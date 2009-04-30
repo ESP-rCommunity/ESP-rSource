@@ -51,6 +51,7 @@ C espriou.h provides currentfile, defdbfl exemfl.
 #include "control.h"
 #include "net_flow.h"
 #include "prj3dv.h"
+#include "ipvdata.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -128,10 +129,8 @@ C Temporal definitions.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
       common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -1469,6 +1468,7 @@ C simula commissions technical assessments and analysis.
 #include "building.h"
 #include "esprdbfile.h"
 #include "sbem.h"
+#include "ipvdata.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       
@@ -1491,11 +1491,6 @@ C Temporal header (to get its time frequency)
      &             LSTREC,NDBSTP,NUWPR
       common/CFGV/icfgv
       common/IPVF/lipvdatf
-
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C Typical seasons and default simulation periods. Isset is the
 C current seasons set, nsset number of sets, Isauto (0=use info as
@@ -2467,6 +2462,7 @@ C << the longer string used when commissioning a simulation.
 
       subroutine ipvactions(ier)
 #include "building.h"
+#include "ipvdata.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -2485,9 +2481,6 @@ C to include the path and create a string to drive the modules.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C Typical seasons and default simulation periods. Isset is the
 C current seasons set, nsset number of sets, Isauto (0=use info as
@@ -4449,6 +4442,7 @@ C << message to user that such a file does not exist
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -4465,16 +4459,6 @@ C Path to model and command line file (if any).
       common/CFGV/icfgv
       common/pophelp/h(60)
 
-C ipvtitl (char 40) is the title that shows up in reports
-C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
-C ipvsynop (char 248) documents the integrated performance view
-C ipvsimu (char 6) is a short tag describing the assessments to be run
-C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
-C   season assessment with all days included.
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 

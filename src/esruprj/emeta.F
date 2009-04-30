@@ -1097,6 +1097,7 @@ C espriou.h provides currentfile.
 #include "control.h"
 #include "seasons.h"
 C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -1146,9 +1147,7 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-C IPV description.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
+C IPV description via ipvdata.h.
 
 C Control documentation common
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
@@ -2218,6 +2217,7 @@ C the file with minimum interaction.
 C espriou.h provides currentfile.
 #include "seasons.h"
 C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -2281,9 +2281,7 @@ C NZJVN : topology of vertices associated with each connection.
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-C IPV description.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
+C IPV description via ipvdata.h.
 
 C Control documentation common
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,

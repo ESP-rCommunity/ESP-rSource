@@ -37,6 +37,7 @@ C altered based on information held in IPV definition.
 #include "uncertainty.h"
 #include "espriou.h"
 #include "control.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -48,19 +49,9 @@ C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options
       common/rcmd/LCMDFL
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
       common/CFGV/icfgv
-
-C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
-C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
-C ipvastjd() are the assessment start julian dates,
-C ipvafnjd are the assessment finish julian dates and
-C nipvdispjd number of days to display in detail,
-C ipvdispjd is list of julian days (must be within the assessment period).
-C ipvadesc is a 40 char description associated with each assessment.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C IDST tool commands
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
@@ -284,6 +275,7 @@ C If act = 'i' then initialise variables.
 C espriou.h for climatelist file name.
 #include "seasons.h"
 C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -301,75 +293,6 @@ C IPV description.
       common/IPVF/lipvdatf
       common/CFGV/icfgv
 
-C Format of the IPV report.
-C  = 1 is human readable text, 2 is tab separated, 3 is java
-      common/IPVFORMAT/ipvform,ipvversion
-
-C ipvtitl (char 40) is the title that shows up in reports
-C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
-C ipvsynop (char 248) documents the integrated performance view
-C ipvsimu (char 6) is a short tag describing the assessments to be run
-C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
-C   season assessment with all days included.
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-
-C List of metric sets: nms is number of sets, imetget is the
-C esrures iget index for the metric selected, imetmsc holds two
-C miscelaneous indices for use by the metric, nzmg is the
-C number of zones in each set, emgflr is the total floor area in
-C each set, emgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), emgwtg is a weighting factor for the
-C metric, izmg is the list of zones in each set.
-C metrglbl is 20 char label equivalent to GLABEL in esrures
-C msdoc is 12 char identifier for each metric set.
-C metgroup is 12 char identifier for the group of zones associated
-C   with this metric.
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-
-C List of energy demand sets: neds is number of sets, idgmsc() are
-C miscel data describing set, iaggr=0 no timestep aggregate reporting
-C iaggr=1 timestep aggregate data included, nzedg is the
-C number of zones in each set, edgflr is the total floor area in
-C each set, edgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), izedg is the list of zones in each set.
-C zedsdoc is 12 char identifier for each set.
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
-
-C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
-C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
-C ipvastjd() are the assessment start julian dates,
-C ipvafnjd are the assessment finish julian dates and
-C nipvdispjd number of days to display in detail,
-C ipvdispjd is list of julian days to display (must be within an
-C   assessment period).
-C ipvadesc is a 40 char description associated with each assessment.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVSEALB/ipvadesc(MIPVA)
-
-C ddm* are the degree-day multipliers (or user defined multipliers) between
-C the periods simulated and the whole season for heating, cooling, lights,
-C small power, fans, domestic hot water. For nipvassmt=1 these are 
-C initially set to 1.0.
-      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
-     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
-
-C dm* are the degree-day and day-ratio multipliers between the
-C typical periods and the whole season for heating (DD), cooling (DD),
-C lights (ratio), small power (ratio), fans (ratio), domestic hot
-C water (ratio). For nipvassmt=1 these are initially set to 1.0.
-C This information is potentially used to support IPV calculations.
-      real dmheat,dmcool,dmlight,dmsmlpw,dmfan,dmdhw
-      common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
-     &              dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
-
-      common/IPVI/nipvimg,lipvimg(4)
-
 C Description of distributed demands and file name.
       COMMON/BL1/dmdsdesc,bdmds
 
@@ -383,15 +306,14 @@ C ITMM is menu for metric sets.
       DIMENSION ITMGET(15),ITM(31),ITMM(13),ITME(14),IVALS(MCOM)
       character ITM*48,ITMM*41,ITME*33,ITMGET*33,H*72,hold*40,hold5*50
       character act*1
-      character lipvimg*72,lipvdatf*72,outs*124
+      character lipvdatf*72,outs*124
       CHARACTER DS*7,DS1*10
       character*72 LTMP,LCFGF
       CHARACTER dmdsdesc*248,bdmds*72
       character cfgroot*24,t40*40,t72*72,t248*248
       character descr*7,descrst*10,descrfn*10
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
-      character ipvadesc*40,t12*12,key*1
-      character zedsdoc*12,msdoc*12,metrglbl*20,metgroup*12
+      character t12*12,key*1
       character simact*6,ipvaction*3
       logical MODSIT,XST,OK
 
@@ -1798,34 +1720,16 @@ C#include "espriou.h"
 C espriou.h for climatelist file name.
 #include "seasons.h"
 C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
 
-C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
-C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
-C ipvastjd() are the assessment start julian dates,
-C ipvafnjd are the assessment finish julian dates and
-C nipvdispjd number of days to display in detail,
-C ipvdispjd is list of julian days to display (must be within an
-C   assessment period).
-C ipvadesc is a 40 char description associated with each assessment.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVSEALB/ipvadesc(MIPVA)
-
-C ddm* are the degree-day multipliers (or user defined multipliers) between
-C the periods simulated and the whole season for heating, cooling, lights,
-C small power, fans, domestic hot water. For nipvassmt=1 these are 
-C initially set to 1.0.
-      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
-     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
-
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-      character act*6,LCFGF*72,cfgroot*24,cr*24,ipvadesc*40
+      character act*6,LCFGF*72,cfgroot*24,cr*24
 
 C Set root name string and length.
       cr=cfgroot
@@ -2124,6 +2028,7 @@ C << add logic to allow for two extreme seasons
 
       subroutine ipv2simpar(act)
 #include "building.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -2133,10 +2038,8 @@ C << add logic to allow for two extreme seasons
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PREC7/ITCNST
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
@@ -2308,6 +2211,7 @@ C << update logic to accept parameters for a silent use >>
 #include "esprdbfile.h"
 #include "seasons.h"
 C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -2328,17 +2232,6 @@ C seasons.h provides typper and typsea
       real CHUM     ! ambient RH
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-
-C dm* are the degree-day and day-ratio multipliers between the
-C typical periods and the whole season for heating (DD), cooling (DD),
-C lights (ratio), small power (ratio), fans (ratio), domestic hot
-C water (ratio). For nipvassmt=1 these are initially set to 1.0.
-C This information is potentially used to support IPV calculations.
-      real dmheat,dmcool,dmlight,dmsmlpw,dmfan,dmdhw
-      common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
-     &              dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
       character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
       character DESCR*7,DESCR1*10,title*40,hold*32

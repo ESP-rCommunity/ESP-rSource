@@ -1492,6 +1492,7 @@ C climatelist.
 #include "building.h"
 #include "seasons.h"
 C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -1509,14 +1510,7 @@ C seasons.h provides typper and typsea
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
-C dm* are the degree-day and day-ratio multipliers between the
-C typical periods and the whole season for heating (DD), cooling (DD),
-C lights (ratio), small power (ratio), fans (ratio), domestic hot
-C water (ratio). For nipvassmt=1 these are initially set to 1.0.
-C This information is potentially used to support IPV calculations.
-      real dmheat,dmcool,dmlight,dmsmlpw,dmfan,dmdhw
-      common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
-     &             dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
+C dm* variables are from ipvdata.h.
 
       character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
       character DESCR*7,DESCR1*10,title*40,hold*32,act*1

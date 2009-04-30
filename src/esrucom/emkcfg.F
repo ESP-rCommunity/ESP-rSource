@@ -47,6 +47,7 @@ C ICLIM,LCLIM (for climate file)
 #include "sbem.h"
 #include "roam.h"
 #include "CFC_common.h"
+#include "ipvdata.h"
       PARAMETER (MSTMC=20,MSGAL=40)
       
       integer lnblnk  ! function definition
@@ -156,14 +157,8 @@ C Primary energy and emissions conversions.
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
 
 C Project demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds

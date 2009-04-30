@@ -100,14 +100,20 @@ C Error messages.
 
 C ************ AZALT
 C AZALT Calculate the solar azimuth and elevation angles at each hour
-C of the day for any site.
+C of the day for any site for either local mean time or apparent time.
+
+C RLONGT = Longitudinal difference east = positive, west = negative of
+C          the reference time zone e.g. Britain reference is Greenwich
+C          zero degrees longitude.
+C RLATIT = Latitude of the site north = positive, south = negative degrees.
       SUBROUTINE AZALT(IYD,ITS,RLONGT,RLATIT,SOLALT,SOLAZI)
       implicit none
       
       real esind,ecosd  ! function definitions
 
 C Parameters:
-      integer IYD,ITS
+      integer IYD  ! julian day of the year
+      integer ITS  ! time system 1 = local mean time, 2 = local apparent time
       real RLONGT,RLATIT,SOLALT,SOLAZI
       DIMENSION SOLALT(24),SOLAZI(24)
       
@@ -129,14 +135,6 @@ C Local definitions:
       GLAT = 55.9
       GLON = -4.15
 
-C  IYD = DAY NUMBER OF THE YEAR (JAN 1=1, JAN 2=2,..., DEC 31=365)
-C  ITS = TIME SYSTEM UNDER ANALYSIS, I.e. IF LOCAL MEAN
-C        TIME (LMT), INPUT 1, IF LOCAL APPARENT TIME ,(LAT) ,INPUT 2.
-C  RLONGT = LONGITUDINAL DIFFERENCE OF THE SITE MEASURED EAST(+VE)
-C           OR WEST(-VE) OF THE REFERENCE TIME ZONE. IN BRITAIN THE
-C           REFERENCE TIME ZONE IS AT GREENWICH (0 DEG LONGITUDE). (DEG)
-C  RLATIT = LATITUDE OF SITE (NORTH +VE, SOUTH -VE) (DEGREES)
-
 C CHECK LATITUDE AND LONGITUDE.
       IF(INIT.EQ.1)GOTO 18
       IF(RLATIT.GT.90.0.OR.RLATIT.LT.-90.0)goto 14
@@ -153,7 +151,7 @@ C CALCULATION OF THE EQUATION OF TIME.
       EQTIME=0.1645*ESIND(A)-0.1255*ECOSD(B)-0.025*ESIND(B)
 
 C CALCULATION OF THE DECLINATION.
-   11 A=280.1+0.9863*IYD
+   11 A=280.1+0.9863*FLOAT(IYD)
       DECLIN=23.45*ESIND(A)
       SDDECL=ESIND(DECLIN)
       CDDECL=ECOSD(DECLIN)

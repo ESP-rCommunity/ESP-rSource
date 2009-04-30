@@ -69,6 +69,8 @@ C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "geometry.h"
 #include "cfd.h"
 #include "sbem.h"
+#include "ipvdata.h"
+
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -243,11 +245,7 @@ C   losspercent and is assumed to apply to all zones in the model.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent
 
-C IPV text strings
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
+C IPV data comes via ipvdata.h
       
       CHARACTER*72 LCFD,LCNN
       CHARACTER*72 LAPROB,LPRJLG,LPNF
