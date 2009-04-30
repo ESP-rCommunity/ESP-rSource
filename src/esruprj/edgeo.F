@@ -7034,9 +7034,9 @@ C IER=0 OK, IER=1 problem.
       CHARACTER item*33,outs*124,KEY*1
       logical found
 #ifdef OSX
-      integer iix,iiy
+      integer iix,iiy,ixd
 #else
-      integer*8 iix,iiy
+      integer*8 iix,iiy,ixd
 #endif
 
 C Initialise vertex list menu size variables based on window size.

@@ -3770,9 +3770,9 @@ C Curvilinear boundary vertex numbers.
 
       CHARACTER act*1,H*72,HOLD*72,outs*124
 #ifdef OSX
-      integer iix,iiy
+      integer iix,iiy,ixd
 #else
-      integer*8 iix,iiy
+      integer*8 iix,iiy,ixd
 #endif
 
 C Tell the user the rules of selection.
