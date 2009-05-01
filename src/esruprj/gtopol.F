@@ -1390,9 +1390,9 @@ C IER=0 OK, IER=1 problem.
       CHARACTER item*33,outs*124,KEY*1
       logical found
 #ifdef OSX
-      integer iix,iiy,ixd
+      integer iix,iiy,ixd,iyd
 #else
-      integer*8 iix,iiy,ixd
+      integer*8 iix,iiy,ixd,iyd
 #endif
 
 C Initialise vertex list menu size variables based on window size.
@@ -2055,9 +2055,9 @@ C Method checks for minimally linked vertices.
       CHARACTER H*72,ACTION*1,HOLD*72,outs*124,SN*6,SN2*6
       character holds*36,SNAME1*6,SNAMED*6,SMLCN1*12
 #ifdef OSX
-      integer iix,iiy,ixd
+      integer iix,iiy,ixd,iyd
 #else
-      integer*8 iix,iiy,ixd
+      integer*8 iix,iiy,ixd,iyd
 #endif
     
       IER=0

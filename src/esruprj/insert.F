@@ -108,9 +108,9 @@ C << what about including common zndata in this manipulation? >>
       character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
 #ifdef OSX
-      integer iix,iiy,ixd
+      integer iix,iiy,ixd,iyd
 #else
-      integer*8 iix,iiy,ixd
+      integer*8 iix,iiy,ixd,iyd
 #endif
 
       IER=0
