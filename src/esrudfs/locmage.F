@@ -91,6 +91,8 @@ C for all other variables is achieved.
       COMMON/NORM/RENORMU,RENORMV,RENORMW,RENORMT,RENORMK,RENORME 
       COMMON/ITERAT/NITER
       common/SOLVER/ILISOL
+C Parameter "Nostop" gt. 0 overrides "non-convergence" control. Use with care.
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
 
 C Boundary condition commons.  
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
@@ -382,9 +384,11 @@ C Not in graphics mode => list data.
      &                  AGEf(IMONT(ICFD),JMONT(ICFD),KMONT(ICFD))
         endif
       endif
-C Check for convergence, making sure that we have done at least 20 iterations.
+C Check for convergence, making sure that we have done at least 5 iterations.
 C        write (6,*) 'Residual and max resid ',RESORL,SRMAX(ICFD)
-      if (RESORL.lt.SRMAX(ICFD).and.NITER.gt.20) goto 99
+C      if (RESORL.lt.SRMAX(ICFD).and.NITER.gt.5) goto 99
+      if (RESORL.lt.SRMAX(ICFD) .and. NOSTOP .ne.0 
+     &     .and. NITER.gt.5) goto 99
  9999 continue
 
 C Check max iters.
@@ -455,7 +459,7 @@ C cases - at solid walls the BC's are always of the zero-gradient type.
      &              SIFH(ntcelz),SIFL(ntcelz)
       COMMON/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
-      COMMON/MFS/IMFACT
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
       COMMON/THETA/THETA1(MCFND,MNZ),THETA2(MCFND,MNZ)
 
       CHARACTER HSID*72

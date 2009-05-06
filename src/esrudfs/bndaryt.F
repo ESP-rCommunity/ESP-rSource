@@ -95,7 +95,7 @@ C
       COMMON/SUSP/SUKD(ntcelx,ntcely,ntcelz),SPKD(ntcelx,ntcely,ntcelz)
       common/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
-      COMMON/MFS/IMFACT
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
       COMMON/THETA/THETA1(MCFND,MNZ),THETA2(MCFND,MNZ)
       COMMON/YUANcm/Uqstor(ntcelx,ntcely,ntcelz),Uqinit
 
@@ -1923,7 +1923,7 @@ C BNDARTT - Impose thermal boundary conditions for turbulent flow.
       COMMON/CONST/GREAT,small,GRAV
       common/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
-      COMMON/MFS/IMFACT
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
       COMMON/YUANcm/Uqstor(ntcelx,ntcely,ntcelz),Uqinit
       COMMON/closehow/yplus(ntcelx,ntcely,ntcelz)
 

@@ -113,6 +113,7 @@ C     &              Zplawe(MNREG,MNZ),NREG(3,MNZ)
      &              SUPCMP(MCMP,MCMS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
       COMMON/LINRFC1/URFCD(MNZ)
       COMMON/NSSWP/NSSWPU(MNZ),NSSWPV(MNZ),NSSWPW(MNZ),NSSWPP(MNZ),
      &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
@@ -1013,6 +1014,12 @@ C Check if residuals should be renormalized or not.
         goto 999
       endif
       if(word(1:1).eq.'N'.or.word(1:1).eq.'n')LRENORM=.FALSE.
+C read switch for non-convergence ignoring and maximum number of conflation mfs-dfs loops ...
+      CALL EGETWI(OUTSTR,K,IVAL,0,4,'W','cfdat-nostop',IER)
+      NOSTOP=IVAL
+      CALL EGETWI(OUTSTR,K,IVAL,1,30,'W','cfdat-nostop',IER)
+      MITMFS=IVAL
+c  end insertion
 
 C Relaxation factors.
       FLSDTU(ICFD)=1.0E+20

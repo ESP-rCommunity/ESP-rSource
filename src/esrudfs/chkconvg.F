@@ -64,7 +64,10 @@ C     &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ACCrec/IACC
       common/ADAPITER/ITERADD
-      
+
+C Parameter "Nostop" gt. 0 overrides "non-convergence" control. Use with care.
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
+
       CHARACTER word*124,H*72,outs*124,LCFD*72
 
       LOGICAL OK,DOK,CALLU,CALLV,CALLW,CALLT,KEMDL,CONVER,BUOY,CALLC
@@ -140,6 +143,13 @@ C iterations).  Write current residuals to ACC file.
         WRITE(word,'(a,1P7E10.3)') '  Energy dissipation = ',RESORE
         CALL EDISP(IUOUT,word)
       ENDIF
+
+C dont stop in multi-timestep simulations ...
+      IF(NOSTOP.ne.0)THEN
+        CONVER=.TRUE.
+        return
+      ENDIF
+C end insertion
 
       dok=.true.
       h(1)='Based on the convergence criteria you gave the solution'

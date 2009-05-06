@@ -81,7 +81,7 @@ C CFCALC - CFD solution manager.
      1              IZEROT,IZanKE,IMITZ
       COMMON/INCALP/INCALPOL(MCTM)
       COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
-      COMMON/MFS/IMFACT
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
       COMMON/ICFNOD/ICFD,ICP
       COMMON/LINRFC1/URFCD(MNZ)
       COMMON/URFDEN/URFDEN
@@ -516,12 +516,13 @@ C      ENDIF
 C Check for max iterations reached, if so query user about 
 C exporting data to a plot file. 
       IF(NITER.EQ.MAXIT) GOTO 302
-      IF(SORCE.GT.SORMAX.OR.NITER.LT.20) GOTO 300 
+      IF(SORCE.GT.SORMAX.OR.NITER.LT.5) GOTO 300 
   302 continue
       
 C Check convergence.
       if(SORCE.GT.SORMAX)THEN
-        IF(ICFMFS(ICFD).EQ.1.AND.NMFSRUN.LE.10)THEN
+C        IF(ICFMFS(ICFD).EQ.1.AND.NMFSRUN.LE.10)THEN
+        IF(ICFMFS(ICFD).EQ.1.AND.NMFSRUN.LE.10.and.NOSTOP.eq.0)THEN
 
 C Help message (unindented)
       H(1) = 'If mass residual is maximum and velocity residuals are'
@@ -608,7 +609,7 @@ C need to be done again using lower velocity URFs
             GOTO 320
           endif
         endif
-        CALL EDISP(IUOUT,'Solution did not converge')       
+C        CALL EDISP(IUOUT,'Solution did not converge') 
       ELSE
         CONVER=.TRUE.
         WRITE(OUT,'(A,I4,A,I3,A,F6.3,A)')'Solution converged in ',
@@ -631,12 +632,19 @@ C      write (6,*) 'LMA',CALLMA(ICFD),'  gopher',gophrun
       RETURN
       
 C Format statements.
- 312  FORMAT(1H ,I6,2X,1P7E10.3,/,9X,1P7E10.3)
+C 312  FORMAT(1H ,I6,2X,1P7E10.3,/,9X,1P7E10.3)
+ 312  FORMAT(1H ,I6,2X,1P14E11.3)
+C 410  FORMAT(/,' DFS - Monitoring of residuals & variables',/,/,
+C     &' ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',9X,'K',7X,'Eps.',/)
  410  FORMAT(/,' DFS - Monitoring of residuals & variables',/,/,
-     &'   ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',9X,'K',7X,'Eps.',/)
+     & ' ITER',9X,'rU',9X,'rV',9X,'rW',9X,'rP',9X,'rT',
+     & 9X,'rK',7X,'rEps.',
+     & 9X,'U',9X,'V',10X,'W',10X,'P', 10X,'T',10X,'K',8X,'Eps.',/)
+
  420  FORMAT(/,' DFS - Monitoring of renormalized residuals &',
      &' variables',/,/,'   ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',
-     &9X,'K',7X,'Eps.',/)
+     & 9X,'K',7X,'Eps.',/)
+
  1030 FORMAT(/,'ITIME =',I3)
       END
 

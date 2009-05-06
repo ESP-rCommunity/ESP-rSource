@@ -62,6 +62,12 @@ C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
       common/SOLVER/ILISOL
       COMMON/GGDH/ GENB1(ntcelx,ntcely,ntcelz),GGDH
+      
+C Parameter "Nostop" gt. 0 overrides "non-convergence" control. Use with care.
+C MITMFS is the max number of times cfd will be invoked using mfs 
+C determined boundary conditions at one time step to attain mutual
+C cfd-mfs convergence.
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
 
       DIMENSION HC(MNSBZ),SFNAM(MNSBZ)
 
@@ -71,10 +77,7 @@ C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
       CHARACTER*72 TITLE,outfil,CFTRFL,LPHI,LCFD,out
       LOGICAL INITFL,CONVER,GGDH
 
-C MITMFS is the max number of times cfd will be invoked using mfs 
-C determined boundary conditions at one time step to attain mutual
-C cfd-mfs convergence.
-      PARAMETER(MITMFS=20)
+C      PARAMETER(MITMFS=20)
 
       ICFD=IND
       ICP=ICOMP
@@ -168,7 +171,10 @@ C Activate mfs-cfd coupling via MFBNDR if airflow network is defined
             GOTO 257
           ELSE
             IF(LKTR.GT.MITMFS)THEN
-              call edisp(iuout,'Could not get mfs-cfd convergence')
+              write(out,'(A,I4,A)')
+     &          'Could not get mfs-cfd convergence in '
+     &                           ,lktr,' runs'
+              call edisp(iuout,out)
               CALL MFBNDR(0)
               GOTO 257
             ENDIF

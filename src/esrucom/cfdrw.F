@@ -464,7 +464,7 @@ C Convergance criteria.
       write(IUF,'(a)',IOSTAT=ios,ERR=3) '# Iteration control.'
       write(IUF,'(a)',IOSTAT=ios,ERR=3) '*iteration '
       write(IUF,'(i6,G12.4,a)',IOSTAT=ios,ERR=3) MAXITR(ICFD),
-     &                     SRMAX(ICFD),' No'
+     &                     SRMAX(ICFD),' No  0  20'
       write(IUF,'(a,3i4,a)',IOSTAT=ios,ERR=3)  '*monitor ',
      &  IMONT(ICFD)-1,JMONT(ICFD)-1,KMONT(ICFD)-1,'  CFD.mon'
       if (INITFL(ICFD)) then
@@ -570,7 +570,7 @@ C   ICFBLD(ICFD)=building conflation mechanism (not used at present)
 C   ICFMFS(ICFD)=mass flow conflation mechanism (0=none, 1=active)
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
-      COMMON/MFS/IMFACT
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
       COMMON/LINRFC1/URFCD(MNZ)
       COMMON/NSSWP/NSSWPU(MNZ),NSSWPV(MNZ),NSSWPW(MNZ),NSSWPP(MNZ),
      &             NSSWPT(MNZ),NSSWPK(MNZ),NSSWPE(MNZ)
@@ -1684,6 +1684,14 @@ C Read iteration control data.
       MAXITR(ICFD)=IVAL
       CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','conv crit',IER)
       SRMAX(ICFD)=VAL
+C also read switch for "renormalization" and for "ignore non-convergence" as well as max iterations between mfs and dfs
+      CALL EGETW(OUTSTR,K,WORD,'W','renorm',IER)
+c  ... ?
+      CALL EGETWI(OUTSTR,K,IVAL,0,4,'W','cfdrw-nostop',IER)
+      NOSTOP=IVAL
+      CALL EGETWI(OUTSTR,K,IVAL,1,30,'W','cfdat-nostop',IER)
+      MITMFS=IVAL
+C end inclusion
       CALL STRIPC(IFL,OUTSTR,0,ND,1,'monitoring',IER)
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','monitor',IER)

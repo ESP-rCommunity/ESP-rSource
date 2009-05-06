@@ -410,7 +410,7 @@ C always of the zero-gradient type.
      &              SIFH(ntcelz),SIFL(ntcelz)
       COMMON/INCALC/INCALU,INCALV,INCALW,INCALK,INCALD,INCALT,
      1              IZEROT,IZanKE,IMITZ
-      COMMON/MFS/IMFACT
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
       COMMON/THETA/THETA1(MCFND,MNZ),THETA2(MCFND,MNZ)
 
       CHARACTER*72 HSID
