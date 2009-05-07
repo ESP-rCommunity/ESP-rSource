@@ -121,6 +121,7 @@ C VOLPres - BC volume pressure if applicable
       common/cfdini/INITFL(MNZ)
       common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
 C ICFDNOD = mass flow network node representative of CFD domain
 C ICFDCNN = list of mfs connections representative of CFD openings
@@ -461,10 +462,11 @@ C Local mean age.
       endif
      
 C Convergance criteria.
+      if (MITMFS.eq.0) MITMFS=20
       write(IUF,'(a)',IOSTAT=ios,ERR=3) '# Iteration control.'
       write(IUF,'(a)',IOSTAT=ios,ERR=3) '*iteration '
-      write(IUF,'(i6,G12.4,a)',IOSTAT=ios,ERR=3) MAXITR(ICFD),
-     &                     SRMAX(ICFD),' No  0  20'
+      write(IUF,'(i6,G12.4,a,i2,a,i2)',IOSTAT=ios,ERR=3)MAXITR(ICFD),
+     &                     SRMAX(ICFD),' No ',NOSTOP,'  ',MITMFS
       write(IUF,'(a,3i4,a)',IOSTAT=ios,ERR=3)  '*monitor ',
      &  IMONT(ICFD)-1,JMONT(ICFD)-1,KMONT(ICFD)-1,'  CFD.mon'
       if (INITFL(ICFD)) then
@@ -1688,8 +1690,10 @@ C also read switch for "renormalization" and for "ignore non-convergence" as wel
       CALL EGETW(OUTSTR,K,WORD,'W','renorm',IER)
 c  ... ?
       CALL EGETWI(OUTSTR,K,IVAL,0,4,'W','cfdrw-nostop',IER)
+      if (IER.ne.0) NOSTOP=0
       NOSTOP=IVAL
-      CALL EGETWI(OUTSTR,K,IVAL,1,30,'W','cfdat-nostop',IER)
+      CALL EGETWI(OUTSTR,K,IVAL,1,30,'W','cfdat-mitmfs',IER)
+      if (IER.ne.0) MITMFS=20
       MITMFS=IVAL
 C end inclusion
       CALL STRIPC(IFL,OUTSTR,0,ND,1,'monitoring',IER)
