@@ -1247,8 +1247,9 @@ C Convergence criteria.
 C Additional data needed for some models.
       COMMON/ZTURB/rMOOT,nZtoKE
       COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
  
-      character H*72,ITEM(32)*40,ltmp*16,dtmp*16, POLNAM*12
+      character H*72,ITEM(34)*40,ltmp*16,dtmp*16, POLNAM*12
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
@@ -1278,7 +1279,7 @@ C has been activated then display associated state variables and allow
 C definition of initial values and relaxation factors.
 C First clear menu.
  5    INO=-4
-      do 10 I=1,32
+      do 10 I=1,34
         ITEM(I)='  '
  10   continue
 
@@ -1359,13 +1360,17 @@ C Now create menu.
      &      MAXITR(ICFD)
       write (ITEM(23+NCTM),'(a,f7.5)')'y Max sum of residuals: ',
      &      SRMAX(ICFD)
-      ITEM(24+NCTM)=' ------------------------------- '
-      write (ITEM(25+NCTM),'(a,3i4)') 'z Monitoring cell (i,j,k):',
+      write (ITEM(24+NCTM),'(a,i5)')'u Non-convergence mfs-dfs: ',
+     &      NOSTOP
+      write (ITEM(25+NCTM),'(a,i5)')'v Max. iterations mfs-dfs: ',
+     &      MITMFS
+      ITEM(26+NCTM)=' ------------------------------- '
+      write (ITEM(27+NCTM),'(a,3i4)') 'z Monitoring cell (i,j,k):',
      &                        IMONT(ICFD)-1,JMONT(ICFD)-1,KMONT(ICFD)-1
-      ITEM(26+NCTM)= ' ------------------------------- '
-      ITEM(27+NCTM)='? Help'
-      ITEM(28+NCTM)='- exit this menu'
-      NITMS=28+NCTM
+      ITEM(28+NCTM)= ' ------------------------------- '
+      ITEM(29+NCTM)='? Help'
+      ITEM(30+NCTM)='- exit this menu'
+      NITMS=30+NCTM
 
 C Help text for this menu.
       h(1)= 'Specify the equations to be solved in the CFD analysis.'
@@ -1643,7 +1648,60 @@ C Convergence criteria.
         CALL EASKR(VAL,' ',' Maximum equation residual?',
      &             0.,'F',1.,'F',0.02,'iterations',IER,17)
         SRMAX(ICFD)=VAL
+
+      elseif (INO.eq.24+NCTM) then
+        h(1)= 'An iterative solution procedure is employed.'
+        h(2)= 'Iterations continue until either:'
+        h(3)= '  1) the solution converges to a user-specified'
+        h(4)= '     tolerance; or'
+        h(5)= '  2) a user-specified number of iterations has been'
+        h(6)= '     performed.'
+        h(7)= '  '
+        h(8)= 'In multi-timestep mfs-dfs conflated simulations'
+        h(9)= 'calculations will be halted if the solution does'
+        h(10)='not converge. User input is required.'
+        h(11)='This behaviour is often not wanted. Setting NOSTOP to'
+        h(12)='a value .ne. 0 leads to a different behaviour:'
+        h(13)=' The simulation continues without user input,'
+        h(14)=' i.e. a *non-converged* solution is accepted!'
+        h(15)='  '
+        h(16)='***Use this feature with due restraint!***'
+        h(17)='  '
+        h(18)='Following options of alternative behaviour are'
+        h(19)='available: '
+        h(20)='   1   simulation continues w/o user input'
+        h(21)='       ((no further options yet ...))'
+        h(22)='  '
+        h(23)='A cancel results in no change to the model. '
+        ival=NOSTOP
+        CALL EASKI(ival,' ',' Disregard non-convergence?',
+     &             0,'F',4,'F',0,'non-convergence',IERI,23)
+        if(ieri.eq.-3)then
+          continue
+        else
+          NOSTOP=ival
+        endif
       elseif (INO.eq.25+NCTM) then
+        h(1)= 'When mfs-dfs conflation is used, both modules'
+        h(2)= 'should find a converged solution.'
+        h(3)= '  '
+        h(4)= 'Specify the maximum number of loops for this.'
+        h(5)= 'If no solution is found in this number of loops'
+        h(6)= 'the simulations progresses to the next time step,'
+        h(7)= 'regardless. A warning is given.'
+        h(8)= '  '
+        h(9)= 'A value of 20 is the default. Values between'
+        h(10)='1 and 30 can be used. For multi-timestep'
+        h(11)='simulations, a value of 5 seems reasonable.'
+        ival=MITMFS
+        CALL EASKI(ival,' ',' Number of iterations betw. mfs-dfs?',
+     &             1,'F',30,'F',20,'iter mfs-dfs',IERI,11)
+        if(ieri.eq.-3)then
+          continue
+        else
+          MITMFS=ival
+        endif
+      elseif (INO.eq.27+NCTM) then
 
 C Monitoring cell.
         h(1)='Specify the localtion of the monitoring cell.  This'
