@@ -272,7 +272,7 @@ C Calculate the current period id for identified casual gain.
       if(.not.INCALT) call UNIFORMT  
 
       CALL PROPS(1)
-      WRITE(ICFMON,1030)ITIMST
+      if (NOSTOP.eq.0) WRITE(ICFMON,1030)ITIMST
 
 C Record ACC actions (begin).
       IF( abs(IFCFD(ICP)).eq.4 .or. abs(IFCFD(ICP)).eq.5)THEN
@@ -298,29 +298,29 @@ C Record ACC actions (begin).
         write(IACC,*) '  Convergence criteria: ',MAXIT,SORMAX
         write(IACC,*) '  Relaxation factors: ',URFU,URFV,URFW,URFP,URFT,
      &                                       URFK,URFE,URFVIS,URFDEN
-      else
-        write(6,*)
-        write(6,*) 'Initiating CFD sim with following parameters:'
-        if(INCALU) write(6,*) '  U-momentum active'
-        if(INCALV) write(6,*) '  V-momentum active'
-        if(INCALW) write(6,*) '  W-momentum active'
-        if(INCALT) write(6,*) '  Energy equation active'
-        if(INCALK) write(6,*) '  k-epsilon turb model active'
-        if(IZanKE) write(6,*) '  k-epsilon + fixed mu-t active'
-        if(IMITZ)  write(6,*) '  Chen & Xu turb model active'
-        if(BUOYA)  write(6,*) '  Buoyancy turned on'
-        if(BOUSSA) write(6,*) '  Boussinesq approximation active',
-     &                  ' with ref temp = ',TBAR
-        do 21 IV=1,NVOL(ICFD)
-          if (IDcasgn(IV,ICFD).gt.0) then
-            write(6,*) 'Heat gain set from casual gain ',
-     &          IDcasgn(IV,ICFD),' to ',VOLHeat(IV,ICFD),'W in volume ',
-     &          VOLNAME(IV,ICFD)
-          endif
- 21     continue
-        write(6,*) '  Convergence criteria: ',MAXIT,SORMAX
-        write(6,*) '  Relaxation factors: ',URFU,URFV,URFW,URFP,URFT,
-     &                                       URFK,URFE,URFVIS,URFDEN
+c      else
+c        write(6,*)
+c        write(6,*) 'Initiating CFD sim with following parameters:'
+c        if(INCALU) write(6,*) '  U-momentum active'
+c        if(INCALV) write(6,*) '  V-momentum active'
+c        if(INCALW) write(6,*) '  W-momentum active'
+c        if(INCALT) write(6,*) '  Energy equation active'
+c        if(INCALK) write(6,*) '  k-epsilon turb model active'
+c        if(IZanKE) write(6,*) '  k-epsilon + fixed mu-t active'
+c        if(IMITZ)  write(6,*) '  Chen & Xu turb model active'
+c        if(BUOYA)  write(6,*) '  Buoyancy turned on'
+c        if(BOUSSA) write(6,*) '  Boussinesq approximation active',
+c     &                  ' with ref temp = ',TBAR
+c        do 21 IV=1,NVOL(ICFD)
+c          if (IDcasgn(IV,ICFD).gt.0) then
+c            write(6,*) 'Heat gain set from casual gain ',
+c     &          IDcasgn(IV,ICFD),' to ',VOLHeat(IV,ICFD),'W in volume ',
+c     &          VOLNAME(IV,ICFD)
+c          endif
+c 21     continue
+c        write(6,*) '  Convergence criteria: ',MAXIT,SORMAX
+c        write(6,*) '  Relaxation factors: ',URFU,URFV,URFW,URFP,URFT,
+c     &                                       URFK,URFE,URFVIS,URFDEN
       ENDIF
 C Record ACC actions (end).
 
@@ -332,13 +332,17 @@ C Iteration loop.
       IF (mod(MAXIT,MFRP).NE.0) NPLT=NPLT+1
       ICALL=0
 
-C If in text mode, print monitoring headlines.
+C If in text mode, print monitoring headlines, otherwise write these to monitoring file
       IF(LRENORM) THEN
         IF(MMOD.NE.8) WRITE(IUOUT,420)
         WRITE(ICFMON,420)
       ELSE
         IF(MMOD.NE.8) WRITE(IUOUT,410)
-        WRITE(ICFMON,410)
+        if (NOSTOP.eq.0) then
+          WRITE(ICFMON,410)
+        else
+          WRITE(ICFMON,415)        
+        endif
       ENDIF
 
 C Iterate until solution converges.
@@ -438,7 +442,7 @@ C Find the maximum source of residual.
 
 C Write/ plot residuals and monitoring values.
 C First check if output for this iteration.
-      if (mod(NITER,NPLT).eq.0.or.NITER.le.1) then
+      if (mod(NITER,NPLT).eq.0 .or.NITER.le.1 .and.NOSTOP.eq.0) then
 
 C Write residuals and monitoring values in a ASCII format file.
         WRITE(ICFMON,312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
@@ -618,7 +622,7 @@ C        CALL EDISP(IUOUT,'Solution did not converge')
       ENDIF
 
 C Write out final monitoring/ residual info if not done above.
-      if(mod(NITER,NPLT).ne.0)then
+      if(mod(NITER,NPLT).ne.0 .and.NOSTOP.eq.0)then
          WRITE(ICFMON,312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
      1         RESORK,RESORE,Uf(IMON,JMON,KMON),Vf(IMON,JMON,KMON),
      2         Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),Tf(IMON,JMON,KMON),
@@ -640,12 +644,17 @@ C     &' ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',9X,'K',7X,'Eps.',/)
      & ' ITER',9X,'rU',9X,'rV',9X,'rW',9X,'rP',9X,'rT',
      & 9X,'rK',7X,'rEps.',
      & 9X,'U',9X,'V',10X,'W',10X,'P', 10X,'T',10X,'K',8X,'Eps.',/)
+     
+ 415  FORMAT(/,' DFS - Monitoring for multi-timestep dfs-mfs runs',/,
+     & ' ITER',9X,'rU',9X,'rV',9X,'rW',9X,'rP',9X,'rT',
+     & 9X,'rK',7X,'rEps.',
+     & 9X,'U',9X,'V',10X,'W',10X,'P', 10X,'T',10X,'K',8X,'Eps.',/)
 
  420  FORMAT(/,' DFS - Monitoring of renormalized residuals &',
      &' variables',/,/,'   ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',
      & 9X,'K',7X,'Eps.',/)
 
- 1030 FORMAT(/,'ITIME =',I3)
+ 1030 FORMAT(/,'ITIME =',I5)
       END
 
 

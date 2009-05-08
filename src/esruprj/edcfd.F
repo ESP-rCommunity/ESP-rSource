@@ -151,7 +151,7 @@ C flag.  Then read in the data based on the conflation type.
         CALL STRIPC(IUF,OUTSTR,0,ND,1,'dfd line 1',IER)
         if(OUTSTR(1:7).eq.'*DFS V2')then
           CALL ERPFREE(IUF,ISTAT)
-          call DFDREAD(IZONE,2,iuout,IER)
+          call DFDREAD(IZONE,0,iuout,IER)
           if (IER.ne.0) return
         elseif(OUTSTR(1:15).eq.'DFS DESCRIPTION')then
           CALL STRIPC(IUF,OUTSTR,0,ND,1,'dfd line 2',IER)

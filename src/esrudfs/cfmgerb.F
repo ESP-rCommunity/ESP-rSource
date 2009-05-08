@@ -69,6 +69,27 @@ C determined boundary conditions at one time step to attain mutual
 C cfd-mfs convergence.
       COMMON/MFS/IMFACT,NOSTOP,MITMFS
 
+C Items for monitor file "multi-timestep" runs
+      COMMON/ITERAT/NITER
+      COMMON/VARf/Uf(ntcelx,ntcely,ntcelz),Vf(ntcelx,ntcely,ntcelz),
+     1            Wf(ntcelx,ntcely,ntcelz),
+     2            P(ntcelx,ntcely,ntcelz),PP(ntcelx,ntcely,ntcelz),
+     3            TEf(ntcelx,ntcely,ntcelz),EDf(ntcelx,ntcely,ntcelz)
+      COMMON/PCOR/RESORM,NSWPP,URFP,FSDTP,IPREF,JPREF,KPREF
+      COMMON/TEN/RESORK,NSWPK,URFK,FSDTK
+      COMMON/TDIS/RESORE,NSWPD,URFE,FSDTE
+      COMMON/UVEL/RESORU,NSWPU,URFU,FSDTU,DXEPU(ntcelx),
+     1            DXPWU(ntcelx),SEWU(ntcelx)
+      COMMON/VVEL/RESORV,NSWPV,URFV,FSDTV,DYNPV(ntcely),
+     1            DYPSV(ntcely),SNSV(ntcely)
+      COMMON/WVEL/RESORW,NSWPW,URFW,FSDTW,DZHPW(ntcelz),
+     1            DZPLW(ntcelz),SHLW(ntcelz)
+      common/param1/MAXITR(MNZ),IMONT(MNZ),JMONT(MNZ),KMONT(MNZ),
+     1             IPPHI(MNZ),SRMAX(MNZ)
+      COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
+     1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
+
+C -- end
       DIMENSION HC(MNSBZ),SFNAM(MNSBZ)
 
       CHARACTER NBCHAR*10,SFNAM*12
@@ -85,6 +106,11 @@ C      PARAMETER(MITMFS=20)
       IBLACT=IFCFD(ICP)
       TSTEP=3600.0/float(ntstep)
       LKTR=1
+
+C Monitoring position.
+      IMON=IMONT(ICFD)
+      JMON=JMONT(ICFD)
+      KMON=KMONT(ICFD)
 
 C Hardwire version of LISOLV to use.
       ILISOL=3
@@ -197,6 +223,14 @@ C Convection coefficients.
         SFNAM(I)=SSNAME(icon)
  100  CONTINUE
 
+C Write monitor file if multi-timestep simulation with afn-mfs conflation
+      if (NOSTOP.ne.0) then
+         WRITE(ICFMON,312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
+     1         RESORK,RESORE,Uf(IMON,JMON,KMON),Vf(IMON,JMON,KMON),
+     2         Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),Tf(IMON,JMON,KMON),
+     3         TEf(IMON,JMON,KMON),EDf(IMON,JMON,KMON)         
+      endif
+
 C Surface conflation:
       IF( ABS(IFCFD(ICP)).EQ.1 .OR.
      &    (ABS(IFCFD(ICP)).GE.4.and.ABS(IFCFD(ICP)).LE.7) )THEN
@@ -227,6 +261,8 @@ C Write calculated variable fields to be used in the next time-step.
       CALL PRNNEW(ifl)
 
       RETURN
+C Format statements.
+ 312  FORMAT(1H ,I6,2X,1P14E11.3)
       END
 
 
