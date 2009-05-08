@@ -123,15 +123,14 @@ C Generate help and default strings.
       WRITE(DSTR,27,iostat=ios,err=1)STR2(1:IW2)
    27 FORMAT('The default value (',a,') will be used.')
 
-      CALL INTSTR(IVAL,STR2,IW2,IER)
-      CALL INTSTR(IDEFLT,STR1,IW1,IER)
+      CALL INTSTR(IVAL,STR1,IW1,IER)
       IF(NHELP.GT.0)THEN
         WRITE(H(NHELP+1),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
       ELSE
         LN=max(1,LNBLNK(ERMSG))
         WRITE(H(1),64,iostat=ios,err=1)ERMSG(1:LN)
    64   FORMAT('No help available for ',a,'!')
-        WRITE(H(2),65,iostat=ios,err=1)STR2(1:IW2),STR1(1:IW1)
+        WRITE(H(2),65,iostat=ios,err=1)STR1(1:IW1),STR2(1:IW2)
    65   FORMAT('Current value is (',a,'); Default value is (',a,').')
       ENDIF
 
