@@ -1086,12 +1086,12 @@ C Read data and match to volume with same name.
               if (ND.gt.3) then
 
 C Read conflated data.
-                CALL EGETW(OUTSTR,K,WORD,'W','vert bar',IER)
-                CALL EGETW(OUTSTR,K,WORD,'W','conf',IER)
-
 C Following line commented because vertical bar is considered a comment 
 C from circa rev1700
-C                CALL EGETWI(OUTSTR,K,IVALS,1,99,'-','conf type',IER)
+C                CALL EGETW(OUTSTR,K,WORD,'W','vert bar',IER)
+
+                CALL EGETW(OUTSTR,K,WORD,'W','conf',IER)
+                CALL EGETWI(OUTSTR,K,IVALS,1,99,'-','conf type',IER)
                 IVConfl(IV,ICFD)=IVALS
                 CALL EGETW(OUTSTR,K,WORD,'W','surface',IER)
                 VCsurf(IV,ICFD)=WORD(1:12)
