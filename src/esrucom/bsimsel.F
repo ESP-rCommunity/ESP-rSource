@@ -19,16 +19,18 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C ***** select BASESIMP type
-C Based on data from BASESIMP, A Simplified Foundation Energy-Loss Model 
-C Derived from BASECALC (TM) Simultions
+C bsimtype is based on data from BASESIMP, A Simplified Foundation  
+C Energy-Loss Model Derived from BASECALC (TM) Simultions
 C Ian Beausoleil-Morrison, CANMET Energy Technology Centre,
 C Natural Resources Canada, 1996, 1998 1999.
+C ibst (integer) is the index of the user selection to be returned
 
       subroutine bsimtype(ibst)
       common/pophelp/h(60)
       dimension bl(145),IVAL(145)
       character bl*65,h*72,outs*72
       logical ok,dok
+      integer ibst  ! index of user selection
 
 C Build the selection list.
       write(bl(1),'(a)')

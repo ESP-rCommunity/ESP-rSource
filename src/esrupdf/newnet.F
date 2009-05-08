@@ -66,7 +66,7 @@ C Mass flow network.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Defaults.
-      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Plant network.
       common/C23/IFPNF,LPNF
@@ -102,7 +102,7 @@ C Common controlling format of plant network file
       character*20 simtyp(3)
       character lpnam*72,laprob*72,LPNF*72
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       dimension ival(mpcom)
       CHARACTER*44 ITEM(28)
       CHARACTER H*72,outs*124,ltmp*72,pcname*15, lctlf*72,ctldoc*248
@@ -1036,6 +1036,7 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
 
 #include "plant.h"
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       common /pcdat/ nnodes(mpcom), isv(mpcom,mnodec), 
@@ -1054,11 +1055,6 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       dimension ival(mpcom), cnttyp(4)
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
@@ -1206,7 +1202,7 @@ C General image option flags.
               nzg=1
               nznog(1)=IZ
               izgfoc=IZ
-              CALL ADJVIEW(ITRC,IER)
+              CALL ADJVIEW(IER)
               MODIFY=.TRUE.
               MODBND=.TRUE.
 
@@ -1708,7 +1704,6 @@ C Electrical details for specified plant components
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       DIMENSION VERT(35),IEPMAP(MPCOM)
       CHARACTER PCNAME*15,STR*8
       character*(*) head
@@ -2106,6 +2101,9 @@ C The routine presents a list of surface layers.
       common/pophelp/h(60)
       common/FILEP/IFIL
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -2138,7 +2136,7 @@ C Arrays of material properties.
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
       character item*32
-      CHARACTER DESC*48,NAM*72,PNAM*20,H*72
+      CHARACTER NAM*72,PNAM*20,H*72
       CHARACTER TITL*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -2315,6 +2313,7 @@ C interaction is begun.
       SUBROUTINE ASKBPLINK(head,MOD,IS,IER)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 #include "plant.h"
 #include "control.h"      
 
@@ -2330,22 +2329,20 @@ C Common for the building plant link
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pcsort/icode(maxpc)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      DIMENSION VERT(35), CTYPE(4)
+      DIMENSION VERT(35), PCTYPE(4)
       CHARACTER PCNAME*15
 
       character*(*) head
-      CHARACTER H*72,VERT*64,KEY*1,MOD*1,ctype*12,desc*12,tstr*15,
-     &zname*12,zdesc*64,tstr1*15
+      CHARACTER H*72,VERT*64,KEY*1,MOD*1,pctype*12,desc*12,tstr*15,
+     &tstr1*15
       LOGICAL SELECT
 
 C Currently three types of linkages are supported.
-      ctype(1)= 'convective'
-      ctype(2)= 'conv/rad'
-      ctype(3)= 'embedded'
+      pctype(1)= 'convective'
+      pctype(2)= 'conv/rad'
+      pctype(3)= 'embedded'
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -2373,11 +2370,11 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           IF(IPCLINKT(L).EQ.1)THEN
-            WRITE(desc,'(A12)')ctype(1)
+            WRITE(desc,'(A12)')pctype(1)
           ELSEIF(IPCLINKT(L).EQ.2)THEN
-            WRITE(desc,'(A12)')ctype(2)
+            WRITE(desc,'(A12)')pctype(2)
           ELSE
-            WRITE(desc,'(A12)')ctype(3)
+            WRITE(desc,'(A12)')pctype(3)
           ENDIF
  
 C Create reporting strings, avoiding zero pointers.
@@ -2535,6 +2532,7 @@ C D - delete
       SUBROUTINE EDBPLINK(MODE,IS)
 
 #include "building.h"
+#include "geometry.h"
 #include "plant.h"
 #include "control.h"
 
@@ -2560,11 +2558,6 @@ C Common for the building plant lin
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR
@@ -2760,7 +2753,7 @@ C General image option flags.
           nzg=1
           nznog(1)=IZ
           izgfoc=IZ
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
           MODIFY=.TRUE.
           MODBND=.TRUE.
 

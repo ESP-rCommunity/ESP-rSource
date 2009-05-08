@@ -736,7 +736,11 @@ C default file names for databases
       common/cctlnm/ctldoc,lctlf
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/pcdbdt/ipcrec(mpcom)
-      common/rcmd/LCMDFL
+
+C This common block based on initial results file dialog and is
+C the best-guess of file names (but with full path).
+      character RFILEABS*144,PFILEABS*144,MSTRFILEABS*144,LAFRESABS*144
+      COMMON/ABSRESLIB/RFILEABS,PFILEABS,MSTRFILEABS,LAFRESABS
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
       common/pcresres/ napout(mpcom),apcout(20)
@@ -749,14 +753,14 @@ C default file names for databases
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
 
-      character DFILE*72,LTMP*144,outs*124,LCMDFL*144,T72*72
+      character DFILE*72,LTMP*144,outs*124,T72*72
       character lctlf*72,ctldoc*248,scname*12,h*72,MODE*4
       character firstbit*72,secondbit*72,path*72,LCFGF*72,cfgroot*24
-      character longtmp*144,LFCFG*72
+      character longtmp*144
       logical XST,ok,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -768,20 +772,20 @@ C Defaults.
       ier=0
     6 call edisp(iuout,' ')
       if(imode.eq.1) then
-        if(LCMDFL(1:2).ne.'  '.or.LCMDFL(1:4).ne.'UNKN')then
-          ltmp=lcmdfl
+        if(PFILEABS(1:2).ne.'  '.or.PFILEABS(1:4).ne.'UNKN')then
+          ltmp=PFILEABS
         else
           ltmp=' '
         endif
 
 C Assume default plants results name (*.plr) taken from zone results
-C name (*.res)
-	lrf=lnblnk(LTMP)
-	lrf3=lrf-3
-	lrf4=lrf-4
-	if(LTMP(lrf3:lrf).eq.'.res')then
-	  write(LTMP,'(2a)') LTMP(1:lrf4),'.plr'
-	endif
+C name (*.res). Use the same style as in MFOUTP.
+C	lrf=lnblnk(LTMP)
+C	lrf3=lrf-3
+C	lrf4=lrf-4
+C	if(LTMP(lrf3:lrf).eq.'.res')then
+C	  write(LTMP,'(2a)') LTMP(1:lrf4),'.plr'
+C	endif
 
         llt=lnblnk(ltmp)
         h(1)='The predictions from solution of a plant/system '
@@ -795,36 +799,36 @@ C name with the full path.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(ltmp,' Library name ? ',' ',96,DFILE,
-     &        'library file',IER,4)
+            CALL EASKF(ltmp,'Plant library name ? ',' ',96,DFILE,
+     &        'plant library file',IER,4)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(ltmp,' Library name ? ',' ',124,DFILE,
-     &        'library file',IER,4)
+            CALL EASKF(ltmp,'Plant library name ? ',' ',124,DFILE,
+     &        'plant library file',IER,4)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(ltmp,' Library name ? ',' ',144,DFILE,
-     &        'library file',IER,4)
+            CALL EASKF(ltmp,'Plant library name ? ',' ',144,DFILE,
+     &        'plant library file',IER,4)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(ltmp,' Library name ? ',' ',144,DFILE,
-     &      'library file',IER,4)
+          CALL EASKF(ltmp,'Plant library name ? ',' ',144,DFILE,
+     &      'plant library file',IER,4)
         else
-          CALL EASKF(ltmp,' Library name ? ',' ',96,DFILE,
-     &      'library file',IER,4)
+          CALL EASKF(ltmp,'Plant library name ? ',' ',96,DFILE,
+     &      'plant library file',IER,4)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
         if(LTMP(1:2).eq.'  '.or.LTMP(1:4).eq.'UNKN')goto 6
       else
-        ltmp=LCMDFL
+        ltmp=PFILEABS
       endif
       IER=0
-C      XST=.false.
+
       INQUIRE (FILE=LTMP,EXIST=XST)
       IF(XST)THEN
 
 C Set record length of library file.
         nprl = nprecl
-        OPEN (iunitp,FILE=LTMP(:lnblnk(LTMP)),ACCESS='DIRECT',
+        OPEN (iunitp,FILE=LTMP(1:lnblnk(LTMP)),ACCESS='DIRECT',
      &    RECL=nprl*4,FORM='UNFORMATTED',STATUS='OLD',IOSTAT=ISTAT)
           write(outs,'(A,I3)')' Opening file with record length',nprl
           call edisp(iuout,outs)
@@ -852,7 +856,8 @@ C Read number of result-set.
       endif
       ipset=0
       if(nsim.gt.1) then
-         write(outs,'(a,I4,a)')' Library contains',nsim,' results sets'
+         write(outs,'(a,I4,a)')'Plant library contains',nsim,
+     &     ' results sets'
          call edisp(iuout,outs)
   13     ipset=1
          CALL easki(ipset,' ',' Specify required set ? ',
@@ -936,13 +941,13 @@ C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           if(iglib.eq.1.or.iglib.eq.3)then
-            CALL EASKF(longtmp,' Model configuration file ?',' ',96,
+            CALL EASKF(longtmp,'Model configuration file ?',' ',96,
      &        DFCFG,'config file name',IER,3)
           elseif(iglib.eq.2)then
-            CALL EASKF(longtmp,' Model configuration file ?',' ',144,
+            CALL EASKF(longtmp,'Model configuration file ?',' ',144,
      &        DFCFG,'config file name',IER,3)
           else
-            CALL EASKF(longtmp,' Model configuration file ?',' ',96,
+            CALL EASKF(longtmp,'Model configuration file ?',' ',96,
      &        DFCFG,'config file name',IER,3)
           endif
           if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -1142,7 +1147,7 @@ C naout (number of additional output data) is returned.
       common/ntype/isv(mpcom,mnodec)
       common/adopdesc/adopdsc(mpcom,15)
       LOGICAL OK,dok,unixok
-      CHARACTER ZDESC*25,cdate*16,buffer*80,adopdsc*30
+      CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30
       character h*72,fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
@@ -1195,8 +1200,8 @@ C File doesn't exist.
 
 C Old file, so check header.
       iorec = 1
-      READ (ipcdb,REC=IOREC,IOSTAT=ISTAT,ERR=99999) ZDESC
-      IF (ZDESC .NE. ' PLANT COMPONENT DATABASE') then
+      READ (ipcdb,REC=IOREC,IOSTAT=ISTAT,ERR=99999) PZDESC
+      IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
          ok=.false.
          dok=.false.
          h(1)='The plant component database associated with the model'
@@ -1442,8 +1447,9 @@ C Begin with the menu type=4 (performance metrics).
       call opnplt(npcomp,imode,ier)
       if(ier.ne.0) return  ! a -3 signals user cancel during file browse.
 
-C Define prompt.
+C Define prompt and set initial value of xquery.
       outs='  '
+      XQUERY=0.0
 
 C Check if can draw in colour.
       colok=.false.
@@ -1518,7 +1524,6 @@ C Ask for set point value.
           continue
         else
           H(1)='The ..'
-          XQUERY=0.0
           CALL EASKR(XQUERY,' ','  Test point value ? ',
      &             0.0,'-',0.0,'-',20.0,'query value',IER,1)
         endif

@@ -45,6 +45,7 @@ C                           furniture
 
       PROGRAM RevTime
 #include "building.h"
+#include "geometry.h"
 #include "acoustic.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -52,6 +53,8 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
+#include "prj3dv.h"
+C prj3dv.h provides common blocks drwmat clip and image
       
       integer lnblnk  ! function definition
 
@@ -75,7 +78,6 @@ C Help
       COMMON/pophelp/h(60)
 
 C View point, view direction, ...
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
 C Scale the project
@@ -85,7 +87,6 @@ C Scale the project
 
 C Zone information
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -93,7 +94,7 @@ C Zone information
       COMMON/AirPro/RTair,RHR
 
 C Defaults and paths
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
       common/uhome/upath
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -143,10 +144,10 @@ C Material data array.
       CHARACTER ACOName*72,DACONam*72,LCFGF*72,cfgroot*24
       CHARACTER H*72,outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144
-      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 path,upath
       CHARACTER fs*1,outsd*124
-      CHARACTER zname*12,zdesc*64,TxtZone*72,CLMRF*72,TTmp*72
+      CHARACTER TxtZone*72,CLMRF*72,TTmp*72
       CHARACTER CalcName*12,DESCR*7,DESCR1*10 
       CHARACTER tg*1,delim*1,xfile*144,dstmp*24,LabFreq*4
       CHARACTER PubType*12,FurType*12,FurCat*4,CovSurf*12
@@ -405,7 +406,7 @@ C (Re)Set all surfaces to std line width.
             VIEWM(3)=VIEWMI(3)
             ANG=ANGI
           endif
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
 
 C Open core of databases.
           call opendb(ier)

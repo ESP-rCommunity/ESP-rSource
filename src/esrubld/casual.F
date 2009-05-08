@@ -46,6 +46,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 
       subroutine mzcasi(icomp)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
 #include "power.h"
@@ -59,12 +60,8 @@ C QLAT   - latent load for present (1) and future (2) time step.
 
       common/btime/btimep,btimef
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
 
 C Zone lighting and power commons.
       COMMON/ELECFLG/IELF(MCOM)
@@ -87,9 +84,8 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IHTCLFLUX(MCOM)
-     
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -644,9 +640,9 @@ C If first timestep set previous values to current.
 C Sum present and future time rows and convert radiant casual 
 C variables to W/m^2.
       QCASCT=QCASC(1)+QCASC(2)
-      QCASRT(icomp)=(QCASR(1)+QCASR(2))/ZOA(ICOMP)
-      QCASR(1)=QCASR(1)/ZOA(ICOMP)
-      QCASR(2)=QCASR(2)/ZOA(ICOMP)
+      QCASRT(icomp)=(QCASR(1)+QCASR(2))/zonetotsurfacearea(ICOMP)
+      QCASR(1)=QCASR(1)/zonetotsurfacearea(ICOMP)
+      QCASR(2)=QCASR(2)/zonetotsurfacearea(ICOMP)
       QCASRS(ICOMP)=QCASR(2)
       QCASLT=QLATN(1)+QLATN(2)
 
@@ -672,9 +668,9 @@ C Output computed results.
       call edisp(itu,outs)
 
 C Display radiant contribution as Watts.
-      RWP=QCASR(1)*ZOA(ICOMP)
-      RWF=QCASR(2)*ZOA(ICOMP)
-      RW=QCASRT(icomp)*ZOA(ICOMP)
+      RWP=QCASR(1)*zonetotsurfacearea(ICOMP)
+      RWF=QCASR(2)*zonetotsurfacearea(ICOMP)
+      RW=QCASRT(icomp)*zonetotsurfacearea(ICOMP)
       write (outs,9994) RWP,RWF,QCASC(1),QCASC(2),QLATN(1),QLATN(2)
  9994 format(' Total gain    |',2F10.2,'|',2F10.2,'|',2F10.2)
       call edisp(itu,outs)
@@ -728,6 +724,9 @@ C  FRAC : fraction of casual gain (returned value)
 
       SUBROUTINE INTLUM(ICOMP,FRAC)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/precz.
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -745,10 +744,6 @@ C  FRAC : fraction of casual gain (returned value)
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
 C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       integer nccode,indutl
@@ -756,7 +751,6 @@ C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 C Zone casual gain control data.
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
@@ -809,7 +803,6 @@ C Illuminance database.
       character outs*124,doit*124,outstr*124,cfgroot*24
 
       character*72 LCFGF,LTMPFL,LTMPFLA,upath,OUTCMD
-      character zname*12,zdesc*64
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST

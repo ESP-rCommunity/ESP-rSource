@@ -31,6 +31,7 @@ C ********************* sbmedit
 C sbmedit define high level data associated with UK NCM methodology.
       subroutine sbmedit
 #include "building.h"
+#include "geometry.h"
 #include "sbem.h"
 #include "tdf2.h"
 #include "control.h"
@@ -47,15 +48,12 @@ C sbmedit define high level data associated with UK NCM methodology.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -93,7 +91,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character subpath*72         
       CHARACTER OUTSTR*124     
  
-      integer igupgrade
       CHARACTER SSPARENT*12,ACT*1,ADF*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       dimension IVALSS(29)       ! array to get epicks answer from
@@ -102,11 +99,11 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48,tab*1
-      character outs*124,outs248*248,h*72,CTYPE*4,GUESS*24
+      character outs*124,outs248*248,h*72,GUESS*24
       character HEAD*25,ITEMS*50,D64*64,ITEMX*50,ITEMH*70,PRSSN*60
-      CHARACTER HSYSNM*70,KEY*1,zname*12,zdesc*64,TMPSTR*64
+      CHARACTER HSYSNM*70,KEY*1,TMPSTR*64
       character*35 ZITEMS(MCOM+4)
-      real Air_infilt,gversion
+      real Air_infilt
       real light_input_watt !user input for heat gains from lights
                             !instead of using the values from the sbem database
       LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
@@ -476,7 +473,7 @@ C Begin with high level menu.
         DO 111 IZ=1,NCOMP
           CALL EMKEY(IZ,KEY,IER)
           WRITE(ZITEMS(IZ),'(A1,1X,A,F6.2)')KEY,
-     &         zname(IZ)(1:lnblnk(zname(IZ))),ACH(IZ)
+     &      zname(IZ)(1:lnzname(IZ)),ACH(IZ)
  111    CONTINUE 
         M=NCOMP
         ZITEMS(M+1)= ' ______________________________ '
@@ -921,14 +918,14 @@ C If no zones specified in model advise user and go back to menu
               WRITE(TMPSTR,'(2A)')' ',HVACNAME(IZ)
             ENDIF
             WRITE(OUTS,'(3A,I3,A)')
-     &       'Zone ',ZNAME(IZ),' is linked to system number ',
-     &       IHLZ(IZ),TMPSTR
+     &       'Zone ',zname(IZ)(1:lnzname(iz)),
+     &       ' is linked to system number ',IHLZ(IZ),TMPSTR
             CALL EDISP(IUOUT,OUTS)
  102      CONTINUE
           DO 402 IZ=1,NCOMP
             IA=1
             WRITE(OUTS,'(2A)')'Choose HVAC system for zone ',
-     &      zname(IZ)(1:lnblnk(zname(IZ)))
+     &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
  914        CALL EPICKS(IA,JSTR,' ','Link zones to HVAC systems',
      &      70,NCMSYS+1,HSYSNM,OUTS(1:40),IER,2)
@@ -962,14 +959,14 @@ C Link DHW systems and zones
      &        HVACNAME(-IDHWLZ(IZ))
             ENDIF
             WRITE(OUTS,'(3A,I3,A)')
-     &       'Zone ',ZNAME(IZ),' is linked to system number ',
+     &       'Zone ',zname(IZ),' is linked to system number ',
      &       ABS(IDHWLZ(IZ)),TMPSTR
             CALL EDISP(IUOUT,OUTS)
  109      CONTINUE
           DO 404 IZ=1,NCOMP
             IA=1
             WRITE(OUTS,'(2A)')'Choose DHW system for zone ',
-     &      zname(IZ)(1:lnblnk(zname(IZ)))
+     &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
  915        CALL EPICKS(IA,JSTR,' ','Link zones to DHW systems',
      &      70,NDHWSYS+2,HSYSNM,OUTS(1:44),IER,2)
@@ -1004,7 +1001,7 @@ C Link DHW systems and zones
               ENDIF
  130        CONTINUE
             WRITE(OUTS,'(2A)')'Choose activity for zone ',
-     &      zname(IZ)(1:lnblnk(zname(IZ)))
+     &      zname(IZ)(1:lnzname(IZ))
             IX=1
             CALL EPICKS(IX,KSYS,' ',OUTS(1:LNBLNK(OUTS)),
      &      40,ICAC,ITEMS,OUTS(1:LNBLNK(OUTS)),IER,2)
@@ -1026,7 +1023,7 @@ C with tdf)
                   theactivityindex(IZ)=IAT
                   IACTYTYP(IZ)=mainactivity
                   write(outs,*)'for zone ',
-     &            zname(iz)(1:lnblnk(zname(iz))),
+     &            zname(iz)(1:lnzname(iz)),
      &            ' activity is:',roomactname(iat)
                   CALL EDISP(IUOUT,OUTS(1:LNBLNK(OUTS)))
                   goto 151
@@ -1044,7 +1041,7 @@ C Link lighting systems with zones
         DO 160 IZ=1,NCOMP
           ILIGHTUSER(IZ)=0
           CALL EASKABC('Choose one of the options for defining lighting
-     &    heat gains from lights for: ',zname(IZ)(1:lnblnk(zname(IZ))),
+     &    heat gains from lights for: ',zname(IZ)(1:lnzname(IZ)),
      &    'user defined W/m2 per 100lux','pick from list','continue',
      &    Iwaylight,2)
           IF(Iwaylight.EQ.1)THEN
@@ -1058,12 +1055,12 @@ C value is a realistic one
             light_input_watt=LIGHTWATTAGE(IZ)
             CALL EASKR(light_input_watt,
      &      'Enter heat gains from lights in watts (assuming 100% on)
-     &      for zone:',zname(IZ)(1:lnblnk(zname(IZ))),0.,'F',0.,'-',
+     &      for zone:',zname(IZ)(1:lnzname(IZ)),0.,'F',0.,'-',
      &      LIGHTWATTAGE(IZ),'light heat gains ',IER,2)          
             LIGHTWATTAGE(IZ)=light_input_watt
           ELSE
             WRITE(OUTS,'(2A)')'Choose lighting type for zone ',
-     &      zname(IZ)(1:lnblnk(zname(IZ)))
+     &      zname(IZ)(1:lnzname(IZ))
             CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
      &      70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
             ILITYP(IZ)=LSYS(1)
@@ -1100,11 +1097,10 @@ C If surface is exterior then check if use is specified if not then ask
               ADF=SSUSE(ICN,1)
               IF(ADF(1:1).EQ.'-')THEN
                 IZGFOC=ICOMP
-                ITRC=0
                 MODIFY=.TRUE.
                 CALL INLNST(1)
                 LINSTY(ICN)=2
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
                 WRITE(OUTS,'(2A)')'Enter usage for surface ',SSNAME(ICN)
                 CALL EDISP(IUOUT,' ')
                 CALL EDISP(IUOUT,OUTS)
@@ -1602,6 +1598,7 @@ C All networks (plant, airflow, contaminants etc) are removed from the
 C model.
       SUBROUTINE EMKSBM
 #include "building.h"
+#include "geometry.h"
 #include "sbem.h"
 #include "esprdbfile.h"
       
@@ -1622,7 +1619,6 @@ C model.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C3F/LCNN
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -1635,15 +1631,8 @@ C << G1 is probably not the common block to use for this >>
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      COMMON/G2/NGL(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
 
 C G9 holds information on children of a surface.
       integer nbchild       ! how many children (up to 4)
@@ -1815,6 +1804,7 @@ C Make a copy of constructions file and tmc file if applicable
         IUNIT=12
         QUIET=.FALSE.
         call FINDFIL(LTHRM(ICOMP),XST)
+	ITRC=0
         ITRU=6
         CALL ECONST(LTHRM(ICOMP),IUNIT,ICOMP,ITRC,ITRU,IER)
         EXT='.con'
@@ -2045,7 +2035,7 @@ C If surface is exterior then check if use is specified if not then ask
                 MODIFY=.TRUE.
                 CALL INLNST(1)
                 LINSTY(ICN)=2
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
                 ijk=lnblnk(ssname(icn))
                 WRITE(OUTS,'(3A)')'Surface ',SSNAME(ICN)(1:ijk),
      &          ' has use: something else. Confirm this in which case'
@@ -2272,7 +2262,6 @@ C Make one child in this surface
                   ICON=IZSTOCN(icomp,nsur)+1
                   NSUR=NSUR+1
                   NZTV(ICOMP)=NTV
-                  NGL(NSUR)=0
                   WRITE(SNAME(ICOMP,NSUR),'(2A)')
      &            CHAR(96+IELF),'_not_glz'
                   COE(1)=SSURCOG(ICN,1)
@@ -2333,7 +2322,7 @@ C Display what the notional model looks like
                   nznog(ic)=IC
  2312           continue
                 izgfoc=ICOMP
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
               ELSE
                 CONTINUE
               ENDIF
@@ -2390,7 +2379,6 @@ C set to 1. If it has not been set then define a frame for the window
               ICON=IZSTOCN(icomp,nsur)+1
               NSUR=NSUR+1
               NZTV(ICOMP)=NTV
-              NGL(NSUR)=0
               WRITE(SNAME(ICOMP,NSUR),'(2A)')CHAR(96+IELF),'_frame'
               COE(1)=SSURCOG(ICN,1)
               COE(2)=SSURCOG(ICN,2)
@@ -2587,23 +2575,22 @@ C It finally generate BRUKL input document and other SBEM reports.
       SUBROUTINE NCMCAL(IER)
 #include "sbem.h"
 #include "building.h"
+#include "geometry.h"
       common/FILEP/IFIL
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
      
 C Build variable (These should eventually be placed in build_info.h)
       character cBuilder*32          ! User who compiled system
@@ -2636,9 +2623,8 @@ C Build variable (These should eventually be placed in build_info.h)
       CHARACTER BRUKFL*72
       CHARACTER CFGROOT*24,LCFGF*72
       character*12 SN,ZSN,FN,ZFN,RN,ZRN,TRN,ZTRN
-      CHARACTER SSPARENT*12,TMPSTR*24,DESC*48,TMPSTR2*70
+      CHARACTER SSPARENT*12,TMPSTR*24,TMPSTR2*70
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character zname*12,zdesc*64
       LOGICAL CONTEXT,BNDRY,ISNEAR,XST
       REAL TMPREAL
       REAL tot_floor_area,tot_ext_area
@@ -2648,7 +2634,6 @@ C Check information about building, certifier and owner to be present
       
 C Read *.ncm file and SBEM database
       CALL RSBEM
-c      CALL SBEMPR(IER)
 
 C Following parameters to be present when writing BRUKL file
 C Place holder static values are used currently
@@ -2671,9 +2656,9 @@ C Call calculator for BER and TER
 
 C Start writing BRUKL file
 C Building, owner, certifier detail...
-      ILEN=LNBLNK(LASBEM)
-      IF(LASBEM(ILEN-4:ILEN).EQ.'.ncm')THEN
-        WRITE(BRUKFL,'(2A)')LASBEM(1:ILEN-4),'.inp'
+      ILN=LNBLNK(LASBEM)
+      IF(LASBEM(ILN-4:ILN).EQ.'.ncm')THEN
+        WRITE(BRUKFL,'(2A)')LASBEM(1:ILN-4),'.inp'
       ELSE
         WRITE(BRUKFL,'(2a)')CFGROOT(1:LNBLNK(CFGROOT)),'.inp'
       ENDIF
@@ -2873,7 +2858,8 @@ C Add surface areas
               else
                 continue 
               endif
-            elseif(SSOTF(icc)(1:4).ne.'OPAQ')then
+            elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &            SSOTF(icc)(1:4).ne.'CFC ')then
 
 C Check the U value for each external window.
               UVH = 0.0
@@ -3155,7 +3141,7 @@ C Write information about systems
 
 C Write remainder of the check information
       do 30 iz=1, ncomp
-        WRITE(IUF,'(3a)',iostat=ios) '"',zname(iz)(1:lnblnk(zname(IZ))),
+        WRITE(IUF,'(3a)',iostat=ios) '"',zname(iz)(1:lnzname(IZ)),
      &      '" = CHECK3'
 
 C Leave this at Low risk for the moment but it has to change at the moment

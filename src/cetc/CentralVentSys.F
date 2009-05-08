@@ -1,12 +1,12 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -26,7 +26,7 @@ c Copyright 2001: NRCan Buildings Group
 c Created October 4, 2001
 c Edited: BB Oct 4, 15, Nov 2
 c ---
-      
+     
 c
       Implicit None
 #include "aim2_parameters.h"
@@ -68,15 +68,14 @@ c Created August  15, 2001
 c Edited: BB Aug 15, 16, 17, Oct 4, 10, 12, 23, 25, Nov 1, 2
 c ---
 
-      
+     
 c ---
       IMPLICIT NONE
 #include "building.h"
+#include "geometry.h"
 #include "aim2_parameters.h"
 #include "aim2_common.h"
 #include "Ventilation_Data.h"
-      COMMON/PREC2/VOL
-      REAL VOL(MCOM)
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
 
@@ -99,15 +98,15 @@ c     Implicit None
       real fTempTol
       parameter ( fTempTol = 0.5 )
 
-      
+     
       save J, iFun, i, iCycle
       save T, HLR, DeltaT, ZoneFraction
       save Msg
       save ExitNOW
-      
+     
       Data iCycle / 9990 /
 
-      
+     
       If ( iCycle .lt. 1 ) Then
          Write (Msg,'(a,6f8.2)') 'MECH_VENT_CONTROL - ZF',
      & ( VOL(i), i = 1, 6 )
@@ -169,7 +168,7 @@ c
 c
                ZoneFraction = VOL(iComp) / AIM2_house_vol
                Exit
-c 
+c
             Endif
          End Do
 c
@@ -183,7 +182,7 @@ c --- Convert air heat loss rate into an equivalent conductance (to outdoors)
 c
          DeltaT = TFA(iComp) - T
 
-         If ( Abs(DeltaT) .gt. fTempTol ) 
+         If ( Abs(DeltaT) .gt. fTempTol )
      &              ZONE_infil_cond = HLR / DeltaT
 c
 c --- Supply Duct heat gain
@@ -291,7 +290,7 @@ c ---
 C Used in the xml reporting structure
 C      real fH3KSumEnergyUseElec(iNumUses)        ! Energy consumption assoc. w/ electricuty (W)
 
-      
+     
 c
       If ( iFun .eq. 0 ) Then ! HRV INITIALIZATION
 c
@@ -454,7 +453,7 @@ C fuel cell controller.
             FCctl_HRV_draw = TotalPower
 
 c
-c           If (Dbg) Write (IO,1001) i, 
+c           If (Dbg) Write (IO,1001) i,
 c    x ( 0. )  , T, Tpre, T7, PrePwr,
 c    x eHRV, SensibleEff, FanPwr, Ts, T2, Te, Tx, Tex,
 c    x sDuctHG, eDuctHG, T3
@@ -601,10 +600,10 @@ c
       Integer i, j, Duct
       Real HLcoef(3,4)
 c ---
-      
+     
       Save Fleak, Diam, L, HTC, AvVel, CnstDD,  j, Duct
       Save HLcoef
-      
+     
 c ---
 c  Flexible                           * V    const    * R    Cl
       Data (HLcoef(1,j), j = 1, 4) / 0.095,  1.000,  0.950,  3. /
@@ -723,11 +722,11 @@ c This IF ensures start-up is over.
 
 c Sum up monthly energies
 
-      
-         fHRV_Elec_Energy(imonth) = 
+     
+         fHRV_Elec_Energy(imonth) =
      &     fHRV_Elec_Energy(imonth) + TotalPower * 3600./REAL(NTSTEP) !(Watts)
 
 
          return
-      ENDIF 
-      END  
+      ENDIF
+      END 

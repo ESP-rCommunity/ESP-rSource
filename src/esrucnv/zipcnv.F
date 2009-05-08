@@ -32,6 +32,9 @@ C system in the plane of the face in which the window is
 C situated.
       SUBROUTINE zipcnv(upgcfg,LOUT,itrc,IER)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/G4/c20/precz.
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -45,26 +48,17 @@ C situated.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
       common/CFGV/icfgv
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-C CTYPE (4 char) - zone shape type (REC, REG or GEN)
-C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/G4/NDP(MCOM),IDPN(MCOM,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
 
       DIMENSION XX(MS),YY(MS),ndum(MS),ddum(MS),ngld(MS)
-      CHARACTER OUTSTR*124,WORD*20,zname*12,zdesc*64,phrase*64
+      CHARACTER OUTSTR*124,WORD*20,phrase*64
       CHARACTER*72 upgcfg,LCFGF
       character GFILE*72,ZN*12,outs*124,tmp*124,LCNN*72,cfgroot*24
       character oformat*24,head*4,LOUT*72,SOTF*4,SN*12
@@ -161,32 +155,40 @@ C second is the zone name, if more items then not a proper name.
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(ic),'(a)')WORD(1:lnblnk(WORD))
         zname(IC)=' '
+        lnzname(IC)=0
         zdesc(IC)=' '
+        lnzdesc(IC)=0
       ELSEIF(ND.EQ.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(ic),'(a)') WORD(1:lnblnk(WORD))
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(IC))
+        lnzname(IC)=lnblnk(zname(IC))  ! update string length
         zdesc(IC)=' '
+        lnzdesc(IC)=0
       ELSEIF(ND.gt.2)THEN
         CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(IC),'(a)') WORD(1:lnblnk(WORD))
         CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(IC))
+        lnzname(IC)=lnblnk(zname(IC))  ! update string length
         call egetrm(outstr,K,phrase,'W','Z description',IER)
-        ZDESC(IC)=phrase
+        zdesc(IC)=phrase
+        lnzdesc(IC)=lnblnk(phrase)  ! update the length of this string.
       ENDIF
 
 C Fill in a default zone name if blank or UNKNOWN.
       IF(zname(IC)(1:2).EQ.'  '.OR.zname(IC)(1:7).EQ.'UNKNOWN')THEN
         IF(IC.LE.9)WRITE(zname(IC),'(A5,I1)')'Zone-',IC
         IF(IC.GT.9)WRITE(zname(IC),'(A5,I2)')'Zone-',IC
+        lnzname(IC)=lnblnk(zname(IC))  ! update string length
       ENDIF
       if(zdesc(IC)(1:1).EQ.' ')then
         write(zdesc(IC),'(a,a)') 
-     &    zname(IC)(1:lnblnk(zname(IC))),' describes a...'
+     &    zname(IC)(1:lnzname(IC)),' describes a...'
+        lnzdesc(IC)=lnblnk(zdesc(IC))  ! update the length of this string.
       endif
 
 C Zone is of type REC, look for 7 items on one or two lines.
@@ -311,9 +313,9 @@ C Create and write geometry file.
         ier=0
         CALL EFOPSEQ(iotmp2,LGEOM(IC),3,IER)
         write(iotmp2,'(a,a,a,a)')'# geometry of ',
-     &       zname(ic)(1:lnblnk(zname(ic))),' defined in: ',
+     &       zname(ic)(1:lnzname(ic)),' defined in: ',
      &       LGEOM(IC)(1:lnblnk(LGEOM(IC)))
-        write(iotmp2,'(a,a)')'GEN ',zname(ic)(1:lnblnk(zname(ic)))
+        write(iotmp2,'(a,a)')'GEN ',zname(ic)(1:lnzname(ic))
         write(iotmp2,'(I8,I8,a)')NTV,NSUR,
      &      '   0.000    # vertices, surfaces, rotation angle'
         write(iotmp2,'(a)')'#  X co-ord, Y co-ord, Z co-ord '

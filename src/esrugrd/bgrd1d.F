@@ -34,12 +34,12 @@ C main multi-D gridding menu.
 C *********************************************************************
       SUBROUTINE MENU1D
 #include "building.h"
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -56,7 +56,7 @@ C *********************************************************************
 
       LOGICAL OK,DOK,IGR1D,SAVEOK,XST
       CHARACTER ITEM(14)*31,ITEMZ(MCOM)*20,ITEMC(MS)*20,ITEML(ME)*20
-      CHARACTER H*72,TEXT*40,zname*12,zdesc*64,LGRD1D*72
+      CHARACTER H*72,TEXT*40,LGRD1D*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
@@ -517,12 +517,12 @@ C LUMPMN generates the lumped construction menu.
 C *********************************************************************
       SUBROUTINE LUMPMN
 #include "building.h"
+#include "geometry.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
@@ -545,7 +545,7 @@ C *********************************************************************
 
       LOGICAL OK,dok
 
-      CHARACTER ITEM(15)*31,H*72,TEXT2*120,MSG1*50,zname*12,zdesc*64
+      CHARACTER ITEM(15)*31,H*72,TEXT2*120,MSG1*50
       CHARACTER ITEMZ(MCOM)*20,ITEMC(MS+2)*28,HCFILE*72,OUTSTR*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12

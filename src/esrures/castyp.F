@@ -44,6 +44,7 @@ C VAL3(20,?) holds controlled convective casual type 3.
 
       SUBROUTINE ZCASC(IZONE,IDAY)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
@@ -63,8 +64,7 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IHTCLFLUX(MCOM)     
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C TDFINT are ranges allowed for integer fields in the instance.
@@ -73,8 +73,6 @@ C TDFINT are ranges allowed for integer fields in the instance.
       COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X1a_QTOTOCCUP,X2a_QTOTOCCUP
       REAL X1c_QTOTEQUIP,X2c_QTOTEQUIP
-      
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)
@@ -425,14 +423,14 @@ C VAL3(20,?) holds controlled radiant casual type 3.
 
       SUBROUTINE ZCASR(IZONE,ISFN,IDAY)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-      COMMON/RECV5/sna(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
+      COMMON/RECV5/sna(MCOM,MS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/AVRAGE/IDAVER
@@ -445,8 +443,7 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IHTCLFLUX(MCOM)     
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C TDFINT are ranges allowed for integer fields in the instance.
@@ -818,6 +815,7 @@ C VAL3(20,?) holds controlled casual type 3.
 
       SUBROUTINE CASRT(IZONE,IDAY)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 
       common/recver/izver,ipver,iever
@@ -834,9 +832,8 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IHTCLFLUX(MCOM)
-     
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C TDFINT are ranges allowed for integer fields in the instance.
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
@@ -844,8 +841,6 @@ C TDFINT are ranges allowed for integer fields in the instance.
       COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X1a_QTOTOCCUP,X2a_QTOTOCCUP
       REAL X1c_QTOTEQUIP,X2c_QTOTEQUIP
-      
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)
@@ -1203,12 +1198,11 @@ C will be corrected in the revised results library.
       SUBROUTINE CASTYP(IZ,IDAY,ITSTEP,UCCT1,UCCT2,UCCT3,
      &                  UCCRT1,UCCRT2,UCCRT3,ICC)
 #include "building.h"
+#include "geometry.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/recver/izver,ipver,iever
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
@@ -1449,6 +1443,7 @@ C VAL3(20,?) holds controlled casual type 3.
 
       SUBROUTINE ZCASCF(IZONE,IDAY,IJDAY)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1463,9 +1458,8 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IHTCLFLUX(MCOM)
-     
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C TDFINT are ranges allowed for integer fields in the instance.
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
@@ -1473,8 +1467,6 @@ C TDFINT are ranges allowed for integer fields in the instance.
       COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X2a_QTOTOCCUP
       REAL X2c_QTOTEQUIP
-      
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
 C.........END: USED FOR ACTIVITY TDF DATA.....................
 
       DIMENSION VAL(MBITS+2)

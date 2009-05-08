@@ -254,7 +254,7 @@ C Run the simulation template and analyse results
       END
 
 C Dummy routines from common3dv.F
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       ier=0
       return
       end

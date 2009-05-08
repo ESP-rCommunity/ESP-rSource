@@ -29,16 +29,19 @@ C ************* CADJVIEW
 C CADJVIEW takes the current status of view and boundary mods
 C and adjusts the viewing transforms & object boundaries if 
 C necessary before displaying the zone.
-C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
-C then it represents the zone which is currently being edited.
-      SUBROUTINE CADJVIEW(ITRC,IER)
+C IER=0 OK, IER=1 problem. 
+C izgfoc greater than zero represents the zone which is currently being edited.
+      SUBROUTINE CADJVIEW(IER)
 #include "building.h"
+#include "prj3dv.h"
+
+C Passed parameter.
+      integer ier
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       LOGICAL MODIFY,MODLEN,MODBND
       integer numberofzones ! to pass to updwire rather than ncomp
 
@@ -73,7 +76,7 @@ C If viewpoint or bounds different then initialise viewing paramters.
         ENDIF
 
 C Draw the selected bodies.
-        CALL CDRAWESP(ITRC,IER)
+        CALL CDRAWESP(IER)
 
 C Recover information begin edited and reset modify flag.
         if(izgfoc.NE.0)CALL ERCZONE(izgfoc)
@@ -88,9 +91,14 @@ C Recover information begin edited and reset modify flag.
 C ******************** CDRAWESP 
 C CDRAWESP loads the geometric description(s) from an ESP file,
 C converts into viewing coords, clips the image and draws it.
-      SUBROUTINE CDRAWESP(ITRC,ier)
+C ier is returned as non-zero if there has been a problem.
+      SUBROUTINE CDRAWESP(ier)
 #include "building.h"
-      PARAMETER  (MPL = 200 )
+#include "geometry.h"
+#include "prj3dv.h"
+
+C Passed parameter.
+      integer ier
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -101,21 +109,19 @@ C converts into viewing coords, clips the image and draws it.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C VCOORD : X,Y & Z coordinates of each vertice in zone.
@@ -135,7 +141,7 @@ C NZJVN : topology of vertices associated with each connection.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
-      CHARACTER DESC*48,MLCN*12,zname*12,zdesc*64
+      CHARACTER MLCN*12
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSX
@@ -413,8 +419,6 @@ C move cursor to vertex and remember position.
             IV=NZJVN(icc,IP)
             CALL VERTLBL(ix,iy,IV,ier)
           ENDIF
-          ixlast=ix
-          iylast=iy
           iixlast=ix   ! cast for edline call
           iiylast=iy
 
@@ -424,6 +428,8 @@ C move cursor to vertex and remember position.
           iedge=iedge+1
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -432,7 +438,7 @@ C Debug..
 C            write(6,*) 'nap nbp nbedgdup iedge j',nap,nbp,nbedgdup(icc),
 C     &        iedge,j
             if(NAP.ne.NBP)then
-              call eswline(ixlast,iylast,ix,iy)
+              call eswline(iixlast,iiylast,iix,iiy)
             else
 
 C If there will be diagonal lines drawn (duplicate edges) check if the
@@ -455,18 +461,20 @@ C with the co-planer.
 C If this edge is shared with a co-planer surface with the same construction
 C and greys can be done reset forground to 50% grey otherwise draw black,
 C unless duplicate line has already been drawn.
+              iix=ix
+              iiy=iy
               if(imatshr(icc,iedge).eq.0)then
-                if(.NOT.found)call eswline(ixlast,iylast,ix,iy)
+                if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok)call winscl('i',nifgrey-3)
-                call eswline(ixlast,iylast,ix,iy)
+                if(greyok) call winscl('i',nifgrey-3)
+                call eswline(iixlast,iiylast,iix,iiy)
                 if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           ixc=ixc+ix
           iyc=iyc+iy
@@ -476,16 +484,12 @@ C move cursor back to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
             IV=NZJVN(icc,IP1)
             CALL VERTLBL(ix,iy,IV,ier)
-            ixlast=ix
-            iylast=iy
             iixlast=ix   ! cast for edline call
             iiylast=iy
           ENDIF
 
 C Repeat until next point is the first, remember position.
           IP1 = IBNXT(IP1)
-          ixlast=ix
-          iylast=iy
           iixlast=ix   ! cast for edline call
           iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
@@ -494,12 +498,14 @@ C Complete the polygon.
           iedge=iedge+1
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
 C common/G8 for hints as to alternate greys or dots.
             if(NAP.ne.NBP)then
-              call eswline(ixlast,iylast,ix,iy)
+              call eswline(iixlast,iiylast,iix,iiy)
             else
 
 C If there will be diagonal lines drawn (duplicate edges) check if the
@@ -511,8 +517,6 @@ C with the co-planer.
                   found=.false.
                 else
                   LD=4
-                  iix=ix
-                  iiy=iy
                   call edline(iixlast,iiylast,iix,iiy,LD)
                   write(6,*) 'duplicate edge.'
                   found=.true.
@@ -523,17 +527,17 @@ C If this edge is shared with a co-planer surface with the same construction
 C and greys can be done reset forground to 50% grey otherwise draw black,
 C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
-                if(.NOT.found)call eswline(ixlast,iylast,ix,iy)
+                if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
                 if(greyok)call winscl('i',nifgrey-3)
-                call eswline(ixlast,iylast,ix,iy)
+                call eswline(iixlast,iiylast,iix,iiy)
                 if(greyok)call winscl('-',0)
               endif
             endif
           elseif(IPEN.eq.-305)then
-            call edwline(ixlast,iylast,ix,iy)
+            call edwline(iixlast,iiylast,iix,iiy)
           else
-            call eswline(ixlast,iylast,ix,iy)
+            call eswline(iixlast,iiylast,iix,iiy)
           endif
           ixc=ixc+ix
           iyc=iyc+iy

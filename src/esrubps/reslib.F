@@ -159,6 +159,10 @@ C If remote path then use EFOPRAN otherwise FPRAND.
         CALL FPRAND(IUNIT,ISTAT,nzrl,3,RFILE)
         if(ISTAT.lt.0) then
           if(autook) then
+            write(outs,*)'MZLIBF Fatal error: unable to open',
+     &        rfile(1:lnblnk(rfile)),' record width ',nzrl
+            call edisp(iuout,outs)
+            call pauses(3)   ! pause for 3 seconds then abort program.
             call epagend
             stop
           else
@@ -193,6 +197,8 @@ C If autook then do not preserve previous results sets.
           goto 8
         endif
       else
+
+C Autook not set so ask for confirmation.
         h(1)='A previous assessment or assessments are stored in'
         h(2)='this file. If the model is the same it should be safe'
         h(3)='to append another assessment. '
@@ -218,7 +224,7 @@ C If autook then do not preserve previous results sets.
 
       IF(OK)then
 
-c Determine if design data has been changed.
+C User wants to preserve data. Determine if design data has been changed.
         dok=.false.
         h(1)='If the model has changed the differences might cause'
         h(2)='eratic performance results recovery. Take care! '
@@ -236,12 +242,13 @@ c Delete all simulations by setting NSIM=0.
         IREC=1
         NSIM=0
 
-C izver is the version flag: 
+C izver is the version flag for building results: 
 C   izver=1 tells res that the results files have associated descriptive strings.
 C   izver=2 tells res that aggregate inside and outside face convective transfer 
 C     is included in zone info. 
 C   izver=3 total exterior transparent and floor areas saved for each zone
-        izver=3
+C   izver<4 does not include explicit conv/rad/latent gain fields for each casual gain type.
+        izver=4
         WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
       endif
 
@@ -283,6 +290,10 @@ C file path name use FPOPEN.
           call FPRAND(IMFRES,ISTAT,NMRL,3,LAFRES)
           if(ISTAT.lt.0)then
             if(autook) then
+              write(outs,*)'MZLIBF Fatal error: unable to open',
+     &          LAFRES(1:lnblnk(LAFRES)),' record width ',NMRL
+              call edisp(iuout,outs)
+              call pauses(3)   ! pause for 3 seconds then abort program.
               call epagend
               stop
             else
@@ -337,6 +348,10 @@ C If remote path then use EFOPRAN otherwise FPRAND.
         CALL FPRAND(IUNIT,ISTAT,nprl,3,PFILE)
         if(ISTAT.lt.0)then
           if(autook) then
+            write(outs,*)'MZLIBF Fatal error: unable to open',
+     &        pfile(1:lnblnk(pfile)),' record width ',nprl
+            call edisp(iuout,outs)
+            call pauses(3)   ! pause for 3 seconds then abort program.
             call epagend
             stop
           else
@@ -433,6 +448,10 @@ C file path name use FPOPEN.
           call FPOPEN(IMSTR,ISTAT,1,3,MSTRFILE)
           if(ISTAT.lt.0)then
             if(autook) then
+              write(outs,*)'MZLIBF Fatal error: unable to open',
+     &          MSTRFILE(1:lnblnk(MSTRFILE))
+              call edisp(iuout,outs)
+              call pauses(3)   ! pause for 3 seconds then abort program.
               call epagend
               stop
             else
@@ -493,6 +512,10 @@ C file path name use FPRAND.
           call FPRAND(IELFIL,ISTAT,IELIBW,3,ERESLIB)
           if(ISTAT.lt.0)then
             if(autook) then
+              write(outs,*)'MZLIBF Fatal error: unable to open',
+     &          ERESLIB(1:lnblnk(ERESLIB)),' record width ',IELIBW
+              call edisp(iuout,outs)
+              call pauses(3)   ! pause for 3 seconds then abort program.
               call epagend
               stop
             else

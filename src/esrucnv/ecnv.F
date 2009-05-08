@@ -30,6 +30,7 @@ C Portions of the DXF translation can be traced back (eventually)
 C to code from ABACUS, Department of Architecture & Building Science.
       program ecnv
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
@@ -75,12 +76,10 @@ C ESP-r commons.
       common/C3F/LCNN
       COMMON/C6/INDCFG
       common/CFGV/icfgv
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
@@ -117,7 +116,7 @@ C Material data array.
       character filname*144,filname2*144,filname1*144,repfile*40
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
-      character zname*12,zdesc*64,RZNAME*24,head*4,ZN*12,LTMP*144
+      character RZNAME*24,head*4,ZN*12,LTMP*144
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character path*72,upath*72,LCNN*72
       character upgcfg*72
@@ -585,6 +584,7 @@ C Assuming a single esp-r zone so create file names etc.
                  endif
                  NCCODE(NCOMP)=NCOMP
                  write(zname(NCOMP),'(a)') ZN
+                 lnzname(NCOMP)=lnblnk(ZN)
                  if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                    write(lf,'(a,a4)') ZN(1:ln),'.geo'
                  else
@@ -613,6 +613,7 @@ C Found a new zone so create file names etc.
                    endif
                    NCCODE(NCOMP)=NCOMP
                    write(zname(NCOMP),'(a)') ZN
+                   lnzname(NCOMP)=lnblnk(ZN)
                    if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                      write(lf,'(a,a4)') ZN(1:ln),'.geo'
                    else
@@ -632,11 +633,11 @@ C that zone files live in same folder as the configuration file.
                        if(zonepth(1:2).eq.'  '.or.
      &                    zonepth(1:2).eq.'./')then
                          write(lf,'(a,a4)') 
-     &                     zname(im)(1:lnblnk(zname(im))),'.obs'
+     &                     zname(im)(1:lnzname(im)),'.obs'
                        else
                          write(lf,'(a,a1,a,a4)') 
      &                     zonepth(1:lnblnk(zonepth)),fs,
-     &                     zname(im)(1:lnblnk(zname(im))),'.obs'
+     &                     zname(im)(1:lnzname(im)),'.obs'
                        endif
                        ZOBS(im)=lf
                        if(itrc.gt.1)then
@@ -833,7 +834,7 @@ C zone.
      &            err=903)
             endif
   142       read(iotobs,*,end=143)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
-            if(ZN(:lnblnk(ZN)).eq.zname(ivv)(:lnblnk(zname(ivv))))then
+            if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
               NB=NB+1
               XO(NB)=TXO
               YO(NB)=TYO
@@ -962,38 +963,30 @@ C **** wegeom
 C write esp geometry file.
       subroutine wegeom(iotmp2,iv,lf,ier)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
-C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
-C which make up the floor, IUZBASEA signals that the user selected
-C specific surfaces (two), has edited the floor area (one) or it was
-C calculated based on FLOR orientations (zero). IZBASELIST is the
-C number of items in the list.
-      common/PREC17/ZBASEA(MCOM),IBASES(MCOM,12),IUZBASEA(MCOM),
-     &  IZBASELIST(MCOM)
+C common prec17 is described in geometry.h.
 
 C Use YOS to hold dummy values for surface indentation.
       dimension ndum(MS),Y0S(MS)
-      character lf*72,zname*12,zdesc*64,SN*12,SOTF*4,louts*248
+      character lf*72,SN*12,SOTF*4,louts*248
       integer lnzn
        
       ier=0
       CALL EFOPSEQ(iotmp2,lf,3,IER)
       if(ier.ne.0)goto 903
-      lnzn=lnblnk(zname(iv))
+      lnzn=lnzname(iv)
       write(iotmp2,'(4a)')'# geometry of ',
-     &       zname(iv)(1:lnzn),' defined in: ',
-     &       lf(1:lnblnk(lf))
+     &  zname(iv)(1:lnzn),' defined in: ',lf(1:lnblnk(lf))
       write(iotmp2,'(5a)')'GEN ',zname(iv)(1:lnzn),' ',
      &  zname(iv)(1:lnzn),' was imported from DXF  # type, name, descr'
       write(iotmp2,'(I8,I8,a)')NZTV(iv),NZSUR(iv),
@@ -1093,6 +1086,7 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
 
       subroutine putcoods(itrc)
 #include "building.h"
+#include "geometry.h"
       parameter (MAXLAY = 80)
       
       integer lnblnk  ! function definition
@@ -1110,7 +1104,6 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       common/matrix/ amat(3,3), xnorm, ynorm, znorm
       common/layers/ layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       common/dxfe/oformat,indxzon,head
@@ -1268,6 +1261,7 @@ C conversion is stuffing layer 1 named zero into a zone named
 C first then accept match.
       subroutine matchl(il,head,RZNAME,match,im)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -1275,10 +1269,9 @@ C first then accept match.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/layers/layname(MAXLAY), numlay, laycolour(MAXLAY),
      &       layflag(MAXLAY)
-      character layname*72,zname*12,zdesc*64,TZNAME*24,RZNAME*24,head*4
+      character layname*72,TZNAME*24,RZNAME*24,head*4
       logical match
 
       head=' '
@@ -1351,7 +1344,7 @@ C **** matchv
 C Matches or adds a vertex to a zone.
       subroutine matchv(iz,is,match,x1,y1,z1)
 #include "building.h"
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+#include "geometry.h"
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
@@ -1449,7 +1442,15 @@ C << to write only the header portion.
 
       common/cctlnm/ctldoc,lctlf
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
 C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
@@ -1470,7 +1471,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER LCFGF*72
       CHARACTER LCNN*72,LPRJLG*72,LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
-      character imgfmt*4,imgfoc*4,limgfil*72,indxcmt*24
+      character indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character dstmp*24
@@ -1564,6 +1565,10 @@ C Write images if any.
         do 142 img=1,noimg
           WRITE(ioout,'(a,a4,2x,a4,2x,a)')'*img ',imgfmt(img),
      &      imgfoc(img),limgfil(img)(1:lnblnk(limgfil(img)))
+          if(icfgv.gt.3)then
+            WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2)'*imdoc ',
+     &        imgdoc(img)(1:lnblnk(imgdoc(img)))
+          endif
  142    continue
       endif
 
@@ -1600,7 +1605,7 @@ C Write primary energy conversions if these have been set.
 
 C Dummy routines from common3dv.F needed to match implied
 C calls in esru_lib.F
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       ier=0
       return
       end

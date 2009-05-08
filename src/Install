@@ -71,6 +71,28 @@ $CLM -mode text -file $1 -act asci2bin silent $2  >/dev/null 2>/dev/null
 
 }
 
+
+#=====================================================================
+pdb_convert()  # converts plant dbs from iwec.a to binary formats
+#=====================================================================
+{
+SourceName=$1
+TargetName=$2
+TargetFolder=$3
+printf "\r                                                                            "
+printf "\r   - Creating binary plant databases [${TargetName}]..."
+
+$PDB -mode text >/dev/null 2>&1 <<zzz
+$TargetName
+c
+a
+${SourceName}
+e
+-
+zzz
+mv $TargetName $TargetFolder
+
+}
 #=====================================================================
 # Main script
 #=====================================================================
@@ -343,7 +365,7 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
    else
     # Add XML include files to include paths
     xml_libs_found="yes"
-    LIBXML2_INCLUDE="-I/usr/include/libxml2 -I/usr/local/include/libxml2"
+    LIBXML2_INCLUDE="-I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/local/include/xslt"
 
     # xml support may optionally include support for xslt & exslt. Check
     # that libraries are available
@@ -1051,7 +1073,7 @@ case $platform in
    linux)    ULIBS="-L${SRCdir}/lib ";;
    cygwin)   ULIBS="-L${SRCdir}/lib ";;
    mac)      ULIBS="-L${SRCdir}/lib ";;
-   mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib";;
+   mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib -L/local/lib";;
 esac
 
 # Append versioning information library
@@ -2051,37 +2073,11 @@ zzz
    echo " Done."
 
    echo -n "   - Creating binary plant components databases..."
-   $PDB -mode text  >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/plantc.db1
-c
-a
-plantc.db1.a
-e
--
-zzz
-
-   $PDB -mode text  >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/plantc.db2
-c
-a
-plantc.db2.a
-e
--
-zzz
-     echo " Done."
-
-     
-     
-     echo -n "   - Creating PP binary plant components databases ..."
-     rm -f plantc.tt
-     $PDB -mode text  >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/plantc.tt
-c
-a
-plantc.tt.a
-e
--
-zzz
+   
+   # pdb convert: [ source file ] [ dest. file ] [ dest folder ]
+   pdb_convert plantc.db1.a plantc.db1 ${DESTdir}/esp-r/databases
+   pdb_convert plantc.db2.a plantc.db2 ${DESTdir}/esp-r/databases
+   pdb_convert plantc.tt.a  plantc.tt  ${DESTdir}/esp-r/databases
    echo " Done."
 
    echo -n "   - Creating binary climate databases "

@@ -41,7 +41,7 @@ C database entry.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to problem and command line file (if any).
       common/rpath/path
@@ -71,9 +71,9 @@ C Name of current application
 
       logical     unixok,OK,DOK,XST
       CHARACTER ZITEM(9)*26 
-      CHARACTER ZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
+      CHARACTER PZDESC*25,LTMP*72,cdesc*80,h*72,inf*144,L144*144
       character lcmdfl*144,outs*124,outs248*248
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,fs*1
       character mfsdsc*68,ltpcmp*60 
 
@@ -246,8 +246,8 @@ C IRECLN= from plantdb.h file.
         if(ier.ne.0)goto 100
 
         IREC = 1
-        READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) ZDESC
-        IF (ZDESC .NE. ' PLANT COMPONENT DATABASE')then
+        READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
+        IF (PZDESC .NE. ' PLANT COMPONENT DATABASE')then
           call usrmsg('File is not a plant component database,',
      &      'please supply the file name again.','W')
           goto 100
@@ -429,7 +429,7 @@ C ***** dummy routine for c code active descriptions buttons.
       end
 
 C Dummy routines from common3dv.F
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       ier=0
       return
       end

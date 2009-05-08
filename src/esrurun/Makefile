@@ -20,7 +20,8 @@ OBJECTS = runesp.o aim2_pretimestep.o arrow.o ascii_mat.o \
 	clickonbitmap.o context.o ctlexp.o ctlwrt.o ctread.o \
 	dossupport.o e3dviews.o ecasctl.o \
 	econstr.o econtrol.o edatabase.o edcfd.o edcon.o edcondb.o eddb.o \
-	edgeo.o edipv.o edobs.o edonecon.o edoptic.o edpro.o edtopol.o edzone.o egeometry.o egtgeom.o \
+	edgeo.o edipv.o editCFC.o edobs.o edonecon.o edoptic.o edpro.o edtopol.o \
+	edzone.o egeometry.o egtgeom.o emeta.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o explor.o filelist.o \
 	folders.o gtopol.o hcfmk.o initalc.o insert.o item.o maintn.o mfcdat.o \
 	mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o mksbem.o \
@@ -146,6 +147,9 @@ egeometry.F:
 egtgeom.F:
 	rm -f egtgeom.F
 	ln -s $(COMdir)/egtgeom.F .
+emeta.F:
+	rm -f emeta.F
+	ln -s $(PRJdir)/emeta.F .
 emfnetw.F:
 	rm -f emfnetw.F
 	ln -s $(COMdir)/emfnetw.F .
@@ -275,7 +279,9 @@ tdfedit.F:
 aim2_pretimestep.F:
 	rm -f aim2_pretimestep.F
 	ln -s $(CETCdir)/aim2_pretimestep.F .
-
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -288,11 +294,12 @@ clean:
 	c2fdum.F cfdat.F cfdrw.F cfg3dv.F cfgmsc.F cfgrid.F cgd.F clickonbitmap.F \
 	context.F ctlexp.F ctlwrt.F ctread.F dossupport.F e3dviews.F ecasctl.F \
 	econstr.F econtrol.F edcfd.F edcon.F edcondb.F edatabase.F eddb.F edgeo.F edipv.F \
-	edobs.F edonecon.F edoptic.F edpro.F edtopol.F edzone.F egeometry.F emfnetw.F \
+	edobs.F edonecon.F edoptic.F edpro.F edtopol.F edzone.F egeometry.F emeta.F emfnetw.F \
 	egtgeom.F emkcfg.F esru_misc.F eroper.F esystem.F explor.F filelist.F folders.F \
 	gtopol.F hcfmk.F initalc.F insert.F item.F maintn.F mfcdat.F mfelst.F mfprb1.F mfprb2.F \
 	mfnmsc.F mfrlst.F mksbem.F MultiYear_climate.F net2pdf.F newnet.F nwkrewr.F \
 	pltcfg.F pltnet.F prescoef.F prjdmds.F prjfmk.F prjqa.F psychro.F rcdblist.F \
 	rwipv.F rwroam.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
+	editCFC.F
 	
 

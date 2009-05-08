@@ -40,6 +40,7 @@ C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed
 
       PROGRAM eco
 #include "building.h"
+#include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -48,6 +49,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
 #include "espriou.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -74,7 +76,6 @@ C Help
       COMMON/pophelp/h(60)
 
 C View point, view direction, ...
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
 C Scale the project
@@ -84,14 +85,15 @@ C Scale the project
 
 C Zone information
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/Displ/SelSurf(MCON)
 
 C Composites information
-
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -101,7 +103,7 @@ C Composites information
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
       common/uhome/upath
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -180,10 +182,9 @@ C Arrays of material properties.
       REAL HeightCo,WidthCo, Perimeter, Area
       CHARACTER BCFName*72,DBCFNam*72,System*72,BCFVer*5
       CHARACTER LCFGF*72,cfgroot*24
-      CHARACTER H*72,outs*124,ITEM*35,DESC*48,Hold*24
-      CHARACTER zname*12,zdesc*64
+      CHARACTER H*72,outs*124,ITEM*35,Hold*24
       CHARACTER inf*144,LCMDFL*144
-      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER path*72,upath*72,L144*144
       CHARACTER NAM*72,TITL*72
 C      CHARACTER tab*1
@@ -451,7 +452,7 @@ C (Re)Set all surfaces to std line width.
             VIEWM(3)=VIEWMI(3)
             ANG=ANGI
           endif
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
 
 C Open core of databases.
           call opendb(ier)
@@ -851,8 +852,7 @@ C update menu text
           TxtZone = 'UNKNOWN' 
           ISel = 0    
           if (nzg .EQ. 1) then
-            write(TxtZone,'(a)')
-     &                      zname(nznog(1))(1:12)
+            write(TxtZone,'(a)') zname(nznog(1))(1:12)
             if (NbSurSel(nznog(1)) .EQ. 1) then
               TxtCompo =  Sname(nznog(1),Isursel(1))(1:12)
             elseif (NbSurSel(nznog(1)) .EQ. NbSurSel(nznog(1))) then
@@ -862,7 +862,7 @@ C update menu text
             endif
           elseif (nzg .LT. ncomp) then
             write(TxtZone,'(2a)')
-     &        zname(nznog(1))(1:lnblnk(zname(nznog(1)))),' + other'
+     &        zname(nznog(1))(1:lnzname(nznog(1))),' + other'
           elseif (nzg .EQ. ncomp) then
              write(TxtZone,'(a)')' All zones'
           endif

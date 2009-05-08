@@ -29,6 +29,7 @@ C common blocks into the file and unit specified in COMMON/C21.
       SUBROUTINE EMKCFG(act,IER)
 
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "uncertainty.h"
 #include "net_flow.h"
@@ -45,6 +46,7 @@ C ICLIM,LCLIM (for climate file)
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
+#include "CFC_common.h"
       PARAMETER (MSTMC=20,MSGAL=40)
       
       integer lnblnk  ! function definition
@@ -67,7 +69,6 @@ C ICLIM,LCLIM (for climate file)
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
@@ -89,7 +90,15 @@ C Configuration control.
       common/cctlnm/ctldoc,lctlf
 
 C Images.
-      COMMON/IMAGF/imgfmt(10),imgfoc(10),limgfil(10),noimg,iton
+      character imgfmt*4  ! GIF XBMP TIF JPG
+      character imgfoc*4  ! FZON FNET FCTL FDFS
+      character limgfil*72  ! file name (extend to 144 char)
+      character imgdoc*248  ! text associated with image
+      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+
+      integer noimg  ! number of images
+      integer iton   ! zero if images not yet shown, one if yes
+      common/imagfi/noimg,iton
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
@@ -151,6 +160,10 @@ C IPV description.
       common/IPVF/lipvdatf
       common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
      &              ipvafnjd(MIPVA),ipvdispjd(10)
+      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
+     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
+      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
+     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
 
 C Project demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds
@@ -206,8 +219,6 @@ C DHW.
       character sDHW_InputFileName*72
       INTEGER   iDHW_FLAG
 
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
-
 C Fuel cell.
       common/Fcell/iFClds,LFClds
 
@@ -242,17 +253,15 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
       CHARACTER*72 LCFGF,LCNN
       CHARACTER LAPROB*72,LPRJLG*72
-      CHARACTER zname*12,CXSTR*78,cfgroot*24,zdesc*64
+      CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72,LTDF*72,LTDFA*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      character imgfmt*4,imgfoc*4,limgfil*72
       character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
@@ -523,6 +532,18 @@ C reflect whether the standard database folder is being used.
      &      LPCDB(1:lnblnk(LPCDB))
       endif
 
+C UK SBEM database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      IF(ISBEM.EQ.1)THEN
+        if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',
+     &      LSBEM(1:lnblnk(LSBEM))
+        elseif(ipathsbem.eq.2)then
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*stdsbem  ',
+     &      LSBEM(1:lnblnk(LSBEM))
+        endif
+      ENDIF
+
 C HVAC
       IF (ihvacflag.EQ.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*hvac  ',
@@ -664,22 +685,36 @@ C Write alternative definition of weekends if not default.
       WRITE(IFCFG,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'
 
-C If SBEM compliance checking is active write name and path of SBEM db
+C If SBEM compliance checking is active write name of NCM file.
       IF(ISBEM.EQ.1)THEN
-        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*sbem  ',DSBEM
-        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',LASBEM
+        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',
+     &    LASBEM(1:lnblnk(LASBEM))
       ENDIF
       IF(INOTI.EQ.1)THEN
         WRITE(OUTS,'(2A)')'*not # UK NCM notional model (10% thermal',
      &  ' bridges included in all exterior surfaces)'
         WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
+      ELSEIF(INOTI.EQ.2)THEN
+        WRITE(OUTS,'(A)')'*ref # UK NCM reference model'
+        WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
+      ELSEIF(INOTI.EQ.3)THEN
+        WRITE(OUTS,'(A)')'*typ # UK NCM typical model'
+        WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
+      ELSEIF(INOTI.EQ.4)THEN
+        WRITE(OUTS,'(A)')'*str # UK NCM stripped model'
+        WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2)OUTS(1:LNBLNK(OUTS))
       ENDIF
 
-C Write images if any.
+C Write images if any. If the version of the configuration file
+C is greater than 3 then also write out documentation.
       if(noimg.gt.0)then
         do 42 img=1,noimg
           WRITE(IFCFG,'(a,a4,2x,a4,2x,a)',IOSTAT=IOS,ERR=2)'*img ',
      &     imgfmt(img),imgfoc(img),limgfil(img)(1:lnblnk(limgfil(img)))
+          if(icfgv.gt.3)then
+            WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2)'*imdoc ',
+     &        imgdoc(img)(1:lnblnk(imgdoc(img)))
+          endif
  42     continue
       endif
 
@@ -716,15 +751,27 @@ C name of the IPV file or write the data internal to the cfg file.
      &      lipvdatf(1:lnipv)
         endif
       else
-      
-C Use call to write into the cfg file itself and then clear name of
+
+C If the version of configuration file is 4 or greater
+C then there could be an embedded IPV description. Check
+C first if the number of IPV metrics or demand sets is greater than
+C zero. If so take common block information and include
+C it in the configuration file.
+        if(nms.gt.0.or.neds.gt.0)then
+
+C Use call mkipvdat to write into the cfg file and then clear name of
 C the external IPV file (also notify the user they can remove it).
-        ipvaction='cfg'
-        call mkipvdat(ifcfg,LCFGF,ipvaction)
-	if(lnipv.gt.0)then
-	  call usrmsg('You can removed the IPV file if you want',
+          ipvaction='cfg'
+          call mkipvdat(ifcfg,LCFGF,ipvaction)
+          if(lnipv.eq.0)then
+            continue
+          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+            continue
+          else
+	    call usrmsg('Info merged. Remove the separate IPV file',
      &      lipvdatf,'W')
-	  lipvdatf=' '  ! ensure old file name is no longer referenced
+	    lipvdatf=' '  ! ensure old file name is no longer referenced
+          endif
         endif
       endif
 
@@ -1019,6 +1066,11 @@ C Fabric portion of description.
           WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)
      &    '*tmc ',LTWIN(I)(1:lnblnk(LTWIN(I))),'  # transparent constr'
         endif
+        if(icfc(I).EQ.1)then
+          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)
+     &    '*cfc ',lcfcin(I)(1:lnblnk(lcfcin(I))),
+     &    '  # complex fenestration constr'
+        endif
         if(IVF(I).EQ.1)then
           WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)
      &      '*ivf ',LVIEW(I)(1:LNBLNK(LVIEW(I))),' # viewfactors'
@@ -1204,16 +1256,15 @@ C system configuration file. If ICF=1 then display with zone and surface names
 C if possible. If ICON=0 then generate a text heading.
       SUBROUTINE CONXINF(ICF,ICON,CXSTR)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12,zdesc*64
-      CHARACTER zname*12
+      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
@@ -1314,13 +1365,13 @@ C CEN 13791 boundary condition.
 C ****** Scan and report current mis-matches.
       subroutine ckcurmatch(prob,iprob,ier)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical prob,dup,first

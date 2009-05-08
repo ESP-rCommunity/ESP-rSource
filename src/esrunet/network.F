@@ -157,7 +157,7 @@ C Legacy flow file commons.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -221,7 +221,7 @@ C Name of current application
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       CHARACTER*34 ITEM(26)
-      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER INF*144,H*72,PATH*72,UPATH*72
       CHARACTER FS*1,STR*72,outs*124,outstr*124
       LOGICAL UNIXOK,OK,DOK,CLOSEM,CLOSEX,isexavail
@@ -949,7 +949,7 @@ C      write(6,*) 'ihavenewcnn b',ihavenewcnn
       END
 
 C ************************* NETWDRW **********************************
-C This is the main drawing routine for the network  and is called
+C NETWDRW is the main drawing routine for the network  and is called
 C when the workspace needs to be resized or redrawn. 
       SUBROUTINE NETWDRW
 
@@ -1164,18 +1164,16 @@ C Redraw the connections with current scaling, limits and layer.
       END
 
 C ********************* NETWMIC *********************************
-C This routine manages the network icons, can be called from the C-side
+C NETWMIC manages the network icons, can be called from the C-side
 C to handle deletion of icons.
       SUBROUTINE NETWMIC(IMODE,IMOPT)
 
-# include "gnetwk.h"
+#include "gnetwk.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
 
       COMMON/POPHELP/H(60)  
-
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Icon commons       
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -2852,7 +2850,6 @@ C in the main menu which calls this subroutine.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
 C Global attributes commons (associated with igatrdom(),dgtagatr(),
 C     &  dgatrib(),dgmenuatr() passed back via scanicondb call.
@@ -3103,7 +3100,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
      &          IVMAX,'W',IVALD,'glob atrib intg data',IER,0)
               if(ier.eq.0)then
                 write(istr,'(I8)') IVAL
-                call removepad(istr,inpstr,ilen,iflag)
+                call removepad(istr,inpstr,ilena,iflag)
                 write(DATCATIE(IAST,ISL,1),'(A)') inpstr
                 write(ddgatrib(ICATIE(IAST,ISL),1),'(A)') inpstr
               endif
@@ -3124,7 +3121,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
               CALL EASKR(VAL,t32,' ',VMIN,'W',
      &          VMAX,'W',VALD,'atrib real data',IER,1)
               if(ier.eq.0)then
-                call relstr(val,vnpstr,ilen,iflag)
+                call relstr(val,vnpstr,ilena,iflag)
                 WRITE(DATCATIE(IAST,ISL,1),'(a)') vnpstr
                 WRITE(ddgatrib(ICATIE(IAST,ISL),1),'(a)') vnpstr
               endif
@@ -3136,7 +3133,7 @@ C blanks at the start and assign back to DATCATIE and ATRICN.
               CALL EASKS(VSTR,t32,' ',12,'nothing',
      &          'atrib text data',IER,0)
               if(ier.eq.0.and.VSTR(1:2).ne.'  ')then
-                call removepad(vstr,vnpstr,ilen,iflag)
+                call removepad(vstr,vnpstr,ilena,iflag)
                 DATCATIE(IAST,ISL,1)=VNPSTR
                 ddgatrib(ICATIE(IAST,ISL),1)=VNPSTR
               endif
@@ -3166,22 +3163,21 @@ C are returned. If ier=-1 then summary file was not available.
       subroutine selrelexttag(exttag,AVAL,SVAL,ier)
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/MFLDOC/DEPRE(MPRD)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
 
 C Summary of external data.
       common/exsum/isexavail,iuex
 
-      dimension AVAL(6),SVAL(6),zx(MCOM),zy(MCOM),zz(MCOM)
+      dimension AVAL(6),SVAL(6),zx(MCOM),zy(MCOM),zz(MCOM),zn(MCOM)
+      dimension zv(MCOM)
 
 C snacon is the surface area associated with a connection,
 C surazi is the azimuth associated with a connection,
@@ -3194,10 +3190,11 @@ C znamecon is the zone name associated with inside face a conneciton
       dimension snacon(MCON),surazi(MCON),surelv(MCON),surzmin(MCON)
       dimension surzcog(MCON),surzmax(MCON),conname(MCON)
       dimension snamecon(MCON),znamecon(MCON)
-      CHARACTER H*72,outstr*124,DEPRE*40,t72*72,zname*12,zdesc*64
+      CHARACTER H*72,outstr*124,DEPRE*40,t72*72
       CHARACTER PCITM(35)*42,KEY*1,exttag*12,WORD*20,SVAL*12,conname*43
       CHARACTER PSITM(35)*60
       character snamecon*12,znamecon*12,outs*124,tl*18,tc*18,tt*18
+      character zn*12
       LOGICAL OK,DOK,isexavail
 
 C Rewind summary file if it exists (assumed to be open on unit iuex).
@@ -3370,8 +3367,8 @@ C Setup multi-page menu.
           else
             inz=inz+1
             K=0
-            CALL EGETW(OUTSTR,K,zname(inz),'W','zone name',IFLAG)
-            CALL EGETWR(OUTSTR,K,VOL(inz),0.,0.,'-','zone vol',IER)
+            CALL EGETW(OUTSTR,K,zn(inz),'W','zone name',IFLAG)
+            CALL EGETWR(OUTSTR,K,zv(inz),0.,0.,'-','zone vol',IER)
             CALL EGETWR(OUTSTR,K,zx(inz),0.,0.,'-','zone cog X',IER)
             CALL EGETWR(OUTSTR,K,zy(inz),0.,0.,'-','zone cog Y',IER)
             CALL EGETWR(OUTSTR,K,zz(inz),0.,0.,'-','zone cog Z',IER)
@@ -3400,7 +3397,7 @@ C current menu line index. Build up text strings for the menu.
             IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
               M=M+1
               CALL EMKEY(M,KEY,IER)   
-              WRITE(PCITM(M),'(A1,1X,A,2F8.2)')KEY,zname(IM),vol(im),
+              WRITE(PCITM(M),'(A1,1X,A,2F8.2)')KEY,zn(IM),zv(im),
      &          zz(im)
             ENDIF
   202     CONTINUE
@@ -3458,7 +3455,7 @@ C Ask whether choice is OK.
           write(t72,'(a,a)')'Use ',zname(ifoc)
           CALL ASKOK(t72,'attributes with this component?',OK,dok,3)
           IF(.NOT.OK)GOTO 71
-          AVAL(1)=VOL(ifoc)
+          AVAL(1)=zv(ifoc)
           AVAL(2)=zx(ifoc)
           AVAL(3)=zy(ifoc)
           AVAL(4)=zz(ifoc)
@@ -3636,16 +3633,15 @@ C file for the current model. File is assumed to be open on
 C unit iuex.
       subroutine listexttag(exttag,ier)
 #include "building.h"
+CC#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
 
 C Summary of external data.
       common/exsum/isexavail,iuex
 
-      dimension zx(MCOM),zy(MCOM),zz(MCOM)
-      CHARACTER outstr*124,zname*12,zdesc*64
-      CHARACTER exttag*12,WORD*20,outs*124
+      dimension zx(MCOM),zy(MCOM),zz(MCOM),zn(MCOM),zv(MCOM)
+      CHARACTER outstr*124
+      CHARACTER exttag*12,WORD*20,outs*124,zn*12
       LOGICAL isexavail
 
 C Rewind the .summary file and read in the first line.
@@ -3687,12 +3683,12 @@ C Scan the model summary file and report on zone names, volumes and height.
           else
             inz=inz+1
             K=0
-            CALL EGETW(OUTSTR,K,zname(inz),'W','zone name',IFLAG)
-            CALL EGETWR(OUTSTR,K,VOL(inz),0.,0.,'-','zn vol',IER)
+            CALL EGETW(OUTSTR,K,zn(inz),'W','zone name',IFLAG)
+            CALL EGETWR(OUTSTR,K,zv(inz),0.,0.,'-','zn vol',IER)
             CALL EGETWR(OUTSTR,K,zx(inz),0.,0.,'-','zn cog X',IER)
             CALL EGETWR(OUTSTR,K,zy(inz),0.,0.,'-','zn cog Y',IER)
             CALL EGETWR(OUTSTR,K,zz(inz),0.,0.,'-','zn cog Z',IER)
-            write(outs,'(4X,A,2F8.2)') zname(inz),vol(inz),zz(inz)
+            write(outs,'(4X,A,2F8.2)') zn(inz),zv(inz),zz(inz)
             call edisp(iuout,outs)
             goto 43
           endif

@@ -26,6 +26,10 @@ C EDCASCTL - edit casual gain control data.
 
       SUBROUTINE  EDCASCTL(ITRC,ICOMP,IER)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/c20/precz.
+#include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -39,7 +43,6 @@ C EDCASCTL - edit casual gain control data.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/user/browse
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -48,13 +51,8 @@ C EDCASCTL - edit casual gain control data.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -87,8 +85,6 @@ C TMC common block:
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       DIMENSION ITMC2DF(30),KSTR(MDTY)
       DIMENSION  COG1(3),COG2(3),COG3(3),tip(3),ipoints(6,2)
@@ -97,7 +93,7 @@ C TMC common block:
       logical newgeo  ! to use for testing if new/old geometry file.
       logical browse
 
-      character H*72,zname*12,zdesc*64,outs*124,LTMP*72,DTMP*64
+      character H*72,outs*124,LTMP*72,DTMP*64
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -115,11 +111,10 @@ C Assume daylight coeffs do need calculated.
 
 C Check and see if a casual gain control file exists.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-        WRITE(DLCGCIN,'(A,A4)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
-     &    '.cgc'
+        WRITE(DLCGCIN,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.cgc'
       else
         WRITE(DLCGCIN,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.cgc'
+     &    zname(ICOMP)(1:lnzname(ICOMP)),'.cgc'
       endif
       if(ICGC(ICOMP).NE.0)then
         call FINDFIL(LCGCIN(ICOMP),XST)
@@ -242,7 +237,7 @@ C Reset all surface lines to standard width and redraw if revised data.
         nzg=1
         nznog(1)=ICOMP
         izgfoc=ICOMP
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
       endif
       NL=NLITZ(ICOMP)
       write(ITEM(1),'(A,A)')   '  Zone: ',zname(ICOMP)
@@ -342,7 +337,7 @@ C In special case...
         m=m+1   
         write(ITEM(m),'(A)') '  TMC number & DF(s) for each photocell:'
         do 44 ii = 1,NSUR
-          if(SOTF(II)(1:4).NE.'OPAQ')THEN
+          if(SOTF(II)(1:4).NE.'OPAQ'.AND.SOTF(II)(1:4).NE.'CFC ')THEN
             m=m+1
             CALL EMKEY(m,KEY,IER)
             write(ITEM(m),'(A,I4,2X,F6.4,a)')key,II,DFDAT(ICOMP,N,II,1),
@@ -830,7 +825,7 @@ C Calculation type.
 C Loop through all surfaces and find out number of TMCs:
           ICOUNT=0
           do 47 i = 1, NSUR
-            if(SOTF(I)(1:4).NE.'OPAQ')THEN
+            if(SOTF(I)(1:4).NE.'OPAQ'.AND.SOTF(I)(1:4).NE.'CFC ')THEN
               ICOUNT=ICOUNT+1              
             endif
 47        continue 

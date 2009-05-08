@@ -597,6 +597,9 @@ C               the common/ua2/ arrays).
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -611,7 +614,7 @@ C               the common/ua2/ arrays).
 C      CHARACTER TITL*72,NAM*72,CSTR*25
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER MATNAM*12,CSTR*25,DESC*48
+      CHARACTER MATNAM*12,CSTR*25
 
 C Data stored in UA02 has the following meaning in this routine:
 C IDMAT(?,1): The material in the chosen MLC, if this is 0 then 
@@ -1127,10 +1130,10 @@ C UAZ01 edits surface properties in memory.
 
       SUBROUTINE UAZ01(IZONE,IACT,DIR)
 #include "building.h"
+#include "geometry.h"
 #include "uncertainty.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/PREC2/VOL(MCOM)
 
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
      &             NSNOG(MNIL,MCOM,MS)
@@ -1191,9 +1194,12 @@ C IEL = index of matching elements
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      CHARACTER DESC*48
+
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 

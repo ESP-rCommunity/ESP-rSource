@@ -40,7 +40,6 @@ C IER=0 OK, IER=1 problem.
       common/filep/ifil
 
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       common/spmfxst/ispmxist,spflnam 
       common/spmopn/ispopen 
@@ -338,6 +337,7 @@ C Data items.
       subroutine EDSPM(ISPM,MODE,ITRU)
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
 #include "power.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -355,13 +355,12 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
      &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
       common/spmatlbl/spmlabel(mspmnod)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C << rewrite logic using G6 common block >>
 
@@ -376,7 +375,6 @@ C << rewrite logic using G6 common block >>
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/MFLDOC/DEPRE(MPRD) 
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
@@ -424,7 +422,7 @@ C sstr in spdesc.
       logical newgeo  ! to use for testing if new/old geometry file.
       integer header,footer
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
-      CHARACTER DESC*48,NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
+      CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
       CHARACTER TITL*72,DADESC*72,spitem2*32
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -681,7 +679,7 @@ C General image option flags.
       nzg=1
       nznog(1)=IZ
       izgfoc=IZ
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
 
@@ -694,7 +692,7 @@ C General image option flags.
      &    'component. ',IER)
       ENDIF
       CALL EPMENRC
-      if(SOTF(ISO)(1:4).eq.'OPAQ')then
+      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC ')then
         ISPMF=1
       else
         ISPMF=0
@@ -720,10 +718,10 @@ c      IVAL=IFOC
       nzg=1
       nznog(1)=IZ
       izgfoc=IZ
-      CALL ADJVIEW(ITRC,IER)
+      CALL ADJVIEW(IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
-      if(SOTF(ISO)(1:4).eq.'OPAQ')then
+      if(SOTF(ISO)(1:4).eq.'OPAQ'.or.SOTF(ISO)(1:4).eq.'CFC ')then
         ISPMF=1
       else
         ISPMF=0
@@ -917,7 +915,7 @@ C General image option flags.
         nzg=1
         nznog(1)=IZ
         izgfoc=IZ
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         MODIFY=.TRUE.
         MODBND=.TRUE.
 
@@ -945,7 +943,7 @@ C Recover the related zone.
         nzg=1
         nznog(1)=IZ
         izgfoc=IZ
-        CALL ADJVIEW(ITRC,IER)
+        CALL ADJVIEW(IER)
         MODIFY=.TRUE.
         MODBND=.TRUE.
        

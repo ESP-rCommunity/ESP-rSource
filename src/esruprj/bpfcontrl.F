@@ -39,6 +39,7 @@ C          block sctl to have been filled for the current period.
 
       SUBROUTINE CONTRL(ITRC,ITRU,icfoc,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
 #include "net_flow.h"
 #include "control.h"
@@ -49,7 +50,6 @@ C          block sctl to have been filled for the current period.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -62,7 +62,6 @@ C          block sctl to have been filled for the current period.
      &             opticdoc
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/user/browse
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -73,8 +72,7 @@ C ipeerptbk is pointer from position in display to day type.
       dimension mptback(35),iperptbk(35)
       CHARACTER*43 VERT(35)
       CHARACTER CTLDOC*248,LCTLF*72,KEY*1,LCFGF*72
-      CHARACTER outs*124,H*72,LASCI*72,zname*12,cfgroot*24
-      character zdesc*64
+      CHARACTER outs*124,H*72,LASCI*72,cfgroot*24
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,opticdoc*248
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -1251,7 +1249,7 @@ C Plant common required for building/plant flux linkage
       common/pcdat/nnodes(mpcom),isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
 
-      DIMENSION SALT(25),IVALS(25)
+      DIMENSION SALT(24),IVALS(24)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
@@ -1399,7 +1397,7 @@ C law can be jumped around.
         useold=.false.
         iclawt=-1
   77    if(useold)then
-          if(iclawt.ge.0.and.iclawt.le.25)then
+          if(iclawt.ge.0.and.iclawt.le.23)then
             iclaw=iclawt
             IBCLAW(II,JJ,KK)=iclaw
             useold=.false.
@@ -1410,7 +1408,7 @@ C law can be jumped around.
      &      iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.
      &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.15.or.
      &      iclaw.eq.21.or.iclaw.eq.22.or.iclaw.eq.23.
-     &      or.iclaw.eq.24.or.iclaw.eq.25)then
+     &      or.iclaw.eq.24)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -1458,7 +1456,6 @@ C starting up the menu based control period definition.
         SALT(22)='VAV cooling with CAV reheat            '
         SALT(23)='Match sensed values (ideal:2 setpoints)'
         SALT(24)='Adaptive human comfort model           '
-        SALT(25)='Deadband control for heating/cooling   '
         if(iclaw.ne.0)then
           write(outs,'(a,a)') 'Current control law: ',SALT(iclaw)
           call edisp(iuout,outs)
@@ -1527,7 +1524,7 @@ C starting up the menu based control period definition.
         H(59)='control law 11 where values from the temporal file'
         H(60)='are taken to set the setpoints for heating and cooling'
   63    CALL EPICKS(IX,IVALS,' ','Control law:',
-     &    40,25,SALT,'control law (indented=old or obscure)',IER,60)
+     &    40,24,SALT,'control law (indented=old or obscure)',IER,60)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 63
         iclaw=IVALS(1)
         IBCLAW(II,JJ,KK)=iclaw
@@ -2598,20 +2595,11 @@ C Slave Capacity Controller or VAV controller.
             goto 77
           endif
           goto 92
+        elseif(IBCLAW(II,JJ,KK).eq.23)then  
 
-C Code seems to be repeated at this stage for each control law. It could
-C be used once. Adding bcl25 together with bcl23 below in order to test
-C a possible shrinking of this repetitive code
-        elseif(IBCLAW(II,JJ,KK).eq.23.or.IBCLAW(II,JJ,KK).eq.25)then  
-C BCL23:
 C Read setpoints from temporal file. This control law was developed for
 C the UK NCM and takes in setpoints from tdf data and is based on the
 C logic on control law 1
-
-C BCL25:
-C Read upper and lower heating and cooling setpoints. Also maximum
-C heating and cooling capacities. This is a deadband control developed
-C for future use in demand side management controls.
           nper=NBCDP(II,JJ)
           loopdaytype=nbcdt(II)
           if(KK.GT.1)then
@@ -2708,8 +2696,8 @@ C      DIMENSION IGVAL(60)
       logical logic_cminitial ! needed to initialise cmlocal array in order to save values              
       dimension cmlocal(misc)   ! for local editing of cm data.
       real cmlocal
-      dimension sorting(16),bsorting(16),sort_tmp(16),bsort_tmp(16) ! for local sorting of cm bidirectional data.
-      dimension sortset(16),sortmerge(16)   
+      dimension sorting(6),bsorting(6),sort_tmp(6),bsort_tmp(6) ! for local sorting of cm bidirectional data.
+      dimension sortset(6),sortmerge(6)   
       real sorting,bsorting,sort_tmp,bsort_tmp,sortset,sortmerge
       integer isortCounter,ibsortCounter
       integer LL
@@ -2723,10 +2711,9 @@ C Optical control day types.
       J=IV
       JJ=J
       logic_cminitial=.false.
-
 C Logical needed to initialiase cm arrays
 C This initialiasation applies only to ioclaw=2. It will have to change in the future
-      do 952 inmisc=1,16
+      do 952 inmisc=1,6
         if(.not.logic_cminitial)then
           cm(2*inmisc)=-30.0
           cm(2*inmisc+1)=1.
@@ -2914,14 +2901,14 @@ C        endif
 
 C<<<<<<<<attempt to introduce an emenu here
           logic_cminitial=.true.
-          cm(1)=32.
+          cm(1)=12.
   
           do 11 ij=1,misc
             cmlocal(ij)=cm(ij)
   11      continue
 
-C Set it to 28 for the moment
-         do 852 inmisc=1,16
+C Set it to 12 for the moment
+         do 852 inmisc=1,6
             sorting(inmisc)=0.0
             bsorting(inmisc)=0.0
             sortmerge(inmisc)=0.0
@@ -2930,8 +2917,8 @@ C Set it to 28 for the moment
 
 C Number of actual items displayed.
   741     IER=0
-          M=16
-          MVERT=19
+          M=6
+          MVERT=9
           do 963 ibictl_item=1,M
             isetp_displayCM=2*ibictl_item
             idat_displayCM=isetp_displayCM+1     
@@ -2980,7 +2967,7 @@ C Now display the menu.
 
 C Sort the setpoints in descending order.
 C Use a temporary array to hold them for sorting
-            do 147 ix=1,16           
+            do 147 ix=1,6           
               if(cmlocal(ix*2).ge.0.0)then
 
 C Get the positives for sorting
@@ -2994,17 +2981,17 @@ C Make them positive for using them in SORTR
               bsorting(ix)=abs(bsorting(ix))                 
   147       continue
             KFLAG = -1
-            call SORTR(sorting,sort_tmp,16,KFLAG)
-            call SORTR(bsorting,bsort_tmp,16,KFLAG)
+            call SORTR(sorting,sort_tmp,6,KFLAG)
+            call SORTR(bsorting,bsort_tmp,6,KFLAG)
             isortCounter=0
             ibsortCounter=0
 
 C assign (next line only) back the negative values as they were before the sorting
-            do 159 irevert=1,16
+            do 159 irevert=1,6
               bsorting(irevert)=-bsorting(irevert)            
   159       continue
-            do 146 ixreturn=1,16
-              do 145 ixmatch=1,16
+            do 146 ixreturn=1,6
+              do 145 ixmatch=1,6
                 CALL ECLOSE(sorting(ixreturn),cmlocal(ixmatch*2),0.01,
      &               bNumsAreEqual)
                 if(bNumsAreEqual)then
@@ -3052,16 +3039,16 @@ C do not count when there is dublication
                   ibsortCounter=ibsortCounter+1
 
 C sortmerge will merge sorting and bsorting back together                  
-C 16 is the total number of sortmerge (e.g. set-points). The aim is to place
+C 6 is the total number of sortmerge (e.g. set-points). The aim is to place
 C the negatives at the end of the array
                   if(ibsortCounter.gt.0)then
-                    sortmerge(17-ibsortCounter)=cmlocal(ixmatch*2) 
-                    sortset(17-ibsortCounter)=cmlocal(ixmatch*2+1)
+                    sortmerge(7-ibsortCounter)=cmlocal(ixmatch*2) 
+                    sortset(7-ibsortCounter)=cmlocal(ixmatch*2+1)
                   endif
                 endif
   145         continue                             
   146       continue
-            do 144 ipassback=1,16
+            do 144 ipassback=1,6 
               cmlocal(ipassback*2)=sortmerge(ipassback)
               cmlocal(ipassback*2+1)=sortset(ipassback)
 C              write(6,*) sortmerge(ipassback),'  ',sortset(ipassback)
@@ -4133,7 +4120,6 @@ C Edit flow control function II.
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ICPK(MCNN),INPK(MNOD)
       CHARACTER*84 VERT(36)
@@ -4265,10 +4251,10 @@ C of if:elseif:else recover.
         if(NITEMS.gt.0)then
           WRITE(outs,'(a,i3,a)')' For period',KK,' current data...'
           call edisp(iuout,outs)
-          if(NITEMS.LE.13)then
-            write(outs,'(13F9.1)')(cm(L),L=2,NITEMS+1)
+          if(NITEMS.LE.12)then
+            write(outs,'(12F10.2)')(cm(L),L=2,NITEMS+1)
           else
-            write(outs,'(13F9.1)')(cm(L),L=2,13)
+            write(outs,'(12F10.2)')(cm(L),L=2,12)
           endif
           call SDELIM(outs,outsc,'S',IW)
           call edisp(iuout,outsc)
@@ -4333,7 +4319,7 @@ C What is the equivalent for flow.....
 
 C Miscellaneous data for on / off controller.
           cm(1)=3.
-  53      WRITE(HOLD,'(3f8.2)')cm(2),cm(3),cm(4)
+  53      WRITE(HOLD,'(3f11.5)')cm(2),cm(3),cm(4)
           H(1)= 'Number of items for on/off controller = 3 '
           H(2)= ' 1st is setpoint, '
           H(3)= ' 2nd is action index 1=direct, -1=inverse'
@@ -4382,7 +4368,7 @@ C Miscellaneous data for proportional controller.
           if(ier.ne.0)goto 54
         elseif(iclaw.eq.2)then
           cm(1)=6.
-  55      WRITE(HOLD,'(3f8.2)')cm(2),cm(3),cm(4)
+  55      WRITE(HOLD,'(3f10.4)')cm(2),cm(3),cm(4)
           H(1)= 'Number of items for range controller = 6 '
           H(2)= ' 1st is low setpoint, '
           H(3)= ' 2nd is mid setpint'
@@ -4410,7 +4396,7 @@ C Miscellaneous data for proportional controller.
           CALL EGETWR(HOLD,K,cm(3),0.,0.,'-','mid set pt',IER)
           CALL EGETWR(HOLD,K,cm(4),0.,0.,'-','high set pt',IER)
           if(ier.ne.0)goto 55
- 157      WRITE(HOLD,'(3f8.3)')cm(5),cm(6),cm(7)
+ 157      WRITE(HOLD,'(3f9.4)')cm(5),cm(6),cm(7)
           CALL EASKS(HOLD,
      &      ' Ratios of rate or area for: low, mid, high (see help)',
      &      ' : ',42,' 0. 1. 1. ',' flow range controller',IER,16)
@@ -4490,7 +4476,7 @@ C<< To include feed back to text feedback area using USRMSG
           if(ieri.ne.0)goto 56
           cm(3)=real(NSEN)
           call edisp(iuout,' Ideal multi-sensor controller:')
-          cm(1)=2.+8.*NSEN
+          cm(1)=2.0+8.0*NSEN
           OK=.true.
           IF(NSEN.EQ.1)
      &    CALL ASKOK('You have chosen just one sensor, the only option',
@@ -4524,32 +4510,32 @@ C Auxiliary sensor details,
      &        'e relative humidity ',' ',' ',' ',' ',' ',' ',
      &        ino,idno,56)
               IF(INO.EQ.1)THEN
-                CM(NDX+1)=0
+                CM(NDX+1)=0.0
                 msg1=' senses ambient T'
               elseif(INO.eq.2)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses wind speed'
               elseif(INO.eq.3)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses wind direction'
               elseif(INO.eq.4)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses diffuse solar'
               elseif(INO.eq.5)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses direct solar'
               elseif(INO.eq.6)then
-                CM(NDX+1)=INO
+                CM(NDX+1)= real(INO)
                 msg1=' senses RH'
               ENDIF
             ELSEIF(IW.EQ.2)THEN
-              CM(NDX)=-4.
+              CM(NDX)=-4.0
               call ASKRNOD('  sensed flow node','-',INOD,IER)
               CM(NDX+1)=INOD
               write(msg1,'(2a)') ' senses nd ',ndnam(inod)
             ENDIF
-            CM(NDX+2)=0
-            CM(NDX+3)=0
+            CM(NDX+2)=0.0
+            CM(NDX+3)=0.0
             CALL EASKR(cm(ndx+4),' ',' Aux sensor set-point ? ',
      &        -100.,'F',0.,'-',0.,' Aux sensor set-point',IER,56)
             write(msg2,'(a,f5.2)') ' setpoint ',cm(ndx+4)
@@ -4573,13 +4559,13 @@ C     &        0.,'F',1.,'F',1.,' Aux sensor set-point',IER,56)
      &      CALL EASKABC('Logical action variable',
      &      'with next sensor','AND','OR','NOT',iad,56)
             IF(IAD.EQ.1)THEN
-              CM(NDX+7)=1.
+              CM(NDX+7)=1.0
               msg4=' AND'
             ELSEIF(IAD.EQ.2)THEN
-              CM(NDX+7)=2.
+              CM(NDX+7)=2.0
               msg4=' OR'
             ELSEIF(IAD.EQ.3)THEN
-              CM(NDX+7)=3.
+              CM(NDX+7)=3.0
               msg4=' NOT'
             ENDIF
 
@@ -4701,11 +4687,11 @@ C PI controller
           H(27)='loop will be used as the sensed parameter'
           CALL ECLOSE(CM(1),0.0,0.001,close1)
           IF(CLOSE1)THEN
-            CM(2)=21
-            CM(3)=1.
+            CM(2)=21.0
+            CM(3)=1.0
             CM(4)=0.3
-            CM(5)=1.
-            CM(6)=1000.
+            CM(5)=1.0
+            CM(6)=1000.0
           ENDIF
           CM(1)=8.0
           call edisp(iuout,' ')
@@ -5035,7 +5021,6 @@ C flow connections.It is assumed that the user will make one selection only.
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5757,14 +5742,13 @@ C flow connections.It is assumed that the user will make one selection only.
       SUBROUTINE actloc(prompt,title,icfoc,II,isn1,ian1,ian2,ian3,
      &  errmsg,IER)
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
 #include "plant.h"
 #include "epara.h"
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5782,7 +5766,7 @@ C flow connections.It is assumed that the user will make one selection only.
       CHARACTER*(*) prompt,title,errmsg
 
       DIMENSION VERT(35)
-      CHARACTER VERT*40,KEY*1,zname*12,zdesc*64,prompt2*36
+      CHARACTER VERT*40,KEY*1,prompt2*36
       character h*72,outs*124,LTPCMP*60,CMNAM*12,NDNAM*12
       integer ian1T,ian2T,ian3T,ilayt  ! local variable for editing.
 
@@ -6217,10 +6201,8 @@ C   for control law one.
       common/sctldata/ndec(misc),vmin(misc),vmax(misc),
      &  vdef(misc),nctlhelp,nmenulines
 
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-
       character act*1,h*72
-      DIMENSION VERT(35),SALT(25),IVALS(25)
+      DIMENSION VERT(35),SALT(24),IVALS(24)
       dimension cmlocal(misc)    ! for local editing of cm data.
       real cmlocal
       integer ivals              ! for return of selection array.
@@ -6461,7 +6443,6 @@ C control law to trap changes.
           SALT(22)='VAV cooling with CAV reheat (BETA)     '
           SALT(23)='Match sensed values (ideal:2 setpoints)'
           SALT(24)='Adaptive human comfort model           '
-          SALT(25)='Deadband control for heating/cooling   '
           if(iclawcurrent.ne.0)then
             write(outs,'(2a)') ' Current control law: ',
      &        SALT(iclawcurrent)
@@ -6533,7 +6514,7 @@ C Re-instanciate help specifically for summary of control laws.
           H(59)='Values from the temporal file are taken to set setpnts'
           H(60)='Further details within each control law interface. '
   63      CALL EPICKS(IX,IVALS,' ',' Control law option:',
-     &      42,25,SALT,'control law (indented=old or obscure)',IER,60)
+     &      42,24,SALT,'control law (indented=old or obscure)',IER,60)
           if(ix.eq.0.or.IVALS(1).eq.0)goto 63
           if(iclawcurrent.ne.IVALS(1))then
 
@@ -6754,16 +6735,6 @@ C At the moment it does what the control law 11 does
               cmlocal(8)=0.8
               cmlocal(9)=2.0
               goto 90
-            elseif(iclaw.eq.25)then
-              cmlocal(1)=6.0     
-              cmlocal(2)=1000.0  !Maximum heating capacity 
-              cmlocal(3)=1000.0     !Maximum cooling capacity 
-              cmlocal(4)=17.0  !Heating lower limit setpoint
-              cmlocal(5)=20.0     !Heating upper limit setpoint
-              cmlocal(6)=24.0    !Cooling lower limit setpoint
-              cmlocal(7)=28.0    !Heating upper limit setpoint
-              ier=25
-              goto 90
             else
 
             endif
@@ -6782,8 +6753,8 @@ C The user did not alter the control law.
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Edit data item identified by KEYIND
-        CALL KEYIND(MVERT,IVERT,IFOC,IO)                     
-              
+        CALL KEYIND(MVERT,IVERT,IFOC,IO)
+
 C prompt1 (72 char) first easkr prompt
 C prompt2 (72 char) second easkr prompt
 C ndec (int) number of decimal places to display
@@ -7049,8 +7020,6 @@ C it points to the same zone as is used by the master controller.
           elseif(iclaw.eq.23)then
             modval=.true.
           elseif(iclaw.eq.24)then
-            modval=.true.
-          elseif(iclaw.eq.25)then
             modval=.true.
           else
 
@@ -8177,58 +8146,9 @@ C comfort temperature the control is activated
           menu(9)='Comfort band '
           prompt1(9)='Comfort band (default is 2deg) '
           prompt2(9)=' '
-          ndec(9)=3; vmin(9)=0.0; vmax(9)=0.99; vdef(9)=2.0
+          ndec(9)=3; vmin(8)=0.0; vmax(8)=0.99; vdef(8)=2.0
           nmenulines=9    ! set to the last cm index used
           nctlhelp=18
-        elseif(iclaw.eq.25)then    
-         
-C Reading heating and cooling setpoints from temporal file
-          H(1)='This control law defines deadband setpoints for heating'
-          H(2)='and cooling. The logic for heating is: '
-          H(3)='if Tair>=Thsetp,upper then heating is off,'
-          H(4)='elseif Tair>Thsetp,lower then 3 cases are possible:'
-          H(5)='   a) Tair,currentTimestep > Tair,previousTimestep. In'
-          H(6)='      this case temperature within the zone increases '
-          H(7)='      and heating is on. '
-          H(8)='   b) Tair,currentTimestep = Tair,previousTimestep. In'
-          H(9)='      this case heating will be on if it was on at the'
-          H(10)='      previous timestep and off if it was off at the '
-          H(11)='      previous timestep. '
-          H(12)='   c) Tair,currentTimestep < Tair,previousTimestep. In'
-          H(13)='      this case heating will be off.  '
-          H(14)='else the temperature within the zone is lower or equal'
-          H(15)='than the lower setpoint and heating will be on.'
-          H(16)=' '
-          H(17)='Similar rules are applied for cooling.'
-          prompt1(1)=' '
-          prompt2(1)=' '
-          ndec(1)=-1; vmin(1)=0.0; vmax(1)=0.0; vdef(1)=0.0
-          menu(2)='Maximum heating capacity (W)'
-          prompt1(2)='Maximum heating capacity (W) '
-          prompt2(2)='which is available to meet the demand. '
-          ndec(2)=0; vmin(2)=0.0; vmax(2)=999999.0; vdef(2)=1000.0
-          menu(3)='Maximum cooling capacity (W)'
-          prompt1(3)='Maximum cooling capacity (W) '
-          prompt2(3)='which is available to meet the demand.'
-          ndec(3)=0; vmin(3)=0.0; vmax(3)=999999.0; vdef(3)=1000.0
-          menu(4)='Heating lower setpoint (oC)'
-          prompt1(4)='Heating setpoint (oC) that defines '
-          prompt2(4)=' the lower limit for the deadband. '
-          ndec(4)=1; vmin(4)=-100.0; vmax(4)=100.0; vdef(4)=17.0          
-          menu(5)='Heating upper setpoint (oC)'
-          prompt1(5)='Heating setpoint (oC) that defines '
-          prompt2(5)='the upper limit for the deadband. '
-          ndec(5)=1; vmin(5)=-100.0; vmax(5)=100.0; vdef(5)=20.0   
-          menu(6)='Cooling lower setpoint (oC)'
-          prompt1(6)='Cooling setpoint (oC) that defines '
-          prompt2(6)='the lower limit for the deadband. '
-          ndec(6)=1; vmin(6)=-100.0; vmax(6)=100.0; vdef(6)=24.0          
-          menu(7)='Cooling upper setpoint (oC)'
-          prompt1(7)='Cooling setpoint (oC) that defines'
-          prompt2(7)='the upper limit for the deadband. '
-          ndec(7)=1; vmin(7)=-100.0; vmax(7)=100.0; vdef(7)=28.0  
-          nmenulines=7    ! set to the last cm index used
-          nctlhelp=17
         else
           h(1)=' '
           h(2)=' '

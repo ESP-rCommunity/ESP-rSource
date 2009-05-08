@@ -53,14 +53,14 @@ C Path to problem and command line file (if any).
       common/rcmd/LCMDFL
 
 C Defaults.
-      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
       character LCMDFL*144,inf*144,H*72,mldnam*48
       character path*72,upath*72
@@ -187,7 +187,7 @@ C Initialise the ststistical results
       nitem=8
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
-      call askabout('mld',1)
+      call askabout('mld ',1)
 
       call emenu(head,item,nitem,ino)
 
@@ -210,7 +210,7 @@ C Set statistics reporting flag to ON or OFF  .
       elseif(ino.eq.7) then
 
 C Help via the askabout facility in esru_ask.F The zero requests display
-        call askabout('mld',0)
+        call askabout('mld ',0)
         goto 2
       elseif(ino.eq.8) then
         CALL EPAGEND
@@ -238,7 +238,7 @@ C ***** Dummy display of images.
 
 C Dummy routines from common3dv.F needed to match implied
 C calls in esru_lib.F
-      SUBROUTINE ADJVIEW(ITRC,IER)
+      SUBROUTINE ADJVIEW(IER)
       ier=0
       return
       end

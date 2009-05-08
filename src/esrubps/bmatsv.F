@@ -32,6 +32,7 @@ C Include files req'd for deleting temporary files after the simulation is compl
 C HOT3000: Fuel cell.
 #include "SOFC.h"
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "plant.h"
 #include "tdf2.h"
@@ -113,9 +114,7 @@ C TDF commons. zrotp is the previous rotation angle for each zone.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IHTCLFLUX(MCOM)
-          
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
       common/zrotat/zrotp(mcom)
 
 C Common for thermophysical property replacement.
@@ -208,12 +207,6 @@ C Common for electrical file.
       CHARACTER LCMDFL*144
 
 C Additional commons for SHOCC.
-      common/c20/nzsur(mcom),nztv(mcom)
-
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
 
 C SNAME (12 char) - surface name attribute
 C ZBASEA    - area of base (m^2)
@@ -1321,6 +1314,10 @@ C For 3D zone model, close the associated files.
                 CALL ERPFREE(ITLW,ISTAT)
                 CALL ERPFREE(ILWV,ISTAT)
               ENDIF
+
+C CFC output
+!             call CFCoutput(icomp)
+
    40       continue
 
 C Zone loop complete. Call HVAC simulation controller if HVAC models are active.

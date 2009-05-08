@@ -28,8 +28,8 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(23),GMENUS(23)
-      DIMENSION ISGGT(25),IVAL(25)
+      COMMON/TDFGH2/GTYPES(22),GMENUS(22)
+      DIMENSION ISGGT(24),IVAL(24)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
       CHARACTER KEY*1,ISGGT*30,FOCUS*8,h*72
@@ -91,7 +91,7 @@ C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(23),GMENUS(23)
+      COMMON/TDFGH2/GTYPES(22),GMENUS(22)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -123,7 +123,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=23
+      NITEMS=22
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data:  '
       GTYPES(2)='CASUALT'
@@ -168,8 +168,6 @@ C Pick up the arrays used for displaying current generic items.
       GMENUS(21)='Vertical solar:'     
       GTYPES(22)='HTCLSETP'
       GMENUS(22)='H & C setpoints:'     
-      GTYPES(23)='HCQPOWER'
-      GMENUS(23)='H & C power ctl:'    
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -529,23 +527,7 @@ C Control state: two data item.
         GMF(2)='REAL,2,0.0,-300.0,300.0'
         MGMA(2)='Cooling set-points (degC): '
         FOUND=.TRUE.
-
-      ELSEIF(FOCUS(1:8).EQ.'HCQPOWER')THEN
-
-C Control state: two data item.
-        GAIDE   ='Heating & Cooling power (W)'
-        GHELP(1)='Assign Heating and cooling heat flux'
-        GHELP(2)='in different columns (degC). Used with'
-        GHELP(3)='to bcl10 control.'        
-        GMH='3,2,0,0,2,0,-999.9'
-        GDHDRT(1)='   time  | Heating   |  Cooling   '
-        GDHDRT(2)='   of day| heat flux | heat flux  '
-        GDHDRT(3)='Flux for heating:'
-        GMF(1)='REAL,1,0.0,0.0,99999.0'
-        MGMA(1)='Heating set-points (degC): '
-        GMF(2)='REAL,2,0.0,-99999.0,0.0'
-        MGMA(2)='Cooling set-points (degC): '
-        FOUND=.TRUE.        
+        
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN
         RETURN
 

@@ -283,17 +283,12 @@ C and the surrounding obstruction blocks.
 
       subroutine sitpln(icomp)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "geometry.h"
 
       common/spad/mmod,limit,limtty
       common/outin/iuout,iuin
       common/filep/ifil
 
-      character ctype*4
-      real gversion
-      integer igupgrade
-      common/g0/ctype(mcom),gversion(mcom),igupgrade
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
@@ -302,15 +297,14 @@ C and the surrounding obstruction blocks.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/precz/zname(mcom),zdesc(mcom)
       common/prec8/slat,slon
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
 
-      character zname*12,sstr*72,blabel*4,blkname*8,blkmat*12
-      character tz*13,zdesc*64
+      character sstr*72,blabel*4,blkname*8,blkmat*12
+      character tz*13
       logical newgeo  ! used to test for new/old geometry file.
 #ifdef OSX
       integer igwid,igheight
@@ -401,7 +395,7 @@ C output the zone name.
       iupdown=0
       isym=0
       call etplot(x(1),y(1),iupdown,isym)
-      if(lnblnk(zname(icomp)).gt.1)then
+      if(lnzname(icomp).gt.1)then
          write(tz,'(a)')zname(icomp)
          call winfnt(itfs)
          call wstxpt(ix+2,iy-2,tz)

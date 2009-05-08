@@ -434,7 +434,7 @@ C Use espriou.h for climatelist file name and defdbfl.
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
 
@@ -469,7 +469,7 @@ C cdintglz (char*32) internal glazing/window
      &  cdintfloor(5),cdintceil(5),cdintptn(5),cdintdoor(5),cdintglz(5)
 
       CHARACTER OUTSTR*124,WORD*20,outs248*248
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
       character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dinstpath*48,di*48
       logical unixok,dll
@@ -1151,8 +1151,8 @@ C ********* parsim
 C parsim: allows terminal, size, config file, simulation parameter file arguments
 C  to be passed to the program from the invocation line.  
 
-      subroutine parsim(termtype,iappw,iappx,iappy,inf,browse,sps,
-     &  aut,actf)
+      subroutine parsim(iverb,termtype,iappw,iappx,iappy,inf,browse,
+     &  sps,aut,actf)
       
       integer lnblnk  ! function definition
 
@@ -1166,7 +1166,7 @@ C Application name
       
       character sTimeout*72  
       integer iTimeoutFlag
-      integer termtype,iappw,iappx,iappy
+      integer iverb,termtype,iappw,iappx,iappy
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
@@ -1201,6 +1201,7 @@ C into binary, and set default terminal type as necessary
       aut  = 'default'
       actf  = 'UNKNOWN'
       argument = ' '
+      iverb = 0
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
@@ -1219,6 +1220,8 @@ C Get arguments from command line: if one parameter.
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
+        elseif(argument(1:2).eq.'-v')then
+          iverb = 2   ! tell application to run with debug on
         elseif(argument(1:8) .eq. '-version' ) then
 C Display version information and then quit
           CALL ESPrVersion("summary",cAppName,IUOUT)
@@ -2175,7 +2178,7 @@ C  to be passed to e2r from the invocation line.
       
       integer lnblnk  ! function definition
 
-C      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/OUTIN/IUOUT,IUIN
 
 C Application name
       common/APPNAME/cAppName

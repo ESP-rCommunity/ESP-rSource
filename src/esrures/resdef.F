@@ -45,6 +45,7 @@ C routines.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/INITL/INIT1,INIT2
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
+      COMMON/ABSRESLIB/RFILEABS,PFILEABS,MSTRFILEABS,LAFRESABS
       common/rpath/path
       common/rcmd/lcmdfl
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
@@ -54,14 +55,15 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/recver/izver,ipver,iever
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
  
-      character LTMP*72,H*72,outs*124
+      character LTMP*72,H*72,outs*124,outs248*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      character RFILEABS*144,PFILEABS*144,MSTRFILEABS*144,LAFRESABS*144
       character path*72,lcmdfl*144,ltmpc*144,lpath*72
       logical XST
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -88,7 +90,7 @@ C assigned database.
         H(6)='usually exists. This is a link to an example results'
         H(7)='library set up when ESP was first installed.'
         LTMP=' '
-        ltmpc=LCMDFL
+        ltmpc=LCMDFL   ! the file name that was passed in the command line
         llt=lnblnk(ltmpc)
 
 C Use ifdefs because the X11 version will be returning only the
@@ -122,7 +124,20 @@ C will act on this.
         endif
 
         if(ltmpc(1:2).ne.'  '.and.ltmpc(1:4).ne.'UNKN')then
+
+C Save back the command file name. While here also assume that any
+C other results files will be found in the same location and make
+C up full length strings that guess what those file names will be.
           LCMDFL=ltmpc
+          lrf=lnblnk(ltmpc)
+          lrf3=lrf-3
+          lrf4=lrf-4
+          if(ltmpc(lrf3:lrf).eq.'.res')then
+            write(LAFRESABS,'(2a)') ltmpc(1:lrf4),'.mfr'
+            write(PFILEABS,'(2a)') ltmpc(1:lrf4),'.plr'
+          else
+            continue
+          endif
         else
           goto 6
         endif
@@ -137,12 +152,21 @@ C Temporarily find the path and local file name for the results
 C file supplied. Save the current path to lpath and restore this
 C after the results file has been found and loaded so that subsequent
 C scans of cfg and zone files can be accomplished.
-C      write(6,*) 'MORFIL: current path is ',path
-C      write(6,*) 'MORFIL: cmdfile is ',lcmdfl
+C Debug.
+C      write(outs248,*) 'MORFIL: current command file path is ',path
+C      call edisp248(iuout,outs248,100)
+      write(outs248,*) 'MORFIL: cmd line file is ',lcmdfl
+      call edisp248(iuout,outs248,100)
+
       lpath=path
       call fdroot(LCMDFL,path,LTMP)
-C      write(6,*) 'MORFIL: local file is now ',ltmp
-C      write(6,*) 'MORFIL: rev path is ',path
+
+C Debug.
+C      write(outs248,*) 'MORFIL: local file is now ',ltmp
+C      call edisp248(iuout,outs248,100)
+C      write(outs248,*) 'MORFIL: rev path is ',path
+C      call edisp248(iuout,outs248,100)
+
       CALL ERPFREE(iunit,ISTAT)
       call FINDFIL(ltmp,xst)
 C      write(6,*) 'MORFIL: exist is ',xst
@@ -198,12 +222,13 @@ C          call edisp(iuout,outs)
             IBLIB=1
           endif
         endif
-        RFILE=LTMP
+        RFILE=LTMP   ! save the non-path part of the results file
 
 C Restore the path after getting results file name so model files
 C can be accessed.
         path=lpath
-C        write(6,*) 'MORFIL: path reset to ',path
+C        write(outs248,*) 'MORFIL: path reset to ',path
+C        call edisp248(iuout,outs248,100)
       ELSE
         call usrmsg(' Could not find: ',LTMP,'W')
         goto  6
@@ -254,15 +279,7 @@ C Establish if this database contains result-sets.
 C Read in all file names and miscellaneous data associated
 C with the results held in this database and stored in the
 C header block.
-    8 if (NSIM.lt.31) then
-        if (MNRS.gt.30) then
-          ISTREC=MNRS
-        else
-          ISTREC=30
-        endif
-      else
-        ISTREC=MNRS
-      endif
+    8 ISTREC=MNRS
       CALL MOINIT(ISTREC,IER)
 
 C If the user was asked to browse for the model configuration file
@@ -749,6 +766,7 @@ C NZNO - zone number of each.
 
       SUBROUTINE MOZDFN
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -759,10 +777,9 @@ C NZNO - zone number of each.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       DIMENSION IVALS(MCOM)
-      character ZNAME*12,zdesc*64,H*72
+      character H*72
 
 C If default setup then link in all zones in the model.
       IF(IDEFLT.EQ.1)then
@@ -832,7 +849,7 @@ C           which solar energy is injected in the absence
 C           of internal insolation information.
 C LSNAM   - is the name of the entire system.
 C NCCODE  - zone code.
-C ZNAME   - zone name.
+C ZNAME   - zone name (from geometry.h).
 C NCONST  - number of multilayered constructions in
 C           each zone.
 C NELTS   - number of homogeneous elements in each
@@ -848,6 +865,7 @@ C ISTREC is the start record.
 C ier is zero if no problems and -3 if user issued a cancel.
       SUBROUTINE MOINIT(ISTREC,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 
       integer lnblnk  ! function definition
@@ -866,15 +884,15 @@ C ier is zero if no problems and -3 if user issued a cancel.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/DNORGH/IRTYPE
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/RECV5/SNA(MCOM,MS),ZBASEA(MCOM),ZTRANA(MCOM)
-C      COMMON/RECV7/ZOA(MCOM)
+      COMMON/RECV5/SNA(MCOM,MS)
+      common/PREC18/ZTRANA(MCOM)
+
+C Nothing references ZGAE and ZGAI.
       COMMON/RECV8/ZGAE(MCOM),ZGAI(MCOM)
       COMMON/RECV9/CHARDM(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -888,13 +906,13 @@ C      COMMON/RECV7/ZOA(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER LCFGF*72,CHDUM*72
 
 C longtmp is the model configuration file with full path.
-      CHARACTER zname*12,zdesc*64,NAME*6,longtmp*144,H*72,cfgroot*24
+      CHARACTER NAME*6,longtmp*144,H*72,cfgroot*24
       character outs*124,znpad*15,path*72,MODE*4,ltmp*72
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -904,6 +922,19 @@ C longtmp is the model configuration file with full path.
       IREC=ISTREC+2
       IBP=1
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
+
+C If an oder library the start record is probably 32 so if
+C the data scan yields a silly number reset IREC and try and
+C read again.
+      if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
+        IREC=30+2
+        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
+        if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
+          write(6,*) 'WARNING: ncomp at record was dubious',NCOMP,IREC
+          write(6,*) 'this results file needs to be scanned with'
+          write(6,*) 'an older version of res.'
+        endif
+      endif
       IREC=IREC+1
       IF(NCOMP.GT.0)goto 3
       IBP=2
@@ -1002,6 +1033,7 @@ C     IREC=IREC+3*NCOMP
       DO 20 I=1,NCOMP
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)znpad
         write(ZNAME(I),'(a)') znpad(1:12)
+	lnzname(I)=lnblnk(znpad)  ! update string length
         IREC=IREC+1
    20 CONTINUE
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCONST(I),I=1,NCP)
@@ -1067,27 +1099,32 @@ C else read in transparent and floor areas as described.
         IREC=IREC+NCOMP+NCOMP
       else
       
-C Read floor area of each zone.
+C Read floor area of each zone (this is actually already available
+C in common block prec17 defined in geometry.h. Potentially we
+C do not need to read this array here. But later if we decide not
+C to scan geometry files this line would be needed.
+C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZBASEA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
       
-C Read area of transparent surfaces connected to external type BC.
+C Read area of transparent surfaces connected to external boundary.
+C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZTRANA(I),I=1,NCOMP)
         IREC=IREC+1
 C        write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
       endif
 
-C Read surface areas.
+C Read surface areas in each zone.
       DO 90 I=1,NCOMP
         NN=NCONST(I)
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(SNA(I,J),J=1,NN)
         IREC=IREC+1
    90 CONTINUE
 
-C ZOA Not needed.
+C ZOA Not needed so skip ncomp records
+C << could be location of other one-per-zone data >>.
       DO 100 I=1,NCOMP
-C        READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ZOA(I)
         IREC=IREC+1
   100 CONTINUE
       DO 110 I=1,NCOMP
@@ -1224,6 +1261,9 @@ C but if using GTK then we need the full length to avoid truncation.
         if (longtmp(1:2).ne.'  ') GOTO 289
       ENDIF
 
+C The following line reads ncomp records which will contain zeros
+C (because there are no default doors and windows). ZGAE and ZGAI
+C are not referenced. Could we use these slots for something else?
       DO 140 I=1,NCOMP
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)ZGAE(I),ZGAI(I),
      &  xdum,xdum

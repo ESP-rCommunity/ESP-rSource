@@ -47,6 +47,10 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -76,7 +80,7 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      CHARACTER OUTSTR*124,DESC*48,NAM*72,H*72,outs*124
+      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
       CHARACTER RSTR*124
       CHARACTER WORD*20,TITL*72,MLCN*12,OTF*4,OPT*12,MLCSYM*12
       DIMENSION ICLN(30)
@@ -351,7 +355,7 @@ C the wrong format.
 
 C ******* parsemlcdesc
 C Parse the DESC string from the MLC common block returning text for
-C MLCN (its name) ,OTF (whether OPAQ/TAN) ,OPT (optical name) ,MLCSYM
+C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
       subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM)
       
@@ -367,9 +371,11 @@ C Clear parameters to be returned and then copy from DES.
       WRITE(MLCN,'(A)')DES(1:12)
       WRITE(OTF,'(A)') DES(15:18)
       IF(OTF(1:2).EQ.'  ')OTF='OPAQ'
-      IF(OTF(1:4).NE.'OPAQ')THEN
+      IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
         WRITE(OPT,'(A)') DES(21:32)
         IF(OPT.EQ.' ')OPT='UNKNOWN'
+      ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+        OPT='USE GSLedit'
       ELSE
         OPT='OPAQUE'
       ENDIF
@@ -393,9 +399,12 @@ C << note if transparent also should check optical properties >>
       subroutine ismlcsymmetric(ifoc,layermatch) 
 
 #include "building.h"
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      CHARACTER DESC*48
+
       logical layermatch,closea,closeb,closec,closed,closee
 
 C If one layer then it is symmetric.
@@ -465,6 +474,9 @@ C construction based on contents of common MLC.
       
       integer lnblnk  ! function definition
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GVALCAL/CLAMDA(MMLC)
@@ -496,7 +508,7 @@ C Arrays of material properties.
       logical closemat
 
       DIMENSION PNAM(ME)
-      CHARACTER OUTSTR*124,DESC*48,NAM*72,PNAM*72
+      CHARACTER OUTSTR*124,NAM*72,PNAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
       character MLCSYM*12
 
@@ -505,9 +517,13 @@ C Pick up general description of the composite.
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
-        IF(OTF(1:4).NE.'OPAQ')THEN
+        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
           WRITE(OUTSTR,'(5a)')' Details of transparent construction: ',
      &      MLCN,' with ',OPT,' optics.'
+          CALL EDISP(ITRU,OUTSTR)
+        ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+          WRITE(OUTSTR,'(3a)')' ',
+     &      'Details of complex fenestration construction: ',MLCN
           CALL EDISP(ITRU,OUTSTR)
         ELSE
           WRITE(OUTSTR,'(2a)')' Details of opaque construction: ',MLCN
@@ -650,7 +666,7 @@ C      call ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
 C QPAQ.
-      if(OTF(1:4).NE.'OPAQ')then
+      if(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')then
         if(OPT(1:4).ne.'OPAQ'.and.OPT(1:4).ne.'UNKN')then
           SOPT=OPT
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
@@ -669,6 +685,9 @@ C on contents of common MLC.
       
       integer lnblnk  ! function definition
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
@@ -696,7 +715,7 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      CHARACTER OUTSTR*124,DESC*48,NAM*72
+      CHARACTER OUTSTR*124,NAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
 
@@ -768,7 +787,7 @@ C an inside wall to inside wall hc 0.13 both sides.
      &  UVH,UVU,UVD,UVI
       IF(ITRC.NE.0)then
         CALL EDISP(ITRU,' ')
-        IF(OTF(1:4).NE.'OPAQ')THEN
+        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
           WRITE(OUTSTR,'(5a,F6.3,a,F6.3,a,f6.3,a,f6.3)')
      &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),' with ',OPT,
      &    ' optics are (horiz flow)',UVH,' (upwards flow)',UVU,
@@ -794,6 +813,9 @@ C IER=0 OK, IER=1 problem.
 C#include "esprdbfile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -801,7 +823,7 @@ C#include "esprdbfile.h"
 
       DIMENSION IVAL(MMLC),COMPS(MMLC)
       CHARACTER*(*) PROMPT1,PROMPT2
-      CHARACTER H*72,DESC*48,COMPS*33
+      CHARACTER H*72,COMPS*33
 
       IER=0
       ISEL=0
@@ -938,6 +960,9 @@ C This subroutine uses the material array data in matdatarray if available.
       
       integer lnblnk  ! function definition
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -970,7 +995,7 @@ C Arrays of material properties.
       logical closemat
 
       DIMENSION PNAM(ME)
-      CHARACTER DESC*48,NAM*72,TITL*72,PNAM*72
+      CHARACTER NAM*72,TITL*72,PNAM*72
 
 C Assume that data on composites is in common MLC.
       IF(.NOT.MLDBOK)THEN

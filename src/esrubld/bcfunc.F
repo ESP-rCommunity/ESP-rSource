@@ -50,7 +50,6 @@ C      BCL21: master slave capacity inj/ext controller
 C      BCL22: VAV with CAV with reheat air supply controller
 C      BCL23: Match sensed values (ideal:2 setpoints)
 C      BCL24: Adaptive human comfort model
-C      BCL25: Deadband control for heating and cooling
 C      BCL99: constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
 C      ZRHCTL: relative humidity controlling routine
@@ -69,9 +68,7 @@ C The main building control function executive.
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       common/dllerr/dllsubr,dllmesg
-      common/TempPr/prevTimstpZtemp !temporarily store previous timestep zone temper.
-      real prevTimstpZtemp(MCOM)
-      
+
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
 
@@ -98,8 +95,8 @@ C negated then property substitution active within zone
 C associated with control function.
    76 IFUNC=ABS(IBCLAW(ICF,IDTYP,IPER))
       GOTO
-     &(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,
-     & 25),IFUNC
+     &(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24)
+     & ,IFUNC
       GOTO 98
 
 C CL1 is basic control with potential for a different heating and
@@ -213,17 +210,11 @@ C CL22 VAV and CAV air based controller
 C CL23 sensed setpoint based controller
    23 call BCL23
       goto 99
-
-C CL24 Adaptive human comfort model      
+      
+C CL24 Adaptive human comfort model
    24 call BCL24(ier)
       goto 99
-
-C CL25 Deadband control for heating and cooling
-   25 call BCL25(ier)
-      prevTimstpZtemp(icomp)=TNP
-      write(6,*) 'prvTims',prevTimstpZtemp(icomp)    
-      goto 99      
-
+      
 C New control laws should be inserted here.
    98 continue
       write(outs,'(a,i3,a)')' Zone control function',IFUNC,
@@ -296,7 +287,7 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
 
@@ -380,8 +371,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IHTCLFLUX(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -610,8 +600,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IHTCLFLUX(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MBITS+2)
       character dllsubr*12,dllmesg*124,outs
@@ -1031,7 +1020,7 @@ C the present time row surface and air point temperatures.
 
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -1339,7 +1328,7 @@ C A basic controller.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
 C Common for relative humidity control (ideal) and dew point relative humidity
 C control.
@@ -1777,7 +1766,7 @@ C An exponential pre-heat (or cool) controller.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/BTIME/BTIMEP,BTIMEF
       
@@ -1930,7 +1919,7 @@ C A fixed heat injection/extraction controller.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       CHARACTER OUTS*124
 
 C Fatal error test.
@@ -2032,7 +2021,7 @@ C suitable for use with controller types 0,35,36,37,38,39.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
@@ -2368,7 +2357,7 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       COMMON/C14PS/NDCON(MPCOM,MNODEC),ISV(MPCOM,MNODEC)
       COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
@@ -2733,7 +2722,7 @@ C A multi-stage controller with hysteresis.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -3077,7 +3066,7 @@ C represents the heat pipe physics.
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
@@ -3233,7 +3222,6 @@ C ON condition is reached.
       SUBROUTINE BCL10
 #include "building.h"
 #include "control.h"
-#include "tdf2.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -3241,23 +3229,13 @@ C ON condition is reached.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/BCL10M/LASTH(MCOM),LASTC(MCOM)
       CHARACTER*3 LASTH,LASTC
- 
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     & 	     IHTCLFLUX(MCOM)      
-      DIMENSION VAL(MBITS+2) 
-
-      character outs*124
-      logical closeHflag,closeCflag
-      real QMINrequired,QMAXrequired,QHFluxLeftover,QCFluxLeftover !comments to follow...
       
+      character outs*124
+
 c Fatal error test.
       IF(BMISCD(ICF,IDTYP,IPER,1).LT.6.0)GOTO 99
 
@@ -3290,146 +3268,31 @@ c CSPOFF = cooling OFF set point temp. (deg.C)
       CSPON=BMISCD(ICF,IDTYP,IPER,6)
       CSPOFF=BMISCD(ICF,IDTYP,IPER,7)
 
-C If a flag in the control file exists in order to assign heating
-C and cooling capacities from external file (temporal file/tdf) then
-C take data at each timestep for these fluxes. 
-C The flag for this is 0.123 (no integer are currently allowed in control files)
-      call eclose(QHM,0.123,0.001,closeHflag)
-      call eclose(QCM,0.123,0.001,closeCflag)
-      if(closeHflag.and.closeCflag)then
-       
-C Take input from tdf for both heating and cooling
-        if(IHTCLFLUX(ICF).ne.0)then
-          itdi=IHTCLFLUX(ICF) 
-        endif        
-        IFOC=itdi
-        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-        QHM=VAL(ISD)  
-        QCM=-VAL(ISD+1)                   
-      elseif(closeHflag.and.(.not.closeCflag))then   
-         
-C Take input from tdf only for heating      
-        if(IHTCLFLUX(ICF).ne.0)then
-          itdi=IHTCLFLUX(ICF) 
-        endif        
-        IFOC=itdi
-        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-        QHM=VAL(ISD)  
-      elseif(.not.closeHflag.and.closeCflag)then     
-
-C Take input from tdf only for cooling  
-        if(IHTCLFLUX(ICF).ne.0)then
-          itdi=IHTCLFLUX(ICF) 
-        endif        
-        IFOC=itdi
-        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)  
-        QCM=-VAL(ISD+1)       
-      endif     
-
 C Note that heating and cooling throttling ranges may overlap. In
 C this case simultaneous heating and cooling may result.
-C Heating cycle:
-      IF(closeHflag.or.closeCflag)THEN
-      
-C Read heating capacity from external file     
-        IF(TCTL.LT.HSPON)THEN
-          QMINrequired=(BB3-BB1*HSPON)/BB2
-          QMAXrequired=(BB3-BB1*HSPOFF)/BB2
-          IF(QHM.GE.QMAXrequired)THEN
-            QH=QMAXrequired
-            QHFluxLeftover=QHM-QH  
-            LASTH(IICOMP)='ON'
-          ELSEIF(QHM.GE.QMINrequired)THEN
-            QH=QHM
-            QHFluxLeftover=0.0
-            LASTH(IICOMP)='ON'
-          ELSE
-            QH=QMINrequired
-            QHFluxLeftover=QHM-QH
-            LASTH(IICOMP)='ON'
-          ENDIF  
-        ELSEIF(TCTL.GT.HSPOFF)THEN
-          QH=0.
-          QHFluxLeftover=QHM
-          LASTH(IICOMP)='OFF'
-        ELSEIF(TCTL.GE.HSPON.AND.TCTL.LE.HSPOFF)THEN
-          QMAXrequired=(BB3-BB1*HSPOFF)/BB2
-          IF(QHM.GE.QMAXrequired)THEN
-            QH=QMAXrequired
-            QHFluxLeftover=QHM-QH
-            LASTH(IICOMP)='ON'
-          ELSE
-            QH=QHM
-            QHFluxLeftover=0
-            LASTH(IICOMP)='ON'
-          ENDIF         
-        ENDIF
-        write(96,*) 'Heating leftover,',QHFluxLeftover
 
-C Using the value defined in interface      
-      ELSE      
-        IF(TCTL.LT.HSPON)THEN
-          QH=QHM
-          LASTH(IICOMP)='ON '
-        ELSEIF(TCTL.GT.HSPOFF)THEN
-          QH=0.
-          LASTH(IICOMP)='OFF'
-        ELSEIF(TCTL.GE.HSPON.AND.TCTL.LE.HSPOFF)THEN
-          IF(LASTH(IICOMP).EQ.'ON ')QH=QHM
-          IF(LASTH(IICOMP).EQ.'OFF')QH=0.
-        ENDIF
+C Heating cycle:
+      IF(TCTL.LT.HSPON)THEN
+         QH=QHM
+         LASTH(IICOMP)='ON '
+      ELSEIF(TCTL.GT.HSPOFF)THEN
+         QH=0.
+         LASTH(IICOMP)='OFF'
+      ELSEIF(TCTL.GE.HSPON.AND.TCTL.LE.HSPOFF)THEN
+         IF(LASTH(IICOMP).EQ.'ON ')QH=QHM
+         IF(LASTH(IICOMP).EQ.'OFF')QH=0.
       ENDIF
 
 C Cooling cycle:
-      IF (closeHflag.or.closeCflag)THEN      
-
-C Read cooling capacity from tdf file      
-        IF(TCTL.GT.CSPON)THEN
-          QMINrequired=(BB3-BB1*CSPON)/BB2
-          QMAXrequired=(BB3-BB1*CSPOFF)/BB2
-          IF(QCM.GE.QMAXrequired)THEN
-            QC=QMAXrequired
-            QCFluxLeftover=QCM-QC
-            LASTC(IICOMP)='ON'
-          ELSEIF(QCM.GE.QMINrequired)THEN
-            QC=QCM
-            QCFluxLeftover=0
-            LASTC(IICOMP)='ON'
-          ELSE
-            QC=QMINrequired
-            QCFluxLeftover=QCM-QC
-            LASTC(IICOMP)='ON'
-          ENDIF
-        ELSEIF(TCTL.LT.CSPOFF)THEN
-          QC=0.
-          QCFluxLeftover=QCM
-          LASTC(IICOMP)='OFF'
-        ELSEIF(TCTL.LE.CSPON.AND.TCTL.GE.CSPOFF)THEN
-          QMAXrequired=(BB3-BB1*CSPOFF)/BB2
-          IF(QCM.GE.QMAXrequired) THEN
-            QC=QMAXrequired
-            QCFluxLeftover=QCM-QC
-            LASTC(IICOMP)='ON'
-          ELSE
-            QC=QCM
-            QCFluxLeftover=0
-            LASTC(IICOMP)='ON'
-          ENDIF
-        ENDIF 
-        write(96,*) 'Cooling leftover,',QCFluxLeftover
-        
-C Using the value defined in interface     
-      ELSE      
-        IF(TCTL.GT.CSPON)THEN
-           QC=QCM
-           LASTC(IICOMP)='ON '
-        ELSEIF(TCTL.LT.CSPOFF)THEN
-           QC=0.
-           LASTC(IICOMP)='OFF'
-        ELSEIF(TCTL.LE.CSPON.AND.TCTL.GE.CSPOFF)THEN
-           IF(LASTC(IICOMP).EQ.'ON ')QC=QCM
-           IF(LASTC(IICOMP).EQ.'OFF')QC=0.
-        ENDIF
+      IF(TCTL.GT.CSPON)THEN
+         QC=QCM
+         LASTC(IICOMP)='ON '
+      ELSEIF(TCTL.LT.CSPOFF)THEN
+         QC=0.
+         LASTC(IICOMP)='OFF'
+      ELSEIF(TCTL.LE.CSPON.AND.TCTL.GE.CSPOFF)THEN
+         IF(LASTC(IICOMP).EQ.'ON ')QC=QCM
+         IF(LASTC(IICOMP).EQ.'OFF')QC=0.
       ENDIF
 
 C Convert from (/m^2) if necessary.
@@ -3483,7 +3346,7 @@ C It also is used to support temporal file setpoint sensing.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
      
@@ -3744,7 +3607,7 @@ C It is suitable for use with a type 0 controller.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
 
       COMMON/BCL10M/LASTH(MCOM),LASTC(MCOM)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
@@ -3938,7 +3801,7 @@ C Heating and cooling restrictions are allowed.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC7/ITCNST      
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -4126,7 +3989,7 @@ C Heating and cooling restrictions are allowed.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN    
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FLTCTR/QHLAST,QCLAST
       COMMON/FLTCLR/LASTH(MCOM),LASTC(MCOM)
       CHARACTER*3 LASTH,LASTC
@@ -4331,7 +4194,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
@@ -4593,7 +4456,7 @@ C Suitable for use with controller types 0,35,36,37,38,39.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
@@ -4871,7 +4734,7 @@ C Fuzzy Logic PI/PD Controller.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FZCTL1/FZM(MFP,3,5,10),ERRSAV(MFP),QSAV(MFP),
      &ACUT(3,5),FZCTIP(5,5),FZCTOP(5),COA(5)
       COMMON/FZCTL2/NFZF(MFP,3),FZT(MFP,3),NONZRO
@@ -5188,7 +5051,7 @@ C is identically the same as the sensor input.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       
       character outs*124
 
@@ -5259,7 +5122,7 @@ C This control law is suitable for a type 0 controller.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
      
@@ -5476,6 +5339,9 @@ C if 0 for a wetted surface 1 for a swiming pool.
 
       SUBROUTINE BCL20
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
 #include "control.h"
 
       COMMON/TC/ITC,ICNT
@@ -5484,15 +5350,11 @@ C if 0 for a wetted surface 1 for a swiming pool.
       COMMON/FILEP/IFIL
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/ATPRES/PATMOS
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       integer nccode,indutl
@@ -6008,8 +5870,8 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IHTCLFLUX(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
       DIMENSION VAL(MBITS+2)
@@ -6356,222 +6218,6 @@ C      write(6,*)trm,TOP,TCOMF,iheat,icool,QFUT,pw,rn
       RETURN
       END
 
-
-C ******************** BCL25
-C Deadband control for heating and cooling. Upper and lower heating and
-C cooiling setpoints are provided by the user together with maximum heating 
-C and cooling capacity.
-C .....................IMPROVE DOCUMENTATION ...............
-C .....................IMPROVE DOCUMENTATION ...............
-      SUBROUTINE BCL25(IER)
-
-#include "building.h"
-#include "control.h"
-
-C climate file commons
-      COMMON/FILEP/IFIL
-      COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
-     &             DFLP,DFLF,HFLP,HFLF
-
-      common/pophelp/h(60)
-      COMMON/TC/ITC,ICNT
-      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      COMMON/BTIME/BTIMEP,BTIMEF
-      common/dllerr/dllsubr,dllmesg
-
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-c      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
-c      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
-      common/TempPr/prevTimstpZtemp !temporarily store previous timestep zone temper.
-      real prevTimstpZtemp(mcom)      
-
-      DIMENSION ICLM(24,6)
-      PARAMETER (MMD=20)
-      REAL PREVTEMP(MMD)
-      character dllsubr*12,dllmesg*124,outs*124,H*72
-      logical dll
-      real QHM !max heating capacity (W)
-      real QHN !min heating capacity (W) - set to 0 for this control law
-      real QCM !max cooling capacity (W)
-      real QCN !min cooling capacity (W) - set to 0 for this control law
-      real lower_HSP !lower heating set point temp. (deg.C)
-      real upper_HSP !upper heating set point temp. (deg.C)
-      real lower_CSP !lower cooling set point temp. (deg.C)
-      real upper_CSP !upper cooling set point temp. (deg.C)
-
-C Check to see if running in dll mode.
-      call isadll(dll)
-
-C Fatal error test.
-      if(bmiscd(icf,idtyp,iper,1).lt.6.)goto 99
-
-C Trace output
-      if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
-     &   itrace(41).ne.0) then
-        if (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).eq.0) then
-          write(outs,'(a,i2)') 
-     &      'Entering subroutine BCL25 sensing in zone ',
-     &      IBSN(ICF,1)
-          call edisp(itu,outs)
-        elseif (IBSN(ICF,1).GT.0.and.IBAN(ICF,1).GT.0) then
-          write(outs,'(a,i2,a,i2)') 
-     &      'Entering subroutine BCL25 sensing in zone ',
-     &      IBSN(ICF,1),' and actuating in zone ',IBAN(ICF,1)
-          call edisp(itu,outs)
-        else
-          call edisp(itu,' Entering subroutine BCL25')
-        endif
-        CALL DAYCLK(IDYP,BTIMEF,ITU)
-      endif
-
-C Determine sensed temperature.
-      CALL CFVAR(TCTL,IER)
-      if(ier.eq.2)then
-        return
-      endif
-
-C User should make sure that cooling setpoints are higher than heating setpoints
-      QHM=BMISCD(ICF,IDTYP,IPER,2)
-      QHN=0.0
-      QCM=-BMISCD(ICF,IDTYP,IPER,3)
-      QCN=0.0
-      lower_HSP=BMISCD(ICF,IDTYP,IPER,4)
-      upper_HSP=BMISCD(ICF,IDTYP,IPER,5)
-      lower_CSP=BMISCD(ICF,IDTYP,IPER,6)
-      upper_CSP=BMISCD(ICF,IDTYP,IPER,7)
-C       write(6,*) 'lower H: ',lower_HSP
-C       write(6,*) 'upper H: ',upper_HSP
-C       write(6,*) 'lower C: ',lower_CSP
-C       write(6,*) 'upper C: ',upper_CSP      
-      QFUT=0.
-      TFUT=TNP
-
-C If between upper heating and lower cooling setp. then free float
-      IF(TCTL.GE.upper_HSP.and.TCTL.LE.lower_CSP)then
-        TFUT=TNP
-c        TFUT=BB3/BB1        
-        QFUT=0.0
-        RETURN
-      endif
-
-C<<<<use eclose >>>>>>>>   
-      if(TCTL.ge.upper_CSP)then
-C <<<only cooling is on with maximum power >>>>>>>
-        IPLT=2   
-        TCONT=lower_CSP    
-        TFUT=(BB3-BB2*QCM)/BB1
-        QFUT=QCM
-        return      
-      elseif(TCTL.gt.lower_CSP)then
-C<<<<need here previous timestep temperature>>>>>>>>> 
-C<<<make it working only for zone air temperature for now>>>
-C<<<use TPA(IICOMP) as previous timestep temperature of the zone?? >>>
-C <<<TEST this - Otherwise there may be a need for iteration >>>>
-        if(TCTL.gt.prevTimstpZtemp(iicomp))then
-          write(6,*) 'tfut_greater',TFUT
-C Temperature within zone increases, so turn cooling off
-          TFUT=BB3/BB1        
-          QFUT=0.0
-          return
-C<<<CALL ECLOSE FOR THE NEXT ONE >>>>
-        elseif(TCTL.eq.prevTimstpZtemp(iicomp))then
-          write(6,*) 'tfut_equal',prevTimstpZtemp(iicomp)
-
-C Check if cooling was on at previous timestep (use QFUT=0 for this)
-C<<<ECLOSE is essential here >>>>
-          if(QFUT.eq.0.0)then
-            TFUT=BB3/BB1        
-            return
-          else
-
-C Cooling is on            
-            IPLT=2   
-            TCONT=lower_CSP    
-            TFUT=(BB3-BB2*QCM)/BB1
-            QFUT=QCM
-            return           
-          endif
-        else
-
-C zone temper. is greater than lower cooling setpoint but it decreases
-C <<<< (if comparison with previous timestep is correct)>>>
-C Cooling is on
-          IPLT=2   
-          TCONT=lower_CSP    
-          TFUT=(BB3-BB2*QCM)/BB1
-          QFUT=QCM 
-          return           
-        endif
-      elseif(TCTL.gt.lower_HSP)then
-C<<<<need here previous timestep temperature>>>>>>>>> 
-C<<<make it working only for zone air temperature for now>>>
-C<<<use TPA(IICOMP) as previous timestep temperature of the zone?? >>>
-C <<<TEST this - Otherwise there may be a need for iteration >>>>
-        if(TCTL.gt.prevTimstpZtemp(iicomp))then
-          write(6,*) 'Heat_tfut_greater',prevTimstpZtemp(iicomp)
-C temperature within zone increases so heating is on
-          IPLT=1
-          TCONT=upper_HSP 
-          TFUT=(BB3-BB2*QHM)/BB1
-          QFUT=QHM
-          return              
-
-C<<<CALL ECLOSE FOR THE NEXT ONE >>>>
-        elseif(TCTL.eq.prevTimstpZtemp(iicomp))then  
-          write(6,*) 'Heat_tfut_equal',prevTimstpZtemp(iicomp)
-C Check if heating was on at previous timestep (use QFUT=0. for this)
-C<<<ECLOSE is essential here >>>>
-          if(QFUT.eq.0.0)then
-            TFUT=BB3/BB1        
-            return
-          else          
-
-C Heating is on
-            IPLT=1
-            TCONT=upper_HSP            
-            TFUT=(BB3-BB2*QHM)/BB1
-            QFUT=QHM
-            return          
-          endif
-        else
-
-C zone temper. is greater than lower heating setpoint but it decreases
-C <<<< (if comparison with previous timestep is correct)>>>
-C Heating is off
-          return        
-        endif      
-      elseif(TCTL.le.lower_HSP)then
-
-C heating is on
-        IPLT=1
-        TCONT=upper_HSP           
-        TFUT=(BB3-BB2*QHM)/BB1
-        QFUT=QHM
-        return    
-      endif
-      
-      RETURN
-   99 write(outs,'(a)')' BCL25: data incomplete.'
-      if(dll)then
-        dllsubr='BCL25'
-        dllmesg=outs
-        ier=2
-        return
-      else
-        call edisp(iuout,outs)
-        call epwait
-        call epagend
-        STOP
-      endif
-  999 H(1) = 'A data i/o error has occured in the program at BCL25'
-      H(2) = '(deadband control) and it is probably best not to go on. '
-      H(3) = 'Program is taking one step back.'
-      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
-      RETURN
-      END
-
 C ******************** BCL99
 C BCL99 modifies the thermo-physical properties of up to three 
 C multi-layered construction(s).
@@ -6581,6 +6227,10 @@ C ICALL = 2 signals call from solar with request for alternative props.
 
       subroutine bcl99(ICALL)
 #include "building.h"
+
+C geometry.h provides commons G0 and G2.
+#include "geometry.h"
+
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
@@ -6594,6 +6244,10 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
      &           layers(mmlc),drair(mmlc,me,3)
 
@@ -6603,7 +6257,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/t1/ne(ms),nairg(ms),ipairg(ms,mgp),rairg(ms,mgp)
       common/t2/con(ms,me),den(ms,me),sht(ms,me),thk(ms,me)
 
-      COMMON/PREC1/SNA(MCOM,MS),ZOA(MCOM)
+      COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       common/prec12/ei(mcom,ms),ee(mcom,ms),ai(mcom,ms),ae(mcom,ms)
@@ -6615,10 +6269,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       common/trc/itrc
@@ -6653,7 +6303,7 @@ C Arrays of material properties.
       logical closemat
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      character desc*48,titl*72,nam*72
+      character titl*72,nam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 

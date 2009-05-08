@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <apply_style_sheet>false</apply_style_sheet>
-  <dump_all_data>false</dump_all_data>
+  <dump_all_data>true</dump_all_data>
   <enable_xml_wildcards>true</enable_xml_wildcards>
   <hierarchy>flat</hierarchy>
   <link_style_sheet>false</link_style_sheet>

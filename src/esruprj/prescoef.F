@@ -332,27 +332,22 @@ C Wind velocity profile.
 C ************* EDCPFAC
 C Edit coordinates that define at which facade location CPCALC
 C should calculate pressure coefficients.
-      SUBROUTINE EDCPFAC(ITRC,IER)
+      SUBROUTINE EDCPFAC(IER)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 #include "net_flow.h"
+#include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/cpcaco/nuco,naco(MPCP),xcoab(MPCP),ycoab(MPCP),
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
       common/pophelp/h(60)
       common/FILEP/IFIL
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -360,15 +355,12 @@ C should calculate pressure coefficients.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/CPCALC2/FICOCP
 
@@ -605,7 +597,7 @@ C Manual input of cordinates.
           nzg=1
           nznog(1)=IC
           izgfoc=IC
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
  256      CALL EASKSUR(IC,ISO,'-','with respect to which external ',
      &               'surface do you want to define coordinates? ',IER)
           call ZSID(IC,ISO,ZSDES,ZSDESC,ZSDESS) 
@@ -623,7 +615,7 @@ C selected to a thick line.
           nznog(1)=IC
           izgfoc=IC
           izgfoc=IC
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
 
 C Ask for x offset.
           DX=1.0
@@ -739,7 +731,7 @@ C  transparent surface of the zone
                 nzg=1
                 nznog(1)=IZU
                 izgfoc=IZU
-                CALL ADJVIEW(ITRC,IER)
+                CALL ADJVIEW(IER)
 
 C Find maximum and minimum vertex coordinates of transparent surface
                 xdebi=x(JVN(IZW,1))
@@ -1452,7 +1444,6 @@ C IER=0 OK, IER=1 problem.
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/MFLDOC/DEPRE(MPRD)
       common/pophelp/h(60)
@@ -1478,7 +1469,6 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-C      IER=0
       moddb =.false.
 
 C Create a menu showing the available database items.  Allow user to
@@ -1679,7 +1669,7 @@ C Produce help text.
 C Define facade coordinates. 
 
             CALL EPMENSV
-            call EDCPFAC(ITRC,IER)
+            call EDCPFAC(IER)
             CALL EPMENRC
           elseif(INOO.EQ.11) then
 
@@ -1953,13 +1943,13 @@ C a unit number passed in as a parameter
 
       common/PCCTL/MPC, NXTREC
       common/PCDATC/NPC,ITMLOC(MAXPC,2)
-      CHARACTER*25 ZDESC
+      CHARACTER*25 PZDESC
 
 C Write header.
       IF (IFLG .EQ. 0) THEN
-        ZDESC = ' PLANT COMPONENT DATABASE'
+        PZDESC = ' PLANT COMPONENT DATABASE'
         IREC = 1
-        WRITE (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) ZDESC
+        WRITE (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
 
 C Zeroize no of items.
         NPC = 0

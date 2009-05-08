@@ -66,12 +66,12 @@ C displays the main menu for surfaces.
 C *********************************************************************
       SUBROUTINE GRDSRF(IZ,IDRW1,IDRW2)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -87,7 +87,7 @@ C *********************************************************************
 
       DIMENSION ITEM(12),IVALS(MS)
       CHARACTER*72 H
-      CHARACTER SSRF*12,zname*12,zdesc*64,ITEMS(MS)*17,CORDNT*24
+      CHARACTER SSRF*12,ITEMS(MS)*17,CORDNT*24
       CHARACTER ITEM*28,SZN*12,STTS*5
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -941,6 +941,7 @@ C the main menu for edges.
 C *********************************************************************
       SUBROUTINE GRDEDG(IZ,IDRW1,IDRW2)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -948,7 +949,6 @@ C *********************************************************************
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -960,7 +960,7 @@ C *********************************************************************
 
       DIMENSION ITEM(17),IVALS(MEZ)
       CHARACTER*72 H,LINDSC,DISCR
-      CHARACTER SRF(2)*12,zname*12,zdesc*64,ITEMS(MEZ)*27
+      CHARACTER SRF(2)*12,ITEMS(MEZ)*27
       CHARACTER ITEM*30,SZN*12,STTS*9,STATS*15,MSG*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -1187,12 +1187,11 @@ C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWEDG(IEG)
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
       COMMON/GR3D25/NDXE(MEZ),DXE(MEZ,MZE)
@@ -1346,6 +1345,7 @@ C CONEDG displays the edge construction menu.
 C *********************************************************************
       SUBROUTINE CONEDG(IZ,IEG)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1354,7 +1354,6 @@ C *********************************************************************
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -1368,8 +1367,7 @@ C *********************************************************************
       DIMENSION ITEM(14),IUDLR(5)
 
       CHARACTER*72 H,PROPS
-      CHARACTER ITEM*30,SZN*12,SRF(2)*12,LMTS*32,DISCR*94,zdesc*64
-      CHARACTER zname*12
+      CHARACTER ITEM*30,SZN*12,SRF(2)*12,LMTS*32,DISCR*94
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER TEXT*124,BAR*1
@@ -1954,6 +1952,7 @@ C the main menu for corners.
 C *********************************************************************
       SUBROUTINE GRDCRN(IZ,IDRW1,IDRW2)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1962,7 +1961,6 @@ C *********************************************************************
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
@@ -1973,7 +1971,7 @@ C *********************************************************************
 
       DIMENSION IVALS(MCZ)
       CHARACTER*72 H,DISCR
-      CHARACTER SRF(3)*12,zname*12,zdesc*64,ITEMS(MCZ)*25
+      CHARACTER SRF(3)*12,ITEMS(MCZ)*25
       CHARACTER ITEM(18)*30,SZN*12,STTS*9,STATS*15,MSG*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -2213,12 +2211,11 @@ C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWCRN(ICR)
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/DRWMAT/TEMAT(4,4), TSMAT(4,4),
-     &              ETMMAT(4,4), ETSMAT(4,4), TBOX(3,2)
 
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
@@ -2367,6 +2364,7 @@ C CONCRN displays the corner construction menu.
 C *********************************************************************
       SUBROUTINE CONCRN(IZ,ICR)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -2375,7 +2373,6 @@ C *********************************************************************
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       COMMON/PREC8/SLAT,SLON
 
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)
@@ -2389,8 +2386,7 @@ C *********************************************************************
       DIMENSION ITEM(15),IUDLR(5)
 
       CHARACTER*72 H,PROPS,DISCR
-      CHARACTER ITEM*30,SZN*12,SRF(3)*12,LMTS*32,zdesc*64
-      CHARACTER zname*12
+      CHARACTER ITEM*30,SZN*12,SRF(3)*12,LMTS*32
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER TEXT*124,BAR*1

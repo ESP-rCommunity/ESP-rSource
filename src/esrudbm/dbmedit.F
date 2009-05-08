@@ -53,7 +53,6 @@ C Icwhich is its category. Idbh is the position in the hash table.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
 
@@ -677,7 +676,6 @@ C allow choice.  Itwhich is the index of the db item selected.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
       common/pophelp/h(60)
 
 C Generic db commons: file log, list of db, current classifications,
@@ -1303,7 +1301,8 @@ C << take text from _e.gdba files to fill this in >>
      & 'matching construction name (`same` if symetric),'
         write(dbdoc(3),'(3a)')
      & 'colour name on `other` face, colour name on `inside` face, ',
-     & 'OPAQ:TRAN tag and optical name, acoustic name on `other` face,',
+     & 'OPAQ:TRAN:CFC tag and optical name,',
+     & ' acoustic name on `other` face,',
      & ' acoustic name on `inside` face,'
         write(dbdoc(4),'(3a)')
      & 'longwave emissivity at `inside` and `other` face, ',

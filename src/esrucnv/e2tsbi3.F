@@ -27,6 +27,9 @@ C e2vrml:  Generate VRLM 2.0 world of esp-r model.
 C ******* Translate esp data to tsbi3 file geom and materials.
       SUBROUTINE e2tsbi3(itrc,incobs,IER)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/precz.
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -40,18 +43,17 @@ C ******* Translate esp data to tsbi3 file geom and materials.
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
 
 C Arrays of material properties.
@@ -79,11 +81,11 @@ C Arrays of material properties.
       logical closemat
 
       character GDESCR*36,DESCRC*25
-      CHARACTER NAM*72,TITL*72,DESC*48,outs*124
+      CHARACTER NAM*72,TITL*72,outs*124
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       dimension iprndx(50),optndx(50)
-      character optndx*12,OPT*12,ZSN*28,q*1,zname*12,zdesc*64,T12*12
+      character optndx*12,OPT*12,ZSN*28,q*1,T12*12
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       DIMENSION ZSN(MS)
       character CONTYPE*12
@@ -221,7 +223,7 @@ C Now for each mlc, write out its fields.
       do 36 ino = 1,NMLC
         WRITE(CONTYPE,'(A)') DESC(ino)(15:18)
         IF(CONTYPE.EQ.' ')CONTYPE='OPAQ'
-        IF(CONTYPE.EQ.'TRAN')THEN
+        IF(CONTYPE(1:4).NE.'OPAQ')THEN
            WRITE(CONTYPE,'(A)') DESC(ino)(21:32)
         ELSE
            CONTYPE='OPAQ'
@@ -305,7 +307,9 @@ C Read in the zone geometry.
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+        vol(mz)=zvol
+        zonetotsurfacearea(mz)=zoa
 
 C Loop through all vertices and find the top and bottom of the zone.
         ZMX=-1.E+7
@@ -346,7 +350,7 @@ C Zone connections field - add 9 to esp zone index.
              lizc = 4
           endif
 
-C         write(zsn(is),'(3a)') zname(mz)(:lnblnk(zname(mz))),':',
+C         write(zsn(is),'(3a)') zname(mz)(1:lnzname(mz)),':',
 C    &       SNAME(mz,is)
 
 C Eliminate double definition of surfaces
@@ -402,7 +406,7 @@ C Surface sloped, assume square.
 C Conversion to tsbi3 elevation of surfaces
           felv=ABS(PELV(is)-90.)
 
-          WRITE(ioout,'(3a,4F8.3)') q,zsn(is)(:lnblnk(zsn(is))),q,
+          WRITE(ioout,'(3a,4F8.3)') q,zsn(is)(1:lnblnk(zsn(is))),q,
      &      PAZI(is),felv,swid,surh
           WRITE(ioout,'(a)') '-9999.00 -9999.00 -9999.00 '
 
@@ -431,7 +435,7 @@ C 4 parameter field.
 
 C Find composite which matches. 
 
-          IF(SOTF(IS).eq.'TRAN')THEN
+          IF(SOTF(IS)(1:4).ne.'OPAQ')THEN
 
 C Opaque constructions in this surface - NONE
             WRITE(ioout,'(a)') '  -1' 
@@ -450,10 +454,10 @@ C one matching the current MLC optics.
 C << the #glass_lib match is optndx(iiii) which should be >>
 C << substituted in the write statement below >>
 C Window NoOf, name and type
-C           WRITE(ioout,'(12a)')'1 ',q,zsn(is)(:lnblnk(zsn(is))),q,
+C           WRITE(ioout,'(12a)')'1 ',q,zsn(is)(1:lnblnk(zsn(is))),q,
 C    &            ' ',q,SMLCN(is)(1:lnblnk(SMLCN(is))),q,
 C    &            ' ',q,'unknown',q
-            WRITE(ioout,'(12a)')'1 ',q,zsn(is)(:lnblnk(zsn(is))),q,
+            WRITE(ioout,'(12a)')'1 ',q,zsn(is)(1:lnblnk(zsn(is))),q,
      &            ' ',q,optndx(iiii),q,' ',q,'unknown',q
 
 C Calculate the window U-value
@@ -537,7 +541,7 @@ C External obstracles - NONE
      &           DBSHT,E,AE,DRV,TITL,NAM)
             endif
             WRITE(ioout,'(f8.3,8a,F8.2)') sna(is),'  ',
-     &        q,zsn(is)(:lnblnk(zsn(is))),q,'   ',
+     &        q,zsn(is)(1:lnblnk(zsn(is))),q,'   ',
      &        q,SMLCN(is)(1:lnblnk(SMLCN(is))),q,AE 
             WRITE(ioout,'(a)') '-1' 
           ENDIF
@@ -567,7 +571,9 @@ C RE-Read in the zone geometry.
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+        vol(mz)=zvol
+        zonetotsurfacearea(mz)=zoa
         FLA=0.
 
 C Loop through all vertices and find the top and bottom of the zone.
@@ -582,7 +588,7 @@ C Loop through all vertices and find the top and bottom of the zone.
   44    continue
 
 C Write zone name.
-        WRITE(ioout,'(3a)')q,zname(mz)(1:lnblnk(zname(mz))),q
+        WRITE(ioout,'(3a)')q,zname(mz)(1:lnzname(mz)),q
         WRITE(ioout,'(4a)') q,'unknown',q,'  -1'
         WRITE(ioout,'(4a)') q,'unknown',q,'  -1'
         WRITE(ioout,'(4a)') q,'unknown',q,'  -1'
@@ -728,6 +734,7 @@ C e2vrml takes zones/obstructions and any ground topology and
 C creates a grey-scale VRML 2.0 world.
       SUBROUTINE e2vrml(itrc,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -742,21 +749,20 @@ C creates a grey-scale VRML 2.0 world.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -793,12 +799,13 @@ C Arrays of material properties.
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
       character GDESCR*36,MLCN*12,OTF*4,OPT*12
+      character MLCSYM*12
       CHARACTER cfgroot*24,LCFGF*72
-      CHARACTER NAM*72,TITL*72,DESC*48,BLKNAME*8,BLKMAT*12
+      CHARACTER NAM*72,TITL*72,BLKNAME*8,BLKMAT*12
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER GMLCN*12,GSNAME*6
-      character ZSN*28,q*1,zname*12,zdesc*64
+      character ZSN*28,q*1
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
       character outs*124,outsd*124,hc*1
       logical XST,numb
@@ -834,15 +841,7 @@ C Define a VRML material for each construction in the database.
 
 C Pick up general description of the composite.
         ifound=im
-        WRITE(MLCN,'(A)')DESC(IM)(1:12)
-        WRITE(OTF,'(A)') DESC(IM)(15:18)
-        IF(OTF.EQ.' ')OTF='OPAQ'
-        IF(OTF.EQ.'TRAN')THEN
-          WRITE(OPT,'(A)') DESC(IM)(21:32)
-          IF(OPT.EQ.' ')OPT='UNKNOWN'
-        ELSE
-          OPT='OPAQUE'
-        ENDIF
+        call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
 
 C For the inside and outside layer get surface properties (AE & AI).
         if(closemat)then
@@ -872,7 +871,7 @@ C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if(OTF.EQ.'TRAN')then
+        if(OTF(1:4).NE.'OPAQ')then
           CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
           if(VTRN.gt.0.02)then
             gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))
@@ -896,7 +895,7 @@ C << surface should be skipped logic for later...>>
         WRITE(ioout,'(5a)')'parameter [ ',q,'target = description',q,
      &    ' ]'
         WRITE(ioout,'(a)') '  children [ Shape {'
-        if(OTF.EQ.'TRAN')then
+        if(OTF(1:4).NE.'OPAQ')then
           WRITE(ioout,'(3a)')
      &      '   appearance DEF Glass_',MLCN(1:lnblnk(MLCN)),
      &      ' Appearance {'
@@ -937,7 +936,9 @@ C Read in the zone geometry.
         else
           call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
         endif
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,VOL)
+        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+        vol(newfoc)=zvol
+        zonetotsurfacearea(newfoc)=zoa
         WRITE(ioout,'(a)')' '
         WRITE(ioout,'(3a)')'# zone ',zname(newfoc),' starts here....'
         do 5 j=1,nsur
@@ -950,15 +951,7 @@ C through each of the MLC and finding a match.
 
 C Pick up general description of the composite.
               ifound=im
-              WRITE(MLCN,'(A)')DESC(IM)(1:12)
-              WRITE(OTF,'(A)') DESC(IM)(15:18)
-              IF(OTF.EQ.' ')OTF='OPAQ'
-              IF(OTF.EQ.'TRAN')THEN
-                WRITE(OPT,'(A)') DESC(IM)(21:32)
-                IF(OPT.EQ.' ')OPT='UNKNOWN'
-              ELSE
-                OPT='OPAQUE'
-              ENDIF
+              call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
 
 C For the inside and outside layer get surface properties.
               if(closemat)then
@@ -990,7 +983,7 @@ C For the inside and outside layer get surface properties.
 
 C Remeber characters in surface name
           lsn=lnblnk(sname(newfoc,j))
-          write(zsn(j),'(3a)') zname(newfoc)(1:lnblnk(zname(newfoc))),
+          write(zsn(j),'(3a)') zname(newfoc)(1:lnzname(newfoc)),
      &      ':',sname(newfoc,j)(1:lsn)
           lzsn=lnblnk(zsn(j))
 
@@ -1022,7 +1015,7 @@ C (which holds the coordinates of the zone along with the first surface.
           WRITE(ioout,'(a)') '  children ['
           WRITE(ioout,'(a)') '    Shape {'
           if(j.eq.1)then
-            if(OTF.EQ.'TRAN')then
+            if(OTF(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
      &          '      appearance USE Glass_',MLCN(1:lnblnk(MLCN))
             else
@@ -1042,8 +1035,7 @@ C Ensure first character is not a number.
             WRITE(ioout,'(a)') '        ccw TRUE'
             WRITE(ioout,'(a)') '        solid FALSE'
             WRITE(ioout,'(3a)')'        coord DEF COORD_',
-     &        zname(newfoc)(1:lnblnk(zname(newfoc))),
-     &        ' Coordinate { point ['
+     &        zname(newfoc)(1:lnzname(newfoc)),' Coordinate { point ['
 
 C Note on coordinates:
 C In esp-r the +Z is up, in VRML +Y is up.  In esp-r and VRML +X is same.
@@ -1079,7 +1071,7 @@ C Write a comma separated list of vertices (in both directions) with a trailing 
           else
 
 C Write differently if opaque or transparent.
-            if(OTF.EQ.'TRAN')then
+            if(OTF(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
      &          '     appearance USE Glass_',MLCN(1:lnblnk(MLCN))
             else
@@ -1095,13 +1087,13 @@ C Write differently if opaque or transparent.
      &          sname(newfoc,j)(1:lsn),' IndexedFaceSet {'
             endif
             WRITE(ioout,'(a)')  '        ccw TRUE'
-            if(OTF.EQ.'TRAN')then
+            if(OTF(1:4).NE.'OPAQ')then
               WRITE(ioout,'(a)')'        solid FALSE'
             else
               WRITE(ioout,'(a)')'        solid TRUE'
             endif
             WRITE(ioout,'(2a)') '        coord USE COORD_',
-     &        zname(newfoc)(1:lnblnk(zname(newfoc)))
+     &        zname(newfoc)(1:lnzname(newfoc))
             WRITE(ioout,'(a)')  '        coordIndex [ '
             write(outs,'(24I4)') (JVN(J,K)-1,K=1,NVER(j))
             call sdelim(outs,outsd,'C',IW)
@@ -1126,10 +1118,14 @@ C Write differently if opaque or transparent.
 C If there are obstructions associated with this zone read them in
 C and convert into GB1 commons and write them out using similar
 C logic.
-        IF(IOBS(newfoc).EQ.1)then
+        if(IOBS(newfoc).EQ.1)then
           CALL EGOMST(ITA1,ZOBS(newfoc),0,0,iuout,IER)
           WRITE(outs,'(a,a)')' Scanning : ',ZOBS(newfoc)
           CALL edisp(iuout,outs)
+          WRITE(ioout,'(a)')' '
+          WRITE(ioout,'(3a)')'# zone ',zname(newfoc),
+     &      'obstructions start here....'
+        elseif(IOBS(newfoc).EQ.2)then
           WRITE(ioout,'(a)')' '
           WRITE(ioout,'(3a)')'# zone ',zname(newfoc),
      &      'obstructions start here....'
@@ -1180,9 +1176,10 @@ C (which holds its coordinates of along with the first surface.
      &       '.html',hc,BLKNAME(IB)(1:lsn),q,' ]'
             WRITE(ioout,'(a)') '  children ['
             WRITE(ioout,'(a)') '    Shape {'
-            if(kbs.eq.1)then
+            if(kbs.eq.1)then   ! include the block material
               WRITE(ioout,'(2a)')
-     &          '     appearance USE Solid_',MLCN(1:lnblnk(MLCN))
+     &          '     appearance USE Solid_',
+     &          BLKMAT(IB)(1:lnblnk(BLKMAT(IB)))
               call ifnumber(BLKNAME(IB)(1:1),numb)
               if(numb)then
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF a',
@@ -1223,7 +1220,8 @@ C Write a comma separated list of vertices with a trailing -1.
               WRITE(ioout,'(a)') '  '
             else
               WRITE(ioout,'(2a)')
-     &          '     appearance USE Solid_',MLCN(1:lnblnk(MLCN))
+     &          '     appearance USE Solid_',
+     &          BLKMAT(IB)(1:lnblnk(BLKMAT(IB)))
               call ifnumber(BLKNAME(IB)(1:1),numb)
               if(numb)then
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF a',

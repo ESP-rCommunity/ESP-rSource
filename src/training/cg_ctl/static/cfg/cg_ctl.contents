@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Daylight factors used to switch artificial
-lights. defined in cg_ctl.cfg generated on Thu Aug 23 18:52:22 2007. Notes
+lights. defined in cg_ctl.cfg generated on Wed Nov 26 16:12:17 2008. Notes
 associated with the model are in cg_ctl.log
  
 The model is located at latitude   52.00 with a longitude difference of   0.00
@@ -9,15 +9,32 @@ from the local time meridian. The year used in simulations is 1999 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.15.
  
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
+ 
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
 The climate used is: ESP test climate and is held in:
 /usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
+An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
  materials              : /usr/esru/esp-r/databases/constr.db1
- constructions          : /usr/esru/esp-r/databases/multicon.db1
+ constructions          : ./multicon.db1
  plant components       : /usr/esru/esp-r/databases/plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
  optical properties     : /usr/esru/esp-r/databases/optics.db1
  
  ____________________________________________________________
@@ -58,20 +75,31 @@ ID Zone         Volume|          Surface
  
  Casual gains are controlled in this zone.
  
+ 
+ Air schedule notes:
+two brief periods of occupancy and lights on weekdays
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  3  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 -  7     0.50  0.0083    0.00  0.0000   0     0.00
-Wkd  2  8 - 16     2.00  0.0333    0.00  0.0000   0     0.00
-Wkd  3 17 - 24     0.50  0.0083    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.50  0.0083    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.50  0.0083    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekday      :    3
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 -  7     0.50  0.0083    0.00  0.0000   0     0.00
+  2  8 - 16     2.00  0.0333    0.00  0.0000   0     0.00
+  3 17 - 24     0.50  0.0083    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0083    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0083    0.00  0.0000   0     0.00
  
 Notes:
 two brief periods of occupancy and lights on weekdays
- Number of Weekday Sat Sun zone loads= 10  0  0
+Number of weekday      loads= 10
 Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
     No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
 Wkd  1 OccuptW    0 -  8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
@@ -84,6 +112,7 @@ Wkd  7 LightsW    8 - 11   864.0     0.0      0.4      0.6    0.90  1  864.0  24
 Wkd  8 LightsW   11 - 14     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
 Wkd  9 LightsW   14 - 16   864.0     0.0      0.4      0.6    0.90  1  864.0  240.0  1
 Wkd 10 LightsW   16 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of saturday     loads=  0
  
  ____________________________________________________________
  
@@ -115,20 +144,31 @@ Wkd 10 LightsW   16 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    
  
  
  
+ 
+ Air schedule notes:
+864W lighting 8-16hr
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  3  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 -  7     0.50  0.0083    0.00  0.0000   0     0.00
-Wkd  2  8 - 16     2.00  0.0333    0.00  0.0000   0     0.00
-Wkd  3 17 - 24     0.50  0.0083    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.50  0.0083    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.50  0.0083    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekday      :    3
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 -  7     0.50  0.0083    0.00  0.0000   0     0.00
+  2  8 - 16     2.00  0.0333    0.00  0.0000   0     0.00
+  3 17 - 24     0.50  0.0083    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0083    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0083    0.00  0.0000   0     0.00
  
 Notes:
 864W lighting 8-16hr
- Number of Weekday Sat Sun zone loads=  8  0  0
+Number of weekday      loads=  8
 Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
     No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
 Wkd  1 OccuptW    0 -  8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
@@ -139,6 +179,7 @@ Wkd  5 OccuptW   16 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    
 Wkd  6 LightsW    0 -  8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
 Wkd  7 LightsW    8 - 16   864.0     0.0      0.4      0.6    0.90  1  864.0  240.0  1
 Wkd  8 LightsW   16 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of saturday     loads=  0
  
  ____________________________________________________________
  

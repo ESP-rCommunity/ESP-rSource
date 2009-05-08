@@ -144,6 +144,7 @@ C  itrc the level of reporting (zero is quiet).
 
 #include "plant.h"
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
@@ -153,7 +154,6 @@ C LPCDB/IPCDB (for plant template database)
 
       COMMON/ER1/IER1
       COMMON/outin/iuout,iuin
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       COMMON/C6/INDCFG
       COMMON/C8/LPNAM
@@ -184,9 +184,8 @@ C Electrical details for specified plant components
       CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24,fs*1
       CHARACTER LAPROB*72,LPNAM*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER ZDESCR*25
+      CHARACTER PZDESCR*25
       character*68 mscdsc, cvrdsc      
-      CHARACTER ZNAME*12,ZDESC*64
       character loutstr*248,louts*248
       DIMENSION NPSTA(MAXPC),RVA(MMISCD),RVB(MPCON)
       DIMENSION RVC(MADATA), NEP(MPCOM)
@@ -264,8 +263,8 @@ C -> but don't open the database if save-level 0 or 5 are specified!
 
 C Read the total number of plant components (NTPC) in the database.
       IREC = 1
-      READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) ZDESCR
-      IF (ZDESCR(1:25) .NE. ' PLANT COMPONENT DATABASE')then
+      READ(IUNIT1,REC=IREC,IOSTAT=ISTAT,ERR=950) PZDESCR
+      IF (PZDESCR(1:25) .NE. ' PLANT COMPONENT DATABASE')then
         call lusrmsg('May not be a plant db!',LPCDB,'W')
       endif
       IREC=2
@@ -290,13 +289,21 @@ C Configuration file plant data : first read system description.
       LPNAM=OUTSTR(1:72)
 
 C Read number of plant components in system.
-      CALL STRIPC(iuc,OUTSTR,2,ND,1,'no plant comps',IER)
+      CALL STRIPC(iuc,OUTSTR,2,ND,1,'# of plant components',IER)
       IF(IER.NE.0)RETURN
       K=0
-      CALL EGETWI(OUTSTR,K,NPCOMP,1,MPCOM,'F','no p comp',IER)
+      CALL EGETWI(OUTSTR,K,NPCOMP,0,MPCOM,'F',
+     &            '# of plant components',IER)
+      
       CALL EGETWI(OUTSTR,K,NPMTYP,1,4,'F','type of matrix',IER)
       IF(IER.NE.0) GOTO 1001
 
+C If at least one plant componet is not found, then reset simulation
+C to 'building only'.      
+      if ( NPCOMP < 1 ) then
+        indcfg = 1
+        return
+      ENDIF
 C  Set the electrical component counter to 0.
       npel=0
 
@@ -572,7 +579,7 @@ C     check is performed in MZPMXT.
 
          if(pcondr(ipcon).lt.0..or.pcondr(ipcon).gt.1.) goto 925
          if(ipct(ipcon).eq.4) then
-          if(pconsd(ipcon,1).lt.0.or.
+          if(pconsd(ipcon,1).lt. (0.) .or.
      &       pconsd(ipcon,1).gt.real(mcom)) goto 913
          endif
    46   continue
@@ -662,17 +669,39 @@ C Check if there is a plant fluid flow network available: 0 = no
      &   )
         IF(IFLWN.EQ.0) goto 606
 
+C << NOTE: none of this is really necessary. Even in stand-alone
+C << mode the configuration file will have these entries. 
+
 C Read names of PROBLEM, PRESSURE DISTRIBUTION and RESULTS files, un-
 C less this was already done above (building side air flow wanted)
+C Note that some older models may be missing the names of the flow
+C network, pressure db and flow results file. If there are more than
+C one item on the lines then do not bother setting the variable and
+C warn the user.
 
 C << should this be updated for ipath* >>
         IF(IAIRN.ge.0) THEN
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'network file',IER)
-          LAPROB=OUTSTR(1:72)
-          CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'pressure file',IER)
-          write(LAPRES,'(a)') LOUTSTR(1:144)
-          CALL STRIPC(iuc,OUTSTR,0,ND,1,'mfs res file',IER)
-          LAFRES=OUTSTR(1:72)
+          CALL STRIPC(iuc,OUTSTR,99,ND,1,'network file',IER)
+          if(ND.gt.1)then
+            call usrmsg('plant looking for mass flow network and foud',
+     &        outstr(1:48),'W')
+          else
+            write(LAPROB,'(a)') OUTSTR(1:lnblnk(outstr))
+          endif	
+          CALL LSTRIPC(iuc,LOUTSTR,99,ND,1,'pressure file',IER)
+          if(ND.gt.1)then
+            call usrmsg('plant looking for pressure db and foud',
+     &        outstr(1:48),'W')
+          else
+            write(LAPRES,'(a)') LOUTSTR(1:144)
+          endif	
+          CALL STRIPC(iuc,OUTSTR,99,ND,1,'mfs res file',IER)
+          if(ND.gt.1)then
+            call usrmsg('looking for mass flow results and foud',
+     &        outstr(1:48),'W')
+          else
+            LAFRES=OUTSTR(1:72)
+          endif	
           IF(IER.NE.0)RETURN
 
 C Reporting.

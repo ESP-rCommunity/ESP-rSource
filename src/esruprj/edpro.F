@@ -58,7 +58,6 @@ C NCG() (integer) is the number of periods in a profile.
 C NO() (integer) record where profile X starts.
 C PDBDESC() (char*40) description of the profile.
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ITEM(35)
       CHARACTER PDBDESC*40,outs*124,KEY*1,H*72,ITEM*42
@@ -275,7 +274,6 @@ C a fresh ASCII version file.
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
      &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       DIMENSION ITEM(30)
       character NFLAG*1

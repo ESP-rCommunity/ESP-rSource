@@ -36,6 +36,7 @@ C CFDDTA - Reads the CFD configuration file.
 #include "cfd.h"
 #include "net_flow.h"
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
@@ -64,7 +65,6 @@ C   Zplawe(IREG,ICFD) - East wall z-power law coef of region IREG per domain (IC
 C      (used in the case of curvilinear Z)
       COMMON/FILEP/IFIL
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/GRIDFN/NCELX(MNREG,MNZ),NCELY(MNREG,MNZ),NCELZ(MNREG,MNZ),
      &  NCELZE(MNREG,MNZ),XREG(MNREG,MNZ),YREG(MNREG,MNZ),
      &  ZREG(MNREG,MNZ),ZREGE(MNREG,MNZ),Xplaw(MNREG,MNZ),
@@ -157,7 +157,7 @@ C Flow visualization common blocks.
       CHARACTER*72 TITLE,CFTRFL,HSID,LPHI,LCFD,Lflpar
       CHARACTER LVALCM*60,LTPCMP*60,CMNAM*12,NDNAM*12,outs*124
       CHARACTER*72 LVEC,LBIT
-      character solveqn*80,zname*12,zdesc*64
+      character solveqn*80
       LOGICAL BUOYA,BOUSSA
 
       IFL=IFIL+1
@@ -1463,12 +1463,12 @@ C   surf (12 char) is passed parameter. The current zone is taken
 C   from common block variable icp.
       FUNCTION IDSURF(SURF)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ICFNOD/ICFD,ICP
 
@@ -2043,10 +2043,10 @@ C  with the origin at the lower southwest corner of the CFD domain.
       SUBROUTINE SETGEO
 #include "cfd.h"
 #include "building.h"
+#include "prj3dv.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),

@@ -70,6 +70,7 @@ C       by calling eddisp (as opposed to edisp).
       character pifltog*4,lpifl*72,OUTSTR*124,lname*24,ldisc*64,key*8
 
       logical recal,newzn
+      integer iflen  ! length of file
 
 C IOFMT - save performance groupings in same file=1, or
 C separately=0 (default), using IGRP to remember which group we're 
@@ -108,9 +109,9 @@ C Open output redirect (if saving all outputs together).
         if (outfile(1:7).eq.'UNKNOWN') then
 
 C Output file not specified - use pif file name but changed to *.dat
-          ilen=lnblnk(lpifl)-3
-          if (lpifl(ilen:ilen).eq.'.') then
-            write (xfile,'(2a)') lpifl(1:ilen),'dat'
+          iflen=lnblnk(lpifl)-3
+          if (lpifl(iflen:iflen).eq.'.') then
+            write (xfile,'(2a)') lpifl(1:iflen),'dat'
           else
             write (xfile,'(2a)') lpifl(1:lnblnk(lpifl)),'.dat'
           endif
@@ -351,9 +352,9 @@ C Open output redirect (if saving separately).
         if (outfile(1:7).eq.'UNKNOWN') then
 
 C Output file not specified - use pif file name but changed to *.dat
-          ilen=lnblnk(lpifl)-3
-          if (lpifl(ilen:ilen).eq.'.') then
-            write (xfile,'(2a,i4.4)') lpifl(1:ilen),'dat',IGRP
+          iflen=lnblnk(lpifl)-3
+          if (lpifl(iflen:iflen).eq.'.') then
+            write (xfile,'(2a,i4.4)') lpifl(1:iflen),'dat',IGRP
           else
             write (xfile,'(2a,i4.4)') lpifl(1:lnblnk(lpifl)),'.dat',IGRP
           endif

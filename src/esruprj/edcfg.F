@@ -35,6 +35,9 @@ C information to be saved into a new file. ITRU unit number for user
 C output; IER=0 indicates no error. 
       subroutine edcfg(ITRC,ITRU,IER)
 #include "building.h"
+
+C geometry.h provides commons G0/G2/G7/prec2/precz.
+#include "geometry.h"
 #include "uncertainty.h"
 #include "net_flow.h"
 #include "control.h"
@@ -68,17 +71,9 @@ C LPRFDB,IPRODB (for event profile database)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/G7/SSNA(MCON),SSPAZI(MCON),SSPELV(MCON),SSPERIM(MCON),
-     &          SSUREQN(MCON,4),SSURCOG(MCON,3),SSURVN(MCON,3)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      COMMON/PREC2/VOL(MCOM)
       common/user/browse
       common/uhome/upath
       common/CFGV/icfgv
@@ -89,7 +84,7 @@ C Plant network.
       common/C23/IFPNF,LPNF
 
 C Defaults.
-      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -136,13 +131,13 @@ C Uncertainty.
       character longtfile*144,longtfiledos*144
       character LCFGF*72,H*72,ITEMS*34,t24*24,ETEXT*82
       character NDNAM*12,LFIL*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,entflnam*72,upath*72,remainder*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
-      character zname*12,zdesc*64,CXITM*43,outs*124,fs*1
+      character CXITM*43,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
       character ATRTAG*12,ATRMENU*32,ATRICN*12,NWKTYPSTR*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
@@ -298,7 +293,7 @@ C redraw the model image.
 C (Re)Set all surfaces to standard line width.
             CALL INLNST(1)
             izgfoc=0
-            CALL ADJVIEW(ITRC,IER)
+            CALL ADJVIEW(IER)
           endif
 
 C Re-draw the configuration buttons.
@@ -851,7 +846,7 @@ C network commons and list out those commons.
 C Link nodes and zones.
           DO 33 IZ=1,NCOMP
             if(ICAAS(IZ).gt.0)then
-              write(outs,'(3A)')zname(IZ)(1:lnblnk(zname(IZ))),
+              write(outs,'(3A)')zname(IZ)(1:lnzname(IZ)),
      &          'is currently linked to:',NDNAM(ICAAS(IZ))
               h(1)='You may have nodes that are not linked to a zone'
               h(2)='but where network nodes and zones are linked, the'
@@ -869,7 +864,7 @@ C Link nodes and zones.
                 ICAAS(IZ)=0
               endif
             else
-              write(outs,'(A,A)') zname(IZ)(1:lnblnk(zname(IZ))),
+              write(outs,'(A,A)') zname(IZ)(1:lnzname(IZ)),
      &          'has no mass flow node.'
               CALL EASKAB(outs,' ','ok','select a node',iacc,3)
               if(iacc.eq.1)then
@@ -1168,6 +1163,7 @@ C Control editing of zone composition ITRU unit number for user
 C output, IER=0 indicates no error.
       SUBROUTINE EDZCOMP(ITRC,ITRU,IER)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -1190,14 +1186,9 @@ C output, IER=0 indicates no error.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -1207,7 +1198,6 @@ C output, IER=0 indicates no error.
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -1265,12 +1255,12 @@ C Flag noting whether casual gain periods are currently sorted.
       character SSPARENT*12
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
       character jsparent*12,jsuse*8
-      character doit*248,tmode*8,zname*12,DSFIL*72,ZN*12
+      character doit*248,tmode*8,DSFIL*72,ZN*12
       character outs*124,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character HOLD*32,zdesc*64,zd*64
+      character HOLD*32,zd*64
       CHARACTER ETEXT*82
       character sfile*72,snpfile*72,fs*1,lodlabel*6
       CHARACTER LAPROB*72
@@ -1342,7 +1332,7 @@ C redraw the model image.
 C (Re)Set all surfaces to standard line width.
           CALL INLNST(1)
           izgfoc=0
-          CALL ADJVIEW(ITRC,IER)
+          CALL ADJVIEW(IER)
         endif
         if(MMOD.eq.8)then
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -1663,24 +1653,25 @@ C Read the geometry to fill in the data below.
      &      ' ( <12 char, no blanks) ?',12,'new_zone','zone name',IER,3)
           IF(ZN.eq.' '.or.ier.ne.0)goto 42
           call st2name(ZN,zname(NCOMP))
+          lnzname(NCOMP)=lnblnk(zname(NCOMP))
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(DFILE,'(A,A4)') zname(NCOMP)(1:lnblnk(zname(NCOMP))),
-     &      '.geo'
+            WRITE(DFILE,'(A,A4)') zname(NCOMP)(1:lnzname(NCOMP)),'.geo'
           else
             WRITE(DFILE,'(4a)') zonepth(1:lnblnk(zonepth)),fs,
-     &         zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.geo'
+     &        zname(NCOMP)(1:lnzname(NCOMP)),'.geo'
           endif
           LGEOM(NCOMP)=DFILE
 
           H(1)='The zone description allows information about'
           H(2)='zone form and composition to be recorded.'
-          write(zd,'(a,a)') 
-     &      zname(NCOMP)(1:lnblnk(zname(NCOMP))),' describes a '
+          write(zd,'(2a)') 
+     &      zname(NCOMP)(1:lnzname(NCOMP)),' describes a '
   40      CALL EASKS(zd,'What does it represent?',
      &      ' (<64 char)',64,'no description entered','zone descr',
      &      IER,2)
           IF(zd.eq.' '.or.ier.ne.0)goto 40
           zdesc(NCOMP)=zd
+          lnzdesc(NCOMP)=lnblnk(zd)  ! update the length of this string.
 
 C If an obstruction file check if this should be copied as well.
 C Save zone geometry, read in obstructions, write out to another
@@ -1706,11 +1697,11 @@ C file and then recover the zone commons.
                 IOBS(NCOMP)=1 
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(DFILE,'(2a)') 
-     &              zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.obs'
+     &              zname(NCOMP)(1:lnzname(NCOMP)),'.obs'
                 else
                   WRITE(DFILE,'(4a)') 
      &              zonepth(1:lnblnk(zonepth)),fs,
-     &              zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.obs'
+     &              zname(NCOMP)(1:lnzname(NCOMP)),'.obs'
                 endif
                 ZOBS(NCOMP)=DFILE
                 CALL MKGOMST(IUF,ZOBS(NCOMP),NCOMP,IER)
@@ -1953,15 +1944,13 @@ C Construction and zone TMC file.
 C DFILE is the default file name for any TMC file to be created,
 C CFILE is default for constr file.
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
-     &        '.tmc'
-            WRITE(CFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
-     &        '.con'
+            WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),'.tmc'
+            WRITE(CFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),'.con'
           else
             WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &        zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.tmc'
+     &        zname(NCOMP)(1:lnzname(NCOMP)),'.tmc'
             WRITE(CFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &        zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.con'
+     &        zname(NCOMP)(1:lnzname(NCOMP)),'.con'
           endif
           if(irop.eq.1)then
 
@@ -2078,11 +2067,10 @@ C point to it, otherwise offer option to browse for an existing file.
             if(irop.eq.1.or.irop.eq.2) irop=4
           endif
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
-     &        '.opr'
+            WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),'.opr'
           else
             WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &        zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.opr'
+     &        zname(NCOMP)(1:lnzname(NCOMP)),'.opr'
           endif
           if(irop.eq.1)then
 
@@ -2142,11 +2130,11 @@ C See if the source zone has a viewfactor file.
      &        'Options:','copy file','point to file',
      &        'browse file','cancel',' ',' ',' ',irop,5)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
+              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),
      &          '.vwf'
             else
               WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &          zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.vwf'
+     &          zname(NCOMP)(1:lnzname(NCOMP)),'.vwf'
             endif
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
@@ -2206,11 +2194,11 @@ C See if the source zone has a casual gain control file.
      &        'Options:','copy file','point to file',
      &        'browse file','cancel',' ',' ',' ',irop,4)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
+              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),
      &          '.cgc'
             else
               WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &          zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.cgc'
+     &          zname(NCOMP)(1:lnzname(NCOMP)),'.cgc'
             endif
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
@@ -2267,11 +2255,11 @@ C See if the source zone has a convection regime file.
      &        'Options:','copy file','point file',
      &        'browse file','cancel',' ',' ',' ',irop,4)
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnblnk(zname(NCOMP))),
+              WRITE(DFILE,'(A,A4)')zname(NCOMP)(1:lnzname(NCOMP)),
      &          '.htc'
             else
               WRITE(DFILE,'(3A,A4)') zonepth(1:lnblnk(zonepth)),fs,
-     &          zname(NCOMP)(1:lnblnk(zname(NCOMP))),'.htc'
+     &          zname(NCOMP)(1:lnzname(NCOMP)),'.htc'
             endif
             if(irop.eq.1)then
               CALL ERPFREE(IUF,ISTAT)
@@ -2626,11 +2614,11 @@ C Global tasks.
                 ISI(ICOMP)=1
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LSHAD(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+     &              zname(icomp)(1:lnzname(icomp)),'.shd'
                 else
                   WRITE(LSHAD(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.shd'
+     &              zname(icomp)(1:lnzname(icomp)),'.shd'
                 endif
 
 C Create a small place-holder file that subsequent calculation
@@ -2638,7 +2626,7 @@ C procedure can overwrite.
                 IUF=IFIL+2
                 CALL EFOPSEQ(IUF,LSHAD(ICOMP),3,IER)
                 WRITE(IUF,'(2a)') 'Placeholder shading file for ',
-     &            zname(icomp)(1:lnblnk(zname(icomp)))
+     &            zname(icomp)(1:lnzname(icomp))
                 CALL ERPFREE(IUF,ios)
 
 C << note: the add insolation option actually should cause
@@ -2673,10 +2661,10 @@ C If browsing, do not save files but allow ish to be started.
         endif
         IF(ISI(IC).eq.0)THEN
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(SFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.shd'
+            WRITE(SFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.shd'
           else
             WRITE(SFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &        zname(IC)(1:lnblnk(zname(IC))),'.shd'
+     &        zname(IC)(1:lnzname(IC)),'.shd'
           endif
           DSFIL = 'new.shd'
           H(1)='The zone shading/insulation database holds time'
@@ -2693,10 +2681,10 @@ C If browsing, do not save files but allow ish to be started.
 
 C Confirm existing shading file name and offer option to dereference.
           if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-            WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.shd'
+            WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.shd'
           else
             WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &        zname(IC)(1:lnblnk(zname(IC))),'.shd'
+     &        zname(IC)(1:lnzname(IC)),'.shd'
           endif
           SFIL = LSHAD(IC)
           clkok=.false.
@@ -2764,7 +2752,7 @@ C If browsing, do not save files but allow ish to be started.
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         IUO=IFIL+1
         call tstamp('>','PRJ: enter hc file')
-        CALL HCFMK(ITRC,ITRU,IUO,IC,IER)
+        CALL HCFMK(ITRU,IUO,IC,IER)
         MODIFY=.TRUE.
 
 C Loop back and see if another zone is requested.
@@ -2811,11 +2799,11 @@ C Global tasks.
                 ICOMP=ivals(IC)
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(LVIEW(icomp),'(A,A4)')
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.vwf'
+     &              zname(icomp)(1:lnzname(icomp)),'.vwf'
                 else
                   WRITE(LVIEW(icomp),'(3A,A4)') 
      &              zonepth(1:lnblnk(zonepth)),'/',
-     &              zname(icomp)(1:lnblnk(zname(icomp))),'.vwf'
+     &              zname(icomp)(1:lnzname(icomp)),'.vwf'
                 endif
                 silent=.true.
                 if(iw.eq.1)then
@@ -3001,16 +2989,16 @@ C If browsing do not save files but allow grd to be started.
 
 C Offer creation of moisture transport data file or dereference.
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(SFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.mst'
+          WRITE(SFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.mst'
         else
           WRITE(SFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.mst'
+     &      zname(IC)(1:lnzname(IC)),'.mst'
         endif
         DSFIL = SFIL
         H(1)='The moisture file holds moisture transport data'
         H(2)='for nodes.'
         write(outs,'(3a)')'Moisture transport file for ',
-     &    zname(IC)(1:lnblnk(zname(IC))),'?'
+     &    zname(IC)(1:lnzname(IC)),'?'
         clkok=.false.
         if(.NOT.MSTRZN(IC))then
 
@@ -3077,10 +3065,10 @@ C << What does ignore mean here? >>
 
 C Confirm file names.
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.cvs'
+          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.cvs'
         else
           WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.cvs'
+     &      zname(IC)(1:lnzname(IC)),'.cvs'
         endif
         SFIL = L3DCVS(IC)
         H(1)='The 3D control volumes file defines...'
@@ -3090,10 +3078,10 @@ C Confirm file names.
         if(SFIL(1:2).ne.'  ') L3DCVS(IC)=SFIL
 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.cnc'
+          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.cnc'
         else
           WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.cnc'
+     &      zname(IC)(1:lnzname(IC)),'.cnc'
         endif
         SFIL = L3DCNC(IC)
         H(1)='The 3D control volumes connections file defines...'
@@ -3103,10 +3091,10 @@ C Confirm file names.
         if(SFIL(1:2).ne.'  ') L3DCNC(IC)=SFIL
 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.ndc'
+          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.ndc'
         else
           WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.ndc'
+     &      zname(IC)(1:lnzname(IC)),'.ndc'
         endif
         SFIL = L3DNDC(IC)
         H(1)='The 3D nodes coordinates file defines...'
@@ -3116,10 +3104,10 @@ C Confirm file names.
         if(SFIL(1:2).ne.'  ') L3DNDC(IC)=SFIL
 
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
-          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnblnk(zname(IC))),'.3dt'
+          WRITE(DSFIL,'(A,A4)')zname(IC)(1:lnzname(IC)),'.3dt'
         else
           WRITE(DSFIL,'(3A,A4)') zonepth(1:lnblnk(zonepth)),'/',
-     &      zname(IC)(1:lnblnk(zname(IC))),'.3dt'
+     &      zname(IC)(1:lnzname(IC)),'.3dt'
         endif
         SFIL = L3DTAQ(IC)
         H(1)='The 3D nodes temperatures file defines...'
@@ -3221,7 +3209,7 @@ C espriou.h for parameter MFFOLD
       common/deflt4/dinstpath
 
 C Defaults.
-      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
+      common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical XST,OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -3236,7 +3224,7 @@ C Defaults.
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
       character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,t144*144,ETEXT*82
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*48
@@ -3316,7 +3304,7 @@ C Note for GTK, LTMP will be returned with the absolute path to the
 C folder even if prj started up in the cfg folder. There is subsequent
 C logic which determines if we actually are browsing.
           CALL EASKF(LTMP,' ',' System configuration file?',144,DFCFG,
-     &      'config file name',IER,167)
+     &      'config file name',IER,16)
         else
           CALL EASKF(LTMP,' ','System configuration file?',96,DFCFG,
      &      'config file name',IER,16)
@@ -3685,7 +3673,8 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
           itrc=IW-1
         endif
         MODE='ALL '
-        CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
+        IUF=IPRODB   ! assign second file unit to the events db unit
+        CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
 C copy # of plant component nodes from bps to prj commons 
         call CopyPltNodeCounts()
         IF(IER.NE.0)THEN
@@ -4072,6 +4061,7 @@ C      of obstruction data.
      &  silent,itru,ier)
       implicit none
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
       real valx,valy,valz  ! the transforms
@@ -4086,24 +4076,16 @@ C      of obstruction data.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      integer nzsur,nztv
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       integer ivf,isi,ihc,itw,icgc,iobs
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      
       integer NSUR,JVN,NVER,NTV
       real X,Y,Z
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -4126,7 +4108,7 @@ C      of obstruction data.
       
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character zname*12,zdesc*64,ZN*12,h*72
+      character ZN*12,h*72
       character outs*124
       logical DOK,OK
       integer iuf   ! file type 
@@ -4273,6 +4255,7 @@ C      of obstruction data.
 
       implicit none
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
       integer izlistnb,izlist,itru,ier  ! type for passed parameters
@@ -4287,23 +4270,16 @@ C      of obstruction data.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      integer nzsur,nztv
-      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
       integer ivf,isi,ihc,itw,icgc,iobs
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
       integer nb
       real XO,YO,ZO,DX,DY,DZ,BANG
       COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
@@ -4322,7 +4298,7 @@ C      of obstruction data.
       
       character*72 LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character zname*12,zdesc*64,ZN*12,h*72
+      character ZN*12,h*72
       character outs*124
       logical DOK,OK
       integer itrc,iuf,iicomp,ij,iz,i

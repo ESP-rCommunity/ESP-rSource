@@ -8,7 +8,7 @@
   electrolyzer      70
     3        # Component has   3 control variable(s).
   0.  0.  0.
-   39     5
+   42     5
       0.85450     #   1 Electrolyser efficiency coefficient e0 (-)                      
      -0.59480E-04 #   2 Electrolyser efficiency coefficient e1 (-/W)                    
       0.75630E-08 #   3 Electrolyser efficiency coefficient e2 (-/W^2)                  
@@ -47,7 +47,10 @@
        1.0000     #  36 Flag for feed water temperature (1=const,2=containment temp)    
        20.000     #  37 Constant feed water inlet temperature (oC)                      
        24.0000     #  38 Operating voltage of electrolyser (V)                           
-       2.0000     #  39 Mode of operation (1=Constant current; 2=Variable current)      
+       2.0000     #  39 Mode of operation (1=Constant current; 2=Variable current)
+       1.0          # 40 Flag for feed water heating (0=no,1=yes)
+       0.0        #  41 Aux DC power coefficient w0 (W)
+       0.0        # 42 Aux DC power coefficient w1 (W)
 # Component electrical details.
   1.000  -1      0.000    120.000   4
 #->   2, Empirical PEM hydrogen cogeneration fuel cell                           

@@ -30,6 +30,7 @@ C MZINPT code in espbps/input.f.
 
       SUBROUTINE MOGCFG
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
 
@@ -38,11 +39,6 @@ C MZINPT code in espbps/input.f.
       COMMON/FILEP/IFIL
       common/trc/itrc
 
-      character CTYPE*4
-      real gversion
-      integer igupgrade
-      COMMON/G0/CTYPE(MCOM),gversion(MCOM),igupgrade
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       integer nccode,indutl
@@ -64,8 +60,8 @@ C Temporal definition commons.
       COMMON/TDFFT/LTDF,LTDFA
 
 C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF,DSBEM
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER*72 LCFGF,path,LTDF,LTDFA,ltmp
       CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248
@@ -183,7 +179,7 @@ C SYNOPF displays the names of the files used in a simulation
 
       SUBROUTINE SYNOPF
 #include "building.h"
-
+#include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
 
@@ -201,11 +197,12 @@ C SYNOPF displays the names of the files used in a simulation
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
+
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCTLF
 
       CHARACTER*248 CTLDOC
-      CHARACTER*21 LABELS(7)
+      CHARACTER*21 LABELS(8)
 
       character outs*124
 
@@ -215,7 +212,8 @@ C SYNOPF displays the names of the files used in a simulation
      &            ' Zone view factor  : ',
      &            ' Zone shad/insolat : ',
      &            ' Zone transp walls : ',
-     &            ' Zone cas gain ctrl: '/
+     &            ' Zone cas gain ctrl: ',
+     &            ' Zone cfc constr.  : '/
 
 C Echo names of files for visual check.
       write(outs,59)LSNAM
@@ -250,6 +248,10 @@ C Echo names of files for visual check.
         ENDIF
         IF(ICGC(I).EQ.1)THEN
           write(outs,86)LABELS(7),LCGCIN(I)
+          call edisp(iuout,outs)
+        ENDIF
+        IF(icfc(I).EQ.1)THEN
+          write(outs,86)LABELS(8),lcfcin(I)
           call edisp(iuout,outs)
         ENDIF
    10 CONTINUE

@@ -29,8 +29,10 @@ C if these are 0 then use default values.
       program dfs
 #include "cfd.h"
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -46,7 +48,6 @@ C if these are 0 then use default values.
       common/appw/iappw,iappx,iappy
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      common/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
@@ -85,8 +86,7 @@ C Lisolv selector.
 C Small openings.
       common/SSOinit/areaSSO
 
-C Commons used when conflated which should be cleared in stand alone mode.
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+C Common precz when conflated should be cleared in stand alone mode.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -109,7 +109,6 @@ C Material data arrays.
       CHARACTER*72 TITLE,CFTRFL,LPHI,RESFL,WORD
       integer islice,jslice,kslice
       CHARACTER*72 LVEC,LBIT,t72,vecfil
-      character zname*12,zdesc*64
       character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
       LOGICAL INCALU,INCALV,INCALW,INCALK,INCALD,INCALT
@@ -124,7 +123,9 @@ C Material data arrays.
 C Clear 'conflated only' commons.
       do 2 I=1,MCOM
         zname(I)=' '
+        lnzname(I)=0
         zdesc(I)=' '
+        lnzdesc(I)=0
  2    continue
  
 C Set defaults.
