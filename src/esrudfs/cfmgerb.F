@@ -609,4 +609,3 @@ C Error writing data.
       call edisp(iuout,outs)
       return
       end
-

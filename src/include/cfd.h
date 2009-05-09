@@ -5,7 +5,11 @@ C  direction. If CFD is not being used, these can be reduced to 12 to
 C  reduce the size of bps. Note that a number of exemplars require
 C  these variables to be sized to 32. The other variables have little
 C  impact of the size of dfs and bps.
-C  
+C
+C Type declarations.
+      integer NTCELX,NTCELY,NTCELZ,MCEL1D,MCFND,MNREG,MNHS
+	  integer MNSBZ,MNZ,MNVLS,MCTM,MFRP
+
 C  Maximum number of cells in x direction (usual setting NTCELX=32)
       PARAMETER (NTCELX=32)
 C  Maximum number of cells in y direction (usual setting NTCELY=32)

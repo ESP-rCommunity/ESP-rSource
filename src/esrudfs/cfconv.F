@@ -146,13 +146,13 @@ C surface conflation.
         IS=ISUFLC(L,ICFD)
         TIS(IS)=SSB(L,ICFD)
         if(ITCtype(L,ICFD).ge.1 .and. ITCtype(L,ICFD).le.8)
-     &                                                   oneway(IS)='**'
+     &                                                 oneway(IS)='**'
    20 CONTINUE
 
 C Write header line to monitoring file.
       if (NOSTOP.eq.0) then
         write(ifl,*)
-        write(ifl,*) 'CFD-predicted Surface Convection and Coefficients:'
+	  write(ifl,*)'CFD-predicted Surface Convection and Coefficients:'
         write(ifl,*)
       endif
 
@@ -167,9 +167,6 @@ C potential and the surface area. Write results to monitoring file.
         QTS = -CONVF(ICFD,IS)
 		if (NOSTOP.eq.0) then
            write(ifl,1010) SFNAM(IS),QTS,HC(IS),TIS(IS),TAIR,oneway(IS)
-		else
-C Transmit the above to xml output for multi-timestep cfd-bsim runs with NOSTOP.ne.0
-
 		endif
    30 CONTINUE
 
@@ -179,6 +176,9 @@ C Transmit the above to xml output for multi-timestep cfd-bsim runs with NOSTOP.
      &             ' in use the heat transfer results given here are'
         write(ifl,*)'for information purposes only; they will not be',
      &             ' used by BSim.'
+	  else
+C Transmit the above to xml output for multi-timestep cfd-bsim runs with NOSTOP.ne.0
+		call ConflationData_to_h3k(ICFD,SFNAM,HC,NCNST)
 	  endif
 
       RETURN
@@ -186,3 +186,63 @@ C Format statements.
  1010   FORMAT(A12,' Qwall->air(W) = ',f11.1,' HC-CFD = ',f7.2,
      &         ' Tsurf = ',f7.2,' Tair = ',f7.2,2x,a2)
       END
+
+
+C ***************** ConflationData_to_h3k *****************
+C This routine transfers conflation data to the H3K reporting
+C facilities. Created by Achim Geissler, May 9 2009.
+
+      subroutine ConflationData_to_h3k(iZone,SFNAM,HC,NCNST)
+      implicit none
+#include "cfd.h"
+#include "building.h"
+
+C Parameters.
+      integer iZone,NCNST
+	  
+
+C Commons.
+      COMMON/CFDCON/CONVF(MNZ,MNSBZ)
+      real CONVF
+
+      dimension SFNAM(MNSBZ),HC(MNSBZ)
+
+      CHARACTER*12 SFNAM
+	  real HC
+
+C Local variables.
+      character*2 cZone_Chars
+      integer IS
+
+C References.
+      integer lnblnk
+
+C Pad index to 'XX'.
+      if(iZone.gt.9)then
+         write(cZone_Chars,'(i2)')iZone
+      else
+         write(cZone_Chars,'(a,i1)') '0',iZone
+      endif
+
+C Output cfd surface heat transfer coefficients
+C and cfd surface - air heat flux.
+      do IS=1,NCNST
+         call add_to_xml_reporting(
+     &     HC(IS),
+     &     'cfd/'//'z'// cZone_Chars //
+     &     '/' // SFNAM(IS)(1:lnblnk(SFNAM(IS))) //'/HC-CFD',
+     &     'units',
+     &     '(W/(m2 K)',
+     &     'CFD surface heat transfer coefficient')
+	 
+         call add_to_xml_reporting(
+     &     -CONVF(iZone,IS),
+     &     'cfd/'//'z' // cZone_Chars //
+     &     '/' // SFNAM(IS)(1:lnblnk(SFNAM(IS))) // '/Qwall->air',
+     &     'units',
+     &     '(W)',
+     &     'Heat flux from wall to air, Qwall->air')
+      enddo
+
+      return
+      end
