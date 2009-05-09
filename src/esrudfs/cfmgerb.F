@@ -182,8 +182,9 @@ C Invoke CFD simulation.
       if (icfcal(ICFD).eq.1) call efopseq(ifl,CFTRFL(ICFD),3,ier)
 
 C Activate mfs-cfd coupling via MFBNDR if airflow network is defined
-      IF(ICFMFS(ICFD).EQ.1)THEN
-        IF(LKTR.EQ.1)CALL MFBNDR(1)
+      IF(ICFMFS(ICFD).EQ.1) THEN
+	    if (NOSTOP.ne.0.and.icfcal(ICFD).eq.1) WRITE(ICFMON,415)
+        IF(LKTR.EQ.1) CALL MFBNDR(1)
  256    CALL MFBNDR(2)      
         CALL CFCALC(NSINC,TSTEP,IMFACT,IBLACT,CONVER)
         IF(CONVER)THEN
@@ -225,10 +226,10 @@ C Convection coefficients.
 
 C Write monitor file if multi-timestep simulation with afn-mfs conflation
       if (NOSTOP.ne.0) then
-         WRITE(ICFMON,312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
-     1         RESORK,RESORE,Uf(IMON,JMON,KMON),Vf(IMON,JMON,KMON),
-     2         Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),Tf(IMON,JMON,KMON),
-     3         TEf(IMON,JMON,KMON),EDf(IMON,JMON,KMON)         
+         WRITE(ICFMON,312)NSINC,LKTR,NITER,RESORU,RESORV,RESORW,
+     1      RESORM,RESORT,RESORK,RESORE,Uf(IMON,JMON,KMON),
+     2      Vf(IMON,JMON,KMON),Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),
+     3      Tf(IMON,JMON,KMON),TEf(IMON,JMON,KMON),EDf(IMON,JMON,KMON)         
       endif
 
 C Surface conflation:
@@ -262,7 +263,13 @@ C Write calculated variable fields to be used in the next time-step.
 
       RETURN
 C Format statements.
- 312  FORMAT(1H ,I6,2X,1P14E11.3)
+ 312  FORMAT(1H ,I8,I4,I6,2X,1P14E11.3)
+
+ 415  FORMAT(/,' Monitoring for multi-timestep dfs-mfs runs',/,
+     & '     TSTEP',' LKTR','  ITER',6X,'rU',9X,'rV',9X,'rW',9X,
+     & 'rP',9X,'rT',9X,'rK',7X,'rEps.',
+     & 9X,'U',9X,'V',10X,'W',10X,'P', 10X,'T',10X,'K',8X,'Eps.',/)
+
       END
 
 

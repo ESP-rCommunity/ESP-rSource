@@ -340,8 +340,6 @@ C If in text mode, print monitoring headlines, otherwise write these to monitori
         IF(MMOD.NE.8) WRITE(IUOUT,410)
         if (NOSTOP.eq.0) then
           WRITE(ICFMON,410)
-        else
-          WRITE(ICFMON,415)        
         endif
       ENDIF
 
@@ -442,13 +440,16 @@ C Find the maximum source of residual.
 
 C Write/ plot residuals and monitoring values.
 C First check if output for this iteration.
-      if (mod(NITER,NPLT).eq.0 .or.NITER.le.1 .and.NOSTOP.eq.0) then
+      if (mod(NITER,NPLT).eq.0 .or.NITER.le.1) then
 
-C Write residuals and monitoring values in a ASCII format file.
-        WRITE(ICFMON,312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
+C If not in "NOSTOP" mode, write residuals and monitoring values in 
+C a ASCII format file.
+        if (NOSTOP.eq.0) then
+          WRITE(ICFMON,312)NITER,RESORU,RESORV,RESORW,RESORM,RESORT,
      1         RESORK,RESORE,Uf(IMON,JMON,KMON),Vf(IMON,JMON,KMON),
      2         Wf(IMON,JMON,KMON),P(IMON,JMON,KMON),Tf(IMON,JMON,KMON),
      3         TEf(IMON,JMON,KMON),EDf(IMON,JMON,KMON)
+        endif
 
 C Don't display anything for first 2 iterations.
         if (NITER.GE.3) then
@@ -645,11 +646,6 @@ C     &' ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',9X,'K',7X,'Eps.',/)
      & 9X,'rK',7X,'rEps.',
      & 9X,'U',9X,'V',10X,'W',10X,'P', 10X,'T',10X,'K',8X,'Eps.',/)
      
- 415  FORMAT(/,' DFS - Monitoring for multi-timestep dfs-mfs runs',/,
-     & ' ITER',9X,'rU',9X,'rV',9X,'rW',9X,'rP',9X,'rT',
-     & 9X,'rK',7X,'rEps.',
-     & 9X,'U',9X,'V',10X,'W',10X,'P', 10X,'T',10X,'K',8X,'Eps.',/)
-
  420  FORMAT(/,' DFS - Monitoring of renormalized residuals &',
      &' variables',/,/,'   ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',
      & 9X,'K',7X,'Eps.',/)

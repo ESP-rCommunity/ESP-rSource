@@ -117,6 +117,8 @@ C CFCONV - Calculate convection coefficients based on the CFD predictions.
       COMMON/TEMPf/Tf(ntcelx,ntcely,ntcelz),GAMH(ntcelx,ntcely,ntcelz),
      1             RESORT,NSWPT,URFT,FSDTT,PRANDL,PFUN
 
+      COMMON/MFS/IMFACT,NOSTOP,MITMFS
+
       DIMENSION SFNAM(MNSBZ),HC(MNSBZ),TIS(MNSBZ)
 
       CHARACTER*12 SFNAM
@@ -148,9 +150,11 @@ C surface conflation.
    20 CONTINUE
 
 C Write header line to monitoring file.
-      write(ifl,*)
-      write(ifl,*) 'CFD-predicted Surface Convection and Coefficients:'
-      write(ifl,*)
+      if (NOSTOP.eq.0) then
+        write(ifl,*)
+        write(ifl,*) 'CFD-predicted Surface Convection and Coefficients:'
+        write(ifl,*)
+      endif
 
 C Examine each ESP-r surface in turn. Calculate driving potential for surface
 C convection (Tsurf - Tair) then normalize the heat transfer by the driving
@@ -161,16 +165,24 @@ C potential and the surface area. Write results to monitoring file.
           HC(IS) = ABS(CONVF(ICFD,IS)) / DELT / ATCFD(IS)
         endif
         QTS = -CONVF(ICFD,IS)
-        write(ifl,1010) SFNAM(IS),QTS,HC(IS),TIS(IS),TAIR,oneway(IS)
- 1010   FORMAT(A12,' Qwall->air(W) = ',f11.1,' HC-CFD = ',f7.2,
-     &         ' Tsurf = ',f7.2,' Tair = ',f7.2,2x,a2)
+		if (NOSTOP.eq.0) then
+           write(ifl,1010) SFNAM(IS),QTS,HC(IS),TIS(IS),TAIR,oneway(IS)
+		else
+C Transmit the above to xml output for multi-timestep cfd-bsim runs with NOSTOP.ne.0
+
+		endif
    30 CONTINUE
 
-      write(ifl,*)
-      write(ifl,*) 'If 1-way surface conflation (indicated by **) is ',
-     &             'in use the heat transfer results given here are'
-      write(ifl,*) 'for information purposes only; they will not be ',
-     &             'used by BSim.'
+      if (NOSTOP.eq.0) then
+        write(ifl,*)
+	   write(ifl,*)'If 1-way surface conflation (indicated by **) is',
+     &             ' in use the heat transfer results given here are'
+        write(ifl,*)'for information purposes only; they will not be',
+     &             ' used by BSim.'
+	  endif
 
       RETURN
+C Format statements.
+ 1010   FORMAT(A12,' Qwall->air(W) = ',f11.1,' HC-CFD = ',f7.2,
+     &         ' Tsurf = ',f7.2,' Tair = ',f7.2,2x,a2)
       END
