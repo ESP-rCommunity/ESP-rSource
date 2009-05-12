@@ -635,10 +635,10 @@ C simulation.
 C      write (6,*) 'LMA',CALLMA(ICFD),'  gopher',gophrun
       if (CALLMA(ICFD).and.(.not.gophrun)) call calclma(ITIMST)
       RETURN
-      
+
 C Format statements.
 C 312  FORMAT(1H ,I6,2X,1P7E10.3,/,9X,1P7E10.3)
- 312  FORMAT(1H ,I6,2X,1P14E11.3)
+ 312  FORMAT(1H ,I6,2X,14(1P,E11.3))
 C 410  FORMAT(/,' DFS - Monitoring of residuals & variables',/,/,
 C     &' ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',9X,'K',7X,'Eps.',/)
  410  FORMAT(/,' DFS - Monitoring of residuals & variables',/,/,
@@ -647,8 +647,8 @@ C     &' ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',9X,'K',7X,'Eps.',/)
      & 9X,'U',9X,'V',10X,'W',10X,'P', 10X,'T',10X,'K',8X,'Eps.',/)
      
  420  FORMAT(/,' DFS - Monitoring of renormalized residuals &',
-     &' variables',/,/,'   ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',
-     & 9X,'K',7X,'Eps.',/)
+     & ' variables',/,/,'  ITER',9X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',
+     &  9X,'K',7X,'Eps.',/)
 
  1030 FORMAT(/,'ITIME =',I5)
       END
