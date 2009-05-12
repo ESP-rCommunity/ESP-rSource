@@ -263,7 +263,7 @@ C Write calculated variable fields to be used in the next time-step.
 
       RETURN
 C Format statements.
- 312  FORMAT(1H ,I8,I4,I6,2X,1P14E11.3)
+ 312  FORMAT(1H,I8,I4,I6,2X,1P14E11.3)
 
  415  FORMAT(/,' Monitoring for multi-timestep dfs-mfs runs',/,
      & '     TSTEP',' LKTR','  ITER',6X,'rU',9X,'rV',9X,'rW',9X,
