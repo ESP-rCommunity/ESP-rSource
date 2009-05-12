@@ -724,19 +724,21 @@ C       Report total short wave radiation on this surface.
 C-----------------------------------------------------------------------
         call add_to_xml_reporting (
      &          qswrde(iZone,iSurface,2),
-     &          H3K_rep_NAME(1:27) // '/heat_flux/radiation/shortwave' ,
+     &          H3K_rep_NAME(1:iH3K_NameLen) 
+     &            // '/heat_flux/radiation/shortwave',
      &          'units', '(W)',
      &          'Short-wave solar radiation'
      &           )
-     
+
         call add_to_xml_reporting (
      &          qswrde(iZone,iSurface,2)/sna(iZone,iSurface),
-     &          H3K_rep_NAME(1:27) // '/heat_flux/radiation/'
+     &          H3K_rep_NAME(1:iH3K_NameLen) 
+     &            // '/heat_flux/radiation/'
      &            //  'shortwave/unit_area' ,
      &          'units', '(W/m2)',
      &          'Short-wave solar radiation per unit area'
      &          )     
-     
+
 C-----------------------------------------------------------------------
 C       Estimate heat loss from surface by performing energy
 C       balance on exterior surface node. Equation depends on
