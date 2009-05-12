@@ -165,9 +165,9 @@ C potential and the surface area. Write results to monitoring file.
           HC(IS) = ABS(CONVF(ICFD,IS)) / DELT / ATCFD(IS)
         endif
         QTS = -CONVF(ICFD,IS)
-		if (NOSTOP.eq.0) then
+        if (NOSTOP.eq.0) then
            write(ifl,1010) SFNAM(IS),QTS,HC(IS),TIS(IS),TAIR,oneway(IS)
-		endif
+        endif
    30 CONTINUE
 
       if (NOSTOP.eq.0) then
@@ -176,10 +176,10 @@ C potential and the surface area. Write results to monitoring file.
      &             ' in use the heat transfer results given here are'
        write(ifl,*)'for information purposes only; they will not be',
      &             ' used by BSim.'
-	  else
+      else
 C Transmit the above to xml output for multi-timestep cfd-bsim runs with NOSTOP.ne.0
-		call ConflationData_to_h3k(ICFD,SFNAM,HC,NCNST)
-	  endif
+       call ConflationData_to_h3k(ICFD,SFNAM,HC,NCNST)
+      endif
 
       RETURN
 C Format statements.
@@ -208,7 +208,7 @@ C Commons.
       dimension SFNAM(MNSBZ),HC(MNSBZ)
 
       CHARACTER*12 SFNAM
-	  real HC
+      real HC
 
 C Local variables.
       character*2 cZone_Chars
