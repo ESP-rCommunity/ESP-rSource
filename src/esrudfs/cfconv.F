@@ -172,10 +172,10 @@ C potential and the surface area. Write results to monitoring file.
 
       if (NOSTOP.eq.0) then
        write(ifl,*)
-	     write(ifl,*)'If 1-way surface conflation (indicated by **) is',
-     &             ' in use the heat transfer results given here are'
-       write(ifl,*)'for information purposes only; they will not be',
-     &             ' used by BSim.'
+       write(ifl,*)'If 1-way surface conflation (indicated by **)',
+     &       ' is in use the heat transfer results given here are'
+       write(ifl,*)'for information purposes only; they will not',
+     &             ' be used by BSim.'
       else
 C Transmit the above to xml output for multi-timestep cfd-bsim runs with NOSTOP.ne.0
        call ConflationData_to_h3k(ICFD,SFNAM,HC,NCNST)
