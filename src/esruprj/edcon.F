@@ -514,27 +514,30 @@ C Help text for this menu.
       H(31)='    are used.'
       H(32)=' e) lux level - you specify the lux level above which'
       H(33)='    the alternative optical properties are used.'
-      H(34)='    '
-      H(35)='Note that there can be up to 8 control periods during'
-      H(36)='a day and that all days within the simulation are treated'
-      H(37)='the same).'
-      H(38)=' '
-      H(39)='The alternative optical propetry set must relate to the'
-      H(40)='same number of material layers as the original set. It'
-      H(41)='is a good idea to prepare the alternative set using the'
-      H(42)='the Optical Properties db management facility prior to'
-      H(43)='using the transparent properties facility in this menu.'
-      H(44)=' '
-      H(45)='Control of optical properties can be used to approximate'
-      H(46)='the closing of window blinds and shutters.'
+      H(34)=' f) Phase change state - you specify the phase which'
+      H(35)='    the alternative optical properties are used.'
+      H(36)='    3 available options: solid, mixed, liquid.'
+      H(37)='    '
+      H(38)='Note that there can be up to 8 control periods during'
+      H(39)='a day and that all days within the simulation are treated'
+      H(40)='the same).'
+      H(41)=' '
+      H(42)='The alternative optical propetry set must relate to the'
+      H(43)='same number of material layers as the original set. It'
+      H(44)='is a good idea to prepare the alternative set using the'
+      H(45)='the Optical Properties db management facility prior to'
+      H(46)='using the transparent properties facility in this menu.'
       H(47)=' '
-      H(48)='If the model has an air flow network you might also'
-      H(49)='wish to control any flow components associated with'
-      H(50)='transparent surfaces that have optical property control.'
-      H(51)='Note however that the air flow control logic is'
-      H(52)='different from optical property control logic so care'
-      H(53)='is required to ensure that they operate together as'
-      H(54)='intended.'
+      H(48)='Control of optical properties can be used to approximate'
+      H(49)='the closing of window blinds and shutters.'
+      H(50)=' '
+      H(51)='If the model has an air flow network you might also'
+      H(52)='wish to control any flow components associated with'
+      H(53)='transparent surfaces that have optical property control.'
+      H(54)='Note however that the air flow control logic is'
+      H(55)='different from optical property control logic so care'
+      H(56)='is required to ensure that they operate together as'
+      H(57)='intended.'
 
 C Now display the menu.
       write(head,'(3a)') 'Composition of `',
@@ -565,7 +568,7 @@ C Now display the menu.
 
 C If no existing file advise user to create from info in geom file and
 C various databases.
-        CALL PHELPD('zone geom file section',54,'-',0,0,IER)
+        CALL PHELPD('zone geom file section',57,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Save data and then return to menu.
@@ -1520,6 +1523,10 @@ C For each of the TMC types.
             WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
      &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
      &        '  # sensing lightswitch @ actuation point'
+          elseif(NBCTT(ICOMP,K,I).eq.5)then
+            WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
+     &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
+     &        '  # sensing phase change material state'
           elseif(NBCTT(ICOMP,K,I).eq.-99)then
             WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
      &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
@@ -1793,6 +1800,8 @@ C Display of current information...
             msg=' sensing daylight coeff.'
           elseif(NBCTT(ICOMP,KK,I).eq.4)then
             msg=' Lightswitch2002.'
+          elseif(NBCTT(ICOMP,KK,I).eq.5)then
+            msg=' sensing state of PCM'
           elseif(NBCTT(ICOMP,KK,I).eq.-99)then
             msg=' sensing time only'
           endif
@@ -1950,57 +1959,94 @@ C For each control period get the appropriate replacement properties.
           H(24)='    which the alternative optical properties will'
           H(25)='    be used. Two alternative lux calculation'
           H(26)='    approaches are offered.'
-          H(27)=' '
-          H(28)='Note: there can be up to 8 control periods in a'
-          H(29)='day (all days within the simulation will be treated'
-          H(30)='the same).'
-          H(31)=' '
-          H(32)='The alternative optics must correspond to the same'
-          H(33)='number of layers as the initial set. It is a good'
-          H(34)='idea to prepare the alternative properties via the'
-          H(35)='Optical Properties db management facility prior to'
-          H(36)='using the transparent properties facility here.'
-          H(37)=' '
-          H(38)='Control of optical properties can be used to'
-          H(39)='approximate closing blinds/shutters and shading'
-          H(40)='devices.'
-          H(41)=' '
-          H(42)='If the model has an air flow network you might also'
-          H(43)='think about controlling any air flow components'
-          H(44)='associated with any transparent surfaces that have'
-          H(45)='been assigned optical property control. Note however'
-          H(46)='that the air flow control logic is different from'
-          H(47)='the optical property control logic so some care and'
-          H(48)='testing is required to ensure that optical and flow'
-          H(49)='control works together.'
+          H(27)=' f) Phase change state - you specify the phase which'
+          H(28)='    the alternative optical properties are used.'
+          H(29)='    3 available options: solid, mixed, liquid.'  
+          H(30)=' '
+          H(31)='Note: there can be up to 8 control periods in a'
+          H(32)='day (all days within the simulation will be treated'
+          H(33)='the same).'
+          H(34)=' '
+          H(35)='The alternative optics must correspond to the same'
+          H(36)='number of layers as the initial set. It is a good'
+          H(37)='idea to prepare the alternative properties via the'
+          H(38)='Optical Properties db management facility prior to'
+          H(39)='using the transparent properties facility here.'
+          H(40)=' '
+          H(41)='Control of optical properties can be used to'
+          H(42)='approximate closing blinds/shutters and shading'
+          H(43)='devices.'
+          H(44)=' '
+          H(45)='If the model has an air flow network you might also'
+          H(46)='think about controlling any air flow components'
+          H(47)='associated with any transparent surfaces that have'
+          H(48)='been assigned optical property control. Note however'
+          H(49)='that the air flow control logic is different from'
+          H(50)='the optical property control logic so some care and'
+          H(51)='testing is required to ensure that optical and flow'
+          H(52)='control works together.'
           if(n3.eq.-99)then
-            call EASKATOG('Controlled on:','(currently time)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+            idno=1
+            call MENUATOL(outs,'Controlled on: (currently time)',
+     &      'a time','b incident radiation','c ambient temp.',
+     &      'd zone temp.','e lux level','f LtSwitch',
+     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
+     &       52)
           elseif(n3.eq.0)then
-            call EASKATOG('Controlled on:','(currently radiation)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+            idno=1
+            call MENUATOL(outs,'Controlled on: (currently radiation)',
+     &      'a time','b incident radiation','c ambient temp.',
+     &      'd zone temp.','e lux level','f LtSwitch',
+     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
+     &       52)          
           elseif(n3.eq.1)then
-            call EASKATOG('Controlled on:','(currently ambient temp.)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+            idno=1
+            call MENUATOL(outs,
+     &      'Controlled on: (currently ambient temp.)',
+     &      'a time','b incident radiation','c ambient temp.',
+     &      'd zone temp.','e lux level','f LtSwitch',
+     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
+     &       52)           
           elseif(n3.eq.2)then
-            call EASKATOG('Controlled on:','(currently zone temp.)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+            idno=1
+            call MENUATOL(outs,
+     &      'Controlled on: (currently zone temp.)',
+     &      'a time','b incident radiation','c ambient temp.',
+     &      'd zone temp.','e lux level','f LtSwitch',
+     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
+     &       52)              
           elseif(n3.eq.3)then
-            call EASKATOG('Controlled on:','(currently daylight coef)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+            idno=1
+            call MENUATOL(outs,
+     &      'Controlled on: (currently daylight coef)',
+     &      'a time','b incident radiation','c ambient temp.',
+     &      'd zone temp.','e lux level','f LtSwitch',
+     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
+     &       52)                 
           elseif(n3.eq.4)then
-            call EASKATOG('Controlled on:','(currently Lightswitch)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+            idno=1
+            call MENUATOL(outs,
+     &      'Controlled on: (currently Lightswitch)',
+     &      'a time','b incident radiation','c ambient temp.',
+     &      'd zone temp.','e lux level','f LtSwitch',
+     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
+     &       52)          
+          elseif(n3.eq.5)then
+            idno=1
+            call MENUATOL(outs,
+     &      'Controlled on: (currently state of PCM)',
+     &      'a time','b incident radiation','c ambient temp.',
+     &      'd zone temp.','e lux level','f LtSwitch',
+     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
+     &       52)            
           else
-            call EASKATOG('Controlled on:','(currently undefined)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,49)
+            idno=1
+            call MENUATOL(outs,
+     &      'Controlled on: (currently undefined)',
+     &      'a time','b incident radiation','c ambient temp.',
+     &      'd zone temp.','e lux level','f LtSwitch',
+     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
+     &       52)            
           endif
           if(irt.eq.1)then
             NBCTT(ICOMP,ICP,IT)= -99
@@ -2009,25 +2055,25 @@ C For each control period get the appropriate replacement properties.
             NBCTT(ICOMP,ICP,IT)= 0
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Radiation set point?',
-     &      0.00,'W',1000.0,'W',0.0,'radiation set point',IER,49)
+     &      0.00,'W',1000.0,'W',0.0,'radiation set point',IER,52)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.3)then
             NBCTT(ICOMP,ICP,IT)= 1
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Ambient temp. set point?',
-     &      0.00,'W',1000.0,'W',0.0,'ambient set point',IER,49)
+     &      0.00,'W',1000.0,'W',0.0,'ambient set point',IER,52)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.4)then
             NBCTT(ICOMP,ICP,IT)= 2
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Zone temp. set point',
-     &      0.00,'W',1000.0,'W',0.0,'zone set point',IER,49)
+     &      0.00,'W',1000.0,'W',0.0,'zone set point',IER,52)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.5)then
             NBCTT(ICOMP,ICP,IT)= 3
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Lux set point',
-     &      0.00,'W',1000.0,'W',0.0,'lux set point',IER,49)
+     &      0.00,'W',1000.0,'W',0.0,'lux set point',IER,52)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.6)then
 
@@ -2035,9 +2081,16 @@ C << Do not know what sort of question is to be asked here! >>
             NBCTT(ICOMP,ICP,IT)= 4
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Lightswitch lux set point?',
-     &      0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',IER,49)
+     &      0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',IER,52)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.7)then
+            NBCTT(ICOMP,ICP,IT)= 5
+            VAL=BACTPT(ICOMP,ICP,IT)
+            CALL EASKR(VAL,' ',
+     &      'State of PCM (1.0=solid 2.0=liquid 3.0=mixed)',
+     &      1.00,'W',3.0,'W',0.0,'phase change PCM',IER,52)
+            BACTPT(ICOMP,ICP,IT)=VAL
+          elseif(irt.eq.8)then
             return
           ENDIF
           NTL=NGLAZ(IT)

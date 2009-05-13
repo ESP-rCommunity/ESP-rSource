@@ -2259,6 +2259,10 @@ C Phase change material.
       common/pcm02/spcm(mcom,ms,mn),spcmtf,spcmtp
       common/pcm03/pcmfac(mcom,ms,mn),pcmshts(mcom,ms,mn)
 
+      common/PcmState/iPcmStateFlag
+      integer iPcmStateFlag !flag that indicates the state of PCM at each timestep
+                            !if iPcmStateFlag is 1: solid, if 2: mixed, if 3: liquid
+      
       character spmlabel*16,spflnam*72,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
       logical close
@@ -2328,12 +2332,15 @@ C             = shtliqa*tfcm + shtliqb for tmelt < tfcm < tsoli (mixed phase).
          if(tfcm.lt.tmelt)then
             appcon=consol
             appsht=shtsol
+            iPcmStateFlag=1
          elseif(tfcm.gt.tsoli)then
             appcon=conliq
             appsht=shtsol
+            iPcmStateFlag=2
          else
             appcon=(consol+conliq)/2.
             appsht=shtsol+(shtliqa*tfcm+shtliqb)
+            iPcmStateFlag=3
          endif
 
 C Parameters for xml output.
@@ -2469,7 +2476,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -2857,7 +2864,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -3232,7 +3239,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -3637,7 +3644,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1

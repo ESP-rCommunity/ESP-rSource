@@ -390,6 +390,12 @@ C Tdf common block to allow using vertical solar radiation data
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
       DIMENSION VAL(MBITS+2)            
       real sumDirDiff !the sum of the direct and diffuse components for use in tdf (vertical solar)
+      real fPcmStateFlag !temporarily converting to a real the flag for 
+                         !the PCM state (solid, liquid, mixed)
+      common/PcmState/iPcmStateFlag
+      integer iPcmStateFlag !flag that indicates the state of PCM at each timestep
+                            !if iPcmStateFlag is 1: solid, if 2: mixed, if 3: liquid
+
 
       ZAREA=zonetotsurfacearea(ICOMP)
 
@@ -840,7 +846,7 @@ C properties i.e. transmittance, absorptance and reflectance:
      &                 .AND.IBLND(ICOMP,I).GT.0) THEN
      
 C LIGHTSWITCH manual blind control. First set the resulting direct
-C transmission, td [W/m²],through TMC as if ibofot=0 (i.e. default
+C transmission, td [W/mÂ²],through TMC as if ibofot=0 (i.e. default
 C optics).
                    xx1 = tmct(icomp,itmc,ind1(i))
                    if(ind2(i).eq.6) then
@@ -864,7 +870,21 @@ C If istate not equal to 0, then blinds are down.
                       ecrat(icomp,i)=0.
                       nbpont(icomp,i)=k
                    endif
-                
+                ELSEIF(NBCTT(ICOMP,K,ITMC).EQ.5) THEN
+
+C State of PCM activation.
+                  fPcmStateFlag=real(iPcmStateFlag)
+                  write (6,*) 'BACT1: ',BACTPT(ICOMP,K,ITMC) 
+                  write (6,*) 'fPcmStateFlag1: ',fPcmStateFlag  
+                  call eclose(BACTPT(ICOMP,K,ITMC),fPcmStateFlag,0.1,
+     &               bCloseToZero)               
+                  IF(bCloseToZero)THEN
+                  write (6,*) 'BACT: ',BACTPT(ICOMP,K,ITMC) 
+                  write (6,*) 'fPcmStateFlag: ',fPcmStateFlag  
+                    IBOFOT(ICOMP,I)=1
+                    ECRAT(ICOMP,I)=0.0
+                    NBPONT(ICOMP,I)=K
+                  ENDIF                
                 ELSE
 
 C Radiation activation; check which surface the sensor is on;
@@ -3678,7 +3698,7 @@ C Local variables
 
 C Constants
       REAL ZEROK,SBC,GHTC,KSNOW,ESNOW,CMTOM
-      DATA ZEROK/273.15/          ! 0°C in Kelvin 
+      DATA ZEROK/273.15/          ! 0Â°C in Kelvin 
       DATA SBC/5.6697E-08/        ! Stefan-Botlzmann constant, W/K4/m2
       DATA GHTC/10./              ! Convection coefficient, W/m2/K
       DATA KSNOW/0.12/            ! Thermal conductivity of snow, W/m/K
