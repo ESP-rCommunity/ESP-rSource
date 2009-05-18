@@ -252,6 +252,10 @@
 *cfg    C:\Esru\esp-r\training\constr\adapt\cfg\tim.cfg
 *root	C:\Esru\esp-r\training\constr\adapt
 *item
+*name   phase change materials
+*cfg    C:\Esru\esp-r\training\PCM\cfg\Phase_Change_Materials.cfg
+*root	C:\Esru\esp-r\training\PCM
+*item
 *name   adaptive 1-D gridding
 *cfg    C:\Esru\esp-r\training\constr\adapt\cfg\g1d.cfg
 *root	C:\Esru\esp-r\training\constr\adapt
