@@ -440,12 +440,13 @@ long int *folder;
  int ilen,i,ok;
  int iaccessu,iaccessg,iaccesso,ifolder;
  int ist_uid,ist_gid,u_uid,u_euid,g_uid,g_euid;
- char name2[80];
+ char name2[140];  /* allow sufficient buffer size for long file names */
  struct stat st;
 
 /* Work with copy of file name. */
-  ilen = 0;
-  f_to_c_l(fname,&len,&ilen); strncpy(name2,fname,(unsigned int)ilen); name2[ilen] = '\0';
+  f_to_c_l(fname,&len,&ilen);
+  if ( ilen > len ) ilen = len;  /* in case ilen is corrupt, set to len */
+  strncpy(name2,fname,(unsigned int)ilen); name2[ilen] = '\0';
 /*   fprintf(stderr,"file is %s %d %d \n",name2,ilen,len); */
   i = stat(name2, &st);
   iaccessu = (st.st_mode&0200); /* returns 0 if u-w */
