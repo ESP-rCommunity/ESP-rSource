@@ -71,7 +71,6 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
       logical OK,dok,FOUND
 
    1  ISAVE=1
-      IER=0
       if(ist.eq.1)then
         CALL EDISP(IUOUT,'Select period')
       elseif(ist.eq.2)then
@@ -584,6 +583,7 @@ C Setup limits for climate parameters
         IF(IER.NE.0)GOTO 999
         A(2)=0.
       ELSEIF(ILC.EQ.4)THEN
+        if(NORD.eq.0) NORD=1
         CALL EASKI(NORD,' What is the order of polynomial?','(see help)'
      &    ,0,'W',3,'W',0,'constant dir',IER,18)
         IF(IER.NE.0)GOTO 999

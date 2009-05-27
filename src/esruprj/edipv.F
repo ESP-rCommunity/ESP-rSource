@@ -2236,8 +2236,9 @@ C seasons.h provides typper and typsea
       character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
       character DESCR*7,DESCR1*10,title*40,hold*32
       DIMENSION ALT(24),AZI(24),GHSUM(MIPVA),DAYGLOB(MIPVA)
-      dimension seacddwk(MSPS),seahddtot(MSPS),seacddtot(MSPS)
-      dimension seahddwk(MSPS)
+      dimension seahddwk(MSPS)  ! hdd avg/week (for each season)
+      dimension seacddwk(MSPS)  ! cdd avg/week (for each season)
+      dimension seahddtot(MSPS),seacddtot(MSPS)  ! total hdd & cdd during each season
 
 C For each of the seasons: wkdiff is the difference in the performance
 C parameters for the assessment period and the season, iwkbest
@@ -2257,12 +2258,15 @@ C best week.
         return
       endif
 
-C Initial weightings for heading dd, cooling dd, solar radiation.
+C Initial weightings for heating dd, cooling dd, solar radiation.
       hddw=1.0
       cddw=1.0
       radw=1.0
 
-C First check if it exists: if so open, otherwise create with 0 length.
+C << climate file reading SEEMS to be to get a value for iyear >>
+C << if this is passed in or recovered from a different common block >>
+C << then this block of code is not needed >>
+C First check if it exists: if so open.
       CALL ERPFREE(ICLIM,ISTAT)
       CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
       if(ISTAT.ge.0)then
@@ -2290,9 +2294,10 @@ C Scan the climate file for some of its details.
      &           -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,2)
 
 C If output to file alter the edisp unit number.
+C << the clmper.F code includes ixopen test >>
       itru = iuout
 
-C Reset text feedback.
+C Clear initial values.
       DNM=0.
       HRM=0.
       UPMC=0.
@@ -2352,7 +2357,7 @@ C Loop through each seasonal period.
         CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
      &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
 
-C For each day read climate data, set parameters and analyse.
+C For each day in the season read climate data, set parameters and analyse.
         DO 10 I=IDSS,IDSF
           IDD=I
           CALL CLMGET(IDD)
@@ -2360,6 +2365,8 @@ C For each day read climate data, set parameters and analyse.
           DNJ=0
           UPJC=0.
           DAYL=24.0
+
+C For each hour in the day work out radiation and then degree days.
           DO 20 J=1,24
             IF(ALT(J).LT.0.001)THEN
               DIRH=0.
@@ -2384,25 +2391,25 @@ C T below heating BASE,SAVE DEG-HRS IN DNJ
 C T above cooling BASE ,SAVE DEG-HRS IN UPJC
               UPJC=UPJC+(TT-CBT)
             endif
-   20     CONTINUE
-          XDN=DNJ/24
-          XUPC=UPJC/24
+   20     CONTINUE       ! end of the hour loop
+          XDN=DNJ/24     ! convert from degree-hours to degree days
+          XUPC=UPJC/24   ! and do this for cooling as well
 
 C Update seasonal parameters and go to the next day.
-          DNM=DNM+DNJ
-          HRM=HRM+DAYL
-          UPMC=UPMC+UPJC
-          HRMC=HRMC+DAYL
-   10   CONTINUE
+          DNM=DNM+DNJ     ! increment heating degree hours
+          HRM=HRM+DAYL    ! increment heating hours
+          UPMC=UPMC+UPJC  ! increment cooling degree hours
+          HRMC=HRMC+DAYL  ! increment cooling hours
+   10   CONTINUE          ! end of the day-in-the-season loop
 
 C Compute parameters (total & average degree days) for this season.
         XHR=24.0/HRM
         XHRC=24.0/HRMC
         XDN=DNM/24
         XUPC=UPMC/24
-        YDN=XHR*XDN
+        YDN=XHR*XDN         ! heat dd avg/day
         seahddwk(k)=YDN*7.
-        YUPC=XHRC*XUPC
+        YUPC=XHRC*XUPC      ! cool dd avg/ay
         seacddwk(k)=YUPC*7.
 
 C Number of days in season is IDSF-IDSS+1. DAYGLOB is daily mean
@@ -2435,7 +2442,7 @@ C UPDATE WHOLE PERIOD
         UPIC=UPIC+UPMC
         UPMC=0.
         HRMC=0.
-  42  continue
+  42  continue   ! end of season loop
 
 C Loop through each week in each season and check against the
 C calculated average data.
@@ -2496,7 +2503,6 @@ C Loop through each of the assessment periods.
         iwkbstrt(k)=0
         wkdiff(k)=3.
         GHSUMW=0.
-        itrc=0
         CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
      &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
         WRITE(outs,'(a)')PERST2

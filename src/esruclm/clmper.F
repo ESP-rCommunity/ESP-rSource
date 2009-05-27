@@ -1493,7 +1493,7 @@ C climatelist.
 #include "seasons.h"
 C seasons.h provides typper and typsea
 #include "ipvdata.h"
-      
+     
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1505,8 +1505,13 @@ C seasons.h provides typper and typsea
       COMMON/RADTYP/IDNGH
       common/exporttgi/ixopen,ixloc,ixunit
 
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
+      integer NDAY  ! current day that data has been scanned for
+      real CDIF     ! diffuse solar
+      real CTMP     ! ambient dry bulb temperature
+      real CDNR     ! direct normal solar
+      real CVEL     ! wind velocity
+      real CDIR     ! wind direction
+      real CHUM     ! ambient RH
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
@@ -1515,11 +1520,33 @@ C dm* variables are from ipvdata.h.
       character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
       character DESCR*7,DESCR1*10,title*40,hold*32,act*1
       DIMENSION ALT(24),AZI(24),GHSUM(MSPS),DAYGLOB(MSPS)
-      dimension seacddwk(MSPS),seahddtot(MSPS),seacddtot(MSPS)
-      dimension seahddwk(MSPS)
+      dimension seahddwk(MSPS)  ! hdd avg/week (for each season)
+      dimension seacddwk(MSPS)  ! cdd avg/week (for each season)
+      dimension seahddtot(MSPS),seacddtot(MSPS)  ! total hdd & cdd during each season
+
+C For each of the seasons: wkdiff is the difference in the performance
+C parameters for the assessment period and the season, iwkbest
+C is the index of the best week, iwkbstrt is the julian day start
+C of the best week, wkheatdd is heating degree days in the seasons
+C best week and wkcooldd is the cooling degree days in the seasons
+C best week.
+      dimension wkdiff(MIPVA),iwkbest(MIPVA),iwkbstrt(MIPVA)
+      dimension wkheatdd(MIPVA),wkcooldd(MIPVA)
+            
+      real hddw,cddw,radw       ! user defined weighting for HDD, CDD and radiation
+      real HBT,CBT   ! base temperatures for heating and cooling DD calcs
+      real DNJ       ! T below heating deg-hours
+      real DNM       ! subtotal of heating deg-hours
+      real XDN       ! seasonal hdd subtotal to write to seahddtot
+      real HRM       ! subtotal of hours
+      real UPJC      ! T above cooling base deg-hours
+      real UPMC      ! subtotal of cooling deg-hours
+      real XUPC      ! seasonal cdd subtotal to write to seacddtot
+      real HRMC      ! hours in the season
+      real DAYL      ! length of day (24 hours)
+      real DIRH      ! hemispheric solar radiation
+
       logical ok,dok
-      
-      real hddw,cddw,radw   ! weightings for heating dd, cooling dd, solar radiation.
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
@@ -1567,7 +1594,7 @@ C INITIALISE PARAMETERS FOR WHOLE PERIOD
       UPIC=0
       HRTOTC=0.
 
-C Loop through each seasonal period.
+C Loop through each seasonal period << MSPS? >>.
       do 42 k=1,5
         GHSUM(k)=0.
         DAYGLOB(k)=0.
@@ -1609,7 +1636,7 @@ C Loop through each seasonal period.
         CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
      &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
 
-C For each day read climate data, set parameters and analyse.
+C For each day in the season read climate data, set parameters and analyse.
         DO 10 I=IDSS,IDSF
           IDD=I
           CALL CLMGET(IDD)
@@ -1617,6 +1644,8 @@ C For each day read climate data, set parameters and analyse.
           DNJ=0
           UPJC=0.
           DAYL=24.0
+
+C For each hour in the day work out radiation and then degree days.
           DO 20 J=1,24
             IF(ALT(J).LT.0.001)THEN
               DIRH=0.
@@ -1641,25 +1670,25 @@ C T below heating BASE,SAVE DEG-HRS IN DNJ
 C T above cooling BASE ,SAVE DEG-HRS IN UPJC
               UPJC=UPJC+(TT-CBT)
             endif
-   20     CONTINUE
-          XDN=DNJ/24
-          XUPC=UPJC/24
+   20     CONTINUE       ! end of the hour loop
+          XDN=DNJ/24     ! convert from degree-hours to degree days
+          XUPC=UPJC/24   ! and do this for cooling as well
 
 C Update seasonal parameters and go to the next day.
-          DNM=DNM+DNJ
-          HRM=HRM+DAYL
-          UPMC=UPMC+UPJC
-          HRMC=HRMC+DAYL
-   10   CONTINUE
+          DNM=DNM+DNJ     ! increment heating degree hours
+          HRM=HRM+DAYL    ! increment heating hours
+          UPMC=UPMC+UPJC  ! increment cooling degree hours
+          HRMC=HRMC+DAYL  ! increment cooling hours
+   10   CONTINUE          ! end of the day-in-the-season loop
 
 C Compute parameters (total & average degree days) for this season.
         XHR=24.0/HRM
         XHRC=24.0/HRMC
         XDN=DNM/24
         XUPC=UPMC/24
-        YDN=XHR*XDN
+        YDN=XHR*XDN         ! heat dd avg/day
         seahddwk(k)=YDN*7.
-        YUPC=XHRC*XUPC
+        YUPC=XHRC*XUPC      ! cool dd avg/ay
         seacddwk(k)=YUPC*7.
 
 C Number of days in season is IDSF-IDSS+1. DAYGLOB is daily mean
@@ -1667,6 +1696,7 @@ C global horizontal solar for season.
         DAYGLOB(k)=(GHSUM(k)/(IDSF-IDSS+1))/1000.
 
 C Report on the current season.
+        call eddisp(itru,' ')
         WRITE(outs,'(3a)')title(1:lnblnk(title)),' ',PERST2
         call eddisp(itru,outs)
         WRITE(outs,'(a,F8.2,a,F8.2,a,F9.2)')' Heat DD avg/day   ',YDN,
@@ -1691,7 +1721,7 @@ C UPDATE WHOLE PERIOD
         UPIC=UPIC+UPMC
         UPMC=0.
         HRMC=0.
-  42  continue
+  42  continue   ! end of season loop
 
 C Loop through each week in each season and check against the
 C calculated average data.
@@ -1723,6 +1753,8 @@ C Allow user to define weightings.
       CALL EGETWR(HOLD,K,cddw,0.0,1.0,'W','cdd weight',IER)
       CALL EGETWR(HOLD,K,radw,0.0,1.0,'W','solar weight',IER)
       if(ier.ne.0)goto 143
+
+C Loop through each of the assessment periods << MIPVA? >>.
       IWK=0
       do 43 k=1,5
         if(k.eq.1)then
@@ -1746,9 +1778,9 @@ C Allow user to define weightings.
           IDSS=is2wins
           IDSF=is2winf
         endif
-        iwkbest=0
-        iwkbstrt=0
-        wkdiff=3.
+        iwkbest(k)=0
+        iwkbstrt(k)=0
+        wkdiff(k)=3.
         GHSUMW=0.
         CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
      &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
@@ -1803,7 +1835,7 @@ C Convert day to D,M
           CALL EDAYR(II,IDD,IMM)
           CALL EWEEKD(IDD,IMM,IYEAR,IDWK)
 
-C Prepare for output, check if week complete. << IDS ? >>
+C Prepare for output, check if week complete.
           IF(II.eq.IDSS)GO TO 41
           IF(IDWK.ne.IXDWK)GO TO 41
           iwk=iwk+1
@@ -1838,12 +1870,12 @@ C Deal with radiation.
           WRITE(outs,'(a,3F9.3,a,F9.3)')' Params (heat|cool|solar)',
      &      PARM1,PARM2,PARM3,' Params total ',PARMTOT
           call edisp(itru,outs)
-          if(PARMTOT.lt.wkdiff)then
-            wkdiff=PARMTOT
-            iwkbest=iwk
-            iwkbstrt=IDSOW
-            wkheatdd=XDN
-            wkcooldd=XUPC
+          if(PARMTOT.lt.wkdiff(k))then
+            wkdiff(k)=PARMTOT
+            iwkbest(k)=iwk
+            iwkbstrt(k)=IDSOW
+            wkheatdd(k)=XDN
+            wkcooldd(k)=XUPC
           endif
 
 C Reset weekly total global horizontal.
@@ -1905,15 +1937,15 @@ C Deal with radition here for last week of season.
         WRITE(outs,'(a,3F9.3,a,F9.3)')' Params (heat|cool|solar)',
      &    PARM1,PARM2,PARM3,' Params total ',PARMTOT
         call edisp(itru,outs)
-        if(PARMTOT.lt.wkdiff)then
-          wkdiff=PARMTOT
-          iwkbest=iwk
-          iwkbstrt=IDSOW
-          wkheatdd=XDN
-          wkcooldd=XUPC
+        if(PARMTOT.lt.wkdiff(k))then
+          wkdiff(k)=PARMTOT
+          iwkbest(k)=iwk
+          iwkbstrt(k)=IDSOW
+          wkheatdd(k)=XDN
+          wkcooldd(k)=XUPC
         endif
         call stdate(iyear,iwkbstrt,DESCR,DESCR1)
-        WRITE(outs,'(a,i3,3a,F6.2)')' Best week is nb ',iwkbest,' ',
+        WRITE(outs,'(a,i3,3a,F6.2)')' Best week is nb ',iwkbest(k),' ',
      &    DESCR1,' with minimum weighted difference of ',wkdiff
         call edisp(itru,outs)
         if(itru.ne.iuout)call edisp(iuout,outs)
@@ -1921,18 +1953,18 @@ C Deal with radition here for last week of season.
 C Convert from julian day of the start of the assessment to the end
 C of the assessment to number of days in period and get ratio with
 C the number of days in the season.
-        ijulst=iwkbstrt
-        ijulfn=iwkbstrt+6
+        ijulst=iwkbstrt(k)
+        ijulfn=iwkbstrt(k)+6
 
 C Ratio of seasonal totoal heating and cooling degree days and the
 C best assessment week heating and cooling degree days.
-        if(wkheatdd.gt.0.01)then
-          hddratio=seahddtot(k)/wkheatdd
+        if(wkheatdd(k).gt.0.01)then
+          hddratio=seahddtot(k)/wkheatdd(k)
         else
           hddratio=1.0
         endif
-        if(wkcooldd.gt.0.01)then
-          cddratio=seacddtot(k)/wkcooldd
+        if(wkcooldd(k).gt.0.01)then
+          cddratio=seacddtot(k)/wkcooldd(k)
         else
           cddratio=1.0
         endif
@@ -1951,8 +1983,8 @@ C best assessment week heating and cooling degree days.
             call askok('Use best-fit week for the 1st winter season',
      &       'typical assessment period in the climatelist?',ok,dok,1)
             if(ok)then
-              ia1wins = iwkbstrt
-              ia1winf = iwkbstrt+6
+              ia1wins = iwkbstrt(k)
+              ia1winf = iwkbstrt(k)+6
             endif
           endif
         elseif(k.eq.2)then
@@ -1971,8 +2003,8 @@ C Debug...
             call askok('Use best-fit week for the spring season',
      &       'typical assessment period in the climatelist?',ok,dok,1)
             if(ok)then
-              ia1sprs = iwkbstrt
-              ia1sprf = iwkbstrt+6
+              ia1sprs = iwkbstrt(k)
+              ia1sprf = iwkbstrt(k)+6
             endif
           endif
         elseif(k.eq.3)then
@@ -1990,8 +2022,8 @@ C Debug...
             call askok('Use best-fit week for the summer season',
      &       'typical assessment period in the climatelist?',ok,dok,1)
             if(ok)then
-              iasums = iwkbstrt
-              iasumf = iwkbstrt+6
+              iasums = iwkbstrt(k)
+              iasumf = iwkbstrt(k)+6
             endif
           endif
         elseif(k.eq.4)then
@@ -2009,8 +2041,8 @@ C Debug...
             call askok('Use best-fit week for the autumn season',
      &       'typical assessment period in the climatelist?',ok,dok,1)
             if(ok)then
-              ia2sprs = iwkbstrt
-              ia2sprf = iwkbstrt+6
+              ia2sprs = iwkbstrt(k)
+              ia2sprf = iwkbstrt(k)+6
             endif
           endif
         elseif(k.eq.5)then
@@ -2028,13 +2060,14 @@ C Debug...
             call askok('Use best-fit week for the 2nd winter season',
      &       'typical assessment period in the climatelist?',ok,dok,1)
             if(ok)then
-              ia2wins = iwkbstrt
-              ia2winf = iwkbstrt+6
+              ia2wins = iwkbstrt(k)
+              ia2winf = iwkbstrt(k)+6
             endif
           endif
         endif
 
-C For the current season set degree day or day ratios.
+C For the current season set degree day or day ratios. The logic
+C here is a bit different fron edipv.F.  << ?? >>
         dmheat(k)=hddratio
         dmcool(k)=cddratio
         dmlight(k)=dayratio
