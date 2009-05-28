@@ -46,7 +46,8 @@ Then create a tar file of the esp-r folders (the example below
 includes a version in the name of the tar file which you may
 wish to change to reflect the current version number).
 
-sudo tar cf esp-r_X11_11.6_osx.tar esp-r
+ cd /
+ sudo tar cf esp-r_X11_11.6_osx.tar /opt/esru/esp-r
 
 gzip -9 that tar file and move it into /opt/precompiled_for_osx.
 
@@ -90,7 +91,11 @@ The way that the self extractor is created is via a command similar
 to the one below (adapt for your makeself.sh location and for the
 machine type PPC/Intel):
 
-sudo /users/jon/bin/makeself-2.1.4/makeself.sh precompiled_for_osx esp-r_v11.6_osx_precomp.run "ESP-r V11.6 distribution PPC for OSX (/opt/esru)" ./setup_osx
+For PPC
+sudo /Users/jon/bin/makeself-2.1.5/makeself.sh pre_compiled_for_osx esp-r_v11.6_osx_precomp.run "ESP-r V11.6 distribution PPC for OSX (/opt/esru)" ./setup_osx
+
+For Intel
+sudo /Users/jon/bin/makeself-2.1.5/makeself.sh pre_compiled_for_osx esp-r_v11.6_osx_precomp_intel.run "ESP-r V11.6 distribution Intel for OSX (/opt/esru)" ./setup
 
 The tokens in the above command are as follows:
 
