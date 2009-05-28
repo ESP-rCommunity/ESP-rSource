@@ -179,6 +179,7 @@ C IEEE callback (Solaris)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -927,7 +928,7 @@ C a climate file by reading records 366 and 367.
         call EFOPRAN(ICLIM,LCLIM,144,0,IER)
         IF(ier.eq.0)THEN
           IREC=366
-          READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,IRT
+          READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
           IREC=367
           READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
           WRITE(OUTS,1000)CLMLOC,ICYEAR
@@ -935,7 +936,7 @@ C a climate file by reading records 366 and 367.
           CALL EDISP(IUOUT,' ')
           CALL EDISP(IUOUT,OUTS)
           IRTYPE=0
-          IF(IRT.EQ.123)IRTYPE=1
+          IF(ICDNGH.EQ.123)IRTYPE=1
           if(icfgv.lt.3)then
             h(1)='Older configuration files do not have a year record.'
             h(2)='If you want the year to be taken from the climate'

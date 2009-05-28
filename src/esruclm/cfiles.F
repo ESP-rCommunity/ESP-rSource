@@ -48,7 +48,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       LOGICAL OK,DOK,silent
@@ -177,8 +177,8 @@ C Transfer this to the binary file.
 
 C Insert Climatic Year.
       IREC=366
-      IADN=IDNGH
-      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,IADN
+      ICDNGH=IDNGH
+      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,ICDNGH
       IREC=367
       WRITE(ICLIM,REC=IREC)CLMLOC
       IREC=368
@@ -232,7 +232,7 @@ C if the radiation flag set was set to GH in the binary climate file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       COMMON/CLMDT1/CLMLOC
@@ -441,7 +441,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
       common/pophelp/h(60)
       
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       COMMON/APPRDIFF/iapprox_diff
@@ -633,8 +633,8 @@ C Transfer this to the binary file.
 
 C Insert Climatic Year.
  48   IREC=366
-      IADN=IDNGH
-      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,IADN
+      ICDNGH=IDNGH
+      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,ICDNGH
       IREC=367
       WRITE(ICLIM,REC=IREC)CLMLOC
       IREC=368
@@ -673,8 +673,8 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
       COMMON/INPER/INIT
       COMMON/FILEP/IFIL
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/RADTYP/IDNGH
       common/pophelp/h(60)
@@ -864,6 +864,8 @@ C << consider if LCLIM needs to be > 72 char >>
 
       IREC=366
       READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR,IDNGH
+      ICYEAR=IYEAR
+      ICDNGH=IDNGH
       IF(IYEAR.EQ.0)goto 1000
       IREC=367
       READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
@@ -1078,7 +1080,10 @@ C read in.
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/RADTYP/IDNGH
 
 C String variables for location.
       common/CLMLOC1/city,provence,country,source,dayname,dpdescr
@@ -1091,9 +1096,6 @@ C Design conditions line of text.
 
 C Comment lines.
       common/CLMCOM/clmcomment(2)
-
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/RADTYP/IDNGH
       dimension ICLMEPW(12,31,24,6)
 
       CHARACTER CLMLOC*30,WORD*24,uncert*44
@@ -1383,8 +1385,8 @@ C Transfer this to the binary file.
 
 C Insert Climatic Year.
       IREC=366
-      IADN=IDNGH
-      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,IADN
+      ICDNGH=IDNGH
+      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,ICDNGH
       IREC=367
       WRITE(ICLIM,REC=IREC)CLMLOC
       IREC=368

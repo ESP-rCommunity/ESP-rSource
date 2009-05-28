@@ -96,7 +96,7 @@ C seasons.h provides typper and typsea
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       common/pophelp/h(60)
       COMMON/PERPER/PERST2
       dimension pmenu(29)
@@ -394,7 +394,7 @@ C      common/appw/iappw,iappx,iappy
 
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       integer NDAY
       real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
@@ -1501,7 +1501,7 @@ C seasons.h provides typper and typsea
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/RADTYP/IDNGH
       common/exporttgi/ixopen,ixloc,ixunit
 
@@ -1944,9 +1944,9 @@ C Deal with radition here for last week of season.
           wkheatdd(k)=XDN
           wkcooldd(k)=XUPC
         endif
-        call stdate(iyear,iwkbstrt,DESCR,DESCR1)
+        call stdate(iyear,iwkbstrt(k),DESCR,DESCR1)
         WRITE(outs,'(a,i3,3a,F6.2)')' Best week is nb ',iwkbest(k),' ',
-     &    DESCR1,' with minimum weighted difference of ',wkdiff
+     &    DESCR1,' with minimum weighted difference of ',wkdiff(k)
         call edisp(itru,outs)
         if(itru.ne.iuout)call edisp(iuout,outs)
 

@@ -46,7 +46,9 @@ C seasons.h provides typper and typsea
       COMMON/INPER/INIT
       COMMON/OUTPCH/ICOUT
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -55,8 +57,6 @@ C seasons.h provides typper and typsea
 C Indicator of possible command line action to take and the
 C file associated with this action.
       common/ract/paction,pascif
-
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Path to problem and command line file (if any).
       common/rpath/path
@@ -120,6 +120,7 @@ C Initial assumptions. Pass module name to C code structure.
       KDS=1
       KDF=24
       IYEAR=2000
+      ICYEAR=2000
       cfgroot='  '
       LCFGF='  '
 
@@ -615,6 +616,7 @@ C Change radiation type.
         IRTYP=0
         IF(IRADT.EQ.2)IRTYP=123
         IDNGH=IRTYP
+        ICDNGH=IRTYP
         IREC=366
         READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR
         WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR,IRTYP
@@ -1212,7 +1214,7 @@ C Clear common blocks for a new climate file.
       SUBROUTINE clrclm
 
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
 
@@ -1228,6 +1230,7 @@ C Clear common blocks for a new climate file.
       IDS=1
       IDF=365
       IYEAR=2000
+      ICYEAR=2000
       CLAT=50.
       CLONG=0.
 

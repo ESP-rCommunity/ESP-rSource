@@ -27,7 +27,7 @@ C component data is given for both isotropic and anisotropic skies.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -245,9 +245,9 @@ C   SUBROUTINE TO PRINT CLIMATE HEADING
       COMMON/OUTPCH/ICOUT
       CHARACTER*30 CLMLOC
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
-      common/exporttgi/ixopen,ixloc,ixunit
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      common/exporttgi/ixopen,ixloc,ixunit
       character outs*124
 
 C If output to file alter the edisp unit number.

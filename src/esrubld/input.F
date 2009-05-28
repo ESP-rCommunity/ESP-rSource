@@ -113,6 +113,7 @@ C laprob  - fluid flow description file
       common/filep/ifil
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       common/outin/iuout,iuin
 
@@ -580,7 +581,7 @@ C a climate file by reading records 366 and 367.
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
       IF(ier.eq.0)THEN
         IREC=366
-        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,IRT
+        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
         IREC=367
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
         WRITE(OUTSTR,1000)CLMLOC,ICYEAR
@@ -588,7 +589,7 @@ C a climate file by reading records 366 and 367.
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,OUTSTR)
         IRTYPE=0
-        IF(IRT.EQ.123)IRTYPE=1
+        IF(ICDNGH.EQ.123)IRTYPE=1
 
 C If older configuration, confirm the year.
         if(icfgv.lt.3)then

@@ -60,7 +60,7 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
      A              CDIR(MT),CHUM(MT)
       COMMON/RADTYP/IDNGH
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERPER/PERST2
 
@@ -952,7 +952,7 @@ C is based on global horizontal and not direct normal. At the moment
 C this is specified in MKOREANCLM when this is subroutine is used
 C      COMMON/RADTYP/IDNGH
 
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/APPRDIFF/iapprox_diff
 
 C IME specifies the minute

@@ -57,7 +57,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character dinstpath*48
 
 C Climate data.
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       COMMON/C4/XLAT,XLON
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP

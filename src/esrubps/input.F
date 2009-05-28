@@ -194,6 +194,7 @@ C default file names for databases
       common/filep/ifil
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       common/outin/iuout,iuin
 
@@ -695,7 +696,7 @@ C the global model definition, as it can be specified separately.
          call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
          IF(iClmErr.eq.0)THEN
             IREC=366
-            READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,IRT
+            READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
             IREC=367
             READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
             WRITE(OUTSTR,1000)CLMLOC,ICYEAR
@@ -703,7 +704,7 @@ C the global model definition, as it can be specified separately.
             CALL EDISP(IUOUT,' ')
             CALL EDISP(IUOUT,OUTSTR)
             IRTYPE=0
-            IF(IRT.EQ.123)IRTYPE=1
+            IF(ICDNGH.EQ.123)IRTYPE=1
    
 C If older configuration, confirm the year.
             if(icfgv.lt.3)then

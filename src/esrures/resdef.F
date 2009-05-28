@@ -648,6 +648,7 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
 
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
@@ -901,6 +902,7 @@ C Nothing references ZGAE and ZGAI.
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/RECVBP/IBP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       common/hcthry/ihct,icorexhct
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -1293,10 +1295,14 @@ C Climate file not found - ask user for name.
       endif
 
 C Also recover the solar radiation flag from the climate file.
+
+C << Note this sets the year from the climate file scan!  What
+C << if the model uses a different year?  Which one is used?
+
       IRECC=366
-      READ(IUNITC,REC=IRECC,IOSTAT=ios,ERR=102)IYEAR,IRT
+      READ(IUNITC,REC=IRECC,IOSTAT=ios,ERR=102)IYEAR,ICDNGH
       IRTYPE=0
-      IF(IRT.EQ.123)IRTYPE=1
+      IF(ICDNGH.EQ.123)IRTYPE=1
 
     2 RETURN
 
@@ -1304,7 +1310,7 @@ C Also recover the solar radiation flag from the climate file.
         call usrmsg(' ',
      &    'No permission to read year from climate file.','W')
       else
-        call usrmsg(' ','Error readint year from climate file.','W')
+        call usrmsg(' ','Error reading year from climate file.','W')
       endif
       ier=-4
       goto 2

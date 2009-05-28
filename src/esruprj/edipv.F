@@ -1151,8 +1151,14 @@ C Re-scan climate seasons and periods.
           MODSIT=.true.
         elseif(IW.eq.2)then
 
-C Local (stripped) version of a subroutine from clmsyn.F
+C Local (stripped) version of a subroutine from clmper.F
+
+C << check if the current climate file is open and the values
+C << for clat and clong are instanciated prior to call to getmultip
+
           call getmultip
+
+C Loop through five (?) seasons.and set dd arrays.
           do 105 ij=1,5
             ddmheat(ij)=dmheat(ij)
             ddmcool(ij)=dmcool(ij)
@@ -2216,11 +2222,9 @@ C seasons.h provides typper and typsea
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/RADTYP/IDNGH
 
       integer NDAY  ! current day that data has been scanned for
@@ -2279,8 +2283,6 @@ C Scan the climate file for some of its details.
       IREC=366
       READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR,IDNGH
       IF(IYEAR.EQ.0)goto 1000
-      IREC=367
-      READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
       IREC=368
       READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
 
