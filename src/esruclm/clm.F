@@ -26,6 +26,11 @@ C climatic data sets compatible with ESP-r.
       program clm
 #include "esprdbfile.h"
 #include "espriou.h"
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+      
 #include "seasons.h"
 C seasons.h provides typper and typsea
       

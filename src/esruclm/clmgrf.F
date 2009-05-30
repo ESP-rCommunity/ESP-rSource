@@ -387,6 +387,11 @@ C indicate how much space is available for the graph (i.e. what
 C axis that do not need to be drawn)
 C season (1 char) '-' do not bother 's' indicate season.
       SUBROUTINE CLMDRW(IPICK,mxmn,onleft,onright,season)
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+
 #include "seasons.h"
 C seasons.h provides typper and typsea
 

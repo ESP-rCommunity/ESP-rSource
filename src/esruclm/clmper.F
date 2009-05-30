@@ -90,6 +90,11 @@ C ************* SELPER
 C SELPER: Menu for period selection - user defined, monthly, typical
 C week or season (scanned from climatelist file).
       subroutine selper(ier)
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+
 #include "seasons.h"
 C seasons.h provides typper and typsea
 
@@ -1415,6 +1420,11 @@ C iuf, return ier=0 if ok. This item can either
 C be as a fragment to be included in the climatelist file by
 C the user or as part of an item management facility.
       subroutine mkitemclimatelist(iuf,ier)
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+      
 #include "seasons.h"
 C seasons.h provides typper and typsea
       
@@ -1493,11 +1503,10 @@ C climatelist.
 #include "seasons.h"
 C seasons.h provides typper and typsea
 #include "ipvdata.h"
-     
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -1516,25 +1525,13 @@ C seasons.h provides typper and typsea
      &              CDIR(MT),CHUM(MT)
 
 C dm* variables are from ipvdata.h.
+C sea* variables are from season.h
 
       character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
       character DESCR*7,DESCR1*10,title*40,hold*32,act*1
       DIMENSION ALT(24),AZI(24),GHSUM(MSPS),DAYGLOB(MSPS)
-      dimension seahddwk(MSPS)  ! hdd avg/week (for each season)
-      dimension seacddwk(MSPS)  ! cdd avg/week (for each season)
-      dimension seahddtot(MSPS),seacddtot(MSPS)  ! total hdd & cdd during each season
 
-C For each of the seasons: wkdiff is the difference in the performance
-C parameters for the assessment period and the season, iwkbest
-C is the index of the best week, iwkbstrt is the julian day start
-C of the best week, wkheatdd is heating degree days in the seasons
-C best week and wkcooldd is the cooling degree days in the seasons
-C best week.
-      dimension wkdiff(MIPVA),iwkbest(MIPVA),iwkbstrt(MIPVA)
-      dimension wkheatdd(MIPVA),wkcooldd(MIPVA)
-            
-      real hddw,cddw,radw       ! user defined weighting for HDD, CDD and radiation
-      real HBT,CBT   ! base temperatures for heating and cooling DD calcs
+      real HBT,CBT   ! local base temperatures for heating and cooling DD calcs
       real DNJ       ! T below heating deg-hours
       real DNM       ! subtotal of heating deg-hours
       real XDN       ! seasonal hdd subtotal to write to seahddtot
@@ -1546,6 +1543,12 @@ C best week.
       real DAYL      ! length of day (24 hours)
       real DIRH      ! hemispheric solar radiation
 
+C For each of the seasons:
+C  cddratio is the season / assessment ratio for cooling
+C  hddratio is the season / assessment ratio for heating
+      dimension cddratio(MIPVA)
+      dimension hddratio(MIPVA)
+
       logical ok,dok
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
@@ -1554,19 +1557,28 @@ C best week.
         return
       endif
 
-C Initial weightings for heating dd, cooling dd, solar radiation.
+C Initial weightings for heating dd, cooling dd, solar radiation (from seasons.h).
       hddw=1.0
       cddw=1.0
       radw=1.0
 
       H(1)='Degree day calculations are derived from a specific '
       H(2)='base temperature (deg C). '
-      HBT=17.
+      if(hddbaset.lt.0.1)then
+        hddbaset=17.0
+      endif
+      HBT=hddbaset
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
      &           -10.,'W',40.,'W',17.0,'DD heating base temp',IER,2)
-      CBT=21.
+      hddbaset=HBT
+
+      if(cddbaset.lt.0.1)then
+        cddbaset=21.0
+      endif
+      CBT=cddbaset
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
      &           -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,2)
+      cddbaset=CBT
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -1575,20 +1587,19 @@ C If output to file alter the edisp unit number.
         call usrmsg(' Output being directed to file... ',' ','-')
       endif
 
-C Reset text feedback.
+C Reset text feedback and write out beginning of report.
       CALL CHEAD(30)
-      DNM=0.
-      HRM=0.
-      UPMC=0.
-      HRMC=0.
-
-      WRITE(outs,12)HBT,CBT
+      WRITE(outs,12) hddbaset,cddbaset
   12  FORMAT(' Degree day analysis: heating base at',F6.1,' & cooling',
      &       F6.1,' Deg C')
       call edisp(itru,outs)
       call edisp(itru,'  ')
 
-C INITIALISE PARAMETERS FOR WHOLE PERIOD
+C Clear initial values and parameters for whole period.
+      DNM=0.
+      HRM=0.
+      UPMC=0.
+      HRMC=0.
       DNI=0
       HRTOT=0.
       UPIC=0
@@ -1659,16 +1670,16 @@ C For each hour in the day work out radiation and then degree days.
             endif
 
             TT=CTMP(J)
-            IF(TT.GT.HBT)then
+            IF(TT.GT.hddbaset)then
             else
 
 C T below heating BASE,SAVE DEG-HRS IN DNJ
-              DNJ=DNJ+(HBT-TT)
+              DNJ=DNJ+(hddbaset-TT)
             endif
-            IF(TT.GT.CBT)then
+            IF(TT.GT.cddbaset)then
 
 C T above cooling BASE ,SAVE DEG-HRS IN UPJC
-              UPJC=UPJC+(TT-CBT)
+              UPJC=UPJC+(TT-cddbaset)
             endif
    20     CONTINUE       ! end of the hour loop
           XDN=DNJ/24     ! convert from degree-hours to degree days
@@ -1817,16 +1828,16 @@ C For each day read climate data, set parameters and analyse.
             endif
 
             TT=CTMP(J)
-            IF(TT.GT.HBT)then
+            IF(TT.GT.hddbaset)then
             else
 
 C T below heating BASE,SAVE DEG-HRS IN DNJ
-              DNJ=DNJ+(HBT-TT)
+              DNJ=DNJ+(hddbaset-TT)
             endif
-            IF(TT.GT.CBT)then
+            IF(TT.GT.cddbaset)then
 
 C T above cooling BASE ,SAVE DEG-HRS IN UPJC
-              UPJC=UPJC+(TT-CBT)
+              UPJC=UPJC+(TT-cddbaset)
             endif
    21     CONTINUE
 
@@ -1870,10 +1881,11 @@ C Deal with radiation.
           WRITE(outs,'(a,3F9.3,a,F9.3)')' Params (heat|cool|solar)',
      &      PARM1,PARM2,PARM3,' Params total ',PARMTOT
           call edisp(itru,outs)
+
           if(PARMTOT.lt.wkdiff(k))then
-            wkdiff(k)=PARMTOT
-            iwkbest(k)=iwk
-            iwkbstrt(k)=IDSOW
+            wkdiff(k)=PARMTOT  ! remember the weighted parameters
+            iwkbest(k)=iwk     ! remember the week index
+            iwkbstrt(k)=IDSOW  ! remember julian day at start of that week
             wkheatdd(k)=XDN
             wkcooldd(k)=XUPC
           endif
@@ -1944,9 +1956,12 @@ C Deal with radition here for last week of season.
           wkheatdd(k)=XDN
           wkcooldd(k)=XUPC
         endif
+
+C Cast year and julian day at start of best fit week to a description.
         call stdate(iyear,iwkbstrt(k),DESCR,DESCR1)
-        WRITE(outs,'(a,i3,3a,F6.2)')' Best week is nb ',iwkbest(k),' ',
-     &    DESCR1,' with minimum weighted difference of ',wkdiff(k)
+        WRITE(outs,'(a,i3,3a,F6.2,a,F6.2)')' Best week number is ',
+     &    iwkbest(k),' ',DESCR1,' with HDD of ',wkheatdd(k),
+     &    ' & CDD of ',wkcooldd(k)
         call edisp(itru,outs)
         if(itru.ne.iuout)call edisp(iuout,outs)
 
@@ -1956,17 +1971,18 @@ C the number of days in the season.
         ijulst=iwkbstrt(k)
         ijulfn=iwkbstrt(k)+6
 
-C Ratio of seasonal totoal heating and cooling degree days and the
-C best assessment week heating and cooling degree days.
+C Ratio of seasonal total heating and cooling degree days and the
+C best assessment week heating and cooling degree days. Ensure that
+C there is no divide by zero.
         if(wkheatdd(k).gt.0.01)then
-          hddratio=seahddtot(k)/wkheatdd(k)
+          hddratio(k)=seahddtot(k)/wkheatdd(k)
         else
-          hddratio=1.0
+          hddratio(k)=1.0
         endif
         if(wkcooldd(k).gt.0.01)then
-          cddratio=seacddtot(k)/wkcooldd(k)
+          cddratio(k)=seacddtot(k)/wkcooldd(k)
         else
-          cddratio=1.0
+          cddratio(k)=1.0
         endif
         if(k.eq.1)then
           dayratio=((is1winf-is1wins)+1)/((ijulfn-ijulst)+1)
@@ -1975,7 +1991,7 @@ C best assessment week heating and cooling degree days.
           call edisp(iuout,outs)
           write(outs,'(a,F6.3,A,F6.3)') 
      &      'early winter ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
+     &      hddratio(k),' & cool DD:',cddratio(k)
           call edisp(iuout,outs)
           if(act.eq.'?')then
             dok=.true.
@@ -1995,7 +2011,7 @@ C Debug...
           call edisp(iuout,outs)
           write(outs,'(a,F6.3,A,F6.3)') 
      &      'spring ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
+     &      hddratio(k),' & cool DD:',cddratio(k)
           call edisp(iuout,outs)
           if(act.eq.'?')then
             dok=.true.
@@ -2014,7 +2030,7 @@ C Debug...
           call edisp(iuout,outs)
           write(outs,'(a,F6.3,A,F6.3)') 
      &      'summer ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
+     &      hddratio(k),' & cool DD:',cddratio(k)
           call edisp(iuout,outs)
           if(act.eq.'?')then
             dok=.true.
@@ -2033,7 +2049,7 @@ C Debug...
           call edisp(iuout,outs)
           write(outs,'(a,F6.3,A,F6.3)') 
      &      'autumn ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
+     &      hddratio(k),' & cool DD:',cddratio(k)
           call edisp(iuout,outs)
           if(act.eq.'?')then
             dok=.true.
@@ -2052,7 +2068,7 @@ C Debug...
           call edisp(iuout,outs)
           write(outs,'(a,F6.3,A,F6.3)') 
      &      'late winter ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
+     &      hddratio(k),' & cool DD:',cddratio(k)
           call edisp(iuout,outs)
           if(act.eq.'?')then
             dok=.true.
@@ -2066,19 +2082,28 @@ C Debug...
           endif
         endif
 
-C For the current season set degree day or day ratios. The logic
-C here is a bit different fron edipv.F.  << ?? >>
-        dmheat(k)=hddratio
-        dmcool(k)=cddratio
+C For the current season set degree day or day ratios. For heating
+C and cooling ensure that the dm* value is at least as large as the
+C day ratio.
+        if(hddratio(k).gt.dayratio)then
+          dmheat(k)=hddratio(k)
+        else
+          dmheat(k)=dayratio
+        endif
+        if(cddratio(k).gt.dayratio)then
+          dmcool(k)=cddratio(k)
+        else
+          dmcool(k)=dayratio
+        endif
         dmlight(k)=dayratio
         dmsmlpw(k)=dayratio
         dmfan(k)=dayratio
         dmdhw(k)=dayratio
+        h(1)='You might wish to record this information before going'
+        h(2)='to the next season.'
         if(act.eq.'?')then
           continue
         else
-          h(1)='You might wish to record this information before going'
-          h(2)='to the next season.'
           call easkab('Options:',' ','look at next season','continue',
      &      iok,2)
           if(iok.eq.2)return

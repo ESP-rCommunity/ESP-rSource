@@ -31,6 +31,11 @@ C Scan list of climate databases and present selection to user.
 #include "epara.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+
 #include "seasons.h"
 C seasons.h provides typper and typsea
       
@@ -466,6 +471,11 @@ C  if 'f' then stop the application
 C  if 'u' then jump to 'useit' part of calling subroutine
 C  if 'e' then found 'end' so close unit number (92)
       subroutine itemclimatelist(idblfil,act,actreturn,clmdb,ier)
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+
 #include "seasons.h"
 C seasons.h provides typper and typsea
 

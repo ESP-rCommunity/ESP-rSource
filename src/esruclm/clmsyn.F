@@ -1075,6 +1075,11 @@ C ********* SYNOPDEGS *******
 C SYNOPDEGS computes seasonal heating and cooling DEGREE DAYS 
 C for the given period.
       SUBROUTINE SYNOPDEGS
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+
 #include "seasons.h"
 C seasons.h provides typper and typsea
 
