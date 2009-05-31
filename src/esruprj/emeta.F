@@ -228,6 +228,7 @@ C Fell through, no change in climate and location.
           endif
         endif
 
+C Impose climate site data on the model.
   75    continue
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)

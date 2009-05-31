@@ -2221,8 +2221,6 @@ C << periods for assessment e.g. a fortnight?
 C seasons.h provides typper and typsea
 #include "ipvdata.h"
 
-      integer lnblnk  ! function definition
-
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -2237,7 +2235,7 @@ C Redirected text/graphics parameters.
 C dm* variables are from ipvdata.h.
 C sea* variables are from season.h
 
-      character H*72,outs*124,title*40
+      character H*72,outs*124
 
       real HBT,CBT   ! local base temperatures for heating and cooling DD calcs
 
@@ -2261,12 +2259,7 @@ C Initial weightings for heating dd, cooling dd, solar radiation (from seasons.h
 C Set delimiter in reports to standard/literal format.
       delim = '-'
 
-C << climate file reading SEEMS to be to get a value for iyear >>
-C << if this is passed in or recovered from a different common block >>
-C << then this block of code is not needed. >>
-C << NEXT test icyear >>
-
-C First check if it exists: if so open.
+C First check if climate datase exists: if so open.
       CALL ERPFREE(ICLIM,ISTAT)
       CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
       if(ISTAT.ge.0)then
@@ -2275,10 +2268,10 @@ C First check if it exists: if so open.
         call edisp(iuout,' opened climate file')
       endif
 
-C Scan the climate file for some of its details.
+C Scan the climate file for CLAT and CLONG details.
       IREC=366
-      READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR,IDNGH
-      IF(IYEAR.EQ.0)goto 1000
+      READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
+      IF(ICYEAR.EQ.0)goto 1000
       IREC=368
       READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
 
