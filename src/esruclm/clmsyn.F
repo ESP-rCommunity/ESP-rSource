@@ -189,6 +189,9 @@ C Look for DD and Radiation typical week.
      &    'use in climatelist typical assessment periods)?',ok,dok,3)
         if(ok)then
           call DDRADSUM('?')
+
+C << But where are the best-fit weeks reported? >>
+
         else
           call DDRADSUM('-')
         endif
