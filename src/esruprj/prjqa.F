@@ -46,6 +46,7 @@ C ICLIM,LCLIM (for climate file)
 C espriou.h provides currentfile.
 #include "sbem.h"
 #include "ipvdata.h"
+#include "seasons.h"
       
       integer lnblnk  ! function definition
 
@@ -1112,24 +1113,29 @@ C Check if embedded within configuration file.
             call edisp248(itu,ipvsynop,80)
           elseif(contextinfo.eq.2)then
 
-C Rescan the climatelist file to get seasons. If this was successful
-C then include a description of the IPV. Otherwise warn user about
+C If there is no local season definition, rescan the climatelist
+C file to get seasons. If this was successful then include
+C a description of the IPV. Otherwise warn user about
 C the climate file and attempt to print out IPV contents.
-            INQUIRE (FILE=cdblfil,EXIST=XST)
-            if(XST)then
-              IUF=IFIL+2
-              call scancdblist(IUF,LCLIM,ok,iercl)
-              if(iercl.eq.0)then
-                call listipvdat(itu,'a',ier)
-              else
-                call edisp(itu,
-     &            'The climatelist was incomplete or missing so the')
-                call edisp(itu,'IPV details might be incorrect.')
-                if(ieripv.eq.0)then
+            if(ihaveseason.ge.1)then
+              call listipvdat(itu,'a',ier)
+            else
+              INQUIRE (FILE=cdblfil,EXIST=XST)
+              if(XST)then
+                IUF=IFIL+2
+                call scancdblist(IUF,LCLIM,ok,iercl)
+                if(iercl.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else
                   call edisp(itu,
+     &            'The climatelist was incomplete or missing so the')
+                  call edisp(itu,'IPV details might be incorrect.')
+                  if(ieripv.eq.0)then
+                    call listipvdat(itu,'a',ier)
+                  else
+                    call edisp(itu,
      &              'The IPV description was incomplete or missing.')
+                  endif
                 endif
               endif
             endif
@@ -2039,6 +2045,8 @@ C not browsing.
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "espriou.h"
+#include "seasons.h"
       
       integer lnblnk  ! function definition
 
@@ -2124,6 +2132,24 @@ C is still a need for upgrading.
           endif
         endif
   775 continue
+
+C Check whether the climate file is associated with seasons defined
+C in the climatelist file and if none written to the model set flag
+C for this to happen.
+      if(ihaveseason.gt.0)then
+        continue
+      else
+        INQUIRE (FILE=cdblfil,EXIST=XST)
+        if(XST)then
+          IUF=IFIL+2
+          call scancdblist(IUF,LCLIM,ok,iercl)
+          if(iercl.eq.0)then
+            ihaveseason=1
+            allnew=.false.
+          endif
+        endif
+      endif
+
       if(allnew)then
         igupgrade=2
         forceupgrade=.false.
@@ -2339,6 +2365,23 @@ C Save the file, sorting the periods if necessary.
 
 C Save the model configuration file before continuing.
           CALL EMKCFG('-',IER)
+
+C Check if climate file season data is available via the climatelist
+C file and then include seasonal tokens in the model.
+          if(ihaveseason.gt.0)then
+            continue
+          else
+            INQUIRE (FILE=cdblfil,EXIST=XST)
+            if(XST)then
+              IUF=IFIL+2
+              call scancdblist(IUF,LCLIM,ok,iercl)
+              if(iercl.eq.0)then
+                ihaveseason=1
+                CALL EMKCFG('-',IER)
+              endif
+            endif
+          endif
+
 
 C While we are at it, control files often include out of date descriptions
 C and if there is a control file scan it and write it back out again.

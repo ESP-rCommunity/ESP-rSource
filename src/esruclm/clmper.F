@@ -1419,6 +1419,10 @@ C Write an item for climatelist file to previously opened file on unit
 C iuf, return ier=0 if ok. This item can either
 C be as a fragment to be included in the climatelist file by
 C the user or as part of an item management facility.
+
+C << consider how to make this a common code for use in writing
+C << to configuration file as well as climatelist and climate block
+
       subroutine mkitemclimatelist(iuf,ier)
 
 C Manual inclusion of a parameter from building.h
@@ -1433,10 +1437,13 @@ C seasons.h provides typper and typsea
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
       COMMON/CLMDT1/CLMLOC
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
       character clmlhelp*72,tab*1
       CHARACTER CLMLOC*30
+      character descr*7,descrst*10,descrfn*10  ! for season dates
+      character descrst1*10,descrfn1*10        ! for 2nd season dates
 
       tab=CHAR(9) 
      
@@ -1458,28 +1465,58 @@ C with default information.
       call edayr(is1winf,id2,im2)
       call edayr(is2wins,id3,im3)
       call edayr(is2winf,id4,im4)
-      write(iuf,'(a,8i3)')'*winter_s',id1,im1,id2,im2,id3,im3,id4,im4
+      call stdate(iyear,is1wins,descr,descrst)
+      call stdate(iyear,is1winf,descr,descrfn)
+      call stdate(iyear,is2wins,descr,descrst1)
+      call stdate(iyear,is2winf,descr,descrfn1)
+      write(iuf,'(a,8i3,8a)')'*winter_s',id1,im1,id2,im2,id3,im3,
+     &  id4,im4,' # seasons ',descrst,'--',descrfn,' & ',descrst1,
+     &    '--',descrfn1
       call edayr(is1sprs,id1,im1)
       call edayr(is1sprf,id2,im2)
       call edayr(is2sprs,id3,im3)
       call edayr(is2sprf,id4,im4)
-      write(iuf,'(a,8i3)')'*spring_s',id1,im1,id2,im2,id3,im3,id4,im4
+      call stdate(iyear,is1sprs,descr,descrst)
+      call stdate(iyear,is1sprf,descr,descrfn)
+      call stdate(iyear,is2sprs,descr,descrst1)
+      call stdate(iyear,is2sprf,descr,descrfn1)
+      write(iuf,'(a,8i3,8a)')'*spring_s',id1,im1,id2,im2,id3,im3,
+     &  id4,im4,' # seasons ',descrst,'--',descrfn,' & ',descrst1,
+     &  '--',descrfn1
       call edayr(is1sums,id1,im1)
       call edayr(is1sumf,id2,im2)
-      write(iuf,'(a,4i3)')'*summer_s',id1,im1,id2,im2
+      call stdate(iyear,is1sums,descr,descrst)
+      call stdate(iyear,is1sumf,descr,descrfn)
+      write(iuf,'(a,4i3,4a)')'*summer_s',id1,im1,id2,im2,
+     &  ' # summer season ',descrst,'--',descrfn
       call edayr(ia1wins,id1,im1)
       call edayr(ia1winf,id2,im2)
       call edayr(ia2wins,id3,im3)
       call edayr(ia2winf,id4,im4)
-      write(iuf,'(a,8i3)')'*winter_t',id1,im1,id2,im2,id3,im3,id4,im4
+      call stdate(iyear,ia1wins,descr,descrst)
+      call stdate(iyear,ia1winf,descr,descrfn)
+      call stdate(iyear,ia2wins,descr,descrst1)
+      call stdate(iyear,ia2winf,descr,descrfn1)
+      write(iuf,'(a,8i3,8a)')'*winter_t',id1,im1,id2,im2,id3,im3,
+     &  id4,im4,' # typical ',descrst,'--',descrfn,' & ',descrst1,
+     &  '--',descrfn1
       call edayr(ia1sprs,id1,im1)
       call edayr(ia1sprf,id2,im2)
       call edayr(ia2sprs,id3,im3)
       call edayr(ia2sprf,id4,im4)
-      write(iuf,'(a,8i3)')'*spring_t',id1,im1,id2,im2,id3,im3,id4,im4
+      call stdate(iyear,ia1sprs,descr,descrst)
+      call stdate(iyear,ia1sprf,descr,descrfn)
+      call stdate(iyear,ia2sprs,descr,descrst1)
+      call stdate(iyear,ia2sprf,descr,descrfn1)
+      write(iuf,'(a,8i3,8a)')'*spring_t',id1,im1,id2,im2,id3,im3,
+     &  id4,im4,' # typical ',descrst,'--',descrfn,' & ',descrst1,
+     &  '--',descrfn1
       call edayr(iasums,id1,im1)
       call edayr(iasumf,id2,im2)
-      write(iuf,'(a,4i3)')'*summer_t',id1,im1,id2,im2
+      call stdate(iyear,iasums,descr,descrst)
+      call stdate(iyear,iasumf,descr,descrfn)
+      write(iuf,'(a,4i3,4a)')'*summer_t',id1,im1,id2,im2,
+     &  ' # typical summer ',descrst,'--',descrfn
       write(iuf,'(a)')'*help_start'
       if(nbclmlhelp.eq.0)then
         write(iuf,'(a)')' Supporting text has yet to be entered.'
@@ -1501,19 +1538,13 @@ C climatelist.  It calls clmddscan to do most of the work.
       SUBROUTINE DDRADSUM(act)
 #include "building.h"
 #include "seasons.h"
-C seasons.h provides typper and typsea
-#include "ipvdata.h"
+C seasons.h provides typper, typsea, sea* variables
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
-      COMMON/RADTYP/IDNGH
       common/exporttgi/ixopen,ixloc,ixunit
 
-C dm* variables are from ipvdata.h.
-C sea* variables are from season.h
 
       character H*72,outs*124
       character act*1

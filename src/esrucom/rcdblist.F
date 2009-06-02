@@ -44,6 +44,9 @@ C seasons.h provides typper and typsea
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+      common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
+      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
+      character clmlhelp*72
 
       dimension name(60), mitem(35)
       character name*32,mitem*33,OUTSTR*124,WORD*20
@@ -245,6 +248,7 @@ C Present information on a climate db.
           if(tlook(1:lnblnk(tlook)).eq.look(1:lnblnk(look)))then
 
 C Parse this item of the climatelist file.
+            write(clmlnam,'(a)') tlook(1:32)  ! remember menu entry 
             call itemclimatelist(idblfil,'r',actreturn,clmdb,ier)
             if(actreturn.eq.'e')then
               goto 92
@@ -284,10 +288,13 @@ C Scan list of climate databases for name and return database.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
+      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
+      character clmlhelp*72
 
       dimension name(60)
       character name*32,OUTSTR*124,WORD*20
-      character group*32,tlook*32,line*72,outs*124
+      character group*32,tlook*32,outs*124
       character clmdb*72,avail*10,alias*32
 
 C Open the list of climate databases.
@@ -331,7 +338,6 @@ C Get info for db matching the alias.
   3   CALL STRIPC(idblfil,OUTSTR,0,ND,0,'item lines',IER)
       if(ier.ne.0)goto 92
 
-      line=' '
       clmdb='UNKNOWN'
       K=0
       CALL EGETW(outstr,K,WORD,'W','*name tag',IER)
@@ -339,6 +345,8 @@ C Get info for db matching the alias.
         tlook = ' '
         call egetrm(outstr,K,tlook,'W','name',IER)
         if(tlook(1:lnblnk(tlook)).eq.alias(1:lnblnk(alias)))then
+          write(clmlnam,'(a)') tlook(1:32)  ! remember menu entry 
+	
   4       CALL STRIPC(idblfil,OUTSTR,0,ND,0,'item line',IER)
           if(ier.ne.0)goto 92
           K=0
@@ -351,8 +359,8 @@ C Get info for db matching the alias.
             call edisp(iuout,outs)
             goto 4
           elseif(WORD(1:5).eq.'*aide')then
-            call egetrm(outstr,K,line,'W','brief description',IER)
-            write(outs,'(a,a)') ' Description  : ',line
+            call egetrm(outstr,K,clmlaid,'W','brief description',IER)
+            write(outs,'(a,a)') ' Description  : ',clmlaid
             call edisp(iuout,outs)
             goto 4
           elseif(WORD(1:6).eq.'*avail')then
@@ -399,9 +407,12 @@ C the climate file was not selected via scan of climatelist.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
+      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
+      character clmlhelp*72
 
       character*(*) clmdb
-      character OUTSTR*124,WORD*20
+      character OUTSTR*124,WORD*20,outs*124
       character tlook*72
       character actreturn*1
       logical ok
@@ -432,11 +443,22 @@ C Get info for db matching the alias.
 
       K=0
       CALL EGETW(outstr,K,WORD,'W','*name tag',IER)
-      if(WORD(1:5).eq.'*dbfl')then
+      if(WORD(1:5).eq.'*aide')then
+        call egetrm(outstr,K,clmlaid,'W','brief description',IER)
+        goto 3
+      elseif(WORD(1:5).eq.'*name')then
+        call egetrm(outstr,K,clmlnam,'W','menu entry',IER)
+        goto 3
+      elseif(WORD(1:5).eq.'*dbfl')then
         call egetrm(outstr,K,tlook,'W','file name',IER)
         if(tlook(1:lnblnk(tlook)).eq.clmdb(1:lnblnk(clmdb)))then
 
 C Parse this item of the climatelist file.
+          write(outs,'(a,a)') ' Description  : ',clmlaid
+          call edisp(iuout,outs)
+          write(outs,'(a,a)') ' Menu entry  : ',clmlnam
+          call edisp(iuout,outs)
+
           call itemclimatelist(idblfil,'s',actreturn,clmdb,ier)
           if(actreturn.eq.'e')then
             if(ier.eq.0) ok = .true.
@@ -504,6 +526,7 @@ C Numbers associated with one climatelist item.
       character clmlhelp*72
 
   4   CALL STRIPC(idblfil,OUTSTR,0,ND,0,'item line',IER)
+      write(6,*) outstr(1:lnblnk(outstr))
       if(ier.ne.0)then
         actreturn='e'
         return
@@ -529,6 +552,11 @@ C Numbers associated with one climatelist item.
         call edisp(iuout,outs)
         if(act.eq.'r')sethead = clmlaid
         goto 4
+      elseif(WORD(1:5).eq.'*name')then
+        call egetrm(outstr,K,clmlnam,'W','menu entry',IER)
+        write(outs,'(a,a)') ' Menu entry  : ',clmlnam
+        call edisp(iuout,outs)
+        goto 4
       elseif(WORD(1:6).eq.'*avail')then
         call egetrm(outstr,K,clmlavail,'W','db avail',IER)
         if(act.eq.'s')then
@@ -537,6 +565,8 @@ C Numbers associated with one climatelist item.
         endif
         goto 4
       elseif(WORD(1:9).eq.'*winter_t')then
+
+C Instanciate typper common block variables ia1wins,ia1winf,ia2wins,ia2winf 
         call egetrm(outstr,K,pstring,'W','winter typ',IER)
         CALL CHITMS(pstring,ni)
         if(ni.eq.4)then
@@ -575,6 +605,8 @@ C Has start and end day of both winters.
         endif
         goto 4
       elseif(WORD(1:9).eq.'*spring_t')then
+
+C Instanciate typper common block variables ia1sprs,ia1sprf,ia2sprs,ia2sprf 
         call egetrm(outstr,K,pstring,'W','spring typ',IER)
         CALL CHITMS(pstring,ni)
         if(ni.eq.4)then
@@ -613,6 +645,8 @@ C Has start and end day and typical day of spring and autumn.
         endif
         goto 4
       elseif(WORD(1:9).eq.'*summer_t')then
+
+C Instanciate typper common block variables iasums & iasumf
         call egetrm(outstr,K,pstring,'W','summer typ',IER)
         CALL CHITMS(pstring,ni)
         K=0
@@ -626,7 +660,7 @@ C Has start and end day and typical day of spring and autumn.
       elseif(WORD(1:9).eq.'*winter_s')then
 
 C Read winter season - two periods e.g. nov-dec & jan-feb
-C is1wins,is1winf,is2wins,is2winf
+C common block typsea is1wins,is1winf,is2wins,is2winf
         call egetrm(outstr,K,pstring,'W','winter sea',IER)
         CALL CHITMS(pstring,ni)
         K=0
@@ -646,7 +680,7 @@ C is1wins,is1winf,is2wins,is2winf
       elseif(WORD(1:9).eq.'*spring_s')then
 
 C Read transition season - two periods e.g. mar-may & sep-oct
-C is1sprs,is1sprf,is2sprs,is2sprf
+C common block typsea is1sprs,is1sprf,is2sprs,is2sprf
         call egetrm(outstr,K,pstring,'W','trans sea',IER)
         CALL CHITMS(pstring,ni)
         K=0
@@ -665,7 +699,7 @@ C is1sprs,is1sprf,is2sprs,is2sprf
         goto 4
       elseif(WORD(1:9).eq.'*summer_s')then
 
-C Read summer season - one period e.g. jun-aug (is1sums,is1sumf).
+C Read summer season - e.g. jun-aug (common block typsea is1sums,is1sumf).
         call egetrm(outstr,K,pstring,'W','summer sea',IER)
         CALL CHITMS(pstring,ni)
         K=0

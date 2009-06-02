@@ -543,6 +543,11 @@ C Write alternative definition of weekends if not default.
         WRITE(IFCFG,'(a,2I3,a)',IOSTAT=IOS,ERR=2) '*weekend  ',
      &    idwe1,idwe2,' # alt weekend def'
       endif
+
+C If there is a seasonal definition associated with the climate
+C file (e.g. user defined or via climate list).
+C << to be done >>
+
       WRITE(IFCFG,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'
 

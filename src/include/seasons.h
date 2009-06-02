@@ -49,3 +49,10 @@ C base temperatures.
       real hddbaset ! base heating temperature for dd calcs
       real cddbaset ! base cooling temperature for dd calcs
       common/seaddweighting/hddw,cddw,radw,hddbaset,cddbaset
+
+C Signal availablilty of seaonal information
+      integer ihaveseason  ! 1 is whole season and typical period
+                           ! 2 also includes user weightings and base temps
+                           ! 0 not available
+      common/haveseason/ihaveseason
+

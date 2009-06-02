@@ -326,37 +326,41 @@ C is for an annual assessment.
 
 C Rescan the `climatelist` file. Check if this climate is
 C in the list. If not instanciate season and typical start and end dates.
-      INQUIRE (FILE=cdblfil,EXIST=XST)
-      if(XST)then
-        IUF=IFIL+2
-        call scancdblist(IUF,LCLIM,ok,ier)
-        if(ok)then
-          continue
-        else
+      if(ihaveseason.gt.0)then
+        continue
+      else
+        INQUIRE (FILE=cdblfil,EXIST=XST)
+        if(XST)then
+          IUF=IFIL+2
+          call scancdblist(IUF,LCLIM,ok,ier)
+          if(ok)then
+            continue
+          else
 
 C Set default early winter, spring, summer, autumn, late winter periods.
-          CALL EDAY(9,1,ia1wins)
-          CALL EDAY(15,1,ia1winf)
-          CALL EDAY(6,3,ia1sprs)
-          CALL EDAY(12,3,ia1sprf)
-          CALL EDAY(11,7,iasums)
-          CALL EDAY(17,7,iasumf)
-          CALL EDAY(2,10,ia2sprs)
-          CALL EDAY(8,10,ia2sprf)
-          CALL EDAY(20,11,ia2wins)
-          CALL EDAY(26,11,ia2winf)
+            CALL EDAY(9,1,ia1wins)
+            CALL EDAY(15,1,ia1winf)
+            CALL EDAY(6,3,ia1sprs)
+            CALL EDAY(12,3,ia1sprf)
+            CALL EDAY(11,7,iasums)
+            CALL EDAY(17,7,iasumf)
+            CALL EDAY(2,10,ia2sprs)
+            CALL EDAY(8,10,ia2sprf)
+            CALL EDAY(20,11,ia2wins)
+            CALL EDAY(26,11,ia2winf)
 
 C Default season definitions.
-          CALL EDAY(1,1,is1wins)
-          CALL EDAY(28,2,is1winf)
-          CALL EDAY(1,11,is2wins)
-          CALL EDAY(31,12,is2winf)
-          CALL EDAY(1,3,is1sprs)
-          CALL EDAY(30,4,is1sprf)
-          CALL EDAY(1,9,is2sprs)
-          CALL EDAY(31,10,is2sprf)
-          CALL EDAY(1,5,is1sums)
-          CALL EDAY(31,8,is1sumf)
+            CALL EDAY(1,1,is1wins)
+            CALL EDAY(28,2,is1winf)
+            CALL EDAY(1,11,is2wins)
+            CALL EDAY(31,12,is2winf)
+            CALL EDAY(1,3,is1sprs)
+            CALL EDAY(30,4,is1sprf)
+            CALL EDAY(1,9,is2sprs)
+            CALL EDAY(31,10,is2sprf)
+            CALL EDAY(1,5,is1sums)
+            CALL EDAY(31,8,is1sumf)
+          endif
         endif
       endif
 
@@ -1124,8 +1128,9 @@ C Domestic hot water day ratio.
         h(7)='in each season and return the ratios of days or degree'
         h(8)='days (for heating and cooling) for use in scaling short'
         h(9)='simulations to whole seasons.'
-        CALL EASKABC('Options: ',' ','scan for seasons & periods',
-     &      'scan for day/DD ratios','continue',IW,9)
+        CALL EASKABC('Options: ',' ',
+     &    'scan climatelist for seasons & periods',
+     &    'scan for day/DD ratios','continue',IW,9)
         if(IW.eq.1.or.IW.eq.2)then
 
 C Rescan climate to acquire ratios from the climatelist file.
@@ -1152,13 +1157,9 @@ C Re-scan climate seasons and periods.
         elseif(IW.eq.2)then
 
 C Local (stripped) version of a subroutine from clmper.F
-
-C << check if the current climate file is open and the values
-C << for clat and clong are instanciated prior to call to getmultip
-
           call getmultip
 
-C Loop through five (?) seasons.and set dd arrays.
+C Loop through five (?) seasons and set dd arrays.
           do 105 ij=1,5
             ddmheat(ij)=dmheat(ij)
             ddmcool(ij)=dmcool(ij)
@@ -2225,7 +2226,6 @@ C seasons.h provides typper and typsea
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
-      COMMON/RADTYP/IDNGH
 
 C Redirected text/graphics parameters.
       character xfile*144,tg*1,delim*1
