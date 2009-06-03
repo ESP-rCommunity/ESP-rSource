@@ -76,6 +76,8 @@ C Redirected text/graphics parameters.
       common/exporttgi/ixopen,ixloc,ixunit
 
 C Climate list common.
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
@@ -94,8 +96,6 @@ C Name of current application
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72
       LOGICAL OK,DOK,unixok,there,silent
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -865,8 +865,8 @@ C Cast back to 72 char name and do the conversion.
           h(4)='Usually you want to update the site information.'
           CALL ASKOK(' ','Update the site info as well?',OK,dok,4)
           silent=.false.
-          WRITE(outs,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
-          CALL EDISP(IUOUT,outs)
+          WRITE(outs248,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
+          CALL EDISP248(IUOUT,outs248,100)
           if(ok)then
             CALL MKBCLM(iuout,1,LASCI,IUNIT,IDS,IDF,silent,IER)
           else
@@ -960,14 +960,12 @@ C Toggle trace level.
       ELSEIF(INO.EQ.19)THEN
 
 C Feedback channel. Suggest an initial name for the export file.
-C Currently LCLIM is only 72 characters but once it is 144 char
-C then the 130 logic can be added into the 2nd write statement.
         if(ixopen.eq.0)then
           llt=lnblnk(LCLIM)
           if(llt.lt.130)then
             write(xfile,'(2a)') LCLIM(1:llt),'.report'
           else
-            write(xfile,'(2a)') LCLIM(1:72),'.report'
+            write(xfile,'(2a)') LCLIM(1:130),'.report'
           endif
         endif
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Data',IER)

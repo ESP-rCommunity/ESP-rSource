@@ -915,7 +915,8 @@ C Defaults.
 
 C longtmp is the model configuration file with full path.
       CHARACTER NAME*6,longtmp*144,H*72,cfgroot*24
-      character outs*124,znpad*15,path*72,MODE*4,ltmp*72
+      character outs*124,znpad*15,path*72,MODE*4
+      character louts*248
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -962,6 +963,9 @@ C read again.
       IREC=IREC+1
 
 C Recover CLIMATE file name used at simulation time.
+C << if there is an error it might be because of the version
+C << of the database file
+
     4 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LCLIM
       IREC=IREC+1
 
@@ -1278,18 +1282,32 @@ C Finally check if the climate file read in above exists.
       IF(IER.LT.0)then
 
 C Climate file not found - ask user for name.
-        write(outs,'(A,A,A)') ' Referenced climate file ',
+        write(louts,'(3A)') ' Referenced climate file ',
      &     LCLIM(1:lnblnk(LCLIM)), ' not found...'
-        call edisp(iuout,outs)
+        call edisp248(iuout,louts,90)
         call erpfree(IUNITC,istat)
         H(1)=' A climate file defines the model boundary'
         H(2)=' condition. The one included in the results libary'
         H(3)=' was not found, type in the correct name.'
-        ltmp=LCLIM
-        CALL EASKS(ltmp,'  Climate file name ?',
-     &     '  ',72,DCLIM,'climate file name',IER,3)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LCLIM=ltmp
+        longtmp=LCLIM
+
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &      96,DCLIM,'climate file name',IER,3)
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &      144,DCLIM,'climate file name',IER,3)
+        else
+          CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &      96,DCLIM,'climate file name',IER,3)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
+          LCLIM=longtmp
         endif
         goto 44
       endif

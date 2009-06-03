@@ -688,7 +688,7 @@ C or passed into clm module).
       logical rescan
 
       CHARACTER CLMLOC*30,H*72,outs*124,tab*1,outs248*248
-      character LCMDFL*144,clmdb*72,L144*144
+      character LCMDFL*144,clmdb*144,L144*144
       tab = CHAR(9)
 
 C Get help message set.
@@ -832,7 +832,6 @@ C name with the full path.
 
 C Create file explicitly (not relative to problem configuration path).
 C First check if it exists: if so open, otherwise create with 0 length.
-C << consider if LCLIM needs to be > 72 char >>
       if(ICLIM.eq.0)then
         ICLIM=IFIL
       endif
@@ -843,22 +842,14 @@ C << consider if LCLIM needs to be > 72 char >>
         CALL FPRAND(ICLIM,ISTAT,144,3,LCMDFL)
         if(.NOT.silent)call edisp(iuout,' opened new climate file')
         llf=lnblnk(LCMDFL)
-        if(llf.le.72)then
-          write(LCLIM,'(a)') LCMDFL(1:llf)
-        else
-          write(LCLIM,'(a)') LCMDFL(1:72)
-          call edisp(iuout,'Had to truncate climate file name.')
-        endif
+        write(LCLIM,'(a)') LCMDFL(1:llf)
         RETURN
       elseif(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,1,LCMDFL)
         if(.NOT.silent)call edisp(iuout,' opened climate file')
-        if(lnblnk(LCMDFL).le.72)then
-          write(LCLIM,'(a)') LCMDFL(1:lnblnk(LCMDFL))
-        else
-          write(LCLIM,'(a)') LCMDFL(1:72)
-        endif
+        llf=lnblnk(LCMDFL)
+        write(LCLIM,'(a)') LCMDFL(1:llf)
         if(LCLIM.eq.DCLIM)call edisp(iuout,' Default climate assigned.')
       endif
 

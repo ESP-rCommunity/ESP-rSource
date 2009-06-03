@@ -45,13 +45,13 @@ C seasons.h provides typper and typsea
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
       character clmlhelp*72
 
       dimension name(60), mitem(35)
       character name*32,mitem*33,OUTSTR*124,WORD*20
       character group*32,key*1,look*32,tlook*32
-      character clmdb*72,llclmdb*144,h*72,actreturn*1
+      character clmdb*144,llclmdb*144,h*72,actreturn*1
 
 C Set default early winter, spring, summer, autumn, late winter periods.
       CALL EDAY(9,1,ia1wins)
@@ -216,8 +216,8 @@ C with the GTK version.
         endif
         IF(llclmdb(1:2).EQ.'  ')GOTO 289
 
-C Cast back to 72 char name.
-        llt=MIN0(lnblnk(llclmdb),72)
+C Cast back to clmdb.
+        llt=lnblnk(llclmdb)
         write(clmdb,'(a)') llclmdb(1:llt)
         CALL ERPFREE(idblfil,ISTAT)
         IER=0
@@ -289,13 +289,13 @@ C Scan list of climate databases for name and return database.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
       character clmlhelp*72
 
       dimension name(60)
       character name*32,OUTSTR*124,WORD*20
-      character group*32,tlook*32,outs*124
-      character clmdb*72,avail*10,alias*32
+      character group*32,tlook*32,outs*124,louts*248
+      character clmdb*144,avail*10,alias*32
 
 C Open the list of climate databases.
       CALL EFOPSEQ(idblfil,cdblfil,1,IER)
@@ -355,8 +355,9 @@ C Get info for db matching the alias.
             goto 92
           elseif(WORD(1:5).eq.'*dbfl')then
             call egetrm(outstr,K,clmdb,'W','db file',IER)
-            write(outs,'(a,a)') ' Climate database: ',clmdb
-            call edisp(iuout,outs)
+            write(louts,'(a,a)') ' Climate database: ',
+     &        clmdb(1:lnblnk(clmdb))
+            call edisp248(iuout,louts,100)
             goto 4
           elseif(WORD(1:5).eq.'*aide')then
             call egetrm(outstr,K,clmlaid,'W','brief description',IER)
@@ -408,7 +409,7 @@ C the climate file was not selected via scan of climatelist.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
       character clmlhelp*72
 
       character*(*) clmdb
@@ -500,8 +501,6 @@ C Manual inclusion of a parameter from building.h
 
 #include "seasons.h"
 C seasons.h provides typper and typsea
-
-C << clmdb might need to be a longer name >>
       
       integer lnblnk  ! function definition
 
@@ -511,22 +510,22 @@ C << clmdb might need to be a longer name >>
 C Strings associated with one climatelist item.
 C clmlnam (char*32) is the selection list string
 C clmlaid is aide (char*72) memoire for list item
-C clmldbfile (char*72) is the climate file (with path info)
+C clmldbfile (char*144) is the climate file (with path info)
 C clmlavail (char*10) is either ONLINE or OFFLINE
 C clmlhelp (char*72) is array of help strings
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
 
 C Numbers associated with one climatelist item.
       common/clmlnum/nbclmlhelp
 
-      character OUTSTR*124,WORD*20
+      character OUTSTR*124,WORD*20,louts*248
       character sethead*72,outs*124
-      character clmdb*72,h*72,pstring*40,act*1,actreturn*1
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72
+      character clmdb*144,h*72,pstring*40,act*1,actreturn*1
 
   4   CALL STRIPC(idblfil,OUTSTR,0,ND,0,'item line',IER)
-      write(6,*) outstr(1:lnblnk(outstr))
+C      write(6,*) outstr(1:lnblnk(outstr))
       if(ier.ne.0)then
         actreturn='e'
         return
@@ -541,9 +540,10 @@ C Numbers associated with one climatelist item.
           goto 4
         elseif(act.eq.'r')then
           call egetrm(outstr,K,clmdb,'W','db file',IER)
-          write(outs,'(a,a)') ' Climate database: ',clmdb
-          call edisp(iuout,outs)
-          clmldbfile=clmdb
+          write(louts,'(a,a)') ' Climate database: ',
+     &      clmdb(1:lnblnk(clmdb))
+          call edisp248(iuout,louts,100)
+          write(clmldbfile,'(a)') clmdb(1:lnblnk(clmdb))
           goto 4
         endif
       elseif(WORD(1:5).eq.'*aide')then
@@ -785,7 +785,7 @@ C for the line used in ASKOK.
           elseif(clmlavail(1:6).eq.'ONLINE')then
             call edisp(iuout,
      &        'found matching seasons & asessment periods for')
-            call edisp(iuout,clmdb)
+            call edisp248(iuout,clmdb,100)
             actreturn='e'
             return
           endif

@@ -967,15 +967,15 @@ C Print address for building and client.
 
 C Tell about climate taking note of timing of solar data.
         if(iSlr_half_hr_flg.eq.0)then
-          WRITE(outs248,'(5A)')'The climate used is: ',
+          WRITE(outs248,'(5A)')'The climate is: ',
      &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
      &      LCLIM(1:lnblnk(LCLIM)),
-     &      ' and uses hour centred solar data.'
+     &      ' with hour centred solar data.'
         else
-          WRITE(outs248,'(5A)')'The climate used is: ',
+          WRITE(outs248,'(5A)')'The climate is: ',
      &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
      &      LCLIM(1:lnblnk(LCLIM)),
-     &      ' and uses half hour centred solar data.'
+     &      ' with half hour centred solar data.'
         endif
         call edisp248(itu,outs248,80)
 
@@ -2031,7 +2031,7 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
       goto 3
 
 C Error trap.
- 1000 call usrmsg('Problem scanning climate file',lclim,'W')
+ 1000 call lusrmsg('Problem scanning climate file',lclim,'W')
       goto 1001
 
       end

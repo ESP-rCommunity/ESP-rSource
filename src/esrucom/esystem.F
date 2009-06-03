@@ -185,7 +185,7 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
 C Seasons.
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
       character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp

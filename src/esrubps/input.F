@@ -269,7 +269,7 @@ C Material data arrays.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,h*72,spsname*8,L144*144,fs*1
+      CHARACTER outs*124,louts*248,h*72,spsname*8,L144*144,fs*1
       CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
@@ -730,14 +730,15 @@ C Kill simulation if in DLL mode
                return
             else
 C Warn the user that the climate file definition has failed. 
-               write(outs,'(A,A,A)')'Warning: specified climate file (',
+               write(louts,'(A,A,A)')
+     &           'Warning: specified climate file (',
      &           LCLIM(1:LNBLNK(LCLIM)), ') could not be found.'
               
-               call edisp (iuout, outs)
+               call edisp248 (iuout,louts,100)
                if ( autook ) then
 
 C If running silently, stop
-                  call edisp(iuout,outs)               
+                  call edisp248(iuout,louts,100)               
                   call pauses(3)   ! pause for 3 seconds then abort program.
                   call epagend
                   stop

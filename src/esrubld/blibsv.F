@@ -111,6 +111,8 @@ C an extra record is used.
       IF(NCOMP.LE.20)goto  4
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),
      &I=21,NCOMP)
+
+C Note: LCLIM is 144 char so this assume a minimal record width.
       IREC = IREC + 1
     4 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LCLIM
       IREC=IREC+1

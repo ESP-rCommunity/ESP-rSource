@@ -757,7 +757,7 @@ C Defaults.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
 
-      character DFILE*72,LTMP*144,outs*124,T72*72
+      character DFILE*72,LTMP*144,outs*124,louts*248
       character lctlf*72,ctldoc*248,scname*12,h*72,MODE*4
       character firstbit*72,secondbit*72,path*72,LCFGF*72,cfgroot*24
       character longtmp*144
@@ -1003,7 +1003,10 @@ C Read climate file name.
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
-        LCLIM=firstbit  ! until lclim becomes 144 char
+        lnfb=lnblnk(firstbit)
+        lnsb=lnblnk(secondbit)
+	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(6,*) LCLIM
       endif
 
 C Check that this CLIMATE file can still be assigned. << convert >>
@@ -1011,18 +1014,32 @@ C Check that this CLIMATE file can still be assigned. << convert >>
       CALL FPRAND(IUNITC,ISTAT,144,1,LCLIM)
       IF(ISTAT.LT.0)then
 C Climate file not found - ask user for name.
-        write(outs,'(A,A,A)') ' Referenced climate file ',
+        write(louts,'(3A)') ' Referenced climate file ',
      &     LCLIM(1:lnblnk(LCLIM)), ' not found...'
-        call edisp(iuout,outs)
+        call edisp248(iuout,louts,100)
         call erpfree(IUNITC,istat)
         H(1)=' A climate file defines the problem boundary'
         H(2)=' condition. The one included in the results libary'
         H(3)=' was not found, type in the correct name.'
-        t72=LCLIM
-        CALL EASKS(t72,'  Climate file name ?',
-     &     '  ',72,DCLIM,'climate file name',IER,3)
-        if(t72(1:2).ne.'  '.and.t72(1:4).ne.'UNKN')then
-          LCLIM=t72
+        ltmp=LCLIM
+
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(ltmp,' ',' Climate file name ? ',
+     &      96,DCLIM,'climate file name',IER,3)
+        elseif(iglib.eq.2)then
+          CALL EASKF(ltmp,' ',' Climate file name ? ',
+     &      144,DCLIM,'climate file name',IER,3)
+        else
+          CALL EASKF(ltmp,' ',' Climate file name ? ',
+     &      96,DCLIM,'climate file name',IER,3)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LCLIM=ltmp
         endif
         goto 44
       endif
@@ -1073,7 +1090,7 @@ C Read control data for simulation.
       IREC=NST
       write(scname,'(a)')CTLDOC(1:12)
       READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000)
-     &   IpSD1,IpSM1,IpSD2,IpSM2,IpSDS,IpSDF,NpTS,ipsav,SCNAME,IDAVER
+     &   IpSD1,IpSM1,IpSD2,IpSM2,IpSDS,IpSDF,NpTS,ipsav,scname,IDAVER
       IREC=IREC+1
 
 C In case of no configuration control file active, skip one record

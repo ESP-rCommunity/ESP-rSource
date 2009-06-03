@@ -175,10 +175,10 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 C Strings associated with one climatelist item.
 C clmlnam (char*32) is the selection list string
 C clmlaid is aide (char*72) memoire for list item
-C clmldbfile (char*72) is the climate file (with path info)
+C clmldbfile (char*144) is the climate file (with path info)
 C clmlavail (char*10) is either ONLINE or OFFLINE
 C clmlhelp (char*72) is array of help strings
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
       character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
 

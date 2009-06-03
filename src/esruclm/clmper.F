@@ -405,6 +405,8 @@ C      common/appw/iappw,iappx,iappy
       real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
@@ -416,8 +418,7 @@ C ITM is main item editing menu.
       character NMTHNM(12)*3,DAYNAM(7)*3
       character descr*7,descrst*10,descrfn*10,descrstn*10
       character descrstp*10,h*72
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72,DFILE*72,outs*124,louts*248
+      character DFILE*72,outs*124,louts*248
       character DESCRX*7,DESCR1X*10,DESCR1*10,hold*40
       CHARACTER CLMLOC*30,t32*32,d32*32,t72*72,d72*72
       character llasci*144,llitem*144,longtfile*144,longtfiledos*144
@@ -674,7 +675,7 @@ C        write(6,*) llasci
         IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 290
 
 C Cast back to 72 char name.
-        llt=MIN0(lnblnk(llasci),72)
+        llt=lnblnk(llasci)
         write(clmldbfile,'(a)') LLASCI(1:llt)
       elseif(INO.eq.4)then
 
@@ -1434,13 +1435,14 @@ C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
       COMMON/CLMDT1/CLMLOC
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72,tab*1
+      character tab*1
       CHARACTER CLMLOC*30
       character descr*7,descrst*10,descrfn*10  ! for season dates
       character descrst1*10,descrfn1*10        ! for 2nd season dates
