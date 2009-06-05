@@ -3727,9 +3727,9 @@ C Check for incompatable face/ cell definition
       elseif (IFACE.eq.2) then
         if (Ii.ne.NTCX.or.If.ne.NTCX) IER=2
       elseif (IFACE.eq.3) then
-        if (Ji.ne.1.or.Kf.ne.1) IER=2
+        if (Ji.ne.1.or.Jf.ne.1) IER=2
       elseif (IFACE.eq.4) then
-        if (Ji.ne.NTCY.or.Kf.ne.NTCY) IER=2
+        if (Ji.ne.NTCY.or.Jf.ne.NTCY) IER=2
       elseif (IFACE.eq.5) then
         if (Ki.ne.1.or.Kf.ne.1) IER=2
       elseif (IFACE.eq.6) then

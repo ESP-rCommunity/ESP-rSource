@@ -847,6 +847,9 @@ C If there is an obstructions file read it.
       ITEMS(4) =  ' .... Model selection ........'
       ITEMS(5) =  'd open existing'
       ITEMS(6) =  'e create new'
+
+C Debug.
+C      write(6,*) ' model management browse status ',browse
       if(CFGOK)then
         if(browse)then
           ITEMS(7) =  ' .... Current model (browse) ....'
@@ -1094,6 +1097,9 @@ C Set initial browse toggle to match useraction.
                 elseif(useraction(1:8).eq.'ownit   ')then
                   browse=.false.
                 endif
+
+C Debug.
+C                write(6,*) 'after exemplar selection browse ',browse
 
 C Copy the exemplar configuration file (with full path) to LCMDFL.
                 write(LCMDFL,'(a)') exemplar(1:lnblnk(exemplar))
@@ -1755,6 +1761,9 @@ C Debug the patched file name.
             longtfile=longtfiledos
           endif
 
+C Debug.
+C          write(6,*) ' simula browse status ',browse
+
 C If browsing pass this information to bps and if the user
 C has set the trace level above one add a -v optin to the
 C command line.
@@ -2283,7 +2292,7 @@ C one timestep in the hour.
             if(itdflg.ne.0)then
 
 C There is temporal data so must save at each timestep.
-              write(6,*) 'temporal data found so save each timestep'
+C              write(6,*) 'temporal data found so save each timestep'
               isavgh=0
             else
               H(1)='The ESP-r Simulator calculates the value of each'

@@ -533,7 +533,7 @@ C          to test against the above equation
 
 C Add up longwave exchange fluxes to determine layer source terms
       do 90 j=1,nCFCPart,2
-            qlwtot(j)=0
+            qlwtot(j)=0.
             do 100 k=j,nCFCPart,2
                   qlwtot(j)=qlwtot(j)+q(j,k)
   100       continue
@@ -702,7 +702,8 @@ C Otherwise assign heat injection to only the inside surface node
 C for non CFC surfaces.
         icfctp=icfcfl(icomp,i)
 
-        IF(icfctp.gt.0.and.icfcltp(icomp,icfctp,ne).ge.2)then
+        IF(icfctp.gt.0)then
+	 if(icfcltp(icomp,icfctp,ne).ge.2)then
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
      &                            qZnsurTot(i)/(fnnod*2.)
           do 230 j=nn-1,nn-nnod+1,-1
@@ -712,7 +713,11 @@ C for non CFC surfaces.
   230     continue
           inode=inode-1
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
-     &                            qZnsurTot(i)/(fnnod*2)
+     &                            qZnsurTot(i)/(fnnod*2.)
+	 else
+          qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
+     &                            qZnsurTot(i)
+	 endif
         ELSE
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
      &                            qZnsurTot(i)
@@ -959,7 +964,7 @@ C Calculate exchange factor for intra-constructional CFC layers.
                       FSbb(icomp,isurf,i-1,j+1)=0.
                     end if
                   elseif(i.eq.j.and.j.eq.nCFCPart)then
-                    FSbb(icomp,isurf,i-1,j-1)=0
+                    FSbb(icomp,isurf,i-1,j-1)=0.
                   elseif(i.ne.j.and.j.ne.nCFCPart)then
                     FSbf(icomp,isurf,i-1,j+1)=JsolB(indxj)
                     FSbb(icomp,isurf,i-1,j+1)=JsolB(indxj+3)
@@ -1411,7 +1416,7 @@ C Assign optical properties for each layer from commons to temp arrays
       ENDDO
       i=n-2
       xx=2*i
-      ae(xx)=0
+      ae(xx)=0.
       bp(xx)=-(rbbd(1)*BB(2*i)+tfbd(1)*(GBM))
       i=n-1
       xx=2*i-1
@@ -1634,7 +1639,7 @@ C define the two cavity surface temperatures
 
               if(itypenext.eq.2)then !next layer is slat-type blind
                 if(i+2.eq.ne)goto 200 !skip if next layer is last layer
-                L=((lthk*2)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
+                L=((lthk*2.)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
                 hc=0.
 
                 CALL ConvVertCav(L,TA,TB,rmlr_mass(icomp,icfctp,i+1),
@@ -1903,7 +1908,7 @@ C Calculate Rayleigh number
       Ra=ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
 
 C Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
-      Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000/Ra)**1.4))**(2))
+      Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000./Ra)**1.4))**(2))
 
 C Calculate convective heat transfer coefficient.
       hc=Nu*k/L     !(W/m^2.K)
@@ -3114,18 +3119,18 @@ C ********************************************************************
       DIMENSION tb(me),tf(me),rb(me),rf(me)
       REAL Ir
 
-      aw(1)=0
+      aw(1)=0.
       ap(1)=0.00001
-      ae(1)=1
-      bp(1)=0
-      aw(2)=1
+      ae(1)=1.
+      bp(1)=0.
+      aw(2)=1.
       IF (rb(n-2).LT.0.0001) THEN
             ap(2)=0.00001
       ELSE
             ap(2)=rb(n-2)
       ENDIF
       ae(2)=-tf(n-2)
-      bp(2)=0
+      bp(2)=0.
       DO i=2,n-2,1
             xx=2*i-1
             aw(xx)=-tb(n-i)
@@ -3134,10 +3139,10 @@ C ********************************************************************
             ELSE
                   ap(xx)=rf(n-i)
             ENDIF
-            ae(xx)=1
-            bp(xx)=0
+            ae(xx)=1.
+            bp(xx)=0.
             xx=2*i
-            aw(xx)=1
+            aw(xx)=1.
             IF (rb(n-i-1).LT.0.0001) THEN
                   ap(xx)=0.00001
             ELSE
@@ -3147,7 +3152,7 @@ C ********************************************************************
             bp(xx)=0.
       ENDDO
       xx=2*(n-2)
-      ae(xx)=0
+      ae(xx)=0.
       bp(xx)=-(tf(1))*Ir
       RETURN
       END
@@ -3183,8 +3188,8 @@ C ********************************************************************
 
       m=2*n-4
       DO i=1,m,1
-            alpha(i)=0
-            beta(i)=0
+            alpha(i)=0.
+            beta(i)=0.
       ENDDO
       alpha(1)=ae(1)/ap(1)
       beta(1)=bp(1)/ap(1)
@@ -3286,11 +3291,13 @@ C loop through zone surfaces
             icfctp=icfcfl(icomp,i) ! cfc type index
 
 C if cfc is detected AND indoor slat blind is present
-                  if(icfctp.gt.0.and.icfcltp(icomp,icfctp,ne).ge.2)then
+                  if(icfctp.gt.0)then
+                    if(icfcltp(icomp,icfctp,ne).ge.2)then
                       do 110 j=1,nc
                          HRF(i,j)=0.0
                          HRF(j,i)=0.0
  110                  continue
+                    endif
                   end if
  100  continue
 
@@ -3352,11 +3359,11 @@ C loop through zone surfaces
             icfctp=icfcfl(icomp,i)  !CFC type index
 
 C if cfc is detected AND indoor slat blind is present
-                 if(icfctp.gt.0.and.icfcltp(icomp,icfctp,1).ge.2)then
+                 if(icfctp.gt.0)then
 
-                        QELWF(I)=0.
+                   if(icfcltp(icomp,icfctp,1).ge.2)QELWF(I)=0.
 
-                  end if
+                 end if
  100  continue
 
 C Save future time-row values for use as present

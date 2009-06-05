@@ -76,7 +76,7 @@ C ipeerptbk is pointer from position in display to day type.
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,opticdoc*248
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,t248*248,SSTR*72
+      character docpth*24,tmppth*24,dbspth*24,t248*248,SSTR*96
       character sfile*72,snpfile*72,fs*1
       logical LINKED,OK,dok,XST,browse,unixok
 
@@ -1252,7 +1252,7 @@ C Plant common required for building/plant flux linkage
       DIMENSION SALT(24),IVALS(24)
       CHARACTER*82 VERT(20)
 
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,hold*40,KEY*1
+      CHARACTER outs*124,H*72,SSTR*96,TMP*96,SALT*40,hold*40,KEY*1
       character outsa*84,outsb*84,outsc*84,ltmp*248,SSTRB*48
       logical close1,close2,close3,close4,useold
 
@@ -2688,7 +2688,7 @@ C      COMMON/GPICK/GS(MGOPT),nopt
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       CHARACTER*84 VERT(20)
       CHARACTER*65 VERT2(20)
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1
+      CHARACTER outs*124,H*72,SSTR*96,TMP*96,KEY*1
       character outsa*84,outsb*84,outsc*84,ltmp*248
 C      CHARACTER GS*52
 C      DIMENSION IGVAL(60)
@@ -3090,7 +3090,7 @@ C Edit plant control function II.
       DIMENSION SALT(42),IVALS(42),PSALT(17),IPVALS(17)
       CHARACTER*84 VERT(20)
 
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72,SALT*40,PSALT*40,KEY*1
+      CHARACTER outs*124,H*72,SSTR*96,TMP*96,SALT*40,PSALT*40,KEY*1
       character outsa*84,outsb*84,outsc*84,ltmp*248
 
       CHARACTER hold*60
@@ -4123,7 +4123,7 @@ C Edit flow control function II.
 
       DIMENSION ICPK(MCNN),INPK(MNOD)
       CHARACTER*84 VERT(36)
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72,KEY*1,NDNAM*12
+      CHARACTER outs*124,H*72,SSTR*96,TMP*96,KEY*1,NDNAM*12
       character outsa*84,outsb*84,outsc*84,hold*42,LTMP*248
       character prmpt1*72,prmpt2*72
 
@@ -4753,7 +4753,7 @@ C Edit global control function II.
       common/pophelp/h(60)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
-      CHARACTER outs*124,H*72,SSTR*72,TMP*72,LTMP*248
+      CHARACTER outs*124,H*72,SSTR*96,TMP*96,LTMP*248
       character outsa*84,outsb*84,outsc*84,KEY*1
       character hold*42
       CHARACTER*84 VERT(20)
@@ -6207,7 +6207,7 @@ C   for control law one.
       real cmlocal
       integer ivals              ! for return of selection array.
 
-      CHARACTER VERT*45,KEY*1,SSTR*72,TMP*72,ltmp*248,SALT*42
+      CHARACTER VERT*45,KEY*1,SSTR*96,TMP*96,ltmp*248,SALT*42
       character menu*32,prompt1*72,prompt2*72
       character outs*124
       character*(*) head  ! the title passed from calling code

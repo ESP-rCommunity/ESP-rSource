@@ -1020,6 +1020,8 @@ C Set folder separator (fs) to \ or / as required.
           fs = char(92)
         endif
 
+C Debug.
+C        write(6,*) 'edcfg res remote is ',remote,nsset
         if(nsset.gt.0)then
           if(isset.eq.0)isset=1
           if(INDCFG.eq.2)then

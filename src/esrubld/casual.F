@@ -212,15 +212,22 @@ C Trace output ?
         CALL DAYCLK(IDYP,BTIMEF,ITU)
       endif
 
+C This loop executes 6720 times per timestep since
+C MC=24*MCT*MDTY and MPHAS =4 as defined in building.h. This is
+C extremely inefficient and causes a significant increase in 
+C run-time. This loop is only used for trace. Loop is now skipped
+C unless trace is on. 
+      if(traceok) then
 C Update present and zero the future zone power values. 
-      DO 4 IPHS=1,MPHAS
-        DO 5 ICAS=1,MC
-          RP(ICOMP,1,ICAS,IPHS)=RP(ICOMP,2,ICAS,IPHS)
-          QP(ICOMP,1,ICAS,IPHS)=QP(ICOMP,2,ICAS,IPHS)
-          RP(ICOMP,2,ICAS,IPHS)=0.
-          QP(ICOMP,2,ICAS,IPHS)=0.
-  5     CONTINUE
-  4   CONTINUE
+        DO 4 IPHS=1,MPHAS
+          DO 5 ICAS=1,MC
+            RP(ICOMP,1,ICAS,IPHS)=RP(ICOMP,2,ICAS,IPHS)
+            QP(ICOMP,1,ICAS,IPHS)=QP(ICOMP,2,ICAS,IPHS)
+            RP(ICOMP,2,ICAS,IPHS)=0.
+            QP(ICOMP,2,ICAS,IPHS)=0.
+  5       CONTINUE
+  4     CONTINUE
+      endif
 
 C Zero zone power loads and update present control fractions.
       DO 9 ITY=1,MGTY

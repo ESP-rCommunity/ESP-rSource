@@ -1590,6 +1590,19 @@ C PROCESS FOR EXTERNAL CFC
             tmpIDF=0.0  !interior diffuse source
             tmpIBM=0.0  !interior beam source 
 
+C Get shading data if it exists            
+            IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
+              POO=0.
+              POFF=0.
+            ELSE
+              POO=PO(ICOMP,I,IHRF)
+              POFF=POF(ICOMP,I,IHRF)
+            ENDIF
+
+C Apply shading factor to external incident radiation            
+            EXDIR(I)=SRADDO(I)*(1.-POO)
+            EXDIF(I)=SRADF(I)*(1.-POFF)
+            
             IF(ians(i).eq.0)then  !surface is not self shaded
 
 C Determine profile angle
@@ -1604,7 +1617,7 @@ C layers have profile angle dependency
 
 C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
 C and absorbed fluxes in each CFC layer.
-             call solar_multilayer(icomp,i,icfctp,sraddo(i),sradf(i),
+             call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
      &       tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
 
             ELSE     !surface is self-shaded
@@ -1620,14 +1633,14 @@ C each CFC layer. Incidence and profile angles set to 0 since self-shaded.
 
 C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
 C and absorbed fluxes in each CFC layer.
-             call solar_multilayer(icomp,i,icfctp,sraddo(i),sradf(i),
+             call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
      &       tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
 
             END IF
 
 C save multilayer results for CFC output
-             RadIncDirS(icomp,i)=sraddo(i)
-             RadIncDifS(icomp,i)=sradf(i)
+             RadIncDirS(icomp,i)=EXDIR(I)
+             RadIncDifS(icomp,i)=EXDIF(I)
              issur_self_shd(icomp,i)=ians(i)
              transBB_S(icomp,i)=TRANSBB_SYS!*SNA(ICOMP,I)
              transD_S(icomp,i)=TRANSD_SYS!*SNA(ICOMP,I)
@@ -3185,7 +3198,7 @@ c Handle shading file corresponding to each zone in
 c turn.
       DO 10 I=1,NCOMP
         IF(ISI(I).EQ.0)goto 9
-
+      
 c Assign shading file for zone 'I'.
         LS=LSHAD(I)
         call EFOPRAN(IUNIT,LS,maxrec(i),1,IER)

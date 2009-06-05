@@ -256,6 +256,8 @@ C Plots points on target surface representing direct shaded portion.
       dimension ioshd(mox,moz)
       character blkname*8,blkmat*12
 
+      integer*8 iix,iiy
+      
       do 10 i=1,nox
          do 20 j=1,noz
 
@@ -270,7 +272,9 @@ C the surface polygon will not have been set to -1.
             if(ioshd(i,j).eq.1)goto 1
             goto 20
     1       call u2pixel(xop(i,j),zop(i,j),ix,iy)
-            call edwline(ix-1,iy,ix+1,iy)
+            iix=ix
+            iiy=iy
+            call edwline(iix-1,iiy,iix+1,iiy)
    20    continue
    10 continue
       call forceflush()

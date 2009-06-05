@@ -511,7 +511,7 @@ C If an input file has been specified then load it.
                call usrmsg('Scanning the model...',' ','-')
             endif
             mode='NONE'
-            call ersys(lcfgf,ifcfg,iairp,mode,0,ier)
+            call ersys_mmode(lcfgf,ifcfg,iairp,mode,0,ier,silent)
 
 C Open core of databases if not already done so.
             if(MLDBOK.and.MATDBOK.and.OPTKOK)then
@@ -860,7 +860,7 @@ C GTK version will be returning the name with the full path.
             call tstamp('>','Ish: scanning new model')
             call tstamp('>',lcfgf)
             mode='NONE'
-            call ersys(lcfgf,ifcfg,iairp,mode,0,ier)
+            call ersys_mmode(lcfgf,ifcfg,iairp,mode,0,ier,silent)
             if(MLDBOK.and.MATDBOK.and.OPTKOK)then
               continue
             else
