@@ -3591,7 +3591,7 @@ C Take into account the current value of whichdbpath.
      &    lapres(1:lnblnk(lapres))
       endif
 C Debug.
-      write(6,*) 'previous pres coef ',lprev(1:lnblnk(lprev))
+C      write(6,*) 'previous pres coef ',lprev(1:lnblnk(lprev))
 
   60  continue
       if(ipathapres.eq.0.or.ipathapres.eq.1)then
@@ -4082,7 +4082,7 @@ C otherwise edit the database contents.
      &    lapres(1:lnblnk(lapres))
 
 C Debug.
-        write(6,*) 'working pressure coef ',lworking
+C        write(6,*) 'working pressure coef ',lworking
         CALL EFOPSEQ(IAPRES,lworking,1,IER)
       endif
       IF(IER.NE.0) GOTO 60

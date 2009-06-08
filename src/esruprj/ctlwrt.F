@@ -47,7 +47,7 @@ C an ascii file.
       CHARACTER lctlf*72,ctldoc*248
       character outs*248,outsd*248
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
-      character DS*7,DS1*10,DE*7,DE1*10,SSTR*72,SSTR1*72,SSTR2*248
+      character DS*7,DS1*10,DE*7,DE1*10,SSTR*96,SSTR1*96,SSTR2*248
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
       character glctldoc*248,opticdoc*248
       logical Vldtng

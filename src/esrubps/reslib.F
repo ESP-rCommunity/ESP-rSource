@@ -122,6 +122,9 @@ C results files should be saved to the users home folder.
         endif
       endif
 
+C Debug.
+C      write(6,*) 'mzlibf browse and remote ',browse,remote
+
 C Skip building library if plant only configuration
       IF(INDCFG.EQ.2) GOTO 121
 
@@ -132,6 +135,9 @@ C Now assign user-specified building library. Use dealremote to confirm
 C the file name and check if the file is being placed in a location the
 C user can write to.
     4 LTMP=RFILE
+
+C Debug.
+C      write(6,*) 'reslib.F spfileok remote ',spfileok,remote
       if(.not.spfileok) then
         iw=0
         call dealremote('z',remote,LTMP,IW)

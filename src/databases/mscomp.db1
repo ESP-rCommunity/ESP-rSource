@@ -653,7 +653,7 @@ incorporated.
 #            material model no 
      4            4 
 *DESC
-Solar collector back plate    
+Solar_collector_back_plate    
 *SPECDATA
 5                 
 0.002     Water flow rate (l/s)

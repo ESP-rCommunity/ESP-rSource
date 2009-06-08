@@ -471,7 +471,7 @@ C except where explicitly redefined.
       complex vspm
       character spmlabel*16, outs*124,spflnam*72,strspm*16,unitspm*16,
      &          txtspm*72
-
+      
 C Nominal efficiency.
       neff=spmdat(ispmnod,1)/100.
 
@@ -2262,7 +2262,7 @@ C Phase change material.
       character spmlabel*16,spflnam*72,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
       logical close
-
+      
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
          write(outs,*)'SPMAT53 fatal error: incorrect zone assignment!'
@@ -2636,7 +2636,7 @@ C Phase change material.
 
       character spflnam*72,spmlabel*16,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
-
+      
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
          write(outs,*)'SPMAT54 fatal error: incorrect zone assignment!'
@@ -3004,7 +3004,7 @@ C Phase change material.
 
       character spflnam*72,spmlabel*16,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
-
+      
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
          write(outs,*)'SPMAT55 fatal error: incorrect zone assignment!'
@@ -3400,7 +3400,7 @@ C Local variables.
       real LayFrac(3)
       integer presk
       integer db(3)	!- Debug variable, stores 'case' of PCM heating/cooling.
-
+      
 C Data.
       data LayFrac /0.25, 0.5, 0.25/	!- PCM split into 3 layers.
 

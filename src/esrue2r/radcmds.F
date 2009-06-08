@@ -1022,7 +1022,8 @@ C Assumes that the path to the image is given.
 #else
       integer*8 igwid,igheight  ! for use with axiscale
 #endif
-      
+
+      integer *8 iix1,iiy1,iix2,iiy2
       logical XST,unixok
 
 C Generate picture and glare file names.
@@ -1125,7 +1126,11 @@ C Draw values as a circle.
             CALL ecirc(ix1,iy1,3,1)
             do 10 I=2,NUGR
               call u2pixel(UGRANG(I),UGRV(I),ix2,iy2)
-              call edwline(ix1,iy1,ix2,iy2)
+              iix1=ix1
+              iiy1=iy1
+              iix2=ix2
+              iiy2=iy2
+              call edwline(iix1,iiy1,iix2,iiy2)
               CALL ecirc(ix2,iy2,3,1)
               ix1=ix2
               iy1=iy2

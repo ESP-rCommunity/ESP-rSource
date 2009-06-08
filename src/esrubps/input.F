@@ -379,7 +379,7 @@ C Use supplementary temporary unit number for IAPROB
         IAPROB=IFIL+22
         MODE='ALL '
         call usrmsg('Scanning the model description...',' ','-')
-        CALL ERSYS(LCFGF,ifcfg,IAPROB,MODE,ITRC,IER)
+        CALL ERSYS_mmode(LCFGF,ifcfg,IAPROB,MODE,ITRC,IER,autook)
         call usrmsg('Scanning the model description...done ',' ','-')
 
 C Building and plant description now complete.
@@ -1779,11 +1779,11 @@ C Assign results file names.
             ERESLIB=selres(i)
           endif
 
-C debug...
-C          write(6,*)rfile
-C          write(6,*)LAFRES
-C          write(6,*)pfile
-C          write(6,*)'splres ',splres
+C Debug...
+C          write(6,*) ' input.F usesps rfile ',i,rfile
+C          write(6,*) ' input.F usesps lafres ',i,LAFRES
+C          write(6,*) ' input.F usesps pfile ',i,pfile
+C          write(6,*) ' input.F usesps splres ',i,splres
           if(match)goto 43
         endif
    42 continue

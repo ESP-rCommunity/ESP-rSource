@@ -1,5 +1,5 @@
 C This file is part of the ESP-r system.
-C Copyright Energy Systems Research Unit, University of
+
 C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
@@ -956,7 +956,6 @@ C parpsfh: Help message for parpsf.
       subroutine parpsfh(appn)
       COMMON/OUTIN/IUOUT,IUIN
       character appn*24
-
       if(appn(1:3).eq.'bld'.or.appn(1:3).eq.'bps')then
         call edisp(iuout,'This is the ESP-r Simulator. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -979,8 +978,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'    will be placed in the users home')
         call edisp(iuout,'    folder. Default is no.')
         call edisp(iuout,' ')
-        call edisp(iuout,' -help :this help message. ')
-        return
       elseif(appn(1:3).eq.'clm')then
         call edisp(iuout,'The climate analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -991,11 +988,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'   whether the user interacts')
         call edisp(iuout,'  (where file is asci input or output file)')
         call edisp(iuout,'   [-s < width, offset left & top>]')
-        call edisp(iuout,' ')
-        call edisp(iuout,'  where -mode options are:')
-        call edisp(iuout,'    text    = text mode')
-        call edisp(iuout,'    graphic = graphic mode')
-        call edisp(iuout,'    script = script mode')
         call edisp(iuout,' ')
         call edisp(iuout,'Example converting binary file to asci: ')
         call edisp(iuout,
@@ -1010,8 +1002,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,
      &    ' clm -file new.clm -act epw2bin silent current.epw')
         call edisp(iuout,' ')
-        call edisp(iuout,' -help :this help message. ')
-        return
       elseif(appn(1:3).eq.'dfs')then
         call edisp(iuout,'The stand-alone domain flow module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1045,18 +1035,11 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'   (where action {asci2bin|bin2asci}]')
         call edisp(iuout,'   (where file is asci input or output file)')
         call edisp(iuout,' ')
-        call edisp(iuout,'  where -mode options are:')
-        call edisp(iuout,'    text    = text mode ')
-        call edisp(iuout,'    graphic = graphic mode')
-        call edisp(iuout,'    script = script mode')
-        call edisp(iuout,' ')
         call edisp(iuout,'  where -act recalculate')
         call edisp(iuout,'    interactively recalculates shading.')
         call edisp(iuout,'  where -act update_silent')
         call edisp(iuout,'    no usr interaction during recalculation.')
         call edisp(iuout,' ')
-        call edisp(iuout,' -help :this help message. ')
-        return
       elseif(appn(1:3).eq.'mfs')then
         call edisp(iuout,'The stand-alone network flow solver. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1112,13 +1095,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'   recovery commands]')
         call edisp(iuout,'   [-s < width, offset left & top>]')
         call edisp(iuout,' ')
-        call edisp(iuout,'  where -mode options are:')
-        call edisp(iuout,'    text    = text mode')
-        call edisp(iuout,'    graphic = graphic mode')
-        call edisp(iuout,'    script = script mode')
-        call edisp(iuout,' ')
-        call edisp(iuout,' -help :this help message. ')
-        return
       elseif(appn(1:3).eq.'tdf')then
         call edisp(iuout,'The temporal database manager. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1143,7 +1119,9 @@ C parpsfh: Help message for parpsf.
       call edisp(iuout,'    graphic = graphic mode')
       call edisp(iuout,'    script = script mode')
       call edisp(iuout,' ')
-      call edisp(iuout,' -help :this help message. ')
+      call edisp(iuout,' -help: display this help message. ')
+      call edisp(iuout,' -version: display version number and quit.')
+      call edisp(iuout,' -buildinfo: display build details and quit.')
       return
       end
 
@@ -1205,12 +1183,8 @@ C into binary, and set default terminal type as necessary
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'and parameters ',sps(1:lnblnk(sps))
-        call edisp(iuout,outs)
+C There's nothing to parse. Do not report "Starting APP with FILE..."
+C unless -v is specified (and m>=1).
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1220,8 +1194,6 @@ C Get arguments from command line: if one parameter.
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
-        elseif(argument(1:2).eq.'-v')then
-          iverb = 2   ! tell application to run with debug on
         elseif(argument(1:8) .eq. '-version' ) then
 C Display version information and then quit
           CALL ESPrVersion("summary",cAppName,IUOUT)
@@ -1230,6 +1202,10 @@ C Display version information and then quit
 C Display detailed build information and then quit
           CALL ESPrVersion("details",cAppName,IUOUT)
           stop
+        elseif(argument(1:2).eq.'-v')then
+          iverb = 2   ! tell application to run with debug on
+                      ! Note: this option MUST follow -version
+                      ! for both to be supported
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1279,14 +1255,16 @@ C Display detailed build information and then quit
 
   42    continue
         outs=' '
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        outs=' '
-        write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
-     &   ' in ',aut,' mode and ',browse,' browsing.'
-        call edisp(iuout,outs)
+        if ( iVerb == 2 ) then
+          write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf))
+          call edisp(iuout,outs)
+          outs=' '
+          write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
+     &     ' in ',aut,' mode and ',browse,' browsing.'
+          call edisp(iuout,outs)
+        endif
         return
       endif
 

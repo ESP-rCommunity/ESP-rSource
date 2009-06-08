@@ -5021,7 +5021,7 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
   134 PEM stack cooling pump AC power draw (W)
       Value =   0.0000         Range (Min Max)      -100.0000     100.0000
  CDATA variables:
-    1 Desired net AC output (-)
+    1 Desired net AC output (frac of FCPM max DC production)
     2 Auxiliary burner output (frac of max)
  
  Number of additional output parameters:     4

@@ -19,7 +19,10 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C esystem.f provides the following facilities:
-C  ERSYS :   Reads a commented system configuration file.
+C  ERSYS :      Legacy interface that calls ERSYS_mmode in verbose
+C               mode.
+C  ERSYS_mmode: Reads a commented system configuration file, in silent
+C               or verbose modes
 C  SITEINFO: English description of the site information (cfg file).
 C  CONXINFO: returns an English description of the inter-connections 
 C            in the configuration file. 
@@ -28,13 +31,34 @@ C            IZSTOCN(MCOMP,MS) holding the connection index.
 C findwhichdbpath: takes a database file name and checks to see if
 C            the path is local or absolute or standard database folder.
 
+C ******************** ERSYS_mmode
+C ERSYS_mmode is a legacy interface to ERSYS_mmode, below. It allows
+C existing code to call ERSYS_mmode in its traditional verbose mode.
 
-C ******************** ERSYS 
-C ERSYS reads a system configuration file which defines the building
+      SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
+      IMPLICIT NONE
+      integer  iUC, iUF, iTRC, iER
+      CHARACTER*72 FILE
+      CHARACTER*4 MODE
+      logical bSilent
+
+C Call multi-mode interface in traditional verboase mode.
+
+      bSilent = .false.
+
+      call ERSYS_mmode(FILE,IUC,IUF,MODE,ITRC,IER,bSilent)
+
+      return
+      end
+
+
+C ******************** ERSYS_mmode 
+C ERSYS_mmode reads a system configuration file which defines the building
 C and/or plant definition for simulation with or without comments
 C and with several levels of verbosity in reporting.  
 C If MODE='NONE' ERSYS fills the common block with file names only. 
-C IF MODE='ALL ' then all geom files scanned.
+C IF MODE='ALL ' then all geom files scanned. Depending on the value
+C of bVerbose, it may provide interactive prompts to the screen.
 
 C Common block variables are:
 C INDCFG  - is the configuration file index where: 0= registration, 
@@ -114,7 +138,7 @@ C           network need not be matched.
 
 C BDMDS,dbdsdesc - name file project demands file and related description.
 
-      SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
+      SUBROUTINE ERSYS_mmode(FILE,IUC,IUF,MODE,ITRC,IER,bSilent)
 #include "building.h"
 
 C geometry.h provides commons G0/G2/prec2/precz/c20.
@@ -147,6 +171,8 @@ C espriou.h provides currentfile and defdbfl.
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
+
+      logical bSilent ! Flag indicating verbosity.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
@@ -879,9 +905,9 @@ C set the LPCDB common block string via call to findwhichdbpath.
         call findwhichdbpath('pdb',lworking,ier)
 
 C debug.
-        write(6,*) lworking
-        write(6,*) lpcdb
-        write(6,*) ' ersys ipathpcdb is ',ipathpcdb
+C        write(6,*) lworking
+C        write(6,*) lpcdb
+C        write(6,*) ' ersys ipathpcdb is ',ipathpcdb
       elseif(WORD(1:7).eq.'*stdpdb')then
         ipathpcdb=2  ! standard folder for plant template database
         CALL EGETRM(LOUTSTR,K,LPCDB,'W','plant template db',IER)
@@ -1677,7 +1703,8 @@ C Project log file, read and then go on to fabric/plant description.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
         LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
         goto 45
-      else
+      elseif ( .not. bSilent ) then
+
         call usrmsg(' Unknown entry format... ',outstr,'W')
         dok=.true.
         h(1)='An unknown tag or line was found in the configuration'
@@ -1691,6 +1718,10 @@ C Project log file, read and then go on to fabric/plant description.
           ier=1
           return
         endif
+
+      else
+          ier=1
+          return
       endif
 
 C Loop back for next database file.
@@ -3130,19 +3161,19 @@ C The initial part of the path matches so only save the file name w/o path.
       endif
 
 C Debug.
-      write(6,*) file
+C      write(6,*) file
       if(topic(1:3).eq.'opt')then
-        write(6,*) loptdb
-        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
+C        write(6,*) loptdb
+C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
       elseif(topic(1:3).eq.'pdb')then
-        write(6,*) LPCDB
-        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+C        write(6,*) LPCDB
+C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
       elseif(topic(1:3).eq.'prs')then
-        write(6,*) lapres
-        write(6,*) 'findwhichdbpath ipath is ',ipathapres
+C        write(6,*) lapres
+C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
       elseif(topic(1:3).eq.'sbm')then
-        write(6,*) lsbem
-        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+C        write(6,*) lsbem
+C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
       endif
 
       return

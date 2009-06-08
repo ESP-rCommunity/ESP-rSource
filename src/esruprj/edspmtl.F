@@ -574,8 +574,8 @@ C Set up the menu
 
 C Label lthe material according to type
   99  labl=spdefnam
-      call easks(labl,' ',' Label for material ?',16,spdefnam,
-     &  '  spm label ', IER,0)
+      call easks(labl,' ',' Label for material (no spaces)?',16,
+     &  spdefnam,'  spm label ', IER,0)
       spmlabel(ispmn)=labl
 
 C Get data items for special component.

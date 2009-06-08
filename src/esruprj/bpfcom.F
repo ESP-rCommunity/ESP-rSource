@@ -1283,7 +1283,7 @@ C list out the zone/loop associations.
       common/c1/ncomp,ncon
       common/cctl/icascf(mcom)
 
-      character outs*124,SSTR*72
+      character outs*124,SSTR*96
 
 C List linkages with zones if II = 0.
       if(II.eq.0)then
