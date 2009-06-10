@@ -40,6 +40,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
+#include "ipvdata.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -67,10 +68,8 @@ C ITRU unit number for user output, IER=0 indicates no error.
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/CFGV/icfgv
 
 C CPCALC description

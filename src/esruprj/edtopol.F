@@ -2982,7 +2982,7 @@ C IDST tool commands.
       character CMDLNAM*80,CMDLBL*12
       character LCFGF*72,cfgroot*24,h*72
       character CXITM*43,outs*124,LTMP*72
-      character clmdb*72
+      character clmdb*144
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
       character doit*248,tmode*8,tfile*72,aut*8,runmode*12,keepres*4

@@ -2328,13 +2328,26 @@ C is up (=1) or down (=0). The solar angles are computed relative
 C to local mean time (e.g. Greenwich is the reference time zone for
 C the UK).
       SUBROUTINE EAZALTS(TIMEH,ID,SLAT,SLON,ISUNUP,SAZI1,SALT1)
+      implicit none
+      
+      real esind,ecosd  ! function definitions
+
+C Parameters:
+      integer ID,ISUNUP
+      real TIMEH,SLAT,SLON,SAZI1,SALT1
+
+C Local
+      real A,ABST,AZMUTH,B,CDEC,CDTIME,CSLAT,DAY,DEC,EQT,HOUR,PI,R
+      real SABST,SALT,SAZI,SDEC,SSLAT,TIME,TIMCOE,XX,YY
       logical CLOSE
-      SAZI1=0.
+      
+      PI = 4.0 * ATAN(1.0)  ! pattern used in AZALT
+      SAZI1=0.      ! set initial values
       SALT1=0.
       ISUNUP=1
-      R=3.14159/180.
-      DAY=FLOAT(ID)
-      HOUR=TIMEH
+      R=PI/180.0    ! compute radians
+      DAY=FLOAT(ID) ! cast julian day to local
+      HOUR=TIMEH    ! cast passed time to hour fraction
 
 c Calculate equation of time.
       A=1.978*DAY-160.22
@@ -2348,7 +2361,7 @@ c Compute declination.
       CDEC=COS(DEC*R)
 
 c Compute solar altitude.
-      TIME=HOUR+(EQT+SLON/15.)
+      TIME=HOUR+(EQT+SLON/15.0)
       TIMCOE=15.0*(12.0-TIME)
       CDTIME=COS(TIMCOE*R)
       ABST=ABS(TIMCOE)
@@ -2356,7 +2369,7 @@ c Compute solar altitude.
       SSLAT=SIN(SLAT*R)
       CSLAT=COS(SLAT*R)
       SALT=ASIN(SSLAT*SDEC+CSLAT*CDEC*CDTIME)/R
-      IF(SALT.LT.0.)goto 1
+      IF(SALT.LT.0.0)goto 1
 
 C Solar aziumth.
       AZMUTH=(CDEC*SABST)/ECOSD(SALT)

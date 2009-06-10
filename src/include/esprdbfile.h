@@ -76,9 +76,9 @@ C LFMUL - (72 char) constructions db file name
       common/CONDB/LFMAT,LFMUL
       character LFMAT*72,LFMUL*72
 
-C LCLIM - (72 char) climate file name associated with the model
+C LCLIM - (144 char) climate file name associated with the model
       COMMON/C22/LCLIM
-      character LCLIM*72
+      character LCLIM*144
 
 C Default file names for databases (72 char):
 C DCLIM - default climate, DAPRES - default pressure coef
@@ -86,12 +86,12 @@ C DFCON - default materials, DFMUL - default constructions
 C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
 C DPCDB - default plant components, DSBEM - default UK SBEM
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,DSBEM
-      character*72 DCLIM,DFCON,DFMUL
+      character*72 DFCON,DFMUL
       character DOPTDB*144,DPRFDB*144,DAPRES*144,DPCDB*144
-      character DSBEM*144
+      character DSBEM*144,DCLIM*144
 
 C LSBEM - (144 char) SBEM building type and systems db file name
       COMMON/SBEM00/LSBEM
-      character*144 LSBEM
+      character LSBEM*144
 
 C end of esp-r_dbfile.h

@@ -113,6 +113,7 @@ C laprob  - fluid flow description file
       common/filep/ifil
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       common/outin/iuout,iuin
 
@@ -187,7 +188,7 @@ C Material data arrays.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,h*72,spsname*8,L144*144
+      CHARACTER outs*124,h*72,spsname*8,L144*144,longtmp*144
       CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
@@ -570,17 +571,33 @@ C a climate file by reading records 366 and 367.
         iclim=ifil
         call erpfree(iclim,istat)
         if (.not.autook) then
-          LTMP=LCLIM
-          CALL EASKS(LTMP,'  Climate file name ?',
-     &               '  ',72,DCLIM,'climate file name',IER,9)
-          IF(LTMP(1:2).EQ.'  ')goto 35
-          LCLIM=LTMP
+          longtmp=LCLIM
+
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &        96,DCLIM,'climate file name',IER,3)
+          elseif(iglib.eq.2)then
+            CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &        144,DCLIM,'climate file name',IER,3)
+          else
+            CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &        96,DCLIM,'climate file name',IER,3)
+          endif
+          if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+          if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
+            LCLIM=longtmp
+          endif
+
         endif
       endif
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
       IF(ier.eq.0)THEN
         IREC=366
-        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,IRT
+        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
         IREC=367
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
         WRITE(OUTSTR,1000)CLMLOC,ICYEAR
@@ -588,7 +605,7 @@ C a climate file by reading records 366 and 367.
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,OUTSTR)
         IRTYPE=0
-        IF(IRT.EQ.123)IRTYPE=1
+        IF(ICDNGH.EQ.123)IRTYPE=1
 
 C If older configuration, confirm the year.
         if(icfgv.lt.3)then

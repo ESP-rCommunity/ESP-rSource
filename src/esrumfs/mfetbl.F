@@ -212,8 +212,8 @@ C First general table info and column headers
       call edisp(itru,outs)
       WRITE(outs248,*) '# Cp-wind : ',LAPRES(1:LNBLNK(LAPRES))
       call edisp248(itru,outs248,100)
-      WRITE(outs,*) '# Climate : ',LCLIM(1:LNBLNK(LCLIM))
-      call edisp(itru,outs)
+      WRITE(outs248,*) '# Climate : ',LCLIM(1:LNBLNK(LCLIM))
+      call edisp248(itru,outs248,100)
       WRITE(outs,*) '# Results : ',LAFRES(1:LNBLNK(LAFRES))
       call edisp(itru,outs)
       write(outs,'(a,a,1x,a,a)') '# Julian date, Temp @ ',NR,NT,

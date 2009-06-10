@@ -245,9 +245,9 @@ C AXISDRW - draw and label axes.
 
       integer YAXSET, ADDLIN
 #ifdef OSX
-      integer igwid,igheight  ! for use with axiscale
+      integer igwid,igheight,iid1,iid2  ! for use with axiscale
 #else
-      integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 igwid,igheight,iid1,iid2  ! for use with axiscale
 #endif
 
 
@@ -302,7 +302,8 @@ C draw vertical axis.
           else
             call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
      &                             YSC(I),0,ilr(I),'  ')
-            call wstxpt(igx(I),igt-5,ALABEL(I))
+            iid1=igx(I); iid2=igt-5;
+            call wstxpt(iid1,iid2,ALABEL(I))
           endif
         endif
  10   continue

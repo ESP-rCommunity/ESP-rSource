@@ -51,6 +51,7 @@ C espriou.h provides currentfile, defdbfl exemfl.
 #include "control.h"
 #include "net_flow.h"
 #include "prj3dv.h"
+#include "ipvdata.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -128,10 +129,8 @@ C Temporal definitions.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
       common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -571,6 +570,7 @@ C and if so do what it says.
           if(XST)then
 
 C Call newprb without the need to confirm model but to check its path.
+C We assume that the user owns the model to be transformed.
             itisanexemplar=.false.
             confirm=.false.
             ckpath=.true.
@@ -679,7 +679,7 @@ C              write(6,*)'idst naloc =',nidst,naloc
   23      CALL ERPFREE(IFCFG,ISTAT)
 
 C Call newprb without the need to confirm model but to check its path.
-C << for now assume that the file passed is not an exemplar >>
+C Assume that the file passed is not an exemplar.
           itisanexemplar=.false.
           confirm=.false.
           ckpath=.true.
@@ -694,8 +694,8 @@ C          call edisp(iuout,'* Loading supplied model description.')
           call tstamp('>',LCFGF)
         else
 
-C The model file might not exist.
-C << for now assume that the file passed is not an exemplar >>
+C The model file might not exist. Request the path is checked.
+C Assume that the file name passed is not an exemplar.
           itisanexemplar=.false.
           confirm=.false.
           ckpath=.true.
@@ -853,10 +853,10 @@ C      write(6,*) ' model management browse status ',browse
       if(CFGOK)then
         if(browse)then
           ITEMS(7) =  ' .... Current model (browse) ....'
-          ITEMS(13)=  'm browse/simulate'
+          ITEMS(13)=  'm browse/ simulate'
         else
           ITEMS(7) =  ' .... Current model ..........'
-          ITEMS(13)=  'm browse/edit/simulate'
+          ITEMS(13)=  'm browse/ edit/ simulate'
         endif
         WRITE(ITEMS(8),'(2A)') '  cfg  : ',LCFGF(1:22)
         WRITE(ITEMS(9),'(2A)') '  path : ',path(1:22)
@@ -1139,8 +1139,10 @@ C action if there is no match in the paths.
                     itisanexemplar=.false.
                   endif
                 endif
-C                write(outs,*) '* Browse status is ',browse
-C                call edisp(iuout,outs)
+
+C Debug.
+                write(outs,*) '* Browse status ',browse,itisanexemplar
+                call edisp(iuout,outs)
 
 C If running on a Windows machine the the file browser would have been
 C used and there is no need to check the path.
@@ -1193,7 +1195,8 @@ C Something was passed in via the command line so offer choice.
             CALL EASKABC(outs,' ','use it as the model',
      &        'specify another','cancel',IW,7)
 
-C Find the path and local file name.
+C User confirmed model so find the path and local file name. The
+C variable dirpath is where esp-r training models are located.
             if(IW.eq.1)then
               ltcmdfl=LCMDFL
               call fdroot(ltcmdfl,path,LCFGF)
@@ -1465,6 +1468,7 @@ C simula commissions technical assessments and analysis.
 #include "building.h"
 #include "esprdbfile.h"
 #include "sbem.h"
+#include "ipvdata.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       
@@ -1487,11 +1491,6 @@ C Temporal header (to get its time frequency)
      &             LSTREC,NDBSTP,NUWPR
       common/CFGV/icfgv
       common/IPVF/lipvdatf
-
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C Typical seasons and default simulation periods. Isset is the
 C current seasons set, nsset number of sets, Isauto (0=use info as
@@ -1739,6 +1738,8 @@ C Invoke simulator for the case of a simulation parameter set.
           else
             goto 3
           endif
+
+C Setup chile process for the type of terminal.
           call tstamp('>','PRJ: beginning simulation with param set.')
           doit = ' '
           call tchild(ICPMOD)
@@ -1795,7 +1796,7 @@ C an offset from prj start position.
           endif
 
 C Debug.
-C          call usrmsg('Begining simulation via',doit,'-')
+          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         else
@@ -1851,7 +1852,7 @@ C an offset from prj start position.
           endif
 
 C Debug.
-C          call usrmsg('Begining simulation via',doit,'-')
+          call usrmsg('Begining simulation via',doit,'-')
           call runit(doit,tmode)
           return
         endif
@@ -2461,6 +2462,7 @@ C << the longer string used when commissioning a simulation.
 
       subroutine ipvactions(ier)
 #include "building.h"
+#include "ipvdata.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -2479,9 +2481,6 @@ C to include the path and create a string to drive the modules.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C Typical seasons and default simulation periods. Isset is the
 C current seasons set, nsset number of sets, Isauto (0=use info as
@@ -4443,6 +4442,7 @@ C << message to user that such a file does not exist
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -4459,16 +4459,6 @@ C Path to model and command line file (if any).
       common/CFGV/icfgv
       common/pophelp/h(60)
 
-C ipvtitl (char 40) is the title that shows up in reports
-C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
-C ipvsynop (char 248) documents the integrated performance view
-C ipvsimu (char 6) is a short tag describing the assessments to be run
-C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
-C   season assessment with all days included.
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
 

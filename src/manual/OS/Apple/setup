@@ -114,9 +114,8 @@ fi
 echo " "
 echo " ESP-r is available in two versions:"
 echo " a) the standard X11 impementation"
-echo " b) an implementation using the GTK graphics"
-echo "    library (some functions have not yet"
-echo "    been ported."
+echo " b) NOT AVAILABLE - an implementation using the GTK graphics"
+echo "    library (some functions have not yet been ported)"
 echo " "
 echo " selection option [a/b]:"
 read which
@@ -150,15 +149,14 @@ echo " This may take a few minutes ..."
 if [ ! -d /opt/esru ]; then
   sudo mkdir /opt/esru
 fi
-
-# assumes that the tar file was created in / and is not compressed
+  
 cd /
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  sudo tar xf $ISD/esp-r_X11_11.6_ppc_osx.tar 
+  sudo tar xf $ISD/esp-r_X11_11.6_intel_osx.tar
 elif [[ $which = 'b' ]] ; then
   echo " Extracting GTK ESP-r distribution ..."
-  sudo tar xf $ISD/esp-r_GTK_11.6_ppc_osx.tar
+  sudo tar xf $ISD/esp-r_GTK_11.6_intel_osx.tar
 fi
 echo " Extracting ESP-r distribution ...done."
 echo " "
@@ -173,11 +171,6 @@ chmod a+r /opt/esru
 chmod a+r /opt/esru/bin
 chmod a+r /opt/esru/esp-r
 chmod a+r /opt/esru/esp-r/bin
-
-cd /
-echo " Extracting Radiance distribution ..."
-sudo zcat $ISD/radiance_precomp_osx.tar.gz | tar xf -
-echo " Extracting Radiance distribution ... done."
 
 echo "copy .cshrc...to /tmp"
 sudo cp $ISD/cshrc /tmp/.cshrc
@@ -195,10 +188,6 @@ echo "  cp /tmp/.cshrc ."
 echo " "
 echo "See the instructions for further information."
 echo " "
-
-echo "copying helper applications..."
-cp $ISD/xv /sw/bin
-echo "copy helper applications... done."
 
 echo "...done. "
 echo -e $DSP4

@@ -112,8 +112,10 @@ C Simulator parameters.
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
 #ifdef OSX
       integer iupdown,isym    ! passed to etplot
+      integer iid1,iid2
 #else
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iid1,iid2
 #endif
 
 C If the network flow file has not yet been opened request information.
@@ -918,8 +920,8 @@ C Finally label lines, matching zone line colour if used.
               call winscl('z',ICM)
             endif
           endif
-          call u2pixel(TIMEold(I),Yold(I),ixs,iys)
-          call wstxpt(ixs,iys,t20)
+          call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
+          call wstxpt(iid1,iid2,t20)
           if(colok)call winscl('-',0)
           call forceflush()
  200    continue
@@ -928,7 +930,8 @@ C If there are optional user defined labels draw them.
         if(ngrlbl.gt.0)then
           do 201 ijj=1,ngrlbl
             t24=grlbl(ijj)
-            call wstxpt(lblpx(ijj),lblpy(ijj),t24)
+            iid1=lblpx(ijj); iid2=lblpy(ijj);
+            call wstxpt(iid1,iid2,t24)
  201      continue
         endif
       elseif (MENUTYPE.eq.5) then

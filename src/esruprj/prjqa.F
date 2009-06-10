@@ -45,6 +45,8 @@ C ICLIM,LCLIM (for climate file)
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "sbem.h"
+#include "ipvdata.h"
+#include "seasons.h"
       
       integer lnblnk  ! function definition
 
@@ -119,18 +121,7 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       COMMON/CLMDT1/CLMLOC
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/CFGV/icfgv
-
-C ipvtitl (char 40) is the title that shows up in reports
-C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
-C ipvsynop (char 248) documents the integrated performance view
-C ipvsimu (char 6) is a short tag describing the assessments to be run
-C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
-C   season assessment with all days included.
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -976,15 +967,15 @@ C Print address for building and client.
 
 C Tell about climate taking note of timing of solar data.
         if(iSlr_half_hr_flg.eq.0)then
-          WRITE(outs248,'(5A)')'The climate used is: ',
+          WRITE(outs248,'(5A)')'The climate is: ',
      &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
      &      LCLIM(1:lnblnk(LCLIM)),
-     &      ' and uses hour centred solar data.'
+     &      ' with hour centred solar data.'
         else
-          WRITE(outs248,'(5A)')'The climate used is: ',
+          WRITE(outs248,'(5A)')'The climate is: ',
      &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
      &      LCLIM(1:lnblnk(LCLIM)),
-     &      ' and uses half hour centred solar data.'
+     &      ' with half hour centred solar data.'
         endif
         call edisp248(itu,outs248,80)
 
@@ -1122,24 +1113,29 @@ C Check if embedded within configuration file.
             call edisp248(itu,ipvsynop,80)
           elseif(contextinfo.eq.2)then
 
-C Rescan the climatelist file to get seasons. If this was successful
-C then include a description of the IPV. Otherwise warn user about
+C If there is no local season definition, rescan the climatelist
+C file to get seasons. If this was successful then include
+C a description of the IPV. Otherwise warn user about
 C the climate file and attempt to print out IPV contents.
-            INQUIRE (FILE=cdblfil,EXIST=XST)
-            if(XST)then
-              IUF=IFIL+2
-              call scancdblist(IUF,LCLIM,ok,iercl)
-              if(iercl.eq.0)then
-                call listipvdat(itu,'a',ier)
-              else
-                call edisp(itu,
-     &            'The climatelist was incomplete or missing so the')
-                call edisp(itu,'IPV details might be incorrect.')
-                if(ieripv.eq.0)then
+            if(ihaveseason.ge.1)then
+              call listipvdat(itu,'a',ier)
+            else
+              INQUIRE (FILE=cdblfil,EXIST=XST)
+              if(XST)then
+                IUF=IFIL+2
+                call scancdblist(IUF,LCLIM,ok,iercl)
+                if(iercl.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else
                   call edisp(itu,
+     &            'The climatelist was incomplete or missing so the')
+                  call edisp(itu,'IPV details might be incorrect.')
+                  if(ieripv.eq.0)then
+                    call listipvdat(itu,'a',ier)
+                  else
+                    call edisp(itu,
      &              'The IPV description was incomplete or missing.')
+                  endif
                 endif
               endif
             endif
@@ -2035,7 +2031,7 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
       goto 3
 
 C Error trap.
- 1000 call usrmsg('Problem scanning climate file',lclim,'W')
+ 1000 call lusrmsg('Problem scanning climate file',lclim,'W')
       goto 1001
 
       end
@@ -2049,6 +2045,8 @@ C not browsing.
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "espriou.h"
+#include "seasons.h"
       
       integer lnblnk  ! function definition
 
@@ -2134,6 +2132,24 @@ C is still a need for upgrading.
           endif
         endif
   775 continue
+
+C Check whether the climate file is associated with seasons defined
+C in the climatelist file and if none written to the model set flag
+C for this to happen.
+      if(ihaveseason.gt.0)then
+        continue
+      else
+        INQUIRE (FILE=cdblfil,EXIST=XST)
+        if(XST)then
+          IUF=IFIL+2
+          call scancdblist(IUF,LCLIM,ok,iercl)
+          if(iercl.eq.0)then
+            ihaveseason=1
+            allnew=.false.
+          endif
+        endif
+      endif
+
       if(allnew)then
         igupgrade=2
         forceupgrade=.false.
@@ -2349,6 +2365,23 @@ C Save the file, sorting the periods if necessary.
 
 C Save the model configuration file before continuing.
           CALL EMKCFG('-',IER)
+
+C Check if climate file season data is available via the climatelist
+C file and then include seasonal tokens in the model.
+          if(ihaveseason.gt.0)then
+            continue
+          else
+            INQUIRE (FILE=cdblfil,EXIST=XST)
+            if(XST)then
+              IUF=IFIL+2
+              call scancdblist(IUF,LCLIM,ok,iercl)
+              if(iercl.eq.0)then
+                ihaveseason=1
+                CALL EMKCFG('-',IER)
+              endif
+            endif
+          endif
+
 
 C While we are at it, control files often include out of date descriptions
 C and if there is a control file scan it and write it back out again.

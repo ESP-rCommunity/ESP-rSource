@@ -1889,7 +1889,7 @@ C Simulator parameters.
       CHARACTER ctldoc*248
       CHARACTER*72 LCFGF,LCTLF
       character PERST1*14,PERST2*44,PERST3*44
-      character outs*124,cfgroot*24,h*72
+      character outs*124,louts*248,cfgroot*24,h*72
 
       LOGICAL OK,dok,IGR1D,BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,INTHPS,INTHPZ,global,glbrwd
@@ -1941,21 +1941,21 @@ C Determine the number of zone days simulated.
    41 NZTS=(NCOMP*(IDAYS+ITCNST))*NTSTEP*24
 
 C Write out appropriate message.
-      write(outs,'(a,a)')  ' Climate file         : ',
+      write(louts,'(a,a)')  ' Climate file         : ',
      &  LCLIM(:lnblnk(LCLIM))
-      call edisp(icout,outs)
-      write(outs,'(a,a)')  ' Configuration file   : ',
+      call edisp248(icout,louts,100)
+      write(outs,'(a,a)')   ' Configuration file   : ',
      &  LCFGF(:lnblnk(LCFGF))
       call edisp(icout,outs)
-      write(outs,'(a,a)')  ' Configuration name   : ',
+      write(outs,'(a,a)')   ' Configuration name   : ',
      &  LSNAM(:lnblnk(LSNAM))
       call edisp(icout,outs)
       call edisp(icout,' ')
       if(NCF.eq.0.and.NCL.eq.0)then
-        call edisp(icout,    ' Control strategy     : free-floating')
+        call edisp(icout,   ' Control strategy     : free-floating')
         call edisp(icout,' ')
       else
-        write(outs,'(a,a)')  ' Control file name    : ',
+        write(outs,'(a,a)') ' Control file name    : ',
      &    LCTLF(1:lnblnk(LCTLF))
         call edisp(icout,outs)
         call edisp(icout,' ')
@@ -2018,11 +2018,15 @@ C Derive string for simulation period.
       goto 135
    42 IF(BYTE.GT.2000.0)goto 14
       write(outs,'(a,F7.1,a)')' Zone results db size : ',BYTE,' Kbytes'
-      call edisp(icout,outs)
+      if(isave.eq.1.or.isave.eq.2.or.isave.eq.3.or.isave.eq.4)then
+        call edisp(icout,outs)
+      endif
       goto 135
    14 BYTE=BYTE/1024.0
       write(outs,'(a,F7.1,a)')' Zone results db size : ',BYTE,' Mbytes'
-      call edisp(icout,outs)
+      if(isave.eq.1.or.isave.eq.2.or.isave.eq.3.or.isave.eq.4)then
+        call edisp(icout,outs)
+      endif
 
   135 IF(INDCFG.EQ.1)goto 136
       NREC=3
@@ -2492,14 +2496,15 @@ C if itru=33 then works as a header to the trace.
 
       character*72 lafres,lctlf,lcfgf,rfile
       character ctldoc*248,outs*124,PFILE*72,MSTRFILE*72,cfgroot*24
+      character louts*248
 
       dimension io(mcom)
 
       call edisp(itru,' ')
       write(outs,'(A,A)')' Results library     :  ',RFILE
       call edisp(itru,outs)
-      write(outs,'(A,A)')' Climate file        :  ',LCLIM
-      call edisp(itru,outs)
+      write(louts,'(A,A)')' Climate file        :  ',LCLIM
+      call edisp248(itru,louts,100)
       write(outs,'(A,A)')' Configuration file  :  ',LCFGF
       call edisp(itru,outs)
       write(outs,'(A,A)')' Configuration descr :  ',LSNAM
