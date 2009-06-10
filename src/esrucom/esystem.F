@@ -19,7 +19,10 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C esystem.f provides the following facilities:
-C  ERSYS :   Reads a commented system configuration file.
+C  ERSYS :      Legacy interface that calls ERSYS_mmode in verbose
+C               mode.
+C  ERSYS_mmode: Reads a commented system configuration file, in silent
+C               or verbose modes
 C  SITEINFO: English description of the site information (cfg file).
 C  CONXINFO: returns an English description of the inter-connections 
 C            in the configuration file. 
@@ -28,13 +31,34 @@ C            IZSTOCN(MCOMP,MS) holding the connection index.
 C findwhichdbpath: takes a database file name and checks to see if
 C            the path is local or absolute or standard database folder.
 
+C ******************** ERSYS_mmode
+C ERSYS_mmode is a legacy interface to ERSYS_mmode, below. It allows
+C existing code to call ERSYS_mmode in its traditional verbose mode.
 
-C ******************** ERSYS 
-C ERSYS reads a system configuration file which defines the building
+      SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
+      IMPLICIT NONE
+      integer  iUC, iUF, iTRC, iER
+      CHARACTER*72 FILE
+      CHARACTER*4 MODE
+      logical bSilent
+
+C Call multi-mode interface in traditional verboase mode.
+
+      bSilent = .false.
+
+      call ERSYS_mmode(FILE,IUC,IUF,MODE,ITRC,IER,bSilent)
+
+      return
+      end
+
+
+C ******************** ERSYS_mmode 
+C ERSYS_mmode reads a system configuration file which defines the building
 C and/or plant definition for simulation with or without comments
 C and with several levels of verbosity in reporting.  
 C If MODE='NONE' ERSYS fills the common block with file names only. 
-C IF MODE='ALL ' then all geom files scanned.
+C IF MODE='ALL ' then all geom files scanned. Depending on the value
+C of bVerbose, it may provide interactive prompts to the screen.
 
 C Common block variables are:
 C INDCFG  - is the configuration file index where: 0= registration, 
@@ -114,7 +138,7 @@ C           network need not be matched.
 
 C BDMDS,dbdsdesc - name file project demands file and related description.
 
-      SUBROUTINE ERSYS(FILE,IUC,IUF,MODE,ITRC,IER)
+      SUBROUTINE ERSYS_mmode(FILE,IUC,IUF,MODE,ITRC,IER,bSilent)
 #include "building.h"
 
 C geometry.h provides commons G0/G2/prec2/precz/c20.
@@ -144,11 +168,11 @@ C espriou.h provides currentfile and defdbfl.
 #include "sbem.h"
 #include "roam.h"
 #include "CFC_common.h"
-#include "ipvdata.h"
-#include "seasons.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
+
+      logical bSilent ! Flag indicating verbosity.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
@@ -183,12 +207,6 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-
-C Seasons.
-      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
-      character clmlhelp*72
-      common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
-      common/clmlnum/nbclmlhelp
 
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
@@ -337,8 +355,12 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C IPV data is from ipvdata.h.
+C IPV description.
       common/IPVF/lipvdatf
+      common/IPVFORMAT/ipvform,ipvversion
+
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C Dispersed demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds
@@ -504,8 +526,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character calename*32,calentag*12,calendayname*32
       character LWndSupp*72
       character HDR*12
-      character ipvact*3   ! to singnal internal or external IPV file
-      character pstring*40 ! for season days and months
+      character ipvact*3  ! to singnal internal or external IPV file
       logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
@@ -1244,138 +1265,6 @@ C There is a calendar of day types defined read its name.
         CALL EGETWI(LOUTSTR,K,idwe2,1,7,'W','weekend day',IER)
         wkd1=wkday(idwe1)
         wkd2=wkday(idwe2)
-
-C Seasonal data (similar to climatelist file scan in rcdblist.F)
-      elseif(WORD(1:8).eq.'*seasons')then
-        ihaveseason=1   ! signal a local definition exists
- 444    CALL STRIPC(IUC,OUTSTR,0,ND,1,'seasons data',IER)
-        K=0
-        CALL EGETW(OUTSTR,K,WORD,'W','seasons tag',IFLAG)
-        if(WORD(1:5).eq.'*aide')then
-          call egetrm(outstr,K,clmlaid,'W','brief description',IER)
-          goto 444
-        elseif(WORD(1:5).eq.'*name')then
-          call egetrm(outstr,K,clmlnam,'W','menu entry',IER)
-          goto 444
-        elseif(WORD(1:9).eq.'*winter_t')then
-
-C Instanciate typper common block variables ia1wins,ia1winf,ia2wins,ia2winf 
-          call egetrm(outstr,K,pstring,'W','winter typ',IER)
-
-C Has start and end day of both winters.
-          K=0
-          CALL EGETWI(pstring,K,ID1,1,31,'F','s day',IER)
-          CALL EGETWI(pstring,K,IM1,1,12,'F','s month',IER)
-          CALL EGETWI(pstring,K,ID2,1,31,'F','f day',IER)
-          CALL EGETWI(pstring,K,IM2,1,12,'F','f month',IER)
-          CALL EDAY(ID1,IM1,ia1wins)
-          CALL EDAY(ID2,IM2,ia1winf)
-          CALL EGETWI(pstring,K,ID1,1,31,'F','s day',IER)
-          CALL EGETWI(pstring,K,IM1,1,12,'F','s month',IER)
-          CALL EGETWI(pstring,K,ID2,1,31,'F','f day',IER)
-          CALL EGETWI(pstring,K,IM2,1,12,'F','f month',IER)
-          CALL EDAY(ID1,IM1,ia2wins)
-          CALL EDAY(ID2,IM2,ia2winf)
-          goto 444
-        elseif(WORD(1:9).eq.'*spring_t')then
-
-C Instanciate typper common block variables ia1sprs,ia1sprf,ia2sprs,ia2sprf 
-          call egetrm(outstr,K,pstring,'W','spring typ',IER)
-
-C Has start and end day and typical day of spring and autumn.
-          K=0
-          CALL EGETWI(pstring,K,ID1,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM1,1,12,'F','month',IER)
-          CALL EGETWI(pstring,K,ID2,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM2,1,12,'F','month',IER)
-          CALL EDAY(ID1,IM1,ia1sprs)
-          CALL EDAY(ID2,IM2,ia1sprf)
-          CALL EGETWI(pstring,K,ID1,1,31,'F','s day',IER)
-          CALL EGETWI(pstring,K,IM1,1,12,'F','s month',IER)
-          CALL EGETWI(pstring,K,ID2,1,31,'F','f day',IER)
-          CALL EGETWI(pstring,K,IM2,1,12,'F','f month',IER)
-          CALL EDAY(ID1,IM1,ia2sprs)
-          CALL EDAY(ID2,IM2,ia2sprf)
-          goto 444
-        elseif(WORD(1:9).eq.'*summer_t')then
-
-C Instanciate typper common block variables iasums & iasumf
-          call egetrm(outstr,K,pstring,'W','summer typ',IER)
-          K=0
-          CALL EGETWI(pstring,K,ID1,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM1,1,12,'F','month',IER)
-          CALL EGETWI(pstring,K,ID2,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM2,1,12,'F','month',IER)
-          CALL EDAY(ID1,IM1,iasums)
-          CALL EDAY(ID2,IM2,iasumf)
-          goto 444
-        elseif(WORD(1:9).eq.'*winter_s')then
-
-C Read winter season - two periods e.g. nov-dec & jan-feb
-C common block typsea is1wins,is1winf,is2wins,is2winf
-          call egetrm(outstr,K,pstring,'W','winter sea',IER)
-          K=0
-          CALL EGETWI(pstring,K,ID1,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM1,1,12,'F','month',IER)
-          CALL EGETWI(pstring,K,ID2,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM2,1,12,'F','month',IER)
-          CALL EGETWI(pstring,K,ID3,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM3,1,12,'F','month',IER)
-          CALL EGETWI(pstring,K,ID4,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM4,1,12,'F','month',IER)
-          CALL EDAY(ID1,IM1,is1wins)
-          CALL EDAY(ID2,IM2,is1winf)
-          CALL EDAY(ID3,IM3,is2wins)
-          CALL EDAY(ID4,IM4,is2winf)
-          goto 444
-        elseif(WORD(1:9).eq.'*spring_s')then
-
-C Read transition season - two periods e.g. mar-may & sep-oct
-C common block typsea is1sprs,is1sprf,is2sprs,is2sprf
-          call egetrm(outstr,K,pstring,'W','trans sea',IER)
-          K=0
-          CALL EGETWI(pstring,K,ID1,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM1,1,12,'F','month',IER)
-          CALL EGETWI(pstring,K,ID2,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM2,1,12,'F','month',IER)
-          CALL EGETWI(pstring,K,ID3,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM3,1,12,'F','month',IER)
-          CALL EGETWI(pstring,K,ID4,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM4,1,12,'F','month',IER)
-          CALL EDAY(ID1,IM1,is1sprs)
-          CALL EDAY(ID2,IM2,is1sprf)
-          CALL EDAY(ID3,IM3,is2sprs)
-          CALL EDAY(ID4,IM4,is2sprf)
-          goto 444
-        elseif(WORD(1:9).eq.'*summer_s')then
-
-C Read summer season - e.g. jun-aug (common block typsea is1sums,is1sumf).
-          call egetrm(outstr,K,pstring,'W','summer sea',IER)
-          K=0
-          CALL EGETWI(pstring,K,ID1,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM1,1,12,'F','month',IER)
-          CALL EGETWI(pstring,K,ID2,1,31,'F','day',IER)
-          CALL EGETWI(pstring,K,IM2,1,12,'F','month',IER)
-          CALL EDAY(ID1,IM1,is1sums)
-          CALL EDAY(ID2,IM2,is1sumf)
-          goto 444
-        elseif(WORD(1:11).eq.'*help_start')then
-
-C Read and store the comments into the HELP array for later display.
-          nbclmlhelp=0
- 445      CALL STRIPC(IUC,OUTSTR,0,ND,0,'help line',IER)
-          if(OUTSTR(1:11).eq.'*season_end')then
-            continue
-          else
-            nbclmlhelp=nbclmlhelp+1
-            lastcc = MIN0(lnblnk(OUTSTR),72)
-            if(nbclmlhelp.lt.60)then
-              write(clmlhelp(nbclmlhelp),'(a)')OUTSTR(1:lastcc)
-            endif
-            goto 445
-          endif
-        endif
-
       elseif(WORD(1:5).eq.'*year')then
         CALL EGETWI(LOUTSTR,K,IYEAR,1900,2020,'W','year',IER)
 
@@ -1814,7 +1703,8 @@ C Project log file, read and then go on to fabric/plant description.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
         LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
         goto 45
-      else
+      elseif ( .not. bSilent ) then
+
         call usrmsg(' Unknown entry format... ',outstr,'W')
         dok=.true.
         h(1)='An unknown tag or line was found in the configuration'
@@ -1828,6 +1718,10 @@ C Project log file, read and then go on to fabric/plant description.
           ier=1
           return
         endif
+
+      else
+          ier=1
+          return
       endif
 
 C Loop back for next database file.

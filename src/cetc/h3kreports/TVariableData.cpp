@@ -13,6 +13,9 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <climits>
+#include <cstring>
+#include <memory>
 #include "TVariableData.h"
 
 #define DEBUG 0
@@ -84,7 +87,7 @@ TVariableData::TVariableData()
 {
   bFirstCall = true;
   bNewValueSentThisTimestep = false;
-
+  m_metacount = 0;
   // Search status flags.
   bSummarySearchStatus = false;
   bLogSearchStatus = false;
@@ -177,10 +180,17 @@ void TVariableData::SetMeta(const std::string& sMetaName, const std::string& sMe
 
   TMetadataMap::iterator pos;
 
+  // Limit number of permissible meta-data to 2 --- the maximum
+  // number currently permitted in the add_to_xml_reporting interface.
+  // (Stopping here eliminates needlessly searching through the metadata
+  // list over and over again...)
+  if ( m_metacount >= 2 ) { return; }
+
   //if sMetaName not found
   if((pos = m_metadata.find(sMetaName)) == m_metadata.end())
     {
       m_metadata.insert(make_pair(sMetaName, sMetaValue)); //create and insert a new pair
+      m_metacount++;
     }
 
 }

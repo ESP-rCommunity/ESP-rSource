@@ -164,11 +164,6 @@ C air flow reporting.
       integer YAXSET, ADDLIN
 
       logical CLIST,NLIST,CNLST,CRLST,OKL,dok,CTLST
-#ifdef OSX
-      integer iid1,iid2
-#else
-      integer*8 iid1,iid2
-#endif
 
 C The logical variables are required so as user is asked for additional
 C information about the choice of metric if necessary.
@@ -946,8 +941,7 @@ C Find out point where text should be drawn.
           lblpx(igrl)=ix
           lblpy(igrl)=iy
           t24=grlbl(igrl)
-          iid1=lblpx(igrl); iid2=lblpy(igrl);
-          call wstxpt(iid1,iid2,t24)
+          call wstxpt(lblpx(igrl),lblpy(igrl),t24)
           dok=.true.
           h(1)='If you say yes you can insert another label in the'
           h(2)='graph. Otherwise you will be returned to the menu.'

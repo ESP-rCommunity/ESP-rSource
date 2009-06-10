@@ -383,7 +383,6 @@ C ICLIM,LCLIM (for climate file)
       CHARACTER COLHDS(MCOLT)*14
       CHARACTER ITEM(12)*23
       character PERST1*14,PERST2*44,PERST3*44,outs*124,OUTSTR*124
-      character louts*248
       character NIS*12,NIE*12,WORD*20,FORMHD*29,FORMCL*29
       CHARACTER NDNAM*12
       DIMENSION  COLCNT(MCOLT),ICOLIX(MCOLT,2)
@@ -565,8 +564,8 @@ C Show status.
         call edisp(iuout,outs)
         WRITE(outs,'(A,A)') ' Cp-wind : ',LAPRES(1:LNBLNK(LAPRES))
         call edisp(iuout,outs)
-        WRITE(louts,'(A,A)') ' Climate : ',LCLIM(1:LNBLNK(LCLIM))
-        call edisp248(iuout,louts,100)
+        WRITE(outs,'(A,A)') ' Climate : ',LCLIM(1:LNBLNK(LCLIM))
+        call edisp(iuout,outs)
         WRITE(outs,'(A,A)') ' Results : ',LAFRES(1:LNBLNK(LAFRES))
         call edisp(iuout,outs)
         call edisp(iuout,' ')
@@ -616,8 +615,8 @@ C First general table info and column headers
       call edisp(itru,outs)
       WRITE(outs,*) '# Cp-wind : ',LAPRES(1:LNBLNK(LAPRES))
       call edisp(itru,outs)
-      WRITE(louts,*) '# Climate : ',LCLIM(1:LNBLNK(LCLIM))
-      call edisp248(itru,louts,100)
+      WRITE(outs,*) '# Climate : ',LCLIM(1:LNBLNK(LCLIM))
+      call edisp(itru,outs)
       WRITE(outs,*) '# Results : ',LAFRES(1:LNBLNK(LAFRES))
       call edisp(itru,outs)
       IF(IDIM.EQ.1) THEN

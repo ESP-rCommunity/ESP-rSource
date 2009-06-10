@@ -424,11 +424,6 @@ C IER=0 OK, IER=1 problem.
       DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3),COG3(3)
       CHARACTER VERT*35,KEY*1,H*72,HOLD*32,GTGEOM*72
       character outs*124,headv*48,GMLCN*12,GSNAME*6
-#ifdef OSX
-      integer iix,iiy
-#else
-      integer*8 iix,iiy
-#endif
 
 C Initial values for vertex at angle facility.
       V1=1.0
@@ -602,8 +597,8 @@ C Show the new point on the current wireframe.
               COG1(3)=z3
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              call ecirc(iix,iiy,3,1)
+              call u2pixel(COG3(1),COG3(2),ix,iy)
+              call ecirc(ix,iy,3,1)
               call forceflush()
             endif
             if(NGTV.lt.MGTV)then
@@ -786,8 +781,8 @@ C Show the new point on the current wireframe.
               COG1(3)=z3
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              call ecirc(iix,iiy,3,1)
+              call u2pixel(COG3(1),COG3(2),ix,iy)
+              call ecirc(ix,iy,3,1)
               call forceflush()
             endif
             if(NGTV.lt.MGTV)then
@@ -950,8 +945,8 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
               COG1(3)=z3
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              call ecirc(iix,iiy,3,1)
+              call u2pixel(COG3(1),COG3(2),ix,iy)
+              call ecirc(ix,iy,3,1)
               call forceflush()
             endif
             dok=.true.
@@ -1115,8 +1110,8 @@ C Show the new point on the current wireframe.
               COG1(3)=z3
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              call ecirc(iix,iiy,3,1)
+              call u2pixel(COG3(1),COG3(2),ix,iy)
+              call ecirc(ix,iy,3,1)
               call forceflush()
             endif
             dok=.true.
@@ -1389,11 +1384,6 @@ C IER=0 OK, IER=1 problem.
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
-#ifdef OSX
-      integer iix,iiy,ixd,iyd
-#else
-      integer*8 iix,iiy,ixd,iyd
-#endif
 
 C Initialise vertex list menu size variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1494,9 +1484,9 @@ C hit and then loop through each of the vertices for something close.
             COG1(3)=ZGT(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-ixx
-            iyd=iiy-iyy
+            call u2pixel(COG3(1),COG3(2),ix,iy)
+            ixd=ix-ixx
+            iyd=iy-iyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -1509,7 +1499,7 @@ C hit and then loop through each of the vertices for something close.
               INPICK=INPICK+1
               ijvn=ijvn+1
               IVLST(ijvn)=i
-              CALL ecirc(iix,iiy,3,0)
+              CALL ecirc(ix,iy,3,0)
               call forceflush()
               goto 46
             endif
@@ -2054,11 +2044,6 @@ C Method checks for minimally linked vertices.
       CHARACTER GMLCN*12,GSNAME*6
       CHARACTER H*72,ACTION*1,HOLD*72,outs*124,SN*6,SN2*6
       character holds*36,SNAME1*6,SNAMED*6,SMLCN1*12
-#ifdef OSX
-      integer iix,iiy,ixd,iyd
-#else
-      integer*8 iix,iiy,ixd,iyd
-#endif
     
       IER=0
       DOK=.false.
@@ -2392,9 +2377,9 @@ C the individual vertex numbers from the list.
               COG1(3)=ZGT(I)
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),iix,iiy)
-              ixd=iix-ixx
-              iyd=iiy-iyy
+              call u2pixel(COG3(1),COG3(2),ix,iy)
+              ixd=ix-ixx
+              iyd=iy-iyy
               if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
                 if(found)then
                   call edisp(iuout,'Close points...try again.')
@@ -2490,9 +2475,9 @@ C IER=1 problem.
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
 #ifdef OSX
-      integer iupdown,isym,iix,iiy    ! passed to etplot
+      integer iupdown,isym    ! passed to etplot
 #else
-      integer*8 iupdown,isym,iix,iiy    ! passed to etplot
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
 C Initialise zone surface-vertex list menu size variables based on
@@ -2733,8 +2718,8 @@ C Show these points as small circles...
             COG1(3)=ZZ(J)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            CALL ecirc(iix,iiy,3,1)
+            call u2pixel(COG3(1),COG3(2),ix,iy)
+            CALL ecirc(ix,iy,3,1)
             call forceflush()
   154     CONTINUE
         endif
@@ -3229,10 +3214,10 @@ C ****** Routine to update-draw ground during triangulation.
       character outs*72
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
-      integer iupdown,isym,iix,iiy    ! passed to etplot
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iupdown,isym,iix,iiy    ! passed to etplot
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       CALL startbuffer()
@@ -3253,9 +3238,9 @@ C ****** Routine to update-draw ground during triangulation.
         COG1(3)=ZGT(IV)
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
-        CALL ecirc(iix,iiy,2,1)
-        CALL VERTLBL(iix,iiy,IV,ier)
+        call u2pixel(COG3(1),COG3(2),ix,iy)
+        CALL ecirc(ix,iy,2,1)
+        CALL VERTLBL(ix,iy,IV,ier)
         call forceflush()
   42  continue
       if(NGTG.eq.0)return

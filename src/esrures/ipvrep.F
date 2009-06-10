@@ -35,7 +35,6 @@ C Write IPV report based on description held in common.
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -76,6 +75,56 @@ C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
 C IPV description.
       common/IPVF/lipvdatf
 
+C ipvtitl (char 40) is the title that shows up in reports
+C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
+C ipvsynop (char 248) documents the integrated performance view
+C ipvsimu (char 6) is a short tag describing the assessments to be run
+C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
+C   season assessment with all days included.
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
+
+C List of metric sets: nms is number of sets, imetget is the
+C esrures iget index for the metric selected, imetmsc holds two
+C miscelaneous indices for use by the metric, nzmg is the
+C number of zones in each set, emgflr is the total floor area in
+C each set, emgsca is a scaling factor (e.g. to scale these zones
+C towards a whole building), emgwtg is a weighting factor for the
+C metric, izmg is the list of zones in each set.
+C metrglbl is 20 char label equivalent to GLABEL in esrures
+C msdoc is 12 char identifier for each metric set.
+      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
+     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
+      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
+
+C List of energy demand sets: neds is number of sets, idgmsc() are
+C miscel data describing set, iaggr=0 no timestep aggregate reporting
+C iaggr=1 timestep aggregate data included, nzedg is the
+C number of zones in each set, edgflr is the total floor area in
+C each set, edgsca is a scaling factor (e.g. to scale these zones
+C towards a whole building), izedg is the list of zones in each set.
+C zedsdoc is 12 char identifier for each set.
+      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
+     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
+      common/IPVDEDS/zedsdoc(MIPVM)
+
+C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
+C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
+C ipvastjd() are the assessment start julian dates,
+C ipvafnjd are the assessment finish julian dates and
+C nipvdispjd number of days to display in detail,
+C ipvdispjd is list of julian days (must be within the assessment period).
+C ipvadesc is a 40 char description associated with each assessment.
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+      common/IPVSEALB/ipvadesc(MIPVA)
+
+      common/IPVDMD/idmdinc(7)
+
+C Format of the IPV report.
+C  = 1 is human readable text, 2 is tab separated, 3 is java
+      common/IPVFORMAT/ipvform,ipvversion
+
 C << is pvdayhr useful? >>
       common/spm55/pvdayhr(2*MTS)
       common/ract/paction
@@ -91,12 +140,14 @@ C Pre calculated data (filtered).
       dimension ITEM(13),edput(7,MTS),ddmax(7),ddmin(7),dtot(7),dave(7)
       dimension XMAX(7),XMIN(7),XAVE(7),XTOT(7),DMAX(7),DMIN(7),XMSUM(7)
       dimension XMINSUM(7)
+      character metgroup*12
       character tab*1,outs*124,LTIME*5,outsn*124,outsd*124,outsc*124
       character outsl*248,outlsd*248,outlsc*248
       character xfile*144,tg*1,delim*1,H*72,ITEM*18,lipvdatf*72
       character SLABEL*32,GLABEL*20,SUFFIX*8,paction*16
       CHARACTER dmdsdesc*248,bdmds*72,ltmp*72,LJTIME*8
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
+      character ipvadesc*40,zedsdoc*12,msdoc*12,metrglbl*20
       CHARACTER selres*72,CLMLOC*30
       character descr*7,descrst*10,descrfn*10,dstmp*24,sq*1
       character ipvaction*3  ! to signal external IPV file
@@ -1911,7 +1962,6 @@ C ********* mkannrep
 C Write IPV report based on description held in common.
       subroutine mkannrep(iier)
 #include "building.h"
-#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -1923,12 +1973,28 @@ C Write IPV report based on description held in common.
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/BL1/dmdsdesc,bdmds
 
+C IPV description.
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+
+C ddm* are the degree-day multipliers (or user defined multipliers) between
+C the periods simulated and the whole season for heating, cooling, lights,
+C small power, fans, domestic hot water. For nipvassmt=1 these are 
+C initially set to 1.0.
+      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
+     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
+
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
+
+C ipvform = 0 is unspecified, 1 is human readable text, 2 is tab separated,
+C           3 is java
+      common/IPVFORMAT/ipvform,ipvversion
+      common/IPVSEALB/ipvadesc(MIPVA)
       
       dimension NHW(9,MSPS)
       dimension WHD(MSPS),WCD(MSPS),WLD(MSPS),WFD(MSPS),WSPD(MSPS)
@@ -1939,6 +2005,7 @@ C Write IPV report based on description held in common.
       CHARACTER dmdsdesc*248,bdmds*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
+      character ipvadesc*40
 
       logical XST,dmdsok,closea,closeb,closec,closed,closee
 
@@ -2554,14 +2621,18 @@ C << at some point include arrays for separate reporting of pumps and lifts. >>
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
-#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Uncomment next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
 
-C IPV description via ipvdata.h.
+C IPV description.
+      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
+     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
+      common/IPVDEDS/zedsdoc(MIPVM)
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
@@ -2572,7 +2643,7 @@ C IPV description via ipvdata.h.
       dimension SPCS(MSPS,11),DHWCS(MSPS,11),PVC(MSPS,11)
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
-      character outstr*124,word*20,third*20,name*12
+      character outstr*124,word*20,third*20,name*12,zedsdoc*12
       logical dmdsok,atassment,atreports
 
 C Open intermediate report.
@@ -2720,14 +2791,19 @@ C << at some point include additional arrays for pumps and lifts >>
 
 #include "building.h"
 #include "espriou.h"
-#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
+      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
+     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
+      common/IPVDEDS/zedsdoc(MIPVM)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
+
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C For each simulation which was run and type of demand, and 
 C for one more than the possible
@@ -2737,7 +2813,7 @@ C number of demand sets (the extra is for distributed demands).
       dimension ZLUDS(MSPS,11),ZLDS(MSPS,11),FDS(MSPS,11)
       dimension SPDS(MSPS,11),DHWDS(MSPS,11),DPVD(MSPS,11)
       character outstr*124,act*1,word*20
-      character name*12,third*20
+      character zedsdoc*12,name*12,third*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
       logical dmdsok,atassment,atreports
@@ -2886,14 +2962,19 @@ C << at some point include additional arrays for pumps and lifts >>
 
 #include "building.h"
 #include "espriou.h"
-#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
+      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
+     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
+      common/IPVDEDS/zedsdoc(MIPVM)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
+
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C For each type of demand, and for one more than the possible
 C number of demand sets (the extra is for distributed demands).
@@ -2901,7 +2982,7 @@ C number of demand sets (the extra is for distributed demands).
       dimension ZLUDS(11),ZLDS(11),FDS(11)
       dimension SPDS(11),DHWDS(11),DPVD(11)
       character outstr*124,act*1,word*20
-      character name*12,third*20
+      character zedsdoc*12,name*12,third*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
       logical dmdsok,atassment,atreports
@@ -3039,18 +3120,24 @@ C Note if Java IPV because different logic required.
       subroutine ipvgcmft(ifu,NH,ier)  
 #include "building.h"
 #include "espriou.h"
-#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
+      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
+     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
+      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
+      common/IPVFORMAT/ipvform,ipvversion
 
       character outstr*124,word*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,third*20
+      character selres*72,third*20,metgroup*12
+      character msdoc*12,metrglbl*20
       dimension nh(9,5)
       logical atassment,atreports
 
@@ -3126,7 +3213,6 @@ C ************** aggreghd
 C Hourly aggregate energy demand per unit time.
       subroutine aggreghd(itru,iseas,pvok)
 #include "building.h"
-#include "ipvdata.h"
 
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
@@ -3141,7 +3227,12 @@ C      common/OUTIN/IUOUT,IUIN
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
-C IPV description via ipvdata.h.
+C IPV description.
+      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
+     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+      common/IPVDMD/idmdinc(7)
 
 C << is this required? >>
       common/spm55/pvdayhr(2*MTS)

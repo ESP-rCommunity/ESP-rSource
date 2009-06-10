@@ -116,6 +116,7 @@ public:
     bool bNewValueSentThisTimestep;
 
     TMetadataMap m_metadata;
+    int m_metacount;
     double m_currentValue;
     double m_oldValue;
     double m_newValue;

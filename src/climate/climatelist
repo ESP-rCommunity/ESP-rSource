@@ -532,40 +532,34 @@ radiation is Direct Normal.  Dry bulb temperatures:
 *aide	Dundee 1980 (sourced from Oscar Faber)
 *dbfl	/usr/esru/esp-r/climate/dundee80
 *avail	ONLINE
-*winter_s  1  1 17  3  4 11 31 12
-*spring_s 18  3 19  5  9  9  3 11
-*summer_s 20  5  8  9
-*winter_t  5  2 11  2 23 12 29 12
-*spring_t  8  4 14  4 30  9  6 10
-*summer_t  2  9  8  9
+*winter_s 1  1  19  3  6  11  31 12
+*spring_s 20 3  21  5  11  9   5 11
+*summer_s 22 5  10  9
+*winter_t 7  2  13  2  14 11 20 11
+*spring_t 4  4  10  4   3 10  9 10
+*summer_t 6  6  12  6
 *help_start
-Climate is dundee
- Location: 56.50N  3.00W : 1980
- Month    Minimum  Time          Maximum  Time         Mean
- Jan     -6.1 @ 9h00 Wed-16       11.3 @14h00 Wed-02     3.7
- Feb     -4.9 @ 7h00 Mon-25       13.1 @13h00 Wed-06     3.3
- Mar     -2.3 @ 8h00 Wed-05       14.6 @14h00 Fri-07     5.6
- Apr     -3.7 @ 3h00 Wed-23       17.4 @16h00 Tue-29     6.5
- May     -2.6 @ 5h00 Fri-02       18.5 @16h00 Fri-30     9.7
- Jun      3.4 @ 4h00 Sun-29       20.2 @17h00 Sun-29    12.1
- Jul      6.7 @ 3h00 Thu-03       24.0 @14h00 Sun-27    14.1
- Aug      4.6 @ 5h00 Sun-17       23.7 @15h00 Sun-24    14.7
- Sep      3.9 @ 3h00 Fri-26       22.7 @16h00 Thu-04    13.1
- Oct     -1.8 @ 2h00 Mon-20       15.0 @14h00 Wed-01     7.7
- Nov     -3.5 @ 6h00 Mon-03       13.6 @13h00 Thu-20     6.0
- Dec     -2.2 @ 7h00 Fri-19       11.9 @15h00 Wed-10     5.1
- Annual  -6.1 @ 9h00 Wed-16-Jan   24.0 @14h00 Sun-27-Jul     8.5
- ---Seasons & typical periods---
-Winter season is Tue-01-Jan - Mon-17-Mar
-Typical winter week begins Tue-05-Feb
-Spring season is Tue-18-Mar - Mon-19-May
-Typical spring week begins Tue-08-Apr
-Summer season is Tue-20-May - Mon-08-Sep
-Typical summer week begins Tue-02-Sep
-Autumn season is Tue-09-Sep - Mon-03-Nov
-Typical autumn week begins Tue-30-Sep
-Winter season is Tue-04-Nov - Wed-31-Dec
-Typical winter week begins Tue-23-Dec
+Dundee is located at 56.5N and 3.0W.  The solar
+radiation is Direct Normal. Dry bulb temperatures:
+ Month     Minimum  Time           Maximum  Time         Mean
+ Jan        -6.1 @ 9h00 Wed 16    11.3 @14h00 Wed  2     3.7
+ Feb        -4.9 @ 7h00 Mon 25    13.1 @13h00 Wed  6     3.3
+ Mar        -2.3 @ 8h00 Wed  5    14.6 @14h00 Fri  7     5.6
+ Apr        -3.7 @ 3h00 Wed 23    17.4 @16h00 Tue 29     6.5
+ May        -2.6 @ 5h00 Fri  2    18.5 @16h00 Fri 30     9.7
+ Jun         3.4 @ 4h00 Sun 29    20.2 @17h00 Sun 29    12.1
+ Jul         6.7 @ 3h00 Thu  3    24.0 @14h00 Sun 27    14.1
+ Aug         4.6 @ 5h00 Sun 17    23.7 @15h00 Sun 24    14.7
+ Sep         3.9 @ 3h00 Fri 26    22.7 @16h00 Thu  4    13.1
+ Oct        -1.8 @ 2h00 Mon 20    15.0 @14h00 Wed  1     7.7
+ Nov        -3.5 @ 6h00 Mon  3    13.6 @13h00 Thu 20     6.0
+ Dec        -2.2 @ 7h00 Fri 19    11.9 @15h00 Wed 10     5.1
+ All  -6.1 @ 9h00 Wed 16 Jan   24.0 @14h00 Sun 27 Jul    8.5
+ Typical winter week begins Monday 7 Feb,
+ Typical spring week begins Monday 4 April,
+ Typical summer week begins Monday 6 June.
+ Typical autumn week begins Monday 3 October.
+ Typical winter week begins Monday 14 November,
 *help_end
 *item
 *name	DULUTH MN USA iwec 727450

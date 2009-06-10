@@ -292,9 +292,6 @@ C Passed parameters.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
-C Local arrays.
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
-      integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
@@ -345,10 +342,10 @@ C Transform the location into eyepoint and then screen coords.
           COG1(3)=ZB(1)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          call u2pixel(COG3(1),COG3(2),ix,iy)
           btemp='        '
           write(btemp,'(a)') BLKNAME(IB)
-          CALL wstxpt(iix,iiy,btemp)
+          CALL wstxpt(ix,iy,btemp)
         ENDIF
 
 C If editing an obstruction, highlight it.
@@ -402,9 +399,9 @@ C Multiply each vertex by ETSMAT (Eye to Screen Matrix) to transform
 C to screen coords. First move to the beginning point (as passed from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
-          iixlast=iix   ! cast for edline call
-          iiylast=iiy
+          call u2pixel(AAX,AAY,ix,iy)
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -413,7 +410,9 @@ C If IP1 is ever negative then jump to a later point.
 
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
             call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
@@ -429,13 +428,15 @@ C past -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          iixlast=iix   ! cast for edline call
-          iiylast=iiy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
             call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
@@ -467,16 +468,13 @@ C Passed parameter.
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
-C Local arrays.
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
-      integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 #ifdef OSX
-      integer iix,iiy,iixlast,iiylast,iid2
+      integer iix,iiy,iixlast,iiylast
 #else
-      integer*8 iix,iiy,iixlast,iiylast,iid2
+      integer*8 iix,iiy,iixlast,iiylast
 #endif     
 
       CHARACTER temp*7,CUBN*6
@@ -496,10 +494,9 @@ C Transform the location into eyepoint and then screen coords.
         COG1(3)=ZB(1)
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        call u2pixel(COG3(1),COG3(2),ix,iy)
         write(temp,'(A)')CUBN(IB)
-        iid2=iiy+8
-        CALL wstxpt(iix,iid2,temp)
+        CALL wstxpt(ix,iy+8,temp)
 
 C Continue on with surfaces in the sensor.
 C Copy polygon for sensor surface I into structure AX AY AZ
@@ -544,9 +541,9 @@ C Multiply each vertex by ETSMAT (Eye to Screen Matrix).
 C First move to the beginning (as passed back from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
-          iixlast=iix   ! cast for edline call
-          iiylast=iiy
+          call u2pixel(AAX,AAY,ix,iy)
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -555,7 +552,9 @@ C If IP1 is ever negative then jump to a later point.
 
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
 
@@ -565,13 +564,15 @@ C past any -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          iixlast=iix   ! cast for edline call
-          iiylast=iiy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
  1000   CONTINUE
@@ -600,9 +601,6 @@ C Passed parameter.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY6G/LINSTYG(MGRT)
 
-C Local arrays.
-      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
-      integer IANXT,IBNXT
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
@@ -611,9 +609,9 @@ C Local arrays.
 
 C Local variables to pass to edline.
 #ifdef OSX
-      integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid2
+      integer iix,iiy,iixlast,iiylast
 #else
-      integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid2
+      integer*8 iix,iiy,iixlast,iiylast
 #endif     
 
 C Save the current font and switch to a smaller font for displaying
@@ -629,15 +627,15 @@ C surface names etc. Ixc,iyc keep track of surface/pixel COG.
           COG1(3)=ZGT(IV)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          CALL ecirc(iix,iiy,2,1)
-          CALL VERTLBL(iix,iiy,IV,ier)
+          call u2pixel(COG3(1),COG3(2),ix,iy)
+          CALL ecirc(ix,iy,2,1)
+          CALL VERTLBL(ix,iy,IV,ier)
   42    continue
       endif
       if(ngt.eq.0)return
       do 43 igs = 1, NGT
-        iixc=0
-        iiyc=0
+        ixc=0
+        iyc=0
 
 C Copy polygon for Surface I into structure A for compatibility with
 C viewer format 'holes' in surfaces.
@@ -671,17 +669,19 @@ C Transform surface polygon as above.
 C Move to first point.
           IP = IABS(IBPNT)
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
-          iixlast=iix   ! cast for edline call
-          iiylast=iiy
-          iixc=iixc+iix
-          iiyc=iiyc+iiy
+          call u2pixel(AAX,AAY,ix,iy)
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
+          ixc=ixc+ix
+          iyc=iyc+iy
 
 C Draw succeeding points until last vertex.
           IP1 = IBNXT(IP)
  451      CONTINUE
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
@@ -691,17 +691,19 @@ C Draw succeeding points until last vertex.
           else
             call edline(iixlast,iiylast,iix,iiy,LD)
           endif
-          iixc=iixc+iix
-          iiyc=iiyc+iiy
+          ixc=ixc+ix
+          iyc=iyc+iy
 
           IP1 = IBNXT(IP1)
-          iixlast=iix   ! cast for call to edline
-          iiylast=iiy
+          iixlast=ix   ! cast for call to edline
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 451
 
 C Complete ground surface.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
@@ -714,17 +716,16 @@ C Complete ground surface.
           call forceflush()
 
 C If ground surface names are to be displayed place near the centre of polygon.
-C If the surface is not drawn (iixc=0 & iyc=0) do not label it.  For clarity drop to
+C If the surface is not drawn (ixc=0 & iyc=0) do not label it.  For clarity drop to
 C the next smaller font for the surface name and then restore font
 C to normal size.
           IF(ITSNM.EQ.0)THEN
-            IF(iixc.GT.0.AND.iiyc.GT.0.AND.(NAP.EQ.NBP))THEN
+            IF(ixc.GT.0.AND.iyc.GT.0.AND.(NAP.EQ.NBP))THEN
               IF(IFS.GT.0)CALL winfnt(NAMEFT)
               write(stemp,'(A)')GSNAME(igs)
-              iixc=iixc/NBP
-              iiyc=iiyc/NBP
-              iid2=iiyc+(3*(NAMEFT+1))
-              CALL wstxpt(iixc,iid2,stemp)
+              ixc=ixc/NBP
+              iyc=iyc/NBP
+              CALL wstxpt(ixc,iyc+(3*(NAMEFT+1)),stemp)
               IF(IFS.GT.0)CALL winfnt(IFS)
             endif
           endif
@@ -751,12 +752,7 @@ C Passed parameters.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-
-C Explicit local variables
-      real COG1,COG2,COG3
-      dimension COG1(3),COG2(3),COG3(3)
-      real GRIDD,XD,DD
-      real GXMN,GYMN,XINC,YINC
+      DIMENSION COG1(3),COG2(3),COG3(3)
       logical close,greyok
 
 C Local variables to pass to edline.
@@ -816,7 +812,7 @@ C Transform one end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        call u2pixel(COG3(1),COG3(2),ix,iy)
 
 C Transform other end of line.
         COG1(1)=XINC
@@ -824,14 +820,18 @@ C Transform other end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix1,iiy1)
+        call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
 C Draw the dotted line, first take calculated pixels and
 C cast to local variable to pass to edline. Only do this if
 C the length of the line is more than one pixel.
-        if(iix.eq.iix1.and.iiy.eq.iiy1)then
+        if(ix.eq.ix1.and.iy.eq.iy1)then
           continue
         else
+          iix=ix
+          iiy=iy
+          iix1=ix1
+          iiy1=iy1
           call edline(iix,iiy,iix1,iiy1,LD)
         endif
 
@@ -855,7 +855,7 @@ C Transform one end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        call u2pixel(COG3(1),COG3(2),ix,iy)
 
 C Transform other end of line.
         COG1(1)=XMX+GRIDD
@@ -863,12 +863,16 @@ C Transform other end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix1,iiy1)
+        call u2pixel(COG3(1),COG3(2),ix1,iy1)
 
 C Draw the dotted line after casting to local variable.
-        if(iix.eq.iix1.and.iiy.eq.iiy1)then
+        if(ix.eq.ix1.and.iy.eq.iy1)then
           continue
         else
+          iix=ix
+          iiy=iy
+          iix1=ix1
+          iiy1=iy1
           call edline(iix,iiy,iix1,iiy1,LD)
         endif
 

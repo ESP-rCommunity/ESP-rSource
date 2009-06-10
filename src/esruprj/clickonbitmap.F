@@ -136,11 +136,11 @@ C an object has been saved the set justentered to false.
 #ifdef OSX
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4
-      integer iixx2,iiyy2,iixx3,iiyy3,iix,iiy
+      integer iixx2,iiyy2,iixx3,iiyy3
 #else
       integer*8 iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer*8 iixx1,iiyy1,iid1,iid2,iid3,iid4
-      integer*8 iixx2,iiyy2,iixx3,iiyy3,iix,iiy
+      integer*8 iixx2,iiyy2,iixx3,iiyy3
 #endif
 
 C Logical toggles: xbmorigin (required origin defined) xbmnorth (optional
@@ -872,10 +872,8 @@ C origin if these have been defined.
 C Debug.
 C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
               call winscl('z',0)
-              iid1=ixbul; iid2=iybul;
-              call esymbol(iid1,iid2,6,1)
-              iid1=ixblr; iid2=iyblr;
-              call esymbol(iid1,iid2,4,1)
+              call esymbol(ixbul,iybul,6,1)
+              call esymbol(ixblr,iyblr,4,1)
               call winscl('-',0)
               xbmload=.true.
             else
@@ -951,11 +949,9 @@ C Origin within the bitmap.
      &      ' ','-')
           call winscl('z',0)
           CALL trackview(ii,ixo,iyo)
-          iid1=ixo; iid2=iyo;
-          call esymbol(iid1,iid2,24,1)
+          call esymbol(ixo,iyo,24,1)
           write(temp6,'(A)')'Origin'
-          iix=ixo+5; iiy=iyo-5;
-          CALL wstxpt(iix,iiy,temp6)
+          CALL wstxpt(ixo+5,iyo-5,temp6)
           call winscl('-',0)
           write(outs,'(a,2i6)')' origin X Y pixels =',ixo,iyo
           call edisp(iuout,outs)
@@ -979,16 +975,13 @@ C North.
      &      ' ','-')
           call winscl('z',0)
           CALL trackview(ii,ixtn1,iytn1)
-          iid1=ixtn1; iid2=iytn1;
-          call esymbol(iid1,iid2,11,1)
+          call esymbol(ixtn1,iytn1,11,1)
           CALL trackview(ii,ixtn2,iytn2)
-          iid1=ixtn2; iid2=iytn2;
-          call esymbol(iid1,iid2,18,1)
+          call esymbol(ixtn2,iytn2,18,1)
           iid1=ixtn1; iid2=iytn1; iid3=ixtn2; iid4=iytn2;
           call edwline(iid1,iid2,iid3,iid4)
           write(temp6,'(A)')'North'
-          iid1=ixtn2+5; iid2=iytn2-5;
-          CALL wstxpt(iid1,iid2,temp6)
+          CALL wstxpt(ixtn2+5,iytn2-5,temp6)
           call winscl('-',0)
           call usrmsg(' ',' ','-')
           xbmnorth=.true.
@@ -1010,11 +1003,9 @@ C Scaling of a known line. Ask for two points and distance.
      &      'two points along a known line... ','-')
           call winscl('z',0)
           CALL trackview(ii,ixs1,iys1)
-          iid1=ixs1; iid2=iys1;
-          call esymbol(iid1,iid2,11,1)
+          call esymbol(ixs1,iys1,11,1)
           CALL trackview(ii,ixs2,iys2)
-          iid1=ixs1; iid2=iys2;
-          call esymbol(iid1,iid2,11,2)
+          call esymbol(ixs1,iys2,11,2)
           call winscl('-',0)
           call usrmsg(' ',' ','-')
           disn=1.
@@ -1564,24 +1555,21 @@ C to green draw the symbol and index of vertex and do Z editing if requested.
             px(INVERT)=tpx
             py(INVERT)=tpy
             call winscl('z',3)
-            iid1=ipxx(INVERT); iid2=ipyy(INVERT);
-            call esymbol(iid1,iid2,24,1)
+            call esymbol(ipxx(INVERT),ipyy(INVERT),24,1)
           elseif(inpmode.eq.4)then
             ipxx(INVERT)=ixx
             ipzz(INVERT)=izz
             px(INVERT)=tpx
             pz(INVERT)=tpy
             call winscl('z',3)
-            iid1=ipxx(INVERT); iid2=ipzz(INVERT);
-            call esymbol(iid1,iid2,24,1)
+            call esymbol(ipxx(INVERT),ipzz(INVERT),24,1)
           elseif(inpmode.eq.5)then
             ipyy(INVERT)=iyy
             ipzz(INVERT)=izz
             py(INVERT)=tpx
             pz(INVERT)=tpy
             call winscl('z',3)
-            iid1=ipyy(INVERT); iid2=ipzz(INVERT);
-            call esymbol(iid1,iid2,24,1)
+            call esymbol(ipyy(INVERT),ipzz(INVERT),24,1)
           endif
 
           if(INVERT.gt.0.and.INVERT.le.9)write(temp3,'(i1)') INVERT
@@ -1947,8 +1935,7 @@ C Corner added draw it and index and a line from the previous to current.
           pyw(NW)=tpyw
 
           call winscl('z',3)
-          iid1=ipxw(NW); iid2=ipyw(NW);
-          call esymbol(iid1,iid2,24,1)
+          call esymbol(ipxw(NW),ipyw(NW),24,1)
           if(NW.gt.0.and.NW.le.9)write(temp3,'(i1)') NW
           if(NW.gt.9.and.NW.le.99)write(temp3,'(i2)') NW
           if(NW.gt.99)write(temp3,'(i3)') NW
@@ -2368,11 +2355,9 @@ C Remember the block origin.
           px(INVERT)=tpx1
           py(INVERT)=tpy1
           call winscl('z',3)
-          iid1=ipxx(INVERT); iid2=ipyy(INVERT);
-          call esymbol(iid1,iid2,24,1)
+          call esymbol(ipxx(INVERT),ipyy(INVERT),24,1)
           write(temp6,'(A)')'Org'
-          iid1=ixx1+5; iid2=iyy1-5;
-          CALL wstxpt(iid1,iid2,temp6)
+          CALL wstxpt(ixx1+5,iyy1-5,temp6)
 
 C Remember the point at the end of the front edge.
           INVERT=INVERT+1
@@ -2381,8 +2366,7 @@ C Remember the point at the end of the front edge.
           px(INVERT)=tpx2
           py(INVERT)=tpy2
           call winscl('z',3)
-          iid1=ipxx(INVERT); iid2=ipyy(INVERT);
-          call esymbol(iid1,iid2,24,1)
+          call esymbol(ipxx(INVERT),ipyy(INVERT),24,1)
           twid=crowxyz(tpx1,tpy1,Z1,tpx2,tpy2,Z1)
 
 C Find orientation of line and from that the orientation of the blocks.
@@ -2429,8 +2413,7 @@ C Check if tollerably close to an axis.
           px(INVERT)=tpx3
           py(INVERT)=tpy3
           call winscl('z',3)
-          iid1=ipxx(INVERT); iid2=ipyy(INVERT);
-          call esymbol(iid1,iid2,24,1)
+          call esymbol(ipxx(INVERT),ipyy(INVERT),24,1)
           tdepth=crowxyz(tpx2,tpy2,Z1,tpx3,tpy3,Z1)
           iixx1=ixx1; iiyy1=iyy1; iixx2=ixx2; iiyy2=iyy2;
           iixx3=ixx3; iiyy3=iyy3;
@@ -3022,10 +3005,8 @@ C      write(6,*) 'refresh bitmap'
      &  15,15,ixbul,iybul,ixblr,iyblr)
       call edisp(iuout,'Refreshing bitmap...')
       call winscl('z',0)
-      iid1=ixbul; iid2=iybul;
-      call esymbol(iid1,iid2,6,1)
-      iid1=ixblr; iid2=iyblr;
-      call esymbol(iid1,iid2,4,1)
+      call esymbol(ixbul,iybul,6,1)
+      call esymbol(ixblr,iyblr,4,1)
       call winscl('-',0)
 
 C If north known and within the displayed area then draw it.
@@ -3036,15 +3017,12 @@ C If north known and within the displayed area then draw it.
           if(((ixtn1.ge.ixbul).and.(ixtn1.le.ixblr)).and.
      &       ((iytn1.ge.iybul).and.(iytn1.le.iyblr)))then
             call winscl('z',0)
-            iid1=ixtn1; iid2=iytn1;
-            call esymbol(iid1,iid2,11,1)
-            iid1=ixtn2; iid2=iytn2;
-            call esymbol(iid1,iid2,18,1)
+            call esymbol(ixtn1,iytn1,11,1)
+            call esymbol(ixtn2,iytn2,18,1)
 	    iixtn1=ixtn1; iiytn1=iytn1; iixtn2=ixtn2; iiytn2=iytn2;
             call edwline(iixtn1,iiytn1,iixtn2,iiytn2)
             write(temp6,'(A)')'North'
-            iid1=ixtn2+5; iid2=iytn2-5;
-            CALL wstxpt(iid1,iid2,temp6)
+            CALL wstxpt(ixtn2+5,iytn2-5,temp6)
             call winscl('-',0)
           endif
         endif
@@ -3055,11 +3033,9 @@ C If origin known and within the displayed area then draw it.
         if(((ixo.ge.ixbul).and.(ixo.le.ixblr)).and.
      &     ((iyo.ge.iybul).and.(iyo.le.iyblr)))then
           call winscl('z',0)
-          iid1=ixo; iid2=iyo;
-          call esymbol(iid1,iid2,24,1)
+          call esymbol(ixo,iyo,24,1)
           write(temp6,'(A)')'Origin'
-          iid1=ixo+5; iid2=iyo-5;
-          CALL wstxpt(iid1,iid2,temp6)
+          CALL wstxpt(ixo+5,iyo-5,temp6)
           call winscl('-',0)
         endif
       endif
@@ -3090,8 +3066,7 @@ C bitmap as drawn on the display).
             if(((ipxx(j).ge.ixbul).and.(ipxx(j).le.ixblr)).and.
      &         ((ipyy(j).ge.iybul).and.(ipyy(j).le.iyblr)))then
               call winscl('z',3)
-              iid1=ipxx(j); iid2=ipyy(j);
-              call esymbol(iid1,iid2,24,1)
+              call esymbol(ipxx(j),ipyy(j),24,1)
               if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
               if(j.gt.9.and.j.le.99)write(temp3,'(i2)') j
               if(j.gt.99)write(temp3,'(i3)') j
@@ -3102,8 +3077,7 @@ C bitmap as drawn on the display).
             if(((ipxx(j).ge.ixbul).and.(ipxx(j).le.ixblr)).and.
      &         ((ipzz(j).ge.iybul).and.(ipzz(j).le.iyblr)))then
               call winscl('z',3)
-              iid1=ipxx(j); iid2=ipzz(j);
-              call esymbol(iid1,iid2,24,1)
+              call esymbol(ipxx(j),ipzz(j),24,1)
               if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
               if(j.gt.9.and.j.le.99)write(temp3,'(i2)') j
               if(j.gt.99)write(temp3,'(i3)') j
@@ -3114,8 +3088,7 @@ C bitmap as drawn on the display).
             if(((ipyy(j).ge.ixbul).and.(ipyy(j).le.ixblr)).and.
      &         ((ipzz(j).ge.iybul).and.(ipzz(j).le.iyblr)))then
               call winscl('z',3)
-              iid1=ipyy(j); iid2=ipzz(j);
-              call esymbol(iid1,iid2,24,1)
+              call esymbol(ipyy(j),ipzz(j),24,1)
               if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
               if(j.gt.9.and.j.le.99)write(temp3,'(i2)') j
               if(j.gt.99)write(temp3,'(i3)') j
@@ -3135,8 +3108,7 @@ C      if(nipwhis.gt.0.and.inpm.eq.3)then
           if(((ipxwhis(j).ge.ixbul).and.(ipxwhis(j).le.ixblr)).and.
      &       ((ipywhis(j).ge.iybul).and.(ipywhis(j).le.iyblr)))then
             call winscl('z',2)
-            iid1=ipxwhis(j); iid2=ipywhis(j);
-            call esymbol(iid1,iid2,24,1)
+            call esymbol(ipxwhis(j),ipywhis(j),24,1)
             if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
             if(j.gt.9.and.j.le.99)write(temp3,'(i2)') j
             if(j.gt.99)write(temp3,'(i3)') j
@@ -3173,8 +3145,7 @@ C << code needs to be updated to allow for clipping >>
           if(((ipxw(j).ge.ixbul).and.(ipxw(j).le.ixblr)).and.
      &       ((ipyw(j).ge.iybul).and.(ipyw(j).le.iyblr)))then
             call winscl('z',3)
-            iid1=ipxw(j); iid2=ipyw(j);
-            call esymbol(iid1,iid2,24,1)
+            call esymbol(ipxw(j),ipyw(j),24,1)
             if(j.gt.0.and.j.le.9)write(temp3,'(i1)') j
             if(j.gt.9.and.j.le.99)write(temp3,'(i2)') j
             if(j.gt.99)write(temp3,'(i3)') j

@@ -631,13 +631,13 @@ C ilabs is string arry for layer insert/delet selection.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
-      integer iigr,iigr2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
-      integer iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4,iix,iiy
+      integer iigr,iigr2,iigt2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
+      integer iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iigr,iigr2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
-      integer*8 iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4,iix,iiy
+      integer*8 iigr,iigr2,iigt2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
+      integer*8 iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4
 #endif
 
       IER=0
@@ -727,25 +727,25 @@ C Stuff into static variables for later access and draw axis.
         call viewtext(gtext,iside,isize,ifont)
 
 C Draw visible as a circle.
-        call u2pixel(0.0,VTRNED,iix,iiy)
-        CALL ecirc(iix,iiy,3,1)
-        iid1=igr+10; iid2=igt;
-        CALL ecirc(iid1,iid2,3,1)
+        call u2pixel(0.0,VTRNED,ix,iy)
+        CALL ecirc(ix,iy,3,1)
+        CALL ecirc(igr+10,igt,3,1)
         write(temp,'(A)')' Visible trn'
-        iid1=igr+25; iid2=igt;
-        CALL wstxpt(iid1,iid2,temp)
+        CALL wstxpt(igr+25,igt,temp)
 
 C Draw direct transmission.
         iid1=igr; iid2=igt+15; iid3=igr+20; iid4=igt+15;
         call edwline(iid1,iid2,iid3,iid4)
         write(temp,'(A)')' Direct trn'
-        iid1=igr+25; iid2=igt+15;
-        CALL wstxpt(iid1,iid2,temp)
-        call u2pixel(0.0,DGED(1),iix1,iiy1)
-        call u2pixel(40.0,DGED(2),iix2,iiy2)
-        call u2pixel(55.0,DGED(3),iix3,iiy3)
-        call u2pixel(70.0,DGED(4),iix4,iiy4)
-        call u2pixel(80.0,DGED(5),iix5,iiy5)
+        CALL wstxpt(igr+25,igt+15,temp)
+        call u2pixel(0.0,DGED(1),ix1,iy1)
+        call u2pixel(40.0,DGED(2),ix2,iy2)
+        call u2pixel(55.0,DGED(3),ix3,iy3)
+        call u2pixel(70.0,DGED(4),ix4,iy4)
+        call u2pixel(80.0,DGED(5),ix5,iy5)
+        iix1=ix1; iiy1=iy1; iix2=ix2; iiy2=iy2;
+        iix3=ix3; iiy3=iy3; iix4=ix4; iiy4=iy4;
+        iix5=ix5; iiy5=iy5;
         call edwline(iix1,iiy1,iix2,iiy2)
         call edwline(iix2,iiy2,iix3,iiy3)
         call edwline(iix3,iiy3,iix4,iiy4)
@@ -755,13 +755,15 @@ C Draw reflection.
         iid1=igr; iid2=igt+30; iid3=igr+20; iid4=igt+30;
         call eswline(iid1,iid2,iid3,iid4)
         write(temp,'(A)')' Reflection'
-        iid1=igr+25; iid2=igt+30;
-        CALL wstxpt(iid1,iid2,temp)
-        call u2pixel(0.0,sr(1),iix1,iiy1)
-        call u2pixel(40.0,sr(2),iix2,iiy2)
-        call u2pixel(55.0,sr(3),iix3,iiy3)
-        call u2pixel(70.0,sr(4),iix4,iiy4)
-        call u2pixel(80.0,sr(5),iix5,iiy5)
+        CALL wstxpt(igr+25,igt+30,temp)
+        call u2pixel(0.0,sr(1),ix1,iy1)
+        call u2pixel(40.0,sr(2),ix2,iy2)
+        call u2pixel(55.0,sr(3),ix3,iy3)
+        call u2pixel(70.0,sr(4),ix4,iy4)
+        call u2pixel(80.0,sr(5),ix5,iy5)
+        iix1=ix1; iiy1=iy1; iix2=ix2; iiy2=iy2;
+        iix3=ix3; iiy3=iy3; iix4=ix4; iiy4=iy4;
+        iix5=ix5; iiy5=iy5;
         call eswline(iix1,iiy1,iix2,iiy2)
         call eswline(iix2,iiy2,iix3,iiy3)
         call eswline(iix3,iiy3,iix4,iiy4)
@@ -773,20 +775,22 @@ C Draw absorption for each layer.
         iigr2=igr+20
         call edline(iigr,iigt4,iigr2,iigt4,3)
         write(temp,'(A)')' Absorb'
-        iid1=igr+25; iid2=igt+45;
-        CALL wstxpt(iid1,iid2,temp)
+        CALL wstxpt(igr+25,igt+45,temp)
         DO 46 IL=1,NTLED
-          call u2pixel(0.0,ABED(IL,1),iix1,iiy1)
-          call u2pixel(40.0,ABED(IL,2),iix2,iiy2)
-          call u2pixel(55.0,ABED(IL,3),iix3,iiy3)
-          call u2pixel(70.0,ABED(IL,4),iix4,iiy4)
-          call u2pixel(80.0,ABED(IL,5),iix5,iiy5)
+          call u2pixel(0.0,ABED(IL,1),ix1,iy1)
+          call u2pixel(40.0,ABED(IL,2),ix2,iy2)
+          call u2pixel(55.0,ABED(IL,3),ix3,iy3)
+          call u2pixel(70.0,ABED(IL,4),ix4,iy4)
+          call u2pixel(80.0,ABED(IL,5),ix5,iy5)
+          iix1=ix1; iiy1=iy1; iix2=ix2; iiy2=iy2;
+          iix3=ix3; iiy3=iy3; iix4=ix4; iiy4=iy4;
+          iix5=ix5; iiy5=iy5;
           call edline(iix1,iiy1,iix2,iiy2,3)
           call edline(iix2,iiy2,iix3,iiy3,3)
-          call esymbol(iix2,iiy2,IL+3,1)
+          call esymbol(ix2,iy2,IL+3,1)
           call edline(iix3,iiy3,iix4,iiy4,3)
           call edline(iix4,iiy4,iix5,iiy5,3)
-          call esymbol(iix3,iiy3,IL+3,1)
+          call esymbol(ix3,iy3,IL+3,1)
   46    CONTINUE
         call forceflush()
       endif

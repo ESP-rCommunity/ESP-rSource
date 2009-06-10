@@ -116,60 +116,10 @@ C-----------------------------------------------------------------------
       integer iCPc
       integer iVector_length
       parameter ( iVector_length = iCompound_count * iElement_count )
-C.....First zero all arrays      
-      data ( ( iCompound_Composition(iCPc, iElc ),
-     &         iELc=1,iElement_count ),
-     &       iCPc = 1, iCompound_count
-     &     )
-     &     / iVector_length * 0 /
-
-C.....Now add elemental compositions     
-      data iCompound_Composition(iHydrogen,   iElement_Hydrogen ) /  2 /
-
-      data iCompound_Composition(iMethane,    iElement_Carbon   ) /  1 /
-      data iCompound_Composition(iMethane,    iElement_Hydrogen ) /  4 /
-
-      data iCompound_Composition(iEthane,     iElement_Carbon   ) /  2 /
-      data iCompound_Composition(iEthane,     iElement_Hydrogen ) /  6 /
-
-      data iCompound_Composition(iPropane,    iElement_Carbon   ) /  3 /
-      data iCompound_Composition(iPropane,    iElement_Hydrogen ) /  8 /
-
-      data iCompound_Composition(iButane,     iElement_Carbon   ) /  4 /
-      data iCompound_Composition(iButane,     iElement_Hydrogen ) / 10 /
-
-      data iCompound_Composition(iHexane,     iElement_Carbon   ) /  6 /
-      data iCompound_Composition(iHexane,     iElement_Hydrogen ) / 14 /
-
-      data iCompound_Composition(iPentane,    iElement_Carbon   ) /  5 /
-      data iCompound_Composition(iPentane,    iElement_Hydrogen ) / 12 /
-
-      data iCompound_Composition(iC_Monoxide, iElement_Carbon   ) /  1 /
-      data iCompound_Composition(iC_Monoxide, iElement_Oxygen   ) /  1 /
-
-      data iCompound_Composition(iC_Dioxide,  iElement_Carbon   ) /  1 /
-      data iCompound_Composition(iC_Dioxide,  iElement_Oxygen   ) /  2 /
-
-      data iCompound_Composition(iOxygen,     iElement_Oxygen   ) /  2 /
-
-      data iCompound_Composition(iNitrogen,   iElement_Nitrogen ) /  2 /
-
-      data iCompound_Composition(iWater_l,    iElement_Hydrogen ) /  2 /
-      data iCompound_Composition(iWater_l,    iElement_Oxygen   ) /  1 /
       
-      data iCompound_Composition(iWater_v,    iElement_Hydrogen ) /  2 /
-      data iCompound_Composition(iWater_v,    iElement_Oxygen   ) /  1 /
+      common/Chem_compounds/iCompound_Composition
 
-      data iCompound_Composition(iMethanol,   iElement_Carbon   ) /  1 /
-      data iCompound_Composition(iMethanol,   iElement_Hydrogen ) /  4 /
-      data iCompound_Composition(iMethanol,   iElement_Oxygen   ) /  1 /
 
-      data iCompound_Composition(iEthanol,    iElement_Carbon   ) /  2 /
-      data iCompound_Composition(iEthanol,    iElement_Hydrogen ) /  6 /
-      data iCompound_Composition(iEthanol,    iElement_Oxygen   ) /  1 /
-
-      save iCompound_Composition
-      
 C-----------------------------------------------------------------------
 C     Compound enthalpies of formation (J / kmol), @ 25oC, 100 kPa
 C     Source: Van Wylen et al. 1994

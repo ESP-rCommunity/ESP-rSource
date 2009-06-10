@@ -1,5 +1,5 @@
 *connections  for complex_fenestration
-*Date Tue Mar 10 14:31:34 2009
+*Date Tue Apr 28 20:18:31 2009
      26   # number of connections
    1   1   0   0   0  #    1 Wall-1 in zone1 is External
    1   2   3   2   4  #    2 Wall-2 in zone1 >|< Wall-4 in zone2

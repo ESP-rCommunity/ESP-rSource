@@ -41,8 +41,6 @@ C PERIOD ACCORDINGLY.
       COMMON/DAYSF/KDS,KDF
       common/exporttgi/ixopen,ixloc,ixunit
 
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
       COMMON/CLMVAR/VNAME(6)
@@ -295,8 +293,6 @@ C PERIOD ACCORDINGLY.
       COMMON/DAYSF/KDS,KDF
       common/exporttgi/ixopen,ixloc,ixunit
 
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
       COMMON/CLMVAR/VNAME(6)

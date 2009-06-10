@@ -1342,7 +1342,7 @@ C ------------------------------------------------------------------------------
 #include "dhw_parameters.h"
 #include "dhw_common.h"
 #include "ground_temp_mains_common.h" 
-
+#include "espriou.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/C21/IFCFG,cfgroot,LCFGF
@@ -1366,6 +1366,7 @@ C Set error flag to false
 C Open DHW input data file. Note that if IFIL only incremented by one, problems
 C occur as this file unit is already in use.
       IUNIT=IFIL+10
+      write (currentfile, '(A)') sDHW_InputFileName
       CALL ERPFREE(IUNIT,ISTAT)
       CALL EFOPSEQ(IUNIT,sDHW_InputFileName,1,IER)
       IF(ier.ne.0) error_flag = .true.
@@ -1675,6 +1676,7 @@ C Error handling.
     7   format(' DHW input file error.DHW SIM CANCELLED')
         call edisp(iuout,outs)
         iDHW_Flag = 0 !sets flag not to perform DHW simulation.
+        stop ' Fatal error: Cannot read DHW simulation file.'
       endif
       
       RETURN

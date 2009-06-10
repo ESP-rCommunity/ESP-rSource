@@ -506,12 +506,12 @@ C Arrays of material properties.
       integer lnam    ! length of material name
       integer lfordoc ! length available for material documentation
       logical closemat
+      logical bCloseToZero
 
       DIMENSION PNAM(ME)
       CHARACTER OUTSTR*124,NAM*72,PNAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
       character MLCSYM*12
-
 C Pick up general description of the composite.
       ier=0
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
@@ -552,7 +552,6 @@ C Reporting based on report level.
       ENDIF
       RT=0.
       DO 15, IL=1,LAYERS(IFOC)
-
 C If an air layer include the R values in the display.
         if(closemat)then
           legmat=IPR(IFOC,IL)   ! which legacy index
@@ -599,13 +598,14 @@ C Referenced item was not in the materials hash list. Write zeros.
 
 C Also report on thermal resistance (m^2K/W) of the layer. If dbcon
 C is zero then avoid divide by zero.
-          if(dbcon.gt.0.0)then
+          call eclose ( dbcon, 0.0, 1E-06, bCloseToZero)
+          if(.not. bCloseToZero)then
             RSI=DTHK(IFOC,IL)/DBCON
           else
             RSI=1.0
           endif
           PNAM(IL)=NAM
-          if(dbcon.gt.0.0)then
+          if(.not. bCloseToZero)then
             RT=RT+DTHK(IFOC,IL)/DBCON
           else
             RT=1.0
@@ -672,7 +672,6 @@ C QPAQ.
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
         endif
       endif
-
       RETURN
       END
 

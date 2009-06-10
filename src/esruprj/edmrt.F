@@ -223,7 +223,7 @@ C read it or create one with default (area weighted) viewfactors
 C and no MRT sensors.
       if(IVF(ICOMP).eq.1)then
         H(1)='The zone viewfactor file contains data from the'
-        H(2)='ESRU espvwf program which allows a more robust treatment'
+        H(2)='ESRU vwf program which allows a more robust treatment'
         H(3)='of longwave radiation within a zone.'
         H(4)=' '
         H(5)='If you want to ignore the existing viewfactors for this'

@@ -3727,9 +3727,9 @@ C Check for incompatable face/ cell definition
       elseif (IFACE.eq.2) then
         if (Ii.ne.NTCX.or.If.ne.NTCX) IER=2
       elseif (IFACE.eq.3) then
-        if (Ji.ne.1.or.Kf.ne.1) IER=2
+        if (Ji.ne.1.or.Jf.ne.1) IER=2
       elseif (IFACE.eq.4) then
-        if (Ji.ne.NTCY.or.Kf.ne.NTCY) IER=2
+        if (Ji.ne.NTCY.or.Jf.ne.NTCY) IER=2
       elseif (IFACE.eq.5) then
         if (Ki.ne.1.or.Kf.ne.1) IER=2
       elseif (IFACE.eq.6) then
@@ -3769,11 +3769,6 @@ C Curvilinear boundary vertex numbers.
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
 
       CHARACTER act*1,H*72,HOLD*72,outs*124
-#ifdef OSX
-      integer iix,iiy,ixd,iyd
-#else
-      integer*8 iix,iiy,ixd,iyd
-#endif
 
 C Tell the user the rules of selection.
       ier=0
@@ -3836,9 +3831,9 @@ C the individual vertex numbers from the list.
             COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-ixx
-            iyd=iiy-iyy
+            call u2pixel(COG3(1),COG3(2),ix,iy)
+            ixd=ix-ixx
+            iyd=iy-iyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -3899,9 +3894,9 @@ C Ask for and display the bottom defining vertices (west to east).
             COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            ixd=iix-ixx
-            iyd=iiy-iyy
+            call u2pixel(COG3(1),COG3(2),ix,iy)
+            ixd=ix-ixx
+            iyd=iy-iyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')

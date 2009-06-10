@@ -1503,7 +1503,7 @@ C Simulator parameters.
       CHARACTER ctldoc*248
       CHARACTER*72 LCFGF,LCTLF
       character PERST1*14,PERST2*44,PERST3*44
-      character outs*124,louts*248,cfgroot*24,h*72
+      character outs*124,cfgroot*24,h*72
 
       LOGICAL OK,dok,IGR1D,BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,INTHPS,INTHPZ,global,glbrwd
@@ -1552,9 +1552,9 @@ C Determine the number of zone days simulated.
    41 NZTS=(NCOMP*(IDAYS+ITCNST))*NTSTEP*24
 
 C Write out appropriate message.
-      write(louts,'(a,a)')  ' Climate file         : ',
+      write(outs,'(a,a)')  ' Climate file         : ',
      &  LCLIM(1:lnblnk(LCLIM))
-      call edisp248(icout,louts,100)
+      call edisp(icout,outs)
       write(outs,'(a,a)')  ' Configuration file   : ',
      &  LCFGF(1:lnblnk(LCFGF))
       call edisp(icout,outs)
@@ -2045,7 +2045,7 @@ C if itru=33 then works as a header to the trace.
       common/cctl/icascf(mcom)
 
       character*72 lctlf,lcfgf
-      character ctldoc*248,outs*124,louts*248,cfgroot*24
+      character ctldoc*248,outs*124,cfgroot*24
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
       dimension io(mcom)
@@ -2053,8 +2053,8 @@ C if itru=33 then works as a header to the trace.
       call edisp(itru,' ')
       write(outs,'(A,A)')' Results library     :  ',RFILE
       call edisp(itru,outs)
-      write(louts,'(A,A)')' Climate file        :  ',LCLIM
-      call edisp248(itru,louts,100)
+      write(outs,'(A,A)')' Climate file        :  ',LCLIM
+      call edisp(itru,outs)
       write(outs,'(A,A)')' Configuration file  :  ',LCFGF
       call edisp(itru,outs)
       write(outs,'(A,A)')' Configuration descr :  ',LSNAM

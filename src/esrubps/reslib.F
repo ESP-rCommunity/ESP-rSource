@@ -106,8 +106,7 @@ C      write(6,*) ichar(path(1:1)),' ',ichar(path(2:2))
 
 C If simulator was commissioned with browsing yes then by definition
 C we are running remotely and the results files should be saved
-C to the users home folder. Note: this should be the same logic as
-C is used in esruprj/edcfg.F subroutine edcfg.F (near line 993).
+C to the users home folder.
       remote=.false.
       if(browse)then
         remote=.true.
@@ -141,22 +140,18 @@ C Debug.
 C      write(6,*) 'reslib.F spfileok remote ',spfileok,remote
       if(.not.spfileok) then
         iw=0
-        call dealremote('zi',remote,LTMP,IW)
+        call dealremote('z',remote,LTMP,IW)
         IF(LTMP(1:2).EQ.'  ')GOTO 4
-      else
+      ELSE
 
 C If the simulator is being run in autoexec mode then the results 
-C will be placed in the location specified if remote is false and
-C with the users home folder prepended if remote is true. Otherwise
-C the user will be asked to confirm the results file name (and path)
+C will be placed in the location specified otherwise the user will
+C be asked to confirm the results file name (and path)
         if(autook) then
           iw=2
-          if(remote)then
-            call dealremote('zs',remote,LTMP,IW)
-          endif
         else
           iw=0
-          call dealremote('zi',remote,LTMP,IW)
+          call dealremote('z',remote,LTMP,IW)
           IF(LTMP(1:2).EQ.'  ')GOTO 4
         ENDIF
       ENDIF
@@ -275,23 +270,15 @@ C <<Should really get this name from the simulation parameters.>>
     9   LTMP=LAFRES
         if(.not.spfileok) then
           iw=0
-          call dealremote('fi',remote,LTMP,IW)
+          call dealremote('f',remote,LTMP,IW)
           IF(LTMP.EQ.' ')GOTO 9
           LAFRES=LTMP
         else
-
-C If the simulator is being run in autoexec mode then flow results 
-C will be placed in the location specified if remote is false and
-C with the users home folder prepended if remote is true. Otherwise
-C the user will be asked to confirm the results file name (and path)
           if(autook) then 
             iw=2
-            if(remote)then
-              call dealremote('fs',remote,LTMP,IW)
-            endif
           else
             iw=0
-            call dealremote('fi',remote,LTMP,IW)
+            call dealremote('f',remote,LTMP,IW)
             IF(LTMP.EQ.' ')GOTO 9
             LAFRES=LTMP
           endif
@@ -345,23 +332,15 @@ C Now assign user-specified plant library.
  103  LTMP=pfile
       if(.not.spfileok) then
         iw=0
-        call dealremote('pi',remote,LTMP,IW)
+        call dealremote('p',remote,LTMP,IW)
         IF(ltmp.EQ.' ')GOTO 103
         pfile=ltmp
       else
-
-C If the simulator is being run in autoexec mode then plant results 
-C will be placed in the location specified if remote is false and
-C with the users home folder prepended if remote is true. Otherwise
-C the user will be asked to confirm the results file name (and path)
         if(autook) then 
           iw=2
-          if(remote)then
-            call dealremote('ps',remote,LTMP,IW)
-          endif
         else
           iw=0
-          call dealremote('pi',remote,LTMP,IW)
+          call dealremote('p',remote,LTMP,IW)
           IF(ltmp.EQ.' ')GOTO 103
           pfile=ltmp
         endif
@@ -450,23 +429,15 @@ c Now assign user-specified moisture flow library.
    59   LTMP=MSTRFILE
         if(.not.spfileok) then
           iw=0
-          call dealremote('mi',remote,LTMP,IW)
+          call dealremote('m',remote,LTMP,IW)
           IF(LTMP.EQ.' ')GOTO 59
           MSTRFILE=LTMP
         else
-
-C If the simulator is being run in autoexec mode then moisture results 
-C will be placed in the location specified if remote is false and
-C with the users home folder prepended if remote is true. Otherwise
-C the user will be asked to confirm the results file name (and path)
           if(autook) then 
             iw=2
-            if(remote)then
-              call dealremote('ms',remote,LTMP,IW)
-            endif
           else
             iw=0
-            call dealremote('mi',remote,LTMP,IW)
+            call dealremote('m',remote,LTMP,IW)
             IF(LTMP.EQ.' ')GOTO 59
             MSTRFILE=LTMP
           endif
@@ -520,18 +491,15 @@ C Assign a library for the power flow results, and open on IFIL+21.
    11   LTMP=ERESLIB
         IF(.not.spfileok) THEN
           IW=0
-          call dealremote('ei',remote,LTMP,IW)
+          call dealremote('e',remote,LTMP,IW)
           IF(LTMP.EQ.' ')GOTO 11
           ERESLIB=LTMP
         else
           if(autook) then 
             iw=2
-            if(remote)then
-              call dealremote('es',remote,LTMP,IW)
-            endif
           else
             iw=0
-            call dealremote('ei',remote,LTMP,IW)
+            call dealremote('e',remote,LTMP,IW)
             IF(LTMP.EQ.' ')GOTO 11
             ERESLIB=LTMP
           endif
@@ -575,21 +543,18 @@ C CFD results library.
  591    LTMP='libc'
         if(.not.spfileok) then
           iw=0
-          call dealremote('di',remote,LTMP,IW)
+          call dealremote('d',remote,LTMP,IW)
           IF(LTMP.EQ.' ')GOTO 591
           CFRESF=LTMP
         else
           if(autook) then 
   
 C <<Should really get this name from the simulation parameters.>>
-            iw=2
-            if(remote)then
-              call dealremote('ds',remote,LTMP,IW)
-            endif
             CFRESF=LTMP
+            iw=2
           else
             iw=0
-            call dealremote('di',remote,LTMP,IW)
+            call dealremote('d',remote,LTMP,IW)
             IF(LTMP.EQ.' ')GOTO 591
             CFRESF=LTMP
           endif
@@ -638,15 +603,10 @@ C Error on read of library - reset and initialize.
 C ********** dealremote
 C Deal with names of various results files and checks if they will be
 C put in a location other than where the user invoked the tool.
-C Passed parameters:
-C  topic (2 char) (z=zone, f=network flow, p=plant, m=moisture, e=electrical,
-C         d=CFD ) with second character i=interactive s=silent
-C  remote (logical) = true then calculate the full path
-C  lfile (72 char) file name which may be edited by user (if interactive) 
-C        and returned as an updated string
-C Return parameter:
-C  IW (integer) as 0 if no decision made, IW as 1 if in current path and IW
-C        as 2 if in some other location.
+C Passed the topic (z=zone, f=network flow, p=plant, m=moisture, e=electrical,
+C d=CFD ), File name LFILE is passed in and may be edited by user,
+C Returns IW as 0 if no decision made, IW as 1 if in current path and IW
+C as 2 if in some other location.
       subroutine dealremote(topic,remote,LFILE,IW)
       
       integer lnblnk  ! function definition
@@ -654,7 +614,7 @@ C        as 2 if in some other location.
       COMMON/OUTIN/IUOUT,IUIN
       common/uhome/upath
       common/pophelp/h(60)
-      character topic*2,LFILE*72
+      character topic*1,LFILE*72
       character h*72,upath*72,ltmp*72,ltpath*72,filen*72
       logical unixok,remote
 
@@ -662,9 +622,7 @@ C        as 2 if in some other location.
       if(remote)then
         call fdroot(lfile,ltpath,filen)
 
-C Is the path (ltpath) to the results file absolute or relative.
-C If it is unix and starts with a / then absolute. If DOS and
-C the 2nd character is a : then absolute.
+C Is ltpath absolute or relative.
         call isunix(unixok)
         if(unixok)then
           if (ICHAR(ltpath(1:1)).ne.47) then
@@ -682,7 +640,7 @@ C the 2nd character is a : then absolute.
       endif
 
 C Depending on the domain of the file confirm its name.
-      if(topic(1:2).eq.'zi')then
+      if(topic.eq.'z')then
         H(1)='The zone results library contains one or more simulation'
         H(2)='result sets. Each result set is comprised of the'
         H(3)='simulation time-series for the same model but,'
@@ -699,7 +657,7 @@ C Depending on the domain of the file confirm its name.
           CALL EASKS(LFILE,' Zone results library name ?',
      &      ' ',72,ltmp,'zone results lib',IER,9)
         endif
-      elseif(topic(1:2).eq.'fi')then
+      elseif(topic.eq.'f')then
         H(1)='The results of mass flow simulations are placed in an'
         H(2)='ASCII file for recovery and analysis by the simlator'
         H(3)='or the stand-alone mfs solver. '
@@ -714,7 +672,7 @@ C Depending on the domain of the file confirm its name.
           CALL EASKS(LFILE,' Mass flow results library name ?',
      &      ' ',72,ltmp,'mass results lib',IER,6)
         endif
-      elseif(topic(1:2).eq.'pi')then
+      elseif(topic.eq.'p')then
         H(1)='The plant (systems) results library contains one or more'
         H(2)='simulation result sets. Each set comprises the simulation'
         H(3)='time-series for the same model but, potentially, for'
@@ -731,7 +689,7 @@ C Depending on the domain of the file confirm its name.
           CALL EASKS(LFILE,' Plant results library name ?',
      &      ' ',72,ltmp,'plnt results lib',IER,9)
         endif
-      elseif(topic(1:2).eq.'mi')then
+      elseif(topic.eq.'m')then
         H(1)='The results of moisture flow simulations are placed in'
         H(2)='an ASCII file for recovery and analysis by the mld'
         H(3)='module. '
@@ -746,7 +704,7 @@ C Depending on the domain of the file confirm its name.
           CALL EASKS(LFILE,' Moisture flow results library name ?',
      &      ' ',72,ltmp,'Moisture results lib',IER,6)
         endif
-      elseif(topic(1:2).eq.'ei')then
+      elseif(topic.eq.'e')then
         H(1)='The results of electrical network simulations are '
         H(2)='placed in an binary database for recovery and'
         H(3)='analysis by the results analysis module. '
@@ -761,7 +719,7 @@ C Depending on the domain of the file confirm its name.
           CALL EASKS(LFILE,'Electrical network results library name ?',
      &      ' ',72,ltmp,'electrical results lib',IER,6)
         endif
-      elseif(topic(1:2).eq.'di')then
+      elseif(topic.eq.'d')then
         H(1)='The results of CFD simulations are placed in a binary'
         H(2)='database for recovery and analysis by the results'
         H(3)='analysis module. '

@@ -535,7 +535,7 @@ C.....Time
 
       common/pctstp/ntstpp
       integer ntstpp            ! number of plant timesteps / building timestep
-
+      integer iNumSubSteps      ! local copy of ntstpp
       common/c12ps/npcdat,ipofs1,ipofs2
       integer npcdat(mpcom,9)      ! miscellaneous plant data
       integer ipofs1(mcoefg)       ! not used in current context
@@ -618,7 +618,9 @@ C             ( # bld ts/hour ) * ( # plt ts / bld ts )
 C                               * ( 24 hours )
 C                               * ( 7 days )
 C-----------------------------------------------------------------------
-      iBufferLength = min ( ntstep * ntstpp * 24 * 7, iStoreSize )
+      ! ntstpp may not be set, ensure that it's at least 1.
+      iNumSubSteps = max( ntstpp, 1 )
+      iBufferLength = min ( ntstep * iNumSubSteps * 24 * 7, iStoreSize )
 
 C-----------------------------------------------------------------------
 C     Zero load parameters (W)
@@ -633,7 +635,7 @@ C-----------------------------------------------------------------------
 C     Loop through connections, and establish heating/cooling loads
 C     associated with connections to zones. 
 C-----------------------------------------------------------------------
-
+      do_connections_exist: if ( nPCon > 0 ) then
       connection_loop: do iConnect = 1, nPCon
 
 C.......Check for type-4 connection: coupling between plant
@@ -680,12 +682,13 @@ C.........Compute load
         endif connected_to_zone
 
       enddo connection_loop
-
+      endif do_connections_exist
 C-----------------------------------------------------------------------
 C     Loop through plant components, and collect DHW loads from known 
 C     (this loop might one-day be expanded to collect space loads from 
-C     radiant systems as well.
+C     radiant systems as well.)
 C-----------------------------------------------------------------------
+      do_plt_comp_exist: if (nPComp > 0 ) then
       component_loop_1: do iComponent = 1, nPComp
 
 C.......Collect component type:
@@ -705,14 +708,13 @@ C...........Do nothing.
         end select Plant_type
 
       enddo component_loop_1
-
+      endif do_plt_comp_exist
 C-----------------------------------------------------------------------
 C     Shift data in load buffers.
 C-----------------------------------------------------------------------
 
 C.....If current buffer location is less than length, increment buffer
 C.....location, 
-
       buffer_length: if ( iBufferCount < iBufferLength ) then
 
         iBufferCount = iBufferCount + 1
@@ -725,8 +727,6 @@ C.....and creating space at the end
 
           fLoadSH(iBufferLoc) = fLoadSH( iBufferLoc + 1 )
           fLoadWH(iBufferLoc) = fLoadWH( iBufferLoc + 1 )
-
-
 
         enddo shift_buffers
 
@@ -775,7 +775,7 @@ C-----------------------------------------------------------------------
         fuel_loop: do iFuel = 1, iNumFuel
 
           uncatagorized:
-     &    if ( .not. bPltUseCatagorized(iComponent, iFuel ) .and. 
+     &    if ( .not. bPltUseCatagorized(iComponent, iFuel ) .and.
      &         .not. bNumsAreClose ) then
 
             fPltEnergyUse(iComponent, iFuel, iUseSpaceHeat )

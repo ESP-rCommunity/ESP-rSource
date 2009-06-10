@@ -4147,8 +4147,8 @@ C espriou.h provides currentfile.
       common/appw/iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/rpath/path
+      COMMON/CLMDT0/CLAT,CLONG
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -4158,13 +4158,13 @@ C espriou.h provides currentfile.
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
-      CHARACTER H*72,DFILE*72,LLASCI*144
-      character longtfile*144,longtafile*144,message*48,longtmp*144
+      CHARACTER*72 H,DFILE,LASCI,LTMP
+      character longtfile*144,longtafile*144,message*48
       CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
-      LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
+      LOGICAL CLKOK,OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character cfgroot*24,LCFGF*72,linstd*60
       character dinstpath*48,path*72
       CHARACTER*72 NNAME
@@ -4182,7 +4182,7 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
       moddb=.false.
- 552  llt=lnblnk(LCLIM)
+ 552  llt=MIN0(lnblnk(LCLIM),72)
       write(llclmdb,'(a)') lclim(1:llt)
 
       H(1)='Climate databases are hourly sets of values from '
@@ -4277,8 +4277,8 @@ C If file exists read it and enter editing facility.
           if(ier.eq.0)then
             moddb=.true.
 
-C Cast back to LCLIM.
-            llt=lnblnk(llclmdb)
+C Cast back to 72 char name.
+            llt=MIN0(lnblnk(llclmdb),72)
             write(LCLIM,'(a)') llclmdb(1:llt)
           else
             call usrmsg('Problem encountered with Climate db!',
@@ -4325,9 +4325,9 @@ C use a file browser to go looking for it.
         iuf=IFIL+1
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
-          call rdblist(IUF,longtfile,ier)
+          call rdblist(IUF,LTMP,ier)
           if(ier.eq.0)then
-            if(longtfile(1:12).eq.'USER_DEFINED')then
+            if(LTMP(1:12).eq.'USER_DEFINED')then
               write(llclmdb,'(a)') 'newclim'
  291          llt=lnblnk(llclmdb)
               iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -4352,15 +4352,15 @@ C use a file browser to go looking for it.
               IF(llclmdb(1:2).EQ.'  ')GOTO 291
               IER=0
 
-C Cast back to LCLIM.
-              llt=lnblnk(llclmdb)
+C Cast back to 72 char names.
+              llt=MIN0(lnblnk(llclmdb),72)
               write(LCLIM,'(a)') llclmdb(1:llt)
-              write(longtfile,'(a)') llclmdb(1:llt)
-            elseif(longtfile.eq.'UNKNOWN'.or.longtfile(1:2).eq.'  ')then
+              write(LTMP,'(a)') llclmdb(1:llt)
+            elseif(LTMP.eq.'UNKNOWN'.or.LTMP(1:2).eq.'  ')then
               call usrmsg('Nothing selected from the list!',' ','W')
               goto 552
             else
-              write(LCLIM,'(a)') longtfile(1:lnblnk(longtfile))
+              write(LCLIM,'(a)') LTMP(1:lnblnk(LTMP))
             endif
           endif
         else
@@ -4380,7 +4380,7 @@ C use the editing facility.
 C << next try using llclmdb for the file opening and then try >>
 C << it instead of longtfile >>
           IER=0
-          call EFOPRAN(ICLIM,LCLIM,144,0,IER)
+          call EFOPRAN(ICLIM,LTMP,144,0,IER)
           if(ier.eq.0)then
             call tstamp('>','PRJ: start clm')
             doit = ' '
@@ -4421,29 +4421,17 @@ C << revise to support browsing for the file (askf has a cancel option now) >>
         h(2)='project name. '
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(longtmp,'(2a)') cfgroot(1:lr),'.climate'
+          write(LTMP,'(2a)') cfgroot(1:lr),'.climate'
         else
-          write(longtmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.climate'
         endif
-
-C If using X11 assume that the full path is less than 96 chars
-C but if using GTK then we need the full length to avoid truncation.
- 553    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      144,DCLIM,'climate file name',IER,3)
-        else
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        endif
-        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-
-        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
-          LCLIM=longtmp
+        clkok=.false.
+ 553    CALL EASKSCNCL(LTMP,' ','Climate db?',
+     &      'cancel',clkok,72,DCLIM,'climate database',IER,2)
+        if(clkok) RETURN
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LCLIM=ltmp
         else
           goto 553
         endif
@@ -4525,7 +4513,7 @@ C name to include the path and create a string to drive clm.
 
 C Copy the standard db to project folder. Suggest a local
 C file name based on the project root name. Lastly do the copy.
-C If the default is to be copied ask for local name. Use longtmp for
+C If the default is to be copied ask for local name. Use LTMP for
 C the file name as known to esp-r and LCOPY for the system cp call.   
         if(copydef)then
           call edisp(iuout,'The source file is:')
@@ -4540,36 +4528,18 @@ C the file name as known to esp-r and LCOPY for the system cp call.
         h(2)='active project name.'
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(longtmp,'(2a)') cfgroot(1:lr),'.climate'
+          write(LTMP,'(2a)') cfgroot(1:lr),'.climate'
         else
-          write(longtmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.climate'
         endif
-
-C If using X11 assume that the full path is less than 96 chars
-C but if using GTK then we need the full length to avoid truncation.
- 554    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      144,DCLIM,'climate file name',IER,3)
-        else
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        endif
-        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-
-        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
-          LCLIM=longtmp
-        else
-          goto 554
-        endif
+ 554    CALL EASKS(LTMP,' ',
+     &      'Name of db after copy to project folder?',
+     &       72,'climate.db','copied climate database',IER,2)
         call isunix(unixok)
-        IF(longtmp(1:2).NE.'  ')then
+        IF(LTMP(1:2).NE.'  ')then
           write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        longtmp(1:lnblnk(longtmp))
+     &        LTMP(1:lnblnk(LTMP))
           if(copydef)then
             doit = ' '
             if(unixok)then
@@ -4582,7 +4552,7 @@ C Similar logic but using DCLIM.
               call dbdoscopy(DCLIM,lcopy,message,doit,ier)
             endif
             call runit(doit,'-')
-            LCLIM=longtmp
+            LCLIM=LTMP
           else
             doit = ' '
             if(unixok)then
@@ -4595,7 +4565,7 @@ C Similar logic but using LCLIM.
               call dbdoscopy(LCLIM,lcopy,message,doit,ier)
             endif
             call runit(doit,'-')
-            LCLIM=longtmp
+            LCLIM=LTMP
           endif
           moddb=.true.
           call tstamp('>','PRJ: start clm')
@@ -4630,36 +4600,30 @@ C Confirm suggested name and then write out asci file.
         H(1)='Some databases are held as BINARY files for speed'
         H(2)='of access and security. It is sometimes convenient'
         H(3)='to convert to ASCII - e.g. for implementation under'
-        H(4)='a different operating system or for word processing.'
-
+        H(4)='a different operating system or for word processing. '
         DFILE='./climate.a'
-        LLASCI=' '
-        write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-     &      96,DFILE,'climate file name',IER,3)
-        elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-     &      144,DFILE,'climate file name',IER,3)
+        clkok=.false.
+        LASCI=' '
+        write(LASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
+        CALL EASKSCNCL(LASCI,' ',' Climate db (ascii)?',
+     &     'cancel',clkok,72,DFILE,'climate data (ascii)',IER,4)
+        if(clkok)then
+          RETURN
         else
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-     &      96,DFILE,'climate file name',IER,3)
-        endif
-        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
 C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
-        call addpath(LCLIM,longtfile,concat)
-        call addpath(LLASCI,longtafile,concat)
-        call tstamp('>','PRJ: start clm for conversion')
-        doit = ' '
-        write(doit,'(5a)') 'clm -mode text -file ',
-     &      longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
-     &      longtafile(1:lnblnk(longtafile))
-        CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
-        if(ok)then
-          call runit(doit,tmode)
+          call addpath(LCLIM,longtfile,concat)
+          call addpath(LASCI,longtafile,concat)
+          call tstamp('>','PRJ: start clm for conversion')
+          doit = ' '
+          write(doit,'(5a)') 'clm -mode text -file ',
+     &        longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
+     &        longtafile(1:lnblnk(longtafile))
+          CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
+          if(ok)then
+            call runit(doit,tmode)
+          endif
         endif
       elseif(isw.eq.6)then
 
@@ -4669,51 +4633,36 @@ C Confirm suggested name and then write out binary file.
         H(2)='of access and security. There are machine dependant'
         H(3)='and can be created from ASCII file versions.'
         DFILE='./climate.a'
+        clkok=.false.
+        LASCI=' '
+        write(LASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
+        CALL EASKSCNCL(LASCI,' ','Climate db (ascii)?',
+     &     'cancel',clkok,72,DFILE,'climate data (ascii)',IER,3)
+        if(clkok) RETURN
 
-        LLASCI=' '
-        write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-     &      96,DFILE,'climate file name',IER,3)
-        elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-     &      144,DFILE,'climate file name',IER,3)
+        ltmp=LCLIM
+        CALL EASKSCNCL(ltmp,' ','Climate db (binary)?',
+     &     'cancel',clkok,72,DFILE,'climate data (binary)',IER,3)
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LCLIM=ltmp
+        endif
+        if(clkok)then
+          RETURN
         else
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-     &      96,DFILE,'climate file name',IER,3)
-        endif
-        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-
-        longtmp=LCLIM
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      144,DCLIM,'climate file name',IER,3)
-        else
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        endif
-        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
-          LCLIM=longtmp
-        endif
 
 C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
-        call addpath(LCLIM,longtfile,concat)
-        call addpath(LLASCI,longtafile,concat)
-        call tstamp('>','PRJ: start clm for conversion')
-        doit = ' '
-        write(doit,'(5a)') 'clm -mode text -file ',
-     &      longtfile(1:lnblnk(longtfile)),' -act asci2bin silent ',
-     &      longtafile(1:lnblnk(longtafile))
-        CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
-        if(ok)then
-          call runit(doit,tmode)
+          call addpath(LCLIM,longtfile,concat)
+          call addpath(LASCI,longtafile,concat)
+          call tstamp('>','PRJ: start clm for conversion')
+          doit = ' '
+          write(doit,'(5a)') 'clm -mode text -file ',
+     &        longtfile(1:lnblnk(longtfile)),' -act asci2bin silent ',
+     &        longtafile(1:lnblnk(longtafile))
+          CALL ASKOK(' ','Browse/edit exported climate data?',OK,dok,3)
+          if(ok)then
+            call runit(doit,tmode)
+          endif
         endif
       elseif(isw.eq.7)then
 
@@ -4724,55 +4673,40 @@ C Confirm suggested name and then write out binary file.
         H(3)='file EPW_readme). This option converts EPW files'
         H(4)='to ESP-r climate files.'
         DFILE='./climate.a'
+        clkok=.false.
+        LASCI=' '
+        write(LASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
+        CALL EASKSCNCL(LASCI,' ','Climate db (EPW)?',
+     &     'cancel',clkok,72,DFILE,'climate data (EPW)',IER,4)
+        if(clkok) RETURN
 
-        LLASCI=' '
-        write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-     &      96,DFILE,'climate file name',IER,3)
-        elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-     &      144,DFILE,'climate file name',IER,3)
+        ltmp=LCLIM
+        CALL EASKSCNCL(ltmp,' ','Climate db (ESP-r)?',
+     &     'cancel',clkok,72,DFILE,'climate data (binary)',IER,4)
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LCLIM=ltmp
+        endif
+        if(clkok)then
+          RETURN
         else
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
-     &      96,DFILE,'climate file name',IER,3)
-        endif
-        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-
-        longtmp=LCLIM
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
-     &      144,DCLIM,'climate file name',IER,3)
-        else
-          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        endif
-        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
-          LCLIM=longtmp
-        endif
 
 C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
-        call addpath(LCLIM,longtfile,concat)
-        call addpath(LLASCI,longtafile,concat)
-        call tstamp('>','PRJ: start clm for conversion')
-        doit = ' '
-        write(doit,'(5a)') 'clm -mode text -file ',
-     &      longtfile(1:lnblnk(longtfile)),' -act epw2bin silent ',
-     &      longtafile(1:lnblnk(longtafile))
-        h(1)='Use the browse function to clarify whether the climate'
-        h(2)='data you have selected is appropriate for the current '
-        h(3)='model. '
-        dok=.false.
-        CALL ASKOK(' ','Browse/edit imported climate data?',OK,dok,3)
-        if(ok)then
-          call runit(doit,tmode)
+          call addpath(LCLIM,longtfile,concat)
+          call addpath(LASCI,longtafile,concat)
+          call tstamp('>','PRJ: start clm for conversion')
+          doit = ' '
+          write(doit,'(5a)') 'clm -mode text -file ',
+     &        longtfile(1:lnblnk(longtfile)),' -act epw2bin silent ',
+     &        longtafile(1:lnblnk(longtafile))
+          h(1)='Use the browse function to clarify whether the climate'
+          h(2)='data you have selected is appropriate for the current '
+          h(3)='model. '
+          dok=.false.
+          CALL ASKOK(' ','Browse/edit imported climate data?',OK,dok,3)
+          if(ok)then
+            call runit(doit,tmode)
+          endif
         endif
       endif
 

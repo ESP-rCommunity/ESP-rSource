@@ -1,47 +1,14 @@
-C This file is part of the ESP-r system.
-C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
-
-C ESP-r is free software.  You can redistribute it and/or
-C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
-C (version 2 orlater).
-
-C ESP-r is distributed in the hope that it will be useful
-C but WITHOUT ANY WARRANTY; without even the implied
-C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-C PURPOSE. See the GNU General Public License for more
-C details.
-
-C You should have received a copy of the GNU General Public
-C License along with ESP-r. If not, write to the Free
-C Software Foundation, Inc., 59 Temple Place, Suite 330,
-C Boston, MA 02111-1307 USA.
-
-C  "AZALTS" Calculates the solar azimuth and elevation for a specified
-C  hour of the day. Logic is similar to subroutine azalt in
-C  esrucom/commonclm.F
+C  "AZALTS" CALCULATES THE SOLAR AZIMUTH AND THE SOLAR ALTITUDE
+C   FOR A SPECIFIED HOUR OF A DAY
 
       SUBROUTINE AZALTS(IYD,IHR,ITS,RLONGT,RLATIT,SOLALT,SOLAZI)
-
-C Parameters:
-      integer IYD,IHR,ITS
-      real RLONGT,RLATIT,SOLALT,SOLAZI
-
-      integer INIT,IUOUT,IUIN
-      real GLAT,GLON
+      common/pophelp/h(60)
       COMMON/UAZALT/INIT,GLAT,GLON
       COMMON/OUTIN/IUOUT,IUIN
-      character h*72
-      common/pophelp/h(60)
-
-C Local definitions:
       logical close,OK,dok
-      real PI,DECLIN,SDDECL,CDDECL,CDTIME,TIME,TIMCOE,ABSTMC,ASDTIM
-      real ALT,SDLAT,CDLAT,AZMUTH
+      character h*72
 
       PI = 4.0 * ATAN(1.0)
-
 C  IYD = DAY NUMBER OF THE YEAR (JAN 1=1, JAN 2=2,..., DEC 31=365)
 C  ITS = TIME SYSTEM UNDER ANALYSIS, I.e. IF LOCAL MEAN
 C        TIME (LMT), INPUT 1, IF LOCAL APPARENT TIME ,(LAT) ,INPUT 2.
@@ -50,30 +17,34 @@ C           OR WEST(-VE) OF THE REFERENCE TIME ZONE. IN BRITAIN THE
 C           REFERENCE TIME ZONE IS AT GREENWICH (0 DEG LONGITUDE). (DEG)
 C  RLATIT = LATITUDE OF SITE (NORTH +VE, SOUTH -VE) (DEGREES)
 
-C CHECK LATITUDE AND LONGITUDE.
+C  CHECK LATITUDE AND LONGITUDE.
+
       IF(INIT.EQ.1)goto 18
       IF(RLATIT.GT.90.0.OR.RLATIT.LT.-90.0)goto 14
       IF(RLONGT.GT.15.0.OR.RLONGT.LT.-15.0)goto 14
 
-C THE SIN AND COS OF THE LATITUDE ARE EVALUATED.
+C  THE SIN AND COS OF THE LATITUDE ARE EVALUATED.
    15 SDLAT=ESIND(RLATIT)
       CDLAT=ECOSD(RLATIT)
 
-C CALCULATION OF THE EQUATION OF TIME.
+C      CALCULATION OF THE EQUATION OF TIME
+C
       IF(ITS.EQ.2)goto 11
       A=1.978*IYD-160.22
       B=0.989*IYD-80.11
       EQTIME=0.1645*ESIND(A)-0.1255*ECOSD(B)-0.025*ESIND(B)
 
-C CALCULATION OF THE DECLINATION.
+C      CALCULATION OF THE DECLINATION
+C
    11 A=280.1+0.9863*IYD
       DECLIN=23.45*ESIND(A)
       SDDECL=ESIND(DECLIN)
       CDDECL=ECOSD(DECLIN)
 
-C IF LMT IS USED THEN THE LONGITUDE AND EQUATION OF TIME
-C WILL EFFECT THE SOLAR TIME AT THE USERS SITE. A
-C CORRECTION WILL THEREFORE BE REQUIRED.
+C  IF LMT IS USED THEN THE LONGITUDE AND EQUATION OF TIME
+C  WILL EFFECT THE SOLAR TIME AT THE USERS SITE. A
+C  CORRECTION WILL THEREFORE BE REQUIRED.
+C
       IF(ITS.EQ.2)GOTO 1
       TIME=IHR+(EQTIME+(RLONGT/15.0))
       GOTO 2
@@ -81,21 +52,23 @@ C CORRECTION WILL THEREFORE BE REQUIRED.
     2 TIMCOE=15.0*(12.0-TIME)
       CDTIME=ECOSD(TIMCOE)
       ABSTMC=ABS(TIMCOE)
-C      SDTIME=ESIND(TIMCOE)
+      SDTIME=ESIND(TIMCOE)
       ASDTIM=ESIND(ABSTMC)
-
-C CALCULATION OF THE SOLAR ALTITUDE.
+C
+C      CALCULATION OF THE SOLAR ALTITUDE
+C
       ALT=SDLAT*SDDECL+CDLAT*CDDECL*CDTIME
       SOLALT=ASIN(ALT)*180.0/PI
-
-C SOLAR AZIMUTH.
+C
+C            SOLAR AZIMUTH
+C
       AZMUTH=(CDDECL*ASDTIM)/ECOSD(SOLALT)
       IF(AZMUTH.LT.-1.0)AZMUTH=-1.0
       IF(AZMUTH.GT.1.0)AZMUTH=1.0
       SOLAZI=ASIN(AZMUTH)*180.0/PI
 
-C Correct the azimuthal angle for time of day and whether
-C in north or south hemispheres.
+C  Correct the azimuthal angle for time of day and whether
+C  in north or south hemispheres.
       X=CDTIME
       call eclose(RLATIT,0.0,0.001,close)
       if(close)goto 13
@@ -120,16 +93,16 @@ C in north or south hemispheres.
     7 IF(TIME.GT.12.0)SOLAZI=360.0-SOLAZI
    10 CONTINUE
       RETURN
-
-   14 dok=.false.
-      h(1)='There are some limits that should not be exceeded.'
-      h(2)='If you say no the the program will stop. '
-      CALL ASKOK('Lat was outwith +-90.0 or Long difference more than',
-     &  '+- 15 deg. Continue with default Lat/Long?',OK,dok,2)
-      if(.NOT.OK)then
-        CALL EPAGEND
-        STOP
-      endif
+   14 WRITE(IUOUT,16)
+   16 FORMAT(' Lat/Lon error in AZALT :',/,
+     &' default site Glasgow (55.9N,4.15W)')
+      dok=.false.
+      h(1)='The latitude or longitude difference from time meridian'
+      h(2)='is outwith the normal limits. A no exits program.'
+      CALL ASKOK(' ',' Continue?',OK,dok,2)
+      if(ok)goto 18
+   17 CALL EPAGEND
+      STOP
    18 RLATIT=GLAT
       RLONGT=GLON
       INIT=1

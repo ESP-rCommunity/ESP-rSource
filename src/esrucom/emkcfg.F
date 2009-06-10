@@ -47,8 +47,6 @@ C ICLIM,LCLIM (for climate file)
 #include "sbem.h"
 #include "roam.h"
 #include "CFC_common.h"
-#include "ipvdata.h"
-#include "seasons.h"
       PARAMETER (MSTMC=20,MSGAL=40)
       
       integer lnblnk  ! function definition
@@ -158,8 +156,14 @@ C Primary energy and emissions conversions.
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
 
-C IPV description via ipvdata.h.
+C IPV description.
       common/IPVF/lipvdatf
+      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
+     &              ipvafnjd(MIPVA),ipvdispjd(10)
+      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
+     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
+      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
+     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
 
 C Project demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds
@@ -171,19 +175,6 @@ C CPCALC description
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
-
-C Strings associated with one climatelist item.
-C clmlnam (char*32) is the selection list string
-C clmlaid is aide (char*72) memoire for list item
-C clmldbfile (char*144) is the climate file (with path info)
-C clmlavail (char*10) is either ONLINE or OFFLINE
-C clmlhelp (char*72) is array of help strings
-      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
-      character clmlhelp*72
-      common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
-
-C Numbers associated with one climatelist item.
-      common/clmlnum/nbclmlhelp
 
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -287,9 +278,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character calename*32,calentag*12,calendayname*32,loutc*96
       character LWndSupp*72
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
-      character descr*7,descrst*10,descrfn*10  ! for season dates
-      character descrst1*10,descrfn1*10        ! for 2nd season dates
-      
+
 C An array of mass flow nodes for writing.
       CHARACTER NDNAM*12
       character namen*12
@@ -297,7 +286,6 @@ C An array of mass flow nodes for writing.
 
       character act*1  ! a '-' is normal use, a 's' is silent
       character ipvaction*3  ! to instruct mkipv to do it within cfg file
-      character tab*1  ! a literal tab character
 
       dimension iav(60)
 
@@ -694,83 +682,6 @@ C Write alternative definition of weekends if not default.
         WRITE(IFCFG,'(a,2I3,a)',IOSTAT=IOS,ERR=2) '*weekend  ',
      &    idwe1,idwe2,' # alt weekend def'
       endif
-
-C If there is a seasonal definition associated with the climate
-C file (e.g. user defined or via climate list).  This block of
-C code might be a << good one to place in a separate subroutine >>
-C and used by various facilities.
-      if(ihaveseason.gt.0)then
-        tab=CHAR(9) 
-        write(IFCFG,'(a)')'*seasons'
-        write(IFCFG,'(3a)')'*name',tab,clmlnam(1:lnblnk(clmlnam))
-        write(IFCFG,'(3a)')'*aide',tab,clmlaid(1:lnblnk(clmlaid))
-        call edayr(is1wins,id1,im1)
-        call edayr(is1winf,id2,im2)
-        call edayr(is2wins,id3,im3)
-        call edayr(is2winf,id4,im4)
-        call stdate(iyear,is1wins,descr,descrst)
-        call stdate(iyear,is1winf,descr,descrfn)
-        call stdate(iyear,is2wins,descr,descrst1)
-        call stdate(iyear,is2winf,descr,descrfn1)
-        write(IFCFG,'(a,8i3,8a)')'*winter_s',id1,im1,id2,im2,id3,im3,
-     &    id4,im4,' # seasons ',descrst,'--',descrfn,' & ',descrst1,
-     &    '--',descrfn1
-        call edayr(is1sprs,id1,im1)
-        call edayr(is1sprf,id2,im2)
-        call edayr(is2sprs,id3,im3)
-        call edayr(is2sprf,id4,im4)
-        call stdate(iyear,is1sprs,descr,descrst)
-        call stdate(iyear,is1sprf,descr,descrfn)
-        call stdate(iyear,is2sprs,descr,descrst1)
-        call stdate(iyear,is2sprf,descr,descrfn1)
-        write(IFCFG,'(a,8i3,8a)')'*spring_s',id1,im1,id2,im2,id3,im3,
-     &    id4,im4,' # seasons ',descrst,'--',descrfn,' & ',descrst1,
-     &    '--',descrfn1
-        call edayr(is1sums,id1,im1)
-        call edayr(is1sumf,id2,im2)
-        call stdate(iyear,is1sums,descr,descrst)
-        call stdate(iyear,is1sumf,descr,descrfn)
-        write(IFCFG,'(a,4i3,4a)')'*summer_s',id1,im1,id2,im2,
-     &    ' # summer season ',descrst,'--',descrfn
-        call edayr(ia1wins,id1,im1)
-        call edayr(ia1winf,id2,im2)
-        call edayr(ia2wins,id3,im3)
-        call edayr(ia2winf,id4,im4)
-        call stdate(iyear,ia1wins,descr,descrst)
-        call stdate(iyear,ia1winf,descr,descrfn)
-        call stdate(iyear,ia2wins,descr,descrst1)
-        call stdate(iyear,ia2winf,descr,descrfn1)
-        write(IFCFG,'(a,8i3,8a)')'*winter_t',id1,im1,id2,im2,id3,im3,
-     &    id4,im4,' # typical ',descrst,'--',descrfn,' & ',descrst1,
-     &    '--',descrfn1
-        call edayr(ia1sprs,id1,im1)
-        call edayr(ia1sprf,id2,im2)
-        call edayr(ia2sprs,id3,im3)
-        call edayr(ia2sprf,id4,im4)
-        call stdate(iyear,ia1sprs,descr,descrst)
-        call stdate(iyear,ia1sprf,descr,descrfn)
-        call stdate(iyear,ia2sprs,descr,descrst1)
-        call stdate(iyear,ia2sprf,descr,descrfn1)
-        write(IFCFG,'(a,8i3,8a)')'*spring_t',id1,im1,id2,im2,id3,im3,
-     &    id4,im4,' # typical ',descrst,'--',descrfn,' & ',descrst1,
-     &    '--',descrfn1
-        call edayr(iasums,id1,im1)
-        call edayr(iasumf,id2,im2)
-        call stdate(iyear,iasums,descr,descrst)
-        call stdate(iyear,iasumf,descr,descrfn)
-        write(IFCFG,'(a,4i3,4a)')'*summer_t',id1,im1,id2,im2,
-     &    ' # typical summer ',descrst,'--',descrfn
-        write(IFCFG,'(a)')'*help_start'
-        if(nbclmlhelp.eq.0)then
-          write(IFCFG,'(a)')' Supporting text has yet to be entered.'
-        else
-          do 442 ij=1,nbclmlhelp
-            write(IFCFG,'(a)') clmlhelp(ij)(1:lnblnk(clmlhelp(ij)))
- 442      continue
-        endif
-        write(IFCFG,'(a)')'*season_end'
-      endif
-
       WRITE(IFCFG,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'
 

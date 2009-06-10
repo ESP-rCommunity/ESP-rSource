@@ -189,9 +189,6 @@ C Look for DD and Radiation typical week.
      &    'use in climatelist typical assessment periods)?',ok,dok,3)
         if(ok)then
           call DDRADSUM('?')
-
-C << But where are the best-fit weeks reported? >>
-
         else
           call DDRADSUM('-')
         endif
@@ -218,11 +215,9 @@ C  terms of a dimensionless number - the CSI.
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       common/exporttgi/ixopen,ixloc,ixunit
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+      COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLMDT1/CLMLOC
       CHARACTER CLMLOC*30,outs*124
@@ -728,8 +723,6 @@ C Display is per day.
       COMMON/DAYSF/KDS,KDF
       common/exporttgi/ixopen,ixloc,ixunit
 
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
@@ -907,8 +900,6 @@ C for the given period.
       COMMON/DAYSF/KDS,KDF
       common/exporttgi/ixopen,ixloc,ixunit
 
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
@@ -1078,24 +1069,23 @@ C ********* SYNOPDEGS *******
 C SYNOPDEGS computes seasonal heating and cooling DEGREE DAYS 
 C for the given period.
       SUBROUTINE SYNOPDEGS
-
-C Manual inclusion of a parameter from building.h
-      parameter (MSPS=10)
-      parameter (MIPVA=MSPS)
-
-#include "seasons.h"
-C seasons.h provides typper and typsea
-
       PARAMETER (MT=24)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/exporttgi/ixopen,ixloc,ixunit
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
+
+C Typical periods win1|trn1|sum|trn2|win2 with start,finish,typical day
+      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
+     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
+
+C Season definitions. 2 periods for winter (i.e. nov-dec and
+C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
+      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
+     &              is2sprs,is2sprf,is1sums,is1sumf
 
       character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
 
@@ -1282,8 +1272,6 @@ C for the given period.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
 
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 
@@ -1484,8 +1472,6 @@ C TO GET ONE DAY OF ONE CLIMATE PARAMETER
       PARAMETER (MT=24)
 
       DIMENSION XJ(24)
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
 

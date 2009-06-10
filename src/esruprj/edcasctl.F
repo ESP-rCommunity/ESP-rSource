@@ -104,11 +104,6 @@ C TMC common block:
       CHARACTER SPARENT*12
       CHARACTER info*18,cgcdesc*64,brw*8
       INTEGER IX,IY,IZ,KSTR
-#ifdef OSX
-      integer iix,iiy
-#else
-      integer*8 iix,iiy
-#endif
 
 C Assume daylight coeffs do need calculated.
       ldcoef=.true.
@@ -295,8 +290,8 @@ C For each sensor for methods 1,2,4.
           COG1(3)=CGH(ICOMP,N,J)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          CALL ecirc(iix,iiy,2,1)
+          call u2pixel(COG3(1),COG3(2),ix,iy)
+          CALL ecirc(ix,iy,2,1)
           tip(1)=CGX(ICOMP,N,J)+UX(ICOMP,N,J)
           tip(2)=CGY(ICOMP,N,J)+UY(ICOMP,N,J)
           tip(3)=CGH(ICOMP,N,J)+UH(ICOMP,N,J)
@@ -327,8 +322,8 @@ C Daylight coef method (5).
           COG1(3)=CGH(ICOMP,N,J)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          CALL ecirc(iix,iiy,2,1)
+          call u2pixel(COG3(1),COG3(2),ix,iy)
+          CALL ecirc(ix,iy,2,1)
           tip(1)=CGX(ICOMP,N,J)+UX(ICOMP,N,J)
           tip(2)=CGY(ICOMP,N,J)+UY(ICOMP,N,J)
           tip(3)=CGH(ICOMP,N,J)+UH(ICOMP,N,J)

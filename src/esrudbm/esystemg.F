@@ -144,7 +144,6 @@ C espriou.h provides currentfile and defdbfl.
 #include "lookup_data.h"
 #include "sbem.h"
 #include "roam.h"
-#include "ipvdata.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -337,8 +336,12 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C IPV description come from ipvdata.h.
+C IPV description.
       common/IPVF/lipvdatf
+      common/IPVFORMAT/ipvform,ipvversion
+
+      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
+      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C Dispersed demands (lifts/fans/DHW).
       COMMON/BL1/dmdsdesc,bdmds

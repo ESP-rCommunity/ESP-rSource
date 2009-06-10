@@ -1,6 +1,6 @@
 
         Steps to create or use the ESP-r self extractor on Linux
-                            June 2009
+                            March 2009
 
 There are two patterns used to create an installer for ESP-r for use
 on Linux computers.  One is via a single-file self-extractor and 
@@ -18,23 +18,12 @@ makeself-2.1.5. Makeself is a script which can be downloaded from
 <XX>  and it allows a pre-compiled version of ESP-r to be extracted on
 a users computer with minimal interaction.
 
-Optional Linux software is typically installed to the /opt folder.
-First check that /opt exists on your computer. If is does then
-issue the following command to create and own (e.g. if your login
-name is fred and your group is staff):
-  sudo mkdir /usr/esru
-  sudo chown fred /usr/esru
-  sudo chgrp staff /usr/esru
-  sudo mkdir /opt/esru
-  sudo chown fred /opt/esru
-  sudo chgrp staff /opt/esru
+First compile a standard version of esp-r (X11 version) in the standard
+location /usr/esru with a command such as:
 
-Next compile a standard version of esp-r (X11 version) in the standard
-location /opt/esru with a command such as:
-
-  ./Install -d /opt/esru --gcc3 --compiler_version -3.4
+  ./Install -d /usr/esru --compiler_version -3.4
   or
-  ./Install -d /opt/esru --gcc4 --compiler_version -4.1
+  ./Install -d /usrs/esru --gcc4 --compiler_version -4.3
 
 You can find out more about the source code compile process by giving
 the command:
@@ -44,60 +33,62 @@ the command:
 Before compiling check that /opt/esru exists and that you can write
 to it.  If it does not exist issue the command
 
+  sudo mkdir /usr/esru
+  sudo chown your_login_name /usr/esru
+  sudo chgrp your_group /usr/esru
 
-After you have built the ESP-r distribution in /opt/esru, there may be 
+After you have built the ESP-r distribution in /usr/esru, there may be 
 hidden folders related to the version control system called
 subversion which is used by the ESP-r development community. There
-is no need for these hidden folders in /opt/esru. To clean these up go 
-to /opt/esru and issue the following command:
+is no need for these hidden folders in /usr/esru. To clean these up go 
+to /usr/esru and issue the following command:
 
   find . -name .svn -print >which_svn
   rm -rf `cat which_svn`
 
-Create a folder /opt/esru/precompiled_for_linux
+Create a folder /usr/esru/precompiled_for_linux
 
-  mkdir /opt/esru/precompiled_for_linux
+  mkdir /usr/esru/precompiled_for_linux
 
 Then create a tar file of the esp-r folders (the example below 
 includes a version in the name of the tar file which you may
 wish to change to reflect the current version number).
 
-  tar cf esp-r_X11_11.7_linux.tar esp-r
-  gzip -9 esp-r_X11_11.7_linux.tar
-  mv esp-r_X11_11.7_linux.tar.gz /opt/esru/precompiled_for_linux
+  tar cf esp-r_X11_11.6_linux.tar esp-r
+  gzip -9 esp-r_X11_11.6_linux.tar
+  mv esp-r_X11_11.6_linux.tar.gz /usr/esru/precompiled_for_linux
 
 A similar process is taken for the GTK version.  You will need
 the C header files and libraries related to GTK before you can
 compile this version of ESP-r. Look in the document about setting
 up cygwin for ESP-r development for more information about this.
 
-To compile a GTK version either remove the /opt/esru/esp-r folder
-or at least remove the executables from the /opt/esru/esp-r/bin folder.
+To compile a GTK version either remove the /usr/esru/esp-r folder
+or at least remove the executables from the /usr/esru/esp-r/bin folder.
 
 Clear the source (via a make clean) and compile a new GTK 
 version of esp-r.
 
-  ./Install -d /usr/esru --gcc3 --compiler_version -3.4
+  ./Install -d /usr/esru --compiler_version -3.4
   or
-  ./Install -d /usr/esru --gcc4 --compiler_version -4.1
+  ./Install -d /usr/esru --gcc4 --compiler_version -4.3
  
-Again remove the subversion files from the /opt/esru folders.
+Again remove the subversion files from the /usr/esru folders.
 
 Create the tar file of the GTK distribution and gzip it and
 place it in the precompiled_for_linux folder (as above). 
 
-  tar cf esp-r_GTK_11.7_linux.tar esp-r
-  gzip -9 esp-r_GTK_11.7_linux.tar
-  mv esp-r_GTK_11.7_linux.tar.gz /opt/esru/precompiled_for_linux
+  tar cf esp-r_GTK_11.6_linux.tar esp-r
+  gzip -9 esp-r_GTK_11.6_linux.tar
+  mv esp-r_GTK_11.6_linux.tar.gz /usr/esru/precompiled_for_linux
 
 Remember to remove any older *.tar.gz files from the precompiled_for_linux
 folder so that are not included in the installer run file.
 
 Next, Edit the setup script (setup) to include the specific names 
-of the gzipped tar files. Make sure the setup file has execute
-permissions  e.g.  chmod a+x setup
+of the gzipped tar files.
 
-In folder /opt/esru/precompiled_for_linux along with the gziped tar files
+In folder /usr/esru/precompiled_for_linux along with the gziped tar files
 there are several other files as follows:
 
 License (text which is used to advise the user on license conditions).
@@ -109,7 +100,7 @@ files are helper applications that setup is going to copy.
 The way that the self extractor is created is via a command similar
 to the one below (adapt for your makeself.sh location):
 
-sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_linux esp-r_v11.7_linux_precomp.run "ESP-r V11.7 distribution" ./setup
+sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_linux esp-r_v11.6_linux_precomp.run "ESP-r V11.6 distribution" ./setup
 
 The tokens in the above command are as follows:
 
@@ -155,13 +146,13 @@ Typically the `run` file you downloaded should be placed in /tmp within
 and run from that folder via a command (adapt to reflect the 
 actual name of the `run` file).  For example:
 
-  ./esp-r_v11.7_linux_precomp.run
+  ./esp-r_v11.6_linux_precomp.run
 
 If nothing happens it may be that the download process has removed the
 execute permissions from the run file.  You can re-enable these via
 the command:
 
-  chmod a+x ./esp-r_v11.7_linux_precomp.run
+  chmod a+x ./esp-r_v11.6_linux_precomp.run
 
 There are two versions of ESP-r which can be installed. The
 so-called X11 version is the legacy version and the GTK version
@@ -176,7 +167,7 @@ X11 or GTK version as they are installed to the same folder.
 The installer will ask you a number of yes/no questions and, if
 successful it will place an ESP-r distribution in the folders:
 
-  /opt/esru/esp-r/
+  /usr/esru/esp-r/
     bin
     climate
     databases
@@ -191,7 +182,7 @@ remove the installer.
 Adapting your environment
 
 You will need to set an environment variable PATH so that
-the folder /opt/esru/esp-r/bin is known. Go back to your
+the folder /usr/esru/esp-r/bin is known. Go back to your
 home folder and see if there is a .cshrc or a .profile file.
 
   cd
@@ -201,7 +192,7 @@ Some users of ESP-r prefer to use the "C" shell. The entry
 in the .cshrc file in your home folder might look something like:
 
 set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
-/opt/esru/esp-r/bin )
+/usr/esru/esp-r/bin )
 
 If you are running the bash shell then you would look for an entry
 in the .profile file something like:
@@ -214,7 +205,7 @@ variables are correct give the following command:
 
   which prj
 
-If the answer back is '/opt/esru/esp-r/bin/prj' then the environment variable
+If the answer back is '/usr/esru/esp-r/bin/prj' then the environment variable
 is set.  Most users will want to run ESP-r in graphics mode so you need to
 give the command to start esp-r from within an X11 command window.
 
@@ -233,7 +224,7 @@ case the gzipped tar files can be used to install ESP-r. The following is a list
 steps that users should take in order to install via a tar file.
 
 The first step is to prepare a folder to install the ESP-r distribution. The
-usual location is /opt/esru.
+usual location is /usr/esru.
 
 ESP-r requires an X11 environment to be installed. This is typically available
 on all Linux machines. 
@@ -257,54 +248,51 @@ interaction. The other version of ESP-r uses the GTK graphics library
 with a modern style of interaction (but it is not quite a complete port
 of ESP-r). The web page gives more information on the specific differences.
 
-To determine if it is necessary to create the /opt/esru folder start
+To determine if it is necessary to create the /usr/esru folder start
 up either a terminal or and X11 terminal. In the terminal
 give the following command:
 
-  ls -l /opt
+  ls -l /usr
 
 in the listing given look for the following line:
 
 drwxr-xr-x    15 root  admin      510 Aug 31 12:38 esru
 
-To create a new /opt/esru folder give the following commands. Lets
-assume that your login name is fred and your group is staff.  If you
-do not have permission to create these files you should either become
-root when you do this or prepend the 'sudo' command to the mkdir and
-chmod commands.
+To create a new /usr/esru folder give the following commands. Lets
+assume that your login name is fred and your group is staff.
 
-  cd /opt
+  cd /usr
   mkdir esru
   chmod a+x esru
   chmod a+r esru
   chmod u+w esru
 
 Copy the the_file_name_tar.gz file (the_file_name represents the name of the file
-that you downloaded or was created in in the procedures above) to the /opt folder
+that you downloaded or was created in in the procedures above) to the /usr folder
 via the following commands (depending on which version of
 ESP-r you want:
 
  cd to_the_folder_with_the_tar.gz file
- cp the_file_name.tar.gz /opt/esru
+ cp the_file_name.tar.gz /usr
 
-Next, go back to /opt and uncompress the tar.gz file for the version
+Next, go back to /usr and uncompress the tar.gz file for the version
 of ESP-r that you want to create.
 
-  cd /opt/esru
+  cd /usr/esru
 
   gzip -d the_file_name.tar.gz
   chown fred the_file_name.tar
   chgrp staff the_file_name.tar
 
-Since the folder /opt/esru is alreay owned by fred it should
+Since the folder /usr/esru is alreay owned by fred it should
 be possible to extract from the tar file the ESP-r distribution
 via the command:
 
   tar xf the_file_name.tar
 
-Now lets make sure that everything in the folder /opt/esru
+Now lets make sure that everything in the folder /usr/esru
 is available to be owned
-  cd /opt/esru
+  cd /usr/esru
 
   ls -l
 
@@ -315,7 +303,7 @@ drwxr-xr-x   14 fred  staff  476 Aug 27 02:46 esp-r
 If you see that the user is root and the user is admin
 then we need to alter this via the following commands:
 
-  cd /opt/esru
+  cd /usr/esru
   chown -R fred esp-r
   chgrp -R staff esp-r
 

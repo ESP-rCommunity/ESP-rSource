@@ -132,9 +132,7 @@ C << EITHER opened at 36 records wide or we need two records
 C << to write each string
 
 C Store climate file name.
-      write(firstbit,'(a)')LCLIM(1:72)
-      write(secondbit,'(a)')LCLIM(73:144)
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) firstbit
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) LCLIM(1:72)
       IREC=IREC+1
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) secondbit
       IREC=IREC+1

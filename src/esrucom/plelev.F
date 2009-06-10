@@ -65,10 +65,10 @@ C geometry.h provides commons G0/G2/precz.
       character tz*13
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
+      integer iupdown,isym    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
       logical newgeo  ! to use for testing if new/old geometry file.
       newgeo=.false.  ! assume older format geometry.
@@ -141,17 +141,17 @@ C Check for a zone obstructions file.
         endif
 
         if(direc.eq.'P')then
-          call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,2),iix,iiy)
+          call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,2),ix,iy)
           iupdown=0
           isym=0
           call etplot(ZCOG(newfoc,1),ZCOG(newfoc,2),iupdown,isym)
         elseif(direc.eq.'S')then
-          call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,3),iix,iiy)
+          call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,3),ix,iy)
           iupdown=0
           isym=0
           call etplot(ZCOG(newfoc,1),ZCOG(newfoc,3),iupdown,isym)
         elseif(direc.eq.'E')then
-          call u2pixel(ZCOG(newfoc,2),ZCOG(newfoc,3),iix,iiy)
+          call u2pixel(ZCOG(newfoc,2),ZCOG(newfoc,3),ix,iy)
           iupdown=0
           isym=0
           call etplot(ZCOG(newfoc,2),ZCOG(newfoc,3),iupdown,isym)
@@ -159,12 +159,10 @@ C Check for a zone obstructions file.
         IF(lnzname(newfoc).GT.1)THEN
           write(tz,'(A)')zname(newfoc)
           call winfnt(ITFS)
-          iid1=iix+2; iid2=iiy-2;
-          call wstxpt(iid1,iid2,tz)
+          call wstxpt(ix+2,iy-2,tz)
         ELSE
           call winfnt(ITFS)
-          iid1=iix+2; iid2=iiy-2;
-          call wstxpt(iid1,iid2,'Target')
+          call wstxpt(ix+2,iy-2,'Target')
         endif
 
         DO 400 I=1,NSUR
@@ -219,13 +217,12 @@ C and plotting.
             if(direc.eq.'S')call etplot(X(J),Z(J),iupdown,isym)
             if(direc.eq.'E')call etplot(Y(J),Z(J),iupdown,isym)
   422     CONTINUE
-          if(direc.eq.'P')call u2pixel(X(J),Y(J),iix,iiy)
-          if(direc.eq.'S')call u2pixel(X(J),Z(J),iix,iiy)
-          if(direc.eq.'E')call u2pixel(Y(J),Z(J),iix,iiy)
+          if(direc.eq.'P')call u2pixel(X(J),Y(J),ix,iy)
+          if(direc.eq.'S')call u2pixel(X(J),Z(J),ix,iy)
+          if(direc.eq.'E')call u2pixel(Y(J),Z(J),ix,iy)
           WRITE(blabel,423)IB
   423     FORMAT('B',I2)
-          iid1=iix+4; iid2=iiy-4;
-          call wstxpt(iid1,iid2,blabel)
+          call wstxpt(ix+4,iy-4,blabel)
   420   CONTINUE
   54  continue
       call forceflush()
@@ -259,9 +256,9 @@ C Print labels and return to default font.
       elseif(direc.eq.'E')then
         WRITE(sstr,'(a,a)')'East elev of: ',LSNAM(1:lnblnk(LSNAM))
       endif
-      iiy= igt-10
-      iix = igl
-      call wstxpt(iix,iiy,sstr)
+      iy= igt-10
+      ix = igl
+      call wstxpt(ix,iy,sstr)
       call forceflush()
 
 C If izgfoc is not zero and nzg is one and there is an obstructions

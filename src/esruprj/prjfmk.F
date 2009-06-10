@@ -3127,12 +3127,10 @@ C  ICOMP zone number
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iid1,iid2
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iid1,iid2
 #endif
 
       IDTY=IDTYP
@@ -3315,10 +3313,9 @@ C Title and labels.
       isize=1
       ifont=1
       call viewtext(outs,iside,isize,ifont)
-      iid1=igl+20; iid2=igt-65;
-      call wstxpt(iid1,iid2,'Infiltration')
-      iid1=igr-100; iid2=igt-65;
-      call wstxpt(iid1,iid2,'Ventilation')
+
+      call wstxpt(igl+20,igt-65,'Infiltration')
+      call wstxpt(igr-100,igt-65,'Ventilation')
       call pixel2u(igl+120,igt-69,gx,gy)
       iupdown=0
       isym=0
@@ -3334,12 +3331,9 @@ C Title and labels.
       CALL etplot(gx,gy,iupdown,isym)
 
       ioff=(int(ipltwd)/3)
-      iid1=igl+ioff; iid2=igt-10;
-      call wstxpt(iid1,iid2,CALENTAG(IDAY))
-      iid1=iglsat+ioff; iid2=igt-10;
-      call wstxpt(iid1,iid2,CALENTAG(JDAY))
-      iid1=iglsun+ioff; iid2=igt-10;
-      call wstxpt(iid1,iid2,CALENTAG(KDAY))
+      call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
+      call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
+      call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
       call forceflush()
 
       return
@@ -5189,12 +5183,10 @@ C Descriptive label for a zone load or casual gain.
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iid1,iid2
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to etplot
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iid1,iid2
 #endif
 
       logical COLOK
@@ -5539,11 +5531,9 @@ C Title and labels.
       isize=1
       ifont=1
       call viewtext(outs,iside,isize,ifont)
-      iid1=igl+20; iid2=igt-65;
-      call wstxpt(iid1,iid2,' Total sensible')
-      iid1=igr-100; iid2=igt-65;
-      call wstxpt(iid1,iid2,'Total latent')
-      iid1=igl+120; iid2=igt-69;
+
+      call wstxpt(igl+20,igt-65,' Total sensible')
+      call wstxpt(igr-100,igt-65,'Total latent')
       call pixel2u(igl+120,igt-69,gx,gy)
       iupdown=0
       isym=0
@@ -5561,12 +5551,10 @@ C Title and labels.
         write(outs,'(2a)')
      &        lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'
         IY=igt-(12*I)-18
-        iid1=igl+20; iid2=IY;
-        call wstxpt(iid1,iid2,outs)
+        call wstxpt(igl+20,IY,outs)
         write(outs,'(2a)')
      &          lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
-        iid1=igr-100; iid2=IY;
-        call wstxpt(iid1,iid2,outs)
+        call wstxpt(igr-100,IY,outs)
         if (COLOK) call winscl('z',I)
         call pixel2u(igl+120,IY-4,gx,gy)
         iupdown=0
@@ -5585,12 +5573,9 @@ C Title and labels.
  300  continue
 
       ioff=(int(ipltwd)/3)
-      iid1=igl+ioff; iid2=igt-10;
-      call wstxpt(iid1,iid2,CALENTAG(IDAY))
-      iid1=iglsat+ioff; iid2=igt-10;
-      call wstxpt(iid1,iid2,CALENTAG(JDAY))
-      iid1=iglsun+ioff; iid2=igt-10;
-      call wstxpt(iid1,iid2,CALENTAG(KDAY))
+      call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
+      call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
+      call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
       call forceflush()
 
       return

@@ -194,7 +194,6 @@ C default file names for databases
       common/filep/ifil
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       common/outin/iuout,iuin
 
@@ -269,7 +268,7 @@ C Material data arrays.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,louts*248,h*72,spsname*8,L144*144,fs*1
+      CHARACTER outs*124,h*72,spsname*8,L144*144,fs*1
       CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
@@ -380,7 +379,7 @@ C Use supplementary temporary unit number for IAPROB
         IAPROB=IFIL+22
         MODE='ALL '
         call usrmsg('Scanning the model description...',' ','-')
-        CALL ERSYS(LCFGF,ifcfg,IAPROB,MODE,ITRC,IER)
+        CALL ERSYS_mmode(LCFGF,ifcfg,IAPROB,MODE,ITRC,IER,autook)
         call usrmsg('Scanning the model description...done ',' ','-')
 
 C Building and plant description now complete.
@@ -696,7 +695,7 @@ C the global model definition, as it can be specified separately.
          call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
          IF(iClmErr.eq.0)THEN
             IREC=366
-            READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
+            READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,IRT
             IREC=367
             READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
             WRITE(OUTSTR,1000)CLMLOC,ICYEAR
@@ -704,7 +703,7 @@ C the global model definition, as it can be specified separately.
             CALL EDISP(IUOUT,' ')
             CALL EDISP(IUOUT,OUTSTR)
             IRTYPE=0
-            IF(ICDNGH.EQ.123)IRTYPE=1
+            IF(IRT.EQ.123)IRTYPE=1
    
 C If older configuration, confirm the year.
             if(icfgv.lt.3)then
@@ -730,15 +729,14 @@ C Kill simulation if in DLL mode
                return
             else
 C Warn the user that the climate file definition has failed. 
-               write(louts,'(A,A,A)')
-     &           'Warning: specified climate file (',
+               write(outs,'(A,A,A)')'Warning: specified climate file (',
      &           LCLIM(1:LNBLNK(LCLIM)), ') could not be found.'
               
-               call edisp248 (iuout,louts,100)
+               call edisp (iuout, outs)
                if ( autook ) then
 
 C If running silently, stop
-                  call edisp248(iuout,louts,100)               
+                  call edisp(iuout,outs)               
                   call pauses(3)   ! pause for 3 seconds then abort program.
                   call epagend
                   stop
@@ -1764,17 +1762,7 @@ C mode.
 
           endif 
 
-C Assign results file names based on names recorded in the simulation
-C parameter sets.  If the user is browsing then code in reslib.F will ensure 
-C that it is placed in the users home folder (if there is a relative path
-C included such as ../res then this will be ignored). 
-C If the file user is not browsing and the simulation was started 
-C in the model cfg folder then the supplied name will be used as is (e.g.
-C if it has a relative path then it will be written using that relative
-C path.
-C If the file name includes an absolute path e.g. /tmp then this is respected
-C for interactive or silent runs and for invocations from within the cfg folder
-C or from another location.
+C Assign results file names.
           if(sblres(i)(1:2).ne.'  ')then
             RFILE=sblres(i)
           endif
@@ -1815,7 +1803,7 @@ C Check that we have enough info to proceede if autook
             return
           else
             call usrmsg(outs,' ','W')
-            call pauses(3)   ! pause for 3 seconds then abort program.
+            call pauses(2)   ! pause for 2 seconds then abort program.
             CALL EPAGEND
             STOP
           endif

@@ -255,12 +255,9 @@ C Plots points on target surface representing direct shaded portion.
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       dimension ioshd(mox,moz)
       character blkname*8,blkmat*12
-#ifdef OSX
-      integer iix,iiy,iid1,iid2
-#else
-      integer*8 iix,iiy,iid1,iid2
-#endif
 
+      integer*8 iix,iiy
+      
       do 10 i=1,nox
          do 20 j=1,noz
 
@@ -274,9 +271,10 @@ C the surface polygon will not have been set to -1.
             endif
             if(ioshd(i,j).eq.1)goto 1
             goto 20
-    1       call u2pixel(xop(i,j),zop(i,j),iix,iiy)
-            iid1=iix-1; iid2=iix+1;
-            call edwline(iid1,iiy,iid2,iiy)
+    1       call u2pixel(xop(i,j),zop(i,j),ix,iy)
+            iix=ix
+            iiy=iy
+            call edwline(iix-1,iiy,iix+1,iiy)
    20    continue
    10 continue
       call forceflush()
@@ -316,12 +314,10 @@ C and the surrounding obstruction blocks.
       integer igwid,igheight
       integer iside,isize     ! passed to viewtext
       integer ipos,iupdown,isym,ifont    ! passed to etplot
-      integer iid1,iid2,iix,iiy
 #else
       integer*8 igwid,igheight
       integer*8 iside,isize     ! passed to viewtext
       integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
-      integer*8 iid1,iid2,iix,iiy
 #endif
 
 C The right offset for the graphic box is the character width
@@ -399,19 +395,17 @@ C output the zone name.
       else
          call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
       endif
-      call u2pixel(x(1),y(1),iix,iiy)
+      call u2pixel(x(1),y(1),ix,iy)
       iupdown=0
       isym=0
       call etplot(x(1),y(1),iupdown,isym)
       if(lnzname(icomp).gt.1)then
          write(tz,'(a)')zname(icomp)
          call winfnt(itfs)
-         iid1=iix+2; iid2=iiy-2;
-         call wstxpt(iid1,iid2,tz)
+         call wstxpt(ix+2,iy-2,tz)
       else
          call winfnt(itfs)
-         iid1=iix+2; iid2=iiy-2;
-         call wstxpt(iid1,iid2,'Target')
+         call wstxpt(ix+2,iy-2,'Target')
       endif
 
       iupdown=0
@@ -446,19 +440,19 @@ C Convert obstruction block geometry to GEN format (/g1/) and plot.
             call etplot(X(J),Y(J),iupdown,isym)
    70    continue
 
-         call u2pixel(X(J),Y(J),iix,iiy)
+         call u2pixel(X(J),Y(J),ix,iy)
          write(blabel,2)ib
     2    format('B',i2)
-         iid1=iix+2; iid2=iiy-2;
-         call wstxpt(iid1,iid2,blabel)
+         call wstxpt(ix+2,iy-2,blabel)
    60 continue
 
 C Print labels and return to default font.
     1 call winfnt(ifs)
       write(sstr,3)slat,slon
     3 format('Site Plan, Latitude ',f5.1,', Longitude ',f4.1)
-      iid1=igt-5; iid2=igl;
-      call wstxpt(iid1,iid2,sstr)
+      iy=igt-5
+      ix=igl
+      call wstxpt(ix,iy,sstr)
       call forceflush()
 
       return

@@ -44,13 +44,14 @@ C MAKS2D - draw 2d slices on screen.
       character souts*48,name*12,scale*10,title*30
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
-      integer iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
-      integer iid1,iid2,iid3,iid4
+      integer iupdown,isym    ! passed to etplot
+      integer iigt,ileft,iright      ! passed to eswline
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
-      integer*8 iid1,iid2,iid3,iid4
+      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigt,ileft,iright      ! passed to eswline
 #endif
+      integer iiright   !passed to wstxpt
 
 C Set default values.
       XZ=0.
@@ -143,15 +144,13 @@ C again by dividing 'sll' by 10.
       ileft=igl+10
 
 C Draw scale line. e.g. |--------| = 0.1m/s
-      iid1=ileft; iid2=igt-5; iid3=ileft; iid4=igt-15;
-      call eswline(iid1,iid2,iid3,iid4)
-      iid1=iright; iid2=igt-5; iid3=iright; iid4=igt-15;
-      call eswline(iid1,iid2,iid3,iid4)
-      iid1=ileft; iid2=igt-10; iid3=iright; iid4=igt-10;
-      call eswline(iid1,iid2,iid3,iid4)
+      iigt=igt ! eswline expects integer*8
+      call eswline(ileft,iigt-5,ileft,iigt-15)
+      call eswline(iright,iigt-5,iright,iigt-15)
+      call eswline(ileft,iigt-10,iright,iigt-10)
       write (scale,'(a,f5.3,a)') '= ',sll,'m/s'
-      iid1=iright+5; iid2=igt-5;
-      call wstxpt(iid1,iid2,scale)
+      iiright=iright    ! wstxpt expects integer when iright is integer*8 
+      call wstxpt(iiright+5,igt-5,scale)
       call forceflush()
 
       return

@@ -71,6 +71,28 @@ $CLM -mode text -file $1 -act asci2bin silent $2  >/dev/null 2>/dev/null
 
 }
 
+
+#=====================================================================
+pdb_convert()  # converts plant dbs from iwec.a to binary formats
+#=====================================================================
+{
+SourceName=$1
+TargetName=$2
+TargetFolder=$3
+printf "\r                                                                            "
+printf "\r   - Creating binary plant databases [${TargetName}]..."
+
+$PDB -mode text >/dev/null 2>&1 <<zzz
+$TargetName
+c
+a
+${SourceName}
+e
+-
+zzz
+mv $TargetName $TargetFolder
+
+}
 #=====================================================================
 # Main script
 #=====================================================================
@@ -101,7 +123,7 @@ install_training="yes"     #         training files
 install_exes="prompt"      #         executables
 delete_temp_files="yes"    # Delete temporary files.
 preserve_espr_dir="yes"    # save existing ESP-r directory by default
-gnu_version="gcc3"         # flag indicating which version of gcc is in use
+gnu_version="gcc4"         # flag indicating which version of gcc is in use
 make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
 xLibs="X11"                # Default x-library
@@ -164,11 +186,12 @@ if [ $# -ne 0 ]; then
         --xml)          xml_support=yes;           shift;;
         --gcc32)        gnu_version="gcc32";       shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
+        --gcc3)         gnu_version="gcc3";        shift;;
         --intel)        use_intel="yes";           shift;;
         --X11)          xLibs="X11";               shift;;
         --GTK)          xLibs="GTK";               shift;;
         --noX)          xLibs="noX";               shift;;
-        --fpe)          enableFPE="yes";           shift;;
+        --gcc3-fpe)     enableFPE="yes";           shift;;
         --compiler_version) shift; input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
@@ -244,7 +267,7 @@ if [ $help -eq 1 ]; then
   echo " ARGUMENTS: "
   echo " "
   echo "    <NAME> to install one or more named modules (e.g."
-  echo "           Install clm for the module clm)"
+  echo "           'Install clm' for the module clm)"
   echo " "
   echo "    --compiler_version <STRING>: Append <STRING> to the default"
   echo "        compiler binaries. For instance, to invoke the compiler"
@@ -253,31 +276,38 @@ if [ $help -eq 1 ]; then
   echo "        compilation on Apple PPC machines should typically use"
   echo "        '--compiler_version -3.3'."
   echo " "
-  echo "    -d <PATH>,  --destination <PATH>: Install "
-  echo "        ESP-r in <PATH>/esp-r directory. The "
-  echo "        default path is ${DESTdir}."
+  echo "    -d <PATH>,  --destination <PATH>: Install ESP-r in"
+  echo "        <PATH>/esp-r directory. The default path is:"
+  echo "        ${DESTdir}."
   echo " " 
-  echo "    --debug: Include debugging symbols in executable"
-  echo "        the default is no debugging symbols. Note that" 
-  echo "        if you include debugging then you should answer" 
-  echo "        no when asked if you want to install the executables."
+  echo "    --debug: Include debugging symbols in ESP-r binaries:"
+  echo "        (the default is no debugging symbols). This option also"
+  echo "        preserves the object files, allowing ESP-r to be"
+  echo "        quickly rebuilt during development."
   echo " "
-  echo "    --extra-debug: Enable extended debugging options"
+  echo "    --extra-debug: Enable extended debugging options. Adds"
+  echo "        pedantic range checking, floating-point exception "
+  echo "        handling and stack dump capabilities to ESP-r binaries."
+  echo "        This option is only supported by the intel and gcc4"
+  echo "        compilers."
   echo " "
   echo "    --force: Overwrite a corrupted installation. "
   echo " "
-  echo "    --fpe: Enable compiler-specific floating-point-exception"
-  echo "         handling procedures, if available."
-  echo " " 
-  echo "    --gcc32: Use 3.2 version of GCC provided by the"
-  echo "         compat-gcc-32, compat-gcc-32-c++, compat-gcc-32-g77"
-  echo "         and compat-libf2c-32 packages."
+  echo "    --gcc3-fpe: Enable rudamentry gcc3 floating-point-exception"
+  echo "         handling procedures."
+  echo " "
+# Soon to be obsoleted option:  
+#   echo "    --gcc32: Use 3.2 version of GCC provided by the"
+#   echo "         compat-gcc-32, compat-gcc-32-c++, compat-gcc-32-g77"
+#   echo "         and compat-libf2c-32 packages."
+#   echo " "
+  echo "    --gcc3: Use the GCC3 compilers (gcc, g++ and g77)."
+  echo "         NOTE: support for GCC3 is provided for legacy "
+  echo "         applications only, and will be discontinued in the"
+  echo "         future. Please use GCC4, Sun F90 or Intel if possible."
   echo " "
   echo "    --gcc4: Use the GCC4 compilers (gcc, g++ and gFortran)."
-  echo "         NOTE: compilation of ESP-r with GCC4+ is not currently"
-  echo "         supported, and may introduce uncertianty into results."
-  echo "         GCC4-builds of ESP-r should be used for testing purposes"
-  echo "         only."
+  echo "         (this option is enabled by default)."
   echo " "
   echo "    -h, --help:  Display this help message."
   echo " "
@@ -343,7 +373,7 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
    else
     # Add XML include files to include paths
     xml_libs_found="yes"
-    LIBXML2_INCLUDE="-I/usr/include/libxml2 -I/usr/local/include/libxml2"
+    LIBXML2_INCLUDE="-I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/local/include/xslt"
 
     # xml support may optionally include support for xslt & exslt. Check
     # that libraries are available
@@ -1051,7 +1081,7 @@ case $platform in
    linux)    ULIBS="-L${SRCdir}/lib ";;
    cygwin)   ULIBS="-L${SRCdir}/lib ";;
    mac)      ULIBS="-L${SRCdir}/lib ";;
-   mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib";;
+   mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib -L/local/lib";;
 esac
 
 # Append versioning information library
@@ -2051,37 +2081,11 @@ zzz
    echo " Done."
 
    echo -n "   - Creating binary plant components databases..."
-   $PDB -mode text  >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/plantc.db1
-c
-a
-plantc.db1.a
-e
--
-zzz
-
-   $PDB -mode text  >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/plantc.db2
-c
-a
-plantc.db2.a
-e
--
-zzz
-     echo " Done."
-
-     
-     
-     echo -n "   - Creating PP binary plant components databases ..."
-     rm -f plantc.tt
-     $PDB -mode text  >/dev/null 2>/dev/null <<zzz
-${DESTdir}/esp-r/databases/plantc.tt
-c
-a
-plantc.tt.a
-e
--
-zzz
+   
+   # pdb convert: [ source file ] [ dest. file ] [ dest folder ]
+   pdb_convert plantc.db1.a plantc.db1 ${DESTdir}/esp-r/databases
+   pdb_convert plantc.db2.a plantc.db2 ${DESTdir}/esp-r/databases
+   pdb_convert plantc.tt.a  plantc.tt  ${DESTdir}/esp-r/databases
    echo " Done."
 
    echo -n "   - Creating binary climate databases "

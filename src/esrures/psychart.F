@@ -564,9 +564,9 @@ C#include "building.h"
       CHARACTER PUTS*15,outs*124
       logical colok
 #ifdef OSX
-      integer iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
+      integer iupdown,isym    ! passed to etplot
 #else
-      integer*8 iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
+      integer*8 iupdown,isym    ! passed to etplot
 #endif
 
       colok=.false.
@@ -593,8 +593,7 @@ C#include "building.h"
               if(ICM.gt.nzonec) ICM=(IPCOMP-100)-nzonec
               call winscl('z',ICM)
             endif
-            iid1=ixs+4; iid2=iys-4;
-            call wstxpt(iid1,iid2,puts)
+            call wstxpt(ixs+4,iys-4,puts)
             if(colok)call winscl('-',0)
             call forceflush()
           ELSEIF(IPCOMP.GT.0.AND.IPCOMP.LE.100) THEN 
@@ -608,27 +607,24 @@ C Keep track of components plotted
               if(ICM.gt.nzonec) ICM=IPCOMP-nzonec
               call winscl('z',ICM)
             endif
-            iid1=ixs+4; iid2=iys-4;
-            call wstxpt(iid1,iid2,puts)
+            call wstxpt(ixs+4,iys-4,puts)
             if(colok)call winscl('-',0)
             call forceflush()
           ELSEIF(IPCOMP.EQ.0) THEN
             WRITE(PUTS,*) 'Ext db'
             call u2pixel(x,y,ixs,iys)
             icm=0
-            iid1=ixs+4; iid2=iys-4;
-            call wstxpt(iid1,iid2,puts)
+            call wstxpt(ixs+4,iys-4,puts)
           ELSEIF(IPCOMP.LT.0) THEN
             WRITE(PUTS,*) 'Zone',-IPCOMP
             call u2pixel(x,y,ixs,iys)
             icm=0
-            iid1=ixs+4; iid2=iys-4; 
-            call wstxpt(iid1,iid2,puts)
+            call wstxpt(ixs+4,iys-4,puts)
           ENDIF
         ENDIF 
-        call u2pixel(x,y,iix,iiy)
+        call u2pixel(x,y,ix,iy)
         if(colok.and.icm.ne.0)call winscl('z',ICM)
-        call ecirc(iix,iiy,3,1)
+        call ecirc(ix,iy,3,1)
         if(colok)call winscl('-',0)
         IF(IPCOMP.GT.0.AND.IPCOMP.LE.100) IPLOTREC(IPCOMP,NOD)=1
         call forceflush()

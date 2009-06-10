@@ -208,7 +208,6 @@ C act='m' called from ipv metric with parameters already set.
 
       SUBROUTINE ZONTAB(act)
 #include "building.h"
-#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -232,6 +231,10 @@ C act='m' called from ipv metric with parameters already set.
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
+
+C Format of the IPV report.
+C  = 1 is human readable text, 2 is tab separated, 3 is java
+      common/IPVFORMAT/ipvform,ipvversion
 
       character outs*124,act*1,sq*1,unit*7,t20*20
       character SLABEL*32,GLABEL*20,LTIME*5,LJTIME*8

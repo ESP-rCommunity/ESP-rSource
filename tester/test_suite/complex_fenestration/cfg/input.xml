@@ -3,7 +3,7 @@
   <apply_style_sheet>false</apply_style_sheet>
   <dump_all_data>true</dump_all_data>
   <enable_xml_wildcards>false</enable_xml_wildcards>
-  <hierarchy>flat</hierarchy>
+  <hierarchy>tree</hierarchy>
   <link_style_sheet>false</link_style_sheet>
   <output_dictionary>false</output_dictionary>
   <report_startup_period_data>false</report_startup_period_data>

@@ -286,7 +286,7 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       DIMENSION IVA(MCOM),RVA(misc)
-      CHARACTER HDG*5,ctldoc*248,LCTLF*72,OUTSTR*124,SSTR*72
+      CHARACTER HDG*5,ctldoc*248,LCTLF*72,OUTSTR*124,SSTR*96
       CHARACTER PERST1*14,PERST2*44,PERST3*44,NODID*12,
      &          WORD*20,CMPID*12,NDPOS*12,NDNEG*12
       character dllsubr*12,dllmesg*124,outs*124,t40*40
@@ -1964,7 +1964,7 @@ c      COMMON/idrhctl1/rhspt(MCOM),irhct(MCOM)
       END
 
 C ******************** EVCNTRL 
-C EVCNTRL: Decodes and returns a string (72 char) describing a config
+C EVCNTRL: Decodes and returns a string (96 char) describing a config
 C control file sensors, actuator, control types, control laws.
       SUBROUTINE EVCNTRL(icfoc,II,JJ,KK,WHICH,SSTR)
 #include "building.h"
@@ -1991,7 +1991,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      CHARACTER SSTR*72,SSTRB*48
+      CHARACTER SSTR*96,SSTRB*48
       CHARACTER WHICH*1,ZN*12
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,SN*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -2271,7 +2271,7 @@ C Ideal Control law.
       END
 
 C ******************** EVCNTRLAW 
-C EVCNTRLAW: Decodes and returns two strings (72 char & 248 char) describing
+C EVCNTRLAW: Decodes and returns two strings (96 char & 248 char) describing
 C an esp-r control file control laws for zone/plant/flow/electrical.
       SUBROUTINE EVCNTRLAW(icfoc,II,JJ,KK,SSTR,message)
 #include "building.h"
@@ -2283,7 +2283,7 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
-      CHARACTER SSTR*72,SSTRB*48,SSTR1*72,SSTRB1*48
+      CHARACTER SSTR*96,SSTRB*48,SSTR1*96,SSTRB1*48
       CHARACTER NDNAM*12
 
       dimension cm(misc)  ! for passing miscel control data
@@ -3182,7 +3182,7 @@ C List one day type of a building/plant/flow/global/optical control.
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      character outs*124,SSTR*72,TMP*72,LTMP*248
+      character outs*124,SSTR*96,TMP*96,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       character outsa*84,outsb*84,outsc*84
 
@@ -3324,7 +3324,7 @@ C Decodesensor takes the 4 indices that define a sensor
 C and returns a descriptive string.
 C icfoc is the index of the control domain
 C icsn(5) is the array of indices
-C SSTR is the string (72 char) returned
+C SSTR is the string (96 char) returned
 C SSTRB is brief string (48 char) returned
       subroutine decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
 #include "building.h"
@@ -3346,7 +3346,7 @@ C SSTRB is brief string (48 char) returned
 
       integer icfoc
       dimension icsn(5)
-      character sstr*72,sstrb*48
+      character sstr*96,sstrb*48
       CHARACTER ZN*12,NNAM*14,DESC*20
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
       CHARACTER sn*12
@@ -3923,7 +3923,8 @@ C  131 if(ian2.lt.0.or.ian2.gt.nzsur(ian1))goto 1005
       endif  
       if(ian3.lt.0)goto 1006
       if(ian2.eq.0)goto 20
-
+      if(isn2.eq.0)goto 20     ! necessary to avoid array out of bounds error in NELTS(isn1,isn2)
+      
 C If this called from simulator NELTS will have been
 C instanciated so do a further check if node is within
 C the number of layers in this construction.

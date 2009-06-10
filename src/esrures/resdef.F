@@ -648,7 +648,6 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
 
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
@@ -902,7 +901,6 @@ C Nothing references ZGAE and ZGAI.
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/RECVBP/IBP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       common/hcthry/ihct,icorexhct
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -915,8 +913,7 @@ C Defaults.
 
 C longtmp is the model configuration file with full path.
       CHARACTER NAME*6,longtmp*144,H*72,cfgroot*24
-      character outs*124,znpad*15,path*72,MODE*4
-      character louts*248
+      character outs*124,znpad*15,path*72,MODE*4,ltmp*72
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -963,9 +960,6 @@ C read again.
       IREC=IREC+1
 
 C Recover CLIMATE file name used at simulation time.
-C << if there is an error it might be because of the version
-C << of the database file
-
     4 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LCLIM
       IREC=IREC+1
 
@@ -1282,45 +1276,27 @@ C Finally check if the climate file read in above exists.
       IF(IER.LT.0)then
 
 C Climate file not found - ask user for name.
-        write(louts,'(3A)') ' Referenced climate file ',
+        write(outs,'(A,A,A)') ' Referenced climate file ',
      &     LCLIM(1:lnblnk(LCLIM)), ' not found...'
-        call edisp248(iuout,louts,90)
+        call edisp(iuout,outs)
         call erpfree(IUNITC,istat)
         H(1)=' A climate file defines the model boundary'
         H(2)=' condition. The one included in the results libary'
         H(3)=' was not found, type in the correct name.'
-        longtmp=LCLIM
-
-C If using X11 assume that the full path is less than 96 chars
-C but if using GTK then we need the full length to avoid truncation.
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      144,DCLIM,'climate file name',IER,3)
-        else
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
-        endif
-        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-
-        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
-          LCLIM=longtmp
+        ltmp=LCLIM
+        CALL EASKS(ltmp,'  Climate file name ?',
+     &     '  ',72,DCLIM,'climate file name',IER,3)
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LCLIM=ltmp
         endif
         goto 44
       endif
 
 C Also recover the solar radiation flag from the climate file.
-
-C << Note this sets the year from the climate file scan!  What
-C << if the model uses a different year?  Which one is used?
-
       IRECC=366
-      READ(IUNITC,REC=IRECC,IOSTAT=ios,ERR=102)IYEAR,ICDNGH
+      READ(IUNITC,REC=IRECC,IOSTAT=ios,ERR=102)IYEAR,IRT
       IRTYPE=0
-      IF(ICDNGH.EQ.123)IRTYPE=1
+      IF(IRT.EQ.123)IRTYPE=1
 
     2 RETURN
 
@@ -1328,7 +1304,7 @@ C << if the model uses a different year?  Which one is used?
         call usrmsg(' ',
      &    'No permission to read year from climate file.','W')
       else
-        call usrmsg(' ','Error reading year from climate file.','W')
+        call usrmsg(' ','Error readint year from climate file.','W')
       endif
       ier=-4
       goto 2

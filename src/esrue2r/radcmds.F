@@ -1019,12 +1019,11 @@ C Assumes that the path to the image is given.
       dimension UGRV(72),UGRANG(72)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iix1,iiy1,iix2,iiy2
 #endif
-      
+
+      integer *8 iix1,iiy1,iix2,iiy2
       logical XST,unixok
 
 C Generate picture and glare file names.
@@ -1123,14 +1122,18 @@ C Stuff into static variables for later access and draw axis.
      &        'Degrees from view center')
 
 C Draw values as a circle.
-            call u2pixel(UGRANG(1),UGRV(1),iix1,iiy1)
-            CALL ecirc(iix1,iiy1,3,1)
+            call u2pixel(UGRANG(1),UGRV(1),ix1,iy1)
+            CALL ecirc(ix1,iy1,3,1)
             do 10 I=2,NUGR
-              call u2pixel(UGRANG(I),UGRV(I),iix2,iiy2)
+              call u2pixel(UGRANG(I),UGRV(I),ix2,iy2)
+              iix1=ix1
+              iiy1=iy1
+              iix2=ix2
+              iiy2=iy2
               call edwline(iix1,iiy1,iix2,iiy2)
-              CALL ecirc(iix2,iiy2,3,1)
-              iix1=iix2
-              iiy1=iiy2
+              CALL ecirc(ix2,iy2,3,1)
+              ix1=ix2
+              iy1=iy2
  10         continue
             call forceflush()
           endif

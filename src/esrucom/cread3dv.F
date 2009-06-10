@@ -87,12 +87,10 @@ C NZJVN : topology of vertices associated with each connection.
 C Local variables to pass to edline and axiscale.
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
-      integer ixxc
+      integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
-      integer*8 ixxc
+      integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3
 #endif
 
 C If not in graphic mode return.
@@ -180,11 +178,11 @@ C Note: temp character t13 is 1 char wider than zname().
         COG1(3)=ZCOG(nznog(IZ),3)
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        call u2pixel(COG3(1),COG3(2),ix,iy)
         write(t13,'(A)')zname(nznog(IZ))
         call textpixwidth(t13,ipixw)
-        ixxc = iix - (ipixw/2)
-        CALL wstxpt(ixxc,iiy,t13)
+        ixxc = ix - (ipixw/2)
+        CALL wstxpt(ixxc,iy,t13)
       ENDIF
       IF(ier.NE.0)RETURN
       call forceflush()
@@ -198,9 +196,9 @@ C label and loop back to the next body.
           COG1(3)=VCOORD(nznog(IZ),IV,3)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),iix,iiy)
-          CALL ecirc(iix,iiy,3,1)
-          CALL VERTLBL(iix,iiy,IV,ier)
+          call u2pixel(COG3(1),COG3(2),ix,iy)
+          CALL ecirc(ix,iy,3,1)
+          CALL VERTLBL(ix,iy,IV,ier)
   202   CONTINUE
         call forceflush()
         ISTOK=.FALSE.
@@ -227,27 +225,23 @@ C draw it as a solid circle.
             COG1(3)=VCOORD(nznog(IZ),IZV,3)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            call u2pixel(COG3(1),COG3(2),ix,iy)
             IF(IHIT.EQ.0)THEN
-              CALL ecirc(iix,iiy,3,1)
+              CALL ecirc(ix,iy,3,1)
             ELSEIF(IHIT.GT.0.AND.IHIT.LT.2)THEN
-              CALL ecirc(iix,iiy,3,0)
+              CALL ecirc(ix,iy,3,0)
             ENDIF
-            CALL VERTLBL(iix,iiy,IZV,ier)
+            CALL VERTLBL(ix,iy,IZV,ier)
 
 C If less than 2 hits then draw a legend for the meaning
 C of the vertex symbols.
             IF(IFS.GT.0)CALL winfnt(1)
-            iid1=igl+20; iid2=igb+25;
-            CALL ecirc(iid1,iid2,3,1)
+            CALL ecirc(igl+20,igb+25,3,1)
             write(temp,'(A)')'Unlinked vertex'
-            iid1=igl+30; iid2=igb+30;
-            CALL wstxpt(iid1,iid2,temp)
-            iid1=igl+140; iid2=igb+25;
-            CALL ecirc(iid1,iid2,3,0)
+            CALL wstxpt(igl+30,igb+30,temp)
+            CALL ecirc(igl+140,igb+25,3,0)
             write(temp20,'(A)')'Single-linked vertex'
-            iid1=igl+150; iid2=igb+30;
-            CALL wstxpt(iid1,iid2,temp20)
+            CALL wstxpt(igl+150,igb+30,temp20)
             IF(IFS.GT.0)CALL winfnt(IFS)
           ENDIF
   204   CONTINUE
@@ -388,23 +382,25 @@ C Multiply each vertex by ETSMAT to transform to screen coords
 C ETSMAT = Eye to Screen Matrix.  First move to the beginning.
           IP = IABS(IBPNT)
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(AAX,AAY,ix,iy)
 
 C If vertex are to be labeled do it in the smallest font, then
 C move cursor to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
             IV=NZJVN(icc,IP)
-            CALL VERTLBL(iix,iiy,IV,ier)
+            CALL VERTLBL(ix,iy,IV,ier)
           ENDIF
-          iixlast=iix   ! cast for edline call
-          iiylast=iiy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
 
           IP1 = IBNXT(IP)
 
  351      CONTINUE
           iedge=iedge+1
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -452,21 +448,23 @@ C If vertex are to be labeled do it in the smallest font and
 C move cursor back to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
             IV=NZJVN(icc,IP1)
-            CALL VERTLBL(iix,iiy,IV,ier)
-            iixlast=iix   ! cast for edline call
-            iiylast=iiy
+            CALL VERTLBL(ix,iy,IV,ier)
+            iixlast=ix   ! cast for edline call
+            iiylast=iy
           ENDIF
 
 C Repeat until next point is the first, remember position.
           IP1 = IBNXT(IP1)
-          iixlast=iix   ! cast for edline call
-          iiylast=iiy
+          iixlast=ix   ! cast for edline call
+          iiylast=iy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           iedge=iedge+1
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,iix,iiy)
+          call u2pixel(AAX,AAY,ix,iy)
+          iix=ix
+          iiy=iy
           if(IPEN.eq.1)then
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
@@ -529,15 +527,17 @@ C offset the surface name depending on orientation.
                 VN(3)=SSURVN(icc,3)
                 CALL VECTRN(VN,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iixc,iiyc)
+                call u2pixel(COG3(1),COG3(2),ixc,iyc)
+                iixc=ixc
+                iiyc=iyc
                 call arrow(CG,VN,0.3,0.1,ipoints,'a',2)
                 IF(SSVFC(icc).EQ.'VERT'.or.SSVFC(icc).EQ.'CEIL'.or.
      &             SSVFC(icc).EQ.'FLOR')THEN
-                  iixc=iixc+5
+                  ixc=ixc+5
                 ELSE
-                  iixc=iixc+5
+                  ixc=ixc+5
                 ENDIF
-                CALL wstxpt(iixc,iiyc,stemp)
+                CALL wstxpt(ixc,iyc,stemp)
                 IF(IFS.GT.0)CALL winfnt(IFS)
               else
                 CG(1)=SSURCOG(icc,1)
@@ -545,57 +545,58 @@ C offset the surface name depending on orientation.
                 CG(3)=SSURCOG(icc,3)
                 CALL VECTRN(CG,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),iixc,iiyc)
+                call u2pixel(COG3(1),COG3(2),ixc,iyc)
+                iixc=ixc
+                iiyc=iyc
                 IF(SSVFC(icc).EQ.'VERT')THEN
 
 C Draw arrow and horizontal line.
-                  iid1=iixc+3
-                  iid2=iiyc-3
+                  iid1=ixc+3
+                  iid2=iyc-3
                   call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iixc+3
-                  iid2=iiyc+3
+                  iid1=ixc+3
+                  iid2=iyc+3
                   call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iixc+7
+                  iid1=ixc+7
                   call eswline(iixc,iiyc,iid1,iiyc)
-                  iixc=iixc+7
+                  ixc=ixc+7
                 ELSEIF(SSVFC(icc).EQ.'CEIL')THEN
 
 C Draw arrow to surface then up and horizontal to the text.
-                  iid1=iixc+3
-                  iid2=iiyc-3
+                  iid1=ixc+3
+                  iid2=iyc-3
                   call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iixc-3
-                  iid2=iiyc-3
+                  iid1=ixc-3
+                  iid2=iyc-3
                   call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iiyc-5
+                  iid1=iyc-5
                   call eswline(iixc,iiyc,iixc,iid1)
-                  iid1=iiyc-5
-                  iid2=iixc+7
-                  iid3=iiyc-5
+                  iid1=iyc-5
+                  iid2=ixc+7
+                  iid3=iyc-5
                   call eswline(iixc,iid1,iid2,iid3)
-                  iiyc=iiyc-5
-                  iixc=iixc+7
+                  iyc=iyc-5
+                  ixc=ixc+7
                 ELSEIF(SSVFC(icc).EQ.'FLOR')THEN
 
 C Draw arrow to surface then down and horizontal to the text.
-                  iid1=iixc+3
-                  iid2=iiyc+3
+                  iid1=ixc+3
+                  iid2=iyc+3
                   call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iixc-3
-                  iid2=iiyc+3
+                  iid1=ixc-3
+                  iid2=iyc+3
                   call eswline(iixc,iiyc,iid1,iid2)
-                  iid1=iiyc+5
+                  iid1=iyc+5
                   call eswline(iixc,iiyc,iixc,iid1)
-                  iid1=iiyc+5
-                  iid2=iixc+7
-                  iid3=iiyc+5
+                  iid1=iyc+5
+                  iid2=ixc+7
+                  iid3=iyc+5
                   call eswline(iixc,iid1,iid2,iid3)
-                  iiyc=iiyc+5
-                  iixc=iixc+7
+                  iyc=iyc+5
+                  ixc=ixc+7
                 ENDIF
 C Make some concession to the size of the font.
-                iid4=iiyc+(3*(NAMEFT+1))
-                CALL wstxpt(iixc,iid4,stemp)
+                CALL wstxpt(ixc,iyc+(3*(NAMEFT+1)),stemp)
                 IF(IFS.GT.0)CALL winfnt(IFS)
               endif
             endif

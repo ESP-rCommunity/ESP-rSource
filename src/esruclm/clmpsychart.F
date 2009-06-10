@@ -34,10 +34,8 @@ C esrures/psychart.F - revised to for plotting climate data.
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+      COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
       common/pixhist/ipixhist(8760,2)

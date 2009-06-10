@@ -28,7 +28,7 @@ C of lines to include in the text portion of the display.
       common/appw/iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+      COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -120,7 +120,7 @@ C Display heading for climate graph.
       common/appw/iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+      COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

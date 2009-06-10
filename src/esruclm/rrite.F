@@ -33,13 +33,11 @@ C climate file.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      integer NDAY
-      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
 
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+      COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       DIMENSION item(31),holdd(24)
       CHARACTER*30 CLMLOC
@@ -229,7 +227,7 @@ C SITEDIT edits site related data in a climate file.
       common/pophelp/h(60)
 
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+      COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       CHARACTER CLMLOC*30,T30*30,H*72,outs*124
       logical ok
@@ -240,7 +238,6 @@ C Ask for the year (2001 convenintly has monday on 1 Jan).
       H(3)='as a Monday.'
       CALL EASKI(IYEAR,' ',' What is the year ? ',
      &         1900,'F',2005,'W',2001,'year',IER,3)
-      ICYEAR=IYEAR
 
 C Now transfer to the climate file.
       IREC=366
