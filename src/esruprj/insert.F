@@ -107,6 +107,11 @@ C << what about including common zndata in this manipulation? >>
       character HOLD*72,hold64*64,holds*36,t248*248
       character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
+#ifdef OSX
+      integer iix,iiy,ixd,iyd
+#else
+      integer*8 iix,iiy,ixd,iyd
+#endif
 
       IER=0
       DDOK=.false.
@@ -1106,9 +1111,9 @@ C User has specified clicking from mouse so just do that.
                 COG1(3)=Z(I)
                 CALL VECTRN(COG1,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),ix,iy)
-                ixd=ix-ixx
-                iyd=iy-iyy
+                call u2pixel(COG3(1),COG3(2),iix,iiy)
+                ixd=iix-ixx
+                iyd=iiy-iyy
                 if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
                   if(found)then
                     call edisp(iuout,'Close points...try again.')

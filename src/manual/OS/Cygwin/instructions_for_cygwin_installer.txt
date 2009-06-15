@@ -18,12 +18,13 @@ makeself-2.1.5. Makeself is a script which can be downloaded from
 <XX>  and it allows a pre-compiled version of ESP-r to be extracted on
 a users computer with minimal interaction.
 
-First compile a standard version of esp-r (X11 version) in the standard
-location which on OSX should be /usr/esru with a command such as:
+The commands to compile a standard version of esp-r (X11 version) 
+in the standard location which on cygwin should be /usr/esru with 
+a command such as:
 
-  ./Install -d /usr/esru --compiler_version -3.4
+  ./Install -d /usr/esru --gcc3 --compiler_version -3.4
   or
-  ./Install -d /usr/esru --gcc4 --compiler_version -4.3
+  ./Install -d /usr/esru --gcc4 --compiler_version -4.1
 
 You can find out more about the source code compile process by giving
 the command:
@@ -52,9 +53,9 @@ Then create a tar file of the esp-r folders (the example below
 includes a version in the name of the tar file which you may
 wish to change to reflect the current version number).
 
-  tar cf esp-r_X11_11.6_cygwin.tar esp-r
-  gzip -9 esp-r_X11_11.6_cygwin.tar
-  mv esp-r_X11_11.6_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
+  tar cf esp-r_X11_11.7_cygwin.tar esp-r
+  gzip -9 esp-r_X11_11.7_cygwin.tar
+  mv esp-r_X11_11.7_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
 
 A similar process is taken for the GTK version.  You will need
 the C header files and libraries related to GTK before you can
@@ -66,30 +67,31 @@ or at least remove the executables from the /usr/esru/esp-r/bin folder.
 
 Clear the source (via a make clean) and compile a new GTK 
 version of esp-r.
-  ./Install -d /usr/esru --compiler_version -3.4
+  ./Install -d /usr/esru --gcc3 --compiler_version -3.4
   or
-  ./Install -d /usr/esru --gcc4 --compiler_version -4.3
+  ./Install -d /usr/esru --gcc4 --compiler_version -4.1
  
 Again remove the subversion files from the /usr/esru folders.
 
 Create the tar file of the GTK distribution and gzip it and
 place it in the precompiled_for_cygwin folder (as above). 
 
-  tar cf esp-r_GTK_11.6_cygwin.tar esp-r
-  gzip -9 esp-r_GTK_11.6_cygwin.tar
-  mv esp-r_GTK_11.6_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
+  tar cf esp-r_GTK_11.7_cygwin.tar esp-r
+  gzip -9 esp-r_GTK_11.7_cygwin.tar
+  mv esp-r_GTK_11.7_cygwin.tar.gz /usr/esru/precompiled_for_cygwin
 
 Remember to remove any older *.tar.gz files from the precompiled_for_cygwin
 folder so that are not included in the installer run file.
 
 Next, Edit the setup script (setup) to include the specific names 
-of the gzipped tar files.
+of the gzipped tar files.  After editing ensure that the setup
+has execute permissions  e.g.  chmod a+x setup
 
-In folder /opt/precompiled_for_cygwin along with the gziped tar files
+In folder /usr/esru/precompiled_for_cygwin along with the gziped tar files
 there are several other files as follows:
 
 License (text which is used to advise the user on license conditions).
-setup_osx (a script which tells makeself.sh what to do during the extraction
+setup (a script which tells makeself.sh what to do during the extraction
       process.
 
 The file that does most of the work is setup.  This needs to be edited
@@ -99,7 +101,7 @@ files are helper applications that setup is going to copy.
 The way that the self extractor is created is via a command similar
 to the one below (adapt for your makeself.sh location):
 
-sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_cygwin esp-r_v11.6_cygwin_precomp.run "ESP-r V11.6 distribution" ./setup
+sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_cygwin esp-r_v11.7_cygwin_precomp.run "ESP-r V11.7 distribution" ./setup
 
 The tokens in the above command are as follows:
 
@@ -147,13 +149,13 @@ Typically the `run` file you downloaded should be placed in /tmp within
 the cygwin environment and run from that folder via a command (adapt to reflect the 
 actual name of the `run` file).  For example:
 
-  ./esp-r_v11.6_cygwin_precomp.run
+  ./esp-r_v11.7_cygwin_precomp.run
 
 If nothing happens it may be that the download process has removed the
 execute permissions from the run file.  You can re-enable these via
 the command:
 
-  chmod a+x ./esp-r_v11.6_cygwin_precomp.run
+  chmod a+x ./esp-r_v11.7_cygwin_precomp.run
 
 There are two versions of ESP-r which can be installed. The
 so-called X11 version is the legacy version and the GTK version
@@ -215,7 +217,7 @@ than the initial cygwin terminal (which only handles text based applications).
 Where to get more information
 
 The ESP-r download pages have separate folders for each operating system. Further
-information is available on issues related to setup of an OSX machine to work
+information is available on issues related to setup cygwin to work
 with ESP-r.
 
 
@@ -246,7 +248,7 @@ drwxr-xr-x    60 jon  jon       2040 Jul 15 06:49 testing
 the first jon is the user name and the second instance is the name of the 
 group. In some cases the second instance might be staff or users.
 
-There are two version of ESP-r for OSX. One is based on the X11 graphics 
+There are two version of ESP-r for cygwin. One is based on the X11 graphics 
 library and is a complete version of ESP-r but is an older style of 
 interaction. The other version of ESP-r uses the GTK graphics library 
 with a modern style of interaction (but it is not quite a complete port
@@ -277,7 +279,7 @@ via the following commands (depending on which version of
 ESP-r you want:
 
  cd to_the_folder_with_the_tar.gz file
- cp the_file_name.tar.gz /usr
+ cp the_file_name.tar.gz /usr/esru
 
 Next, go back to /usr and uncompress the tar.gz file for the version
 of ESP-r that you want to create.

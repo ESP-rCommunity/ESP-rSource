@@ -52,7 +52,7 @@ C tzph,tzpc are zone heating/cooling use over time.
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      character LTMP*72,h*72,outs*124
+      character LTMP*72,h*72,outs*124,louts*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character cfgroot*24,tab*1
       character*72 lcfgf
@@ -90,8 +90,8 @@ c Save option is zero.
       call edisp(IWU,'Performance assessment report')
       write(outs,'(3a)')'Results library',tab,RFILE
       call edisp(IWU,outs)
-      write(outs,'(3a)')'Climate file',tab,LCLIM
-      call edisp(IWU,outs)
+      write(louts,'(3a)')'Climate file',tab,LCLIM
+      call edisp(IWU,louts)
       write(outs,'(3a)')'Configuration file',tab,LCFGF
       call edisp(IWU,outs)
       write(outs,'(3a)')'Configuration descr',tab,LSNAM

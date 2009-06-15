@@ -69,6 +69,9 @@ C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "geometry.h"
 #include "cfd.h"
 #include "sbem.h"
+#include "ipvdata.h"
+#include "seasons.h"
+
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -243,11 +246,7 @@ C   losspercent and is assumed to apply to all zones in the model.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent
 
-C IPV text strings
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
+C IPV data comes via ipvdata.h
       
       CHARACTER*72 LCFD,LCNN
       CHARACTER*72 LAPROB,LPRJLG,LPNF
@@ -343,6 +342,15 @@ C Clear pre-simulation sets.
         isstmon(i)=0
         isfnday(i)=0
         isfnmon(i)=0
+	seahddwk(i)=0.0
+	seacddwk(i)=0.0
+	seahddtot(i)=0.0
+        seacddtot(i)=0.0
+	wkdiff(i)=0.0
+	iwkbest(i)=0
+	iwkbstrt(i)=0
+        wkheatdd(i)=0.0
+	wkcooldd(i)=0.0
   39  continue
   
 C Clear IPV strings and number of assessmments.
@@ -440,6 +448,14 @@ C Clear image related data.
       XLON=0.0
       SLON=0.
 
+C Season data.
+      ihaveseason=0
+      ia1wins=0; ia1winf=0; ia1sprs=0; ia1sprf=0
+      iasums=0;  iasumf=0;  ia2sprs=0; ia2sprf=0; ia2wins=0; ia2winf=0 
+      is1wins=0; is1winf=0; is2wins=0; is2winf=0; is1sprs=0; is1sprf=0
+      is2sprs=0; is2sprf=0; is1sums=0; is1sumf=0
+      hddw=1.0; cddw=1.0; radw=1.0; hddbaset=0.0; cddbaset=0.0
+ 
 C Zone level common blocks.
       do 42 IX = 1,MCOM
         do 43 IXS = 1,MS

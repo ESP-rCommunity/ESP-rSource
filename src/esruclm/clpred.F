@@ -54,11 +54,13 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
      &             PWV(MD,MT),PWD(MD,MT),PRH(MD,MT),PLAST(MD,MT)
       COMMON/FILEP/IFIL
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
       COMMON/RADTYP/IDNGH
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERPER/PERST2
 
@@ -69,7 +71,6 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
       logical OK,dok,FOUND
 
    1  ISAVE=1
-      IER=0
       if(ist.eq.1)then
         CALL EDISP(IUOUT,'Select period')
       elseif(ist.eq.2)then
@@ -582,6 +583,7 @@ C Setup limits for climate parameters
         IF(IER.NE.0)GOTO 999
         A(2)=0.
       ELSEIF(ILC.EQ.4)THEN
+        if(NORD.eq.0) NORD=1
         CALL EASKI(NORD,' What is the order of polynomial?','(see help)'
      &    ,0,'W',3,'W',0,'constant dir',IER,18)
         IF(IER.NE.0)GOTO 999
@@ -950,7 +952,7 @@ C is based on global horizontal and not direct normal. At the moment
 C this is specified in MKOREANCLM when this is subroutine is used
 C      COMMON/RADTYP/IDNGH
 
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/APPRDIFF/iapprox_diff
 
 C IME specifies the minute

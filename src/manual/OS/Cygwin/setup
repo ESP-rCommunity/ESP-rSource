@@ -1,7 +1,7 @@
 #!/bin/bash -f
 
 echo " "
-echo "This script installs the X11 or GTK ESP-r distribution version 11.6"
+echo "This script installs the X11 or GTK ESP-r distribution version 11.7"
 echo "on a Windows computer which already has the Cygwin emulation"
 echo "environment up and running."
 echo " "
@@ -12,8 +12,7 @@ echo "Consider being Administrator when running this installer"
 echo "(or a user who has administrative privilages)."
 echo " "
 echo "The installation will be to a standard location, which"
-echo "is /home/esru and a link will be created to this from "
-echo "/usr/esru if it does not already exist."
+echo "is /usr/esru if it does not already exist."
 echo " "
 
 DSP1=" \n
@@ -132,12 +131,12 @@ fi
 cd /usr/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  zcat $ISD/esp-r_v11.6_X11_cygwin.tar.gz | tar xf - 
+  zcat $ISD/esp-r_v11.7_X11_cygwin.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 elif  [[ $which = 'b' ]] ; then
   echo "proceeding with the GTK version..."
   echo " Extracting GTK ESP-r distribution ..."
-  zcat $ISD/esp-r_v11.6_GTK_cygwin.tar.gz | tar xf - 
+  zcat $ISD/esp-r_GTK_11.7_cygwin.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 fi
 echo " "
@@ -145,6 +144,9 @@ echo "Setting folder permissions... "
 chmod a+x /usr/esru
 chmod a+x /usr/esru/esp-r
 chmod a+x /usr/esru/esp-r/bin
+chmod a+r /usr/esru
+chmod a+r /usr/esru/esp-r
+chmod a+r /usr/esru/esp-r/bin
 
 echo "copy and backup profile..."
 cp /etc/profile /etc/profile-

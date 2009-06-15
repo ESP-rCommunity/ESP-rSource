@@ -631,10 +631,15 @@ C No polygons to draw.
 C-----VERTLBL ----------------------------------------------------------
 C VERTLBL writes out a vertex label based on the coordinates passed
 C and the vertex number.
-      SUBROUTINE VERTLBL(ix,iy,IP,ier)
+      SUBROUTINE VERTLBL(iix,iiy,IP,ier)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER VTEXT*4,VT*4
+#ifdef OSX
+      integer iix,iiy,iix1,iiy1
+#else
+      integer*8 iix,iiy,iix1,iiy1
+#endif
 
       IER=0
 
@@ -648,7 +653,8 @@ C If vertices are to be labeled do it in the smallest font.
         WRITE(VT,'(a,i3)')'v',IP
       ENDIF
       VTEXT=VT
-      CALL wstxpt(ix+1,iy-1,VTEXT)
+      iix1=iix+1; iiy1=iiy-1;
+      CALL wstxpt(iix1,iiy1,VTEXT)
       IF(IFS.GT.0)CALL winfnt(IFS)
       call forceflush()
 

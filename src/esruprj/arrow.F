@@ -38,11 +38,11 @@ C     character outs*124
 
 C Local variables to pass to edline.
 #ifdef OSX
-      integer iixp,iiyp,iixq,iiyq
+      integer iixp,iiyp,iixq,iiyq,iixa,iiya
       integer iixc1,iiyc1,iixc2,iiyc2
       integer iixc3,iiyc3,iixc4,iiyc4
 #else
-      integer*8 iixp,iiyp,iixq,iiyq
+      integer*8 iixp,iiyp,iixq,iiyq,iixa,iiya
       integer*8 iixc1,iiyc1,iixc2,iiyc2
       integer*8 iixc3,iiyc3,iixc4,iiyc4
 #endif     
@@ -156,43 +156,40 @@ C      write(6,*) 'Axlen  & dist & SF iaxis ',AXLEN,DIST,SF,IAXIS
 C Draw the damn thing!
       CALL VECTRN(P,TEMAT,COG2,IER)
       CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),ixp,iyp)
+      call u2pixel(COG3(1),COG3(2),iixp,iiyp)
       CALL VECTRN(Q,TEMAT,COG2,IER)
       CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),ixq,iyq)
+      call u2pixel(COG3(1),COG3(2),iixq,iiyq)
       CALL VECTRN(A,TEMAT,COG2,IER)
       CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),ixa,iya)
+      call u2pixel(COG3(1),COG3(2),iixa,iiya)
       COG1(1)=corner(1,1)
       COG1(2)=corner(1,2)
       COG1(3)=corner(1,3)
       CALL VECTRN(COG1,TEMAT,COG2,IER)
       CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),ixc1,iyc1)
+      call u2pixel(COG3(1),COG3(2),iixc1,iiyc1)
       COG1(1)=corner(2,1)
       COG1(2)=corner(2,2)
       COG1(3)=corner(2,3)
       CALL VECTRN(COG1,TEMAT,COG2,IER)
       CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),ixc2,iyc2)
+      call u2pixel(COG3(1),COG3(2),iixc2,iiyc2)
       COG1(1)=corner(3,1)
       COG1(2)=corner(3,2)
       COG1(3)=corner(3,3)
       CALL VECTRN(COG1,TEMAT,COG2,IER)
       CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),ixc3,iyc3)
+      call u2pixel(COG3(1),COG3(2),iixc3,iiyc3)
       COG1(1)=corner(4,1)
       COG1(2)=corner(4,2)
       COG1(3)=corner(4,3)
       CALL VECTRN(COG1,TEMAT,COG2,IER)
       CALL VECTRN(COG2,ETSMAT,COG3,IER)
-      call u2pixel(COG3(1),COG3(2),ixc4,iyc4)
+      call u2pixel(COG3(1),COG3(2),iixc4,iiyc4)
 
 C Draw the arrow. (IDRAW determines shaft width).
       if (IDRAW.gt.0) then
-        iixp=ixp; iiyp=iyp; iixq=ixq; iiyq=iyq;
-        iixc1=ixc1; iiyc1=iyc1; iixc2=ixc2; iiyc2=iyc2;
-        iixc3=ixc3; iiyc3=iyc3; iixc4=ixc4; iiyc4=iyc4;
         if (IDRAW.eq.1) call eswline(iixp,iiyp,iixq,iiyq)
         if (IDRAW.eq.2) call edwline(iixp,iiyp,iixq,iiyq)
         call eswline(iixc1,iiyc1,iixc2,iiyc2)
@@ -207,18 +204,18 @@ C Draw the arrow. (IDRAW determines shaft width).
       call forceflush()
 
 C Copy pixel locations to ipoints.
-      ipoints(1,1)=ixp
-      ipoints(1,2)=iyp
-      ipoints(2,1)=ixq
-      ipoints(2,2)=iyq
-      ipoints(3,1)=ixc1
-      ipoints(3,2)=iyc1
-      ipoints(4,1)=ixc2
-      ipoints(4,2)=iyc2
-      ipoints(5,1)=ixc3
-      ipoints(5,2)=iyc3
-      ipoints(6,1)=ixc4
-      ipoints(6,2)=iyc4
+      ipoints(1,1)=int(iixp)
+      ipoints(1,2)=int(iiyp)
+      ipoints(2,1)=int(iixq)
+      ipoints(2,2)=int(iiyq)
+      ipoints(3,1)=int(iixc1)
+      ipoints(3,2)=int(iiyc1)
+      ipoints(4,1)=int(iixc2)
+      ipoints(4,2)=int(iiyc2)
+      ipoints(5,1)=int(iixc3)
+      ipoints(5,2)=int(iiyc3)
+      ipoints(6,1)=int(iixc4)
+      ipoints(6,2)=int(iiyc4)
 
       RETURN
 

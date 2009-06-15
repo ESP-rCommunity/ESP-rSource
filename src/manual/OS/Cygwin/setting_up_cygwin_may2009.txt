@@ -2,54 +2,63 @@
  
  Installing cygwin for ESP-r use on a W2K/WXP computer.
  
-                 November 2006 version
+                 May 2009 version
  
  1.0 Introduction:
  
  Using ESP-r on a PC requires a compatible operating environment.
- This document discusses how to set the cygwin environment to 
- provide the necessary display, command shell, and low-level 
- library functions and system calls which ESP-r expects to find.
+ There is, for example a Native Windows version of ESP-r, however
+ some production tasks and development tasks are more robust under
+ the Cygwin emulation environment on Windows computers. Cygwin 
+ provides the necessary display, command shell, and low-level 
+ library functions and system calls which ESP-r expects to find
+ on a Linux computer, but integrated within the Windows environment.
  
- The document also discusses how to install esp-r once Cygwin
- has been setup. There are two options: a) install from a 
+ Cygwin differs from virtualization in that it exists within the
+ same folder structure of Windows rather than in a virtual computer
+ so it naturaly sees the Windows file folders and Windows Explorer
+ can access the files within the Cygwin environment.  Cygwin allows
+ ESP-r to run at almost the same speed as a native version.
+ 
+ The document also discusses how to install ESP-r once Cygwin
+ has been setup. There are two options: install from a 
  precompiled distribution downloaded from the
- University of Strathclyde ftp server, c) install from
+ University of Strathclyde ftp server, or install from
  source. 
  
  Setting up cygwin requires several steps and the use of commands 
- which will be familiar to those who have used Unix/Linux. Please
- read the instructions carefully.
- 
- To find out more about cygwin start with their web page
- <http://www.cygwin.com>. This document is based on
- recent Cgywin installers. To save time please review
- the Cgywin site installation documentation in addition to the 
- instructions which follow.
+ which will be familiar to those who have used Unix/Linux. If you
+ want to jump into that jungle and get your fingers bitten off
+ then you will  not  want to read the sections that follow. You
+ would probably also want to skip the information on the Cygwin
+ web site at <http://www.cygwin.com>.
  
  1.1 Before you download and install cygwin:
  
- Prior to downloading and installing cygwin you need to setup
- administrative and normal users on the PC so that your `login`
- to cygwin is similar to that on a Linux or Unix computer. Typically
- this involves an Administrator (who maintains the cygwin and ESP-r
- applications) and a normal user who runs ESP-r (hint user names
- should not have spaces or unprintable characters). If the computer
- is part of a domain then there are additional commands needed
- to create entries in the /etc/passwd file and the /etc/group
- file.
+ Prior to downloading and installing cygwin ensure there is an
+ administrative and at least one normal user on your PC. Typically
+ the Administrator user would maintains the cygwin and ESP-r
+ applications. If you work as a different user for normal simulation
+ tasks then it is harder to corrupt databases and test models.
+ 
+ Hints: ESP-r works much better if user names do not have spaces or 
+ unprintable characters. ESP-r also works better if you setup your
+ user account to have a home folder like C:\Joe rather than the
+ typical C:\Documents and Settings\Joe. 
+ 
+ If the computer is part of a domain then there are additional commands needed
+ to create entries in the /etc/passwd file and the /etc/group file.
  
  If you are going to take the entire cygwin environment you
- will need somewhat less than 2GB of disk space. If you restrict
+ will need ~2.5GB of disk space. If you restrict
  cygwin to packages needed to develop ESP-r then you will need
- somewhat more than 1GB of disk space. If you take a minimum
+ ~1.6GB of disk space. If you take a minimum
  cygwin that is sufficient to run ESP-r then you will need
- ~750 MB of free space for cygwin. You will need ~350 MB
- free for ESP-r and Radiance.
+ ~1GB of free space for cygwin. You will need ~400 MB
+ for ESP-r and Radiance.
  
- If possible, become administrator to do the cygwin install. 
- This makes the whole process easier than if you attempt the 
- install as a normal user.
+ The install process tends to present fewer hassles if you
+ do the Cygwin install as administrator.
  
  1.2 Installing cygwin from the web:
  
@@ -89,11 +98,20 @@
  the skip section 1.3b. If you just want to run ESP-r 
  skip to the section 1.3c.
  
+ Consider what type of window manager you would like to
+ use.  It is possible to replicate the GNOME or KDE
+ window managers found on Linux computers if you have
+ lots of disk space and a fast computer. There is 
+ also a minimal approach that allows for ESP-r to run
+ in graphic mode without a window manager e.g. it just
+ pops-up on the normal screen as an application.
+ 
  1.3a If disk space is not a problem -  
  
- Select all by toggling the "All -> default" to "All -> Install". Note that the
- installer might take a minute to react to this request and it
- can take 30 minutes to download and install with a fast connection.
+ Select all by toggling the "All -> default" to "All -> Install". This
+ could take a few moments for this change to take affect.  It
+ can take 30 minutes to download All and another 30 minutes to
+ install.
  
  1.3b Packages for ESP-r development - 
  
@@ -104,14 +122,25 @@
   Admin:        tick all (i.e. toggle Install)
   Archive:      tick all
   Base:         tick all
+  Audio:        optional
   Database:     optional
-  Devel:        tick ELFIO, autoconf, automake, binutils,
-                dpkg, gcc, gcc-mingw, gdb, make, 
-                mingw-runtime, mktemp
-  Doc:          optional but at least get the man pages
+  Devel:        if you have space toggle to Install
+  
+                if you want to save some space toggle to Install and then
+		go into the list and remove the Qt development files along
+		with Ada compiler and Pascal compiler
+		
+		you will want both the gcc3.4/g77 as well as the
+		version 4 gcc g++ with gfortran
+		
+  Doc:          optional but at least get the man pages and xpdf
   Editors:      at least nedit, vim & midnight commander
   Games:        optional
-  Gnome:        optional
+  Gnome:        optional if all you want is an X11 version of ESP-r
+                otherwise - add the runtime and development versions of
+		atk, gdk-pixbuf, glib2, gtk2-x11-engines, libgnome2,
+		libxslt, libxml2, pango
+		 
   Graphics:     tick ImageMagic, ghostscript, jpeg, libpng,
                 opengl,tiff and image libraries
   KDE:          optional
@@ -120,16 +149,21 @@
   Mail:         optional
   Math:         optional
   Net:          tick openssh, ping, inetutils, rsync.
-  Publishing:   optional
+  Perl:         leave at default
+  Publishing:   optional + psutils
   Shells:       pick all
   System:       pick procps, 
   Text:         pick enscript, groff, gv,less, more, textinfo
   Utils:        pick bzip2, clear, cygutils, file, gnupg, keychain,
-                patch, time, units
-  Web:          optional (wget is useful)
-  X11:          pick at least one window manager (fvfwm is a minimal one) 
-                as well as XFree86-lib-compat and everything that starts
-                with xorg-xll and then Xaw3D, grace, lesstif, transfig and xfig.
+                ncurses, patch, time, units
+  Web:          optional + wget, cadaver, neon
+  X11:          typically toggle to Install and then try removing most
+                of the 100dpi fonts and the Qt items and Windowmaker
+		
+                for a minimal X11 install use default + least one window 
+		manager (fvfwm is a minimal one) plus everything that 
+		starts with xorg and then add Xaw3D, grace, lesstif,
+	        transfig and xfig.
  
  1.3c Packages needed just to run ESP-r:
  
@@ -140,36 +174,32 @@
   Admin:        tick all
   Archive:      tick all
   Base:         toggle to default
-  Database:     toggle to none
+  Database:     toggle to default
   Devel:        toggle to default
-  Doc:          toggle to default and add xpdf
+  Doc:          toggle to default + xpdf
   Editors:      at least nedit, vim & midnight commander
   Games:        optional
-  Gnome:        toggle to none
+  Gnome:        optional
   Graphics:     toggle to default and add ImageMagic
   Intepretors:  toggle to default plus gawk and expect 
   Libs:    toggle to default
   Mail:         toggle to none
-  Math:         toggle to none
-  Net:          toggle to none
-  Publishing:   toggle to none
+  Math:         toggle to default
+  Net:          toggle to default
+  Publishing:   toggle to default
   Shells:       pick all
   System:       pick procps, 
   Text:         pick enscript, less, more, textinfo
   Utils:        toggle to default
   Web:          toggle to default plus wget
-  X11:          pick at least one window manager (fvfwm is a minimal one) 
-                as well as XFree86-lib-compat and everything that starts
-                with xorg-xll and then Xaw3D, grace, lesstif, transfig and xfig.
+  X11:          use the minimal install list from above.
  
  
  1.4 Post-install patches:
                  
  After completing the list the installer will download the various
- packages and put an icon on the desktop.
- 
- The cygwin site has a related sites link <http://cygwin.com/links.html>
- with ported software.
+ packages and put an icon on the desktop. The installer takes some time 
+ sorting out the post-install so do not give up!
  
  Once Cygwin is installed you can move on to the 2nd stage of 
  installing ESP-r and Radiance.

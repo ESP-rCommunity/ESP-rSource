@@ -57,7 +57,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character dinstpath*48
 
 C Climate data.
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       COMMON/C4/XLAT,XLON
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
@@ -228,6 +228,7 @@ C Fell through, no change in climate and location.
           endif
         endif
 
+C Impose climate site data on the model.
   75    continue
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
@@ -1095,6 +1096,9 @@ C and act on the information within the file.
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "control.h"
+#include "seasons.h"
+C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -1144,19 +1148,7 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-C IPV description.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-
-C Season definitions (from climatelist file). 2 periods for winter
-C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
-C and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
-C Typical periods win1|trn1|sum|trn2|win2 with start,finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
+C IPV description via ipvdata.h.
 
 C Control documentation common
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
@@ -2224,6 +2216,9 @@ C the file with minimum interaction.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "seasons.h"
+C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -2287,19 +2282,7 @@ C NZJVN : topology of vertices associated with each connection.
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-C IPV description.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-
-C Season definitions (from climatelist file). 2 periods for winter
-C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
-C and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
-C Typical periods win1|trn1|sum|trn2|win2 with start,finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
+C IPV description via ipvdata.h.
 
 C Control documentation common
       common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,

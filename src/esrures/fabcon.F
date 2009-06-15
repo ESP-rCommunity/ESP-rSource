@@ -782,9 +782,11 @@ C IPRZ is primitive db ref for each layer.
 #ifdef OSX
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
+      integer iid1,iid2
 #else
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iid1,iid2
 #endif
 
 C Determine the 'other' zone and connection information.
@@ -793,8 +795,10 @@ C Determine the 'other' zone and connection information.
       ZN=zname(ICOMP)
 
 C Draw construction section.
-      call wstxpt(igl,igt-10,TCSTR)
-      call wstxpt(igr,igt-10,ZN)
+      iid1=igl; iid2=igt-10;
+      call wstxpt(iid1,iid2,TCSTR)
+      iid1=igr; iid2=igt-10;
+      call wstxpt(iid1,iid2,ZN)
       igr=13
       X=0.
       YD=PMAX-PMIN
