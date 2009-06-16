@@ -1,5 +1,5 @@
 C This file is part of the ESP-r system.
-
+C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or

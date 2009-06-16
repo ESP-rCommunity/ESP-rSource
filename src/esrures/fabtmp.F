@@ -647,10 +647,10 @@ C IPRZ is material db ref for each layer.
       character ZN*12
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iid1,iid2    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
 #endif
 
 C Re-establish available colours.
@@ -670,8 +670,10 @@ C Get and display results.
       icnt=0
 
 C Draw construction section.
-      call wstxpt(igl,igt-10,TCSTR)
-      call wstxpt(igr,igt-10,ZN)
+      iid1=igl; iid2=igt-10;
+      call wstxpt(iid1,iid2,TCSTR)
+      iid1=igr; iid2=igt-10;
+      call wstxpt(iid1,iid2,ZN)
       igr=13
       X=0.
       YD=TMAX-TMIN
@@ -764,8 +766,10 @@ C If possible reset the foreground colour to white and redraw the line.
             endif
 
 C Re-Draw construction section.
-            call wstxpt(igl,igt-10,TCSTR)
-            call wstxpt(igr,igt-10,ZN)
+            iid1=igl; iid2=igt-10;
+            call wstxpt(iid1,iid2,TCSTR)
+            iid1=igr; iid2=igt-10;
+            call wstxpt(iid1,iid2,ZN)
             igr=13
             X=0.
             YD=TMAX-TMIN

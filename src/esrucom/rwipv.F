@@ -5,82 +5,13 @@ C Write IPV data to an external file or within cfg file based
 C on the parameter act (3 char) ='ipv' or ='cfg'
       subroutine mkipvdat(ifu,file,act)
 #include "building.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
-C ipvform = 1 report is human readable text, 2 is tab separated, 3 is java
-      common/IPVFORMAT/ipvform,ipvversion
-
-C ipvtitl (char 40) is the title that shows up in reports
-C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
-C ipvsynop (char 248) documents the integrated performance view
-C ipvsimu (char 6) is a short tag describing the assessments to be run
-C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
-C   season assessment with all days included.
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-
-C List of metric sets: nms is number of sets, imetget is the
-C esrures iget index for the metric selected, imetmsc holds two
-C miscelaneous indices for use by the metric, nzmg is the
-C number of zones in each set, emgflr is the total floor area in
-C each set, emgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), emgwtg is a weighting factor for the
-C metric, izmg is the list of zones in each set.
-C metrglbl is 20 char label equivalent to GLABEL in esrures
-C msdoc is 12 char identifier for each metric set.
-C metgroup is 12 char identifier for the group of zones associated
-C   with this metric.
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-
-C List of energy demand sets: neds is number of sets, idgmsc() are
-C miscel data describing set, iaggr=0 no timestep aggregate reporting
-C iaggr=1 timestep aggregate data included, nzedg is the
-C number of zones in each set, edgflr is the total floor area in
-C each set, edgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), izedg is the list of zones in each set.
-C zedsdoc is 12 char identifier for each set.
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
-
-C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
-C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
-C ipvastjd() are the assessment start julian dates,
-C ipvafnjd are the assessment finish julian dates and
-C nipvdispjd number of days to display in detail,
-C ipvdispjd is list of julian days (must be within the assessment period).
-C ipvadesc is a 40 char description associated with each assessment.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVSEALB/ipvadesc(MIPVA)
-
-C ddm* are the degree-day multipliers (or user defined multipliers) between
-C the periods simulated and the whole season for heating, cooling, lights,
-C small power, fans, domestic hot water. For nipvassmt=1 these are 
-C initially set to 1.0. << should call clm for these numbers >>.
-      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
-     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
-
-C Dispersed demands (lifts/pumps/etc.) can be included from a project
-C demands file (which defines weekday/saturday/sunday profiles).  These
-C demands are appended to any zone based integrations and typical day
-C profiles are included in a third 24 hour set of profiles.  No scaling
-C is done with data, assumes that the associated areas translate directly
-C to the fully scaled project.
-C  idmdinc(7): 0 (exclude) or 1 (include) toggle for each type
-      common/IPVDMD/idmdinc(7)
-
-C NIPVIMG number of image files associate with IPV.
-C LIPVIMG (72 char) image files associate with IPV
-      common/IPVI/nipvimg,lipvimg(4)
-
-      character file*72,lipvimg*72,tab*1
+      character file*72,tab*1
       character outs*124,outsd*124,outsn*124
-      character ipvadesc*40,zedsdoc*12,metgroup*12
-      character msdoc*12,metrglbl*20,dstmp*24
+      character dstmp*24
       character act*3   ! indicate which file destination
 
 C      tab=CHAR(9)
@@ -274,6 +205,7 @@ C Clear IPV common blocks. If act = 'b' blank all the data, if act = 'i'
 C then include initial data for energy demand sets and metrics.
       subroutine clearipvdat(act)
 #include "building.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -284,24 +216,9 @@ C Comments about common blocks are in ripvdat.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVSEALB/ipvadesc(MIPVA)
-      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
-     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
-      common/IPVI/nipvimg,lipvimg(4)
 
-      character act*1,lipvimg*72
-      character ipvadesc*40,zedsdoc*12,msdoc*12,metrglbl*20
-      character cfgroot*24,metgroup*12
+      character act*1
+      character cfgroot*24
       character LCFGF*72
 
 C Days to display (default is three (early winter, spring, summer).
@@ -404,67 +321,13 @@ C on the parameter act (3 char) ='ipv' or ='cfg'.
       subroutine ripvdat(ifu,file,act,ier)
 #include "building.h"
 #include "espriou.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
-C ipvform = 0 is unspecified, 1 is human readable text, 2 is tab separated,
-C           3 is java
-      common/IPVFORMAT/ipvform,ipvversion
-
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-
-C List of metric sets: nms is number of sets, imetget is the
-C esrures iget index for the metric selected, imetmsc holds two
-C miscelaneous indices for use by the metric, nzmg is the
-C number of zones in each set, emgflr is the total floor area in
-C each set, emgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), emgwtg is a weighting factor for the
-C metric, izmg is the list of zones in each set.
-C metrglbl is 20 char label equivalent to GLABEL in esrures
-C msdoc is 12 char identifier for each metric set.
-C metgroup is 12 char identifier for the group of zones associated
-C   with this metric.
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-
-C List of energy demand sets: neds is number of sets, idgmsc() are
-C miscel data describing set, iaggr=0 no timestep aggregate reporting
-C iaggr=1 timestep aggregate data included, nzedg is the
-C number of zones in each set, edgflr is the total floor area in
-C each set, edgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), izedg is the list of zones in each set.
-C zedsdoc is 12 char identifier for each set.
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
-
-C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
-C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
-C ipvastjd() are the assessment start julian dates,
-C ipvafnjd are the assessment finish julian dates and
-C nipvdispjd number of days to display in detail,
-C ipvdispjd is list of julian days (must be within the assessment period).
-C ipvadesc is a 40 char description associated with each assessment.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVSEALB/ipvadesc(MIPVA)
-
-C ddm* are the degree-day multipliers (or user defined multipliers) between
-C the periods simulated and the whole season for heating, cooling, lights,
-C small power, fans, domestic hot water. For nipvassmt=1 these are 
-C initially set to 1.0. << should call clm for these numbers >>.
-      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
-     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
-
-      common/IPVDMD/idmdinc(7)
-      common/IPVI/nipvimg,lipvimg(4)
-
       character file*72,word*20
-      character lipvimg*72,OUTSTR*124,LOUTSTR*248
-      character ipvadesc*40,zedsdoc*12
-      character msdoc*12,metrglbl*20,metgroup*12,dstmp*24
+      character OUTSTR*124,LOUTSTR*248
+      character dstmp*24
       character act*3   ! indicate which file destination
 
 C Open any existing file by this name.
@@ -705,37 +568,20 @@ C Where act='a' list all, act='m' list metrics, act='d' list
 C demand sets. Itru is the channel for listing.
       subroutine listipvdat(itru,act,ier)
 #include "building.h"
+#include "seasons.h"
+C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-
-C See ripvdat for IPV common block information.
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVSEALB/ipvadesc(MIPVA)
-      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
-     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
-
-      common/IPVDMD/idmdinc(7)
-      common/IPVI/nipvimg,lipvimg(4)
-
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
+C See ipvdata.h and ripvdat for IPV common block information.
 
       dimension list(32)  ! zone lists currently limited to 32 max.
 
-      character lipvimg*72,ipvadesc*40,zedsdoc*12,outs*124
-      character msdoc*12,metrglbl*20,act*1,metgroup*12
+      character outs*124
+      character act*1
       character descr*7,descrst*10,descrfn*10,zdescr*248
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
 

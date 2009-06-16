@@ -1,16 +1,16 @@
 [Setup]
 OutputDir=C:\Installer_for_ESP-r\Installer
 SourceDir=C:\Installer_for_ESP-r\Source
-OutputBaseFilename=ESP-r_setup_native_windows_v11.4
-VersionInfoVersion=11.4
+OutputBaseFilename=ESP-r_setup_native_windows_v11_7_4333
+VersionInfoVersion=11.6.4294
 VersionInfoCompany=ESRU and others
-VersionInfoDescription=version 11.4 for native windows
-VersionInfoCopyright=ESRU and others 2001-2007
+VersionInfoDescription=version 11.7.4333 for native windows
+VersionInfoCopyright=ESRU and others 2001-2009
 Compression=zip
 MinVersion=0,5.0.2195
-AppCopyright=Copywrite ESRU and Natural Resources Canada 2001-2007
+AppCopyright=Copywrite ESRU and Natural Resources Canada 2001-2009
 AppName=ESP-r for Windows
-AppVerName=ESP-r for Windows V11.4
+AppVerName=ESP-r for Windows V11.7.4333
 InfoAfterFile=C:\Installer_for_ESP-r\Source\Esru\README_ESP-r_after_installer.txt
 InfoBeforeFile=C:\Installer_for_ESP-r\Source\Esru\README_ESP-r_before_installer.txt
 LicenseFile=C:\Installer_for_ESP-r\Source\Esru\GPL.txt
@@ -24,10 +24,10 @@ DisableStartupPrompt=false
 FlatComponentsList=false
 AlwaysShowDirOnReadyPage=true
 ShowLanguageDialog=no
-UsePreviousGroup=true
+UsePreviousGroup=false
 AppPublisher=Energy System Research Unit, Glasgow (and others)
 AppPublisherURL=http://www.esru.strath.ac.uk
-AppVersion=ESP-r Version 11.4
+AppVersion=ESP-r Version 11.7.4333
 UninstallDisplayName=ESP-r
 MergeDuplicateFiles=false
 DisableDirPage=true
@@ -38,20 +38,14 @@ AppID={{657A736E-6F01-474E-8BBB-3E5EE35F97E0}
 UninstallDisplayIcon={app}\esplogosmall.bmp
 [Files]
 Source: Esru\GPL.txt; DestDir: {app}; Flags: comparetimestamp
-Source: Esru\contrasting_bep_sim_prog_v1.0.pdf; DestDir: {app}; Flags: comparetimestamp
-Source: Esru\esp-r_cookbook_feb_2006d.pdf; DestDir: {app}; Flags: comparetimestamp
-Source: Esru\esp-r_overview_july_2006.pdf; DestDir: {app}; Flags: comparetimestamp
+Source: Esru\Documents\*.*; DestDir: {app}\Documents; Flags: comparetimestamp
 Source: ..\Installer\EditPath.exe; DestDir: {app}\EditPath
 Source: Esru\*.*; DestDir: {app}; Flags: comparetimestamp recursesubdirs ignoreversion
 Source: GTK\*.*; DestDir: C:\GTK; Flags: recursesubdirs ignoreversion
 [Dirs]
-Name: {app}\bin
 Name: {app}\esp-r
-Name: {app}\lib
 Name: {app}\Models
-Name: {app}\tutorial
-Name: {app}\bin\ray
-Name: {app}\lib\ray
+Name: {app}\Documents
 Name: {app}\esp-r\bin
 Name: {app}\esp-r\climate
 Name: {app}\esp-r\databases

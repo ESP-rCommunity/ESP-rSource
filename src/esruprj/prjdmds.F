@@ -38,6 +38,7 @@ C file unit for the demands file. IER=0 is OK.
       SUBROUTINE PRJDMDS(ITRC,ITRU,IUO,IER)
 
 #include "building.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -57,7 +58,6 @@ C Demands notes and file name.
 
 C Floor area (optionally) associated with each demand type.
       COMMON/BL2/dmdfla(7)
-      common/IPVDMD/idmdinc(7)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -507,6 +507,7 @@ C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
 
 #include "building.h"
 #include "epara.h"
+#include "ipvdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -521,7 +522,6 @@ C Calendar commons.
 
 C Descriptive label for each project demands type.
       common/bloadlabel/blodlabel(7)
-      common/IPVDMD/idmdinc(7)
 
 C Local editing arrays.
       dimension IEBCGS(MC),IEBCGF(MC),CEBMGS(MC),CEBMGL(MC),BERADC(MC)
@@ -843,6 +843,7 @@ C patterns.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+#include "ipvdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -852,7 +853,6 @@ C LPRFDB,IPRODB (for event profile database)
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
-      common/IPVDMD/idmdinc(7)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -1000,6 +1000,7 @@ C Maximum number of demands/day       MC=20
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -1018,7 +1019,6 @@ C IBCGT() - type of gain (1-7)
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
-      common/IPVDMD/idmdinc(7)
       common/b3ver/idmdver
 
 C Calendar commons.

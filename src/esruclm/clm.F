@@ -26,6 +26,13 @@ C climatic data sets compatible with ESP-r.
       program clm
 #include "esprdbfile.h"
 #include "espriou.h"
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+      
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -44,7 +51,9 @@ C climatic data sets compatible with ESP-r.
       COMMON/INPER/INIT
       COMMON/OUTPCH/ICOUT
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -53,8 +62,6 @@ C climatic data sets compatible with ESP-r.
 C Indicator of possible command line action to take and the
 C file associated with this action.
       common/ract/paction,pascif
-
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Path to problem and command line file (if any).
       common/rpath/path
@@ -68,16 +75,9 @@ C Redirected text/graphics parameters.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
 
-C Typical assessment periods win1|trn1|sum|trn2|win2 with start & finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
 C Climate list common.
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
@@ -96,8 +96,6 @@ C Name of current application
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72
       LOGICAL OK,DOK,unixok,there,silent
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -127,6 +125,7 @@ C Initial assumptions. Pass module name to C code structure.
       KDS=1
       KDF=24
       IYEAR=2000
+      ICYEAR=2000
       cfgroot='  '
       LCFGF='  '
 
@@ -622,6 +621,7 @@ C Change radiation type.
         IRTYP=0
         IF(IRADT.EQ.2)IRTYP=123
         IDNGH=IRTYP
+        ICDNGH=IRTYP
         IREC=366
         READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR
         WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR,IRTYP
@@ -865,8 +865,8 @@ C Cast back to 72 char name and do the conversion.
           h(4)='Usually you want to update the site information.'
           CALL ASKOK(' ','Update the site info as well?',OK,dok,4)
           silent=.false.
-          WRITE(outs,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
-          CALL EDISP(IUOUT,outs)
+          WRITE(outs248,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
+          CALL EDISP248(IUOUT,outs248,100)
           if(ok)then
             CALL MKBCLM(iuout,1,LASCI,IUNIT,IDS,IDF,silent,IER)
           else
@@ -960,14 +960,12 @@ C Toggle trace level.
       ELSEIF(INO.EQ.19)THEN
 
 C Feedback channel. Suggest an initial name for the export file.
-C Currently LCLIM is only 72 characters but once it is 144 char
-C then the 130 logic can be added into the 2nd write statement.
         if(ixopen.eq.0)then
           llt=lnblnk(LCLIM)
           if(llt.lt.130)then
             write(xfile,'(2a)') LCLIM(1:llt),'.report'
           else
-            write(xfile,'(2a)') LCLIM(1:72),'.report'
+            write(xfile,'(2a)') LCLIM(1:130),'.report'
           endif
         endif
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Data',IER)
@@ -1034,8 +1032,10 @@ C hour in any specified day.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
 
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
-     A              CDIR(MT),CHUM(MT)
+     &              CDIR(MT),CHUM(MT)
       character outs*124,xfile*144,tg*1,delim*1,h*72
       logical ok,dok
 
@@ -1217,7 +1217,7 @@ C Clear common blocks for a new climate file.
       SUBROUTINE clrclm
 
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
 
@@ -1233,6 +1233,7 @@ C Clear common blocks for a new climate file.
       IDS=1
       IDF=365
       IYEAR=2000
+      ICYEAR=2000
       CLAT=50.
       CLONG=0.
 
