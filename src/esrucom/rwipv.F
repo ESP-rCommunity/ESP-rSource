@@ -489,8 +489,10 @@ C out its zones, floor area, weighting and set description.
       elseif(WORD(1:8).eq.'*metric_')then
         imset=imset+1
         CALL EGETWI(OUTSTR,K,imetget(imset),0,99,'W','metric iget',IER)
-        CALL EGETWI(OUTSTR,K,imetmsc(imset,1),0,32,'W','metric msc',IER)
-        CALL EGETWI(OUTSTR,K,imetmsc(imset,2),0,32,'W','metric msc',IER)
+        CALL EGETWI(OUTSTR,K,imetmsc(imset,1),0,32,'W','metric msc 1',
+     &    IER)
+        CALL EGETWI(OUTSTR,K,imetmsc(imset,2),0,32,'W','metric msc 2',
+     &    IER)
         CALL EGETWI(OUTSTR,K,nzmg(imset),0,MCOM,'W','nb of zones',IER)
         CALL EGETWR(OUTSTR,K,emgflr(imset),1.,9999.,'W','metric flr',
      &    IER)

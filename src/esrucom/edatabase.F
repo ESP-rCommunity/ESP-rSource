@@ -364,8 +364,6 @@ C tag for symmetry. Where values are missing or unknown setup defaults.
       character DES*48,MLCN*12,OTF*4,OPT*12,MLCSYM*12
 
 C Clear parameters to be returned and then copy from DES.
-      MLCN=' '
-      OTF=' '
       OPT=' '
       MLCSYM=' '
       WRITE(MLCN,'(A)')DES(1:12)
@@ -512,6 +510,9 @@ C Arrays of material properties.
       CHARACTER OUTSTR*124,NAM*72,PNAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
       character MLCSYM*12
+
+      real RSI  ! used in reporting of R value in SI units
+      
 C Pick up general description of the composite.
       ier=0
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
@@ -1111,7 +1112,6 @@ C GS (52 char) list of optical database items to select from.
       CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36
       character lworking*144,fs*1
       integer lndbp   ! for length of standard database path
-      integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
 
 C Set folder separator (fs) to \ or / as required.

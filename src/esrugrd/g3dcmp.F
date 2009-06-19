@@ -297,11 +297,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #endif
 
 C Define the  MAX & MIN surface coordinates.
@@ -354,10 +354,10 @@ C Draw a scale vertical axis.
         CALL ETPLOT(X1,Z1,iupdown,isym)
         iupdown=IPEN
         CALL ETPLOT(X2,Z2,iupdown,isym)
-        CALL U2PIXEL(X1,Z1,IX,IY)
-        CALL ECIRC(IX,IY,3,1)
+        CALL U2PIXEL(X1,Z1,iix,iiy)
+        CALL ECIRC(iix,iiy,3,1)
         IVRT1=ILINB(IS,IL,1)
-        CALL VERTLBL(IX,IY,IVRT1,IER)
+        CALL VERTLBL(iix,iiy,IVRT1,IER)
    20 CONTINUE
       IF(INDXS(IS).EQ.3)THEN
         DO 30 IL=NLINB(IS)+1,NLINA(IS)
@@ -1202,10 +1202,10 @@ C *********************************************************************
       DIMENSION XS(8),YS(8),ZS(8)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #endif
 
       IVRT1=IVXEDG(IEG,1)
@@ -1270,12 +1270,12 @@ C Clear the graphical feedback window.
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the two extreme vertices.
-      CALL U2PIXEL(XS(1),YS(1),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,IVRT1,IER)
-      CALL U2PIXEL(XS(5),YS(5),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,IVRT2,IER)
+      CALL U2PIXEL(XS(1),YS(1),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,IVRT1,IER)
+      CALL U2PIXEL(XS(5),YS(5),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,IVRT2,IER)
 
 C Draw the edge.
       iupdown=0
@@ -1634,11 +1634,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer iix1,iiy1,iix2,iiy2
+      integer iix,iiy,iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
-      integer*8 iix1,iiy1,iix2,iiy2
+      integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
 #endif
 
 C Define the two surfaces.
@@ -1658,33 +1658,25 @@ C Define the two surfaces.
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,1)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMX2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMX2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMN2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,1)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMX2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMX2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMN2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
       DO 10 I=1,NDXE(IEG)-1
-        CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
-        CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(FLOAT(I),YMN2,iix1,iiy1)
+        CALL U2PIXEL(FLOAT(I),YMX2,iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYE(IEG)-1
-        CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
-        CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(XMN2,FLOAT(J),iix1,iiy1)
+        CALL U2PIXEL(XMX2,FLOAT(J),iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
@@ -1693,7 +1685,7 @@ C Define the two surfaces.
         YCF=-0.5
         DO 40 J=1,NDYE(IEG)
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')ITPEDG(IEG,I,J,IL)
           ipos=0
           isize=itfs
@@ -2227,10 +2219,10 @@ C *********************************************************************
       DIMENSION XS(8),YS(8),ZS(8)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy    ! passed to etplot
 #else
-      integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 igwid,igheight  ! for use with axiscale u2pixel
+      integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #endif
 
       IVRX=IVXCRN(ICR)
@@ -2292,9 +2284,9 @@ C Clear the graphical feedback window.
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the vertex.
-      CALL U2PIXEL(XS(1),YS(1),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,IVRX,IER)
+      CALL U2PIXEL(XS(1),YS(1),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,IVRX,IER)
 
 C Draw the corner.
       iupdown=0
@@ -2655,11 +2647,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer iix1,iiy1,iix2,iiy2
+      integer iix,iiy,iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer*8 iix1,iiy1,iix2,iiy2
+      integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
 #endif
 
 C Return if not in graghical mode.
@@ -2683,33 +2675,25 @@ C Define the two surfaces.
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,1)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMX2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMX2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMN2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,1)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMX2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMX2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMN2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
       DO 10 I=1,NDXC(ICR)-1
-        CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
-        CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(FLOAT(I),YMN2,iix1,iiy1)
+        CALL U2PIXEL(FLOAT(I),YMX2,iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYC(ICR)-1
-        CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
-        CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(XMN2,FLOAT(J),iix1,iiy1)
+        CALL U2PIXEL(XMX2,FLOAT(J),iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
@@ -2720,7 +2704,7 @@ C Define the two surfaces.
         YCF=-0.5
         DO 40 J=1,NDYC(ICR)
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')ITPCRN(ICR,I,J,IL)
           CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE

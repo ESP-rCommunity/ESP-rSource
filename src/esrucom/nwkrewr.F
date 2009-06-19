@@ -1471,7 +1471,7 @@ C Write out attributes with minimal white space.
         write(INUNIT,'(a)',iostat=ios,err=1) '*End_attribute'
         write(INUNIT,'(2a,F8.4,a,F8.4,a,F8.4,a)',iostat=ios,err=1) 
      &    '*Where',tab,XYZICON(I,1),tab,XYZICON(I,2),tab,XYZICON(I,3),
-     #    ' # Icon position XYZ:'
+     &    ' # Icon position XYZ:'
         DO 12 J=1,NIVC(I) 
           WRITE(INUNIT,'(2a,F8.4,a,F8.4,a,F8.4,a)',iostat=ios,err=1) 
      &      '*Vertex',tab,VCICON(I,J,1),tab,VCICON(I,J,2),tab,
