@@ -43,6 +43,8 @@
 #include <commons.h>    
 
 extern FILE *wwc;
+extern int  wwc_ok;   /* assume this set in esru_util.c */
+extern int  wwc_macro;   /* assume this set in esru_util.c */
 
 /* f_height and f_width which already declared globaly in esp-r.c are used here. */ 
 extern gint f_height;

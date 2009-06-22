@@ -1,9 +1,14 @@
 /*
 esru_util.c	(independant of graphics) 
 These routines are called from ESP-r fortran code. The routines are :-
-        f_to_c_l() confirm Fortran string length
-        ckaccess_() finds access parameters of a file
-        getfilelist_() return list of files in a folder
+   f_to_c_l() confirm Fortran string length
+   ckaccess_() finds access parameters of a file
+   getfilelist_() return list of files in a folder
+   wwcopen_() open ww commands output file 
+   wwcclose_() Close and mark end or ww commands file
+   wwcsetstart_() indicate start of a set of drawing commands
+   wwcsetend_()	 indicate end of a set of drawing commands
+   curproject_() pass in info on the current project from fortran
 */
 
 #include <stdio.h>
@@ -12,6 +17,20 @@ These routines are called from ESP-r fortran code. The routines are :-
 #include <sys/stat.h>
 #include <dirent.h>
 #include <sys/time.h>
+#include <string.h>
+
+char cfgroot[25];	/* f77 project root name    */
+char path[73];	/* f77 project path    */
+char upath[73];	/* f77 users path    */
+char imgpth[25];	/* f77 relative path to images    */
+char docpth[25];	/* f77 relative path to documents    */
+char tmppth[25];	/* f77 relative path to scratch folder    */
+
+/* the wwc_ok and wwc_macro are treated as extern types in esru_x.c */
+int  wwc_ok = 0;   /* assume no echo of drawing commands to wwc */
+int  wwc_macro = 0;   /* assume not in a macro drawing command (etplot) */
+int browse;	/* if = 0 then user owns, if = 1 user browsing */
+FILE *wwc;
 
 /* ************** Confirm Fortran string length *************** */
 /*
@@ -309,5 +328,101 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
   }
   *flist = *locflist;	/* copy locflist back to flist */
   *nflist = locnflist;
+  return;
+}
+
+/*  open ww commands output file */
+void wwcopen_(name,len)
+char *name;
+int len;	/* string length from fortran */
+{
+ int ilen;
+ char name2[140];
+ wwc_ok = 1;   /* set flag to echo drawing commands to wwc */
+
+/*
+ * Terminate at fortran length, find actual string length
+ * and then reterminate.
+ */
+  f_to_c_l(name,&len,&ilen); strncpy(name2,name,(unsigned int)ilen); name2[ilen]='\0';
+  if ((wwc = fopen(name2,"w"))==NULL) {
+    fprintf(stderr,"could not open wwc file %s\n",name2);
+    exit(1);
+  }
+  return;
+}
+
+/* Close and mark endww commands file if one has been setup */
+void wwcclose_(name,len)
+char *name;
+int len;	/* string length from fortran */
+{
+ int ilen;
+ char name2[140];
+  f_to_c_l(name,&len,&ilen); strncpy(name2,name,(unsigned int)ilen); name2[ilen] = '\0';
+  if ( wwc_ok == 1) {
+    wwc_ok = 0;   /* reset flag to not echo drawing commands to wwc */
+    fprintf(wwc,"*end_wwc\t%s\n",name2);
+    fclose(wwc);
+  } else {
+    fprintf(stderr,"ww commands file never opened...\n");
+  }
+  return;
+}
+
+void wwcsetstart_()	/* indicate start of a set of drawing commands */
+{
+ if ( wwc_ok == 1) fprintf(wwc,"*start_set\n");
+  return;
+}
+
+void wwcsetend_()		/* indicate end of a set of drawing commands */
+{
+ if ( wwc_ok == 1) fprintf(wwc,"*end_set\n");
+  return;
+}
+
+/* curproject_() - pass in info on the current project from fortran */
+void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
+  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth)
+  char *fcfgroot;	/* f77 project root name    */
+  char *fpath;	/* f77 project path    */
+  char *fupath;	/* f77 users path    */
+  char *fimgpth;	/* f77 relative path to images    */
+  char *fdocpth;	/* f77 relative path to documents    */
+  char *ftmppth;	/* f77 relative path to scratch folder    */
+  long int *ibrowse;	/* if = 0 then user owns, if = 1 user browsing */
+  int  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth;	/* length of strings from f77  */
+{
+  int  l_root,l_fpath,l_fupath,l_fimgpth,l_fdocpth,l_ftmppth;
+
+  l_root = l_fpath = l_fupath = l_fimgpth = l_fdocpth = l_ftmppth =0;
+  browse = (int) *ibrowse;
+  strcpy(cfgroot,"                       ");
+  f_to_c_l(fcfgroot,&len_root,&l_root); strncpy(cfgroot,fcfgroot,(unsigned int)l_root);	/* copy to static */
+  cfgroot[l_root] = '\0';
+  strcpy(imgpth, "                       ");
+  f_to_c_l(fimgpth,&len_fimgpth,&l_fimgpth); strncpy(imgpth,fimgpth,(unsigned int)l_fimgpth);	/* copy to static */
+  imgpth[l_fimgpth] = '\0';
+  strcpy(docpth, "                       ");
+  f_to_c_l(fdocpth,&len_fdocpth,&l_fdocpth); strncpy(docpth,fdocpth,(unsigned int)l_fdocpth);	/* copy to static */
+  docpth[l_fdocpth] = '\0';
+  strcpy(tmppth, "                       ");
+  f_to_c_l(ftmppth,&len_ftmppth,&l_ftmppth); strncpy(tmppth,ftmppth,(unsigned int)l_ftmppth);	/* copy to static */
+  tmppth[l_ftmppth] = '\0';
+  strcpy(path,
+      "                                                                         ");
+  f_to_c_l(fpath,&len_fpath,&l_fpath); strncpy(path,fpath,(unsigned int)l_fpath);	/* copy to static */
+  path[l_fpath] = '\0';
+  strcpy(upath,
+      "                                                                         ");
+  f_to_c_l(fupath,&len_fupath,&l_fupath); strncpy(upath,fupath,(unsigned int)l_fupath);	/* copy to static */
+  upath[l_fupath] = '\0';
+/* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
+/* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
+/* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
+/* debug  fprintf(stderr,"path %s\n",path);  */
+/* debug  fprintf(stderr,"upath %s\n",upath);  */
+/* debug  fprintf(stderr,"browse %d\n",browse);  */
   return;
 }

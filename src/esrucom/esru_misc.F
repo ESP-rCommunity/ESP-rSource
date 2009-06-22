@@ -771,7 +771,7 @@ C Show network related images.
 C Show control related images (assumes that control has already been scanned).
         call imgdisp(1,'FCTL',ier)
         if(ncf.gt.0.or.ncl.gt.0.or.ncc.gt.0.or.ngf.gt.0)then
-          write(h(1),'(a,a)')'System control is via ',LCTLF(1:56)
+          write(h(1),'(a,a)')'System control via ',LCTLF(1:50)
           nh=1
           if(ncf.gt.0)then
             nh=nh+1

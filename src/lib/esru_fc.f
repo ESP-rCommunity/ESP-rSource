@@ -110,25 +110,25 @@ C      subroutine showlogo(itime,lix,liy)
 C      return
 C      end
 
-      subroutine wwcopen(name)
-      character*(*) name
-      return
-      end
+C      subroutine wwcopen(name)
+C      character*(*) name
+C      return
+C      end
 
-      subroutine wwcclose(name)
-      character*(*) name
-      return
-      end
+C      subroutine wwcclose(name)
+C      character*(*) name
+C      return
+C      end
 
-      subroutine wwcsetstart
-      write(6,*) '*start_set'
-      return
-      end
+C      subroutine wwcsetstart
+C      write(6,*) '*start_set'
+C      return
+C      end
 
-      subroutine wwcsetend
-      write(6,*) '*end_set'
-      return
-      end
+C      subroutine wwcsetend
+C      write(6,*) '*end_set'
+C      return
+C      end
 
       subroutine wstxpt(ix,iy,buff)
       character*(*) buff
@@ -533,11 +533,11 @@ C      ibottom=0
 C      return
 C      end
 
-      subroutine curproject(fcfgroot,fpath,fupath,fimgpth,fdocpth,
-     &  ftmppth,ibrowse)
-      character*(*) fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth
-      return
-      end
+C      subroutine curproject(fcfgroot,fpath,fupath,fimgpth,fdocpth,
+C     &  ftmppth,ibrowse)
+C      character*(*) fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth
+C      return
+C      end
 
       subroutine curmodule(fcmodule)
       character*(*) fcmodule
