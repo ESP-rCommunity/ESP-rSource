@@ -5237,7 +5237,7 @@ C Check if geometry file has already been updated.
             EXT='.con'
             CALL FNCNGR(LTHRM(ICOMP),APE,EXT,NNAME)
             LTHRM(ICOMP)=NNAME
-            CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,ITRU,QUIET,IER)
+            CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
             WRITE(MSG1,'(2A)')
      &              '* New constructions file written out for zone ',
      &              ZNAME(ICOMP)

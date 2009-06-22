@@ -1055,7 +1055,7 @@ C Save geometry file.
       endif
 
 C Save construction file.
-      CALL EMKCON(LTHRM(ICOMP),IUF,IComp,IUOUT,QUIET,IER)
+      CALL EMKCON(LTHRM(ICOMP),IUF,IComp,QUIET,IER)
 
 C Save operation file.
       CALL EMKOPER(IUF,LPROJ(ICOMP),IComp,IUOUT,IER)

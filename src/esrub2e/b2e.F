@@ -296,7 +296,7 @@ C Dummy routines from common3dv.F
       return
       end
 
-      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
       logical cfgok
       ier=0
       return

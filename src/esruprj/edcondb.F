@@ -840,7 +840,7 @@ C Help text for this menu.
             chgdb=.true.
             ltmp=' '
             write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
-            CALL mkascimat(IUOUT,IAF,ltmp,IER)
+            CALL mkascimat(IAF,ltmp,IER)
             MODDB=.FALSE.
           ENDIF
           GOTO 4
@@ -884,7 +884,7 @@ C reset flag to show db is current with local arrays.
             chgdb=.true.
             ltmp=' '
             write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
-            CALL mkascimat(IUOUT,IAF,ltmp,IER)
+            CALL mkascimat(IAF,ltmp,IER)
             MODDB=.FALSE.
           ENDIF
         ELSEIF(INO.EQ.NITMS-3)THEN

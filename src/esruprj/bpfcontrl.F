@@ -4726,7 +4726,8 @@ C PI controller
           if(ier.ne.0)goto 101
 
 C Miscellaneous data for additional flow controllers should follow here.
-  70    endif
+        endif
+  70    continue
 
 C Extract from working array to fmiscd() common structure
         call extrctl(2,II,JJ,KK)

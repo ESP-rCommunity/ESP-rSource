@@ -660,7 +660,7 @@ C and save the system configuration file if not browsing.
       if(cfgok.and.(.NOT.browse))then
         IUF=IFIL+2
         call tstamp('>','PRJ: save zone construction')
-        CALL EMKCON(LTHRM(ICOMP),IUF,ICOMP,IUOUT,QUIET,IER)
+        CALL EMKCON(LTHRM(ICOMP),IUF,ICOMP,QUIET,IER)
         IF(IER.EQ.1)THEN
           dok=.true.
           h(1)='Check that you have permission to update the zone'

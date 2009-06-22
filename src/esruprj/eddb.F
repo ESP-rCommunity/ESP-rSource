@@ -438,10 +438,10 @@ C Check to see if the file has correct info.
           goto 139  !  a binary file found so carry on.
         endif
  1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
         if(ier.eq.-2)then
           ier=0
-          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
           if(ier.ne.0)then
             call usrmsg('No readable materials database was not found',
      &                  'or file was corrupt','W')
@@ -504,10 +504,10 @@ C to a binary file.
      &        'Options:','use it',
      &        'convert to a binary file','cancel',IW,5)
             if(iw.eq.1)then
-              call rascimat(iuout,IAF,LASCI,IER)  ! try current ascii format
+              call rascimat(IAF,LASCI,IER)  ! try current ascii format
               if(ier.eq.-2)then
                 ier=0
-                call rlegacymat(iuout,IAF,LASCI,ier)  ! try older ascii format
+                call rlegacymat(IAF,LASCI,ier)  ! try older ascii format
                 if(ier.ne.0)then
                   call usrmsg('No readable Materials database was',
      &                        'found or the file was corrupt.','W')
@@ -803,10 +803,10 @@ C It might be an ascii version of the file.
 
 C Attempt to scan version 1.1 ASCII file, if ier returned as -2 then
 C re-read as a legacy materials file.
-            call rascimat(iuout,IFMAT,LTMP,IER)
+            call rascimat(IFMAT,LTMP,IER)
             if(ier.eq.-2)then
               ier=0
-              call rlegacymat(iuout,IFMAT,LTMP,ier)
+              call rlegacymat(IFMAT,LTMP,ier)
               if(ier.ne.0)then
                 call usrmsg('The Materials db was not found',
      &                      'or was corrupt!','W')
@@ -1160,7 +1160,7 @@ C ascii version of this new Materials db.
             IAF=IFIL+1
             call eclose(matver,1.1,0.001,close)
             if(close)then
-              CALL mkascimat(IUOUT,IAF,LASCI,IER)
+              CALL mkascimat(IAF,LASCI,IER)
             else
               CALL MKAPRC(IUOUT,LASCI,IAF,IER)
             endif
@@ -1202,7 +1202,7 @@ C Confirm suggested name and then write out ascii file.
         else
           call eclose(matver,1.1,0.001,close)
           if(close)then
-            CALL mkascimat(IUOUT,IAF,LASCI,IER)
+            CALL mkascimat(IAF,LASCI,IER)
           else
             CALL MKAPRC(IUOUT,LASCI,IAF,IER)
           endif
@@ -1257,10 +1257,10 @@ C Legacy materials to common blocks.
 
 C Attempt to scan version 1.1 ASCII file, if ier returned as -2 then
 C re-read as a legacy materials file.
-        call rascimat(iuout,IAF,LASCI,IER)
+        call rascimat(IAF,LASCI,IER)
         if(ier.eq.-2)then
           ier=0
-          call rlegacymat(iuout,IAF,LASCI,ier)
+          call rlegacymat(IAF,LASCI,ier)
         endif
 
 C Offer display of materials common blocks.
@@ -1279,7 +1279,7 @@ C Offer display of materials common blocks.
         if(clkok)then
           return
         else
-          CALL mkascimat(IUOUT,IAF,ltmp,IER)
+          CALL mkascimat(IAF,ltmp,IER)
         endif
       endif
 

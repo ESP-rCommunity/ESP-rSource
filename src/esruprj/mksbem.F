@@ -1810,7 +1810,7 @@ C Make a copy of constructions file and tmc file if applicable
         EXT='.con'
         CALL FNCNGR(LTHRM(ICOMP),APE,EXT,NNAME)
         LTHRM(ICOMP)=NNAME
-        CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,ITRU,QUIET,IER)
+        CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
         call FINDFIL(LTWIN(ICOMP),XST)
         IF(.NOT.XST)GOTO 500
         IFU=13

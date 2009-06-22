@@ -329,6 +329,7 @@ C is 2 then re-read the version 1.1 zone geometry file.
         IF(IER.NE.0)RETURN
       ELSEIF(IOBS(ifoc).EQ.2)THEN
         if(newgeo)then
+          ITRC=0
           call georead(IUF,LGEOM(ifoc),ifoc,1,ITRC,iuout,ier)
           IF(IER.NE.0)RETURN
         endif
@@ -883,16 +884,15 @@ C Move to next grid position.
       END
 
 C ******************* EMKVIEW 
-C EMKVIEW constructs a 'viewer' format file. The trace level (ITRC) defines 
-C whether information about the zones is displayed or not. IUO is the file
-C unit number. CFGOK is passed in as .TRUE. if the user can select zones.
+C EMKVIEW constructs a 'viewer' format file. IUO is the file unit number.
+C CFGOK is passed in as .TRUE. if the user can select zones.
 C IER is returned as non-zero if there is a problem.
-      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
 #include "building.h"
 #include "geometry.h"
 
 C Passed parameters.
-      integer ITRC,IUO,IER
+      integer IUO,IER
       logical CFGOK
       
       COMMON/OUTIN/IUOUT,IUIN

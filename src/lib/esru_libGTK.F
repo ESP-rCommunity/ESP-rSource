@@ -5002,7 +5002,7 @@ C Get file name.
           call FPOPEN(IUO,ISTAT,1,3,LFIL)
           write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
         endif
-        CALL EMKVIEW(ITRC,IUO,CFGOK,IER)
+        CALL EMKVIEW(IUO,CFGOK,IER)
         IF(IER.NE.0)THEN
           CALL USRMSG(' ',' problem creating image file... ','W')
           goto 92

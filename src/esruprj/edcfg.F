@@ -1993,7 +1993,7 @@ C Also update lodlabel commons before writing out.
             IF(CFILE.NE.'  ')THEN
               QUIET=.false.
               write(LTHRM(NCOMP),'(a)') CFILE(1:lnblnk(CFILE))
-              CALL EMKCON(LTHRM(NCOMP),IUF,NCOMP,IUOUT,QUIET,IER)
+              CALL EMKCON(LTHRM(NCOMP),IUF,NCOMP,QUIET,IER)
               if(ITW(IC).eq.1)then
 
 C Update itmcfl for the new zone.

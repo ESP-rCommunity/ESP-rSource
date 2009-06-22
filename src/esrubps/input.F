@@ -598,10 +598,10 @@ C code from esruprj/eddb.F subroutine opendb.
           endif
  1006     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
           write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
-          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
-            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
             if(ier.ne.0)then
               if(dll)then
                 dllsubr='mzinpt'

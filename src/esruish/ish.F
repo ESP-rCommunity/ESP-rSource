@@ -1643,10 +1643,10 @@ C Check to see if the file has correct info.
           goto 139  !  a binary file found so carry on.
         endif
  1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
         if(ier.eq.-2)then
           ier=0
-          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
           if(ier.ne.0)then
             call usrmsg('No readable materials database was not found',
      &                  'or file was corrupt','W')
@@ -1721,10 +1721,10 @@ C to a binary file.
      &        'Options:','use it',
      &        'convert to a binary file','cancel',IW,5)
             if(iw.eq.1)then
-              call rascimat(iuout,IAF,LASCI,IER)  ! try current ascii format
+              call rascimat(IAF,LASCI,IER)  ! try current ascii format
               if(ier.eq.-2)then
                 ier=0
-                call rlegacymat(iuout,IAF,LASCI,ier)  ! try older ascii format
+                call rlegacymat(IAF,LASCI,ier)  ! try older ascii format
                 if(ier.ne.0)then
                   call usrmsg('No readable Materials database was',
      &                        'found or the file was corrupt.','W')

@@ -318,14 +318,19 @@ C ************* EMKCON
 C Generic routine to write a construction file based on information cur-
 C rently held in common blocks T1 T2 T4.
 C CONFIL is the name of the file to be written to (any existing file
-C by this name is overwritten).  zname is the zone name (12 char), ICOMP
-C is the zone number.
-C ITRU unit number for user output, IER=0 OK, IER=1 problem.
-      SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
+C by this name is overwritten).
+      SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,QUIET,IER)
 #include "building.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      character CONFIL*72  ! zone constructions file
+      integer IFILT        ! file unit for zone constructions file
+      integer ICOMP        ! index of the zone
+      logical QUIET        ! true acts silently
+      integer IER          ! IER=0 OK, IER=1 problem
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -336,16 +341,14 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-      logical QUIET
 
-      CHARACTER*72 CONFIL
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character outs*124,louts*248
 
       IER=0
 
-C Place output into IFILT. Open any existing file by this name, 
+C Open any existing file by this name (CONFIL), 
 C (ask user for confirmation to over-write) or create a new file.
 C If in quiet mode then file should exist.
       IF(QUIET) THEN
