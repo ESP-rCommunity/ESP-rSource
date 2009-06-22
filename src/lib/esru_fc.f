@@ -94,12 +94,12 @@ C      subroutine windcl(n,ir,ig,ib)
 C      return
 C      end
 
-      subroutine f_to_c_l(msg,if_len,ilen)
-      character*(*) msg
-      if_len = LEN(msg)
-      ilen = lnblnk(msg)
-      return
-      end
+C      subroutine f_to_c_l(msg,if_len,ilen)
+C      character*(*) msg
+C      if_len = LEN(msg)
+C      ilen = lnblnk(msg)
+C      return
+C      end
 
 C      subroutine winlod(name,itime,lix,liy)
 C      character*(*) name
@@ -129,15 +129,6 @@ C      end
       write(6,*) '*end_set'
       return
       end
-
-C      subroutine ckaccess(folder,laccess,lerr,fname)
-C      integer folder, laccess,lerr
-C      character*(*) fname
-C      folder = 1
-C      lerr = 0
-C      laccess = 0
-C      return
-C      end
 
       subroutine wstxpt(ix,iy,buff)
       character*(*) buff

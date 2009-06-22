@@ -270,9 +270,6 @@ void wwcsetend_()		/* indicate end of a set of drawing commands */
   return;
 }
 
-/* ****** ckaccess_() finds access parameters of a file and is in esru_nox.c ********* */
-
-/* ****** getfilelist_() returns a list of files in a folder and is in esru_nox.c ********* */
 
 /* curproject_() - pass in info on the current project from fortran */
 void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
