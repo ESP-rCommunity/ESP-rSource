@@ -18,6 +18,8 @@ These routines are called from ESP-r fortran code. The routines are :-
 #include <dirent.h>
 #include <sys/time.h>
 #include <string.h>
+/* external defines are found in wwxlegacy.h */
+#include "wwxlegacy.h"
 
 char cfgroot[25];	/* f77 project root name    */
 char path[73];	/* f77 project path    */

@@ -1,8 +1,9 @@
 /*
- * copyright ESRU 2001-3
+ * copyright ESRU 2001-9
  * This source may be copied, distributed, altered or used, but not sold
  * for profit.  This notice should remain in the source unaltered, and
  * any changes to the source made known to ESRU.
+ * Used by esru_nox.c and esru_uitl.c
  */
 
 /* #if defined(c_plusplus)||defined(__GNUG__)||defined(__GNUC__) */
@@ -102,5 +103,6 @@ void	fprofma_(char* sstr, long int* nstr, char* title, char* list, long int* nli
 		 long int* ino, long int* nhelp, int lensstr, int lentitle, int lenlist);
 
 void	ipset(int flag);
+void	f_to_c_l(char* msg,int* f_len,int* len);
 void	ckaccess_(long int* folder,long int* laccess,long int* lerr,char* fname,int len);
 void	getfilelist_(char* folder,char* act,char* flist,long int nwflist[],long int* nflist,int lenfolder,int lenact,int lenflist);
