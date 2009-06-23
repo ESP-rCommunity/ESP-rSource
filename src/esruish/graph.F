@@ -351,7 +351,7 @@ C Re-read zone geometry file and establish the maximum and minimum
 C vertix values.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
+        call georead(ifil+1,lgeom(icomp),icomp,0,iuout,ier)
       else
         call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
       endif
@@ -395,7 +395,7 @@ C Re-read the geometry file, plot it and move to the first vertex and
 C output the zone name.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-         call georead(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
+         call georead(ifil+1,lgeom(icomp),icomp,0,iuout,ier)
       else
          call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
       endif

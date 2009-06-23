@@ -80,7 +80,7 @@ C Read in the zone geometry data.
       IUNIT=IFIL+1
       call eclose(gversion(izone),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
+        call georead(IUNIT,LGEOM(IZONE),IZONE,0,IUOUT,IER)
       else
         call egomin(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
       endif

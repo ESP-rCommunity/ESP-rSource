@@ -578,7 +578,7 @@ C try and re-scan the constructions database.
      &          'Attempting to convert an ASCII Materials db to a')
               call edisp(iuout,
      &          'binary version matching the Constructions db.')
-              CALL MKBPRC(IUOUT,IAF,LASCI,IER)
+              CALL MKBPRC(IAF,LASCI,IER)
               if(ier.eq.0)then
                 call usrmsg(
      &            'An ASCII Materials db was found and converted.',
@@ -878,7 +878,7 @@ C If the materials db was edited write a backup ASCII version.
                 continue
               else
                 IAF=IFIL+1
-                CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+                CALL MKAPRC(LASCI,IAF,IER)
               endif
             endif
             modcon=chgdb
@@ -1061,7 +1061,7 @@ C << Extend logic to support newer ASCII Material db. >>
      &    '  0.500, 1050.000, 837.000, 0.900, 0.400, 1000.000 '
         CALL ERPFREE(IAF,ISTAT)
         call pausems(400)
-        CALL MKBPRC(IUOUT,IAF,LTMPFL,IER)
+        CALL MKBPRC(IAF,LTMPFL,IER)
       elseif(isw.eq.4)then
 
 C Copy the standard db to project folder. Suggest a local
@@ -1162,7 +1162,7 @@ C ascii version of this new Materials db.
             if(close)then
               CALL mkascimat(IAF,LASCI,IER)
             else
-              CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+              CALL MKAPRC(LASCI,IAF,IER)
             endif
           endif
         else
@@ -1204,7 +1204,7 @@ C Confirm suggested name and then write out ascii file.
           if(close)then
             CALL mkascimat(IAF,LASCI,IER)
           else
-            CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+            CALL MKAPRC(LASCI,IAF,IER)
           endif
         endif
       elseif(isw.eq.6)then
@@ -1237,7 +1237,7 @@ C the same name as the binary one and is in the same location.
         if(clkok)then
           return
         else
-          CALL MKBPRC(IUOUT,IAF,LASCI,IER)
+          CALL MKBPRC(IAF,LASCI,IER)
         endif
       elseif(isw.eq.7)then
 

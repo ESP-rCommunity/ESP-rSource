@@ -935,7 +935,7 @@ C to reconstruct /G1/,/G2/ and /G5/.
             call sitpln(icomp)
             call eclose(gversion(icomp),1.1,0.01,newgeo)
             if(newgeo)then
-               call georead(iuf,lgeom(icomp),icomp,0,0,iuout,ier)
+               call georead(iuf,lgeom(icomp),icomp,0,iuout,ier)
             else
                call egomin(iuf,lgeom(icomp),icomp,0,0,iuout,ier)
             endif
@@ -1452,13 +1452,13 @@ C  ifstat = 8  new file filled via import of ascii file
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(silent)then
          if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
+            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
          else
             call egomin(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
          endif
       else
          if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
+            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
          else
             call egomin(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
          endif
@@ -1795,7 +1795,7 @@ C try and re-scan the constructions database.
      &          'Attempting to convert an ASCII Materials db to a')
               call edisp(iuout,
      &          'binary version matching the Constructions db.')
-              CALL MKBPRC(IUOUT,IAF,LASCI,IER)
+              CALL MKBPRC(IAF,LASCI,IER)
               if(ier.eq.0)then
                 call usrmsg(
      &            'An ASCII Materials db was found and converted.',

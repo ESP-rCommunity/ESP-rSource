@@ -120,7 +120,7 @@ C if izver >=4 the zone operation file is not needed.
         IUNIT=IFIL+1
         call eclose(gversion(J),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
+          call georead(IUNIT,LGEOM(J),J,1,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
         endif

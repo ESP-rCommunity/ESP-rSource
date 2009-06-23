@@ -206,7 +206,7 @@ C Rescan geometry file.
       IUF=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,0,ITRU,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
       else
         call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,ITRU,IER)
       endif

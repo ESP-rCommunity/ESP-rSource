@@ -939,7 +939,7 @@ C Read (silently) in the zone geometry data.
       IUNITF=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
       else
         call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
       endif

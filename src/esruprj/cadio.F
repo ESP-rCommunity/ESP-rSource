@@ -1858,7 +1858,7 @@ C file exists.
             if(i.eq.1)then
               IUF=IFIL+2
               write(LASCI,'(2a)') LF(1:lnblnk(LF)),'.a'
-              CALL MKAPRC(IUOUT,LASCI,IUF,IER)
+              CALL MKAPRC(LASCI,IUF,IER)
               call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LASCI,ier)
             endif
           endif

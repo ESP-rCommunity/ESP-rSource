@@ -128,7 +128,7 @@ C file and plot it. Move to first vertex and give the zone name.
         newfoc=nznog(mz)
         call eclose(gversion(newfoc),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+          call georead(IUF,LGEOM(newfoc),newfoc,0,IUOUT,IER)
         else
           call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
         endif
@@ -272,7 +272,7 @@ C << this may not be necessary if newgeo is true >>
         IF(IOBS(newfoc).EQ.1)THEN
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+            call georead(IUF,LGEOM(newfoc),newfoc,0,IUOUT,IER)
           else
             call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
           endif

@@ -1078,7 +1078,7 @@ C Update all geometry files to version 1.1 from previous
           IUF=IFIL+2
           CALL ECLOSE(GVERSION(ICOMP),1.1,0.01,NEWGEO)
           IF(NEWGEO)THEN
-            CALL GEOREAD(IUF,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+            CALL GEOREAD(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
           ELSE
             CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
           ENDIF
@@ -1788,7 +1788,7 @@ C Loop through each zone in the model...
         EXT='.geo'
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+          call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
         else
           call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
         endif
@@ -1797,7 +1797,7 @@ C Loop through each zone in the model...
         if(newgeo)then
           call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
         else
-          call emkgeo(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          call emkgeo(IUF,LGEOM(ICOMP),ICOMP,3,IER)
         endif
 
 C Make a copy of constructions file and tmc file if applicable
@@ -2009,7 +2009,7 @@ C parent child relationships
           IUF=IFIL+2
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
           else
             call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
           endif
@@ -2343,7 +2343,7 @@ C Now add window frames (frames previously defined in the original are
 C retained in the code above but only the areas are changed). Following
 C code only adds frames to windows that do not have any framing.
       DO 700 ICOMP=1,NCOMP
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
         DO 557 isur=1,nzsur(icomp)
           icn=IZSTOCN(icomp,isur)
           ADF=SSPARENT(ICN)
@@ -2439,7 +2439,7 @@ C Update connections file before going on to the next zone
 
 C Change constructions for different surfaces now based on use
       DO 600 ICOMP=1,NCOMP
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
         DO 601 I=1,NZSUR(icomp)
           icc=izstocn(icomp,i)
           USE=SSUSE(ICC,1)

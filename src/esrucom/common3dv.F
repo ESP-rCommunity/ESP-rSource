@@ -329,8 +329,7 @@ C is 2 then re-read the version 1.1 zone geometry file.
         IF(IER.NE.0)RETURN
       ELSEIF(IOBS(ifoc).EQ.2)THEN
         if(newgeo)then
-          ITRC=0
-          call georead(IUF,LGEOM(ifoc),ifoc,1,ITRC,iuout,ier)
+          call georead(IUF,LGEOM(ifoc),ifoc,1,iuout,ier)
           IF(IER.NE.0)RETURN
         endif
       ENDIF
@@ -960,7 +959,7 @@ C Pass ICOMP in as a positive so that 'ALL' is included in list.
         IF(IVALS(IZ).GT.0)THEN
           call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,0,iuout,IER)
+            call georead(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,iuout,IER)
           else
             call egomin(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,0,iuout,IER)
           endif

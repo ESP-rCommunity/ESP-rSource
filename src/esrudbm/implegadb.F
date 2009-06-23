@@ -1153,7 +1153,7 @@ C Close file before exiting.
 C ************* MKAPRC (copy from edcondb.F)
 C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
-      SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
+      SUBROUTINE MKAPRC(LASCI,IFA,IER)
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition

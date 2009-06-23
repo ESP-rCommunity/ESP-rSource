@@ -726,7 +726,7 @@ C << it might not be necesary to scan geometry file >>
             LTMP=LGEOM(IVALS(IZ))
             call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+              call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
             else
               call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
             endif
@@ -1340,7 +1340,7 @@ C Jump if no zones.
           LTMP=LGEOM(IVALS(IZ))
           call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+            call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
           else
             call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
           endif
@@ -1423,7 +1423,7 @@ C Jump if no zones or no zone info requested.
         LTMP=LGEOM(IZZ)
         call eclose(gversion(izz),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUF,LTMP,IZZ,1,0,itu,IER)
+          call georead(IUF,LTMP,IZZ,1,itu,IER)
         else
           call egomin(IUF,LTMP,IZZ,1,0,itu,IER)
         endif
@@ -2184,7 +2184,7 @@ C igupgrade was set to 2 in preferences also force an upgrade.
 
 C If all of the shading directives are zero then double check to
 C see if there are shading and obstruction files.
-              call georead(IFIL+2,LGEOM(iz),iz,0,0,iuout,IER)
+              call georead(IFIL+2,LGEOM(iz),iz,0,iuout,IER)
               if(nsurfcalc(iz).eq.0.and.nsurfinso(iz).eq.0)then
                 if(ISI(iz).eq.0.and.IOBS(iz).eq.0)then
                   continue

@@ -53,8 +53,8 @@ extern GdkColor gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;	/* in
 extern gint ter;            /* terminal type passed on initial call */
 extern gint child_ter;      /* child process terminal type  */
 
-extern gint  wwc_ok;   /* assume no echo of drawing commands to wwc */
-extern gint  wwc_macro;   /* assume not in a macro drawing command (etplot) */
+extern int wwc_ok;   /* assume no echo of drawing commands to wwc */
+extern int wwc_macro;   /* assume not in a macro drawing command (etplot) */
 
 extern gint xold, yold;     /* current 'pen' position used by eline_() */
 extern gint x_off,y_off;         /* display X & Y offsets in pixels (see linescale) */

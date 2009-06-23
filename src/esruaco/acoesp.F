@@ -314,7 +314,7 @@ C Read geometry file for chosen zone.
       ITMP=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
       else
         call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
       endif
@@ -699,7 +699,7 @@ C for each surface in the zone according to the frequency band
               endif
               call eclose(gversion(nZnog(J)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
+                call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,iuout,
      &           IER)
               else
                 call egomin(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
@@ -889,8 +889,7 @@ C Display equivalent surface for MATERIAL
               endif
               call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
-     &           IER)
+                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
               else
                 call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
      &           IER)
@@ -1146,8 +1145,7 @@ C Should any way compute the equivalent area
             DO 691 k =1,NZG 
               call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
-     &           IER)
+                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
               else
                 call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
      &           IER)

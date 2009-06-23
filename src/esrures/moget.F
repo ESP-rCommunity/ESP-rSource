@@ -3925,7 +3925,7 @@ C and casual gain control file. << Work towards not reading zone files >>
         IUNIT=IFIL+1
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,0,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
         endif

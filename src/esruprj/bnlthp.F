@@ -120,7 +120,7 @@ C Read the complete building thermal and geometical data.
       DO 5 ICOMP=1,NCOMP
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
         endif

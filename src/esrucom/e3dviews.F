@@ -898,7 +898,7 @@ C description into a gen body and then get its bounds.
 
 C Check geometry file version and scan geometry file to get obstructions.
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
+              call georead(IFIL+1,LGEOM(IVZ),IVZ,1,IUOUT,IER)
             endif
           endif
           DO 301 IB=1,NB
@@ -931,7 +931,7 @@ C otherwise read from file.
    78     FORMAT(' Bounds: ',A)
           if(itrc.gt.1)CALL USRMSG(' ',OUTSTR,'-')
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
+            call georead(IFIL+1,LGEOM(IVZ),IVZ,1,IUOUT,IER)
           else
             call egomin(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
           endif

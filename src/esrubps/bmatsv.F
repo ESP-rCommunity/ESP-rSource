@@ -1186,8 +1186,7 @@ C                 endif
                   igu=ifil+1
                   call eclose(gversion(icomp),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(igu,LGEOM(icomp),icomp,1,itrc,iuout,
-     &                IER)
+                    call georead(igu,LGEOM(icomp),icomp,1,iuout,IER)
                   else
                     call egomin(igu,LGEOM(icomp),icomp,1,itrc,iuout,
      &                IER)

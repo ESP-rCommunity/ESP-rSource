@@ -1567,7 +1567,7 @@ C Edit zone name - read and then write the geometry file.
         endif
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
+          call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
         else
           call egomin(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
         endif
@@ -1587,7 +1587,7 @@ C Edit zone name - read and then write the geometry file.
           if(newgeo)then
             call geowrite(IUF,LGEOM(IZ),IZ,iuout,3,IER)
           else
-            call emkgeo(IUF,LGEOM(IZ),IZ,iuout,3,IER)
+            call emkgeo(IUF,LGEOM(IZ),IZ,3,IER)
           endif
           ZN=zname(IZ)
         endif

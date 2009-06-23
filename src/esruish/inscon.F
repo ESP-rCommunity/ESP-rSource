@@ -86,13 +86,13 @@ C for /ishdirec/.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(act.eq.'s')then
          if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
+            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
          else
             call egomin(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
          endif
       else
          if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
+            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
          else
             call egomin(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
          endif
@@ -266,13 +266,13 @@ C for /ishdirec/.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(act.eq.'s')then
          if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
+            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
          else
             call egomin(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
          endif
       else
          if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
+            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
          else
             call egomin(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
          endif

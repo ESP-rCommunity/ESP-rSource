@@ -1761,7 +1761,7 @@ C File with raw bi-directional data.
 
 C Open and scan the file.
         iua=IPRODB
-        call erbiwin(itrc,itru,iua,bidirfile,ier)
+        call erbiwin(itru,iua,bidirfile,ier)
         if(ier.eq.0)then
           call edisp(iuout,'The bi-directional data was sucessfully')
           call edisp(iuout,'scanned. Now indicate which surfaces are')

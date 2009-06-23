@@ -473,7 +473,7 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                   call edisp(iuout,outs)
                   call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
+                    call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,
      &                iuout,IER)
                   else
                     call egomin(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
@@ -500,7 +500,7 @@ C Logic to decide whether to upgrade other zone geometry format.
      &                iuout,3,IER)
                   else
                     call emkgeo(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                iuout,3,IER)
+     &                3,IER)
                   endif
                   IF(IER.NE.0)CALL USRMSG(
      &              'There was a problem updating the other surface ',
@@ -668,7 +668,7 @@ C Test for saving current or new format geometry file.
             if(newgeo)then
               call geowrite(IFIL+2,LTMP,ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LTMP,ICOMP,iuout,3,IER)
+              call emkgeo(IFIL+2,LTMP,ICOMP,3,IER)
             endif
           endif
 
@@ -845,7 +845,7 @@ C any flow network node associated with this zone.
             if(newgeo)then
               call geowrite(IFIL+2,LTMP,ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LTMP,ICOMP,iuout,3,IER)
+              call emkgeo(IFIL+2,LTMP,ICOMP,3,IER)
             endif
             if(IAIRN.ge.1.and.ICAAS(ICOMP).ne.0)then
               SUPNOD(ICAAS(ICOMP),2)=VOL(ICOMP)
@@ -1199,7 +1199,7 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                       call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                       if(newgeo)then
                         call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                    0,0,iuout,IER)
+     &                    0,iuout,IER)
                       else
                         call egomin(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
      &                    0,0,iuout,IER)
@@ -1217,7 +1217,7 @@ C Assign new MLC name to the icoth surface.
      &                  iuout,3,IER)
                       else
                         call emkgeo(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                  iuout,3,IER)
+     &                  3,IER)
                       endif
                       IF(IER.NE.0)CALL USRMSG(
      &                 'Problem updating other surface attribute... ',
@@ -1346,7 +1346,7 @@ C Finally update the system configuration file if not browsing.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
             endif
 	    silent= .false.
             call sumrchg(ICOMP,'r',silent)
@@ -1382,7 +1382,7 @@ C editing facility.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
             endif
             silent = .false.
             call sumrchg(ICOMP,'r',silent)
@@ -1555,7 +1555,7 @@ C Produce help text for the menu.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
           endif
 
 C Warn user if there is a flow node associated with this zone that
@@ -1739,7 +1739,7 @@ C other zone.
             if(newgeo)then
               call geowrite(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,3,IER)
             endif
             MODIFY=.TRUE.
             MODBND=.TRUE.
@@ -1753,7 +1753,7 @@ C other zone.
             MODBND=.TRUE.
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+              call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
             else
               call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
             endif
@@ -1770,7 +1770,7 @@ C other zone.
 C User aborted so scan the intial zone prior to returning.
               call eclose(gversion(icomp),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
+                call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
               else
                 call egomin(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
               endif
@@ -1782,7 +1782,7 @@ C User aborted so scan the intial zone prior to returning.
 C Re-establish the initial zone geometry.
             call eclose(gversion(icomp),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
+              call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
             else
               call egomin(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
             endif
@@ -1810,7 +1810,7 @@ C If user has not canceled then perform the transform.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           if(IAIRN.ge.1.and.ICAAS(ICOMP).ne.0)then
             call usrmsg(
@@ -1998,7 +1998,7 @@ C Logic for deciding which format of geometry file to write.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
           endif
 
 C Warn user if there is a flow node associated with this zone that
@@ -2304,7 +2304,7 @@ C Ask for name of file to put updated information into.
         if(newgeo)then
           call geowrite(IFIL+2,LTMP,ICOMP,iuout,4,IER)
         else
-          call emkgeo(IFIL+2,LTMP,ICOMP,iuout,4,IER)
+          call emkgeo(IFIL+2,LTMP,ICOMP,4,IER)
         endif
         IF(IER.NE.0)THEN
           CALL USRMSG(' ','Problem creating file!','W')
@@ -2486,7 +2486,7 @@ C If any changes update and then save geometry file.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           changed=.false.
         endif
@@ -2532,7 +2532,7 @@ C If any changes update and then save geometry file before invoking ish.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           changed=.false.
         endif
@@ -3124,7 +3124,7 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           CALL EMKCFG('-',IER)
           call warnmod(ICOMP,'sf+')
@@ -3397,7 +3397,7 @@ C zone.
                     call edisp(iuout,outs)
                     call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                     if(newgeo)then
-                      call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
+                      call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,
      &                  iuout,IER)
                     else
                       call egomin(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
@@ -3420,7 +3420,7 @@ C Logic to decide whether to update other zone geometry format.
      &                  iuout,3,IER)
                     else
                       call emkgeo(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                  iuout,3,IER)
+     &                  3,IER)
                     endif
                     IF(IER.NE.0)CALL USRMSG(
      &               'Problem updating other surface attribute... ',
@@ -3909,7 +3909,7 @@ C Finally update the system configuration file if not browsing.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
           endif
 
 C If user requested other side to be updated do this as well. Read
@@ -3922,7 +3922,7 @@ C other zone) and write out that zones geometry.
             call edisp(iuout,outs)
             call eclose(gversion(IC2(IC)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+2,LGEOM(IC2(IC)),IC2(IC),0,0,iuout,IER)
+              call georead(IFIL+2,LGEOM(IC2(IC)),IC2(IC),0,iuout,IER)
             else
               call egomin(IFIL+2,LGEOM(IC2(IC)),IC2(IC),0,0,iuout,IER)
             endif
@@ -3940,7 +3940,7 @@ C Assign new MLC name to the icoth surface.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(IC2(IC)),IC2(IC),iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(IC2(IC)),IC2(IC),iuout,3,IER)
+              call emkgeo(IFIL+2,LGEOM(IC2(IC)),IC2(IC),3,IER)
             endif
             IF(IER.NE.0)CALL USRMSG(' ',
      &           'Problem updating other surface attribute.','W')
@@ -6424,7 +6424,7 @@ C Delete a surface. If number of surfaces changed then update cfg.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           call warnmod(ICOMP,'sf-')
         endif
@@ -6905,7 +6905,7 @@ C Record the recent changes and re-display
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           call warnmod(ICOMP,'sf+')
         endif
@@ -7922,7 +7922,7 @@ C Make up a zone geometry file name for this new zone.
       if(newgeo)then
         call geowrite(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
       else
-        call emkgeo(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
+        call emkgeo(IFIL+2,LGEOM(icomp),icomp,4,IER)
       endif
 
 C If there are default windows then attempt to insert them as
@@ -7976,7 +7976,7 @@ C Save zone if more surfaces have been added.
         if(newgeo)then
           call geowrite(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
         else
-          call emkgeo(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
+          call emkgeo(IFIL+2,LGEOM(icomp),icomp,4,IER)
         endif
       endif
 

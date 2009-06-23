@@ -5443,7 +5443,7 @@ C Use zone moisture content (xi), x at saturation to evaluate Ev.
 C Read in surface details and calculate the area weighted radiant temperature. 
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
+          call georead(ifil+1,lgeom(icomp),icomp,0,itu,ier)
         else
           call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
         endif
@@ -6403,7 +6403,7 @@ C Reset properties by reading in zone descriptor files.
 
         call eclose(gversion(ICMP),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         else
           call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
         endif
@@ -6417,7 +6417,7 @@ C Read in the thermophysical properties for this zone
 C (needed in subroutine mzcoe1).
         call eclose(gversion(ICMP),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         else
           call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
         endif

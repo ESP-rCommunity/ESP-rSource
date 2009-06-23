@@ -468,7 +468,7 @@ C Save this to file before passing into the geometry editing facility.
       if(newgeo)then
         call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
-        call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+        call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
       endif
       IF(IER.EQ.1)THEN
         dok=.true.
@@ -637,7 +637,7 @@ C Scan geometry file and update control and connections.
 C Try reading in the geometry to fill in the data below.
         call eclose(gversion(IC),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
         endif
@@ -773,7 +773,7 @@ C the geometry file.
           if(newgeo)then
             call geowrite(IFIL+1,LGEOM(ic),ic,iuout,3,IER)
           else
-            call emkgeo(IFIL+1,LGEOM(ic),ic,iuout,3,IER)
+            call emkgeo(IFIL+1,LGEOM(ic),ic,3,IER)
           endif
         endif
 
@@ -1272,7 +1272,7 @@ C the values of ICT, IE2 and IC2.
           changed=.FALSE.
           call eclose(gversion(IX),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IX),IX,1,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(IX),IX,1,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(IX),IX,1,0,iuout,IER)
           endif
@@ -1313,7 +1313,7 @@ C the values of ICT, IE2 and IC2.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(IX),IX,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(IX),IX,iuout,3,IER)
+              call emkgeo(IFIL+2,LGEOM(IX),IX,3,IER)
             endif
           endif
           call usrmsg('  ','  ','-')
@@ -1382,7 +1382,7 @@ C in reverse order (adjusting the connections as required).
       call usrmsg('  ',outs,'-')
       call eclose(gversion(IW2),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IW2),IW2,1,0,iuout,IER)
+        call georead(IFIL+1,LGEOM(IW2),IW2,1,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IW2),IW2,1,0,iuout,IER)
       endif
@@ -1560,7 +1560,7 @@ C commons via reading in related files.
       do 48 ir=1,NCOMP
         call eclose(gversion(ir),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(ir),ir,1,0,IUOUT,IER)
+          call georead(IFIL+1,LGEOM(ir),ir,1,IUOUT,IER)
         else
           call egomin(IFIL+1,LGEOM(ir),ir,1,0,IUOUT,IER)
         endif

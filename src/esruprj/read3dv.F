@@ -175,7 +175,7 @@ C before going on to the surfaces in the zone itself.
       IF(nznog(IZ).NE.izgfoc)THEN
         call eclose(gversion(nznog(IZ)),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)
+          call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,IUOUT,IER)
         else
           call egomin(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)
         endif

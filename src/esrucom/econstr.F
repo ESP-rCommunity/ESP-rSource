@@ -1235,12 +1235,18 @@ C Open existing ASCII construction data file as unit IIN.
 C ******** ERBIWIN
 C  ERBIWIN: reads bi-directional optical data from measurements
 C           file.
-      subroutine erbiwin(itrc,itru,iua,lua,ier)
+      subroutine erbiwin(itru,iua,lua,ier)
 #include "building.h"
 #include "espriou.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer itru  ! channel for feedback
+      integer iua   ! file unit
+      character LUA*72  ! optical data file name
+      integer ier   ! error state to return zero is ok
 
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
@@ -1292,7 +1298,7 @@ C   sky and ground diffuse radiation
      &  DF_G_GND(MSTMC,MSGAL),DF_RF_GND(MSTMC,MSGAL),
      &  a_dfSKYinner(MSTMC,MSGAL),a_dfGNDinner(MSTMC,MSGAL),
      &  a_dfSKYouter(MSTMC,MSGAL),a_dfGNDouter(MSTMC,MSGAL) 
-      character OUTSTR*124,OUTS*124,LUA*72,WORD*20
+      character OUTSTR*124,OUTS*124,WORD*20
       character bidirfile*72,bidirname*12
       logical bCloseToZero
 

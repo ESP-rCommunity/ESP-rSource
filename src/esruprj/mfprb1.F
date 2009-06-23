@@ -989,7 +989,7 @@ C (Re)Set all surfaces to standard line width.
 C General image option flags.
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,0,0,ITRU,IER)
+            call georead(IFIL+1,LGEOM(IZ),IZ,0,ITRU,IER)
           else
             call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,ITRU,IER)
           endif
@@ -1907,7 +1907,7 @@ C Allow the user to select the roof of the building
       itrc=0
       call eclose(gversion(IZ),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
       endif

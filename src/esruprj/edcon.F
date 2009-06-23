@@ -138,7 +138,7 @@ C Set existance of a zone construction file to false.
 C Read in the related geometry file into common.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
       else
         call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
       endif
@@ -769,7 +769,7 @@ C If geometry info has changed then save it as well.
           if(newgeo)then
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           else
-            CALL EMKGEO(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            CALL EMKGEO(IUF,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           MODGEO=.FALSE.
         endif

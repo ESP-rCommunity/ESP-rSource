@@ -647,7 +647,7 @@ C Open and scan the bidirectional data file if it exists.
         continue
       else
         iua=IAPROB
-        call erbiwin(0,iuout,iua,bidirfile,ier)
+        call erbiwin(iuout,iua,bidirfile,ier)
         if(ier.eq.0)then
           call edisp(itru,'The bi-directional data was sucessfully')
           call edisp(itru,'scanned.')
@@ -859,7 +859,7 @@ C translate the casual gains.
 
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,1,ITU,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
         endif
@@ -1537,7 +1537,7 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       do 287 IZ=1,NCOMP
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
         endif

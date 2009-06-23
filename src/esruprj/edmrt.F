@@ -114,7 +114,7 @@ C matching geometry file.
 C Set VEWF array in preparation for editing or silent creation.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
       else
         call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
       endif

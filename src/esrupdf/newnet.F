@@ -1177,7 +1177,7 @@ C and construction node cntdt3 counted from outside.
             ELSEIF(ICLOC.EQ.2.OR.ICLOC.EQ.3)THEN
               call eclose(gversion(IZ),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+                call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
               else
                 call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
               endif
@@ -2728,7 +2728,7 @@ C Determine the linkage type.
 
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
           endif

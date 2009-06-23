@@ -996,7 +996,7 @@ C Now read zone geometry file to enable edge selection.
       ITRC=0
       call eclose(gversion(ifocz),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
+        call georead(ITA1,LGEOM(ifocz),ifocz,0,IUOUT,IER)
       else
         call EGOMIN(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
       endif

@@ -459,7 +459,7 @@ C Re-Read in the initial zone geometry file into common & restore
 C the image.
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+          call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
         else
           call egomin(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
         endif
@@ -915,7 +915,7 @@ C Check for blind shutter control.
             do 100 newfoc=1,ncomp
               call eclose(gversion(newfoc),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ita3,LGEOM(newfoc),newfoc,1,ITRC,ITRU,IER)
+                call georead(ita3,LGEOM(newfoc),newfoc,1,ITRU,IER)
               else
                 call egomin(ita3,LGEOM(newfoc),newfoc,1,ITRC,ITRU,IER)
               endif
@@ -1109,13 +1109,13 @@ C Read in the zone geometry.
         if(ACT.eq.'i')then
           call usrmsg(' ',outs,'-')
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif
         else
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,0,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,0,IUOUT,IER)
           endif

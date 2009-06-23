@@ -151,7 +151,7 @@ C << to re-read. several steps required before this is possible.
 
               call eclose(gversion(iotherzone),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,0,
+                call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
      &            iuout,IER)
               else
                 call egomin(IFIL+2,LGEOM(iotherzone),iotherzone,0,0,
@@ -176,7 +176,7 @@ C Logic to decide whether to upgrade other zone geometry format.
      &            iuout,3,IER)
               else
                 call emkgeo(IFIL+2,LGEOM(iotherzone),iotherzone,
-     &            iuout,3,IER)
+     &            3,IER)
               endif
             endif
           endif
@@ -197,7 +197,7 @@ C be rewritten. Scan it and update ssother and then write.
               call edisp(iuout,outs)
               call eclose(gversion(iotherzone),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,0,
+                call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
      &            iuout,IER)
               else
                 call egomin(IFIL+2,LGEOM(iotherzone),iotherzone,0,0,
@@ -220,7 +220,7 @@ C Logic to decide whether to upgrade other zone geometry format.
      &            iuout,3,IER)
               else
                 call emkgeo(IFIL+2,LGEOM(iotherzone),iotherzone,
-     &            iuout,3,IER)
+     &            3,IER)
               endif
             endif
           endif
@@ -563,7 +563,7 @@ C Reset all surface lines in donor zone.
           if(newgeo)then
             call geowrite(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           MODIFY=.TRUE.
           MODBND=.TRUE.
@@ -604,7 +604,7 @@ C Read the other zone and put selected surface data into temp storage.
         if(.NOT.same)then
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
           endif
@@ -664,7 +664,7 @@ C past the current last surface in the zone`.
         if(.NOT.same)then
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
           endif
@@ -991,13 +991,13 @@ C copying the next surface.
             if(newgeo)then
               call geowrite(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,3,IER)
             endif
             call edisp(iuout,' getting donor zone info...')
 
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+              call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
             else
               call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
             endif
@@ -1013,7 +1013,7 @@ C copying the next surface.
             if(newgeo)then
               call geowrite(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,3,IER)
             endif
             write(outs,'(3a)') ' Repeat transforms for ',
      &       SNAME(ICOMP,ispk(npick)),' ?'

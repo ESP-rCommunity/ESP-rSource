@@ -1853,7 +1853,7 @@ C Read in the zone geometry.
         CALL edisp(iuout,outs)
         call eclose(gversion(mz),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+          call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
         else
           call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
         endif

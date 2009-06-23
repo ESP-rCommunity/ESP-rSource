@@ -959,7 +959,7 @@ C to be refreshed.
             izgfoc=izone
             call eclose(gversion(nznog(1)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
+              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,
      &          IUOUT,IER)
             else
               call egomin(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
@@ -1827,7 +1827,7 @@ C to be refreshed.
             izgfoc=izone
             call eclose(gversion(nznog(1)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
+              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,
      &          IUOUT,IER)
             else
               call egomin(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,

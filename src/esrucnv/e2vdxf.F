@@ -86,7 +86,7 @@ C Read in the zone geometry.
           CALL edisp(iuout,outs)
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif
@@ -147,7 +147,7 @@ C Write obstructions to output file.
 C Free the viewer file and eeread in the geometry file.
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif
@@ -305,7 +305,7 @@ C Read in the zone geometry.
         CALL edisp(iuout,outs)
         call eclose(gversion(mz),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+          call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
         else
           call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
         endif
@@ -348,7 +348,7 @@ C obstruction.
 C Reread in the geometry file.
           call eclose(gversion(mz),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+            call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
           endif
@@ -505,7 +505,7 @@ C Read in the zone geometry.
           CALL edisp(iuout,outs)
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif
@@ -552,7 +552,7 @@ C << Still to do - read and convert any ground topology. >>
 C Free the THF file and reread in the geometry file.
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif

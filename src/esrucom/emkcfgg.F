@@ -1115,7 +1115,7 @@ C geometry.h provides commons G0/G2/c20.
       do 287 IZ=1,NCOMP
         call eclose(gversion(iz),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
         else
           CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
         endif

@@ -1191,7 +1191,7 @@ C Use standard esp-r common flow for legacy materials db.
                 gendbok(idp)=.false.
                 goto 42
               endif 
-              CALL MKAPRC(IUOUT,afil,IAFIL,IER)
+              CALL MKAPRC(afil,IAFIL,IER)
               IBFIL=IFIL+2
               call imprimmat(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
 
@@ -1450,7 +1450,7 @@ C Use standard esp-r common flow for legacy materials db.
               gendbok(idp)=.false.
               return
             endif 
-            CALL MKAPRC(IUOUT,afil,IAFIL,IER)
+            CALL MKAPRC(afil,IAFIL,IER)
             IBFIL=IFIL+2
             call imprimmat(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
 
@@ -2199,7 +2199,7 @@ C Use standard esp-r common code for legacy materials db.
               jdbhash=0
               return
             endif 
-            CALL MKAPRC(IUOUT,afil,IAFIL,IER)
+            CALL MKAPRC(afil,IAFIL,IER)
             IBFIL=IFIL+2
 
 C Depending on the type of database call various conversion functions.

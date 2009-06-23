@@ -258,7 +258,7 @@ C and jump back if hc facility entered in error.
 C Display the reference zone.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,iuout,IER)
       else
         call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
       endif

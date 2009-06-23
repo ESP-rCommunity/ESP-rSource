@@ -1016,7 +1016,7 @@ C Show the zone selection menu.
         SZN=zname(IZ)
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
         endif

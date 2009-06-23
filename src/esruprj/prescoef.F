@@ -584,7 +584,7 @@ C Manual input of cordinates.
           IUF=IFIL+1
           call eclose(gversion(IC),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LGEOM(IC),IC,1,0,iuout,IER)
+            call georead(IUF,LGEOM(IC),IC,1,iuout,IER)
           else
             call egomin(IUF,LGEOM(IC),IC,1,0,iuout,IER)
           endif
@@ -712,7 +712,7 @@ C Open geometry file for surface property check.
           do 46 IZU=1,NCOMP
             call eclose(gversion(IZU),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LGEOM(IZU),IZU,1,0,iuout,IER)
+              call georead(IUF,LGEOM(IZU),IZU,1,iuout,IER)
             else
               call egomin(IUF,LGEOM(IZU),IZU,1,0,iuout,IER)
             endif

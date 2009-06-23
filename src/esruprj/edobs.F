@@ -101,7 +101,7 @@ C re-read the geometry file.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
         CALL ERPFREE(IUF,ios)
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRC,ITRU,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
         if(IOBS(ICOMP).EQ.2)then
           continue
         elseif(IOBS(ICOMP).EQ.1)then
@@ -685,7 +685,7 @@ C is 0 then set makedummy to true.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
         CALL ERPFREE(IUF,ios)
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRC,ITRU,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
         if(IOBS(ICOMP).EQ.2)then
           if(NB.eq.0)then
             ZOBS(ICOMP)=' '
@@ -981,7 +981,7 @@ C Initial values for point at angle facility.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
         CALL ERPFREE(IUF,ios)
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRC,ITRU,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
       endif
 
 C Initial menu entry setup.

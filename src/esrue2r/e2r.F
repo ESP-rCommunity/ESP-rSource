@@ -1510,7 +1510,7 @@ C (need to test blind/ shuter control flags).
           if(XST)then
             call eclose(gversion(icomp),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+              call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
             else
               call egomin(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
             endif

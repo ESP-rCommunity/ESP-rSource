@@ -202,7 +202,7 @@ C Remember the topology attributes for reference zone.
         IUO=IFIL+1
         call eclose(gversion(IC1(IFOC)),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
+          call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
         else
           call egomin(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
         endif
@@ -592,7 +592,7 @@ C Update zone geometry if attributes have changed.
           call usrmsg(' Updating problem...',' ','-')
           call eclose(gversion(IC1(IFOC)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
+            call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
           else
             call egomin(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
           endif
@@ -613,7 +613,7 @@ C Update zone geometry if attributes have changed.
           if(newgeo)then
             call geowrite(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),iuout,3,IER)
           else
-            call emkgeo(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),iuout,3,IER)
+            call emkgeo(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),3,IER)
           endif
           IF(IER.NE.0)CALL USRMSG(' ',
      &           ' Problem updating surface attribute...','W')
@@ -626,7 +626,7 @@ C other zone) and write out that zones geometry.
           call usrmsg(' Updating other side...',' ','-')
           call eclose(gversion(IC2(IFOC)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,0,iuout,IER)
+            call georead(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,iuout,IER)
           else
             call egomin(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,0,iuout,IER)
           endif
@@ -644,7 +644,7 @@ C other zone) and write out that zones geometry.
           if(newgeo)then
             call geowrite(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),iuout,3,IER)
           else
-            call emkgeo(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),iuout,3,IER)
+            call emkgeo(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),3,IER)
           endif
           IF(IER.NE.0)CALL USRMSG(' ',
      &           ' Problem updating other surface attribute...','W')

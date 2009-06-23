@@ -526,7 +526,7 @@ C of connections re-establish the IZSTOCN array.
           do 87 IZ=1,NCOMP
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+              call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
             else
               call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
             endif
@@ -594,7 +594,7 @@ C << show the surface attributes also be cleared?? >>
           do 187 IZ=1,NCOMP
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+              call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
             else
               call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
             endif
@@ -887,7 +887,7 @@ C Remember topology attributes for reference zone.
         IUO=IFIL+1
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUO,LGEOM(IZ),IZ,0,0,iuout,IER)
+          call georead(IUO,LGEOM(IZ),IZ,0,iuout,IER)
         else
           call egomin(IUO,LGEOM(IZ),IZ,0,0,iuout,IER)
         endif
@@ -1716,7 +1716,7 @@ C << what about using CALL ESCZONE(ICOMP) and then CALL ERCZONE(ICOMP)? >>
           call edisp(iuout,' Updating surface attributes...')
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+2,LGEOM(IZ),IZ,0,0,iuout,IER)
+            call georead(IFIL+2,LGEOM(IZ),IZ,0,iuout,IER)
           else
             call egomin(IFIL+2,LGEOM(IZ),IZ,0,0,iuout,IER)
           endif
@@ -1740,7 +1740,7 @@ C          write(6,*) (TOTHER(ij,1),ij=1,10)
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(IZ),IZ,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(IZ),IZ,iuout,3,IER)
+            call emkgeo(IFIL+2,LGEOM(IZ),IZ,3,IER)
           endif
           IF(IER.NE.0)THEN
             CALL USRMSG(bl,' Problem updating geometry file.','W')
@@ -1843,7 +1843,7 @@ C and display zone when connection jumps to another zone.
         IF(ICL.NE.IC1(ICC))THEN
           call eclose(gversion(IC1(ICC)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IC1(ICC)),IC1(ICC),1,0,ITRU,IER)
+            call georead(IFIL+1,LGEOM(IC1(ICC)),IC1(ICC),1,ITRU,IER)
           else
             call egomin(IFIL+1,LGEOM(IC1(ICC)),IC1(ICC),1,0,ITRU,IER)
           endif
@@ -3050,7 +3050,7 @@ C updated as well.
                   LTMP=LGEOM(IZ)
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(IUF,LTMP,IZ,1,0,iuout,IER)
+                    call georead(IUF,LTMP,IZ,1,iuout,IER)
                   else
                     call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
                   endif
@@ -3067,7 +3067,7 @@ C updated as well.
                   if(newgeo)then
                     call geowrite(IUF,LTMP,IZ,iuout,3,IER)
                   else
-                    call emkgeo(IUF,LTMP,IZ,iuout,3,IER)
+                    call emkgeo(IUF,LTMP,IZ,3,IER)
                   endif
  243            continue
               endif
@@ -3091,7 +3091,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   LTMP=LGEOM(IZ)
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(IUF,LTMP,IZ,1,0,iuout,IER)
+                    call georead(IUF,LTMP,IZ,1,iuout,IER)
                   else
                     CALL EGOMIN(IUF,LTMP,IZ,1,0,iuout,IER)
                   endif
@@ -3108,7 +3108,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   if(newgeo)then
                     call geowrite(IUF,LTMP,IZ,iuout,3,IER)
                   else
-                    call emkgeo(IUF,LTMP,IZ,iuout,3,IER)
+                    call emkgeo(IUF,LTMP,IZ,3,IER)
                   endif
  244            continue
               endif
@@ -3132,7 +3132,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   LTMP=LGEOM(IZ)
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(IUF,LTMP,IZ,1,0,iuout,IER)
+                    call georead(IUF,LTMP,IZ,1,iuout,IER)
                   else
                     call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
                   endif
@@ -3149,7 +3149,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   if(newgeo)then
                     call geowrite(IUF,LTMP,IZ,iuout,3,IER)
                   else
-                    call emkgeo(IUF,LTMP,IZ,iuout,3,IER)
+                    call emkgeo(IUF,LTMP,IZ,3,IER)
                   endif
  245            continue
               endif
@@ -3432,7 +3432,7 @@ C Search and replace by finding matching constructions.
               LTMP=LGEOM(IVALS(IZ))
               call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+                call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
               else
                 call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
               endif
@@ -3475,7 +3475,7 @@ C << of TRAN for SSOTF.
               if(newgeo)then
                 call geowrite(IUF,LTMP,IVALS(IZ),iuout,3,IER)
               else
-                call emkgeo(IUF,LTMP,IVALS(IZ),iuout,3,IER)
+                call emkgeo(IUF,LTMP,IVALS(IZ),3,IER)
               endif
               QUIET=.TRUE.
               write(outs,'(3a)') ' Updating: ',zn(1:lnblnk(zn)),
@@ -3536,7 +3536,7 @@ C Anchor point substitution.
             LTMP=LGEOM(IZ)
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LTMP,IZ,1,0,iuout,IER)
+              call georead(IUF,LTMP,IZ,1,iuout,IER)
             else
               call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
             endif
@@ -3555,7 +3555,7 @@ C << of TRAN for SSOTF.
             if(newgeo)then
               call geowrite(IUF,LTMP,IZ,iuout,3,IER)
             else
-              call emkgeo(IUF,LTMP,IZ,iuout,3,IER)
+              call emkgeo(IUF,LTMP,IZ,3,IER)
             endif
  2243     continue
           QUIET=.FALSE.
@@ -3640,7 +3640,7 @@ C << of TRAN for SSOTF.
             LTMP=LGEOM(IVALS(IZ))
             call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+              call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
             else
               call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
             endif
@@ -3726,7 +3726,7 @@ C 'any horizontal','any orien.','cancel'.
             if(newgeo)then
               call geowrite(IUF,LTMP,IVALS(IZ),ITRU,3,IER)
             else
-              call emkgeo(IUF,LTMP,IVALS(IZ),ITRU,3,IER)
+              call emkgeo(IUF,LTMP,IVALS(IZ),3,IER)
             endif
             QUIET=.TRUE.
             write(outs,'(3a)') ' Updating: ',zn(1:lnblnk(zn)),

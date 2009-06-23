@@ -2226,7 +2226,7 @@ C fully read to find the number of surfaces in the zone.
             call st2name(ZN,zname(ICOMP))
             lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
             CALL ERPFREE(IUF,ios)
-            call georead(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
+            call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
             gversion(icomp) = 1.1   ! set the version number.
             write(currentfile,'(a)') FILE(1:lnblnk(FILE))
           else
@@ -2507,7 +2507,7 @@ C derived data. Use georead or egomin depending on version.
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(XST)then
           if(newgeo)then
-            call georead(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
+            call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
           else
             call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
           endif

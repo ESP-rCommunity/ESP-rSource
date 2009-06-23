@@ -750,7 +750,7 @@ C lowest and highest point and cog of surface.
           DO 930 IZ = 1,NCOMP
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
+              call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
             else
               call egomin(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
             endif
@@ -1652,7 +1652,7 @@ C Read the geometry to fill in the data below.
           NCOMP=NCOMP+1
           call eclose(gversion(NCOMP),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LTMP,NCOMP,1,ITRC,iuout,IER)
+            call georead(IFIL+1,LTMP,NCOMP,1,iuout,IER)
           else
             call egomin(IFIL+1,LTMP,NCOMP,1,ITRC,iuout,IER)
           endif
@@ -1896,7 +1896,7 @@ C Now it is ok to write out the copied zone.
             call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           else
 	    iuf=ifil+2
-            call emkgeo(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
+            call emkgeo(iuf,LGEOM(NCOMP),NCOMP,3,IER)
           endif
           IF(IER.EQ.1)THEN
             dok=.true.
@@ -2352,7 +2352,7 @@ C Update the configuration file.
 C Scan the geometry file and freshen derived geometric common blocks.
           call eclose(gversion(IC),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+            call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
           endif
@@ -2957,7 +2957,7 @@ C CFD.
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         call eclose(gversion(IC),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
         endif
@@ -4155,7 +4155,7 @@ C      of obstruction data.
           LTMP=LGEOM(IICOMP)
           call eclose(gversion(IICOMP),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
+            call georead(IUF,LTMP,IICOMP,1,iuout,IER)
           else
             call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
           endif
@@ -4174,7 +4174,7 @@ C Decide whether to upgrade the geometry file format.
           if(newgeo)then
             call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
           else
-            call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
+            call emkgeo(IUF,LTMP,IICOMP,3,IER)
           endif
 
 C After transform update the g6 & g7 commons and find dependencies.
@@ -4344,7 +4344,7 @@ C      of obstruction data.
           LTMP=LGEOM(IICOMP)
           call eclose(gversion(IICOMP),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
+            call georead(IUF,LTMP,IICOMP,1,iuout,IER)
           else
             call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
           endif
@@ -4357,7 +4357,7 @@ C      of obstruction data.
           if(newgeo)then
             call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
           else
-            call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
+            call emkgeo(IUF,LTMP,IICOMP,3,IER)
           endif
 
 C After transform update the g6 & g7 commons and find dependencies.

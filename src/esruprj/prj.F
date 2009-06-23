@@ -820,7 +820,7 @@ C            call edisp(iuout,'* Changing focus to specified zone.')
             itru=iuout
             call eclose(gversion(index),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(index),index,1,ITRC,iuout,IER)
+              call georead(IFIL+1,LGEOM(index),index,1,iuout,IER)
             else
               call egomin(IFIL+1,LGEOM(index),index,1,ITRC,iuout,IER)
             endif
@@ -3529,7 +3529,7 @@ C Check contiguity.
       do 287 IZ=1,NCOMP
         call eclose(gversion(iz),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
         endif
@@ -3699,7 +3699,7 @@ C Do cursory check to see if the file is sorted.
 C Zone construction file exists so attempt to scan it.
             call eclose(gversion(i),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(I),I,0,0,iuout,IER)
+              call georead(IFIL+1,LGEOM(I),I,0,iuout,IER)
             else
               call egomin(IFIL+1,LGEOM(I),I,0,0,iuout,IER)
             endif
@@ -4544,7 +4544,7 @@ C geometry and attribution
             EXT='.geo'
             call eclose(gversion(icomp),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+              call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             else
               call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
             endif
@@ -4557,7 +4557,7 @@ C geometry and attribution
             if(newgeo)then
               call geowrite(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
             else
-              call emkgeo(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+              call emkgeo(IUF,LGEOM(ICOMP),ICOMP,3,IER)
             endif
 
 C Remember this geometry file has been done so that a later selection
@@ -5213,7 +5213,7 @@ C Check if geometry file has already been updated.
               EXT='.geo'
               call eclose(gversion(icomp),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRC,ITRU,IER)
+                call georead(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRU,IER)
               else
                 call egomin(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRC,ITRU,IER)
               endif
@@ -5226,7 +5226,7 @@ C Check if geometry file has already been updated.
               if(newgeo)then
                 call geowrite(IUNIT,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
               else
-                call emkgeo(IUNIT,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+                call emkgeo(IUNIT,LGEOM(ICOMP),ICOMP,3,IER)
               endif
               WRITE(MSG1,'(2A)')
      &        '* New geometry file written out for zone ',ZNAME(ICOMP)

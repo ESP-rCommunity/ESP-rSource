@@ -848,7 +848,7 @@ C If esp pre-processor or user defined df then read in geometry data.
       if(nog)then
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
+          call georead(iunit,lgeom(icomp),icomp,0,itu,ier)
         else
           call egomin(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
         endif

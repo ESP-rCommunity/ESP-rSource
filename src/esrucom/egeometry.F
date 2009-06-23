@@ -300,7 +300,7 @@ C the should use georead to scan the file.
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
         gversion(icomp) = 1.1   ! set the version number.
         CALL ERPFREE(IUNIT,ios)
-        call georead(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
+        call georead(IUNIT,LGEOM,ICOMP,IR,ITRU,IER)
         return
       else
         K=0
@@ -977,18 +977,21 @@ C mation currently held in common blocks G0 G1 G3 G4 G6.  It is
 C assumed that this information has been checked.
 C GENFIL is the name of the file to be written to (any existing file
 C by this name is overwritten).  
-C ICOMP is the zone number, ATR=true attribute file ATR=false plain file.
-C IR=1 range checking IR=0 no range checking, ITRC unit number for
-C user output, IER=0 OK IER=1 problem. IWF = 3 create/overwrite,=4 check
-C with user before overwriting.
 
-      SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
+      SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,iwf,IER)
 #include "building.h"
 
 C geometry.h provides commons G0/G2/G4/prec17/precz/c20.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer IFILG        ! file unit
+      character GENFIL*72  ! file name
+      integer ICOMP        ! the zone number
+      integer iwf          ! 3 create/overwrite, 4 confirm before overwriting.
+      integer IER          ! IER 0 OK IER 1 problem
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -1008,7 +1011,7 @@ C << calling code to signal that ZNDATA could be used instead.
 C Dummy array for default windows.
       dimension NGLD(MS)
 
-      CHARACTER GENFIL*72,louts*248
+      CHARACTER louts*248
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER SO*15    ! to write out legacy
@@ -1191,8 +1194,6 @@ C Error messages.
 C ******************** GEOREAD 
 C GEOREAD reads V1.1 zone geometry data from a user-constructed data
 C file. Data input is based on an extended GENeral (GEN) shaped zones.
-C If IR=1 then range checking is enabled, otherwise only minimal checking
-C is performed on the data as read in.
 
 C GEN - any polyhedral-shaped zone comprised of 'M' planes.
 
@@ -1209,7 +1210,7 @@ C       anticlockwise order which comprise each surface and the
 C       rotation angle from the site X-axis to east (anticlockwise
 C       +ve).
  
-      SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
+      SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRU,IER)
 #include "building.h"
 
 C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
@@ -1219,6 +1220,13 @@ C espriou.h provides currentfile.
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer IUNIT  ! file unit to read
+      integer ICOMP  ! zone number
+      integer IR     ! IR 1 range checking is enabled, otherwise only minimal checking
+      integer ITRU   ! file unit for feedback
+      integer IER    ! zero is ok
 
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -3855,7 +3863,7 @@ C using georead or egomin and pass across into the appropriate array.
         endif
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,iuout,ier)
+          call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
         else
           call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,iuout,ier)
         endif

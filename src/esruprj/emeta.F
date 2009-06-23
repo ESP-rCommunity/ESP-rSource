@@ -791,7 +791,7 @@ C parent surface.  Later add logic to better place the door..
       if(nbdoor.gt.0)then
         do 78 ids=1,NZSUR(ICOMP)
           if(hasdoor(ids).gt.0.0)then
-            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             newsurf=nsur+1
             isurf=ids
             CALL SURLEHI(isurf,XYMAX,ZMAX)  ! get width of parent
@@ -876,7 +876,7 @@ C the parent surface as a percentage of area.
       if(nbglz.gt.0)then
         do 77 ids=1,NZSUR(ICOMP)
           if(hasglaze(ids).gt.0.0)then
-            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             newsurf=nsur+1
             isurf=ids
             act='sp'

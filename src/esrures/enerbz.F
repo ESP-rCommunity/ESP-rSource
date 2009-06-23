@@ -73,7 +73,7 @@ C Read in the geometry file to refresh surface attributes.
       iunit=ifil+1
       call eclose(gversion(izone),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
+        call georead(iunit,LGEOM(IZONE),IZONE,0,iuout,ier)
       else
         call egomin(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
       endif

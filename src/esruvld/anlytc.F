@@ -909,7 +909,7 @@ C Copy the default validation model.
       CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
       call eclose(gversion(IComp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUnit,LGEOM(IComp),IComp,1,ITRC,IUOUT,IER)
+        call georead(IUnit,LGEOM(IComp),IComp,1,IUOUT,IER)
       else
         call egomin(IUnit,LGEOM(IComp),IComp,1,ITRC,IUOUT,IER)
       endif
@@ -1051,7 +1051,7 @@ C Save geometry file.
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
       else
-        call emkgeo(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
+        call emkgeo(IUF,LGEOM(ICOMP),IComp,3,IER)
       endif
 
 C Save construction file.

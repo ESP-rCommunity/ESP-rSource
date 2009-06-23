@@ -650,7 +650,7 @@ c      ISO=ispmloc(IVAL,2)
       if(IZ.eq.0) return
       call eclose(gversion(IZ),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
       endif
@@ -704,7 +704,7 @@ c      IVAL=IFOC
 
       call eclose(gversion(IZ),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
       endif
@@ -890,7 +890,7 @@ C For ducted wind turbine - select the position of the DWT outlet
         if(IZ.eq.0) return
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
         endif
@@ -929,7 +929,7 @@ C General image option flags.
 C Recover the related zone.
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
         endif

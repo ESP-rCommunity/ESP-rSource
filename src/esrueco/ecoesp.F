@@ -528,7 +528,7 @@ C Add an element, initiate it to the values of last element in class.
               EE(ILNE)=EE(NE)
               EA(ILNE)=EA(NE)
               EDRV(ILNE)=EDRV(NE)
-              CALL EDPELEM(iuout,EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
+              CALL EDPELEM(EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
      &           EE(ILNE),EA(ILNE),EDRV(ILNE),ENAM(ILNE),IER) 
               NE=NE+1
               MODDB=.TRUE.
@@ -546,7 +546,7 @@ C Add an element, initiate it to the values of last element in class.
 
 C Identified one of the elements to edit or select.
           IFOC=INO-7
-          CALL EDPELEM(iuout,EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
+          CALL EDPELEM(EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
      &               EE(IFOC),EA(IFOC),EDRV(IFOC),ENAM(IFOC),IER) 
           if(ACTION.eq.'M')then
             MODDB=.TRUE.
@@ -882,7 +882,7 @@ C Read geometry file for chosen zone.
       itru=6
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
       else
         call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
       endif
@@ -1965,7 +1965,7 @@ C If approach is model based, read the current zone information
           ICurZone=nznog(IZ)
           call eclose(gversion(ICurZone),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
           endif
@@ -3139,7 +3139,7 @@ C If approach is model based, read the current zone information
             ICurZone=nznog(IZ)
             call eclose(gversion(ICurZone),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,
+              call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,
      &          IER)
             else
               call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,

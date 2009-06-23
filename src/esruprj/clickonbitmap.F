@@ -2117,7 +2117,7 @@ C Save this to file before passing into the geometry editing facility.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
             endif
             IF(IER.EQ.1)THEN
               CALL usrmsg(' ',' Problem creating geometry file...','W')
