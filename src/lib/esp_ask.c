@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <glib.h>
-#include <esp-r.h>
+#include "esp-r.h"
 
 /* ***** askdialog_() ask for text input */
 /* Could pass in:

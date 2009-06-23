@@ -17,7 +17,7 @@ static const char rcsid[] = "$Id$";
 #include <esp_list.h>
 #include <gtk/gtkdialog.h>
 #include <string.h>
-#include <esp-r.h>
+#include "esp-r.h"
 
 /* extern void g_get_esp_item_from_list_cb(); from popup */
 

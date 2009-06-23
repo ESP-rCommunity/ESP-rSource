@@ -88,12 +88,12 @@ intialisation and graphics, using ww. The routines are :-
 	refreshenv_()
                         :-  pass back window information to fortran common.
 */
-#include 	<stdio.h>
-#include 	<math.h>
+#include <stdio.h>
+#include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include	<ctype.h>
-#include	"wwcut.h"
+#include <ctype.h>
+#include "wwcut.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -218,6 +218,24 @@ static unsigned char logo_bits[] = {
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x80, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+/* external definitions in the Fortran code */
+extern gnwkquery_();
+extern wirepk_();
+extern profgrdump_();
+extern cpwpk_();
+extern chgazi_();
+extern chgelev_();
+extern proftxdump_();
+extern nwkslctc_();
+extern gconad_();
+extern gridupdt_();
+extern nwkupdtpos_();
+extern icntfm_();
+extern cfgpk_();
+extern updview_();
+extern sleep();
+extern aux_menu();
 
 /* global data types */
 Display  *theDisp;
