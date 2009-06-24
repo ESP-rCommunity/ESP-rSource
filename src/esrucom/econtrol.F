@@ -2158,10 +2158,17 @@ C Flow actuator.
         SSTR='undefined actuation'
         IF(IFAN(II,1).EQ.-3)THEN
           L=IFAN(II,2)
-          WRITE(SSTR,'(A,i3,1x,5A)')'flow connection: ',
-     &      L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
-     &      NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),' via ',
-     &      CMNAM(ITPCON(L))(1:lnblnk(CMNAM(ITPCON(L))))
+          if(ITPCON(L).ne.0)then
+            WRITE(SSTR,'(A,i3,1x,5A)')'flow connection: ',
+     &        L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
+     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),' via ',
+     &        CMNAM(ITPCON(L))(1:lnblnk(CMNAM(ITPCON(L))))
+          else
+            WRITE(SSTR,'(A,i3,1x,4A)')'flow connection: ',
+     &        L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
+     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),
+     &        ' via unknown component.'
+          endif
         ELSEIF(IFAN(II,1).EQ.-4)THEN
           L=IFAN(II,2)
           if(L.ne.0)then

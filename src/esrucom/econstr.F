@@ -826,13 +826,19 @@ C if the surface attribute should be updated.
       NTMC=0
       DO 10 I=1,NS
         icn1=izstocn(icomp,i)
-        ITMCFL(ICOMP,I)=IVA(I)
-        IF(ITMCFL(ICOMP,I).NE.0.AND.(SSOTF(icn1)(1:4).EQ.'OPAQ'))THEN
-          WRITE(OUTS,'(5a)')' The TMC file ',LUA(1:lnblnk(LUA)),
-     &      ' not sure if ',SSNAME(icn1),' is transparent.'
+	if(icn1.ne.0)then
+          ITMCFL(ICOMP,I)=IVA(I)
+          IF(ITMCFL(ICOMP,I).NE.0.AND.(SSOTF(icn1)(1:4).EQ.'OPAQ'))THEN
+            WRITE(OUTS,'(5a)')' The TMC file ',LUA(1:lnblnk(LUA)),
+     &        ' not sure if ',SSNAME(icn1),' is transparent.'
+            call edisp(itru,outs)
+            call edisp(itru,' Check your zone files.')
+	  ENDIF
+        else
+          WRITE(OUTS,'(a,i3,a,i3,a)')' The surface in zone ',icomp,
+     &      ' and surface ',i,' does not exist in master list.'
           call edisp(itru,outs)
-          call edisp(itru,' Check your zone files.')
-        ENDIF
+        endif
         IF(ITMCFL(ICOMP,I).GT.NTMC)NTMC=ITMCFL(ICOMP,I)
    10 CONTINUE
       IF(NTMC.EQ.0.OR.NTMC.GT.MTMC)THEN

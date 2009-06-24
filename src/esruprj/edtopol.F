@@ -1871,6 +1871,13 @@ C surface attribute and ask user if attribute should be used. First
 C check for easy matches.
         ICN=IZSTOCN(IC1(ICC),iss)
         WRITE(SO,'(A)')SSOTHER(ICN,1)(1:12)
+
+C Set connected zone name if one exists.
+        if(IC2(ICC).ne.0)then
+	  write(ZN,'(a)') zname(IC2(ICC))
+        else
+	  ZN='------------'
+        endif
         WRITE(TMP,'(A,I3,A,A15)')'Surface ',ISS,' attribute: ',SO
         WRITE(OUTSTR,'(A,A)')'Topology: ',CXSTR(1:lnblnk(CXSTR))
         IF(SO(1:8).EQ.'EXTERIOR'.AND.ICT(ICC).EQ.0)THEN
@@ -1897,7 +1904,7 @@ C check for easy matches.
         ELSEIF(SO(1:7).EQ.'UNKNOWN'.OR.SO(1:2).EQ.'  ')THEN
           CALL EDISP(iuout,' surface attribute was UNKNOWN: skipping.')
           GOTO 123
-        ELSEIF(ICT(ICC).EQ.3.AND.(SO.EQ.zname(IC2(ICC))))then
+        ELSEIF(ICT(ICC).EQ.3.AND.(SO.EQ.ZN))then
           CALL EDISP(iuout,'   connected zone names match.')
           GOTO 123
         ELSEIF(SO(1:7).EQ.'SIMILAR')THEN
