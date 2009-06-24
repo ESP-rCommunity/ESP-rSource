@@ -71,6 +71,11 @@ C Climate data.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
 
+C Calendar commons.
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      character calename*32,calentag*12,calendayname*32 
+
 C Passed in parameters.
       character action*8,root*24,mpath*72,folder*12,menu*32
       character fs*1           ! file separator
@@ -246,9 +251,47 @@ C Impose climate site data on the model.
      &    '. Previously used ',xlat,xlon,'.'
         call edisp(iuout,outs)
 
-C << place to define a calendar if this has not already been
-C << done.
-	
+C Write calendar information (just the default one for the moment)       
+        calename='standard weekday Sat & Sun'
+        nbdaytype=3
+        nbcaldays(1)=0
+        calentag(1)='weekdays'
+        calendayname(1)='weekdays (all year)'
+        nbcaldays(2)=0
+        calentag(2)='saturday'
+        calendayname(2)='Saturdays (all year)'
+        nbcaldays(3)=0
+        calentag(3)='sunday'
+        calendayname(3)='Sundays (all year)'
+        calentag(4)='-'
+        calentag(5)='-'
+        calentag(6)='-'
+        calentag(7)='-'
+        calentag(8)='-'
+        calentag(9)='-'
+        calendayname(4)='-'
+        calendayname(5)='-'
+        calendayname(6)='-'
+        calendayname(7)='-'
+        calendayname(8)='-'
+        calendayname(9)='-'
+        do 542 ijd=1,365
+
+C for julian day ijd find month and day of month and day of week.
+          call edayr(ijd,idayn,imthn)
+          call eweekd(idayn,imthn,iyear,idwk)
+          if(idwk.ge.1.and.idwk.le.5)then
+            icalender(ijd)=1
+            nbcaldays(1)=nbcaldays(1)+1
+          elseif(idwk.eq.6)then
+            icalender(ijd)=2
+            nbcaldays(2)=nbcaldays(2)+1
+          elseif(idwk.eq.7)then
+            icalender(ijd)=3
+            nbcaldays(3)=nbcaldays(3)+1
+          endif
+  542   continue                    	
+  
 C If there is ground temperature information scan that file and
 C put the data in UGRDTP.
         if(haveground)then
