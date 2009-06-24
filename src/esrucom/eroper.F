@@ -1257,14 +1257,18 @@ C --------- EMKOPER
 C Write zone operation common block data to file. It is assumed
 C that this information has been checked.  OPFIL is the name of
 C the file to be written to (confirm if to be overwritten).
-C ICOMP is the zone number.
-C ITRC unit number for user output, IER=0 OK IER=1 problem.
-      SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,ITRU,IER)
+      SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,IER)
 #include "building.h"
 #include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer IUO         ! file unit
+      character OPFIL*72  ! zone file name
+      integer ICOMP       ! zone number
+      integer IER         ! 0 OK IER 1 problem
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
@@ -1303,8 +1307,7 @@ C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
       COMMON/Vld20/Vldtng
 
-      character OPFIL*72,lodlabel*6
-      character dstmp*24
+      character lodlabel*6,dstmp*24
       logical Vldtng
 
       IER=0
@@ -1899,13 +1902,15 @@ C     &  loadmixed(ic,4,1),loadmixed(ic,5,1)
 C ******************* CPYCASIJ ***********************
 C CPYCASIJ Copy one casual period jx to another ix for zone icomp and 
 C daytype idaytype. 
-C    icomp - current zone.
-C    idaytype - day type to sort
-C    ix is the destination
-C    jx is the source
 
-      SUBROUTINE CPYCASIJ(icomp,idaytype,ix,jx,ier)
+      SUBROUTINE CPYCASIJ(icomp,idaytype,ix,jx)
 #include "building.h"
+
+C Parameters
+      integer icomp    ! current zone
+      integer idaytype ! day type to sort
+      integer ix       ! is the destination
+      integer jx       ! is the source
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -1943,14 +1948,18 @@ C Electrical data flag and elctrical data.
 C ******************* CPYCASIT ***********************
 C CPYCASIT Copy one casual period jx to backup variables for zone icomp 
 C and daytype idaytype. 
-C    icomp - current zone.
-C    idaytype - day type to sort
-C    jx is the source
-C    icgt,icgs,icgf,cmgs,cmgl,radc,conc,ipf,iphas,pf,pwr,bvolt
-C    are the temporary variables.
       SUBROUTINE CPYCASIT(icomp,idaytype,jx,icgtX,icgsX,icgfX,cmgsX,
-     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
+     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
 #include "building.h"
+
+C Parameters
+      integer icomp    ! current zone
+      integer idaytype ! day type to sort
+      integer jx       ! is the source
+      integer icgtX,icgsX,icgfX    ! temporary variables
+      real cmgsX,cmglX,radcX,concX ! temporary variables
+      integer ipfX,iphasX          ! temporary variables
+      real pfX,pwrX,bvoltX         ! temporary variables
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -1993,14 +2002,18 @@ C Electrical data flag and elctrical data.
 C ******************* CPYCASTI ***********************
 C CPYCASTI - Copy from backup variables to casual period jx for zone icomp 
 C and daytype idaytype. 
-C    icomp - current zone.
-C    idaytype - day type to sort
-C    jx is the destination
-C    icgt,icgs,icgf,cmgs,cmgl,radc,conc,ipf,iphas,pf,pwr,bvolt
-C    are the temporary variables.
       SUBROUTINE CPYCASTI(icomp,idaytype,jx,icgtX,icgsX,icgfX,cmgsX,
-     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
+     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
 #include "building.h"
+
+C Parameters
+      integer icomp    ! current zone
+      integer idaytype ! day type to sort
+      integer jx       ! is the source
+      integer icgtX,icgsX,icgfX    ! temporary variables
+      real cmgsX,cmglX,radcX,concX ! temporary variables
+      integer ipfX,iphasX          ! temporary variables
+      real pfX,pwrX,bvoltX         ! temporary variables
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -2651,7 +2664,7 @@ C power.
 
 C Write operations file
           ip3ver(icomp)=2
-          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
         ENDIF
  100  CONTINUE
       NBDAYTYPE=NBDAYTYPEHOLD

@@ -181,7 +181,7 @@ C then an older file so rewind the file and call emfread.
         IF(IER.NE.0)goto 179
         IF(ND.GE.4)THEN
           REWIND(IUM,ERR=999)
-          CALL EMFREAD(IUM,0,IIER)
+          CALL EMFREAD(IUM,IIER)
           CALL ERPFREE(IUM,ISTAT)
         elseif((ND.eq.1.or.ND.eq.2).and.
      &          OUTSTR(1:18).EQ.'*Graphical_network')then

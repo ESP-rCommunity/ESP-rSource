@@ -307,7 +307,7 @@ C Read in the zone geometry.
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
         vol(mz)=zvol
         zonetotsurfacearea(mz)=zoa
 
@@ -571,7 +571,7 @@ C RE-Read in the zone geometry.
 
 C Find current zone information, check location if user might
 C have edited vertices or added a surface.
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
         vol(mz)=zvol
         zonetotsurfacearea(mz)=zoa
         FLA=0.
@@ -936,7 +936,7 @@ C Read in the zone geometry.
         else
           call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
         endif
-        CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
         vol(newfoc)=zvol
         zonetotsurfacearea(newfoc)=zoa
         WRITE(ioout,'(a)')' '

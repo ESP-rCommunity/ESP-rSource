@@ -326,7 +326,7 @@ C Read geometry file for chosen zone.
       CALL ADJVIEW(IER)
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
       Vol(icomp)= ZVOL
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       FLA=0.
@@ -705,7 +705,7 @@ C for each surface in the zone according to the frequency band
                 call egomin(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
      &           IER)
               endif
-              CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
             DO 400 I = 1,NSUR
               icon=IZSTOCN(nZnog(J),I)
               In = MLCIndex(SSMLCN(icon))
@@ -894,7 +894,7 @@ C Display equivalent surface for MATERIAL
                 call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
      &           IER)
               endif
-              CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
             DO 200 I = 1,NSUR
               icon=IZSTOCN(nZnog(k),I)
@@ -1150,7 +1150,7 @@ C Should any way compute the equivalent area
                 call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
      &           IER)
               endif
-              CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
  691        CONTINUE
           ENDIF

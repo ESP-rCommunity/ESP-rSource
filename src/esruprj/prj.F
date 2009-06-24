@@ -5500,7 +5500,7 @@ C then an older file so rewind the file and call emfread.
           CALL STRIPC(IUM,OUTSTR,99,ND,0,'1st line of file',IER)
           IF(ND.GE.4)THEN
             REWIND(IUM,ERR=999)
-            CALL EMFREAD(IUM,0,IIER)
+            CALL EMFREAD(IUM,IIER)
           elseif((ND.eq.1.or.ND.eq.2).and.
      &          OUTSTR(1:18).EQ.'*Graphical_network')then
 

@@ -1058,7 +1058,7 @@ C Save construction file.
       CALL EMKCON(LTHRM(ICOMP),IUF,IComp,QUIET,IER)
 
 C Save operation file.
-      CALL EMKOPER(IUF,LPROJ(ICOMP),IComp,IUOUT,IER)
+      CALL EMKOPER(IUF,LPROJ(ICOMP),IComp,IER)
 
 C Save additional files if existing.
       if(IGR1D)CALL SAVE1D(LGRD1D,IUF,IUOUT,ITRC,IER)

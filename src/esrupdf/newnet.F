@@ -358,7 +358,7 @@ C Read the existing flow network
 
 C << Note: should check to see if LAPROB is a network flow file or
 C << a graphic network file (as is done in esystem.F) 
-          CALL EMFREAD(IUF,0,IER)
+          CALL EMFREAD(IUF,IER)
           IF(IER.NE.0)THEN
             CALL EDISP(IUOUT,' ')
             CALL EDISP(IUOUT,'ERROR: Problem reading fluid flow file!')

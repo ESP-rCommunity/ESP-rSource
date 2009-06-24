@@ -1086,7 +1086,7 @@ C Update all geometry files to version 1.1 from previous
 
 C Code to loop through each surface to build a hash table so that each
 C surface also knowns its children
-          CALL SURREL(ACT,ICOMP,IER)
+          CALL SURREL(ACT,ICOMP)
 
 C For each surface in this zone
           DO 552 ISUR=1,NZSUR(ICOMP)
@@ -1822,7 +1822,7 @@ C Make a copy of constructions file and tmc file if applicable
 
 C Establish parents of surfaces in this zone (fill common blocks G6 G7)
  500    ACT='s'
-        CALL SURREL(ACT,ICOMP,IER)
+        CALL SURREL(ACT,ICOMP)
 
 C Remember this geometry file has been done so that a later selection
 C of constructions does not re-do it.
@@ -2017,10 +2017,10 @@ C parent child relationships
 
 C Code to loop through each surface to build a hash table so that each
 C surface also knowns its children
-          CALL SURREL(ACT,ICOMP,IER)
+          CALL SURREL(ACT,ICOMP)
 
 C Get surface areas via call to zinfo.
-          call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+          call zinfo(sna,zoa,pazi,pelv,zvol)
 
 C For each surface in this zone
           do 552 isur=1,nzsur(icomp)

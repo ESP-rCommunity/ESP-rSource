@@ -2353,11 +2353,11 @@ C current format.
 C Save the file, sorting the periods if necessary.
               if(MODOPR)then
                 if(sorted)then
-                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,ITRU,IER)
+                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)
                 else
                   call PROCESSOLDCAS(iz,0,iuout,IER)
                   MODOPR=.true.
-                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,ITRU,IER)
+                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)
                 endif
               endif
             endif

@@ -7810,7 +7810,7 @@ C Estimate base area.
 C If base area has not yet been calculated, do this now and
 C get surface areas via call to zinfo.
       if(checkbase)then
-        call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+        call zinfo(sna,zoa,pazi,pelv,zvol)
 	vol(icomp)=zvol
         zonetotsurfacearea(icomp)=zoa
         do 43 ijj=1,NSUR

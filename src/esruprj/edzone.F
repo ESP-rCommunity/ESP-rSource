@@ -1099,7 +1099,7 @@ C should be scanned and converted into flow common blocks.
           write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
           IF(ND.GE.4)THEN
             REWIND(IUM,ERR=999)
-            CALL EMFREAD(IUM,ITRC,IER)
+            CALL EMFREAD(IUM,IER)
             CALL ERPFREE(IUM,ISTAT)
           elseif((ND.eq.1.or.ND.eq.2).and.
      &            OUTSTR(1:18).EQ.'* Graphical_network')then
@@ -1110,7 +1110,7 @@ C into network flow common blocks.
             call NETREAD(IUM,'R',IER)
             CALL NETTOFLW(ier)
           endif
-C          CALL EMFREAD(IUM,ITRC,IER)
+C          CALL EMFREAD(IUM,IER)
 C          CALL ERPFREE(IUM,ISTAT)
           if(ier.ne.0)then
             CALL USRMSG(' ','Problem in flow network!','F')
@@ -1372,7 +1372,7 @@ C Update operations file if any changes.
           call edisp(iuout,' zone to be deleted.  Links have been')
           call edisp(iuout,' removed and the operation file is now')
           call edisp(iuout,' being updated...')
-          CALL EMKOPER(IUO,LPROJ(IX),IX,iuout,IER)
+          CALL EMKOPER(IUO,LPROJ(IX),IX,IER)
         endif
   25  continue
 

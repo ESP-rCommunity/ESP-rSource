@@ -1059,7 +1059,7 @@ C Set to current format
 C Just in case sort the data.
         call PROCESSOLDCAS(ICOMP,0,iuout,IER)
         IUO=IFIL+2
-        CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+        CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
       endif
 
 C Update configuration file to know about the construction files.

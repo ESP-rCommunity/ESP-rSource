@@ -915,7 +915,7 @@ C Now close geometry data file.
 C If base area has not yet been calculated, do this now and calculate 
 C transparent area for surfaces connected to external boundary conditions.
 C Get surface areas via call to zinfo.
-      call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+      call zinfo(sna,zoa,pazi,pelv,zvol)
       vol(icomp)=zvol
       zonetotsurfacearea(icomp)=zoa
       ZTRANA(ICOMP)=0.
@@ -2051,7 +2051,7 @@ C Now close geometry data file.
 C If base area has not yet been calculated, do this now and calculate 
 C transparent area for surfaces connected to external boundary.
 C Get surface areas via call to zinfo.
-      call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+      call zinfo(sna,zoa,pazi,pelv,zvol)
       vol(ICOMP)=zvol
       zonetotsurfacearea(ICOMP)=zoa
       ZTRANA(ICOMP)=0.
@@ -2964,19 +2964,21 @@ C Report data to required number of significant figures.
 
 C ********************** ZINFO
 C 'ZINFO' takes data from the zone geometry commons G1,G2,G3 and returns
-C the following parameters:
-C SNA   - surface area of each polygon
-C ZOA   - total surface area associated with zone.
-C PAZI  - plane azimuth angle
-C PELV  - plane elevation angle
-C ZVOL   - zone bounded volume
-C << IOUT is not used >>
-      SUBROUTINE ZINFO(IOUT,SNA,ZOA,PAZI,PELV,ZVOL)
+C several derived values.
+      SUBROUTINE ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 #include "building.h"
 
+C Parameters
+      real SNA  ! returned area for each surface
+      dimension SNA(MS)
+      real ZOA  ! returned total surface area associated with zone
+      real PAZI ! returned plane azimuth angle
+      real PELV ! returned plane elevation angle
+      dimension PAZI(MS),PELV(MS)
+      real ZVOL ! returned zone bounded volume
+
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      DIMENSION SNA(MS),XSUM(MS),YSUM(MS),ZSUM(MS)
-      DIMENSION PAZI(MS),PELV(MS)
+      DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       LOGICAL CLOSE
       character outs*124
 
@@ -3358,8 +3360,8 @@ C iwhich is local variable to sort most often referenced adjacent surf.
 
 C Do test call to surrel to see if it picks up any parent child
 C relationships. Use strict test.
-C          call surrel('-',izone,ier)
-          call surrel('s',izone,ier)
+C          call surrel('-',izone)
+          call surrel('s',izone)
         endif
 
         do 43 isurf=1,NZSUR(izone)
@@ -3618,7 +3620,7 @@ C Note: if surface I and J both have the name number of vertices then
 C a match should be discounted because the two surfaces are likely to
 C be duplicates.
 
-      SUBROUTINE SURREL(ACT,ICOMP,IER)
+      SUBROUTINE SURREL(ACT,ICOMP)
 #include "building.h"
 #include "geometry.h"
 
@@ -3952,7 +3954,7 @@ C << should this also fill G6?? >>.
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.  Gather misc zone infor-
 C mation so make a probable guess at locations.
-      CALL ZINFO(ITRU,SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
       if(ISUR.eq.0)then
         DO 44 I=1,NSUR
           SOTF(I)='OPAQUE'

@@ -136,7 +136,7 @@ C just write operations file
       IF(IVER.NE.0)then
         ICOMP=IVER
         if(cfgok.and.(.NOT.browse))then
-          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
           IF(IER.LT.0)THEN
             call edisp(iuout,
      &        'Problem saving current operations to the new file.')
@@ -439,7 +439,7 @@ C Write file and return.
      &        'Updating model to reflect changes',
      &        'in zone operations data or file name...','-')
             LPROJ(ICOMP)=LTMP
-            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
             CALL EMKCFG('-',ier)
             call usrmsg(
      &        'Updating model to reflect changes',
@@ -911,7 +911,7 @@ C Edit or browse for operations file name.
 C Save current information into a descriptive file
 C and rewrite the system configuration file if not browsing.
         if(cfgok.and.(.NOT.browse))then
-   11     CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+   11     CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
           IF(IER.LT.0)THEN
             DOK=.true.
             h(1)='You were presented with this message because a'
@@ -2850,7 +2850,7 @@ C Save the destination operation file.
       call usrmsg(
      &  'Updating model to reflect changes in destination',
      &  'operations data or file name...','-')
-      CALL EMKOPER(IUO,LPROJ(idest),idest,iuout,IER)
+      CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
       CALL EMKCFG('-',ier)
       call usrmsg(
      &  'Updating model to reflect changes in destination',
@@ -4252,7 +4252,7 @@ C If new period then set defaults otherwise get data from common.
         BVOLTX=0.0
       ELSEIF(IDT.GT.0)THEN
         call CPYCASIT(icomp,idt,iper,icgtX,icgsX,icgfX,cmgsX,cmglX,
-     &    radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
+     &    radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
       endif
 
 C If silent jump to insertion logic.
@@ -4621,9 +4621,9 @@ C Now update common blocks. Loop backwards from
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
             call CPYCASTI(icomp,idt,ix,icgtX,icgsX,icgfX,cmgsX,cmglX,
-     &      radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
+     &      radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
           else
-            call CPYCASIJ(icomp,IDT,IX,IX-1,ier)
+            call CPYCASIJ(icomp,IDT,IX,IX-1)
           endif
  300    continue
       ENDIF
@@ -5144,7 +5144,7 @@ C Save the destination operation file.
      &    'Updating model to reflect changes',
      &    'in destination operation data or file name...','-')
       endif
-      CALL EMKOPER(IUO,LPROJ(idest),idest,ITRU,IER)
+      CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
       CALL EMKCFG('s',ier)
       if(act(1:1).eq.'-')then
         call usrmsg(
@@ -5638,7 +5638,7 @@ C data up.
         ix = ncasX+1
  234    continue
         ix = ix-1
-        call CPYCASIJ(icomp,IDTY,ix,ix-1,ier)
+        call CPYCASIJ(icomp,IDTY,ix,ix-1)
         ncas(IDTY)=ncas(IDTY)+1
         if(ielf(icomp).ne.0)then
           nel(IDTY)=nel(IDTY)+1
@@ -5655,7 +5655,7 @@ C is the last possible period then only decrement counters.
           if(ielf(icomp).ne.0)nel(IDTY)=nel(IDTY)-1
         else
           do 110 IX=IDP,NCAS(IDTY)
-            call CPYCASIJ(icomp,IDTY,ix,ix+1,ier)
+            call CPYCASIJ(icomp,IDTY,ix,ix+1)
             if(ielf(icomp).ne.0)then
               nel(IDTY)=nel(IDTY)-1
             endif

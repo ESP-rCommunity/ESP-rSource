@@ -2113,7 +2113,7 @@ C Also update lodlabel commons before writing out.
               lodlabel(ncomp,2)=lodlabel(ic,2)
               lodlabel(ncomp,3)=lodlabel(ic,3)
               CALL ERPFREE(IUF,ISTAT)
-              CALL EMKOPER(IUF,LPROJ(NCOMP),NCOMP,iuout,IER)
+              CALL EMKOPER(IUF,LPROJ(NCOMP),NCOMP,IER)
             else
               goto 91
             endif
@@ -2507,7 +2507,7 @@ C File is older format and assumed to be unsorted.
                       continue
                     else
                       ip3ver(icomp)=2
-                      CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+                      CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
                     endif
                   else
 
@@ -2528,7 +2528,7 @@ C browsing update the operation file.
                         continue
                       else
                         ip3ver(icomp)=2
-                        CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+                        CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
                       endif
                     endif
                   endif

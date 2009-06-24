@@ -2645,7 +2645,7 @@ C then an older file so rewind the file and then call emfread.
         endif
         IF(ND.GE.4)THEN
           REWIND(IUF,ERR=999)
-          CALL EMFREAD(IUF,ITRC,IER)
+          CALL EMFREAD(IUF,IER)
           CALL ERPFREE(IUF,ISTAT)
           IAIRN = 1
         elseif((ND.eq.1.or.ND.eq.2).and.

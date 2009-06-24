@@ -657,7 +657,7 @@ c      ISO=ispmloc(IVAL,2)
 
 C << rewrite logic to use G7 common rather than call zinfo >>
 
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 
 C General image option flags.
       ITDSP=1
@@ -894,7 +894,7 @@ C For ducted wind turbine - select the position of the DWT outlet
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
         endif
-        CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 C General image option flags.
         ITDSP=1
         ITBND=1
