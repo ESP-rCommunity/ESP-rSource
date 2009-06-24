@@ -706,9 +706,9 @@ C user does not cancel the operation.
           call calenmanage('i',ier)
           loop=8
           loopst=1
-C          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+C          call calenprint(iuout,'t',iyear,loopst,loop)
 C          call edisp(iuout,' ')
-C          call calenprint(iuout,'g',iyear,loopst,loop,ier)
+C          call calenprint(iuout,'g',iyear,loopst,loop)
 C          call edisp(iuout,' ')
         endif
 

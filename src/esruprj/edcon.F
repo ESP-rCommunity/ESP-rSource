@@ -216,7 +216,7 @@ C Construction file name not yet specified.
       call FINDFIL(LTHRM(ICOMP),XST)
       if(XST)then
         IF(QUIET) THEN 
-          CALL EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER) 
+          CALL EDZCON(ICOMP,MODGEO,MODCON,IER) 
         ELSE
           write(outs,'(3a)') 'Found an existing constructions file: ',
      &            LTHRM(ICOMP)(1:lnblnk(LTHRM(ICOMP))),'.'
@@ -234,7 +234,7 @@ C Construction file name not yet specified.
             endif
           elseif(IWA.EQ.2)then
             call tstamp('>','PRJ: scan db & rebuild zone construction')
-            CALL EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER) 
+            CALL EDZCON(ICOMP,MODGEO,MODCON,IER) 
           elseif(IWA.eq.3)then
             call tstamp('>','PRJ: abandoned rebuild zone construction')
             return
@@ -258,7 +258,7 @@ C If in quiet mode: the file should exist => error if we are here.
             goto 42
           endif
         ENDIF
-        CALL EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
+        CALL EDZCON(ICOMP,MODGEO,MODCON,IER)
       endif
       if(IER.NE.0)then
         again=.true.
@@ -626,7 +626,7 @@ C Produce a menu of data related to this surface.
         IS=IFOC
         CALL EPMENSV
         call tstamp('>','PRJ: enter surface construction')
-        CALL EDSCON(ITRC,ITRU,ICOMP,IS,MODGEO,MODCON,IER)
+        CALL EDSCON(ITRU,ICOMP,IS,MODGEO,MODCON,IER)
         CALL EPMENRC
       ELSE
 
@@ -692,7 +692,7 @@ C If any of the surfaces are transparent save this info.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   61  CONTINUE
       IF(TFOUND)THEN
-        CALL MKTWIN(ITRU,IUF,ICOMP,QUIET,IER)
+        CALL MKTWIN(IUF,ICOMP,QUIET,IER)
         IF(IER.EQ.1)RETURN
         ITW(ICOMP)=1 
 
@@ -788,13 +788,21 @@ C ************* EDSCON
 C Edit zone surface construction attributes in common block G6 and 
 C allow this to be saved. ITRU unit number for user output, IER=0 OK, 
 C IER=1 problem. Make use of construction information in common MLC.
-      SUBROUTINE EDSCON(ITRC,ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
+      SUBROUTINE EDSCON(ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer itru   ! unit for reporting
+      integer icomp  ! zone number
+      integer isur   ! associated surface
+      logical MODGEO ! return true if altered geometry
+      logical MODCON ! return true if altered construction
+      integer ier    ! zero is ok
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -840,7 +848,7 @@ C Arrays of material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL MODGEO,MODCON,told,closemat
+      LOGICAL told,closemat
 
       DIMENSION ISD(19)
       CHARACTER TITL*72,NAM*72,ISD*46
@@ -1190,10 +1198,17 @@ C EDZCON takes the information in the composite construction db and the
 C zone geometry file (surface attributes) and attempts to construct a
 C zone construction file with minimum intervention by the user.
 
-      SUBROUTINE EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
+      SUBROUTINE EDZCON(ICOMP,MODGEO,MODCON,IER)
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+
+C Parameters
+      integer icomp  ! zone number
+      logical MODGEO ! return true if altered geometry
+      logical MODCON ! return true if altered construction
+      integer ier    ! zero is ok
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -1236,7 +1251,7 @@ C Arrays of material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODGEO,MODCON
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat
 
       CHARACTER outs*124,SSPARENT*12
@@ -1388,7 +1403,7 @@ C currently held in common blocks.
 C LTWIN is the name of the file to be written to (any existing file
 C by this name is overwritten).  ZNAME is the zone name (12 char), ICOMP
 C is the zone number.  ITRC= trace verbose level.
-C ITRU unit number for user output, IER=0 OK, IER=1 problem.
+C IER=0 OK, IER=1 problem.
 
 C Work out where the various definitive information sources should be
 C combined to create this file.  In essence we need to read through
@@ -1396,11 +1411,17 @@ C each of the existing surfaces and find the unique optical types which
 C exist in this zone.  Then for each of these we need to write out their
 C optical properties as gathered from the optical database.  Make use of
 C the number of composite layers to build this up.
-      SUBROUTINE MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
+      SUBROUTINE MKTWIN(IFU,ICOMP,QUIET,IER)
 #include "building.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+
+C Parameter
+      integer IFU   ! file unit
+      integer ICOMP ! zone number
+      logical QUIET ! if true then no dialog
+      integer IER   ! if zero then ok
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -1420,7 +1441,7 @@ C the number of composite layers to build this up.
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
-      logical QUIET,XST
+      logical XST
 
       dimension ival(MS)
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS

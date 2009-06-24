@@ -1042,7 +1042,7 @@ C Introduction.
 
 C Manage databases.
         call tstamp('>','PRJ: db management enter')
-        CALL EDDB(ITRC,IUOUT,IER)
+        CALL EDDB(IER)
         call tstamp('>','PRJ: db management exit')
       ELSEIF(INO.EQ.3)THEN
 
@@ -5249,7 +5249,7 @@ C Check if geometry file has already been updated.
             EXT='.tmc'
             CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
             LTWIN(ICOMP)=NNAME
-            CALL MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
+            CALL MKTWIN(IFU,ICOMP,QUIET,IER)
             WRITE(MSG1,'(2A)')
      &      'New  transparent constructions file written out for zone '
      &      ,ZNAME(ICOMP)

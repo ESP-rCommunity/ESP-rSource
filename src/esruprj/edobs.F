@@ -513,7 +513,7 @@ C Edit the new block, first hilight the obstruction.
           ITOBS = IB
           CALL ADJVIEW(IER)
           CALL EPMENSV
-          CALL EDOBSB(ITRC,ITRU,IUF,ICOMP,IB,IER)
+          CALL EDOBSB(ITRU,IUF,ICOMP,IB,IER)
           CALL EPMENRC
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
@@ -578,7 +578,7 @@ C Ask for transform distance for obstruction and then apply.
 C Edit the copied block.
             IB=NB
             CALL EPMENSV
-            CALL EDOBSB(ITRC,ITRU,IUF,ICOMP,IB,IER)
+            CALL EDOBSB(ITRU,IUF,ICOMP,IB,IER)
             CALL EPMENRC
             MODIFY=.TRUE.
             GOTO 91
@@ -619,7 +619,7 @@ C Edit block identified by KEYIND.
         IB=IFOC
         if(IB.ne.0)then
           CALL EPMENSV
-          CALL EDOBSB(ITRC,ITRU,IUF,ICOMP,IB,IER)
+          CALL EDOBSB(ITRU,IUF,ICOMP,IB,IER)
           CALL EPMENRC
         endif
       ENDIF
@@ -934,9 +934,17 @@ C Provide default values for the new obstructions file.
 
 C ************* EDOBSB 
 C EDOBSB: Edit details of an obstruction block.
-      SUBROUTINE EDOBSB(ITRC,ITRU,IUF,ICOMP,IB,IER)
+      SUBROUTINE EDOBSB(ITRU,IUF,ICOMP,IB,IER)
 #include "building.h"
 #include "geometry.h"
+
+C Parameters
+      integer ITRU   ! unit for writing errors
+      integer IUF    ! file unit
+      integer ICOMP  ! zone number
+      integer IB     ! block number
+      integer IER    ! zero is ok
+      
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV

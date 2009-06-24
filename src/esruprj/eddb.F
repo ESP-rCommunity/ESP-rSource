@@ -32,7 +32,7 @@ C ********** EDDB
 C Controls specification/ browsing of databases.
 C ITRU is channel for user output, IER=0 means no errors encountered.
 
-      SUBROUTINE EDDB(ITRC,ITRU,IER)
+      SUBROUTINE EDDB(IER)
 #include "building.h"
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
