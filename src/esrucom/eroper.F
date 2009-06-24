@@ -1747,11 +1747,11 @@ C Descriptive label for a zone load or casual gain types.
 C ************* checkcascount
 C checkcascount scans current P3 & P3TYPE commons and refreshes 
 C loadcount() & load24() in common blocks loadcnt & loadall
-C Parameters:
-C   icomp - current zone.
-C   ier - set to 1 if there was a problem
-      subroutine checkcascount(icomp,ier)
+      subroutine checkcascount(icomp)
 #include "building.h"
+
+C Parameters
+      integer icomp  ! index of the zone to scan
 
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -2154,7 +2154,7 @@ C version files
 C Find how many of each casual gain type for each day type as well
 C as whether each profile needs to be absolute (casual gain type positive),
 C or based on area (casual gain type negative) or if mixed +-.
-      call checkcascount(icomp,ier)
+      call checkcascount(icomp)
       
 C Zero derived gains in the temporary array and set the type as per
 C the call to checkcascount.
@@ -2505,7 +2505,7 @@ C logical problem set to true if daytype might not be sorted.
       endif
 
 C Check how many casual gains there are for each type on each day type.
-      call checkcascount(icomp,ier)
+      call checkcascount(icomp)
 
 C How many occupant/lights/small power?
       n1=loadcount(icomp,1,IDTY)

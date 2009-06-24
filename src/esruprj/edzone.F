@@ -293,7 +293,7 @@ C this if user supplied information exists.
       IF(ishape.ne.3.and.ishape.ne.4)THEN
 
 C << does this fill all of the G5 variables? >>
-        CALL FILSUR(iuout,ICOMP,0)
+        CALL FILSUR(ICOMP,0)
 
 C Update the connection list and hash.
         ICCC=NCON
@@ -1195,7 +1195,7 @@ C the user and ask if it should be deleted.
 C User requests deletion of control loop. Do this and then decrement all
 C icascf links to subsequent controls.
                     icfoc=0
-                    call ADDCNTL(icfoc,'D',IER)
+                    call ADDCNTL(icfoc,'D')
                     do 245 IXI=IW2,NCOMP
                       if(icascf(IXI).gt.ik)then
                         write(outs,'(3A)') ' shifting zone-ctl link ',
@@ -1238,7 +1238,7 @@ C the user and ask if it should be deleted.
                   CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
                   if(ok)then
                     icfoc=2
-                    call ADDCNTL(icfoc,'D',IER)
+                    call ADDCNTL(icfoc,'D')
                   endif
                 endif
   79          continue

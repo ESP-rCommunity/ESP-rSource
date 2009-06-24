@@ -565,7 +565,7 @@ C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
 
 C Instantiate defaults for the surfaces to be read in.
-      CALL FILSUR(itru,ICOMP,0)
+      CALL FILSUR(ICOMP,0)
 
       icn1=izstocn(icomp,1)
       if(icn1.gt.0)then
@@ -1535,7 +1535,7 @@ C Now proceed to read vertices on one or more lines.
 C If this is the first *surf encountered then set NSUR equal to the
 C number of edge sets and call filsur to instanciate default data.
             NSUR=NEDGE
-            CALL FILSUR(itru,ICOMP,0)
+            CALL FILSUR(ICOMP,0)
 
 C Check if the master connection list has been filled, if so
 C this is a 'subsequent scan' and the connections based commons
@@ -3938,8 +3938,12 @@ C If ISUR=0 do all surfaces otherwise if ISUR>0 for one surface.
 
 C << should this also fill G6?? >>.
 
-      SUBROUTINE FILSUR(itru,ICOMP,ISUR)
+      SUBROUTINE FILSUR(ICOMP,ISUR)
 #include "building.h"
+
+C Parameters
+      integer icomp ! zone number
+      integer isur  ! zero do all surfaces otherwise index of a surface
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),

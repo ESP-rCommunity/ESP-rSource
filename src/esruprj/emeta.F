@@ -636,7 +636,7 @@ C Rotate if required.
       ENDIF
 
 C Begin with default assumptions for each surface then overwrite.
-      CALL FILSUR(iuout,ICOMP,0)
+      CALL FILSUR(ICOMP,0)
 
 C Update the connection list.
       ICCC=NCON

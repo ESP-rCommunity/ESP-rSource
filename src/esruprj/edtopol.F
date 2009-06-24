@@ -173,7 +173,7 @@ C The inital task is to see if there are easily spotted issues with
 C the connections list.
       call usrmsg(
      &  'Checking zone surfaces against master list...',' ','-')
-      call ckcurmatch(prob,iprob,ier)
+      call ckcurmatch(prob,iprob)
       if(prob)then
         call tstamp('>','PRJ: found topology incinsistent')
         if(IPROB.gt.10)then

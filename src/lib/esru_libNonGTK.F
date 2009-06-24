@@ -4214,10 +4214,10 @@ C pophelp where IL is the number of lines of help under consideration.
 
 C ************* EVSET
 C EVSET provides setup environment for wire frame view w/in prj.
-C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
+C IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
 
-      SUBROUTINE EVSET(ITRC,act,IER)
+      SUBROUTINE EVSET(act,IER)
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"

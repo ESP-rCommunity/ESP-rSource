@@ -1808,17 +1808,29 @@ C rule MORS is the handedness of the axes defining the polygon
 C verticies.  For solid bodies whose faces have been described anti-
 C clockwise when viewed from the outside the unit normals within this
 C routine will point outwards from the body.
-      SUBROUTINE EPLNEQN(ITRC,ITRU,MORS,ISTA,PNTLST,CG,EQN,IERR)
+
+C Note: this subroutine is not called
+
+      SUBROUTINE EPLNEQN(ITRU,MORS,ISTA,PNTLST,CG,EQN,IERR)
 #include "building.h"
 
-      DIMENSION PNTLST(100),CG(3),VNORM(3),EQN(4),
-     &          PNT(MV,3),E(MV,3),VN(MV,3),EV1(3),EV2(3),EV3(3)
+C Parameters
+      integer itru  ! unit for writing errors
+      integer mors  ! indicates handedness of polygon - see below
+      integer ISTA  ! start pointer to pntlst
+      real PNTLST   ! list of points - see below
+      real CG       ! returned centroid of polygon
+      real EQN      ! returned equation of the plane
+      DIMENSION PNTLST(100),CG(3),EQN(4)
+      integer IERR  ! error state - see below
+      
+      real VNORM,PNT,E,VN,EV1,EV2,EV3
+      dimension VNORM(3),PNT(MV,3),E(MV,3),VN(MV,3)
+      dimension EV1(3),EV2(3),EV3(3)
       CHARACTER outs*124
       logical close
 
 C INPUTS.
-
-C    ISTA              START POINTER TO PNTLST.
 C    PNTLST(ISTA)      NO. OF POINTS IN THE POLYGON.
 C    PNTLST(ISTA+1)    FIRST VERTEX X COORD.
 C    PNTLST(ISTA+2)    FIRST VERTEX Y COORD.
@@ -1831,14 +1843,6 @@ C                                         E.G. MODEL COORDS.
 C                      IF MORS=2 FLAGS A LEFT HANDED SYSTEM
 C                                         E.G. SCREEN COORDS.
 
-C OUTPUTS.
-C    CG(1)  THE X COORD. OF THE CENTROID OF THE POLYGON.
-C    CG(2)  '   Y   '
-C    CG(3)  '      '
-C    EQN(1) THE A COEFFICIENT OF THE EQUATION OF THE PLANE.
-C    EQN(2) '   B   '
-C    EQN(3) '   C   '
-C    EQN(4) '   D   '
 C    IERR   AN ERROR FLAG. IF .GE. 0 ALL O.K.
 C           IF -1 THEN THE MAGNITUDE OF THE UNIT NORMAL IS .LT.10E-4
 C           IF -2 THEN LESS THAN 3 POINTS IN THE POLYGON.

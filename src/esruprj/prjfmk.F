@@ -3747,7 +3747,7 @@ C Add new casual gain period.
      &        'Cancel',ICGTS,3)
           if (ICGTS.ne.4) then
             IQ=0
-            if(.NOT.browse)call checkcascount(icomp,ier)
+            if(.NOT.browse)call checkcascount(icomp)
             call EASKABC('Add period for one or all day types',
      &          ' ','One day type','All day types','Cancel',IOPT,1)
             IF(IOPT.EQ.1)THEN

@@ -861,6 +861,7 @@ C Iskip : If = 0, then skip the list of surfaces menu
      &               ISelComp(MCON)
       COMMON/Displ/SelSurf(MCON)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
 
       DIMENSION VERT(35)
@@ -900,7 +901,7 @@ C Multi-page list
       call edisp(iuout,'Please select surfaces to include in analysis.')
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
       vol(icomp)=zvol
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       OPQ=0.
@@ -1471,6 +1472,9 @@ C
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+
+C << Why is SDATA used? >>
+      real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
@@ -1969,7 +1973,7 @@ C If approach is model based, read the current zone information
           else
             call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
           endif
-          call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
+          call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
           vol(ICurZone)=zvol
           context=.false.
         ENDIF
@@ -2516,6 +2520,7 @@ C phylosophy as LCACalc
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
@@ -3145,7 +3150,7 @@ C If approach is model based, read the current zone information
               call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,
      &          IER)
             endif
-            call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
+            call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
             vol(ICurZone)=zvol
             context=.false.
           ENDIF

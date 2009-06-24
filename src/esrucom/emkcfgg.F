@@ -1081,11 +1081,15 @@ C CEN 13791 boundary condition.
       END
 
 C ****** Scan and report current mis-matches.
-      subroutine ckcurmatch(prob,iprob,ier)
+      subroutine ckcurmatch(prob,iprob)
 #include "building.h"
 
 C geometry.h provides commons G0/G2/c20.
 #include "geometry.h"
+
+C Parameters
+      logical prob  ! true if there is a problem
+      integer iprob ! number of mis-matches detected
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1102,7 +1106,7 @@ C geometry.h provides commons G0/G2/c20.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      logical prob,dup,first
+      logical dup,first
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78

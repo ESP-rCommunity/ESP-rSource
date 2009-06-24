@@ -1452,9 +1452,13 @@ C CEN 13791 boundary condition.
       END
 
 C ****** Scan and report current mis-matches.
-      subroutine ckcurmatch(prob,iprob,ier)
+      subroutine ckcurmatch(prob,iprob)
 #include "building.h"
 #include "geometry.h"
+
+C Parameters
+      logical prob  ! true if there is a problem
+      integer iprob ! number of mis-matches detected
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1463,7 +1467,7 @@ C ****** Scan and report current mis-matches.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      logical prob,dup,first
+      logical dup,first
 
       CHARACTER CXSTR*78
 

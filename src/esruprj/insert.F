@@ -1165,7 +1165,7 @@ C string. Fill the string first with spaces (MSYS should like this approach
         endif
 
 C Fill default attributes.
-        CALL FILSUR(iuout,ICOMP,NSUR)
+        CALL FILSUR(ICOMP,NSUR)
         T14=' '
         write(T14,'(2a)') SNAME(ICOMP,NSUR),'  '
  52     CALL EASKS(T14,'Surface name','(unique word <=12char):',

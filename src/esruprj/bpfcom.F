@@ -22,16 +22,20 @@ C Common source in building/plant/ flow/ global/ optical control.
 
 C ******** ADDCNTL
 C Add or delete a building/plant/flow/optical control.
-      SUBROUTINE ADDCNTL(icfoc,ACT,IER)
+      SUBROUTINE ADDCNTL(icfoc,ACT)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
 
-      common/pophelp/h(60)
+C Parameters
+      integer icfoc   ! control domain to work with 
+      character ACT*1 ! action to take - D or A or C
+      
+            common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
-      character ACT*1,outs*124,H*72
+      character outs*124,H*72
       dimension rper(30),rperf(30)
 
       if(ACT.eq.'D')then
@@ -792,11 +796,15 @@ C Copy an existing control loop.
 
 C ******** ADDCTLD
 C Add or delete a building/plant/flow/global/optical control day type.
-      SUBROUTINE ADDCTLD(icfoc,II,IER)
+      SUBROUTINE ADDCTLD(icfoc,II)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
 
+C Parameters
+      integer icfoc   ! control domain to work with 
+      integer II      ! index of the control
+      
       common/pophelp/h(60)
       character h*72
 
@@ -1134,15 +1142,20 @@ C Copy and existing control loop day type.
 
 C ******** ADDCTLDP
 C Add or delete a building/plant/flow/global/optical control period.
-C II is the loop, ID is the day type, act is "D" delete, "A"
-C for add.
-      SUBROUTINE ADDCTLDP(icfoc,II,ID,act,IER)
+      SUBROUTINE ADDCTLDP(icfoc,II,ID,act)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
 
+C Parameters
+      integer icfoc   ! control domain to work with 
+      integer II      ! control loop to work with
+      integer ID      ! day type to act on
+      character ACT*1 ! action to take - D (delete) or A (add)
+
+
       common/pophelp/h(60)
-      character h*72,act*1
+      character h*72
 
       if(icfoc.eq.0)limit=nbcdp(II,ID)
       if(icfoc.eq.1)limit=npcdp(II,ID)

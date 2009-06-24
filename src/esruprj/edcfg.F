@@ -3811,7 +3811,7 @@ C Set flag so that bounds are checked.
         ENDIF
 
 C Scan the model topology and report on any problems encountered.
-        call ckcurmatch(prob,iprob,ier)
+        call ckcurmatch(prob,iprob)
         if(prob)then
           call tstamp('>','PRJ: found topology incinsistent')
           if(IPROB.gt.10)then

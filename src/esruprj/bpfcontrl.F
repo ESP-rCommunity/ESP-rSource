@@ -222,7 +222,7 @@ C de-referencing the file.
 
 C Set defaults and ask user which control to focus on first.
         LINKED=.FALSE.
-        call ADDCNTL(icfoc,'A',IER)
+        call ADDCNTL(icfoc,'A')
       endif
 
 C Setup for multi-page menu.
@@ -785,11 +785,11 @@ C Warn user to update any connections to plant loops.
      &     'add control loop','copy control loop',
      &     'del/add/copy day type','cancel',' ',' ',IW,2)
         if(IW.eq.1)then
-          call ADDCNTL(icfoc,'D',IER)
+          call ADDCNTL(icfoc,'D')
         elseif(IW.eq.2)then
-          call ADDCNTL(icfoc,'A',IER)
+          call ADDCNTL(icfoc,'A')
         elseif(IW.eq.3)then
-          call ADDCNTL(icfoc,'C',IER)
+          call ADDCNTL(icfoc,'C')
         elseif(IW.eq.4)then
 
 C Add or delete a control day type (unless Weekday/Sat/Sun).
@@ -829,7 +829,7 @@ C Begin by selecting the loop to focus on.
      &      'control add/delete day type is not applicable.','W')
             goto 92
           endif 
-          call ADDCTLD(icfoc,IFOC,IER)
+          call ADDCTLD(icfoc,IFOC)
         elseif(IW.eq.5)then
           goto 92
         endif
@@ -1336,9 +1336,9 @@ C Add or delete a period.
         CALL EASKABC(' ','Options:',
      &    'add period','delete period','cancel',iad,1)
         if(iad.eq.1)then
-          call addctldp(0,II,JJ,'A',iier)
+          call addctldp(0,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(0,II,JJ,'D',iier)
+          call addctldp(0,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
@@ -2790,9 +2790,9 @@ C Add or delete a period.
         CALL EASKABC('Options:',' ',
      &    'add period','delete period','continue',iad,1)
         if(iad.eq.1)then
-          call addctldp(5,II,JJ,'A',iier)
+          call addctldp(5,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(5,II,JJ,'D',iier)
+          call addctldp(5,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
@@ -3175,9 +3175,9 @@ C Add or delete a period.
         CALL EASKABC('Options:',' ',
      &    'add period','delete period','continue',iad,1)
         if(iad.eq.1)then
-          call addctldp(1,II,JJ,'A',iier)
+          call addctldp(1,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(1,II,JJ,'D',iier)
+          call addctldp(1,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
@@ -4226,9 +4226,9 @@ C Add or delete a period.
         CALL EASKABC('Options:',' ',
      &    'add period','delete period','continue',iad,1)
         if(iad.eq.1)then
-          call addctldp(2,II,JJ,'A',iier)
+          call addctldp(2,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(2,II,JJ,'D',iier)
+          call addctldp(2,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
@@ -4839,9 +4839,9 @@ C Add or delete a period.
         CALL EASKABC('Options:',' ',
      &    'add period','delete period','continue',iad,1)
         if(iad.eq.1)then
-          call addctldp(3,II,JJ,'A',iier)
+          call addctldp(3,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(3,II,JJ,'D',iier)
+          call addctldp(3,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN

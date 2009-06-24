@@ -1455,11 +1455,19 @@ C the user to kill it.
 C ***** wtarentry
 C wtarentry: write entry in tar names file taking into account case where file
 C name begins with ../ .
-      subroutine wtarentry(iunit,pathome,tr,ltr,tp,ltp,lf,ier)
+      subroutine wtarentry(iunit,pathome,tr,ltr,tp,ltp,lf)
       integer lnblnk  ! function definition
-      logical pathome,unixok
-      character*(*) lf
-      character tp*32,tr*32,fs*1
+
+C Parameters
+      integer iunit   ! file unit for written entries
+      logical pathome ! true uses tp, false uses tr
+      character tp*32 ! path including final file separator
+      character tr*32 ! path without 
+      character*(*) lf ! file name for entries
+      integer ltr,ltp  ! length of strings tp and tr
+      
+      character fs*1
+      logical unixok
 
       call isunix(unixok)
       if(unixok)then
@@ -1847,11 +1855,11 @@ C Build up a list of the current files used in the model.
         endif
         if(i.eq.3.or.i.eq.4.or.i.eq.5.or.i.eq.6.or.i.eq.7)then
           if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL,ier)
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
           endif
         else
           if(LF(1:9).ne.'/usr/esru'.and.LF(1:4).ne.'UNKN')then
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
 
 C Place to write out ascii version of constructions db if a local
 C file exists.
@@ -1859,7 +1867,7 @@ C file exists.
               IUF=IFIL+2
               write(LASCI,'(2a)') LF(1:lnblnk(LF)),'.a'
               CALL MKAPRC(LASCI,IUF,IER)
-              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LASCI,ier)
+              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LASCI)
             endif
           endif
         endif
@@ -1884,7 +1892,7 @@ C Write control file if it exists.
      &       ctlpth(3:lc),fs,LCTLF(lc+1:lnblnk(LCTLF))
           endif
         else
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LCTLF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LCTLF)
         endif
       endif
 
@@ -1892,18 +1900,18 @@ C Write HOT3000 hvac file if known.
       if(ihvacflag.eq.0)then
         continue
       else
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,hvacfile,ier)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,hvacfile)
       endif
 
 C Write HOT3000 AIM-2 file if known.
       if(iAIM2.eq.0)then
         continue
       else
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LAIM2,ier)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LAIM2)
       endif
 
 C Write uncertainty analysis library file if known.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LUALF,ier)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LUALF)
 
 C Write images if any.
       if(noimg.gt.0)then
@@ -1924,13 +1932,13 @@ C Write images if any.
      &          imgpth(3:lc),fs,LF(lc+1:lnblnk(LF))
             endif
           else
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           endif
  42     continue
       endif
 
 C IPV file, if known.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lipvdatf,ier)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lipvdatf)
 
 C Write non-specific demads.
       if(bdmds(1:4).eq.'UNKN'.or.bdmds(1:2).eq.'  ')then
@@ -1951,14 +1959,14 @@ C Write non-specific demads.
      &      ctlpth(3:lc),fs,bdmds(lc+1:lnblnk(bdmds))
           endif
         else
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,bdmds,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,bdmds)
         endif
       endif
 
       if(lradcf(1:4).eq.'UNKN'.or.lradcf(1:2).eq.'  ')then
         continue
       else
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lradcf,ier)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lradcf)
       endif
 
 C Non-linear thermophysical properties configuration file.
@@ -1972,7 +1980,7 @@ C Non-linear thermophysical properties configuration file.
         continue
       else
         if(ispmxist.gt.0)then
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,spflnam,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,spflnam)
         endif
       endif
       if(ientxist.gt.0)then
@@ -2001,18 +2009,18 @@ C Temporal database.
       endif
 
 C Project log file.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LPRJLG,ier)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LPRJLG)
 
 C Ground information.
       IF(GRND3D)THEN
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDCVS,ier)
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDCNC,ier)
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDNDC,ier)
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDTAQ,ier)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDCVS)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDCNC)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDNDC)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDTAQ)
       ENDIF
 
 C Ground topology.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,GTGEOM,ier)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,GTGEOM)
 
 C Write zone files.
       DO 920 I = 1,NCOMP
@@ -2055,7 +2063,7 @@ C Write zone files.
      &            zonepth(3:lc),fs,LF(lc+1:lnblnk(LF))
               endif
             else
-              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
             endif
           endif
  921    continue
@@ -2065,7 +2073,7 @@ C Write zone BASESIMP description if known.
           continue
         else
           LF=LBSIMP(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
 
 C Write zone CFD file if known.
@@ -2090,27 +2098,27 @@ C Write zone CFD file if known.
      &         zonepth(3:lc),fs,LF(lc:lnblnk(LF))
             endif
           else
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           endif
         endif
 
 C The following write statements do not detect the file location
         if(ZONE3D(I))then
           LF=L3DCVS(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           LF=L3DCNC(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           LF=L3DNDC(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           LF=L3DTAQ(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
         if(MSTRZN(I))then
           LF=LMOIST(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
         if(IndxSt.EQ.I)then
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGrdSt,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGrdSt)
         endif
  920  continue
 
@@ -2132,7 +2140,7 @@ C Flow network.
      &       netpth(3:lc),fs,LF(lc:lnblnk(LF))
           endif
         else
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
       endif
       if(INDCFG.EQ.2.or.INDCFG.EQ.3)then
@@ -2154,7 +2162,7 @@ C Plant network information.
      &        netpth(3:lc),fs,LF(lc:lnblnk(LF))
           endif
         else
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
       endif
       call ERPFREE(IUNIT,ISTAT)

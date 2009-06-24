@@ -965,7 +965,7 @@ C no mismatch.
       IW=IWARN
       IWARN=0
       call usrmsg(' Checking model topology...',' ','-')
-      call ckcurmatch(prob,iprob,ier)
+      call ckcurmatch(prob,iprob)
       if(prob.and.iprob.gt.1)then
         outs='More than one complaint about model contiguity'
         if(dll)then
@@ -1505,9 +1505,13 @@ C      write(6,*)spfileok,perok,tstepok,saveok,autook,exitok,startupok
       end
 
 C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
-      subroutine ckcurmatch(prob,iprob,ier)
+      subroutine ckcurmatch(prob,iprob)
 #include "building.h"
 #include "geometry.h"
+
+C Parameters
+      logical prob  ! true if there is a problem
+      integer iprob ! number of mis-matches detected
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1524,7 +1528,7 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      logical prob,dup,first
+      logical dup,first
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78

@@ -460,7 +460,7 @@ C Setting izgfoc=0 denotes that not in single zone edit mode.
 C (Re)Set all surfaces to std line width.
         CALL INLNST(1)
         izgfoc=0
-        CALL EVSET(ITRC,'-',IER)
+        CALL EVSET('-',IER)
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display

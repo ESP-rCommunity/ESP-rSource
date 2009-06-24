@@ -6381,7 +6381,7 @@ C and nznog array of selected zone indices.
       if(inpk.ne.nzg)then
         call edisp(iuout,'Mismatch between inpk and nzg.')
       endif
-      CALL EVSET(1,'B',IER)
+      CALL EVSET('B',IER)
       if(ier.ne.0)then
         call edisp(iuout,'Problem after image button pick.')
       endif

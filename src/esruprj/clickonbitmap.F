@@ -2045,7 +2045,7 @@ C Convert into a gen body and update nzsur and nztv
 
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
-            CALL FILSUR(iuout,ICOMP,0)
+            CALL FILSUR(ICOMP,0)
 
 C Update the connection list.
             ICCC=NCON

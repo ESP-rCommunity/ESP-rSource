@@ -7793,7 +7793,7 @@ C IDPN defines the default plane numbers.
 C Surface attributes:
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
-      CALL FILSUR(itru,ICOMP,0)
+      CALL FILSUR(ICOMP,0)
 
 C Estimate base area.
       checkbase=.true.
