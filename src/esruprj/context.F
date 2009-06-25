@@ -611,7 +611,7 @@ C otherwise overwrite. (Same logic as in esystem.F
         if(ok)then
           loop=12
           loopst=1
-          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+          call calenprint(iuout,'t',iyear,loopst,loop)
         endif
 
       ELSEIF(INO.EQ.8)THEN
@@ -2009,7 +2009,7 @@ C temporal definition entity
      &  'Controls might be suitable for use with temporal data.')
             do 777 ijj=1,ncf
               if(ibclaw(ijj,1,1).eq.23)found=.true.
-              call LSTCNTL(iuout,0,ijj,IER)
+              call LSTCNTL(iuout,0,ijj)
  777        continue
             if(found)then
 
@@ -2171,10 +2171,10 @@ C control law in the first period.
             do 77 ijj=1,ncf
               if(ibsn(ijj,1).eq.-5)then
                 found=.true.
-                call LSTCNTL(iuout,0,ijj,IER)
+                call LSTCNTL(iuout,0,ijj)
               elseif(ibclaw(ijj,1,1).eq.11)then
                 found=.true.
-                call LSTCNTL(iuout,0,ijj,IER)
+                call LSTCNTL(iuout,0,ijj)
               endif
   77        continue
             if(found)then
@@ -2937,9 +2937,9 @@ C loopst is the month number to start with
         endif
 
 C Print the calendar.
-        call calenprint(iuout,'t',iyear,loopst,loop,ier)
+        call calenprint(iuout,'t',iyear,loopst,loop)
         call edisp(iuout,' ')
-        call calenprint(iuout,'g',iyear,loopst,loop,ier)
+        call calenprint(iuout,'g',iyear,loopst,loop)
         call edisp(iuout,' ')
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
@@ -3043,9 +3043,15 @@ C at loopst for loop months.
 C Currently it prints to text feedback or file only. Future
 C option is to display in graphic feedback with day types
 C as defined by calenmanage.
-C act (char*1) action to take 't' text feedback, 'g' graphic feedback.
-      subroutine calenprint(itru,act,iyear,loopst,loop,ier)
+      subroutine calenprint(itru,act,iyear,loopst,loop)
 #include "building.h"
+
+C Parameters
+      integer itru    ! reporting unit
+      character act*1 ! action to take 't' text feedback, 'g' graphic feedback
+      integer iyear   ! year to use for day of week calculations
+      integer loopst  ! month to start list/display
+      integer loop    ! number of months to list/display
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -3080,7 +3086,7 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C Text for each slot.
       character*3 am1slots(42),am2slots(42)
       character calename*32,calentag*12,calendayname*32,word3*3
-      character act*1,mohead*44,outs*124,etext*72
+      character mohead*44,outs*124,etext*72
       CHARACTER*9 RAMONTH(12)
       DIMENSION ID(12),MDAYS(12)
 

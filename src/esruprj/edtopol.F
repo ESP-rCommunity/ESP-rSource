@@ -568,7 +568,7 @@ C attributes.
      &      '(adiabetic,similar, constant etc. see help)',OK,dok,9)
           if(OK)then
             call tstamp('>','CFG: import surface attributes')
-            call ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
+            call ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
             MODIFY=.TRUE.
           endif
         elseif(IRT.eq.2)then
@@ -674,7 +674,7 @@ C attributes.
      &      '(adiabetic,similar, constant etc. see help)',OK,dok,7)
           if(OK)then
             call tstamp('>','CFG: import surface attributes')
-            call ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
+            call ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
             MODIFY=.TRUE.
           endif
         elseif(IRT.eq.3)then
@@ -1770,12 +1770,16 @@ C Ask user if updated information should be saved to different file.
 C ************* ESACON 
 C ESACON import surface connection attributes into the problem topology
 C common block C3 while taking into account confirmation preferences.
-C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
-      SUBROUTINE ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
+C IER=0 OK, IER=1 problem.
+      SUBROUTINE ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
 #include "building.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+
+C Parameters: logical variables set the context of what to check
+      logical M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP
+      integer  IER   ! zero is ok 
 
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1803,11 +1807,10 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,close,longpause
-      logical M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78,outs*124
-      CHARACTER OUTSTR*124,SO*12,TMP*54,H*72
+      CHARACTER OUTSTR*124,SO*12,ZN*12,TMP*54,H*72
       CHARACTER bl*2
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12

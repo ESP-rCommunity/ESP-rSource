@@ -1183,7 +1183,7 @@ C If one of the control loops references the zone to be deleted warn
 C the user and ask if it should be deleted.
               do 77 ik=1,ncf
                 if(ibsn(ik,1).eq.IW2.or.iban(ik,1).eq.IW2)then
-                  call LSTCNTL(iuout,0,ik,IER)
+                  call LSTCNTL(iuout,0,ik)
                   write(outs,'(a,i2,a,a)') 'Control loop ',ik,
      &              ' is specific to ',zname(IW2)
                   DOK=.true.
@@ -1229,7 +1229,7 @@ C If one of the ventilation control loops references the zone to be deleted warn
 C the user and ask if it should be deleted.
               do 79 ik=1,ncc
                 if(ifsn(ik,1).eq.IW2.or.ifan(ik,1).eq.IW2)then
-                  call LSTCNTL(itru,2,ik,IER)
+                  call LSTCNTL(itru,2,ik)
                   write(outs,'(a,i2,a,a)') 'Ventilation control loop ',
      &              ik,' is specific to ',zname(IW2)
                   DOK=.true.

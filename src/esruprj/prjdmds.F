@@ -129,9 +129,9 @@ C do with the user.
           loop=4
           loopst=1
           if(MMOD.eq.8)then
-            call calenprint(iuout,'g',iyear,loopst,loop,ier)
+            call calenprint(iuout,'g',iyear,loopst,loop)
           else
-            call calenprint(iuout,'t',iyear,loopst,loop,ier)
+            call calenprint(iuout,'t',iyear,loopst,loop)
           endif
         elseif(IW.eq.2)then
           call usrmsg('Go to the Model context -> calendar option',
@@ -147,9 +147,9 @@ C List out the initial months of the calendar.
         loop=4
         loopst=1
         if(MMOD.eq.8)then
-          call calenprint(iuout,'g',iyear,loopst,loop,ier)
+          call calenprint(iuout,'g',iyear,loopst,loop)
         else
-          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+          call calenprint(iuout,'t',iyear,loopst,loop)
         endif
       endif
         

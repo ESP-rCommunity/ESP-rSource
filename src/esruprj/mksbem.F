@@ -1818,7 +1818,7 @@ C Make a copy of constructions file and tmc file if applicable
         EXT='.tmc'
         CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
         LTWIN(ICOMP)=NNAME
-        CALL MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
+        CALL MKTWIN(IFU,ICOMP,QUIET,IER)
 
 C Establish parents of surfaces in this zone (fill common blocks G6 G7)
  500    ACT='s'

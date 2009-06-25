@@ -2008,7 +2008,7 @@ C Update itmcfl for the new zone.
                   write(LTWIN(NCOMP),'(a)') DFILE(1:lnblnk(DFILE))
                   ITW(NCOMP)=1
                   QUIET=.false.
-                  CALL MKTWIN(ITRU,IUF,NCOMP,QUIET,IER)
+                  CALL MKTWIN(IUF,NCOMP,QUIET,IER)
                 else
                   goto 90
                 endif
