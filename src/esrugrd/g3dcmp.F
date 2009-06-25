@@ -964,6 +964,7 @@ C *********************************************************************
       CHARACTER ITEM*30,SZN*12,STTS*9,STATS*15,MSG*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      real DZX   ! To avoid variable name clash with DX from geometry.h
 
       SZN=zname(IZ)
       SRF(1)=' '
@@ -1088,11 +1089,11 @@ C Define edge gridding in the local z-direction.
         K=0
         TDZ=0.
         DO 50 I=1,NDZ
-          CALL EGETWR(DISCR,K,DZ,0.,THK3,'F',
+          CALL EGETWR(DISCR,K,DZX,0.,THK3,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 40
-          DZE(IEG,I)=DZ
-          TDZ=TDZ+DZ
+          DZE(IEG,I)=DZX
+          TDZ=TDZ+DZX
           IF((TDZ-THK3).GT.1.E-3)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')
@@ -1371,6 +1372,7 @@ C *********************************************************************
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER TEXT*124,BAR*1
+      real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
@@ -1439,11 +1441,11 @@ C Define X - gridding.
         K=0
         TDX=0.
         DO 30 I=1,NDX
-          CALL EGETWR(DISCR,K,DX,0.,THK1,'F',
+          CALL EGETWR(DISCR,K,DXX,0.,THK1,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DXE(IEG,I)=DX
-          TDX=TDX+DX
+          DXE(IEG,I)=DXX
+          TDX=TDX+DXX
           IF((TDX-THK1).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')
@@ -1482,11 +1484,11 @@ C Define Y - gridding.
         K=0
         TDY=0.
         DO 50 I=1,NDY
-          CALL EGETWR(DISCR,K,DY,0.,THK2,'F',
+          CALL EGETWR(DISCR,K,DYX,0.,THK2,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DYE(IEG,I)=DY
-          TDY=TDY+DY
+          DYE(IEG,I)=DYX
+          TDY=TDY+DYX
           IF((TDY-THK2).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')
@@ -1967,6 +1969,7 @@ C *********************************************************************
       CHARACTER ITEM(18)*30,SZN*12,STTS*9,STATS*15,MSG*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      real DZX   ! To avoid variable name clash with DX from geometry.h
 
 
       SZN=zname(IZ)
@@ -2099,11 +2102,11 @@ C Define edge gridding in the local z-direction.
         K=0
         TDZ=0.
         DO 120 I=1,NDZ
-          CALL EGETWR(DISCR,K,DZ,0.,THK3,'F',
+          CALL EGETWR(DISCR,K,DZX,0.,THK3,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DZC(ICR,I)=DZ
-          TDZ=TDZ+DZ
+          DZC(ICR,I)=DZX
+          TDZ=TDZ+DZX
           IF((TDZ-THK3).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is greater than the actual length','W')
@@ -2382,6 +2385,7 @@ C *********************************************************************
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER TEXT*124,BAR*1
+      real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
 
 C Define the three surfaces.
       IS1=ISFCRN(ICR,1)
@@ -2458,11 +2462,11 @@ C Define X - gridding.
         K=0
         TDX=0.
         DO 30 I=1,NDX
-          CALL EGETWR(DISCR,K,DX,0.,THK1,'F',
+          CALL EGETWR(DISCR,K,DXX,0.,THK1,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DXC(ICR,I)=DX
-          TDX=TDX+DX
+          DXC(ICR,I)=DXX
+          TDX=TDX+DXX
           IF((TDX-THK1).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')
@@ -2504,11 +2508,11 @@ C Define Y - gridding.
         K=0
         TDY=0.
         DO 50 I=1,NDY
-          CALL EGETWR(DISCR,K,DY,0.,THK2,'F',
+          CALL EGETWR(DISCR,K,DYX,0.,THK2,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DYC(ICR,I)=DY
-          TDY=TDY+DY
+          DYC(ICR,I)=DYX
+          TDY=TDY+DYX
           IF((TDY-THK2).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')

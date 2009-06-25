@@ -761,7 +761,6 @@ C creates a grey-scale VRML 2.0 world.
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),

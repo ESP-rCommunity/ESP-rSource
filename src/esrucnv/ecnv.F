@@ -83,8 +83,6 @@ C ESP-r commons.
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 

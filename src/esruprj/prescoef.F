@@ -381,6 +381,8 @@ C should calculate pressure coefficients.
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV)
       DIMENSION VP(3),EP(3),EQN(4),TMAT(4,4),RMAT(4,4)
+      real DX1,DZ1  ! to avoid name clash in geometry.h
+      
 #ifdef OSX
       integer iix,iiy
 #else
@@ -623,19 +625,19 @@ C selected to a thick line.
           CALL ADJVIEW(IER)
 
 C Ask for x offset.
-          DX=1.0
+          DX1=1.0
           H(1)='The X offset is the horizontal distance from the '
           H(2)='lower left corner of the surface (looking from'
           H(3)='the outside) to the considered point.'
-          CALL EASKR(DX,' ',' X offset: ? ',
+          CALL EASKR(DX1,' ',' X offset: ? ',
      &       0.1,'-',99.9,'-',1.0,'X offset',IER,3)
 
 C Ask for z offset.
-          DZ=1.0
+          DZ1=1.0
           H(1)='The Z offset is the vertical distance from the '
           H(2)='lower left corner of the surface (looking from'
           H(3)='the outside) to the considered point.'
-          CALL EASKR(DZ,' ',' Z offset: ? ',
+          CALL EASKR(DZ1,' ',' Z offset: ? ',
      &         0.1,'-',99.9,'-',1.0,'Z offset',IER,3)
 
 C Make up XX,YY,ZZ to the transform routine.
@@ -663,8 +665,8 @@ C Transform all points in surface and find lower left corner.
             IF(X1.LT.XMIN)XMIN=X1
             IF(Y1.LT.YMIN)YMIN=Y1
  300      CONTINUE
-          XMIN=XMIN+DX
-          YMIN=YMIN+DZ
+          XMIN=XMIN+DX1
+          YMIN=YMIN+DZ1
           CALL ORTTRN(XMIN,YMIN,ZZZ,RMAT,XXDP,YYDP,ZZDP,IERR)
           COG1(1)=XXDP
           COG1(2)=YYDP

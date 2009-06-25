@@ -317,6 +317,7 @@ C Calculates the direct and diffuse solar shading. Called from shdcon.
 
       subroutine shadc(icomp)
 #include "building.h"
+#include "geometry.h"
 
       common/tracech/icout
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
@@ -325,7 +326,6 @@ C Calculates the direct and diffuse solar shading. Called from shdcon.
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/contr/mon,isc(ms),iyd
-      common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
       common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/ihtime/ihour
       common/sangl1/sazi1,salt1

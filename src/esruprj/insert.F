@@ -2018,13 +2018,23 @@ C << Implementation of a cancel option will require the common block
 C << instanciation code blocks to be moved so that the data is only
 C << written at the end of the process. This has yet to be done.
 
-      SUBROUTINE INSREC(ITRC,ITRU,ICOMP,IS,act,XO,ZO,XW,ZH,
+      SUBROUTINE INSREC(ITRC,ITRU,ICOMP,IS,act,XO1,ZO1,XW,ZH,
      &  rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
 
       integer lnblnk  ! function definition
+
+C Parameters
+      integer itrc,itru  ! tracel level and reporting unit
+      integer icomp      ! zone number
+      integer is         ! surface number
+      character act*2    ! user supplied action
+      real XO1,ZO1,XW,ZH ! X and Z offset width and height of opening
+      character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
+      character rsparent*12
+      integer IER        ! zero is ok
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -2068,10 +2078,8 @@ C << written at the end of the process. This has yet to be done.
       CHARACTER SPARENT*12
       CHARACTER outs*124,ETEXT*82,hold*36,H*72,DESCRC*25,SN*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12,act*2,T14*14
+      character SSPARENT*12,T14*14
       character guesstype*24  ! for context of surface addition
-      character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
-      character rsparent*12
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
@@ -2112,7 +2120,7 @@ C Depending on act.
      &      ' will make the model/zone/surface too complex!','W')
           RETURN
         ENDIF
-        PERC = XO
+        PERC = XO1
 
 C Determine surface length and height. Comment out feedback since
 C it is silent percentage.
@@ -2124,8 +2132,8 @@ C        call edisp(itru,outs)
 C Determine opening width, height, X offset and z offset.
         XW=(XYMAX*SQRT(PERC))/10
         ZH=(ZMAX*SQRT(PERC))/10
-        XO=((XYMAX-XW)/2)
-        ZO=((ZMAX-ZH)/2)
+        XO1=((XYMAX-XW)/2)
+        ZO1=((ZMAX-ZH)/2)
         guesstype='window_grill_frame'
         goto 72
       endif
@@ -2195,8 +2203,8 @@ C vertices in this surface +6 are < MV.
      &      ' will make the model/zone/surface too complex!','W')
           RETURN
         ENDIF
-        XO=1.
-        ZO=0.5
+        XO1=1.
+        ZO1=0.5
         XW=1.
         ZH=1.
         guesstype='window_grill_frame'
@@ -2208,8 +2216,8 @@ C vertices in this surface +6 are < MV.
      &      ' will make the model/zone/surface too complex!','W')
           RETURN
         ENDIF
-        XO=0.1
-        ZO=0.
+        XO1=0.1
+        ZO1=0.
         XW=0.8
         ZH=2.1
         guesstype='door_grill_frame'
@@ -2252,13 +2260,13 @@ C edited to a thick line if currently in graphics mode.
         H(7)='outside face) to the bottom of the new surface.'
         H(8)=' '
         H(9)='The opening width and height are in metres. '
-        write(hold,'(4f8.3,a)') XO,ZO,XW,ZH,'  '
+        write(hold,'(4f8.3,a)') XO1,ZO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Z offset, Width, Height: (see help)',
      &    ' ',36,' 0.1 0.1 1.0 1.0','Xoff Zoff width height',IER,9)
         K=0
-        CALL EGETWR(HOLD,K,XO,0.0,99.,'W','X offset',IER)
-        CALL EGETWR(HOLD,K,ZO,0.0,99.,'W','Z offset',IER)
+        CALL EGETWR(HOLD,K,XO1,0.0,99.,'W','X offset',IER)
+        CALL EGETWR(HOLD,K,ZO1,0.0,99.,'W','Z offset',IER)
         CALL EGETWR(HOLD,K,XW,0.0,99.,'W','width',IER)
         CALL EGETWR(HOLD,K,ZH,0.0,99.,'W','height',IER)
       elseif (IRT.eq.2)then
@@ -2267,12 +2275,12 @@ C edited to a thick line if currently in graphics mode.
         H(3)='face) to the left side of the new surface. '
         H(4)=' '
         H(5)='The opening width and height are in metres. '
-        write(hold,'(3f8.3,a)') XO,XW,ZH,'  '
+        write(hold,'(3f8.3,a)') XO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Width, Height (m): (see help)',
      &    ' ',36,' 0.1 0.8 2.1','Xoff Zoff width height',IER,5)
         K=0
-        CALL EGETWR(HOLD,K,XO,0.0,99.,'W','X offset',IER)
+        CALL EGETWR(HOLD,K,XO1,0.0,99.,'W','X offset',IER)
         CALL EGETWR(HOLD,K,XW,0.0,99.,'W','width',IER)
         CALL EGETWR(HOLD,K,ZH,0.0,99.,'W','height',IER)
       elseif (IRT.eq.3)then
@@ -2297,8 +2305,8 @@ C << NOTE: this logic assumes a rectangular parent surface >>
 C << and the area will not be correct for other surface shapes. >>
         XW=(XYMAX*SQRT(PERC))/10
         ZH=(ZMAX*SQRT(PERC))/10
-        XO=((XYMAX-XW)/2)
-        ZO=((ZMAX-ZH)/2)
+        XO1=((XYMAX-XW)/2)
+        ZO1=((ZMAX-ZH)/2)
         guesstype='window_grill_frame'
       endif
       if(ier.ne.0)goto 43
@@ -2312,7 +2320,7 @@ C transform routine.
         YY(J) = Y(JVN(IS,J))
         ZZ(J) = Z(JVN(IS,J))
   150 CONTINUE
-      CALL ETRANSW(ITRC,ITRU,N,XX,YY,ZZ,0.00,XO,ZO,XW,ZH,XA,YA,ZA)
+      CALL ETRANSW(ITRC,ITRU,N,XX,YY,ZZ,0.00,XO1,ZO1,XW,ZH,XA,YA,ZA)
 
 C If in silent mode skip past the graphic feedback.
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then

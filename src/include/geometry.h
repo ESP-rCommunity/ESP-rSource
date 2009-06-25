@@ -56,4 +56,11 @@ C lnzname,lnzdesc - length of strings.
       integer lnzname,lnzdesc
       common/preczln/lnzname(MCOM),lnzdesc(MCOM)
 
+C Obstruction block commons (legacy).
+      integer NB    ! number of obstruction blocks.
+      real XO,YO,ZO ! XYX coordinates of each block origin.
+      real DX,DY,DZ ! width depth and height of each block
+      real BANG     ! block rotation angle (degrees).
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
 

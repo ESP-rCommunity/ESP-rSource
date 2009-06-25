@@ -26,7 +26,7 @@ C THF (THINGS) file for use in MicroGDS.
       subroutine e2vdxf(itrc,incobs,ichop)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G2/precz/GS5.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -44,7 +44,6 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
@@ -461,7 +460,6 @@ C THF (THINGS) file for use in MicroGDS.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),

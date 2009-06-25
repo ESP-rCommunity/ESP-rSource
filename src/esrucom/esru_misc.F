@@ -1059,15 +1059,11 @@ C range checking and printed summary. An obstruction block name (up to
 C 12 characters) may be included as an option and is returned via BLKNAME. 
       SUBROUTINE EGOMST(IUNIT,LOBS,IR,ITRC,ITRU,IER)
 #include "building.h"
+C geometry.h provides common block GS5
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
-
-C NB number of obstruction blocks.
-C X0 Y0 Z0 coordinates of each block origin.
-C DX DY DZ width depth and height of each block
-C BANG block rotation angle.
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
 
 C NOX NOZ gridding resolution of surfaces for shading
 C NGX NGZ not used.
@@ -1200,11 +1196,12 @@ C MKGOMST: Creates an annotated site obstruction file based
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
 #include "building.h"
+C geometry.h provides common block GS5
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
       integer nccode,indutl

@@ -79,6 +79,8 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+      real DX1,DY1,DZ1  ! to avoid name clash with geometry.h
+      real XO1,YO1,ZO1
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -176,12 +178,12 @@ C Allow user choices of beginning as a simple shape (with image feedback).
      &    'rectangular plan','polygon plan','general 3D',
      &    'bitmap',ishape,22)
  144  IF(ishape.eq.1)THEN
-        XO=0.
-        YO=0.
-        ZO=0.
-        DX=5.0
-        DY=3.0
-        DZ=2.7
+        XO1=0.
+        YO1=0.
+        ZO1=0.
+        DX1=5.0
+        DY1=3.0
+        DZ1=2.7
         H(1)='The specification of a rectangular extrusion requires'
         H(2)='the specification of an origin (relative to the site'
         H(3)='coordinate system, and a length, depthand height.'
@@ -191,26 +193,26 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         H(7)='The rectangle may then be rotated by an angle measured'
         H(8)='from the X axis, anticlockwise positive.'
         HOLD=' '
-        WRITE(HOLD,'(1x,3f8.3)')XO,YO,ZO
+        WRITE(HOLD,'(1x,3f8.3)')XO1,YO1,ZO1
         CALL EASKS(HOLD,' ','Origin X,Y,Z?',
      &           32,' 0. 0. 0. ','origin coord',IER,8)
         K=0
-        CALL EGETWR(HOLD,K,XO,-999.9,999.9,'W','X origin',IER)
-        CALL EGETWR(HOLD,K,YO,-999.9,999.9,'W','Y origin',IER)
-        CALL EGETWR(HOLD,K,ZO,-9.9,999.9,'W','Z origin',IER)
+        CALL EGETWR(HOLD,K,XO1,-999.9,999.9,'W','X origin',IER)
+        CALL EGETWR(HOLD,K,YO1,-999.9,999.9,'W','Y origin',IER)
+        CALL EGETWR(HOLD,K,ZO1,-9.9,999.9,'W','Z origin',IER)
 
  242    H(1)='The length (with no rotation) is along the X axis.'
         H(2)='The width (with no rotation) is along the Y axis.'
         H(3)='The height is along the Z axis.'
         HOLD=' '
-        WRITE(HOLD,'(1x,3f8.3)')DX,DY,DZ
+        WRITE(HOLD,'(1x,3f8.3)')DX1,DY1,DZ1
         CALL EASKS(HOLD,' ','Rectangle length, width and height?',
      &             32,' 2.5 3.5 2.7 ','rectangle size',IER,3)
         K=0
-        CALL EGETWR(HOLD,K,DX,0.001,99.9,'W','box width',IER)
-        CALL EGETWR(HOLD,K,DY,0.001,99.9,'W','box depth',IER)
-        CALL EGETWR(HOLD,K,DZ,0.001,99.9,'W','box height',IER)
-        if(DX.lt.0.001.or.DY.lt.0.001)goto 242
+        CALL EGETWR(HOLD,K,DX1,0.001,99.9,'W','box width',IER)
+        CALL EGETWR(HOLD,K,DY1,0.001,99.9,'W','box depth',IER)
+        CALL EGETWR(HOLD,K,DZ1,0.001,99.9,'W','box height',IER)
+        if(DX1.lt.0.001.or.DY1.lt.0.001)goto 242
 
         H(1)='Orientation is the angle between the length (DX) side'
         H(2)='of the rectangle and the X-axis, anticlockwise +ve.'
@@ -219,7 +221,7 @@ C Allow user choices of beginning as a simple shape (with image feedback).
      &       -359.0,'W',359.0,'W',0.0,'box orientation',IER,2)
 
 C Convert box into a gen description.
-        CALL ERECC(XO,YO,ZO,DX,DY,DZ,ANG)
+        CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,ANG)
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6

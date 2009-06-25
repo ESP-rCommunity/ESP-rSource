@@ -467,9 +467,9 @@ C coordinates are relative to the original coordinate system.
 
       subroutine cornr(ibn)
 #include "building.h"
+#include "geometry.h"
 
       common/tracech/icout
-      common/gs5/nb,xo(mb),y0(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
       common/obs/xc(8),yc(8),zc(8)
 
       character outs*124
@@ -480,10 +480,10 @@ C coordinates are relative to the original coordinate system.
 
       pi=4.0*atan(1.0)
       r=pi/180.
-      ca=cos(ang(ibn)*r)
-      sa=sin(ang(ibn)*r)
+      ca=cos(bang(ibn)*r)
+      sa=sin(bang(ibn)*r)
       xc(1)=xo(ibn)
-      yc(1)=y0(ibn)
+      yc(1)=yo(ibn)
       zc(1)=zo(ibn)+dz(ibn)
       xc(5)=xc(1)
       yc(5)=yc(1)

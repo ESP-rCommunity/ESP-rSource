@@ -1135,6 +1135,7 @@ C and act on the information within the file.
        integer MSZ   ! number of silent zones array sizes
        PARAMETER (MSZ=10) 
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -1169,11 +1170,7 @@ C SNFNAM  - *72 Name of the file containing hourly snow depth information
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
-C NB number of obstruction blocks.
-C X0 Y0 Z0 coordinates of each block origin.
-C DX DY DZ width depth and height of each block
-C BANG block rotation angle.
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+C Obstruction blocks via geometry.h.
 
 C NOX NOZ gridding resolution of surfaces for shading
 C NGX NGZ not used.
@@ -2298,11 +2295,7 @@ C SNFNAM  - *72 Name of the file containing hourly snow depth information
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C NB number of obstruction blocks.
-C X0 Y0 Z0 coordinates of each block origin.
-C DX DY DZ width depth and height of each block
-C BANG block rotation angle.
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+C Obstruction blocks via geometry.h.
 
 C NOX NOZ gridding resolution of surfaces for shading
 C NGX NGZ not used.

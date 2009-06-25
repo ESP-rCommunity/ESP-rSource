@@ -256,6 +256,7 @@ C MLC commons to recover optical property name.
       character OTF*4,OPT*12 ! for use with parsemlcdesc
       logical dll,checkbase
       logical havec24
+      real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
 
       IER=0
       ZN=' '
@@ -355,9 +356,9 @@ C Zone is of type REC, look for 7 items on one or two lines.
         call lstripc(IUNIT,loutstr,99,ND,1,'line 2',IER)
         IF(IER.NE.0)goto 1001
         K=0
-        CALL EGETWR(loutstr,K,XO,0.,0.,'-','X origin',IER)
-        CALL EGETWR(loutstr,K,YO,0.,0.,'-','Y origin',IER)
-        CALL EGETWR(loutstr,K,ZO,0.,0.,'-','Z origin',IER)
+        CALL EGETWR(loutstr,K,XO1,0.,0.,'-','rec X origin',IER)
+        CALL EGETWR(loutstr,K,YO1,0.,0.,'-','rec Y origin',IER)
+        CALL EGETWR(loutstr,K,ZO1,0.,0.,'-','rec Z origin',IER)
 
 C If only 3 items on first line read another loutstr and try to continue.
         IF(ND.EQ.3) THEN
@@ -365,13 +366,13 @@ C If only 3 items on first line read another loutstr and try to continue.
           call lstripc(IUNIT,loutstr,0,ND,1,'line 2',IER)
           IF(IER.NE.0)goto 1001
         ENDIF
-        CALL EGETWR(loutstr,K,DX,0.,0.,'-','length',IER)
-        CALL EGETWR(loutstr,K,DY,0.,0.,'-','width',IER)
-        CALL EGETWR(loutstr,K,DZ,0.,0.,'-','height',IER)
-        CALL EGETWR(loutstr,K,AR,-360.,360.,'W','rotation angle',IER)
+        CALL EGETWR(loutstr,K,DX1,0.,0.,'-','length',IER)
+        CALL EGETWR(loutstr,K,DY1,0.,0.,'-','width',IER)
+        CALL EGETWR(loutstr,K,DZ1,0.,0.,'-','height',IER)
+        CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rotation angle',IER)
 
 C Now convert to a gen description.
-        CALL ERECC(XO,YO,ZO,DX,DY,DZ,AR)
+        CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,AR1)
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
         CTYPE(icomp)='GEN '
@@ -384,7 +385,7 @@ C Zone is of type REG.
         CALL EGETWI(loutstr,K,NW,3,MS-2,'W','no of walls',IER)
         CALL EGETWR(loutstr,K,Z1,0.,1000.,'W','floor height',IER)
         CALL EGETWR(loutstr,K,Z2,Z1,1000.,'F','ceiling ht',IER)
-        CALL EGETWR(loutstr,K,AR,-360.,360.,'W','rot angle',IER)
+        CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rot angle',IER)
 
 C Read base vertex data.
         DO 60 IW=1,NW
@@ -397,10 +398,10 @@ C Read base vertex data.
 
 C Now convert to GEN body type and place into in common block.
         CALL EREGC(NW,Z1,Z2,XX,YY)
-        IF(AR.LT.-.01.OR.AR.GT..01)then
+        IF(AR1.LT.-.01.OR.AR1.GT..01)then
           x1=X(1)
           y1=Y(1)
-          CALL ESCROT(AR,x1,y1)
+          CALL ESCROT(AR1,x1,y1)
         endif
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
@@ -420,7 +421,7 @@ C (Shouldn't four planar surfaces be required to fully-bound a zone?)
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
 C Read rotation angle. Does this input work?
-        CALL EGETWR(loutstr,K,AR,-360.,360.,'W','rotation angle',IER)
+        CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rotation angle',IER)
 
 C Read each vertex data line, strip any comments, see if 3 items and
 C place in X(),Y(),Z().
@@ -461,10 +462,10 @@ C Now proceed to read vertices on one or more lines.
    10   CONTINUE
 
 C Rotate if required.
-        if(AR.LT.-.01.OR.AR.GT..01)then
+        if(AR1.LT.-.01.OR.AR1.GT..01)then
           x1=X(1)
           y1=Y(1)
-          CALL ESCROT(AR,x1,y1)
+          CALL ESCROT(AR1,x1,y1)
         endif
 C Unrecognized keyword.      
       ELSE
@@ -1306,13 +1307,8 @@ C Thermal bridge common block is described in esruprj/edgeo.F
 
 C This information was previously/also held in zone obstruction
 C file. The intent is that older models when scanned can be upgraded
-C to hold such information in the zone geometry file.
-
-C NB number of obstruction blocks.
-C X0 Y0 Z0 coordinates of each block origin.
-C DX DY DZ width depth and height of each block
-C BANG block rotation angle.
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+C to hold such information in the zone geometry file. Common GS5
+C is defined in geometry.h
 
 C NOX NOZ gridding resolution of surfaces for shading
 C NGX NGZ not used.
@@ -2161,11 +2157,7 @@ C Error subroutine and error details for dll mode.
       character dllsubr*12,dllmesg*124
       common/dllerr/dllsubr,dllmesg
 
-C NB number of obstruction blocks.
-C X0 Y0 Z0 coordinates of each block origin.
-C DX DY DZ width depth and height of each block
-C BANG block rotation angle.
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+C Obstruction blocks common GS5 is found in geometry.h.
 
 C NOX NOZ gridding resolution of surfaces for shading
 C NGX NGZ not used.

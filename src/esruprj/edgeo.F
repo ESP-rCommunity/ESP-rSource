@@ -40,7 +40,7 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 #include "net_flow.h"
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/c20.
+C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/c20/GS5.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -78,11 +78,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-C NB number of obstruction blocks.
-C X0 Y0 Z0 coordinates of each block origin.
-C DX DY DZ width depth and height of each block
-C BANG block rotation angle.
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+C Obstruction blocks via geometry.h.
 
 C NOX NOZ gridding resolution of surfaces for shading
 C NGX NGZ not used.
@@ -2948,6 +2944,7 @@ C Optical and geometric properties.
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
+      real XO1,ZO1  ! to prevent name clash in geometry.h
 
 C Display a selection of surfaces available in the zone. If surface
 C faces another zone, get the other surface connection index. 
@@ -3113,7 +3110,7 @@ C XO,ZO,XW,ZH are not used in an interactive insert.
         rsuse1=' '
         rsuse2=' '
         rsparent='-'
-        CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO,ZO,XW,ZH,
+        CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO1,ZO1,XW,ZH,
      &    rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
         if(LASTS.ne.NSUR)then
           call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -5926,6 +5923,8 @@ C Make use of VERINFO to display the current vertex surface connections.
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
+      real XO1,ZO1  ! to prevent name clash in geometry.h
+      
 #ifdef OSX
       integer iix,iiy
 #else
@@ -6553,11 +6552,11 @@ C the mouse click option.
 
 C Add/insert a surface, return to higher level menu when done.
 C The 'ii' request an interactive insertion, the parameters
-C XO,ZO,XW,ZH are not used in an interactive insert. The string
+C XO1,ZO1,XW,ZH are not used in an interactive insert. The string
 C parameters are currently passed as blanks for interactive mode.
 C << ?? make use of rsname etc in interactive use?? >>
-          XO=0.
-          ZO=0.
+          XO1=0.
+          ZO1=0.
           XW=0.
           ZH=0.
           rsname=' '
@@ -6566,7 +6565,7 @@ C << ?? make use of rsname etc in interactive use?? >>
           rsuse1=' '
           rsuse2=' '
           rsparent='-'
-          CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO,ZO,XW,ZH,
+          CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO1,ZO1,XW,ZH,
      &      rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
         elseif(IRT.eq.4)then
           call tstamp('>','PRJ: copy local surfaces')
@@ -7411,6 +7410,8 @@ C be inserted.
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
+      real ARX,Z1X,Z2X,DX1,DY1,DZ1  ! to avoid variable clash with geometry.h
+      real XO1,YO1,ZO1
 
       IER=0
       phrasea=' '
@@ -7566,9 +7567,9 @@ C Zone is of type REC, look for 7 items on one or two lines.
      &    ' REC line origin was misunderstood.'
         IF(IER.NE.0)goto 1001
         K=0
-        CALL EGETWR(OUTSTR,K,XO,0.,0.,'-','X origin',IER)
-        CALL EGETWR(OUTSTR,K,YO,0.,0.,'-','Y origin',IER)
-        CALL EGETWR(OUTSTR,K,ZO,0.,0.,'-','Z origin',IER)
+        CALL EGETWR(OUTSTR,K,XO1,0.,0.,'-','X origin',IER)
+        CALL EGETWR(OUTSTR,K,YO1,0.,0.,'-','Y origin',IER)
+        CALL EGETWR(OUTSTR,K,ZO1,0.,0.,'-','Z origin',IER)
 
 C If only 3 items on first line read another OUTSTR and try to continue.
         IF(ND.EQ.3) THEN
@@ -7576,13 +7577,13 @@ C If only 3 items on first line read another OUTSTR and try to continue.
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'line 3',IER)
           IF(IER.NE.0)goto 1001
         ENDIF
-        CALL EGETWR(OUTSTR,K,DX,0.,0.,'-','length',IER)
-        CALL EGETWR(OUTSTR,K,DY,0.,0.,'-','width',IER)
-        CALL EGETWR(OUTSTR,K,DZ,0.,0.,'-','height',IER)
-        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rotation angle',IER)
+        CALL EGETWR(OUTSTR,K,DX1,0.,0.,'-','length',IER)
+        CALL EGETWR(OUTSTR,K,DY1,0.,0.,'-','width',IER)
+        CALL EGETWR(OUTSTR,K,DZ1,0.,0.,'-','height',IER)
+        CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rotation angle',IER)
 
 C Now convert to a gen description.
-        CALL ERECC(XO,YO,ZO,DX,DY,DZ,AR)
+        CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,ARX)
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
         CTYPE(icomp)='GEN '
@@ -7595,9 +7596,9 @@ C Zone is of type REG.
         IF(IER.NE.0)goto 1001
         K=0
         CALL EGETWI(OUTSTR,K,NW,3,MS-2,'W','no of walls',IER)
-        CALL EGETWR(OUTSTR,K,Z1,0.,1000.,'W','floor height',IER)
-        CALL EGETWR(OUTSTR,K,Z2,Z1,1000.,'F','ceiling ht',IER)
-        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rot angle',IER)
+        CALL EGETWR(OUTSTR,K,Z1X,0.,1000.,'W','floor height',IER)
+        CALL EGETWR(OUTSTR,K,Z2X,Z1X,1000.,'F','ceiling ht',IER)
+        CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rot angle',IER)
 
 C Read base vertex data.
         DO 60 IW=1,NW
@@ -7609,11 +7610,11 @@ C Read base vertex data.
    60   CONTINUE
 
 C Now convert to GEN body type and place into in common block.
-        CALL EREGC(NW,Z1,Z2,XX,YY)
-        IF(AR.LT.-.01.OR.AR.GT..01)then
+        CALL EREGC(NW,Z1X,Z2X,XX,YY)
+        IF(ARX.LT.-.01.OR.ARX.GT..01)then
           x1=X(1)
           y1=Y(1)
-          CALL ESCROT(AR,x1,y1)
+          CALL ESCROT(ARX,x1,y1)
         endif
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
@@ -7630,7 +7631,7 @@ C Zone is of type GEN.
         CALL EGETWI(OUTSTR,K,NSUR,3,MS,'F','no of surfaces',IER)
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
-        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rot angle',IER)
+        CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rot angle',IER)
 
 C Read each vertex data line, strip any comments, see if 3 items and
 C place in X(),Y(),Z().
@@ -7674,10 +7675,10 @@ C Now proceed to read vertices on one or more lines.
    10   CONTINUE
 
 C Rotate if required.
-        if(AR.LT.-.01.OR.AR.GT..01)then
+        if(ARX.LT.-.01.OR.ARX.GT..01)then
           x1=X(1)
           y1=Y(1)
-          CALL ESCROT(AR,x1,y1)
+          CALL ESCROT(ARX,x1,y1)
         endif
       ELSE
         write(outs,'(2a)') ' Geometry shape type illegal in ',
@@ -7931,8 +7932,8 @@ C transparent surfaces.
         do 66 idw=1,nbdef
           isurf=iwhichsurfw(idw)
           act='sw'
-          XO=VALX(idw)
-          ZO=VALZ(idw)
+          XO1=VALX(idw)
+          ZO1=VALZ(idw)
           XW=VALW(idw)
           ZH=VALH(idw)
           rsname=' '
@@ -7941,7 +7942,7 @@ C transparent surfaces.
           rsuse1=' '
           rsuse2=' '
           rsparent='-'
-          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO,ZO,XW,ZH,
+          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO1,ZO1,XW,ZH,
      &      rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
   66    continue
       endif
@@ -7951,8 +7952,8 @@ C If there are default doors, attempt to insert them as surfaces.
         do 67 idd=1,nbdor
           isurf=iwhichsurfd(idd)
           act='sd'
-          XO=VALDX(idd)
-          ZO=0.0
+          XO1=VALDX(idd)
+          ZO1=0.0
           XW=VALDW(idd)
           ZH=VALDH(idd)
           rsname=' '
@@ -7961,7 +7962,7 @@ C If there are default doors, attempt to insert them as surfaces.
           rsuse1=' '
           rsuse2=' '
           rsparent='-'
-          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO,ZO,XW,ZH,
+          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO1,ZO1,XW,ZH,
      &      rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
   67    continue
       endif

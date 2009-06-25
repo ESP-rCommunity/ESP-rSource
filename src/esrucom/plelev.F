@@ -30,7 +30,7 @@ C IUF is file unit for geometry, utility file units.
       SUBROUTINE PLELEV(IUF,direc,ier)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G2/precz/GS5.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -40,7 +40,6 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
