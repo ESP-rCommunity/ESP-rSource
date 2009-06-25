@@ -11,6 +11,44 @@
    IEXP = 0 means don't care or already know no. items - don't check
    IEXP >0  means a specific number of items expected (error if not)
    IEXP = 99 check number of items and return in ITEMS
+
+ Example of use: open a file (name) and scan it for specific tokens
+ . . . 
+ #include "wwinfo.h"
+ FILE *wwc;
+ int iexp, itm, ier;
+ int ilen, count;
+ char outstr[124];
+ char word[72];
+ . . .
+ if ((wwc = fopen(name,"r"))==NULL) {
+  fprintf(stderr,"could not open wwc file %s\n",name);
+  return;
+ }
+ fprintf(stderr,"file is %s\n",name);
+ do {	/* Read a line from file, skipping & stripping comments */
+   iexp = 99; itm = 0; ier = 0;
+   cstripc(wwc,outstr,&iexp,&itm,"wwc problem",&ier);
+
+   count = sscanf(outstr,"%s",word);
+   iexp = 99; itm = 0; ier = 0;
+   if (strncmp(word, "*start_set", 10) == 0) {
+   } else if (strncmp(word, "*end_set", 8) == 0) {
+   } else if (strncmp(word, "*end_wwc", 8) == 0) {
+       fprintf(stderr,"finished set of commands\n");
+       fclose(wwc);
+       return;
+   } else if (strncmp(word, "*axiscale", 9) == 0) {
+       iexp = 11;
+       cstripc(wwc,outstr,&iexp,&itm,"axiscale cmd",&ier);
+       sscanf(outstr,"%d%d%f%f%f%f%f%f%f%f%f",
+         &gw,&gh,&xmn,&xmx,&ymn,&ymx,&xsc,&ysc,&sca,&xadd,&yadd);
+       axiscale_(&gw,&gh,&xmn,&xmx,&ymn,&ymx,&xsc,&ysc,&sca,&xadd,&yadd);
+   } else if (strncmp(word, "*edline", 7) == 0) {
+   . . .
+  } while ( ier == 0);
+  fclose(wwc);
+ 
 */
 cstripc(fp,outstr,iexp,items,msg,ier)
  char *msg;
