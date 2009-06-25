@@ -2440,7 +2440,7 @@ C Arrays of material properties.
       logical closemat
 
 C      dimension SNA(MS),PAZI(MS),PELV(MS)
-      DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
+      DIMENSION MLED(31),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LTMP
       CHARACTER NAM*72,TITL*72,H*72,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12

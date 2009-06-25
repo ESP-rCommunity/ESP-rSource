@@ -32,7 +32,7 @@ C Ground topology.
       PARAMETER (MGTV=500)	!- Vertices.
 
 C Construction.
-      PARAMETER (ME=20)		!- Elements/construction. - Increased from 8 to 20 to support CFCs - (Bart Lomanowski)
+      PARAMETER (ME=30)		!- Elements/construction. - Increased from 8 to 20 to support CFCs - (Bart Lomanowski)
       PARAMETER (MN=50)		!- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
       PARAMETER (MGP=10)	!- Air gaps/construction. - Increased from 3 to 10 to support CFCs - (Bart Lomanowski)
       PARAMETER (MMLC=120)	!- Multilayered constructions in model.
