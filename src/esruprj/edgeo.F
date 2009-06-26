@@ -3088,13 +3088,13 @@ C Produce help text for the menu.
 
 C Add/insert a surface, return to higher level menu when done.
 C The 'ii' request an interactive insertion, the parameters
-C XO,ZO,XW,ZH are not used in an interactive insert.
+C XO1,ZO1,XW,ZH are not used in an interactive insert.
         H(1)='Inserting a surface into an existing surface is a'
         H(2)='common way to create a door or window opening.'
         LASTS=NSUR
         call tstamp('>','PRJ: insert surface into another')
-        XO=0.
-        ZO=0.
+        XO1=0.
+        ZO1=0.
         XW=0.
         ZH=0.
         rsname=' '

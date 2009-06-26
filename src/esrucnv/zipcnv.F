@@ -33,7 +33,7 @@ C situated.
       SUBROUTINE zipcnv(upgcfg,LOUT,itrc,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/c20/precz.
+C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -65,6 +65,7 @@ C geometry.h provides commons G0/G2/G4/c20/precz.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,dstmp*24
       logical okform,okant,zipok
+      real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
 
       IER=0
 
@@ -193,10 +194,10 @@ C Fill in a default zone name if blank or UNKNOWN.
 
 C Zone is of type REC, look for 7 items on one or two lines.
       IF(CTYPE(ic)(1:3).EQ.'REC')THEN
-        read(ioin,*) XO,YO,ZO,DX,DY,DZ,AR
+        read(ioin,*) XO1,YO1,ZO1,DX1,DY1,DZ1,AR
 
 C Now convert to a gen description.
-        CALL ERECC(XO,YO,ZO,DX,DY,DZ,AR)
+        CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,AR)
         CTYPE(ic)='GEN '
 
 C Zone is of type REG.
