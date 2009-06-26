@@ -1059,22 +1059,16 @@ C range checking and printed summary. An obstruction block name (up to
 C 12 characters) may be included as an option and is returned via BLKNAME. 
       SUBROUTINE EGOMST(IUNIT,LOBS,IR,ITRC,ITRU,IER)
 #include "building.h"
-C geometry.h provides common block GS5
+C geometry.h provides common block GS5/GS6
 #include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
 
-C NOX NOZ gridding resolution of surfaces for shading
-C NGX NGZ not used.
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-
 C Error messages (for use by low level I/O calls)
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER LOBS*72,BLKNAME*8,BLKMAT*12,tmp*8,OUTSTR*124,WORD*20
+      CHARACTER LOBS*72,tmp*8,OUTSTR*124,WORD*20
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
 
@@ -1196,20 +1190,18 @@ C MKGOMST: Creates an annotated site obstruction file based
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
 #include "building.h"
-C geometry.h provides common block GS5
+C geometry.h provides common block GS5/GS6
 #include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       CHARACTER Z*72
-      CHARACTER BLKNAME*8,BLKMAT*12
       character outl*124,outld*124
 
 C Create/Open the file.

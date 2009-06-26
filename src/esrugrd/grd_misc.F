@@ -158,15 +158,16 @@ C 'MESH' Computes the centre point X & Z coordinate of each rectangular
 C grid square of a mesh superimposed on the opaque surface in question.
       SUBROUTINE MESH(IS)
 #include "building.h"
+#include "geometry.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
       COMMON/GRID3/OGRIDA(MS)
-      CHARACTER BLKNAME*8,BLKMAT*12,outs*124,h*72
+      CHARACTER outs*124,h*72
       logical OK,dok
 
 C Find max and min X & Z values for this surface.

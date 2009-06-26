@@ -264,7 +264,7 @@ C IER is returned as non-zero if there is a problem.
       SUBROUTINE DRAWOBS(IFOC,ier)
 #include "building.h"
 
-C geometry.h provides commons G0, G2, GS5.
+C geometry.h provides commons G0, G2, GS5, GS6.
 #include "geometry.h"
 #include "prj3dv.h"
 
@@ -278,7 +278,6 @@ C Passed parameters.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
@@ -299,7 +298,7 @@ C Local arrays.
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER btemp*8,BLKNAME*8,BLKMAT*12
+      CHARACTER btemp*8
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       logical newgeo  ! to use for testing if new/old geometry file.

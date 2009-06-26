@@ -406,12 +406,12 @@ C file does not exist.
 
       subroutine igeoms
 #include "building.h"
+#include "geometry.h"
 
       common/pophelp/h(60)
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/tmc/itmc(ms),nwins
-      character blkname*8,blkmat*12,H*72
+      character H*72
 
 C Set default grid. Note that ngx and ngz relate to old style default
 C windows and are no longer used.
@@ -448,7 +448,6 @@ C            in the misur list.
 
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/sunhr/isunhr
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/tshd/ioshd(mox,moz)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad1/isunup
@@ -471,7 +470,7 @@ C performed and is set to 1 when they have.
       common/data1/ical,idifc,init
 
       dimension xf(mtv),yf(mtv),zf(mtv),ydist(mox,moz)
-      character blkname*8,blkmat*12,outs*124,paction*16
+      character outs*124,paction*16
       character*3 month(12)
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -683,11 +682,11 @@ C surface shading information.
 
       subroutine inwshd(isur,ihr,modes)
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/tshd/ioshd(mox,moz)
       common/sunhr/isunhr
       common/shdfil/ishadf
@@ -695,7 +694,7 @@ C surface shading information.
       common/recshd/irectx
 
       dimension irecs(ms)
-      character blkname*8,blkmat*12,outs*124
+      character outs*124
 
       iushd=ifil
 
@@ -868,18 +867,18 @@ C at hour jj.
 
       subroutine insort(icomp,ii,jj)
 #include "building.h"
+#include "geometry.h"
 
       common/inswin/igins(mox,moz)
       common/pinsol/ins(ms),pins(ms),pinw(ms),pcshad
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/outin/iuout,iuin
       common/c24/izstocn(mcom,ms)
 
       dimension icounts(ms+4),icountw(ms+4),icountt(ms+4)
-      character blkname*8,blkmat*12,outs*124
+      character outs*124
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
 

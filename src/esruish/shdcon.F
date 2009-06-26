@@ -326,7 +326,6 @@ C Calculates the direct and diffuse solar shading. Called from shdcon.
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/contr/mon,isc(ms),iyd
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/ihtime/ihour
       common/sangl1/sazi1,salt1
       common/sangl2/sazi2,salt2
@@ -337,7 +336,7 @@ C performed and is set to 1 when they have.
       common/data1/ical,idifc,init
 
       dimension month(12),npz(8),alt(8),azi(8)
-      character blkname*8,blkmat*12,outs*124,paction*16
+      character outs*124,paction*16
       character month*3,mode*3
       logical tok
 
@@ -931,12 +930,11 @@ C establish if it is within the target surface and shadow polygon.
 
       subroutine shdtst(itsur)
 #include "building.h"
+#include "geometry.h"
 
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/shad2/ishd,npoint,xs(5),zs(5)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
-      character blkname*8,blkmat*12
 
       if(ishd.eq.0)return
 

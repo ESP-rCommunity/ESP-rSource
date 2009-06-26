@@ -1172,13 +1172,6 @@ C SNFNAM  - *72 Name of the file containing hourly snow depth information
 
 C Obstruction blocks via geometry.h.
 
-C NOX NOZ gridding resolution of surfaces for shading
-C NGX NGZ not used.
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      character BLKNAME*8,BLKMAT*12
-
       common/rpath/path
       character*72 path,odir    ! where are folders
 
@@ -1271,8 +1264,8 @@ C Paremeters passed to:silentzone
       dimension nbob(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
       dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
 
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
+C BLOCKNAMEM (8 char) name of obstruction block.
+C BLOCKMATM (12 char) obstruction block construction attribute (for Radiance).
       character BLOCKNAME*8,BLOCKMAT*12
       dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
 
@@ -2297,13 +2290,6 @@ C SNFNAM  - *72 Name of the file containing hourly snow depth information
 
 C Obstruction blocks via geometry.h.
 
-C NOX NOZ gridding resolution of surfaces for shading
-C NGX NGZ not used.
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      character BLKNAME*8,BLKMAT*12
-
 C VCOORD : X,Y & Z coordinates of each vertice in zone.
 C NZNVER : number of vertices associated with each connection.
 C NZJVN : topology of vertices associated with each connection.
@@ -2383,8 +2369,8 @@ C      dimension nbob(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
 C      dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
       dimension nbob(MSZ)
       
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
+C BLOCKNAME (8 char) name of obstruction block.
+C BLOCKMAT (12 char) obstruction block construction attribute (for Radiance).
 C      character BLOCKNAME*8,BLOCKMAT*12
 C      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
 

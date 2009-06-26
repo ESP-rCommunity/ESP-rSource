@@ -34,7 +34,7 @@ C via clicking on a bitmap.
       subroutine clickonbitmap(icomp,ier)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5.
+C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -59,7 +59,6 @@ C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5.
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -114,7 +113,7 @@ C end indices for each zone.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
       character phrase*124,WORD*48,msg*72,ltmp*72,fs*1
-      character zn*12,BLKNAME*8,BLKMAT*12
+      character zn*12
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72

@@ -67,13 +67,12 @@ C points are later excluded.
 
       subroutine mesh(its)
 #include "building.h"
+#include "geometry.h"
 
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/grid3/ogrida(ms)
       common/grid11/xop(mox,moz),zop(mox,moz)
-      character blkname*8,blkmat*12
 
 C Derive bounding box (in 2d) for surface 'its'. First find max and min
 C x & y values for this surface by scanning each vertex.

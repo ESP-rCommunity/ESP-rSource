@@ -36,16 +36,15 @@ C Writes the model geometry to the zone transitional shading file.
       subroutine tfile1(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0, G2,GS5.
+C geometry.h provides commons G0, G2, GS5, GS6.
 #include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/contr/mon,isc(ms),iyd
       common/find/irecl
-      character blkname*8,blkmat*12,outs*124
+      character outs*124
 
       iunit=ifil
 
@@ -409,6 +408,7 @@ C and computes the overall direct and diffuse shading factors.
 
       subroutine tfile3(icomp,is,mode)
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       common/tracech/icout
@@ -416,7 +416,6 @@ C and computes the overall direct and diffuse shading factors.
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/g1t/xft(mv),zft(mv)
       common/grid3/ogrida(ms)
       common/shad1/isunup
@@ -429,7 +428,7 @@ C and computes the overall direct and diffuse shading factors.
 
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-      character blkname*8,blkmat*12,outs*124,mode*3
+      character outs*124,mode*3
       logical tok
 
 C If trace requested enable writing.
@@ -621,17 +620,16 @@ C shading file as previously written by tfile1 and tfile12.
       subroutine retrv1(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0, G2, GS5.
+C geometry.h provides commons G0, G2, GS5, GS6.
 #include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
 
-      character outs*124,blkname*8,blkmat*12
+      character outs*124
 
       iunit=ifil
       

@@ -45,7 +45,6 @@ C LPRFDB,IPRODB (for event profile database)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -76,7 +75,7 @@ C LPRFDB,IPRODB (for event profile database)
       character*30 PICK(MB)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      CHARACTER KEY*1,H*72,BLKNAME*8,BLKMAT*12,HOLD*24
+      CHARACTER KEY*1,H*72,HOLD*24
       character blkroot*6,mat*12,tbn*8
       character holds*36,SFIL*72,DSFIL*72,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -635,14 +634,13 @@ C the block information.
       SUBROUTINE ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/precz/GS5.
+C geometry.h provides commons G0/G2/precz/GS5/GS6.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -656,7 +654,7 @@ C geometry.h provides commons G0/G2/precz/GS5.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-      CHARACTER H*72,BLKNAME*8,BLKMAT*12,LTMP*72,OFILE*72
+      CHARACTER H*72,LTMP*72,OFILE*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -947,7 +945,6 @@ C Parameters
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
       character DESC*48
       integer NMLC,IPR,LAYERS
@@ -973,7 +970,7 @@ C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       LOGICAL MODIFY,MODLEN,MODBND
       DIMENSION VERT(19),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S8*8
-      character BLKNAME*8,BLKMAT*12,HOLD*32,outs*124
+      character HOLD*32,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -1229,7 +1226,6 @@ C of the reveal (adj wall), OWID is the width of the obstruction block.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -1242,7 +1238,7 @@ C of the reveal (adj wall), OWID is the width of the obstruction block.
       DIMENSION  TMAT(4,4),RMAT(4,4),VP(3),EP(3),EQN(4)
 
       logical clx0,cly0,clx1,cly1,clxm1,clym1
-      CHARACTER BLKNAME*8,BLKMAT*12,blkroot*6,mat*12,HOLDS*36,H*72
+      CHARACTER blkroot*6,mat*12,HOLDS*36,H*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
 

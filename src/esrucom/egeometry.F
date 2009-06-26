@@ -1310,13 +1310,6 @@ C file. The intent is that older models when scanned can be upgraded
 C to hold such information in the zone geometry file. Common GS5
 C is defined in geometry.h
 
-C NOX NOZ gridding resolution of surfaces for shading
-C NGX NGZ not used.
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      character BLKNAME*8,BLKMAT*12
-
       DIMENSION IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       CHARACTER OUTSTR*124,LGEOM*72,WORD*32
@@ -2157,14 +2150,7 @@ C Error subroutine and error details for dll mode.
       character dllsubr*12,dllmesg*124
       common/dllerr/dllsubr,dllmesg
 
-C Obstruction blocks common GS5 is found in geometry.h.
-
-C NOX NOZ gridding resolution of surfaces for shading
-C NGX NGZ not used.
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      character BLKNAME*8,BLKMAT*12
+C Obstruction blocks common GS5/GS6 is found in geometry.h.
 
       CHARACTER GENFIL*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8

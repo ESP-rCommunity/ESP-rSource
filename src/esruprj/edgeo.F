@@ -80,13 +80,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C Obstruction blocks via geometry.h.
 
-C NOX NOZ gridding resolution of surfaces for shading
-C NGX NGZ not used.
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      character BLKNAME*8,BLKMAT*12
-
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
 C   1 is 'all_applicable', 0 is manual selection of surfaces.

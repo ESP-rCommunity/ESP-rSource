@@ -568,7 +568,6 @@ C If ACT='i' then interactive, ACT='s' for silent.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -652,7 +651,7 @@ C Arrays of material properties.
       character SSPARENT*12
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character*72 matfil,rmmfil,LBSRIF,aglzfil
-      character BLKNAME*8,BLKMAT*12,ZSN*28
+      character ZSN*28
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12

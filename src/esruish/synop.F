@@ -44,7 +44,6 @@ C a zone transitional shading file.
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
       common/c24/izstocn(mcom,ms)
@@ -53,7 +52,7 @@ C a zone transitional shading file.
       dimension month(12),iavdec(12)
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-      character blkname*8,blkmat*12,outs*124,month*3,sn*12
+      character outs*124,month*3,sn*12
       logical ok,dok
 
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/

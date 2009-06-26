@@ -34,6 +34,7 @@ C to superimpose any direct shading.
 
       subroutine graph(icomp)
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -41,12 +42,11 @@ C to superimpose any direct shading.
       common/spad/mmod,limit,limtty
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/headl/irecs(ms)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
 
-      character blkname*8,blkmat*12,outs*124,h*72
+      character outs*124,h*72
       dimension ioshd(mox,moz),iva(ms)
       logical ok,dok
 #ifdef OSX
@@ -250,11 +250,11 @@ C Plots points on target surface representing direct shaded portion.
 
       subroutine shddrw(is,ishad,ioshd)
 #include "building.h"
+#include "geometry.h"
 
       common/grid11/xop(mox,moz),zop(mox,moz)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       dimension ioshd(mox,moz)
-      character blkname*8,blkmat*12
+
 #ifdef OSX
       integer iix,iiy,iid1,iid2
 #else
@@ -296,7 +296,6 @@ C and the surrounding obstruction blocks.
       common/filep/ifil
 
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -308,7 +307,7 @@ C and the surrounding obstruction blocks.
       integer ifs,itfs,imfs
       common/gfont/ifs,itfs,imfs
 
-      character sstr*72,blabel*4,blkname*8,blkmat*12
+      character sstr*72,blabel*4
       character tz*13
       logical newgeo  ! used to test for new/old geometry file.
 #ifdef OSX
