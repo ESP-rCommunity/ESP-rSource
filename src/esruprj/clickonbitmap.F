@@ -607,8 +607,6 @@ C Clear current obstructions and setup for another zones obs.
           NB=0
           NOX=MOX
           NOZ=MOZ
-          NGX=10
-          NGZ=10
           ZN='obstructions'
         else
 
@@ -1297,8 +1295,6 @@ C and ground topology do require intial information.
             NB=0
             NOX=MOX
             NOZ=MOZ
-            NGX=10
-            NGZ=10
             inpmode = inpt
           elseif(inpt.eq.8)then
             continue

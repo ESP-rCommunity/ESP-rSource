@@ -1071,6 +1071,7 @@ C Error messages (for use by low level I/O calls)
       CHARACTER LOBS*72,tmp*8,OUTSTR*124,WORD*20
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
+      integer NGXD,NGZD  ! dummy values for depreciated NGX & NGZ
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -1147,13 +1148,15 @@ C then assign the block index as the name via internal read.
    10 CONTINUE
 
 C Read surface test grid information and check ranges.
-      CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'obs grid infor',IER)
+      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'obs grid infor',IER)
       IF(IER.NE.0)GOTO 99
       K=0
       CALL EGETWI(OUTSTR,K,NOX,4,MOX,'F','opq grid X',IER)
       CALL EGETWI(OUTSTR,K,NOZ,4,MOZ,'F','opq grid Z',IER)
-      CALL EGETWI(OUTSTR,K,NGX,4,10,'F','win grid X',IER)
-      CALL EGETWI(OUTSTR,K,NGZ,4,10,'F','win grid Z',IER)
+      if(ND.eq.4)then
+       CALL EGETWI(OUTSTR,K,NGXD,4,10,'F','win grid X depreciated',IER)
+       CALL EGETWI(OUTSTR,K,NGZD,4,10,'F','win grid Z depreciated',IER)
+      endif
 
 C Close site file.
    99 CALL ERPFREE(IUNIT,ISTAT)
@@ -1236,9 +1239,9 @@ C For each block write info, use space as item separation.
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
    10 CONTINUE
 
-C Read surface test grid information and check ranges.
-      WRITE(IAF,'(A)',IOSTAT=IOS,ERR=3) '# grid opq X opq Z win X win Z'
-      WRITE(IAF,'(4I6)',IOSTAT=IOS,ERR=3) NOX,NOZ,NGX,NGZ
+C Write surface test grid information.
+      WRITE(IAF,'(A)',IOSTAT=IOS,ERR=3) '# grid surf X surf Z'
+      WRITE(IAF,'(2I6)',IOSTAT=IOS,ERR=3) NOX,NOZ
 
 C Close site file.
       CALL ERPFREE(IAF,ISTAT)

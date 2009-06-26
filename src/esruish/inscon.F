@@ -413,10 +413,7 @@ C file does not exist.
       common/tmc/itmc(ms),nwins
       character H*72
 
-C Set default grid. Note that ngx and ngz relate to old style default
-C windows and are no longer used.
-      ngx=10
-      ngz=10
+C Set default surface grid.
       nox=20
       noz=20
       nwins=0

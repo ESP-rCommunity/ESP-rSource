@@ -105,10 +105,10 @@ C re-read the geometry file.
         elseif(IOBS(ICOMP).EQ.1)then
 
 C There was an existing zone obstructions file and the obstructions
-C should be transferred into the zone geometry file.
-
-C << where/when to do this transfer >>
-
+C should be transferred into the zone geometry file. Note: ecrobs
+C takes care of updating the model cfg file.
+          silent=.false.
+          CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
         elseif(IOBS(ICOMP).EQ.0)then
           IOBS(ICOMP)=2
           MODIFY=.TRUE.
@@ -778,8 +778,6 @@ C If we need to make a dummy obstruction file do this.
         BLKMAT(1)='NONE'
         NOX=20
         NOZ=20
-        NGX=10
-        NGZ=10
         if(newgeo)then
           call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           if(IER.eq.0)then
@@ -918,8 +916,6 @@ C Provide default values for the new obstructions file.
         BLKMAT(1)='NONE'
         NOX=20
         NOZ=20
-        NGX=10
-        NGZ=10
         CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
         IF(IER.NE.0)RETURN
         IOBS(ICOMP)=1 
