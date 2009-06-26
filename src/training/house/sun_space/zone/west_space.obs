@@ -5,5 +5,5 @@
     1    # no obstruction blocks
 # origin X  Y  Z  width  depth  height  angle  descr
   0.020  0.020  0.000  0.020  0.020  0.020    0.0  o              # block  1
-# grid opq X  opq Z  win X  win Z
-    10    10     5     5
+# grid opq X  opq Z
+    10    10

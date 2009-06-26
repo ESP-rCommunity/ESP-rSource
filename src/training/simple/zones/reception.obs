@@ -11,5 +11,5 @@
     1.200   -7.000    3.100    3.600    1.000    2.900    0.000  xblk_2   extern_wall  # block  6
     5.200   -7.000    3.100    3.600    1.000    2.900    0.000  xblk_3   extern_wall  # block  7
     9.100   -7.000    3.100   10.800    1.000    2.900    0.000  xblk_4   extern_wall  # block  8
-# grid opq X  opq Z  win X  win Z
-    20    20     5     5
+# grid opq X  opq Z
+    20    20
