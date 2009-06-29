@@ -764,7 +764,7 @@ C BNDOBJ: Does range checking on objects to be displayed.
       SUBROUTINE BNDOBJ(ITRC,IER)
 #include "building.h"
 
-C geometry.h provides commons G0, G2, GS5.
+C geometry.h provides commons G0, G2, GS5/GS6.
 #include "geometry.h"
 #include "prj3dv.h"
       
@@ -889,7 +889,7 @@ C description into a gen body and then get its bounds.
             IUF=IFIL+1
             if(itrc.gt.1)then
               WRITE(OUTSTR,'(A,A)')' Bounds: ',
-     &          ZOBS(IVZ)(:lnblnk(ZOBS(IVZ)))
+     &          ZOBS(IVZ)(1:lnblnk(ZOBS(IVZ)))
               CALL USRMSG(' ',OUTSTR,'-')
             endif
             CALL EGOMST(IUF,ZOBS(IVZ),0,0,IUOUT,IER)
@@ -900,7 +900,7 @@ C Check geometry file version and scan geometry file to get obstructions.
               call georead(IFIL+1,LGEOM(IVZ),IVZ,1,IUOUT,IER)
             endif
           endif
-          DO 301 IB=1,NB
+          DO 301 IB=1,nbob
             CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
      &               BANG(IB))
             DO 302 I=1,NTV

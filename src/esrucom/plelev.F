@@ -30,7 +30,7 @@ C IUF is file unit for geometry, utility file units.
       SUBROUTINE PLELEV(IUF,direc,ier)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/precz/GS5.
+C geometry.h provides commons G0/G2/precz/GS5/GS6.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -193,8 +193,8 @@ C Check for a zone obstructions file.
 
 C Now draw each obstruction block by first converting to GEN (COMMON G1)
 C and plotting.
-        if(NB.eq.0)goto 54
-        DO 420 IB= 1,NB
+        if(nbob.eq.0)goto 54
+        DO 420 IB= 1,nbob
           CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),BANG(IB))
           DO 422 I=1,NSUR
             J=JVN(I,1)

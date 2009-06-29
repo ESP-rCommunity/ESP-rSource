@@ -57,15 +57,16 @@ C lnzname,lnzdesc - length of strings.
       common/preczln/lnzname(MCOM),lnzdesc(MCOM)
 
 C Obstruction block commons (legacy).
-      integer NB    ! number of obstruction blocks.
+      integer nbob  ! nbob number of obstruction blocks.
       real XO,YO,ZO ! XYX coordinates of each block origin.
       real DX,DY,DZ ! width depth and height of each block
       real BANG     ! block rotation angle (degrees).
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+      COMMON/GS5/nbob,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),
+     &           BANG(MB)
 
-      integer NOX,NOZ     ! gridding resolution of surfaces for shading
-      character BLKNAME*8 ! name of obstruction block.
-      character BLKMAT*12 ! obstruction block construction attribute (for Radiance).
+      integer NOX,NOZ      ! gridding resolution of surfaces for shading
+      character BLKNAME*12 ! name of obstruction block.
+      character BLKMAT*12  ! obstruction block construction attribute (for Radiance).
       COMMON/GS6/NOX,NOZ,BLKNAME(MB),BLKMAT(MB)
 
 

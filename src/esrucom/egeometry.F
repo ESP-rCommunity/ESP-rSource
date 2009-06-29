@@ -1214,7 +1214,7 @@ C       +ve).
       SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRU,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
+C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
 
 C espriou.h provides currentfile.
@@ -1307,7 +1307,7 @@ C Thermal bridge common block is described in esruprj/edgeo.F
 
 C This information was previously/also held in zone obstruction
 C file. The intent is that older models when scanned can be upgraded
-C to hold such information in the zone geometry file. Common GS5
+C to hold such information in the zone geometry file. Common GS5/GS6
 C is defined in geometry.h
 
       DIMENSION IVA(MS)
@@ -1334,7 +1334,7 @@ C is defined in geometry.h
       NEDGE=0  ! counter for surfaces in the edge list, assume no surfaces
       NS=0     ! temporary array for counting surfaces.
       NSUR=0   ! reset surface count
-      NB=0     ! reset number of obstructions
+      nbob=0     ! reset number of obstructions
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -1968,18 +1968,18 @@ C Read another line to get the actual blocks.
           if(phrase(1:4).eq.'*obs')then
             if(iobs(icomp).eq.1) goto 72  ! keep reading till *end_block
             if(iobs(icomp).eq.0) iobs(icomp)=2
-            NB=NB+1
-            CALL EGETWR(OUTSTR,K,XO(NB),-999.,998.,'W','X org',IER)
-            CALL EGETWR(OUTSTR,K,YO(NB),-999.,998.,'W','Y org',IER)
-            CALL EGETWR(OUTSTR,K,ZO(NB), -99., 99.,'W','Z org',IER)
-            CALL EGETWR(OUTSTR,K,DX(NB),   0., 99.,'W','X dis',IER)
-            CALL EGETWR(OUTSTR,K,DY(NB),   0., 99.,'W','Y dis',IER)
-            CALL EGETWR(OUTSTR,K,DZ(NB),   0., 99.,'W','Z dis',IER)
-            CALL EGETWR(OUTSTR,K,BANG(NB),-359.,359.,'W','rot a',IER)
+            nbob=nbob+1
+            CALL EGETWR(OUTSTR,K,XO(nbob),-999.,998.,'W','X org',IER)
+            CALL EGETWR(OUTSTR,K,YO(nbob),-999.,998.,'W','Y org',IER)
+            CALL EGETWR(OUTSTR,K,ZO(nbob), -99., 99.,'W','Z org',IER)
+            CALL EGETWR(OUTSTR,K,DX(nbob),   0., 99.,'W','X dis',IER)
+            CALL EGETWR(OUTSTR,K,DY(nbob),   0., 99.,'W','Y dis',IER)
+            CALL EGETWR(OUTSTR,K,DZ(nbob),   0., 99.,'W','Z dis',IER)
+            CALL EGETWR(OUTSTR,K,BANG(nbob),-359.,359.,'W','rot a',IER)
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-            BLKNAME(NB)=WORD(1:8)
+            BLKNAME(nbob)=WORD(1:12)
             CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            BLKMAT(NB)=WORD(1:12)
+            BLKMAT(nbob)=WORD(1:12)
             goto 72
           elseif(phrase(1:4).eq.'*mrt')then
 
@@ -2415,7 +2415,7 @@ C The phrase can have spaces in it so do not pack string.
 
 C iobs is 2 if there are block descriptions to include in this zone
 C geometry file also write the NOX and NOZ values.
-      if(IOBS(icomp).eq.2.and.NB.gt.0)then
+      if(IOBS(icomp).eq.2.and.nbob.gt.0)then
         hasobstr=.true.
       endif
       if(hasobstr)then
@@ -2424,7 +2424,7 @@ C geometry file also write the NOX and NOZ values.
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '#  *obs = obstructions'
         write(ifilg,'(2a,i2,i3,a)',IOSTAT=IOS,ERR=13) 
      &    '*block_start',tab,NOX,NOZ,' # geometric blocks'
-        do 89 ib=1,NB
+        do 89 ib=1,nbob
           WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &      '*obs',tab,XO(ib),YO(ib),ZO(ib),DX(ib),DY(ib),
      &      DZ(ib),BANG(ib),BLKNAME(ib),BLKMAT(ib)

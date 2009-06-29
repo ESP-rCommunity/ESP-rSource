@@ -347,9 +347,9 @@ C Write topography.
          goto 1000
       endif
 
-      write(iunit,rec=irec,iostat=istat,err=1000)nb
+      write(iunit,rec=irec,iostat=istat,err=1000)nbob
       irec=irec+1
-      do 20 I=1,nb
+      do 20 I=1,nbob
          write(iunit,rec=irec,iostat=istat,err=1000)xo(i),yo(i),zo(i),
      &                                       dx(i),dy(i),dz(i),bang(i)
          irec=irec+1
@@ -934,9 +934,9 @@ C Read topography.
          goto 1000
       endif
       
-      read(iunit,rec=irec,iostat=istat,err=1000)nb
+      read(iunit,rec=irec,iostat=istat,err=1000)nbob
       irec=irec+1
-      do 20 i=1,nb
+      do 20 i=1,nbob
          read(iunit,rec=irec,iostat=istat,err=1000)xo(i),yo(i),zo(i),
      &                                       dx(i),dy(i),dz(i),bang(i)
          irec=irec+1

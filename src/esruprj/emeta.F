@@ -1258,15 +1258,14 @@ C Paremeters passed to:silentzone
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
 
-      integer nbob  ! nbob number of obstruction blocks.
       real XOB,YOB,ZOB  ! coordinates of each block origin.
       real DXOB,DYOB,DZOB  ! width depth and height of each block
-      dimension nbob(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
+      dimension nbobs(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
       dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
 
-C BLOCKNAMEM (8 char) name of obstruction block.
+C BLOCKNAMEM (12 char) name of obstruction block.
 C BLOCKMATM (12 char) obstruction block construction attribute (for Radiance).
-      character BLOCKNAME*8,BLOCKMAT*12
+      character BLOCKNAME*12,BLOCKMAT*12
       dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
 
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
@@ -1388,7 +1387,7 @@ C in the file.
           szsize(iz,1) = 0.0
           szsize(iz,2) = 0.0
           szsize(iz,3) = 0.0
-          nbob(iz) = 0
+          nbobs(iz) = 0
           ht_Setpoint(iz)= 0.0
           cl_Setpoint(iz)= 0.0
           i_ctl_link(iz)=0
@@ -1816,8 +1815,8 @@ C box shapes.
       elseif(WORD(1:4).eq.'*obs')then
 
 C An obstruction block to be associated with the current zone.
-        nbob(nsz)=nbob(nsz)+1
-        nob=nbob(nsz)
+        nbobs(nsz)=nbobs(nsz)+1
+        nob=nbobs(nsz)
         CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
         XOB(nsz,nob)=val1
         CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
@@ -2132,11 +2131,11 @@ C        usefile(iz) = ' '
 C If there are obstructions fill in relevant common blocks. Set iobs()=2
 C to signal that the common blocks have been instanciated and data should
 C be included in the version 1.1 geometry file.
-          if(nbob(isz).gt.0)then
-            NB=nbob(isz)
+          if(nbobs(isz).gt.0)then
+            nbob=nbobs(isz)
             NOX=20
             NOZ=20
-            do 58 ib=1,nbob(isz)
+            do 58 ib=1,nbobs(isz)
               XO(ib)=XOB(isz,ib)
               YO(ib)=YOB(isz,ib)
               ZO(ib)=ZOB(isz,ib)
@@ -2150,7 +2149,7 @@ C be included in the version 1.1 geometry file.
             iobs(icomp)=2
           else
             iobs(icomp)=0
-            NB=0
+            nbob=0
           endif
           if(i_ctl_link(isz).gt.0)then
             isilentncf=1+isilentncf
@@ -2362,16 +2361,16 @@ C Paremeters passed to:silentzone
       integer nbwalls(MSZ)     ! nb of vertical walls
       real rotateit(MSZ)        ! angle of rotation
 
-      integer nbob  ! nbob number of obstruction blocks.
 C      real XOB,YOB,ZOB  ! coordinates of each block origin.
 C      real DXOB,DYOB,DZOB  ! width depth and height of each block
-C      dimension nbob(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
+C      dimension nbobs(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
 C      dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
-      dimension nbob(MSZ)
+      integer nbobs  ! nbobs number of obstruction blocks.
+      dimension nbobs(MSZ)
       
-C BLOCKNAME (8 char) name of obstruction block.
+C BLOCKNAME (12 char) name of obstruction block.
 C BLOCKMAT (12 char) obstruction block construction attribute (for Radiance).
-C      character BLOCKNAME*8,BLOCKMAT*12
+C      character BLOCKNAME*12,BLOCKMAT*12
 C      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
 
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
@@ -2524,7 +2523,7 @@ C << add in zone description >>
         nbwalls(iz) = NZSUR(IZ) ! surfaces in the zone
         rotateit(iz) = 0.0      ! rotation is always zero
 	if(iobs(iz).eq.0)then
-          nbob(iz) = 0
+          nbobs(iz) = 0
         else
 	  ! we need a variable for this
         endif
@@ -2535,7 +2534,7 @@ C Control data - ignore for now.
         i_ctl_link(iz)=0
 
 C Obstructions - this is only known after scanning zone file.
-C        do 55 ibu=1,nbob(iz)
+C        do 55 ibu=1,nbobs(iz)
 C          XOB(iz,ibu) = 0.0
 C          YOB(iz,ibu) = 0.0
 C          ZOB(iz,ibu) = 0.0
@@ -2733,8 +2732,8 @@ C Data structures which have not yet been sorted.
 C      if(WORD(1:4).eq.'*obs')then
 
 C An obstruction block to be associated with the current zone.
-C        nbob(nsz)=nbob(nsz)+1
-C        nob=nbob(nsz)
+C        nbobs(nsz)=nbobs(nsz)+1
+C        nob=nbobs(nsz)
 C        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
 C        XOB(nsz,nob)=val1
 C        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)

@@ -821,8 +821,9 @@ C connections file.
 C Create a dummy obstruction file for zone. Rewind the temporary
 C block store file and scann for blocks matching the current
 C zone.
+C << what about newer >>
           if(IOBS(ivv).eq.1)then
-            NB=0
+            nbob=0
             INQUIRE(iotobs,OPENED=OPND)
             if(OPND)then
               rewind(iotobs,ERR=999)
@@ -833,14 +834,14 @@ C zone.
             endif
   142       read(iotobs,*,end=143)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
             if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
-              NB=NB+1
-              XO(NB)=TXO
-              YO(NB)=TYO
-              ZO(NB)=TZO
-              DX(NB)=TDX
-              DY(NB)=TDY
-              DZ(NB)=TDZ
-              BANG(NB)=TBANG
+              nbob=nbob+1
+              XO(nbob)=TXO
+              YO(nbob)=TYO
+              ZO(nbob)=TZO
+              DX(nbob)=TDX
+              DY(nbob)=TDY
+              DZ(nbob)=TDZ
+              BANG(nbob)=TBANG
             endif
             goto 142
  143        continue
@@ -855,10 +856,10 @@ C << need for a separate obstructions file
             write(iotmp2,'(a,a)')'# associated with zone geom file ',
      &        LGEOM(ivv)(1:lnblnk(LGEOM(ivv)))
             write(iotmp2,'(a)')' 0.0  0.0  # dummy valuse'
-            write(iotmp2,'(I4,a)') NB,'     # no obstruction blocks'
+            write(iotmp2,'(I4,a)') nbob,'     # no obstruction blocks'
             write(iotmp2,'(a)')
      &       '# origin  X   Y   Z   width  depth  height  angle  descr'
-            do 144 ibx=1,NB
+            do 144 ibx=1,nbob
               write(iotmp2,'(7f9.4,a)')XO(ibx),YO(ibx),ZO(ibx),
      &           DX(ibx),DY(ibx),DZ(ibx),BANG(ibx),' dxf # block '
  144        continue

@@ -117,7 +117,7 @@ C end indices for each zone.
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
-      CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S8*8
+      CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character longtfile*144,fname*96
 
@@ -183,12 +183,12 @@ C plan case(NW), initial base Z (z1) initial top (z2).
       X1=0.0
       other=0.1
 
-C NB is the number of obstruction blocks. NBL is number of
-C historical points for prior blocks (NBL = NB*3 because each
+C nbob is the number of obstruction blocks. NBL is number of
+C historical points for prior blocks (NBL = nbob*3 because each
 C block is defined with an origin point, a point at end of
 C the front face and a point at back right corner). 
       NBFREL=0
-      NB=0
+      nbob=0
 
 C Pixel (upper left and lower right corners) of where the bitmap was draw.
       ixbul=0
@@ -351,7 +351,7 @@ C up and down (by 50 pixel increments).
       if(inpmode.eq.1)then
         ITEMS(8+m+n)='i mode >> pick vertices at one Z'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')'j  Z coordinate @',Z1
-        WRITE(ITEMS(10+m+n),'(A,1X,i4)')  'k  nb. of vertices ',INVERT
+        WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
@@ -371,8 +371,8 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.3)then
         ITEMS(8+m+n)='i mode >> pick floor plan'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')  'j  floor @  :',Z1
-        WRITE(ITEMS(10+m+n),'(A,1X,F8.4)')  'k  ceiling @:',Z2
-        WRITE(ITEMS(11+m+n),'(A,1X,i2)')    'l  nb. of walls ',NW
+        WRITE(ITEMS(10+m+n),'(A,1X,F8.4)') 'k  ceiling @:',Z2
+        WRITE(ITEMS(11+m+n),'(A,1X,i2)')   'l  nb. of walls ',NW
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
         else
@@ -381,7 +381,7 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.4)then
         ITEMS(8+m+n)='i mode >> elevation (south)'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')'j  Y coordinate @',Y1
-        WRITE(ITEMS(10+m+n),'(A,1X,i4)')  'k  nb. of vertices ',INVERT
+        WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
@@ -391,7 +391,7 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.5)then
         ITEMS(8+m+n)='i mode >> elevation (east)'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')'j  X coordinate @',X1
-        WRITE(ITEMS(10+m+n),'(A,1X,i4)')  'k  nb. of vertices ',INVERT
+        WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
@@ -401,7 +401,7 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.6)then
         ITEMS(8+m+n)='i mode >> ground topology'
         ITEMS(9+m+n)='                             '
-        WRITE(ITEMS(10+m+n),'(A,1X,i4)')  'k  nb. of vertices ',INVERT
+        WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
@@ -411,8 +411,8 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.7)then
         ITEMS(8+m+n)='i mode >> obstructions'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')  'j  base @  :',Z1
-        WRITE(ITEMS(10+m+n),'(A,1X,F8.4)')  'k  height:',Z2
-        WRITE(ITEMS(11+m+n),'(A,1X,i2)')    'l  nb. of obs ',NB
+        WRITE(ITEMS(10+m+n),'(A,1X,F8.4)') 'k  height:',Z2
+        WRITE(ITEMS(11+m+n),'(A,1X,i2)')   'l  nb. of obs ',nbob
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
         else
@@ -604,7 +604,7 @@ C entry to point clicking.
 C Clear current obstructions and setup for another zones obs.
           INVERT=0
           NBFREL=0
-          NB=0
+          nbob=0
           NOX=MOX
           NOZ=MOZ
           ZN='obstructions'
@@ -1292,7 +1292,7 @@ C and ground topology do require intial information.
             NW=0
             INVERT=0
             NBFREL=0
-            NB=0
+            nbob=0
             NOX=MOX
             NOZ=MOZ
             inpmode = inpt
@@ -2502,7 +2502,7 @@ C          write(6,*) ixx3,ixx2,ixx1,ioffx,ixx1+ioffx
 C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
 
           write(outs,'(a,i3,a,f8.3,a,f8.3,a,f7.3,a,f7.3,a,f7.3)') 
-     &      'Block ',NB,' @ X',tpx1,' Y',tpy1,' width ',twid,
+     &      'Block ',nbob,' @ X',tpx1,' Y',tpy1,' width ',twid,
      &      'm and depth ',tdepth,'m @ aimuth ',RO
           call edisp(iuout,outs)
           call forceflush()
@@ -2520,15 +2520,15 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
      &        ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other)
             goto 346
           endif
-          NB=NB+1
+          nbob=nbob+1
           NBFREL=NBFREL+3
 
 C Ask for name.
-          H(1)='A descriptive name (up to 8 char) is recommended.'
-          S8='blk_'
-          CALL EASKS(S8,' ',' Name of obstruction? ',
-     &      8,'obstruction','Block name',IER,1)
-          IF(S8.NE.' ')BLKNAME(NB)=S8
+          H(1)='A descriptive name (up to 12 char) is recommended.'
+          S12='blk_'
+          CALL EASKS(S12,' ',' Name of obstruction? ',
+     &      12,'obstruction','Block name',IER,1)
+          IF(S12(1:2).NE.'  ')BLKNAME(nbob)=S12
           H(1)='The base elevation of obstruction is in metres.'
           CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
      &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,1)
@@ -2540,15 +2540,15 @@ C Ask for name.
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
           IF(ISEL.GT.0)then
-            WRITE(BLKMAT(NB),'(A12)')DESC(ISEL)(1:12)
+            WRITE(BLKMAT(nbob),'(A12)')DESC(ISEL)(1:12)
           endif
-          XO(NB)=tpx1
-          YO(NB)=tpy1
-          ZO(NB)=Z1
-          DX(NB)=twid
-          DY(NB)=tdepth
-          DZ(NB)=Z2
-          BANG(NB)=RO
+          XO(nbob)=tpx1
+          YO(nbob)=tpy1
+          ZO(nbob)=Z1
+          DX(nbob)=twid
+          DY(nbob)=tdepth
+          DZ(nbob)=Z2
+          BANG(nbob)=RO
           call usrmsg(' ',' ','-')
           call edisp(iuout,' ')
           call edisp(iuout,
@@ -2564,7 +2564,7 @@ C Save current batch of obstructions, first ask which zone it is related to.
      &      ' Associate which zone with these obstructions? ',
      &      12,NCOMP,zname,' zone list',IER,1)
           IC=IVALS(1)
-          if(IC.gt.0.and.NB.gt.0)then
+          if(IC.gt.0.and.nbob.gt.0)then
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
             else

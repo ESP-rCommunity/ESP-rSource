@@ -298,7 +298,7 @@ C Local arrays.
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER btemp*8
+      CHARACTER btemp*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -332,7 +332,7 @@ C is 2 then re-read the version 1.1 zone geometry file.
         endif
       ENDIF
 
-      DO 301 IB=1,NB
+      DO 301 IB=1,nbob
         CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),BANG(IB))
 
 C If block names are to be displayed place near first vertex.
@@ -1011,8 +1011,8 @@ C should be included in image.
         elseif(IOBS(IZ).EQ.2)THEN
           continue  ! any obstructions are in the geometry file.
         endif
-        if(NB.gt.0)then
-          DO 301 IB=1,NB
+        if(nbob.gt.0)then
+          DO 301 IB=1,nbob
 C << conversion to using cnvblk and common GB1 to be done >>
 C            CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
 C     &        BANG(IB))

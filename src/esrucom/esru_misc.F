@@ -1068,7 +1068,7 @@ C geometry.h provides common block GS5/GS6
 C Error messages (for use by low level I/O calls)
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER LOBS*72,tmp*8,OUTSTR*124,WORD*20
+      CHARACTER LOBS*72,tmp*12,OUTSTR*124,WORD*20
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
       integer NGXD,NGZD  ! dummy values for depreciated NGX & NGZ
@@ -1103,14 +1103,14 @@ C in the data.
 C Read number of obstruction blocks and check for range errors.
       CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'number of blocks',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NB,1,MB,'F','no of obstr',IER)
+      CALL EGETWI(OUTSTR,K,nbob,1,MB,'F','no of obstr',IER)
       IF(IER.NE.0)GOTO 99
 
 C Read each obstruction block, if 7 items found then unattributed, if
 C 8 items assume the last is a name for the obstruction block, if 9 items
 C then the last is the construction attribute. If no  name & or construction
 C then assign the block index as the name via internal read.
-      DO 10 I=1,NB
+      DO 10 I=1,nbob
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'obstruction block',IER)
         IF(IER.NE.0)GOTO 99
         IF(ND.eq.7.OR.ND.eq.8.OR.ND.eq.9)THEN
@@ -1133,11 +1133,11 @@ C then assign the block index as the name via internal read.
             BLKMAT(I)='NONE'
           ELSEIF(ND.EQ.8)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-            BLKNAME(I)=WORD(1:8)
+            BLKNAME(I)=WORD(1:12)
             BLKMAT(I)='NONE'
           ELSEIF(ND.EQ.9)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-            BLKNAME(I)=WORD(1:8)
+            BLKNAME(I)=WORD(1:12)
             CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
             BLKMAT(I)=WORD(1:12)
           ENDIF
@@ -1169,12 +1169,12 @@ C Trace.
   997   FORMAT('Shading based on a grid of ',
      &           I2,' by ',I2,' for surfaces.')
         CALL EDISP(ITRU,OUTSTR)
-        WRITE(OUTSTR,9996)NB
+        WRITE(OUTSTR,9996)nbob
  9996   FORMAT('There are ',I2,' blocks associated with the zone.')
         CALL EDISP(ITRU,OUTSTR)
         CALL EDISP(ITRU,
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
-        DO 9995 I=1,NB
+        DO 9995 I=1,nbob
           tmp=BLKNAME(I)
           WRITE(OUTSTR,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
      &      BANG(I),tmp(1:LNBLNK(TMP)),BLKMAT(I)
@@ -1225,16 +1225,16 @@ C Write all site information.
      &  ' 0. 0.   # dummy values for site position'
 
 C Write number of blocks.
-      WRITE(IAF,'(I5,A)',IOSTAT=IOS,ERR=3) NB,
+      WRITE(IAF,'(I5,A)',IOSTAT=IOS,ERR=3) nbob,
      &  '    # no obstruction blocks'
 
 C For each block write info, use space as item separation.
       WRITE(IAF,'(a)')
      &'# origin X Y Z, width, depth, height, rot angle, descr, material'
-      DO 10 I=1,NB
+      DO 10 I=1,nbob
         WRITE(outl,34,IOSTAT=IOS,ERR=3)XO(I),YO(I),ZO(I),DX(I),DY(I),
      &    DZ(I),BANG(I),BLKNAME(I),BLKMAT(I),I
-  34    FORMAT(7F9.3,2X,A8,1X,A12,1X,'# block ',I2)
+  34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
    10 CONTINUE

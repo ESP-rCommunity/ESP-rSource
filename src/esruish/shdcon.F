@@ -352,7 +352,7 @@ C If trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
 
-      if(nb.eq.0)then
+      if(nbob.eq.0)then
          call usrmsg('No obstruction blocks defined so',
      &               'exiting from shading calculation.','W')
          return
@@ -544,7 +544,7 @@ C from the sun or sky patch.
 
 C Complete projection transformation on an obstruction block (ibn)
 C and surface-by-surface (ibs) basis.
-               do 50 ibn=1,nb
+               do 50 ibn=1,nbob
 
 C Compute X, Y and Z coordinates of obstruction block corners 
 C relative to the original site coordinate system.
