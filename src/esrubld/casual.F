@@ -1146,7 +1146,8 @@ C Check for no direct solar (effectively use dayfactor).
      &              (IBLIND.eq.nint(DBILLA(IDB,5)))) then
 
                   write (66,*) ' Found a diffuse match: '
-            write (66,*) 'Dir: ',DBILLA(IDB,3),' Blind: ',DBILLA(IDB,5)
+                  write (66,*) 'Dir: ',DBILLA(IDB,3),
+     &                         ' Blind: ',DBILLA(IDB,5)
 
                   NMATCH=NMATCH+1
                   do 321 ILZ=1,MLCOM
@@ -1324,7 +1325,11 @@ C Loop through till 'OUTCMD' string found.
               endif
               if (OUTSTR(1:60).ne.OUTCMD(1:60)) goto 777
 
-C Now read sensor data.
+C Now read sensor data (for lighting zone N=1, as only this is looped through
+C ... any other light zones get lost with radiance coupling).
+C USE ONLY ONE LIGHTING ZONE WITH RADIANCE COUPLING seems to 
+C be the consequence ... "outloop" this internal loop (DO 19)  over all lighting zones? The 
+C data has been calculated by Radiance for all sensors so should be available ...  
               DO 19 I=1,NDF(ICOMP,N)
                 sumJ=0.
                 CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'t var illum',IER)
