@@ -1268,6 +1268,16 @@ C DOCUMENT IDRHCTL1
      &RHDC(MCOM),IRHCT(MCOM)
 C << still working on this >>
 
+C DOCUMENT ILDB
+      common/ILDB/NDBENT,DBILLA(MILDB,5),DBILLS(MILDB,MLCOM,MDF)
+C ndbent is the current number of database entries (max. MILDB)
+C dbilla is    DBILLA(NDBENT,1)=SALT  solar altitude
+C              DBILLA(NDBENT,2)=RSAZI relative solar azimuth
+C              DBILLA(NDBENT,3)=QDIR  direct radiation
+C              DBILLA(NDBENT,4)=QDIF  diffuse radiation
+C              DBILLA(NDBENT,5)=float(IBLIND) blind switch
+C dbills is the illuminance database for radiance calcs
+
 C DOCUMENT IMAGE
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 C << still working on this >>

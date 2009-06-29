@@ -85,7 +85,7 @@ C Casual gain control.
       PARAMETER (MDCFP=5)	!- Daylight coefficient sets.
       PARAMETER (MDCFS=2)
       PARAMETER (MDCFV=145)	!- Sky patches.
-      PARAMETER (MILDB=200)	!- Radiance illuminance data sets (?)
+      PARAMETER (MILDB=2000)	!- Radiance illuminance data sets (?)
 
 C Systems control.
       PARAMETER (MSEN=4)

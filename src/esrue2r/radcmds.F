@@ -311,7 +311,11 @@ C Recreate octree, setting rtrace options, and run rtrace.
         if (IBLNDS.ne.0.and.NBSRIF(IRIFFOC).eq.0) then
 
 C Error can't simulate switched blinds.
-          call usrmsg('Cannot simulate switched blinds.','  ','F')
+C          call usrmsg('Cannot simulate switched blinds.','  ','F')
+          write(outs,'(a,a)')
+     &  'In .rcf: Alternative .rif for ',
+     &  '"replacement properties (TMC)" missing!'
+          call usrmsg(outs,'  ','F')
         endif
         if (IBLNDS.eq.0) then
           rn=RIFNAME(IRIFFOC)

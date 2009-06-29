@@ -1255,8 +1255,8 @@ C Calculate regression coefficients GRADQR and GRADQF.
             endif
 
 C Call e2r to calculate illuminances.
-C ** Set this as the default treatment **
-            ILLDBM=0
+C ** Set this as the default treatment ** <= why? This turns off "reuse" of Radiance calcs, it seems ... (29/6/2009, AG)
+C            ILLDBM=0
             if (ILLDBM.eq.0) then
 
 C Create transfer file (format: .PID.tmp) LTMPFL is the file name (passed
@@ -1285,8 +1285,13 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               call edisp(icout,'Lighting simulation has now commenced.')
               call runit(doit,'-')
 
-C Create new entry in illuminance database.
+C Create new entry in illuminance database if MILDB is not exceeded - otherwise, give
+C warning and overwrite last entry from now on ...
               NDBENT=NDBENT+1
+              if (NDBENT .gt. MILDB) then
+                write(*,*)' *** DBILLA full - Runtime increase!! ***'
+                NDBENT=MILDB
+              endif
               DBILLA(NDBENT,1)=SALT
               DBILLA(NDBENT,2)=RSAZI
               DBILLA(NDBENT,3)=QDIR
