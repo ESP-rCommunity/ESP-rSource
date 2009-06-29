@@ -1068,7 +1068,7 @@ C geometry.h provides common block GS5/GS6
 C Error messages (for use by low level I/O calls)
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER LOBS*72,tmp*12,OUTSTR*124,WORD*20
+      CHARACTER LOBS*72,tmp*12,OUTSTR*124,WORD*32
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
       integer NGXD,NGZD  ! dummy values for depreciated NGX & NGZ
@@ -1136,10 +1136,13 @@ C then assign the block index as the name via internal read.
             BLKNAME(I)=WORD(1:12)
             BLKMAT(I)='NONE'
           ELSEIF(ND.EQ.9)THEN
+
+C Get name of obstruction block and its construction (which might
+C contain spaces).
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLKNAME(I)=WORD(1:12)
-            CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            BLKMAT(I)=WORD(1:12)
+            CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            write(BLKMAT(I),'(a)') WORD(1:lnblnk(WORD))
           ENDIF
         ELSE
           CALL USRMSG(' mismatch block descr in',OUTSTR,'W')

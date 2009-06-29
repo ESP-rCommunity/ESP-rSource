@@ -2370,7 +2370,7 @@ C      dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
       
 C BLOCKNAME (12 char) name of obstruction block.
 C BLOCKMAT (12 char) obstruction block construction attribute (for Radiance).
-C      character BLOCKNAME*12,BLOCKMAT*12
+C      character BLOCKNAME*12,BLOCKMAT*32
 C      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
 
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
@@ -2750,7 +2750,7 @@ C        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
 C        BANGOB(nsz,nob)=val1
 C        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
 C        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
-C        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+C        CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
 C        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
 C      elseif(WORD(1:6).eq.'*usage')then
 

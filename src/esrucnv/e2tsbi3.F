@@ -1134,7 +1134,7 @@ C logic.
      &      BANG(IB))
 
 C Work out the colour for each block by looping
-C through each of the MLC and finding a match.
+C through each of the MLC and finding a match (for first 12 char).
           ifound = 0
           do 66 im= 1,NMLC
             if(BLKMAT(IB)(1:12).eq.DESC(IM)(1:12))then

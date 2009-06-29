@@ -1978,8 +1978,10 @@ C Read another line to get the actual blocks.
             CALL EGETWR(OUTSTR,K,BANG(nbob),-359.,359.,'W','rot a',IER)
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLKNAME(nbob)=WORD(1:12)
-            CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            BLKMAT(nbob)=WORD(1:12)
+
+C The name of the construction might contain spaces so use EGETP.
+            CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            write(BLKMAT(nbob),'(a)') WORD(1:lnblnk(WORD))
             goto 72
           elseif(phrase(1:4).eq.'*mrt')then
 

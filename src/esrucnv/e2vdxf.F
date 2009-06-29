@@ -537,7 +537,7 @@ C Write obstruction information as a clump of surfaces.
               WRITE(ioout,'(a)')'0 '
               WRITE(ioout,'(I2)')NSUR
               DO 250 J=1,NSUR
-                WRITE(ioout,'(a,a8)')'1 ',BLKMAT(J)(1:8)
+                WRITE(ioout,'(2a)')'1 ',BLKMAT(J)(1:lnblnk(BLKMAT(J)))
                 WRITE(ioout,'(I3,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
   250         continue
   301       continue

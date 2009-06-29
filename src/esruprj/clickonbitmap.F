@@ -2540,7 +2540,7 @@ C Ask for name.
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
           IF(ISEL.GT.0)then
-            WRITE(BLKMAT(nbob),'(A12)')DESC(ISEL)(1:12)
+            WRITE(BLKMAT(nbob),'(A)')DESC(ISEL)(1:12)
           endif
           XO(nbob)=tpx1
           YO(nbob)=tpy1

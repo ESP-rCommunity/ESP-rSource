@@ -178,12 +178,12 @@ C current menu line index. Build up text strings for the menu as well
 C as a list for copy and delete use. 
       M=MHEAD
       DO 10 L=1,ILEN
-        WRITE(PICK(L),304)L,BLKNAME(L),BLKMAT(L)
+        WRITE(PICK(L),304)L,BLKNAME(L),BLKMAT(L)(1:12)
   304   FORMAT(I3,2X,A,1x,A)
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          WRITE(VERT(M),303)KEY,L,BLKNAME(L),BLKMAT(L)
+          WRITE(VERT(M),303)KEY,L,BLKNAME(L),BLKMAT(L)(1:12)
   303     FORMAT(A1,I3,2X,A,1x,A)
         ENDIF
    10 CONTINUE
@@ -1009,7 +1009,7 @@ C Set menu header text.
       WRITE(VERT(2),'(A,3F6.2)')  'b block  W D H:',DX(IB),DY(IB),DZ(IB)
       WRITE(VERT(3),'(A,F7.2)')   'c rotation    : ',BANG(IB)
       WRITE(VERT(4),'(A,A)')      'd name        : ',BLKNAME(IB)
-      WRITE(VERT(5),'(A,A)')      'e construction: ',BLKMAT(IB)
+      WRITE(VERT(5),'(A,A)')      'e construction: ',BLKMAT(IB)(1:12)
       VERT(6)                  =  '  ____________________________ '
       VERT(7)                  =  '  block coords    X       Y   '
       WRITE(VERT(8),'(A,2F8.3)')  '  front left  :',XB(1),YB(1)
@@ -1173,13 +1173,15 @@ C Now display the menu.
         IF(S12(1:2).NE.'  ')BLKNAME(IB)=S12
         MODIFY=.TRUE.
       ELSEIF(IVERT.EQ.5)THEN
+
+C Note: this logic only picks up the first 12 char of construction.
         CALL EPMENSV
         CALL EPKMLC(ISEL,
      &    'Select an OPAQUE construction from the list to',
      &    'associate with the block for visualisation purposes.',IER)
         CALL EPMENRC
         IF(ISEL.GT.0)then
-          WRITE(BLKMAT(IB),'(A12)')DESC(ISEL)(1:12)
+          WRITE(BLKMAT(IB),'(A)')DESC(ISEL)(1:12)
           MODIFY=.TRUE.
         endif
         IF(IER.EQ.1)THEN
@@ -1219,6 +1221,17 @@ C of the reveal (adj wall), OWID is the width of the obstruction block.
       
       integer lnblnk  ! function definition
 
+C Parameters
+      integer icomp   ! zone index
+      integer irs     ! selected surface
+      real azim       ! azimuth of parent surface
+      real elev       ! elevation of parent surface
+      real RTK        ! projection (m) of the reveal
+      real OWID       ! width of the reveal
+      character blkroot*8  ! root name of the set of obstructions
+      character mat*12  ! first 12 characters of obstruction construction
+      integer IER     ! if zero ok
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -1234,7 +1247,9 @@ C of the reveal (adj wall), OWID is the width of the obstruction block.
       DIMENSION  TMAT(4,4),RMAT(4,4),VP(3),EP(3),EQN(4)
 
       logical clx0,cly0,clx1,cly1,clxm1,clym1
-      CHARACTER blkroot*8,mat*12,HOLDS*36,H*72
+
+C Note: mat is only passed as the first 12 char of construction.
+      CHARACTER HOLDS*36,H*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -1380,7 +1395,7 @@ C Create the sill obstruction.
       DZ(nbob)=OWID
       BANG(nbob)=RO
       write(BLKNAME(nbob),'(a,a1)')blkroot(1:lnblnk(blkroot)),'s'
-      BLKMAT(nbob)=mat
+      write(BLKMAT(nbob),'(a)') mat(1:lnblnk(mat))
       CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
 
 C Create the head obstruction.
@@ -1393,7 +1408,7 @@ C Create the head obstruction.
       DZ(nbob)=OWID
       BANG(nbob)=RO
       write(BLKNAME(nbob),'(a,a1)')blkroot(1:lnblnk(blkroot)),'h'
-      BLKMAT(nbob)=mat
+      write(BLKMAT(nbob),'(a)') mat(1:lnblnk(mat))
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1410,7 +1425,7 @@ C Create the left side fin.
       DZ(nbob)=DDZ+OWID+OWID
       BANG(nbob)=RO
       write(BLKNAME(nbob),'(a,a1)')blkroot(1:lnblnk(blkroot)),'l'
-      BLKMAT(nbob)=mat
+      write(BLKMAT(nbob),'(a)') mat(1:lnblnk(mat))
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1427,7 +1442,7 @@ C Create the right side fin.
       DZ(nbob)=DDZ+OWID+OWID
       BANG(nbob)=RO
       write(BLKNAME(nbob),'(a,a1)')blkroot(1:lnblnk(blkroot)),'r'
-      BLKMAT(nbob)=mat
+      write(BLKMAT(nbob),'(a)') mat(1:lnblnk(mat))
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
