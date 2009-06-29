@@ -798,7 +798,7 @@ C Switch off delay time memory common block
       common/sus/issny
 
 C Illuminance database.
-      common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
+      common/ILDB/NDBENT,DBILLA(MILDB,5),DBILLS(MILDB,MLCOM,MDF)
 
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
       DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)

@@ -16,7 +16,7 @@ C Type declarations.
       integer MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID,MMTR,MBND,MSNOD
       integer MMAT,MIPVM,MIPVA,MSPS,MDTY,MGTY,MGPER
       integer MCNDV,MCNDC,MPICK,MVAR,MIMG,MSPMRES
-      integer MCFC
+      integer MCFC,MILDB
 
 C Geometry.
       PARAMETER (MCOM=52)	!- Zones.
@@ -85,6 +85,7 @@ C Casual gain control.
       PARAMETER (MDCFP=5)	!- Daylight coefficient sets.
       PARAMETER (MDCFS=2)
       PARAMETER (MDCFV=145)	!- Sky patches.
+      PARAMETER (MILDB=200)	!- Radiance illuminance data sets (?)
 
 C Systems control.
       PARAMETER (MSEN=4)
