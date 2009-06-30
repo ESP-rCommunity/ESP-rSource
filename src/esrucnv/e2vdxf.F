@@ -78,7 +78,7 @@ C If viewer output required.
 
 C Clear properties.
           NTMC=0
-          nbob=0
+          nbobs(newfoc)=0
 
 C Read in the zone geometry.
           WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
@@ -115,9 +115,9 @@ C Read in util & obstruction file.
           IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
      &      0,0,iuout,IER)
 
-          if(nbob.ge.1)then
+          if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
-            DO 301 IB=1,nbob
+            DO 301 IB=1,nbobs(newfoc)
               CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
      &                 BANG(IB))
 
@@ -297,7 +297,7 @@ C For each zone in the list...
 
 C Clear properties.
         NTMC=0
-        nbob=0
+        nbobs(mz)=0
 
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(mz)
@@ -316,9 +316,9 @@ C Read in util & obstruction file.
         endif
 
 C Inclusion of obstructions.
-        if(nbob.ge.1)then
+        if(nbobs(mz).ge.1)then
           if(incobs.eq.0)goto 61
-          do 43 ib=1,nbob
+          do 43 ib=1,nbobs(mz)
 
 C Convert block into insertion and scaling for a block named
 C obstruction.
@@ -494,7 +494,7 @@ C If viewer output required.
 
 C Clear properties.
           NTMC=0
-          nbob=0
+          nbobs(newfoc)=0
 
 C Read in the zone geometry.
           WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
@@ -523,9 +523,9 @@ C Read in obstruction file.
           IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
      &      0,0,iuout,IER)
 
-          if(nbob.ge.1)then
+          if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
-            DO 301 IB=1,nbob
+            DO 301 IB=1,nbobs(newfoc)
               CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
      &                 BANG(IB))
 

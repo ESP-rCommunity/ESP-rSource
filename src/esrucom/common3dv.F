@@ -332,7 +332,7 @@ C is 2 then re-read the version 1.1 zone geometry file.
         endif
       ENDIF
 
-      DO 301 IB=1,nbob
+      DO 301 IB=1,nbobs(ifoc)
         CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),BANG(IB))
 
 C If block names are to be displayed place near first vertex.
@@ -1011,8 +1011,8 @@ C should be included in image.
         elseif(IOBS(IZ).EQ.2)THEN
           continue  ! any obstructions are in the geometry file.
         endif
-        if(nbob.gt.0)then
-          DO 301 IB=1,nbob
+        if(nbobs(iz).gt.0)then
+          DO 301 IB=1,nbobs(iz)
 C << conversion to using cnvblk and common GB1 to be done >>
 C            CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
 C     &        BANG(IB))

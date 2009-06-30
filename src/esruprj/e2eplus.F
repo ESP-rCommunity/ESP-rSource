@@ -2379,8 +2379,8 @@ C iobs() is 2 and newgeo true then blocks already scanned.
             call edisp(iuout,'Confused where obstructions are.')
           endif
         ENDIF
-        if(nbob.gt.0)then
-          DO 301 IB=1,nbob
+        if(nbobs(mz).gt.0)then
+          DO 301 IB=1,nbobs(mz)
             CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
      &        BANG(IB))
             do 302 ibs=1,6

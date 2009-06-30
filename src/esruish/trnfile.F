@@ -347,9 +347,9 @@ C Write topography.
          goto 1000
       endif
 
-      write(iunit,rec=irec,iostat=istat,err=1000)nbob
+      write(iunit,rec=irec,iostat=istat,err=1000)nbobs(icomp)
       irec=irec+1
-      do 20 I=1,nbob
+      do 20 I=1,nbobs(icomp)
          write(iunit,rec=irec,iostat=istat,err=1000)xo(i),yo(i),zo(i),
      &                                       dx(i),dy(i),dz(i),bang(i)
          irec=irec+1
@@ -620,7 +620,7 @@ C shading file as previously written by tfile1 and tfile12.
       subroutine retrv1(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0, G2, GS5, GS6.
+C geometry.h provides commons G0,G2,GS5,GS6,GS7,GS8.
 #include "geometry.h"
 
       common/outin/iuout,iuin
@@ -934,9 +934,9 @@ C Read topography.
          goto 1000
       endif
       
-      read(iunit,rec=irec,iostat=istat,err=1000)nbob
+      read(iunit,rec=irec,iostat=istat,err=1000)nbobs(icomp)
       irec=irec+1
-      do 20 i=1,nbob
+      do 20 i=1,nbobs(icomp)
          read(iunit,rec=irec,iostat=istat,err=1000)xo(i),yo(i),zo(i),
      &                                       dx(i),dy(i),dz(i),bang(i)
          irec=irec+1

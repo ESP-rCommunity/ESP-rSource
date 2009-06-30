@@ -193,8 +193,8 @@ C Check for a zone obstructions file.
 
 C Now draw each obstruction block by first converting to GEN (COMMON G1)
 C and plotting.
-        if(nbob.eq.0)goto 54
-        DO 420 IB= 1,nbob
+        if(nbobs(newfoc).eq.0)goto 54
+        DO 420 IB= 1,nbobs(newfoc)
           CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),BANG(IB))
           DO 422 I=1,NSUR
             J=JVN(I,1)

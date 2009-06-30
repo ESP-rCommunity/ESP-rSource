@@ -183,12 +183,12 @@ C plan case(NW), initial base Z (z1) initial top (z2).
       X1=0.0
       other=0.1
 
-C nbob is the number of obstruction blocks. NBL is number of
-C historical points for prior blocks (NBL = nbob*3 because each
+C nbobs() is the number of obstruction blocks. NBL is number of
+C historical points for prior blocks (NBL = nbobs*3 because each
 C block is defined with an origin point, a point at end of
 C the front face and a point at back right corner). 
       NBFREL=0
-      nbob=0
+      nbobs(icomp)=0
 
 C Pixel (upper left and lower right corners) of where the bitmap was draw.
       ixbul=0
@@ -412,7 +412,8 @@ C up and down (by 50 pixel increments).
         ITEMS(8+m+n)='i mode >> obstructions'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')  'j  base @  :',Z1
         WRITE(ITEMS(10+m+n),'(A,1X,F8.4)') 'k  height:',Z2
-        WRITE(ITEMS(11+m+n),'(A,1X,i2)')   'l  nb. of obs ',nbob
+        WRITE(ITEMS(11+m+n),'(A,1X,i2)')   'l  nb. of obs ',
+     &    nbobs(icomp)
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
         else
@@ -604,7 +605,7 @@ C entry to point clicking.
 C Clear current obstructions and setup for another zones obs.
           INVERT=0
           NBFREL=0
-          nbob=0
+          nbobs(icomp)=0
           NOX=MOX
           NOZ=MOZ
           ZN='obstructions'
@@ -1292,7 +1293,7 @@ C and ground topology do require intial information.
             NW=0
             INVERT=0
             NBFREL=0
-            nbob=0
+            nbobs(icomp)=0
             NOX=MOX
             NOZ=MOZ
             inpmode = inpt
@@ -2502,8 +2503,8 @@ C          write(6,*) ixx3,ixx2,ixx1,ioffx,ixx1+ioffx
 C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
 
           write(outs,'(a,i3,a,f8.3,a,f8.3,a,f7.3,a,f7.3,a,f7.3)') 
-     &      'Block ',nbob,' @ X',tpx1,' Y',tpy1,' width ',twid,
-     &      'm and depth ',tdepth,'m @ aimuth ',RO
+     &      'Block ',nbobs(icomp),' @ X',tpx1,' Y',tpy1,' width ',
+     &      twid,'m and depth ',tdepth,'m @ aimuth ',RO
           call edisp(iuout,outs)
           call forceflush()
           dok=.true.
@@ -2520,7 +2521,7 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
      &        ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other)
             goto 346
           endif
-          nbob=nbob+1
+          nbobs(icomp)=nbobs(icomp)+1
           NBFREL=NBFREL+3
 
 C Need to get the associated zone before we can save the names
@@ -2534,11 +2535,12 @@ C and constructions.
           IC=IVALS(1)
 
 C Ask for name.
+          nbo=nbobs(icomp)
           H(1)='A descriptive name (up to 12 char) is recommended.'
           S12='blk_'
           CALL EASKS(S12,' ',' Name of obstruction? ',
      &      12,'obstruction','Block name',IER,1)
-          IF(S12(1:2).NE.'  ')BLOCKNAME(IC,nbob)=S12
+          IF(S12(1:2).NE.'  ')BLOCKNAME(IC,nbo)=S12
           H(1)='The base elevation of obstruction is in metres.'
           CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
      &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,1)
@@ -2550,15 +2552,15 @@ C Ask for name.
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(IC,nbob),'(A)')DESC(ISEL)(1:12)
+            WRITE(BLOCKMAT(IC,nbo),'(A)')DESC(ISEL)(1:12)
           endif
-          XO(nbob)=tpx1
-          YO(nbob)=tpy1
-          ZO(nbob)=Z1
-          DX(nbob)=twid
-          DY(nbob)=tdepth
-          DZ(nbob)=Z2
-          BANG(nbob)=RO
+          XO(nbo)=tpx1
+          YO(nbo)=tpy1
+          ZO(nbo)=Z1
+          DX(nbo)=twid
+          DY(nbo)=tdepth
+          DZ(nbo)=Z2
+          BANG(nbo)=RO
           call usrmsg(' ',' ','-')
           call edisp(iuout,' ')
           call edisp(iuout,
@@ -2570,7 +2572,7 @@ C Ask for name.
 C Save current batch of obstructions, first ask which zone it is related to.
 
 C << update to work with version 1.1 geometry files. >>
-          if(IC.gt.0.and.nbob.gt.0)then
+          if(IC.gt.0.and.nbobs(icomp).gt.0)then
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
             else

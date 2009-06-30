@@ -366,7 +366,7 @@ C vertix values.
 
 C Convert obstruction block geometry to GEN format (/g1/) and
 C establish maximum and minimum site coordinates.
-      do 20 i=1,nbob
+      do 20 i=1,nbobs(icomp)
          call erecc(xo(i),yo(i),zo(i),dx(i),dy(i),dz(i),bang(i))
          do 30 j=1,ntv
             xmn=amin1(xmn,x(j))
@@ -427,8 +427,8 @@ C output the zone name.
    40 continue
 
 C Convert obstruction block geometry to GEN format (/g1/) and plot.
-      if(nbob.eq.0)goto 1
-      do 60 ib= 1,nbob
+      if(nbobs(icomp).eq.0)goto 1
+      do 60 ib= 1,nbobs(icomp)
          call erecc(xo(ib),yo(ib),zo(ib),dx(ib),dy(ib),dz(ib),bang(ib))
          iupdown=0
          isym=0

@@ -164,13 +164,13 @@ C Initial rotation values.
 C Setup for multi-page menu.
    91 MHEAD=4
       MCTL=7
-      ILEN=nbob
+      ILEN=nbobs(icomp)
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
 C Initial menu entry setup.
    92 IER=0
-      ILEN=nbob
+      ILEN=nbobs(icomp)
       IVERT=-3
 
 C Loop through the items until the page to be displayed. M is the 
@@ -191,7 +191,7 @@ C as a list for copy and delete use.
 
 C Present a list of the existing blocks and options.
       WRITE(VERT(1),'(A,2I3)')  'a Surface X&Z grid:',NOX,NOZ
-      WRITE(VERT(2),'(A,I3)')   '  No. obstr blocks:',nbob
+      WRITE(VERT(2),'(A,I3)')   '  No. obstr blocks:',nbobs(icomp)
       VERT(3)    =              '  __________________________  '
       VERT(4)    =              ' Blk| description & compos    '
 
@@ -357,10 +357,10 @@ C Rotate an obstruction.
      &     'continue',IBOPT,2)
         if(IBOPT.eq.1)then
           CALL EPMENSV
-          INPIC=nbob
+          INPIC=nbobs(icomp)
           H(1)='Choose one or more blocks to rotate.'
           CALL EPICKS(INPIC,IVALB,' ',' Which obstructions to rotate:',
-     &      30,nbob,PICK,' block list',IER,1)
+     &      30,nbobs(icomp),PICK,' block list',IER,1)
           CALL EPMENRC
           H(1)='The rotation is applied at the obstruction origin,'
           H(2)='with the anticlockwise direction positive. '
@@ -403,10 +403,10 @@ C Rotation choices.
           endif
         elseif(IBOPT.eq.2)then
           CALL EPMENSV
-          INPIC=nbob
+          INPIC=nbobs(icomp)
           H(1)='Choose one or more blocks to transform.'
           CALL EPICKS(INPIC,IVALB,' ','Transform which obstructions:',
-     &        30,nbob,PICK,' block list',IER,1)
+     &        30,nbobs(icomp),PICK,' block list',IER,1)
           CALL EPMENRC
           HOLDS= ' 0.  0.  0. '
           H(1)='Offsets are from block origin in metres. '
@@ -438,15 +438,15 @@ C +- Obstruction.
 
 C Build up text strings for the delete menu. 
           CALL EPMENSV
-          INPIC=MAX0(nbob-2,4)
+          INPIC=MAX0(nbobs(icomp)-2,4)
           H(1)='Choose block(s) to delete.'
           CALL EPICKS(INPIC,IVALB,' ','Delete which obstruction(s):',
-     &        30,nbob,PICK,' delete options',IER,1)
+     &        30,nbobs(icomp),PICK,' delete options',IER,1)
           CALL EPMENRC
           if(inpic.gt.0)then
             do 143 ijb=1,INPIC
               ID=IVALB(ijb)
-              IF(nbob.LT.2)then
+              IF(nbobs(icomp).LT.2)then
 
 C To delete the last obstruction, dereference the file and exit.
                 if(newgeo)then
@@ -466,7 +466,7 @@ C To delete the last obstruction, dereference the file and exit.
                 endif
               endif
               if(ID.eq.0)GOTO 92
-              DO 791 IDV=ID,nbob-1
+              DO 791 IDV=ID,nbobs(icomp)-1
                 XO(IDV)=XO(IDV+1)
                 YO(IDV)=YO(IDV+1)
                 ZO(IDV)=ZO(IDV+1)
@@ -477,23 +477,24 @@ C To delete the last obstruction, dereference the file and exit.
                 BLOCKNAME(icomp,IDV)=BLOCKNAME(icomp,IDV+1)
                 BLOCKMAT(icomp,IDV)=BLOCKMAT(icomp,IDV+1)
   791         CONTINUE
-              nbob=nbob-1
+              nbobs(icomp)=nbobs(icomp)-1
   143       continue
           endif
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob-')
         ELSEIF(IW.EQ.1)THEN
-          IF(nbob+1.LE.MB)THEN
-            nbob=nbob+1
-            XO(nbob)=1.0
-            YO(nbob)=1.0
-            ZO(nbob)=0.0
-            DX(nbob)=1.0
-            DY(nbob)=1.0
-            DZ(nbob)=1.0
-            BANG(nbob)=0
-            BLOCKNAME(icomp,nbob)='new_blk'
-            BLOCKMAT(icomp,nbob)='NONE'
+          IF(nbobs(icomp)+1.LE.MB)THEN
+            nbobs(icomp)=nbobs(icomp)+1
+	    nbo=nbobs(icomp)
+            XO(nbo)=1.0
+            YO(nbo)=1.0
+            ZO(nbo)=0.0
+            DX(nbo)=1.0
+            DY(nbo)=1.0
+            DZ(nbo)=1.0
+            BANG(nbo)=0
+            BLOCKNAME(icomp,nbo)='new_blk'
+            BLOCKMAT(icomp,nbo)='NONE'
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(newgeo)then
@@ -508,11 +509,11 @@ C To delete the last obstruction, dereference the file and exit.
           ENDIF
 
 C Edit the new block, first hilight the obstruction.
-          IB=nbob
-          ITOBS = IB
+	  nbo=nbobs(icomp)
+          ITOBS = nbo
           CALL ADJVIEW(IER)
           CALL EPMENSV
-          CALL EDOBSB(ITRU,IUF,ICOMP,IB,IER)
+          CALL EDOBSB(ITRU,IUF,ICOMP,nbo,IER)
           CALL EPMENRC
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
@@ -520,15 +521,16 @@ C Edit the new block, first hilight the obstruction.
         elseif(IW.EQ.3)THEN
 
 C Copy obstruction.
+	  nbo=nbobs(icomp)
           CALL EPMENSV
           INPIC=1
           H(1)='Choose a block to copy.'
           CALL EPICKS(INPIC,IVALB,' ','Copy which obstruction:',
-     &      30,nbob,PICK,' copy options',IER,1)
+     &      30,nbo,PICK,' copy options',IER,1)
           CALL EPMENRC
           IFOC=IVALB(1)
-          if(nbob+1.LE.MB.and.IFOC.ne.0)then
-            nbob=nbob+1
+          if(nbo+1.LE.MB.and.IFOC.ne.0)then
+            nbobs(icomp)=nbobs(icomp)+1
  244        write(tbn,'(a)') BLOCKNAME(ICOMP,IFOC)
             H(1)='Supply a unique block name for this copy (perhaps'
             H(2)='modifying thenname of the original block) '
@@ -555,14 +557,15 @@ C Ask for transform distance for obstruction and then apply.
             CALL EGETWR(HOLDS,K,VALY,-99.,99.,'W','Y tr',IER)
             CALL EGETWR(HOLDS,K,VALZ,-99.,99.,'W','Z tr',IER)
             if(ier.ne.0)goto 243
-            XO(nbob)=XO(IFOC)+VALX
-            YO(nbob)=YO(IFOC)+VALY
-            ZO(nbob)=ZO(IFOC)+VALZ
-            DX(nbob)=DX(IFOC)
-            DY(nbob)=DY(IFOC)
-            DZ(nbob)=DZ(IFOC)
-            BANG(nbob)=BANG(IFOC)
-            BLOCKMAT(icomp,nbob)=BLOCKMAT(icomp,IFOC)
+	    nbo=nbobs(icomp)
+            XO(nbo)=XO(IFOC)+VALX
+            YO(nbo)=YO(IFOC)+VALY
+            ZO(nbo)=ZO(IFOC)+VALZ
+            DX(nbo)=DX(IFOC)
+            DY(nbo)=DY(IFOC)
+            DZ(nbo)=DZ(IFOC)
+            BANG(nbo)=BANG(IFOC)
+            BLOCKMAT(icomp,nbo)=BLOCKMAT(icomp,IFOC)
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(newgeo)then
@@ -575,9 +578,9 @@ C Ask for transform distance for obstruction and then apply.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 
 C Edit the copied block.
-            IB=nbob
+	    nbo=nbobs(icomp)
             CALL EPMENSV
-            CALL EDOBSB(ITRU,IUF,ICOMP,IB,IER)
+            CALL EDOBSB(ITRU,IUF,ICOMP,nbo,IER)
             CALL EPMENRC
             MODIFY=.TRUE.
             GOTO 91
@@ -684,7 +687,7 @@ C is 0 then set makedummy to true.
         CALL ERPFREE(IUF,ios)
         call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
         if(IOBS(ICOMP).EQ.2)then
-          if(nbob.eq.0)then
+          if(nbobs(icomp).eq.0)then
             ZOBS(ICOMP)=' '
             makedummy=.true.
             goto 42
@@ -767,7 +770,7 @@ C existing file use it, otherwise add a dummy obstruction file silently.
  42   if(makedummy)then
 
 C If we need to make a dummy obstruction file do this.
-        nbob=1
+        nbobs(icomp)=1
         XO(1)=1.0
         YO(1)=1.0
         ZO(1)=0.0
@@ -905,7 +908,7 @@ C User asked to browse within the model for other obstruction files.
       ELSE
           
 C Provide default values for the new obstructions file.
-        nbob=1
+        nbobs(icomp)=1
         XO(1)=1.0
         YO(1)=1.0
         ZO(1)=0.0
@@ -1254,10 +1257,11 @@ C Note: mat is only passed as the first 12 char of construction.
       CHARACTER HOLDS*36,H*72
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer nbo     ! local counter
 
 C Check if ok to add 4 obstructions.
       IUF=IPRODB
-      if(nbob+4.GT.MB)then
+      if(nbobs(icomp)+4.GT.MB)then
         call usrmsg('Reveal not added, run out of obstructions',
      &    'in this zone. ','W')
         return
@@ -1388,31 +1392,33 @@ C Check if tollerably close to an axis.
       endif
 
 C Create the sill obstruction.
-      nbob=nbob+1
-      XO(nbob)=XXW(1)
-      YO(nbob)=YYW(1)
-      ZO(nbob)=ZZW(1)
-      DX(nbob)=DDX+OWID+OWID
-      DY(nbob)=RTK
-      DZ(nbob)=OWID
-      BANG(nbob)=RO
-      write(BLOCKNAME(icomp,nbob),'(a,a1)')
+      nbobs(icomp)=nbobs(icomp)+1
+      nbo=nbobs(icomp)
+      XO(nbo)=XXW(1)
+      YO(nbo)=YYW(1)
+      ZO(nbo)=ZZW(1)
+      DX(nbo)=DDX+OWID+OWID
+      DY(nbo)=RTK
+      DZ(nbo)=OWID
+      BANG(nbo)=RO
+      write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'s'
-      write(BLOCKMAT(icomp,nbob),'(a)') mat(1:lnblnk(mat))
+      write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
 
 C Create the head obstruction.
-      nbob=nbob+1
-      XO(nbob)=XXW(2)
-      YO(nbob)=YYW(2)
-      ZO(nbob)=ZZW(2)
-      DX(nbob)=DDX+OWID+OWID
-      DY(nbob)=RTK
-      DZ(nbob)=OWID
-      BANG(nbob)=RO
-      write(BLOCKNAME(icomp,nbob),'(a,a1)')
+      nbobs(icomp)=nbobs(icomp)+1
+      nbo=nbobs(icomp)
+      XO(nbo)=XXW(2)
+      YO(nbo)=YYW(2)
+      ZO(nbo)=ZZW(2)
+      DX(nbo)=DDX+OWID+OWID
+      DY(nbo)=RTK
+      DZ(nbo)=OWID
+      BANG(nbo)=RO
+      write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'h'
-      write(BLOCKMAT(icomp,nbob),'(a)') mat(1:lnblnk(mat))
+      write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1420,17 +1426,18 @@ C Create the head obstruction.
       endif
 
 C Create the left side fin.
-      nbob=nbob+1
-      XO(nbob)=XXW(3)
-      YO(nbob)=YYW(3)
-      ZO(nbob)=ZZW(3)
-      DX(nbob)=OWID
-      DY(nbob)=RTK
-      DZ(nbob)=DDZ+OWID+OWID
-      BANG(nbob)=RO
-      write(BLOCKNAME(icomp,nbob),'(a,a1)')
+      nbobs(icomp)=nbobs(icomp)+1
+      nbo=nbobs(icomp)
+      XO(nbo)=XXW(3)
+      YO(nbo)=YYW(3)
+      ZO(nbo)=ZZW(3)
+      DX(nbo)=OWID
+      DY(nbo)=RTK
+      DZ(nbo)=DDZ+OWID+OWID
+      BANG(nbo)=RO
+      write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'l'
-      write(BLOCKMAT(icomp,nbob),'(a)') mat(1:lnblnk(mat))
+      write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1438,17 +1445,18 @@ C Create the left side fin.
       endif
 
 C Create the right side fin.
-      nbob=nbob+1
-      XO(nbob)=XXW(4)
-      YO(nbob)=YYW(4)
-      ZO(nbob)=ZZW(4)
-      DX(nbob)=OWID
-      DY(nbob)=RTK
-      DZ(nbob)=DDZ+OWID+OWID
-      BANG(nbob)=RO
-      write(BLOCKNAME(icomp,nbob),'(a,a1)')
+      nbobs(icomp)=nbobs(icomp)+1
+      nbo=nbobs(icomp)
+      XO(nbo)=XXW(4)
+      YO(nbo)=YYW(4)
+      ZO(nbo)=ZZW(4)
+      DX(nbo)=OWID
+      DY(nbo)=RTK
+      DZ(nbo)=DDZ+OWID+OWID
+      BANG(nbo)=RO
+      write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'r'
-      write(BLOCKMAT(icomp,nbob),'(a)') mat(1:lnblnk(mat))
+      write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else

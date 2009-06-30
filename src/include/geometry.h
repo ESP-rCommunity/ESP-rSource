@@ -65,9 +65,7 @@ C Obstruction block commons (legacy).
      &           BANG(MB)
 
       integer NOX,NOZ      ! gridding resolution of surfaces for shading
-      character BLKNAME*12 ! name of obstruction block.
-      character BLKMAT*32  ! obstruction block construction attribute (for Radiance).
-      common/GS6/NOX,NOZ,BLKNAME(MB),BLKMAT(MB)
+      common/GS6/NOX,NOZ
 
 C Obstruction block commons (whole model)
       integer nbobs     ! number of zone obstructions

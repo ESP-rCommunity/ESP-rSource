@@ -1099,7 +1099,7 @@ C in here.
         newfoc=nznog(mz)
 
 C Clear properties.
-        nbob=0
+        nbobs(mz)=0
 
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
@@ -1128,6 +1128,7 @@ C Read in the zone geometry.
         endif
         ZN=zname(newfoc)
 
+C If (older) zone obstructions file scan it.
         IF(IOBS(newfoc).EQ.1)THEN
           CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,0,iuout,IER)
         endif
@@ -1164,7 +1165,7 @@ C Aternative glazing descriptions file.
         endif
 
 C Confirm inclusion of obstructions.
-        if(nbob.ge.1)then
+        if(nbobs(newfoc).ge.1)then
           if(ACT.eq.'i')then
             write(outs,'(3a)') ' Include ',ZN(1:lnblnk(ZN)),
      &                            ' obstructions ? '
@@ -1181,8 +1182,8 @@ C Confirm inclusion of obstructions.
 
           WRITE(irofil,'(a)') '# Obstruction defs... '
           WRITE(irofil,'(a)') '  '
-          nobs=nobs+nbob
-          do 43 ib=1,nbob
+          nobs=nobs+nbobs(newfoc)  ! increment count of obstructions
+          do 43 ib=1,nbobs(newfoc)
 
 C Create a genbox command to match the obstruction.
             if(BLOCKMAT(newfoc,ib)(1:4).eq.'NONE')then

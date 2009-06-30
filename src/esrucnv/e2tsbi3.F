@@ -1128,8 +1128,8 @@ C logic.
           WRITE(ioout,'(3a)')'# zone ',zname(newfoc),
      &      'obstructions start here....'
         endif
-        if(nbob.eq.0) goto 302
-        DO 301 IB=1,nbob
+        if(nbobs(newfoc).eq.0) goto 302
+        DO 301 IB=1,nbobs(newfoc)
           CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
      &      BANG(IB))
 

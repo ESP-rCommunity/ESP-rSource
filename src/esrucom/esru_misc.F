@@ -1103,14 +1103,15 @@ C in the data.
 C Read number of obstruction blocks and check for range errors.
       CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'number of blocks',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,nbob,1,MB,'F','no of obstr',IER)
+      CALL EGETWI(OUTSTR,K,nbo,1,MB,'F','number of obstr',IER)
       IF(IER.NE.0)GOTO 99
+      nbobs(icomp)=nbo  ! remember how many for this zone
 
 C Read each obstruction block, if 7 items found then unattributed, if
 C 8 items assume the last is a name for the obstruction block, if 9 items
 C then the last is the construction attribute. If no  name & or construction
 C then assign the block index as the name via internal read.
-      DO 10 I=1,nbob
+      DO 10 I=1,nbobs(icomp)
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'obstruction block',IER)
         IF(IER.NE.0)GOTO 99
         IF(ND.eq.7.OR.ND.eq.8.OR.ND.eq.9)THEN
@@ -1172,12 +1173,12 @@ C Trace.
   997   FORMAT('Shading based on a grid of ',
      &           I2,' by ',I2,' for surfaces.')
         CALL EDISP(ITRU,OUTSTR)
-        WRITE(OUTSTR,9996)nbob
+        WRITE(OUTSTR,9996)nbobs(icomp)
  9996   FORMAT('There are ',I2,' blocks associated with the zone.')
         CALL EDISP(ITRU,OUTSTR)
         CALL EDISP(ITRU,
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
-        DO 9995 I=1,nbob
+        DO 9995 I=1,nbobs(icomp)
           tmp=BLOCKNAME(ICOMP,I)
           WRITE(OUTSTR,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
      &      BANG(I),tmp(1:LNBLNK(TMP)),BLOCKMAT(ICOMP,I)
@@ -1228,13 +1229,13 @@ C Write all site information.
      &  ' 0. 0.   # dummy values for site position'
 
 C Write number of blocks.
-      WRITE(IAF,'(I5,A)',IOSTAT=IOS,ERR=3) nbob,
+      WRITE(IAF,'(I5,A)',IOSTAT=IOS,ERR=3) nbobs(icomp),
      &  '    # no obstruction blocks'
 
 C For each block write info, use space as item separation.
       WRITE(IAF,'(a)')
      &'# origin X Y Z, width, depth, height, rot angle, descr, material'
-      DO 10 I=1,nbob
+      DO 10 I=1,nbobs(icomp)
         WRITE(outl,34,IOSTAT=IOS,ERR=3)XO(I),YO(I),ZO(I),DX(I),DY(I),
      &    DZ(I),BANG(I),BLOCKNAME(ICOMP,I),BLOCKMAT(ICOMP,I),I
   34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)

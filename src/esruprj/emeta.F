@@ -2122,7 +2122,6 @@ C If there are obstructions fill in relevant common blocks. Set iobs()=2
 C to signal that the common blocks have been instanciated and data should
 C be included in the version 1.1 geometry file.
           if(nbobs(isz).gt.0)then
-            nbob=nbobs(isz)
             NOX=20
             NOZ=20
             do 58 ib=1,nbobs(isz)
@@ -2133,13 +2132,11 @@ C be included in the version 1.1 geometry file.
               DY(ib)=DYOB(isz,ib)
               DZ(ib)=DZOB(isz,ib)
               BANG(ib)=BANGOB(isz,ib)
-C              BLKNAME(ib)=BLOCKNAME(isz,ib)
-C              BLKMAT(ib)=BLOCKMAT(isz,ib)
   58        continue
             iobs(icomp)=2
           else
             iobs(icomp)=0
-            nbob=0
+            nbobs(icomp)=0
           endif
           if(i_ctl_link(isz).gt.0)then
             isilentncf=1+isilentncf

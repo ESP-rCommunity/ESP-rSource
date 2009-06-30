@@ -1912,7 +1912,7 @@ C Do same transformation to obstructions?
             CALL ESCZONE(NCOMP)
             CALL EGOMST(IUF,NCOMP,ZOBS(NCOMP),0,ITRC,ITRU,IER)
             if(OKZT)then
-              do 85 ij=1,nbob
+              do 85 ij=1,nbobs(ncomp)
                 XO(ij)=XO(ij)+VALX
                 YO(ij)=YO(ij)+VALY
                 ZO(ij)=ZO(ij)+VALZ
@@ -1923,7 +1923,7 @@ C Do same transformation to obstructions?
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 88 ij=1,nbob
+              do 88 ij=1,nbobs(ncomp)
                 XXX=XO(ij)-X1
                 YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA
@@ -4220,7 +4220,7 @@ C transform origin.
             endif
             if(OK)then
               CALL EGOMST(IUF,IICOMP,ZOBS(IICOMP),0,ITRC,ITRU,IER)
-              do 63 ij=1,nbob
+              do 63 ij=1,nbobs(iicomp)
                 XO(ij)=XO(ij)+VALX
                 YO(ij)=YO(ij)+VALY
                 ZO(ij)=ZO(ij)+VALZ
@@ -4243,7 +4243,7 @@ C apply the transform and write the file back out.
                 call askok(outs,' ?',OK,dok,2)
               endif
               if(OK)then
-                do 64 ij=1,nbob
+                do 64 ij=1,nbobs(iicomp)
                   XO(ij)=XO(ij)+VALX
                   YO(ij)=YO(ij)+VALY
                   ZO(ij)=ZO(ij)+VALZ
@@ -4412,7 +4412,7 @@ C Rotate any obstructions associated with this zone.
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 86 ij=1,nbob
+              do 86 ij=1,nbobs(iicomp)
                 XXX=XO(ij)-X1
                 YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA
@@ -4451,7 +4451,7 @@ C apply the transform and write the file back out.
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 87 ij=1,nbob
+              do 87 ij=1,nbobs(iicomp)
                 XXX=XO(ij)-X1
                 YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA

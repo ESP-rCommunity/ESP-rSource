@@ -1608,7 +1608,7 @@ C Rotate any obstructions associated with this zone.
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 86 ij=1,nbob
+              do 86 ij=1,nbobs(icomp)
                 XXX=XO(ij)-X1
                 YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA
@@ -1634,7 +1634,7 @@ C so now apply the transform to the obstructions (only).
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 87 ij=1,nbob
+              do 87 ij=1,nbobs(icomp)
                 XXX=XO(ij)-X1
                 YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA
@@ -1844,7 +1844,7 @@ C Transform any obstructions associated with this zone.
             if(ok)then
               call edisp(iuout,' Obstruction data prior to transform.')
               CALL EGOMST(IFIL+2,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
-              do 63 ij=1,nbob
+              do 63 ij=1,nbobs(icomp)
                 XO(ij)=XO(ij)+VALX
                 YO(ij)=YO(ij)+VALY
                 ZO(ij)=ZO(ij)+VALZ
@@ -1862,7 +1862,7 @@ C so now apply the transform to the obstructions (only).
      &                 'associated with this zone? ',ok,dok,2)
             if(ok.and.newgeo)then
               call edisp(iuout,' Obstruction data prior to transform.')
-              do 65 ij=1,nbob
+               do 65 ij=1,nbobs(icomp)
                 XO(ij)=XO(ij)+VALX
                 YO(ij)=YO(ij)+VALY
                 ZO(ij)=ZO(ij)+VALZ
@@ -2044,14 +2044,14 @@ C And also report other zone summary fields as in the QA report.
 C Display obstructions if newgeom is true.
         if(newgeo)then
           if(iobs(icomp).eq.2)then
-            if(nbob.gt.0)then
+            if(nbobs(icomp).gt.0)then
               call edisp(iuout,'Details of obstruction blocks:')
               write(outs,'(a,i2,a,i2,a)')'Shading based on grids of ',
      &          NOX,' by ',NOZ,' for surfaces.'
               call edisp(iuout,outs)
               call edisp(iuout,
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
-              DO 9995 I=1,nbob
+              DO 9995 I=1,nbobs(icomp)
                 lnbn=LNBLNK(BLOCKNAME(icomp,I))
                 WRITE(outs,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
      &            BANG(I),BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)

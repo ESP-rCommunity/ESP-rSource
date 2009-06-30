@@ -131,6 +131,7 @@ C Material data array.
 C Data types for parcnv call.
       integer itrc,incobs,ichop,itmprm,iverb
       real conv
+      integer nbo  ! local variable for nbobs
  
 C System parameter initializing. Use ioin for the input file,
 C ioout for primary output file, ioblk for block storage,
@@ -823,7 +824,7 @@ C block store file and scann for blocks matching the current
 C zone.
 C << what about newer >>
           if(IOBS(ivv).eq.1)then
-            nbob=0
+            nbobs(ivv)=0
             INQUIRE(iotobs,OPENED=OPND)
             if(OPND)then
               rewind(iotobs,ERR=999)
@@ -834,14 +835,15 @@ C << what about newer >>
             endif
   142       read(iotobs,*,end=143)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
             if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
-              nbob=nbob+1
-              XO(nbob)=TXO
-              YO(nbob)=TYO
-              ZO(nbob)=TZO
-              DX(nbob)=TDX
-              DY(nbob)=TDY
-              DZ(nbob)=TDZ
-              BANG(nbob)=TBANG
+              nbobs(ivv)=nbobs(ivv)+1
+              nbo=nbobs(ivv)
+              XO(nbo)=TXO
+              YO(nbo)=TYO
+              ZO(nbo)=TZO
+              DX(nbo)=TDX
+              DY(nbo)=TDY
+              DZ(nbo)=TDZ
+              BANG(nbo)=TBANG
             endif
             goto 142
  143        continue
@@ -856,10 +858,11 @@ C << need for a separate obstructions file
             write(iotmp2,'(a,a)')'# associated with zone geom file ',
      &        LGEOM(ivv)(1:lnblnk(LGEOM(ivv)))
             write(iotmp2,'(a)')' 0.0  0.0  # dummy valuse'
-            write(iotmp2,'(I4,a)') nbob,'     # no obstruction blocks'
+            write(iotmp2,'(I4,a)') nbobs(ivv),
+     &        '     # no obstruction blocks'
             write(iotmp2,'(a)')
      &       '# origin  X   Y   Z   width  depth  height  angle  descr'
-            do 144 ibx=1,nbob
+            do 144 ibx=1,nbobs(ivv)
               write(iotmp2,'(7f9.4,a)')XO(ibx),YO(ibx),ZO(ibx),
      &           DX(ibx),DY(ibx),DZ(ibx),BANG(ibx),' dxf # block '
  144        continue
