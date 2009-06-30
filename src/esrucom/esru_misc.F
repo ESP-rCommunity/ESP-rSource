@@ -1056,10 +1056,10 @@ C not exist assume no nodes temperature file exist.
 C ************** EGOMST 
 C EGOMST:  Reads site obstruction data as ASCII strings, with or without
 C range checking and printed summary. An obstruction block name (up to
-C 12 characters) may be included as an option and is returned via BLKNAME. 
-      SUBROUTINE EGOMST(IUNIT,LOBS,IR,ITRC,ITRU,IER)
+C 12 characters) may be included as an option and is returned via BLOCKNAME. 
+      SUBROUTINE EGOMST(IUNIT,ICOMP,LOBS,IR,ITRC,ITRU,IER)
 #include "building.h"
-C geometry.h provides common block GS5/GS6
+C geometry.h provides common block GS5/GS6/GS7/GS8
 #include "geometry.h"
 #include "espriou.h"
       
@@ -1124,25 +1124,25 @@ C then assign the block index as the name via internal read.
           CALL EGETWR(OUTSTR,K,BANG(I),-359.,359.,'W','rot a',IER)
           IF(ND.EQ.7)THEN
             IF(I.LE.9)THEN
-              WRITE(BLKNAME(I),77)I
+              WRITE(BLOCKNAME(ICOMP,I),77)I
    77         FORMAT('B',I1)
             ELSEIF(I.GT.9)THEN
-              WRITE(BLKNAME(I),78)I
+              WRITE(BLOCKNAME(ICOMP,I),78)I
    78         FORMAT('B',I2)
             ENDIF
-            BLKMAT(I)='NONE'
+            BLOCKMAT(ICOMP,I)='NONE'
           ELSEIF(ND.EQ.8)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-            BLKNAME(I)=WORD(1:12)
-            BLKMAT(I)='NONE'
+            BLOCKNAME(ICOMP,I)=WORD(1:12)
+            BLOCKMAT(ICOMP,I)='NONE'
           ELSEIF(ND.EQ.9)THEN
 
 C Get name of obstruction block and its construction (which might
 C contain spaces).
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-            BLKNAME(I)=WORD(1:12)
+            BLOCKNAME(ICOMP,I)=WORD(1:12)
             CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            write(BLKMAT(I),'(a)') WORD(1:lnblnk(WORD))
+            write(BLOCKMAT(ICOMP,I),'(a)') WORD(1:lnblnk(WORD))
           ENDIF
         ELSE
           CALL USRMSG(' mismatch block descr in',OUTSTR,'W')
@@ -1178,9 +1178,9 @@ C Trace.
         CALL EDISP(ITRU,
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
         DO 9995 I=1,nbob
-          tmp=BLKNAME(I)
+          tmp=BLOCKNAME(ICOMP,I)
           WRITE(OUTSTR,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
-     &      BANG(I),tmp(1:LNBLNK(TMP)),BLKMAT(I)
+     &      BANG(I),tmp(1:LNBLNK(TMP)),BLOCKMAT(ICOMP,I)
  9994     FORMAT(I3,7F8.1,' ',a,' ',a)
           CALL EDISP(ITRU,OUTSTR)
  9995   CONTINUE
@@ -1196,7 +1196,7 @@ C MKGOMST: Creates an annotated site obstruction file based
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
 #include "building.h"
-C geometry.h provides common block GS5/GS6
+C geometry.h provides common block GS5/GS6/GS7/GS8
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -1236,7 +1236,7 @@ C For each block write info, use space as item separation.
      &'# origin X Y Z, width, depth, height, rot angle, descr, material'
       DO 10 I=1,nbob
         WRITE(outl,34,IOSTAT=IOS,ERR=3)XO(I),YO(I),ZO(I),DX(I),DY(I),
-     &    DZ(I),BANG(I),BLKNAME(I),BLKMAT(I),I
+     &    DZ(I),BANG(I),BLOCKNAME(ICOMP,I),BLOCKMAT(ICOMP,I),I
   34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))

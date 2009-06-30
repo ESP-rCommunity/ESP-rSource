@@ -350,7 +350,7 @@ C Fictitious transmission threshhold.
 
 C Check for obstructions.
       IF(IOBS(ICOMP).EQ.1)THEN
-        CALL EGOMST(ITA1,ZOBS(ICOMP),0,0,iuout,IER)
+        CALL EGOMST(ITA1,ICOMP,ZOBS(ICOMP),0,0,iuout,IER)
       endif
 
 10    INO = -4
@@ -1129,7 +1129,7 @@ C Read in the zone geometry.
         ZN=zname(newfoc)
 
         IF(IOBS(newfoc).EQ.1)THEN
-          CALL EGOMST(ITA1,ZOBS(newfoc),0,0,iuout,IER)
+          CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,0,iuout,IER)
         endif
 
 C Display the other zone, resetting all surface lines to std.
@@ -1185,17 +1185,19 @@ C Confirm inclusion of obstructions.
           do 43 ib=1,nbob
 
 C Create a genbox command to match the obstruction.
-            if(BLKMAT(ib)(1:4).eq.'NONE')then
+            if(BLOCKMAT(newfoc,ib)(1:4).eq.'NONE')then
               WRITE(irofil,'(a,a,3f9.3,a,f9.3,a,3f9.3)')
      &          '!genbox rc_ex_unknown ',
-     &          BLKNAME(IB)(1:lnblnk(BLKNAME(IB))),
+     &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB))),
      &          DX(ib),DY(ib),DZ(ib),' | xform -rz ',BANG(ib),
      &          ' -t ',XO(ib),YO(ib),ZO(ib)
               WRITE(irofil,'(a)') ' '
             else
               WRITE(irofil,'(a,a,a,a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genbox  rc_ex_',BLKMAT(ib)(1:lnblnk(BLKMAT(ib))),
-     &          '  ',BLKNAME(IB)(1:lnblnk(BLKNAME(IB))),
+     &          '!genbox  rc_ex_',
+     &          BLOCKMAT(newfoc,ib)(1:lnblnk(BLOCKMAT(newfoc,ib))),
+     &          '  ',        
+     &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB))),
      &          DX(ib),DY(ib),DZ(ib),' | xform -rz ',BANG(ib),
      &          ' -t ',XO(ib),YO(ib),ZO(ib)
               WRITE(irofil,'(a)') ' '

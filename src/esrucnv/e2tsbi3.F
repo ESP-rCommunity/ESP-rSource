@@ -1117,7 +1117,7 @@ C If there are obstructions associated with this zone read them in
 C and convert into GB1 commons and write them out using similar
 C logic.
         if(IOBS(newfoc).EQ.1)then
-          CALL EGOMST(ITA1,ZOBS(newfoc),0,0,iuout,IER)
+          CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,0,iuout,IER)
           WRITE(outs,'(a,a)')' Scanning : ',ZOBS(newfoc)
           CALL edisp(iuout,outs)
           WRITE(ioout,'(a)')' '
@@ -1137,7 +1137,7 @@ C Work out the colour for each block by looping
 C through each of the MLC and finding a match (for first 12 char).
           ifound = 0
           do 66 im= 1,NMLC
-            if(BLKMAT(IB)(1:12).eq.DESC(IM)(1:12))then
+            if(BLOCKMAT(newfoc,IB)(1:12).eq.DESC(IM)(1:12))then
 
 C Pick up general description of the composite.
               ifound=im
@@ -1162,7 +1162,7 @@ C For the inside and outside layer get surface properties.
  77       continue
 
 C Remeber characters in block name
-          lsn=lnblnk(BLKNAME(IB))
+          lsn=lnblnk(BLOCKNAME(newfoc,IB))
 
 C If the first face write initial anchor for this obstruction
 C (which holds its coordinates of along with the first surface.
@@ -1171,25 +1171,26 @@ C (which holds its coordinates of along with the first surface.
             WRITE(ioout,'(5a)')'parameter [ ',q,
      &        'target = description',q,' ]'
             WRITE(ioout,'(8a)')'  url [ ',q,cfgroot(1:lnblnk(cfgroot)),
-     &       '.html',hc,BLKNAME(IB)(1:lsn),q,' ]'
+     &       '.html',hc,BLOCKNAME(newfoc,IB)(1:lsn),q,' ]'
             WRITE(ioout,'(a)') '  children ['
             WRITE(ioout,'(a)') '    Shape {'
             if(kbs.eq.1)then   ! include the block material
               WRITE(ioout,'(2a)')
      &          '     appearance USE Solid_',
-     &          BLKMAT(IB)(1:lnblnk(BLKMAT(IB)))
-              call ifnumber(BLKNAME(IB)(1:1),numb)
+     &          BLOCKMAT(newfoc,IB)(1:lnblnk(BLOCKMAT(newfoc,IB)))
+              call ifnumber(BLOCKNAME(newfoc,IB)(1:1),numb)
               if(numb)then
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF a',
-     &            BLKNAME(IB)(1:lsn),kbs,' IndexedFaceSet {'
+     &            BLOCKNAME(newfoc,IB)(1:lsn),kbs,' IndexedFaceSet {'
               else
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF ',
-     &            BLKNAME(IB)(1:lsn),kbs,' IndexedFaceSet {'
+     &            BLOCKNAME(newfoc,IB)(1:lsn),kbs,' IndexedFaceSet {'
               endif
               WRITE(ioout,'(a)') '        ccw TRUE'
               WRITE(ioout,'(a)') '        solid FALSE'
               WRITE(ioout,'(3a)')'        coord DEF COORD_',
-     &        BLKNAME(IB)(1:lnblnk(BLKNAME(IB))),' Coordinate { point ['
+     &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB))),
+     &          ' Coordinate { point ['
 
 C Note on coordinates:
 C In esp-r the +Z is up, in VRML +Y is up.  In esp-r and VRML +X is same.
@@ -1219,19 +1220,19 @@ C Write a comma separated list of vertices with a trailing -1.
             else
               WRITE(ioout,'(2a)')
      &          '     appearance USE Solid_',
-     &          BLKMAT(IB)(1:lnblnk(BLKMAT(IB)))
-              call ifnumber(BLKNAME(IB)(1:1),numb)
+     &          BLOCKMAT(newfoc,IB)(1:lnblnk(BLOCKMAT(newfoc,IB)))
+              call ifnumber(BLOCKNAME(newfoc,IB)(1:1),numb)
               if(numb)then
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF a',
-     &            BLKNAME(IB)(1:lsn),kbs,' IndexedFaceSet {'
+     &            BLOCKNAME(newfoc,IB)(1:lsn),kbs,' IndexedFaceSet {'
               else
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF ',
-     &            BLKNAME(IB)(1:lsn),kbs,' IndexedFaceSet {'
+     &            BLOCKNAME(newfoc,IB)(1:lsn),kbs,' IndexedFaceSet {'
               endif
               WRITE(ioout,'(a)') '        ccw TRUE'
               WRITE(ioout,'(a)')'        solid TRUE'
               WRITE(ioout,'(2a)')'        coord USE COORD_',
-     &          BLKNAME(IB)(1:lnblnk(BLKNAME(IB)))
+     &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB)))
               write(outs,'(4I4)') (JVNB(kbs,K)-1,K=1,4)
               call sdelim(outs,outsd,'S',IW)
               WRITE(ioout,'(3a)') '        coordIndex [ ',

@@ -892,7 +892,7 @@ C description into a gen body and then get its bounds.
      &          ZOBS(IVZ)(1:lnblnk(ZOBS(IVZ)))
               CALL USRMSG(' ',OUTSTR,'-')
             endif
-            CALL EGOMST(IUF,ZOBS(IVZ),0,0,IUOUT,IER)
+            CALL EGOMST(IUF,IVZ,ZOBS(IVZ),0,0,IUOUT,IER)
           elseif(IOBS(IVZ).EQ.2)then
 
 C Check geometry file version and scan geometry file to get obstructions.

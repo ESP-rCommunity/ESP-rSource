@@ -134,7 +134,7 @@ C file and plot it. Move to first vertex and give the zone name.
 
 C Check for a zone obstructions file.
         if(IOBS(newfoc).EQ.1)then
-          CALL EGOMST(IUF,ZOBS(newfoc),0,0,iuout,IER)
+          CALL EGOMST(IUF,newfoc,ZOBS(newfoc),0,0,iuout,IER)
         elseif(IOBS(newfoc).EQ.2)then
           continue
         endif

@@ -2372,7 +2372,7 @@ C iobs() is 2 and newgeo true then blocks already scanned.
           continue
         ELSEIF(IOBS(mz).EQ.1)THEN
           IUF=IFIL+1
-          CALL EGOMST(IUF,ZOBS(mz),0,0,iuout,IER)
+          CALL EGOMST(IUF,mz,ZOBS(mz),0,0,iuout,IER)
           IF(IER.NE.0) goto 4
         ELSEIF(IOBS(mz).EQ.2)THEN
           if(.NOT.newgeo)then
@@ -2388,7 +2388,7 @@ C iobs() is 2 and newgeo true then blocks already scanned.
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          'Surface:Shading:Detached:Building',com
               WRITE(ioout,'(2a,i1,2a)',iostat=ios,err=6) '  ',
-     &          BLKNAME(ib)(1:lnblnk(BLKNAME(ib))),ibs,com,
+     &          BLOCKNAME(mz,ib)(1:lnblnk(BLOCKNAME(mz,ib))),ibs,com,
      &          '   !- User Supplied Surface Name'
               WRITE(ioout,'(5a)',iostat=ios,err=6) '  ',com,
      &          '   !- TransSchedShadowSurf'

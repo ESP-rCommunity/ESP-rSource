@@ -178,12 +178,13 @@ C current menu line index. Build up text strings for the menu as well
 C as a list for copy and delete use. 
       M=MHEAD
       DO 10 L=1,ILEN
-        WRITE(PICK(L),304)L,BLKNAME(L),BLKMAT(L)(1:12)
+        WRITE(PICK(L),304)L,BLOCKNAME(ICOMP,L),BLOCKMAT(ICOMP,L)(1:12)
   304   FORMAT(I3,2X,A,1x,A)
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          WRITE(VERT(M),303)KEY,L,BLKNAME(L),BLKMAT(L)(1:12)
+          WRITE(VERT(M),303)KEY,L,BLOCKNAME(ICOMP,L),
+     &      BLOCKMAT(ICOMP,L)(1:12)
   303     FORMAT(A1,I3,2X,A,1x,A)
         ENDIF
    10 CONTINUE
@@ -473,8 +474,8 @@ C To delete the last obstruction, dereference the file and exit.
                 DY(IDV)=DY(IDV+1)
                 DZ(IDV)=DZ(IDV+1)
                 BANG(IDV)=BANG(IDV+1)
-                BLKNAME(IDV)=BLKNAME(IDV+1)
-                BLKMAT(IDV)=BLKMAT(IDV+1)
+                BLOCKNAME(icomp,IDV)=BLOCKNAME(icomp,IDV+1)
+                BLOCKMAT(icomp,IDV)=BLOCKMAT(icomp,IDV+1)
   791         CONTINUE
               nbob=nbob-1
   143       continue
@@ -491,8 +492,8 @@ C To delete the last obstruction, dereference the file and exit.
             DY(nbob)=1.0
             DZ(nbob)=1.0
             BANG(nbob)=0
-            BLKNAME(nbob)='new_blk'
-            BLKMAT(nbob)='NONE'
+            BLOCKNAME(icomp,nbob)='new_blk'
+            BLOCKMAT(icomp,nbob)='NONE'
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(newgeo)then
@@ -528,14 +529,14 @@ C Copy obstruction.
           IFOC=IVALB(1)
           if(nbob+1.LE.MB.and.IFOC.ne.0)then
             nbob=nbob+1
- 244        write(tbn,'(a)') BLKNAME(IFOC)
+ 244        write(tbn,'(a)') BLOCKNAME(ICOMP,IFOC)
             H(1)='Supply a unique block name for this copy (perhaps'
             H(2)='modifying thenname of the original block) '
             CALL EASKS(tbn,' Re-name the obstruction copy:',
      &        '(original block name shown)',
      &        12,'block','obs block name',IER,2)
-            if(tbn(1:12).ne.BLKNAME(IFOC)(1:12))then
-              write(BLKNAME(nbob),'(a)') tbn
+            if(tbn(1:12).ne.BLOCKNAME(ICOMP,IFOC)(1:12))then
+              write(BLOCKNAME(ICOMP,nbob),'(a)') tbn
             else
               call usrmsg('The block name must be unique',
      &                    'please supply a different name','W')
@@ -561,7 +562,7 @@ C Ask for transform distance for obstruction and then apply.
             DY(nbob)=DY(IFOC)
             DZ(nbob)=DZ(IFOC)
             BANG(nbob)=BANG(IFOC)
-            BLKMAT(nbob)=BLKMAT(IFOC)
+            BLOCKMAT(icomp,nbob)=BLOCKMAT(icomp,IFOC)
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(newgeo)then
@@ -695,7 +696,7 @@ C is 0 then set makedummy to true.
 C New format geometry with old obstructions. Scan and write with geometry.
           call FINDFIL(ZOBS(ICOMP),XST)
           if(XST)then
-            CALL EGOMST(IUF,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+            CALL EGOMST(IUF,ICOMP,ZOBS(ICOMP),0,ITRC,ITRU,IER)
             if(IER.eq.0)then
               ZOBS(ICOMP)=' '
               IOBS(ICOMP)=2
@@ -737,7 +738,7 @@ C existing file use it, otherwise add a dummy obstruction file silently.
           ZOBS(ICOMP)=OFILE
           call FINDFIL(OFILE,XST)
           if(XST)then
-            CALL EGOMST(IUF,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+            CALL EGOMST(IUF,ICOMP,ZOBS(ICOMP),0,ITRC,ITRU,IER)
             IF(IER.eq.0)then
               IOBS(ICOMP)=1
               return
@@ -750,7 +751,7 @@ C existing file use it, otherwise add a dummy obstruction file silently.
         else
           call FINDFIL(ZOBS(ICOMP),XST)
           if(XST)then
-            CALL EGOMST(IUF,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+            CALL EGOMST(IUF,ICOMP,ZOBS(ICOMP),0,ITRC,ITRU,IER)
             IF(IER.eq.0)then
               IOBS(ICOMP)=1
               return
@@ -774,8 +775,8 @@ C If we need to make a dummy obstruction file do this.
         DY(1)=1.0
         DZ(1)=1.0
         BANG(1)=0
-        BLKNAME(1)='First'
-        BLKMAT(1)='NONE'
+        BLOCKNAME(ICOMP,1)='First'
+        BLOCKMAT(ICOMP,1)='NONE'
         NOX=20
         NOZ=20
         if(newgeo)then
@@ -898,7 +899,7 @@ C User asked to browse within the model for other obstruction files.
       endif
       call FINDFIL(LTMP,XST)
       IF(XST)THEN
-        CALL EGOMST(IUF,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+        CALL EGOMST(IUF,ICOMP,ZOBS(ICOMP),0,ITRC,ITRU,IER)
         IF(IER.NE.0)RETURN
         IOBS(ICOMP)=1 
       ELSE
@@ -912,8 +913,8 @@ C Provide default values for the new obstructions file.
         DY(1)=1.0
         DZ(1)=1.0
         BANG(1)=0
-        BLKNAME(1)='First'
-        BLKMAT(1)='NONE'
+        BLOCKNAME(ICOMP,1)='First'
+        BLOCKMAT(ICOMP,1)='NONE'
         NOX=20
         NOZ=20
         CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
@@ -1008,8 +1009,9 @@ C Set menu header text.
       WRITE(VERT(1),'(A,3F6.2)')  'a origin X Y Z:',XO(IB),YO(IB),ZO(IB)
       WRITE(VERT(2),'(A,3F6.2)')  'b block  W D H:',DX(IB),DY(IB),DZ(IB)
       WRITE(VERT(3),'(A,F7.2)')   'c rotation    : ',BANG(IB)
-      WRITE(VERT(4),'(A,A)')      'd name        : ',BLKNAME(IB)
-      WRITE(VERT(5),'(A,A)')      'e construction: ',BLKMAT(IB)(1:12)
+      WRITE(VERT(4),'(A,A)')      'd name        : ',BLOCKNAME(ICOMP,IB)
+      WRITE(VERT(5),'(A,A)')      'e construction: ',
+     &  BLOCKMAT(ICOMP,IB)(1:12)
       VERT(6)                  =  '  ____________________________ '
       VERT(7)                  =  '  block coords    X       Y   '
       WRITE(VERT(8),'(A,2F8.3)')  '  front left  :',XB(1),YB(1)
@@ -1167,10 +1169,10 @@ C Now display the menu.
         call warnmod(ICOMP,'ob+')
       ELSEIF(IVERT.EQ.4)THEN
         H(1)='A descriptive name (up to 12 char) is recommended.'
-        S12=BLKNAME(IB)
+        S12=BLOCKNAME(ICOMP,IB)
         CALL EASKS(S12,' ',' Name of obstruction? ',
      &    12,'obstruction','Block name',IER,1)
-        IF(S12(1:2).NE.'  ')BLKNAME(IB)=S12
+        IF(S12(1:2).NE.'  ')BLOCKNAME(ICOMP,IB)=S12
         MODIFY=.TRUE.
       ELSEIF(IVERT.EQ.5)THEN
 
@@ -1181,7 +1183,7 @@ C Note: this logic only picks up the first 12 char of construction.
      &    'associate with the block for visualisation purposes.',IER)
         CALL EPMENRC
         IF(ISEL.GT.0)then
-          WRITE(BLKMAT(IB),'(A)')DESC(ISEL)(1:12)
+          WRITE(BLOCKMAT(icomp,IB),'(A)')DESC(ISEL)(1:12)
           MODIFY=.TRUE.
         endif
         IF(IER.EQ.1)THEN
@@ -1394,8 +1396,9 @@ C Create the sill obstruction.
       DY(nbob)=RTK
       DZ(nbob)=OWID
       BANG(nbob)=RO
-      write(BLKNAME(nbob),'(a,a1)')blkroot(1:lnblnk(blkroot)),'s'
-      write(BLKMAT(nbob),'(a)') mat(1:lnblnk(mat))
+      write(BLOCKNAME(icomp,nbob),'(a,a1)')
+     &  blkroot(1:lnblnk(blkroot)),'s'
+      write(BLOCKMAT(icomp,nbob),'(a)') mat(1:lnblnk(mat))
       CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
 
 C Create the head obstruction.
@@ -1407,8 +1410,9 @@ C Create the head obstruction.
       DY(nbob)=RTK
       DZ(nbob)=OWID
       BANG(nbob)=RO
-      write(BLKNAME(nbob),'(a,a1)')blkroot(1:lnblnk(blkroot)),'h'
-      write(BLKMAT(nbob),'(a)') mat(1:lnblnk(mat))
+      write(BLOCKNAME(icomp,nbob),'(a,a1)')
+     &  blkroot(1:lnblnk(blkroot)),'h'
+      write(BLOCKMAT(icomp,nbob),'(a)') mat(1:lnblnk(mat))
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1424,8 +1428,9 @@ C Create the left side fin.
       DY(nbob)=RTK
       DZ(nbob)=DDZ+OWID+OWID
       BANG(nbob)=RO
-      write(BLKNAME(nbob),'(a,a1)')blkroot(1:lnblnk(blkroot)),'l'
-      write(BLKMAT(nbob),'(a)') mat(1:lnblnk(mat))
+      write(BLOCKNAME(icomp,nbob),'(a,a1)')
+     &  blkroot(1:lnblnk(blkroot)),'l'
+      write(BLOCKMAT(icomp,nbob),'(a)') mat(1:lnblnk(mat))
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1441,8 +1446,9 @@ C Create the right side fin.
       DY(nbob)=RTK
       DZ(nbob)=DDZ+OWID+OWID
       BANG(nbob)=RO
-      write(BLKNAME(nbob),'(a,a1)')blkroot(1:lnblnk(blkroot)),'r'
-      write(BLKMAT(nbob),'(a)') mat(1:lnblnk(mat))
+      write(BLOCKNAME(icomp,nbob),'(a,a1)')
+     &  blkroot(1:lnblnk(blkroot)),'r'
+      write(BLOCKMAT(icomp,nbob),'(a)') mat(1:lnblnk(mat))
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else

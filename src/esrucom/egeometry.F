@@ -1977,11 +1977,11 @@ C Read another line to get the actual blocks.
             CALL EGETWR(OUTSTR,K,DZ(nbob),   0., 99.,'W','Z dis',IER)
             CALL EGETWR(OUTSTR,K,BANG(nbob),-359.,359.,'W','rot a',IER)
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-            BLKNAME(nbob)=WORD(1:12)
+            BLOCKNAME(icomp,nbob)=WORD(1:12)
 
 C The name of the construction might contain spaces so use EGETP.
             CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            write(BLKMAT(nbob),'(a)') WORD(1:lnblnk(WORD))
+            write(BLOCKMAT(icomp,nbob),'(a)') WORD(1:lnblnk(WORD))
             goto 72
           elseif(phrase(1:4).eq.'*mrt')then
 
@@ -2429,7 +2429,7 @@ C geometry file also write the NOX and NOZ values.
         do 89 ib=1,nbob
           WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &      '*obs',tab,XO(ib),YO(ib),ZO(ib),DX(ib),DY(ib),
-     &      DZ(ib),BANG(ib),BLKNAME(ib),BLKMAT(ib)
+     &      DZ(ib),BANG(ib),BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
           call SDELIM(outs,outsd,'C',IW)
           write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
      &      outsd(1:lnblnk(outsd)),'  # block ',ib

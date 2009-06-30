@@ -2232,7 +2232,7 @@ C zobs() cleared for this zone..
               if(iobs(iz).eq.0)then
                 continue
               elseif(iobs(iz).eq.1)then
-                CALL EGOMST(IFIL+2,ZOBS(iz),0,ITRC,ITRU,IER)
+                CALL EGOMST(IFIL+2,iz,ZOBS(iz),0,ITRC,ITRU,IER)
                 iobs(iz)=2
                 zobs(iz)=' '
                 call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
@@ -2295,7 +2295,7 @@ C geometry file and zobs() cleared for this zone..
               if(iobs(iz).eq.0)then
                 continue
               elseif(iobs(iz).eq.1)then
-                CALL EGOMST(IFIL+2,ZOBS(iz),0,ITRC,ITRU,IER)
+                CALL EGOMST(IFIL+2,iz,ZOBS(iz),0,ITRC,ITRU,IER)
                 iobs(iz)=2
                 zobs(iz)=' '
                 call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)

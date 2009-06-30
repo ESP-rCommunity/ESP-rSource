@@ -1717,7 +1717,7 @@ C file and then recover the zone commons.
               CALL ESCZONE(NCOMP)
               call FINDFIL(ZOBS(IC),XST)
               IF(XST)THEN
-                CALL EGOMST(IUF,ZOBS(IC),0,ITRC,ITRU,IER)
+                CALL EGOMST(IUF,IC,ZOBS(IC),0,ITRC,ITRU,IER)
                 IOBS(NCOMP)=1 
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(DFILE,'(2a)') 
@@ -1910,7 +1910,7 @@ C Now it is ok to write out the copied zone.
 C Do same transformation to obstructions?
           if(OKOB)then
             CALL ESCZONE(NCOMP)
-            CALL EGOMST(IUF,ZOBS(NCOMP),0,ITRC,ITRU,IER)
+            CALL EGOMST(IUF,NCOMP,ZOBS(NCOMP),0,ITRC,ITRU,IER)
             if(OKZT)then
               do 85 ij=1,nbob
                 XO(ij)=XO(ij)+VALX
@@ -2381,7 +2381,7 @@ C If there is an obstructions file read it, if obstructions within
 C the zone geometry file nothing more needs to be done.
           IUF=IFIL+1
           if(IOBS(IC).EQ.1)then
-            CALL EGOMST(IUF,ZOBS(IC),IR,ITRC,ITRU,IER)
+            CALL EGOMST(IUF,IC,ZOBS(IC),IR,ITRC,ITRU,IER)
           elseif(IOBS(IC).EQ.2)then
             continue
           endif
@@ -4219,7 +4219,7 @@ C transform origin.
               call askok(outs,' ?',OK,dok,2)
             endif
             if(OK)then
-              CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
+              CALL EGOMST(IUF,IICOMP,ZOBS(IICOMP),0,ITRC,ITRU,IER)
               do 63 ij=1,nbob
                 XO(ij)=XO(ij)+VALX
                 YO(ij)=YO(ij)+VALY
@@ -4407,7 +4407,7 @@ C Rotate any obstructions associated with this zone.
               call askok(outs,' ?',OK,dok,3)
             endif
             if(OK)then
-              CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
+              CALL EGOMST(IUF,IICOMP,ZOBS(IICOMP),0,ITRC,ITRU,IER)
               PI = 4.0 * ATAN(1.0)
               A=-VAL*PI/180.
               CA=COS(A)

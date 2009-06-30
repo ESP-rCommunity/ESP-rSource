@@ -1603,7 +1603,7 @@ C Rotate any obstructions associated with this zone.
      &                 'associated with this zone? ',ok,dok,2)
             if(ok)then
               call edisp(iuout,' Obstruction data prior to transform.')
-              CALL EGOMST(IFIL+2,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+              CALL EGOMST(IFIL+2,ICOMP,ZOBS(ICOMP),0,ITRC,ITRU,IER)
               PI = 4.0 * ATAN(1.0)
               A=-VAL*PI/180.
               CA=COS(A)
@@ -1843,7 +1843,7 @@ C Transform any obstructions associated with this zone.
      &                 'associated with this zone? ',ok,dok,2)
             if(ok)then
               call edisp(iuout,' Obstruction data prior to transform.')
-              CALL EGOMST(IFIL+2,ZOBS(ICOMP),0,ITRC,iuout,IER)
+              CALL EGOMST(IFIL+2,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
               do 63 ij=1,nbob
                 XO(ij)=XO(ij)+VALX
                 YO(ij)=YO(ij)+VALY
@@ -2052,8 +2052,9 @@ C Display obstructions if newgeom is true.
               call edisp(iuout,
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
               DO 9995 I=1,nbob
+                lnbn=LNBLNK(BLOCKNAME(icomp,I))
                 WRITE(outs,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
-     &            BANG(I),BLKNAME(I)(1:LNBLNK(BLKNAME(I))),BLKMAT(I)
+     &            BANG(I),BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)
  9994           FORMAT(I3,7F8.1,' ',a,' ',a)
                 call edisp(iuout,outs)
  9995         CONTINUE

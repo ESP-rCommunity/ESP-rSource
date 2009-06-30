@@ -1258,16 +1258,6 @@ C Paremeters passed to:silentzone
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
 
-      real XOB,YOB,ZOB  ! coordinates of each block origin.
-      real DXOB,DYOB,DZOB  ! width depth and height of each block
-      dimension nbobs(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
-      dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
-
-C BLOCKNAMEM (12 char) name of obstruction block.
-C BLOCKMATM (12 char) obstruction block construction attribute (for Radiance).
-      character BLOCKNAME*12,BLOCKMAT*12
-      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
-
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character textmass*32,stextmass*32
       dimension textmass(4,3),stextmass(MSZ,4,3)
@@ -2143,8 +2133,8 @@ C be included in the version 1.1 geometry file.
               DY(ib)=DYOB(isz,ib)
               DZ(ib)=DZOB(isz,ib)
               BANG(ib)=BANGOB(isz,ib)
-              BLKNAME(ib)=BLOCKNAME(isz,ib)
-              BLKMAT(ib)=BLOCKMAT(isz,ib)
+C              BLKNAME(ib)=BLOCKNAME(isz,ib)
+C              BLKMAT(ib)=BLOCKMAT(isz,ib)
   58        continue
             iobs(icomp)=2
           else
@@ -2361,18 +2351,6 @@ C Paremeters passed to:silentzone
       integer nbwalls(MSZ)     ! nb of vertical walls
       real rotateit(MSZ)        ! angle of rotation
 
-C      real XOB,YOB,ZOB  ! coordinates of each block origin.
-C      real DXOB,DYOB,DZOB  ! width depth and height of each block
-C      dimension nbobs(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
-C      dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
-      integer nbobs  ! nbobs number of obstruction blocks.
-      dimension nbobs(MSZ)
-      
-C BLOCKNAME (12 char) name of obstruction block.
-C BLOCKMAT (12 char) obstruction block construction attribute (for Radiance).
-C      character BLOCKNAME*12,BLOCKMAT*32
-C      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
-
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character stextmass*32
       dimension stextmass(MSZ,4,3)
@@ -2534,17 +2512,17 @@ C Control data - ignore for now.
         i_ctl_link(iz)=0
 
 C Obstructions - this is only known after scanning zone file.
-C        do 55 ibu=1,nbobs(iz)
-C          XOB(iz,ibu) = 0.0
-C          YOB(iz,ibu) = 0.0
-C          ZOB(iz,ibu) = 0.0
-C          DXOB(iz,ibu) = 0.0
-C          DYOB(iz,ibu) = 0.0
-C          DZOB(iz,ibu) = 0.0
-C          BANGOB(iz,ibu) = 0.0
-C          BLOCKNAME(iz,ibu) = ' '
-C          BLOCKMAT(iz,ibu) = ' '
-C  55    continue
+        do 55 ibu=1,nbobs(iz)
+          XOB(iz,ibu) = 0.0
+          YOB(iz,ibu) = 0.0
+          ZOB(iz,ibu) = 0.0
+          DXOB(iz,ibu) = 0.0
+          DYOB(iz,ibu) = 0.0
+          DZOB(iz,ibu) = 0.0
+          BANGOB(iz,ibu) = 0.0
+          BLOCKNAME(iz,ibu) = ' '
+          BLOCKMAT(iz,ibu) = ' '
+  55    continue
 
   42  continue
 

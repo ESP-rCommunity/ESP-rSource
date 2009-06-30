@@ -61,12 +61,25 @@ C Obstruction block commons (legacy).
       real XO,YO,ZO ! XYX coordinates of each block origin.
       real DX,DY,DZ ! width depth and height of each block
       real BANG     ! block rotation angle (degrees).
-      COMMON/GS5/nbob,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),
+      common/GS5/nbob,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),
      &           BANG(MB)
 
       integer NOX,NOZ      ! gridding resolution of surfaces for shading
       character BLKNAME*12 ! name of obstruction block.
       character BLKMAT*32  ! obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,BLKNAME(MB),BLKMAT(MB)
+      common/GS6/NOX,NOZ,BLKNAME(MB),BLKMAT(MB)
+
+C Obstruction block commons (whole model)
+      integer nbobs     ! number of zone obstructions
+      real XOB,YOB,ZOB  ! coordinates of each block origin.
+      real DXOB,DYOB,DZOB  ! width depth and height of each block
+      real BANGOB       ! rotation angle of block
+      common/GS7/nbobs(MCOM),XOB(MCOM,MB),YOB(MCOM,MB),ZOB(MCOM,MB),
+     &  DXOB(MCOM,MB),DYOB(MCOM,MB),DZOB(MCOM,MB),BANGOB(MCOM,MB)
+
+C BLOCKNAMEM (12 char) name of obstruction block.
+C BLOCKMAT (32 char) obstruction block construction (for Radiance).
+      character BLOCKNAME*12,BLOCKMAT*12
+      common/GS8/BLOCKNAME(MCOM,MB),BLOCKMAT(MCOM,MB)
 
 

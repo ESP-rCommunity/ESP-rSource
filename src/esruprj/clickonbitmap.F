@@ -2523,12 +2523,22 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
           nbob=nbob+1
           NBFREL=NBFREL+3
 
+C Need to get the associated zone before we can save the names
+C and constructions.
+
+          H(1)=' Pick a zone for these obstructions.'
+          INPIC=1
+          CALL EPICKS(INPIC,IVALS,' ',
+     &      ' Associate which zone with these obstruction(s)? ',
+     &      12,NCOMP,zname,' zone list',IER,1)
+          IC=IVALS(1)
+
 C Ask for name.
           H(1)='A descriptive name (up to 12 char) is recommended.'
           S12='blk_'
           CALL EASKS(S12,' ',' Name of obstruction? ',
      &      12,'obstruction','Block name',IER,1)
-          IF(S12(1:2).NE.'  ')BLKNAME(nbob)=S12
+          IF(S12(1:2).NE.'  ')BLOCKNAME(IC,nbob)=S12
           H(1)='The base elevation of obstruction is in metres.'
           CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
      &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,1)
@@ -2540,7 +2550,7 @@ C Ask for name.
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
           IF(ISEL.GT.0)then
-            WRITE(BLKMAT(nbob),'(A)')DESC(ISEL)(1:12)
+            WRITE(BLOCKMAT(IC,nbob),'(A)')DESC(ISEL)(1:12)
           endif
           XO(nbob)=tpx1
           YO(nbob)=tpy1
@@ -2558,12 +2568,8 @@ C Ask for name.
   347     continue
 
 C Save current batch of obstructions, first ask which zone it is related to.
-          H(1)=' Pick a zone for these obstructions.'
-          INPIC=1
-          CALL EPICKS(INPIC,IVALS,' ',
-     &      ' Associate which zone with these obstructions? ',
-     &      12,NCOMP,zname,' zone list',IER,1)
-          IC=IVALS(1)
+
+C << update to work with version 1.1 geometry files. >>
           if(IC.gt.0.and.nbob.gt.0)then
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'

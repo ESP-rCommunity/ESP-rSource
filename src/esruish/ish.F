@@ -671,7 +671,7 @@ C starting calculations.
           
 C Proceed with shading and then insolation calculations.
             if(iobs(icomp).eq.1)then
-               call egomst(iuf,zobs(icomp),0,0,iuout,ier)
+               call egomst(iuf,icomp,zobs(icomp),0,0,iuout,ier)
                write(outs,'(3a)')'Shading calculations for ',
      &           zname(icomp)(1:lnzname(icomp)),'...'
                call edisp(iuout,outs)
@@ -1475,9 +1475,9 @@ C  ifstat = 8  new file filled via import of ascii file
 C Get name of obstruction file.
       if(iobs(icomp).eq.1)then
          if(silent)then
-            call egomst(iuf,zobs(icomp),0,0,iuout,ier)
+            call egomst(iuf,icomp,zobs(icomp),0,0,iuout,ier)
          else
-            call egomst(iuf,zobs(icomp),0,1,iuout,ier)
+            call egomst(iuf,icomp,zobs(icomp),0,1,iuout,ier)
          endif
       elseif(iobs(icomp).eq.2)then
          continue   ! any obstructions are in the geometry file.

@@ -112,8 +112,8 @@ C Write to output file.
    50     continue
 
 C Read in util & obstruction file.
-          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,ZOBS(newfoc),0,0,
-     &      iuout,IER)
+          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
+     &      0,0,iuout,IER)
 
           if(nbob.ge.1)then
             if(incobs.eq.0)goto 4
@@ -312,7 +312,7 @@ C Read in the zone geometry.
 
 C Read in util & obstruction file.
         IF(IOBS(mz).EQ.1)THEN
-          CALL EGOMST(ITA1,ZOBS(mz),0,0,iuout,IER)
+          CALL EGOMST(ITA1,mz,ZOBS(mz),0,0,iuout,IER)
         endif
 
 C Inclusion of obstructions.
@@ -520,8 +520,8 @@ C Write surface information to the THF file.
    50     continue
 
 C Read in obstruction file.
-          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,ZOBS(newfoc),0,0,
-     &      iuout,IER)
+          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
+     &      0,0,iuout,IER)
 
           if(nbob.ge.1)then
             if(incobs.eq.0)goto 4
@@ -537,7 +537,8 @@ C Write obstruction information as a clump of surfaces.
               WRITE(ioout,'(a)')'0 '
               WRITE(ioout,'(I2)')NSUR
               DO 250 J=1,NSUR
-                WRITE(ioout,'(2a)')'1 ',BLKMAT(J)(1:lnblnk(BLKMAT(J)))
+                WRITE(ioout,'(2a)')'1 ',
+     &            BLOCKMAT(newfoc,J)(1:lnblnk(BLOCKMAT(newfoc,J)))
                 WRITE(ioout,'(I3,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
   250         continue
   301       continue

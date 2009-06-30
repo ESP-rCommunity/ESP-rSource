@@ -829,7 +829,7 @@ C            call edisp(iuout,'* Changing focus to specified zone.')
 C If there is an obstructions file read it.
             IUF=IFIL+1
             if(IOBS(index).EQ.1)then
-              CALL EGOMST(IUF,ZOBS(index),IR,ITRC,ITRU,IER)
+              CALL EGOMST(IUF,index,ZOBS(index),IR,ITRC,ITRU,IER)
             elseif(IOBS(index).EQ.2)then
               continue  ! obstructions are in zone geometry file
             endif
@@ -4954,7 +4954,7 @@ C update the file name and write back out to NNAME file.
                 if(IOBS(ICOMP).eq.1)then
                   silent=.true.
                   EXT='.obs'
-                  CALL EGOMST(IUF,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+                  CALL EGOMST(IUF,icomp,ZOBS(ICOMP),0,ITRC,ITRU,IER)
                   CALL FNCNGR(ZOBS(ICOMP),APE,EXT,NNAME)
                   ZOBS(ICOMP)=NNAME
                   CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)

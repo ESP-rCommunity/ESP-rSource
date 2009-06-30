@@ -323,7 +323,7 @@ C is 2 then re-read the version 1.1 zone geometry file.
       IF(IOBS(ifoc).EQ.0)THEN
         RETURN
       ELSEIF(IOBS(ifoc).EQ.1)THEN
-        CALL EGOMST(IUF,ZOBS(ifoc),0,0,iuout,IER)
+        CALL EGOMST(IUF,ifoc,ZOBS(ifoc),0,0,iuout,IER)
         IF(IER.NE.0)RETURN
       ELSEIF(IOBS(ifoc).EQ.2)THEN
         if(newgeo)then
@@ -345,7 +345,7 @@ C Transform the location into eyepoint and then screen coords.
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
           call u2pixel(COG3(1),COG3(2),iix,iiy)
           btemp='        '
-          write(btemp,'(a)') BLKNAME(IB)
+          write(btemp,'(a)') BLOCKNAME(IFOC,IB)
           CALL wstxpt(iix,iiy,btemp)
         ENDIF
 
@@ -1006,7 +1006,7 @@ C should be included in image.
         if(IOBS(IZ).EQ.1)then
           write(outs,'(a,a)') ' Using: ',ZOBS(IZ)
           CALL USRMSG(' ',outs,'-')
-          CALL EGOMST(IUF,ZOBS(IZ),0,0,iuout,IER)
+          CALL EGOMST(IUF,iz,ZOBS(IZ),0,0,iuout,IER)
           IF(IER.NE.0)RETURN
         elseif(IOBS(IZ).EQ.2)THEN
           continue  ! any obstructions are in the geometry file.
