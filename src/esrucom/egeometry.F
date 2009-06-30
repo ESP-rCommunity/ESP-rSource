@@ -1978,9 +1978,12 @@ C Read another line to get the actual blocks.
             XOB(icomp,nbo)=VX
             YOB(icomp,nbo)=VY
             ZOB(icomp,nbo)=VZ
-            CALL EGETWR(OUTSTR,K,DX(nbo),   0., 99.,'W','X dis',IER)
-            CALL EGETWR(OUTSTR,K,DY(nbo),   0., 99.,'W','Y dis',IER)
-            CALL EGETWR(OUTSTR,K,DZ(nbo),   0., 99.,'W','Z dis',IER)
+            CALL EGETWR(OUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
+            CALL EGETWR(OUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
+            CALL EGETWR(OUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+            DXOB(icomp,nbo)=VX
+            DYOB(icomp,nbo)=VY
+            DZOB(icomp,nbo)=VZ
             CALL EGETWR(OUTSTR,K,BANG(nbo),-359.,359.,'W','rot a',IER)
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
@@ -2435,7 +2438,7 @@ C geometry file also write the NOX and NOZ values.
         do 89 ib=1,nbobs(icomp)
           WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &      '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
-     &      DX(ib),DY(ib),DZ(ib),BANG(ib),
+     &      DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),BANG(ib),
      &      BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
           call SDELIM(outs,outsd,'C',IW)
           write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 

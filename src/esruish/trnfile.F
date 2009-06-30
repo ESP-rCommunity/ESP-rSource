@@ -352,7 +352,7 @@ C Write topography.
       do 20 I=1,nbobs(icomp)
          write(iunit,rec=irec,iostat=istat,err=1000)
      &     xob(icomp,i),yob(icomp,i),zob(icomp,i),
-     &     dx(i),dy(i),dz(i),bang(i)
+     &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bang(i)
          irec=irec+1
    20 continue
       write(iunit,rec=irec,iostat=istat,err=1000)nox,noz
@@ -940,7 +940,7 @@ C Read topography.
       do 20 i=1,nbobs(icomp)
          read(iunit,rec=irec,iostat=istat,err=1000)
      &     xob(icomp,i),yob(icomp,i),zob(icomp,i),
-     &     dx(i),dy(i),dz(i),bang(i)
+     &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bang(i)
          irec=irec+1
    20 continue
       read(iunit,rec=irec,iostat=istat,err=1000)nox,noz

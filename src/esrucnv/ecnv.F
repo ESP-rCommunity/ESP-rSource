@@ -840,9 +840,9 @@ C << what about newer >>
               XOB(ivv,nbo)=TXO
               YOB(ivv,nbo)=TYO
               ZOB(ivv,nbo)=TZO
-              DX(nbo)=TDX
-              DY(nbo)=TDY
-              DZ(nbo)=TDZ
+              DXOB(ivv,nbo)=TDX
+              DYOB(ivv,nbo)=TDY
+              DZOB(ivv,nbo)=TDZ
               BANG(nbo)=TBANG
             endif
             goto 142
@@ -864,8 +864,8 @@ C << need for a separate obstructions file
      &       '# origin  X   Y   Z   width  depth  height  angle  descr'
             do 144 ibx=1,nbobs(ivv)
               write(iotmp2,'(7f9.4,a)')XOB(ivv,ibx),YOB(ivv,ibx),
-     &          ZOB(ivv,ibx),DX(ibx),DY(ibx),DZ(ibx),BANG(ibx),
-     &          ' dxf # block '
+     &          ZOB(ivv,ibx),DXOB(ivv,ibx),DYOB(ivv,ibx),
+     &          DZOB(ivv,ibx),BANG(ibx),' dxf # block '
  144        continue
             write(iotmp2,'(a)')'# grid opq X opq Z win X win Z'
             write(iotmp2,'(a)')'    20    20     5     5'

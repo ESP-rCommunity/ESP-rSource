@@ -2054,8 +2054,9 @@ C Display obstructions if newgeom is true.
               DO 9995 I=1,nbobs(icomp)
                 lnbn=LNBLNK(BLOCKNAME(icomp,I))
                 WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
-     &            ZOB(icomp,I),DX(I),DY(I),DZ(I),
-     &            BANG(I),BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)
+     &            ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
+     &            DZOB(icomp,I),BANG(I),
+     &            BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)
  9994           FORMAT(I3,7F8.1,' ',a,' ',a)
                 call edisp(iuout,outs)
  9995         CONTINUE

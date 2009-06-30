@@ -548,7 +548,7 @@ C and surface-by-surface (ibs) basis.
 
 C Compute X, Y and Z coordinates of obstruction block corners 
 C relative to the original site coordinate system.
-                 call cornr(ibn)
+                 call cornr(icomp,ibn)
 
 C Project obstruction block surface, form intersection with plane
 C of target surface if necessary, then determine target surface

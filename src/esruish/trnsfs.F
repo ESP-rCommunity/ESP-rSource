@@ -461,13 +461,18 @@ C Trace output.
 
 C ************** CORNR ********************
 C Returns the x, y and z coordinates of the 8 vertices of an
-C obstruction block, where vertices 1-4 are anticlockwise uppermost
-C and verticed 5-8 are anticlockwise lowermost. At this stage the
-C coordinates are relative to the original coordinate system.
+C obstruction block (ibn) in zone (iz), where vertices 1-4 are
+C anticlockwise uppermost and verticed 5-8 are anticlockwise lowermost.
+C At this stage the coordinates are relative to the original
+C coordinate system.
 
-      subroutine cornr(ibn)
+      subroutine cornr(iz,ibn)
 #include "building.h"
 #include "geometry.h"
+
+C Parameter
+      integer iz  ! zone index
+      integer ibn ! index of block
 
       common/tracech/icout
       common/obs/xc(8),yc(8),zc(8)
@@ -482,26 +487,26 @@ C coordinates are relative to the original coordinate system.
       r=pi/180.
       ca=cos(bang(ibn)*r)
       sa=sin(bang(ibn)*r)
-      xc(1)=xo(ibn)
-      yc(1)=yo(ibn)
-      zc(1)=zo(ibn)+dz(ibn)
+      xc(1)=xob(iz,ibn)
+      yc(1)=yob(iz,ibn)
+      zc(1)=zob(iz,ibn)+dzob(iz,ibn)
       xc(5)=xc(1)
       yc(5)=yc(1)
-      zc(5)=zo(ibn)
-      xc(2)=xc(1)+dx(ibn)*ca
-      yc(2)=yc(1)+dx(ibn)*sa
+      zc(5)=zob(iz,ibn)
+      xc(2)=xc(1)+dxob(iz,ibn)*ca
+      yc(2)=yc(1)+dxob(iz,ibn)*sa
       zc(2)=zc(1)
       xc(6)=xc(2)
       yc(6)=yc(2)
       zc(6)=zc(5)
-      xc(3)=xc(2)-dy(ibn)*sa
-      yc(3)=yc(2)+dy(ibn)*ca
+      xc(3)=xc(2)-dyob(iz,ibn)*sa
+      yc(3)=yc(2)+dyob(iz,ibn)*ca
       zc(3)=zc(1)
       xc(7)=xc(3)
       yc(7)=yc(3)
       zc(7)=zc(5)
-      xc(4)=xc(1)-dy(ibn)*sa
-      yc(4)=yc(1)+dy(ibn)*ca
+      xc(4)=xc(1)-dyob(iz,ibn)*sa
+      yc(4)=yc(1)+dyob(iz,ibn)*ca
       zc(4)=zc(1)
       xc(8)=xc(4)
       yc(8)=yc(4)

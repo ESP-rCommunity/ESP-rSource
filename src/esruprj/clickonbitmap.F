@@ -2557,9 +2557,9 @@ C Ask for name.
           XOB(IC,nbo)=tpx1
           YOB(IC,nbo)=tpy1
           ZOB(IC,nbo)=Z1
-          DX(nbo)=twid
-          DY(nbo)=tdepth
-          DZ(nbo)=Z2
+          DXOB(IC,nbo)=twid
+          DYOB(IC,nbo)=tdepth
+          DZOB(IC,nbo)=Z2
           BANG(nbo)=RO
           call usrmsg(' ',' ','-')
           call edisp(iuout,' ')

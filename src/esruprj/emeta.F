@@ -2125,9 +2125,6 @@ C be included in the version 1.1 geometry file.
             NOX=20
             NOZ=20
             do 58 ib=1,nbobs(isz)
-              DX(ib)=DXOB(isz,ib)
-              DY(ib)=DYOB(isz,ib)
-              DZ(ib)=DZOB(isz,ib)
               BANG(ib)=BANGOB(isz,ib)
   58        continue
             iobs(icomp)=2

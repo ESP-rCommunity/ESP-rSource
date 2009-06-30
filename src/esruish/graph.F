@@ -368,7 +368,7 @@ C Convert obstruction block geometry to GEN format (/g1/) and
 C establish maximum and minimum site coordinates.
       do 20 i=1,nbobs(icomp)
          call erecc(xob(icomp,i),yob(icomp,i),zob(icomp,i),
-     &     dx(i),dy(i),dz(i),bang(i))
+     &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bang(i))
          do 30 j=1,ntv
             xmn=amin1(xmn,x(j))
             ymn=amin1(ymn,y(j))
@@ -431,7 +431,7 @@ C Convert obstruction block geometry to GEN format (/g1/) and plot.
       if(nbobs(icomp).eq.0)goto 1
       do 60 ib= 1,nbobs(icomp)
          call erecc(xob(icomp,ib),yob(icomp,ib),zob(icomp,ib),
-     &     dx(ib),dy(ib),dz(ib),bang(ib))
+     &     dxob(icomp,ib),dyob(icomp,ib),dzob(icomp,ib),bang(ib))
          iupdown=0
          isym=0
          do 70 i=1,nsur

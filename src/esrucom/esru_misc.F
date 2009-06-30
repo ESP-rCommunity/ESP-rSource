@@ -1123,9 +1123,12 @@ C then assign the block index as the name via internal read.
           XOB(icomp,I)=VX
           YOB(icomp,I)=VY
           ZOB(icomp,I)=VZ
-          CALL EGETWR(OUTSTR,K,DX(I),   0., 99.,'W','X dis',IER)
-          CALL EGETWR(OUTSTR,K,DY(I),   0., 99.,'W','Y dis',IER)
-          CALL EGETWR(OUTSTR,K,DZ(I),   0., 99.,'W','Z dis',IER)
+          CALL EGETWR(OUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
+          CALL EGETWR(OUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
+          CALL EGETWR(OUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+          DXOB(icomp,I)=VX
+          DYOB(icomp,I)=VY
+          DZOB(icomp,I)=VZ
           CALL EGETWR(OUTSTR,K,BANG(I),-359.,359.,'W','rot a',IER)
           IF(ND.EQ.7)THEN
             IF(I.LE.9)THEN
@@ -1185,7 +1188,7 @@ C Trace.
         DO 9995 I=1,nbobs(icomp)
           tmp=BLOCKNAME(ICOMP,I)
           WRITE(OUTSTR,9994)I,XOB(ICOMP,I),YOB(ICOMP,I),ZOB(ICOMP,I),
-     &      DX(I),DY(I),DZ(I),BANG(I),
+     &      DXOB(ICOMP,I),DYOB(ICOMP,I),DZOB(ICOMP,I),BANG(I),
      &      tmp(1:LNBLNK(TMP)),BLOCKMAT(ICOMP,I)
  9994     FORMAT(I3,7F8.1,' ',a,' ',a)
           CALL EDISP(ITRU,OUTSTR)
@@ -1242,7 +1245,8 @@ C For each block write info, use space as item separation.
      &'# origin X Y Z, width, depth, height, rot angle, descr, material'
       DO 10 I=1,nbobs(icomp)
         WRITE(outl,34,IOSTAT=IOS,ERR=3)XOB(icomp,I),YOB(icomp,I),
-     &    ZOB(icomp,I),DX(I),DY(I),DZ(I),BANG(I),
+     &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
+     &    BANG(I),
      &    BLOCKNAME(ICOMP,I),BLOCKMAT(ICOMP,I),I
   34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)
         call SDELIM(outl,outld,'S',IW)
