@@ -390,12 +390,12 @@ C Rotation choices.
             SA=SIN(A)
             do 86 ij=1,INPIC
               IFOC=IVALB(ij)
-              XXX=XO(IFOC)-X1
-              YYY=YO(IFOC)-Y1
+              XXX=XOB(ICOMP,IFOC)-X1
+              YYY=YOB(ICOMP,IFOC)-Y1
               XR=XXX*CA+YYY*SA
               YR=YYY*CA-XXX*SA
-              XO(IFOC)=XR+X1
-              YO(IFOC)=YR+Y1
+              XOB(ICOMP,IFOC)=XR+X1
+              YOB(ICOMP,IFOC)=YR+Y1
               BANG(IFOC)=BANG(IFOC)+ANG
   86        continue
             MODIFY=.TRUE.
@@ -419,9 +419,9 @@ C Rotation choices.
           if(ier.ne.0)goto 152
           do 87 ij=1,INPIC
             IFOC=IVALB(ij)
-            XO(IFOC)=XO(IFOC)+VALX
-            YO(IFOC)=YO(IFOC)+VALY
-            ZO(IFOC)=ZO(IFOC)+VALZ
+            XOB(icomp,IFOC)=XOB(icomp,IFOC)+VALX
+            YOB(icomp,IFOC)=YOB(icomp,IFOC)+VALY
+            ZOB(icomp,IFOC)=ZOB(icomp,IFOC)+VALZ
   87      continue
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
@@ -467,9 +467,9 @@ C To delete the last obstruction, dereference the file and exit.
               endif
               if(ID.eq.0)GOTO 92
               DO 791 IDV=ID,nbobs(icomp)-1
-                XO(IDV)=XO(IDV+1)
-                YO(IDV)=YO(IDV+1)
-                ZO(IDV)=ZO(IDV+1)
+                XOB(icomp,IDV)=XOB(icomp,IDV+1)
+                YOB(icomp,IDV)=YOB(icomp,IDV+1)
+                ZOB(icomp,IDV)=ZOB(icomp,IDV+1)
                 DX(IDV)=DX(IDV+1)
                 DY(IDV)=DY(IDV+1)
                 DZ(IDV)=DZ(IDV+1)
@@ -486,9 +486,9 @@ C To delete the last obstruction, dereference the file and exit.
           IF(nbobs(icomp)+1.LE.MB)THEN
             nbobs(icomp)=nbobs(icomp)+1
 	    nbo=nbobs(icomp)
-            XO(nbo)=1.0
-            YO(nbo)=1.0
-            ZO(nbo)=0.0
+            XOB(icomp,nbo)=1.0
+            YOB(icomp,nbo)=1.0
+            ZOB(icomp,nbo)=0.0
             DX(nbo)=1.0
             DY(nbo)=1.0
             DZ(nbo)=1.0
@@ -558,9 +558,9 @@ C Ask for transform distance for obstruction and then apply.
             CALL EGETWR(HOLDS,K,VALZ,-99.,99.,'W','Z tr',IER)
             if(ier.ne.0)goto 243
 	    nbo=nbobs(icomp)
-            XO(nbo)=XO(IFOC)+VALX
-            YO(nbo)=YO(IFOC)+VALY
-            ZO(nbo)=ZO(IFOC)+VALZ
+            XOB(icomp,nbo)=XOB(icomp,IFOC)+VALX
+            YOB(icomp,nbo)=YOB(icomp,IFOC)+VALY
+            ZOB(icomp,nbo)=ZOB(icomp,IFOC)+VALZ
             DX(nbo)=DX(IFOC)
             DY(nbo)=DY(IFOC)
             DZ(nbo)=DZ(IFOC)
@@ -771,9 +771,9 @@ C existing file use it, otherwise add a dummy obstruction file silently.
 
 C If we need to make a dummy obstruction file do this.
         nbobs(icomp)=1
-        XO(1)=1.0
-        YO(1)=1.0
-        ZO(1)=0.0
+        XOB(icomp,1)=1.0
+        YOB(icomp,1)=1.0
+        ZOB(icomp,1)=0.0
         DX(1)=1.0
         DY(1)=1.0
         DZ(1)=1.0
@@ -909,9 +909,9 @@ C User asked to browse within the model for other obstruction files.
           
 C Provide default values for the new obstructions file.
         nbobs(icomp)=1
-        XO(1)=1.0
-        YO(1)=1.0
-        ZO(1)=0.0
+        XOB(icomp,1)=1.0
+        YOB(icomp,1)=1.0
+        ZOB(icomp,1)=0.0
         DX(1)=1.0
         DY(1)=1.0
         DZ(1)=1.0
@@ -1005,11 +1005,13 @@ C obstructions are not true zones.
 
 C Extract coordinates for corners for the current block to 
 C display in the command menu.
-      CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),BANG(IB))
+      CALL CNVBLK(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
+     &  DX(IB),DY(IB),DZ(IB),BANG(IB))
       ITOBS = IB
 
 C Set menu header text.
-      WRITE(VERT(1),'(A,3F6.2)')  'a origin X Y Z:',XO(IB),YO(IB),ZO(IB)
+      WRITE(VERT(1),'(A,3F6.2)')  'a origin X Y Z:',XOB(ICOMP,IB),
+     &  YOB(ICOMP,IB),ZOB(ICOMP,IB)
       WRITE(VERT(2),'(A,3F6.2)')  'b block  W D H:',DX(IB),DY(IB),DZ(IB)
       WRITE(VERT(3),'(A,F7.2)')   'c rotation    : ',BANG(IB)
       WRITE(VERT(4),'(A,A)')      'd name        : ',BLOCKNAME(ICOMP,IB)
@@ -1070,7 +1072,8 @@ C Now display the menu.
      &     '@ angle&dist from vertex','continue',IBOPT,3)
         if(IBOPT.eq.1)then
           HOLD=' '
-          WRITE(HOLD,'(1x,3f9.4)')XO(IB),YO(IB),ZO(IB)
+          WRITE(HOLD,'(1x,3f9.4)')XOB(ICOMP,IB),YOB(ICOMP,IB),
+     &      ZOB(ICOMP,IB)
         elseif(IBOPT.eq.2)then
           inpick=1
           CALL EPMENSV
@@ -1137,9 +1140,12 @@ C Now display the menu.
         CALL EASKS(HOLD,MSG,
      &     ' X Y Z coords ',32,' 1.0 1.0 0.0  ','blk org xyz',IER,1)
         K=0
-        CALL EGETWR(HOLD,K,XO(IB),-999.0,999.9,'W','blk orgx',IER)
-        CALL EGETWR(HOLD,K,YO(IB),-999.0,999.9,'W','blk orgy',IER)
-        CALL EGETWR(HOLD,K,ZO(IB),-99.0,999.9,'W','blk orgz',IER)
+        CALL EGETWR(HOLD,K,VX,-999.0,999.9,'W','blk orgx',IER)
+        CALL EGETWR(HOLD,K,VY,-999.0,999.9,'W','blk orgy',IER)
+        CALL EGETWR(HOLD,K,VZ,-99.0,999.9,'W','blk orgz',IER)
+        XOB(ICOMP,IB)=VX
+        YOB(ICOMP,IB)=VY
+        ZOB(ICOMP,IB)=VZ
         if(ier.ne.0)goto 42
         MODIFY=.TRUE.
         MODBND=.TRUE.
@@ -1394,9 +1400,9 @@ C Check if tollerably close to an axis.
 C Create the sill obstruction.
       nbobs(icomp)=nbobs(icomp)+1
       nbo=nbobs(icomp)
-      XO(nbo)=XXW(1)
-      YO(nbo)=YYW(1)
-      ZO(nbo)=ZZW(1)
+      XOB(icomp,nbo)=XXW(1)
+      YOB(icomp,nbo)=YYW(1)
+      ZOB(icomp,nbo)=ZZW(1)
       DX(nbo)=DDX+OWID+OWID
       DY(nbo)=RTK
       DZ(nbo)=OWID
@@ -1409,9 +1415,9 @@ C Create the sill obstruction.
 C Create the head obstruction.
       nbobs(icomp)=nbobs(icomp)+1
       nbo=nbobs(icomp)
-      XO(nbo)=XXW(2)
-      YO(nbo)=YYW(2)
-      ZO(nbo)=ZZW(2)
+      XOB(icomp,nbo)=XXW(2)
+      YOB(icomp,nbo)=YYW(2)
+      ZOB(icomp,nbo)=ZZW(2)
       DX(nbo)=DDX+OWID+OWID
       DY(nbo)=RTK
       DZ(nbo)=OWID
@@ -1428,9 +1434,9 @@ C Create the head obstruction.
 C Create the left side fin.
       nbobs(icomp)=nbobs(icomp)+1
       nbo=nbobs(icomp)
-      XO(nbo)=XXW(3)
-      YO(nbo)=YYW(3)
-      ZO(nbo)=ZZW(3)
+      XOB(icomp,nbo)=XXW(3)
+      YOB(icomp,nbo)=YYW(3)
+      ZOB(icomp,nbo)=ZZW(3)
       DX(nbo)=OWID
       DY(nbo)=RTK
       DZ(nbo)=DDZ+OWID+OWID
@@ -1447,9 +1453,9 @@ C Create the left side fin.
 C Create the right side fin.
       nbobs(icomp)=nbobs(icomp)+1
       nbo=nbobs(icomp)
-      XO(nbo)=XXW(4)
-      YO(nbo)=YYW(4)
-      ZO(nbo)=ZZW(4)
+      XOB(icomp,nbo)=XXW(4)
+      YOB(icomp,nbo)=YYW(4)
+      ZOB(icomp,nbo)=ZZW(4)
       DX(nbo)=OWID
       DY(nbo)=RTK
       DZ(nbo)=DDZ+OWID+OWID

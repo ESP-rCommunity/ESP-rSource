@@ -1191,7 +1191,7 @@ C Create a genbox command to match the obstruction.
      &          '!genbox rc_ex_unknown ',
      &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB))),
      &          DX(ib),DY(ib),DZ(ib),' | xform -rz ',BANG(ib),
-     &          ' -t ',XO(ib),YO(ib),ZO(ib)
+     &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
               WRITE(irofil,'(a)') ' '
             else
               WRITE(irofil,'(a,a,a,a,3f9.3,a,f9.3,a,3f9.3)')
@@ -1200,7 +1200,7 @@ C Create a genbox command to match the obstruction.
      &          '  ',        
      &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB))),
      &          DX(ib),DY(ib),DZ(ib),' | xform -rz ',BANG(ib),
-     &          ' -t ',XO(ib),YO(ib),ZO(ib)
+     &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
               WRITE(irofil,'(a)') ' '
             endif
  43       continue

@@ -2554,9 +2554,9 @@ C Ask for name.
           IF(ISEL.GT.0)then
             WRITE(BLOCKMAT(IC,nbo),'(A)')DESC(ISEL)(1:12)
           endif
-          XO(nbo)=tpx1
-          YO(nbo)=tpy1
-          ZO(nbo)=Z1
+          XOB(IC,nbo)=tpx1
+          YOB(IC,nbo)=tpy1
+          ZOB(IC,nbo)=Z1
           DX(nbo)=twid
           DY(nbo)=tdepth
           DZ(nbo)=Z2

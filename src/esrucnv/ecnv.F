@@ -837,9 +837,9 @@ C << what about newer >>
             if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
               nbobs(ivv)=nbobs(ivv)+1
               nbo=nbobs(ivv)
-              XO(nbo)=TXO
-              YO(nbo)=TYO
-              ZO(nbo)=TZO
+              XOB(ivv,nbo)=TXO
+              YOB(ivv,nbo)=TYO
+              ZOB(ivv,nbo)=TZO
               DX(nbo)=TDX
               DY(nbo)=TDY
               DZ(nbo)=TDZ
@@ -863,8 +863,9 @@ C << need for a separate obstructions file
             write(iotmp2,'(a)')
      &       '# origin  X   Y   Z   width  depth  height  angle  descr'
             do 144 ibx=1,nbobs(ivv)
-              write(iotmp2,'(7f9.4,a)')XO(ibx),YO(ibx),ZO(ibx),
-     &           DX(ibx),DY(ibx),DZ(ibx),BANG(ibx),' dxf # block '
+              write(iotmp2,'(7f9.4,a)')XOB(ivv,ibx),YOB(ivv,ibx),
+     &          ZOB(ivv,ibx),DX(ibx),DY(ibx),DZ(ibx),BANG(ibx),
+     &          ' dxf # block '
  144        continue
             write(iotmp2,'(a)')'# grid opq X opq Z win X win Z'
             write(iotmp2,'(a)')'    20    20     5     5'

@@ -1325,6 +1325,7 @@ C GS7/GS8 are defined in geometry.h
       logical dll,checkbase
       logical havec24
       integer nbo   ! local value of nbobs
+      real VX,VY,VZ ! local values for XOB YOB ZOB
 
       IER=0
       ZN=' '
@@ -1971,9 +1972,12 @@ C Read another line to get the actual blocks.
             if(iobs(icomp).eq.0) iobs(icomp)=2
             nbobs(icomp)=nbobs(icomp)+1
             nbo=nbobs(icomp)
-            CALL EGETWR(OUTSTR,K,XO(nbo),-999.,998.,'W','X org',IER)
-            CALL EGETWR(OUTSTR,K,YO(nbo),-999.,998.,'W','Y org',IER)
-            CALL EGETWR(OUTSTR,K,ZO(nbo), -99., 99.,'W','Z org',IER)
+            CALL EGETWR(OUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
+            CALL EGETWR(OUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
+            CALL EGETWR(OUTSTR,K,VZ, -99., 99.,'W','obs Z org',IER)
+            XOB(icomp,nbo)=VX
+            YOB(icomp,nbo)=VY
+            ZOB(icomp,nbo)=VZ
             CALL EGETWR(OUTSTR,K,DX(nbo),   0., 99.,'W','X dis',IER)
             CALL EGETWR(OUTSTR,K,DY(nbo),   0., 99.,'W','Y dis',IER)
             CALL EGETWR(OUTSTR,K,DZ(nbo),   0., 99.,'W','Z dis',IER)
@@ -2430,8 +2434,9 @@ C geometry file also write the NOX and NOZ values.
      &    '*block_start',tab,NOX,NOZ,' # geometric blocks'
         do 89 ib=1,nbobs(icomp)
           WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &      '*obs',tab,XO(ib),YO(ib),ZO(ib),DX(ib),DY(ib),
-     &      DZ(ib),BANG(ib),BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+     &      '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
+     &      DX(ib),DY(ib),DZ(ib),BANG(ib),
+     &      BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
           call SDELIM(outs,outsd,'C',IW)
           write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
      &      outsd(1:lnblnk(outsd)),'  # block ',ib

@@ -1609,12 +1609,12 @@ C Rotate any obstructions associated with this zone.
               CA=COS(A)
               SA=SIN(A)
               do 86 ij=1,nbobs(icomp)
-                XXX=XO(ij)-X1
-                YYY=YO(ij)-Y1
+                XXX=XOB(icomp,ij)-X1
+                YYY=YOB(icomp,ij)-Y1
                 XR=XXX*CA+YYY*SA
                 YR=YYY*CA-XXX*SA
-                XO(ij)=XR+X1
-                YO(ij)=YR+Y1
+                XOB(icomp,ij)=XR+X1
+                YOB(icomp,ij)=YR+Y1
                 BANG(ij)=BANG(ij)+VAL
   86          continue
               CALL MKGOMST(IFIL+2,ZOBS(ICOMP),ICOMP,IER)
@@ -1635,12 +1635,12 @@ C so now apply the transform to the obstructions (only).
               CA=COS(A)
               SA=SIN(A)
               do 87 ij=1,nbobs(icomp)
-                XXX=XO(ij)-X1
-                YYY=YO(ij)-Y1
+                XXX=XOB(icomp,ij)-X1
+                YYY=YOB(icomp,ij)-Y1
                 XR=XXX*CA+YYY*SA
                 YR=YYY*CA-XXX*SA
-                XO(ij)=XR+X1
-                YO(ij)=YR+Y1
+                XOB(icomp,ij)=XR+X1
+                YOB(icomp,ij)=YR+Y1
                 BANG(ij)=BANG(ij)+VAL
   87          continue
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
@@ -1845,9 +1845,9 @@ C Transform any obstructions associated with this zone.
               call edisp(iuout,' Obstruction data prior to transform.')
               CALL EGOMST(IFIL+2,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
               do 63 ij=1,nbobs(icomp)
-                XO(ij)=XO(ij)+VALX
-                YO(ij)=YO(ij)+VALY
-                ZO(ij)=ZO(ij)+VALZ
+                XOB(icomp,ij)=XOB(icomp,ij)+VALX
+                YOB(icomp,ij)=YOB(icomp,ij)+VALY
+                ZOB(icomp,ij)=ZOB(icomp,ij)+VALZ
   63          continue
               CALL MKGOMST(IFIL+2,ZOBS(ICOMP),ICOMP,IER)
             endif
@@ -1863,9 +1863,9 @@ C so now apply the transform to the obstructions (only).
             if(ok.and.newgeo)then
               call edisp(iuout,' Obstruction data prior to transform.')
                do 65 ij=1,nbobs(icomp)
-                XO(ij)=XO(ij)+VALX
-                YO(ij)=YO(ij)+VALY
-                ZO(ij)=ZO(ij)+VALZ
+                XOB(icomp,ij)=XOB(icomp,ij)+VALX
+                YOB(icomp,ij)=YOB(icomp,ij)+VALY
+                ZOB(icomp,ij)=ZOB(icomp,ij)+VALZ
   65          continue
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
@@ -2053,7 +2053,8 @@ C Display obstructions if newgeom is true.
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
               DO 9995 I=1,nbobs(icomp)
                 lnbn=LNBLNK(BLOCKNAME(icomp,I))
-                WRITE(outs,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
+                WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
+     &            ZOB(icomp,I),DX(I),DY(I),DZ(I),
      &            BANG(I),BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)
  9994           FORMAT(I3,7F8.1,' ',a,' ',a)
                 call edisp(iuout,outs)
@@ -7561,9 +7562,9 @@ C Zone is of type REC, look for 7 items on one or two lines.
      &    ' REC line origin was misunderstood.'
         IF(IER.NE.0)goto 1001
         K=0
-        CALL EGETWR(OUTSTR,K,XO1,0.,0.,'-','X origin',IER)
-        CALL EGETWR(OUTSTR,K,YO1,0.,0.,'-','Y origin',IER)
-        CALL EGETWR(OUTSTR,K,ZO1,0.,0.,'-','Z origin',IER)
+        CALL EGETWR(OUTSTR,K,XO1,0.,0.,'-','rec X origin',IER)
+        CALL EGETWR(OUTSTR,K,YO1,0.,0.,'-','rec Y origin',IER)
+        CALL EGETWR(OUTSTR,K,ZO1,0.,0.,'-','rec Z origin',IER)
 
 C If only 3 items on first line read another OUTSTR and try to continue.
         IF(ND.EQ.3) THEN

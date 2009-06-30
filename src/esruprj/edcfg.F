@@ -1913,9 +1913,9 @@ C Do same transformation to obstructions?
             CALL EGOMST(IUF,NCOMP,ZOBS(NCOMP),0,ITRC,ITRU,IER)
             if(OKZT)then
               do 85 ij=1,nbobs(ncomp)
-                XO(ij)=XO(ij)+VALX
-                YO(ij)=YO(ij)+VALY
-                ZO(ij)=ZO(ij)+VALZ
+                XOB(ncomp,ij)=XOB(ncomp,ij)+VALX
+                YOB(ncomp,ij)=YOB(ncomp,ij)+VALY
+                ZOB(ncomp,ij)=ZOB(ncomp,ij)+VALZ
    85         continue
             endif
             if(OKZR)then
@@ -1924,12 +1924,12 @@ C Do same transformation to obstructions?
               CA=COS(A)
               SA=SIN(A)
               do 88 ij=1,nbobs(ncomp)
-                XXX=XO(ij)-X1
-                YYY=YO(ij)-Y1
+                XXX=XOB(ncomp,ij)-X1
+                YYY=YOB(ncomp,ij)-Y1
                 XR=XXX*CA+YYY*SA
                 YR=YYY*CA-XXX*SA
-                XO(ij)=XR+X1
-                YO(ij)=YR+Y1
+                XOB(ncomp,ij)=XR+X1
+                YOB(ncomp,ij)=YR+Y1
                 BANG(ij)=BANG(ij)+VAL
   88          continue
             endif
@@ -4221,9 +4221,9 @@ C transform origin.
             if(OK)then
               CALL EGOMST(IUF,IICOMP,ZOBS(IICOMP),0,ITRC,ITRU,IER)
               do 63 ij=1,nbobs(iicomp)
-                XO(ij)=XO(ij)+VALX
-                YO(ij)=YO(ij)+VALY
-                ZO(ij)=ZO(ij)+VALZ
+                XOB(iicomp,ij)=XOB(iicomp,ij)+VALX
+                YOB(iicomp,ij)=YOB(iicomp,ij)+VALY
+                ZOB(iicomp,ij)=ZOB(iicomp,ij)+VALZ
   63          continue
               CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
             endif
@@ -4244,9 +4244,9 @@ C apply the transform and write the file back out.
               endif
               if(OK)then
                 do 64 ij=1,nbobs(iicomp)
-                  XO(ij)=XO(ij)+VALX
-                  YO(ij)=YO(ij)+VALY
-                  ZO(ij)=ZO(ij)+VALZ
+                  XOB(iicomp,ij)=XOB(iicomp,ij)+VALX
+                  YOB(iicomp,ij)=YOB(iicomp,ij)+VALY
+                  ZOB(iicomp,ij)=ZOB(iicomp,ij)+VALZ
   64            continue
                 call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
               endif
@@ -4413,12 +4413,12 @@ C Rotate any obstructions associated with this zone.
               CA=COS(A)
               SA=SIN(A)
               do 86 ij=1,nbobs(iicomp)
-                XXX=XO(ij)-X1
-                YYY=YO(ij)-Y1
+                XXX=XOB(iicomp,ij)-X1
+                YYY=YOB(iicomp,ij)-Y1
                 XR=XXX*CA+YYY*SA
                 YR=YYY*CA-XXX*SA
-                XO(ij)=XR+X1
-                YO(ij)=YR+Y1
+                XOB(iicomp,ij)=XR+X1
+                YOB(iicomp,ij)=YR+Y1
                 BANG(ij)=BANG(ij)+VAL
   86          continue
               CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
@@ -4452,12 +4452,12 @@ C apply the transform and write the file back out.
               CA=COS(A)
               SA=SIN(A)
               do 87 ij=1,nbobs(iicomp)
-                XXX=XO(ij)-X1
-                YYY=YO(ij)-Y1
+                XXX=XOB(iicomp,ij)-X1
+                YYY=YOB(iicomp,ij)-Y1
                 XR=XXX*CA+YYY*SA
                 YR=YYY*CA-XXX*SA
-                XO(ij)=XR+X1
-                YO(ij)=YR+Y1
+                XOB(iicomp,ij)=XR+X1
+                YOB(iicomp,ij)=YR+Y1
                 BANG(ij)=BANG(ij)+VAL
   87          continue
               call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)

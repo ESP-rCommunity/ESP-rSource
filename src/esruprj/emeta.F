@@ -2125,9 +2125,6 @@ C be included in the version 1.1 geometry file.
             NOX=20
             NOZ=20
             do 58 ib=1,nbobs(isz)
-              XO(ib)=XOB(isz,ib)
-              YO(ib)=YOB(isz,ib)
-              ZO(ib)=ZOB(isz,ib)
               DX(ib)=DXOB(isz,ib)
               DY(ib)=DYOB(isz,ib)
               DZ(ib)=DZOB(isz,ib)
@@ -2704,29 +2701,6 @@ C Now close meta file.
 
 
 C Data structures which have not yet been sorted.
-C      if(WORD(1:4).eq.'*obs')then
-
-C An obstruction block to be associated with the current zone.
-C        nbobs(nsz)=nbobs(nsz)+1
-C        nob=nbobs(nsz)
-C        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
-C        XOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
-C        YOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','Z org',IER)
-C        ZOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','X dis',IER)
-C        DXOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Y dis',IER)
-C        DYOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
-C        DZOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
-C        BANGOB(nsz,nob)=val1
-C        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-C        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
-C        CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
-C        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
 C      elseif(WORD(1:6).eq.'*usage')then
 
 C After *usage the next token is 'pattern' (tag indicating that

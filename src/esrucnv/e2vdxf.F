@@ -118,8 +118,8 @@ C Read in util & obstruction file.
           if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
-              CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
-     &                 BANG(IB))
+              CALL ERECC(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
+     &          DX(IB),DY(IB),DZ(IB),BANG(IB))
 
 C Write obstruction information after inverting edges.
               DO 320 J=1,NSUR
@@ -328,11 +328,11 @@ C obstruction.
             write(ioout,'(a)')'  2'
             write(ioout,'(a)')'OBSTRUCTION'
             write(ioout,'(a)')' 10'
-            write(ioout,'(f9.1)')XO(IB)*1000.
+            write(ioout,'(f9.1)')XOB(mz,IB)*1000.
             write(ioout,'(a)')' 20'
-            write(ioout,'(f9.1)')YO(IB)*1000.
+            write(ioout,'(f9.1)')YOB(mz,IB)*1000.
             write(ioout,'(a)')' 30'
-            write(ioout,'(f9.1)')ZO(IB)*1000.
+            write(ioout,'(f9.1)')ZOB(mz,IB)*1000.
             write(ioout,'(a)')' 41'
             write(ioout,'(f9.1)')DX(IB)*1000.
             write(ioout,'(a)')' 42'
@@ -526,8 +526,8 @@ C Read in obstruction file.
           if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
-              CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
-     &                 BANG(IB))
+              CALL ERECC(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
+     &          DX(IB),DY(IB),DZ(IB),BANG(IB))
 
 C Write obstruction information as a clump of surfaces.
               WRITE(ioout,'(a,i2)')'YIN ',NTV

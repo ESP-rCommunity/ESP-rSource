@@ -901,8 +901,8 @@ C Check geometry file version and scan geometry file to get obstructions.
             endif
           endif
           DO 301 IB=1,nbobs(ivz)
-            CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
-     &               BANG(IB))
+            CALL ERECC(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
+     &        DX(IB),DY(IB),DZ(IB),BANG(IB))
             DO 302 I=1,NTV
               IF(ITBND.NE.0)THEN
 

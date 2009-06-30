@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -1072,6 +1072,7 @@ C Error messages (for use by low level I/O calls)
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
       integer NGXD,NGZD  ! dummy values for depreciated NGX & NGZ
+      real VX,VY,VZ   ! local values for XOB YOB ZOB
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -1116,9 +1117,12 @@ C then assign the block index as the name via internal read.
         IF(IER.NE.0)GOTO 99
         IF(ND.eq.7.OR.ND.eq.8.OR.ND.eq.9)THEN
           K=0
-          CALL EGETWR(OUTSTR,K,XO(I),-999.,998.,'W','X org',IER)
-          CALL EGETWR(OUTSTR,K,YO(I),-999.,998.,'W','Y org',IER)
-          CALL EGETWR(OUTSTR,K,ZO(I), -99., 99.,'W','Z org',IER)
+          CALL EGETWR(OUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
+          CALL EGETWR(OUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
+          CALL EGETWR(OUTSTR,K,VZ, -99., 99.,'W','obs Z org',IER)
+          XOB(icomp,I)=VX
+          YOB(icomp,I)=VY
+          ZOB(icomp,I)=VZ
           CALL EGETWR(OUTSTR,K,DX(I),   0., 99.,'W','X dis',IER)
           CALL EGETWR(OUTSTR,K,DY(I),   0., 99.,'W','Y dis',IER)
           CALL EGETWR(OUTSTR,K,DZ(I),   0., 99.,'W','Z dis',IER)
@@ -1180,8 +1184,9 @@ C Trace.
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
         DO 9995 I=1,nbobs(icomp)
           tmp=BLOCKNAME(ICOMP,I)
-          WRITE(OUTSTR,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
-     &      BANG(I),tmp(1:LNBLNK(TMP)),BLOCKMAT(ICOMP,I)
+          WRITE(OUTSTR,9994)I,XOB(ICOMP,I),YOB(ICOMP,I),ZOB(ICOMP,I),
+     &      DX(I),DY(I),DZ(I),BANG(I),
+     &      tmp(1:LNBLNK(TMP)),BLOCKMAT(ICOMP,I)
  9994     FORMAT(I3,7F8.1,' ',a,' ',a)
           CALL EDISP(ITRU,OUTSTR)
  9995   CONTINUE
@@ -1236,8 +1241,9 @@ C For each block write info, use space as item separation.
       WRITE(IAF,'(a)')
      &'# origin X Y Z, width, depth, height, rot angle, descr, material'
       DO 10 I=1,nbobs(icomp)
-        WRITE(outl,34,IOSTAT=IOS,ERR=3)XO(I),YO(I),ZO(I),DX(I),DY(I),
-     &    DZ(I),BANG(I),BLOCKNAME(ICOMP,I),BLOCKMAT(ICOMP,I),I
+        WRITE(outl,34,IOSTAT=IOS,ERR=3)XOB(icomp,I),YOB(icomp,I),
+     &    ZOB(icomp,I),DX(I),DY(I),DZ(I),BANG(I),
+     &    BLOCKNAME(ICOMP,I),BLOCKMAT(ICOMP,I),I
   34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
