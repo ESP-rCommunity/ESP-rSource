@@ -1131,7 +1131,8 @@ C logic.
         if(nbobs(newfoc).eq.0) goto 302
         DO 301 IB=1,nbobs(newfoc)
           CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
-     &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),BANG(IB))
+     &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
+     &      BANGOB(newfoc,IB))
 
 C Work out the colour for each block by looping
 C through each of the MLC and finding a match (for first 12 char).

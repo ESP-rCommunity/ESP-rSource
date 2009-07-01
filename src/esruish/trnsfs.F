@@ -485,8 +485,8 @@ C Parameter
 
       pi=4.0*atan(1.0)
       r=pi/180.
-      ca=cos(bang(ibn)*r)
-      sa=sin(bang(ibn)*r)
+      ca=cos(bangob(iz,ibn)*r)
+      sa=sin(bangob(iz,ibn)*r)
       xc(1)=xob(iz,ibn)
       yc(1)=yob(iz,ibn)
       zc(1)=zob(iz,ibn)+dzob(iz,ibn)

@@ -57,9 +57,6 @@ C lnzname,lnzdesc - length of strings.
       common/preczln/lnzname(MCOM),lnzdesc(MCOM)
 
 C Obstruction block commons (legacy).
-      real BANG     ! block rotation angle (degrees).
-      common/GS5/BANG(MB)
-
       integer NOX,NOZ      ! gridding resolution of surfaces for shading
       common/GS6/NOX,NOZ
 

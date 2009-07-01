@@ -1930,7 +1930,7 @@ C Do same transformation to obstructions?
                 YR=YYY*CA-XXX*SA
                 XOB(ncomp,ij)=XR+X1
                 YOB(ncomp,ij)=YR+Y1
-                BANG(ij)=BANG(ij)+VAL
+                BANGOB(ncomp,ij)=BANGOB(ncomp,ij)+VAL
   88          continue
             endif
             CALL MKGOMST(IUF,ZOBS(NCOMP),NCOMP,IER)
@@ -4419,7 +4419,7 @@ C Rotate any obstructions associated with this zone.
                 YR=YYY*CA-XXX*SA
                 XOB(iicomp,ij)=XR+X1
                 YOB(iicomp,ij)=YR+Y1
-                BANG(ij)=BANG(ij)+VAL
+                BANGOB(iicomp,ij)=BANGOB(iicomp,ij)+VAL
   86          continue
               CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
             endif
@@ -4458,7 +4458,7 @@ C apply the transform and write the file back out.
                 YR=YYY*CA-XXX*SA
                 XOB(iicomp,ij)=XR+X1
                 YOB(iicomp,ij)=YR+Y1
-                BANG(ij)=BANG(ij)+VAL
+                BANGOB(iicomp,ij)=BANGOB(iicomp,ij)+VAL
   87          continue
               call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
             endif

@@ -2124,9 +2124,6 @@ C be included in the version 1.1 geometry file.
           if(nbobs(isz).gt.0)then
             NOX=20
             NOZ=20
-            do 58 ib=1,nbobs(isz)
-              BANG(ib)=BANGOB(isz,ib)
-  58        continue
             iobs(icomp)=2
           else
             iobs(icomp)=0

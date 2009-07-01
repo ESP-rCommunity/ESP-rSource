@@ -196,7 +196,8 @@ C and plotting.
         if(nbobs(newfoc).eq.0)goto 54
         DO 420 IB= 1,nbobs(newfoc)
           CALL ERECC(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
-     &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),BANG(IB))
+     &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
+     &      BANGOB(newfoc,IB))
           DO 422 I=1,NSUR
             J=JVN(I,1)
             iupdown=0

@@ -2382,7 +2382,7 @@ C iobs() is 2 and newgeo true then blocks already scanned.
         if(nbobs(mz).gt.0)then
           DO 301 IB=1,nbobs(mz)
             CALL CNVBLK(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
-     &        DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),BANG(IB))
+     &        DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),BANGOB(mz,IB))
             do 302 ibs=1,6
               WRITE(ioout,'(a)',iostat=ios,err=6) ' '
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
