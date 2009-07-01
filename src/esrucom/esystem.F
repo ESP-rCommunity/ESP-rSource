@@ -2502,6 +2502,10 @@ C With hash known, re-scan geometry files (connection based
 C surface attributes will be instanciated during geometry read).
 C Warn if izstocn returns zero. Recover zone volume and surface
 C derived data. Use georead or egomin depending on version.
+
+C << good place to use MODE='ALL ' logic to also scan the
+C << obstruction blocks (and what else??)
+
       do 242 ICOMP=1,NCOMP
         call FINDFIL(LGEOM(ICOMP),XST)
         call eclose(gversion(icomp),1.1,0.01,newgeo)

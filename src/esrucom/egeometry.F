@@ -2110,8 +2110,8 @@ C assumed that this information has been checked.
 C GENFIL is the name of the file to be written to (any existing file
 C by this name is overwritten).  
 C ICOMP is the zone number, 
-C IR=1 range checking IR=0 no range checking, ITRC unit number for
-C user output, IER=0 OK IER=1 problem. IWF = 3 create/overwrite,=4 check
+C ITRC unit number for user output,
+C IER=0 OK IER=1 problem. IWF = 3 create/overwrite,=4 check
 C with user before overwriting.
 
 C If iobs()=2 then there are blocks to write out within the
