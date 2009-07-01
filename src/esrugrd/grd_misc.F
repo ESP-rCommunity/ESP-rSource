@@ -156,7 +156,8 @@ c Trace output ?
 C *************** MESH ***********************
 C 'MESH' Computes the centre point X & Z coordinate of each rectangular
 C grid square of a mesh superimposed on the opaque surface in question.
-      SUBROUTINE MESH(IS)
+C (equivalent to subroutine in esruish/miscel.F)
+      SUBROUTINE MESH(IZONE,IS)
 #include "building.h"
 #include "geometry.h"
 
@@ -188,13 +189,13 @@ C Mesh length and height is given by:
       DZMESH=ZMAX-ZMIN
 
 C Establish grid interval for this surface.
-      DIVX=DXMESH/NOX
-      DIVZ=DZMESH/NOZ
+      DIVX=DXMESH/NOX(IZONE)
+      DIVZ=DZMESH/NOZ(IZONE)
       OGRIDA(IS)=DIVX*DIVZ
 
 C Compute X & Z values for centre point of each grid square.
-      DO 20 I=1,NOX
-        DO 30 J=1,NOZ
+      DO 20 I=1,NOX(IZONE)
+        DO 30 J=1,NOZ(IZONE)
           XOP(I,J)=DIVX/2.+(I-1)*DIVX
           ZOP(I,J)=DIVZ/2.+(J-1)*DIVZ
    30   CONTINUE
@@ -217,8 +218,8 @@ C Trace if verbose level.
      &' Opaque surface grid centre coordinates for surface ',I2,':')
       call edisp(iuout,outs)
       call edisp(iuout,' NOX|NOZ|     X   |    Z')
-      DO 9996 I=1,NOX
-        DO 9995 J=1,NOZ
+      DO 9996 I=1,NOX(IZONE)
+        DO 9995 J=1,NOZ(IZONE)
           WRITE(outs,9994)I,J,XOP(I,J),ZOP(I,J)
  9994     FORMAT(I3,',',I3,2F10.2)
           call edisp(iuout,outs)

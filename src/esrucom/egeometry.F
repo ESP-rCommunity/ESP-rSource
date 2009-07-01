@@ -1956,11 +1956,11 @@ C be incremented to iobs() = 2.
 C Following the tag *block_start will be the grid for X and Z. If
 C there are insufficient tokens on line set both to 20.
           if(ND.gt.2)then
-            CALL EGETWI(OUTSTR,K,NOX,4,20,'F','opq grid X',IER)
-            CALL EGETWI(OUTSTR,K,NOZ,4,20,'F','opq grid Z',IER)
+            CALL EGETWI(OUTSTR,K,NOX(icomp),4,20,'F','opq grid X',IER)
+            CALL EGETWI(OUTSTR,K,NOZ(icomp),4,20,'F','opq grid Z',IER)
           else
-            NOX=20
-            NOZ=20
+            NOX(icomp)=20
+            NOZ(icomp)=20
           endif
 
 C Read another line to get the actual blocks.
@@ -2435,7 +2435,7 @@ C geometry file also write the NOX and NOZ values.
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# block entities:'
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '#  *obs = obstructions'
         write(ifilg,'(2a,i2,i3,a)',IOSTAT=IOS,ERR=13) 
-     &    '*block_start',tab,NOX,NOZ,' # geometric blocks'
+     &  '*block_start',tab,NOX(icomp),NOZ(icomp),' # geometric blocks'
         do 89 ib=1,nbobs(icomp)
           WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &      '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),

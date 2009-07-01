@@ -160,7 +160,7 @@ C Total direct shading.
 C Partial direct shading: increment irec by nox to skip over
 C ioshd array.
               elseif(inds.eq.0)then
-                 irec=irec+nox
+                 irec=irec+nox(icomp)
                  read(iunit,rec=irec,iostat=istat,err=1000)pso(i,j),
      &                                                     psof(i,j)
                  irec=irec+1

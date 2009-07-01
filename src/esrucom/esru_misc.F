@@ -1163,8 +1163,8 @@ C Read surface test grid information and check ranges.
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'obs grid infor',IER)
       IF(IER.NE.0)GOTO 99
       K=0
-      CALL EGETWI(OUTSTR,K,NOX,4,MOX,'F','opq grid X',IER)
-      CALL EGETWI(OUTSTR,K,NOZ,4,MOZ,'F','opq grid Z',IER)
+      CALL EGETWI(OUTSTR,K,NOX(icomp),4,MOX,'F','surf shd grid X',IER)
+      CALL EGETWI(OUTSTR,K,NOZ(icomp),4,MOZ,'F','surf shd grid Z',IER)
       if(ND.eq.4)then
        CALL EGETWI(OUTSTR,K,NGXD,4,10,'F','win grid X depreciated',IER)
        CALL EGETWI(OUTSTR,K,NGZD,4,10,'F','win grid Z depreciated',IER)
@@ -1177,7 +1177,7 @@ C Trace.
       IF(ITRC.GT.0)THEN
         CALL EDISP(ITRU,' ')
         CALL EDISP(ITRU,'Details of obstruction blocks:')
-        WRITE(OUTSTR,997)NOX,NOZ
+        WRITE(OUTSTR,997)NOX(icomp),NOZ(icomp)
   997   FORMAT('Shading based on a grid of ',
      &           I2,' by ',I2,' for surfaces.')
         CALL EDISP(ITRU,OUTSTR)
@@ -1256,7 +1256,7 @@ C For each block write info, use space as item separation.
 
 C Write surface test grid information.
       WRITE(IAF,'(A)',IOSTAT=IOS,ERR=3) '# grid surf X surf Z'
-      WRITE(IAF,'(2I6)',IOSTAT=IOS,ERR=3) NOX,NOZ
+      WRITE(IAF,'(2I6)',IOSTAT=IOS,ERR=3) NOX(icomp),NOZ(icomp)
 
 C Close site file.
       CALL ERPFREE(IAF,ISTAT)

@@ -409,15 +409,15 @@ C shading file.
          call tfile2(itsur)
 
 C Set up target surface mesh.
-         call mesh(itsur)
+         call mesh(icomp,itsur)
 
 C Proceed hour-by-hour.
          do 30 ihr=1,24
 
 C Reset foshd each hour, setting any grid point not within surface
 C to -1.0.
-            do 401 i=1,nox
-               do 402 j=1,noz
+            do 401 i=1,nox(icomp)
+               do 402 j=1,noz(icomp)
                   call point1(itsur,xop(i,j),zop(i,j),ians)
                   foshd(i,j)=0
                   if(ians.eq.0)foshd(i,j)=-1.0
@@ -464,8 +464,8 @@ C here for use in shdtst.
 
 C Reset ioshd before each sun or sky patch loop, setting any
 C grid point not within target surface to -1.
-              do 403 i=1,nox
-                 do 404 j=1,noz
+              do 403 i=1,nox(icomp)
+                 do 404 j=1,noz(icomp)
                     call point1(itsur,xop(i,j),zop(i,j),ians)
                     ioshd(i,j)=0
                     if(ians.eq.0)ioshd(i,j)=-1
@@ -556,7 +556,7 @@ C shading.
                  do 60 ibs=1,6
                    call trnsf3(ihour,ibn,ibs)
                    call decomp(ibn,ibs,itsur)
-                   call shdtst(itsur)
+                   call shdtst(icomp,itsur)
    60            continue 
    50          continue         ! obstruction block loop
 
@@ -571,8 +571,8 @@ C each target surface grid point (foshd) and determine overall
 C diffuse surface shading if last sky patch has just been
 C considered (psof).
                elseif(mode.eq.'dif')then
-                  do 70 i=1,nox
-                     do 80 j=1,noz
+                  do 70 i=1,nox(icomp)
+                     do 80 j=1,noz(icomp)
                         if(ioshd(i,j).eq.-1)goto 80
                         foshd(i,j)=foshd(i,j)+float(ioshd(i,j))/145.0
    80                continue
@@ -583,8 +583,8 @@ C considered (psof).
 
 C Surface cannot see sun or sky patch.
     2          if(mode.eq.'dir')then
-                  do 90 i=1,nox
-                     do 100 j=1,noz
+                  do 90 i=1,nox(icomp)
+                     do 100 j=1,noz(icomp)
                         if(ioshd(i,j).eq.-1)goto 100
                         if(mode.eq.'dir')ioshd(i,j)=1
 C                       if(mode.eq.'dif')foshd(i,j)=foshd(i,j)+1.0/145.0
@@ -928,7 +928,7 @@ C ********** SHDTST **********
 C Tests each grid centre point of a user-specified grid to
 C establish if it is within the target surface and shadow polygon.
 
-      subroutine shdtst(itsur)
+      subroutine shdtst(izone,itsur)
 #include "building.h"
 #include "geometry.h"
 
@@ -941,8 +941,8 @@ C establish if it is within the target surface and shadow polygon.
 C For each opaque surface grid point, test whether it is within 
 C the target surface. If it is, then test whether also within
 C the shadow polygon.
-      do 10 i=1,nox
-         do 20 j=1,noz
+      do 10 i=1,nox(izone)
+         do 20 j=1,noz(izone)
 C Is point within surface itsur?
             if(ioshd(i,j).eq.-1)goto 20
 

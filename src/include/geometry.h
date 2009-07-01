@@ -56,11 +56,10 @@ C lnzname,lnzdesc - length of strings.
       integer lnzname,lnzdesc
       common/preczln/lnzname(MCOM),lnzdesc(MCOM)
 
-C Obstruction block commons (legacy).
-      integer NOX,NOZ      ! gridding resolution of surfaces for shading
-      common/GS6/NOX,NOZ
-
 C Obstruction block commons (whole model)
+      integer NOX,NOZ      ! gridding X and Z resolution of surfaces for shading
+      common/GS6/NOX(MCOM),NOZ(MCOM)
+
       integer nbobs     ! number of zone obstructions
       real XOB,YOB,ZOB  ! coordinates of each block origin.
       real DXOB,DYOB,DZOB  ! width depth and height of each block

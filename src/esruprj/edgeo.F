@@ -2047,7 +2047,7 @@ C Display obstructions if newgeom is true.
             if(nbobs(icomp).gt.0)then
               call edisp(iuout,'Details of obstruction blocks:')
               write(outs,'(a,i2,a,i2,a)')'Shading based on grids of ',
-     &          NOX,' by ',NOZ,' for surfaces.'
+     &          NOX(icomp),' by ',NOZ(icomp),' for surfaces.'
               call edisp(iuout,outs)
               call edisp(iuout,
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')

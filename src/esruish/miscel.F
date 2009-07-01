@@ -65,7 +65,7 @@ C grid cell as superimposed on the target surface. Note that some of
 C these points will lie outside a non-rectangular target surface; such
 C points are later excluded.
 
-      subroutine mesh(its)
+      subroutine mesh(izone,its)
 #include "building.h"
 #include "geometry.h"
 
@@ -94,13 +94,13 @@ C Mesh length and height.
 
 C Establish grid interval for this surface. Ogrida is the area of
 C one grid cell.
-      divx=dxmesh/nox
-      divz=dzmesh/noz
+      divx=dxmesh/nox(izone)
+      divz=dzmesh/noz(izone)
       ogrida(its)=divx*divz
 
 C Compute x & y values for centre point of each grid cell.
-      do 20 i=1,nox
-         do 30 j=1,noz
+      do 20 i=1,nox(izone)
+         do 30 j=1,noz(izone)
             xop(i,j)=divx/2.+(i-1)*divx
             zop(i,j)=divz/2.+(j-1)*divz
    30    continue

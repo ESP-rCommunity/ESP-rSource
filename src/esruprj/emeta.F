@@ -2122,8 +2122,6 @@ C If there are obstructions fill in relevant common blocks. Set iobs()=2
 C to signal that the common blocks have been instanciated and data should
 C be included in the version 1.1 geometry file.
           if(nbobs(isz).gt.0)then
-            NOX=20
-            NOZ=20
             iobs(icomp)=2
           else
             iobs(icomp)=0

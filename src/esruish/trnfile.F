@@ -355,7 +355,7 @@ C Write topography.
      &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bangob(icomp,i)
          irec=irec+1
    20 continue
-      write(iunit,rec=irec,iostat=istat,err=1000)nox,noz
+      write(iunit,rec=irec,iostat=istat,err=1000)nox(icomp),noz(icomp)
       irecl=irec+1
       return
 
@@ -467,8 +467,8 @@ C Sun not up.
 
     2 is1=-1
       is2=-2
-      do 10 i=1,nox
-         do 20 j=1,noz
+      do 10 i=1,nox(icomp)
+         do 20 j=1,noz(icomp)
             if(ioshd(i,j).eq.-1)goto 20
             if(ioshd(i,j).eq.0)is1=0
             if(ioshd(i,j).eq.1)is2=1
@@ -501,16 +501,16 @@ C Partial direct shading, is1= 0; write ioshd to zone transitional
 C shading file.
     4 write(iunit,rec=irec,iostat=istat,err=1000)is1
       irec=irec+1
-      do 30 i=1,nox
+      do 30 i=1,nox(icomp)
          write(iunit,rec=irec,iostat=istat,err=1000)
-     &                                        (ioshd(i,j),j=1,noz)
+     &     (ioshd(i,j),j=1,noz(icomp))
          irec=irec+1
    30 continue
 
 C Calculate overall shading on target surface, gssa (gssa is
 C initialised in shadc before direct and diffuse processing).
-    1 do 40 k=1,nox
-         do 50 l=1,noz
+    1 do 40 k=1,nox(icomp)
+         do 50 l=1,noz(icomp)
             if(ioshd(k,l).eq.-1)goto 50
             if(mode.eq.'dir')gssa=gssa+ioshd(k,l)*ogrida(is)
 
@@ -590,8 +590,8 @@ C Trace output.
  9995    format('Direct shading = ',f8.4)
          call edisp(icout,outs)
          call edisp(icout,'IOSHD:')
-         do 9994 j=noz,1,-1
-            write(outs, 9993) (ioshd(i,j),i=1,nox)
+         do 9994 j=noz(icomp),1,-1
+            write(outs, 9993) (ioshd(i,j),i=1,nox(icomp))
  9993       format(50i3)
             call edisp(icout,outs)
  9994    continue
@@ -600,8 +600,8 @@ C Trace output.
  9992    format('Diffuse shading = ',f8.4)
          call edisp(icout,outs)
          call edisp(icout,'FOSHD:')
-         do 9991 j=noz,1,-1
-            write(outs, 9990) (foshd(i,j),i=1,nox)
+         do 9991 j=noz(icomp),1,-1
+            write(outs, 9990) (foshd(i,j),i=1,nox(icomp))
  9990       format(50f7.3)
             call edisp(icout,outs)
  9991    continue
@@ -943,7 +943,7 @@ C Read topography.
      &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bangob(icomp,i)
          irec=irec+1
    20 continue
-      read(iunit,rec=irec,iostat=istat,err=1000)nox,noz
+      read(iunit,rec=irec,iostat=istat,err=1000)nox(icomp),noz(icomp)
       return
 
  1000 write(outs,1001)irec

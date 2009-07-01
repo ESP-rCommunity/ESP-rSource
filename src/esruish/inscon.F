@@ -187,7 +187,7 @@ C can be used.
          ishadf=1
       else
          ishadf=0
-         if(mon.eq.mons)call igeoms
+         if(mon.eq.mons)call igeoms(icomp)
       endif
 
 C Commence computation for each specified month and allow user to
@@ -404,9 +404,14 @@ C ********** IGEOMS **********
 C Establishes the source surface grid if a zone transitional shading
 C file does not exist.
 
-      subroutine igeoms
+C << update to use a different common block than g1 >>
+
+      subroutine igeoms(izone)
 #include "building.h"
 #include "geometry.h"
+
+C Parameter
+      integer izone  ! index of zone
 
       common/pophelp/h(60)
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
@@ -414,8 +419,8 @@ C file does not exist.
       character H*72
 
 C Set default surface grid.
-      nox=20
-      noz=20
+      if(nox(izone).eq.0) nox(izone)=20
+      if(noz(izone).eq.0) noz(izone)=20
       nwins=0
       do 10 i=1,nsur
         if(itmc(i).ne.0)nwins=nwins+1
@@ -514,7 +519,7 @@ C translation plus three-dimensional plane rotation.
          call trnsf1i(isrc)
 
 C Grid the insolation source surface.
-         call mesh(isrc)
+         call mesh(icomp,isrc)
 
 C Proceed hour-by-hour.
          do 30 j=1,24
@@ -536,8 +541,8 @@ C Determine angles for all external and internal surfaces.
 
 C Initiallise igins, the array of source grid points holding
 C the insolated surface numbers.
-            do 40 m=1,nox
-               do 50 n=1,noz
+            do 40 m=1,nox(icomp)
+               do 50 n=1,noz(icomp)
                   call point1(isrc,xop(m,n),zop(m,n),ians)
                   if(ians.eq.0)then
 C Outwith source surface.
@@ -552,13 +557,13 @@ C Not yet defined.
 
 C Take zone transitional shading file information into account.
 C modes=1 indicates that call is for first sun-up hour; 2 otherwise.
-            call inwshd(isrc,ihr,modes)
+            call inwshd(icomp,isrc,ihr,modes)
             modes=2
 
 C If caie is positive then source surface can be considered.
             if(caie(isrc).le.0.0)then
-               do 60 m=1,nox
-                  do 70 n=1,noz
+               do 60 m=1,nox(icomp)
+                  do 70 n=1,noz(icomp)
                      if(igins(m,n).ne.-200)igins(m,n)=-100
    70             continue
    60          continue
@@ -588,8 +593,8 @@ C Set up source surface global coordinates.
 
 C Initiate source surface grid point-by-point analysis.
                ipass=0
-               do 100 m=1,nox
-                  do 110 n=1,noz
+               do 100 m=1,nox(icomp)
+                  do 110 n=1,noz(icomp)
                      if(igins(m,n).eq.-200)goto 110
                      if(ioshd(m,n).eq.1)then
                         igins(m,n)=-100
@@ -677,7 +682,7 @@ C ********** inwshd **********
 C Reads the transitional shading file if one exists and extracts
 C surface shading information.
 
-      subroutine inwshd(isur,ihr,modes)
+      subroutine inwshd(izone,isur,ihr,modes)
 #include "building.h"
 #include "geometry.h"
 
@@ -724,23 +729,24 @@ C Sun not up must be an error!
       if(ians.eq.-1)goto 5
 
 C Read surface shading information.
-      do 10 i=1,nox
-         read(iushd,rec=irec,iostat=istat,err=1000)(ioshd(i,j),j=1,noz)
+      do 10 i=1,nox(izone)
+         read(iushd,rec=irec,iostat=istat,err=1000)
+     &     (ioshd(i,j),j=1,noz(izone))
          irec=irec+1
    10 continue
       goto 4
 
 C Surface is not shaded.
-    1 do 20 i=1,nox
-         do 30 j=1,noz
+    1 do 20 i=1,nox(izone)
+         do 30 j=1,noz(izone)
             ioshd(i,j)=0
    30    continue
    20 continue
       goto 4
 
 C Surface is fully shaded.
-    5 do 40 i=1,nox
-         do 50 j=1,noz
+    5 do 40 i=1,nox(izone)
+         do 50 j=1,noz(izone)
             ioshd(i,j)=1
    50    continue
    40 continue
@@ -890,8 +896,8 @@ C Initialise.
    10 continue
 
 C Count the number of grid points that project onto each surface.
-      do 20 i=1,nox
-         do 21 j=1,noz
+      do 20 i=1,nox(icomp)
+         do 21 j=1,noz(icomp)
             if(igins(i,j).eq.-200)then
                icountt(nsur+3)=icountt(nsur+3)+1
             elseif(igins(i,j).eq.-100)then

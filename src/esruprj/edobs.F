@@ -190,7 +190,8 @@ C as a list for copy and delete use.
    10 CONTINUE
 
 C Present a list of the existing blocks and options.
-      WRITE(VERT(1),'(A,2I3)')  'a Surface X&Z grid:',NOX,NOZ
+      WRITE(VERT(1),'(A,2I3)')  'a Surface X&Z grid:',NOX(icomp),
+     &  NOZ(icomp)
       WRITE(VERT(2),'(A,I3)')   '  No. obstr blocks:',nbobs(icomp)
       VERT(3)    =              '  __________________________  '
       VERT(4)    =              ' Blk| description & compos    '
@@ -605,12 +606,12 @@ C Surface X & Z grid density.
         H(5)='will allow greater resolution, especially for'
         H(6)='complex surfaces or those with thin edges.'
   42    HOLD=' '
-        WRITE(HOLD,'(1x,2i5)')NOX,NOZ
+        WRITE(HOLD,'(1x,2i5)')NOX(icomp),NOZ(icomp)
         CALL EASKS(HOLD,' Surface X & Z grid density:',' ',
      &     24,' 20 20  ','surf grid',IER,6)
         K=0
-        CALL EGETWI(HOLD,K,NOX,4,MOX,'W','surf x grid',IER)
-        CALL EGETWI(HOLD,K,NOZ,4,MOZ,'W','surf z grid',IER)
+        CALL EGETWI(HOLD,K,NOX(icomp),4,MOX,'W','surf x grid',IER)
+        CALL EGETWI(HOLD,K,NOZ(icomp),4,MOZ,'W','surf z grid',IER)
         if(ier.ne.0)goto 42
         MODIFY=.TRUE.
         call warnmod(ICOMP,'ob+')
@@ -780,8 +781,8 @@ C If we need to make a dummy obstruction file do this.
         BANGOB(icomp,1)=0
         BLOCKNAME(ICOMP,1)='First'
         BLOCKMAT(ICOMP,1)='NONE'
-        NOX=20
-        NOZ=20
+        NOX(icomp)=20
+        NOZ(icomp)=20
         if(newgeo)then
           call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           if(IER.eq.0)then
@@ -918,8 +919,8 @@ C Provide default values for the new obstructions file.
         BANGOB(icomp,1)=0
         BLOCKNAME(ICOMP,1)='First'
         BLOCKMAT(ICOMP,1)='NONE'
-        NOX=20
-        NOZ=20
+        NOX(icomp)=20
+        NOZ(icomp)=20
         CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
         IF(IER.NE.0)RETURN
         IOBS(ICOMP)=1 

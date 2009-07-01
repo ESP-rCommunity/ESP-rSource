@@ -73,7 +73,7 @@ C Retrieve surface transformed coordinates.
       irec=irec+1
 
 C Set up mesh centre points.
-      call mesh(is)
+      call mesh(icomp,is)
 
 C Make the right offset for the graphic box is the character
 C width of the menu.
@@ -147,23 +147,23 @@ C Total direct shading.
             if(j.lt.ih)goto 20
             call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
      &                                               Xadd,Zadd,sca)
-            call shddrw(is,1,ioshd)
+            call shddrw(icomp,is,1,ioshd)
 
 C Partial direct shading.
          elseif(inds.eq.0)then
             if(j.lt.ih)then
-               irec=irec+nox+1
+               irec=irec+nox(icomp)+1
                goto 20
             endif
-            do 30 k=1,nox
+            do 30 k=1,nox(icomp)
                read(iunit,rec=irec,iostat=istat,err=1000)
-     &                                            (ioshd(k,l),l=1,noz)
+     &           (ioshd(k,l),l=1,noz(icomp))
                irec=irec+1
    30       continue
             irec=irec+1
             call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
      &                                               Xadd,Zadd,sca)
-            call shddrw(is,2,ioshd)
+            call shddrw(icomp,is,2,ioshd)
          endif
 
          dok=.true.
@@ -248,12 +248,18 @@ C Draw target surface.
 C ********** SHDDRW **********
 C Plots points on target surface representing direct shaded portion.
 
-      subroutine shddrw(is,ishad,ioshd)
+      subroutine shddrw(izone,is,ishad,ioshd)
 #include "building.h"
 #include "geometry.h"
 
-      common/grid11/xop(mox,moz),zop(mox,moz)
+C Parameters
+      integer izone  ! index of zone
+      integer is     ! target surface
+      integer ishad  ! denotes partial or full shading - see below
+      integer ioshd  ! array of points
       dimension ioshd(mox,moz)
+
+      common/grid11/xop(mox,moz),zop(mox,moz)
 
 #ifdef OSX
       integer iix,iiy,iid1,iid2
@@ -261,8 +267,8 @@ C Plots points on target surface representing direct shaded portion.
       integer*8 iix,iiy,iid1,iid2
 #endif
 
-      do 10 i=1,nox
-         do 20 j=1,noz
+      do 10 i=1,nox(izone)
+         do 20 j=1,noz(izone)
 
 C ishad=2 corresponds to the partial shading case, while ishad=1
 C corresponds to 100% shading for which ioshd points falling outwith
