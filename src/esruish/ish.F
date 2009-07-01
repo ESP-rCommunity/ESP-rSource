@@ -500,7 +500,8 @@ C unit ifil+6 for output file.
       ixunit=ifil+9
       delim='-'
 
-C If an input file has been specified then load it.
+C If an input file has been specified then load it and force it
+C to also fill data structures for obstructions.
       lcfgf=' '
       xst=.false.
       if(lcmdfl(1:2).ne.'  '.and.lcmdfl(1:4).ne.'UNKN')then
@@ -510,7 +511,7 @@ C If an input file has been specified then load it.
             if(paction(1:13).ne.'update_silent')then
                call usrmsg('Scanning the model...',' ','-')
             endif
-            mode='NONE'
+            mode='ALL '
             call ersys_mmode(lcfgf,ifcfg,iairp,mode,0,ier,silent)
 
 C Open core of databases if not already done so.
@@ -671,7 +672,7 @@ C starting calculations.
           
 C Proceed with shading and then insolation calculations.
             if(iobs(icomp).eq.1)then
-               call egomst(iuf,icomp,zobs(icomp),0,0,iuout,ier)
+C               call egomst(iuf,icomp,zobs(icomp),0,0,iuout,ier)
                write(outs,'(3a)')'Shading calculations for ',
      &           zname(icomp)(1:lnzname(icomp)),'...'
                call edisp(iuout,outs)
@@ -859,7 +860,7 @@ C GTK version will be returning the name with the full path.
             call fdroot(lcmdfl,path,lcfgf)
             call tstamp('>','Ish: scanning new model')
             call tstamp('>',lcfgf)
-            mode='NONE'
+            mode='ALL '
             call ersys_mmode(lcfgf,ifcfg,iairp,mode,0,ier,silent)
             if(MLDBOK.and.MATDBOK.and.OPTKOK)then
               continue
@@ -1474,11 +1475,12 @@ C  ifstat = 8  new file filled via import of ascii file
 
 C Get name of obstruction file.
       if(iobs(icomp).eq.1)then
-         if(silent)then
-            call egomst(iuf,icomp,zobs(icomp),0,0,iuout,ier)
-         else
-            call egomst(iuf,icomp,zobs(icomp),0,1,iuout,ier)
-         endif
+         continue   ! any obstructions have already been scanned.
+C         if(silent)then
+C            call egomst(iuf,icomp,zobs(icomp),0,0,iuout,ier)
+C         else
+C            call egomst(iuf,icomp,zobs(icomp),0,1,iuout,ier)
+C         endif
       elseif(iobs(icomp).eq.2)then
          continue   ! any obstructions are in the geometry file.
       elseif(iobs(icomp).eq.0)then

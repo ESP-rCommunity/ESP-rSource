@@ -174,7 +174,14 @@ C espriou.h provides currentfile and defdbfl.
       
       integer lnblnk  ! function definition
 
-      logical bSilent ! Flag indicating verbosity.
+C Parameters
+      character FILE*72  ! model configuration file name
+      integer IUC        ! channel to read configuration file
+      integer IUF        ! channel for other required model files
+      character MODE*4   ! if ALL then causes additional data structure to be read
+      integer ITRC       ! level of reporting during the file scan
+      integer IER        ! return zero if ok, 2 if cfg file could not be opened
+      logical bSilent    ! Flag indicating verbosity.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/POPHELP/H(60)
@@ -495,13 +502,13 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
-      CHARACTER*72 FILE,LCFD,LCNN
+      CHARACTER*72 LCFD,LCNN
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
       character lworking*144
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
+      CHARACTER WORD*20,NODID*12,CXSTR*78,ZN*12
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       character lradcf*72
@@ -2502,10 +2509,6 @@ C With hash known, re-scan geometry files (connection based
 C surface attributes will be instanciated during geometry read).
 C Warn if izstocn returns zero. Recover zone volume and surface
 C derived data. Use georead or egomin depending on version.
-
-C << good place to use MODE='ALL ' logic to also scan the
-C << obstruction blocks (and what else??)
-
       do 242 ICOMP=1,NCOMP
         call FINDFIL(LGEOM(ICOMP),XST)
         call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -2514,6 +2517,20 @@ C << obstruction blocks (and what else??)
             call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
           else
             call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
+	    
+C Check MODE='ALL ' logic to also scan obstruction blocks from zone
+C obstruction file if older model.
+            if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
+              if(iobs(icomp).eq.1)then
+                call FINDFIL(ZOBS(ICOMP),XST)
+                if(XST)then
+                  CALL ERPFREE(IUF,ISTAT)
+                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
+                endif
+              elseif(iobs(icomp).eq.2)then
+                continue
+              endif
+            endif
           endif
           DO 243 IS=1,NZSUR(ICOMP)
             icc=IZSTOCN(icomp,is)
