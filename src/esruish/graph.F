@@ -302,11 +302,13 @@ C and the surrounding obstruction blocks.
       common/filep/ifil
 
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
       common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
+      common/c24/izstocn(mcom,ms)
       common/prec8/slat,slon
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
@@ -351,36 +353,29 @@ C return the offsets that define it and set local variables.
 C Reopen the dialogue box.
       call usrmsg(' ',' ','-')
 
-C Re-read zone geometry file and establish the maximum and minimum
-C vertix values.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(ifil+1,lgeom(icomp),icomp,0,iuout,ier)
-      else
-        call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
-      endif
+C Establish the maximum and minimum vertix values.
       xmx=-1.E+8
       ymx=-1.E+8
       xmn=1.E+8
       ymn=1.E+8
-      do 10 i=1,ntv
-         xmn=amin1(xmn,x(i))
-         ymn=amin1(ymn,y(i))
-         xmx=amax1(xmx,x(i))
-         ymx=amax1(ymx,y(i))
+      do 10 i=1,NZNVER(icomp)
+        xmn=amin1(xmn,VCOORD(icomp,i,1))
+        ymn=amin1(ymn,VCOORD(icomp,i,2))
+        xmx=amax1(xmx,VCOORD(icomp,i,1))
+        ymx=amax1(ymx,VCOORD(icomp,i,2))
    10 continue
 
-C Convert obstruction block geometry to GEN format (/g1/) and
+C Convert obstruction block geometry to (/gb1/) and
 C establish maximum and minimum site coordinates.
       do 20 i=1,nbobs(icomp)
-         call erecc(xob(icomp,i),yob(icomp,i),zob(icomp,i),
-     &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bangob(icomp,i))
-         do 30 j=1,ntv
-            xmn=amin1(xmn,x(j))
-            ymn=amin1(ymn,y(j))
-            xmx=amax1(xmx,x(j))
-            ymx=amax1(ymx,y(j))
-   30    continue
+        call cnvblk(xob(icomp,i),yob(icomp,i),zob(icomp,i),
+     &    dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bangob(icomp,i))
+        do 30 j=1,8
+          xmn=amin1(xmn,xb(j))
+          ymn=amin1(ymn,yb(j))
+          xmx=amax1(xmx,xb(j))
+          ymx=amax1(ymx,yb(j))
+   30   continue
    20 continue
 
 C Determine scaling ratios for the drawing and axis.
@@ -396,18 +391,11 @@ C Draw a scale horizontal axis, move to beginning point.
 C Draw a scale vertical axis.
       call vrtaxis(ymn,ymx,igl,igb,igt,Yadd,sca,1,0,'^ North')
 
-C Re-read the geometry file, plot it and move to the first vertex and
-C output the zone name.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-         call georead(ifil+1,lgeom(icomp),icomp,0,iuout,ier)
-      else
-         call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
-      endif
-      call u2pixel(x(1),y(1),iix,iiy)
+C Plot the zone and the zone name.
+      call u2pixel(VCOORD(icomp,1,1),VCOORD(icomp,1,2),iix,iiy)
       iupdown=0
       isym=0
-      call etplot(x(1),y(1),iupdown,isym)
+      call etplot(VCOORD(icomp,1,1),VCOORD(icomp,1,2),iupdown,isym)
       if(lnzname(icomp).gt.1)then
          write(tz,'(a)')zname(icomp)
          call winfnt(itfs)
@@ -419,41 +407,43 @@ C output the zone name.
          call wstxpt(iid1,iid2,'Target')
       endif
 
+C For each corner recover coordinates for the connection and plot.
       iupdown=0
       isym=0
       do 40 i=1,nsur
-         j=jvn(i,1)
-         call etplot(x(j),y(j),iupdown,isym)
-         k=nver(i)
-         iupdown=-302
-         do 50 l=2,k
-            m=jvn(i,l)
-            call etplot(x(m),y(m),iupdown,isym)
-   50    continue
-         call etplot(X(J),Y(J),iupdown,isym)
+        icc=IZSTOCN(icomp,i)
+        j=NZJVN(icc,1)
+        call etplot(VCOORD(icomp,j,1),VCOORD(icomp,j,2),iupdown,isym)
+        k=NZNVER(icc)
+        iupdown=-302
+        do 50 l=2,k
+          m=NZJVN(icc,l)
+          call etplot(VCOORD(icomp,m,1),VCOORD(icomp,m,2),iupdown,isym)
+   50   continue
+        call etplot(VCOORD(icomp,j,1),VCOORD(icomp,j,2),iupdown,isym)
    40 continue
 
-C Convert obstruction block geometry to GEN format (/g1/) and plot.
+C Convert obstruction block geometry to (/gb1/) and plot.
       if(nbobs(icomp).eq.0)goto 1
       do 60 ib= 1,nbobs(icomp)
-         call erecc(xob(icomp,ib),yob(icomp,ib),zob(icomp,ib),
-     &     dxob(icomp,ib),dyob(icomp,ib),dzob(icomp,ib),
-     &     bangob(icomp,ib))
-         iupdown=0
-         isym=0
-         do 70 i=1,nsur
-            j=jvn(i,1)
-            call etplot(x(j),y(j),iupdown,isym)
-            k=nver(i)
-            iupdown=1
-            do 80 l=2,k
-               m=jvn(i,l)
-               call etplot(x(m),y(m),iupdown,isym)
-   80       continue
-            call etplot(X(J),Y(J),iupdown,isym)
+        call cnvblk(xob(icomp,ib),yob(icomp,ib),zob(icomp,ib),
+     &    dxob(icomp,ib),dyob(icomp,ib),dzob(icomp,ib),
+     &    bangob(icomp,i))
+        iupdown=0
+        isym=0
+        do 70 i=1,6
+          j=jvnb(i,1)
+          call etplot(xb(j),yb(j),iupdown,isym)
+          k=4
+          iupdown=1
+          do 80 l=2,k
+            m=jvnb(i,l)
+            call etplot(xb(m),yb(m),iupdown,isym)
+   80     continue
+          call etplot(xb(j),yb(j),iupdown,isym)
    70    continue
 
-         call u2pixel(X(J),Y(J),iix,iiy)
+         call u2pixel(xb(J),yb(J),iix,iiy)
          write(blabel,2)ib
     2    format('B',i2)
          iid1=iix+2; iid2=iiy-2;
@@ -464,7 +454,7 @@ C Print labels and return to default font.
     1 call winfnt(ifs)
       write(sstr,3)slat,slon
     3 format('Site Plan, Latitude ',f5.1,', Longitude ',f4.1)
-      iid1=igt-5; iid2=igl;
+      iid1=igt-15; iid2=igl;
       call wstxpt(iid1,iid2,sstr)
       call forceflush()
 
