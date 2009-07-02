@@ -1336,7 +1336,18 @@ C GS7/GS8 are defined in geometry.h
       NEDGE=0  ! counter for surfaces in the edge list, assume no surfaces
       NS=0     ! temporary array for counting surfaces.
       NSUR=0   ! reset surface count
-      nbobs(icomp)=0    ! reset number of obstructions
+
+C Treatment of obstructions needs to take into account several
+C factors. The version 1.1 geometry file might not yet have
+C embedded legacy zone obstruction file entities. If there
+C is still a legacy zone obstruction file associated with this
+C zone then the calling code will need to do that instanciation
+C in a subsequent call and that will be updating nbobs.
+      if(iobs(icomp).eq.1)then
+        continue          ! scan of zone obs file will reset
+      else
+        nbobs(icomp)=0    ! reset obstructions
+      endif
 
 C Check if running in dll mode.
       call isadll(dll)

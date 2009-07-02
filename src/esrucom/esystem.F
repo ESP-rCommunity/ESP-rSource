@@ -2514,12 +2514,28 @@ C derived data. Use georead or egomin depending on version.
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(XST)then
           if(newgeo)then
+
+C If MODE='ALL ' we also want to fill obstruction data structures
+C but there is a case where a version 1.1 geometry file might
+C not yet include obstruction blocks that were in legacy zone
+C obstructions files. If this is the case then scan them.
             call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+            if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
+              if(iobs(icomp).eq.1)then
+                call FINDFIL(ZOBS(ICOMP),XST)
+                if(XST)then
+                  CALL ERPFREE(IUF,ISTAT)
+                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
+                endif
+              elseif(iobs(icomp).eq.2)then
+                continue
+              endif
+            endif
           else
-            call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
 	    
-C Check MODE='ALL ' logic to also scan obstruction blocks from zone
+C If MODE='ALL ' also scan obstruction blocks from zone
 C obstruction file if older model.
+            call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
             if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
               if(iobs(icomp).eq.1)then
                 call FINDFIL(ZOBS(ICOMP),XST)

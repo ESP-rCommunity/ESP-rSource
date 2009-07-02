@@ -671,18 +671,7 @@ C starting calculations.
             endif
           
 C Proceed with shading and then insolation calculations.
-            if(iobs(icomp).eq.1)then
-C               call egomst(iuf,icomp,zobs(icomp),0,0,iuout,ier)
-               write(outs,'(3a)')'Shading calculations for ',
-     &           zname(icomp)(1:lnzname(icomp)),'...'
-               call edisp(iuout,outs)
-               call tstamp('>','Ish: re-calculate shading')
-               call shdcon(icomp,ier,'s')
-               changed_existing=.true.  ! so we know to update ASCII on exit
-               write(outs,'(3a)')'Shading calculations for ',
-     &           zname(icomp)(1:lnzname(icomp)),'...done.'
-               call edisp(iuout,outs)
-            elseif(iobs(icomp).eq.2)then
+            if(iobs(icomp).gt.0)then
                write(outs,'(3a)')'Shading calculations for ',
      &           zname(icomp)(1:lnzname(icomp)),'...'
                call edisp(iuout,outs)
