@@ -347,15 +347,15 @@ C Write topography.
          goto 1000
       endif
 
-      write(iunit,rec=irec,iostat=istat,err=1000)nbobs(icomp)
-      irec=irec+1
-      do 20 I=1,nbobs(icomp)
-         write(iunit,rec=irec,iostat=istat,err=1000)
-     &     xob(icomp,i),yob(icomp,i),zob(icomp,i),
-     &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bangob(icomp,i)
-         irec=irec+1
-   20 continue
-      write(iunit,rec=irec,iostat=istat,err=1000)nox(icomp),noz(icomp)
+C      write(iunit,rec=irec,iostat=istat,err=1000)nbobs(icomp)
+C      irec=irec+1
+C      do 20 I=1,nbobs(icomp)
+C         write(iunit,rec=irec,iostat=istat,err=1000)
+C     &     xob(icomp,i),yob(icomp,i),zob(icomp,i),
+C     &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bangob(icomp,i)
+C         irec=irec+1
+C   20 continue
+C      write(iunit,rec=irec,iostat=istat,err=1000)nox(icomp),noz(icomp)
       irecl=irec+1
       return
 
@@ -935,15 +935,15 @@ C Read topography.
          goto 1000
       endif
       
-      read(iunit,rec=irec,iostat=istat,err=1000)nbobs(icomp)
-      irec=irec+1
-      do 20 i=1,nbobs(icomp)
-         read(iunit,rec=irec,iostat=istat,err=1000)
-     &     xob(icomp,i),yob(icomp,i),zob(icomp,i),
-     &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bangob(icomp,i)
-         irec=irec+1
-   20 continue
-      read(iunit,rec=irec,iostat=istat,err=1000)nox(icomp),noz(icomp)
+C      read(iunit,rec=irec,iostat=istat,err=1000)nbobs(icomp)
+C      irec=irec+1
+C      do 20 i=1,nbobs(icomp)
+C         read(iunit,rec=irec,iostat=istat,err=1000)
+C     &     xob(icomp,i),yob(icomp,i),zob(icomp,i),
+C     &     dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bangob(icomp,i)
+C         irec=irec+1
+C   20 continue
+C      read(iunit,rec=irec,iostat=istat,err=1000)nox(icomp),noz(icomp)
       return
 
  1000 write(outs,1001)irec

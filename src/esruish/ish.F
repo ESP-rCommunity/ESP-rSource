@@ -133,8 +133,6 @@ C IEEE callback (Solaris)
       common/c21/ifcfg,cfgroot,lcfgf
       common/indics/ivf(mcom),isi(mcom),ihc(mcom),
      &              itw(mcom),icgc(mcom),iobs(mcom)
-      common/udesc/lview(mcom),lhcco(mcom),
-     &             ltwin(mcom),lcgcin(mcom),zobs(mcom)
 
 C Path to model and command line file (if any).
       common/rpath/path
@@ -169,7 +167,6 @@ C Material data arrays.
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
       character*72 lname,ltrns,tbase,h
       character*72 lcfgf
-      character*72 lview,lhcco,ltwin,lcgcin,zobs
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*60,ltmp*144
       character descrh*5,descrd*5,inf*144,lcmdfl*144
@@ -1424,13 +1421,10 @@ C  ifstat = 8  new file filled via import of ascii file
      &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/indics/ivf(mcom),isi(mcom),ihc(mcom),
      &              itw(mcom),icgc(mcom),iobs(mcom)
-      common/udesc/lview(mcom),lhcco(mcom),
-     &             ltwin(mcom),lcgcin(mcom),zobs(mcom)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/ray3/modify,modlen,modbnd
       common/ract/paction
 
-      character*72 lview,lhcco,ltwin,lcgcin,zobs
       character h*72,exportfile*72,paction*16,outs*124
 
       logical modify,modlen,modbnd,silent,xst
@@ -1465,11 +1459,6 @@ C  ifstat = 8  new file filled via import of ascii file
 C Get name of obstruction file.
       if(iobs(icomp).eq.1)then
          continue   ! any obstructions have already been scanned.
-C         if(silent)then
-C            call egomst(iuf,icomp,zobs(icomp),0,0,iuout,ier)
-C         else
-C            call egomst(iuf,icomp,zobs(icomp),0,1,iuout,ier)
-C         endif
       elseif(iobs(icomp).eq.2)then
          continue   ! any obstructions are in the geometry file.
       elseif(iobs(icomp).eq.0)then
