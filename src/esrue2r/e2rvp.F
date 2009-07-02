@@ -148,8 +148,8 @@ C ******* Default views formation.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
 
       LOGICAL MODIFY,MODLEN,MODBND,XST,OK,DOK,addview
@@ -157,7 +157,7 @@ C ******* Default views formation.
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
 
       character item*30,h*72,hold*28,VALT*28,OUTSTR*124,WORD*20
       character outs*124,LBSRIF*72
@@ -807,9 +807,9 @@ C extend the list.
      &     ' -vu 0 0 1 -vh ',angh,' -vv ',angv,' -vs 0 -vl 0 '
         WRITE(vewcmds(indxvew),'(a)') doit
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
-        if (NBSRIF(ISCENEFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
         vewdone=.true.
       elseif(INO.EQ.(NITEMS-1))then

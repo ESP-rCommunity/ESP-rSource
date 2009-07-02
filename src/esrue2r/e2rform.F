@@ -34,8 +34,8 @@ C ******* Sky calculations. *******
       common/pophelp/h(60)
       COMMON/C4/XLAT,XLON
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
@@ -44,7 +44,7 @@ C ******* Sky calculations. *******
       character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character skopt*3,outs*124,tfile*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character runpath*72,pathtype*24,ltmp72*72,dtmp72*72
       integer lnrp  ! length of run path
 
@@ -60,7 +60,7 @@ C ******* Sky calculations. *******
 
 C Generate a default name for the sky file.
       write (rskyfil,'(a,a4)') 
-     &       SCENERT(ISCENEFOC)(1:lnblnk(SCENERT(ISCENEFOC))),'.sky'
+     &       SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.sky'
 
 C Ask for name of the sky file.  If existing, attempt to
 C read it otherwise remember name.
@@ -84,7 +84,7 @@ C Read a radiance sky file, taking info into commons.
       call usrmsg(' ',' ','-')
 
 C If daylight factors then set sky to CIE overcast.
-      if (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') isky=1
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') isky=1
 
 10    INO = -4
       write(ITEM(1),'(A,F6.1)') 'a Site Latitude: ',XLAT
@@ -184,7 +184,7 @@ C Sky Toggle.
       elseif(INO.EQ.8)then
 
 C If daylight factors then check if sky is CIE overcast.
-      if (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
         if (isky.ne.1) then 
           CALL EASKAB(' The sky is not a CIE standard overcast sky.',
      &            'Do you want to: ','proceed','change sky type',IW,0)
@@ -199,9 +199,9 @@ C which includes redirection of output to the sky definition file.
      &     RTIME,skopt,' -g ',rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
         CALL wrtsky(outs)
         call RRSKY(ITA2,rskyfil,ga,IER)
-        if (RIFPURP(ISCENEFOC)(1:8).eq.'External') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'External') then
           call RADPAR('av',ga)
-        elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Internal') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
           xga=ga/10.
           call RADPAR('av',xga)
         endif
@@ -612,8 +612,8 @@ C TMC data
 
       common/rad2/mono,intext,ifocz
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/radgt/iglzty
       common/radabs/NABS
@@ -659,7 +659,7 @@ C Arrays of material properties.
       CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
       character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72
       integer lnrp  ! length of run path
 
@@ -704,7 +704,7 @@ C Ask for alternative glazing file.
           call ASKOK('Blind shutter control is active.',
      &      'Create model with blinds closed as well?',OK,dok,3)
           if (OK) then
-            NBSRIF(ISCENEFOC)=NABS
+            NBSRIF(ISCENE)=NABS
  12         H(1)=' Supply a local file name (i.e. without a path).'
             H(2)=' This file holds alternative glazed surface details,'
             H(3)=' e.g. representing closed blinds. '
@@ -723,7 +723,7 @@ C Ask for alternative glazing file.
         write(tfile,'(a,a)')runpath(1:lnrp),glzfil(1:lnblnk(glzfil))
         call FPOPEN(iglzfil,ISTAT,1,3,tfile)
         if (NABS.gt.0) then
-          NBSRIF(ISCENEFOC)=NABS
+          NBSRIF(ISCENE)=NABS
           write(atfile,'(a,a)')runpath(1:lnrp),
      &                         aglzfil(1:lnblnk(aglzfil))
           call FPOPEN(ita2,ISTAT,1,3,atfile)
@@ -945,8 +945,8 @@ C Check for blind shutter control.
 
         else
           WRITE(imatfil,'(a)') '# External MLC Colours... '
-          if (RIFPURP(ISCENEFOC)(1:8).eq.'External'.or.
-     &        RIFPURP(ISCENEFOC)(1:8).eq.'Internal') then
+          if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             WRITE(imatfil,'(a,a)') 'fin_ex plastic rc_ex_',
      &        MLCN(1:lnblnk(MLCN))
           else
@@ -960,8 +960,8 @@ C Check for blind shutter control.
           WRITE(imatfil,'(a)') '  '
 
           WRITE(imatfil,'(a)') '# Internal MLC Colours... '
-          if (RIFPURP(ISCENEFOC)(1:8).eq.'External'.or.
-     &        RIFPURP(ISCENEFOC)(1:8).eq.'Internal') then
+          if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             WRITE(imatfil,'(a,a)') 'fin_in plastic rc_in_',
      &        MLCN(1:lnblnk(MLCN))
           else
@@ -1006,7 +1006,7 @@ C Open the outsite geometry/composition file.
       WRITE(irofil,'(a)') '#   definitions must integrate to one.'
 
 C Do not use sky for Day_coef purpose.
-      if (RIFPURP(ISCENEFOC)(1:8).ne.'Day_coef') then
+      if (SCENEPURP(ISCENE)(1:8).ne.'Day_coef') then
         WRITE(irofil,'(a)') '# define sky... '
         WRITE(irofil,'(a)') '  '
         WRITE(irofil,'(a)') 'skyfunc glow sky_glow'
@@ -1274,11 +1274,11 @@ C  Partition - create if not already created or focus zone.
               IANS=1
 C Logic - only allow precalc of illum in focus zone.
 C              if ((newfoc.eq.ifocz).and. 
-C     &            ((RIFPURP(ISCENEFOC)(1:8).eq.'Internal').or.
-C     &             (RIFPURP(ISCENEFOC)(1:5).eq.'Glare'))) then
+C     &            ((SCENEPURP(ISCENE)(1:8).eq.'Internal').or.
+C     &             (SCENEPURP(ISCENE)(1:5).eq.'Glare'))) then
 C Logic - ask about precalc in all internal zones.
-              if (((RIFPURP(ISCENEFOC)(1:8).eq.'Internal').or.
-     &             (RIFPURP(ISCENEFOC)(1:5).eq.'Glare'))) then
+              if (((SCENEPURP(ISCENE)(1:8).eq.'Internal').or.
+     &             (SCENEPURP(ISCENE)(1:5).eq.'Glare'))) then
 
 C Highlight surface on image.
                 if(ACT.eq.'i')then

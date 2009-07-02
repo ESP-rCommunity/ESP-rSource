@@ -57,13 +57,13 @@ C  else simulate the scene by calling simscene
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
 
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character zone*16,aim*12,act*72,LBSRIF*72
       character outs*124,runpath*72,pathtype*24,tfile*72,h*72
 
@@ -87,7 +87,7 @@ C Quit.
 
 C For each scene purpose generate typical sky file.
 C Process daylight coefficients seperately as sky file is artificial.
-      if (RIFPURP(ISCENEFOC)(1:8).eq.'Day_coef') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
 
 C Search for existing 'sky' file. (If found delete)
         write(tfile,'(2a)')runpath(1:lnblnk(runpath)),
@@ -114,22 +114,22 @@ C Search for existing 'sky' file. (If found delete)
       else
 
 C Generate sky command use a sun for all skys except for daylight factors.
-        if (RIFPURP(ISCENEFOC)(1:8).eq.'External'.or.
-     &          RIFPURP(ISCENEFOC)(1:8).eq.'Internal'.or.
-     &          RIFPURP(ISCENEFOC)(1:5).eq.'Glare') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &          SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
+     &          SCENEPURP(ISCENE)(1:5).eq.'Glare') then
           call settime(IRM,IRD,XRT)
           write(outs,'(a,2i3,f6.2,a,f5.2,2(a,f7.1),a)')'gensky',IRM,IRD,
      &          XRT,' +s -g ',rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
-        elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
           write(outs,'(a,f5.2,2(a,f7.1),a)') 'gensky 6 20 12.0 -c -g ',
      &                        rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
-        elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Coupling') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 
 C gendaylit -ang 60 0 -L QDIRILL QDIFILL
           write(outs,'(a,f5.2)')
      &                     'gendaylit -ang 60 0 -L 805 100 -g ',rgrfl
 
-        elseif (RIFPURP(ISCENEFOC)(1:7).eq.'Sun_pos') then
+        elseif (SCENEPURP(ISCENE)(1:7).eq.'Sun_pos') then
 
 C Pick start and end time.
         endif
@@ -137,9 +137,9 @@ C Pick start and end time.
 C Now call Radiance with command stored in variable 'outs'.
         call wrtsky(outs)
         call RRSKY(ITA2,rskyfil,ga,IER)
-        if (RIFPURP(ISCENEFOC)(1:8).eq.'External') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'External') then
           call RADPAR('av',ga)
-        elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Internal') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
           xga=ga/10.
           call RADPAR('av',xga)
         endif
@@ -151,9 +151,9 @@ C Create inside and outside files, first open databases.
       fict=.false.
       call mkriofil(ftr,fict,'s',IER)
       IFC=3
-      call mkrif(ita2,RIFNAME(ISCENEFOC),IFC,0,ier)
-      if (NBSRIF(ISCENEFOC).eq.1) then
-        call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
+      call mkrif(ita2,RIFNAME(ISCENE),IFC,0,ier)
+      if (NBSRIF(ISCENE).eq.1) then
+        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
       endif
 
 C Update rcf file and configuration file.
@@ -161,15 +161,15 @@ C Update rcf file and configuration file.
       call RADCFGOUT(ICHK)
 
 C Generate new octree.
-      call touchrif(RIFNAME(ISCENEFOC))
-      if (NBSRIF(ISCENEFOC).gt.0) then
-        call touchrif(LBSRIF(ISCENEFOC))
+      call touchrif(RIFNAME(ISCENE))
+      if (NBSRIF(ISCENE).gt.0) then
+        call touchrif(LBSRIF(ISCENE))
       endif
 
 C If scene purpose is coupling or daylight coefficients then return.
-      if (RIFPURP(ISCENEFOC)(1:8).eq.'Coupling') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         return
-      elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_coef') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
         return
       endif
 
@@ -182,20 +182,20 @@ C Continue and run radiance simulation?
       call ASKOK('Scene description is now complete.',
      &           'Proceed with simulation?',OK,dok,4)
       if (OK) then
-        if (RIFPURP(ISCENEFOC)(1:8).eq.'External'.or.
-     &      RIFPURP(ISCENEFOC)(1:8).eq.'Internal') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &      SCENEPURP(ISCENE)(1:8).eq.'Internal') then
 
 C Generate default view information and then the image.
           call defview
           call genimage(1)
-        elseif (RIFPURP(ISCENEFOC)(1:5).eq.'Glare') then
+        elseif (SCENEPURP(ISCENE)(1:5).eq.'Glare') then
 
 C Generate <<? default view information ?>> and then the image.
           call defview
           call genimage(2)
           call getglr
           call dispimage(2)
-        elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
 
 C Calculate the daylight factors and then diplay them via dfgridlbl.
           call getdf
@@ -224,15 +224,15 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
       common/radgrid/LDFGRID
 
       character rambfil*72,optnfil*72
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character outs*124,doit*124,doitl*256,tfile*72
       character zone*16,aim*12,act*72,LBSRIF*72
       character QT*1
@@ -258,7 +258,7 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       lnrp=lnblnk(runpath)
 
 C Simulate scene as defined by aim argument.
-      if (RIFPURP(ISCENEFOC)(1:8).eq.'Coupling') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 
 C Read from transfer file defined as the argument for -act from
 C the users home folder.
@@ -308,7 +308,7 @@ C Create sky command and sky.
         call wrtsky(outs)
 
 C Recreate octree, setting rtrace options, and run rtrace.
-        if (IBLNDS.ne.0.and.NBSRIF(ISCENEFOC).eq.0) then
+        if (IBLNDS.ne.0.and.NBSRIF(ISCENE).eq.0) then
 
 C Error can't simulate switched blinds.
 C          call usrmsg('Cannot simulate switched blinds.','  ','F')
@@ -318,13 +318,13 @@ C          call usrmsg('Cannot simulate switched blinds.','  ','F')
           call usrmsg(outs,'  ','F')
         endif
         if (IBLNDS.eq.0) then
-          rn=RIFNAME(ISCENEFOC)
+          rn=RIFNAME(ISCENE)
         else
 C                         Here we need logic to be able to call as many different .rifs
 C                         as there are control periods in the .tmc ...
 C          NBPONT(ICOMP,ITMC) ! the current control period
 C          NBCTMC() ! number of control periods
-          rn=LBSRIF(ISCENEFOC)
+          rn=LBSRIF(ISCENE)
         endif
 
 C Rebuild.
@@ -351,7 +351,7 @@ C Copy transfer file back to users homedir (bps is expecting it to be there).
         call runit(doit,'-')
 
 C Daylight coefficients.
-      elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_coef') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
 
 C Do for all blind states.
         IBLND=0
@@ -413,9 +413,9 @@ C End Debug
 
 C Generate new octree.
           if (IBLND.eq.0) then
-            rn=RIFNAME(ISCENEFOC)
+            rn=RIFNAME(ISCENE)
           else
-            rn=LBSRIF(ISCENEFOC)
+            rn=LBSRIF(ISCENE)
           endif
 
 C Recreate octree and get current file names.
@@ -481,9 +481,9 @@ C Remove temporary files.
         call edisp(IUOUT,'Daylight coefficient set complete')
 
 C Do other blind states.
-        if (NBSRIF(ISCENEFOC).gt.0) then
+        if (NBSRIF(ISCENE).gt.0) then
           IBLND=IBLND+1
-          if (IBLND.le.NBSRIF(ISCENEFOC)) then
+          if (IBLND.le.NBSRIF(ISCENE)) then
             call edisp(IUOUT,'Calculating next blind state.')
             goto 1234
           endif
@@ -575,8 +575,8 @@ C defview generates a new default view.
       COMMON/FILEP/IFIL
 
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -584,13 +584,13 @@ C defview generates a new default view.
 
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character vewcmds*124,rvewsh*10,LBSRIF*72
 
       ITA2=IFIL+7
 
 C External view point.
-      if (RIFPURP(ISCENEFOC)(1:8).eq.'External') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'External') then
 C Create a default view, set file name, set bounds for slightly
 C smaller than the ground disk. Save off zone bounds before
 C adding in the ground disk.
@@ -633,7 +633,7 @@ C adding in the ground disk.
         indxvew=1
         ipckvew=1
 
-      elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Internal') then
+      elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
 
 C Default internal view at max X average Y and Z, looking in -x dir.
         indxvew=0
@@ -646,9 +646,9 @@ C Default internal view at max X average Y and Z, looking in -x dir.
 C Update rif file.
       IFC=3
       IER=0
-      call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
-      if (NBSRIF(ISCENEFOC).eq.1) then
-        call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
+      call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+      if (NBSRIF(ISCENE).eq.1) then
+        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
       endif
 
       return
@@ -676,14 +676,14 @@ C ITP =1 - image only; =2 - glare info to display on image.
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       common/radrp/ipicx
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
 
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character tpic*72,tpicd*72,tgif*72,tgifd*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character vewcmds*124,rvewsh*10,pf*72,h*72,outs*124,ltmp*72
       character doit*256,LBSRIF*72,runpath*72,pathtype*24
       character imgqua*6,detlvl*6,llvar*6,penumb*5
@@ -738,33 +738,33 @@ C not try and display.
           if(unixok)then
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e -o x11 ',
-     &          RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC))),' &'
+     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           else
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',
-     &          RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC))),' &'
+     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           endif
         elseif (ipckvew.eq.0) then 
           if(unixok)then
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e -o x11 ',
-     &          RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC))),' &'
+     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           else
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',
-     &          RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC))),' &'
+     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           endif
         else
           if(unixok)then
             write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &           '; rad -e -o x11 -v ',
      &           rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
-     &           RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC))),' &'
+     &           RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           else
             write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &           '; rad -e -v ',
      &           rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
-     &           RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC))),' &'
+     &           RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
           endif
         endif
         write(6,*) doit
@@ -890,25 +890,25 @@ C file should be removed.
 
 C Save changes to RIF file
             IFC=3
-            call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
-            if (NBSRIF(ISCENEFOC).eq.1) then
-              call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
+            call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+            if (NBSRIF(ISCENE).eq.1) then
+              call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
             endif
 
 C call rad to create image(s) based on current setting of ipckvew.
             if (ipckvew.eq.-1) then 
               write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',
-     &          RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC)))
+     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
             elseif (ipckvew.eq.0) then 
               write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',
-     &          RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC)))
+     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
             else
               write(doit,'(6a)') 'cd ',runpath(1:lnrp),
      &        '; rad -e -v ',
      &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
-     &        ' ',RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC)))
+     &        ' ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
             endif
             write(6,*) doit
             write(outs,'(2a,i3,F6.2)') 'Currently working on...',
@@ -967,9 +967,9 @@ C See if there is an existing pic file by this name.
                 goto 1111
               endif
               IFC=3
-              call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
-              if (NBSRIF(ISCENEFOC).eq.1) then
-                call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
+              call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+              if (NBSRIF(ISCENE).eq.1) then
+                call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
               endif
             elseif(IWR.eq.1)then
 
@@ -983,15 +983,15 @@ C Set file name including path and open.
         if (ipckvew.eq.-1) then 
           write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &       '; rad -e ',
-     &       RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC)))
+     &       RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
         elseif (ipckvew.eq.0) then 
           write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &       '; rad -e ',
-     &       RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC)))
+     &       RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
         else
           write(doit,'(6a)') 'cd ',runpath(1:lnrp),
      &      '; rad -e -v ',rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
-     &      ' ',RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC)))
+     &      ' ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
         endif
         write(6,*) doit
         call edisp(iuout,'Look in the text window for progress.')
@@ -1170,10 +1170,10 @@ C getglr recovers view information and runs glare calculation.
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character vewcmds*124,rvewsh*10,rendopt*200
       character word*12,doit*300,ltmp*200,gf*72,pf*72,glst*4
@@ -1183,7 +1183,7 @@ C getglr recovers view information and runs glare calculation.
       ITA3 = IFIL+10
 
       IER=0
-      call RRIF(ita2,ita3,RIFNAME(ISCENEFOC),'s',IER)
+      call RRIF(ita2,ita3,RIFNAME(ISCENE),'s',IER)
 
 C Check if view info is in a file or kept in the rif file and set 
 C glare angle (set minimum angle to 90 degrees).
@@ -1339,8 +1339,8 @@ C getdf runs daylight factor calculation and then displays them.
 
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/radgrid/LDFGRID
 
@@ -1354,7 +1354,7 @@ C   DFVALS: Daylight factors.
       common/e2rc/crenrp,coconv
 
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       CHARACTER LDFGRID*72,df*72,outs*124,ltmp*72,doit*256,LBSRIF*72
       character QT*1,rambfil*72,optnfil*72,OUTSTR*124
       character crenrp*160,coconv*40,tfile*72,outsl*160
@@ -1422,7 +1422,7 @@ C Reset DFVALS to 0.0
       ICONV=0
 
 C Check octree up to date.
-      call touchrif(RIFNAME(ISCENEFOC))
+      call touchrif(RIFNAME(ISCENE))
       
 C Check rendering parameters.  If the number of ambient bounces is 
 C greater than 1 then the simulation has probably been run before. 
@@ -1440,8 +1440,8 @@ C Ask if the parameters should be reset.
      &                         ' -ab 1 -ad 1024 -as 512 -av 0 0 0'
           write (crenrp,'(a)') outsl
           IFC=3
-          call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
-          call touchrif(RIFNAME(ISCENEFOC))
+          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+          call touchrif(RIFNAME(ISCENE))
         endif
       endif
 
@@ -1617,11 +1617,11 @@ C Save RIF file and update options file.
       if (RECALC) then
         call edisp(iuout,'Recalculating with different resolution...')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
-        call touchrif(RIFNAME(ISCENEFOC))
-        if (NBSRIF(ISCENEFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
-          call touchrif(LBSRIF(ISCENEFOC))
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call touchrif(RIFNAME(ISCENE))
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call touchrif(LBSRIF(ISCENE))
         endif
 
 C Move results file and recalculate DFs. Note this move creates

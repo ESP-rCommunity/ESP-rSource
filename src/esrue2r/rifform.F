@@ -39,8 +39,8 @@ C ******* Setup of image quality and calculation options.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
 
       CHARACTER doit*124,VALT*32
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
@@ -53,7 +53,7 @@ C ******* Setup of image quality and calculation options.
       character vewcmds*124,rvewsh*10,ltmp*72,ltmp60*60
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
 
       DIMENSION ITEM(24),IVALV(20),VALT(20)
 
@@ -64,8 +64,8 @@ C ******* Setup of image quality and calculation options.
       ier=0
 
 10    INO = -4
-      write(ITEM(1),'(A,A)')    '  RIF     : ',RIFNAME(ISCENEFOC)(1:18)
-      write(ITEM(2),'(A,A12)')  '  root    : ',SCENERT(ISCENEFOC)(1:18)
+      write(ITEM(1),'(A,A)')    '  RIF     : ',RIFNAME(ISCENE)(1:18)
+      write(ITEM(2),'(A,A12)')  '  root    : ',SCENERT(ISCENE)(1:18)
       write(ITEM(3),'(A,A)')    '  folder  : ',radpth(1:18)
       write(ITEM(4),'(A,A)')    'a sky file: ',rskyfil(1:18)
       ITEM(5) =                 'b scene descriptions          '
@@ -290,32 +290,32 @@ C Specify PIC root file name.
         H(4)=' '
         H(5)='If the file given exists it will be read in, if not '
         H(6)='a new one will be created with typical defaults. '
-        ltmp = RIFNAME(ISCENEFOC)
+        ltmp = RIFNAME(ISCENE)
         CALL EASKS(ltmp,' Radiance RIF file ?',
      &    '  ',72,'xxx.rif','rif file name',IER,6)
         if(ltmp.eq.' ')goto 642
-        RIFNAME(ISCENEFOC) = ltmp
-        call mkrif(ita2,RIFNAME(ISCENEFOC),4,0,ier)
+        RIFNAME(ISCENE) = ltmp
+        call mkrif(ita2,RIFNAME(ISCENE),4,0,ier)
 C        call edisp(iuout,' ') 
 C        call edisp(iuout,'The current contents of the rif file: ') 
-C        call LISTAS(ITA2,RIFNAME(ISCENEFOC),IER)
+C        call LISTAS(ITA2,RIFNAME(ISCENE),IER)
       elseif(INO.EQ.21)then
         H(1)='The manual edit function allows for `experts` to work'
         H(2)='their magic on the current contents. '
         CALL EASKABCD(' Options: ',' ','Browse current `rif` file',
      &          'Manually edit file','Re-read file','ignore ?',IW,2)
         if(IW.eq.1)then
-          call vifile(ITA2,RIFNAME(ISCENEFOC),'b',ier)
+          call vifile(ITA2,RIFNAME(ISCENE),'b',ier)
         elseif(IW.eq.2)then
-          call vifile(ITA2,RIFNAME(ISCENEFOC),'e',ier)
+          call vifile(ITA2,RIFNAME(ISCENE),'e',ier)
           H(1)='The manual edit function allows for `experts` to work'
           H(2)='their magic on the current contents. After editing '
           H(3)='the re-read file function should be used. '
           dok=.true.
           CALL ASKOK(' ',' Re-read after editing?',OK,dok,3)
-          if(OK)call RRIF(ita2,ita3,RIFNAME(ISCENEFOC),'s',ier)
+          if(OK)call RRIF(ita2,ita3,RIFNAME(ISCENE),'s',ier)
         elseif(IW.eq.3)then
-          call RRIF(ita2,ita3,RIFNAME(ISCENEFOC),'s',ier)
+          call RRIF(ita2,ita3,RIFNAME(ISCENE),'s',ier)
         endif
       elseif(INO.EQ.22)then
 
@@ -338,7 +338,7 @@ C the test run.
 
 C Set file name including path and open.
         write(fil,'(2a)') runpath(1:lnblnk(runpath)),
-     &             RIFNAME(ISCENEFOC)(1:lnblnk(RIFNAME(ISCENEFOC)))
+     &             RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
         if(ipckvew.ne.0)then
           write(doit,'(4a)') 'rad -n -e -v ',
      &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
@@ -383,8 +383,8 @@ C If use = 'f' then force files to account for change in root/dir name.
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENEFOC
+     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
+      common/raddata2/NSCENE,ISCENE
 
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
       character*72 glzfil,aglzfil
@@ -393,14 +393,14 @@ C If use = 'f' then force files to account for change in root/dir name.
       character imgqua*6,detlvl*6,llvar*6,penumb*5
       character rscedes*72,rzoncmd*60,rupaxis*1,crenrp*160,coconv*40
       character vewcmds*124,rvewsh*10
-      character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
+      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
 
       character use*1
       logical skydone,outdone,indone,misdone,vewdone,glzdone
       logical close
 
 C Make the initial part of new file names to follow scene root name.
-      write(pre,'(a)') SCENERT(ISCENEFOC)(1:lnblnk(SCENERT(ISCENEFOC)))
+      write(pre,'(a)') SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE)))
 
 C Have information on ground disk ready. << ? case of external view with ifocz -1 >>
       if(ifocz.gt.0)then

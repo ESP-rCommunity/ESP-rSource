@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C RADCTL.F contains routines to control the creation of radiance files 
 C and the control the visulaisation process depending on the value of 
-C RIFPURP. Contains:
+C SCENEPURP. Contains:
 C  CHITMSL - a copy of CHITMS but for longer strings (300 characters).
 C  RADPAR - check and update render options.
 
