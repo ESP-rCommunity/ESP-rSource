@@ -973,7 +973,6 @@ C write esp geometry file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
@@ -1349,7 +1348,6 @@ C Matches or adds a vertex to a zone.
 #include "building.h"
 #include "geometry.h"
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
       logical clx,cly,clz,match
 

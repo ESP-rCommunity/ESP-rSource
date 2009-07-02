@@ -783,8 +783,8 @@ C         ALPHA is measured from the X axis on the XY plane.
 C         THETA is measured from the XY plane.
       SUBROUTINE SFCRNR(DACC,IZN, JSURF, NAPICS, COORD)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION COORD(MV,3)
 

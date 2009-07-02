@@ -65,10 +65,9 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY6/LINSTY(MCON)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
-C VCOORD : X,Y & Z coordinates of each vertice in zone.
-C NZNVER : number of vertices associated with each connection.
-C NZJVN : topology of vertices associated with each connection.
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
+C VCOORD : X,Y & Z coordinates in model (via geometry.h).
+C NZNVER : number of vertices associated with each connection (via geometry.h).
+C NZJVN : topology of vertices associated with each connection (via geometry.h).
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

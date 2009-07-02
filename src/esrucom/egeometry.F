@@ -998,8 +998,8 @@ C Parameters
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C NOTE: G1 is only valid for the zone that has currently been
-C scanned and is being worked on. There is another common block
-C named ZNDATA which holds this information globally. 
+C scanned and is being worked on. Common block ZNDATA
+C holds this information globally. 
 
 C << todo: emkgeo could use ZNDATA if there was a way for the
 C << calling code to signal that ZNDATA could be used instead.
@@ -2136,8 +2136,7 @@ C geometry file.
       integer lnblnk  ! function definition
 
 C NOTE: G1 is only valid for the zone that has currently been
-C scanned and is being worked on. There is another common block
-C named ZNDATA which holds this information globally. 
+C scanned and is being worked on. ZNDATA holds this information globally. 
 
 C << todo: geowrite could use ZNDATA if there was a way for the
 C << calling code to signal that ZNDATA could be used instead.
@@ -3846,8 +3845,6 @@ C SSURVN is point 1 unit vectpr off of surface COG along the normal.
 
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
       LOGICAL OK,dok,newgeo
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8

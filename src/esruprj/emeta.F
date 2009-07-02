@@ -2264,11 +2264,7 @@ C SNFNAM  - *72 Name of the file containing hourly snow depth information
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C Obstruction blocks via geometry.h.
-
-C VCOORD : X,Y & Z coordinates of each vertice in zone.
-C NZNVER : number of vertices associated with each connection.
-C NZJVN : topology of vertices associated with each connection.
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
+C common zndata (VCOORD,NZNVER,NZJVN) via geometry.h  
 
       common/rpath/path
       character*72 path,odir    ! where path and odir are folders

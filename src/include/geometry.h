@@ -31,6 +31,12 @@ C number of items in the list.
       common/prec17/zbasea(MCOM),ibases(MCOM,12),iuzbasea(MCOM),
      &  izbaselist(MCOM)
 
+C Global coordinates for whole model.
+      real VCOORD    ! X,Y & Z coordinates of vertices in all zones.
+      integer NZNVER ! number of vertices associated with each connection.
+      integer NZJVN  ! topology of vertices associated with each connection.
+      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
+
 C The following section will hold derived data such as volume and surface
 C areas which are of general interest to many subroutines.
 C vol   - zone bounded volume (m^3)

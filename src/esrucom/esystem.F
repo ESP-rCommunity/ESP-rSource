@@ -225,6 +225,7 @@ C Seasons.
 
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
+C VCOORD, NZNVER & NZJVN (from geometry.h)
 
 C For use with MODE=ALL to setup ZNDATA arrays.
 C X,Y & Z   - coordinates of the vertices defining the zone
@@ -234,11 +235,6 @@ C             vertices in each face
 C NTV       - total number of vertices in zone
 C NVER      - contains the number of vertices in each face
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-C VCOORD : X,Y & Z coordinates of each vertice in zone.
-C NZNVER : number of vertices associated with each connection.
-C NZJVN : topology of vertices associated with each connection.
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
 C IFCFG is the file unit for the model configuration file.
 C cfgroot (24 char) root name for the model (used when generating
