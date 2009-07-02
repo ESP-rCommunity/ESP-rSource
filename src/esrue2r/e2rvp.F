@@ -149,7 +149,7 @@ C ******* Default views formation.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
+      common/raddata2/NSCENE,ISCENEFOC
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
 
       LOGICAL MODIFY,MODLEN,MODBND,XST,OK,DOK,addview
@@ -807,9 +807,9 @@ C extend the list.
      &     ' -vu 0 0 1 -vh ',angh,' -vv ',angv,' -vs 0 -vl 0 '
         WRITE(vewcmds(indxvew),'(a)') doit
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
+        if (NBSRIF(ISCENEFOC).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
         endif
         vewdone=.true.
       elseif(INO.EQ.(NITEMS-1))then

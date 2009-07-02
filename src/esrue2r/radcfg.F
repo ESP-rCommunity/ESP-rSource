@@ -53,7 +53,7 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/radcfg/LRADCF
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
+      common/raddata2/NSCENE,ISCENEFOC
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/radgrid/LDFGRID
       common/radabs/NABS
@@ -130,15 +130,14 @@ C Read lines from file, header first.
      &                                         OUTSTR(1:lnblnk(OUTSTR))
       call edisp (iuout,outs)
 
-C Now read number of rif files contained.
-      CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif line',IER)
+C Now read number of scenes contained.
+      CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'scene number line',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NRIF,1,MCOM+1,'W','no of rifs',IER)
+      CALL EGETWI(OUTSTR,K,NSCENE,1,MCOM+1,'W','no of scenes',IER)
 
-      
-C For each rif read 5 items of data
+C For each scene read 5 items of data
       IER=0
-      do 10 I=1,NRIF
+      do 10 I=1,NSCENE
 
 C Reset the number of modelled blind states to zero.
         NBSRIF(I)=-1
@@ -196,7 +195,7 @@ C RADCFGOUT writes the contents of the radiance configuration file.
       common/radcfg/LRADCF
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
+      common/raddata2/NSCENE,ISCENEFOC
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/radgrid/LDFGRID
 
@@ -223,12 +222,12 @@ C Write header first.
       write(IRCFG,'(a,a)') dstmp,' # latest file modification.'
 
 C Now write number of rif files contained.
-      write(IRCFG,'(i3,a)') NRIF,' # No. of scenes'
+      write(IRCFG,'(i3,a)') NSCENE,' # No. of scenes'
       
 C For each rif write 1) name. 2) root identifier. 3) short description 
 C and 4) intended use/ purpose.
 
-      do 10 I=1,NRIF
+      do 10 I=1,NSCENE
 
 C Find the longest string in this scene.
         IML=10
@@ -290,7 +289,7 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
       common/cmddata/zone,aim,act
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
+      common/raddata2/NSCENE,ISCENEFOC
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
@@ -317,7 +316,7 @@ C Use shorter menu depending on what MOD is.
       ELSE
         MCTL=3
       endif
-      ILEN=NRIF
+      ILEN=NSCENE
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
@@ -391,10 +390,10 @@ C If delete or copy scene previously selected then new selection should
 C be deleted or copied, respectively.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
         SELECT=.TRUE.
-        IRIFFOC=IFOC
+        ISCENEFOC=IFOC
         if(delzone)then
-          do 1110 I=IFOC,NRIF
-            if (I.eq.NRIF) then
+          do 1110 I=IFOC,NSCENE
+            if (I.eq.NSCENE) then
               SCENE(I)='UNDEFINED'
               RIFNAME(I)='UNKNOWN'
               SCENERT(I)='UNKNOWN'
@@ -410,29 +409,29 @@ C be deleted or copied, respectively.
               LBSRIF(I)=LBSRIF(I+1)
             endif
  1110     continue
-          NRIF=NRIF-1
-          IRIFFOC=1
+          NSCENE=NSCENE-1
+          ISCENEFOC=1
           modscene=.true.
         elseif(cpyzone)then
-          NRIF=NRIF+1
-          SCENE(NRIF)=SCENE(IFOC)
-          RIFNAME(NRIF)=RIFNAME(IFOC)
-          SCENERT(NRIF)=SCENERT(IFOC)
-          RIFDESC(NRIF)=RIFDESC(IFOC)
-          RIFPURP(NRIF)=RIFPURP(IFOC)
+          NSCENE=NSCENE+1
+          SCENE(NSCENE)=SCENE(IFOC)
+          RIFNAME(NSCENE)=RIFNAME(IFOC)
+          SCENERT(NSCENE)=SCENERT(IFOC)
+          RIFDESC(NSCENE)=RIFDESC(IFOC)
+          RIFPURP(NSCENE)=RIFPURP(IFOC)
           LBSRIF(I)=LBSRIF(IFOC)
-          IRIFFOC=NRIF
+          ISCENEFOC=NSCENE
 
-C Check new scenes data by calling newscene.  As newscene adds one to NRIF 
+C Check new scenes data by calling newscene.  As newscene adds one to NSCENE 
 C subtract one just now, no other data will be effected.
-          NRIF=NRIF-1
+          NSCENE=NSCENE-1
           call usrmsg(' Edit copied scene.',' ','W')
           call newscene('-')
           modscene=.true.
         endif
 
 C If a zone has been deleted then redisplay menu, 
-C foremost to reset IRIFFOC.
+C foremost to reset ISCENEFOC.
         if (delzone) then
           goto 1
         else
@@ -440,7 +439,7 @@ C foremost to reset IRIFFOC.
 C Re-scan rif file if not a new zone.
           ITA2 = IFIL+7
           ITA3 = IFIL+10
-          call RRIF(ita2,ita3,RIFNAME(IRIFFOC),'r',ier)
+          call RRIF(ita2,ita3,RIFNAME(ISCENEFOC),'r',ier)
           RETURN
         endif
       endif
@@ -537,7 +536,7 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       common/rad2/mono,intext,ifocz
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
+      common/raddata2/NSCENE,ISCENEFOC
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
       common/radgt/iglzty
@@ -615,10 +614,10 @@ C Reset glazing treatment to default.
       iglzty=1
 
 C Add new rif file data.
-      NRIF=NRIF+1
+      NSCENE=NSCENE+1
 
 C Set new scene to focus scene.
-      IRIFFOC=NRIF
+      ISCENEFOC=NSCENE
 
 C Reset the number of chosen zones (nzg) to NCOMP.
       nzg=NCOMP
@@ -644,7 +643,7 @@ C Now ask for zone for internal and glare purposes.
 C Set assumptions for each scene purpose and gather any additional 
 C information.
       if (IRP.eq.1) then 
-        RIFPURP(IRIFFOC)='External'
+        RIFPURP(ISCENEFOC)='External'
         intext = 0
         imgqua = 'Medium'
         detlvl = 'Medium'
@@ -658,7 +657,7 @@ C information.
       elseif (IRP.eq.2) then 
 
 C Internal image selected.
-        RIFPURP(IRIFFOC)='Internal'
+        RIFPURP(ISCENEFOC)='Internal'
         intext = 1
         imgqua = 'Medium'
         detlvl = 'Medium'
@@ -671,7 +670,7 @@ C Internal image selected.
       elseif (IRP.eq.3) then 
 
 C Glare image selected.
-        RIFPURP(IRIFFOC)='Glare'
+        RIFPURP(ISCENEFOC)='Glare'
         intext = 1
         imgqua = 'Medium'
         detlvl = 'Medium'
@@ -684,7 +683,7 @@ C Glare image selected.
       elseif (IRP.eq.4) then 
 
 C Daylight factor calculation selected.
-        RIFPURP(IRIFFOC)='Day_fact'
+        RIFPURP(ISCENEFOC)='Day_fact'
         intext = 1
         imgqua = 'High'
         detlvl = 'Medium'
@@ -697,7 +696,7 @@ C Daylight factor calculation selected.
       elseif (IRP.eq.5) then 
 
 C Coupling calculation selected. (thermal/lighting simulation)
-        RIFPURP(IRIFFOC)='Coupling'
+        RIFPURP(ISCENEFOC)='Coupling'
         intext = 1
         imgqua = 'High'
         detlvl = 'Medium'
@@ -710,7 +709,7 @@ C Coupling calculation selected. (thermal/lighting simulation)
       elseif (IRP.eq.6) then 
 
 C Daylight coefficient calculation selected. (thermal/lighting simulation)
-        RIFPURP(IRIFFOC)='Day_coef'
+        RIFPURP(ISCENEFOC)='Day_coef'
         intext = 1
         imgqua = 'High'
         detlvl = 'Medium'
@@ -723,7 +722,7 @@ C Daylight coefficient calculation selected. (thermal/lighting simulation)
       elseif (IRP.eq.7) then 
 
 C Sun positions.
-        RIFPURP(IRIFFOC)='Sun_pos'
+        RIFPURP(ISCENEFOC)='Sun_pos'
         intext = 0
         imgqua = 'Medium'
         detlvl = 'Medium'
@@ -739,23 +738,23 @@ C Sun positions.
 C Set default names based on above.
       if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
         write (outs,'(3a)') zname(ifocz)(1:lnzname(ifocz)),
-     &     '_',RIFPURP(IRIFFOC)(1:6)
-        write (RIFDESC(IRIFFOC),'(5a)') 'Scene of ',
+     &     '_',RIFPURP(ISCENEFOC)(1:6)
+        write (RIFDESC(ISCENEFOC),'(5a)') 'Scene of ',
      &     zname(ifocz)(1:lnzname(ifocz)),' for ',
-     &     RIFPURP(IRIFFOC)(1:lnblnk(RIFPURP(IRIFFOC))),' analysis.'
+     &     RIFPURP(ISCENEFOC)(1:lnblnk(RIFPURP(ISCENEFOC))),' analysis.'
       else
         IL=min(lnblnk(cfgroot),21)
-        write (outs,'(3a)') cfgroot(1:IL),'_',RIFPURP(IRIFFOC)(1:6)
-        write (RIFDESC(IRIFFOC),'(a,a,a,a,a)') 'Scene of ',
+        write (outs,'(3a)') cfgroot(1:IL),'_',RIFPURP(ISCENEFOC)(1:6)
+        write (RIFDESC(ISCENEFOC),'(a,a,a,a,a)') 'Scene of ',
      &     cfgroot(1:lnblnk(cfgroot)),' for ',
-     &     RIFPURP(IRIFFOC)(1:lnblnk(RIFPURP(IRIFFOC))),' analysis.'
+     &     RIFPURP(ISCENEFOC)(1:lnblnk(RIFPURP(ISCENEFOC))),' analysis.'
       endif
-      write (SCENE(IRIFFOC),'(a)') outs(1:28)
-      write (SCENERT(IRIFFOC),'(a)') outs(1:28)
-      write (RIFNAME(IRIFFOC),'(a,a)') 
-     &              SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.rif'
-      write (LBSRIF(IRIFFOC),'(a,a)') 
-     &            SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'_a.rif'
+      write (SCENE(ISCENEFOC),'(a)') outs(1:28)
+      write (SCENERT(ISCENEFOC),'(a)') outs(1:28)
+      write (RIFNAME(ISCENEFOC),'(a,a)') 
+     &      SCENERT(ISCENEFOC)(1:lnblnk(SCENERT(ISCENEFOC))),'.rif'
+      write (LBSRIF(ISCENEFOC),'(a,a)') 
+     &      SCENERT(ISCENEFOC)(1:lnblnk(SCENERT(ISCENEFOC))),'_a.rif'
 
 C Additional details for specific purposes.
       if (IRP.eq.4) then
@@ -782,36 +781,36 @@ C Ask for scene name.
         H(3)='a scene, e.g. one scene may be of the buildings '
         H(4)='exterior and another could be an internal image of a'
         H(5)='zone. Each scene can have multiple viewpoints.'
-        tname=SCENE(IRIFFOC)
-        dname=SCENE(IRIFFOC)
+        tname=SCENE(ISCENEFOC)
+        dname=SCENE(ISCENEFOC)
         CALL EASKS(tname,'Scene name? ',' ',28,dname,'scene name',IER,5)
         IF(tname(1:2).EQ.'  ') GOTO 5
-        SCENE(IRIFFOC)=tname
+        SCENE(ISCENEFOC)=tname
 
 C Ask for root name and use this for rif name.
  15     H(1)='The scene prefix (one word) is used in the creation of'
         H(2)='the rif file name and as a root name for the description,'
         H(3)='view, octree and image files. '
-        tname=SCENERT(IRIFFOC)
-        dname=SCENERT(IRIFFOC)
+        tname=SCENERT(ISCENEFOC)
+        dname=SCENERT(ISCENEFOC)
         CALL EASKS(tname,'Scene root name?',' ',28,dname,'root name',
      &    IER,3)
         IF(tname(1:2).EQ.'  ') GOTO 15
-        SCENERT(IRIFFOC)=tname
-        write (RIFNAME(IRIFFOC),'(a,a)') 
-     &               SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.rif'
-        write (LBSRIF(IRIFFOC),'(a,a)') 
-     &             SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'_a.rif'
+        SCENERT(ISCENEFOC)=tname
+        write (RIFNAME(ISCENEFOC),'(a,a)') 
+     &      SCENERT(ISCENEFOC)(1:lnblnk(SCENERT(ISCENEFOC))),'.rif'
+        write (LBSRIF(ISCENEFOC),'(a,a)') 
+     &      SCENERT(ISCENEFOC)(1:lnblnk(SCENERT(ISCENEFOC))),'_a.rif'
 
 C Ask for additional description.
  25     H(1)='The description is used as an additional aide to'
         H(2)='identify a scenes contents.'
-        tname72=RIFDESC(IRIFFOC)
-        dname72=RIFDESC(IRIFFOC)
+        tname72=RIFDESC(ISCENEFOC)
+        dname72=RIFDESC(ISCENEFOC)
         CALL EASKS(tname72,' Description ? ',' ',72,
-     &                                     dname72,'scene desc',IER,2)
+     &                                    dname72,'scene desc',IER,2)
         IF(tname72(1:2).EQ.'  ') GOTO 25
-        RIFDESC(IRIFFOC)=tname72
+        RIFDESC(ISCENEFOC)=tname72
       endif
 
 C Call rifset to set up all remaining data.
@@ -905,7 +904,7 @@ C if MODE is not - then sensor points file name confirmation required.
       common/rad2/mono,intext,ifocz
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
+      common/raddata2/NSCENE,ISCENEFOC
       common/radgrid/LDFGRID
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
 
@@ -1063,8 +1062,8 @@ C Calculate grid points.
       call ERPFREE(ITA1,ISTAT)
 
 C Get file name for grid points.
-      write (LDFGRID,'(a,a4)') SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),
-     &                                                           '.grd'
+      write (LDFGRID,'(a,a4)')
+     &          SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.grd'
       H(1)=' Supply a local file name (i.e. without a path).'
       if (MODE.eq.'-') then
  55     CALL EASKS(LDFGRID,'Daylight factor grid points file name?',
@@ -1081,7 +1080,8 @@ C Open df points file in working directory.
 
 C Write points and sensor direction (plane normal).
       do 555 IV=1,NDFP
-       write(ITA1,'(6(f8.4,1x))')(DFPTS(IV,IX),IX=1,3),(PEQN(IY),IY=1,3)
+       write(ITA1,'(6(f8.4,1x))')(DFPTS(IV,IX),IX=1,3),
+     &         (PEQN(IY),IY=1,3)
  555  continue
       DFDIR(1)=PEQN(1)
       DFDIR(2)=PEQN(2)
@@ -1275,7 +1275,7 @@ C for use with a 'Coupling' scene purpose.
 
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
+      common/raddata2/NSCENE,ISCENEFOC
       common/radgrid/LDFGRID
       common/rad2/mono,intext,ifocz
 
@@ -1310,11 +1310,11 @@ C Set local file name.
 
 C Open sensor info file (do not add path as radiance is run locally).
       write(LDFGRID,'(a,a)')
-     &            SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC))),'.slc'
+     &    SCENERT(ISCENEFOC)(1:lnblnk(SCENERT(ISCENEFOC))),'.slc'
 
 C Check for file (add working dir path)
       write (outs,'(a,a)') runpath(1:lnblnk(runpath)),
-     &                                      LDFGRID(1:lnblnk(LDFGRID))
+     &                                     LDFGRID(1:lnblnk(LDFGRID))
       call FINDFIL(outs,XST)
       if(XST)then
         call FPOPEN(ITA1,ISTAT,1,0,outs)
@@ -1354,7 +1354,7 @@ C If filexst is 'o' then old file, 'n' then create a new file.
       common/radcfg/LRADCF
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
+      common/raddata2/NSCENE,ISCENEFOC
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
 
@@ -1369,7 +1369,7 @@ C If filexst is 'o' then old file, 'n' then create a new file.
       ITA2=IFIL+7
       ITA3=IFIL+10
       IER=0
-      IRIFFOC=0
+      ISCENEFOC=0
       modscene=.false.
 
 C Clear rcf file unit no/ channel.
@@ -1389,7 +1389,7 @@ C Recover zone index from command line variable zone.
 
 C If rcf file does exist then search for existing rif file.
       if (filexst.eq.'o') then
-        do 10 i=1,NRIF
+        do 10 i=1,NSCENE
           if (RIFPURP(I)(1:5).eq.aim(1:5)) then
 
 C Possible match, further check - look at rif file.
@@ -1398,7 +1398,7 @@ C Possible match, further check - look at rif file.
             if (ifocz.eq.IZONE) then
 
 C Got match.
-              IRIFFOC=I
+              ISCENEFOC=I
 
 C Update sensor information from cgc file.
               if(aim(1:8).eq.'Coupling'.or.aim(1:8).eq.'Day_coef')then
@@ -1431,9 +1431,9 @@ C If not an existing scene then create it.
       if (.not.modscene) then
         call newscene('s')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
+        if (NBSRIF(ISCENEFOC).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
         endif
 
 C Update rcf file and configuration file.

@@ -94,7 +94,7 @@ C Scene configuration commons.
       common/radcfg/LRADCF
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
-      common/raddata2/NRIF,IRIFFOC
+      common/raddata2/NSCENE,ISCENEFOC
       common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
       common/cmddata/zone,aim,act
       common/radgrid/LDFGRID
@@ -210,7 +210,7 @@ C Make case insensitive.
       IFS=1
       ITFS=1
       IMFS=1
-      IRIFFOC=1
+      ISCENEFOC=1
       do 9 I=1,MCOM+1
         SCENE(I)='UNDEFINED'
         RIFNAME(I)='UNKNOWN'
@@ -586,13 +586,13 @@ C Check for command line information.
         call checkrif('o')
         if (act(1:4).ne.'NONE') call autorad
       else
-        if (NRIF.gt.1) then
+        if (NSCENE.gt.1) then
           call edisp(iuout,
      &      'There are existing scenes to select from...')
           call whichrif('m')
-        elseif (NRIF.eq.1) then
-          IRIFFOC=1
-          call RRIF(ita2,ita3,RIFNAME(IRIFFOC),'r',ier)
+        elseif (NSCENE.eq.1) then
+          ISCENEFOC=1
+          call RRIF(ita2,ita3,RIFNAME(ISCENEFOC),'r',ier)
         else
           call edisp(iuout,
      &      'There are no existing scenes. Pleases create one.')
@@ -605,39 +605,39 @@ C Check for command line information.
       write(ITEM(2),'(2A)')   '   path: ',path(1:21)
       ITEM(3)=                '  ____________________________'
       write(ITEM(4),'(2A)')   'b scenes  : ',LRADCF(1:18)
-      write(ITEM(5),'(2A)')   'c name    : ',SCENE(IRIFFOC)(1:18)
-      write(ITEM(6),'(2A)')   '   RIF    : ',RIFNAME(IRIFFOC)(1:18)
-      write(ITEM(7),'(2A)')   '   root   : ',SCENERT(IRIFFOC)(1:18)
-      write(ITEM(8),'(2A)')   '   purpose: ',RIFPURP(IRIFFOC)
+      write(ITEM(5),'(2A)')   'c name    : ',SCENE(ISCENEFOC)(1:18)
+      write(ITEM(6),'(2A)')   '   RIF    : ',RIFNAME(ISCENEFOC)(1:18)
+      write(ITEM(7),'(2A)')   '   root   : ',SCENERT(ISCENEFOC)(1:18)
+      write(ITEM(8),'(2A)')   '   purpose: ',RIFPURP(ISCENEFOC)
       ITEM(9)=                '   ___________________________'
       ITEM(10)=               'd  sky type, location & time  '
       ITEM(11)=               'e  zone & outside composition '
       ITEM(12)=               'f  other (furniture&fittings) '
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+      if (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') then
         ITEM(13)=             'g  edit/display grid          '
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+      elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Coupling') then
         ITEM(13)=             'g                             '
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+      elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_coef') then
         ITEM(13)=             'g                             '
       else
         ITEM(13)=             'g  scene view points          '
       endif
       ITEM(14)=               '   ___________________________'
       ITEM(15)=               'h  scene parameter options    '
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+      if (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') then
         ITEM(16)=             'i  calculate daylight factors '
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+      elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Coupling') then
         ITEM(16)=             'i  calculate sensor illum.    '
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+      elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_coef') then
         ITEM(16)=             'i  calculate daylight coeffs  '
       else
         ITEM(16)=             'i  render the scene           '
       endif
-      if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+      if (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') then
         ITEM(17)=             'j  view daylight factor result'
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+      elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Coupling') then
         ITEM(17)=             'j  view calculated illuminance'
-      elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+      elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_coef') then
         ITEM(17)=             'j  view daylight coeffs       '
       else
         ITEM(17)=             'j  view visualisation results '
@@ -804,9 +804,9 @@ C Sky type.
         call SKYFORM(IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
+        if (NBSRIF(ISCENEFOC).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
         endif
 
       elseif(INO.EQ.11)then
@@ -815,9 +815,9 @@ C Zone and outside composition, updating rif file upon return.
         call E2RFORM('i',IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
+        if (NBSRIF(ISCENEFOC).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
         endif
 
       elseif(INO.EQ.12)then
@@ -845,7 +845,7 @@ C Other descriptions.
       elseif(INO.EQ.13)then
 
 C Depending on value of rifpurp.
-        if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+        if (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') then
           call ERPFREE(ITA1,ISTAT)
           write(tfile,'(a,a)')runpath(1:lnrp),
      &                        LDFGRID(1:lnblnk(LDFGRID))
@@ -875,9 +875,9 @@ C Depending on value of rifpurp.
           CALL ASKOK('Edit grid points?','  ',OK,dok,1)
           izone=0
           if(OK)call setdfgrid('-',izone,ier)
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+        elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Coupling') then
           continue
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef') then
+        elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_coef') then
           continue
         else
 
@@ -894,9 +894,9 @@ C Edit view points.  Save off current views.
           call VEWFORM(IER)
           call edisp(iuout,' updating RIF file to account for views.')
           IFC=3
-          call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-          if (NBSRIF(IRIFFOC).eq.1) then
-            call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+          call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
+          if (NBSRIF(ISCENEFOC).eq.1) then
+            call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
           endif
 
 C Because of the site plan, recalculate perspective view.
@@ -949,9 +949,9 @@ C to remove it before proceeding.
         endif
 
 C Pull up a list of views and ask user for which one.
-        if (RIFPURP(IRIFFOC)(1:8).eq.'External'.or.
-     &      RIFPURP(IRIFFOC)(1:8).eq.'Internal'.or.
-     &      RIFPURP(IRIFFOC)(1:5).eq.'Glare') then
+        if (RIFPURP(ISCENEFOC)(1:8).eq.'External'.or.
+     &      RIFPURP(ISCENEFOC)(1:8).eq.'Internal'.or.
+     &      RIFPURP(ISCENEFOC)(1:5).eq.'Glare') then
           if (indxvew.gt.0) then
             H(1)='Please select one view.'
             IX=1
@@ -966,17 +966,17 @@ C Pull up a list of views and ask user for which one.
           endif
         endif
 
-        if (RIFPURP(IRIFFOC)(1:8).eq.'External'.or.
-     &      RIFPURP(IRIFFOC)(1:8).eq.'Internal') then
+        if (RIFPURP(ISCENEFOC)(1:8).eq.'External'.or.
+     &      RIFPURP(ISCENEFOC)(1:8).eq.'Internal') then
 
 C Generate image if external or internal.
           call genimage(1)
-        elseif (RIFPURP(IRIFFOC)(1:5).eq.'Glare') then
+        elseif (RIFPURP(ISCENEFOC)(1:5).eq.'Glare') then
 
 C Extra calculations for glare.
           call genimage(2)
           call getglr
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+        elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') then
 
 C Daylight factors - calculate and display.
           call getdf
@@ -985,17 +985,18 @@ C Daylight factors - calculate and display.
       elseif(INO.eq.17)then
 
 C Based on purpose view DF or illuminance or daylight coef or image.
-        if (RIFPURP(IRIFFOC)(1:8).eq.'Day_coef'.or.
-     &      RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
+        if (RIFPURP(ISCENEFOC)(1:8).eq.'Day_coef'.or.
+     &      RIFPURP(ISCENEFOC)(1:8).eq.'Coupling') then
           call usrmsg('No results display for this option.','  ','W')
           goto 10
-        elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
+        elseif (RIFPURP(ISCENEFOC)(1:8).eq.'Day_fact') then
         
 C Check for daylight factor results. Note: the results could have been
 C shifted to a *.df- file so check that as well.
           ITA1 = IFIL+6
           lnrp=lnblnk(runpath)
-          write(df,'(2a)')SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),'.df'
+          write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
+     &      '.df'
           write(ltmp,'(2a)')runpath(1:lnrp),df(1:lnblnk(df))
           call ERPFREE(ITA1,ISTAT)
           call FPOPEN(ITA1,ISTAT,1,1,ltmp)
@@ -1003,7 +1004,7 @@ C shifted to a *.df- file so check that as well.
 C debug	    write(6,*) 'found  ',ltmp
             continue
           else
-            write(df,'(2a)')SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),
+           write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
      &        '.df-'
             write(ltmp,'(2a)')runpath(1:lnrp),df(1:lnblnk(df))
             call ERPFREE(ITA1,ISTAT)
@@ -1106,7 +1107,7 @@ C Check chosen image file name.
         endif
 
 C Get glare info file name (if necessary) and display image.
-        if (RIFPURP(IRIFFOC)(1:5).eq.'Glare') then
+        if (RIFPURP(ISCENEFOC)(1:5).eq.'Glare') then
           CALL ERPFREE(ITA2,ISTAT)
           call FINDFIL(gf,XST)
           if (.not.XST) then
@@ -1122,9 +1123,9 @@ C Get glare info file name (if necessary) and display image.
 
 C Save scene information.
         IFC=3
-        call MKRIF(ITA2,RIFNAME(IRIFFOC),IFC,0,IER)
-        if (NBSRIF(IRIFFOC).eq.1) then
-          call mkrif(ita2,LBSRIF(IRIFFOC),IFC,1,ier)
+        call MKRIF(ITA2,RIFNAME(ISCENEFOC),IFC,0,IER)
+        if (NBSRIF(ISCENEFOC).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENEFOC),IFC,1,ier)
         endif
 
       ELSE
