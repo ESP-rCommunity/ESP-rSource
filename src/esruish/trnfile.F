@@ -369,27 +369,34 @@ C ********** TFILE2 **********
 C Transfers the transformed coordinates of the target surface
 C to the zone transitional shading file.
 
-      subroutine tfile2(is)
+      subroutine tfile2(icomp,is)
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+C      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
       common/find/irecl
+      common/c24/izstocn(mcom,ms)
 
       dimension irecs(ms)
       character outs*124
+      integer nv,icc,nzs   ! local for vertex, connection and surface
 
       iunit=ifil
 
+C Get the current connection and number of surfaces in zone.
+      icc=izstocn(icomp,is)
+      nzs=nzsur(icomp)
+
 C Recover and update irecs for surface `is`.
       irec=1
-      read(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nsur)
+      read(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nzs)
       irecs(is)=irecl
-      write(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nsur)
+      write(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nzs)
       irec=irecs(is)
-      nv=nver(is)
+      nv=nznver(icc)
       write(iunit,rec=irec,iostat=istat,err=1000)(xft(i),i=1,nv)
       irec=irec+1
       write(iunit,rec=irec,iostat=istat,err=1000)(zft(i),i=1,nv)
@@ -414,7 +421,6 @@ C and computes the overall direct and diffuse shading factors.
       common/outin/iuout,iuin
       common/tracech/icout
       common/filep/ifil
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/g1t/xft(mv),zft(mv)
@@ -437,6 +443,9 @@ C If trace requested enable writing.
       if(icout.eq.33)tok=.true.
 
       iunit=ifil
+
+C Get the current connection and number of surfaces in zone.
+      icc=IZSTOCN(icomp,is)
 
 C mode = dup; therefore use diffuse shading factors as calculated
 C for last hour.
@@ -520,7 +529,7 @@ C Next line only reached after all sky patches have been processed.
   40  continue
 
 C Calculate gross surface area, gsa.
-      nv=nver(is)
+      nv=nznver(icc)
       call area(nv,xft,zft,gsa)
 
       if(mode.eq.'dir')pso(is,ihour)=gssa/gsa

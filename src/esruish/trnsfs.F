@@ -38,14 +38,16 @@ C consideration. The x and z coordinates of this object body
 C face are then re-expressed in terms of the new local
 C coordinate system for use in 'point'.
 
-      subroutine trnsf1(is)
+      subroutine trnsf1(izone,is)
 #include "building.h"
+#include "geometry.h"
 
       common/tracech/icout
       common/pangl/pazi,pelv,ptilt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
+      common/c24/izstocn(mcom,ms)
 
       dimension yft(mv)
       character outs*124
@@ -60,7 +62,7 @@ C If trace requested enable writing.
 
 C Compute the surface azimuth (pazi), elevation (pelv)
 C X-axis tilt (ptilt) angles.
-      call pangs(is)
+      call pangs(izone,is)
 
 C Convert pazi, pelv and ptilt to the required coordinate axis
 C rotations as follows.
@@ -96,14 +98,16 @@ C rotation.
       c(4)=cos(al)*sin(be)*cos(ga)
       c(5)=cos(be)*cos(ga)
 
+C Get the current connection
+      icc=izstocn(izone,is)
 
-      ip1=jvn(is,1)
+      ip1=nzjvn(icc,1)
       xor=x(ip1)
       yor=y(ip1)
       zor=z(ip1)
 
 C Transform target surface coordinates.
-      do 10 i=1,nver(is)
+      do 10 i=1,nznver(icc)
          xs=x(jvn(is,i))
          ys=y(jvn(is,i))
          zs=z(jvn(is,i))
@@ -138,6 +142,7 @@ C Transformed y value should be close to zero; warn if not.
 
 C Trace output.
       if(tok)then
+         icc=izstocn(izone,is)
          call edisp(icout,' ')
          write(outs,9996)is,pazi,pelv,ptilt
  9996    format('*** TRNSF1: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
@@ -159,7 +164,7 @@ C Trace output.
          write(outs,'(a,2x,5f8.1)')'C -',(c(i),i=1,5)
          call edisp(icout,outs)
          call edisp(icout,'Original XYZ coordinates:')
-         do 9995 i=1,nver(is)
+         do 9995 i=1,nznver(icc)
            xs=x(jvn(is,i))
            ys=y(jvn(is,i))
            zs=z(jvn(is,i))
@@ -167,7 +172,7 @@ C Trace output.
            call edisp(icout,outs)
  9995    continue
          call edisp(icout,'Transformed X`Y`Z` coordinates:')
-         do 9994 i=1,nver(is)
+         do 9994 i=1,nznver(icc)
            write(outs,'(i2,2x,3f8.1)')i,xft(i),yft(i),zft(i)
            call edisp(icout,outs)
  9994    continue
@@ -540,11 +545,13 @@ C   ptilt - is the angle between the face x-axis and the horizontal
 C           where the x-axis is the line joining the 1st and 2nd
 C           face vertices.
 
-      subroutine pangs(is)
+      subroutine pangs(icomp,is)
 #include "building.h"
+#include "geometry.h"
 
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/pangl/pazi,pelv,ptilt
+      common/c24/izstocn(mcom,ms)
 
       logical bHorizontal
 
@@ -553,8 +560,11 @@ C           face vertices.
       xsum=0.
       ysum=0.
       zsum=0.
+
 C Compute azimuth and elevation angles for face 'IS'.
-      nv=nver(is)
+C Get the current connection
+      icc=izstocn(icomp,is)
+      nv=nznver(icc)
       do 10 i=1,nv
          k=i+1
          if(i.eq.nv)k=1

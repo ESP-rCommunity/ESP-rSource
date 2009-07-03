@@ -35,14 +35,16 @@ C face are then re-expressed in terms of the new local
 C coordinate system for use in point. This routine is
 C essentially a copy of trnsf1.
 
-      subroutine trnsf1i(is)
+      subroutine trnsf1i(izone,is)
 #include "building.h"
+#include "geometry.h"
 
       common/tracech/icout
       common/pangl/pazi,pelv,ptilt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
+      common/c24/izstocn(mcom,ms)
 
       dimension yft(mv)
       character outs*124
@@ -57,7 +59,7 @@ C If trace requested enable writing.
 
 C Compute the surface azimuth (pazi), elevation (pelv)
 C x-axis tilt (ptilt) angles.
-      call pangs(is)
+      call pangs(izone,is)
 
 C Convert pazi, pelv and ptilt to the required coordinate axis
 C rotations as follows.
@@ -97,8 +99,11 @@ C rotation.
       yor=y(ip1)
       zor=z(ip1)
 
+C Get the current connection
+      icc=IZSTOCN(izone,is)
+
 C Transform target surface coordinates.
-      do 10 i=1,nver(is)
+      do 10 i=1,nznver(icc)
          xs=x(jvn(is,i))
          ys=y(jvn(is,i))
          zs=z(jvn(is,i))
@@ -133,6 +138,7 @@ C Transformed y value should be close to zero; warn if not.
 
 C Trace output.
       if(tok)then
+         icc=IZSTOCN(izone,is)
          call edisp(icout,' ')
          write(outs,9996)is,pazi,pelv,ptilt
  9996    format('*** TRNSF1I: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
@@ -154,7 +160,7 @@ C Trace output.
          write(outs,'(a,2x,5f8.1)')'C -',(c(i),i=1,5)
          call edisp(icout,outs)
          call edisp(icout,'Original XYZ coordinates:')
-         do 9995 i=1,nver(is)
+         do 9995 i=1,nznver(icc)
             xs=x(jvn(is,i))
             ys=y(jvn(is,i))
             zs=z(jvn(is,i))
@@ -162,7 +168,7 @@ C Trace output.
             call edisp(icout,outs)
  9995    continue
          call edisp(icout,'Transformed X`Y`Z` coordinates:')
-         do 9994 i=1,nver(is)
+         do 9994 i=1,nznver(icc)
             write(outs,'(i2,2x,3f8.1)')i,xft(i),yft(i),zft(i)
             call edisp(icout,outs)
  9994    continue

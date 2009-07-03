@@ -68,11 +68,13 @@ C points are later excluded.
       subroutine mesh(izone,its)
 #include "building.h"
 #include "geometry.h"
-
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
       common/grid3/ogrida(ms)
       common/grid11/xop(mox,moz),zop(mox,moz)
+      common/c24/izstocn(mcom,ms)
+
+C Get the current connection and number of surfaces in zone.
+      icc=izstocn(izone,its)
 
 C Derive bounding box (in 2d) for surface 'its'. First find max and min
 C x & y values for this surface by scanning each vertex.
@@ -80,7 +82,7 @@ C x & y values for this surface by scanning each vertex.
       zmax=-1.E+10
       xmin=1.E+10
       zmin=1.E+10
-      nv=nver(its)
+      nv=nznver(icc)
       do 10 i=1,nv
          xmax=amax1(xmax,xft(i))
          zmax=amax1(zmax,zft(i))
@@ -326,18 +328,22 @@ C ************* POINT1 **********************
 C Determines if a specified point is within or outwith the
 C target surface.
 
-      subroutine point1(is,xx,zz,ians)
+      subroutine point1(icomp,is,xx,zz,ians)
 #include "building.h"
+#include "geometry.h"
 
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
+      common/c24/izstocn(mcom,ms)
 
       dimension c(2*mv+2)
 
       ians=0
 
+C Get the current connection and number of surfaces in zone.
+      icc=izstocn(icomp,is)
+
 C Determine if point xx,zz is within surface 'is'.
-      np=nver(is)
+      np=nznver(icc)
       do 10 i=1,np
          ii=2*i-1
          c(ii)=xft(i)

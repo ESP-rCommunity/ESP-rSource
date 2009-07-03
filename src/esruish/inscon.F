@@ -516,7 +516,7 @@ C              surface i in the zone transitional shading file.
 C Partially derive transformation equations by computing time
 C independent part of equation coefficients - equivalent to
 C translation plus three-dimensional plane rotation.
-         call trnsf1i(isrc)
+         call trnsf1i(icomp,isrc)
 
 C Grid the insolation source surface.
          call mesh(icomp,isrc)
@@ -543,7 +543,7 @@ C Initiallise igins, the array of source grid points holding
 C the insolated surface numbers.
             do 40 m=1,nox(icomp)
                do 50 n=1,noz(icomp)
-                  call point1(isrc,xop(m,n),zop(m,n),ians)
+                  call point1(icomp,isrc,xop(m,n),zop(m,n),ians)
                   if(ians.eq.0)then
 C Outwith source surface.
                      igins(m,n)=-200
@@ -578,7 +578,7 @@ C Exclude a surface that cannot see the source.
                if(intsur.eq.isrc.or.caii(l).le.0.0)goto 80
 
 C Derive the transformation equations for current internal surface.
-               call trnsf1i(intsur)
+               call trnsf1i(icomp,intsur)
 
 C Compute new solar angles relative to internal surface coordinate
 C system.
@@ -612,7 +612,7 @@ C coordinates before initiating projection.
 C Call point containment test; ians is 1 if point is within the
 C receiving surface and striking the side opposite the surface
 C normal.
-                     call point1(intsur,xp,zp,ians)
+                     call point1(icomp,intsur,xp,zp,ians)
                      if(ians.eq.0)goto 110
 
 C Use crowxyz to check real distance between source point (xgp,ygp,zgp)

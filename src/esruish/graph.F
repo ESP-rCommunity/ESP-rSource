@@ -36,6 +36,9 @@ C to superimpose any direct shading.
 #include "building.h"
 #include "geometry.h"
 
+C Parameter
+      integer icomp  ! the focus zone
+
       common/outin/iuout,iuin
       common/filep/ifil
       common/pophelp/h(60)
@@ -44,10 +47,13 @@ C to superimpose any direct shading.
       common/headl/irecs(ms)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+      common/c24/izstocn(mcom,ms)
 
       character outs*124,h*72
       dimension ioshd(mox,moz),iva(ms)
       logical ok,dok
+      integer icc,is,nv   ! local variables for connextion and vertices
+      
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
 #else
@@ -56,6 +62,7 @@ C to superimpose any direct shading.
 
       iunit=ifil
 
+C Ask user for the surface to focus on.
     2 call pickssur(icomp,np,'L',iva,ier)
       if(np.eq.0)then
         goto 1
@@ -63,8 +70,10 @@ C to superimpose any direct shading.
         is=iva(1)
       endif
 
-C Retrieve surface transformed coordinates.
-      nv=NZNVER(icomp)
+C Find connection and number of edges and then retrieve the
+C surface transformed coordinates.
+      icc=izstocn(icomp,is)
+      nv=nznver(icc)
       irec=irecs(is)
       read(iunit,rec=irec,iostat=istat,err=1000)(xft(i),i=1,nv)
       irec=irec+1
@@ -93,14 +102,14 @@ C and sitpln.
       igheight=igwh
 
 C Update the plane equation.
-      call trnsf1(is)
+      call trnsf1(icomp,is)
 
-C Find maximum & minimum surface coordinates.
+C Find maximum & minimum surface coordinates for this surface.
       xmax=-1.E+8
       zmax=-1.E+8
       xmin=1.E+8
       zmin=1.E+8
-      do 10 i=1,NZNVER(icomp)
+      do 10 i=1,nznver(icc)
         xmax=amax1(xmax,xft(i))
         zmax=amax1(zmax,zft(i))
         xmin=amin1(xmin,xft(i))
@@ -273,7 +282,7 @@ C ishad=2 corresponds to the partial shading case, while ishad=1
 C corresponds to 100% shading for which ioshd points falling outwith
 C the surface polygon will not have been set to -1.
             if(ishad.eq.1)then
-               call point1(is,xop(i,j),zop(i,j),ians)
+               call point1(izone,is,xop(i,j),zop(i,j),ians)
                if(ians.eq.0)goto 20
                goto 1
             endif
@@ -350,7 +359,7 @@ C Establish the maximum and minimum vertix values.
       ymx=-1.E+8
       xmn=1.E+8
       ymn=1.E+8
-      do 10 i=1,NZNVER(icomp)
+      do 10 i=1,nztv(icomp)
         xmn=amin1(xmn,VCOORD(icomp,i,1))
         ymn=amin1(ymn,VCOORD(icomp,i,2))
         xmx=amax1(xmx,VCOORD(icomp,i,1))

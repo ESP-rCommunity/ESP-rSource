@@ -402,11 +402,11 @@ C Trace output.
 C Partially derive transformation equations by computing time
 C independent part of equation coefficients - equivalent to
 C translation plus three-dimensional plane rotation.
-         call trnsf1(itsur)
+         call trnsf1(icomp,itsur)
 
 C Transfer transformed surface coordinates to zone transitional
 C shading file.
-         call tfile2(itsur)
+         call tfile2(icomp,itsur)
 
 C Set up target surface mesh.
          call mesh(icomp,itsur)
@@ -418,7 +418,7 @@ C Reset foshd each hour, setting any grid point not within surface
 C to -1.0.
             do 401 i=1,nox(icomp)
                do 402 j=1,noz(icomp)
-                  call point1(itsur,xop(i,j),zop(i,j),ians)
+                  call point1(icomp,itsur,xop(i,j),zop(i,j),ians)
                   foshd(i,j)=0
                   if(ians.eq.0)foshd(i,j)=-1.0
   402          continue
@@ -466,7 +466,7 @@ C Reset ioshd before each sun or sky patch loop, setting any
 C grid point not within target surface to -1.
               do 403 i=1,nox(icomp)
                  do 404 j=1,noz(icomp)
-                    call point1(itsur,xop(i,j),zop(i,j),ians)
+                    call point1(icomp,itsur,xop(i,j),zop(i,j),ians)
                     ioshd(i,j)=0
                     if(ians.eq.0)ioshd(i,j)=-1
   404            continue
