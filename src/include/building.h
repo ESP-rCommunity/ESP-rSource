@@ -16,7 +16,7 @@ C Type declarations.
       integer MNRS,MNFA,MROW,MCOL,MLAY,MLEV,MGRID,MMTR,MBND,MSNOD
       integer MMAT,MIPVM,MIPVA,MSPS,MDTY,MGTY,MGPER
       integer MCNDV,MCNDC,MPICK,MVAR,MIMG,MSPMRES
-      integer MCFC,MILDB
+      integer MCFC,MILDB,MNSCN
 
 C Geometry.
       PARAMETER (MCOM=52)	!- Zones.
@@ -167,3 +167,4 @@ C Miscellaneous.
       PARAMETER (MVAR=5)
       PARAMETER (MIMG=10)	!- Images associated with model.
       PARAMETER (MCFC=7)	! Maximum number of different CFC types within a zone.
+      PARAMETER (MNSCN=5) ! Maximum number of Radiance scenes per zone

@@ -1116,7 +1116,7 @@ C If IBOFOT()=1, then blind/shutter is ON.
             DO 31 I=1,NC
               IF(ITMCFL(ICOMP,I).GT.0)THEN
                 IF(IBOFOT(ICOMP,I).GT.0)THEN
-                  IBLIND = 1
+                  IBLIND = NBPONT(ICOMP,I) !  keep track of >which< control period we are in ...
                   RATIO = 1.0
                 ENDIF
               ENDIF

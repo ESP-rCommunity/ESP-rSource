@@ -164,9 +164,9 @@ C this scene represent alternate blind states.
           elseif (WORD(1:4).eq.'*srt') then
             CALL EGETW(OUTSTR,K,SCENERT(I),'W','scene root',IFLAG)
           elseif (WORD(1:4).eq.'*rde') then
-            CALL EGETRM(OUTSTR,K,SCENEDESC(I),'W','rif desc',IFLAG)
+            CALL EGETRM(OUTSTR,K,SCENEDESC(I),'W','scene desc',IFLAG)
           elseif (WORD(1:4).eq.'*rpu') then
-            CALL EGETW(OUTSTR,K,SCENEPURP(I),'W','rif purp',IFLAG)
+            CALL EGETW(OUTSTR,K,SCENEPURP(I),'W','scene purp',IFLAG)
           elseif (WORD(1:4).eq.'*rgd') then
             CALL EGETW(OUTSTR,K,LDFGRID,'W','grid data',IFLAG)
           elseif (WORD(1:4).eq.'*slc') then
@@ -613,13 +613,13 @@ C Check for tmc file
 C Reset glazing treatment to default.
       iglzty=1
 
-C Add new rif file data.
+C Increment scene counter
       NSCENE=NSCENE+1
 
 C Set new scene to focus scene.
       ISCENE=NSCENE
 
-C Reset the number of chosen zones (nzg) to NCOMP.
+C Reset the number of chosen zones (nzg) to NCOMP and re-initialize nznog() .. for what???
       nzg=NCOMP
       izgfoc=0
       do 3 I=1,NCOMP
@@ -627,7 +627,7 @@ C Reset the number of chosen zones (nzg) to NCOMP.
  3    continue
 
 C Now ask for zone for internal and glare purposes.
-      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
+      if (IRP.eq.2 .or.IRP.eq.3 .or.IRP.eq.5 .or.IRP.eq.6) then
         if (IZONE.le.0) then
           H(1)=' Pick a zone as the focus zone for the Radiance'
           H(2)=' internal image calculations.'
@@ -1288,11 +1288,12 @@ C for use with a 'Coupling' scene purpose.
 
       logical XST
 
-      write(outs,'(a)')'Reading casual gain control file.'
-      call edisp (iuout,outs)
-      write(outs,'(a,a)')'Searching for sensor locations ',
-     &                                        'and orientations.'
-      call edisp (iuout,outs)
+Cag@02072009 comment out following verbosity (5 lines):
+C      write(outs,'(a)')'Reading casual gain control file.'
+C      call edisp (iuout,outs)
+c      write(outs,'(a,a)')'Searching for sensor locations ',
+C     &                                        'and orientations.'
+C      call edisp (iuout,outs)
 
 C Define temporary unit numbers.
       ITA1 = IFIL+6
@@ -1383,7 +1384,7 @@ C Recover zone index from command line variable zone.
       else
         if (aim(1:8).eq.'External') then
           izone=-1
-          zone='  '
+          zone='FRED'
         else
           call zindex(zone,izone)
         endif
@@ -1391,7 +1392,7 @@ C Recover zone index from command line variable zone.
 
 C If rcf file does exist then search for existing rif file.
       if (filexst.eq.'o') then
-        do 10 i=1,NSCENE
+        do 10 I=1,NSCENE
           if (SCENEPURP(I)(1:5).eq.aim(1:5)) then
 
 C Possible match, further check - look at rif file.

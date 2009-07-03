@@ -387,13 +387,13 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      CALL ESPrVersion("summary",cAppName,IUOUT)
-      
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(iuout,' ')
+C ag@02072009 comment out the following verbosity (6 lines):
+C      CALL ESPrVersion("summary",cAppName,IUOUT)
+C      write(outs,'(2a)')
+C     & ' Systems Research Unit, University of',
+C     & ' Strathclyde, Glasgow Scotland.'
+C      call edisp(IUOUT,outs)
+C      call edisp(iuout,' ')
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
@@ -450,8 +450,8 @@ C Check if the command line included a browse directive.
       endif
 
 C debug.
-      write(outs,'(2a)') 'Passed browse parameter of ',brw
-      call edisp(iuout,outs)
+c      write(outs,'(2a)') 'Passed browse parameter of ',brw
+c      call edisp(iuout,outs)
 
 C If an input file has been specified then load and display it
 C and then present the main menu.
