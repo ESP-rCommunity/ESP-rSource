@@ -198,7 +198,7 @@ C update the zone shading & insolation db.
       endif
       call insolc(icomp)
       icstat=1
-      call isave(ier)
+      call isave(icomp,ier)
       mon=mon+1
       if(mon.le.monf)goto 81
 
@@ -404,8 +404,6 @@ C ********** IGEOMS **********
 C Establishes the source surface grid if a zone transitional shading
 C file does not exist.
 
-C << update to use a different common block than g1 >>
-
       subroutine igeoms(izone)
 #include "building.h"
 #include "geometry.h"
@@ -413,16 +411,13 @@ C << update to use a different common block than g1 >>
 C Parameter
       integer izone  ! index of zone
 
-      common/pophelp/h(60)
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/tmc/itmc(ms),nwins
-      character H*72
 
 C Set default surface grid.
       if(nox(izone).eq.0) nox(izone)=20
       if(noz(izone).eq.0) noz(izone)=20
       nwins=0
-      do 10 i=1,nsur
+      do 10 i=1,nzsur(izone)
         if(itmc(i).ne.0)nwins=nwins+1
    10 continue
       return
@@ -449,6 +444,7 @@ C            in the misur list.
 #include "geometry.h"
 
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/c24/izstocn(mcom,ms)
       common/sunhr/isunhr
       common/tshd/ioshd(mox,moz)
       common/grid11/xop(mox,moz),zop(mox,moz)
@@ -500,8 +496,11 @@ C progress report.
 C Loop through surfaces and for each insolation source perform
 C calculations.
       iwin=0
-      do 20 i=1,nsur
+      do 20 i=1,nzsur(icomp)
+
+C Get the current connection for surface isrc
          isrc=i
+         iccisrc=izstocn(icomp,isrc)
          if(itmc(isrc).eq.0)goto 20
          iwin=iwin+1
          modes=1
@@ -537,7 +536,7 @@ C Record first sun-up hour.
             if(isunhr.eq.0)isunhr=j
 
 C Determine angles for all external and internal surfaces.
-            call incai(ihr)
+            call incai(icomp,ihr)
 
 C Initiallise igins, the array of source grid points holding
 C the insolated surface numbers.
@@ -585,7 +584,7 @@ C system.
                call trnsf2i(ihr)
 
 C Set up source surface global coordinates.
-               do 90 inv=1,nver(isrc)
+               do 90 inv=1,nznver(iccisrc)
                   xf(inv)=x(jvn(isrc,inv))
                   yf(inv)=y(jvn(isrc,inv))
                   zf(inv)=z(jvn(isrc,inv))
@@ -603,8 +602,8 @@ C Initiate source surface grid point-by-point analysis.
 
 C Convert source surface grid point coordinates back to global
 C coordinates before initiating projection.
-                     call transp(nver(isrc),xf,yf,zf,xop(m,n),zop(m,n),
-     &                           xgp,ygp,zgp)
+                     call transp(nznver(iccisrc),xf,yf,zf,xop(m,n),
+     &                           zop(m,n),xgp,ygp,zgp)
                      call trnsf3i(ihr,intsur,ipass,xgp,ygp,zgp)
                      ipass=1
                      if(yp.lt.0.0)goto 110
@@ -688,7 +687,6 @@ C surface shading information.
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/tshd/ioshd(mox,moz)
       common/sunhr/isunhr
       common/shdfil/ishadf
@@ -705,7 +703,8 @@ C surface shading information.
 
 C Transfer here for the first hour every day when sun is up.
     2 irec=1
-      read(iushd,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nsur)
+      read(iushd,rec=irec,iostat=istat,err=1000)
+     &    (irecs(i),i=1,nzsur(izone))
       irecn=irecs(isur)
       if(irecn.eq.0)then
           noshad=1
@@ -764,14 +763,16 @@ C Increment irec to skip record holding pso & psof
 
 C ********** INCAI **********
 
-      subroutine incai(ihour)
+      subroutine incai(icomp,ihour)
 #include "building.h"
+#include "geometry.h"
 
       common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/traceout/icout
       common/cai/caii(ms),caie(ms)
       common/tc/itc,icnt
       common/sangl1/sazi1,salt1
+      common/c24/izstocn(mcom,ms)
 
       dimension pazi(ms),pelv(ms)
       dimension xsum(ms),ysum(ms),zsum(ms)
@@ -779,11 +780,14 @@ C ********** INCAI **********
       logical ok
 
       r=atan(1.0)/45.0
-      do 10 i=1,nsur
+      do 10 i=1,nzsur(icomp)
+
+C Get the current connection.
+         icc=izstocn(icomp,i)
          xs=0.
          ys=0.
          zs=0.
-         nv=nver(i)
+         nv=nznver(icc)
 
 C Gross surface area.
          do 20 j=1,nv
@@ -801,7 +805,7 @@ C Gross surface area.
    10 continue
 
 C Azimuth and elevation angles.
-      do 30 i=1,nsur
+      do 30 i=1,nzsur(icomp)
          pazi(i)=90.0
          if(abs(xsum(i)).lt.0.00001)pazi(i)=0.0
          if(xsum(i).lt.0.0)pazi(i)=-90.0
@@ -819,7 +823,7 @@ C Azimuth and elevation angles.
    30 continue
 
 C  Cosine of the angle of incidence and surface-solar azimuth angle.
-      do 40 i=1,nsur
+      do 40 i=1,nzsur(icomp)
          if(salt1.gt.0.0)then
             psazi=abs(pazi(i)-sazi1)
             x1=cos(salt1*r)
@@ -851,12 +855,12 @@ C  Trace output.
       if(.not.ok)return
 
       call edisp(icout,' ')
-      write(outs,'(a,i3)')'*** INCAI: Hour',ihour
+      write(outs,'(a,i3,a,i3)')'*** INCAI: Hour',ihour,' zone',icomp
       call edisp(icout,outs)
       call edisp(icout,
      &' Surface    Internal    External    Azimuth    Elevation')
 
-      do 50 i=1,nsur
+      do 50 i=1,nzsur(icomp)
          write(outs,2)i,caii(i),caie(i),pazi(i),pelv(i)
     2    format(i5,8x,f6.4,6x,f6.4,7x,f5.1,6x,f5.1)
          call edisp(icout,outs)
@@ -874,7 +878,6 @@ C at hour jj.
 
       common/inswin/igins(mox,moz)
       common/pinsol/ins(ms),pins(ms),pinw(ms),pcshad
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/outin/iuout,iuin
@@ -899,32 +902,33 @@ C Count the number of grid points that project onto each surface.
       do 20 i=1,nox(icomp)
          do 21 j=1,noz(icomp)
             if(igins(i,j).eq.-200)then
-               icountt(nsur+3)=icountt(nsur+3)+1
+               icountt(nzsur(icomp)+3)=icountt(nzsur(icomp)+3)+1
             elseif(igins(i,j).eq.-100)then
-               icountt(nsur+1)=icountt(nsur+1)+1
-            elseif(igins(i,j).ge.1.and.igins(i,j).le.nsur)then
+               icountt(nzsur(icomp)+1)=icountt(nzsur(icomp)+1)+1
+            elseif(igins(i,j).ge.1.and.igins(i,j).le.nzsur(icomp))then
                icounts(igins(i,j))=icounts(igins(i,j))+1
                icountt(igins(i,j))=icountt(igins(i,j))+1
                ihit=ihit+1
-            elseif(igins(i,j).le.-1.and.igins(i,j).ge.(-nsur))then
+            elseif(igins(i,j).le.-1.and.igins(i,j).ge.
+     &            (-1*nzsur(icomp)))then
                icountw(abs(igins(i,j)))=icountw(abs(igins(i,j)))+1
                icountt(abs(igins(i,j)))=icountt(abs(igins(i,j)))+1
                ihit=ihit+1
             else
-               icountt(nsur+2)=icountt(nsur+2)+1
+               icountt(nzsur(icomp)+2)=icountt(nzsur(icomp)+2)+1
             endif
    21    continue
    20 continue
 
 C Initialise insolated surfaces.
-      do 30 i=1,nsur
+      do 30 i=1,nzsur(icomp)
          ins(i)=i
    30 continue
 
 C Bubble sort to give highest count to ins(1) etc.
 C Sort based on total hits on surface (i.e. icountt).
-      do 40 i=1,nsur-1
-         do 41 j=1,nsur-1 
+      do 40 i=1,nzsur(icomp)-1
+         do 41 j=1,nzsur(icomp)-1 
             if(icountt(j).lt.icountt(j+1))then
                itemp=icountt(j)
                icountt(j)=icountt(j+1)
@@ -944,7 +948,7 @@ C Sort based on total hits on surface (i.e. icountt).
 
 C Set insolated planes to zero if there are no hits, i.e. total shading.
       if(ihit.eq.0)then
-         do 45 i=1,nsur
+         do 45 i=1,nzsur(icomp)
             ins(i)=0
             pins(i)=0.0
             pinw(i)=0.0
@@ -955,17 +959,18 @@ C Set insolated planes to zero if there are no hits, i.e. total shading.
 
 C Calculate surface insolation proportion of total zone insolation
 C (i.e. all insolated surfaces add to 1).
-      do 50 i=1,nsur
+      do 50 i=1,nzsur(icomp)
          pins(i)=real(icounts(i))/(real(ihit))
          pinw(i)=real(icountw(i))/(real(ihit))
    50 continue
 
 C pcshad is the proportion of grid points shaded.
-      pcshad=real(icountt(nsur+1))/(real(ihit+icountt(nsur+1)))
+      pcshad=real(icountt(nzsur(icomp)+1))/
+     &           (real(ihit+icountt(nzsur(icomp)+1)))
 
 C Re-allocate proportions for surfaces greater than the maximum 
 C number of insolated surfaces ('misur').
-      do 60 i=(misur+1),nsur
+      do 60 i=(misur+1),nzsur(icomp)
          pinrl=pinrl+pins(i)
          pinrl=pinrl+pinw(i)
    60 continue

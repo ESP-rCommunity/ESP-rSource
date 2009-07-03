@@ -1413,7 +1413,6 @@ C  ifstat = 8  new file filled via import of ascii file
       common/outin/iuout,iuin
       common/pophelp/h(60)
       common/filep/ifil
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -1453,8 +1452,6 @@ C  ifstat = 8  new file filled via import of ascii file
          ifstat=7
          return
       endif
-      nzsur(icomp)=nsur
-      nztv(icomp)=ntv
 
 C Get name of obstruction file.
       if(iobs(icomp).eq.1)then

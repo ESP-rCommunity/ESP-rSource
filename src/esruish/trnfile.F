@@ -49,15 +49,15 @@ C geometry.h provides commons G0, G2, GS5, GS6.
       iunit=ifil
 
       irec=2
-      write(iunit,rec=irec,iostat=istat,err=1000)mon,(isc(i),i=1,nsur),
-     &                                           iyd
+      write(iunit,rec=irec,iostat=istat,err=1000)mon,
+     &  (isc(i),i=1,nzsur(icomp)),iyd
       irec=irec+1
-      write(iunit,rec=irec,iostat=istat,err=1000)ctype(icomp),nsur,ntv,
-     &                                           (nver(i),i=1,nsur)
+      write(iunit,rec=irec,iostat=istat,err=1000)ctype(icomp),
+     &  nzsur(icomp),ntv,(nver(i),i=1,nzsur(icomp))
       irec=irec+1
 
 C Write topology.
-      do 10 i=1,nsur
+      do 10 i=1,nzsur(icomp)
          nv=nver(i)
          write(iunit,rec=irec,iostat=istat,err=1000)(jvn(i,j),j=1,nv)
          irec=irec+1
@@ -375,7 +375,6 @@ C to the zone transitional shading file.
 
       common/outin/iuout,iuin
       common/filep/ifil
-C      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
       common/find/irecl
       common/c24/izstocn(mcom,ms)

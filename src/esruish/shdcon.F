@@ -154,7 +154,7 @@ C Write the first record of the zone transitional shading file.
          write(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,ms)
          call tfile1(icomp)
          call shadc(icomp)
-         call ssave(ier)
+         call ssave(icomp,ier)
          if(ier.ne.0)then
             call usrmsg('Error condition detected during file save!',
      &                  'Terminating calculation.','W')
@@ -320,7 +320,6 @@ C Calculates the direct and diffuse solar shading. Called from shdcon.
 #include "geometry.h"
 
       common/tracech/icout
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/prec8/slat,slon
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
@@ -372,7 +371,7 @@ C ksu is the number of sun-up hours
    10 continue
 
 C knt is the total number of target surfaces in zone.
-      do 11 i=1,nsur
+      do 11 i=1,nzsur(icomp)
          if(isc(i).eq.1)knt=knt+1
    11 continue
 
@@ -382,7 +381,7 @@ C progress report.
 
 C Commence direct (mode=dir) and diffuse (mode=dif) shading computation
 C for each target surface in turn.
-      do 20 itsur=1,nsur
+      do 20 itsur=1,nzsur(icomp)
          init=0
 
 C Skip if surface is not selected by user.

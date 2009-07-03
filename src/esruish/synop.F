@@ -41,7 +41,6 @@ C a zone transitional shading file.
       common/filep/ifil
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/contr/mon,isc(ms),iyd
