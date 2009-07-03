@@ -45,7 +45,6 @@ C coordinate system for use in 'point'.
       common/tracech/icout
       common/pangl/pazi,pelv,ptilt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
       common/c24/izstocn(mcom,ms)
 
@@ -102,15 +101,16 @@ C Get the current connection
       icc=izstocn(izone,is)
 
       ip1=nzjvn(icc,1)
-      xor=x(ip1)
-      yor=y(ip1)
-      zor=z(ip1)
+      xor=vcoord(izone,ip1,1)
+      yor=vcoord(izone,ip1,2)
+      zor=vcoord(izone,ip1,3)
 
 C Transform target surface coordinates.
       do 10 i=1,nznver(icc)
-         xs=x(jvn(is,i))
-         ys=y(jvn(is,i))
-         zs=z(jvn(is,i))
+         ip=nzjvn(icc,i)
+         xs=vcoord(izone,ip,1)
+         ys=vcoord(izone,ip,2)
+         zs=vcoord(izone,ip,3)
 
 C Transformed x.
          xft(i)=(xs-xor)*a(1)+(ys-yor)*a(2)-(xs-xor)*a(3)
@@ -165,9 +165,10 @@ C Trace output.
          call edisp(icout,outs)
          call edisp(icout,'Original XYZ coordinates:')
          do 9995 i=1,nznver(icc)
-           xs=x(jvn(is,i))
-           ys=y(jvn(is,i))
-           zs=z(jvn(is,i))
+           ip=nzjvn(icc,i)
+           xs=vcoord(izone,ip,1)
+           ys=vcoord(izone,ip,2)
+           zs=vcoord(izone,ip,3)
            write(outs,'(i2,2x,3f8.1)')i,xs,ys,zs
            call edisp(icout,outs)
  9995    continue
@@ -568,8 +569,8 @@ C Get the current connection
       do 10 i=1,nv
          k=i+1
          if(i.eq.nv)k=1
-         ip1=jvn(is,i)
-         ip2=jvn(is,k)
+         ip1=nzjvn(icc,i)
+         ip2=nzjvn(icc,k)
          xsum=xsum+y(ip1)*z(ip2)-z(ip1)*y(ip2)
          ysum=ysum+z(ip1)*x(ip2)-x(ip1)*z(ip2)
          zsum=zsum+x(ip1)*y(ip2)-y(ip1)*x(ip2)
@@ -589,8 +590,8 @@ C Get the current connection
     2 continue
 
 C Now compute local X-axis tilt angle.
-      iv1=jvn(is,1)
-      iv2=jvn(is,2)
+      iv1=nzjvn(icc,1)
+      iv2=nzjvn(icc,2)
       dz=z(iv2)-z(iv1)
       dist=((x(iv2)-x(iv1))**2+(y(iv2)-y(iv1))**2+
      &(z(iv2)-z(iv1))**2)**.5
@@ -612,8 +613,8 @@ C an adjusted Z value.
         zsum=0.
         do 20 i=1,4
           if(i.eq.1)then
-              ip1=jvn(is,1)
-              ip2=jvn(is,2)
+              ip1=nzjvn(icc,1)
+              ip2=nzjvn(icc,2)
               xx1=x(ip1)
               xx2=x(ip2)
               yy1=y(ip1)
@@ -621,8 +622,8 @@ C an adjusted Z value.
               zz1=z(ip1)
               zz2=z(ip2)
           elseif(i.eq.2)then
-              ip1=jvn(is,2)
-              ip2=jvn(is,2)
+              ip1=nzjvn(icc,2)
+              ip2=nzjvn(icc,2)
               xx1=x(ip1)
               xx2=x(ip2)
               yy1=y(ip1)
@@ -630,8 +631,8 @@ C an adjusted Z value.
               zz1=z(ip1)
               zz2=z(ip2)+0.1
           elseif(i.eq.3)then
-              ip1=jvn(is,2)
-              ip2=jvn(is,1)
+              ip1=nzjvn(icc,2)
+              ip2=nzjvn(icc,1)
               xx1=x(ip1)
               xx2=x(ip2)
               yy1=y(ip1)
@@ -639,8 +640,8 @@ C an adjusted Z value.
               zz1=z(ip1)+0.1
               zz2=z(ip2)+0.1
           elseif(i.eq.4)then
-              ip1=jvn(is,1)
-              ip2=jvn(is,1)
+              ip1=nzjvn(icc,1)
+              ip2=nzjvn(icc,1)
               xx1=x(ip1)
               xx2=x(ip2)
               yy1=y(ip1)

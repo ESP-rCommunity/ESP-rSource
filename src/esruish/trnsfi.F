@@ -77,6 +77,9 @@ C the axis towards the origin.
     3 be=-pelv*r
       ga=-ptilt*r
 
+C Get the current connection
+      icc=IZSTOCN(izone,is)
+
 C Set up transform equation coefficients.
 C Transformation order: z-axis (al from pazi) then
 C x-axis (be from pelv) then y-axis (ga from ptilt)
@@ -94,19 +97,16 @@ C rotation.
       c(3)=sin(al)*sin(be)*cos(ga)
       c(4)=cos(al)*sin(be)*cos(ga)
       c(5)=cos(be)*cos(ga)
-      ip1=jvn(is,1)
+      ip1=nzjvn(icc,1)
       xor=x(ip1)
       yor=y(ip1)
       zor=z(ip1)
 
-C Get the current connection
-      icc=IZSTOCN(izone,is)
-
 C Transform target surface coordinates.
       do 10 i=1,nznver(icc)
-         xs=x(jvn(is,i))
-         ys=y(jvn(is,i))
-         zs=z(jvn(is,i))
+         xs=x(nzjvn(icc,i))
+         ys=y(nzjvn(icc,i))
+         zs=z(nzjvn(icc,i))
 
 C Transformed x.
          xft(i)=(xs-xor)*a(1)+(ys-yor)*a(2)-(xs-xor)*a(3)
@@ -161,9 +161,9 @@ C Trace output.
          call edisp(icout,outs)
          call edisp(icout,'Original XYZ coordinates:')
          do 9995 i=1,nznver(icc)
-            xs=x(jvn(is,i))
-            ys=y(jvn(is,i))
-            zs=z(jvn(is,i))
+            xs=x(nzjvn(icc,i))
+            ys=y(nzjvn(icc,i))
+            zs=z(nzjvn(icc,i))
             write(outs,'(i2,2x,3f8.1)')i,xs,ys,zs
             call edisp(icout,outs)
  9995    continue

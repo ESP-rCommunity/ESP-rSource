@@ -585,9 +585,9 @@ C system.
 
 C Set up source surface global coordinates.
                do 90 inv=1,nznver(iccisrc)
-                  xf(inv)=x(jvn(isrc,inv))
-                  yf(inv)=y(jvn(isrc,inv))
-                  zf(inv)=z(jvn(isrc,inv))
+                  xf(inv)=x(nzjvn(iccisrc,inv))
+                  yf(inv)=y(nzjvn(iccisrc,inv))
+                  zf(inv)=z(nzjvn(iccisrc,inv))
    90          continue
 
 C Initiate source surface grid point-by-point analysis.
@@ -793,8 +793,8 @@ C Gross surface area.
          do 20 j=1,nv
             k=j+1
             if(j.eq.nv)k=1
-            ip1=jvn(i,j)
-            ip2=jvn(i,k)
+            ip1=nzjvn(icc,j)
+            ip2=nzjvn(icc,k)
             xs=xs+y(ip1)*z(ip2)-z(ip1)*y(ip2)
             ys=ys+z(ip1)*x(ip2)-x(ip1)*z(ip2)
             zs=zs+x(ip1)*y(ip2)-y(ip1)*x(ip2)
