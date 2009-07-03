@@ -3087,7 +3087,7 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C Text for each slot.
       character*3 am1slots(42),am2slots(42)
       character calename*32,calentag*12,calendayname*32,word3*3
-      character act*1,mohead*44,outs*124,etext*72
+      character mohead*44,outs*124,etext*72
       CHARACTER*9 RAMONTH(12)
       DIMENSION ID(12),MDAYS(12)
 
