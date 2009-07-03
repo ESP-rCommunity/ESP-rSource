@@ -40,7 +40,6 @@ C to superimpose any direct shading.
       common/filep/ifil
       common/pophelp/h(60)
       common/spad/mmod,limit,limtty
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
       common/headl/irecs(ms)
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -65,7 +64,7 @@ C to superimpose any direct shading.
       endif
 
 C Retrieve surface transformed coordinates.
-      nv=nver(is)
+      nv=NZNVER(icomp)
       irec=irecs(is)
       read(iunit,rec=irec,iostat=istat,err=1000)(xft(i),i=1,nv)
       irec=irec+1
@@ -87,7 +86,7 @@ C Clear the viewing box, draw its border and return the offsets
 C that define it. The win3d parameters match those in facdrw
 C and sitpln.
       call startbuffer()
-      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      call win3d(menuchw,7,4,4,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
       igwh=igb-igt
       igwid=igw
@@ -101,7 +100,7 @@ C Find maximum & minimum surface coordinates.
       zmax=-1.E+8
       xmin=1.E+8
       zmin=1.E+8
-      do 10 i=1,nv
+      do 10 i=1,NZNVER(icomp)
         xmax=amax1(xmax,xft(i))
         zmax=amax1(zmax,zft(i))
         xmin=amin1(xmin,xft(i))
@@ -291,23 +290,18 @@ C the surface polygon will not have been set to -1.
 
 C ********** SITPLN **********
 C Scales and draws the site plan showing the object boundary
-C and the surrounding obstruction blocks.
+C and the surrounding obstruction blocks based on common block
+C data structures.
 
       subroutine sitpln(icomp)
 #include "building.h"
 #include "geometry.h"
 
       common/spad/mmod,limit,limtty
-      common/outin/iuout,iuin
-      common/filep/ifil
 
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/prec8/slat,slon
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -317,16 +311,15 @@ C and the surrounding obstruction blocks.
 
       character sstr*72,blabel*4
       character tz*13
-      logical newgeo  ! used to test for new/old geometry file.
 #ifdef OSX
       integer igwid,igheight
       integer iside,isize     ! passed to viewtext
-      integer ipos,iupdown,isym,ifont    ! passed to etplot
+      integer iupdown,isym,ifont    ! passed to etplot
       integer iid1,iid2,iix,iiy
 #else
       integer*8 igwid,igheight
       integer*8 iside,isize     ! passed to viewtext
-      integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
+      integer*8 iupdown,isym,ifont    ! passed to etplot
       integer*8 iid1,iid2,iix,iiy
 #endif
 
@@ -338,11 +331,10 @@ C dialogue. Axiscale is in wwlib.c.
         call usrmsg('Not in graphic mode!',' ','W')
         return
       endif
-      newgeo=.false.  ! assume old geometry format.
 
 C Define a viewing box, draw its border after clearing it and
 C return the offsets that define it and set local variables.
-      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      call win3d(menuchw,7,4,4,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
       igwh=igb-igt
       igwid=igw
@@ -410,7 +402,7 @@ C Plot the zone and the zone name.
 C For each corner recover coordinates for the connection and plot.
       iupdown=0
       isym=0
-      do 40 i=1,nsur
+      do 40 i=1,nzsur(icomp)
         icc=IZSTOCN(icomp,i)
         j=NZJVN(icc,1)
         call etplot(VCOORD(icomp,j,1),VCOORD(icomp,j,2),iupdown,isym)
@@ -451,12 +443,14 @@ C Convert obstruction block geometry to (/gb1/) and plot.
    60 continue
 
 C Print labels and return to default font.
-    1 call winfnt(ifs)
-      write(sstr,3)slat,slon
-    3 format('Site Plan, Latitude ',f5.1,', Longitude ',f4.1)
-      iid1=igt-15; iid2=igl;
-      call wstxpt(iid1,iid2,sstr)
+    1 write(sstr,'(a,f5.1,a,f4.1)')'Site Plan, Latitude ',slat,
+     &  ' Longitude ',slon
+      iside=1
+      isize=1
+      ifont=2
+      call viewtext(sstr,iside,isize,ifont)
       call forceflush()
+      call winfnt(ifs)
 
       return
       end

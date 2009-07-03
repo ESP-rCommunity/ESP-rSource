@@ -956,7 +956,7 @@ C Generate a heading for the view.
                write(etext,'(a,i2,1x,a3,a,a5,a,f6.1,a,f5.1)')
      &            'View @ ',ido,month(imo),', ',descrh,
      &            ' Sun position - azimuth ',sazi,', altitude ',salt
-               iside=2
+               iside=1
                isize=1
                ifont=ifs
                call viewtext(etext,iside,isize,ifont)

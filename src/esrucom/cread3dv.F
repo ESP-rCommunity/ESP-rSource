@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C cread3dv.F contains the following Fortran subroutines:
 
-C  DRAWESP: Loads the geometric description(s) from an ESP file,
+C  DRAWESP: Loads the geometric description(s) from common blocks,
 C           converts into viewing coords, clips the image and draws it.
 
 C cread3dv.F is an extended version of read3dv.F which makes use of

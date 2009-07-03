@@ -20,7 +20,8 @@ C Boston, MA 02111-1307 USA.
 
 C The file e3dviews.f is a collection of support facilities for 
 C producing 3d images of configurations, implemented as Fortran 
-C Functions and Subroutines and also making use of C code in wwcut.c.
+C Functions and Subroutines and also making use of C code in
+C the lib source folder.
 
 C e3dviews.f contains the following:
 C LENS:   Initialises viewing parameters.
