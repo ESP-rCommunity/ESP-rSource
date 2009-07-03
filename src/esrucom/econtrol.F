@@ -608,7 +608,7 @@ C Set building-side function generator flag.
    30     CONTINUE
 
 C Reporting of all periods in this day type (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,0,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,0,II,JJ,iier)
    20   CONTINUE
    10 CONTINUE
 
@@ -924,7 +924,7 @@ C Set plant-side function generator flag.
    60     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,1,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,1,II,JJ,iier)
    50   continue
    40 continue
       goto 15
@@ -1129,7 +1129,7 @@ C Get date strings. For this test assume some values.
    72     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,2,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,2,II,JJ,iier)
    71   continue
 
 C If control component active read connections.
@@ -1366,7 +1366,7 @@ C Write out string describing the controller type.
    67     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,4,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,4,II,JJ,iier)
    57   continue
    47 continue
 
@@ -1703,7 +1703,7 @@ C<<<<<<<Confirm the 0 to 1 range check >>>>>>>>>
   300     CONTINUE
 
 C Reporting of all periods in this day type (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ,iier)
   200   CONTINUE
   100 CONTINUE
 
@@ -3179,7 +3179,7 @@ C Only law 2 for bidirectional data will be used at the moment (May 2008)
 
 C ******** LSTCNTLD
 C List one day type of a building/plant/flow/global/optical control. 
-      SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ)
+      SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ,IER)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
@@ -3222,7 +3222,7 @@ C List data for function II and day type JJ.
       endif
       NTSPH=1
       CALL EPERSTR(IYEAR,IBD,1,IED,24,
-     &       NTSPH,2,0,PERST1,PERST2,PERST3,IIER)
+     &       NTSPH,2,0,PERST1,PERST2,PERST3,IER)
 
       if(icfoc.eq.0)then
         nnd=nbcdt(ii)
