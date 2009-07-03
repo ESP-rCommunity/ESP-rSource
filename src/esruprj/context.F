@@ -611,7 +611,7 @@ C otherwise overwrite. (Same logic as in esystem.F
         if(ok)then
           loop=12
           loopst=1
-          call calenprint(iuout,'t',iyear,loopst,loop)
+          call calenprint(iuout,'t',iyear,loopst,loop,ier)
         endif
 
       ELSEIF(INO.EQ.8)THEN
@@ -2009,7 +2009,7 @@ C temporal definition entity
      &  'Controls might be suitable for use with temporal data.')
             do 777 ijj=1,ncf
               if(ibclaw(ijj,1,1).eq.23)found=.true.
-              call LSTCNTL(iuout,0,ijj)
+              call LSTCNTL(iuout,0,ijj,ier)
  777        continue
             if(found)then
 
@@ -2171,10 +2171,10 @@ C control law in the first period.
             do 77 ijj=1,ncf
               if(ibsn(ijj,1).eq.-5)then
                 found=.true.
-                call LSTCNTL(iuout,0,ijj)
+                call LSTCNTL(iuout,0,ijj,ier)
               elseif(ibclaw(ijj,1,1).eq.11)then
                 found=.true.
-                call LSTCNTL(iuout,0,ijj)
+                call LSTCNTL(iuout,0,ijj,ier)
               endif
   77        continue
             if(found)then
@@ -2322,7 +2322,7 @@ C Update the control file and link the control loop to the correct zone.
 
 C Depending on the type of data, ask for associated surface 
             IC=-1
- 352      izdef=0
+ 352        izdef=0
             call askzone(ic,izdef,
      &        ' Related zone for bidirectional data set?',
      &        'Related zone','-','Optical sets require a zone.',ier)
@@ -2937,9 +2937,9 @@ C loopst is the month number to start with
         endif
 
 C Print the calendar.
-        call calenprint(iuout,'t',iyear,loopst,loop)
+        call calenprint(iuout,'t',iyear,loopst,loop,ier)
         call edisp(iuout,' ')
-        call calenprint(iuout,'g',iyear,loopst,loop)
+        call calenprint(iuout,'g',iyear,loopst,loop,ier)
         call edisp(iuout,' ')
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
@@ -3043,7 +3043,8 @@ C at loopst for loop months.
 C Currently it prints to text feedback or file only. Future
 C option is to display in graphic feedback with day types
 C as defined by calenmanage.
-      subroutine calenprint(itru,act,iyear,loopst,loop)
+C act (char*1) action to take 't' text feedback, 'g' graphic feedback.
+      subroutine calenprint(itru,act,iyear,loopst,loop,ier)
 #include "building.h"
 
 C Parameters
@@ -3086,7 +3087,7 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C Text for each slot.
       character*3 am1slots(42),am2slots(42)
       character calename*32,calentag*12,calendayname*32,word3*3
-      character mohead*44,outs*124,etext*72
+      character act*1,mohead*44,outs*124,etext*72
       CHARACTER*9 RAMONTH(12)
       DIMENSION ID(12),MDAYS(12)
 

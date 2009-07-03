@@ -6235,7 +6235,7 @@ C setting up the menu.
       endif
 
 C Fill the control period menu and editing range arrays.
-      call stfmenu(icfoc)
+      call stfmenu(icfoc,ier)
 
 C Copy cm data to cmlocal.
       tcpst=tcps
@@ -6244,7 +6244,7 @@ C Copy cm data to cmlocal.
   11  continue
 
 C List current control data for this loop (unless changes are pending).
-      if(.NOT.modval) call LSTCNTLD(iuout,icfoc,icloop,iday)
+      if(.NOT.modval) call LSTCNTLD(iuout,icfoc,icloop,iday,ier)
 
 C Define the static portions of the menu.
    91 MHEAD=6
@@ -6377,7 +6377,7 @@ C List control details.
      &      'Listing only shows data saved in file. While some data',
      &      'has changed these have not been saved to file.','W')
         else
-          call LSTCNTLD(iuout,icfoc,icloop,iday)
+          call LSTCNTLD(iuout,icfoc,icloop,iday,ier)
         endif
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
@@ -7044,7 +7044,7 @@ C Not one of the legal menu choices.
 C ****** stfmenu
 C Stfmenu copies menu and prompts for period editing.  It expects the common
 C block sctl to have been filled for the current period.
-      subroutine stfmenu(icfoc)
+      subroutine stfmenu(icfoc,ier)
 #include "building.h"
 #include "net_flow.h"
 

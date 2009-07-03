@@ -1235,9 +1235,9 @@ C List control data.
           call edisp248(itu,znctldoc,80)
           if(controlinfo.eq.2)then
             do 244 ii=1,NCF
-              call LSTCNTL(itu,0,ii)
+              call LSTCNTL(itu,0,ii,ier)
  244        continue
-            call LSTCNTL(itu,0,0)
+            call LSTCNTL(itu,0,0,ier)
           endif
         endif
         if(NCL.gt.0)then
@@ -1248,7 +1248,7 @@ C List control data.
           call edisp248(itu,plctldoc,80)
           if(controlinfo.eq.2)then
             do 245 ii=1,NCL
-              call LSTCNTL(itu,1,ii)
+              call LSTCNTL(itu,1,ii,ier)
  245        continue
           endif
         endif
@@ -1260,7 +1260,7 @@ C List control data.
           call edisp248(itu,flctldoc,80)
           if(controlinfo.eq.2)then
             do 246 ii=1,NCC
-              call LSTCNTL(itu,2,ii)
+              call LSTCNTL(itu,2,ii,ier)
  246        continue
           endif
         endif
@@ -1272,7 +1272,7 @@ C List control data.
           call edisp248(itu,glctldoc,80)
           if(controlinfo.eq.2)then
             do 147 ii=1,NGF
-              call LSTCNTL(itu,3,ii)
+              call LSTCNTL(itu,3,ii,ier)
  147        continue
           endif
         endif
