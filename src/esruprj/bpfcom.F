@@ -1271,7 +1271,7 @@ C Add a control period (make period start 1 hour after the previous one.
 C ******** LSTCNTL
 C List a building/plant/flow/global/optical control.  If II = 0 then
 C list out the zone/loop associations. 
-      SUBROUTINE LSTCNTL(itru,icfoc,II)
+      SUBROUTINE LSTCNTL(itru,icfoc,II,IER)
 #include "building.h"
 #include "geometry.h"
 #include "net_flow.h"
@@ -1346,7 +1346,7 @@ C List function details.
       if(nn.eq.0)nn=3
       do 20 j=1,nn
         JJ=J
-        call lstcntld(itru,icfoc,II,JJ)
+        call lstcntld(itru,icfoc,II,JJ,iier)
    20 CONTINUE
       return
       end

@@ -718,9 +718,9 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,znctldoc,72)
             do 144 ii=1,NCF
-              call LSTCNTL(itru,0,ii)
+              call LSTCNTL(itru,0,ii,IER)
  144        continue
-            call LSTCNTL(itru,0,0)
+            call LSTCNTL(itru,0,0,IER)
           endif
           if(icfoc.eq.1.and.NCL.gt.0)then
             call edisp(itru,' ')
@@ -729,7 +729,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,plctldoc,72)
             do 145 ii=1,NCL
-              call LSTCNTL(itru,1,ii)
+              call LSTCNTL(itru,1,ii,IER)
  145        continue
           endif
           if(icfoc.eq.2.and.NCC.gt.0)then
@@ -739,7 +739,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,flctldoc,72)
             do 146 ii=1,NCC
-              call LSTCNTL(itru,2,ii)
+              call LSTCNTL(itru,2,ii,IER)
  146        continue
           endif
           if(icfoc.eq.3.and.NGF.gt.0)then
@@ -749,7 +749,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,flctldoc,72)
             do 147 ii=1,NGF
-              call LSTCNTL(itru,3,ii)
+              call LSTCNTL(itru,3,ii,IER)
  147        continue
           endif
           if(icfoc.eq.4.and.NECL.gt.0)then
@@ -759,7 +759,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,elctldoc,72)
             do 247 ii=1,NECL
-              call LSTCNTL(itru,4,ii)
+              call LSTCNTL(itru,4,ii,IER)
  247        continue
           endif
           if(icfoc.eq.5.and.nof.gt.0)then
@@ -769,7 +769,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,opticdoc,72)
             do 248 ii=1,nof
-              call LSTCNTL(itru,5,ii)
+              call LSTCNTL(itru,5,ii,IER)
  248        continue
           endif
         elseif(irc.eq.2)then
@@ -873,27 +873,27 @@ C Pull up a multi-choice dialog to see what should be edited.
         h(4)=' c) for each day type, the period of validity and'
         h(5)='    details for distinct period during the day.'
         if(icfoc.eq.0)then
-          call LSTCNTLD(itru,0,ii,idi)
+          call LSTCNTLD(itru,0,ii,idi,IER)
           write(outs,'(a,i2,a)') 'Zone control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.1)then
-          call LSTCNTLD(itru,1,ii,idi)
+          call LSTCNTLD(itru,1,ii,idi,IER)
           write(outs,'(a,i2,a)') 'Plant control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.2)then
-          call LSTCNTLD(itru,2,ii,idi)
+          call LSTCNTLD(itru,2,ii,idi,IER)
           write(outs,'(a,i2,a)') 'Flow control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.3)then
-          call LSTCNTLD(itru,3,ii,idi)
+          call LSTCNTLD(itru,3,ii,idi,IER)
           write(outs,'(a,i2,a)') 'Global control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.4)then
-          call LSTCNTLD(itru,4,ii,idi)
+          call LSTCNTLD(itru,4,ii,idi,IER)
           write(outs,'(a,i2,a)') 'Power control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.5)then
-          call LSTCNTLD(itru,5,ii,idi)
+          call LSTCNTLD(itru,5,ii,idi,IER)
           write(outs,'(a,i2,a)') 'Optical control function (',II,
      &      ') editing.'
         endif
@@ -1124,22 +1124,22 @@ C Edit period data (day type index is idi), first list the
 C current day type data..
           CALL EPMENSV
           if(icfoc.eq.0)then
-            call LSTCNTLD(itru,0,II,idi)
+            call LSTCNTLD(itru,0,II,idi,IER)
             CALL EBCNTRL(ITRC,II,idi,IER)
           elseif(icfoc.eq.1)then
-            call LSTCNTLD(itru,1,II,idi)
+            call LSTCNTLD(itru,1,II,idi,IER)
             CALL EPCNTRL(ITRC,II,idi,IER)
           elseif(icfoc.eq.2)then
-            call LSTCNTLD(itru,2,II,idi)
+            call LSTCNTLD(itru,2,II,idi,IER)
             CALL EFCNTRL(II,idi,IER)
           elseif(icfoc.eq.3)then
-            call LSTCNTLD(itru,3,II,idi)
+            call LSTCNTLD(itru,3,II,idi,IER)
             CALL EGCNTRL(ITRC,II,idi,IER)
           elseif(icfoc.eq.4)then
-            call LSTCNTLD(itru,4,II,idi)
+            call LSTCNTLD(itru,4,II,idi,IER)
             CALL edisp(iuout,'Electrical editing not available')
           elseif(icfoc.eq.5)then
-            call LSTCNTLD(itru,5,II,idi)
+            call LSTCNTLD(itru,5,II,idi,IER)
             CALL EOCNTRL(II,idi,IER)
           endif
           CALL EPMENRC
