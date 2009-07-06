@@ -546,11 +546,10 @@ C   ptilt - is the angle between the face x-axis and the horizontal
 C           where the x-axis is the line joining the 1st and 2nd
 C           face vertices.
 
-      subroutine pangs(icomp,is)
+      subroutine pangs(izone,is)
 #include "building.h"
 #include "geometry.h"
 
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/pangl/pazi,pelv,ptilt
       common/c24/izstocn(mcom,ms)
 
@@ -564,16 +563,20 @@ C           face vertices.
 
 C Compute azimuth and elevation angles for face 'IS'.
 C Get the current connection
-      icc=izstocn(icomp,is)
+      icc=izstocn(izone,is)
       nv=nznver(icc)
       do 10 i=1,nv
          k=i+1
          if(i.eq.nv)k=1
          ip1=nzjvn(icc,i)
          ip2=nzjvn(icc,k)
-         xsum=xsum+y(ip1)*z(ip2)-z(ip1)*y(ip2)
-         ysum=ysum+z(ip1)*x(ip2)-x(ip1)*z(ip2)
-         zsum=zsum+x(ip1)*y(ip2)-y(ip1)*x(ip2)
+
+         xsum=xsum+vcoord(izone,ip1,2)*vcoord(izone,ip2,3)-
+     &        vcoord(izone,ip1,3)*vcoord(izone,ip2,2)
+         ysum=ysum+vcoord(izone,ip1,3)*vcoord(izone,ip2,1)-
+     &        vcoord(izone,ip1,1)*vcoord(izone,ip2,3)
+         zsum=zsum+vcoord(izone,ip1,1)*vcoord(izone,ip2,2)-
+     &        vcoord(izone,ip1,2)*vcoord(izone,ip2,1)
    10 continue
       pazi=90.0
       if(abs(xsum).lt.0.00001)pazi=0.0
@@ -592,11 +595,12 @@ C Get the current connection
 C Now compute local X-axis tilt angle.
       iv1=nzjvn(icc,1)
       iv2=nzjvn(icc,2)
-      dz=z(iv2)-z(iv1)
-      dist=((x(iv2)-x(iv1))**2+(y(iv2)-y(iv1))**2+
-     &(z(iv2)-z(iv1))**2)**.5
+      dz=vcoord(izone,iv2,3)-vcoord(izone,iv1,3)
+      dist=((vcoord(izone,iv2,1)-vcoord(izone,iv1,1))**2+
+     &      (vcoord(izone,iv2,2)-vcoord(izone,iv1,2))**2+
+     &      (vcoord(izone,iv2,3)-vcoord(izone,iv1,3))**2)**.5
       ptilt=asin(dz/dist)/r
-      if(z(iv1).gt.z(iv2))ptilt=-ptilt
+      if(vcoord(izone,iv1,3).gt.vcoord(izone,iv2,3))ptilt=-ptilt
 
 C For the special case of a horizontal surface, the
 C azimuth calculated above is zero. It is now reset to
@@ -615,39 +619,39 @@ C an adjusted Z value.
           if(i.eq.1)then
               ip1=nzjvn(icc,1)
               ip2=nzjvn(icc,2)
-              xx1=x(ip1)
-              xx2=x(ip2)
-              yy1=y(ip1)
-              yy2=y(ip2)
-              zz1=z(ip1)
-              zz2=z(ip2)
+              xx1=vcoord(izone,ip1,1)
+              xx2=vcoord(izone,ip2,1)
+              yy1=vcoord(izone,ip1,2)
+              yy2=vcoord(izone,ip2,2)
+              zz1=vcoord(izone,ip1,3)
+              zz2=vcoord(izone,ip2,3)
           elseif(i.eq.2)then
               ip1=nzjvn(icc,2)
               ip2=nzjvn(icc,2)
-              xx1=x(ip1)
-              xx2=x(ip2)
-              yy1=y(ip1)
-              yy2=y(ip2)
-              zz1=z(ip1)
-              zz2=z(ip2)+0.1
+              xx1=vcoord(izone,ip1,1)
+              xx2=vcoord(izone,ip2,1)
+              yy1=vcoord(izone,ip1,2)
+              yy2=vcoord(izone,ip2,2)
+              zz1=vcoord(izone,ip1,3)
+              zz2=vcoord(izone,ip2,3)+0.1
           elseif(i.eq.3)then
               ip1=nzjvn(icc,2)
               ip2=nzjvn(icc,1)
-              xx1=x(ip1)
-              xx2=x(ip2)
-              yy1=y(ip1)
-              yy2=y(ip2)
-              zz1=z(ip1)+0.1
-              zz2=z(ip2)+0.1
+              xx1=vcoord(izone,ip1,1)
+              xx2=vcoord(izone,ip2,1)
+              yy1=vcoord(izone,ip1,2)
+              yy2=vcoord(izone,ip2,2)
+              zz1=vcoord(izone,ip1,3)+0.1
+              zz2=vcoord(izone,ip2,3)+0.1
           elseif(i.eq.4)then
               ip1=nzjvn(icc,1)
               ip2=nzjvn(icc,1)
-              xx1=x(ip1)
-              xx2=x(ip2)
-              yy1=y(ip1)
-              yy2=y(ip2)
-              zz1=z(ip1)+0.1
-              zz2=z(ip2)
+              xx1=vcoord(izone,ip1,1)
+              xx2=vcoord(izone,ip2,1)
+              yy1=vcoord(izone,ip1,2)
+              yy2=vcoord(izone,ip2,2)
+              zz1=vcoord(izone,ip1,3)+0.1
+              zz2=vcoord(izone,ip2,3)
           endif
           xsum=xsum+yy1*zz2-zz1*yy2
           ysum=ysum+zz1*xx2-xx1*zz2

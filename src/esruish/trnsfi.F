@@ -42,7 +42,6 @@ C essentially a copy of trnsf1.
       common/tracech/icout
       common/pangl/pazi,pelv,ptilt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
       common/c24/izstocn(mcom,ms)
 
@@ -77,9 +76,6 @@ C the axis towards the origin.
     3 be=-pelv*r
       ga=-ptilt*r
 
-C Get the current connection
-      icc=IZSTOCN(izone,is)
-
 C Set up transform equation coefficients.
 C Transformation order: z-axis (al from pazi) then
 C x-axis (be from pelv) then y-axis (ga from ptilt)
@@ -97,16 +93,20 @@ C rotation.
       c(3)=sin(al)*sin(be)*cos(ga)
       c(4)=cos(al)*sin(be)*cos(ga)
       c(5)=cos(be)*cos(ga)
+
+C Get the current connection
+      icc=izstocn(izone,is)
       ip1=nzjvn(icc,1)
-      xor=x(ip1)
-      yor=y(ip1)
-      zor=z(ip1)
+      xor=vcoord(izone,ip1,1)
+      yor=vcoord(izone,ip1,2)
+      zor=vcoord(izone,ip1,3)
 
 C Transform target surface coordinates.
       do 10 i=1,nznver(icc)
-         xs=x(nzjvn(icc,i))
-         ys=y(nzjvn(icc,i))
-         zs=z(nzjvn(icc,i))
+         ip=nzjvn(icc,i)
+         xs=vcoord(izone,ip,1)
+         ys=vcoord(izone,ip,2)
+         zs=vcoord(izone,ip,3)
 
 C Transformed x.
          xft(i)=(xs-xor)*a(1)+(ys-yor)*a(2)-(xs-xor)*a(3)
@@ -121,18 +121,18 @@ C Transformed z.
 
 C Transformed y value should be close to zero; warn if not.
          if(abs(yft(i)).gt.1.E-3)then
-             call edisp(icout,' ')
-             write(outs,9999)is
- 9999        format('TRNSF1I: Surface ',i2,
-     &                          ' is probably not coplanar!')
-             call edisp(icout,outs)
-             write(outs,9998)i,xs,ys,zs
- 9998        format('Vertex ',i2,', which has coordinates ',3f11.6,',')
-             call edisp(icout,outs)
-             write(outs,9997)yft(i)
- 9997        format('has transformed Y value of ',f11.6,
-     &              ' (should be 0).')
-             call edisp(icout,outs)
+            call edisp(icout,' ')
+            write(outs,9999)is
+ 9999       format('TRNSF1I: Surface ',i2,
+     &                         ' is probably not coplanar!')
+            call edisp(icout,outs)
+            write(outs,9998)i,xs,ys,zs
+ 9998       format('Vertex ',i2,', which has coordinates ',3f11.6,',')
+            call edisp(icout,outs)
+            write(outs,9997)yft(i)
+ 9997       format('has transformed Y value of ',f11.6,
+     &             ' (should be 0).')
+            call edisp(icout,outs)
          endif
    10 continue
 
@@ -161,11 +161,12 @@ C Trace output.
          call edisp(icout,outs)
          call edisp(icout,'Original XYZ coordinates:')
          do 9995 i=1,nznver(icc)
-            xs=x(nzjvn(icc,i))
-            ys=y(nzjvn(icc,i))
-            zs=z(nzjvn(icc,i))
-            write(outs,'(i2,2x,3f8.1)')i,xs,ys,zs
-            call edisp(icout,outs)
+           ip=nzjvn(icc,i)
+           xs=vcoord(izone,ip,1)
+           ys=vcoord(izone,ip,2)
+           zs=vcoord(izone,ip,3)
+           write(outs,'(i2,2x,3f8.1)')i,xs,ys,zs
+           call edisp(icout,outs)
  9995    continue
          call edisp(icout,'Transformed X`Y`Z` coordinates:')
          do 9994 i=1,nznver(icc)
