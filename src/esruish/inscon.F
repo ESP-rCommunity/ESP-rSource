@@ -515,6 +515,8 @@ C              surface i in the zone transitional shading file.
 C Partially derive transformation equations by computing time
 C independent part of equation coefficients - equivalent to
 C translation plus three-dimensional plane rotation.
+C Note: this will overwrite the trnfs common block data which was
+C computed during the shading phase of the calculations.
          call trnsf1i(icomp,isrc)
 
 C Grid the insolation source surface.
@@ -577,6 +579,7 @@ C Exclude a surface that cannot see the source.
                if(intsur.eq.isrc.or.caii(l).le.0.0)goto 80
 
 C Derive the transformation equations for current internal surface.
+C << it would be useful to not call this a 2nd time >>
                call trnsf1i(icomp,intsur)
 
 C Compute new solar angles relative to internal surface coordinate

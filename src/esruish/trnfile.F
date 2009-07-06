@@ -71,7 +71,7 @@ C to the zone transitional shading file.
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/g1t/xft(mv),zft(mv)
+      common/g1t/xft(mcom,mv),yft(mcom,mv),zft(mcom,mv)
       common/find/irecl
       common/c24/izstocn(mcom,ms)
 
@@ -92,9 +92,9 @@ C Recover and update irecs for surface `is`.
       write(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nzs)
       irec=irecs(is)
       nv=nznver(icc)
-      write(iunit,rec=irec,iostat=istat,err=1000)(xft(i),i=1,nv)
+      write(iunit,rec=irec,iostat=istat,err=1000)(xft(icc,i),i=1,nv)
       irec=irec+1
-      write(iunit,rec=irec,iostat=istat,err=1000)(zft(i),i=1,nv)
+      write(iunit,rec=irec,iostat=istat,err=1000)(zft(icc,i),i=1,nv)
       irecl=irec+1
       return
 
@@ -118,7 +118,7 @@ C and computes the overall direct and diffuse shading factors.
       common/filep/ifil
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
-      common/g1t/xft(mv),zft(mv)
+C      common/g1t/xft(mcom,mv),yft(mcom,mv),zft(mcom,mv)
       common/grid3/ogrida(ms)
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
@@ -223,10 +223,10 @@ C Next line only reached after all sky patches have been processed.
   50     continue
   40  continue
 
-C Calculate gross surface area, gsa.
-C << why calculate? this is already known >>>
-      nv=nznver(icc)
-      call area(nv,xft,zft,gsa)
+C Establish gross surface area, gsa.
+C      nv=nznver(icc)
+      gsa=ssna(icc)
+C      call area(nv,xft,zft,gsa)
 
       if(mode.eq.'dir')pso(is,ihour)=gssa/gsa
       if(mode.eq.'dif')then
