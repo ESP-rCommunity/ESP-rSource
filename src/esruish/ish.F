@@ -1477,6 +1477,10 @@ C Get name of obstruction file.
          endif
       endif
 
+C Because they will be used many times derive the xft,yft,zft
+C surface vertex transforms for surfaces in this zone.
+C << to be done after adjusting data structure >>
+
 C Get name of the zone shading & insolation db.
       if(isi(icomp).eq.1)then
          call sifile(icomp,istat)
