@@ -130,7 +130,7 @@ C      common/g1t/xft(mcom,mv),yft(mcom,mv),zft(mcom,mv)
 
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-      character outs*124,mode*3
+      character outs*248,mode*3
       logical tok
 
 C If trace requested enable writing.
@@ -224,9 +224,7 @@ C Next line only reached after all sky patches have been processed.
   40  continue
 
 C Establish gross surface area, gsa.
-C      nv=nznver(icc)
       gsa=ssna(icc)
-C      call area(nv,xft,zft,gsa)
 
       if(mode.eq.'dir')pso(is,ihour)=gssa/gsa
       if(mode.eq.'dif')then
@@ -246,25 +244,25 @@ C Check for inappropriate shading values.
          write(outs,'(3a,f5.3,a,i2,a)') 'Direct shading factor for ',
      &        ssname(icn),' is ',pso(is,ihour),' @ ',ihour,
      &        'hrs - saved as 1.0.'
-         call edisp(iuout,outs)
+         call edisp248(iuout,outs,124)
          pso(is,ihour)=1.0
       elseif(mode.eq.'dir'.and.pso(is,ihour).lt.0.0)then
          write(outs,'(3a,f5.3,a,i2,a)') 'Direct shading factor for ',
      &        ssname(icn),' is ',pso(is,ihour),' @ ',ihour,
      &        'hrs - saved as 0.0.'
-         call edisp(iuout,outs)
+         call edisp248(iuout,outs,124)
          pso(is,ihour)=0.0
       elseif(mode.eq.'dif'.and.psof(is,ihour).gt.1.0)then
         write(outs,'(3a,f5.3,a,i2,a)') 'Diffuse shading factor for ',
      &        ssname(icn),' is ',psof(is,ihour),' @ ',ihour,
      &        'hrs - saved as 1.0.'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,124)
         psof(is,ihour)=1.0
       elseif(mode.eq.'dif'.and.psof(is,ihour).lt.0.0)then
         write(outs,'(3a,f5.3,a,i2,a)') 'Diffuse shading factor for ',
      &        ssname(icn),' is ',psof(is,ihour),' @ ',ihour,
      &        'hrs - saved as 0.0.'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,124)
         psof(is,ihour)=0.0
       endif
 
