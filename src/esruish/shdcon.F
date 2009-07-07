@@ -403,7 +403,7 @@ C independent part of equation coefficients - equivalent to
 C translation plus three-dimensional plane rotation.
          call trnsf1(icomp,itsur)
 
-C Transfer pre-transformed surface coordinates to zone transitional
+C Transfer transformed surface coordinates to zone transitional
 C shading file.
          call tfile2(icomp,itsur)
 
@@ -553,7 +553,7 @@ C Project obstruction block surface, form intersection with plane
 C of target surface if necessary, then determine target surface
 C shading.
                  do 60 ibs=1,6
-                   call trnsf3(icomp,itsur,ihour,ibn,ibs)
+                   call trnsf3(ihour,ibn,ibs)
                    call decomp(ibn,ibs,itsur)
                    call shdtst(icomp,itsur)
    60            continue 

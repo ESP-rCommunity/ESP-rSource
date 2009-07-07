@@ -43,7 +43,7 @@ C Parameter
       common/filep/ifil
       common/pophelp/h(60)
       common/spad/mmod,limit,limtty
-      common/g1t/xft(mcom,mv),yft(mcom,mv),zft(mcom,mv)
+      common/g1t/xft(mv),zft(mv)
       common/headl/irecs(ms)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
@@ -70,14 +70,14 @@ C Ask user for the surface to focus on.
         is=iva(1)
       endif
 
-C Find connection and number of edges and then jump past the
+C Find connection and number of edges and then retrieve the
 C surface transformed coordinates.
       icc=izstocn(icomp,is)
       nv=nznver(icc)
       irec=irecs(is)
-      read(iunit,rec=irec,iostat=istat,err=1000)(xft(icc,i),i=1,nv)
+      read(iunit,rec=irec,iostat=istat,err=1000)(xft(i),i=1,nv)
       irec=irec+1
-      read(iunit,rec=irec,iostat=istat,err=1000)(zft(icc,i),i=1,nv)
+      read(iunit,rec=irec,iostat=istat,err=1000)(zft(i),i=1,nv)
       irec=irec+1
 
 C Set up mesh centre points.
@@ -101,8 +101,7 @@ C and sitpln.
       igwid=igw
       igheight=igwh
 
-C Update the plane equation to get the trnsf common block
-C ready.
+C Update the plane equation.
       call trnsf1(icomp,is)
 
 C Find maximum & minimum surface coordinates for this surface.
@@ -111,10 +110,10 @@ C Find maximum & minimum surface coordinates for this surface.
       xmin=1.E+8
       zmin=1.E+8
       do 10 i=1,nznver(icc)
-        xmax=amax1(xmax,xft(icc,i))
-        zmax=amax1(zmax,zft(icc,i))
-        xmin=amin1(xmin,xft(icc,i))
-        zmin=amin1(zmin,zft(icc,i))
+        xmax=amax1(xmax,xft(i))
+        zmax=amax1(zmax,zft(i))
+        xmin=amin1(xmin,xft(i))
+        zmin=amin1(zmin,zft(i))
    10 continue
 
 C Reopen the dialogue box.
@@ -199,7 +198,7 @@ C Draws the elevation of the target surface.
 #include "building.h"
 
       common/contr/mon,isc(ms),iyd
-      common/g1t/xft(mcom,mv),yft(mcom,mv),zft(mcom,mv)
+      common/g1T/xft(mv),zft(mv)
       common/c24/izstocn(mcom,ms)
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
@@ -244,12 +243,12 @@ C Draw vertical axis.
 C Draw target surface.
       iupdown=0
       isym=0
-      call etplot(xft(icn,1),zft(icn,1),iupdown,isym)
+      call etplot(xft(1),zft(1),iupdown,isym)
       iupdown=1
       do 10 i=2,nv
-         call etplot(xft(icn,i),zft(icn,i),iupdown,isym)
+         call etplot(xft(i),zft(i),iupdown,isym)
    10 continue
-      call etplot(xft(icn,1),zft(icn,1),iupdown,isym)
+      call etplot(xft(1),zft(1),iupdown,isym)
       call forceflush()
       return
       end

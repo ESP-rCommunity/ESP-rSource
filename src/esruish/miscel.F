@@ -68,7 +68,7 @@ C points are later excluded.
       subroutine mesh(izone,its)
 #include "building.h"
 #include "geometry.h"
-      common/g1t/xft(mcom,mv),yft(mcom,mv),zft(mcom,mv)
+      common/g1t/xft(mv),zft(mv)
       common/grid3/ogrida(ms)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/c24/izstocn(mcom,ms)
@@ -84,10 +84,10 @@ C x & y values for this surface by scanning each vertex.
       zmin=1.E+10
       nv=nznver(icc)
       do 10 i=1,nv
-         xmax=amax1(xmax,xft(icc,i))
-         zmax=amax1(zmax,zft(icc,i))
-         xmin=amin1(xmin,xft(icc,i))
-         zmin=amin1(zmin,zft(icc,i))
+         xmax=amax1(xmax,xft(i))
+         zmax=amax1(zmax,zft(i))
+         xmin=amin1(xmin,xft(i))
+         zmin=amin1(zmin,zft(i))
    10 continue
 
 C Mesh length and height.
@@ -332,7 +332,7 @@ C target surface.
 #include "building.h"
 #include "geometry.h"
 
-      common/g1t/xft(mcom,mv),yft(mcom,mv),zft(mcom,mv)
+      common/g1t/xft(mv),zft(mv)
       common/c24/izstocn(mcom,ms)
 
       dimension c(2*mv+2)
@@ -346,14 +346,14 @@ C Determine if point xx,zz is within surface 'is'.
       np=nznver(icc)
       do 10 i=1,np
          ii=2*i-1
-         c(ii)=xft(icc,i)
+         c(ii)=xft(i)
          ii=ii+1
-         c(ii)=zft(icc,i)
+         c(ii)=zft(i)
    10 continue
       last1=2*np+1
       last2=2*np+2
-      c(last1)=xft(icc,1)
-      c(last2)=zft(icc,1)
+      c(last1)=xft(1)
+      c(last2)=zft(1)
       ln=0
       ip=np+1
       do 20 i=2,ip

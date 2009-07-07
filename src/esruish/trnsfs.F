@@ -44,11 +44,11 @@ C coordinate system for use in 'point'.
 
       common/tracech/icout
       common/pangl/pazi,pelv,ptilt
-     
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
-      common/g1t/xft(mcom,mv),yft(mcom,mv),zft(mcom,mv)
+      common/g1t/xft(mv),zft(mv)
       common/c24/izstocn(mcom,ms)
 
+      dimension yft(mv)
       character outs*124
       logical tok
 
@@ -113,18 +113,18 @@ C Transform target surface coordinates.
          zs=vcoord(izone,ip,3)
 
 C Transformed x.
-         xft(icc,i)=(xs-xor)*a(1)+(ys-yor)*a(2)-(xs-xor)*a(3)
+         xft(i)=(xs-xor)*a(1)+(ys-yor)*a(2)-(xs-xor)*a(3)
      &          +(ys-yor)*a(4)-(zs-zor)*a(5)
 
 C Transformed y.
-         yft(icc,i)=-(xs-xor)*b(1)+(ys-yor)*b(2)+(zs-zor)*b(3)
+         yft(i)=-(xs-xor)*b(1)+(ys-yor)*b(2)+(zs-zor)*b(3)
 
 C Transformed z.
-         zft(icc,i)=(xs-xor)*c(1)+(ys-yor)*c(2)+(xs-xor)*c(3)
+         zft(i)=(xs-xor)*c(1)+(ys-yor)*c(2)+(xs-xor)*c(3)
      &          -(ys-yor)*c(4)+(zs-zor)*c(5)
 
 C Transformed y value should be close to zero; warn if not.
-         if(abs(yft(icc,i)).gt.1.E-3)then
+         if(abs(yft(i)).gt.1.E-3)then
             call edisp(icout,' ')
             write(outs,9999)is
  9999       format('TRNSF1: Surface ',i2,' is probably not coplanar!')
@@ -132,7 +132,7 @@ C Transformed y value should be close to zero; warn if not.
             write(outs,9998)i,xs,ys,zs
  9998       format('Vertex ',i2,', which has coordinates ',3f11.6,',')
             call edisp(icout,outs)
-            write(outs,9997)yft(icc,i)
+            write(outs,9997)yft(i)
  9997       format('has transformed Y value of ',f11.6,
      &             ' (should be 0).')
             call edisp(icout,outs)
@@ -174,8 +174,7 @@ C Trace output.
  9995    continue
          call edisp(icout,'Transformed X`Y`Z` coordinates:')
          do 9994 i=1,nznver(icc)
-           write(outs,'(i2,2x,3f8.1)')i,xft(icc,i),yft(icc,i),
-     &       zft(icc,i)
+           write(outs,'(i2,2x,3f8.1)')i,xft(i),yft(i),zft(i)
            call edisp(icout,outs)
  9994    continue
       endif
@@ -354,7 +353,7 @@ C the plane of the target surface. The projected points are specified
 C relative to the local face coordinate system. The y-coordinate is
 C left unprojected but in the new coordinate system.
 
-      subroutine trnsf3(izone,isur,ihr,ibn,ibs)
+      subroutine trnsf3(ihr,ibn,ibs)
 
       common/tracech/icout
       common/obs/xc(8),yc(8),zc(8)
