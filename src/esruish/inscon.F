@@ -387,7 +387,7 @@ C            in the misur list.
 #include "building.h"
 #include "geometry.h"
 
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+C      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/c24/izstocn(mcom,ms)
       common/sunhr/isunhr
       common/tshd/ioshd(mox,moz)
@@ -529,9 +529,10 @@ C system.
 
 C Set up source surface global coordinates.
                do 90 inv=1,nznver(iccisrc)
-                  xf(inv)=x(nzjvn(iccisrc,inv))
-                  yf(inv)=y(nzjvn(iccisrc,inv))
-                  zf(inv)=z(nzjvn(iccisrc,inv))
+	          iwhich=nzjvn(iccisrc,inv)
+                  xf(inv)=vcoord(icomp,iwhich,1)
+                  yf(inv)=vcoord(icomp,iwhich,2)
+                  zf(inv)=vcoord(icomp,iwhich,3)
    90          continue
 
 C Initiate source surface grid point-by-point analysis.
