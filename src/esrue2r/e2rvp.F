@@ -25,8 +25,7 @@ C  VEWFORM: View control and definition.
 C ******* View cone for plan/elevation.
       SUBROUTINE VCONE(direc)
 #include "building.h"
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
+#include "e2r_common.h"
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character direc*1
@@ -126,7 +125,8 @@ C ******* Default views formation.
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
-      
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -136,33 +136,16 @@ C ******* Default views formation.
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      common/rad2/mono,intext,ifocz
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-
-      LOGICAL MODIFY,MODLEN,MODBND,XST,OK,DOK,addview
-      logical skydone,outdone,indone,misdone,vewdone,glzdone,redraw
+ 
+      LOGICAL XST,OK,DOK,addview,redraw
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-
       character item*30,h*72,hold*28,VALT*28,OUTSTR*124,WORD*20
-      character outs*124,LBSRIF*72
+      character outs*124
       character doit*124,ltmp*72,trvewsh*10
-      character vewcmds*124,rvewsh*10
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot

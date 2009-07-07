@@ -21,39 +21,24 @@ C Boston, MA 02111-1307 USA.
 C ******* Setup of image quality and calculation options.
       SUBROUTINE RIFFORM(IER)
 #include "building.h"
-      
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/e2rf/rambfil,optnfil
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      common/rad1m/matfil,rmmfil
-      common/rad2/mono,intext,ifocz
-      common/radrp/ipicx
       common/expath/runpath,pathtype
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
 
       CHARACTER doit*124,VALT*32
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character*72 matfil,rmmfil
       character runpath*72,pathtype*24
-      character rambfil*72,optnfil*72
       character item*30,h*72,HOLD*24
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
-      character rscedes*72,rzoncmd*60,rupaxis*1,fil*80
-      character vewcmds*124,rvewsh*10,ltmp*72,ltmp60*60
+      character fil*80
+      character ltmp*72,ltmp60*60
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
 
       DIMENSION ITEM(24),IVALV(20),VALT(20)
 
@@ -364,39 +349,12 @@ C If use = 'i' then initial assumptions.
 C If use = 'f' then force files to account for change in root/dir name.
       subroutine rifset(ic,use)
 #include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1a/aglzfil
-      common/rad2/mono,intext,ifocz
-      common/rad1m/matfil,rmmfil
-      common/radrp/ipicx
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/e2rc/crenrp,coconv
-      common/e2rf/rambfil,optnfil
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
-      character*72 glzfil,aglzfil
-      character*72 matfil,rmmfil
-      character rambfil*72,optnfil*72,pre*28
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
-      character rscedes*72,rzoncmd*60,rupaxis*1,crenrp*160,coconv*40
-      character vewcmds*124,rvewsh*10
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-
+      character pre*28
       character use*1
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
       logical close
 
 C Make the initial part of new file names to follow scene root name.

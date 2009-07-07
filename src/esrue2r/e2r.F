@@ -32,6 +32,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "espriou.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -47,11 +48,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-
+      
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
@@ -68,39 +65,6 @@ C Path to model.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-
-C Radiance based commons.
-C rofil = `outside` objects, rzfil = is the zone (inside) composition.
-C rskyfil is the sky definition file,  matfil,rmmfil contain
-C materials and miscel geometries.
-C rmfil is for miscel descriptions.
-      common/e2rf/rambfil,optnfil
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1a/aglzfil
-      common/rad1m/matfil,rmmfil
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/rad2/mono,intext,ifocz
-      common/radrp/ipicx
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/grdisk/grdd,grcx,grcy
-      common/radgt/iglzty
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/radif/irofil,irzfil,imatfil,iglzfil
-      common/e2rc/crenrp,coconv
-      common/e2rs/indxscn,rscedes(10),rzoncmd,rupaxis
-
-C Scene configuration commons.
-      common/radcfg/LRADCF
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/cmddata/zone,aim,act
-      common/radgrid/LDFGRID
-      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      character vewcmds*124,rvewsh*10
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -123,19 +87,12 @@ C Materials data array.
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       CHARACTER H*72,outs*124,ITEM*30
-      CHARACTER LDFGRID*72
-      CHARACTER inf*144,LCMDFL*144,LCFGF*72,LBSRIF*72,L144*144
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil
-      character*72 matfil,rmmfil,glzfil,aglzfil
-      character rambfil*72,optnfil*72,tfile*72,runpath*72,pathtype*24
+      CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
+      character tfile*72,runpath*72,pathtype*24
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,cfgroot*24
-      character crenrp*160,coconv*40
-      character rscedes*72,rzoncmd*60,rupaxis*1
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character LRADCF*72,zone*16,aim*12,act*72,OUTSTR*124
+      character OUTSTR*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character ltmp72*72,dtmp72*72,ltmp*72
@@ -145,8 +102,7 @@ C Materials data array.
       DIMENSION IVALV(20),VALT(20),IPVALV(20)  ! for selecting view from list
 
       LOGICAL KEEP,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
+      LOGICAL XST,unixok,there
       LOGICAL ok,dok
       logical browse  ! is true if parameter passed as yes
 
@@ -329,7 +285,7 @@ C Initialise output device, assume minimal trace.
         if(iappx.le.0)iappx=60
         if(iappy.le.0)iappy=10
         if(iappw.le.200)then
-          iappwi=int(520*iappw*0.01)
+          iappwi=int(520.0*real(iappw)*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
           continue
@@ -341,7 +297,7 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       iappwi=int(real(iappw)*(1024.0/780.0))
 
       if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(32*iappw*0.01),12)
+        menuchw = MAX0(int(32.0*real(iappw)*0.01),12)
         LIMTTY=5
         LIMIT =5
       else
@@ -917,7 +873,7 @@ C Recover previous view.
       elseif(INO.EQ.15)then
 
 C Scene parameter options.
-        call RRSKY(ITA2,rskyfil,ga,IER)
+        call RRSKY(ITA2,ga,IER)
         if(IER.LT.0)then 
           CALL USRMSG(' ',' Please define the sky first!','W')
           GOTO 10
@@ -1145,6 +1101,7 @@ C MODLSU read in supplied configuration file and set up paths.
       subroutine MODLSU
 #include "building.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1160,8 +1117,6 @@ C Path to model.
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      common/grdisk/grdd,grcx,grcy
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1169,10 +1124,6 @@ C Path to model.
       CHARACTER*72 SNFNAM
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/GTFIL/GTGEOM
-
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -1185,7 +1136,7 @@ C Path to model.
       CHARACTER LCMDFL*144,LCFGF*72
       character outs*124,fs*1,tldir*72,upath*72,MODE*4
 
-      LOGICAL MODIFY,MODLEN,MODBND,unixok
+      LOGICAL unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical browse  ! as set in e2r command line.
       integer lnrp  ! length of run path
@@ -1472,6 +1423,7 @@ C inqu_tmc: Check if tmc control active.
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
+#include "e2r_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1487,7 +1439,6 @@ C geometry.h provides commons G0 and G2.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
-      common/radabs/NABS
 
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124

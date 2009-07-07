@@ -44,7 +44,8 @@ C  else simulate the scene by calling simscene
 
       SUBROUTINE autorad
 #include "building.h"
-      
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
@@ -53,21 +54,8 @@ C  else simulate the scene by calling simscene
 
       COMMON/C4/XLAT,XLON
 
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/cmddata/zone,aim,act
-
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character zone*16,aim*12,act*72,LBSRIF*72
       character outs*124,runpath*72,pathtype*24,tfile*72,h*72
 
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL fict,XST,OK,DOK
 
       ITA2=IFIL+7
@@ -136,7 +124,7 @@ C Pick start and end time.
 
 C Now call Radiance with command stored in variable 'outs'.
         call wrtsky(outs)
-        call RRSKY(ITA2,rskyfil,ga,IER)
+        call RRSKY(ITA2,ga,IER)
         if (SCENEPURP(ISCENE)(1:8).eq.'External') then
           call RADPAR('av',ga)
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
@@ -211,6 +199,7 @@ C simscene simulates daylight coefficients and coupling (called from bps)
 
       SUBROUTINE simscene
 #include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -219,29 +208,13 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       common/uhome/upath
       common/expath/runpath,pathtype
 
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/e2rf/rambfil,optnfil
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/cmddata/zone,aim,act
-      common/radgrid/LDFGRID
-
-      character rambfil*72,optnfil*72
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character outs*124,doit*124,doitl*256,tfile*72
-      character zone*16,aim*12,act*72,LBSRIF*72
       character QT*1
-      character*72 LDFGRID,LTMPFL,LTMPFA,rn,upath
+      character*72 LTMPFL,LTMPFA,rn,upath
       character runpath*72,pathtype*24
 
       dimension npz(8),alt(8),azim(8),solid(8)
 
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL XST,unixok
       integer lnrp  ! length of run path
 
@@ -297,7 +270,7 @@ C Create sky command and sky.
           write(outs,'(a,2f7.1,a,2f7.1,a,f5.2)')'gendaylit -ang ',RSALT,
      &                         RSAZI,' -W ',QDIR,QDIF,' -g ',rgrfl
         else
-          if (QDIR.gt.0) then
+          if (QDIR.gt.0.0) then
             write(outs,'(a,2f7.1,2(a,f7.1),a,f5.2)')'gensky -ang ',
      &                RSALT,RSAZI,' -B ',QDIF,' -R ',QDIRH,' -g ',rgrfl
           else
@@ -308,7 +281,7 @@ C Create sky command and sky.
         call wrtsky(outs)
 
 C Recreate octree, setting rtrace options, and run rtrace.
-        if (IBLNDS.ne.0.and.NBSRIF(ISCENE).eq.0) then
+        if (IBLNDS.ne.0 .and.NBSRIF(ISCENE).eq.0) then
 
 C Error can't simulate switched blinds.
 C          call usrmsg('Cannot simulate switched blinds.','  ','F')
@@ -317,6 +290,7 @@ C          call usrmsg('Cannot simulate switched blinds.','  ','F')
      &  '"replacement properties (TMC)" missing!'
           call usrmsg(outs,'  ','F')
         endif
+
         if (IBLNDS.eq.0) then
           rn=RIFNAME(ISCENE)
         else
@@ -388,12 +362,12 @@ C Calculate patch direction vector (location).
             yp = 0.0
             zp = 1.0
           elseif(nzone.eq.1) then
-            aazim = azim(nzone)*(IPTCH - 1)
+            aazim = azim(nzone)*real((IPTCH - 1))
             xp = ecosd(aazim)*ecosd(alt(nzone))
             yp = esind(aazim)*ecosd(alt(nzone))
             zp = esind(alt(nzone))
           else
-            aazim = azim(nzone)*((IPTCH - npz(nzone-1)) - 1)
+            aazim = azim(nzone)*real((IPTCH - npz(nzone-1)) - 1)
             xp = ecosd(aazim)*ecosd(alt(nzone))
             yp = esind(aazim)*ecosd(alt(nzone))
             zp = esind(alt(nzone))
@@ -498,9 +472,10 @@ C ********************** settime **********************
 C settime - user choice of standard times for sky generation
 
       SUBROUTINE settime(IRM,IRD,XRT)
+#include "building.h"
+#include "e2r_common.h"
 
       common/pophelp/h(60)
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
 
       character H*72
 
@@ -533,16 +508,18 @@ C touchrif generates an options file based on information
 C generated by rad -t after removing current octree.
 
       SUBROUTINE touchrif(RIFFILE)
+#include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
+      
+      character RIFFILE*72
 
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character doit*124,RIFFILE*72,runpath*72,pathtype*24
+      character doit*124,runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
 C Read current rif file.
@@ -571,21 +548,9 @@ C defview generates a new default view.
       SUBROUTINE defview
 #include "building.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
 
       COMMON/FILEP/IFIL
-
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
-
-      common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
-
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character vewcmds*124,rvewsh*10,LBSRIF*72
 
       ITA2=IFIL+7
 
@@ -660,6 +625,7 @@ C genimage generates an image to screen or file.
 C ITP =1 - image only; =2 - glare info to display on image.
       SUBROUTINE genimage(ITP)
 #include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -670,23 +636,9 @@ C ITP =1 - image only; =2 - glare info to display on image.
       common/expath/runpath,pathtype
       COMMON/C4/XLAT,XLON
 
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad2/mono,intext,ifocz
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/radrp/ipicx
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character tpic*72,tpicd*72,tgif*72,tgifd*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character vewcmds*124,rvewsh*10,pf*72,h*72,outs*124,ltmp*72
-      character doit*256,LBSRIF*72,runpath*72,pathtype*24
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
+      character pf*72,h*72,outs*124,ltmp*72
+      character doit*256,runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
       logical XST,anim,unixok
@@ -1008,6 +960,8 @@ C ITP =1 - image only; =2 - glare info to display on image.
 C Assumes that the path to the image is given.
 
       SUBROUTINE dispimage(ITP)
+#include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1017,18 +971,13 @@ C Assumes that the path to the image is given.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad2/mono,intext,ifocz
       common/expath/runpath,pathtype
 
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character doit*124,pf*72,gf*72,ugrf*72,ltmp*72
-      character vewcmds*124,rvewsh*10,outs*124,outstr*124
+      character outs*124,outstr*124
       character runpath*72,pathtype*24
       integer lnrp  ! length of run path
-      
+
       dimension UGRV(72),UGRANG(72)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
@@ -1160,22 +1109,14 @@ C getglr recovers view information and runs glare calculation.
 
       SUBROUTINE getglr
 #include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype
 
-      common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character vewcmds*124,rvewsh*10,rendopt*200
+      character rendopt*200
       character word*12,doit*300,ltmp*200,gf*72,pf*72,glst*4
       character runpath*72,pathtype*24
 
@@ -1329,6 +1270,7 @@ C getdf runs daylight factor calculation and then displays them.
 
       SUBROUTINE getdf
 #include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1337,27 +1279,9 @@ C getdf runs daylight factor calculation and then displays them.
       common/expath/runpath,pathtype
       common/pophelp/h(60)
 
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/radgrid/LDFGRID
-
-C radgrpts: Daylight factor sensor common
-C   NDFP: Number of locations at which to get daylight factor.
-C   DFPTS: location to calculate DF at.
-C   DFDIR: direction that sensor is looking.
-C   DFVALS: Daylight factors.
-      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
-      common/e2rf/rambfil,optnfil
-      common/e2rc/crenrp,coconv
-
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      CHARACTER LDFGRID*72,df*72,outs*124,ltmp*72,doit*256,LBSRIF*72
-      character QT*1,rambfil*72,optnfil*72,OUTSTR*124
-      character crenrp*160,coconv*40,tfile*72,outsl*160
+      CHARACTER df*72,outs*124,ltmp*72,doit*256
+      character QT*1,OUTSTR*124
+      character tfile*72,outsl*160
       character runpath*72,pathtype*24
       character h*72
       integer lnrp  ! length of run path
@@ -1475,7 +1399,7 @@ C Daylight factors output file.
       endif
 
 C Open sky file and read ground ambient level.
-      call RRSKY(ITA1,rskyfil,ga,IER)
+      call RRSKY(ITA1,ga,IER)
 
 C Call rtrace and calculate daylight factors. This is the point where
 C the logic jumps back to if additional resolution is required.

@@ -26,6 +26,7 @@ C  mkriofil Write inside/outside materials and composition files.
 C ******* Sky calculations. *******
       SUBROUTINE SKYFORM(IER)
 #include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -33,25 +34,16 @@ C ******* Sky calculations. *******
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/C4/XLAT,XLON
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/expath/runpath,pathtype
 
       character item*30,h*72,DESCRH*5,DESCRD*5,DESCR*7,DESCR1*10
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character skopt*3,outs*124,tfile*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character runpath*72,pathtype*24,ltmp72*72,dtmp72*72
       integer lnrp  ! length of run path
 
       DIMENSION ITEM(14)
 
       logical OK,DOK,XST
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
@@ -78,7 +70,7 @@ C read it otherwise remember name.
       IF(XST)THEN
 
 C Read a radiance sky file, taking info into commons.
-        call RRSKY(ITA2,rskyfil,ga,IER)
+        call RRSKY(ITA2,ga,IER)
         if (ier.eq.0) skydone=.true.
       endif
       call usrmsg(' ',' ','-')
@@ -198,7 +190,7 @@ C which includes redirection of output to the sky definition file.
         write(outs,'(a,2i3,f6.2,a,a,f5.2,2(a,f7.1),a)')'gensky',IMO,IDO,
      &     RTIME,skopt,' -g ',rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
         CALL wrtsky(outs)
-        call RRSKY(ITA2,rskyfil,ga,IER)
+        call RRSKY(ITA2,ga,IER)
         if (SCENEPURP(ISCENE)(1:8).eq.'External') then
           call RADPAR('av',ga)
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Internal') then
@@ -247,21 +239,19 @@ C ********************** wrtsky **********************
 C wrtsky calls radiance and writes sky info to file.
 
       SUBROUTINE wrtsky(skycmd)
-      
+#include "building.h"
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
       common/expath/runpath,pathtype
 
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character skycmd*124,doit*124,tfile*72,runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
       LOGICAL XST
 
       lnrp=lnblnk(runpath)
@@ -287,12 +277,13 @@ C Create sky description.
 C ************** e2rform **************
 C Translate esp data to radiance geom and materials.
 C ACT = 's' silent, ACT = 'i' interactive.
-      SUBROUTINE e2rform(ACT,IER)
+      SUBROUTINE e2rform(ACT_1,IER)
 #include "building.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
-      
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -311,23 +302,16 @@ C geometry.h provides commons G0 and G2.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1m/matfil,rmmfil
-      common/radif/irofil,irzfil,imatfil,iglzfil
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/expath/runpath,pathtype
 
-      LOGICAL OK,DOK,XST,fict,MODIFY,MODLEN,MODBND
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
+      LOGICAL OK,DOK,XST,fict
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(17)
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character*72 matfil,rmmfil,tfile
+      character*72 tfile
       character runpath*72,pathtype*24
-      character item*32,h*72,ACT*1,GTGEOM*72
+      character item*32,h*72,ACT_1*1,GTGEOM*72
       integer lnrp  ! length of run path
 
       ITA1 = IFIL+6
@@ -453,7 +437,7 @@ C Write out materials, composition & glazing files.
         DO 46 I=1,nzg
           nznog(I)=I
  46     CONTINUE
-        call mkriofil(ftr,fict,ACT,IER)
+        call mkriofil(ftr,fict,ACT_1,IER)
 
 C Re-Read in the initial zone geometry file into common & restore
 C the image.
@@ -553,10 +537,11 @@ C Explains composition/geometry menu.
 C ********************* mkriofil *********************
 C mkriofil: Write inside/outside materials and composition files.
 C If ACT='i' then interactive, ACT='s' for silent.
-      SUBROUTINE mkriofil(ftr,fict,ACT,IER)
+      SUBROUTINE mkriofil(ftr,fict,ACT_1,IER)
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -597,26 +582,12 @@ C TMC data
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      common/grdisk/grdd,grcx,grcy
-      common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      common/rad1a/aglzfil
-      common/rad1m/matfil,rmmfil
-      common/radif/irofil,irzfil,imatfil,iglzfil
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
+     
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
+
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
-      common/rad2/mono,intext,ifocz
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/radgt/iglzty
-      common/radabs/NABS
       common/expath/runpath,pathtype
 
 C Arrays of material properties.
@@ -651,20 +622,16 @@ C Arrays of material properties.
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-      character*72 matfil,rmmfil,LBSRIF,aglzfil
       character BLKNAME*8,BLKMAT*12,ZSN*28
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
-      CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
+      CHARACTER GMLCN*12,GSNAME*6,ACT_1*1,doit*144
       character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72
       integer lnrp  ! length of run path
 
-      LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,fict,extern,XST,similar
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
+      LOGICAL OK,DOK,fict,extern,XST,similar
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
@@ -683,7 +650,7 @@ C to treat as 'mkillum'.
       call edisp(iuout,' creating glazing file. ')
       CALL ERPFREE(iglzfil,ISTAT)
       CALL ERPFREE(ita2,ISTAT)
-      if(ACT.eq.'i')then
+      if(ACT_1.eq.'i')then
  10     H(1)=' Supply a local file name (i.e. without a path).'
         H(2)=' This file holds glazed surface details. '
         ltmp72=glzfil
@@ -762,7 +729,7 @@ C Create an opaque materials file. Take all of the materials in
 C the existing mlc db and create a set of properties.
       call edisp(iuout,' creating materials for opaque surfaces. ')
       CALL ERPFREE(imatfil,ISTAT)
-      if(ACT.eq.'i')then
+      if(ACT_1.eq.'i')then
  20     H(1)=' Supply a local file name (i.e. without a path).'
         H(2)=' This file holds surface properties for the opaque '
         H(3)=' surfaces, obstructions and ground definition.'
@@ -817,7 +784,7 @@ C Always include a colour for internal UNKNOWN mlc.
 C Open the inside geometry/composition file.
       call edisp(iuout,' creating inside composition. ')
       CALL ERPFREE(irzfil,ISTAT)
-      if(ACT.eq.'i')then
+      if(ACT_1.eq.'i')then
  22     H(1)=' Supply a local file name (i.e. without a path).'
         H(2)=' This file holds the definition of the zone.'
         ltmp72=rzfil
@@ -979,7 +946,7 @@ C Check for blind shutter control.
 C Open the outsite geometry/composition file.
       call edisp(iuout,' creating outside composition. ')
       CALL ERPFREE(irofil,ISTAT)
-      if(ACT.eq.'i')then
+      if(ACT_1.eq.'i')then
  24     H(1)='This holds the definition of outside bodies.'
         ltmp72=rofil
         dtmp72=rofil
@@ -1106,7 +1073,7 @@ C Clear properties.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         call eclose(gversion(newfoc),1.1,0.01,newgeo)
-        if(ACT.eq.'i')then
+        if(ACT_1.eq.'i')then
           call usrmsg(' ',outs,'-')
           if(newgeo)then
             call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
@@ -1135,7 +1102,7 @@ C Read in the zone geometry.
         endif
 
 C Display the other zone, resetting all surface lines to std.
-        if(ACT.eq.'i')then
+        if(ACT_1.eq.'i')then
           MODIFY=.TRUE.
           MODLEN=.TRUE.
           MODBND=.TRUE.
@@ -1167,7 +1134,7 @@ C Aternative glazing descriptions file.
 
 C Confirm inclusion of obstructions.
         if(NB.ge.1)then
-          if(ACT.eq.'i')then
+          if(ACT_1.eq.'i')then
             write(outs,'(3a)') ' Include ',ZN(1:lnblnk(ZN)),
      &                            ' obstructions ? '
             dok=.true.
@@ -1251,7 +1218,7 @@ C Depending on surface type (fict/tran/opaq) write header info.
           if(ifict.eq.1)then
 C          if(iskip(icf).eq.1)then
             WRITE(outs,'(a,a)') '# skipping fict surface: ',zsn(isf)
-            if(ACT.eq.'i')call edisp(iuout,outs)
+            if(ACT_1.eq.'i')call edisp(iuout,outs)
             WRITE(iglzfil,'(a)') outs
             WRITE(iglzfil,'(a)') '  '
 
@@ -1281,7 +1248,7 @@ C Logic - ask about precalc in all internal zones.
      &             (SCENEPURP(ISCENE)(1:5).eq.'Glare'))) then
 
 C Highlight surface on image.
-                if(ACT.eq.'i')then
+                if(ACT_1.eq.'i')then
                   MODIFY=.TRUE.
                   CALL INLNST(1)
                   CALL SURADJ(ifocz,isf,IE,TMP,IZC,ISC,IC,DESCRC)
@@ -1411,7 +1378,7 @@ C IRECT: -1 not rectangular; 0 error; 1 rectangular.
             else
               WRITE(outs,'(a,a)')'# skipping transparent surface: ',
      &                                                         zsn(isf)
-              if(ACT.eq.'i')call edisp(iuout,outs)
+              if(ACT_1.eq.'i')call edisp(iuout,outs)
               WRITE(iglzfil,'(a)') outs
               WRITE(iglzfil,'(a)') '  '
               if (NABS.gt.0) then

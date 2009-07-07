@@ -41,7 +41,8 @@ C ********************* RADCFGIN *********************
 C RADCFGIN reads the contents of the radiance configuration file.
       SUBROUTINE RADCFGIN
 #include "building.h"
-      
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -50,20 +51,12 @@ C RADCFGIN reads the contents of the radiance configuration file.
       common/expath/runpath,pathtype
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/radcfg/LRADCF
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/radgrid/LDFGRID
-      common/radabs/NABS
       common/user/browse
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character LRADCF*72, WORD*124, OUTS*124, OUTSTR*124, LDFGRID*72
-      character LBSRIF*72,pfile*72,path*72,runpath*72,pathtype*24,fs*1
+      character WORD*124, OUTS*124, OUTSTR*124
+      character pfile*72,path*72,runpath*72,pathtype*24,fs*1
       integer lnrp  ! length of run path
 
       logical unixok
@@ -187,20 +180,14 @@ C ********************* RADCFGOUT *********************
 C RADCFGOUT writes the contents of the radiance configuration file.
       SUBROUTINE RADCFGOUT(ICHK)
 #include "building.h"
-      
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       common/FILEP/IFIL
       common/expath/runpath,pathtype
-      common/radcfg/LRADCF
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/radgrid/LDFGRID
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character LRADCF*72,OUTS*72,LDFGRID*72,LBSRIF*72
+      character OUTS*72
       character dstmp*24,pfile*72,runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
@@ -282,19 +269,12 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
       SUBROUTINE whichrif(MODE)
 #include "building.h"
 #include "epara.h"
+#include "e2r_common.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/cmddata/zone,aim,act
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character MODE*1, H*72, VERT*24, KEY*1, LBSRIF*72
-      character zone*16,aim*12,act*72
+      character MODE*1, H*72, VERT*24, KEY*1
 
       dimension VERT(35)
 
@@ -522,7 +502,8 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       SUBROUTINE newscene(MODE)
 #include "building.h"
 #include "geometry.h"
-      
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
@@ -531,26 +512,13 @@ C if MODE='c' (create) then allow all purposes and auto name files.
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 
-      common/e2rc/crenrp,coconv
-      common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
-      common/rad2/mono,intext,ifocz
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/cmddata/zone,aim,act
-      common/radgt/iglzty
-      common/radrp/ipicx
-
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       dimension IVALS(MCOM)
 
-      character crenrp*160,coconv*40,cfgroot*24,LCFGF*72
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character h*72,MODE*1,outs*124,LBSRIF*72
-      character imgqua*6,detlvl*6,llvar*6,penumb*5
-      character zone*16,aim*12,act*72,dname*28,tname*28
+      character cfgroot*24,LCFGF*72
+      character h*72,MODE*1,outs*124
+      character dname*28,tname*28
       character dname72*72,tname72*72
 
 C Ask for purpose of scene if new scene.
@@ -824,17 +792,16 @@ C Call rifset to set up all remaining data.
 C ********************** ADDSCENE **********************
 C ADDSCENE allows the creation of a default translation from ESP-r to radiance.
       subroutine ADDSCENE(IRCFG)
-      
+#include "building.h"
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
 
       common/expath/runpath,pathtype
-      common/radcfg/LRADCF
-      common/cmddata/zone,aim,act
 
-      CHARACTER H*72,LRADCF*72,runpath*72,pathtype*24,pfile*72
-      character zone*16,aim*12,act*72
+      CHARACTER H*72,runpath*72,pathtype*24,pfile*72
       integer lnrp  ! length of run path
 
 C Ask if a default image should be created.
@@ -884,7 +851,8 @@ C if MODE is not - then sensor points file name confirmation required.
       subroutine setdfgrid(MODE,izone,ier)
 #include "building.h"
 #include "geometry.h"
-      
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -903,27 +871,14 @@ C if MODE is not - then sensor points file name confirmation required.
       common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      common/rad2/mono,intext,ifocz
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/radgrid/LDFGRID
-      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
-
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
 
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character h*72,LDFGRID*72,DESCRC*25
+      character h*72,DESCRC*25
       character outs*124,runpath*72,pathtype*24,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
 
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
 
-      LOGICAL MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
       integer lnrp  ! length of run path
 
@@ -1121,8 +1076,10 @@ C Reset display options.
 C ********************** DFGRIDLBL **********************
 C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
 C the daylight factor (act = d|D).
-      SUBROUTINE DFGRIDLBL(act)
+      SUBROUTINE DFGRIDLBL(act_1)
+#include "building.h"
 #include "prj3dv.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1132,20 +1089,14 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
-      common/radgrid/LDFGRID
 
       DIMENSION  COG1(3),COG2(3),COG3(3)
 
-      CHARACTER VT*5,act*1
-      character OUTSTR*124,tfile*72,LDFGRID*72
+      CHARACTER VT*5,act_1*1
+      character OUTSTR*124,tfile*72
       character runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
-      LOGICAL MODIFY,MODLEN,MODBND
 #ifdef OSX
       integer iix,iiy,iid1,iid2
 #else
@@ -1223,7 +1174,7 @@ C Loop through grid points.
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),iix,iiy)
         CALL ecirc(iix,iiy,3,1)
-        if(act.eq.'g'.or.act.eq.'G')then
+        if(act_1.eq.'g'.or.act_1.eq.'G')then
           IF(I.le.9)THEN
             WRITE(VT,'(i1)') I
           ELSEIF(I.gt.9.and.I.le.99)THEN
@@ -1256,7 +1207,8 @@ C for use with a 'Coupling' scene purpose.
 
       SUBROUTINE SENLOC
 #include "building.h"
-      
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1275,15 +1227,8 @@ C for use with a 'Coupling' scene purpose.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/radgrid/LDFGRID
-      common/rad2/mono,intext,ifocz
-
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER*72 LCGCINT,LDFGRID
+      CHARACTER*72 LCGCINT
       character outs*124,runpath*72,pathtype*24
 
       logical XST
@@ -1345,6 +1290,7 @@ C parameters if none found.
 C If filexst is 'o' then old file, 'n' then create a new file.
       SUBROUTINE checkrif(filexst)
 #include "building.h"
+#include "e2r_common.h"
       
       integer lnblnk  ! function definition
 
@@ -1353,18 +1299,9 @@ C If filexst is 'o' then old file, 'n' then create a new file.
       common/C21/IFCFG,cfgroot,LCFGF
       common/expath/runpath,pathtype
 
-      common/rad2/mono,intext,ifocz
-      common/radcfg/LRADCF
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
-     &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
-      common/raddata2/NSCENE,ISCENE
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
-      common/cmddata/zone,aim,act
-
-      character SCENE*28,RIFNAME*72,SCENERT*28,SCENEDESC*72,SCENEPURP*12
-      character filexst*1,LRADCF*72,LBSRIF*72
+      character filexst*1
       character cfgroot*24,LCFGF*72
-      character zone*16,aim*12,act*72,pfile*72,runpath*72,pathtype*24
+      character pfile*72,runpath*72,pathtype*24
 
       LOGICAL modscene
 
@@ -1454,6 +1391,7 @@ C gain control file.
 
       SUBROUTINE RDCFTMP(LFTMP,ISET)
 #include "building.h"
+#include "e2r_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1479,8 +1417,6 @@ C MDCFV - max no of sky patches.
 
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
-      common/rad2/mono,intext,ifocz
 
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCGCINT,LFTMP
