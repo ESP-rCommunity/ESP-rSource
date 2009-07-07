@@ -54,10 +54,6 @@ C                 in common.
       common/pophelp/h(60)
       common/filep/ifil
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
@@ -78,30 +74,6 @@ C Day of average solar declination in each month.
 
       newgeo=.false.  ! Assume older format geometry.
       iunit=ifil
-      iuf=ifil+1
-
-C Read in the geometry file for the current zone to refresh /g1/.
-C If newgeo is true then the geometry file can include values
-C for /ishdirec/.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(act.eq.'s')then
-         if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
-         else
-            call egomin(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
-         endif
-      else
-         if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
-         else
-            call egomin(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
-         endif
-      endif
-      if(ier.ne.0)then
-        call edisp(iuout,'Problem detected while trying to read zone')
-        call edisp(iuout,'geometry file - respecify via menu.')
-        return
-      endif
       
 C Fill the itmc and isc arrays.
   4   call findtmc(icomp,act,nboftmc)
@@ -221,14 +193,9 @@ C   itmc & isc:   toggles for each surface, if 1 then surface is an
 C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
-      common/filep/ifil
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
@@ -258,30 +225,7 @@ C isurfinso list of insolation sources.
       logical newgeo  ! Used to test for new/old geometry file.
 
       newgeo=.false.  ! Assume older format geometry.
-      iuf=ifil+1
 
-C Read in the geometry file for the current zone to refresh /g1/.
-C If newgeo is true then the geometry file can include values
-C for /ishdirec/.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(act.eq.'s')then
-         if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
-         else
-            call egomin(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
-         endif
-      else
-         if(newgeo)then
-            call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
-         else
-            call egomin(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
-         endif
-      endif
-      if(ier.ne.0)then
-        call edisp(iuout,'Problem detected while trying to read zone')
-        call edisp(iuout,'geometry file - respecify via menu.')
-        return
-      endif
       ishadf=0
 
 C Establish if any of the surfaces are TMCs or CFCs.

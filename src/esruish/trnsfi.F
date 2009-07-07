@@ -56,10 +56,6 @@ C If trace requested enable writing.
       pi=4.0*atan(1.0)
       r=pi/180.
 
-C Compute the surface azimuth (pazi), elevation (pelv)
-C x-axis tilt (ptilt) angles.
-C      call pangs(izone,is)
-
 C Convert pazi, pelv and ptilt to the required coordinate axis
 C rotations as follows.
 C    x-axis - be related to pelv
