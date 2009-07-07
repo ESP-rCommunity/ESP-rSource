@@ -43,7 +43,7 @@ C coordinate system for use in 'point'.
 #include "geometry.h"
 
       common/tracech/icout
-      common/pangl/pazi,pelv,ptilt
+      common/pangl/pazi(ms),pelv(ms),ptilt(ms)
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/g1t/xft(mv),zft(mv)
       common/c24/izstocn(mcom,ms)
@@ -61,7 +61,7 @@ C If trace requested enable writing.
 
 C Compute the surface azimuth (pazi), elevation (pelv)
 C X-axis tilt (ptilt) angles.
-      call pangs(izone,is)
+C      call pangs(izone,is)
 
 C Convert pazi, pelv and ptilt to the required coordinate axis
 C rotations as follows.
@@ -70,14 +70,14 @@ C    y-axis - ga related to ptilt
 C    z-axis - al related to pazi
 C Convention: positive angle is anticlockwise when looking along
 C the axis towards the origin.
-      iq=int(pazi/90.0)
+      iq=int(pazi(is)/90.0)
       if(iq.eq.0)goto 1
       goto (1,1,2,2),iq
-    1 al=(180.0-pazi)*r
+    1 al=(180.0-pazi(is))*r
       goto 3
-    2 al=-(pazi-180.0)*r
-    3 be=-pelv*r
-      ga=-ptilt*r
+    2 al=-(pazi(is)-180.0)*r
+    3 be=-pelv(is)*r
+      ga=-ptilt(is)*r
 
 C Set up transform equation coefficients.
 C Transformation order: z-axis (al from pazi) then
@@ -144,7 +144,7 @@ C Trace output.
       if(tok)then
          icc=izstocn(izone,is)
          call edisp(icout,' ')
-         write(outs,9996)is,pazi,pelv,ptilt
+         write(outs,9996)is,pazi(is),pelv(is),ptilt(is)
  9996    format('*** TRNSF1: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
      &          f5.1,'; PTILT= ',f5.1)
          call edisp(icout,outs)
@@ -550,7 +550,7 @@ C           face vertices.
 #include "building.h"
 #include "geometry.h"
 
-      common/pangl/pazi,pelv,ptilt
+      common/pangl/pazi(ms),pelv(ms),ptilt(ms)
       common/c24/izstocn(mcom,ms)
 
       logical bHorizontal
@@ -578,18 +578,18 @@ C Get the current connection
          zsum=zsum+vcoord(izone,ip1,1)*vcoord(izone,ip2,2)-
      &        vcoord(izone,ip1,2)*vcoord(izone,ip2,1)
    10 continue
-      pazi=90.0
-      if(abs(xsum).lt.0.00001)pazi=0.0
-      if(xsum.lt.0.0)pazi=-90.0
-      pelv=90.0
-      if(abs(zsum).lt.0.00001)pelv=0.0
-      if(zsum.lt.0.0)pelv=-90.0
+      pazi(is)=90.0
+      if(abs(xsum).lt.0.00001)pazi(is)=0.0
+      if(xsum.lt.0.0)pazi(is)=-90.0
+      pelv(is)=90.0
+      if(abs(zsum).lt.0.00001)pelv(is)=0.0
+      if(zsum.lt.0.0)pelv(is)=-90.0
       if(abs(ysum).lt.0.00001)goto 1
-      pazi=atan2(xsum,ysum)/r
+      pazi(is)=atan2(xsum,ysum)/r
     1 srx2y2=sqrt(xsum*xsum+ysum*ysum)
-      if(pazi.lt.0.)pazi=pazi+360.
+      if(pazi(is).lt.0.)pazi(is)=pazi(is)+360.
       if(abs(srx2y2).lt.0.00001)goto 2
-      pelv=atan2(zsum,srx2y2)/r
+      pelv(is)=atan2(zsum,srx2y2)/r
     2 continue
 
 C Now compute local X-axis tilt angle.
@@ -599,8 +599,9 @@ C Now compute local X-axis tilt angle.
       dist=((vcoord(izone,iv2,1)-vcoord(izone,iv1,1))**2+
      &      (vcoord(izone,iv2,2)-vcoord(izone,iv1,2))**2+
      &      (vcoord(izone,iv2,3)-vcoord(izone,iv1,3))**2)**.5
-      ptilt=asin(dz/dist)/r
-      if(vcoord(izone,iv1,3).gt.vcoord(izone,iv2,3))ptilt=-ptilt
+      ptilt(is)=asin(dz/dist)/r
+      if(vcoord(izone,iv1,3).gt.vcoord(izone,iv2,3))
+     &  ptilt(is)=-ptilt(is)
 
 C For the special case of a horizontal surface, the
 C azimuth calculated above is zero. It is now reset to
@@ -608,7 +609,7 @@ C the azimuth of the plane comprising the first two
 C vertices of the face and the same two vertices but with
 C an adjusted Z value.
 
-      call eclose ( abs(pelv), 90., 0.001, bHorizontal )
+      call eclose ( abs(pelv(is)), 90., 0.001, bHorizontal )
 
       if ( bHorizontal ) then
 
@@ -657,12 +658,12 @@ C an adjusted Z value.
           ysum=ysum+zz1*xx2-xx1*zz2
           zsum=zsum+xx1*yy2-yy1*xx2
   20    continue
-        pazi=90.0
-        if(abs(xsum).lt.0.00001)pazi=0.0
-        if(xsum.lt.0.0)pazi=-90.0
+        pazi(is)=90.0
+        if(abs(xsum).lt.0.00001)pazi(is)=0.0
+        if(xsum.lt.0.0)pazi(is)=-90.0
         if(abs(ysum).lt.0.00001)goto 3
-        pazi=atan2(xsum,ysum)/r
-    3   if(pazi.lt.0.)pazi=pazi+360.
+        pazi(is)=atan2(xsum,ysum)/r
+    3   if(pazi(is).lt.0.)pazi(is)=pazi(is)+360.
 
       endif
       return

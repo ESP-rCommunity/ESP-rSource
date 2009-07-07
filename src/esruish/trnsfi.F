@@ -40,7 +40,7 @@ C essentially a copy of trnsf1.
 #include "geometry.h"
 
       common/tracech/icout
-      common/pangl/pazi,pelv,ptilt
+      common/pangl/pazi(ms),pelv(ms),ptilt(ms)
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/g1t/xft(mv),zft(mv)
       common/c24/izstocn(mcom,ms)
@@ -58,7 +58,7 @@ C If trace requested enable writing.
 
 C Compute the surface azimuth (pazi), elevation (pelv)
 C x-axis tilt (ptilt) angles.
-      call pangs(izone,is)
+C      call pangs(izone,is)
 
 C Convert pazi, pelv and ptilt to the required coordinate axis
 C rotations as follows.
@@ -67,14 +67,14 @@ C    y-axis - ga related to ptilt
 C    z-axis - al related to pazi
 C Convention: positive angle is anticlockwise when looking along
 C the axis towards the origin.
-      iq=int(pazi/90.0)
+      iq=int(pazi(is)/90.0)
       if(iq.eq.0) goto 1
       goto (1,1,2,2),iq
-    1 al=(180.0-pazi)*r
+    1 al=(180.0-pazi(is))*r
       goto 3
-    2 al=-(pazi-180.0)*r
-    3 be=-pelv*r
-      ga=-ptilt*r
+    2 al=-(pazi(is)-180.0)*r
+    3 be=-pelv(is)*r
+      ga=-ptilt(is)*r
 
 C Set up transform equation coefficients.
 C Transformation order: z-axis (al from pazi) then
@@ -140,7 +140,7 @@ C Trace output.
       if(tok)then
          icc=IZSTOCN(izone,is)
          call edisp(icout,' ')
-         write(outs,9996)is,pazi,pelv,ptilt
+         write(outs,9996)is,pazi(is),pelv(is),ptilt(is)
  9996    format('*** TRNSF1I: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
      &          f5.1,'; PTILT= ',f5.1)
          call edisp(icout,outs)
