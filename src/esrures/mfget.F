@@ -152,7 +152,7 @@ C air flow reporting.
       DIMENSION IVALS(MCOM),zn(MCOM)
       CHARACTER ITEM(35)*23, MTITLE*22, values*20
       character H*72,xfile*144,tg*1,delim*1
-      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32,SUFFIX*6
+      character SMFLABEL*32,GMFLABEL*48,GLMFLABEL*48,SUFFIX*6
       CHARACTER outs*124,pifltog*4,lpifl*72
       CHARACTER NDNAM*12,PROMPT1*72,PROMPT2*72,CONTMNAM*12
       character graftitle*64,grlbl*24,t64*64,t24*24
