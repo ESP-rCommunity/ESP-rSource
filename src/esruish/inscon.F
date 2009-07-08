@@ -716,58 +716,13 @@ c There are several opportunities to use other common blocks.
       common/cai/caii(ms),caie(ms)
       common/tc/itc,icnt
       common/sangl1/sazi1,salt1
-      common/c24/izstocn(mcom,ms)
+      common/pangl/pazi(ms),pelv(ms),ptilt(ms)
 
-      dimension pazi(ms),pelv(ms)
-      dimension xsum(ms),ysum(ms),zsum(ms)
       character outs*124
       logical ok
 
-      r=atan(1.0)/45.0
-      do 10 i=1,nzsur(icomp)
-
-C Get the current connection.
-         icc=izstocn(icomp,i)
-         xs=0.
-         ys=0.
-         zs=0.
-         nv=nznver(icc)
-
-C Gross surface area.
-         do 20 j=1,nv
-            k=j+1
-            if(j.eq.nv)k=1
-            ip1=nzjvn(icc,j)
-            ip2=nzjvn(icc,k)
-            xs=xs+vcoord(icomp,ip1,2)*vcoord(icomp,ip2,3)-
-     &         vcoord(icomp,ip1,3)*vcoord(icomp,ip2,2)
-            ys=ys+vcoord(icomp,ip1,3)*vcoord(icomp,ip2,1)-
-     &         vcoord(icomp,ip1,1)*vcoord(icomp,ip2,3)
-            zs=zs+vcoord(icomp,ip1,1)*vcoord(icomp,ip2,2)-
-     &         vcoord(icomp,ip1,2)*vcoord(icomp,ip2,1)
-   20    continue
-         xsum(i)=xs
-         ysum(i)=ys
-         zsum(i)=zs
-   10 continue
-
-C Azimuth and elevation angles.
-      do 30 i=1,nzsur(icomp)
-         pazi(i)=90.0
-         if(abs(xsum(i)).lt.0.00001)pazi(i)=0.0
-         if(xsum(i).lt.0.0)pazi(i)=-90.0
-         pelv(i)=90.0
-         if(abs(zsum(i)).lt.0.00001)pelv(i)=0.0
-         if(zsum(i).lt.0.0)pelv(i)=-90.0
-         if(abs(ysum(i)).lt.0.00001)goto 1
-         pazi(i)=atan2(xsum(i),ysum(i))
-         pazi(i)=pazi(i)/r
-    1    srx2y2=sqrt(xsum(i)*xsum(i)+ysum(i)*ysum(i))
-         if(pazi(i).lt.0.0)pazi(i)=pazi(i)+360.0
-         if(abs(srx2y2).lt.0.00001)goto 30
-         pelv(i)=atan2(zsum(i),srx2y2)
-         pelv(i)=pelv(i)/r
-   30 continue
+      pi = 4.0 * atan(1.0)
+      r=pi/180.
 
 C  Cosine of the angle of incidence and surface-solar azimuth angle.
       do 40 i=1,nzsur(icomp)
