@@ -387,7 +387,6 @@ C            in the misur list.
 #include "building.h"
 #include "geometry.h"
 
-C      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/c24/izstocn(mcom,ms)
       common/sunhr/isunhr
       common/tshd/ioshd(mox,moz)
@@ -707,12 +706,12 @@ C Increment irec to skip record holding pso & psof
       end
 
 C ********** INCAI **********
-
+C Much of what is calculated in incai is available elsewhere.
+c There are several opportunities to use other common blocks.
       subroutine incai(icomp,ihour)
 #include "building.h"
 #include "geometry.h"
 
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/traceout/icout
       common/cai/caii(ms),caie(ms)
       common/tc/itc,icnt
@@ -740,9 +739,12 @@ C Gross surface area.
             if(j.eq.nv)k=1
             ip1=nzjvn(icc,j)
             ip2=nzjvn(icc,k)
-            xs=xs+y(ip1)*z(ip2)-z(ip1)*y(ip2)
-            ys=ys+z(ip1)*x(ip2)-x(ip1)*z(ip2)
-            zs=zs+x(ip1)*y(ip2)-y(ip1)*x(ip2)
+            xs=xs+vcoord(icomp,ip1,2)*vcoord(icomp,ip2,3)-
+     &         vcoord(icomp,ip1,3)*vcoord(icomp,ip2,2)
+            ys=ys+vcoord(icomp,ip1,3)*vcoord(icomp,ip2,1)-
+     &         vcoord(icomp,ip1,1)*vcoord(icomp,ip2,3)
+            zs=zs+vcoord(icomp,ip1,1)*vcoord(icomp,ip2,2)-
+     &         vcoord(icomp,ip1,2)*vcoord(icomp,ip2,1)
    20    continue
          xsum(i)=xs
          ysum(i)=ys
