@@ -828,7 +828,7 @@ C Pick up general description of the composite.
         WRITE(MLCN,'(A)')DESC(IM)(1:12)
         WRITE(OTF,'(A)') DESC(IM)(15:18)
         IF(OTF.EQ.' ')OTF='OPAQ'
-        IF(OTF.EQ.'TRAN')THEN
+        IF(OTF.EQ.'TRAN'.or.OTF.EQ.'CFC ')THEN
           WRITE(OPT,'(A)') DESC(IM)(21:32)
           IF(OPT.EQ.' ')OPT='UNKNOWN'
         ELSE
@@ -863,7 +863,7 @@ C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if(OTF.EQ.'TRAN')then
+        if(OTF.EQ.'TRAN'.or.OTF.EQ.'CFC ')then
           CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
           if(VTRN.gt.0.02)then
           gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))-0.9166530661)
@@ -1211,8 +1211,8 @@ C Find the matching mlc index and set the material name.
             IF(DESC(IC)(1:12).EQ.SSMLCN(icn)(1:12))ICF=IC
  201      CONTINUE
           if(ICF.eq.-1.or.SSMLCN(icn)(1:4).eq.'UNKN')then
-            if (SSOTF(icn)(1:4).ne.'OPAQ'
-     &            .and.SSOTF(icn)(1:4).ne.'CFC ') then
+            if (SSOTF(icn)(1:4).ne.'OPAQ') then
+C     &            .and.SSOTF(icn)(1:4).ne.'CFC ') then
               material='unknown_glz'
             else
               material='unknown'
@@ -1235,8 +1235,8 @@ C Aternative glazing descriptions file.
               WRITE(ita2,'(a)') outs
               WRITE(ita2,'(a)') '  '
             endif
-          elseif(SSOTF(icn)(1:4).ne.'OPAQ'
-     &            .and.SSOTF(icn)(1:4).ne.'CFC ')then
+          elseif(SSOTF(icn)(1:4).ne.'OPAQ') then
+C     &            .and.SSOTF(icn)(1:4).ne.'CFC ')then
 
 C Create surface based on the following:
 C  Focus zone - create.
