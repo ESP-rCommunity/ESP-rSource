@@ -546,8 +546,8 @@ C Initiate source surface grid point-by-point analysis.
 
 C Convert source surface grid point coordinates back to global
 C coordinates before initiating projection.
-                     call transp(nznver(iccisrc),xf,yf,zf,xop(m,n),
-     &                           zop(m,n),xgp,ygp,zgp)
+                     call transp(iccisrc,xf,yf,zf,xop(m,n),
+     &                 zop(m,n),xgp,ygp,zgp)
                      call trnsf3i(ihr,intsur,ipass,xgp,ygp,zgp)
                      ipass=1
                      if(yp.lt.0.0)goto 110
@@ -899,7 +899,7 @@ C Checks.
 C ********** TRANSP **********
 C This routine transforms a grid point defined relative to a given
 C surface back to global co-ordinates.
-C     1 - Find equation of surface (eqn(4)) and centre of 
+C     1 - Recover equation of surface (eqn(4)) and centre of 
 C         gravity (vp(3)) via pleqn().
 C     2 - Set up eye point normal to plane at centre of gravity
 C         (ep(3)) and use eyemat() to establish matrix and 
@@ -909,21 +909,28 @@ C         surface vertex) when transformed to normal view and
 C         apply reverse transformation to give vertices in
 C         global co-ordinates.
 
-      subroutine  transp(n,x,y,z,dx,dz,xxw,yyw,zzw)
+      subroutine  transp(icc,x,y,z,dx,dz,xxw,yyw,zzw)
 #include "building.h"
+#include "geometry.h"
+
+C Parameters
+      integer icc   ! the model surface connection index
+      real x,y,z    ! coordinates passed
+      real dx,dz    ! grid location
+      real xxw,yyw,zzw ! transformed coordinate
 
       dimension x(mtv),y(mtv),z(mtv)
       dimension tmat(4,4),rmat(4,4)
-      dimension vp(3),ep(3),eqn(4)
+      dimension vp(3),ep(3)
 
-C Get center of surface and surface equation.
-      call pleqn(x,y,z,n,vp,eqn,ier)
-      if(ier.lt.0)return
+C Recover eye point and view point for eyemat.
+      vp(1)=SSURCOG(icc,1)
+      vp(2)=SSURCOG(icc,2)
+      vp(3)=SSURCOG(icc,3)
+      ep(1)=SSURVN(icc,1)
+      ep(2)=SSURVN(icc,2)
+      ep(3)=SSURVN(icc,3)
 
-C Find transformation matrices that normalise face.
-      do 10 j=1,3
-         ep(j)=vp(j)+eqn(j)
-   10 continue
       call eyemat(ep,vp,1.0,tmat,rmat)
 
 C Transform first 2 surface vertices.
