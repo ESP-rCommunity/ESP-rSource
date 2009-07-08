@@ -4265,7 +4265,7 @@ C If 'is' is passed as 0 then check all, otherwise exclude surface is.
       
       lstr=lnblnk(string)
       ok=.true.
-      do 42 i=1,NZSUR(icomp)
+      do 42 i=1,NZSUR(icomp)-1   ! last surface corresponds to new surface for which a connection does not yet exist so don't count it
         icn=izstocn(icomp,i)
         SN=SSNAME(icn)
         if(string(1:lstr).eq.SN(1:lnblnk(SN)))then

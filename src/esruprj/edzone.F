@@ -398,7 +398,7 @@ C Update the connection list and hash for initial surface.
         SSUSE(iccc,1)=SUSE(1,1)
         SSUSE(iccc,2)=SUSE(1,2)
         SSPARENT(iccc)=SPARENT(1)
-        IZSTOCN(icomp,icc)=iccc
+        IZSTOCN(icomp,1)=iccc
         NCON=ICCC
       elseif(ishape.eq.4)then
 
