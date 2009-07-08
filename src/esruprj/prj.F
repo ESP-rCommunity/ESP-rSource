@@ -52,6 +52,8 @@ C espriou.h provides currentfile, defdbfl exemfl.
 #include "net_flow.h"
 #include "prj3dv.h"
 #include "ipvdata.h"
+C Radiance RCF file.
+#include "e2r_common.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -122,9 +124,6 @@ C Images.
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
 
-C Radiance RIF file.
-      common/radcfg/LRADCF
-
 C Temporal definitions.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
@@ -178,13 +177,13 @@ C Name of current application
       character*72 LCFGF,H,LPRJLG
       character*72 LCNN,LTMP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
+      character inf*144,inz*16,inzone*16,act_16*16,inact*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
       character path*72,upath*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
-      character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72,LTDFA*72
+      character ctldoc*248,lctlf*72,ETEXT*82,LTDFA*72
       character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
@@ -229,7 +228,7 @@ C Initialize variables and recover command line arguments.
 
 C Recover command line parameters (terminal, size, config file, zone
 C focus and actions arguments).
-      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3)
+      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act_16,d1,d2,d3)
       IFDAY=2
       IFTIME=0
       nsset=0
@@ -487,8 +486,8 @@ C and determine if focus is a single zone.
 
 C If command line also included a key word, file name or data after -act
 C then set inact.
-      if(act(1:2).ne.'  ')then
-        inact=act
+      if(act_16(1:2).ne.'  ')then
+        inact=act_16
       else
         inact='NONE'
       endif

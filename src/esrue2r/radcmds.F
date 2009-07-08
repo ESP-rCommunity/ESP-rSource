@@ -213,14 +213,14 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       character*72 LTMPFL,LTMPFA,rn,upath
       character runpath*72,pathtype*24
 
-      dimension npz(8),alt(8),azim(8),solid(8)
+      dimension npz(8),alt(8),azimvec(8),solid(8)
 
       LOGICAL XST,unixok
       integer lnrp  ! length of run path
 
       data npz/30,60,84,108,126,138,144,145/
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
-      data azim/12.,12.,15.,15.,20.,30.,60.,0./
+      data azimvec/12.,12.,15.,15.,20.,30.,60.,0./
       data solid/13.39,13.39,13.39,13.39,13.39,13.39,13.39,13.39/
 
       QT=CHAR(39)
@@ -362,12 +362,12 @@ C Calculate patch direction vector (location).
             yp = 0.0
             zp = 1.0
           elseif(nzone.eq.1) then
-            aazim = azim(nzone)*real((IPTCH - 1))
+            aazim = azimvec(nzone)*real((IPTCH - 1))
             xp = ecosd(aazim)*ecosd(alt(nzone))
             yp = esind(aazim)*ecosd(alt(nzone))
             zp = esind(alt(nzone))
           else
-            aazim = azim(nzone)*real((IPTCH - npz(nzone-1)) - 1)
+            aazim = azimvec(nzone)*real((IPTCH - npz(nzone-1)) - 1)
             xp = ecosd(aazim)*ecosd(alt(nzone))
             yp = esind(aazim)*ecosd(alt(nzone))
             zp = esind(alt(nzone))
@@ -586,13 +586,13 @@ C adding in the ground disk.
           rvpz=EYEMI(3)
         endif
         call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
-     &                                               azim,elev)
+     &                                               azimuth,elevtn)
         call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &             OYMX,OZMX,eang)
         angv=eang*1.2
         angh=eang*1.2
 
-        call AZ2UV(azim,elev,vdx,vdy,vdz)
+        call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
         write(vewcmds(1),'(a,3F9.3,a,3F8.4,a,F6.1,a,F6.1,a)') 
      &       '-vtv -vp ',rvpx,rvpy,rvpz,' -vd ',vdx,vdy,vdz,
      &       ' -vu 0 0 1 -vh ',angh,' -vv ',angv,' -vs 0 -vl 0 '

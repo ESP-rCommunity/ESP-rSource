@@ -3886,23 +3886,24 @@ C ***** visualz
 C visualz drives visualisation process - hidden line or raytracing.
 C << this duplicates opts within the model export facility >>
 C << it would be clearer if all model I/O happened there >>
-      subroutine visualz(act,ier)
-      
+      subroutine visualz(act_1,ier)
+#include "building.h"
+#include "e2r_common.h"
+
       integer lnblnk  ! function definition
 
 C      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
-      common/radcfg/LRADCF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/appw/iappw,iappx,iappy
       common/user/browse
       logical concat,OK,DOK,browse,XST,deref,unixok
-      character lradcf*72,dradcf*72,LCFGF*72,OUTSTR*124
+      character dradcf*72,LCFGF*72,OUTSTR*124
       character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
-      character doit*124,tmode*8,H*72,act*1
+      character doit*124,tmode*8,H*72,act_1*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124
       character brw*8   ! to signal model is being browsed
@@ -3915,7 +3916,7 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-      if(act.eq.'V')then
+      if(act_1.eq.'V')then
 
 C Construct a 'VIEWER' format file.  First get file name.
         dvfil='std.vew'
@@ -3957,7 +3958,7 @@ C string to drive VIEWER.
           call runit(doit,tmode)
         endif
         return
-      elseif(act.eq.'R')then
+      elseif(act_1.eq.'R')then
 
 C If in browse mode then run e2r and return, otherwise check rcf name
 C and contents of file on return from e2r.

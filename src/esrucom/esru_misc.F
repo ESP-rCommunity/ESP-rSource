@@ -71,7 +71,8 @@ C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "sbem.h"
 #include "ipvdata.h"
 #include "seasons.h"
-
+#include "e2r_common.h"
+C provides LRADCF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -127,9 +128,6 @@ C HOT3000: AIM-2.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
-C Radiance scenes file.
-      common/radcfg/LRADCF
 
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -263,7 +261,7 @@ C IPV data comes via ipvdata.h
       character hvacfile*72,LAIM2*72,LBSIMP*72
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
-      character dmdsdesc*248,bdmds*72,lradcf*72
+      character dmdsdesc*248,bdmds*72
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8

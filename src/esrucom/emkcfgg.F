@@ -27,7 +27,7 @@ C **************** EMKCFGG
 C EMKCFGG writes out the current contents of system configuration
 C common blocks into the file and unit specified in COMMON/C21.
 C This version uses generic databases.
-      SUBROUTINE EMKCFGG(act,IER)
+      SUBROUTINE EMKCFGG(act_1,IER)
 
 #include "building.h"
 #include "geometry.h"
@@ -43,6 +43,8 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+#include "e2r_common.h"
+C provides LRADCF
       PARAMETER (MSTMC=20,MSGAL=40)
       
       integer lnblnk  ! function definition
@@ -99,9 +101,6 @@ C Images.
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
-
-C Radiance scene file.
-      common/radcfg/LRADCF
 
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
@@ -236,13 +235,12 @@ C Generic databases from esprdbfile.h.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,indxcmt*24,DBSN*15
       character*10 wkd1, wkd2
-      character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72,act*1
+      character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72,act_1*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER dmdsdesc*248,bdmds*72,outs*124

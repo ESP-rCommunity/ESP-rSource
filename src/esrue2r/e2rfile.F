@@ -153,6 +153,7 @@ C Read the first line and get past '# '.
       KT=K   ! there might or might not be a key word -ang
       CALL EGETW(CMDL,KT,WORD,'W','gensky option',IFLAG)
       if(word(1:4).eq.'-ang')then
+C BUG?? --- possibly, "azis" should read "azimuth" (the common variable) and "alts" should be "elevtn"??
         CALL EGETWR(CMDL,KT,alts,0.,90.,'W','alt',IER)
         CALL EGETWR(CMDL,KT,azis,-90.,90.,'W','azi',IER)
         write(outs,'(a,2f7.2)') 'Radiance sun alt & azim=',alts,azis

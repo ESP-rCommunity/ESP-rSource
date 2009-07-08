@@ -145,6 +145,8 @@ C espriou.h provides currentfile and defdbfl.
 #include "sbem.h"
 #include "roam.h"
 #include "ipvdata.h"
+#include "e2r_common.h"
+C provides LRADCF
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -323,9 +325,6 @@ C ICPCON set to one if there is a CPCALC definition.
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe
 
-C Radiance scenes file.
-      common/radcfg/LRADCF
-
 C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
@@ -475,7 +474,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
-      character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
       character GTGEOM*72,GTNAME*15

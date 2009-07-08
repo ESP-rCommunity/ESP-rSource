@@ -50,6 +50,7 @@ C ************************************************************
 #include "uncertainty.h"
 #include "espriou.h"
 #include "esprdbfile.h"
+#include "e2r_common.h"
       PARAMETER (MSTMC=20)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -71,7 +72,6 @@ C ************************************************************
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/radcfg/LRADCF
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -121,7 +121,7 @@ C Uncertainty.
       character outs*124,outs248*248
       character doit*248,longtfile*144,longtfiledos*144
       character fs*1
-      character act*16
+      character act_16*16
       character LUALF*72,LCNG*15,LLOC*15
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -130,7 +130,7 @@ C Uncertainty.
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
       character*72 LCFGF,LPRJLG
-      character LCTLF*72,ctldoc*248,lradcf*72,LTDFA*72
+      character LCTLF*72,ctldoc*248,LTDFA*72
       character LTDF*72,LAPROB*72 
       CHARACTER dmdsdesc*248,bdmds*72
       character bidirfile*72,bidirname*12
@@ -168,7 +168,7 @@ C   'create_silent' to parse the input and create the silentread file
 C   'create_model' to parse the input file, create silentread file
 C          and then generate the model
 C   'create_run_model' does the above but initiates a simulation.
-      call partfa(MODL,inf,act)
+      call partfa(MODL,inf,act_16)
       IFDAY=2
       IFTIME=0
       nsset=0
@@ -311,11 +311,11 @@ C Take command line file name to LCMDF and use as initial climate file.
       endif
 
 C Parse the input file and return an error condition.
-      if(act(1:4).eq.'NONE')then
+      if(act_16(1:4).eq.'NONE')then
 
 C If no action passed assume it is the same as create_run_model.
-        write(act,'(a)') 'create_model'
-        call parse_oc(INTER,act,ier)
+        write(act_16,'(a)') 'create_model'
+        call parse_oc(INTER,act_16,ier)
 
 C Debug.
         write(outs,'(2a)') 'runesp generated model ',LCFGF
@@ -352,21 +352,21 @@ C Debug.
         call epwait
         STOP
 
-      elseif(act(1:13).eq.'create_silent')then
-        call parse_oc(INTER,act,ier)
+      elseif(act_16(1:13).eq.'create_silent')then
+        call parse_oc(INTER,act_16,ier)
         call edisp(iuout,'runesp generated silentread file.')
 
 c << create silent read file to be done. >>
 C << start up prj with the silent input file...>>
         call epwait
         STOP
-      elseif(act(1:12).eq.'create_model')then
-        call parse_oc(INTER,act,ier)
+      elseif(act_16(1:12).eq.'create_model')then
+        call parse_oc(INTER,act_16,ier)
         call edisp(iuout,'runesp generated model.')
         call epwait
         STOP
-      elseif(act(1:16).eq.'create_run_model')then
-        call parse_oc(INTER,act,ier)
+      elseif(act_16(1:16).eq.'create_run_model')then
+        call parse_oc(INTER,act_16,ier)
         call edisp(iuout,'runesp generated model & annual assessment.')
 
 C << start up bps with -p directive...>>

@@ -26,7 +26,7 @@ C  ckcurmatch Scan and report current connection mis-matches.
 C **************** EMKCFG 
 C EMKCFG writes out the current contents of system configuration
 C common blocks into the file and unit specified in COMMON/C21.
-      SUBROUTINE EMKCFG(act,IER)
+      SUBROUTINE EMKCFG(act_1,IER)
 
 #include "building.h"
 #include "geometry.h"
@@ -49,6 +49,8 @@ C ICLIM,LCLIM (for climate file)
 #include "CFC_common.h"
 #include "ipvdata.h"
 #include "seasons.h"
+#include "e2r_common.h"
+C provides LRADCF
       PARAMETER (MSTMC=20,MSGAL=40)
       
       integer lnblnk  ! function definition
@@ -104,9 +106,6 @@ C Images.
 
 C Initial view.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
-
-C Radiance scene file.
-      common/radcfg/LRADCF
 
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam
@@ -271,7 +270,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
       character GTGEOM*72,LCFD*72,DCNN*72
@@ -295,7 +293,7 @@ C An array of mass flow nodes for writing.
       character namen*12
       dimension namen(mcom)
 
-      character act*1  ! a '-' is normal use, a 's' is silent
+      character act_1*1  ! a '-' is normal use, a 's' is silent
       character ipvaction*3  ! to instruct mkipv to do it within cfg file
       character tab*1  ! a literal tab character
 
@@ -398,7 +396,7 @@ C take the default name for the connections file.
           INDCFG=1
 C          call edisp(iuout,'Upgrading from registration to zone.')
           write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
-          if(act(1:1).eq.'-')then
+          if(act_1(1:1).eq.'-')then
   289       H(1)='The surface topology of the model is held in'
             H(2)='a connections file.'
             DCNN='model.cnn'

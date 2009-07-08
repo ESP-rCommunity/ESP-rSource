@@ -68,7 +68,7 @@ C     ifocz   index of current zone ("focus")
 C     ipicx
 
 
-      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
+      common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azimuth,elevtn
       real rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
 C     rvpx, rvpx, rvpz  Radiance view point coordinates (?)
 C     vdx, vdy, vdz     Radiance view direction vector (?)
@@ -78,9 +78,9 @@ C     azim, elev        Radiance ...
 
       common/grdisk/grdd,grcx,grcy
       real grdd,grcx,grcy
-C     grdd
-C     grcx
-C     grcy
+C     grdd  ground disk diameter (?)
+C     grcx  ground disk center x coordinate (?)
+C     grcy  ground disk center y coordinate (?)
 
       common/radgt/iglzty
       integer iglzty

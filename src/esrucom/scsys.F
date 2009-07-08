@@ -45,7 +45,8 @@ C default file names for databases
 C espriou.h provides currentfile.
 #include "lookup_data.h"
 #include "CFC_common.h"
-
+#include "e2r_common.h"
+C provides LRADCF
       PARAMETER (MSTMC=20)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -125,7 +126,6 @@ C Images.
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
-      common/radcfg/LRADCF
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/ndcfd/ncfdnd,icfdnd(MNZ),NCONF
 
@@ -239,7 +239,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER WORD*20,ZN*12
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
-      character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,MCMPDBFL*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character dfdblbl*20,defdbfl*72,GTGEOM*72

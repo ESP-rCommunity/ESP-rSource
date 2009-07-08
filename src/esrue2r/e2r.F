@@ -258,8 +258,8 @@ C views and looking east.
       vdx=1.
       vdy=0.
       vdz=0.
-      azim=90.
-      elev=0.
+      azimuth=90.
+      elevtn=0.
 
 C Initial coords for eyepoint, viewing point, angle of view.
       EYEM(1)=-100.
@@ -427,6 +427,15 @@ C and then present the main menu.
           lnrp=lnblnk(runpath)
         endif
       endif
+
+C Pathmania ...
+c      write(*,*)' ---- '
+c      write(*,*)'path= ',path,' upath= ',upath,' runpath= ',
+c     &    runpath,' pathtype= ',pathtype
+c      write(*,*)'zonepth= ',zonepth,' netpth= ',netpth,
+c     &    ' ctlpth= ',ctlpth,' imgpth= ',imgpth,' radpth= ',radpth,
+c     &    ' docpth= ',docpth,' tmppth= ',tmppth,' dbspth= ',dbspth
+c      write(*,*)' ---- '
 
 C No command line configuration file supplied or cannot be found, 
 C therfore get one.
@@ -1248,7 +1257,7 @@ C If unix and browsing get PID for use in /tmp directory structure.
             pathtype='radinhome'
             call edisp(iuout,' Currently using runpath in user home')
           else
-	  
+
 C If user owns the model then use the ../rad or ./cfg folder so no
 C need to create a folder.
             if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
@@ -1260,11 +1269,11 @@ C need to create a folder.
             write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
             lnrp=lnblnk(runpath)
           endif
-        else
-          if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then
+        else ! not unixok
+          if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\')then
             pathtype='radincfg'
           elseif(radpth(1:6).eq.'./rad '.or.
-     &           radpth(1:6).eq.'.\\rad ')then
+     &           radpth(1:6).eq.'.\\rad')then
             pathtype='radinrad'
           endif
           write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs

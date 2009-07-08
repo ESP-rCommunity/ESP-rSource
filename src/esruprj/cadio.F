@@ -1516,7 +1516,8 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
-      
+#include "e2r_common.h"
+C provides LRADCF
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
@@ -1540,7 +1541,6 @@ C ICLIM,LCLIM (for climate file)
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/LOG/LPRJLG
-      common/radcfg/LRADCF
       COMMON/BL1/dmdsdesc,bdmds
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -1603,7 +1603,7 @@ C The string buffer doit is only used within ifdef code.
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character tp*32,tr*32
-      character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
+      character ctldoc*248,LCTLF*72,LGrdSt*72
       character LTDF*72,LTDFA*72,GTGEOM*72,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,LTMPFL*72
