@@ -69,7 +69,7 @@ C     ipicx
 
 
       common/radv/rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azimuth,elevtn
-      real rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azim,elev
+      real rvpx,rvpy,rvpz,vdx,vdy,vdz,angh,angv,azimuth,elevtn
 C     rvpx, rvpx, rvpz  Radiance view point coordinates (?)
 C     vdx, vdy, vdz     Radiance view direction vector (?)
 C     angh, angv        Radiance view angle horizontal and vertical
