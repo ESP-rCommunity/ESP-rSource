@@ -118,7 +118,6 @@ C and computes the overall direct and diffuse shading factors.
       common/filep/ifil
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
-      common/g1t/xft(mv),zft(mv)
       common/grid3/ogrida(ms)
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
@@ -223,10 +222,8 @@ C Next line only reached after all sky patches have been processed.
   50     continue
   40  continue
 
-C Calculate gross surface area, gsa.
-C << why calculate? this is already known >>>
-      nv=nznver(icc)
-      call area(nv,xft,zft,gsa)
+C Recover gross surface area, gsa.
+      gsa=ssna(icc)
 
       if(mode.eq.'dir')pso(is,ihour)=gssa/gsa
       if(mode.eq.'dif')then

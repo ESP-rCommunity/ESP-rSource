@@ -20,44 +20,10 @@ C Boston, MA 02111-1307 USA.
 
 C MISCEL.F contains the following routines used by ish.
 
-C AREA:    Returns area for any polygon.
 C MESH:    Computes centre point X&Z coord of grid squares.
 C PICKSSUR selects surfaces for shading & insolation analysis.
 C POINT1   determine if a point is within the target surface
 C POINT2   determine if a point is within a shadow polygon.
-
-C ************* AREA 
-C Calculates the area of a surface comprising 'n' vertices
-C and coordinates 'x & y'; the calculated area is 'a'.
-
-      subroutine area(n,x,y,a)
-#include "building.h"
-
-      dimension x(mv),y(mv)
-
-      a=0
-      da=(x(2)-x(1))**2+(y(2)-y(1))**2
-      do 10 i=3,n
-         db=(x(i)-x(1))**2+(y(i)-y(1))**2
-         dc=(x(i)-x(i-1))**2+(y(i)-y(i-1))**2
-         si=(y(1)-y(i-1))*(x(i)-x(i-1))-(y(i)-y(i-1))*(x(1)-x(i-1))
-         if(si.gt.0.)si=1.
-         if(si.lt.0.)si=-1.
-         if(abs(si).lt.0.0001)goto 1
-
-C Check square root is not negative.
-         temp=2.*(da*db+db*dc+dc*da)-(da*da+db*db+dc*dc)
-         if(temp.gt.0.00001)then
-            arex=.25*sqrt(temp)
-         else
-            arex=0.0
-         endif
-         a=a+si*arex
-    1    da=db
-   10 continue
-      a=abs(a)
-      return
-      end
 
 C *************** MESH ***********************
 C Computes the centre point 'x & y' coordinates for each rectangular
