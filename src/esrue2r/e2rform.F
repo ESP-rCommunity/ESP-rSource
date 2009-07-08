@@ -304,6 +304,9 @@ C geometry.h provides commons G0 and G2.
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/expath/runpath,pathtype
 
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      LOGICAL MODIFY,MODLEN,MODBND
+
       LOGICAL OK,DOK,XST,fict
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -603,6 +606,11 @@ C Arrays of material properties.
      &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
      &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
      &  matdbthick(MGIT)
+
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      LOGICAL MODIFY,MODLEN,MODBND
+
+      COMMON/RAY6/LINSTY(MCON)
 
       integer mathash
       common/mathasharray/mathash(0:600)

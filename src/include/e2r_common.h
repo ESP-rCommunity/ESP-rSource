@@ -120,39 +120,7 @@ C     rzoncmd
 C     rupaxis
 
 
-      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
-
-
-      COMMON/RAY3/MODIFY,MODLEN,MODBND
-      LOGICAL MODIFY,MODLEN,MODBND
-C     modify
-C     modlen
-C     modbnd
-
-
-      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-C     zcog
-C     xmn,ymn,zmn
-C     xmx,ymx,zmx
-
-
       COMMON/RAY5OB/OXMN,OYMN,OZMN,OXMX,OYMX,OZMX
-
-
-      COMMON/RAY6/LINSTY(MCON)
-
-      
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-
-
-      common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
-C     initvt
-C     eyemi
-C     viewmi
-C     angi
-
 
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC

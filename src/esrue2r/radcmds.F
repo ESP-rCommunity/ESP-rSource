@@ -551,6 +551,8 @@ C defview generates a new default view.
 #include "e2r_common.h"
 
       COMMON/FILEP/IFIL
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
       ITA2=IFIL+7
 

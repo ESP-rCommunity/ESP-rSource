@@ -48,7 +48,15 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/appw/iappw,iappx,iappy
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      
+
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      LOGICAL MODIFY,MODLEN,MODBND
+
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
@@ -1126,6 +1134,13 @@ C Path to model.
       COMMON/GTFIL/GTGEOM
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      LOGICAL MODIFY,MODLEN,MODBND
+
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      
+      common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24

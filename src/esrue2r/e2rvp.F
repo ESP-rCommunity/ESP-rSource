@@ -28,6 +28,8 @@ C ******* View cone for plan/elevation.
 #include "e2r_common.h"
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+
       character direc*1
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
@@ -138,7 +140,15 @@ C ******* Default views formation.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
- 
+
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      LOGICAL MODIFY,MODLEN,MODBND
+
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+     
       LOGICAL XST,OK,DOK,addview,redraw
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)

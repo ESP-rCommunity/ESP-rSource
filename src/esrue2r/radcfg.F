@@ -863,7 +863,15 @@ C if MODE is not - then sensor points file name confirmation required.
       common/expath/runpath,pathtype
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      
+
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      LOGICAL MODIFY,MODLEN,MODBND
+
+      COMMON/RAY6/LINSTY(MCON)
+
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       integer nccode,indutl
@@ -1090,7 +1098,13 @@ C      COMMON/OUTIN/IUOUT,IUIN
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
-      DIMENSION  COG1(3),COG2(3),COG3(3)
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      LOGICAL MODIFY,MODLEN,MODBND
+
+      DIMENSION COG1(3),COG2(3),COG3(3)
 
       CHARACTER VT*5,act_1*1
       character OUTSTR*124,tfile*72

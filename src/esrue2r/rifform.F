@@ -351,6 +351,11 @@ C If use = 'f' then force files to account for change in root/dir name.
 #include "building.h"
 #include "e2r_common.h"
       
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+
+      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
+     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
+
       integer lnblnk  ! function definition
 
       character pre*28
