@@ -131,6 +131,7 @@ enableFPE="no"             # FPE-exception handling?
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
+reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading files?
 
 #-----------------------------------------------------------
 # List of targets understood by bps
@@ -196,6 +197,7 @@ if [ $# -ne 0 ]; then
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
         --skip_ish_calcs) skip_ish_calcs="yes";    shift;;
+        --reuse_ish_calcs) reuse_ish_calcs="yes";    shift;;
         clean)          targets="${targets} clean" shift;;
         *)
               # check if target is "buildable",
@@ -325,6 +327,11 @@ if [ $help -eq 1 ]; then
   echo "        This option significantly shortens the time required"
   echo "        to install training and validation files, but shading"
   echo "        files must be updated manually."
+  echo " "
+  echo "    --reuse_ish_calcs: Converts existing ascii shading files "
+  echo "        associated with training and validation exemplars, otherwise"
+  echo "        recalculate shading and insolation. This shortens the time"
+  echo "        required to install training and validation files."
   echo " "
   echo "    --silent: Invoke the silent (non-interactive) installation"
   echo "        mode. Default options will be selected, unless "
@@ -1949,10 +1956,17 @@ if [ "$install_training" = "yes" ]; then
         if [ ${isi[$((i+2))]} == "*isi" ]; then
           ish_processed_count=$((${ish_processed_count}+1))
 
-          printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
+          if [ "${reuse_ish_calcs}" = "no" ]; then
+            printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
             $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent > /dev/null
             shdfile=${file%/*}/${isi[$((i+3))]}
             mv -f ${shdfile} ${ESPdir}/${shdfile}
+          elif [ "${reuse_ish_calcs}" = "yes" ]; then
+            printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
+            $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act useupdate_silent > /dev/null
+            shdfile=${file%/*}/${isi[$((i+3))]}
+            mv -f ${shdfile} ${ESPdir}/${shdfile}
+          fi
         fi
       fi
       i=2+$(($i))

@@ -435,7 +435,9 @@ C on a single zone.
 C Take command line action parameter. If paction = 'recalculate' then
 C after the configuration is read in, do a standard annual calculation
 C and pause so user can view results. If paction = 'update_silent' then
-C do standard annual calculation and exit when completed. If paction
+C do standard annual calculation and exit when completed. 
+C If paction= useupdate_silent then import existing ascii file if
+C available otherwise do standard annual calculation. If paction
 C is 'asci2bin' then create an empty binary and then import ascii
 C data and then exit. If paction is 'bin2asci' then scan the binary
 C and then call the ascii export facility and exit.
@@ -448,6 +450,8 @@ C and then call the ascii export facility and exit.
             call edisp(iuout,outs)
             user_recalc=.true.
          elseif(paction(1:13).eq.'update_silent')then
+            silent=.true.
+         elseif(paction(1:16).eq.'useupdate_silent')then
             silent=.true.
          elseif(paction(1:8).eq.'asci2bin')then
 	    write(ascif,'(a)') pascif(1:lnblnk(pascif))
@@ -559,7 +563,15 @@ C of paction (so that we do not do a recursive asci->bin->ascii.
                elseif(istat.eq.1)then
                  loaded_existing=.false.
                elseif(istat.eq.8)then
+
+C A new binary file was created from an existing ascii so
+C the requested useupdate_silent task has been completed.
                  loaded_existing=.true.
+                 if(paction(1:16).eq.'useupdate_silent')then
+                   call pauses(1)
+                   call epagend
+                   stop
+                 endif
                endif
             endif
          endif
@@ -567,6 +579,63 @@ C of paction (so that we do not do a recursive asci->bin->ascii.
 
 C There was no input file, at least clear the model common blocks.
         call clrprb
+      endif
+
+C If useupdate_silent and reached this point then there was either
+C an existing binary shd file which was opened via shdprb and needs
+C to be cleared and re-filled from an ascii shading file or there
+C was a black binary file created. Guess the name of the ascii shading
+C file for the current zone. If it exists then proceed as in
+C asci2bin.
+      if(silent.and.paction(1:16).eq.'useupdate_silent')then
+        if(zn(1:4).eq.'UNKN')then
+          call edisp(iuout,'A zone is required to convert file.')
+          ier = 1
+          call epagend
+          stop 
+        else
+          lnshd=lnblnk(lshad(icomp))
+          write(ascif,'(2a)') lshad(icomp)(1:lnshd),'a'
+          call findfil(ascif,xst)
+          if(xst)then
+            if(isi(icomp).EQ.1)then
+              maxrec=24
+              if(nzsur(icomp).gt.24)maxrec=nzsur(icomp)
+              call findfil(lshad(icomp),xst)
+              if(xst)then
+                call erpfree(ifilsi,istst)
+                call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
+                write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
+                call edisp(iuout,outs)
+                call efdelet(ifilsi,istat)
+                call sifile(icomp,istat)
+                if(istat.eq.0)then
+                  continue
+                elseif(istat.eq.1)then
+                  continue
+                else
+                  call edisp(iuout,'problem setting up new file.')
+                  ier = 1
+                  call epagend
+                  stop 
+                endif
+                write(outs,'(3a)') ' Reading ASCII file ',
+     &            ascif(1:lnblnk(ascif)),'...'
+                call edisp(iuout,outs)
+
+C There are no files to cleanup so just convert and exit.
+                call sifimport(icomp,ascif,ier)
+                call pauses(1)
+                call epagend
+                stop     
+              endif
+            endif
+          else
+
+C The was no existing ascii file so signal need to recalculate shading.
+            user_recalc=.true.
+          endif
+        endif
       endif
 
 C If in conversion mode then call the relevant subroutine.
@@ -696,7 +765,8 @@ C Proceed with shading and then insolation calculations.
             call usrmsg('Unknown Zone Shading & Insolation file.',
      &                  'Cannot recalculate!','W')
          endif
-         if(paction(1:13).eq.'update_silent')then
+         if(paction(1:13).eq.'update_silent'.or.
+     &      paction(1:16).eq.'useupdate_silent')then
             call usrmsg('Recalculation complete cleaning up.',' ','-')
 
 C Finished silent recalculation so exit program, delete the transitional
@@ -743,7 +813,8 @@ C Computations finished, write out the ascii version of the database.
  
 C Allow user to quit manually for a recalculate directive but
 C auto exit for update_silent.
-         if(paction(1:13).eq.'update_silent')then
+         if(paction(1:13).eq.'update_silent'.or.
+     &      paction(1:16).eq.'useupdate_silent')then
            call epagend
            stop
          endif
