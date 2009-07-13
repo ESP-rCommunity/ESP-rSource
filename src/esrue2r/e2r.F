@@ -156,6 +156,9 @@ C Temporary ascii files ITA1 = IFIL+6, ITA2 = IFIL+7, ITA3 = IFIL+10.
 
       call parse2r(MODL,iappw,iappx,iappy,inf,zone,aim,act,brw)
 
+C Set ifocz to zone number (which is passed as "character <zone number>")
+      read(zone,'(i3)')ifocz
+      
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -177,13 +180,20 @@ C Make case insensitive.
       ISCENE=1
       do 9 I=1,MCOM+1
         SCENE(I)='UNDEFINED'
-        RIFNAME(I)='UNKNOWN'
         SCENERT(I)='UNKNOWN'
         SCENEDESC(I)='UNKNOWN'
         SCENEPURP(I)='UNKNOWN'
         LBSRIF(I)='NONE'
         NBSRIF(I)=-1
  9    continue
+
+      do 91 IZON=1,MCOM
+       do 92 ISCN=1,MNSCN
+        do 93 IBPOS=1,MBP+1
+                RIFNAME(IZON,ISCN,IBPOS)='UNKNOWN'
+ 93     continue
+ 92    continue
+ 91   continue
 
 C Set defaults.
       KEEP=.false.
@@ -221,7 +231,7 @@ C Set defaults.
       optnfil='UNKNOWN'
 
 C Assume no focous zone.
-      ifocz = -1
+c      ifocz = -1 ! does not seem necessary!
 
 C Default values for rif file variables.
       intext = 0
@@ -565,7 +575,7 @@ C Check for command line information.
           call whichrif('m')
         elseif (NSCENE.eq.1) then
           ISCENE=1
-          call RRIF(ita2,ita3,RIFNAME(ISCENE),'r',ier)
+          call RRIF(ita2,ita3,rifname(ifocz,iscene,1),'r',ier)
         else
           call edisp(iuout,
      &      'There are no existing scenes. Pleases create one.')
@@ -579,7 +589,8 @@ C Check for command line information.
       ITEM(3)=                '  ____________________________'
       write(ITEM(4),'(2A)')   'b scenes  : ',LRADCF(1:18)
       write(ITEM(5),'(2A)')   'c name    : ',SCENE(ISCENE)(1:18)
-      write(ITEM(6),'(2A)')   '   RIF    : ',RIFNAME(ISCENE)(1:18)
+      write(ITEM(6),'(2A)')   '   RIF    : ',
+     &                                 rifname(ifocz,iscene,1)(1:18)
       write(ITEM(7),'(2A)')   '   root   : ',SCENERT(ISCENE)(1:18)
       write(ITEM(8),'(2A)')   '   purpose: ',SCENEPURP(ISCENE)
       ITEM(9)=                '   ___________________________'
@@ -777,7 +788,7 @@ C Sky type.
         call SKYFORM(IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
         if (NBSRIF(ISCENE).eq.1) then
           call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
@@ -788,7 +799,7 @@ C Zone and outside composition, updating rif file upon return.
         call E2RFORM('i',IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
         if (NBSRIF(ISCENE).eq.1) then
           call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
@@ -867,7 +878,7 @@ C Edit view points.  Save off current views.
           call VEWFORM(IER)
           call edisp(iuout,' updating RIF file to account for views.')
           IFC=3
-          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+          call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
           if (NBSRIF(ISCENE).eq.1) then
             call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
           endif
@@ -1096,7 +1107,7 @@ C Get glare info file name (if necessary) and display image.
 
 C Save scene information.
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
         if (NBSRIF(ISCENE).eq.1) then
           call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
@@ -1462,7 +1473,10 @@ C geometry.h provides commons G0 and G2.
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/TMCB1/IBCMT(MCOM,MTMC)
+c      COMMON/TMCB1/IBCMT(MCOM,MTMC)
+
+      COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
+     &IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
 
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124
@@ -1500,7 +1514,7 @@ C (need to test blind/ shuter control flags).
 
 C Check if tmc control found.
           do 30 I=1,MTMC
-            if (IBCMT(ICOMP,I).gt.NABS) NABS=IBCMT(ICOMP,I)
+            if (NBCTMC(ICOMP,I).gt.NABS) NABS=NBCTMC(ICOMP,I) ! set NABS to number of control periods for TMC
  30       continue
         endif
  10   continue

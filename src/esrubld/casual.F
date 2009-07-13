@@ -1275,6 +1275,7 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               endif
               call FPOPEN(IUNIT,ISTAT,1,2,LTMPFLA)
               write (OUTCMD,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
+        write (*,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
               write(doit,'(3a,i3,3a)')'e2r -file ',

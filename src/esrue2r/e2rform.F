@@ -825,11 +825,11 @@ C not be skipped.
         iskip(im)=0
 
 C Pick up general description of the composite.
-        WRITE(MLCN,'(A)')DESC(IM)(1:12)
+        WRITE(MLCN,'(A)')DESC(IM)(1:12) ! MLC construction name
         WRITE(OTF,'(A)') DESC(IM)(15:18)
         IF(OTF.EQ.' ')OTF='OPAQ'
         IF(OTF.EQ.'TRAN'.or.OTF.EQ.'CFC ')THEN
-          WRITE(OPT,'(A)') DESC(IM)(21:32)
+          WRITE(OPT,'(A)') DESC(IM)(21:32) ! "OPAQUE", "<optics data set name>" or "USE GSLedit"
           IF(OPT.EQ.' ')OPT='UNKNOWN'
         ELSE
           OPT='OPAQUE'
@@ -918,7 +918,21 @@ C Check for blind shutter control.
             WRITE(ita2,'(a)') '  '
           endif
 
-        else
+C create a glass entry for each glass layer of CFC (".or." in line 866 would need to be removed!)
+c        elseif (OTF.EQ.'CFC ')then
+c          do ilay 1 to im_ncfc_el(izone,icfc)
+c          
+c            if (im_cfcltp(izone,icfc,ilay).eq.2) ! layer is blind
+c            
+c            endif
+c            
+c          enddo
+C Blind control?
+c          if (NABS.gt.0) then
+c          
+c          endif
+
+        else ! Not a TMC or CFC ...
           WRITE(imatfil,'(a)') '# External MLC Colours... '
           if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
@@ -1361,7 +1375,7 @@ C IRECT: -1 not rectangular; 0 error; 1 rectangular.
  1275               continue
                   endif
                 endif
-              else
+              else ! surface is/was not divided
                 WRITE(iglzfil,'(a,a,a)') material(1:lnblnk(material)),
      &                        '  polygon  ',zsn(isf)(1:lnblnk(zsn(isf)))
                 WRITE(iglzfil,'(a)') '0 '

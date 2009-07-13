@@ -139,7 +139,7 @@ C Create inside and outside files, first open databases.
       fict=.false.
       call mkriofil(ftr,fict,'s',IER)
       IFC=3
-      call mkrif(ita2,RIFNAME(ISCENE),IFC,0,ier)
+      call mkrif(ita2,rifname(ifocz,iscene,1),IFC,0,ier)
       if (NBSRIF(ISCENE).eq.1) then
         call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
       endif
@@ -149,8 +149,8 @@ C Update rcf file and configuration file.
       call RADCFGOUT(ICHK)
 
 C Generate new octree.
-      call touchrif(RIFNAME(ISCENE))
-      if (NBSRIF(ISCENE).gt.0) then
+      call touchrif(rifname(ifocz,iscene,1))
+      if (NBSRIF(ISCENE).eq.1) then
         call touchrif(LBSRIF(ISCENE))
       endif
 
@@ -260,7 +260,7 @@ C the users home folder.
         call EGETWR(OUTS,K,RSAZI,-180.,180.,'W','Sol azi',IER)
         call EGETWR(OUTS,K,QDIR,0.,1250.,'W','Dir solar',IER)
         call EGETWR(OUTS,K,QDIF,0.,1250.,'W','Diff solar',IER)
-        call EGETWI(OUTS,K,IBLNDS,0,1,'W','Blinds state',IER)
+        call EGETWI(OUTS,K,IBLNDS,0,MBP,'W','Blinds state',IER)
 
 C Check solar position and radiation.
         QDIRH=QDIR*esind(RSALT/57.296)
@@ -292,7 +292,7 @@ C          call usrmsg('Cannot simulate switched blinds.','  ','F')
         endif
 
         if (IBLNDS.eq.0) then
-          rn=RIFNAME(ISCENE)
+          rn=rifname(ifocz,iscene,1)
         else
 C                         Here we need logic to be able to call as many different .rifs
 C                         as there are control periods in the .tmc ...
@@ -387,7 +387,7 @@ C End Debug
 
 C Generate new octree.
           if (IBLND.eq.0) then
-            rn=RIFNAME(ISCENE)
+            rn=rifname(ifocz,iscene,1)
           else
             rn=LBSRIF(ISCENE)
           endif
@@ -613,7 +613,7 @@ C Default internal view at max X average Y and Z, looking in -x dir.
 C Update rif file.
       IFC=3
       IER=0
-      call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+      call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
       if (NBSRIF(ISCENE).eq.1) then
         call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
       endif
@@ -642,7 +642,8 @@ C ITP =1 - image only; =2 - glare info to display on image.
       character pf*72,h*72,outs*124,ltmp*72
       character doit*256,runpath*72,pathtype*24
       integer lnrp  ! length of run path
-
+      integer irifnamelen ! length of rif file name
+      
       logical XST,anim,unixok
       CHARACTER*3 NMTHNM(12)
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -688,37 +689,38 @@ C If glare put it to file.
 C If in unix then use interactive rendering. If Native Windows do
 C not try and display.
         call isunix(unixok)
+        irifnamelen=lnblnk(rifname(ifocz,iscene,1))
         if (ipckvew.eq.-1) then 
           if(unixok)then
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e -o x11 ',
-     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
+     &          rifname(ifocz,iscene,1)(1:irifnamelen),' &'
           else
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',
-     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
+     &          rifname(ifocz,iscene,1)(1:irifnamelen),' &'
           endif
         elseif (ipckvew.eq.0) then 
           if(unixok)then
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e -o x11 ',
-     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
+     &          rifname(ifocz,iscene,1)(1:irifnamelen),' &'
           else
             write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',
-     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
+     &          rifname(ifocz,iscene,1)(1:irifnamelen),' &'
           endif
         else
           if(unixok)then
             write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &           '; rad -e -o x11 -v ',
      &           rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
-     &           RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
+     &          rifname(ifocz,iscene,1)(1:irifnamelen),' &'
           else
             write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &           '; rad -e -v ',
      &           rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
-     &           RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE))),' &'
+     &          rifname(ifocz,iscene,1)(1:irifnamelen),' &'
           endif
         endif
         write(6,*) doit
@@ -844,25 +846,26 @@ C file should be removed.
 
 C Save changes to RIF file
             IFC=3
-            call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+            call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
             if (NBSRIF(ISCENE).eq.1) then
               call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
             endif
 
 C call rad to create image(s) based on current setting of ipckvew.
+            irifnamelen=lnblnk(rifname(ifocz,iscene,1))
             if (ipckvew.eq.-1) then 
               write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',
-     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
+     &          rifname(ifocz,iscene,1)(1:irifnamelen)
             elseif (ipckvew.eq.0) then 
               write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &          '; rad -e ',
-     &          RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
+     &          rifname(ifocz,iscene,1)(1:irifnamelen)
             else
               write(doit,'(6a)') 'cd ',runpath(1:lnrp),
      &        '; rad -e -v ',
-     &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
-     &        ' ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
+     &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
+     &        rifname(ifocz,iscene,1)(1:irifnamelen)
             endif
             write(6,*) doit
             write(outs,'(2a,i3,F6.2)') 'Currently working on...',
@@ -921,7 +924,7 @@ C See if there is an existing pic file by this name.
                 goto 1111
               endif
               IFC=3
-              call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+              call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
               if (NBSRIF(ISCENE).eq.1) then
                 call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
               endif
@@ -934,18 +937,19 @@ C Set file name including path and open.
             endif
           endif
         endif
+        irifnamelen=lnblnk(rifname(ifocz,iscene,1))
         if (ipckvew.eq.-1) then 
           write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &       '; rad -e ',
-     &       RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
+     &       rifname(ifocz,iscene,1)(1:irifnamelen)
         elseif (ipckvew.eq.0) then 
           write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &       '; rad -e ',
-     &       RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
+     &       rifname(ifocz,iscene,1)(1:irifnamelen)
         else
           write(doit,'(6a)') 'cd ',runpath(1:lnrp),
      &      '; rad -e -v ',rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
-     &      ' ',RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
+     &      ' ',rifname(ifocz,iscene,1)(1:irifnamelen)
         endif
         write(6,*) doit
         call edisp(iuout,'Look in the text window for progress.')
@@ -1126,7 +1130,7 @@ C getglr recovers view information and runs glare calculation.
       ITA3 = IFIL+10
 
       IER=0
-      call RRIF(ita2,ita3,RIFNAME(ISCENE),'s',IER)
+      call RRIF(ita2,ita3,rifname(ifocz,iscene,1),'s',IER)
 
 C Check if view info is in a file or kept in the rif file and set 
 C glare angle (set minimum angle to 90 degrees).
@@ -1348,7 +1352,7 @@ C Reset DFVALS to 0.0
       ICONV=0
 
 C Check octree up to date.
-      call touchrif(RIFNAME(ISCENE))
+      call touchrif(rifname(ifocz,iscene,1))
       
 C Check rendering parameters.  If the number of ambient bounces is 
 C greater than 1 then the simulation has probably been run before. 
@@ -1366,8 +1370,8 @@ C Ask if the parameters should be reset.
      &                         ' -ab 1 -ad 1024 -as 512 -av 0 0 0'
           write (crenrp,'(a)') outsl
           IFC=3
-          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
-          call touchrif(RIFNAME(ISCENE))
+          call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
+          call touchrif(rifname(ifocz,iscene,1))
         endif
       endif
 
@@ -1543,8 +1547,8 @@ C Save RIF file and update options file.
       if (RECALC) then
         call edisp(iuout,'Recalculating with different resolution...')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
-        call touchrif(RIFNAME(ISCENE))
+        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
+        call touchrif(rifname(ifocz,iscene,1))
         if (NBSRIF(ISCENE).eq.1) then
           call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
           call touchrif(LBSRIF(ISCENE))

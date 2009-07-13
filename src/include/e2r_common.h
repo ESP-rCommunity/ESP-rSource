@@ -132,11 +132,11 @@ C      common/radcfg/LRADCF(MCOM)
       character LRADCF*72
 C     LRADCF is the ESP-r radiance configuration file .rcf
 
-      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
+      common/raddata/SCENE(MCOM+1),RIFNAME(MCOM,MNSCN,MBP+1),
+     &               SCENERT(MCOM+1),
      &               SCENEDESC(MCOM+1),SCENEPURP(MCOM+1)
 C      common/raddata/SCENE(MCOM,MNSCN),SCENERT(MCOM,MNSCN),
 C     &               SCENEDESC(MCOM,MNSCN),SCENEPURP(MCOM,MNSCN),
-C     &               RIFNAME(MCOM,MNSCN,MBP)
       character SCENE*28,SCENERT*28,SCENEDESC*72
       character SCENEPURP*12,RIFNAME*72
 C     SCENE     is the scene name

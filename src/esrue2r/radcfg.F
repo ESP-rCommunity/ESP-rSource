@@ -147,10 +147,11 @@ C First rif name corresponds to default blind state, subsquent rifs within
 C this scene represent alternate blind states.
             NBSRIF(I)=NBSRIF(I)+1
             if (NBSRIF(I).gt.NABS) then
-              call usrmsg('Scene has to many rif files.','  ','W')
+              call usrmsg('Scene has too many rif files.','  ','W')
             endif
             if (NBSRIF(I).eq.0) then
-              CALL EGETW(OUTSTR,K,RIFNAME(I),'W','rif name',IFLAG)
+              CALL EGETW(OUTSTR,K,RIFNAME(ifocz,I,1),
+     &                                     'W','rif name',IFLAG)
             else
               CALL EGETW(OUTSTR,K,LBSRIF(I),'W','bl st',IFLAG)
             endif
@@ -220,7 +221,7 @@ C Find the longest string in this scene.
         IML=10
         ISLENG=LNBLNK(SCENE(I))
         IF(ISLENG.GT.IML)IML=ISLENG
-        ISLENG=LNBLNK(RIFNAME(I))
+        ISLENG=LNBLNK(RIFNAME(ifocz,I,1))
         IF(ISLENG.GT.IML)IML=ISLENG
         ISLENG=LNBLNK(LBSRIF(I))
         IF(ISLENG.GT.IML)IML=ISLENG
@@ -234,7 +235,7 @@ C Find the longest string in this scene.
         write(IRCFG,'(a,i3)') '# Scene number',I
         OUTS=SCENE(I)
         write(IRCFG,'(a,a,a)')'*snm ',OUTS(1:IML),' # Scene name'
-        OUTS=RIFNAME(I)
+        OUTS=RIFNAME(ifocz,I,1)
         write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Rif name'
         if (NBSRIF(I).gt.0) then
           OUTS=LBSRIF(I)
@@ -347,7 +348,7 @@ C Display the menu.
       ELSEIF(IVERT.EQ.MVERT)THEN
 
 C If no selection has been made before exit then return.
-	IF(.NOT.SELECT)then
+      IF(.NOT.SELECT)then
           ICHK=4
           if(modscene)call RADCFGOUT(ICHK)
           RETURN
@@ -375,14 +376,14 @@ C be deleted or copied, respectively.
           do 1110 I=IFOC,NSCENE
             if (I.eq.NSCENE) then
               SCENE(I)='UNDEFINED'
-              RIFNAME(I)='UNKNOWN'
+              RIFNAME(ifocz,I,1)='UNKNOWN'
               SCENERT(I)='UNKNOWN'
               SCENEDESC(I)='UNKNOWN'
               SCENEPURP(I)='UNKNOWN'
               LBSRIF(I)='NONE'
             else
               SCENE(I)=SCENE(I+1)
-              RIFNAME(I)=RIFNAME(I+1)
+              RIFNAME(ifocz,I,1)=RIFNAME(ifocz,I+1,1) ! ?? logic sound ??
               SCENERT(I)=SCENERT(I+1)
               SCENEDESC(I)=SCENEDESC(I+1)
               SCENEPURP(I)=SCENEPURP(I+1)
@@ -395,7 +396,7 @@ C be deleted or copied, respectively.
         elseif(cpyzone)then
           NSCENE=NSCENE+1
           SCENE(NSCENE)=SCENE(IFOC)
-          RIFNAME(NSCENE)=RIFNAME(IFOC)
+          RIFNAME(ifocz,NSCENE,1)=RIFNAME(ifocz,IFOC,1)
           SCENERT(NSCENE)=SCENERT(IFOC)
           SCENEDESC(NSCENE)=SCENEDESC(IFOC)
           SCENEPURP(NSCENE)=SCENEPURP(IFOC)
@@ -419,7 +420,7 @@ C foremost to reset ISCENE.
 C Re-scan rif file if not a new zone.
           ITA2 = IFIL+7
           ITA3 = IFIL+10
-          call RRIF(ita2,ita3,RIFNAME(ISCENE),'r',ier)
+          call RRIF(ita2,ita3,rifname(ifocz,iscene,1),'r',ier)
           RETURN
         endif
       endif
@@ -527,7 +528,7 @@ C Ask for purpose of scene if new scene.
         IRP=0
         if (aim(1:8).eq.'External') then
           IRP=1
-          izone=-1
+c          izone=-1 ! does not seem necessary
           zone='FRED'
         elseif (aim(1:8).eq.'Internal') then
           IRP=2
@@ -546,7 +547,7 @@ C Ask for purpose of scene if new scene.
           call zindex(zone,izone)
         elseif (aim(1:7).eq.'Sun_pos') then
           IRP=7
-          izone=-1
+c          izone=-1 ! does not seem necessary
         endif
       elseif (MODE.eq.'a') then
         H(1)='The purpose of the scene is used when creating the '
@@ -721,7 +722,7 @@ C Set default names based on above.
       endif
       write (SCENE(ISCENE),'(a)') outs(1:28)
       write (SCENERT(ISCENE),'(a)') outs(1:28)
-      write (RIFNAME(ISCENE),'(a,a)') 
+      write (rifname(ifocz,iscene,1),'(a,a)') 
      &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
       write (LBSRIF(ISCENE),'(a,a)') 
      &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
@@ -767,7 +768,7 @@ C Ask for root name and use this for rif name.
      &    IER,3)
         IF(tname(1:2).EQ.'  ') GOTO 15
         SCENERT(ISCENE)=tname
-        write (RIFNAME(ISCENE),'(a,a)') 
+        write (rifname(ifocz,iscene,1),'(a,a)') 
      &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
         write (LBSRIF(ISCENE),'(a,a)') 
      &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
@@ -899,7 +900,7 @@ C Remember current graphics display options.
       call SVDSOPT
 
 C Ask for zone (if not defined), surface and working plane height.
-      if (IZONE.eq.0) then
+      if (IZONE.le.0) then
         H(1)=' Pick a zone as the focus zone for the Radiance'
         H(2)=' daylight factor calculations.'
  32     INPIC=1
@@ -1331,10 +1332,10 @@ C Clear rcf file unit no/ channel.
 
 C Recover zone index from command line variable zone.
       if (zone(1:4).eq.'Def_') then
-        izone=-1
+c        izone=-1 ! does not seem to be used by the code except in "newscene()"
       else
         if (aim(1:8).eq.'External') then
-          izone=-1
+c          izone=-1 ! also not used except in "newscene()"
           zone='FRED'
         else
           call zindex(zone,izone)
@@ -1347,9 +1348,9 @@ C If rcf file does exist then search for existing rif file.
           if (SCENEPURP(I)(1:5).eq.aim(1:5)) then
 
 C Possible match, further check - look at rif file.
-            ifocz=-1
-            call RRIF(ITA2,ITA3,RIFNAME(I),'s',IER)
-            if (ifocz.eq.IZONE) then
+c            ifocz=-1 ! does not seem necessary
+            call RRIF(ITA2,ITA3,RIFNAME(izone,I,1),'s',IER) !! possible call with izone=-1 !!
+            if (ifocz.eq.izone) then
 
 C Got match.
               ISCENE=I
@@ -1385,7 +1386,7 @@ C If not an existing scene then create it.
       if (.not.modscene) then
         call newscene('s')
         IFC=3
-        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
         if (NBSRIF(ISCENE).eq.1) then
           call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif

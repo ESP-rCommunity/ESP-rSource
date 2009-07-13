@@ -49,7 +49,8 @@ C ******* Setup of image quality and calculation options.
       ier=0
 
 10    INO = -4
-      write(ITEM(1),'(A,A)')    '  RIF     : ',RIFNAME(ISCENE)(1:18)
+      write(ITEM(1),'(A,A)')    '  RIF     : ',
+     &                                 rifname(ifocz,iscene,1)(1:18)
       write(ITEM(2),'(A,A12)')  '  root    : ',SCENERT(ISCENE)(1:18)
       write(ITEM(3),'(A,A)')    '  folder  : ',radpth(1:18)
       write(ITEM(4),'(A,A)')    'a sky file: ',rskyfil(1:18)
@@ -275,32 +276,32 @@ C Specify PIC root file name.
         H(4)=' '
         H(5)='If the file given exists it will be read in, if not '
         H(6)='a new one will be created with typical defaults. '
-        ltmp = RIFNAME(ISCENE)
+        ltmp = rifname(ifocz,iscene,1)
         CALL EASKS(ltmp,' Radiance RIF file ?',
      &    '  ',72,'xxx.rif','rif file name',IER,6)
         if(ltmp.eq.' ')goto 642
-        RIFNAME(ISCENE) = ltmp
-        call mkrif(ita2,RIFNAME(ISCENE),4,0,ier)
+        rifname(ifocz,iscene,1) = ltmp
+        call mkrif(ita2,rifname(ifocz,iscene,1),4,0,ier)
 C        call edisp(iuout,' ') 
 C        call edisp(iuout,'The current contents of the rif file: ') 
-C        call LISTAS(ITA2,RIFNAME(ISCENE),IER)
+C        call LISTAS(ITA2,rifname(izone,iscene,ibpos),IER)
       elseif(INO.EQ.21)then
         H(1)='The manual edit function allows for `experts` to work'
         H(2)='their magic on the current contents. '
         CALL EASKABCD(' Options: ',' ','Browse current `rif` file',
      &          'Manually edit file','Re-read file','ignore ?',IW,2)
         if(IW.eq.1)then
-          call vifile(ITA2,RIFNAME(ISCENE),'b',ier)
+          call vifile(ITA2,rifname(ifocz,iscene,1),'b',ier)
         elseif(IW.eq.2)then
-          call vifile(ITA2,RIFNAME(ISCENE),'e',ier)
+          call vifile(ITA2,rifname(ifocz,iscene,1),'e',ier)
           H(1)='The manual edit function allows for `experts` to work'
           H(2)='their magic on the current contents. After editing '
           H(3)='the re-read file function should be used. '
           dok=.true.
           CALL ASKOK(' ',' Re-read after editing?',OK,dok,3)
-          if(OK)call RRIF(ita2,ita3,RIFNAME(ISCENE),'s',ier)
+          if(OK)call RRIF(ita2,ita3,rifname(ifocz,iscene,1),'s',ier)
         elseif(IW.eq.3)then
-          call RRIF(ita2,ita3,RIFNAME(ISCENE),'s',ier)
+          call RRIF(ita2,ita3,rifname(ifocz,iscene,1),'s',ier)
         endif
       elseif(INO.EQ.22)then
 
@@ -323,7 +324,7 @@ C the test run.
 
 C Set file name including path and open.
         write(fil,'(2a)') runpath(1:lnblnk(runpath)),
-     &             RIFNAME(ISCENE)(1:lnblnk(RIFNAME(ISCENE)))
+     &    rifname(ifocz,iscene,1)(1:lnblnk(rifname(ifocz,iscene,1)))
         if(ipckvew.ne.0)then
           write(doit,'(4a)') 'rad -n -e -v ',
      &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),

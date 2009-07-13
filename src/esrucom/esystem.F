@@ -1488,7 +1488,7 @@ C call ripvdat for data within the cfg file.
           CALL ERPFREE(IUTDF,ISTAT)
           call FINDFIL(lipvdatf,XST)
           if(XST)then
-	    ipvact='ipv'
+   	        ipvact='ipv'
             call ripvdat(IUTDF,lipvdatf,ipvact,ier)
             CALL ERPFREE(IUTDF,ISTAT)
           endif
@@ -1505,9 +1505,9 @@ C for the rest of the data.
           else
             ipvsimu='------'
           endif
-	  ipvact='cfg'
+          ipvact='cfg'
           call ripvdat(iuc,FILE,ipvact,ier)	
-	endif
+        endif
       elseif(WORD(1:5).eq.'*dmds')then
 
 C Building fans/pumps/DHW demands file.
