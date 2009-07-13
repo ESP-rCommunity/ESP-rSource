@@ -1,6 +1,6 @@
-*connections  for bld_mech_ven_th
-*Date Mon Jul 13 17:49:10 2009
-     35   # number of connections
+*connections  for bld_flw_simp
+*Date Mon Jul 13 17:44:45 2009
+     29   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External
    1   3   1   0   0  #    3 pasg in reception >|< Identical environment
@@ -30,9 +30,3 @@
    3   5   0   0   0  #   27 North_wall in roof_space is External
    3   6   0   0   0  #   28 w_roof in roof_space is External
    3   7   0   0   0  #   29 soffit in roof_space is External
-   4   1   0   0   0  #   30 Surf-1 in mixing is External
-   4   2   0   0   0  #   31 Surf-2 in mixing is External
-   4   3   0   0   0  #   32 Surf-3 in mixing is External
-   4   4   0   0   0  #   33 Surf-4 in mixing is External
-   4   5   0   0   0  #   34 Surf-5 in mixing is External
-   4   6   0   0   0  #   35 Surf-6 in mixing is External
