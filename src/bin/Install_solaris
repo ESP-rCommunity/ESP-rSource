@@ -575,6 +575,7 @@ if [ "$compiler" = "prompt" ] && [ "$mode" = "interactive" ]; then
      2) compiler=GNU;;
      3) compiler=intel;;
   esac
+  echo " The $compiler compiler will be used."
 else
   echo " "
   echo " The $compiler compiler set will be used."
@@ -663,6 +664,11 @@ if [ "$mode" = "interactive" ]; then
   noX_prompt="3"
   default="$X11_prompt"
   
+  # Iif [ "$compiler" = "sunF90" ];  then
+  # I  # Is GTK really incompatable with f90 on sun?
+  # I  GTK_prompt="-"
+  # Ifi
+
   if [ "$platform" = "mingw" ]; then
     # MinGW by definition excludes X11.
     X11_prompt="-"
@@ -879,8 +885,11 @@ case $xLibs in
             XDEFDIR="/usr/X11R6 or /usr"
             
             # Try /usr/X11R6 - legacy location on monolithic X locations
-            # Patch for 64 bit Sun Studio compiler Try /usr/X11R6 - 64 bit location on monolithic X locations
-            if [ -d /usr/X11R6/lib64/X11 ] ; then
+            if [ -d /usr/X11R6/lib/X11 ] ; then
+              X11_found="yes"
+              XINSTALLDIR="/usr/X11R6"
+            fi
+            if [ -d /usr/X11R6/lib/64 ] ; then
               X11_found="yes"
               XINSTALLDIR="/usr/X11R6"
             fi
@@ -1095,9 +1104,8 @@ ULIBS="$ULIBS -lversion"
 ULIBS="$ULIBS -lfpe"
 
 # Append X11 library paths to ULIBS as required
-# Patch for Linux with 64 bit Sun Studio compiler
 case $xLibs in
-  X11) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;
+  X11) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
   GTK) ULIBS="$ULIBS -lgtkesru -L${XINSTALLDIR}";;
   noX) ULIBS="$ULIBS -lnoxesru";;
 esac
@@ -1112,7 +1120,6 @@ case $xml_support in
          GNU)     ULIBS="$ULIBS -lXML -lstdc++";;
          intel)   ULIBS="$ULIBS -lXML -lstdc++";;
        esac;
-#        ULIBS="$ULIBS -lXML -lstdc++";
 
        # If libxslt is available, link it too
        case $xsl_libs_available in
