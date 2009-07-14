@@ -679,7 +679,7 @@ C Ask for alternative glazing file.
           call ASKOK('Blind shutter control is active.',
      &      'Create model with blinds closed as well?',OK,dok,3)
           if (OK) then
-            NBSRIF(ISCENE)=NABS
+            NBSRIF(ifocz,ISCENE)=NABS+1 ! number of alternative sets + base case
  12         H(1)=' Supply a local file name (i.e. without a path).'
             H(2)=' This file holds alternative glazed surface details,'
             H(3)=' e.g. representing closed blinds. '
@@ -698,7 +698,7 @@ C Ask for alternative glazing file.
         write(tfile,'(a,a)')runpath(1:lnrp),glzfil(1:lnblnk(glzfil))
         call FPOPEN(iglzfil,ISTAT,1,3,tfile)
         if (NABS.gt.0) then
-          NBSRIF(ISCENE)=NABS
+          NBSRIF(ifocz,ISCENE)=NABS+1
           write(atfile,'(a,a)')runpath(1:lnrp),
      &                         aglzfil(1:lnblnk(aglzfil))
           call FPOPEN(ita2,ISTAT,1,3,atfile)

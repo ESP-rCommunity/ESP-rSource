@@ -164,6 +164,8 @@ C ******* Default views formation.
       integer*8 iupdown,isym    ! passed to etplot
 #endif
 
+      integer irif ! loop variable for more than one rif per scene
+
 C Addview = true then save editing as a new view, if false
 C then it is an update to an existing view.
       IUF=IFIL+1
@@ -802,10 +804,12 @@ C extend the list.
      &     ' -vu 0 0 1 -vh ',angh,' -vv ',angv,' -vs 0 -vl 0 '
         WRITE(vewcmds(indxvew),'(a)') doit
         IFC=3
-        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-        if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-        endif
+        do 66 irif=1,NBSRIF(ifocz,ISCENE)
+          call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+c        if (NBSRIF(ISCENE).eq.1) then
+c          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c        endif
+ 66     continue
         vewdone=.true.
       elseif(INO.EQ.(NITEMS-1))then
 

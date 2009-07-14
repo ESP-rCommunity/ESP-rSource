@@ -58,6 +58,8 @@ C  else simulate the scene by calling simscene
 
       LOGICAL fict,XST,OK,DOK
 
+      integer irif ! loop variable for more than one rif per scene
+      
       ITA2=IFIL+7
       ITA3=IFIL+10
 
@@ -139,20 +141,24 @@ C Create inside and outside files, first open databases.
       fict=.false.
       call mkriofil(ftr,fict,'s',IER)
       IFC=3
-      call mkrif(ita2,rifname(ifocz,iscene,1),IFC,0,ier)
-      if (NBSRIF(ISCENE).eq.1) then
-        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-      endif
+      do 66 irif= 1,NBSRIF(ifocz,iscene)
+        call mkrif(ita2,rifname(ifocz,iscene,1),IFC,0,ier)
+c      if (NBSRIF(ISCENE).eq.1) then
+c        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c      endif
+ 66   continue
 
 C Update rcf file and configuration file.
       ICHK=3
       call RADCFGOUT(ICHK)
 
 C Generate new octree.
-      call touchrif(rifname(ifocz,iscene,1))
-      if (NBSRIF(ISCENE).eq.1) then
-        call touchrif(LBSRIF(ISCENE))
-      endif
+      do 67 irif= 1,NBSRIF(ifocz,iscene)
+        call touchrif(rifname(ifocz,iscene,1))
+c      if (NBSRIF(ISCENE).eq.1) then
+c        call touchrif(LBSRIF(ISCENE))
+c      endif
+ 67   continue
 
 C If scene purpose is coupling or daylight coefficients then return.
       if (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
@@ -217,6 +223,8 @@ C simscene simulates daylight coefficients and coupling (called from bps)
 
       LOGICAL XST,unixok
       integer lnrp  ! length of run path
+      integer irif ! loop variable for more than one rif per scene
+      integer iblnds ! local variable for current blind setting
 
       data npz/30,60,84,108,126,138,144,145/
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
@@ -260,7 +268,7 @@ C the users home folder.
         call EGETWR(OUTS,K,RSAZI,-180.,180.,'W','Sol azi',IER)
         call EGETWR(OUTS,K,QDIR,0.,1250.,'W','Dir solar',IER)
         call EGETWR(OUTS,K,QDIF,0.,1250.,'W','Diff solar',IER)
-        call EGETWI(OUTS,K,IBLNDS,0,MBP,'W','Blinds state',IER)
+        call EGETWI(OUTS,K,iblnds,0,MBP,'W','Blinds state',IER)
 
 C Check solar position and radiation.
         QDIRH=QDIR*esind(RSALT/57.296)
@@ -281,25 +289,21 @@ C Create sky command and sky.
         call wrtsky(outs)
 
 C Recreate octree, setting rtrace options, and run rtrace.
-        if (IBLNDS.ne.0 .and.NBSRIF(ISCENE).eq.0) then
-
-C Error can't simulate switched blinds.
-C          call usrmsg('Cannot simulate switched blinds.','  ','F')
-          write(outs,'(a,a)')
-     &  'In .rcf: Alternative .rif for ',
-     &  '"replacement properties (TMC)" missing!'
+        if ( (iblnds.ne.0 .and.NBSRIF(ifocz,ISCENE).eq.1) .or. 
+     &                 (iblnds.gt.(NBSRIF(ifocz,ISCENE)-1)) ) then
+C Error file missing for simulation of switched blinds.
+          write(outs,'(a,I3,a,I3,a)')
+     &  'In .rcf: Too few .rif (',NBSRIF(ifocz,ISCENE),
+     &  ') for number of TMC replacement properties (',
+     &  iblnds,') available!'
           call usrmsg(outs,'  ','F')
         endif
 
-        if (IBLNDS.eq.0) then
-          rn=rifname(ifocz,iscene,1)
-        else
-C                         Here we need logic to be able to call as many different .rifs
-C                         as there are control periods in the .tmc ...
-C          NBPONT(ICOMP,ITMC) ! the current control period
-C          NBCTMC() ! number of control periods
-          rn=LBSRIF(ISCENE)
-        endif
+c        if (IBLNDS.eq.0) then
+c          rn=rifname(ifocz,iscene,1)
+c        else
+        rn=rifname(ifocz,ISCENE,iblnds+1)
+c        endif
 
 C Rebuild.
         call touchrif(rn)
@@ -328,7 +332,7 @@ C Daylight coefficients.
       elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
 
 C Do for all blind states.
-        IBLND=0
+        iblnds=0
  1234   do 123 IPTCH=1,145
 
 C Search for existing 'sky' file. (If found delete)
@@ -386,11 +390,11 @@ C End Debug
           skydone=.true.
 
 C Generate new octree.
-          if (IBLND.eq.0) then
-            rn=rifname(ifocz,iscene,1)
-          else
-            rn=LBSRIF(ISCENE)
-          endif
+c          if (IBLND.eq.0) then
+          rn=rifname(ifocz,iscene,iblnds+1)
+c          else
+c            rn=LBSRIF(ISCENE)
+c          endif
 
 C Recreate octree and get current file names.
           call touchrif(rn)
@@ -441,7 +445,7 @@ C Display progress...
  123    continue
 
 C Read in daylight coefficients and save to cgc file.
-        ISET=IBLND+1
+        ISET=iblnds+1
         call RDCFTMP(LTMPFA,ISET)
 
 C Remove temporary files.
@@ -455,9 +459,9 @@ C Remove temporary files.
         call edisp(IUOUT,'Daylight coefficient set complete')
 
 C Do other blind states.
-        if (NBSRIF(ISCENE).gt.0) then
-          IBLND=IBLND+1
-          if (IBLND.le.NBSRIF(ISCENE)) then
+        if (NBSRIF(ifocz,ISCENE).gt.1) then
+          iblnds=iblnds+1
+          if (iblnds.le.NBSRIF(ifocz,ISCENE)) then
             call edisp(IUOUT,'Calculating next blind state.')
             goto 1234
           endif
@@ -554,6 +558,8 @@ C defview generates a new default view.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
+      integer irif ! loop variable for more than one rif per scene
+      
       ITA2=IFIL+7
 
 C External view point.
@@ -613,10 +619,12 @@ C Default internal view at max X average Y and Z, looking in -x dir.
 C Update rif file.
       IFC=3
       IER=0
-      call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-      if (NBSRIF(ISCENE).eq.1) then
-        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-      endif
+      do 66 irif= 1,NBSRIF(ifocz,iscene)
+      call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+c      if (NBSRIF(ISCENE).eq.1) then
+c        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c      endif
+ 66   continue
 
       return
       end
@@ -643,6 +651,7 @@ C ITP =1 - image only; =2 - glare info to display on image.
       character doit*256,runpath*72,pathtype*24
       integer lnrp  ! length of run path
       integer irifnamelen ! length of rif file name
+      integer irif ! loop variable for more than one .rif per scene
       
       logical XST,anim,unixok
       CHARACTER*3 NMTHNM(12)
@@ -846,12 +855,15 @@ C file should be removed.
 
 C Save changes to RIF file
             IFC=3
-            call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-            if (NBSRIF(ISCENE).eq.1) then
-              call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-            endif
+            do 66 irif= 1,NBSRIF(ifocz,iscene)
+              call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+c            if (NBSRIF(ISCENE).eq.1) then
+c              call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c            endif
+ 66         continue
 
 C call rad to create image(s) based on current setting of ipckvew.
+C *** what to do here if more than one rif in scene ???? *** ... leave hard-wired index "1" for now ...
             irifnamelen=lnblnk(rifname(ifocz,iscene,1))
             if (ipckvew.eq.-1) then 
               write(doit,'(4a)') 'cd ',runpath(1:lnrp),
@@ -924,10 +936,12 @@ C See if there is an existing pic file by this name.
                 goto 1111
               endif
               IFC=3
-              call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-              if (NBSRIF(ISCENE).eq.1) then
-                call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-              endif
+              do 67 irif= 1,NBSRIF(ifocz,ISCENE)
+                call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+c              if (NBSRIF(ISCENE).eq.1) then
+c                call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c              endif
+ 67           continue
             elseif(IWR.eq.1)then
 
 C Set file name including path and open.
@@ -1291,6 +1305,7 @@ C getdf runs daylight factor calculation and then displays them.
       character runpath*72,pathtype*24
       character h*72
       integer lnrp  ! length of run path
+      integer irif ! loop variable for more than one .rif per scene
 
       logical XST,RECALC
 
@@ -1547,12 +1562,14 @@ C Save RIF file and update options file.
       if (RECALC) then
         call edisp(iuout,'Recalculating with different resolution...')
         IFC=3
-        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-        call touchrif(rifname(ifocz,iscene,1))
-        if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-          call touchrif(LBSRIF(ISCENE))
-        endif
+        do 66 irif= 1,NBSRIF(ifocz,iscene)
+          call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+          call touchrif(rifname(ifocz,iscene,irif))
+c        if (NBSRIF(ISCENE).eq.1) then
+c          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c          call touchrif(LBSRIF(ISCENE))
+c        endif
+ 66     continue
 
 C Move results file and recalculate DFs. Note this move creates
 C a catch-22 for viewing the DF later on.

@@ -133,7 +133,8 @@ C For each scene read 5 items of data
       do 10 I=1,NSCENE
 
 C Reset the number of modelled blind states to zero.
-        NBSRIF(I)=-1
+C        NBSRIF(I)=-1
+        NBSRIF(ifocz,I)=1 ! default rif is no./index 1
  30     CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif data',IER)
         if (OUTSTR(1:9).eq.'*sceneEND') goto 20
         if (IER.eq.0) then
@@ -145,16 +146,16 @@ C Reset the number of modelled blind states to zero.
 
 C First rif name corresponds to default blind state, subsquent rifs within 
 C this scene represent alternate blind states.
-            NBSRIF(I)=NBSRIF(I)+1
-            if (NBSRIF(I).gt.NABS) then
+            if (NBSRIF(ifocz,I).gt.NABS) then
               call usrmsg('Scene has too many rif files.','  ','W')
             endif
-            if (NBSRIF(I).eq.0) then
-              CALL EGETW(OUTSTR,K,RIFNAME(ifocz,I,1),
+c            if (NBSRIF(I).eq.0) then
+            CALL EGETW(OUTSTR,K,RIFNAME(ifocz,I,NBSRIF(ifocz,I)),
      &                                     'W','rif name',IFLAG)
-            else
-              CALL EGETW(OUTSTR,K,LBSRIF(I),'W','bl st',IFLAG)
-            endif
+c            else
+c              CALL EGETW(OUTSTR,K,LBSRIF(I),'W','bl st',IFLAG)
+c            endif
+            NBSRIF(ifocz,I)=NBSRIF(ifocz,I)+1 ! now increment the number of rif files
           elseif (WORD(1:4).eq.'*srt') then
             CALL EGETW(OUTSTR,K,SCENERT(I),'W','scene root',IFLAG)
           elseif (WORD(1:4).eq.'*rde') then
@@ -191,6 +192,7 @@ C RADCFGOUT writes the contents of the radiance configuration file.
       character OUTS*72
       character dstmp*24,pfile*72,runpath*72,pathtype*24
       integer lnrp  ! length of run path
+      integer irif ! loop variable for more than one rif per scene
 
 C Check that ICHK is a sensible value.
       lnrp=lnblnk(runpath)
@@ -221,10 +223,12 @@ C Find the longest string in this scene.
         IML=10
         ISLENG=LNBLNK(SCENE(I))
         IF(ISLENG.GT.IML)IML=ISLENG
-        ISLENG=LNBLNK(RIFNAME(ifocz,I,1))
-        IF(ISLENG.GT.IML)IML=ISLENG
-        ISLENG=LNBLNK(LBSRIF(I))
-        IF(ISLENG.GT.IML)IML=ISLENG
+        do 66 irif= 1,NBSRIF(ifocz,I)
+          ISLENG=LNBLNK(RIFNAME(ifocz,I,irif))
+          IF(ISLENG.GT.IML)IML=ISLENG
+ 66     continue
+c        ISLENG=LNBLNK(LBSRIF(I))
+c        IF(ISLENG.GT.IML)IML=ISLENG
         ISLENG=LNBLNK(SCENERT(I))
         IF(ISLENG.GT.IML)IML=ISLENG
         ISLENG=LNBLNK(SCENEDESC(I))
@@ -235,12 +239,14 @@ C Find the longest string in this scene.
         write(IRCFG,'(a,i3)') '# Scene number',I
         OUTS=SCENE(I)
         write(IRCFG,'(a,a,a)')'*snm ',OUTS(1:IML),' # Scene name'
-        OUTS=RIFNAME(ifocz,I,1)
-        write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Rif name'
-        if (NBSRIF(I).gt.0) then
-          OUTS=LBSRIF(I)
-          write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Alternate rif'
-        endif
+        do 67 irif= 1,NBSRIF(ifocz,I)
+          OUTS=RIFNAME(ifocz,I,irif)
+          write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Rif name'
+c        if (NBSRIF(I).gt.0) then
+c          OUTS=LBSRIF(I)
+c          write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Alternate rif'
+c        endif
+ 67     continue
         OUTS=SCENERT(I)
         write(IRCFG,'(a,a,a)')'*srt ',OUTS(1:IML),' # Scene prefix'
         OUTS=SCENEDESC(I)
@@ -281,6 +287,8 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 
       LOGICAL SELECT,delzone,cpyzone,modscene
 
+      integer irif ! loop variable for more than one rif per scene
+      
  1    IER=0
       SELECT=.false.
       delzone=.false.
@@ -376,18 +384,22 @@ C be deleted or copied, respectively.
           do 1110 I=IFOC,NSCENE
             if (I.eq.NSCENE) then
               SCENE(I)='UNDEFINED'
-              RIFNAME(ifocz,I,1)='UNKNOWN'
+              do 66 irif= 1,NBSRIF(ifocz,I)
+                RIFNAME(ifocz,I,irif)='UNKNOWN'
+ 66           continue
               SCENERT(I)='UNKNOWN'
               SCENEDESC(I)='UNKNOWN'
               SCENEPURP(I)='UNKNOWN'
-              LBSRIF(I)='NONE'
+c              LBSRIF(I)='NONE'
             else
               SCENE(I)=SCENE(I+1)
-              RIFNAME(ifocz,I,1)=RIFNAME(ifocz,I+1,1) ! ?? logic sound ??
+              do 67 irif= 1,NBSRIF(ifocz,I)
+                RIFNAME(ifocz,I,irif)=RIFNAME(ifocz,I+1,1) ! ?? logic sound ??
+ 67           continue
               SCENERT(I)=SCENERT(I+1)
               SCENEDESC(I)=SCENEDESC(I+1)
               SCENEPURP(I)=SCENEPURP(I+1)
-              LBSRIF(I)=LBSRIF(I+1)
+c              LBSRIF(I)=LBSRIF(I+1)
             endif
  1110     continue
           NSCENE=NSCENE-1
@@ -396,11 +408,13 @@ C be deleted or copied, respectively.
         elseif(cpyzone)then
           NSCENE=NSCENE+1
           SCENE(NSCENE)=SCENE(IFOC)
-          RIFNAME(ifocz,NSCENE,1)=RIFNAME(ifocz,IFOC,1)
+          do 68 irif= 1,NBSRIF(ifocz,I)
+            RIFNAME(ifocz,NSCENE,irif)=RIFNAME(ifocz,IFOC,irif)
+ 68       continue
           SCENERT(NSCENE)=SCENERT(IFOC)
           SCENEDESC(NSCENE)=SCENEDESC(IFOC)
           SCENEPURP(NSCENE)=SCENEPURP(IFOC)
-          LBSRIF(I)=LBSRIF(IFOC)
+c          LBSRIF(I)=LBSRIF(IFOC)
           ISCENE=NSCENE
 
 C Check new scenes data by calling newscene.  As newscene adds one to NSCENE 
@@ -420,7 +434,9 @@ C foremost to reset ISCENE.
 C Re-scan rif file if not a new zone.
           ITA2 = IFIL+7
           ITA3 = IFIL+10
-          call RRIF(ita2,ita3,rifname(ifocz,iscene,1),'r',ier)
+          do 69 irif= 1,NBSRIF(ifocz,iscene)
+            call RRIF(ita2,ita3,rifname(ifocz,iscene,irif),'r',ier)
+ 69       continue
           RETURN
         endif
       endif
@@ -724,10 +740,12 @@ C Set default names based on above.
       endif
       write (SCENE(ISCENE),'(a)') outs(1:28)
       write (SCENERT(ISCENE),'(a)') outs(1:28)
-      write (rifname(ifocz,iscene,1),'(a,a)') 
+      do 66 irif= 1,NBSRIF(ifocz,iscene)
+        write (rifname(ifocz,iscene,irif),'(a,a)') 
      &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
-      write (LBSRIF(ISCENE),'(a,a)') 
-     &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
+ 66   continue
+c      write (LBSRIF(ISCENE),'(a,a)') 
+c     &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
 
 C Additional details for specific purposes.
       if (IRP.eq.4) then
@@ -770,10 +788,12 @@ C Ask for root name and use this for rif name.
      &    IER,3)
         IF(tname(1:2).EQ.'  ') GOTO 15
         SCENERT(ISCENE)=tname
-        write (rifname(ifocz,iscene,1),'(a,a)') 
+        do 67 irif= 1,NBSRIF(ifocz,iscene)
+          write (rifname(ifocz,iscene,irif),'(a,a)') 
      &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
-        write (LBSRIF(ISCENE),'(a,a)') 
-     &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
+ 67     continue
+c        write (LBSRIF(ISCENE),'(a,a)') 
+c     &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
 
 C Ask for additional description.
  25     H(1)='The description is used as an additional aide to'
@@ -1388,10 +1408,12 @@ C If not an existing scene then create it.
       if (.not.modscene) then
         call newscene('s')
         IFC=3
-        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-        if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-        endif
+        do 66 irif= 1,NBSRIF(ifocz,iscene)
+          call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+c        if (NBSRIF(ISCENE).eq.1) then
+c          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c        endif
+ 66     continue
 
 C Update rcf file and configuration file.
         ICHK=3

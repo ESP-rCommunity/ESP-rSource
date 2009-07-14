@@ -152,13 +152,10 @@ C     NSCENE is the number of scenes defined in LRADCF
 C     ISCENE is the current scene in use
 
 
-      common/raddata3/NBSRIF(MCOM+1),LBSRIF(MCOM+1)
+      common/raddata3/NBSRIF(MCOM,MNSCN)
       integer NBSRIF
-      character LBSRIF*72
 C      character*
-C      common/raddata3/NBSRIF(MCOM,MNSCN)
 C     NBSRIF is the number of RIF files defined for the corresponding scene
-C     LBSRIF is the name of the alternative .rif file
 
 
       common/radabs/NABS

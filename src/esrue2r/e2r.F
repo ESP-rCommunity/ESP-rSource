@@ -117,6 +117,7 @@ C Materials data array.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnrp  ! length of run path
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer irif ! loop variable for more than one rif in a scene
 
 C Initialize global common data.
       call ezero
@@ -187,15 +188,16 @@ C Make case insensitive.
         SCENERT(I)='UNKNOWN'
         SCENEDESC(I)='UNKNOWN'
         SCENEPURP(I)='UNKNOWN'
-        LBSRIF(I)='NONE'
-        NBSRIF(I)=-1
+c        LBSRIF(I)='NONE'
+c        NBSRIF(I)=-1
  9    continue
 
       do 91 IZON=1,MCOM
        do 92 ISCN=1,MNSCN
-        do 93 IBPOS=1,MBP+1
-                RIFNAME(IZON,ISCN,IBPOS)='UNKNOWN'
+        do 93 irif=1,MBP+1
+          RIFNAME(IZON,ISCN,irif)='UNKNOWN'
  93     continue
+        NBSRIF(IZON,ISCN)=1 ! we need at least one rif file per scene
  92    continue
  91   continue
 
@@ -792,10 +794,12 @@ C Sky type.
         call SKYFORM(IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-        if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-        endif
+        do 66 irif=1,NBSRIF(ifocz,ISCENE)
+          call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+c        if (NBSRIF(ISCENE).eq.1) then
+c          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c        endif
+ 66     continue
 
       elseif(INO.EQ.11)then
 
@@ -803,10 +807,12 @@ C Zone and outside composition, updating rif file upon return.
         call E2RFORM('i',IER)
         call edisp(iuout,' updating RIF file to account for zones.')
         IFC=3
-        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-        if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-        endif
+        do 67 irif=1,NBSRIF(ifocz,ISCENE)
+          call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+c        if (NBSRIF(ISCENE).eq.1) then
+c          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c        endif
+ 67     continue
 
       elseif(INO.EQ.12)then
 
@@ -882,10 +888,12 @@ C Edit view points.  Save off current views.
           call VEWFORM(IER)
           call edisp(iuout,' updating RIF file to account for views.')
           IFC=3
-          call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-          if (NBSRIF(ISCENE).eq.1) then
-            call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-          endif
+          do 68 irif= 1,NBSRIF(ifocz,ISCENE)
+            call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+c          if (NBSRIF(ISCENE).eq.1) then
+c            call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c          endif
+ 68       continue
 
 C Because of the site plan, recalculate perspective view.
 C Recover previous view.
@@ -1111,10 +1119,12 @@ C Get glare info file name (if necessary) and display image.
 
 C Save scene information.
         IFC=3
-        call MKRIF(ITA2,rifname(ifocz,iscene,1),IFC,0,IER)
-        if (NBSRIF(ISCENE).eq.1) then
-          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
-        endif
+        do 69 irif=1,NBSRIF(ifocz,ISCENE)
+          call MKRIF(ITA2,rifname(ifocz,iscene,irif),IFC,0,IER)
+c        if (NBSRIF(ISCENE).eq.1) then
+c          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+c        endif
+ 69     continue
 
       ELSE
         INO=-2
