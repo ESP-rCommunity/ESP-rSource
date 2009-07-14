@@ -596,7 +596,8 @@ C Reset the number of chosen zones (nzg) to NCOMP and re-initialize nznog() .. f
  3    continue
 
 C Now ask for zone for internal and glare purposes.
-      if (IRP.eq.2 .or.IRP.eq.3 .or.IRP.eq.5 .or.IRP.eq.6) then
+      if (IRP.eq.2 .or.IRP.eq.3 .or.IRP.eq.4 .or.
+     &                  IRP.eq.5 .or.IRP.eq.6) then
         if (IZONE.le.0) then
           H(1)=' Pick a zone as the focus zone for the Radiance'
           H(2)=' internal image calculations.'
@@ -622,7 +623,7 @@ C information.
         penumb = 'False'
         crenrp = '-av 10 10 10 '
         coconv = '  '
-        ifocz = -1
+c        ifocz = -1
       elseif (IRP.eq.2) then 
 
 C Internal image selected.
@@ -701,11 +702,12 @@ C Sun positions.
         penumb = 'False'
         crenrp = '-av 10 10 10 '
         coconv = ' '
-        ifocz = -1
+c        ifocz = -1
       endif
 
 C Set default names based on above.
-      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
+      if (IRP.eq.2 .or.IRP.eq.3 .or.IRP.eq.4 .or.
+     &                  IRP.eq.5 .or.IRP.eq.6) then
         write (outs,'(3a)') zname(ifocz)(1:lnzname(ifocz)),
      &     '_',SCENEPURP(ISCENE)(1:6)
         write (SCENEDESC(ISCENE),'(5a)') 'Scene of ',

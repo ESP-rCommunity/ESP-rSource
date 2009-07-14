@@ -157,8 +157,12 @@ C Temporary ascii files ITA1 = IFIL+6, ITA2 = IFIL+7, ITA3 = IFIL+10.
       call parse2r(MODL,iappw,iappx,iappy,inf,zone,aim,act,brw)
 
 C Set ifocz to zone number (which is passed as "character <zone number>")
-      read(zone,'(i3)')ifocz
-      
+      if (zone(1:4) .eq. 'NONE') then
+        ifocz=1 ! set default zone number
+      else
+        read(zone,'(i3)')ifocz
+      endif
+
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
