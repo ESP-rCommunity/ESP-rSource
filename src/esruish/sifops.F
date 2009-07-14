@@ -1440,6 +1440,8 @@ C value for the first index of insst
         goto 1002
       endif
 
+C End marker of the file reached. Close it and update isadd
+C if not december.
   18  call erpfree(iuj,istat)
       call edisp(iuout,' ')
       call edisp(iuout,'Import file closed.')
@@ -1447,7 +1449,9 @@ C value for the first index of insst
       if(ok)then
         call sifwrt(icomp,mnth,lastrec)
         if(lastrec.gt.5)then
-          if(isadd(mnth+1).eq.0) isadd(mnth+1)=lastrec
+          if(mnth.le.11)then
+            if(isadd(mnth+1).eq.0)isadd(mnth+1)=lastrec
+          endif
         endif
       endif
       
