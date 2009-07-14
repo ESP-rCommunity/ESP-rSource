@@ -1781,11 +1781,11 @@ case "${MCTYPE}" in
          echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
          echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
     ;;
-  *)     # Use xv as image editor (and what if it's not available?)
-         echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
-         echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
-         echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
-         echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
+  *)     # Use display as image editor (and what if it's not available?)
+         echo "*image_display,TIF,display" >> ${ESPdir}/esprc
+         echo "*image_display,XBMP,display" >> ${ESPdir}/esprc
+         echo "*image_display,GIF,display" >> ${ESPdir}/esprc
+         echo "*image_display,XWD,display" >> ${ESPdir}/esprc
     ;;
 esac
 echo "*journal,OFF" >> ${ESPdir}/esprc
