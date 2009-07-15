@@ -131,10 +131,10 @@ C Now read number of scenes contained.
 C For each scene read 5 items of data
       IER=0
       do 10 I=1,NSCENE
-
+        irif=0 ! initialize rif counter
 C Reset the number of modelled blind states to zero.
 C        NBSRIF(I)=-1
-        NBSRIF(ifocz,I)=1 ! default rif is no./index 1
+c        NBSRIF(ifocz,I)=1 ! default rif is no./index 1
  30     CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif data',IER)
         if (OUTSTR(1:9).eq.'*sceneEND') goto 20
         if (IER.eq.0) then
@@ -143,19 +143,19 @@ C        NBSRIF(I)=-1
           if (WORD(1:4).eq.'*snm') then
             CALL EGETW(OUTSTR,K,SCENE(I),'W','scene name',IFLAG)
           elseif (WORD(1:4).eq.'*rnm') then
-
+            irif=irif+1 ! increment the number of rif files in this scene
 C First rif name corresponds to default blind state, subsquent rifs within 
-C this scene represent alternate blind states.
-            if (NBSRIF(ifocz,I).gt.NABS) then
+C this scene represent alternate blind states (when no control is defined in .tmc file, NABS=0).
+            if (irif.gt.(NABS+1)) then
               call usrmsg('Scene has too many rif files.','  ','W')
             endif
 c            if (NBSRIF(I).eq.0) then
-            CALL EGETW(OUTSTR,K,RIFNAME(ifocz,I,NBSRIF(ifocz,I)),
+            CALL EGETW(OUTSTR,K,RIFNAME(ifocz,I,irif),
      &                                     'W','rif name',IFLAG)
 c            else
 c              CALL EGETW(OUTSTR,K,LBSRIF(I),'W','bl st',IFLAG)
 c            endif
-            NBSRIF(ifocz,I)=NBSRIF(ifocz,I)+1 ! now increment the number of rif files
+c            NBSRIF(ifocz,I)=NBSRIF(ifocz,I)+1 
           elseif (WORD(1:4).eq.'*srt') then
             CALL EGETW(OUTSTR,K,SCENERT(I),'W','scene root',IFLAG)
           elseif (WORD(1:4).eq.'*rde') then
@@ -172,6 +172,7 @@ c            endif
         endif
         goto 30
  20     continue
+        NBSRIF(ifocz,I)=irif ! store number of rif files for this scene
  10   continue
 
       CALL ERPFREE(IRCFG,ISTAT)
@@ -240,7 +241,11 @@ c        IF(ISLENG.GT.IML)IML=ISLENG
         OUTS=SCENE(I)
         write(IRCFG,'(a,a,a)')'*snm ',OUTS(1:IML),' # Scene name'
         do 67 irif= 1,NBSRIF(ifocz,I)
-          OUTS=RIFNAME(ifocz,I,irif)
+          if (scenepurp(I)(1:6) .eq. 'Extern') then
+            OUTS=RIFNAME(1,I,irif)
+          else
+            OUTS=RIFNAME(ifocz,I,irif)
+          endif
           write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Rif name'
 c        if (NBSRIF(I).gt.0) then
 c          OUTS=LBSRIF(I)
@@ -393,7 +398,7 @@ C be deleted or copied, respectively.
 c              LBSRIF(I)='NONE'
             else
               SCENE(I)=SCENE(I+1)
-              do 67 irif= 1,NBSRIF(ifocz,I)
+              do 67 irif= 1,NBSRIF(ifocz,I+1)
                 RIFNAME(ifocz,I,irif)=RIFNAME(ifocz,I+1,1) ! ?? logic sound ??
  67           continue
               SCENERT(I)=SCENERT(I+1)
@@ -408,7 +413,7 @@ c              LBSRIF(I)=LBSRIF(I+1)
         elseif(cpyzone)then
           NSCENE=NSCENE+1
           SCENE(NSCENE)=SCENE(IFOC)
-          do 68 irif= 1,NBSRIF(ifocz,I)
+          do 68 irif= 1,NBSRIF(ifocz,IFOC)
             RIFNAME(ifocz,NSCENE,irif)=RIFNAME(ifocz,IFOC,irif)
  68       continue
           SCENERT(NSCENE)=SCENERT(IFOC)
@@ -639,7 +644,7 @@ C information.
         penumb = 'False'
         crenrp = '-av 10 10 10 '
         coconv = '  '
-c        ifocz = -1
+        ifocz = 1 ! use zone 1 as focus for external view (RIFNAME !)
       elseif (IRP.eq.2) then 
 
 C Internal image selected.
@@ -1357,7 +1362,8 @@ C Recover zone index from command line variable zone.
 c        izone=-1 ! does not seem to be used by the code except in "newscene()"
       else
         if (aim(1:8).eq.'External') then
-c          izone=-1 ! also not used except in "newscene()"
+          izone=1 ! use zone 1 as "default zone"
+          ifocz=1 ! also focus on this default zone
           zone='FRED'
         else
           call zindex(zone,izone)

@@ -142,7 +142,7 @@ C Create inside and outside files, first open databases.
       call mkriofil(ftr,fict,'s',IER)
       IFC=3
       do 66 irif= 1,NBSRIF(ifocz,iscene)
-        call mkrif(ita2,rifname(ifocz,iscene,1),IFC,0,ier)
+        call mkrif(ita2,rifname(ifocz,iscene,irif),IFC,0,ier)
 c      if (NBSRIF(ISCENE).eq.1) then
 c        call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
 c      endif
@@ -154,7 +154,7 @@ C Update rcf file and configuration file.
 
 C Generate new octree.
       do 67 irif= 1,NBSRIF(ifocz,iscene)
-        call touchrif(rifname(ifocz,iscene,1))
+        call touchrif(rifname(ifocz,iscene,irif))
 c      if (NBSRIF(ISCENE).eq.1) then
 c        call touchrif(LBSRIF(ISCENE))
 c      endif
