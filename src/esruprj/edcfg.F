@@ -3253,7 +3253,7 @@ C Defaults.
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
       character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,t144*144,ETEXT*82
+      character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*48
 
@@ -3275,7 +3275,7 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
-      t72='  '
+      t96='  '
       t144='  '
 
 C Ask for source file name and if the file exists then read it;
@@ -3463,10 +3463,6 @@ C            call edisp(iuout,'User can modify this model.')
         endif
       endif
 
-C Debug.
-C      write(t144,*) 'NEWPRB browse status is ',browse,iaccess
-C      call edisp(iuout,t144)
-
 C Get file separator.
       if(unixok)then
         fs = char(47)
@@ -3613,20 +3609,20 @@ C Check to see if LCFGF is in a cfg folder.
           if(lwcfgr.gt.4)then
             if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
               write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
-              write(t72,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgl-1),'.cfg'
+              write(t96,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgl-1),'.cfg'
             else
               write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-              write(t72,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgr),'.cfg'
+              write(t96,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgr),'.cfg'
             endif
           elseif(lwcfgr.le.4)then
             write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-            write(t72,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgr),'.cfg'
+            write(t96,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgr),'.cfg'
           endif
-          if((t72(1:2).ne.'  ').and.(t72(1:4).ne.'UNKN'))then
+          if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
             XST=.false.
-            INQUIRE (FILE=t72,EXIST=XST)
+            INQUIRE (FILE=t96,EXIST=XST)
             if(XST)then
-              call fdroot(t72,path,LCFGF)
+              call fdroot(t96,path,LCFGF)
               goto 444
             else
 
@@ -3639,23 +3635,23 @@ C name as that the user entered.
               if(lwcfgr.gt.4)then
                 if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
                   write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
-                  write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgl-1),fs,
+                  write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgl-1),fs,
      &              'cfg',fs,LTMP(1:lcfgl-1),'.cfg'
                 else
                   write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-                  write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,'cfg',
+                  write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,'cfg',
      &              fs,LTMP(1:lcfgr),'.cfg'
                 endif
               elseif(lwcfgr.le.4)then
                 write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-                write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,'cfg',fs,
+                write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,'cfg',fs,
      &            LTMP(1:lcfgr),'.cfg'
               endif
-              if((t72(1:2).ne.'  ').and.(t72(1:4).ne.'UNKN'))then
+              if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
                 XST=.false.
-                INQUIRE (FILE=t72,EXIST=XST)
+                INQUIRE (FILE=t96,EXIST=XST)
                 if(XST)then
-                  call fdroot(t72,path,LCFGF)
+                  call fdroot(t96,path,LCFGF)
                   goto 444
                 else
 
@@ -3667,23 +3663,23 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
                   if(lwcfgr.gt.4)then
                     if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
                       write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
-                      write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgl-1),fs,
+                      write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgl-1),fs,
      &                  'cfg',fs,cfgroot(1:lnblnk(cfgroot)),'.cfg'
                     else
                       write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-                      write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,
+                      write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,
      &                  'cfg',fs,cfgroot(1:lnblnk(cfgroot)),'.cfg'
                     endif
                   elseif(lwcfgr.le.4)then
                     write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-                    write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,
+                    write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,
      &                'cfg',fs,cfgroot(1:lnblnk(cfgroot)),'.cfg'
                   endif
-                  if((t72(1:2).ne.'  ').and.(t72(1:4).ne.'UNKN'))then
+                  if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
                     XST=.false.
-                    INQUIRE (FILE=t72,EXIST=XST)
+                    INQUIRE (FILE=t96,EXIST=XST)
                     if(XST)then
-                      call fdroot(t72,path,LCFGF)
+                      call fdroot(t96,path,LCFGF)
                       goto 444
                     endif
                   endif
