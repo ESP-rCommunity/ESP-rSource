@@ -651,12 +651,13 @@ C Single line prompt.
           CALL msgbox(MSG1,MSG2)
         ELSEIF(LEVEL.EQ.'W'.OR.LEVEL.EQ.'w')THEN
 
-C If warning mode then clear continuebox after use clicks continue.
-          CALL continuebox(MSG1,MSG2,cont)
+C If warning mode then clear continuebox after 3 second pause.
+          CALL msgbox(MSG1,MSG2)
+          call pauses(3)
           CALL msgbox(blnk,blnk2)
         ELSEIF(LEVEL.EQ.'P'.OR.LEVEL.EQ.'p')THEN
           CALL msgbox(MSG1,MSG2)
-          call pauses(1)
+          call pauses(2)
         ELSEIF(LEVEL.EQ.'F'.OR.LEVEL.EQ.'f')THEN
 
 C Place in text window since about to exit from program.
