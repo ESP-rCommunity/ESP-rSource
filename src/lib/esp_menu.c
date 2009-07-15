@@ -623,7 +623,7 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    gchar *question_local;
    gint result;
    gint aopt_l,bopt_l,copt_l; /* non-blank lengths */
-   gint msg1_l; /* non-blank lengths for prompt */
+   int msg1_l; /* non-blank lengths for prompt */
 
 /*
  * Create a frame for the menu to be displayed in, add
@@ -633,8 +633,6 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
 
 /* find out actual length of prompt  */
    f_to_c_l(msg1,&msg1_len,&msg1_l);
-
-/* debug  fprintf(stderr,"prompt lengths are %d %d\n",msg1_len,msg1_l); */
    question_local = g_strndup(msg1, (gsize) msg1_l);
 /* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
 

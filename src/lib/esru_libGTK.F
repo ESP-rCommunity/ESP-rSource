@@ -167,7 +167,11 @@ C If in graphic mode use graphic faciltiies to edit the number.
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
@@ -420,7 +424,11 @@ C If in graphic mode use graphic facilities to edit the number.
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
@@ -666,7 +674,11 @@ C        iquery=0
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
@@ -890,7 +902,11 @@ C        iquery=0
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
@@ -1125,7 +1141,11 @@ C        iquery=0
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
@@ -1329,7 +1349,11 @@ C For graphic version use the standard GTK widget as does easks.
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
@@ -1562,7 +1586,11 @@ C        iquery=0
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
@@ -1761,7 +1789,11 @@ C        iquery=0
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
@@ -1952,7 +1984,11 @@ C If in terminal type 8 use dialogue box.
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
@@ -2593,13 +2629,20 @@ C from a yes no (with default indicated) prompt (supports help).
 C In the case of a graphic menu the messages will appear in a
 C dialogue box at the bottom of the graphic window.
 C If NHELP=-1 there is no default option.
+
+C Use ifdef statements to use a different graphic function
+C for the case of F90 complers (espokbox faults with F90)
       SUBROUTINE ASKOK(MSG1,MSG2,OK,DOK,NHELP)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       CHARACTER*(*) MSG1,MSG2
-      CHARACTER ANS*2,MSG3*124,H*72,opta*8,optb*8,optc*14,head*12
+      CHARACTER ANS*2,MSG3*124,H*72,opta*8,optb*8,optc*14
+#ifdef F90
+      character optd*2,opte*2,optf*2,optg*2
+#endif
+      character head*12
       character prompt*144
       logical ok,dok,DEFLT
 
@@ -2658,27 +2701,51 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
         LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') MSG2(1:LN2)
+          else
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
         endif
         opta='yes'
         optb='no'
+#ifdef F90
+        optd='  '
+        opte='  '
+        optf='  '
+        optg='  '
+#endif
         if (DEFLT) then
           if(DOK)then
             id=1
             optc='default (yes)'
+#ifdef F90
+            call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,
+     &        IW)
+#else
             call espokbox(prompt,opta,optb,optc,id,IW)
+#endif
           else
             id=2
             optc='default (no)'
+#ifdef F90
+            call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,
+     &        IW)
+#else
             call espokbox(prompt,opta,optb,optc,id,IW)
+#endif
           endif
         else
           id=0
           optc=' '
+#ifdef F90
+          call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,IW)
+#else
           call espokbox(prompt,opta,optb,optc,ID,IW)
+#endif
         endif
         write(6,*) 'espokbox selected id iw ',id,iw
         IF(IW.eq.1)THEN
@@ -2817,7 +2884,11 @@ C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') MSG2(1:LN2)
+          else
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
@@ -2995,7 +3066,11 @@ C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
 	if((LN1+LN2+1).lt.144)then
-          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          if(LN1.eq.1)then
+            write(prompt,'(a)') MSG2(1:LN2)
+          else
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
         else
           LN2=142-LN1
           write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
@@ -3765,7 +3840,11 @@ C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
 	  if((LN1+LN2+1).lt.144)then
-            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+            if(LN1.eq.1)then
+              write(prompt,'(a)') MSG2(1:LN2)
+            else
+              write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+            endif
           else
             LN2=142-LN1
             write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
@@ -3903,7 +3982,11 @@ C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
 	  if((LN1+LN2+1).lt.144)then
-            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+            if(LN1.eq.1)then
+              write(prompt,'(a)') MSG2(1:LN2)
+            else
+              write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+            endif
           else
             LN2=142-LN1
             write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)

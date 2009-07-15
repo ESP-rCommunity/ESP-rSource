@@ -4310,10 +4310,7 @@ C << update to deal with dos paths >>
           write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &        longtfile(1:lnblnk(longtfile))
         endif
-        CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
-        if(ok)then
-          call runit(doit,tmode)
-        endif
+        call runit(doit,tmode)
       elseif(isw.eq.2)then
 
 C Pull up the official list of climate files and if the user selects
@@ -4395,11 +4392,7 @@ C << it instead of longtfile >>
               write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &            longtfile(1:lnblnk(longtfile))
             endif
-            CALL ASKOK(' ','Browse/edit selected climate data?',
-     &                  OK,dok,3)
-            if(ok)then
-              call runit(doit,tmode)
-            endif
+            call runit(doit,tmode)
           else
             call usrmsg('Problem encountered with Climate db!',
      &                  'Please check db location and content.','W')
