@@ -769,7 +769,7 @@ C options available, (these should not be too long).
       SUBROUTINE EASKAB(MSG1,MSG2,AOPT,BOPT,IWHICH,NHELP)
 
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT
-      character COPT,DOPT*2,EOPT*2,FOPT*2,GOPT*2
+      character COPT*2,DOPT*2,EOPT*2,FOPT*2,GOPT*2
 
       COPT=' '
       DOPT=' '
@@ -1569,13 +1569,16 @@ C been defined - do not add path.
         elseif (a1.eq.'/') then
 
 C Special case: unix absolute path being used on windows - substitute c: for initial /
+C Limit feedback text length to fit within outs text buffer.
           concat = .false.
           write (tfile,'(2a)') 'C:',sfile(5:LNS)
           sfile=tfile
           write(outs,*)
      &      'addpath: warning found unix path changing to windows.'
           call edisp(iuout,outs)
-          write(outs,*) 'addpath: ',sfile
+	  LNS=lnblnk(sfile)
+	  if(LNS.gt.112) LNS=112
+          write(outs,*) 'addpath: ',sfile(1:lnb)
           call edisp(iuout,outs)
         endif
       endif
@@ -1585,7 +1588,7 @@ C Special case: unix absolute path being used on windows - substitute c: for ini
         LNS=max(1,lnblnk(sfile))
         write(tfile,'(2a)',iostat=ios,err=1)path(1:LN),sfile(1:LNS)
       else
-        tfile=sfile
+        write(tfile,'(a)',iostat=ios,err=1)sfile(1:LNS)
       endif
       return
    1  if(IOS.eq.2)then
