@@ -235,12 +235,10 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    title_local = "  ";
 
 /* find out actual length of each prompt and then total length with a space between. */
-   msg1_l = 0;
    f_to_c_l(msg1,&msg1_len,&msg1_l);
    question_local = g_strndup(msg1, (gsize) msg1_l);
 /* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
 
-   aopt_l = bopt_l = copt_l = dopt_l = eopt_l = fopt_l = gopt_l = 0;
    f_to_c_l(aopt,&aopt_len,&aopt_l);
    aopt_local = g_strndup(aopt, (gsize) aopt_l);
    f_to_c_l(bopt,&bopt_len,&bopt_l);
@@ -402,13 +400,10 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    title_local = "  ";
 
 /* find out actual length of each prompt and then total length with a space between. */
-   msg1_l = 0;
    f_to_c_l(msg1,&msg1_len,&msg1_l);
    question_local = g_strndup(msg1, (gsize) msg1_l);
 /* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
 
-   aopt_l = bopt_l = copt_l = dopt_l = eopt_l = fopt_l = gopt_l = 0;
-   hopt_l = iopt_l = jopt_l = kopt_l = lopt_l = 0;
    f_to_c_l(aopt,&aopt_len,&aopt_l);
    aopt_local = g_strndup(aopt, (gsize) aopt_l);
    f_to_c_l(bopt,&bopt_len,&bopt_l);
@@ -637,14 +632,12 @@ void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    title_local = "  ";
 
 /* find out actual length of prompt  */
-   msg1_l = 0;
    f_to_c_l(msg1,&msg1_len,&msg1_l);
 
 /* debug  fprintf(stderr,"prompt lengths are %d %d\n",msg1_len,msg1_l); */
    question_local = g_strndup(msg1, (gsize) msg1_l);
 /* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
 
-   aopt_l = bopt_l = copt_l = 0;
    f_to_c_l(aopt,&aopt_len,&aopt_l);
    aopt_local = g_strndup(aopt, (gsize) aopt_l);
    f_to_c_l(bopt,&bopt_len,&bopt_l);

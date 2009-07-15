@@ -166,7 +166,12 @@ C If in graphic mode use graphic faciltiies to edit the number.
         IVALUE=IVAL
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
 C        write (6,*) '< askint prompt ',PROMPT(1:lnblnk(PROMPT))
@@ -414,7 +419,12 @@ C If in graphic mode use graphic facilities to edit the number.
         endif
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
         RVALUE=RVAL
         CALL askreal(PROMPT,RVALUE,IFLG)
 
@@ -655,7 +665,12 @@ C        iquery=0
         endif
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
 C        write (6,*) '< aske prompt ',PROMPT(1:lnblnk(PROMPT))
@@ -874,7 +889,12 @@ C        iquery=0
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C << There are potentially several things that need updating >>
 C << to this call and to askf (within esp_file.c). >>
@@ -1104,7 +1124,12 @@ C        iquery=0
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
 C        write (6,*) '< askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
@@ -1303,7 +1328,12 @@ C For graphic version use the standard GTK widget as does easks.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
 C        write (6,*) '< 248 askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
@@ -1531,7 +1561,12 @@ C        iquery=0
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
         CALL askdialogcmd(PROMPT,STRVAL,CMD,IFLG)
 
 C Debug.
@@ -1725,7 +1760,12 @@ C        iquery=0
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
         CALL askdialogcncl(PROMPT,STRVAL,CNCL,IFLG)
 
 C Debug.
@@ -1911,7 +1951,12 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
 C        write (6,*) '< askdialog2cmd prompt ',PROMPT(1:lnblnk(PROMPT))
@@ -2612,7 +2657,12 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
   19    continue
         LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-        write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+        endif
         opta='yes'
         optb='no'
         if (DEFLT) then
@@ -2766,7 +2816,12 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-        write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+        endif
 
         CALL espabcbox(prompt,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,IW)
 
@@ -2939,7 +2994,12 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-        write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+        endif
 
         CALL espdozenbox(prompt,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,
      &    HOPT,IOPT,JOPT,KOPT,LOPT,IW)
@@ -3704,7 +3764,12 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	  if((LN1+LN2+1).lt.144)then
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          else
+            LN2=142-LN1
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
 
 C Debug.
 C          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
@@ -3837,7 +3902,12 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	  if((LN1+LN2+1).lt.144)then
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          else
+            LN2=142-LN1
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
 
 C Debug.
 C          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
