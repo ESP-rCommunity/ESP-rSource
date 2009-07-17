@@ -1,8 +1,9 @@
 Synopsis
  
-This is a synopsis of the model L-shaped reception, convective heating, ideal
-control defined in bld_simple.cfg generated on Fri Jul 17 10:36:30 2009. Notes
-associated with the model are in bld_simple.log
+This is a synopsis of the model L-shaped reception, external shading,
+convective heating, ideal control defined in bld_simple_shd.cfg generated on
+Fri Jul 17 10:43:27 2009. Notes associated with the model are in
+bld_simple_shd.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
@@ -124,11 +125,14 @@ ID Zone         Volume|          Surface
  14  2.50     90.   0. east_glz     DCF7671_ VERT -     dbl_glz      ||< external
  
  
- All surfaces will receive diffuse insolation (if shading not calculated).
- No shading analysis requested.
- No insolation analysis requested.
+ An hourly solar radiation distribution is used for this zone.
+ Surfaces (all applicable) for shading analysis:
+1 2 4 5 6 7 8 10 11 12 13 14
+ Insolation sources (all applicable):
+glz_s east_glz
  
  
+ Shading patterns have not yet been calculated.
  
  
  Air schedule notes:

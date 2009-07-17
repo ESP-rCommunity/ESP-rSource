@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model L-shaped reception, convective heating, ideal
-control defined in bld_simple.cfg generated on Fri Jul 17 10:36:30 2009. Notes
-associated with the model are in bld_simple.log
+This is a synopsis of the model L-shaped reception, convective heating, fuzzy
+control defined in bld_simple_fzy.cfg generated on Fri Jul 17 10:38:04 2009.
+Notes associated with the model are in bld_simple_fzy.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
@@ -56,33 +56,18 @@ Databases associated with the model:
  
 The model includes ideal controls as follows:
 Control description:
-bld_simple.ctl
+bld_simple_fzy.ctl
  
 Zones control includes  1 functions.
-convective heating to 15C at 7h and 20C at 9h with 3kW capacity, free float
-otherwise.
+convective heating with fuzzy control
  
- The sensor for function  1 senses the temperature of the current zone.
- The actuator for function  1 is air point of the current zone
- The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  4 periods.
+ The sensor for function  1 senses dry bulb temperature in reception.
+ The actuator for function  1 is the air point in reception.
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       3000.0 0.0 0.0 0.0 15.0 100.0
-basic control: max heating capacity 3000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 15.00C cooling setpoint
-100.00C. (missing 7th item)
-   3  9.00 db temp   > flux      basic control       3000.0 0.0 0.0 0.0 20.0 100.0
-basic control: max heating capacity 3000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
-100.00C. (missing 7th item)
-   4 18.00 db temp   > flux      free floating
- Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
- Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
+   1  0.00 db temp   > flux      fuzzy logic PI-PD c 1.0 1.0 21.0 2.0 1.0 1.0 0.9
+fuzzy logic report TBD
  
  Zone to contol loop linkages:
  zone ( 1) reception    << control  1

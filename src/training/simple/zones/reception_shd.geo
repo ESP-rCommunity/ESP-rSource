@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,reception # tag version, format, zone name
-*date Fri Jul 17 10:36:12 2009  # latest file modification 
+*date Fri Jul 17 10:43:07 2009  # latest file modification 
 reception describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,1.00000,1.00000,0.00000  #   1
@@ -76,8 +76,23 @@ reception describes a...
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  12 # list of surfs
+  1  2  4  5  6  7  8 10 11 12 13 14
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   2 # insolation sources
+ 10 14
 # 
 *base_list,1,9,    48.00 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start,20 20 # geometric blocks
+*obs,-4.900,-7.000,0.000,5.800,1.000,2.950,0.000,blk_1,extern_wall  # block  1
+*obs,1.200,-7.000,0.000,3.600,1.000,2.950,0.000,blk_2,extern_wall  # block  2
+*obs,5.200,-7.000,0.000,3.600,1.000,2.950,0.000,blk_3,extern_wall  # block  3
+*obs,9.100,-7.000,0.000,10.800,1.000,2.950,0.000,blk_4,extern_wall  # block  4
+*obs,-4.900,-7.000,3.100,5.800,1.000,2.900,0.000,xblk_1,extern_wall  # block  5
+*obs,1.200,-7.000,3.100,3.600,1.000,2.900,0.000,xblk_2,extern_wall  # block  6
+*obs,5.200,-7.000,3.100,3.600,1.000,2.900,0.000,xblk_3,extern_wall  # block  7
+*obs,9.100,-7.000,3.100,10.800,1.000,2.900,0.000,xblk_4,extern_wall  # block  8
+*end_block
