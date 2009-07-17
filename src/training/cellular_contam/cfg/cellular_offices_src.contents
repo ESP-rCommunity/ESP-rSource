@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model contaminate high occup model of two adjacent
-cellular offices defined in cellular_contam_ho.cfg generated on Fri Jul 17
-09:06:40 2009. Notes associated with the model are in cellular_offices_bc.log
+This is a synopsis of the model base case model of two adjacent cellular
+offices defined in cellular_offices_src.cfg generated on Fri Jul 17 09:10:44
+2009. Notes associated with the model are in cellular_offices_bc.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 2000 and
@@ -36,13 +36,30 @@ Databases associated with the model:
  plant components       : plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
  optical properties     : optics.db2
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+no overall control description supplied
+ 
+ Flow control includes  1 loops.
+no flow control description supplied
+ 
+ The sensor for function  1 sensors are nodes manager_a (  1) & manager_a (  1)
+ The actuator for function  1 is flow connection:   1 south_ext - manager_a via fan_60lps
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 contam conc > flow    on / off            2.0 1.0
+on/off setpoint 2.00 direct action ON fraction 0.000.
  ____________________________________________________________
  
 The model includes an air flow network.
  
  Flow network description.
  
-   6 nodes,   2 components,   8 connections;     wind reduction =  1.000
+   6 nodes,   4 components,   8 connections;     wind reduction =  1.000
    # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
    1 manager_a    air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
    2 manager_b    air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
@@ -57,13 +74,19 @@ The model includes an air flow network.
  Fluid  1.0 crack width (m)  0.0150 crack length (m)  2.000
  
  opening       110  2  0 Specific air flow opening           m = rho.f(A,dP)
- Fluid  1.0 opening area (m)  0.250
+ Fluid  1.0 opening area (m)  0.125
+ 
+ fan_8lps       30  2  0 Constant vol. flow rate component   m = rho.a
+ Fluid  1.0 flow rate (m^3/s)  0.80000E-02
+ 
+ fan_60lps      30  2  0 Constant vol. flow rate component   m = rho.a
+ Fluid  1.0 flow rate (m^3/s)  0.30000E-01
  
     # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
-    1 south_ext    -0.225   manager_a     0.225   crack           1.725   1.725
+    1 south_ext    -0.225   manager_a     0.225   fan_60lps       1.725   1.725
     2 south_ext    -0.225   manager_b     0.225   crack           1.725   1.725
-    3 south_ext    -0.225   manager_a     0.225   opening         1.725   1.725
-    4 south_ext    -0.225   manager_b     0.225   opening         1.725   1.725
+    3 south_ext    -0.225   manager_a     0.225   fan_8lps        1.725   1.725
+    4 south_ext    -0.225   manager_b     0.225   fan_8lps        1.725   1.725
     5 manager_a     0.000   coridor       0.000   opening         1.500   1.500
     6 manager_b     0.000   coridor       0.000   opening         1.500   1.500
     7 coridor       0.000   west_ext      0.000   opening         1.500   1.500
