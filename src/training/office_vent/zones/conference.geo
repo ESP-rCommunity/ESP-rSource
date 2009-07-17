@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,conference # tag version, format, zone name
-*date Thu Aug 23 18:21:04 2007  # latest file modification 
+*date Fri Jul 17 11:05:01 2009  # latest file modification 
 conference describes a conference room for 10-12
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,3.00000,13.50000,0.00000  #   1
@@ -106,7 +106,7 @@ conference describes a conference room for 10-12
 *edges,8,70,67,65,66,69,68,71,72  # 28
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -149,3 +149,14 @@ conference describes a conference room for 10-12
  10 14 18 22 26
 # 
 *base_list,2,6,28,    61.75 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start,20 20 # geometric blocks
+*obs,12.100,12.000,3.100,6.000,0.020,0.300,90.000,eob1,NONE  # block  1
+*obs,12.300,12.000,3.100,6.000,0.020,0.250,90.000,eob2,NONE  # block  2
+*obs,12.500,12.000,3.100,6.000,0.020,0.220,90.000,eob3,NONE  # block  3
+*obs,12.700,12.000,3.100,6.000,0.020,0.200,90.000,eob4,NONE  # block  4
+*obs,12.900,12.000,3.100,6.000,0.020,0.200,90.000,eob5,NONE  # block  5
+*obs,13.100,12.000,3.100,6.000,0.020,0.200,90.000,eob6,NONE  # block  6
+*end_block
