@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model Model of two adjacent cellular offices with
-VAV/CAV supply 700W reheat defined in cellular_vav.cfg generated on Fri Jul 17
-10:03:00 2009. Notes associated with the model are in cellular_vav.log
+This is a synopsis of the model Two adjacent cellular offices with separate ON
+OFF time cycle control defined in cellular_onoffpro.cfg generated on Fri Jul
+17 09:59:50 2009. Notes associated with the model are in cellular_onoffpro.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1967 and
@@ -41,37 +41,25 @@ Databases associated with the model:
  
 The model includes ideal controls as follows:
 Control description:
-Simple VAV HVAC reverting to CAV with reheat for heating op. 11C
-supply equivalent of 20ach=0.2222 and min 5 ach in room (0.056m3/s)
-and CAV 0.056 m3/s. 700W reheat for desired room t of 20C.
+Represents separate on off setpoint for heating and cooling with cycle
+limits. Heating on below 18C and off above 20C. Cooling on above 24C
+and off below 22C. Loop 1 is for manager_a loop 2 equiv on/off
+manager_b and loop 3 the corridor.
  
-Zones control includes  2 functions.
-this model is for testing purposes - the VAV representation is evolving. Note
-simulation trace must be used to track reheat and air flow rates..
+Zones control includes  3 functions.
+manager_a uses the simple separate ON OFF controller and manager_b uses the
+separate ON OFF controller with ON OFF cycle time limits.
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
- The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      VAV and CAV air bas 700.0 11.0 20.0 0.2 0.1 0.0
-VAV and CAV air based: reheat cap 700.00W air supply temp 11.000C room setpoint 20.000C
-max air flow rate 0.2220m^3/s min air flow rate 0.0560m^3/s
-   3 20.00 db temp   > flux      free floating
- Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      VAV and CAV air bas 700.0 11.0 20.0 0.2 0.1 0.0
-VAV and CAV air based: reheat cap 700.00W air supply temp 11.000C room setpoint 20.000C
-max air flow rate 0.2220m^3/s min air flow rate 0.0560m^3/s
-   3 20.00 db temp   > flux      free floating
- Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       2500.0 0.0 2500.0 0.0 10.0 30.0 0.0
-basic control: max heating capacity 2500.0W min heating capacity 0.0W max cooling
-capacity 2500.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-30.00C.
+   2  7.00 db temp   > flux      separate ON/OFF flu 1500.0 1500.0 18.0 20.0 26.0 24.0
+separate ON/OFF flux: heating capacity 1500.00W cooling capacity 1500.00W heating on
+below 18.00C heating off above 20.00C cooling on above 26.00C cooling off below 24.00C.
+   3 19.00 db temp   > flux      free floating
  
  The sensor for function  2 senses the temperature of the current zone.
  The actuator for function  2 is air point of the current zone
@@ -79,15 +67,28 @@ capacity 2500.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setp
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      variable supply     35.0 10.0 0.1 18.0 24.0 0.0
-variable supply temp: max supply T 35.00C min supply T 10.00C air flow rate
-0.0560(m^3/s) room heating setpoint 18.00C room cooling setpoint 24.00 basic control:
+   2  7.00 db temp   > flux      time-proportional c 1500.0 1500.0 18.0 22.0 26.0 24.0 10.0 5.0 5.0
+time proportioning ON/OFF: heat cap 1500.00W cool cap 1500.00W heat ON 18.00C heat OFF
+22.00C cool ON 26.00C cool OFF 24.00C tot heat 10.mn min heat ON 5.mn min heat OFF 5.mn
+tot cool mnts10. min cool ON 5.mn min cool OFF 5.mn.
+   3 19.00 db temp   > flux      free floating
+ 
+ The sensor for function  3 senses the temperature of the current zone.
+ The actuator for function  3 is air point of the current zone
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.00 db temp   > flux      basic control       1500.0 0.0 1500.0 0.0 18.0 26.0 0.0
+basic control: max heating capacity 1500.0W min heating capacity 0.0W max cooling
+capacity 1500.0W min cooling capacity 0.0W. Heating setpoint 18.00C cooling setpoint
+26.00C.
    3 19.00 db temp   > flux      free floating
  
  Zone to contol loop linkages:
  zone ( 1) manager_a    << control  1
- zone ( 2) manager_b    << control  1
- zone ( 3) coridor      << control  2
+ zone ( 2) manager_b    << control  2
+ zone ( 3) coridor      << control  3
  
  ____________________________________________________________
  

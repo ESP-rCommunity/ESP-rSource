@@ -14,7 +14,7 @@ this model is for testing purposes - the VAV representation is evolving. Note si
       0.  # No. of data items
     0   22   6.000  # ctl type, law (VAV and CAV air based), start @
       6.  # No. of data items
-    700.000 11.000 20.000 0.2222 0.056 0.000
+  700.000 11.000 20.000 0.222 0.056 0.000
     0    2  20.000  # ctl type, law (free floating), start @
       0.  # No. of data items
     1  365  # valid Sun-01-Jan - Sun-31-Dec
@@ -23,7 +23,7 @@ this model is for testing purposes - the VAV representation is evolving. Note si
       0.  # No. of data items
     0   22   6.000  # ctl type, law (VAV and CAV air based), start @
       6.  # No. of data items
-    700.000 11.000 20.000 0.2222 0.056 0.000
+  700.000 11.000 20.000 0.222 0.056 0.000
     0    2  20.000  # ctl type, law (free floating), start @
       0.  # No. of data items
     1  365  # valid Sun-01-Jan - Sun-31-Dec
