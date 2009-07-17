@@ -1,4 +1,4 @@
-# thermophysical properties of hall_2 defined in ../zone/hall_2.con
+# thermophysical properties of hall_2 defined in ../zones/hall_2.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
      1,     0  #  1 door_bath    int_doors   
@@ -13,7 +13,7 @@
      1,     0  # 10 stairs       int_doors   
      1,     0  # 11 door_bed3    int_doors   
 # conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
-# tivity   |          | heat     | ness(m)|type|  temp | factor | factor |     |  
+# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
      0.1900,     700.0,    2390.0,  0.0250,   0,   0.00, 0.00000, 0.00000  #  1  1
      0.1900,     700.0,    2390.0,  0.0250,   0,   0.00, 0.00000, 0.00000  #  2  1
      0.1600,     600.0,    1000.0,  0.0100,   0,   0.00, 0.00000, 0.00000  #  3  1
@@ -37,16 +37,10 @@
      0.1900,     700.0,    2390.0,  0.0250,   0,   0.00, 0.00000, 0.00000  # 10  1
      0.1900,     700.0,    2390.0,  0.0250,   0,   0.00, 0.00000, 0.00000  # 11  1
 # for each surface: inside face emissivity
-  0.90, 0.90, 0.91, 0.91, 0.91, 0.90, 0.91, 0.90, 0.90, 0.90,
- 0.90,
+ 0.90000,0.90000,0.91000,0.91000,0.91000,0.90000,0.91000,0.90000,0.90000,0.90000,0.90000
 # for each surface: outside face emissivity
-  0.90, 0.90, 0.91, 0.91, 0.91, 0.90, 0.90, 0.91, 0.90, 0.90,
- 0.90,
+ 0.90000,0.90000,0.91000,0.91000,0.91000,0.90000,0.90000,0.91000,0.90000,0.90000,0.90000
 # for each surface: inside face solar absorptivity
-  0.65, 0.65, 0.50, 0.50, 0.50, 0.65, 0.50, 0.60, 0.65, 0.65,
- 0.65,
+ 0.65000,0.65000,0.50000,0.50000,0.50000,0.65000,0.50000,0.60000,0.65000,0.65000,0.65000
 # for each surface: outside face solar absorptivity
-  0.65, 0.65, 0.50, 0.50, 0.50, 0.65, 0.30, 0.50, 0.65, 0.65,
- 0.65,
-# inside and exterior glazing maintenance factors
-   0.00   0.00
+ 0.65000,0.65000,0.50000,0.50000,0.50000,0.65000,0.30000,0.50000,0.65000,0.65000,0.65000
