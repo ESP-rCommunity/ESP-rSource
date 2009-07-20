@@ -12,13 +12,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (5) ent_g
    -4    5    0    0  # sensor data
@@ -29,23 +29,23 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  10.000 1.000 1.000
+  10.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
 * Control mass
 # senses node (7) unit_a
    -4    7    0    0  # sensor data
@@ -56,13 +56,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (7) unit_a
    -4    7    0    0  # sensor data
@@ -73,13 +73,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (8) unit_b
    -4    8    0    0  # sensor data
@@ -90,13 +90,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (9) unt_cd
    -4    9    0    0  # sensor data
@@ -107,13 +107,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (10) unit_e
    -4   10    0    0  # sensor data
@@ -124,13 +124,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (10) unit_e
    -4   10    0    0  # sensor data
@@ -141,13 +141,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (10) unit_e
    -4   10    0    0  # sensor data
@@ -158,13 +158,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (11) unit_f
    -4   11    0    0  # sensor data
@@ -175,13 +175,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (11) unit_f
    -4   11    0    0  # sensor data
@@ -192,13 +192,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (12) unit_g
    -4   12    0    0  # sensor data
@@ -209,13 +209,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (13) unt_hi
    -4   13    0    0  # sensor data
@@ -226,13 +226,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (14) unit_j
    -4   14    0    0  # sensor data
@@ -243,13 +243,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (14) unit_j
    -4   14    0    0  # sensor data
@@ -260,13 +260,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (14) unit_j
    -4   14    0    0  # sensor data
@@ -277,13 +277,13 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 21.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  21.000 1.000 1.000
+  21.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
 * Control mass
 # senses node (14) unit_j
    -4   14    0    0  # sensor data
@@ -294,23 +294,23 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  10.000 1.000 1.000
+  10.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
 * Control mass
 # senses node (11) unit_f
    -4   11    0    0  # sensor data
@@ -321,23 +321,23 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  10.000 1.000 1.000
+  10.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
 * Control mass
 # senses node (13) unt_hi
    -4   13    0    0  # sensor data
@@ -348,23 +348,23 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  10.000 1.000 1.000
+  10.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
 * Control mass
 # senses node (7) unit_a
    -4    7    0    0  # sensor data
@@ -375,23 +375,23 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  10.000 1.000 1.000
+  10.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
 * Control mass
 # senses node (10) unit_e
    -4   10    0    0  # sensor data
@@ -402,23 +402,23 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  10.000 1.000 1.000
+  10.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
 * Control mass
 # senses node (12) unit_g
    -4   12    0    0  # sensor data
@@ -429,23 +429,23 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  10.000 1.000 1.000
+  10.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
 * Control mass
 # senses node (8) unit_b
    -4    8    0    0  # sensor data
@@ -456,20 +456,20 @@ mass_flow control is applied to each connection that has either ctdoor or ctwina
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1    0   7.990  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  10.000 1.000 1.000
+  10.00000 1.00000 1.00000
     1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  100.000 1.000 1.000
+  100.00000 1.00000 1.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       1.  # No. of data items
-  100.000
+  100.00000

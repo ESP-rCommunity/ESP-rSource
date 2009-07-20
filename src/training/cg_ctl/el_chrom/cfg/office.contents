@@ -1,0 +1,383 @@
+Synopsis
+ 
+This is a synopsis of the model Tower office with electrochromic glazing and
+daylight linking control defined in office.cfg generated on Mon Jul 20
+15:18:39 2009. Notes associated with the model are in job.notes
+ 
+The model is located at latitude   52.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 1967 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
+ 
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ pressure distributions : pressc.db1
+ materials              : /usr/esru/esp-r/databases/constr.db1
+ constructions          : ../dbs/multicon.db
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : ../dbs/optics.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+proj cntrl
+ 
+Zones control includes  1 functions.
+no descrip
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+ The function day types are Weekdays, Saturdays & Sundays
+ Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       90000.0 0.0 90000.0 0.0 12.0 30.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 90000.0W min cooling capacity 0.0W. Heating setpoint 12.00C cooling setpoint
+30.00C. (missing 7th item)
+   2  7.00 db temp   > flux      basic control       90000.0 0.0 90000.0 0.0 21.0 22.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 90000.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+22.00C. (missing 7th item)
+   3 18.00 db temp   > flux      basic control       90000.0 0.0 90000.0 0.0 12.0 30.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 90000.0W min cooling capacity 0.0W. Heating setpoint 12.00C cooling setpoint
+30.00C. (missing 7th item)
+ Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       90000.0 0.0 90000.0 0.0 12.0 30.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 90000.0W min cooling capacity 0.0W. Heating setpoint 12.00C cooling setpoint
+30.00C. (missing 7th item)
+ Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       90000.0 0.0 90000.0 0.0 12.0 30.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 90000.0W min cooling capacity 0.0W. Heating setpoint 12.00C cooling setpoint
+30.00C. (missing 7th item)
+ 
+ Zone to contol loop linkages:
+ zone ( 1) office-s     << control  1
+ zone ( 2) office-w     << control  1
+ zone ( 3) office-n     << control  1
+ zone ( 4) office-e     << control  1
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 office-s       60.8  17    87.3     7.2    20.3  office-s describes a
+ 2 office-w       60.8  17    87.3     7.2    20.3  office-w describes a
+ 3 office-n       60.8  17    87.3     7.2    20.3  office-n describes a
+ 4 office-e       60.8  17    87.3     7.2    20.3  office-e describes a
+   all           243.   68    349.     29.     81.
+ 
+ 
+ Zone office-s ( 1) is composed of 17 surfaces and 30 vertices.
+ It encloses a volume of 60.8m^3 of space, with a total surface
+ area of 94.5m^2 & approx floor area of 20.3m^2
+ office-s describes a
+ There is 13.500m2 of exposed surface area, 13.500m2 of which is vertical.
+ Outside walls are 31.111 % of floor area & avg U of 1.898 & UA of 11.960
+ Glazing is 35.556 % of floor & 53.333 % facade with avg U of 1.382 & UA of 9.9491
+ 
+ A summary of the surfaces in office-s( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. Right_wall   OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  13.5      0.   0. Rear_wall    OPAQUE   VERT -     Int_wall     ||< identical environment
+  3  13.5    270.   0. Left_wall    OPAQUE   VERT -     Int_wall     ||< identical environment
+  4  20.2      0. -90. Floor        OPAQUE   FLOR -     Floor        ||< identical environment
+  5  20.2      0.  90. Ceiling      OPAQUE   CEIL -     Ceiling      ||< identical environment
+  6  4.50    180.   0. Parapet      OPAQUE   VERT -     Sparel-pan   ||< external
+  7  0.450   180.   0. Frame-bot    OPAQUE   VERT -     Frame        ||< external
+  8  0.450   180.   0. Frame-top    OPAQUE   VERT -     Frame        ||< external
+  9  0.180   180.   0. Frame-1      OPAQUE   VERT -     Frame        ||< external
+ 10  0.180   180.   0. Frame-2      OPAQUE   VERT -     Frame        ||< external
+ 11  0.180   180.   0. Frame-3      OPAQUE   VERT -     Frame        ||< external
+ 12  0.180   180.   0. Frame-4      OPAQUE   VERT -     Frame        ||< external
+ 13  0.180   180.   0. Frame-5      OPAQUE   VERT -     Frame        ||< external
+ 14  1.80    180.   0. Window-1     EC_50/40 VERT -     Glazing      ||< external
+ 15  1.80    180.   0. Window-2     EC_50/40 VERT -     Glazing      ||< external
+ 16  1.80    180.   0. Window-3     EC_50/40 VERT -     Glazing      ||< external
+ 17  1.80    180.   0. Window-4     EC_50/40 VERT -     Glazing      ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Surfaces with optic EC_50/40-clr sense surface  1 over  1 control periods.
+ Standard optic solar trans: 0.263 0.241 0.208 0.139 0.069
+ Period  1: from  4 to 20 sensing daylight coeff. setpoint @  100.00 alt solar 0.029 0.023 0.018 0.010 0.005
+ 
+ Casual gains are controlled in this zone.
+ 
+ 
+ Air schedule notes:
+300W lighting (with electic details) 8-18hr
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    3
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 -  8     0.50  0.0084    0.00  0.0000   0     0.00
+  2  8 - 18     0.00  0.0000    1.00  0.0169   0    20.00
+  3 18 - 24     0.50  0.0084    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0084    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0084    0.00  0.0000   0     0.00
+ 
+Notes:
+300W lighting (with electic details) 8-18hr
+Number of weekday      loads=  9
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    8 - 18   225.0   165.0      0.4      0.6    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW   18 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 LightsW    0 -  8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  5 LightsW    8 - 18   300.0     0.0      0.5      0.5    0.85  1  300.0  240.0  1
+Wkd  6 LightsW   18 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  7 EquiptW    0 -  8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 EquiptW    8 - 18   300.0     0.0      0.4      0.6    0.00  0    0.0    0.0  1
+Wkd  9 EquiptW   18 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of saturday     loads=  0
+ 
+ ____________________________________________________________
+ 
+ Zone office-w ( 2) is composed of 17 surfaces and 30 vertices.
+ It encloses a volume of 60.8m^3 of space, with a total surface
+ area of 94.5m^2 & approx floor area of 20.3m^2
+ office-w describes a
+ There is 13.500m2 of exposed surface area, 13.500m2 of which is vertical.
+ Outside walls are 31.111 % of floor area & avg U of 1.898 & UA of 11.960
+ Glazing is 35.556 % of floor & 53.333 % facade with avg U of 1.382 & UA of 9.9491
+ 
+ A summary of the surfaces in office-w( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5    180.   0. Right_wall   OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  13.5     90.   0. Rear_wall    OPAQUE   VERT -     Int_wall     ||< identical environment
+  3  13.5      0.   0. Left_wall    OPAQUE   VERT -     Int_wall     ||< identical environment
+  4  20.2      0. -90. Floor        OPAQUE   FLOR -     Floor        ||< identical environment
+  5  20.2      0.  90. Ceiling      OPAQUE   CEIL -     Ceiling      ||< identical environment
+  6  4.50    270.   0. Parapet      OPAQUE   VERT -     Sparel-pan   ||< external
+  7  0.450   270.   0. Frame-bot    OPAQUE   VERT -     Frame        ||< external
+  8  0.450   270.   0. Frame-top    OPAQUE   VERT -     Frame        ||< external
+  9  0.180   270.   0. Frame-1      OPAQUE   VERT -     Frame        ||< external
+ 10  0.180   270.   0. Frame-2      OPAQUE   VERT -     Frame        ||< external
+ 11  0.180   270.   0. Frame-3      OPAQUE   VERT -     Frame        ||< external
+ 12  0.180   270.   0. Frame-4      OPAQUE   VERT -     Frame        ||< external
+ 13  0.180   270.   0. Frame-5      OPAQUE   VERT -     Frame        ||< external
+ 14  1.80    270.   0. Window-1     EC_50/40 VERT -     Glazing      ||< external
+ 15  1.80    270.   0. Window-2     EC_50/40 VERT -     Glazing      ||< external
+ 16  1.80    270.   0. Window-3     EC_50/40 VERT -     Glazing      ||< external
+ 17  1.80    270.   0. Window-4     EC_50/40 VERT -     Glazing      ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Surfaces with optic EC_50/40-clr sense surface  2 over  1 control periods.
+ Standard optic solar trans: 0.263 0.241 0.208 0.139 0.069
+ Period  1: from  4 to 20 sensing daylight coeff. setpoint @  100.00 alt solar 0.029 0.023 0.018 0.010 0.005
+ 
+ Casual gains are controlled in this zone.
+ 
+ Uses same operations as zone office-s
+ 
+ ____________________________________________________________
+ 
+ Zone office-n ( 3) is composed of 17 surfaces and 30 vertices.
+ It encloses a volume of 60.8m^3 of space, with a total surface
+ area of 94.5m^2 & approx floor area of 20.3m^2
+ office-n describes a
+ There is 13.500m2 of exposed surface area, 13.500m2 of which is vertical.
+ Outside walls are 31.111 % of floor area & avg U of 1.898 & UA of 11.960
+ Glazing is 35.556 % of floor & 53.333 % facade with avg U of 1.382 & UA of 9.9491
+ 
+ A summary of the surfaces in office-n( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. Right_wall   OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  13.5    180.   0. Rear_wall    OPAQUE   VERT -     Int_wall     ||< identical environment
+  3  13.5    270.   0. Left_wall    OPAQUE   VERT -     Int_wall     ||< identical environment
+  4  20.2      0. -90. Floor        OPAQUE   FLOR -     Floor        ||< identical environment
+  5  20.2      0.  90. Ceiling      OPAQUE   CEIL -     Ceiling      ||< identical environment
+  6  4.50      0.   0. Parapet      OPAQUE   VERT -     Sparel-pan   ||< external
+  7  0.450     0.   0. Frame-bot    OPAQUE   VERT -     Frame        ||< external
+  8  0.450     0.   0. Frame-top    OPAQUE   VERT -     Frame        ||< external
+  9  0.180     0.   0. Frame-1      OPAQUE   VERT -     Frame        ||< external
+ 10  0.180     0.   0. Frame-2      OPAQUE   VERT -     Frame        ||< external
+ 11  0.180     0.   0. Frame-3      OPAQUE   VERT -     Frame        ||< external
+ 12  0.180     0.   0. Frame-4      OPAQUE   VERT -     Frame        ||< external
+ 13  0.180     0.   0. Frame-5      OPAQUE   VERT -     Frame        ||< external
+ 14  1.80      0.   0. Window-1     EC_50/40 VERT -     Glazing      ||< external
+ 15  1.80      0.   0. Window-2     EC_50/40 VERT -     Glazing      ||< external
+ 16  1.80      0.   0. Window-3     EC_50/40 VERT -     Glazing      ||< external
+ 17  1.80      0.   0. Window-4     EC_50/40 VERT -     Glazing      ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Surfaces with optic EC_50/40-clr sense surface  3 over  1 control periods.
+ Standard optic solar trans: 0.263 0.241 0.208 0.139 0.069
+ Period  1: from  4 to 20 sensing daylight coeff. setpoint @  100.00 alt solar 0.029 0.023 0.018 0.010 0.005
+ 
+ Casual gains are controlled in this zone.
+ 
+ Uses same operations as zone office-s
+ 
+ ____________________________________________________________
+ 
+ Zone office-e ( 4) is composed of 17 surfaces and 30 vertices.
+ It encloses a volume of 60.8m^3 of space, with a total surface
+ area of 94.5m^2 & approx floor area of 20.3m^2
+ office-e describes a
+ There is 13.500m2 of exposed surface area, 13.500m2 of which is vertical.
+ Outside walls are 31.111 % of floor area & avg U of 1.898 & UA of 11.960
+ Glazing is 35.556 % of floor & 53.333 % facade with avg U of 1.382 & UA of 9.9491
+ 
+ A summary of the surfaces in office-e( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5      0.   0. Right_wall   OPAQUE   VERT -     Int_wall     ||< identical environment
+  2  13.5    270.   0. Rear_wall    OPAQUE   VERT -     Int_wall     ||< identical environment
+  3  13.5    180.   0. Left_wall    OPAQUE   VERT -     Int_wall     ||< identical environment
+  4  20.2      0. -90. Floor        OPAQUE   FLOR -     Floor        ||< identical environment
+  5  20.2      0.  90. Ceiling      OPAQUE   CEIL -     Ceiling      ||< identical environment
+  6  4.50     90.   0. Parapet      OPAQUE   VERT -     Sparel-pan   ||< external
+  7  0.450    90.   0. Frame-bot    OPAQUE   VERT -     Frame        ||< external
+  8  0.450    90.   0. Frame-top    OPAQUE   VERT -     Frame        ||< external
+  9  0.180    90.   0. Frame-1      OPAQUE   VERT -     Frame        ||< external
+ 10  0.180    90.   0. Frame-2      OPAQUE   VERT -     Frame        ||< external
+ 11  0.180    90.   0. Frame-3      OPAQUE   VERT -     Frame        ||< external
+ 12  0.180    90.   0. Frame-4      OPAQUE   VERT -     Frame        ||< external
+ 13  0.180    90.   0. Frame-5      OPAQUE   VERT -     Frame        ||< external
+ 14  1.80     90.   0. Window-1     EC_50/40 VERT -     Glazing      ||< external
+ 15  1.80     90.   0. Window-2     EC_50/40 VERT -     Glazing      ||< external
+ 16  1.80     90.   0. Window-3     EC_50/40 VERT -     Glazing      ||< external
+ 17  1.80     90.   0. Window-4     EC_50/40 VERT -     Glazing      ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Surfaces with optic EC_50/40-clr sense surface  4 over  1 control periods.
+ Standard optic solar trans: 0.263 0.241 0.208 0.139 0.069
+ Period  1: from  4 to 20 sensing daylight coeff. setpoint @  100.00 alt solar 0.029 0.023 0.018 0.010 0.005
+ 
+ Casual gains are controlled in this zone.
+ 
+ Uses same operations as zone office-s
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 81.000m2, wall area is 25.200m2, window area is 28.800m2.
+ Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ There is 54.000m2 of outside surface area, 54.000m2 of which is vertical.
+ 
+ Outside walls are 31.111 % of floor area & avg U of 1.898 & UA of 47.841
+ Glazing is 35.556 % of floor & 53.333 % facade with avg U of 1.382 & UA of 39.796
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: Floor
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1   32  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 Heavy mix concrete
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.196  3.535  2.834 (partition)  2.482
+ Total area of Floor is     81.00
+ 
+ Details of opaque construction: Ceiling
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1   32  200.0     1.400  2100.   653. 0.90 0.65    19.  0.14 Heavy mix concrete
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.196  3.535  2.834 (partition)  2.482
+ Total area of Ceiling is     81.00
+ 
+ Details of opaque construction: Sparel-pan
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   241    6.0     0.700  3500.   837. 0.83 0.05 19200.  0.01 Glass block
+    2    0    5.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  211  115.0     0.040   250.   840. 0.90 0.30     4.  2.88 Glasswool
+ Int   107   10.0     0.190   950.   840. 0.91 0.50    11.  0.05 Gypsum plasterboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.305  0.308  0.302 (partition)  0.297
+ Total area of Sparel-pan is     18.00
+ 
+ Details of opaque construction: Frame
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1   43    5.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  5.882  7.142  4.761 (partition)  3.846
+ Total area of Frame is      7.20
+ 
+ Details of opaque construction: Int_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block
+ Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.731  1.826  1.619 (partition)  1.498
+ Total area of Int_wall is    162.00
+ 
+ Details of transparent construction: Glazing      with EC_50/40-clr optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   242   12.0     0.760  2710.   837. 0.83 0.05 19200.  0.02 Plate glass
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.53 air  0.53 0.53 0.53
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.382  1.442  1.309 (partition)  1.229
+ 
+ SR-Electrochr-clr   12/12/6  Ele-ch: with id of: EC_50/40-clr
+ with 3 layers [including air gaps] and visible trn: 0.50
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.263 0.241 0.208 0.139 0.069
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.537 0.551 0.547 0.479 0.320
+    2  0.000 0.000 0.000 0.000 0.000
+    3  0.097 0.092 0.085 0.063 0.034
+ Total area of Glazing is     28.80
