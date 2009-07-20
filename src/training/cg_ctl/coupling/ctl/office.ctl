@@ -8,7 +8,7 @@ no descrip
 # actuates air point of the current zone
     0    0    0  # actuator data
     0 # No. day types
-    1  365  # valid Sun-01-Jan - Sun-31-Dec
+    1  365  # valid Mon-01-Jan - Mon-31-Dec
      3  # No. of periods in day
     0    1   0.000  # ctl type, law (basic control), start @
       6.  # No. of data items
@@ -19,12 +19,12 @@ no descrip
     0    1  18.000  # ctl type, law (basic control), start @
       6.  # No. of data items
   2000.000 0.000 2000.000 0.000 12.000 100.000
-    1  365  # valid Sun-01-Jan - Sun-31-Dec
+    1  365  # valid Mon-01-Jan - Mon-31-Dec
      1  # No. of periods in day
     0    1   0.000  # ctl type, law (basic control), start @
       6.  # No. of data items
   2000.000 0.000 2000.000 0.000 12.000 100.000
-    1  365  # valid Sun-01-Jan - Sun-31-Dec
+    1  365  # valid Mon-01-Jan - Mon-31-Dec
      1  # No. of periods in day
     0    1   0.000  # ctl type, law (basic control), start @
       6.  # No. of data items

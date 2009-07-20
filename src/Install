@@ -1881,7 +1881,7 @@ if [ "$install_training" = "yes" ]; then
      
      ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc >/dev/null
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
-     $CLM -mode text -file dec94.clm -act asci2bin silent dec94_clm.txt >/dev/null
+     $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
      cd ${SRCdir}
      ./bin/materials_db_conv training/plant/hvac_vav/dbs materials.db.a materials.db >/dev/null
      ./bin/materials_db_conv training/constr/tp_sub/dbs tp_sub.material.asci tp_sub.material >/dev/null
@@ -1906,10 +1906,9 @@ if [ "$install_training" = "yes" ]; then
      echo " Done."
      echo -n "   - Removing binary materials db from training models ..."
      cd ${SRCdir}/
-     rm -f training/cellular_pv/dbs/cellular_pv.materials
      rm -f training/constr/tp_sub/dbs/tp_sub.material
      rm -f training/plant/wch/dbs/db_prc
-     rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
+     rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
      rm -f validation/CEN/13791/databases/prim.db
      rm -f validation/CEN/13791/databases/WM_A.clm
      rm -f validation/CEN/13791/databases/WM_B.clm
