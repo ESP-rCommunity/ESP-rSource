@@ -1,30 +1,30 @@
 Synopsis
  
-This is a synopsis of the model Base case three zone model with mass flow
-defined in ahu_reheat.cfg generated on Tue Jul 21 10:56:37 2009. Notes
-associated with the model are in ahu_reheat.log
+This is a synopsis of the model Basic three zone model. defined in ahu_vav.cfg
+generated on Tue Jul 21 11:58:27 2009. Notes associated with the model are in
+ahu_vav.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 2007 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.20.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
  
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
  
-Simulationist name: not yet defined
-Simulationist telephone: not yet defined
-Simulationist address: not yet defined
-Simulationist city: not yet defined
-Simulationist postcode: not yet defined
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
 An Integrated Performance View is incomplete or missing.
@@ -32,7 +32,7 @@ An Integrated Performance View is incomplete or missing.
 Databases associated with the model:
  pressure distributions : pressc.db1
  materials              : /usr/esru/esp-r/databases/constr.db2.a
- constructions          : ./multicon.db1
+ constructions          : /usr/esru/esp-r/databases/multicon.db1
  plant components       : plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
  optical properties     : optics.db1
@@ -71,65 +71,147 @@ component 2 and extract node 1.
  zone ( 2) office       << control  2
  zone ( 3) roof_space   << control  0
  
- Plant control includes  4 loops.
+ Plant control includes  2 loops.
 Single zone AHU.
  
- The sensor for function  1 senses var in compt.  4:fan1 @ node no.  1
- The actuator for function  1 is plant component   2:heat_coil @ node no.  1
+ The sensor for function  1 senses var in compt.  4:4 @ node no.  1
+ The actuator for function  1 is plant component   2:2 @ node no.  1
  There have been  1 day types defined.
  Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb   > flux     PID flux control.   1.0 6000.0 0.0 20.0 3.0 1.0 100.0 0.0 0.0
+   1  0.00 dry bulb   > flux     PID flux control.   1.0 10000.0 0.0 29.0 3.0 0.0 0.0 0.0 0.0
  
- The sensor for function  2 senses var in compt.  4:fan1 @ node no.  1
- The actuator for function  2 is plant component   3:cool_coil @ node no.  1
+ The sensor for function  2 senses var in compt.  4:4 @ node no.  1
+ The actuator for function  2 is plant component   3:3 @ node no.  1
  There have been  1 day types defined.
  Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb   > flux     PID flux control.   -1.0 6000.0 0.0 23.0 2.0 1.0 150.0 0.0 0.0
+   1  0.00 dry bulb   > flux     PID flux control.   -1.0 6000.0 0.0 29.0 3.0 0.0 0.0 0.0 0.0
  
- The sensor for function  3 senses dry bulb temperature in reception.
- The actuator for function  3 is plant component   7:re_heat1 @ node no.  1
- There have been  1 day types defined.
- Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb   > flux     PID flux control.   1.0 3000.0 0.0 20.0 2.0 1.0 100.0 0.0 0.0
+ Flow control includes  2 loops.
+VAV_sys
  
- The sensor for function  4 senses dry bulb temperature in office.
- The actuator for function  4 is plant component   8:re_heat2 @ node no.  1
+ The sensor for function  1 senses node (7) recepn
+ The actuator for function  1 is flow connection:   6 n4 - recepn via VAV1
  There have been  1 day types defined.
  Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb   > flux     PID flux control.   1.0 3000.0 0.0 20.0 2.0 1.0 100.0 0.0 0.0
+   1  0.00 dry bulb > flow       proportional + hyst 18.0 100.0 25.0 10.0 0.0
+proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)**** signal
+upper limit 25.00 valve upper limit (%) 10.0 dS 0.00.
+ 
+ The sensor for function  2 senses node (8) office
+ The actuator for function  2 is flow connection:   8 n4 - office via VAV2
+ There have been  1 day types defined.
+ Day type  1 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       proportional + hyst 18.0 100.0 25.0 10.0 0.0
+proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)**** signal
+upper limit 25.00 valve upper limit (%) 10.0 dS 0.00.
+ ____________________________________________________________
+ 
+The model includes an air flow network.
+ 
+ Flow network description.
+ 
+  10 nodes,   8 components,  13 connections;     wind reduction =  1.000
+   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
+   1 outsid       air   boundary & wind ind   1.0000   0.0000     coef   18.000  azim 180.000
+   2 exit         air   boundary & wind ind   1.0000   0.0000     coef   18.000  azim   0.000
+   3 n1           air   internal & unknown    2.0000   22.000     (-)     0.000  vol    0.000
+   4 n2           air   internal & unknown    2.0000   22.000     (-)     0.000  vol    0.000
+   5 n3           air   internal & unknown    2.0000   22.000     (-)     0.000  vol    0.000
+   6 n4           air   internal & unknown    2.0000   22.000     (-)     0.000  vol    0.000
+   7 recepn       air   internal & unknown    2.0000   22.000     (-)     0.000  vol    4.000
+   8 office       air   internal & unknown    2.0000   22.000     (-)     0.000  vol    4.000
+   9 n6           air   internal & unknown    2.0000   22.000     (-)     0.000  vol    0.000
+  10 n7           air   internal & unknown    2.0000   22.000     (-)     0.000  vol    0.000
+ 
+ Component    Type C+ L+ Description
+ 
+ m_box         220 13  1 Conduit ending in converging 3-leg junction & Ccp = f(q/qc)
+   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.
+ x-sect of junct, Ccp coef a0 - a5.
+  1.0    0.13    0.01    2.00    0.00    4.00    0.01   -0.80    2.97
+        -1.09    0.00    0.00    0.00
+ 
+ fans           30  2  0 Constant vol. flow rate component   m = rho.a
+ Fluid  1.0 flow rate (m^3/s)  0.60000
+ 
+ fanr           30  2  0 Constant vol. flow rate component   m = rho.a
+ Fluid  1.0 flow rate (m^3/s)  0.60000
+ 
+ c_coil        210  6  0 General flow conduit component      m = rho.f(D,A,L,k,SCi)
+   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.
+  1.0    0.125    0.012    0.500    0.000    2.000
+ 
+ h_coil        210  6  0 General flow conduit component      m = rho.f(D,A,L,k,SCi)
+   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.
+  1.0    0.125    0.012    0.500    0.000    2.000
+ 
+ s_duct        210  6  0 General flow conduit component      m = rho.f(D,A,L,k,SCi)
+   Fluid, hydr diam, x-sect, conduit ln, roughness, loss fac.
+  1.0    0.100    0.008    1.000    0.000    0.250
+ 
+ VAV1          410  7  0 General flow corrector component    m = rho.f(comp, signal)
+   Fluid, density, pres dif, lin/log, open & closed vol flow,
+   low validity limit
+  1.0    1.200   30.000    1.000    0.600    2.000    3.000
+ 
+ VAV2          410  7  0 General flow corrector component    m = rho.f(comp, signal)
+   Fluid, density, pres dif, lin/log, open & closed vol flow,
+   low validity limit
+  1.0    1.200   30.000    1.000    0.600    2.000    3.000
+ 
+    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
+    1 outsid        1.000   n1            0.000   m_box           2.000   2.000
+    2 n6            1.000   n1            0.000   m_box           3.000   2.000
+    3 n1            0.000   n2            0.000   h_coil          2.000   2.000
+    4 n2            0.000   n3            0.000   c_coil          2.000   2.000
+    5 n3            0.000   n4            0.000   fans            2.000   2.000
+    6 n4            0.000   recepn        0.000   VAV1            2.000   2.000
+    7 recepn        0.000   n7            0.000   s_duct          2.000   2.000
+    8 n4            0.000   office        0.000   VAV2            2.000   2.000
+    9 office        0.000   n7            0.000   s_duct          2.000   2.000
+   10 n7            0.000   n6            0.000   fanr            2.000   2.000
+   11 n6            0.000   outsid        0.000   s_duct          2.000   1.000
+   12 recepn        0.000   exit          0.000   s_duct          2.000   1.000
+   13 office        0.000   exit          0.000   s_duct          2.000   1.000
+thermal zone to air flow node mapping:
+thermal zone -> air flow node
+reception    -> recepn
+office       -> office
+roof_space   -> node not defined
+ 
  
 The model includes a plant network.
  
  The plant network contains  8 components from plantc.db1
  
- Component: mix_box_s ( 1) code  1, db reference  1
+ Component: 1 ( 1) code  1, db reference  1
  No Control data
- Modified parameters for mix_box_s
+ Modified parameters for 1
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
  
- Component: heat_coil ( 2) code  2, db reference  5
+ Component: 2 ( 2) code  2, db reference  5
  Control data: 2000.000
- Modified parameters for heat_coil
+ Modified parameters for 2
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
  
- Component: cool_coil ( 3) code  3, db reference  4
+ Component: 3 ( 3) code  3, db reference  4
  Control data: 2000.000
- Modified parameters for cool_coil
+ Modified parameters for 3
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
  
- Component: fan1 ( 4) code  4, db reference  3
+ Component: 4 ( 4) code  4, db reference  3
  Control data:    0.400
- Modified parameters for fan1
+ Modified parameters for 4
  Component total mass (kg)                          :   10.000
  Mass weighted average specific heat (J/kgK)        :   500.00
  UA modulus (W/K)                                   :   7.0000
@@ -137,9 +219,9 @@ The model includes a plant network.
  Rated volume flow rate (m^3/s)                     :  0.30000
  Overall efficiency (-)                             :  0.70000
  
- Component: supply_duct ( 5) code  5, db reference  6
+ Component: 5 ( 5) code  5, db reference  6
  No Control data
- Modified parameters for supply_duct
+ Modified parameters for 5
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
@@ -147,23 +229,23 @@ The model includes a plant network.
  Length of duct section (m)                         :   0.0000
  Cross sectional face area (m^2)                    :   0.0000
  
- Component: mix_box_r ( 6) code  6, db reference  1
+ Component: 6 ( 6) code  6, db reference  1
  No Control data
- Modified parameters for mix_box_r
+ Modified parameters for 6
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
  
- Component: re_heat1 ( 7) code  7, db reference  5
- Control data: 2000.000
- Modified parameters for re_heat1
+ Component: 7 ( 7) code  7, db reference  7
+ Control data:    1.000
+ Modified parameters for 7
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
  
- Component: re_heat2 ( 8) code  8, db reference  5
- Control data: 2000.000
- Modified parameters for re_heat2
+ Component: 8 ( 8) code  8, db reference  7
+ Control data:    1.000
+ Modified parameters for 8
  Component total mass (kg)                          :   0.0000
  Mass weighted average specific heat (J/kgK)        :   0.0000
  UA modulus (W/K)                                   :   0.0000
@@ -171,38 +253,40 @@ The model includes a plant network.
  Nb of plant component connections: 10
  Con receiving component node type sending component node
  
-  1 mix_box_s node 1 (zone air or ambient.) fan1 node 1 details:     0.50    0.00    0.00
-  1 mix_box_s node 1 (zone air or ambient.) fan1 node 1 details:     0.50    0.00    0.00
+  1 1 node 1 (zone air or ambient.) 4 node 1 details:     0.50    0.00    0.00
+  1 1 node 1 (zone air or ambient.) 4 node 1 details:     0.50    0.00    0.00
  
-  2 mix_box_s node 1 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
-  2 mix_box_s node 1 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
+  2 1 node 1 (from another component.) 6 node 1 details:     0.50    0.00    0.00
+  2 1 node 1 (from another component.) 6 node 1 details:     0.50    0.00    0.00
  
-  3 heat_coil node 1 (from another component.) mix_box_s node 1 details:     1.00    0.00    0.00
-  3 heat_coil node 1 (from another component.) mix_box_s node 1 details:     1.00    0.00    0.00
+  3 2 node 1 (from another component.) 1 node 1 details:     1.00    0.00    0.00
+  3 2 node 1 (from another component.) 1 node 1 details:     1.00    0.00    0.00
  
-  4 cool_coil node 1 (from another component.) heat_coil node 1 details:     1.00    0.00    0.00
-  4 cool_coil node 1 (from another component.) heat_coil node 1 details:     1.00    0.00    0.00
+  4 3 node 1 (from another component.) 2 node 1 details:     1.00    0.00    0.00
+  4 3 node 1 (from another component.) 2 node 1 details:     1.00    0.00    0.00
  
-  5 fan1 node 1 (from another component.) cool_coil node 1 details:     1.00    0.00    0.00
-  5 fan1 node 1 (from another component.) cool_coil node 1 details:     1.00    0.00    0.00
+  5 4 node 1 (from another component.) 3 node 1 details:     1.00    0.00    0.00
+  5 4 node 1 (from another component.) 3 node 1 details:     1.00    0.00    0.00
  
-  6 supply_duct node 1 (from another component.) fan1 node 1 details:     1.00    0.00    0.00
-  6 supply_duct node 1 (from another component.) fan1 node 1 details:     1.00    0.00    0.00
+  6 5 node 1 (from another component.) 4 node 1 details:     1.00    0.00    0.00
+  6 5 node 1 (from another component.) 4 node 1 details:     1.00    0.00    0.00
  
-  7 re_heat1 node 1 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
-  7 re_heat1 node 1 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
+  7 7 node 1 (from another component.) 5 node 1 details:     0.50    0.00    0.00
+  7 7 node 1 (from another component.) 5 node 1 details:     0.50    0.00    0.00
  
-  8 re_heat2 node 1 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
-  8 re_heat2 node 1 (from another component.) supply_duct node 1 details:     0.50    0.00    0.00
+  8 8 node 1 (from another component.) 5 node 1 details:     0.50    0.00    0.00
+  8 8 node 1 (from another component.) 5 node 1 details:     0.50    0.00    0.00
  
-  9 mix_box_r node 1 (zone air or ambient.) re_heat1 node 1 details:     1.00    1.00    0.00
-  9 mix_box_r node 1 (zone air or ambient.) re_heat1 node 1 details:     1.00    1.00    0.00
+  9 6 node 1 (zone air or ambient.) 7 node 1 details:     1.00    1.00    0.00
+  9 6 node 1 (zone air or ambient.) 7 node 1 details:     1.00    1.00    0.00
  
- 10 mix_box_r node 1 (zone air or ambient.) re_heat2 node 1 details:     1.00    2.00    0.00
- 10 mix_box_r node 1 (zone air or ambient.) re_heat2 node 1 details:     1.00    2.00    0.00
+ 10 6 node 1 (zone air or ambient.) 8 node 1 details:     1.00    2.00    0.00
+ 10 6 node 1 (zone air or ambient.) 8 node 1 details:     1.00    2.00    0.00
  
- No of component containments =  0
+ No of component containments =  1
   Component      | Containment descr. | Type
+ 
+ 1  1               fix temp:   3.000      2 details:     3.00    4.00    5.00
  
  ____________________________________________________________
  
@@ -247,25 +331,8 @@ ID Zone         Volume|          Surface
  
  
  
- 
- Air schedule notes:
-the same general pattern as other 3 zone-based exemplars
- Control: no control of air flow
- 
-Number of air change periods for daytype weekday      :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0120    1.00  0.0400   2     0.00
- 
-Number of air change periods for daytype saturday     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0120    1.00  0.0400   2     0.00
- 
-Number of air change periods for daytype sunday       :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0120    1.00  0.0400   2     0.00
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: recepn
  
 Notes:
 the same general pattern as other 3 zone-based exemplars
@@ -316,25 +383,8 @@ Wkd  1 EquiptW    0 - 24    800.0      0.0       0.20       0.80
  No shading analysis requested.
  No insolation analysis requested.
  
- 
- Air schedule notes:
-same pattern as in other 3-zone-based exemplar
- Control: no control of air flow
- 
-Number of air change periods for daytype weekday      :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0040    1.00  0.0133   1     0.00
- 
-Number of air change periods for daytype saturday     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0040    1.00  0.0133   1     0.00
- 
-Number of air change periods for daytype sunday       :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0040    1.00  0.0133   1     0.00
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: office
  
 Notes:
 same pattern as in other 3-zone-based exemplar
