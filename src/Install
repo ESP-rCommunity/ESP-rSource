@@ -1883,8 +1883,6 @@ if [ "$install_training" = "yes" ]; then
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
      $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
      cd ${SRCdir}
-     ./bin/materials_db_conv training/plant/hvac_vav/dbs materials.db.a materials.db >/dev/null
-     ./bin/materials_db_conv training/constr/tp_sub/dbs tp_sub.material.asci tp_sub.material >/dev/null
      echo " Done."
      echo -n "   - Updating materials and climate databases in validation models..."
      cd ${SRCdir}/validation/CEN/13791/databases
@@ -1906,7 +1904,6 @@ if [ "$install_training" = "yes" ]; then
      echo " Done."
      echo -n "   - Removing binary materials db from training models ..."
      cd ${SRCdir}/
-     rm -f training/constr/tp_sub/dbs/tp_sub.material
      rm -f training/plant/wch/dbs/db_prc
      rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
      rm -f validation/CEN/13791/databases/prim.db

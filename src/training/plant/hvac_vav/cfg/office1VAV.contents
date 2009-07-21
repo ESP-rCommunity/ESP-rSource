@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model multizone VAV with explicit plant defined in
-office1VAV.cfg generated on Mon Jan 15 11:32:44 2007. Notes associated with
+office1VAV.cfg generated on Tue Jul 21 17:20:23 2009. Notes associated with
 the model are in office1.notes
  
 The model is located at latitude   45.00 with a longitude difference of   0.00
@@ -9,16 +9,33 @@ from the local time meridian. The year used in simulations is 1999 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-The climate used is: Ottawa Intl ON CAN and is held in:
-/home/jon/esru_long/esp-r/climate/can_ottawa and uses hour centred solar data.
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
+ 
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+The climate is: Ottawa Intl ON CAN and is held in:
+/usr/esru/esp-r/climate/can_ottawa with hour centred solar data.
+An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : /usr/esru/esp-r/databases/pressc.db1
- materials              : /usr/esru/esp-r/databases/constr.db2
+ pressure distributions : pressc.db1
+ materials              : /usr/esru/esp-r/databases/constr.db2.a
  constructions          : ../dbs/assemblies.db
- plant components       : /usr/esru/esp-r/databases/plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1
- optical properties     : /usr/esru/esp-r/databases/optics.db2
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
  
  ____________________________________________________________
  
@@ -62,7 +79,7 @@ no descrip
  Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb   > flow     PID flow control.   -1.0 0.0 0.0 17.0 3.0 0.0 0.0
-   2  7.00 dry bulb   > flow     PID flow control.   -1.0 0.2 0.0 13.0 1.0 0.0 0.0
+   2  7.00 dry bulb   > flow     PID flow control.   -1.0 0.3 0.0 13.0 1.0 0.0 0.0
    3 18.00 dry bulb   > flow     PID flow control.   -1.0 0.0 0.0 17.0 3.0 0.0 0.0
  
  Flow control includes  4 loops.
@@ -75,13 +92,13 @@ flow control on damper (twice) and fan (twice)
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       proportional + hyst 18.0 10.0 27.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 27.00 valve upper limit (%)**** dS 0.00.
+upper limit 27.00 valve upper limit (%)100.0 dS 0.00.
    2  7.00 dry bulb > flow       proportional + hyst 18.0 10.0 21.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 21.00 valve upper limit (%)**** dS 0.00.
+upper limit 21.00 valve upper limit (%)100.0 dS 0.00.
    3 18.00 dry bulb > flow       proportional + hyst 18.0 10.0 27.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 27.00 valve upper limit (%)**** dS 0.00.
+upper limit 27.00 valve upper limit (%)100.0 dS 0.00.
  
  The sensor for function  2 senses node (12) junc_e
  The actuator for function  2 is flow connection:   5 duct_in - fan_s via fan
@@ -90,13 +107,13 @@ upper limit 27.00 valve upper limit (%)**** dS 0.00.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       proportional + hyst 18.0 10.0 27.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 27.00 valve upper limit (%)**** dS 0.00.
+upper limit 27.00 valve upper limit (%)100.0 dS 0.00.
    2  7.00 dry bulb > flow       proportional + hyst 18.0 10.0 21.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 21.00 valve upper limit (%)**** dS 0.00.
+upper limit 21.00 valve upper limit (%)100.0 dS 0.00.
    3 18.00 dry bulb > flow       proportional + hyst 18.0 10.0 27.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 27.00 valve upper limit (%)**** dS 0.00.
+upper limit 27.00 valve upper limit (%)100.0 dS 0.00.
  
  The sensor for function  3 senses node (2) east
  The actuator for function  3 is flow connection:  10 reheat_e - damp_e via damper
@@ -105,13 +122,13 @@ upper limit 27.00 valve upper limit (%)**** dS 0.00.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       proportional + hyst 18.0 10.0 27.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 27.00 valve upper limit (%)**** dS 0.00.
+upper limit 27.00 valve upper limit (%)100.0 dS 0.00.
    2  7.00 dry bulb > flow       proportional + hyst 18.0 10.0 21.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 21.00 valve upper limit (%)**** dS 0.00.
+upper limit 21.00 valve upper limit (%)100.0 dS 0.00.
    3 18.00 dry bulb > flow       proportional + hyst 18.0 10.0 27.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 27.00 valve upper limit (%)**** dS 0.00.
+upper limit 27.00 valve upper limit (%)100.0 dS 0.00.
  
  The sensor for function  4 senses node (12) junc_e
  The actuator for function  4 is flow connection:  15 junc_e - fan_e via fan
@@ -120,13 +137,13 @@ upper limit 27.00 valve upper limit (%)**** dS 0.00.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       proportional + hyst 18.0 10.0 27.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 27.00 valve upper limit (%)**** dS 0.00.
+upper limit 27.00 valve upper limit (%)100.0 dS 0.00.
    2  7.00 dry bulb > flow       proportional + hyst 18.0 10.0 21.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 21.00 valve upper limit (%)**** dS 0.00.
+upper limit 21.00 valve upper limit (%)100.0 dS 0.00.
    3 18.00 dry bulb > flow       proportional + hyst 18.0 10.0 27.0 100.0 0.0
 proportional + hysteresis: signal lower limit 18.00 valve lower limit (%)10.0 signal
-upper limit 27.00 valve upper limit (%)**** dS 0.00.
+upper limit 27.00 valve upper limit (%)100.0 dS 0.00.
  ____________________________________________________________
  
 The model includes an air flow network.
@@ -199,7 +216,7 @@ east         -> east
  
 The model includes a plant network.
  
- The plant network contains 11 components from /usr/esru/esp-r/databases/plantc.db1
+ The plant network contains 11 components from plantc.db1
  
  Component: duct_in ( 1) code  1, db reference  6
  No Control data
@@ -344,11 +361,13 @@ The model includes a plant network.
  12 duct_exh node 1 (from another component.) fan_e node 1 details:     1.00    0.00    0.00
  12 duct_exh node 1 (from another component.) fan_e node 1 details:     1.00    0.00    0.00
  
- No of component containments =  0
+ No of component containments =  1
   Component      | Containment descr. | Type
+ 
+ 1  duct_in         fix temp:  22.000      2 details:    22.00    0.00    0.00
   network file : ../nets/office1_VAV.mfn
   press. coeff.: /usr/esru/esp-r/databases/pressc.db1
-  results file : /tmp/office1summer.mfr
+  results file : office1summer.mfr
  
   plant inter-connection/fluid flow  connection mapping :
    4   5   6   6   9   7  13  14  13  14
@@ -370,22 +389,24 @@ ID Zone         Volume|          Surface
  There is 258.00m2 of exposed surface area, 108.00m2 of which is vertical.
  Outside walls are 53.333 % of floor area & avg U of 0.543 & UA of 43.417
  Flat roof is 100.00 % of floor area & avg U of 0.455 & UA of 68.312
- Glazing is 18.667 % of floor & 25.926 % facade with avg U of 0.000 & UA of 0.00
+ Glazing is 18.667 % of floor & 25.926 % facade with avg U of 3.167 & UA of 88.667
  
  A summary of the surfaces in west( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  53.0    270.   0. west         OPAQ VERT wall_NECB    ||< external
-  2  13.5    180.   0. south        OPAQ VERT wall_NECB    ||< external
-  3  81.0     90.   0. internal     OPAQ VERT partition    ||< internal:east
-  4  13.5      0.   0. north        OPAQ VERT wall_NECB    ||< external
-  5  150.      0.  90. ceiling      OPAQ CEIL roof_NECB    ||< external
-  6  150.      0. -90. floor        OPAQ FLOR conc_deck    ||< adiabatic
-  7  28.0    270.   0. glazing      TRAN VERT window_NECB  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  53.0    270.   0. west         OPAQUE   VERT -     wall_NECB    ||< external
+  2  13.5    180.   0. south        OPAQUE   VERT -     wall_NECB    ||< external
+  3  81.0     90.   0. internal     OPAQUE   VERT -     partition    ||< internal:east
+  4  13.5    360.   0. north        OPAQUE   VERT -     wall_NECB    ||< external
+  5  150.      0.  90. ceiling      OPAQUE   CEIL -     roof_NECB    ||< external
+  6  150.      0. -90. floor        OPAQUE   FLOR -     conc_deck    ||< adiabatic
+  7  28.0    270.   0. glazing      DCF7447_ VERT -     window_NECB  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
@@ -403,14 +424,15 @@ ID Zone         Volume|          Surface
  5 ceiling      (CEIL)   4.   6.  43.  13.      2.  99.   4.  -1.
  6 floor        (FLOR)   4.   6.  43.  13.      2.  99.   4.  -1.
  7 glazing      (VERT)   4.   6.  43.  13.      2.  99.   4.  -1.
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: west
  
 Notes:
 on weekdays a complex pattern of occupants lights and equipment is
 used on saturday and sunday the loads are constant (and low) Note the
-ramp-down on weekday evenings.                          
- Number of Weekday Sat Sun casual gains= 26  2  2
+ramp-down on weekday evenings.
+Number of weekday      casual gains= 26
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  6      0.0      0.0       0.50       0.50
@@ -439,10 +461,16 @@ Wkd 23 EquiptWm2  8 - 17      6.8      0.0       0.25       0.75
 Wkd 24 EquiptWm2 17 - 18      3.8      0.0       0.25       0.75
 Wkd 25 EquiptWm2 18 - 20      2.2      0.0       0.25       0.75
 Wkd 26 EquiptWm2 20 - 24      1.5      0.0       0.25       0.75
-Sat  1 LightsWm2  0 - 24      0.9      0.0       0.60       0.40
-Sat  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
-Sun  1 LightsWm2  0 - 24      0.9      0.0       0.60       0.40
-Sun  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
+Number of saturday     casual gains=  2
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsWm2  0 - 24      0.9      0.0       0.60       0.40
+Wkd  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
+Number of sunday       casual gains=  2
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsWm2  0 - 24      0.9      0.0       0.60       0.40
+Wkd  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  ____________________________________________________________
  
@@ -453,22 +481,24 @@ Sun  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  There is 258.00m2 of exposed surface area, 108.00m2 of which is vertical.
  Outside walls are 53.333 % of floor area & avg U of 0.543 & UA of 43.417
  Flat roof is 100.00 % of floor area & avg U of 0.455 & UA of 68.312
- Glazing is 18.667 % of floor & 25.926 % facade with avg U of 0.000 & UA of 0.00
+ Glazing is 18.667 % of floor & 25.926 % facade with avg U of 3.167 & UA of 88.667
  
  A summary of the surfaces in east( 2) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  53.0     90.   0. east         OPAQ VERT wall_NECB    ||< external
-  2  13.5      0.   0. north        OPAQ VERT wall_NECB    ||< external
-  3  81.0    270.   0. internal     OPAQ VERT partition    ||< internal:west
-  4  13.5    180.   0. south        OPAQ VERT wall_NECB    ||< external
-  5  150.      0.  90. ceiling      OPAQ CEIL roof_NECB    ||< external
-  6  150.      0. -90. floor        OPAQ FLOR conc_deck    ||< adiabatic
-  7  28.0     90.   0. glazing      TRAN VERT window_NECB  ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  53.0     90.   0. east         OPAQUE   VERT -     wall_NECB    ||< external
+  2  13.5    360.   0. north        OPAQUE   VERT -     wall_NECB    ||< external
+  3  81.0    270.   0. internal     OPAQUE   VERT -     partition    ||< internal:west
+  4  13.5    180.   0. south        OPAQUE   VERT -     wall_NECB    ||< external
+  5  150.      0.  90. ceiling      OPAQUE   CEIL -     roof_NECB    ||< external
+  6  150.      0. -90. floor        OPAQUE   FLOR -     conc_deck    ||< adiabatic
+  7  28.0     90.   0. glazing      DCF7447_ VERT -     window_NECB  ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
@@ -486,6 +516,7 @@ Sun  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  5 ceiling      (CEIL)   4.   6.  43.  13.      2.  99.   4.  -1.
  6 floor        (FLOR)   4.   6.  43.  13.      2.  99.   4.  -1.
  7 glazing      (VERT)   4.   6.  43.  13.      2.  99.   4.  -1.
+ 
  Uses same operations as zone west
  
  ____________________________________________________________
@@ -496,18 +527,37 @@ Sun  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  Outside walls are 53.333 % of floor area & avg U of 0.543 & UA of 86.834
  Flat roof is 100.00 % of floor area & avg U of 0.455 & UA of 136.62
- Glazing is 18.667 % of floor & 25.926 % facade with avg U of 0.000 & UA of 0.00
+ Glazing is 18.667 % of floor & 25.926 % facade with avg U of 3.167 & UA of 177.33
  
  ____________________________________________________________
  Multi-layer constructions used:
+ 
+ Details of transparent construction: window_NECB  with DCF7447_06nb optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.13 air  0.13 0.13 0.13
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.167  3.499  2.811 (partition)  2.464
+ 
+ 6_12_6 CF low_e(3) + Krypton: with id of: DCF7447_06nb
+ with 3 layers [including air gaps] and visible trn: 0.74
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.471 0.440 0.387 0.258 0.114
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.175 0.190 0.205 0.219 0.214
+    2  0.001 0.001 0.001 0.001 0.001
+    3  0.172 0.181 0.178 0.151 0.097
+ Total area of window_NECB is     56.00
  
  Details of opaque construction: wall_NECB
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brk
-    2  205   45.0     0.030    30.   837. 0.90 0.50    90.  1.50 Polyurethane foam bd
- Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard
+ Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 mat_004 : Outer leaf brick
+    2  205   45.0     0.030    30.   837. 0.90 0.50    90.  1.50 mat_205 : Polyurethane foam board
+ Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 mat_107 : Gypsum plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.543  0.552  0.531 (partition)  0.517
  Total area of wall_NECB is    160.00
  
@@ -515,7 +565,7 @@ Sun  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   26  200.0     0.960  1800.   840. 0.90 0.65    18.  0.21 No fines concrete
+    1   26  200.0     0.960  1800.   840. 0.90 0.65    18.  0.21 mat_026 : No fines concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.643  2.871  2.390 (partition)  2.135
  Total area of conc_deck is    300.00
  
@@ -523,7 +573,7 @@ Sun  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard
+    1  107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 mat_107 : Gypsum plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.194  4.798  3.592 (partition)  3.045
  Total area of partition is    162.00
  
@@ -531,9 +581,9 @@ Sun  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   162   10.0     0.190   960.   837. 0.90 0.90    15.  0.05 Roofing felt
-    2   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete
-    3  205   55.0     0.030    30.   837. 0.90 0.50    90.  1.83 Polyurethane foam bd
- Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard
+ Ext   162   10.0     0.190   960.   837. 0.90 0.90    15.  0.05 mat_162 : Roofing felt
+    2   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 mat_032 : Heavy mix concrete
+    3  205   55.0     0.030    30.   837. 0.90 0.50    90.  1.83 mat_205 : Polyurethane foam board
+ Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 mat_107 : Gypsum plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.455  0.462  0.447 (partition)  0.437
  Total area of roof_NECB is    300.00
