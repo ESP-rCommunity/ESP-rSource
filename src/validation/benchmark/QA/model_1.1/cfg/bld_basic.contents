@@ -1,30 +1,30 @@
 Synopsis
  
-This is a synopsis of the model Basic 3 zone model with shading. defined in
-bld_basic_shd.cfg generated on Wed Jul 22 17:23:23 2009. Notes associated with
-the model are in bld_basic_shd.log
+This is a synopsis of the model Basic 3 zone model. defined in bld_basic.cfg
+generated on Wed Jul 22 17:21:42 2009. Notes associated with the model are in
+bld_basic.log
  
-The model is located at latitude   51.70 with a longitude difference of  -0.51
+The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.20.
  
-Project name:  not yet defined
-Building address:  not yet defined
-Building city:  not yet defined
-Building Postcode:  not yet defined
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
  
-Building owner name:  not yet defined
-Building owner telephone:  not yet defined
-Building owner address:  not yet defined
-Building owner city:  not yet defined
-Building owner Postcode:  not yet defined
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
  
-Simulationist name:  not yet defined
-Simulationist telephone:  not yet defined
-Simulationist address:  not yet defined
-Simulationist city:  not yet defined
-Simulationist postcode:  not yet defined
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
 Primary energy conversions (demand kWhr to primary kWhr) are:
@@ -42,7 +42,56 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  fan_pump:  612.00   2.06   7.50
  small pr:  612.00   2.06   7.50
  hot water: 190.00   0.20   0.10
-An Integrated Performance View is incomplete or missing.
+An Integrated Performance View has been defined:
+Title : Basic 3 zone model. version 3 of ipv
+Version   : Version bld_basic_c more metrics
+synopsis:
+General test model for use in training courses
+Images    :   0
+ 
+Simulations to be undertaken:
+____simulations ( 3)____________days descrip___
+winter Mon-09-Jan to Sun-15-Jan   7 bld_basic winter run
+trans  Mon-06-Mar to Sun-12-Mar   7 bld_basic transition run
+summer Tue-11-Jul to Mon-17-Jul   7 bld_basic summer run
+ 
+display day Tue-10-Jan.
+display day Tue-07-Mar.
+display day Wed-12-Jul.
+ 
+Seasons (as found in climatelist file):
+         winter  spring  summer  autumn  winter
+  start  02-Jan  13-Mar  15-May  04-Sep  30-Oct
+  finish 12-Mar  14-May  03-Sep  29-Oct  31-Dec
+  days     70       63     112      56      63
+ 
+Ratios between assessments and winter transition summer:
+ heating       1.00   1.00   1.00
+ cooling       1.00   1.00   1.00
+ lighting      1.00   1.00   1.00
+ small power   1.00   1.00   1.00
+ fans&pumps    1.00   1.00   1.00
+ 
+Metric                zones area scaling weight  type name
+ 1 Resultant T (degC)    2   64.00 1.000 1.000 comfort -
+Zones: reception office
+ 2 Zone db T (degC)    2   64.00 1.000 1.000 ZndbT -
+Zones: reception office
+ 3 Zone rel humid (%)    1   16.00 1.000 1.000 RH -
+Zones: office
+ 4 Infiltration (W)    1   48.00 1.000 1.000 Inf -
+Zones: reception
+ 5 Total casual gn (W)    1   48.00 1.000 1.000 TotCasG -
+Zones: reception
+ 6 Solar via outside(W)    2   64.00 1.000 1.000 SolinEx -
+Zones: reception office
+ 7 Solar absorbed (W)    2   64.00 1.000 1.000 TSolabs -
+Zones: reception office
+ 
+Demand set,  nb zones, floor area, scaling factor
+ 1 zones          3  145.00 1.000
+Zones: reception office roof_space
+ 
  
 Databases associated with the model:
  pressure distributions : pressc.db1
@@ -126,14 +175,11 @@ ID Zone         Volume|          Surface
  14  2.50     90.   0. east_glz     DCF7671_ VERT -     dbl_glz      ||< external
  
  
- An hourly solar radiation distribution is used for this zone.
- Surfaces (all applicable) for shading analysis:
-south east north west glz_s door_w east_glz
- Insolation sources (all applicable):
-glz_s east_glz
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
- Shading patterns have not yet been calculated.
  
  
  Air schedule notes:

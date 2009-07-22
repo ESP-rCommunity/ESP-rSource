@@ -1,10 +1,10 @@
 Synopsis
  
-This is a synopsis of the model Basic 3 zone model with shading. defined in
-bld_basic_shd.cfg generated on Wed Jul 22 17:23:23 2009. Notes associated with
-the model are in bld_basic_shd.log
+This is a synopsis of the model Basic 3 zone model with explicit infiltration.
+defined in bld_basic_af1.cfg generated on Wed Jul 22 17:19:04 2009. Notes
+associated with the model are in bld_basic_af1.log
  
-The model is located at latitude   51.70 with a longitude difference of  -0.51
+The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.20.
@@ -87,6 +87,49 @@ capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setp
  zone ( 1) reception    << control  1
  zone ( 2) office       << control  1
  zone ( 3) roof_space   << control  0
+ ____________________________________________________________
+ 
+The model includes an air flow network.
+ 
+ Flow network description.
+ 
+   7 nodes,   4 components,   6 connections;     wind reduction =  1.000
+   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
+   1 north        air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim   0.000
+   2 east         air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim  90.000
+   3 south        air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim 180.000
+   4 west         air   boundary & wind ind   2.0000   0.0000     coef    1.000  azim 270.000
+   5 roof         air   internal & unknown    3.0000   20.000     (-)     0.000  vol   49.000
+   6 recep        air   internal & unknown    1.0000   20.000     (-)     0.000  vol  144.000
+   7 offic        air   internal & unknown    1.0000   20.000     (-)     0.000  vol   48.000
+ 
+ Component    Type C+ L+ Description
+ 
+ drcrk         120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0100 crack length (m)  1.000
+ 
+ wincrk        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0050 crack length (m)  3.000
+ 
+ soffit        110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.010
+ 
+ roofv         110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.020
+ 
+    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
+    1 north         0.000   roof          0.000   roofv           2.000   3.000
+    2 south         0.000   roof          0.000   soffit          2.000   3.000
+    3 south         0.000   recep         0.000   wincrk          2.000   1.000
+    4 west          0.000   recep         0.000   drcrk           2.000   1.000
+    5 west          0.000   offic         0.000   wincrk          2.000   1.000
+    6 offic         0.000   recep         0.000   drcrk           1.000   1.000
+thermal zone to air flow node mapping:
+thermal zone -> air flow node
+reception    -> recep
+office       -> offic
+roof_space   -> roof
+ 
  
  ____________________________________________________________
  
@@ -126,34 +169,14 @@ ID Zone         Volume|          Surface
  14  2.50     90.   0. east_glz     DCF7671_ VERT -     dbl_glz      ||< external
  
  
- An hourly solar radiation distribution is used for this zone.
- Surfaces (all applicable) for shading analysis:
-south east north west glz_s door_w east_glz
- Insolation sources (all applicable):
-glz_s east_glz
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
- Shading patterns have not yet been calculated.
  
- 
- Air schedule notes:
-office space with 5 people and 600W lights 9-5
- Control: no control of air flow
- 
-Number of air change periods for daytype weekday      :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0120    1.00  0.0400   2     0.00
- 
-Number of air change periods for daytype saturday     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0120    1.00  0.0400   2     0.00
- 
-Number of air change periods for daytype sunday       :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0120    1.00  0.0400   2     0.00
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: recep
  
 Notes:
 office space with 5 people and 600W lights 9-5
@@ -208,25 +231,8 @@ Wkd  1 EquiptW    0 - 24    800.0      0.0       0.20       0.80
  
  
  
- 
- Air schedule notes:
-small office for two people, 200 W lighting 9-5
- Control: no control of air flow
- 
-Number of air change periods for daytype weekday      :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0040    1.00  0.0133   1     0.00
- 
-Number of air change periods for daytype saturday     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0040    1.00  0.0133   1     0.00
- 
-Number of air change periods for daytype sunday       :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.30  0.0040    1.00  0.0133   1     0.00
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: offic
  
 Notes:
 small office for two people, 200 W lighting 9-5
@@ -268,16 +274,8 @@ Number of saturday     casual gains=  0
  No shading analysis requested.
  No insolation analysis requested.
  
- 
- Air schedule notes:
-ceiling void with partial lighting gains from below
- Control: no control of air flow
- 
-Number of air change periods for daytype weekday      :    0
- 
-Number of air change periods for daytype saturday     :    0
- 
-Number of air change periods for daytype sunday       :    0
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: roof
  
 Notes:
 ceiling void with partial lighting gains from below
