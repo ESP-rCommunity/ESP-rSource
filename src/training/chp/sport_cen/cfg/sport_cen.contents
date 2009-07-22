@@ -1,0 +1,1284 @@
+Synopsis
+ 
+This is a synopsis of the model Translation from XZIP defined in sport_cen.cfg
+generated on Wed Jul 22 08:24:51 2009. Notes associated with the model are in
+sport_cen.log
+ 
+The model is located at latitude   50.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 1999 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
+ 
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ pressure distributions : pressc.db1
+ materials              : /usr/esru/esp-r/databases/constr.db2.a
+ constructions          : ../dbs/sport_cen.mlc
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+proj cntrl
+ 
+Zones control includes  4 functions.
+no descrip
+ 
+ The sensor for function  1 senses dry bulb temperature in changing.
+ The actuator for function  1 is the air point in changing.
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      flux zone/plant     23.0 1.0 1.0 99000.0 99000.0 29.0 1.0
+plant/zone coupling: source plant component 1 plant component node 1 coupling type
+mCp(0s-0a) sequential. Max heating 99000.00W max cooling 99000.00W. Extract plant
+component 29 and extract node 1.
+ 
+ The sensor for function  2 senses dry bulb temperature in gym.
+ The actuator for function  2 is the air point in gym.
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      flux zone/plant     22.0 1.0 1.0 99000.0 99000.0 28.0 1.0
+plant/zone coupling: source plant component 1 plant component node 1 coupling type
+mCp(0s-0a) sequential. Max heating 99000.00W max cooling 99000.00W. Extract plant
+component 28 and extract node 1.
+ 
+ The sensor for function  3 senses dry bulb temperature in main-hall.
+ The actuator for function  3 is the air point in main-hall.
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      flux zone/plant     24.0 1.0 1.0 99000.0 99000.0 27.0 1.0
+plant/zone coupling: source plant component 1 plant component node 1 coupling type
+mCp(0s-0a) sequential. Max heating 99000.00W max cooling 99000.00W. Extract plant
+component 27 and extract node 1.
+ 
+ The sensor for function  4 senses dry bulb temperature in entrance.
+ The actuator for function  4 is the air point in entrance.
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      flux zone/plant     25.0 1.0 1.0 99000.0 99000.0 26.0 1.0
+plant/zone coupling: source plant component 1 plant component node 1 coupling type
+mCp(0s-0a) sequential. Max heating 99000.00W max cooling 99000.00W. Extract plant
+component 26 and extract node 1.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) changing     << control  1
+ zone ( 2) gym          << control  2
+ zone ( 3) main-hall    << control  3
+ zone ( 4) entrance     << control  4
+ zone ( 5) plant        << control  0
+ 
+ Plant control includes  8 loops.
+no descrip
+ 
+ The sensor for function  1 senses var in compt.  3:pump1 @ node no.  1
+ The actuator for function  1 is plant component   1:chp_unit @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb   > varb     On-Off control.     1.0 80.0 90.0 0.0 0.0 0.0 0.0
+   2  7.00 dry bulb   > varb     On-Off control.     1.0 80.0 90.0 100.0 0.0 0.0 0.0
+   3 23.00 dry bulb   > varb     On-Off control.     1.0 80.0 90.0 0.0 0.0 0.0 0.0
+ 
+ The sensor for function  2 senses var in compt.  5:calorifier @ node no.  1
+ The actuator for function  2 is plant component   9:3_port_valve @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > mas.rt     Prop`l damper ctl.  1.0 0.1 80.0 70.0 22.0 9.0
+ 
+ The sensor for function  3 senses dry bulb temperature in main-hall.
+ The actuator for function  3 is plant component  33:ahu_dv @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > mas.rt     Prop`l damper ctl.  1.0 0.1 16.0 12.0 48.0 46.0
+   2  7.00 dry bulb > mas.rt     Prop`l damper ctl.  1.0 0.1 22.0 18.0 48.0 46.0
+   3 23.00 dry bulb > mas.rt     Prop`l damper ctl.  0.0 1.0 16.0 12.0 48.0 46.0
+ 
+ The sensor for function  4 senses var in compt. 10:converge2 @ node no.  1
+ The actuator for function  4 is plant component  11:boiler_1 @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb   > varb     On-Off control.     1.0 50.0 65.0 0.0 0.0 0.0 0.0
+   2  7.00 dry bulb   > varb     On-Off control.     1.0 50.0 66.0 1.0 0.0 0.0 0.0
+   3 23.00 dry bulb   > varb     On-Off control.     1.0 50.0 65.0 0.0 0.0 0.0 0.0
+ 
+ The sensor for function  5 senses var in compt. 10:converge2 @ node no.  1
+ The actuator for function  5 is plant component  12:boiler_2 @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb   > varb     On-Off control.     1.0 60.0 75.0 0.0 0.0 0.0 0.0
+   2  7.00 dry bulb   > varb     On-Off control.     1.0 60.0 75.0 1.0 0.0 0.0 0.0
+   3 23.00 dry bulb   > varb     On-Off control.     1.0 60.0 75.0 0.0 0.0 0.0 0.0
+ 
+ The sensor for function  6 senses var in compt. 10:converge2 @ node no.  1
+ The actuator for function  6 is plant component  13:boiler_3 @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb   > varb     On-Off control.     1.0 70.0 85.0 0.0 0.0 0.0 0.0
+   2  7.00 dry bulb   > varb     On-Off control.     1.0 70.0 85.0 1.0 0.0 0.0 0.0
+   3 23.00 dry bulb   > varb     On-Off control.     1.0 70.0 85.0 0.0 0.0 0.0 0.0
+ 
+ The sensor for function  7 senses dry bulb temperature in changing.
+ The actuator for function  7 is plant component  20:supply_fan @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb   > flow     On-Off control.     1.0 20.0 20.0 3.5 3.5 1.0 1.0
+   2  7.00 dry bulb   > flow     On-Off control.     1.0 20.0 20.0 9.0 9.0 1.0 1.0
+   3 23.00 dry bulb   > flow     On-Off control.     1.0 20.0 20.0 3.5 3.5 1.0 1.0
+ 
+ The sensor for function  8 senses dry bulb temperature in changing.
+ The actuator for function  8 is plant component  21:extract_fan @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb   > flow     On-Off control.     1.0 20.0 20.0 3.5 3.5 1.0 1.0
+   2  7.00 dry bulb   > flow     On-Off control.     1.0 20.0 20.0 9.0 9.0 1.0 1.0
+   3 23.00 dry bulb   > flow     On-Off control.     1.0 20.0 20.0 3.5 3.5 1.0 1.0
+ ____________________________________________________________
+ 
+The model includes an air flow network.
+ 
+ Flow network description.
+ 
+   9 nodes,   2 components,  10 connections;     wind reduction =  1.000
+   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
+   1 hall         air   internal & unknown    3.0000   20.000     (-)     0.000  vol    0.000
+   2 entry        air   internal & unknown    3.0000   20.000     (-)     0.000  vol    0.000
+   3 chgng        air   internal & unknown    3.0000   20.000     (-)     0.000  vol    0.000
+   4 gym          air   internal & unknown    3.0000   20.000     (-)     0.000  vol    0.000
+   5 plant        air   internal & unknown    3.0000   20.000     (-)     0.000  vol    0.000
+   6 ext_w        air   boundary & wind ind   3.0000   0.0000     coef    1.000  azim  90.000
+   7 ext_s        air   boundary & wind ind   3.0000   0.0000     coef    1.000  azim 180.000
+   8 ext_e        air   boundary & wind ind   3.0000   0.0000     coef    1.000  azim 270.000
+   9 ext_n        air   boundary & wind ind   3.0000   0.0000     coef    1.000  azim   0.000
+ 
+ Component    Type C+ L+ Description
+ 
+ crack         120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0010 crack length (m)  1.000
+ 
+ door          130  5  0 Specific air flow door              m = rho.f(W,H,dP)
+ Fluid  1.0 width  1.600 height 1.800 ref ht  1.500 discharge factor 0.100
+ 
+    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
+    1 entry         0.000   ext_s         0.000   crack           3.000   3.000
+    2 hall          0.000   ext_w         0.000   crack           3.000   3.000
+    3 hall          0.000   ext_e         0.000   crack           3.000   3.000
+    4 chgng         0.000   ext_w         0.000   crack           3.000   3.000
+    5 gym           0.000   ext_w         0.000   crack           3.000   3.000
+    6 plant         0.000   ext_n         0.000   door            3.000   3.000
+    7 entry         0.000   hall          0.000   door            3.000   3.000
+    8 entry         0.000   chgng         0.000   door            3.000   3.000
+    9 gym           0.000   chgng         0.000   door            3.000   3.000
+   10 entry         0.000   ext_w         0.000   door            3.000   3.000
+thermal zone to air flow node mapping:
+thermal zone -> air flow node
+changing     -> chgng
+gym          -> gym
+main-hall    -> hall
+entrance     -> entry
+plant        -> plant
+ 
+ 
+The model includes a plant network.
+ 
+ The plant network contains 35 components from plantc.db1
+ 
+ Component: chp_unit ( 1) code  1, db reference 36
+ Control data:  100.000
+ Modified parameters for chp_unit
+ Engine block total mass (kg)                       :   50.000
+ Block mass weighted average specific heat (J/kgK)  :   600.00
+ Base UA modulus for block heat loss (W/K)          :   60.000
+ Mass of encapsulated coolant (Kg)                  :   2.0000
+ Calorific value of fuel (J/K)                      :  0.55000E+08
+ Maximum power output (W)                           :   36000.
+ Fuel consumption at idling speed (m^3/s)           :  0.67400E-03
+ Incremental fuel consumption (m^3/s/%)             :  0.16160E-04
+ Combustion air flow at idling speed (kg/s)         :  0.28480E-01
+ Incremental combustion air flow (kg/s/%)           :  0.28440E-03
+ Combustion efficiency curve fit parameter a0 (-)   :  0.99000
+ Combustion efficiency curve fit parameter a1 (-)   :   0.0000
+ Combustion efficiency curve fit parameter a2 (-)   :   0.0000
+ Combustion efficiency curve fit parameter a3 (-)   :   0.0000
+ Cylinder wall hA curve fit parameter a0 (-)        :   74.396
+ Cylinder wall hA curve fit parameter a1 (-)        :  0.65379
+ Cylinder wall hA curve fit parameter a2 (-)        : -0.83280E-02
+ Cylinder wall hA curve fit parameter a3 (-)        :  0.52135E-04
+ Primary cooling circuit hA curve fit parameter a0  :   9959.5
+ Primary cooling circuit hA curve fit parameter a1  :   179.04
+ Primary cooling circuit hA curve fit parameter a2  : -0.19504
+ Primary cooling circuit hA curve fit parameter a3  :   0.0000
+ UA curve fit parameter a3 (-)                      :   0.0000
+Electrical data for component   1
+0.800  -1      0.000    220.000   4
+ 
+ 
+ Component: heat_exch ( 2) code  2, db reference 52
+ No Control data
+ Modified parameters for heat_exch
+ Mass of encapsulated fluid on 'hot' side (kg)      :   1.0000
+ Mass of encapsulated fluid on the "cold" side (kg) :   1.0000
+ Overall heat transfer coefficient (W/m^2K)         :   6000.0
+ Heat transfer surface area (m^2)                   :   1.0000
+ UA modulus for component (W/K)                     :  0.10000
+ Flow arrangement index (-)                         :   3.0000
+ 
+ Component: pump1 ( 3) code  3, db reference 15
+ Control data:    0.005
+ Modified parameters for pump1
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   3500.0
+ Rated volume flow rate (m^3/s)                     :  0.70000E-02
+ Overall efficiency (-)                             :  0.70000
+Electrical data for component   3
+0.800  -1      0.000    220.000   4
+ 
+ 
+ Component: exh_heat_exch ( 4) code  4, db reference 54
+ No Control data
+ Modified parameters for exh_heat_exch
+ Mass of encapsulated fluid on 'hot' side (kg)      :   1.0000
+ Mass of encapsulated fluid on the "cold" side (kg) :   1.0000
+ Overall heat transfer coefficient (W/m^2K)         :   300.00
+ Heat transfer surface area (m^2)                   :   1.0000
+ UA modulus for component (W/K)                     :  0.10000
+ Flow arrangement index (-)                         :   2.0000
+ 
+ Component: calorifier ( 5) code  5, db reference 50
+ No Control data
+ Modified parameters for calorifier
+ Component total mass (kg)                          :   3000.0
+ Mass weighted average specific heat (J/kgK)        :   4180.0
+ UA modulus (W/K)                                   :  0.10000E-01
+ Mass of encapsulated water in tubes (kg)           :   5.0000
+ Coil internal heat transfer area (m^2)             :  0.95500
+ Coil internal heat transfer coeficient (W/m^2K)    :   3500.0
+ Coil external heat transfer surface area (m^2)     :   10.000
+ Coil external heat transfer coefficient (W/m^2K)   :   1000.0
+ 
+ Component: converge ( 6) code  6, db reference 14
+ No Control data
+ Modified parameters for converge
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: WCH_pump ( 7) code  7, db reference 15
+ Control data:    0.002
+ Modified parameters for WCH_pump
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   2000.0
+ Rated volume flow rate (m^3/s)                     :  0.30000E-02
+ Overall efficiency (-)                             :  0.70000
+Electrical data for component   7
+0.800  -1      0.000    220.000   4
+ 
+ 
+ Component: DHW_pump ( 8) code  8, db reference 15
+ Control data:    0.001
+ Modified parameters for DHW_pump
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   1500.0
+ Rated volume flow rate (m^3/s)                     :  0.20000E-02
+ Overall efficiency (-)                             :  0.70000
+Electrical data for component   8
+0.800  -1      0.000    220.000   4
+ 
+ 
+ Component: 3_port_valve ( 9) code  9, db reference 38
+ Control data:    0.500
+ Modified parameters for 3_port_valve
+ Component total mass (kg)                          :   1.0000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   3.5000
+ 
+ Component: converge2 (10) code 10, db reference 14
+ No Control data
+ Modified parameters for converge2
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: boiler_1 (11) code 11, db reference 16
+ Control data:    0.000
+ Modified parameters for boiler_1
+ Component total mass (kg)                          :   50.000
+ Mass weighted average specific heat (J/kgK)        :   1000.0
+ Full load gas firing rate if boiler on (m^3/s)     :  0.12000E-02
+ Stand-by gas consumption relative to 1 (-)         :  0.10000E-01
+ Gas heating value at STP (J/m^3)                   :  0.35000E+08
+ Full load water sided efficiency at Tc (-)         :  0.86000
+ Tangent of efficiency curve for Tj < Tc (1/K)      :  0.25000E-02
+ Tangent of efficiency curve for Tj > Tc (1/K)      :  0.25000E-03
+ Stand-by loss at Tj = Te relative to 1 (-)         :  0.80000E-02
+ Tangent of stand-by loss curve (1/K)               :  0.41000E-03
+ Normalized start-stop loss (s)                     :   1.0000
+ Upper boiler temperature limit (C)                 :   90.000
+ 
+ Component: boiler_2 (12) code 12, db reference 16
+ Control data:    0.000
+ Modified parameters for boiler_2
+ Component total mass (kg)                          :   50.000
+ Mass weighted average specific heat (J/kgK)        :   1000.0
+ Full load gas firing rate if boiler on (m^3/s)     :  0.12000E-02
+ Stand-by gas consumption relative to 1 (-)         :  0.10000E-01
+ Gas heating value at STP (J/m^3)                   :  0.35000E+08
+ Full load water sided efficiency at Tc (-)         :  0.86000
+ Tangent of efficiency curve for Tj < Tc (1/K)      :  0.25000E-02
+ Tangent of efficiency curve for Tj > Tc (1/K)      :  0.25000E-03
+ Stand-by loss at Tj = Te relative to 1 (-)         :  0.80000E-02
+ Tangent of stand-by loss curve (1/K)               :  0.41000E-03
+ Normalized start-stop loss (s)                     :   1.0000
+ Upper boiler temperature limit (C)                 :   90.000
+ 
+ Component: boiler_3 (13) code 13, db reference 16
+ Control data:    0.000
+ Modified parameters for boiler_3
+ Component total mass (kg)                          :   50.000
+ Mass weighted average specific heat (J/kgK)        :   1000.0
+ Full load gas firing rate if boiler on (m^3/s)     :  0.12000E-02
+ Stand-by gas consumption relative to 1 (-)         :  0.10000E-01
+ Gas heating value at STP (J/m^3)                   :  0.35000E+08
+ Full load water sided efficiency at Tc (-)         :  0.86000
+ Tangent of efficiency curve for Tj < Tc (1/K)      :  0.25000E-02
+ Tangent of efficiency curve for Tj > Tc (1/K)      :  0.25000E-03
+ Stand-by loss at Tj = Te relative to 1 (-)         :  0.80000E-02
+ Tangent of stand-by loss curve (1/K)               :  0.41000E-03
+ Normalized start-stop loss (s)                     :   1.0000
+ Upper boiler temperature limit (C)                 :   90.000
+ 
+ Component: cvg_b1 (14) code 14, db reference 14
+ No Control data
+ Modified parameters for cvg_b1
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: cvg_b2 (15) code 15, db reference 14
+ No Control data
+ Modified parameters for cvg_b2
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: cvg_b3 (16) code 16, db reference 14
+ No Control data
+ Modified parameters for cvg_b3
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: air_hex (17) code 17, db reference 10
+ No Control data
+ Modified parameters for air_hex
+ Component total mass (kg)                          :   10.000
+ Mass weighted average specific heat (J/kgK)        :   1000.0
+ UA modulus (W/K)                                   :   7.0000
+ Total plate heat transfer area (m^2)               :   300.00
+ Heat exchanger net face area (m^2)                 :   1.0000
+ 
+ Component: heat_coil (18) code 18, db reference 21
+ No Control data
+ Modified parameters for heat_coil
+ Component total mass (kg)                          :   15.000
+ Average specific heat of solids (J/kgK)            :   500.00
+ UA modulus (node 1 to surroundings) (W/K)          :   1.0000
+ Mass of water encapsulated in component (kg)       :   2.0000
+ Coil outside (air) heat transfer area (m^2)        :   15.000
+ Coil inside (water) heat transfer area (m^2)       :  0.33000
+ Coil face area (m^2)                               :   1.0000
+ Metal thermal resistance (m^2K/W)                  :  0.10000E-02
+ Internal tube diameter (m)                         :  0.15000E-01
+ 
+ Component: cool_coil (19) code 19, db reference  8
+ Control data:    0.000
+ Modified parameters for cool_coil
+ Component total mass (kg)                          :   15.000
+ Mass weighted average specific heat (J/kgK)        :   1000.0
+ UA modulus (W/K)                                   :   1.0000
+ Coil air side heat transfer area (m^2)             :   15.000
+ Coil water side heat transfer area (m^2)           :  0.33000
+ Coil face area (m^2)                               :   1.0000
+ Coil metal thermal resistance (m^2K/W)             :  0.10000E-02
+ Internal tube diameter (m)                         :  0.15000E-01
+ Inlet water temperature (C)                        :   10.000
+ 
+ Component: supply_fan (20) code 20, db reference  3
+ Control data:    7.500
+ Modified parameters for supply_fan
+ Component total mass (kg)                          :   30.000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   7.0000
+ Rated total absorbed power (W)                     :   1500.0
+ Rated volume flow rate (m^3/s)                     :   9.0000
+ Overall efficiency (-)                             :  0.70000
+Electrical data for component  20
+0.800  -1      0.000    220.000   4
+ 
+ 
+ Component: extract_fan (21) code 21, db reference  3
+ Control data:    7.500
+ Modified parameters for extract_fan
+ Component total mass (kg)                          :   30.000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   7.0000
+ Rated total absorbed power (W)                     :   5500.0
+ Rated volume flow rate (m^3/s)                     :   9.0000
+ Overall efficiency (-)                             :  0.70000
+Electrical data for component  21
+0.800  -1      0.000    220.000   4
+ 
+ 
+ Component: duct_gym (22) code 22, db reference  6
+ No Control data
+ Modified parameters for duct_gym
+ Component total mass (kg)                          :   9.2500
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   14.000
+ Hydraulic diameter of duct (m)                     :  0.12500
+ Length of duct section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.12270E-01
+ 
+ Component: duct_chg (23) code 23, db reference  6
+ No Control data
+ Modified parameters for duct_chg
+ Component total mass (kg)                          :   9.2500
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   14.000
+ Hydraulic diameter of duct (m)                     :  0.12500
+ Length of duct section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.12270E-01
+ 
+ Component: duct_hall (24) code 24, db reference  6
+ No Control data
+ Modified parameters for duct_hall
+ Component total mass (kg)                          :   9.2500
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   14.000
+ Hydraulic diameter of duct (m)                     :  0.12500
+ Length of duct section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.12270E-01
+ 
+ Component: duct_recp (25) code 25, db reference  6
+ No Control data
+ Modified parameters for duct_recp
+ Component total mass (kg)                          :   9.2500
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   14.000
+ Hydraulic diameter of duct (m)                     :  0.12500
+ Length of duct section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.12270E-01
+ 
+ Component: rduct_recp (26) code 26, db reference  6
+ No Control data
+ Modified parameters for rduct_recp
+ Component total mass (kg)                          :   9.2500
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   14.000
+ Hydraulic diameter of duct (m)                     :  0.12500
+ Length of duct section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.12270E-01
+ 
+ Component: rduct_hall (27) code 27, db reference  6
+ No Control data
+ Modified parameters for rduct_hall
+ Component total mass (kg)                          :   9.2500
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   14.000
+ Hydraulic diameter of duct (m)                     :  0.12500
+ Length of duct section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.12270E-01
+ 
+ Component: rduct_gym (28) code 28, db reference  6
+ No Control data
+ Modified parameters for rduct_gym
+ Component total mass (kg)                          :   9.2500
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   14.000
+ Hydraulic diameter of duct (m)                     :  0.12500
+ Length of duct section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.12270E-01
+ 
+ Component: rduct_cgh (29) code 29, db reference  6
+ No Control data
+ Modified parameters for rduct_cgh
+ Component total mass (kg)                          :   9.2500
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   14.000
+ Hydraulic diameter of duct (m)                     :  0.12500
+ Length of duct section (m)                         :   5.0000
+ Cross sectional face area (m^2)                    :  0.12270E-01
+ 
+ Component: cvg_1 (30) code 30, db reference  1
+ No Control data
+ Modified parameters for cvg_1
+ Component total mass (kg)                          :   1.0000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   3.5000
+ 
+ Component: cvg_2 (31) code 31, db reference  1
+ No Control data
+ Modified parameters for cvg_2
+ Component total mass (kg)                          :   1.0000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   3.5000
+ 
+ Component: cvg_3 (32) code 32, db reference  1
+ No Control data
+ Modified parameters for cvg_3
+ Component total mass (kg)                          :   1.0000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   3.5000
+ 
+ Component: ahu_dv (33) code 33, db reference 38
+ Control data:    0.500
+ Modified parameters for ahu_dv
+ Component total mass (kg)                          :   1.0000
+ Mass weighted average specific heat (J/kgK)        :   500.00
+ UA modulus (W/K)                                   :   3.5000
+ 
+ Component: ahu_cvg (34) code 34, db reference 14
+ No Control data
+ Modified parameters for ahu_cvg
+ Component total mass (kg)                          :  0.10000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000E-01
+ 
+ Component: pump2 (35) code 35, db reference 15
+ Control data:    0.003
+ Modified parameters for pump2
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   500.00
+ Rated volume flow rate (m^3/s)                     :  0.70000E-02
+ Overall efficiency (-)                             :  0.70000
+Electrical data for component  35
+0.700  -1      0.000    220.000   4
+ 
+ 
+ Nb of plant component connections: 50
+ Con receiving component node type sending component node
+ 
+  1 chp_unit node 1 (from another component.) pump2 node 1 details:     1.00    0.00    0.00
+  1 chp_unit node 1 (from another component.) pump2 node 1 details:     1.00    0.00    0.00
+ 
+  2 pump2 node 1 (from another component.) heat_exch node 1 details:     1.00    0.00    0.00
+  2 pump2 node 1 (from another component.) heat_exch node 1 details:     1.00    0.00    0.00
+ 
+  3 chp_unit node 2 (zone air or ambient.) exh_heat_exch node 1 details:     1.00    0.00    0.00
+  3 chp_unit node 2 (zone air or ambient.) exh_heat_exch node 1 details:     1.00    0.00    0.00
+ 
+  4 exh_heat_exch node 1 (from another component.) chp_unit node 2 details:     1.00    0.00    0.00
+  4 exh_heat_exch node 1 (from another component.) chp_unit node 2 details:     1.00    0.00    0.00
+ 
+  5 heat_exch node 1 (from another component.) chp_unit node 1 details:     1.00    0.00    0.00
+  5 heat_exch node 1 (from another component.) chp_unit node 1 details:     1.00    0.00    0.00
+ 
+  6 heat_exch node 2 (from another component.) pump1 node 1 details:     0.16    0.00    0.00
+  6 heat_exch node 2 (from another component.) pump1 node 1 details:     0.16    0.00    0.00
+ 
+  7 exh_heat_exch node 2 (from another component.) heat_exch node 2 details:     1.00    0.00    0.00
+  7 exh_heat_exch node 2 (from another component.) heat_exch node 2 details:     1.00    0.00    0.00
+ 
+  8 cvg_b1 node 1 (from another component.) exh_heat_exch node 2 details:     1.00    0.00    0.00
+  8 cvg_b1 node 1 (from another component.) exh_heat_exch node 2 details:     1.00    0.00    0.00
+ 
+  9 3_port_valve node 1 (from another component.) cvg_b3 node 1 details:     0.70    0.00    0.00
+  9 3_port_valve node 1 (from another component.) cvg_b3 node 1 details:     0.70    0.00    0.00
+ 
+ 10 cvg_b1 node 1 (from another component.) boiler_1 node 2 details:     1.00    0.00    0.00
+ 10 cvg_b1 node 1 (from another component.) boiler_1 node 2 details:     1.00    0.00    0.00
+ 
+ 11 cvg_b2 node 1 (from another component.) boiler_2 node 2 details:     1.00    0.00    0.00
+ 11 cvg_b2 node 1 (from another component.) boiler_2 node 2 details:     1.00    0.00    0.00
+ 
+ 12 cvg_b3 node 1 (from another component.) boiler_3 node 2 details:     1.00    0.00    0.00
+ 12 cvg_b3 node 1 (from another component.) boiler_3 node 2 details:     1.00    0.00    0.00
+ 
+ 13 cvg_b2 node 1 (from another component.) cvg_b1 node 1 details:     1.00    0.00    0.00
+ 13 cvg_b2 node 1 (from another component.) cvg_b1 node 1 details:     1.00    0.00    0.00
+ 
+ 14 cvg_b3 node 1 (from another component.) cvg_b2 node 1 details:     1.00    0.00    0.00
+ 14 cvg_b3 node 1 (from another component.) cvg_b2 node 1 details:     1.00    0.00    0.00
+ 
+ 15 boiler_1 node 1 (from another component.) pump1 node 1 details:     0.28    0.00    0.00
+ 15 boiler_1 node 1 (from another component.) pump1 node 1 details:     0.28    0.00    0.00
+ 
+ 16 boiler_2 node 1 (from another component.) pump1 node 1 details:     0.28    0.00    0.00
+ 16 boiler_2 node 1 (from another component.) pump1 node 1 details:     0.28    0.00    0.00
+ 
+ 17 boiler_3 node 1 (from another component.) pump1 node 1 details:     0.28    0.00    0.00
+ 17 boiler_3 node 1 (from another component.) pump1 node 1 details:     0.28    0.00    0.00
+ 
+ 18 calorifier node 1 (known T + hum ratio.) DHW_pump node 1 details:     1.00   10.00    0.00
+ 18 calorifier node 1 (known T + hum ratio.) DHW_pump node 1 details:     1.00   10.00    0.00
+ 
+ 19 converge node 1 (from another component.) calorifier node 2 details:     1.00    0.00    0.00
+ 19 converge node 1 (from another component.) calorifier node 2 details:     1.00    0.00    0.00
+ 
+ 20 converge node 1 (from another component.) 3_port_valve node 1 details:     1.00    0.00    0.00
+ 20 converge node 1 (from another component.) 3_port_valve node 1 details:     1.00    0.00    0.00
+ 
+ 21 DHW_pump node 1 (from another component.) calorifier node 1 details:     1.00    0.00    0.00
+ 21 DHW_pump node 1 (from another component.) calorifier node 1 details:     1.00    0.00    0.00
+ 
+ 22 calorifier node 2 (from another component.) cvg_b3 node 1 details:     0.00    0.00    0.00
+ 22 calorifier node 2 (from another component.) cvg_b3 node 1 details:     0.00    0.00    0.00
+ 
+ 23 WCH_pump node 1 (from another component.) cvg_b3 node 1 details:     0.30    0.00    0.00
+ 23 WCH_pump node 1 (from another component.) cvg_b3 node 1 details:     0.30    0.00    0.00
+ 
+ 24 converge2 node 1 (from another component.) converge node 1 details:     1.00    0.00    0.00
+ 24 converge2 node 1 (from another component.) converge node 1 details:     1.00    0.00    0.00
+ 
+ 25 pump1 node 1 (from another component.) converge2 node 1 details:     1.00    0.00    0.00
+ 25 pump1 node 1 (from another component.) converge2 node 1 details:     1.00    0.00    0.00
+ 
+ 26 heat_coil node 2 (from another component.) air_hex node 1 details:     1.00    0.00    0.00
+ 26 heat_coil node 2 (from another component.) air_hex node 1 details:     1.00    0.00    0.00
+ 
+ 27 cool_coil node 1 (from another component.) heat_coil node 2 details:     1.00    0.00    0.00
+ 27 cool_coil node 1 (from another component.) heat_coil node 2 details:     1.00    0.00    0.00
+ 
+ 28 supply_fan node 1 (from another component.) cool_coil node 1 details:     1.00    0.00    0.00
+ 28 supply_fan node 1 (from another component.) cool_coil node 1 details:     1.00    0.00    0.00
+ 
+ 29 duct_gym node 1 (from another component.) supply_fan node 1 details:     0.12    0.00    0.00
+ 29 duct_gym node 1 (from another component.) supply_fan node 1 details:     0.12    0.00    0.00
+ 
+ 30 duct_chg node 1 (from another component.) supply_fan node 1 details:     0.12    0.00    0.00
+ 30 duct_chg node 1 (from another component.) supply_fan node 1 details:     0.12    0.00    0.00
+ 
+ 31 duct_hall node 1 (from another component.) supply_fan node 1 details:     0.71    0.00    0.00
+ 31 duct_hall node 1 (from another component.) supply_fan node 1 details:     0.71    0.00    0.00
+ 
+ 32 duct_recp node 1 (from another component.) supply_fan node 1 details:     0.05    0.00    0.00
+ 32 duct_recp node 1 (from another component.) supply_fan node 1 details:     0.05    0.00    0.00
+ 
+ 33 rduct_recp node 1 (zone air or ambient.) duct_recp node 1 details:     1.00    1.00    0.00
+ 33 rduct_recp node 1 (zone air or ambient.) duct_recp node 1 details:     1.00    1.00    0.00
+ 
+ 34 rduct_hall node 1 (zone air or ambient.) duct_hall node 1 details:     1.00    2.00    0.00
+ 34 rduct_hall node 1 (zone air or ambient.) duct_hall node 1 details:     1.00    2.00    0.00
+ 
+ 35 rduct_gym node 1 (zone air or ambient.) duct_gym node 1 details:     1.00    3.00    0.00
+ 35 rduct_gym node 1 (zone air or ambient.) duct_gym node 1 details:     1.00    3.00    0.00
+ 
+ 36 rduct_cgh node 1 (zone air or ambient.) duct_chg node 1 details:     1.00    4.00    0.00
+ 36 rduct_cgh node 1 (zone air or ambient.) duct_chg node 1 details:     1.00    4.00    0.00
+ 
+ 37 cvg_1 node 1 (from another component.) rduct_gym node 1 details:     1.00    0.00    0.00
+ 37 cvg_1 node 1 (from another component.) rduct_gym node 1 details:     1.00    0.00    0.00
+ 
+ 38 cvg_1 node 1 (from another component.) rduct_cgh node 1 details:     1.00    0.00    0.00
+ 38 cvg_1 node 1 (from another component.) rduct_cgh node 1 details:     1.00    0.00    0.00
+ 
+ 39 cvg_2 node 1 (from another component.) rduct_recp node 1 details:     1.00    0.00    0.00
+ 39 cvg_2 node 1 (from another component.) rduct_recp node 1 details:     1.00    0.00    0.00
+ 
+ 40 cvg_2 node 1 (from another component.) rduct_hall node 1 details:     1.00    0.00    0.00
+ 40 cvg_2 node 1 (from another component.) rduct_hall node 1 details:     1.00    0.00    0.00
+ 
+ 41 cvg_3 node 1 (from another component.) cvg_1 node 1 details:     1.00    0.00    0.00
+ 41 cvg_3 node 1 (from another component.) cvg_1 node 1 details:     1.00    0.00    0.00
+ 
+ 42 cvg_3 node 1 (from another component.) cvg_2 node 1 details:     1.00    0.00    0.00
+ 42 cvg_3 node 1 (from another component.) cvg_2 node 1 details:     1.00    0.00    0.00
+ 
+ 43 extract_fan node 1 (from another component.) cvg_3 node 1 details:     1.00    0.00    0.00
+ 43 extract_fan node 1 (from another component.) cvg_3 node 1 details:     1.00    0.00    0.00
+ 
+ 44 air_hex node 1 (zone air or ambient.) air_hex node 2 details:     1.00    0.00    0.00
+ 44 air_hex node 1 (zone air or ambient.) air_hex node 2 details:     1.00    0.00    0.00
+ 
+ 45 air_hex node 2 (from another component.) extract_fan node 1 details:     1.00    0.00    0.00
+ 45 air_hex node 2 (from another component.) extract_fan node 1 details:     1.00    0.00    0.00
+ 
+ 46 ahu_dv node 1 (from another component.) WCH_pump node 1 details:     1.00    0.00    0.00
+ 46 ahu_dv node 1 (from another component.) WCH_pump node 1 details:     1.00    0.00    0.00
+ 
+ 47 converge2 node 1 (from another component.) ahu_cvg node 1 details:     1.00    0.00    0.00
+ 47 converge2 node 1 (from another component.) ahu_cvg node 1 details:     1.00    0.00    0.00
+ 
+ 48 heat_coil node 3 (from another component.) WCH_pump node 1 details:     0.00    0.00    0.00
+ 48 heat_coil node 3 (from another component.) WCH_pump node 1 details:     0.00    0.00    0.00
+ 
+ 49 ahu_cvg node 1 (from another component.) heat_coil node 3 details:     1.00    0.00    0.00
+ 49 ahu_cvg node 1 (from another component.) heat_coil node 3 details:     1.00    0.00    0.00
+ 
+ 50 ahu_cvg node 1 (from another component.) ahu_dv node 1 details:     1.00    0.00    0.00
+ 50 ahu_cvg node 1 (from another component.) ahu_dv node 1 details:     1.00    0.00    0.00
+ 
+ No of component containments =  5
+  Component      | Containment descr. | Type
+ 
+ 1  heat_coil       zone: plant            3 details:     5.00    0.00    0.00
+ 
+ 2  cool_coil       zone: plant            3 details:     5.00    0.00    0.00
+ 
+ 3  chp_unit        zone: plant            3 details:     5.00    0.00    0.00
+ 
+ 4  exh_heat_exch   zone: plant            3 details:     5.00    0.00    0.00
+ 
+ 5  heat_exch       zone: plant            3 details:     5.00    0.00    0.00
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 changing     1600.0  13  1153.0    62.4   360.0  changing describes a
+ 2 gym          1600.0  12  1153.0    62.4   360.0  gym describes a
+ 3 main-hall   19167.0  20  4604.8   136.8  1500.0  main-hall describes a
+ 4 entrance     1166.7  14   894.9    11.0   300.0  entrance describes a
+ 5 plant         360.0   6   352.9     0.0    90.0  plant describes a
+   all         23894.   65   8159.    273.   2610.
+ 
+ 
+ Zone changing ( 1) is composed of 13 surfaces and 30 vertices.
+ It encloses a volume of 1600.m^3 of space, with a total surface
+ area of 1220.m^2 & approx floor area of 360.m^2
+ changing describes a
+ There is 375.41m2 of exposed surface area, 160.00m2 of which is vertical.
+ Outside walls are 36.111 % of floor area & avg U of 0.749 & UA of 97.432
+ Sloped roof is 59.835 % of floor area & avg U of 0.427 & UA of 92.053
+ Glazing is 8.3333 % of floor & 18.750 % facade with avg U of 2.811 & UA of 84.320
+ 
+ A summary of the surfaces in changing( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  40.0    180.   0. Surf-1       OPAQUE   VERT -     intern_wall  ||< external
+  2  168.     90.   0. Surf-2       OPAQUE   VERT -     intern_wall  ||< change-r:main-hall
+  3  80.0      0.   0. Surf-3       OPAQUE   VERT -     intern_wall  ||< Surf-1:gym
+  4  90.0    270.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< external
+  5  215.    270.  68. Surf-5       OPAQUE   SLOP -     roof         ||< external
+  6  200.      0. -90. Surf-6       OPAQUE   FLOR -     oth_ground   ||< ground profile  1
+  7  40.0    180.   0. recep-r      OPAQUE   VERT -     intern_wall  ||< Surf-5:entrance
+  8  160.      0.  90. xSurf-6      OPAQUE   CEIL -     susp_floor   ||< adiabatic
+  9  160.      0. -90. Surf-9       OPAQUE   FLOR -     susp_flr_re  ||< adiabatic
+ 10  10.0    270.   0. glaz-1       DCF7671_ VERT -     d_glz        ||< external
+ 11  10.0    270.   0. glaz-2       DCF7671_ VERT -     d_glz        ||< external
+ 12  10.0    270.   0. glaz-3       DCF7671_ VERT -     d_glz        ||< external
+ 13  32.4     90.   0. glaz_hall2   DCF7671_ VERT -     d_glz        ||< xglaz_hall2:main-hall
+ 
+ 
+ Solar insolation focused on surface Surf-6       (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Casual gains are controlled in this zone.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: chgng
+ 
+Notes:
+nil_operations
+Number of weekday      loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8   450.0   330.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9  1350.0   990.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12  2250.0  1650.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14  1350.0   990.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 20  2250.0  1650.0      0.5      0.5    0.90  0    0.0    0.0  1
+Wkd  7 OccuptW   20 - 23   225.0   165.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 23  4800.0     0.0      0.5      0.5    0.95  1 4800.0  240.0  1
+Wkd 11 LightsW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of saturday     loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8   450.0   330.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9  1350.0   990.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12  2250.0  1650.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14  1350.0   990.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 17  2250.0  1650.0      0.5      0.5    0.90  0    0.0    0.0  1
+Wkd  7 OccuptW   17 - 23   225.0   165.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 23  4800.0     0.0      0.5      0.5    0.95  1 4800.0  240.0  1
+Wkd 11 LightsW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of sunday       loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8   450.0   330.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9  1350.0   990.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12  2250.0  1650.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14  1350.0   990.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 17  2250.0  1650.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  7 OccuptW   17 - 23   225.0   165.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 23  4800.0     0.0      0.5      0.5    0.95  1 4800.0  240.0  1
+Wkd 11 LightsW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+ 
+ ____________________________________________________________
+ 
+ Zone gym ( 2) is composed of 12 surfaces and 28 vertices.
+ It encloses a volume of 1600.m^3 of space, with a total surface
+ area of 1220.m^2 & approx floor area of 360.m^2
+ gym describes a
+ There is 415.41m2 of exposed surface area, 200.00m2 of which is vertical.
+ Outside walls are 47.222 % of floor area & avg U of 0.393 & UA of 66.760
+ Sloped roof is 59.835 % of floor area & avg U of 0.427 & UA of 92.053
+ Glazing is 8.3333 % of floor & 15.000 % facade with avg U of 2.811 & UA of 84.320
+ 
+ A summary of the surfaces in gym( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  80.0    180.   0. Surf-1       OPAQUE   VERT -     intern_wall  ||< Surf-3:changing
+  2  168.     90.   0. Surf-2       OPAQUE   VERT -     intern_wall  ||< gym-r:main-hall
+  3  80.0      0.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< external
+  4  90.0    270.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< external
+  5  215.    270.  68. Surf-5       OPAQUE   SLOP -     roof         ||< external
+  6  200.      0. -90. Surf-6       OPAQUE   FLOR -     oth_ground   ||< ground profile  1
+  7  160.      0.  90. xSurf-6      OPAQUE   CEIL -     susp_floor   ||< adiabatic
+  8  160.      0. -90. Surf-8       OPAQUE   FLOR -     susp_flr_re  ||< adiabatic
+  9  10.0    270.   0. glaz-1       DCF7671_ VERT -     d_glz        ||< external
+ 10  10.0    270.   0. glaz-2       DCF7671_ VERT -     d_glz        ||< external
+ 11  10.0    270.   0. glaz-3       DCF7671_ VERT -     d_glz        ||< external
+ 12  32.4     90.   0. glaz_hall    DCF7671_ VERT -     d_glz        ||< xglaz_hall:main-hall
+ 
+ 
+ Solar insolation focused on surface Surf-6       (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Casual gains are controlled in this zone.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: gym
+ 
+Notes:
+nil_operations
+Number of weekday      loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8   680.0  1020.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9  2040.0  3060.0      0.5      0.5    0.95  1    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12  3400.0  5100.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14  2040.0  3060.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 20  3400.0  5100.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  7 OccuptW   20 - 21   340.0   510.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   21 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 21  6000.0     0.0      0.5      0.5    0.95  1 6000.0  240.0  1
+Wkd 11 LightsW   21 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of saturday     loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8   680.0  1020.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9  2040.0  3060.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12  3400.0  5100.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14  2040.0  3060.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 17  3400.0  5100.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  7 OccuptW   17 - 21   340.0   510.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   21 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 21  6000.0     0.0      0.5      0.5    0.95  1 6000.0  240.0  2
+Wkd 11 LightsW   21 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of sunday       loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8   680.0  1020.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9  2040.0  3060.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12  3400.0  5100.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14  2040.0  3060.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 17  3400.0  5100.0      0.5      0.5    0.95  0    0.0    0.0  1
+Wkd  7 OccuptW   17 - 21   340.0   510.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   21 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 21  6000.0     0.0      0.5      0.5    0.95  1 6000.0  240.0  2
+Wkd 11 LightsW   21 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+ 
+ ____________________________________________________________
+ 
+ Zone main-hall ( 3) is composed of 20 surfaces and 43 vertices.
+ It encloses a volume of 19200.m^3 of space, with a total surface
+ area of 4740.m^2 & approx floor area of 1500.m^2
+ main-hall describes a
+ There is 4166.6m2 of exposed surface area, 1025.0m2 of which is vertical.
+ Outside walls are 208.25 % of floor area & avg U of 0.360 & UA of 1125.8
+ Sloped roof is 44.721 % of floor area & avg U of 0.427 & UA of 286.67
+ Flat roof is 20.000 % of floor area & avg U of 0.427 & UA of 128.20
+ Glazing is 4.8000 % of floor & 7.0244 % facade with avg U of 2.811 & UA of 202.37
+ 
+ A summary of the surfaces in main-hall( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  250.    180.   0. Surf-1       OPAQUE   VERT -     extern_wall  ||< external
+  2  428.     90.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< external
+  3  225.      0.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< external
+  4  50.0    270.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< external
+  5  447.    270.  63. Surf-5       OPAQUE   SLOP -     roof         ||< external
+  6  1500.     0. -90. Surf-6       OPAQUE   FLOR -     hall_floor   ||< external
+  7  224.    180.  63. Surf-7       OPAQUE   SLOP -     roof         ||< external
+  8  447.     90.  63. Surf-8       OPAQUE        -     roof         ||< external
+  9  224.      0.  63. Surf-9       OPAQUE        -     roof         ||< external
+ 10  300.      0.  90. Surf-10      OPAQUE   CEIL -     roof         ||< external
+ 11  50.0    270.   0. xSurf-4      OPAQUE   VERT -     intern_wall  ||< Surf-4:entrance
+ 12  50.0    180.   0. xSurf-3      OPAQUE   VERT -     intern_wall  ||< Surf-3:entrance
+ 13  168.    270.   0. change-r     OPAQUE   VERT -     intern_wall  ||< Surf-2:changing
+ 14  168.    270.   0. gym-r        OPAQUE   VERT -     intern_wall  ||< Surf-2:gym
+ 15  75.0      0.   0. plant-r      OPAQUE   VERT -     intern_wall  ||< Surf-1:plant
+ 16  24.0     90.   0. glaz-1       DCF7671_ VERT -     d_glz        ||< external
+ 17  24.0     90.   0. glaz-2       DCF7671_ VERT -     d_glz        ||< external
+ 18  24.0     90.   0. glaz-3       DCF7671_ VERT -     d_glz        ||< external
+ 19  32.4    270.   0. xglaz_hall2  DCF7671_ VERT -     d_glz        ||< glaz_hall2:changing
+ 20  32.4    270.   0. xglaz_hall   DCF7671_ VERT -     d_glz        ||< glaz_hall:gym
+ 
+ 
+ Solar insolation focused on surface Surf-6       (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Casual gains are controlled in this zone.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: hall
+ 
+Notes:
+a variety of occupant and lighting gains
+Number of weekday      loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8  2380.0  3570.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9  7140.0 10710.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12 11900.0 17850.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14  7140.0 10710.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 20 11900.0 17850.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  7 OccuptW   20 - 23  1190.0  1785.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 23 18000.0     0.0      0.5      0.5    0.95  118000.0  240.0  1
+Wkd 11 LightsW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of saturday     loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8  2380.0  3570.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9  7140.0 10710.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12 11900.0 17850.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14  7140.0 10710.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 17 11900.0 17850.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  7 OccuptW   17 - 23  1190.0  1785.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 23 18000.0     0.0      0.5      0.5    0.95  118000.0  240.0  1
+Wkd 11 LightsW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of sunday       loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8  2380.0  3570.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9  7140.0 10710.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12 11900.0 17850.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14  7140.0 10710.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 17 11900.0 17850.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  7 OccuptW   17 - 23  1190.0  1785.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 23 18000.0     0.0      0.5      0.5    0.95  118000.0  240.0  1
+Wkd 11 LightsW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+ 
+ ____________________________________________________________
+ 
+ Zone entrance ( 4) is composed of 14 surfaces and 32 vertices.
+ It encloses a volume of 1170.m^3 of space, with a total surface
+ area of 906.m^2 & approx floor area of 300.m^2
+ entrance describes a
+ There is 465.94m2 of exposed surface area, 160.00m2 of which is vertical.
+ Outside walls are 49.667 % of floor area & avg U of 0.393 & UA of 58.513
+ Sloped roof is 50.990 % of floor area & avg U of 0.427 & UA of 65.371
+ Flat roof is 50.990 % of floor area & avg U of 0.427 & UA of 65.371
+ Glazing is 3.6667 % of floor & 6.8750 % facade with avg U of 2.811 & UA of 30.917
+ 
+ A summary of the surfaces in entrance( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  55.0    180.   0. Surf-1       OPAQUE   VERT -     extern_wall  ||< external
+  2  40.0     90.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< external
+  3  50.0      0.   0. Surf-3       OPAQUE   VERT -     intern_wall  ||< xSurf-3:main-hall
+  4  50.0     90.   0. Surf-4       OPAQUE   VERT -     intern_wall  ||< xSurf-4:main-hall
+  5  40.0      0.   0. Surf-5       OPAQUE   VERT -     intern_wall  ||< recep-r:changing
+  6  54.0    270.   0. Surf-6       OPAQUE   VERT -     extern_wall  ||< external
+  7  153.    180.  79. Surf-7       OPAQUE   CEIL -     roof         ||< external
+  8  300.      0. -90. Surf-8       OPAQUE   FLOR -     g_flr_entry  ||< ground profile  1
+  9  153.    270.  79. Surf-9       OPAQUE   SLOP -     roof         ||< external
+ 10  2.00    270.   0. glaz-1       DCF7671_ VERT -     d_glz        ||< external
+ 11  2.00    270.   0. glaz-2       DCF7671_ VERT -     d_glz        ||< external
+ 12  2.00    270.   0. glaz-3       DCF7671_ VERT -     d_glz        ||< external
+ 13  2.50    180.   0. glaz-4       DCF7671_ VERT -     d_glz        ||< external
+ 14  2.50    180.   0. glaz-5       DCF7671_ VERT -     d_glz        ||< external
+ 
+ 
+ Solar insolation focused on surface Surf-8       (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: entry
+ 
+Notes:
+a variety of occupant and lighting loads
+Number of weekday      loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8   300.0   220.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9   900.0   660.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12  1500.0  1100.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14   900.0   660.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 20  1500.0  1100.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  7 OccuptW   20 - 23   150.0   110.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 23  3600.0     0.0      0.5      0.5    0.95  1 3600.0  240.0  3
+Wkd 11 LightsW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of saturday     loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8   300.0   220.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9   900.0   660.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12  1500.0  1100.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14   900.0   660.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 17  1500.0  1100.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  7 OccuptW   17 - 23   150.0   110.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 23  3600.0     0.0      0.5      0.5    0.95  1 3600.0  240.0  3
+Wkd 11 LightsW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Number of sunday       loads= 11
+Day Gain Type   Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+    No.  labl   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+Wkd  1 OccuptW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  2 OccuptW    7 -  8   300.0   220.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  3 OccuptW    8 -  9   900.0   660.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  4 OccuptW    9 - 12  1500.0  1100.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  5 OccuptW   12 - 14   900.0   660.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  6 OccuptW   14 - 17  1500.0  1100.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  7 OccuptW   17 - 23   150.0   110.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  8 OccuptW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd  9 LightsW    0 -  7     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+Wkd 10 LightsW    7 - 23  3600.0     0.0      0.5      0.5    0.95  1 3600.0  240.0  3
+Wkd 11 LightsW   23 - 24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+ 
+ ____________________________________________________________
+ 
+ Zone plant ( 5) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 360.m^3 of space, with a total surface
+ area of 353.m^2 & approx floor area of 90.0m^2
+ plant describes a
+ There is 187.87m2 of exposed surface area, 93.000m2 of which is vertical.
+ Outside walls are 103.33 % of floor area & avg U of 0.393 & UA of 36.522
+ Flat roof is 105.41 % of floor area & avg U of 0.427 & UA of 40.542
+ 
+ A summary of the surfaces in plant( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  75.0    180.   0. Surf-1       OPAQUE   VERT -     intern_wall  ||< plant-r:main-hall
+  2  24.0     90.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< external
+  3  45.0      0.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< external
+  4  24.0    270.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< external
+  5  94.9      0.  72. Surf-5       OPAQUE   CEIL -     roof         ||< external
+  6  90.0      0. -90. Surf-6       OPAQUE   FLOR -     oth_ground   ||< ground profile  1
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: plant
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 2610.0m2, wall area is 3665.8m2, window area is 143.00m2.
+ Sloped roof area is 1254.6m2, flat roof area is 547.84m2, skylight area is 0.00m2.
+ There is 5611.3m2 of outside surface area, 1638.0m2 of which is vertical.
+ 
+ Outside walls are 140.45 % of floor area & avg U of 0.378 & UA of 1385.0
+ Sloped roof is 48.069 % of floor area & avg U of 0.427 & UA of 536.15
+ Flat roof is 20.990 % of floor area & avg U of 0.427 & UA of 234.12
+ Glazing is 5.4789 % of floor & 8.7302 % facade with avg U of 2.811 & UA of 401.92
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of transparent construction: d_glz        with DCF7671_06nb optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+ Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
+ with 3 layers [including air gaps] and visible trn: 0.76
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.611 0.583 0.534 0.384 0.170
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.157 0.172 0.185 0.201 0.202
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.117 0.124 0.127 0.112 0.077
+ Total area of d_glz is    272.60
+ 
+ Details of opaque construction: extern_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 mat_004 : Outer leaf brick
+    2  211   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 mat_211 : Glasswool
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 mat_002 : Breeze block
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.393  0.397  0.387 (partition)  0.379
+ Total area of extern_wall is   1455.00
+ 
+ Details of opaque construction: intern_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 mat_103 : Perlite plasterboard
+    2    2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 mat_002 : Breeze block
+ Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 mat_103 : Perlite plasterboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.552  1.628  1.461 (partition)  1.362
+ Total area of intern_wall is   1300.40
+ 
+ Details of opaque construction: g_flr_entry
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   263   50.0     1.280  1460.   879. 0.90 0.85     5.  0.04 mat_263 : Common_earth
+    2  262   50.0     0.520  2050.   184. 0.90 0.85     2.  0.10 mat_262 : Gravel based
+    3   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+    4   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+    5  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mat_216 : Mineral fibre
+    6   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 mat_067 : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 mat_221 : Wilton
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.319  0.322  0.315 (partition)  0.310
+ Total area of g_flr_entry is    300.00
+ 
+ Details of opaque construction: roof
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 mat_043 : Aluminium
+    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 mat_281 : Glass Fibre Quilt
+ Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 mat_043 : Aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.427  0.433  0.420 (partition)  0.412
+ Total area of roof is   2473.26
+ 
+ Details of opaque construction: susp_floor
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   148    3.0     0.850  2000.   837. 0.90 0.60  1000.  0.00 mat_148 : P.V.C./asbestos
+    2  124   19.0     1.400  2100.   650. 0.91 0.65    19.  0.01 mat_124 : Cement screed
+    3   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+    4   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+ Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 mat_042 : Steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.482  3.888  3.056 (partition)  2.651
+ Total area of susp_floor is    320.00
+ 
+ Details of opaque construction: susp_flr_re
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 mat_042 : Steel
+    2   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+    3   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+    4  124   19.0     1.400  2100.   650. 0.91 0.65    19.  0.01 mat_124 : Cement screed
+ Int   148    3.0     0.850  2000.   837. 0.90 0.60  1000.  0.00 mat_148 : P.V.C./asbestos
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.482  3.888  3.056 (partition)  2.651
+ Total area of susp_flr_re is    320.00
+ 
+ Details of opaque construction: hall_floor
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   263   50.0     1.280  1460.   879. 0.90 0.85     5.  0.04 mat_263 : Common_earth
+    2  262   50.0     0.520  2050.   184. 0.90 0.85     2.  0.10 mat_262 : Gravel based
+    3   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+    4   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+    5  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mat_216 : Mineral fibre
+    6   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 mat_067 : Chipboard
+ Int    61   30.0     0.160   800.  2093. 0.90 0.65    11.  0.19 mat_061 : Block (wood)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.310  0.313  0.306 (partition)  0.302
+ Total area of hall_floor is   1500.00
+ 
+ Details of opaque construction: oth_ground
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   263   50.0     1.280  1460.   879. 0.90 0.85     5.  0.04 mat_263 : Common_earth
+    2  262   50.0     0.520  2050.   184. 0.90 0.85     2.  0.10 mat_262 : Gravel based
+    3   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+    4   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
+    5  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mat_216 : Mineral fibre
+    6   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 mat_067 : Chipboard
+ Int   148    3.0     0.850  2000.   837. 0.90 0.60  1000.  0.00 mat_148 : P.V.C./asbestos
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.329  0.332  0.324 (partition)  0.319
+ Total area of oth_ground is    490.00
