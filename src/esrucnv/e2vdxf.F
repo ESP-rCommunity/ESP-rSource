@@ -111,13 +111,16 @@ C Write to output file.
             WRITE(ioout,'(2X,I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
    50     continue
 
-C Read in util & obstruction file.
+C Read in obstruction file.
           IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
      &      0,0,iuout,IER)
 
           if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
+
+C << this is a place to use the GB1 common block and CNVBLK >>
+
               CALL ERECC(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &          DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
      &          BANGOB(newfoc,IB))
@@ -527,6 +530,9 @@ C Read in obstruction file.
           if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
+
+C << this is a place to use the GB1 common block and CNVBLK >>
+
               CALL ERECC(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &          DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
      &          BANGOB(newfoc,IB))

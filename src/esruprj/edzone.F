@@ -220,8 +220,16 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         CALL EASKR(ANG,' ','Rectangle orientation?',
      &       -359.0,'W',359.0,'W',0.0,'box orientation',IER,2)
 
-C Convert box into a gen description.
-        CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,ANG)
+        H(1)='Elevation is the angle between the length (DX) side'
+        H(2)='of the rectangle and the horizon, +ve is an upwards'
+        H(3)='incline and -ve is a downwards incline. Zero results'
+        H(4)='in a standard horizontal base.'
+        ANGE=0.
+        CALL EASKR(ANGE,' ','Rectangle elevation (see help)?',
+     &       -359.0,'W',359.0,'W',0.0,'box elevation',IER,4)
+
+C Convert box into a gen description using two rotation angles.
+        CALL ERECC3A(XO1,YO1,ZO1,DX1,DY1,DZ1,ANG,ANGE,0.0)
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6

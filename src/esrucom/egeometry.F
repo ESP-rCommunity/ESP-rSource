@@ -28,7 +28,9 @@ C           range checking and printed summary.
 C GEOWRITE: Write a geometry file (GEN V1.1 type) based on infor-
 C           mation currently held in common blocks G0 G1 G3 G4 G6.
 C  ERECC:   Converts REC (rectilinear) into a G1 description.
-C  CNVBLK:  Converts REC (rectilinear) description into GB1 common block.
+C  ERECC3A: Converts REC (rectilinear with 2 rotations) into a G1 common block.
+C  CNVBLK:  Converts REC (rectilinear) into GB1 common block.
+C  CNVBLK3A:Converts REC (rectilinear with 2 rotations) into GB1 common block.
 C  EREGC:   Converts REG into a GEN description.
 C  ESCROT:  Rotate a zone by ANG degrees around point x1,y1.
 C  SURINFO: Display surface details and attributes in a tabular format.
@@ -2488,11 +2490,14 @@ C Error messages.
 
 C ******************** ERECC 
 C ERECC converts a REC (rectilinear) description into a GEN description.
-C The X,Y, & Z coordinates of the 'Bottom left-hand' corner (when viewed
-C from the south), the length (from the BL-HC towards the east), width,
-C height of the enclosure and angle of rotation between the length side
-C and due east (anticlockwise positive) are taken from the
-C calling subroutine EGOMIN and converted into the common block G1.
+C The X,Y, & Z block origin coordinates of the 'Bottom left-hand' corner
+C (when viewed from the south),
+C the length (metres from the BLHC towards the east),
+C width (metres from the BLHC towards the north),
+C height (metres from the BLHC upwards),
+C angle of rotation A degrees between the length side and due east axis
+C (anticlockwise is positive).
+C Information is converted into the common block G1.
       SUBROUTINE ERECC(XO,YO,ZO,DX,DY,DZ,A)
 #include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -2522,6 +2527,180 @@ C X0,Y0,Z0 with point 5 is directly above.
         Z(I-4)=ZO
         Z(I)=ZO+DZ
    20 CONTINUE
+
+C Number the vertices in each face.  Vertical faces numbered anticlockwise
+C from bottom left-hand point when face viewed from the outside.  Ceiling
+C numbered anitclockwise from point 5 and when viewed from the outside.
+C Floor numbered anticlockwise from point 1 when viewed from outside 
+C (below).
+      DO 30 I=1,NSUR
+        IF(I.LE.4)THEN
+          DO 40 J=1,4
+            IF(J.LE.2)THEN
+              IF(J.EQ.1)JVN(I,J)=I
+              IF(J.NE.1)JVN(I,J)=I+1
+              IF(I.EQ.4.AND.J.EQ.2)JVN(I,J)=1
+            ELSE
+              JVN(I,J)=8+I-J
+              IF(I.EQ.4.AND.J.EQ.3)JVN(I,J)=5
+            ENDIF
+   40     CONTINUE
+        ELSEIF(I.EQ.6)THEN
+          JVN(I,1)=1
+          DO 50 J=2,4
+            K=6-J
+            JVN(I,J)=K
+   50     CONTINUE
+        ELSEIF(I.EQ.5)THEN
+          K=I-1
+          DO 60 J=1,4
+            K=K+1
+            JVN(I,J)=K
+   60     CONTINUE
+        ENDIF
+   30 CONTINUE
+      NTV=8
+      RETURN
+      END
+
+C ******************** ERECC3A 
+C ERECC converts a REC (rectilinear) description into a GEN description.
+C The X,Y, & Z block origin coordinates of the 'Bottom left-hand' corner
+C (when viewed from the south),
+C the length (metres from the BLHC towards the east),
+C width (metres from the BLHC towards the north),
+C height (metres from the BLHC upwards),
+C angle of rotation A degrees between the length side and due east axis
+C (anticlockwise is positive). This alters the X and Y coordinates but
+C not the Z coordinate.
+C The angle of rotation B is between the length side and the horizon
+C (positive lifts the edge). This alters the X and Z coordinates but
+C not the Y coordinate.
+C The angle of rotation C is between the width side and the horizon
+C (positive lifts the edge) NOT YET implemented. This alters the Y
+C and Z coordinates but not the X.
+C Information is converted into the common block G1.
+      SUBROUTINE ERECC3A(XO,YO,ZO,DX,DY,DZ,A,B,C)
+#include "building.h"
+C Parameters
+      real XO,YO,ZO  ! origin of the box
+      real DX,DY,DZ  ! length, width, height of box
+      real A,B,C     ! angles of rotation
+
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+
+      real PI,R,SA,CA,SB,CB ! local variables
+C     real SC,CC
+      logical CorrectAngle,bCorrectAngle,cCorrectAngle
+      
+      PI = 4.0 * ATAN(1.0)
+      R=PI/180.
+      SA=SIN(A*R)  ! for a angle
+      CA=COS(A*R)
+      SB=SIN(B*R)  ! for b angle
+      CB=COS(B*R)
+C      SC=SIN(C*R)  ! for c angle
+C      CC=COS(C*R)
+
+      NSUR=6
+      DO 10 I=1,NSUR
+        NVER(I)=4
+   10 CONTINUE
+
+C To prevent infinity set CB to zero if B close to 90 or 270 degrees.
+      call eclose(B,90.0,0.02,CorrectAngle)
+      call eclose(B,270.0,0.02,bCorrectAngle)
+      if(CorrectAngle.or.bCorrectAngle)then
+        CB=0.0
+      endif
+   
+C To prevent infinity set SB to zero if B close to 0 180 or 360 degrees.
+      call eclose(B,0.0,0.02,CorrectAngle)
+      call eclose(B,180.0,0.02,bCorrectAngle)
+      call eclose(B,360.0,0.02,cCorrectAngle)      
+      if(CorrectAngle.or.bCorrectAngle.or.cCorrectAngle)then
+        SB=0.0
+      endif
+
+C To prevent infinity set CA to zero if A close to 90 or 270 degrees.
+      call eclose(A,90.0,0.02,CorrectAngle)
+      call eclose(A,270.0,0.02,bCorrectAngle)
+      if(CorrectAngle.or.bCorrectAngle)then
+        CA=0.0
+      endif
+   
+C To prevent infinity set SA to zero if A close to 0 180 or 360 degrees.
+      call eclose(A,0.0,0.02,CorrectAngle)
+      call eclose(A,180.0,0.02,bCorrectAngle)
+      call eclose(A,360.0,0.02,cCorrectAngle)      
+      if(CorrectAngle.or.bCorrectAngle.or.cCorrectAngle)then
+        SA=0.0
+      endif
+
+C Assign corners of the box assuming no rotation.
+      X(1)=XO; X(2)=X(1)+DX; X(3)=X(2); X(4)=X(3)-DX 
+      X(5)=XO; X(6)=X(2); X(7)=X(3); X(8)=X(4)
+      Y(1)=YO; Y(2)=Y(1); Y(3)=Y(2)+DY; Y(4)=Y(3)
+      Y(5)=YO; Y(6)=Y(2); Y(7)=Y(3); Y(8)=Y(4)
+      Z(1)=ZO; Z(2)=ZO; Z(3)=ZO; Z(4)=ZO
+      Z(5)=ZO+DZ; Z(6)=ZO+DZ; Z(7)=ZO+DZ; Z(8)=ZO+DZ
+
+C Do a B angle of rotation first. No Y changes required.
+C X(1) and X(4) do not change. 
+C X(2) and X(3) change based on DX length.
+      write(6,*) CB
+      write(6,*) DX
+      X(2)=X(1)+(DX*CB); X(3)=X(4)+(DX*CB)
+
+C X(5) & X(8) change based on DZ length. 
+      X(5)=X(5)-(DZ*SB); X(8)=X(8)-(DZ*SB)
+
+C X(6) & X(7) change based on DX length.
+      X(6)=X(5)+(DX*CB); X(7)=X(8)+(DX*CB)
+
+C Z(1) & Z(4) do not change. 
+C Z(2) & Z(3) change based on DX length.
+      Z(2)=Z(2)+(DX*SB); Z(3)=Z(3)+(DX*SB) 
+
+C Z(5) & Z(8) change based on DZ length.
+      Z(5)=ZO+(CB*DZ); Z(8)=ZO+(CB*DZ) 
+      
+C Z(6) & Z(7) change based on DZ length.
+      Z(6)=Z(2)+(DZ*CB); Z(7)=Z(3)+(DZ*CB) 
+
+C Moving now to the Y rotation
+C Do an A angle of rotation. No Z changes required.
+C X(1) does not change.       
+C X(2) changes based on [X(2)-X(1)] length
+C      write(6,*) CA
+C      write(6,*) DX
+      X(2)=X(1)+(CB*DX)*CA
+      X(3)=X(2)-(SA*DY)
+      X(4)=X(1)-(SA*DY)
+      X(5)=X(1)-(SB*DZ)*CA
+      X(6)=X(5)+(CB*DX)*CA
+      X(8)=X(4)-(SB*DZ)*CA
+      X(7)=X(8)+(CB*DX)*CA
+
+C Y(1) does not change.         
+      Y(2)=Y(1)+((CB*DX)*SA)
+      Y(4)=Y(1)+(CA*DY)
+      Y(3)=Y(4)+((CB*DX)*SA)           
+      Y(5)=Y(1)-(SB*DZ)*SA
+      Y(6)=Y(5)+(CB*DX)*SA
+      Y(8)=Y(4)-(SB*DZ)*SA
+      Y(7)=Y(8)+((CB*DX)*SA)           
+
+C Debug      
+C      write(6,*) 'x1: ',X(1),'...','y1: ',Y(1),'...','z1: ',Z(1)
+C      write(6,*) 'x2: ',X(2),'...','y2: ',Y(2),'...','z2: ',Z(2)
+C      write(6,*) 'x3: ',X(3),'...','y3: ',Y(3),'...','z3: ',Z(3)
+C      write(6,*) 'x4: ',X(4),'...','y4: ',Y(4),'...','z4: ',Z(4)
+C      write(6,*) 'x5: ',X(5),'...','y5: ',Y(5),'...','z5: ',Z(5)
+C      write(6,*) 'x6: ',X(6),'...','y6: ',Y(6),'...','z6: ',Z(6)      
+C      write(6,*) 'x7: ',X(7),'...','y7: ',Y(7),'...','z7: ',Z(7)      
+C      write(6,*) 'x8: ',X(8),'...','y8: ',Y(8),'...','z8: ',Z(8)      
+C End debug          
 
 C Number the vertices in each face.  Vertical faces numbered anticlockwise
 C from bottom left-hand point when face viewed from the outside.  Ceiling
@@ -2589,6 +2768,176 @@ C X0,Y0,Z0 with point 5 is directly above.
         ZB(I-4)=ZO
         ZB(I)=ZO+DZ
    20 CONTINUE
+
+C Number the vertices in each face anticlockwise from the bottom
+C left-hand point when face viewed from the outside.  Top is
+C numbered anitclockwise from point 5 and when viewed from the outside.
+C base is numbered anticlockwise from point 1 when viewed from outside 
+C (below).
+      DO 30 I=1,NSB
+        IF(I.LE.4)THEN
+          DO 40 J=1,4
+            IF(J.LE.2)THEN
+              IF(J.EQ.1)JVNB(I,J)=I
+              IF(J.NE.1)JVNB(I,J)=I+1
+              IF(I.EQ.4.AND.J.EQ.2)JVNB(I,J)=1
+            ELSE
+              JVNB(I,J)=8+I-J
+              IF(I.EQ.4.AND.J.EQ.3)JVNB(I,J)=5
+            ENDIF
+   40     CONTINUE
+        ELSEIF(I.EQ.6)THEN
+          JVNB(I,1)=1
+          DO 50 J=2,4
+            K=6-J
+            JVNB(I,J)=K
+   50     CONTINUE
+        ELSEIF(I.EQ.5)THEN
+          K=I-1
+          DO 60 J=1,4
+            K=K+1
+            JVNB(I,J)=K
+   60     CONTINUE
+        ENDIF
+   30 CONTINUE
+      RETURN
+      END
+
+C ******************** CNVBLK3A 
+C CNVBLK3A converts a REC (rectilinear) description into GB1 common block.
+C The X,Y, & Z coordinates of the 'Bottom left-hand' corner (when viewed
+C from the south), the length (from the BL-HC towards the east), width,
+C height of the enclosure.
+C The angle of rotation A is between the length side and due east
+C (anticlockwise positive). This alters the X and Y coordinates but
+C not the Z coordinate.
+C The angle of rotation B is between the length side and the horizon
+C (positive lifts the edge). This alters the X and Z coordinates but
+C not the Y coordinate.
+C The angle of rotation C is between the width side and the horizon
+C (positive lifts the edge) not yet implemented. This alters the Y
+C and Z coordinates but not the X.
+
+      SUBROUTINE CNVBLK3A(XO,YO,ZO,DX,DY,DZ,A,B,C)
+
+C Parameters
+      real XO,YO,ZO  ! origin of the box
+      real DX,DY,DZ  ! length, width, height of box
+      real A,B,C     ! angles of rotation
+      
+      real XB,YB,ZB
+      integer JVNB
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      real PI,R,SA,CA,SB,CB ! local variables
+C     real SC,CC
+      integer NSB     ! number of sides
+      logical CorrectAngle,bCorrectAngle,cCorrectAngle
+     
+      PI = 4.0 * ATAN(1.0)
+      R=PI/180.
+      SA=SIN(A*R)  ! for a angle
+      CA=COS(A*R)
+      SB=SIN(B*R)  ! for b angle
+      CB=COS(B*R)
+C      SC=SIN(C*R)  ! for c angle
+C      CC=COS(C*R)
+      NSB=6
+
+C To prevent infinity set CB to zero if B close to 90 or 270 degrees.
+      call eclose(B,90.0,0.02,CorrectAngle)
+      call eclose(B,270.0,0.02,bCorrectAngle)
+      if(CorrectAngle.or.bCorrectAngle)then
+        CB=0.0
+      endif
+   
+C To prevent infinity set SB to zero if B close to 0 180 or 360 degrees.
+      call eclose(B,0.0,0.02,CorrectAngle)
+      call eclose(B,180.0,0.02,bCorrectAngle)
+      call eclose(B,360.0,0.02,cCorrectAngle)      
+      if(CorrectAngle.or.bCorrectAngle.or.cCorrectAngle)then
+        SB=0.0
+      endif
+
+C To prevent infinity set CA to zero if A close to 90 or 270 degrees.
+      call eclose(A,90.0,0.02,CorrectAngle)
+      call eclose(A,270.0,0.02,bCorrectAngle)
+      if(CorrectAngle.or.bCorrectAngle)then
+        CA=0.0
+      endif
+   
+C To prevent infinity set SA to zero if A close to 0 180 or 360 degrees.
+      call eclose(A,0.0,0.02,CorrectAngle)
+      call eclose(A,180.0,0.02,bCorrectAngle)
+      call eclose(A,360.0,0.02,cCorrectAngle)      
+      if(CorrectAngle.or.bCorrectAngle.or.cCorrectAngle)then
+        SA=0.0
+      endif
+
+C Assign corners of the box assuming no rotation.
+      XB(1)=XO; XB(2)=XB(1)+DX; XB(3)=XB(2); XB(4)=XB(3)-DX 
+      XB(5)=XO; XB(6)=XB(2); XB(7)=XB(3); XB(8)=XB(4)
+      YB(1)=YO; YB(2)=YB(1); YB(3)=YB(2)+DY; YB(4)=YB(3)
+      YB(5)=YO; YB(6)=YB(2); YB(7)=YB(3); YB(8)=YB(4)
+      ZB(1)=ZO; ZB(2)=ZO; ZB(3)=ZO; ZB(4)=ZO
+      ZB(5)=ZO+DZ; ZB(6)=ZO+DZ; ZB(7)=ZO+DZ; ZB(8)=ZO+DZ
+
+C Do a B angle of rotation first. No Y changes required.
+C XB(1) and XB(4) do not change. 
+C XB(2) and XB (3) change based on DX length.
+      write(6,*) CB
+      write(6,*) DX
+      XB(2)=XB(1)+(DX*CB); XB(3)=XB(4)+(DX*CB)
+
+C XB(5) & XB(8) change based on DZ length. 
+      XB(5)=XB(5)-(DZ*SB); XB(8)=XB(8)-(DZ*SB)
+
+C XB(6) & XB(7) change based on DX length.
+      XB(6)=XB(5)+(DX*CB); XB(7)=XB(8)+(DX*CB)
+
+C ZB(1) & ZB(4) do not change. 
+C ZB(2) & ZB(3) change based on DX length.
+      ZB(2)=ZB(2)+(DX*SB); ZB(3)=ZB(3)+(DX*SB) 
+
+C ZB(5) & ZB(8) change based on DZ length.
+      ZB(5)=ZO+(CB*DZ); ZB(8)=ZO+(CB*DZ) 
+      
+C ZB(6) & ZB(7) change based on DZ length.
+      ZB(6)=ZB(2)+(DZ*CB);  ZB(7)=ZB(3)+(DZ*CB) 
+      
+C Moving now to the Y rotation
+C Do an A angle of rotation. No Z changes required.
+C XB(1) does not change.       
+C XB(2) changes based on [XB(2)-XB(1)] length
+      write(6,*) CA
+      write(6,*) DX
+      XB(2)=XB(1)+(CB*DX)*CA
+      XB(3)=XB(2)-(SA*DY)
+      XB(4)=XB(1)-(SA*DY)
+      XB(5)=XB(1)-(SB*DZ)*CA
+      XB(6)=XB(5)+(CB*DX)*CA
+      XB(8)=XB(4)-(SB*DZ)*CA
+      XB(7)=XB(8)+(CB*DX)*CA
+
+C YB(1) does not change.         
+      YB(2)=YB(1)+((CB*DX)*SA)
+      YB(4)=YB(1)+(CA*DY)
+      YB(3)=YB(4)+((CB*DX)*SA)           
+      YB(5)=YB(1)-(SB*DZ)*SA
+      YB(6)=YB(5)+(CB*DX)*SA
+      YB(8)=YB(4)-(SB*DZ)*SA
+      YB(7)=YB(8)+((CB*DX)*SA)           
+
+C Debug      
+      write(6,*) 'xb1: ',XB(1),'...','yb1: ',YB(1),'...','zb1: ',ZB(1)
+      write(6,*) 'xb2: ',XB(2),'...','yb2: ',YB(2),'...','zb2: ',ZB(2)
+      write(6,*) 'xb3: ',XB(3),'...','yb3: ',YB(3),'...','zb3: ',ZB(3)
+      write(6,*) 'xb4: ',XB(4),'...','yb4: ',YB(4),'...','zb4: ',ZB(4)
+      write(6,*) 'xb5: ',XB(5),'...','yb5: ',YB(5),'...','zb5: ',ZB(5)
+      write(6,*) 'xb6: ',XB(6),'...','yb6: ',YB(6),'...','zb6: ',ZB(6)      
+      write(6,*) 'xb7: ',XB(7),'...','yb7: ',YB(7),'...','zb7: ',ZB(7)      
+      write(6,*) 'xb8: ',XB(8),'...','yb8: ',YB(8),'...','zb8: ',ZB(8)      
+
+C End debug          
 
 C Number the vertices in each face anticlockwise from the bottom
 C left-hand point when face viewed from the outside.  Top is

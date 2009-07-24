@@ -193,6 +193,9 @@ C Check for a zone obstructions file.
 
 C Now draw each obstruction block by first converting to GEN (COMMON G1)
 C and plotting.
+
+C << this is a place to use the GB1 common block and CNVBLK >>
+
         if(nbobs(newfoc).eq.0)goto 54
         DO 420 IB= 1,nbobs(newfoc)
           CALL ERECC(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
@@ -267,7 +270,9 @@ C Print labels and return to default font.
 
 C If izgfoc is not zero and nzg is one and there is an obstructions
 C file then reload current zone geometry file before returning.
+
 C << this may not be necessary if newgeo is true >>
+
       if(nzg.eq.1.and.izgfoc.gt.0)then
         newfoc=izgfoc
         IF(IOBS(newfoc).EQ.1)THEN

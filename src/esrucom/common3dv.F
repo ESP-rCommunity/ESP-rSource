@@ -1014,9 +1014,11 @@ C should be included in image.
         endif
         if(nbobs(iz).gt.0)then
           DO 301 IB=1,nbobs(iz)
+
 C << conversion to using cnvblk and common GB1 to be done >>
 C            CALL CNVBLK(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
 C     &        DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB))
+
             CALL ERECC(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
      &        DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB))
 

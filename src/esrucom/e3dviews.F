@@ -902,6 +902,9 @@ C Check geometry file version and scan geometry file to get obstructions.
             endif
           endif
           DO 301 IB=1,nbobs(ivz)
+
+C << this is a place to use the GB1 common block and CNVBLK >>
+
             CALL ERECC(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
      &        DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),BANGOB(ivz,IB))
             DO 302 I=1,NTV
@@ -925,6 +928,9 @@ C If zone bounds known jump to next zone.
 
 C If in single zone mode recover common data from memory 
 C otherwise read from file.
+
+C << might not be necessary to recover if GB1 used above >>
+
         IF(IVZ.NE.izgfoc)THEN
           call eclose(gversion(IVZ),1.1,0.01,newgeo)
           WRITE(OUTSTR,78)LGEOM(IVZ)(1:LNBLNK(LGEOM(IVZ)))
