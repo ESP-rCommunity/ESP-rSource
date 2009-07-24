@@ -73,7 +73,7 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
       CHARACTER HOLD*32
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character MODE*4,SSPARENT*12,fs*1
-      CHARACTER OUTSTR*124,H*72,ZN*12
+      CHARACTER OUTSTR*124,H*72,ZN*12,outs*124
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
@@ -200,6 +200,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         CALL EGETWR(HOLD,K,XO1,-999.9,999.9,'W','X origin',IER)
         CALL EGETWR(HOLD,K,YO1,-999.9,999.9,'W','Y origin',IER)
         CALL EGETWR(HOLD,K,ZO1,-9.9,999.9,'W','Z origin',IER)
+	write(outs,'(a,3f9.4)') 'Origin is ',XO1,YO1,ZO1
+	call edisp(iuout,outs)
 
  242    H(1)='The length (with no rotation) is along the X axis.'
         H(2)='The width (with no rotation) is along the Y axis.'
@@ -213,6 +215,8 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         CALL EGETWR(HOLD,K,DY1,0.001,99.9,'W','box depth',IER)
         CALL EGETWR(HOLD,K,DZ1,0.001,99.9,'W','box height',IER)
         if(DX1.lt.0.001.or.DY1.lt.0.001)goto 242
+	write(outs,'(a,3f9.4)') 'Width depth height is ',DX1,DY1,DZ1
+	call edisp(iuout,outs)
 
         H(1)='Orientation is the angle between the length (DX) side'
         H(2)='of the rectangle and the X-axis, anticlockwise +ve.'
@@ -253,10 +257,6 @@ C User begins with an extruded shape.
         CALL EASKI(NW,' ','Number of walls?',
      &           3,'F',MS-2,'F',4,'no of walls',IERI,2)
         if(ieri.eq.-3) goto 42
-C        call edisp(iuout,'Input the coordinates around the base ')
-C        call edisp(iuout,'polygon ANTI-clockwise looking from the')
-C        call edisp(iuout,'top, preferably beginning from the lower ')
-C        call edisp(iuout,'left corner of the enclosure. ')
 
         DO 45 IW=1,NW
           WRITE(OUTSTR,'(A,I2,A)')' For base vertex',IW,'  X & Y:'
@@ -268,7 +268,12 @@ C        call edisp(iuout,'left corner of the enclosure. ')
           K=0
           CALL EGETWR(HOLD,K,XX(IW),-999.,999.,'W','flr X',IER)
           CALL EGETWR(HOLD,K,YY(IW),-999.,999.,'W','flr Y',IER)
+	  write(outs,'(a,i3,a,2f9.4)') 'X&Y for v ',IW,' is ',
+     &      XX(IW),YY(IW)
+	  call edisp(iuout,outs)
    45   CONTINUE
+
+C Allow user to have a 2nd chance to input the vertices.
         dok=.true.
         h(1)='If you have any doubt as to whether you entered the'
         h(2)='correct vertex coordinates you can save time by'
