@@ -83,6 +83,7 @@ C  CROSS2:  Performs a cross-product on vectors passing parameters as ax,ay,az e
 C  DOT3(a,b,product) Return dot product of two vectors a & b.
 C  ZEROS:   Clear a 4x4 array prior to doing vieweing transforms.
 C  ECLOSE:  Checks tolerance between two real numbers.
+C  ECLOSE3: Checks tolerance between two real vectors (3 numbers).
 C  ESIND:   Function returning SIN of angle where angle is given in degrees.
 C  ECOSD:   Function returning COS of angle where angle is given in degrees.
 C  ETAND:   Function returning TAN of angle where angle is given in degrees.
@@ -2276,6 +2277,27 @@ C to a given tolerance TOL and returns CLOSE = .TRUE. or .FALSE.
         CLOSE = .FALSE.
       ENDIF
 
+      RETURN
+      END
+
+C ******************** ECLOSE3
+C ECLOSE3 allows two real vectors R1 & R2  & R3 to be checked for closeness
+C to a given tolerance TOL with X1 X2 & X3 and returns CLOSE = .TRUE. or .FALSE.
+      SUBROUTINE ECLOSE3(R1,R2,R3,X1,X2,X3,TOL,CLOSE)
+      LOGICAL CLOSE,CLOSEA,CLOSEB,CLOSEC
+      real R1,R2,R3  ! the vector to test
+      real X1,X2,X3  ! the vector to compare against
+      real TOL       ! how close
+
+      call eclose(R1,X1,TOL,CLOSEA)   ! test first pair
+      call eclose(R2,X2,TOL,CLOSEB)   ! test second pair
+      call eclose(R3,X3,TOL,CLOSEC)   ! test third pair
+      if(CLOSEA.and.CLOSEB.and.CLOSEC)then   
+        CLOSE=.true.  ! all are close
+      else
+        CLOSE=.false. ! at least one is different
+      endif
+      
       RETURN
       END
 

@@ -891,12 +891,10 @@ C rather than the matdatarray common blocks.
      &                  DRV,TITL,PNAM)
 
       CHARACTER PNAM*72,TITL*72,outs*124
-      logical close1,close2,close3
+      logical close4
 
       IER=0
-      close1=.false.
-      close2=.false.
-      close3=.false.
+      close4=.false.
 
 C The record in the material db is IEL + 1 UNLESS the
 C reference is to material db 0 (air).
@@ -913,10 +911,8 @@ C reference is to material db 0 (air).
      &       DRV,PNAM
 
 C If all values are still 0.0 then not an actual element.
-        CALL ECLOSE(DBCON,0.0,0.001,CLOSE1)
-        CALL ECLOSE(DBDEN,0.0,0.001,CLOSE2)
-        CALL ECLOSE(DBSHT,0.0,0.001,CLOSE3)
-        if(CLOSE1.and.CLOSE2.and.CLOSE3)then
+        call eclose3(DBCON,DBDEN,DBSHT,0.0,0.0,0.0,0.001,CLOSE4)
+        if(CLOSE4)then
           write(outs,'(A,I3,A,2i4)') ' Material db reference ',IEL,
      &                           ' has no data, or all zero...',IR,IFMAT
           call usrmsg(outs,' Please check your selection! ','W')
