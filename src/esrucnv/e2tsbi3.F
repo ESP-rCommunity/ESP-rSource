@@ -808,6 +808,7 @@ C Arrays of material properties.
       character outs*124,outsd*124,hc*1
       logical XST,numb
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer llbm    ! length of block material
 
 C Setup standard assumptions.
       IFIL=11
@@ -1176,9 +1177,9 @@ C (which holds its coordinates of along with the first surface.
             WRITE(ioout,'(a)') '  children ['
             WRITE(ioout,'(a)') '    Shape {'
             if(kbs.eq.1)then   ! include the block material
+              llbm=LNBLOCKMAT(newfoc,IB)
               WRITE(ioout,'(2a)')
-     &          '     appearance USE Solid_',
-     &          BLOCKMAT(newfoc,IB)(1:lnblnk(BLOCKMAT(newfoc,IB)))
+     &         '     appearance USE Solid_',BLOCKMAT(newfoc,IB)(1:llbm)
               call ifnumber(BLOCKNAME(newfoc,IB)(1:1),numb)
               if(numb)then
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF a',
@@ -1219,9 +1220,9 @@ C Write a comma separated list of vertices with a trailing -1.
               WRITE(ioout,'(a)') '} '
               WRITE(ioout,'(a)') '  '
             else
+              llbm=LNBLOCKMAT(newfoc,IB)
               WRITE(ioout,'(2a)')
-     &          '     appearance USE Solid_',
-     &          BLOCKMAT(newfoc,IB)(1:lnblnk(BLOCKMAT(newfoc,IB)))
+     &         '     appearance USE Solid_',BLOCKMAT(newfoc,IB)(1:llbm)
               call ifnumber(BLOCKNAME(newfoc,IB)(1:1),numb)
               if(numb)then
                 WRITE(ioout,'(2a,i1,a)')'      geometry DEF a',

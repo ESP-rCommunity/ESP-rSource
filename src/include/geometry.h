@@ -75,7 +75,10 @@ C Obstruction block commons (whole model)
 
 C BLOCKNAMEM (12 char) name of obstruction block.
 C BLOCKMAT (32 char) obstruction block construction (for Radiance).
+C LNBLOCKNAME,LNBLOCKMAT - length of strings.
       character BLOCKNAME*12,BLOCKMAT*12
       common/GS8/BLOCKNAME(MCOM,MB),BLOCKMAT(MCOM,MB)
+      integer LNBLOCKNAME,LNBLOCKMAT
+      common/GS8LN/LNBLOCKNAME(MCOM,MB),LNBLOCKMAT(MCOM,MB)
 
 

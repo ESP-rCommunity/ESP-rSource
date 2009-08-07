@@ -1391,6 +1391,7 @@ C in the file.
             BANGOB(iz,ibu) = 0.0
             BLOCKNAME(iz,ibu) = ' '
             BLOCKMAT(iz,ibu) = ' '
+            LNBLOCKMAT(iz,ibu) = 0
   55      continue
           do 53 isu=1,MTV   ! clear the coordinates
             szcoords(iz,isu,1)=0.0
@@ -1825,6 +1826,7 @@ C An obstruction block to be associated with the current zone.
         write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
         CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
         write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKMAT(nsz,nob)=lnblnk(BLOCKMAT(nsz,nob))
         goto 43
       elseif(WORD(1:7).eq.'*origin')then
         if(shape(nsz)(1:3).eq.'box')then
@@ -2504,6 +2506,7 @@ C Obstructions - this is only known after scanning zone file.
           BANGOB(iz,ibu) = 0.0
           BLOCKNAME(iz,ibu) = ' '
           BLOCKMAT(iz,ibu) = ' '
+          LNBLOCKMAT(iz,ibu) = 0
   55    continue
 
   42  continue

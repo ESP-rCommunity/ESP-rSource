@@ -2005,6 +2005,7 @@ C Read another line to get the actual blocks.
 C The name of the construction might contain spaces so use EGETP.
             CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
             write(BLOCKMAT(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
+            LNBLOCKMAT(icomp,nbo)=lnblnk(BLOCKMAT(icomp,nbo))
             goto 72
           elseif(phrase(1:4).eq.'*mrt')then
 

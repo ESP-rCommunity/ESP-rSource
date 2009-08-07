@@ -2553,6 +2553,7 @@ C Ask for name.
      &      'associate with the block for visualisation purposes.',IER)
           IF(ISEL.GT.0)then
             WRITE(BLOCKMAT(IC,nbo),'(A)')DESC(ISEL)(1:12)
+            LNBLOCKMAT(IC,nbo)=lnblnk(BLOCKMAT(IC,nbo))
           endif
           XOB(IC,nbo)=tpx1
           YOB(IC,nbo)=tpy1

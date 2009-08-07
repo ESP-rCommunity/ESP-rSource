@@ -660,6 +660,7 @@ C Arrays of material properties.
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72
       integer lnrp  ! length of run path
+      integer lnbm  ! length of block material
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,fict,extern,XST,similar
       logical skydone,outdone,indone,misdone,vewdone,glzdone
@@ -1195,9 +1196,9 @@ C Create a genbox command to match the obstruction.
      &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
               WRITE(irofil,'(a)') ' '
             else
+              lnbm=LNBLOCKMAT(newfoc,ib)
               WRITE(irofil,'(a,a,a,a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genbox  rc_ex_',
-     &          BLOCKMAT(newfoc,ib)(1:lnblnk(BLOCKMAT(newfoc,ib))),
+     &          '!genbox  rc_ex_',BLOCKMAT(newfoc,ib)(1:lnbm),
      &          '  ',        
      &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB))),
      &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),

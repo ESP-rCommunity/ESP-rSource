@@ -84,6 +84,7 @@ C LPRFDB,IPRODB (for event profile database)
       LOGICAL comold,tmcold,vwfold,ishold,unixok,cfcold
       logical newgeo  ! to use for testing if new/old geometry file.
       logical silent  ! to signal quiet dependency resolution
+      integer llbm    ! for length of material
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -178,13 +179,15 @@ C current menu line index. Build up text strings for the menu as well
 C as a list for copy and delete use. 
       M=MHEAD
       DO 10 L=1,ILEN
-        WRITE(PICK(L),304)L,BLOCKNAME(ICOMP,L),BLOCKMAT(ICOMP,L)(1:12)
+        llbm=LNBLOCKMAT(ICOMP,L)
+        WRITE(PICK(L),304)L,BLOCKNAME(ICOMP,L),
+     &    BLOCKMAT(ICOMP,L)(1:llbm)
   304   FORMAT(I3,2X,A,1x,A)
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M,KEY,IER)
           WRITE(VERT(M),303)KEY,L,BLOCKNAME(ICOMP,L),
-     &      BLOCKMAT(ICOMP,L)(1:12)
+     &      BLOCKMAT(ICOMP,L)(1:llbm)
   303     FORMAT(A1,I3,2X,A,1x,A)
         ENDIF
    10 CONTINUE
@@ -477,6 +480,7 @@ C To delete the last obstruction, dereference the file and exit.
                 BANGOB(icomp,IDV)=BANGOB(icomp,IDV+1)
                 BLOCKNAME(icomp,IDV)=BLOCKNAME(icomp,IDV+1)
                 BLOCKMAT(icomp,IDV)=BLOCKMAT(icomp,IDV+1)
+                LNBLOCKMAT(icomp,IDV)=LNBLOCKMAT(icomp,IDV+1)
   791         CONTINUE
               nbobs(icomp)=nbobs(icomp)-1
   143       continue
@@ -496,6 +500,7 @@ C To delete the last obstruction, dereference the file and exit.
             BANGOB(icomp,nbo)=0
             BLOCKNAME(icomp,nbo)='new_blk'
             BLOCKMAT(icomp,nbo)='NONE'
+            LNBLOCKMAT(icomp,nbo)=4
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(newgeo)then
@@ -567,6 +572,7 @@ C Ask for transform distance for obstruction and then apply.
             DZOB(icomp,nbo)=DZOB(icomp,IFOC)
             BANGOB(icomp,nbo)=BANGOB(icomp,IFOC)
             BLOCKMAT(icomp,nbo)=BLOCKMAT(icomp,IFOC)
+            LNBLOCKMAT(icomp,nbo)=LNBLOCKMAT(icomp,nbo)
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(newgeo)then
@@ -781,6 +787,7 @@ C If we need to make a dummy obstruction file do this.
         BANGOB(icomp,1)=0
         BLOCKNAME(ICOMP,1)='First'
         BLOCKMAT(ICOMP,1)='NONE'
+        LNBLOCKMAT(ICOMP,1)=4
         NOX(icomp)=20
         NOZ(icomp)=20
         if(newgeo)then
@@ -919,6 +926,7 @@ C Provide default values for the new obstructions file.
         BANGOB(icomp,1)=0
         BLOCKNAME(ICOMP,1)='First'
         BLOCKMAT(ICOMP,1)='NONE'
+        LNBLOCKMAT(ICOMP,1)=4
         NOX(icomp)=20
         NOZ(icomp)=20
         CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
@@ -974,6 +982,7 @@ C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       character HOLD*32,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer llbm    ! length for material
 
 C Initial values for point at angle facility.
       V1=1.0
@@ -1017,8 +1026,9 @@ C Set menu header text.
      &  DYOB(ICOMP,IB),DZOB(ICOMP,IB)
       WRITE(VERT(3),'(A,F7.2)')   'c rotation    : ',BANGOB(ICOMP,IB)
       WRITE(VERT(4),'(A,A)')      'd name        : ',BLOCKNAME(ICOMP,IB)
+      llbm=LNBLOCKMAT(ICOMP,IB)
       WRITE(VERT(5),'(A,A)')      'e construction: ',
-     &  BLOCKMAT(ICOMP,IB)(1:12)
+     &  BLOCKMAT(ICOMP,IB)(1:llbm)
       VERT(6)                  =  '  ____________________________ '
       VERT(7)                  =  '  block coords    X       Y   '
       WRITE(VERT(8),'(A,2F8.3)')  '  front left  :',XB(1),YB(1)
@@ -1202,6 +1212,7 @@ C Note: this logic only picks up the first 12 char of construction.
         CALL EPMENRC
         IF(ISEL.GT.0)then
           WRITE(BLOCKMAT(icomp,IB),'(A)')DESC(ISEL)(1:12)
+          LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
           MODIFY=.TRUE.
         endif
         IF(IER.EQ.1)THEN
@@ -1419,6 +1430,7 @@ C Create the sill obstruction.
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'s'
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
+      LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
       CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
 
 C Create the head obstruction.
@@ -1434,6 +1446,7 @@ C Create the head obstruction.
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'h'
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
+      LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1453,6 +1466,7 @@ C Create the left side fin.
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'l'
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
+      LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1472,6 +1486,7 @@ C Create the right side fin.
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'r'
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
+      LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else

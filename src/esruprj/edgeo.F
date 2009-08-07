@@ -144,7 +144,7 @@ C prec17 common is described in geometry.h.
       real areaslproof,areafltroof,areaskylt
       real uavgtran,uavgsky,uavwall,uavfltroof,uavslproof,wallper
 
-      integer lna,lnb
+      integer lna,lnb,lnbm,lnbn
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2053,10 +2053,11 @@ C Display obstructions if newgeom is true.
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
               DO 9995 I=1,nbobs(icomp)
                 lnbn=LNBLNK(BLOCKNAME(icomp,I))
+                lnbm=LNBLOCKMAT(icomp,I)
                 WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
      &            ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
      &            DZOB(icomp,I),BANGOB(icomp,I),
-     &            BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)
+     &            BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
  9994           FORMAT(I3,7F8.1,' ',a,' ',a)
                 call edisp(iuout,outs)
  9995         CONTINUE
