@@ -40,6 +40,7 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
@@ -191,41 +192,38 @@ C Check for a zone obstructions file.
   400   CONTINUE
         call forceflush()
 
-C Now draw each obstruction block by first converting to GEN (COMMON G1)
-C and plotting.
-
-C << this is a place to use the GB1 common block and CNVBLK >>
-
+C Now draw each obstruction block by first converting to GB1
+C common block via CNVBLK.
         if(nbobs(newfoc).eq.0)goto 54
         DO 420 IB= 1,nbobs(newfoc)
-          CALL ERECC(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
+          CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
      &      BANGOB(newfoc,IB))
-          DO 422 I=1,NSUR
-            J=JVN(I,1)
+          DO 422 I=1,6   ! for each surface in the block
+            J=JVNB(I,1)
             iupdown=0
             isym=0
-            if(direc.eq.'P')call etplot(X(J),Y(J),iupdown,isym)
-            if(direc.eq.'S')call etplot(X(J),Z(J),iupdown,isym)
-            if(direc.eq.'E')call etplot(Y(J),Z(J),iupdown,isym)
-            K=NVER(I)
+            if(direc.eq.'P')call etplot(XB(J),YB(J),iupdown,isym)
+            if(direc.eq.'S')call etplot(XB(J),ZB(J),iupdown,isym)
+            if(direc.eq.'E')call etplot(YB(J),ZB(J),iupdown,isym)
+            K=4          ! for each edge of block surface
             DO 424 L=2,K
-              M=JVN(I,L)
+              M=JVNB(I,L)
               iupdown=1
               isym=0
-              if(direc.eq.'P')call etplot(X(M),Y(M),iupdown,isym)
-              if(direc.eq.'S')call etplot(X(M),Z(M),iupdown,isym)
-              if(direc.eq.'E')call etplot(Y(M),Z(M),iupdown,isym)
+              if(direc.eq.'P')call etplot(XB(M),YB(M),iupdown,isym)
+              if(direc.eq.'S')call etplot(XB(M),ZB(M),iupdown,isym)
+              if(direc.eq.'E')call etplot(YB(M),ZB(M),iupdown,isym)
   424       CONTINUE
             iupdown=1
             isym=0
-            if(direc.eq.'P')call etplot(X(J),Y(J),iupdown,isym)
-            if(direc.eq.'S')call etplot(X(J),Z(J),iupdown,isym)
-            if(direc.eq.'E')call etplot(Y(J),Z(J),iupdown,isym)
+            if(direc.eq.'P')call etplot(XB(J),YB(J),iupdown,isym)
+            if(direc.eq.'S')call etplot(XB(J),ZB(J),iupdown,isym)
+            if(direc.eq.'E')call etplot(YB(J),ZB(J),iupdown,isym)
   422     CONTINUE
-          if(direc.eq.'P')call u2pixel(X(J),Y(J),iix,iiy)
-          if(direc.eq.'S')call u2pixel(X(J),Z(J),iix,iiy)
-          if(direc.eq.'E')call u2pixel(Y(J),Z(J),iix,iiy)
+          if(direc.eq.'P')call u2pixel(XB(J),YB(J),iix,iiy)
+          if(direc.eq.'S')call u2pixel(XB(J),ZB(J),iix,iiy)
+          if(direc.eq.'E')call u2pixel(YB(J),ZB(J),iix,iiy)
           WRITE(blabel,423)IB
   423     FORMAT('B',I2)
           iid1=iix+4; iid2=iiy-4;

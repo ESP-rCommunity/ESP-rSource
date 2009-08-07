@@ -904,7 +904,7 @@ C Passed parameters.
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -951,6 +951,10 @@ C Pass ICOMP in as a positive so that 'ALL' is included in list.
           IVALS(IZZ)=ICOMP
    79   CONTINUE
       ENDIF
+
+C In the future it may not be necessary to re-scan the geometry
+C files if we switch to the global coordinate data structures.
+C << task to be done >>
 
       IF(INPIC.EQ.0)GOTO 105
       DO 83 IZ=1,INPIC
@@ -1015,32 +1019,32 @@ C should be included in image.
         if(nbobs(iz).gt.0)then
           DO 301 IB=1,nbobs(iz)
 
-C << conversion to using cnvblk and common GB1 to be done >>
-C            CALL CNVBLK(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
-C     &        DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB))
-
-            CALL ERECC(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
+C Conversion using cnvblk and common GB1.
+            CALL CNVBLK(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
      &        DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB))
 
+C            CALL ERECC(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
+C     &        DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB))
+
 C Write obstruction information to the viewer file. First invert edges.
-            DO 320 J=1,NSUR
-              K=NVER(J)
+            DO 320 J=1,6
+              K=4
               DO 330 L=1,K/2
-                ITEMP=JVN(J,L)
-                JVN(J,L)=JVN(J,K+1-L)
-                JVN(J,K+1-L)=ITEMP
+                ITEMP=JVNB(J,L)
+                JVNB(J,L)=JVNB(J,K+1-L)
+                JVNB(J,K+1-L)=ITEMP
   330         CONTINUE
   320       CONTINUE
 
 C Write obstructions to output file.
             WRITE(IUO,218)zname(IVALS(IZ))
   218       FORMAT('GEN',1X,A12,' obstructions')
-            WRITE(IUO,'(2I7)')NTV,NSUR
-            DO 240 J=1,NTV
-              WRITE(IUO,'(3F8.3)')X(J),Y(J),Z(J)
+            WRITE(IUO,'(a)')'  8  6'
+            DO 240 J=1,8
+              WRITE(IUO,'(3F8.3)')XB(J),YB(J),ZB(J)
   240       CONTINUE
-            DO 250 J=1,NSUR
-              WRITE(IUO,'(2X,I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
+            DO 250 J=1,6
+              WRITE(IUO,'(a,21I3)') '  4 ',(JVNB(J,K),K=1,4)
   250       CONTINUE
   301     CONTINUE
         ENDIF

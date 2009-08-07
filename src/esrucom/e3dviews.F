@@ -785,6 +785,7 @@ C ZBFLG()=0 bounds must be recalculated, ZBFLG()=1 use current value.
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
@@ -851,6 +852,8 @@ C If site origin has been included then check its bounds as well.
         ZMX=AMAX1(ZMX,0.0)
       ELSE
 
+C << consider shifting logic to use global coordinates >>
+
 C Read in one of the selected geometry files. However, if this
 C matches the one currently being edited take this from the
 C saved common rather than from the zone file.
@@ -884,7 +887,7 @@ C If bounds for this zone need checking reset max & min.
 
 C If obstructions are to be drawn, get the name of the
 C obstruction file, read it, transform the obstruction
-C description into a gen body and then get its bounds.
+C description and then get its bounds.
         IF(ITDSP.EQ.0.or.ITDSP.eq.5)THEN
           if(IOBS(IVZ).EQ.1)then
             IUF=IFIL+1
@@ -901,22 +904,25 @@ C Check geometry file version and scan geometry file to get obstructions.
               call georead(IFIL+1,LGEOM(IVZ),IVZ,1,IUOUT,IER)
             endif
           endif
+
           DO 301 IB=1,nbobs(ivz)
 
-C << this is a place to use the GB1 common block and CNVBLK >>
-
-            CALL ERECC(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
+C Use the GB1 common block and CNVBLK to find bounds
+            CALL CNVBLK(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
      &        DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),BANGOB(ivz,IB))
-            DO 302 I=1,NTV
+
+C            CALL ERECC(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
+C     &        DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),BANGOB(ivz,IB))
+            DO 302 I=1,8
               IF(ITBND.NE.0)THEN
 
 C Update the overall model bounds to include any obstructions.
-                XMN=AMIN1(XMN,X(I))
-                YMN=AMIN1(YMN,Y(I))
-                ZMN=AMIN1(ZMN,Z(I))
-                XMX=AMAX1(XMX,X(I))
-                YMX=AMAX1(YMX,Y(I))
-                ZMX=AMAX1(ZMX,Z(I))
+                XMN=AMIN1(XMN,XB(I))
+                YMN=AMIN1(YMN,YB(I))
+                ZMN=AMIN1(ZMN,ZB(I))
+                XMX=AMAX1(XMX,XB(I))
+                YMX=AMAX1(YMX,YB(I))
+                ZMX=AMAX1(ZMX,ZB(I))
               ENDIF
   302       CONTINUE
   301     CONTINUE
