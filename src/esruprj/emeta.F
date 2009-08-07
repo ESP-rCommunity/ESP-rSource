@@ -1390,6 +1390,7 @@ C in the file.
             DZOB(iz,ibu) = 0.0
             BANGOB(iz,ibu) = 0.0
             BLOCKNAME(iz,ibu) = ' '
+            LNBLOCKNAME(iz,ibu) = 0
             BLOCKMAT(iz,ibu) = ' '
             LNBLOCKMAT(iz,ibu) = 0
   55      continue
@@ -1824,6 +1825,7 @@ C An obstruction block to be associated with the current zone.
         BANGOB(nsz,nob)=val1
         CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
         write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKNAME(nsz,nob)=lnblnk(BLOCKNAME(nsz,nob))
         CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
         write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
         LNBLOCKMAT(nsz,nob)=lnblnk(BLOCKMAT(nsz,nob))
@@ -2505,6 +2507,7 @@ C Obstructions - this is only known after scanning zone file.
           DZOB(iz,ibu) = 0.0
           BANGOB(iz,ibu) = 0.0
           BLOCKNAME(iz,ibu) = ' '
+          LNBLOCKNAME(iz,ibu) = 0
           BLOCKMAT(iz,ibu) = ' '
           LNBLOCKMAT(iz,ibu) = 0
   55    continue

@@ -1164,7 +1164,7 @@ C For the inside and outside layer get surface properties.
  77       continue
 
 C Remeber characters in block name
-          lsn=lnblnk(BLOCKNAME(newfoc,IB))
+          lsn=LNBLOCKNAME(newfoc,IB)
 
 C If the first face write initial anchor for this obstruction
 C (which holds its coordinates of along with the first surface.
@@ -1191,7 +1191,7 @@ C (which holds its coordinates of along with the first surface.
               WRITE(ioout,'(a)') '        ccw TRUE'
               WRITE(ioout,'(a)') '        solid FALSE'
               WRITE(ioout,'(3a)')'        coord DEF COORD_',
-     &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB))),
+     &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
      &          ' Coordinate { point ['
 
 C Note on coordinates:
@@ -1234,7 +1234,7 @@ C Write a comma separated list of vertices with a trailing -1.
               WRITE(ioout,'(a)') '        ccw TRUE'
               WRITE(ioout,'(a)')'        solid TRUE'
               WRITE(ioout,'(2a)')'        coord USE COORD_',
-     &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB)))
+     &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB))
               write(outs,'(4I4)') (JVNB(kbs,K)-1,K=1,4)
               call sdelim(outs,outsd,'S',IW)
               WRITE(ioout,'(3a)') '        coordIndex [ ',

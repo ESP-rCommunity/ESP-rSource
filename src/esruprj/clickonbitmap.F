@@ -2540,7 +2540,10 @@ C Ask for name.
           S12='blk_'
           CALL EASKS(S12,' ',' Name of obstruction? ',
      &      12,'obstruction','Block name',IER,1)
-          IF(S12(1:2).NE.'  ')BLOCKNAME(IC,nbo)=S12
+          IF(S12(1:2).NE.'  ')then
+            BLOCKNAME(IC,nbo)=S12
+            LNBLOCKNAME(IC,nbo)=lnblnk(S12)
+          endif
           H(1)='The base elevation of obstruction is in metres.'
           CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
      &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,1)

@@ -84,7 +84,7 @@ C LPRFDB,IPRODB (for event profile database)
       LOGICAL comold,tmcold,vwfold,ishold,unixok,cfcold
       logical newgeo  ! to use for testing if new/old geometry file.
       logical silent  ! to signal quiet dependency resolution
-      integer llbm    ! for length of material
+      integer llbm,llbn  ! for length of block material and name
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -180,13 +180,14 @@ C as a list for copy and delete use.
       M=MHEAD
       DO 10 L=1,ILEN
         llbm=LNBLOCKMAT(ICOMP,L)
-        WRITE(PICK(L),304)L,BLOCKNAME(ICOMP,L),
+        llbn=LNBLOCKNAME(ICOMP,L)
+        WRITE(PICK(L),304)L,BLOCKNAME(ICOMP,L)(1:llbn),
      &    BLOCKMAT(ICOMP,L)(1:llbm)
   304   FORMAT(I3,2X,A,1x,A)
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          WRITE(VERT(M),303)KEY,L,BLOCKNAME(ICOMP,L),
+          WRITE(VERT(M),303)KEY,L,BLOCKNAME(ICOMP,L)(1:llbn),
      &      BLOCKMAT(ICOMP,L)(1:llbm)
   303     FORMAT(A1,I3,2X,A,1x,A)
         ENDIF
@@ -479,6 +480,7 @@ C To delete the last obstruction, dereference the file and exit.
                 DZOB(icomp,IDV)=DZOB(icomp,IDV+1)
                 BANGOB(icomp,IDV)=BANGOB(icomp,IDV+1)
                 BLOCKNAME(icomp,IDV)=BLOCKNAME(icomp,IDV+1)
+                LNBLOCKNAME(icomp,IDV)=LNBLOCKNAME(icomp,IDV+1)
                 BLOCKMAT(icomp,IDV)=BLOCKMAT(icomp,IDV+1)
                 LNBLOCKMAT(icomp,IDV)=LNBLOCKMAT(icomp,IDV+1)
   791         CONTINUE
@@ -499,6 +501,7 @@ C To delete the last obstruction, dereference the file and exit.
             DZOB(icomp,nbo)=1.0
             BANGOB(icomp,nbo)=0
             BLOCKNAME(icomp,nbo)='new_blk'
+            LNBLOCKNAME(icomp,nbo)=7
             BLOCKMAT(icomp,nbo)='NONE'
             LNBLOCKMAT(icomp,nbo)=4
             MODIFY=.TRUE.
@@ -545,6 +548,7 @@ C Copy obstruction.
      &        12,'block','obs block name',IER,2)
             if(tbn(1:12).ne.BLOCKNAME(ICOMP,IFOC)(1:12))then
               write(BLOCKNAME(ICOMP,nbo),'(a)') tbn
+              LNBLOCKNAME(ICOMP,nbo)=lnblnk(tbn)
             else
               call usrmsg('The block name must be unique',
      &                    'please supply a different name','W')
@@ -786,6 +790,7 @@ C If we need to make a dummy obstruction file do this.
         DZOB(icomp,1)=1.0
         BANGOB(icomp,1)=0
         BLOCKNAME(ICOMP,1)='First'
+        LNBLOCKNAME(ICOMP,1)=5
         BLOCKMAT(ICOMP,1)='NONE'
         LNBLOCKMAT(ICOMP,1)=4
         NOX(icomp)=20
@@ -925,6 +930,7 @@ C Provide default values for the new obstructions file.
         DZOB(icomp,1)=1.0
         BANGOB(icomp,1)=0
         BLOCKNAME(ICOMP,1)='First'
+        LNBLOCKNAME(ICOMP,1)=5
         BLOCKMAT(ICOMP,1)='NONE'
         LNBLOCKMAT(ICOMP,1)=4
         NOX(icomp)=20
@@ -1200,7 +1206,10 @@ C Now display the menu.
         S12=BLOCKNAME(ICOMP,IB)
         CALL EASKS(S12,' ',' Name of obstruction? ',
      &    12,'obstruction','Block name',IER,1)
-        IF(S12(1:2).NE.'  ')BLOCKNAME(ICOMP,IB)=S12
+        IF(S12(1:2).NE.'  ')then
+          BLOCKNAME(ICOMP,IB)=S12
+          LNBLOCKNAME(ICOMP,IB)=lnblnk(S12)
+        endif
         MODIFY=.TRUE.
       ELSEIF(IVERT.EQ.5)THEN
 
@@ -1429,6 +1438,7 @@ C Create the sill obstruction.
       BANGOB(icomp,nbo)=RO
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'s'
+      LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
       CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
@@ -1445,6 +1455,7 @@ C Create the head obstruction.
       BANGOB(icomp,nbo)=RO
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'h'
+      LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
       if(newgeo)then
@@ -1465,6 +1476,7 @@ C Create the left side fin.
       BANGOB(icomp,nbo)=RO
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'l'
+      LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
       if(newgeo)then
@@ -1485,6 +1497,7 @@ C Create the right side fin.
       BANGOB(icomp,nbo)=RO
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'r'
+      LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
       if(newgeo)then

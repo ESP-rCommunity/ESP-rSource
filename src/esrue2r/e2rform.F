@@ -1190,7 +1190,7 @@ C Create a genbox command to match the obstruction.
             if(BLOCKMAT(newfoc,ib)(1:4).eq.'NONE')then
               WRITE(irofil,'(a,a,3f9.3,a,f9.3,a,3f9.3)')
      &          '!genbox rc_ex_unknown ',
-     &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB))),
+     &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
      &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
      &          ' | xform -rz ',BANGOB(newfoc,ib),
      &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
@@ -1200,7 +1200,7 @@ C Create a genbox command to match the obstruction.
               WRITE(irofil,'(a,a,a,a,3f9.3,a,f9.3,a,3f9.3)')
      &          '!genbox  rc_ex_',BLOCKMAT(newfoc,ib)(1:lnbm),
      &          '  ',        
-     &          BLOCKNAME(newfoc,IB)(1:lnblnk(BLOCKNAME(newfoc,IB))),
+     &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
      &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
      &          ' | xform -rz ',BANGOB(newfoc,ib),
      &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)

@@ -2052,7 +2052,7 @@ C Display obstructions if newgeom is true.
               call edisp(iuout,
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
               DO 9995 I=1,nbobs(icomp)
-                lnbn=LNBLNK(BLOCKNAME(icomp,I))
+                lnbn=LNBLOCKNAME(icomp,I)
                 lnbm=LNBLOCKMAT(icomp,I)
                 WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
      &            ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),

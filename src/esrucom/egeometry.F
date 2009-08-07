@@ -2001,6 +2001,7 @@ C Read another line to get the actual blocks.
             BANGOB(icomp,nbo)=VX
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
+            LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
 
 C The name of the construction might contain spaces so use EGETP.
             CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)

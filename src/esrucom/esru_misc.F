@@ -1068,7 +1068,7 @@ C geometry.h provides common block GS5/GS6/GS7/GS8
 C Error messages (for use by low level I/O calls)
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER LOBS*72,tmp*12,OUTSTR*124,WORD*32
+      CHARACTER LOBS*72,OUTSTR*124,WORD*32
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
       integer NGXD,NGZD  ! dummy values for depreciated NGX & NGZ
@@ -1136,15 +1136,18 @@ C then assign the block index as the name via internal read.
             IF(I.LE.9)THEN
               WRITE(BLOCKNAME(ICOMP,I),77)I
    77         FORMAT('B',I1)
+              LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
             ELSEIF(I.GT.9)THEN
               WRITE(BLOCKNAME(ICOMP,I),78)I
    78         FORMAT('B',I2)
+              LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
             ENDIF
             BLOCKMAT(ICOMP,I)='NONE'
             LNBLOCKMAT(ICOMP,I)=4
           ELSEIF(ND.EQ.8)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(ICOMP,I)=WORD(1:12)
+            LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
             BLOCKMAT(ICOMP,I)='NONE'
             LNBLOCKMAT(ICOMP,I)=4
           ELSEIF(ND.EQ.9)THEN
@@ -1153,6 +1156,7 @@ C Get name of obstruction block and its construction (which might
 C contain spaces).
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(ICOMP,I)=WORD(1:12)
+            LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
             CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
             write(BLOCKMAT(ICOMP,I),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKMAT(icomp,i)=lnblnk(BLOCKMAT(icomp,i))
@@ -1192,10 +1196,10 @@ C Trace.
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
         DO 9995 I=1,nbobs(icomp)
           llbm=LNBLOCKMAT(ICOMP,I)
-          tmp=BLOCKNAME(ICOMP,I)
+          llbn=LNBLOCKNAME(ICOMP,I)
           WRITE(OUTSTR,9994)I,XOB(ICOMP,I),YOB(ICOMP,I),ZOB(ICOMP,I),
      &      DXOB(ICOMP,I),DYOB(ICOMP,I),DZOB(ICOMP,I),BANGOB(ICOMP,I),
-     &      tmp(1:LNBLNK(TMP)),BLOCKMAT(ICOMP,I)(1:llbm)
+     &      BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm)
  9994     FORMAT(I3,7F8.1,' ',a,' ',a)
           CALL EDISP(ITRU,OUTSTR)
  9995   CONTINUE
@@ -1252,10 +1256,11 @@ C For each block write info, use space as item separation.
      &'# origin X Y Z, width, depth, height, rot angle, descr, material'
       DO 10 I=1,nbobs(icomp)
         llbm=LNBLOCKMAT(ICOMP,I)
+        llbn=LNBLOCKNAME(ICOMP,I)
         WRITE(outl,34,IOSTAT=IOS,ERR=3)XOB(icomp,I),YOB(icomp,I),
      &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
      &    BANGOB(icomp,I),
-     &    BLOCKNAME(ICOMP,I),BLOCKMAT(ICOMP,I)(1:llbm),I
+     &    BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm),I
   34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
