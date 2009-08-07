@@ -719,54 +719,57 @@ c There are several opportunities to use other common blocks.
       common/pangl/pazi(ms),pelv(ms),ptilt(ms)
 
       character outs*124
-      logical ok
+      logical ok,tok
+
+C If trace is on set tok.
+      tok=.false.
+      if(icout.eq.33)tok=.true.
 
       pi = 4.0 * atan(1.0)
       r=pi/180.
 
 C  Cosine of the angle of incidence and surface-solar azimuth angle.
       do 40 i=1,nzsur(icomp)
-         if(salt1.gt.0.0)then
-            psazi=abs(pazi(i)-sazi1)
-            x1=cos(salt1*r)
-            x2=sin((90.-pelv(i))*r)
-            x3=cos(psazi*r)
-            x4=sin(salt1*r)
-            x5=cos((90.-pelv(i))*r)
-            caie(i)=x1*x2*x3+x4*x5
-            paz=pazi(i)+180.0
-            if(pazi(i).gt.180.0)paz=pazi(i)-180.0
-            psazi=abs(paz-sazi1)
-            x3=cos(psazi*r)
-            x1=cos(salt1*r)
-            x2=sin((90.+pelv(i))*r)
-            x3=cos(psazi*r)
-            x4=sin(salt1*r)
-            x5=cos((90.+pelv(i))*r)
-            caii(i)=x1*x2*x3+x4*x5
-         else
-            caii(i)=0.0
-            caie(i)=0.0
-         endif
+        if(salt1.gt.0.0)then
+          psazi=abs(pazi(i)-sazi1)
+          x1=cos(salt1*r)
+          x2=sin((90.-pelv(i))*r)
+          x3=cos(psazi*r)
+          x4=sin(salt1*r)
+          x5=cos((90.-pelv(i))*r)
+          caie(i)=x1*x2*x3+x4*x5
+          paz=pazi(i)+180.0
+          if(pazi(i).gt.180.0)paz=pazi(i)-180.0
+          psazi=abs(paz-sazi1)
+          x3=cos(psazi*r)
+          x1=cos(salt1*r)
+          x2=sin((90.+pelv(i))*r)
+          x3=cos(psazi*r)
+          x4=sin(salt1*r)
+          x5=cos((90.+pelv(i))*r)
+          caii(i)=x1*x2*x3+x4*x5
+        else
+          caii(i)=0.0
+          caie(i)=0.0
+        endif
    40 continue
 
-C  Trace output.
-      if(itc.eq.0)return
+C Trace output, check also that user has asked for detailed trace.
       ok=.false.
       if(itc.eq.2)ok=.true.
-      if(.not.ok)return
+      if(tok.and.ok)then
+        call edisp(icout,' ')
+        write(outs,'(a,i3,a,i3)')'*** INCAI: Hour',ihour,' zone',icomp
+        call edisp(icout,outs)
+        call edisp(icout,
+     &  ' Surface    Internal    External    Azimuth    Elevation')
 
-      call edisp(icout,' ')
-      write(outs,'(a,i3,a,i3)')'*** INCAI: Hour',ihour,' zone',icomp
-      call edisp(icout,outs)
-      call edisp(icout,
-     &' Surface    Internal    External    Azimuth    Elevation')
-
-      do 50 i=1,nzsur(icomp)
-         write(outs,2)i,caii(i),caie(i),pazi(i),pelv(i)
-    2    format(i5,8x,f6.4,6x,f6.4,7x,f5.1,6x,f5.1)
-         call edisp(icout,outs)
-   50 continue
+        do 50 i=1,nzsur(icomp)
+          write(outs,2)i,caii(i),caie(i),pazi(i),pelv(i)
+    2     format(i5,8x,f6.4,6x,f6.4,7x,f5.1,6x,f5.1)
+          call edisp(icout,outs)
+   50   continue
+      endif
       return
       end
 

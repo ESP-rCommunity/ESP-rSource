@@ -846,10 +846,14 @@ C Display opening menu.
       items(17)=                'l shd/ins db contents     '
       items(18)=                'm shd/ins export & import '
       items(19) =               '  _______________________ '
+
+C If user toggles trace a 2nd time then we are in detailed mode
       if(itc.eq.0)then
          items(20)=             'm trace output >> none    '
       elseif(itc.eq.1)then
          items(20)=             'm trace output >> fort.33 '
+      elseif(itc.eq.2)then
+         items(20)=             'm trace output+ >> fort.33'
       endif
       if(ixopen.eq.1)then
          items(21)='> outputs >> file       '
@@ -1347,11 +1351,11 @@ C Export or import ASCII (silent).
 C Set trace level displayed in opening menu and main menu.
       elseif(inos.eq.20)then
          itc=itc+1
-         if(itc.gt.1)then
-            itc=0
-            icout=iuout
-         elseif(itc.eq.1)then
-            icout=33
+         if(itc.gt.2)then
+           itc=0
+           icout=iuout
+         elseif(itc.eq.1.or.itc.eq.2)then
+           icout=33
          endif
 
 C Redirect synoptic outputs and result of ASHRAE method to a

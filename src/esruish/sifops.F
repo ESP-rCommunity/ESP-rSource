@@ -72,6 +72,7 @@ C with the db at simulation time.
       character message*64
       integer isourcecount  ! to help with sourcename list
       integer nboftmc       ! number of insolation sources returned from findtmc
+      integer itu           ! for reporting
 
       logical ok,dok
 
@@ -198,30 +199,30 @@ C Present options menu.
 C *** Listing requested.
   77  continue
       if(ipick.eq.1)then
-         icout=iuout
-         if(ixopen.eq.1)icout=ixunit
+         itu=iuout
+         if(ixopen.eq.1)itu=ixunit
          write(outs,'(3a)')'External surface shading for `',
      &                      month(mnth),'`.'
-         call edisp(icout,' ')
-         call edisp(icout,outs)
+         call edisp(itu,' ')
+         call edisp(itu,outs)
          write(outs,'(2a)')' Surface ___  Shading factors ',
      &         '___________________________________________________'
-         call edisp(icout,outs)
+         call edisp(itu,outs)
          do 20 i=1,nzsur(icomp)
             icn=izstocn(icomp,i)
             sn=ssname(icn)
             write(outs,2)i,sn(1:7),(pso(i,j),j=1,12)
     2       format(I2,' (',a,')  Direct,  01-12 hrs ',12(f4.1))
-            call edisp(icout,outs)
+            call edisp(itu,outs)
             write(outs,3)(pso(i,j),j=13,24)
     3       format(14x,'         13-24 hrs ',12(f4.1))
-            call edisp(icout,outs)
+            call edisp(itu,outs)
             write(outs,4)(psof(i,j),j=1,12)
     4       format(14x,'Diffuse, 01-12 hrs ',12(f4.1))
-            call edisp(icout,outs)
+            call edisp(itu,outs)
             write(outs,5)(psof(i,j),j=13,24)
     5       format(14x,'         13-24 hrs ',12(f4.1))
-            call edisp(icout,outs)
+            call edisp(itu,outs)
    20    continue
 
 C Insolation factors. Call insynp in silent mode.
