@@ -138,41 +138,38 @@ C Transformed y value should be close to zero; warn if not.
 
 C Trace output.
       if(tok)then
-         icc=izstocn(izone,is)
-         call edisp(icout,' ')
-         write(outs,9996)is,pazi(is),pelv(is),ptilt(is)
- 9996    format('*** TRNSF1: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
-     &          f5.1,'; PTILT= ',f5.1)
-         call edisp(icout,outs)
-         call edisp(icout,' ')
-         call edisp(icout,'Axis translations & rotations:')
-         write(outs,'(a,2x,3f8.1)')'X, Y & Z translations -',
+        icc=izstocn(izone,is)
+        call edisp(icout,' ')
+        write(outs,9996)is,pazi(is),pelv(is),ptilt(is)
+ 9996   format('*** TRNSF1: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
+     &         f5.1,'; PTILT= ',f5.1)
+        call edisp(icout,outs)
+        call edisp(icout,' ')
+        call edisp(icout,'Axis translations & rotations:')
+        write(outs,'(a,2x,3f8.2)')'X, Y & Z translations -',
      &                             xor,yor,zor
-         call edisp(icout,outs)
-         write(outs,'(a,2x,3f8.1)')
-     &           'X (BE), Y (GA) & Z (AL) rotations -',be/r,ga/r,al/r
-         call edisp(icout,outs)
-         call edisp(icout,'ZXY transform equation coefficients:')
-         write(outs,'(a,2x,5f8.1)')'A -',(a(i),i=1,5)
-         call edisp(icout,outs)
-         write(outs,'(a,2x,5f8.1)')'B -',(b(i),i=1,3)
-         call edisp(icout,outs)
-         write(outs,'(a,2x,5f8.1)')'C -',(c(i),i=1,5)
-         call edisp(icout,outs)
-         call edisp(icout,'Original XYZ coordinates:')
-         do 9995 i=1,nznver(icc)
-           ip=nzjvn(icc,i)
-           xs=vcoord(izone,ip,1)
-           ys=vcoord(izone,ip,2)
-           zs=vcoord(izone,ip,3)
-           write(outs,'(i2,2x,3f8.1)')i,xs,ys,zs
-           call edisp(icout,outs)
- 9995    continue
-         call edisp(icout,'Transformed X`Y`Z` coordinates:')
-         do 9994 i=1,nznver(icc)
-           write(outs,'(i2,2x,3f8.1)')i,xft(i),yft(i),zft(i)
-           call edisp(icout,outs)
- 9994    continue
+        call edisp(icout,outs)
+        write(outs,'(a,2x,3f8.1)')
+     &    'X (BE), Y (GA) & Z (AL) rotations -',be/r,ga/r,al/r
+        call edisp(icout,outs)
+        call edisp(icout,'ZXY transform equation coefficients:')
+        write(outs,'(a,2x,5f8.2)')'A -',(a(i),i=1,5)
+        call edisp(icout,outs)
+        write(outs,'(a,2x,5f8.2)')'B -',(b(i),i=1,3)
+        call edisp(icout,outs)
+        write(outs,'(a,2x,5f8.2)')'C -',(c(i),i=1,5)
+        call edisp(icout,outs)
+        call edisp(icout,
+     &    'Original XYZ coordinates: Transformed X`Y`Z` coords:')
+        do 9995 i=1,nznver(icc)
+          ip=nzjvn(icc,i)
+          xs=vcoord(izone,ip,1)
+          ys=vcoord(izone,ip,2)
+          zs=vcoord(izone,ip,3)
+          write(outs,'(i2,2x,3f8.2,2x,3f8.2)')
+     &      i,xs,ys,zs,xft(i),yft(i),zft(i)
+          call edisp(icout,outs)
+ 9995   continue
       endif
       return
       end
@@ -321,10 +318,10 @@ C Trace output.
  9998    format('Intermediate calculations:')
          call edisp(icout,outs)
          write(outs,9997)x1,y1,z1,x2,y2,z2
- 9997    format('X1,Y1,Z1=    ',3f8.1,'; X2,Y2,Z2=    ',3f10.1)
+ 9997    format('X1,Y1,Z1=    ',3f8.1,'; X2,Y2,Z2=    ',3f10.2)
          call edisp(icout,outs)
          write(outs,9996)xt1,yt1,zt1,xt2,yt2,zt2
- 9996    format('XT1,YT1,ZT1= ',3f8.1,'; XT2,YT2,ZT2= ',3f10.1)
+ 9996    format('XT1,YT1,ZT1= ',3f8.1,'; XT2,YT2,ZT2= ',3f10.2)
          call edisp(icout,outs)
          write(outs,9995)dx,dy,dz
  9995    format('DX= ',f10.1,'; DY= ',f10.1,'; DZ= ',f10.1)
@@ -429,34 +426,24 @@ C Tranform and project z.
 
 C Trace output.
       if(tok)then
-         call edisp(icout,' ')
-         write(outs,9999)ibn,ibs,ihr
- 9999    format('*** TRNSF3: projection of obstruction block ',i2,
-     &          ', surface ',i2,', hour ',i2,'.')
-         call edisp(icout,outs)
-         call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
-         call edisp(icout,'X,Y,Z coordinates:')
-         do 9998 i=1,4
-            ip=ivorder(ibs,i)
-            write(outs,'(i2,3f10.1)')ip,xc(ip),yc(ip),zc(ip)
-            call edisp(icout,outs)
- 9998    continue
-         call edisp(icout,'X`,Y`,Z` coordinates:')
-         do 9997 i=1,4
-            write(outs,'(i2,3f10.1)')i,xt(i),yt(i),zt(i)
-            call edisp(icout,outs)
- 9997    continue
-         write(outs,9996)eta1,eta2
- 9996    format('Pseudo solar angles: ETA1= ',f5.1,'; ETA2= ',f5.1)
-         call edisp(icout,outs)
-         write(outs,9995)ta1,ta2
- 9995    format('TA1= ',f8.1,'; TA2= ',f8.1)
-         call edisp(icout,outs)
-         call edisp(icout,'XP,YP,ZP coordinates:')
-         do 9994 i=1,4
-            write(outs,'(i2,3f10.1)')i,xp(i),yp(i),zp(i)
-            call edisp(icout,outs)
- 9994    continue
+        call edisp(icout,' ')
+        write(outs,9999)ibn,ibs,ihr
+ 9999   format('*** TRNSF3: projection of obstruction ',i2,
+     &         ', on surface ',i2,', at hour ',i2,'.')
+        call edisp(icout,outs)
+        call edisp(icout,
+     &    'X,Y,Z coordinates:   X`,Y`,Z` coords:  XP,YP,ZP  coords:')
+        do 9998 i=1,4
+          ip=ivorder(ibs,i)
+          write(outs,'(i2,3f8.2,i4,3f8.2,i4,3f8.2)')
+     &      ip,xc(ip),yc(ip),zc(ip),
+     &      i,xt(i),yt(i),zt(i),i,xp(i),yp(i),zp(i)
+          call edisp(icout,outs)
+ 9998   continue
+        write(outs,'(a,f5.1,a,f5.1,a,f8.2,a,f8.2)')
+     &   'Pseudo solar angles: ETA1= ',eta1,'; ETA2= ',eta2,
+     &   'TA1= ',ta1,'; TA2= ',ta2
+        call edisp(icout,outs)
       endif
       return
       end
@@ -478,13 +465,19 @@ C Parameter
 
       common/tracech/icout
       common/obs/xc(8),yc(8),zc(8)
+      integer iobstrtrace  ! set to non-zero if already written
+      common/obstrc/iobstrtrace(mcom,mb)
 
       character outs*124
       logical tok
 
+C If the trace unit is 33 and this obstruction has not already
+C been reported on set tok to true.
       tok=.false.
-      if(icout.eq.33)tok=.true.
-
+      if(icout.eq.33)then
+        if(iobstrtrace(iz,ibn).eq.0) tok=.true.
+      endif
+      
       pi=4.0*atan(1.0)
       r=pi/180.
       ca=cos(bangob(iz,ibn)*r)
@@ -519,11 +512,12 @@ C Parameter
          write(outs,'(a,i2,a)')'*** CORNR: Block ',ibn,
      &                         ' site coordinates (XC,YC,ZC)'
          call edisp(icout,outs)
-         call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
+         call edisp(icout,'    X-Coord  Y-Coord  Z-Coord')
          do 9999 i=1,8
-            write(outs,'(i2,3f10.1)')i,xc(i),yc(i),zc(i)
+            write(outs,'(i2,3f9.2)')i,xc(i),yc(i),zc(i)
             call edisp(icout,outs)
  9999    continue
+         iobstrtrace(iz,ibn)=1
       endif
       return
       end

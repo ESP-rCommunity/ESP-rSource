@@ -1494,6 +1494,8 @@ C  ifstat = 8  new file filled via import of ascii file
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/ray3/modify,modlen,modbnd
       common/ract/paction
+      integer iobstrtrace  ! set to non-zero if already written
+      common/obstrc/iobstrtrace(mcom,mb)
 
       character h*72,exportfile*72,paction*16,outs*124
 
@@ -1546,6 +1548,13 @@ C Get name of obstruction file.
                stop
             endif
          endif
+      endif
+
+C Clear trace information for obs block coordinates.
+      if(nbobs(icomp).gt.0)then
+        do 42 ib=1,nbobs(icomp)
+          iobstrtrace(icomp,ib)=0
+  42    continue
       endif
 
 C Because they will be used many times derive the azimuth elevation

@@ -443,7 +443,7 @@ C Trace output.
                if(tok)then
                   call edisp(icout,' ')
                   write(outs,9997)ihour
- 9997             format('*** SHADC: Sun not up at ',I2)
+ 9997             format('*** SHADC: Sun not up at hour ',I2)
                   call edisp(icout,outs)
                endif
                goto 30
@@ -478,9 +478,9 @@ C Direct case.
 C Trace output.
                   if(tok)then
                      call edisp(icout,' ')
-                     write(outs,9996)ihour
- 9996                format(
-     &                '*** SHADC: calculating direct shading at ',i2)
+                     write(outs,'(a,i2)')
+     &               '*** SHADC: calculating direct shading at hour ',
+     &               ihour
                      call edisp(icout,outs)
                   endif
 
@@ -491,10 +491,9 @@ C Diffuse case (only initilise gssa at start of sky vault processing).
 C Trace output.
                   if(tok)then
                      call edisp(icout,' ')
-                     write(outs,9995)ihour,ip-1
- 9995                format(
-     &                  '*** SHADC: calculating diffuse shading at ',
-     &                       i2,' for patch ',i3)
+                     write(outs,'(a,i2,a,i3)')
+     &               '*** SHADC: calculating diffuse shading at hour ',
+     &               ihour,' for patch ',ip-1
                      call edisp(icout,outs)
                   endif
 
@@ -833,27 +832,28 @@ C Tell shdtst to abandon shadow polygon.
       endif
 
 C Trace output.
-   1  if(.not.tok)goto 9999
-      call edisp(icout,' ')
-      write(outs,9998)itsur,ibn,ibs
- 9998 format('*** DECOMP: Target surface ',i2,
+   1  if(tok)then
+        call edisp(icout,' ')
+        write(outs,9998)itsur,ibn,ibs
+ 9998   format('*** DECOMP: Target surface ',i2,
      &       '; obstruction block ',i2,', surface ',i2,'.')
-      call edisp(icout,outs)
-      call edisp(icout,case)
-      if(iscnt.ne.0)then
-         write(outs,'(a,4i2)')'Excluded vertices =',(ipc(i),i=1,iscnt)
-         call edisp(icout,outs)
+        call edisp(icout,outs)
+        call edisp(icout,case)
+        if(iscnt.ne.0)then
+          write(outs,'(a,4i2)')'Excluded vertices =',(ipc(i),i=1,iscnt)
+          call edisp(icout,outs)
+        endif
+        call edisp(icout,'Shadow polygon (XS,ZS):')
+        call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
+        if(npoint.eq.0)then
+          call edisp(icout,'None')
+          goto 9999
+        endif
+        do 9997 I=1,npoint
+          write(outs,'(i2,f10.2,f20.2)')i,xs(i),zs(i)
+          call edisp(icout,outs)
+ 9997   continue
       endif
-      call edisp(icout,'Shadow polygon (XS,ZS):')
-      call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
-      if(npoint.eq.0)then
-         call edisp(icout,'None')
-         goto 9999
-      endif
-      do 9997 I=1,npoint
-         write(outs,'(i2,f10.1,f20.1)')i,xs(i),zs(i)
-         call edisp(icout,outs)
- 9997 continue
 
  9999 return
       end
@@ -905,22 +905,23 @@ C Intersection point.
        zi=zt(ip1)+(((yt(ip1)*zt(ip1))-(yt(ip1)*zt(ip2)))/diff)
 
 C Trace output.
-   1  if(.not.tok)goto 9999
-      call edisp(icout,' ')
-      if(ishd.eq.1)call edisp(icout,
+   1  if(tok)then
+        call edisp(icout,' ')
+        if(ishd.eq.1)call edisp(icout,
      &       '*** INTERSECT: line crosses yt=0 plane.')
-      if(ishd.eq.0)call edisp(icout,
+        if(ishd.eq.0)call edisp(icout,
      &       '*** INTERSECT: line does not cross yt=0 plane.')
-      write(outs,'(a,i1,a,i1)')'Line = ',ip1,' - ',ip2
-      call edisp(icout,outs)
-      write(outs,'(a,3f10.3)')'Point 1 = ',xt(ip1),yt(ip1),zt(ip1)
-      call edisp(icout,outs)
-      write(outs,'(a,3f10.3)')'Point 2 = ',xt(ip2),yt(ip2),zt(ip2)
-      call edisp(icout,outs)
-      write(outs,'(a,2f10.3)')'Intersection = ',xi,zi
-      call edisp(icout,outs)
+        write(outs,'(a,i1,a,i1)')'Line = ',ip1,' - ',ip2
+        call edisp(icout,outs)
+        write(outs,'(a,3f10.3)')'Point 1 = ',xt(ip1),yt(ip1),zt(ip1)
+        call edisp(icout,outs)
+        write(outs,'(a,3f10.3)')'Point 2 = ',xt(ip2),yt(ip2),zt(ip2)
+        call edisp(icout,outs)
+        write(outs,'(a,2f10.3)')'Intersection = ',xi,zi
+        call edisp(icout,outs)
+      endif
 
- 9999 return
+      return
       end
 
 C ********** SHDTST **********

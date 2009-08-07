@@ -149,26 +149,23 @@ C Trace output.
      &         'X (BE), Y (GA) & Z (AL) rotations -',be/r,ga/r,al/r
          call edisp(icout,outs)
          call edisp(icout,'ZXY transform equation coefficients:')
-         write(outs,'(a,2x,5f8.1)')'A -',(a(i),i=1,5)
+         write(outs,'(a,2x,5f8.2)')'A -',(a(i),i=1,5)
          call edisp(icout,outs)
-         write(outs,'(a,2x,5f8.1)')'B -',(b(i),i=1,3)
+         write(outs,'(a,2x,5f8.2)')'B -',(b(i),i=1,3)
          call edisp(icout,outs)
-         write(outs,'(a,2x,5f8.1)')'C -',(c(i),i=1,5)
+         write(outs,'(a,2x,5f8.2)')'C -',(c(i),i=1,5)
          call edisp(icout,outs)
-         call edisp(icout,'Original XYZ coordinates:')
+         call edisp(icout,
+     &     'Original XYZ coordinates:    Transformed X`Y`Z` coords:')
          do 9995 i=1,nznver(icc)
            ip=nzjvn(icc,i)
            xs=vcoord(izone,ip,1)
            ys=vcoord(izone,ip,2)
            zs=vcoord(izone,ip,3)
-           write(outs,'(i2,2x,3f8.1)')i,xs,ys,zs
+           write(outs,'(i2,2x,3f8.2,2x,3f8.2)')
+     &       i,xs,ys,zs,xft(i),yft(i),zft(i)
            call edisp(icout,outs)
  9995    continue
-         call edisp(icout,'Transformed X`Y`Z` coordinates:')
-         do 9994 i=1,nznver(icc)
-            write(outs,'(i2,2x,3f8.1)')i,xft(i),yft(i),zft(i)
-            call edisp(icout,outs)
- 9994    continue
       endif
       return
       end
