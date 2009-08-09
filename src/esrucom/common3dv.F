@@ -1023,9 +1023,6 @@ C Conversion using cnvblk and common GB1.
             CALL CNVBLK(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
      &        DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB))
 
-C            CALL ERECC(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
-C     &        DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB))
-
 C Write obstruction information to the viewer file. First invert edges.
             DO 320 J=1,6
               K=4

@@ -910,10 +910,7 @@ C Check geometry file version and scan geometry file to get obstructions.
 C Use the GB1 common block and CNVBLK to find bounds
             CALL CNVBLK(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
      &        DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),BANGOB(ivz,IB))
-
-C            CALL ERECC(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
-C     &        DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),BANGOB(ivz,IB))
-            DO 302 I=1,8
+            DO 302 I=1,8    ! for each vertex in block
               IF(ITBND.NE.0)THEN
 
 C Update the overall model bounds to include any obstructions.

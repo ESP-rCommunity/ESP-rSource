@@ -42,6 +42,7 @@ C geometry.h provides commons G0/G2/precz/GS5.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
@@ -119,35 +120,35 @@ C Read in obstruction file.
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
 
-C << this is a place to use the GB1 common block and CNVBLK >>
+C Use the GB1 common block via CNVBLK.
 
-              CALL ERECC(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
+              CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &          DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
      &          BANGOB(newfoc,IB))
 
 C Write obstruction information after inverting edges.
-              DO 320 J=1,NSUR
-                K=NVER(J)
+              DO 320 J=1,6
+                K=4
                 DO 330 L=1,K/2
-                  ITEMP=JVN(J,L)
-                  JVN(J,L)=JVN(J,K+1-L)
-                  JVN(J,K+1-L)=ITEMP
+                  ITEMP=JVNB(J,L)
+                  JVNB(J,L)=JVNB(J,K+1-L)
+                  JVNB(J,K+1-L)=ITEMP
   330           continue
   320         continue
 
 C Write obstructions to output file.
               WRITE(ioout,'(a,a15,a)')'GEN ',ZN,' obstructions'
-              WRITE(ioout,'(2I7)')NTV,NSUR
-              DO 240 J=1,NTV
-                WRITE(ioout,'(3F8.3)')X(J),Y(J),Z(J)
+              WRITE(ioout,'(a)')'  8  6'
+              DO 240 J=1,8  ! each of the vertices
+                WRITE(ioout,'(3F8.3)')XB(J),YB(J),ZB(J)
   240         continue
-              DO 250 J=1,NSUR
-                WRITE(ioout,'(I5,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
+              DO 250 J=1,6  ! each of the surfaces
+                WRITE(ioout,'(a,21I3)') '  4 ',(JVNB(J,K),K=1,4)
   250         continue
   301       continue
           ENDIF
 
-C Free the viewer file and eeread in the geometry file.
+C Free the viewer file and reread the geometry file.
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
             call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
@@ -462,6 +463,7 @@ C THF (THINGS) file for use in MicroGDS.
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
@@ -532,23 +534,22 @@ C Read in obstruction file.
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
 
-C << this is a place to use the GB1 common block and CNVBLK >>
-
-              CALL ERECC(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
+C Use the GB1 common block via CNVBLK
+              CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &          DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
      &          BANGOB(newfoc,IB))
 
 C Write obstruction information as a clump of surfaces.
-              WRITE(ioout,'(a,i2)')'YIN ',NTV
-              DO 240 J=1,NTV
-                WRITE(ioout,'(3F9.4)')X(J),Y(J),Z(J)
+              WRITE(ioout,'(a)')'YIN  8'
+              DO 240 J=1,8
+                WRITE(ioout,'(3F9.4)')XB(J),YB(J),ZB(J)
   240         continue
               WRITE(ioout,'(a)')'0 '
-              WRITE(ioout,'(I2)')NSUR
-              DO 250 J=1,NSUR
+              WRITE(ioout,'(a)')'6 '
+              DO 250 J=1,6
                 llbm=LNBLOCKMAT(newfoc,J)
                 WRITE(ioout,'(2a)')'1 ',BLOCKMAT(newfoc,J)(1:llbm)
-                WRITE(ioout,'(I3,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
+                WRITE(ioout,'(a,21I3)') '  4 ',(JVNB(J,K),K=1,4)
   250         continue
   301       continue
           ENDIF
