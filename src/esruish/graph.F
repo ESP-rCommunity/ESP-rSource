@@ -304,163 +304,28 @@ C data structures.
 
       subroutine sitpln(icomp)
 #include "building.h"
-#include "geometry.h"
 
       common/spad/mmod,limit,limtty
 
-      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      integer izstocn
-      common/c24/izstocn(mcom,ms)
-      common/prec8/slat,slon
-      integer menuchw,igl,igr,igt,igb,igw,igwh
-      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
-      integer ifs,itfs,imfs
-      common/gfont/ifs,itfs,imfs
+      character direc*1
 
-      character sstr*72,blabel*4
-      character tz*13
-#ifdef OSX
-      integer igwid,igheight
-      integer iside,isize     ! passed to viewtext
-      integer iupdown,isym,ifont    ! passed to etplot
-      integer iid1,iid2,iix,iiy
-#else
-      integer*8 igwid,igheight
-      integer*8 iside,isize     ! passed to viewtext
-      integer*8 iupdown,isym,ifont    ! passed to etplot
-      integer*8 iid1,iid2,iix,iiy
-#endif
-
-C The right offset for the graphic box is the character width
-C of the menu. Also allow 2 text lines at the bottom for future
-C dialogue. Axiscale is in wwlib.c.
+C Return if not in graphic mode.
       ier=0
       if(mmod.lt.8)then
         call usrmsg('Not in graphic mode!',' ','W')
         return
       endif
 
-C Define a viewing box, draw its border after clearing it and
-C return the offsets that define it and set local variables.
-      call win3d(menuchw,7,4,4,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
-      igwid=igw
-      igheight=igwh
-
-      call startbuffer()
-
-C Reopen the dialogue box.
-      call usrmsg(' ',' ','-')
-
-C Establish the maximum and minimum vertix values.
-      xmx=-1.E+8
-      ymx=-1.E+8
-      xmn=1.E+8
-      ymn=1.E+8
-      do 10 i=1,nztv(icomp)
-        xmn=amin1(xmn,VCOORD(icomp,i,1))
-        ymn=amin1(ymn,VCOORD(icomp,i,2))
-        xmx=amax1(xmx,VCOORD(icomp,i,1))
-        ymx=amax1(ymx,VCOORD(icomp,i,2))
-   10 continue
-
-C Convert obstruction block geometry to (/gb1/) and
-C establish maximum and minimum site coordinates.
-      do 20 i=1,nbobs(icomp)
-        call cnvblk(xob(icomp,i),yob(icomp,i),zob(icomp,i),
-     &    dxob(icomp,i),dyob(icomp,i),dzob(icomp,i),bangob(icomp,i))
-        do 30 j=1,8
-          xmn=amin1(xmn,xb(j))
-          ymn=amin1(ymn,yb(j))
-          xmx=amax1(xmx,xb(j))
-          ymx=amax1(ymx,yb(j))
-   30   continue
-   20 continue
-
-C Determine scaling ratios for the drawing and axis.
-      call axiscale(igwid,igheight,xmn,xmx,ymn,ymx,xsc,ysc,sca,
-     &  Xadd,Yadd)
-
-C Place scaling in static C variables for use by line drawing routines.
-      call linescale(igl,Xadd,sca,igb,Yadd,sca)
-
-C Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmn,xmx,igl,igr,igb,Xadd,sca,1,'East ->')
-
-C Draw a scale vertical axis.
-      call vrtaxis(ymn,ymx,igl,igb,igt,Yadd,sca,1,0,'^ North')
-
-C Plot the zone and the zone name.
-      call u2pixel(VCOORD(icomp,1,1),VCOORD(icomp,1,2),iix,iiy)
-      iupdown=0
-      isym=0
-      call etplot(VCOORD(icomp,1,1),VCOORD(icomp,1,2),iupdown,isym)
-      if(lnzname(icomp).gt.1)then
-         write(tz,'(a)')zname(icomp)
-         call winfnt(itfs)
-         iid1=iix+2; iid2=iiy-2;
-         call wstxpt(iid1,iid2,tz)
-      else
-         call winfnt(itfs)
-         iid1=iix+2; iid2=iiy-2;
-         call wstxpt(iid1,iid2,'Target')
-      endif
-
-C For each corner recover coordinates for the connection and plot.
-      iupdown=0
-      isym=0
-      do 40 i=1,nzsur(icomp)
-        icc=IZSTOCN(icomp,i)
-        j=NZJVN(icc,1)
-        call etplot(VCOORD(icomp,j,1),VCOORD(icomp,j,2),iupdown,isym)
-        k=NZNVER(icc)
-        iupdown=-302
-        do 50 l=2,k
-          m=NZJVN(icc,l)
-          call etplot(VCOORD(icomp,m,1),VCOORD(icomp,m,2),iupdown,isym)
-   50   continue
-        call etplot(VCOORD(icomp,j,1),VCOORD(icomp,j,2),iupdown,isym)
-   40 continue
-
-C Convert obstruction block geometry to (/gb1/) and plot.
-      if(nbobs(icomp).eq.0)goto 1
-      do 60 ib= 1,nbobs(icomp)
-        call cnvblk(xob(icomp,ib),yob(icomp,ib),zob(icomp,ib),
-     &    dxob(icomp,ib),dyob(icomp,ib),dzob(icomp,ib),
-     &    bangob(icomp,i))
-        iupdown=0
-        isym=0
-        do 70 i=1,6
-          j=jvnb(i,1)
-          call etplot(xb(j),yb(j),iupdown,isym)
-          k=4
-          iupdown=1
-          do 80 l=2,k
-            m=jvnb(i,l)
-            call etplot(xb(m),yb(m),iupdown,isym)
-   80     continue
-          call etplot(xb(j),yb(j),iupdown,isym)
-   70    continue
-
-         call u2pixel(xb(J),yb(J),iix,iiy)
-         write(blabel,2)ib
-    2    format('B',i2)
-         iid1=iix+2; iid2=iiy-2;
-         call wstxpt(iid1,iid2,blabel)
-   60 continue
-
-C Print labels and return to default font.
-    1 write(sstr,'(a,f5.1,a,f4.1)')'Site Plan, Latitude ',slat,
-     &  ' Longitude ',slon
-      iside=1
-      isize=1
-      ifont=2
-      call viewtext(sstr,iside,isize,ifont)
-      call forceflush()
-      call winfnt(ifs)
-
+C Use plelv to draw the site plan for the current zone.
+      nzg=1
+      nznog(1)=icomp
+      izgfoc=icomp
+      direc='P'
+      IUF=0
+      call PLELEV(IUF,direc,ier)
+      
       return
       end
 
