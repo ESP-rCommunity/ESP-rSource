@@ -14,7 +14,7 @@ OBJECTS = eco.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o \
 	  ctlexp.o ctread.o dossupport.o e3dviews.o ecocalc.o ecoesp.o \
 	  econstr.o edatabase.o edcondb.o egeometry.o emfnetw.o \
 	  enetmisc.o enetrewr.o eroper.o esru_misc.o esystem.o item.o \
-	  mfcdat.o nwkrewr.o plelev.o pltcfg.o readTrnsys.o readBCF.o \
+	  mfcdat.o nwkrewr.o plelevvc.o pltcfg.o readTrnsys.o readBCF.o \
 	  rwipv.o rwsbem.o startup.o sort.o tdfile.o 
 
 $(PROG): $(OBJECTS)
@@ -89,9 +89,9 @@ mfcdat.F:
 nwkrewr.F:
 	rm -f nwkrewr.F
 	ln -s $(COMdir)/nwkrewr.F .
-plelev.F:
-	rm -f plelev.F
-	ln -s $(COMdir)/plelev.F .
+plelevvc.F:
+	rm -f plelevvc.F
+	ln -s $(COMdir)/plelevvc.F .
 pltcfg.F:
 	rm -f pltcfg.F
 	ln -s $(COMdir)/pltcfg.F .
@@ -126,5 +126,5 @@ clean:
 	ctlexp.F ctread.F dossupport.F e3dviews.F ecasctl.F econstr.F \
         edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F emkcfg.F \
 	enetrewr.F emfnetw.F enetmisc.F eroper.F \
-	esru_misc.F esystem.F inside.F item.F mfcdat.F nwkrewr.F plelev.F \
+	esru_misc.F esystem.F inside.F item.F mfcdat.F nwkrewr.F plelevvc.F \
 	pltcfg.F readTrnsys.F rwipv.F rwsbem.F sort.F startup.F tdfile.F 

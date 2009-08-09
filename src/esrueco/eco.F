@@ -422,7 +422,7 @@ C properties, display it and then present the main menu.
       if(XST)then
         call fdroot(LCMDFL,path,LCFGF)
         call usrmsg('Scanning supplied problem...',' ','-')
-        MODE='NONE'
+        MODE='ALL '
         call ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
         if(IER.eq.0)then
           NZONES=NCOMP
