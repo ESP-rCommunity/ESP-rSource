@@ -414,7 +414,7 @@ C successful then scan all the zones via ZDATA.
           call fdroot(LCMDFL,path,LCFGF)
           call edisp(iuout,' ')
           call edisp(iuout,' Scanning the model description')
-          MODE='NONE'
+          MODE='ALL '
           CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
@@ -550,7 +550,7 @@ C Find the path and local file name.
         call fdroot(LCMDFL,path,LCFGF)
         call edisp(iuout,' ')
         call edisp(iuout,' Scanning the model description')
-        MODE='NONE'
+        MODE='ALL '
         CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.

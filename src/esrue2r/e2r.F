@@ -1201,7 +1201,7 @@ C Set folder separator (fs) to \ or / as required.
 C Configuration file and path are held in common/rcmd/LCMDFL
       call fdroot(LCMDFL,path,LCFGF)
       IAIRP = IFIL+9
-      MODE='NONE'
+      MODE='ALL '
       call ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
       if(IER.eq.0)then
         call inqu_tmc
