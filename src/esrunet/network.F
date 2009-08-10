@@ -2836,9 +2836,8 @@ C Dummy routine (needed for call back from c).
       end
 
 C Dummy subroutine needed to compile.
-      SUBROUTINE PLELEV(IUF,direc,ier)
+      SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
-      integer IUF,IER
 
       return
       end

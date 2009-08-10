@@ -950,10 +950,8 @@ C keep it (SC)
       end
 
 C Dummy subroutine needed to compile (called from library code).
-      SUBROUTINE PLELEV(IUF,direc,ier)
+      SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
-      integer IUF,IER
-
       return
       end
 

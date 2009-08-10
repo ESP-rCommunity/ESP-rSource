@@ -4847,15 +4847,15 @@ C          ITHLZ=ISEL
       elseif(ITPPSW.eq.1)then
 
 C User toggle to a plan view.
-        call PLELEV(IUF,'P',ier)
+        call PLELEV('P')
       elseif(ITPPSW.eq.2)then
 
 C User toggle to a south view.
-        call PLELEV(IUF,'S',ier)
+        call PLELEV('S')
       elseif(ITPPSW.eq.3)then
 
 C User toggled to an east view.
-        call PLELEV(IUF,'E',ier)
+        call PLELEV('E')
       elseif(ITPPSW.eq.4)then
 
 C Perspective view from the sun.
@@ -5009,11 +5009,11 @@ C If image info altered (viewpoint) then update display.
           MODBND=.FALSE.
           MODIFY=.FALSE.
         elseif(ITPPSW.eq.1)then
-          if(redraw)call PLELEV(IUF,'P',ier)
+          if(redraw)call PLELEV('P')
         elseif(ITPPSW.eq.2)then
-          if(redraw)call PLELEV(IUF,'S',ier)
+          if(redraw)call PLELEV('S')
         elseif(ITPPSW.eq.3)then
-          if(redraw)call PLELEV(IUF,'E',ier)
+          if(redraw)call PLELEV('E')
         endif
       ENDIF
 
@@ -5410,11 +5410,11 @@ C If image info altered (viewpoint) then update display.
           MODBND=.FALSE.
           MODIFY=.FALSE.
         elseif(ITPPSW.eq.1)then
-          if(redraw)call PLELEV(IUF,'P',ier)
+          if(redraw)call PLELEV('P')
         elseif(ITPPSW.eq.2)then
-          if(redraw)call PLELEV(IUF,'S',ier)
+          if(redraw)call PLELEV('S')
         elseif(ITPPSW.eq.3)then
-          if(redraw)call PLELEV(IUF,'E',ier)
+          if(redraw)call PLELEV('E')
         endif
       ENDIF
 

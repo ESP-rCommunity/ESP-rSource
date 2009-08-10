@@ -4291,7 +4291,6 @@ C If not in graphic mode return.
 C Initial menu entry setup with one line header, 3 control lines.
       redraw=.false.
       ITPPSW=0
-      IUF=IFIL+1
 
 C Menu loop.
    92 IER=0
@@ -4414,11 +4413,11 @@ C If image info altered (view point) then update display.
           MODBND=.FALSE.
           MODIFY=.FALSE.
         elseif(ITPPSW.eq.1)then
-          if(redraw)call PLELEV(IUF,'P',ier)
+          if(redraw)call PLELEV('P')
         elseif(ITPPSW.eq.2)then
-          if(redraw)call PLELEV(IUF,'S',ier)
+          if(redraw)call PLELEV('S')
         elseif(ITPPSW.eq.3)then
-          if(redraw)call PLELEV(IUF,'E',ier)
+          if(redraw)call PLELEV('E')
         endif
       ENDIF
 

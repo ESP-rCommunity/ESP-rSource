@@ -834,8 +834,7 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE PLELEV(IUF,direc,ier)
+      SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
-      ier=0
       return
       end

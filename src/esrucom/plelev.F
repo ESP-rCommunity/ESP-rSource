@@ -20,6 +20,9 @@ C Boston, MA 02111-1307 USA.
 
 C PLELEV: Scales and draws a site plan/elev showing zone & obstructions.
 
+C NOTE: This version of PELEV is no longer called. All code now uses
+C the version in plelevvc.F
+
 C ************* PLELEV
 C PLELEV Scales and draws a plan or elevation of a model
 C and the surrounding obstruction blocks. direc is

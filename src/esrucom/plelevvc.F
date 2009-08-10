@@ -26,12 +26,11 @@ C and the surrounding obstruction blocks. direc is
 C a character S, E, P,  ie. S gives a south elevation and
 C P gives a plan.  Inpic is the number of zones, ivals is a
 C array of selected zones to include.
-C IUF is file unit for geometry & obstruction file units (unused).
 
 C This version does not scan geometry or obstruction files and
 C instead uses the VCOORD coordinates.
 
-      SUBROUTINE PLELEV(IUF,direc,ier)
+      SUBROUTINE PLELEV(direc)
 #include "building.h"
 
 C geometry.h provides commons G0/G2/precz/GS5/GS6.
@@ -74,7 +73,7 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
 
 C The right offset for the graphic box is the character width
 C of the menu. Also allow 2 text lines at the bottom for future
-C dialogue.      ier=0
+C dialogue.
       if(mmod.lt.8)then
         call usrmsg('Not in graphic mode!',' ','W')
         return

@@ -323,8 +323,7 @@ C Use plelv to draw the site plan for the current zone.
       nznog(1)=icomp
       izgfoc=icomp
       direc='P'
-      IUF=0
-      call PLELEV(IUF,direc,ier)
+      call PLELEV(direc)
       
       return
       end

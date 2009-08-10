@@ -1139,4 +1139,11 @@ C Dummy routine (needed for call back from c).
       return
       end
 
+C Dummy subroutine needed to compile (called from library code).
+      SUBROUTINE PLELEV(direc)
+      CHARACTER direc*1
+
+      return
+      end
+
 
