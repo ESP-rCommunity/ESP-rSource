@@ -2835,6 +2835,14 @@ C Dummy routine (needed for call back from c).
       return
       end
 
+C Dummy subroutine needed to compile.
+      SUBROUTINE PLELEV(IUF,direc,ier)
+      CHARACTER direc*1
+      integer IUF,IER
+
+      return
+      end
+
 C ********************* NETGDATR ************
 C Each domain may contain global attributes such as the wind
 C reduction factor of a flow network which relate to the network
@@ -3707,3 +3715,4 @@ C Scan the model summary file and report on zone names, volumes and height.
       IER=1
       return
       end
+

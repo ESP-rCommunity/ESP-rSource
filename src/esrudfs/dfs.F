@@ -844,3 +844,11 @@ C Dummy routine (needed for call back from c).
       return
       end
 
+C Dummy subroutine needed to compile (called from library code).
+      SUBROUTINE PLELEV(IUF,direc,ier)
+      CHARACTER direc*1
+      integer IUF,IER
+
+      return
+      end
+

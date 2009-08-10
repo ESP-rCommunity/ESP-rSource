@@ -3,7 +3,7 @@
 SRCdir=`pwd`
 
 PROGRAMS = aco bps c2e clm dbm dfs e2r ecnv eco grd ish mfs \
-	   mld mrt pdb prj res run vew
+	   mld mrt net pdb prj res run vew
 
 allX11: libX11 $(PROGRAMS)
 allGTK: libGTK $(PROGRAMS)

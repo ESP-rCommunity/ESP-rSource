@@ -138,7 +138,7 @@ reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading fil
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew"
+programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt net pdb prj res run vew"
 # (bld plt, net are not currently built)
 
 # Add leading and trailing spaces for regexp matching
