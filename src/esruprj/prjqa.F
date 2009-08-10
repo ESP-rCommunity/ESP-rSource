@@ -2228,11 +2228,10 @@ C see if there are shading and obstruction files.
 
 C If there is a v1.1 geometry file and iobs() is 1 then the
 C obstructions need to be moved into the geometry file and
-C zobs() cleared for this zone..
+C zobs() cleared for this zone and iobs set.
               if(iobs(iz).eq.0)then
                 continue
               elseif(iobs(iz).eq.1)then
-                CALL EGOMST(IFIL+2,iz,ZOBS(iz),0,ITRC,ITRU,IER)
                 iobs(iz)=2
                 zobs(iz)=' '
                 call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
@@ -2291,11 +2290,10 @@ C Otherwise assume all applicable for shading and insolation.
               call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
 
 C If iobs() is 1 then the obstructions need to be moved into the
-C geometry file and zobs() cleared for this zone..
+C geometry file and zobs() cleared for this zone and iobs set.
               if(iobs(iz).eq.0)then
                 continue
               elseif(iobs(iz).eq.1)then
-                CALL EGOMST(IFIL+2,iz,ZOBS(iz),0,ITRC,ITRU,IER)
                 iobs(iz)=2
                 zobs(iz)=' '
                 call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
