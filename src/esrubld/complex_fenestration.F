@@ -3574,8 +3574,8 @@ C********************************************************************
 
 C**************** CFC Convection/LW exchange*************************
       write(98,*)
-     &'TIMESTEP | ICOMP | ISUNUP |  SAZI  |  SALT  |  Tamb  |  Tzone'
-      write(98,9995)NSINC,ICOMP,ISUNUP,SAZI,SALT,TP,TFA(ICOMP)
+     & 'TIMESTEP | ICOMP | ISUNUP |  SAZI  |  SALT  |  Tamb  |  Tzone'
+        write(98,9995)NSINC,ICOMP,ISUNUP,SAZI,SALT,TP,TFA(ICOMP)
 
  9995     format(I6,I10,I7,3x,4F9.3)
 
@@ -3592,21 +3592,22 @@ C**************** CFC Convection/LW exchange*************************
  14   continue
 
       write(98,9996)
-     &'   CFC SURFACE |  PAZI  |  ANGI  |  PROANG  | HCIF |',
-     &'HCOF |VBLAYR|   W   |   S   |   PHI   | ORIENT |'
+     & '   CFC SURFACE |  PAZI  |  ANGI  |  PROANG  | HCIF |',
+     & 'HCOF |VBLAYR|   W   |   S   |   PHI   | ORIENT |'
       write(98,9997)i,pazi(icomp,i),fInc_angle(i),
      & proang_s(icomp,icfctp,i),
      & hcif(icomp,i),hcof(icomp,i),ivblayr,vb_w(icomp,icfctp),
-     & vb_s(icomp,icfctp),vb_phiNew(icomp,icfctp),vb_VorH(icomp,icfctp)
+     & vb_s(icomp,icfctp),vb_phiNew(icomp,icfctp),
+     & vb_VorH(icomp,icfctp)
  9996     format(A57,A52)
  9997     format(6x,I10,3x,5F9.3,I7,3f9.3,A8)
 
       write(98,9998)
-     &'     layer |tnc(o) |tnc(m) |tnc(i) |CFCRgap',
-     &'|Q_lw(o)|Q_lw(m)|Q_lw(i)|',
-     &'|QextVB_g_env| h_vb_room  |h_glass_room|',
-     &'|QintVB_b_rm | QintVB_g_rm|',
-     &'|Q_cv(o)|Q_cv(m)|Q_cv(i)|'
+     & '     layer |tnc(o) |tnc(m) |tnc(i) |CFCRgap',
+     & '|Q_lw(o)|Q_lw(m)|Q_lw(i)|',
+     & '|QextVB_g_env| h_vb_room  |h_glass_room|',
+     & '|QintVB_b_rm | QintVB_g_rm|',
+     & '|Q_cv(o)|Q_cv(m)|Q_cv(i)|'
 
  9998     format(4x,A48,A25,A40,A28,A26)
 
@@ -3616,20 +3617,20 @@ C**************** CFC Convection/LW exchange*************************
      &.or.(icfcltp(icomp,icfctp,l).eq.2.and.l.gt.1.and.l.lt.ne))then
 
       write(98,9999)l,tnc(i,(l*2)-1),tnc(i,l*2),tnc(i,(l*2)+1),
-     &cfcRgap(icomp,i,l,2),qcfc_lw(icomp,i,(l*2)-1,2),
-     &qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0,0,
-     &0,0,0,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
-     &qcfc_cv(icomp,i,(l*2)+1,2)
+     & cfcRgap(icomp,i,l,2),qcfc_lw(icomp,i,(l*2)-1,2),
+     & qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0.0,0.0,
+     & 0.0,0.0,0.0,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
+     & qcfc_cv(icomp,i,(l*2)+1,2)
 
       !outdoor blind
-      elseif(icfcltp(icomp,icfctp,l).eq.2.and.l.eq.1)then
+      elseif(icfcltp(icomp,icfctp,l).eq.2 .and. l.eq.1)then
 
       write(98,9999)l,tnc(i,(l*2)-1),tnc(i,l*2),tnc(i,(l*2)+1),
-     &cfcRgap(icomp,i,l,2),qcfc_lw(icomp,i,(l*2)-1,2),
-     &qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),
-     &q_glass_extS(icomp,i),0,
-     &0,0,0,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
-     &qcfc_cv(icomp,i,(l*2)+1,2)
+     & cfcRgap(icomp,i,l,2),qcfc_lw(icomp,i,(l*2)-1,2),
+     & qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),
+     & q_glass_extS(icomp,i),0.0,
+     & 0.0,0.0,0.0,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
+     & qcfc_cv(icomp,i,(l*2)+1,2)
 
       !indoor blind
       elseif(l.eq.ne)then
@@ -3645,8 +3646,9 @@ C**************** CFC Convection/LW exchange*************************
          else
          write(98,9999)l,tnc(i,(l*2)-1),tnc(i,l*2),tns(i),
      &   cfcRgap(icomp,i,l,2),qcfc_lw(icomp,i,(l*2)-1,2),
-     &   qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0,0,
-     &   0,0,0,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
+     &   qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0.0,0.0,
+     &   0.0,0.0,0.0,qcfc_cv(icomp,i,(l*2)-1,2),
+     &   qcfc_cv(icomp,i,l*2,2),
      &   qcfc_cv(icomp,i,(l*2)+1,2)
          end if
 
@@ -3663,7 +3665,7 @@ C********************************************************************
 C************************ Solar Processing **************************
       IF(ISUNUP.eq.1)then
       write(99,*)
-     &'TIMESTEP | ICOMP | ISUNUP |  SAZI  |  SALT  |  Tamb  |  Tzone'
+     & 'TIMESTEP | ICOMP | ISUNUP |  SAZI  |  SALT  |  Tamb  |  Tzone'
       write(99,1000)NSINC,ICOMP,ISUNUP,SAZI,SALT,TP,TFA(ICOMP)
 
  1000     format(I6,I10,I7,3x,4F9.3)
@@ -3682,17 +3684,19 @@ C************************ Solar Processing **************************
  17   continue
 
       write(99,1001)
-     &'   CFC SURFACE |  PAZI  |  ANGI  |  PROANG  | IRadB |',
-     &' IRadD |IsShd? |TranBB | TranD | Refl  |',
-     &'VBLAYR|   W   |   S   |   PHI   | ORIENT |'
-      write(99,1002)i,pazi(icomp,i),fInc_angle(i),
+     & '   CFC SURFACE |  PAZI  |  ANGI  |  PROANG  | IRadB |',
+     & ' IRadD |IsShd? |TranBB | TranD | Refl  |',
+     & 'VBLAYR|   W   |   S   |   PHI   | ORIENT |'
+      write(99,1002) i,pazi(icomp,i),fInc_angle(i),
      & proang_s(icomp,icfctp,i),
      & RadIncDirS(icomp,i),RadIncDifS(icomp,i),
      & issur_self_shd(icomp,i),transBB_S(icomp,i),transD_S(icomp,i),
      & refl_S(icomp,i),ivblayr,vb_w(icomp,icfctp),
-     & vb_s(icomp,icfctp),vb_phiNew(icomp,icfctp),vb_VorH(icomp,icfctp)
+     & vb_s(icomp,icfctp),vb_phiNew(icomp,icfctp),
+     & vb_VorH(icomp,icfctp)
  1001     format(A57,A41,A44)
- 1002     format(6x,I10,3x,5F9.3,I6,3f9.3,I5,2x,3F9.3,A8)
+ 1002     format(6x,I10,3x,9f9.3,I5,2x,3F9.3,A8)
+c 1002     format(I13,5F9.3,I6,3f9.3,I5,2x,3F9.3,A8)
 
       write(99,1003)
      &'     node  | qtmcaExt | qtmcaFin |'
@@ -3714,3 +3718,171 @@ C********************************************************************
       return
       end
  
+
+C ********************************************************************
+C                         --CFC_output for h3k --
+C
+C H3K CFC output generation invoked in MZNUMA.
+C 
+C Generates time-step output to h3k if active
+C
+C ********************************************************************
+      subroutine CFCoutputH3K(icomp)
+      IMPLICIT NONE
+#include "building.h"
+#include "geometry.h"
+#include "CFC_common.h"
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     &NPGAP(MCOM,MS,MGP)
+      integer nconst,nelts,ngaps,npgap
+      COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
+      integer nnds,nndz,nndc,nndl
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
+      real sazi,salt
+      integer isunup
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      real qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      real tfa,qfa
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      real pazi,pelv
+      COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
+     &              HCOF(MCOM,MS)
+      real hcip,hcif,hcop,hcof
+      COMMON/MOIST81/TNC(MS,MN),QNcnst
+      real tnc,qncnst
+      COMMON/MOIST82/TNS(MS),QNsrf
+      real tns,qnsrf
+      COMMON/COE32J/QTMCA(MS,MN,2)
+      real qtmca
+
+      COMMON/PVANG/fInc_angle(MS)
+      real fInc_angle
+
+      common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
+     &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
+     &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
+     &      qtmca_ext(mcom,ms,mn)
+      real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
+      real issur_self_shd,proang_s,qtmca_ext
+
+      integer i,j,k,l,nn,nc,ne,icfctp,icomp,ivblayr
+      integer iH3K_NameLen
+
+      CHARACTER*128 H3K_rep_NAME
+      CHARACTER*3 cConstrName
+      CHARACTER*3 cLayerName
+      character*3 cBuildingName ! root name for "building"
+      character*1 cSep ! The separator
+
+C Basic names (should be defined in a header, somewhere ...)
+      cBuildingName='bui'
+      cSep='/'
+
+C Number of constructions in zone:
+      nc=nconst(icomp)
+
+      do 13 i=1,nc
+
+      if (icfcfl(icomp,i).gt.0) then
+        icfctp=icfcfl(icomp,i)
+        ne=nelts(icomp,i)
+        nn=nndc(icomp,i)
+
+C   find layer with venetian blind
+        do 14 j=1,ne
+          if(icfcltp(icomp,icfctp,j).eq.2)ivblayr=j
+ 14     continue
+ 
+        do 15 l=1,ne
+
+C Filter output by ... (??)
+          if( (icfcltp(icomp,icfctp,l).lt.2 .and. l.lt.ne)
+     &    .or.(icfcltp(icomp,icfctp,l).eq.2 
+     &                         .and.l.gt.1 .and. l.lt.ne)) then
+
+C.......Pad construction index to 'XX'
+            if ( i .gt. 9 ) then
+              write (cConstrName,'(A,I2)') 'c', i
+            else
+              write (cConstrName,'(A,I1)') 'c0', i
+            endif
+C.......Pad layer index to 'XX'
+            if ( l .gt. 9 ) then
+              write (cLayerName,'(A,I2)') 'l', l
+            else
+              write (cLayerName,'(A,I1)') 'l0', l
+            endif
+
+C Build name for construction properties:
+            H3K_rep_NAME = cBuildingName
+     &                     //cSep//zname(icomp)(1:lnzname(icomp))
+     &                     //cSep//cConstrName
+
+            iH3K_NameLen = 3+1+lnzname(icomp)+1+3
+
+C CFC venetian blind slat angle
+            call add_to_xml_reporting (
+     &           vb_phiNew(icomp,icfctp),
+     &           H3K_rep_Name(1:iH3K_NameLen)// '/cfc_vb/angle',
+     &           'units', '(°)',
+     &           'Venetian type blind slat angle' )
+
+C CFC Direct and diffuse radiation incidence
+C       RadIncDirS(icomp,i)
+C       RadIncDifS(icomp,i),
+
+C CFC beam and diffuse transmission
+
+            call add_to_xml_reporting (
+     &           transBB_S(icomp,i),
+     &           H3K_rep_Name(1:iH3K_NameLen)// '/cfc/transBB',
+     &           'units', '(W)',
+     &           'CFC direct beam transmission' )
+     
+            call add_to_xml_reporting (
+     &           transD_S(icomp,i),
+     &           H3K_rep_Name(1:iH3K_NameLen)// '/cfc/transD',
+     &           'units', '(W)',
+     &           'CFC diffuse transmission' )
+
+C build name for layer properties:
+            H3K_rep_NAME = cBuildingName
+     &                     //cSep//zname(icomp)(1:lnzname(icomp))
+     &                     //cSep//cConstrName
+     &                     //cSep//cLayerName
+
+            iH3K_NameLen = 3+1+lnzname(icomp)+1+3+1+3
+
+C CFC layer temperature "out", "middle" and "in" (this should be allready available via standard layer data ...):
+C       tnc(i,(l*2)-1),tnc(i,l*2),tnc(i,(l*2)+1)
+
+C CFC layer resistance (convective, only!)
+            call add_to_xml_reporting (
+     &           cfcRgap(icomp,i,l,2),
+     &           H3K_rep_Name(1:iH3K_NameLen)// '/cfc/Rgap',
+     &           'units', '(m2 K/W)',
+     &           'CFC gap resistance (convective only!)' )
+
+C CFC layer long wave heat flux "out", "middle" and "in":
+C       qcfc_lw(icomp,i,(l*2)-1,2)
+C       qcfc_lw(icomp,i,l*2,2)
+C       qcfc_lw(icomp,i,(l*2)+1,2)
+
+C CFC layer convective heat flux "out", "middle" and "in":
+C       qcfc_cv(icomp,i,(l*2)-1,2)
+C       qcfc_cv(icomp,i,l*2,2)
+C       qcfc_cv(icomp,i,(l*2)+1,2)
+
+C Ideal: Calculate U-value somehow ...
+
+
+          end if
+ 15       continue
+      end if ! icfcfl .gt. 0
+ 13   continue
+
+      return
+      end
