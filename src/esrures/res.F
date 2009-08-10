@@ -147,7 +147,7 @@ C      integer SIGFPE_bps
       logical     unixok,there
 
       CHARACTER ITEM(19)*23
-      CHARACTER*72 H,LTMP,LCFGF,actf,Lflpar
+      CHARACTER*72 H,LCFGF,actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
@@ -157,6 +157,7 @@ C      integer SIGFPE_bps
       character bact*4,pifltog*4,lpifl*72
       character graftitle*64,grlbl*24,LTDF*72,LTDFA*72
       character firstbit*72,secondbit*72
+      character longtmp*144
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -445,12 +446,27 @@ C Read the plant configuration file.
           h(4)='that res CANNOT read the PLANT configuration '
           h(5)='file unless it has first read the model '
           h(6)='configuration file.'
+          write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
 
-          call easks(LTMP,'Configuration file name ?',
-     &      ' ',72,' ','configuration file',IER,0)
-          call fdroot(LTMP,path,LFCFG)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      96,' ','configuration file',IER,4)
+          elseif(iglib.eq.2)then
+            CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      144,' ','configuration file',IER,4)
+          else
+            CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      96,' ','configuration file',IER,4)
+          endif
+          if(ier.eq.-3) goto 902  ! cancel detected pass back -3 in ier.
 
-C Read the model configuration file.
+	  call fdroot(longtmp,path,LCFGF)
+
+C Read the model plant-only configuration file.
           IFCFG=IFIL+1
           IAPROB=IFIL+2  
           MODE='ALL '
