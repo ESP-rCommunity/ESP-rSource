@@ -82,8 +82,6 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
@@ -142,7 +140,6 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character GDESCR*36
       CHARACTER NAM*72,TITL*72,outs*124,h*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -2366,15 +2363,8 @@ C << a door in a wall or as a surface with two windows in it
           endif
   60    continue
 
-C Check if there are obstructions associated with this zone. If
-C iobs() is 2 and newgeo true then blocks already scanned.
-        IF(IOBS(mz).EQ.0)THEN
-          continue
-        ELSEIF(IOBS(mz).EQ.1)THEN
-          IUF=IFIL+1
-          CALL EGOMST(IUF,mz,ZOBS(mz),0,0,iuout,IER)
-          IF(IER.NE.0) goto 4
-        ELSEIF(IOBS(mz).EQ.2)THEN
+C Check where obstructions are located. Details are in common.
+        IF(IOBS(mz).EQ.2)THEN
           if(.NOT.newgeo)then
             call edisp(iuout,'Confused where obstructions are.')
           endif
@@ -2383,7 +2373,7 @@ C iobs() is 2 and newgeo true then blocks already scanned.
           DO 301 IB=1,nbobs(mz)
             CALL CNVBLK(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
      &        DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),BANGOB(mz,IB))
-            do 302 ibs=1,6
+            do 302 ibs=1,6   ! for each of the 6 surfaces of block
               WRITE(ioout,'(a)',iostat=ios,err=6) ' '
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          'Surface:Shading:Detached:Building',com
