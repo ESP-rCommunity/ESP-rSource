@@ -1941,7 +1941,7 @@ C otherwise write out write out zone obstruction file.
             if(newgeo)then
 	      iuf=ifil+2
               call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
-              IOBS(NCOMP)=2
+              IOBS(NCOMP)=2    ! reset to signal obs in geom file
               ZOBS(NCOMP)='  '
             else
               CALL MKGOMST(IUF,ZOBS(NCOMP),NCOMP,IER)
@@ -2389,15 +2389,10 @@ c beeen read in so can include the extended surface `context`.
             CALL INSINFO(IC,ITRU)
           endif
 
-C If there is an obstructions file read it, if obstructions within
-C the zone geometry file nothing more needs to be done.
-          IUF=IFIL+1
-          if(IOBS(IC).EQ.1)then
-            CALL EGOMST(IUF,IC,ZOBS(IC),IR,ITRC,ITRU,IER)
-          elseif(IOBS(IC).EQ.2)then
-            continue
-          endif
+C Obstructions are alread in common - no need to scan.
         ENDIF
+
+C Present zone detail editing menu.
         CALL EDZONE(ITRC,IC,IER)
         MODIFY=.TRUE.
 
