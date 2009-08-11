@@ -1738,9 +1738,9 @@ C file and then recover the zone commons.
 
 C Zone rotations and transforms.
           if(OKOB)then
-            H(1)='When copying a zone the copy is usually shifted'
-            H(2)='away from the position of the source.  You can '
-            H(3)='skip such transforms. '
+            H(1)='When copying a zone and obstructions the copy is'
+            H(2)='usually shifted away from the position of the '
+            H(3)='source. You can skip such transforms.'
           else
             H(1)='When copying a zone the copy is usually shifted'
             H(2)='away from the position of the source.  You can '
@@ -1907,10 +1907,11 @@ C Now it is ok to write out the copied zone.
             IF(OK)GOTO 42
           ENDIF
 
-C Do same transformation to obstructions?
+C Do same transformation to obstructions? If so data is in common
+C so modify common block data. Take into account location of
+C obstruction data.
           if(OKOB)then
             CALL ESCZONE(NCOMP)
-            CALL EGOMST(IUF,NCOMP,ZOBS(NCOMP),0,ITRC,ITRU,IER)
             if(OKZT)then
               do 85 ij=1,nbobs(ncomp)
                 XOB(ncomp,ij)=XOB(ncomp,ij)+VALX
@@ -1933,7 +1934,18 @@ C Do same transformation to obstructions?
                 BANGOB(ncomp,ij)=BANGOB(ncomp,ij)+VAL
   88          continue
             endif
-            CALL MKGOMST(IUF,ZOBS(NCOMP),NCOMP,IER)
+
+C If geometry file can hold obstructions save them there
+C otherwise write out write out zone obstruction file.
+            call eclose(gversion(ncomp),1.1,0.01,newgeo)
+            if(newgeo)then
+	      iuf=ifil+2
+              call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
+              IOBS(NCOMP)=2
+              ZOBS(NCOMP)='  '
+            else
+              CALL MKGOMST(IUF,ZOBS(NCOMP),NCOMP,IER)
+            endif
             CALL ERCZONE(NCOMP)
           endif
 
