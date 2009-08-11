@@ -348,11 +348,6 @@ C Open the primitive, mlc & optics db.
 C Fictitious transmission threshhold.
       ftr=0.92
 
-C Check for obstructions.
-      IF(IOBS(ICOMP).EQ.1)THEN
-        CALL EGOMST(ITA1,ICOMP,ZOBS(ICOMP),0,0,iuout,IER)
-      endif
-
 10    INO = -4
       ITEM(1) =       ' Toggles ...                   '
       if(iscope.eq.1)then
@@ -1128,11 +1123,6 @@ C Read in the zone geometry.
           endif
         endif
         ZN=zname(newfoc)
-
-C If (older) zone obstructions file scan it.
-        IF(IOBS(newfoc).EQ.1)THEN
-          CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,0,iuout,IER)
-        endif
 
 C Display the other zone, resetting all surface lines to std.
         if(ACT.eq.'i')then
