@@ -76,10 +76,6 @@ C espriou.h provides currentfile, defdbfl exemfl.
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
 
 C Significant figure reporting limit (NSIGFIG).
@@ -177,7 +173,6 @@ C Name of current application
       character LUALF*72,LCNG*15,LLOC*15
       character*72 LCFGF,H,LPRJLG
       character*72 LCNN,LTMP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
       character path*72,upath*72,cfgroot*24,exemplar*144
@@ -816,7 +811,6 @@ C Pass information to C library code if running in graphic mode.
               call viewtext(etext,iside,isize,ifont)
             endif
           else
-C            call edisp(iuout,'* Changing focus to specified zone.')
             itru=iuout
             call eclose(gversion(index),1.1,0.01,newgeo)
             if(newgeo)then
@@ -826,13 +820,6 @@ C            call edisp(iuout,'* Changing focus to specified zone.')
             endif
             IF(IER.NE.0)goto 3
 
-C If there is an obstructions file read it.
-            IUF=IFIL+1
-            if(IOBS(index).EQ.1)then
-              CALL EGOMST(IUF,index,ZOBS(index),IR,ITRC,ITRU,IER)
-            elseif(IOBS(index).EQ.2)then
-              continue  ! obstructions are in zone geometry file
-            endif
             CALL EDZONE(ITRC,index,IER)
             MODIFY=.TRUE.
           endif
@@ -4863,6 +4850,10 @@ C Older format geometry file so use separate zone obstructions file.
         elseif(ishd.eq.1)then
 
 C There is shading and/or insulation check if user wants to dereference.
+
+C << the logic below does not check to see if model uses newer file
+C << formats e.g. to remove obstructions from within geometry file.
+
           h(1)='The model includes detailed evaluations of'
           h(2)='shading and/or insolation patterns. '
           h(3)=' '
@@ -4903,7 +4894,6 @@ C There is shading and/or insulation check if user wants to dereference.
                 ICOMP=ivals(IC)
                 ISI(ICOMP)=0
  153          continue
-C              call edisp(iuout,'* Shading files dereferenced.')
               msg1='updating model for shading changes...'
             endif
           elseif(iw.eq.2)then
@@ -4919,7 +4909,6 @@ C files (iobs=1). Ignore zones with obstructions within geometry file.
                 ICOMP=ivals(IC)
                 if(iobs(icomp).eq.1) IOBS(ICOMP)=0
  154          continue
-C              call edisp(iuout,'* Obstruction files dereferenced.')
               msg1='updating model for shading changes...'
             endif
           elseif(iw.eq.3)then
@@ -4934,8 +4923,6 @@ C              call edisp(iuout,'* Obstruction files dereferenced.')
                 ISI(ICOMP)=0
  155          continue
             endif
-C            call edisp(iuout,
-C     &        '* Shading & obstruction files dereferenced.')
             msg1='updating model for shading changes...'
           elseif(iw.eq.4)then
 
@@ -4943,6 +4930,9 @@ C Create an obstructions file for each of the selected zones
 C which does not already have one. If there is an obstructions
 C file (iobs(icomp) is non-zero) then read current obstructions
 C update the file name and write back out to NNAME file.
+
+C << if newer format geometry then alternative logic needed >>
+
             IUF=12
             inpic=0
             call askmultizone(inpic,ivals,
@@ -4964,6 +4954,10 @@ C update the file name and write back out to NNAME file.
 
 C Create an obstruction file name, mangle the name and write
 C out default block.
+
+C << and check if newer geometry file and see about alternative
+C << logic that does not bother with obs file copying.
+
                   IOBS(ICOMP)=1
                   if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                     WRITE(ZOBS(icomp),'(A,A4)')
@@ -5009,10 +5003,6 @@ C << what the logic does not yet do is loot to see if there is an ascii
 C << version of the zone shading file and copy it to the new name.
 
  156          continue
-C              call edisp(iuout,
-C     &          '* Obstruction files being created/copied.')
-C              call edisp(iuout,
-C     &          '* Shading files being created.')
               msg1='updating model for obstruction changes...'
             endif
           elseif(iw.eq.5)then
