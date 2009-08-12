@@ -703,7 +703,7 @@ C for non CFC surfaces.
         icfctp=icfcfl(icomp,i)
 
         IF(icfctp.gt.0)then
-	 if(icfcltp(icomp,icfctp,ne).ge.2)then
+	       if(icfcltp(icomp,icfctp,ne).ge.2)then
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
      &                            qZnsurTot(i)/(fnnod*2.)
           do 230 j=nn-1,nn-nnod+1,-1
@@ -714,10 +714,10 @@ C for non CFC surfaces.
           inode=inode-1
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
      &                            qZnsurTot(i)/(fnnod*2.)
-	 else
+	       else
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
      &                            qZnsurTot(i)
-	 endif
+	      endif
         ELSE
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
      &                            qZnsurTot(i)
@@ -3768,14 +3768,21 @@ C ********************************************************************
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
       real issur_self_shd,proang_s,qtmca_ext
 
+      real RGap1, RGap2, Rsi, Rse, SBOLTZ, T0
+      
       integer i,j,k,l,nn,nc,ne,icfctp,icomp,ivblayr
-      integer iH3K_NameLen
+      integer iH3K_NameLen(2)
 
-      CHARACTER*128 H3K_rep_NAME
-      CHARACTER*3 cConstrName
+      CHARACTER*128 H3K_rep_NAME(2)
+      CHARACTER*3 cConstrName,sIGU
       CHARACTER*3 cLayerName
       character*3 cBuildingName ! root name for "building"
       character*1 cSep ! The separator
+
+      logical TGU,DGU
+      
+      SBOLTZ=5.6697E-08 ! Stefan Bolzmann Constant
+      T0=273.15         ! 0°C in K
 
 C Basic names (should be defined in a header, somewhere ...)
       cBuildingName='bui'
@@ -3790,45 +3797,35 @@ C Number of constructions in zone:
         icfctp=icfcfl(icomp,i)
         ne=nelts(icomp,i)
         nn=nndc(icomp,i)
-
-C   find layer with venetian blind
-        do 14 j=1,ne
-          if(icfcltp(icomp,icfctp,j).eq.2)ivblayr=j
- 14     continue
- 
-        do 15 l=1,ne
-
-C Filter output by ... (??)
-          if( (icfcltp(icomp,icfctp,l).lt.2 .and. l.lt.ne)
-     &    .or.(icfcltp(icomp,icfctp,l).eq.2 
-     &                         .and.l.gt.1 .and. l.lt.ne)) then
+        DGU = .false.
+        TGU = .false.
+        RGap1 = 0.0
+        RGap2 = 0.0
+        Rsi   = 0.13
+        Rse   = 0.04
+        sIGU = 'XXX'
 
 C.......Pad construction index to 'XX'
-            if ( i .gt. 9 ) then
-              write (cConstrName,'(A,I2)') 'c', i
-            else
-              write (cConstrName,'(A,I1)') 'c0', i
-            endif
-C.......Pad layer index to 'XX'
-            if ( l .gt. 9 ) then
-              write (cLayerName,'(A,I2)') 'l', l
-            else
-              write (cLayerName,'(A,I1)') 'l0', l
-            endif
+        if ( i .gt. 9 ) then
+          write (cConstrName,'(A,I2)') 's', i
+        else
+          write (cConstrName,'(A,I1)') 's0', i
+        endif
 
 C Build name for construction properties:
-            H3K_rep_NAME = cBuildingName
-     &                     //cSep//zname(icomp)(1:lnzname(icomp))
-     &                     //cSep//cConstrName
+        H3K_rep_NAME(1) = cBuildingName
+     &                 //cSep//zname(icomp)(1:lnzname(icomp))
+     &                 //cSep//cConstrName
 
-            iH3K_NameLen = 3+1+lnzname(icomp)+1+3
+        iH3K_NameLen(1) = 3+1+lnzname(icomp)+1+3
 
+C Output of CFC construction data ***********************************
 C CFC venetian blind slat angle
-            call add_to_xml_reporting (
-     &           vb_phiNew(icomp,icfctp),
-     &           H3K_rep_Name(1:iH3K_NameLen)// '/cfc_vb/angle',
-     &           'units', '(°)',
-     &           'Venetian type blind slat angle' )
+        call add_to_xml_reporting (
+     &         vb_phiNew(icomp,icfctp),
+     &         H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc_vb/angle',
+     &         'units', '(°)',
+     &         'Venetian type blind slat angle' )
 
 C CFC Direct and diffuse radiation incidence
 C       RadIncDirS(icomp,i)
@@ -3838,33 +3835,49 @@ C CFC beam and diffuse transmission
 
             call add_to_xml_reporting (
      &           transBB_S(icomp,i),
-     &           H3K_rep_Name(1:iH3K_NameLen)// '/cfc/transBB',
-     &           'units', '(W)',
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transBB',
+     &           'units', '(W/m2)',
      &           'CFC direct beam transmission' )
      
             call add_to_xml_reporting (
      &           transD_S(icomp,i),
-     &           H3K_rep_Name(1:iH3K_NameLen)// '/cfc/transD',
-     &           'units', '(W)',
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transD',
+     &           'units', '(W/m2)',
      &           'CFC diffuse transmission' )
 
+
+        do 15 l=1,ne
+C Output of CFC layer data ****************************************** 
+C Filter output by layer type ...
+          if( (icfcltp(icomp,icfctp,l).lt.2)
+     &    .or.(icfcltp(icomp,icfctp,l).eq.2 .and. l.gt.1)) then
+
+C.......Pad layer index to 'XX'
+            if ( l .gt. 9 ) then
+              write (cLayerName,'(A,I2)') 'l', l
+            else
+              write (cLayerName,'(A,I1)') 'l0', l
+            endif
+
 C build name for layer properties:
-            H3K_rep_NAME = cBuildingName
+            H3K_rep_NAME(2) = cBuildingName
      &                     //cSep//zname(icomp)(1:lnzname(icomp))
      &                     //cSep//cConstrName
      &                     //cSep//cLayerName
 
-            iH3K_NameLen = 3+1+lnzname(icomp)+1+3+1+3
+            iH3K_NameLen(2) = 3+1+lnzname(icomp)+1+3+1+3
 
 C CFC layer temperature "out", "middle" and "in" (this should be allready available via standard layer data ...):
 C       tnc(i,(l*2)-1),tnc(i,l*2),tnc(i,(l*2)+1)
 
-C CFC layer resistance (convective, only!)
-            call add_to_xml_reporting (
-     &           cfcRgap(icomp,i,l,2),
-     &           H3K_rep_Name(1:iH3K_NameLen)// '/cfc/Rgap',
-     &           'units', '(m2 K/W)',
-     &           'CFC gap resistance (convective only!)' )
+            if ( icfcltp(icomp,icfctp,l).eq.0 ) then
+C CFC gap resistance if layer is gap (convective, only!)
+              call add_to_xml_reporting (
+     &             cfcRgap(icomp,i,l,2),
+     &             H3K_rep_Name(2)(1:iH3K_NameLen(2))// '/cfc/Rgap',
+     &             'units', '(m2 K/W)',
+     &             'CFC gap resistance (convective only!)' )
+            endif
 
 C CFC layer long wave heat flux "out", "middle" and "in":
 C       qcfc_lw(icomp,i,(l*2)-1,2)
@@ -3876,13 +3889,83 @@ C       qcfc_cv(icomp,i,(l*2)-1,2)
 C       qcfc_cv(icomp,i,l*2,2)
 C       qcfc_cv(icomp,i,(l*2)+1,2)
 
-C Ideal: Calculate U-value somehow ...
-
+C Calculate U-value for IGU in CFC ...
+C Layer type index  >>icfcltp<<  : 
+C      0: gas gap
+C      1: glazing
+C      2: venetian blind
+C The following logic assumes that there are not more than 3 consecutive 
+C glass layers - interspersed with gas layers, of course - in the CFC ...
+            if ( icfcltp(icomp,icfctp,l).eq.0 ) then
+              ! this is a gas layer and no IGU has been identified, yet,
+              if (icfcltp(icomp,icfctp,l-1) .eq. 1) then
+                ! the previous layer is glass, 
+                if ((l.le.(ne-1)) .and. 
+     &              (icfcltp(icomp,icfctp,l+1) .eq. 1)) then
+                  ! the next layer is also glass, so U-value can be / is calculated ...
+                  if (DGU) then
+                    DGU = .false.
+                    TGU = .true. ! triple glazing unit
+                    Rsi = 0.13 ! actual internal convective resistance
+                    ! radiative part
+                    RGap2 = SBOLTZ*ABS(((T0+tnc(i,(l*2)-1))**4.0
+     &                                  - (T0+tnc(i,(l*2)+1))**4.0))
+                    RGap2 = RGap2/(  1.0/(1.0-rlwRB_sv(i,icfctp,l-1))
+     &                             + 1.0/(1.0-rlwRF_sv(i,icfctp,l+1))
+     &                             - 1.0 )
+                    RGap2 = 1.0/RGap2
+                    ! add convective part
+                    RGap2 = RGap2 + cfcRgap(icomp,i,l,2)
+                    ! add third glass layer resistance
+                    RGap2 = RGap2 + 0.0
+                  else
+                    DGU = .true.
+                    Rse = 0.04 ! actual external convective resistance
+                    Rsi = 0.13 ! actual internal convective resistance
+                    ! radiative part
+                    RGap1 = SBOLTZ*ABS(((T0+tnc(i,(l*2)-1))**4.0
+     &                                  - (T0+tnc(i,(l*2)+1))**4.0))
+                    RGap1 = RGap1/(  1.0/(1.0-rlwRB_sv(i,icfctp,l-1))
+     &                             + 1.0/(1.0-rlwRF_sv(i,icfctp,l+1))
+     &                             - 1.0 )
+                    RGap1 = 1.0/RGap1
+                    ! add convective part
+                    RGap1 = RGap1 + cfcRgap(icomp,i,l,2)
+                    ! add first and second glass layer resistances 
+                    RGap1 = RGap1 + 0.0
+                  endif
+                endif
+              endif
+            endif
+C Debug ...
+c          if (l .eq. ne) then
+c           write(*,*)'Typ=',icfctp,' RGap1=',RGap1,' RGap2=',RGap2
+c          endif
 
           end if
- 15       continue
+ 15     continue  ! loop through layers of construction
+
+C Now calculate and output U-value for IGU of this construction
+        if (DGU) then
+          sIGU = 'DGU'
+        else
+          sIGU = 'TGU'
+        endif
+        call add_to_xml_reporting (
+     &       1.0/(RGap1 + RGap2 + 0.17),
+     &       H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/Unom_' // sIGU ,
+     &       'units', '(W/(m2 K))',
+     &       'Nominal CFC IGU U-value' )
+
+        call add_to_xml_reporting (
+     &       1.0/(RGap1 + RGap2 + Rsi + Rse),
+     &       H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/Uact_' // sIGU ,
+     &       'units', '(W/(m2 K))',
+     &       'Actual CFC IGU U-value' )
+
+
       end if ! icfcfl .gt. 0
- 13   continue
+ 13   continue ! loop through constructions of zone
 
       return
       end
