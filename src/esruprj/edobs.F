@@ -28,8 +28,7 @@ C ************* EDOBS
 C EDOBS: Edit obstruction blocks if there is an obstruction file
 C associated with this zone or if there are obstructions held
 C in the version 1.1 zone geometry file. If older geometry file
-C then use separate obstructions file and allow user
-C to create one.
+C then use separate obstructions file and allow user to create one.
 C Use file unit IPRODB temporarily.
       SUBROUTINE EDOBS(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
@@ -92,6 +91,10 @@ C Check if Unix-based or DOS based.
       modcfg=.false.
       ITOBS = 0
 
+C Obstructions for whole model are in common blocks there should
+C be no need to re-scan this information because it is only called
+C from within subroutine X of edgeo.F.
+
 C If newer geometry file it may include obstructions. If the value
 C of iobs for this zone is 2 then obstructions were included so
 C re-read the geometry file.
@@ -99,8 +102,6 @@ C re-read the geometry file.
       newgeo=.false.  ! assume older format geometry.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        CALL ERPFREE(IUF,ios)
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
         if(IOBS(ICOMP).EQ.2)then
           continue
         elseif(IOBS(ICOMP).EQ.1)then
@@ -136,7 +137,7 @@ C a name and or whether it should be ignored.
         ELSEIF(IOBS(ICOMP).eq.0)THEN
 
 C There is no mention of obstructions so get name and create a dummy
-C if it doesn't exist. If user dereferenced the iobs will be zero and
+C block if it doesn't exist. If user dereferenced the iobs will be zero and
 C the model will not have been changed so just return.
           silent=.false.
           CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
@@ -645,7 +646,8 @@ C ************* ECROBS
 C ECROBS: Read in existing obstruction file or create a fresh one.
 C If silent is true then either create or deference silently. If
 C the geometry file is version 1.1 or greater then it can hold
-C the block information.
+C the block information.  Because this is called from several
+C code blocks it is still necessary to re-scan the zone files.
       SUBROUTINE ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
 #include "building.h"
 
@@ -745,7 +747,8 @@ C In either case offer the choice to dereference obstructions.
       endif
 
 C If silent is true create standard name. If this matches an
-C existing file use it, otherwise add a dummy obstruction file silently.
+C existing file and scanning the file via egomst is error-free
+C then use it, otherwise add a dummy obstruction file silently.
       if(silent)then
         makedummy=.false.
         if(ZOBS(ICOMP)(1:2).eq.'  '.or.ZOBS(ICOMP)(1:4).eq.'UNKN')then
@@ -763,6 +766,9 @@ C existing file use it, otherwise add a dummy obstruction file silently.
             makedummy=.true.
           endif
         else
+
+C There was a possible file name so see if it exists and if
+C a scan is error free use it otherwise setup dummy.
           call FINDFIL(ZOBS(ICOMP),XST)
           if(XST)then
             CALL EGOMST(IUF,ICOMP,ZOBS(ICOMP),0,ITRC,ITRU,IER)
@@ -780,7 +786,8 @@ C existing file use it, otherwise add a dummy obstruction file silently.
 
  42   if(makedummy)then
 
-C If we need to make a dummy obstruction file do this.
+C If we need to make a dummy obstruction file do this or include
+C the dummy obstruction in the zone geometry file.
         nbobs(icomp)=1
         XOB(icomp,1)=1.0
         YOB(icomp,1)=1.0
@@ -822,30 +829,40 @@ C If we need to make a dummy obstruction file do this.
         return
       endif
  
-C The next section has not been adapted for newgeo. Would one want
-C to browse for existing obstructions files if newgeo is true? If
-C browse were allowed for newgeo true then the data probably should
-C be included within the geometry file.
-
-C << decision required >>
-
+C If we get to this point browse for existing obstructions files. If
+C newgeo is true adapt the help message and the dialog text.
       H(1)='In order to account for external shading devices,'
       H(2)='window reveals, trees, outside walls, etc. in a '
       H(3)='detailed shading analysis the user should'
       H(4)='approximate such objects as one or more prisms' 
       H(5)='which are described in a site obstruction file.'
       H(6)=' '
-      H(7)='The browse option presents a list of files in the '
-      H(8)='project `zones` folder.'
-      H(9)=' '
-      H(10)='The ignore/dereference option will return you to the zone'
-      H(11)='geometry menu without changing the model.'
+      if(newgeo)then
+        H(7)='The browse option presents a file list in the project'
+        H(8)='`zones` folder to allow import of legacy obstructions'
+        H(9)='(overwriting any obstructions already held in the zone'
+        H(10)='geometry file.  '
+        H(11)=' '
+        H(12)=' '
+      else
+        H(7)='The browse option presents a file list in the project'
+        H(8)='`zones` folder to associate with obstructions in an'
+        H(9)='exising zone obstruction file. '
+        H(10)=' '
+        H(11)='The dereference option removes the reference to any'
+        H(12)='currently associated obstruction file. '
+      endif
       if(ZOBS(ICOMP)(1:2).eq.'  '.or.ZOBS(ICOMP)(1:4).eq.'UNKN')then
         LTMP=OFILE
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.2)then
-          CALL EASKSCMD(LTMP,'Zone obstructions file (see help):',' ',
-     &      'browse',clkok,72,OFILE,'obstruction file',ISER,11)
+          if(newgeo)then
+            CALL EASKSCMD(LTMP,'Legacy obstructions import (see help):',
+     &        ' ','browse',clkok,72,OFILE,'obstruction file',ISER,12)
+          else
+            CALL EASKSCMD(LTMP,'Zone obstructions file (see help):',
+     &        ' ','browse',clkok,72,OFILE,'obstruction file',ISER,12)
+          endif
           if(clkok)iclkok=2   ! notice browse button
           if(iser.eq.-3)then  ! notice GTK cancel button
             IOBS(ICOMP)=0
@@ -853,22 +870,39 @@ C << decision required >>
             return
           endif
         else
-          CALL EASKS2CMD(LTMP,'Zone obstructions file (see help):',' ',
-     &      'cancel','browse',iclkok,72,OFILE,'obstruction file',
-     &      ISER,11)
+          if(newgeo)then
+           CALL EASKS2CMD(LTMP,'Legacy obstructions import (see help):',
+     &       ' ','cancel','browse',iclkok,72,OFILE,'obstruction file',
+     &       ISER,12)
+          else
+           CALL EASKS2CMD(LTMP,'Zone obstructions file (see help):',
+     &       ' ','cancel','browse',iclkok,72,OFILE,'obstruction file',
+     &       ISER,12)
+          endif
           if(iclkok.eq.1)then    ! notice X11 cancel option
             return
           endif
         endif
       else
-        LTMP=ZOBS(ICOMP)
-        CALL EASKS2CMD(LTMP,'Zone obstructions file (see help):',' ',
-     &    'dereference','browse',iclkok,72,OFILE,'obstruction file',
-     &    ISER,7)
+
+C Obstruction file name is non-blank.
+        if(newgeo)then
+          LTMP=ZOBS(ICOMP)
+          CALL EASKS2CMD(LTMP,
+     &      'Legacy obstructions file import (see help):',' ',
+     &      'dereference','browse',iclkok,72,OFILE,'obstruction file',
+     &      ISER,12)
+        else
+          LTMP=ZOBS(ICOMP)
+          CALL EASKS2CMD(LTMP,'Obstructions file (see help):',
+     &      ' ','dereference','browse',iclkok,72,OFILE,'obstr file',
+     &      ISER,12)
+        endif
         if(iser.eq.-3) return  ! notice cancel button
         if(iclkok.eq.1)then    ! notice dereference
           ZOBS(ICOMP)=' '
           IOBS(ICOMP)=0
+          nbobs(icomp)=0       ! reinforce dereference
           return
         endif
       endif
@@ -891,7 +925,7 @@ C User asked to browse within the model for other obstruction files.
             LTMP=OFILE
             CALL EASKS(LTMP,
      &        ' Obstructions file name: (because browse was blank) ',
-     &        ' ',72,OFILE,'obstructions file',ISER,5)
+     &        ' ',72,OFILE,'obstructions file',ISER,12)
             if(iser.eq.-3)then  ! notice cancel button
               ZOBS(ICOMP)=' '
               IOBS(ICOMP)=0
@@ -902,7 +936,7 @@ C User asked to browse within the model for other obstruction files.
           LTMP=OFILE
           CALL EASKS(LTMP,
      &      ' Obstructions file name: (because browse was blank)',
-     &      ' ',72,OFILE,'obstructions file',ISER,5)
+     &      ' ',72,OFILE,'obstructions file',ISER,12)
           if(iser.eq.-3) then  ! notice cancel button
             ZOBS(ICOMP)=' '
             IOBS(ICOMP)=0
@@ -913,6 +947,9 @@ C User asked to browse within the model for other obstruction files.
       else
         IF(LTMP(1:2).NE.'  ')ZOBS(ICOMP)=LTMP
       endif
+
+C Because this is a potentially new file it must be scanned rather
+C than rely on information already in common blocks.
       call FINDFIL(LTMP,XST)
       IF(XST)THEN
         CALL EGOMST(IUF,ICOMP,ZOBS(ICOMP),0,ITRC,ITRU,IER)
@@ -935,10 +972,19 @@ C Provide default values for the new obstructions file.
         LNBLOCKMAT(ICOMP,1)=4
         NOX(icomp)=20
         NOZ(icomp)=20
-        CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
-        IF(IER.NE.0)RETURN
-        IOBS(ICOMP)=1 
-        MODIFY=.TRUE.
+
+C Write to geometry file or the obstructions file.
+        if(newgeo)then
+          call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+          IF(IER.NE.0)RETURN
+          IOBS(ICOMP)=2 
+          MODIFY=.TRUE.
+        else
+          CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+          IF(IER.NE.0)RETURN
+          IOBS(ICOMP)=1 
+          MODIFY=.TRUE.
+         endif
       ENDIF
       RETURN
       END
@@ -997,10 +1043,6 @@ C Initial values for point at angle facility.
 
       newgeo=.false.  ! assume older format geometry.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        CALL ERPFREE(IUF,ios)
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
-      endif
 
 C Initial menu entry setup.
       iz=icomp
@@ -1009,8 +1051,7 @@ C Initial menu entry setup.
       IVERT=-3
 
 C If a modification has been done then update the obstruction
-C file so that changes can be drawn.  This is necessary because
-C obstructions are not true zones.
+C file or geometry file.
       if(MODIFY)then
         if(newgeo)then
           call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
@@ -1441,7 +1482,13 @@ C Create the sill obstruction.
       LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
-      CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+
+C If newer geometry file it may include obstructions.
+      if(newgeo)then
+        call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+      else
+        CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
+      endif
 
 C Create the head obstruction.
       nbobs(icomp)=nbobs(icomp)+1
