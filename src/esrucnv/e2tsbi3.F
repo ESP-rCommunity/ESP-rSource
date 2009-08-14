@@ -1114,13 +1114,12 @@ C Write differently if opaque or transparent.
           endif
   5     continue
 
-C If there are obstructions associated with this zone read them in
-C and convert into GB1 commons and write them out using similar
-C logic.
+C If there are obstructions associated with this zone convert
+C into GB1 commons and write them out using similar logic.
         if(IOBS(newfoc).EQ.1)then
-          CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,0,iuout,IER)
-          WRITE(outs,'(a,a)')' Scanning : ',ZOBS(newfoc)
-          CALL edisp(iuout,outs)
+C          CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,0,iuout,IER)
+C          WRITE(outs,'(a,a)')' Scanning : ',ZOBS(newfoc)
+C          CALL edisp(iuout,outs)
           WRITE(ioout,'(a)')' '
           WRITE(ioout,'(3a)')'# zone ',zname(newfoc),
      &      'obstructions start here....'

@@ -283,7 +283,7 @@ C to update commons for configuration.
           call clrprb
           call edisp(iuout,' Scanning the problem before updating...')
           call escdef(iotmp2,IER)
-          MODE='NONE'
+          MODE='ALL '
           call ERSYS(LCFGF,ioout,iotmp2,MODE,itrc,IER)
           if(IER.eq.0)then
           
@@ -387,7 +387,7 @@ C Make temporary use of file unit iotmp2.
 C Find the path and local file name.
         call fdroot(LTMP,path,LCFGF)
         call edisp(iuout,' Scanning the model description...')
-        MODE='NONE'
+        MODE='ALL '
         call ERSYS(LCFGF,ioin,iotmp2,MODE,itrc,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.

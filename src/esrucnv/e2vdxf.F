@@ -113,8 +113,8 @@ C Write to output file.
    50     continue
 
 C Read in obstruction file.
-          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
-     &      0,0,iuout,IER)
+C          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
+C     &      0,0,iuout,IER)
 
           if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
@@ -316,9 +316,9 @@ C Read in the zone geometry.
         call strup(zname(mz),ZN)
 
 C Read in util & obstruction file.
-        IF(IOBS(mz).EQ.1)THEN
-          CALL EGOMST(ITA1,mz,ZOBS(mz),0,0,iuout,IER)
-        endif
+C        IF(IOBS(mz).EQ.1)THEN
+C          CALL EGOMST(ITA1,mz,ZOBS(mz),0,0,iuout,IER)
+C        endif
 
 C Inclusion of obstructions.
         if(nbobs(mz).ge.1)then
@@ -527,8 +527,8 @@ C Write surface information to the THF file.
    50     continue
 
 C Read in obstruction file.
-          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
-     &      0,0,iuout,IER)
+C          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
+C     &      0,0,iuout,IER)
 
           if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
