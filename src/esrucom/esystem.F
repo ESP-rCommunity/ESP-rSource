@@ -152,6 +152,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (for SBEM database)
+C MCMPDBFL (Special materials/Misc components)
 C default file names for databases
 
 #include "net_flow.h"
@@ -324,9 +325,6 @@ C Initial view.
 C Special materials & electrical network files.
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
-
-C Misc. components database
-      COMMON/MCMPDBNAM/MCMPDBFL
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -523,7 +521,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character WORD2*20,msgl2*48
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
-      CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
+      CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)

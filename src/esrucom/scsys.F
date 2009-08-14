@@ -107,7 +107,6 @@ C Images.
       common/defdb/dfdblbl,defdbfl
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
-      COMMON/MCMPDBNAM/MCMPDBFL
       COMMON/VTHP18/LNLTHP
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
       COMMON/GR1D05/LGRD1D
@@ -240,7 +239,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character lradcf*72
-      CHARACTER ctldoc*248,LCTLF*72,MCMPDBFL*72,LOCUTIL*72
+      CHARACTER ctldoc*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character dfdblbl*20,defdbfl*72,GTGEOM*72
       character ectime*24,wkd1*10,wkd2*10
