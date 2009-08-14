@@ -548,6 +548,7 @@ C and if so do what it says.
         if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
           INQUIRE (FILE=LCMDFL,EXIST=XST)
           if(XST)then
+            call clrprb  ! clear the model common blocks prior to scan
             write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
             IUNIT=IFIL+1
             call silentread(iunit,longtfile,'-',menu,doc,
