@@ -917,6 +917,10 @@ C climate database has been defined.
      &    'W','Multi-year climate db',IER)
         cMY_climate_db_name = cTemp(1:lnblnk(cTemp))
         bMY_climates_defined = .true.
+      elseif(WORD(1:7).eq.'*mscldb')then
+
+C special materials and misc component database
+        CALL EGETRM(LOUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','plant comp db',IER)
 

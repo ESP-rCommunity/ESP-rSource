@@ -854,6 +854,8 @@ C so LSTRIPC and LOUTSTR are used.
         CALL EGETRM(OUTSTR,K,gendbfn(10),'W','pressure db',IER)
       elseif(WORD(1:4).eq.'*pro'.or.WORD(1:4).eq.'*evn')then
         CALL EGETRM(OUTSTR,K,gendbfn(11),'W','profiles db',IER)
+      elseif(WORD(1:7).eq.'*mscldb')then
+        CALL EGETRM(LOUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(OUTSTR,K,gendbfn(12),'W','plant comp db',IER)
       elseif(WORD(1:4).eq.'*cmp')then

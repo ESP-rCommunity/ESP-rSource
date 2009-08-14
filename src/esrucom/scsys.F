@@ -499,6 +499,8 @@ C Read databases until '* PROJ LOG' found.
      &    'W','Multi-year climate db',IER)
         cMY_climate_db_name = cTemp(1:lnblnk(cTemp))
         bMY_climates_defined = .true.
+      elseif(WORD(1:7).eq.'*mscldb')then
+        CALL EGETRM(LOUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(OUTSTR,K,LPCDB,'W','plant comp db',IER)
       elseif(WORD(1:4).eq.'*ctl')then

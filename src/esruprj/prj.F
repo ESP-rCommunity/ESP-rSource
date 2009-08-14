@@ -104,6 +104,10 @@ C Indicator of possible focus zone.
 C Redirected text/graphics parameters.
       common/exporttgi/ixopen,ixloc,ixunit
 
+C Defaults for some of the obscure files.
+      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
 
@@ -524,6 +528,9 @@ C Temporal information on channel IFIL+7.
       LPRFDB=DPRFDB
 
       LPCDB=DPCDB
+
+C Special materials/miscel component database.
+      MCMPDBFL=DMCMPDBFL
 
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9

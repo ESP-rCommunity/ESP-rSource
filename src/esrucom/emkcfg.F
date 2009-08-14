@@ -504,12 +504,12 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdprs  ',
      &      LAPRES(1:lnblnk(LAPRES))
       endif
-C      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
-C     &      LAPRES(1:lnblnk(LAPRES))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
 
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
