@@ -164,12 +164,17 @@ C Silent within the pre-registration process.
 
 C Trap for blank root name.
         IF(LCFTMP(1:2).EQ.'  '.or.LCFTMP(1:4).eq.'UNKN')GOTO 289
+
+C If we got this far in the 'i' mode clear common blocks. Note this
+C clear is not done when called in the 'sn' or 'sw' mode because
+C the meta file facility will have instanciated some common blocks
+C which should not be cleared.
+        call clrprb
       endif
 
 C User did not cancel so instantiate data for new model.
 C At some point switch from default version 3 to v4.
-      call clrprb
-      icfgv=3   ! alter this to 4 when working correctly
+      icfgv=4   ! alter this to 4 when working correctly
       INDCFG=0
       XLAT=55.9
       SLAT=55.9

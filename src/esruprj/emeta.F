@@ -1203,6 +1203,15 @@ C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false
       common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
       character XMLMETRICS*248
+
+C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
+C   toggle for assessment where:
+C   1 is 'all_applicable', 0 is manual selection of surfaces.
+C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
+C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
+      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
+     &       nsurfinso(MCOM),isurfinso(MCOM,MS)
+     
       integer inumXMLmetrics !counts for the number of xml metrics defined
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
@@ -1296,6 +1305,8 @@ C Site related local variables.
       real ht_Setpoint,cl_Setpoint !heating and cooling set-points
       dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
       integer isilentncf !silent decide how many control functions needed
+      integer iva
+      dimension iva(MS)  ! for use with writing arrays of numbers
         
       IER=0
 
@@ -1804,6 +1815,61 @@ C box shapes.
           nbwalls(nsz)=4
         endif
         goto 43
+      elseif(WORD(1:10).eq.'*shad_calc')then
+
+C Shading calculation instructions.
+        CALL EGETW(OUTSTR,K,WORD,'W','shad directive',IFLAG)
+        if(WORD(1:4).eq.'none')then
+          iaplic(nsz,1)=0
+          nsurfcalc(nsz)=0
+        else
+          if(WORD(1:14).eq.'all_applicable')then
+            iaplic(nsz,1)=1
+          elseif(WORD(1:4).eq.'list')then
+            iaplic(nsz,1)=0
+          endif
+
+C Read number of surfaces and then the list
+          CALL EGETWI(OUTSTR,K,iv,0,MS,'-','nsurfcalc',IER)
+          nsurfcalc(nsz)=iv
+          IRVA=nsurfcalc(nsz)
+          CALL EGETWIA(IUNIT,IVA,IRVA,0,MS,'F','lstsfcalc',IER)
+          DO 342 ks=1,nsurfcalc(nsz)
+            lstsfcalc(nsz,ks)=IVA(ks)
+ 342      CONTINUE
+        endif
+        goto 43
+      elseif(WORD(1:11).eq.'*insol_calc')then
+
+C Insolation calculation instructions.
+        CALL EGETW(OUTSTR,K,WORD,'W','insolation directive',IFLAG)
+        if(WORD(1:4).eq.'none')then
+          iaplic(nsz,2)=0
+          nsurfinso(nsz)=0
+        else
+          if(WORD(1:14).eq.'all_applicable')then
+            iaplic(nsz,2)=1
+          elseif(WORD(1:4).eq.'list')then
+            iaplic(nsz,2)=0
+          endif
+
+C Applicable surfaces are the current exterior facing surfaces.
+          CALL EGETWI(OUTSTR,K,iv,0,MS,'-','nsurfinso',IER)
+          nsurfinso(nsz)=iv
+          IRVA=nsurfinso(nsz)
+          CALL EGETWIA(IUNIT,IVA,IRVA,0,MS,'F','isurfinso',IER)
+          DO 344 ks=1,nsurfinso(nsz)
+            isurfinso(nsz,ks)=IVA(ks)
+ 344      CONTINUE
+        endif
+        goto 43
+      elseif(WORD(1:11).eq.'*solar_grid')then
+
+C If there will be shading or insulation then the density of the
+C grid is found after the token *solar_grid.
+        CALL EGETWI(OUTSTR,K,NOX(nsz),4,20,'F','opq grid X',IER)
+        CALL EGETWI(OUTSTR,K,NOZ(nsz),4,20,'F','opq grid Z',IER)
+        goto 43
       elseif(WORD(1:4).eq.'*obs')then
 
 C An obstruction block to be associated with the current zone.
@@ -1829,6 +1895,7 @@ C An obstruction block to be associated with the current zone.
         CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
         write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
         LNBLOCKMAT(nsz,nob)=lnblnk(BLOCKMAT(nsz,nob))
+        if(iobs(nsz).eq.0) iobs(nsz)=2  ! mark where obstructions held
         goto 43
       elseif(WORD(1:7).eq.'*origin')then
         if(shape(nsz)(1:3).eq.'box')then
@@ -2125,7 +2192,7 @@ C        usefile(iz) = ' '
 C If there are obstructions fill in relevant common blocks. Set iobs()=2
 C to signal that the common blocks have been instanciated and data should
 C be included in the version 1.1 geometry file.
-          if(nbobs(isz).gt.0)then
+          if(nbobs(icomp).gt.0)then
             iobs(icomp)=2
           else
             iobs(icomp)=0
@@ -2243,7 +2310,6 @@ C seasons.h provides typper and typsea
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C4/XLAT,XLON
-      COMMON/FILEP/IFIL
 
 C GREF    - External ground reflectivity.
 C GREF12  - (12) Monthly values of ground reflectivity
@@ -2259,8 +2325,6 @@ C SNFNAM  - *72 Name of the file containing hourly snow depth information
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -2302,6 +2366,15 @@ C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false
       common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
       character XMLMETRICS*248
+
+C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
+C   toggle for assessment where:
+C   1 is 'all_applicable', 0 is manual selection of surfaces.
+C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
+C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
+      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
+     &       nsurfinso(MCOM),isurfinso(MCOM,MS)
+     
       integer inumXMLmetrics !counts for the number of xml metrics defined
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
@@ -2368,6 +2441,7 @@ C Site related local variables.
       dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
       integer isilentncf !silent decide how many control functions needed
       character tab*1
+      integer lnzp,lnnp,lncp,lndcp,lndbp ! lengths of paths to model folders
         
       IER=0
 
@@ -2407,7 +2481,19 @@ C Instanciate the sz array structures. The logic is to scan all of the
 C zone details and then write into the file.
       write(actions,'(a)') 'new'
       write(root,'(a)') cfgroot
-      write(folder,'(a)') 'distributed'  ! multiple folders
+
+C If all of the associated folder paths are ./ then we have a
+C single folder model, otherwise use distributed folders.
+      lnzp=lnblnk(zonepth)
+      lnnp=lnblnk(netpth)
+      lncp=lnblnk(ctlpth)
+      lndcp=lnblnk(docpth)
+      lndbp=lnblnk(dbspth)
+      if((lnzp+lnnp+lncp+lndcp+lndbp).lt.12)then
+        write(folder,'(a)') 'single'  ! multiple folders
+      else
+        write(folder,'(a)') 'distributed'  ! multiple folders
+      endif
       write(mpath,'(a)') cfgroot  ! model folder will take root name
       write(silentmenu,'(a)') LSNAM(1:31)
       write(silentdoc,'(a)')  LSNAM(1:lnblnk(LSNAM))
@@ -2486,31 +2572,14 @@ C << add in zone description >>
         usefile(iz) = ' '       ! usefile (skip for now)
         nbwalls(iz) = NZSUR(IZ) ! surfaces in the zone
         rotateit(iz) = 0.0      ! rotation is always zero
-	if(iobs(iz).eq.0)then
-          nbobs(iz) = 0
-        else
-	  ! we need a variable for this
-        endif
 
 C Control data - ignore for now.
         ht_Setpoint(iz)= 0.0
         cl_Setpoint(iz)= 0.0
         i_ctl_link(iz)=0
 
-C Obstructions - this is only known after scanning zone file.
-        do 55 ibu=1,nbobs(iz)
-          XOB(iz,ibu) = 0.0
-          YOB(iz,ibu) = 0.0
-          ZOB(iz,ibu) = 0.0
-          DXOB(iz,ibu) = 0.0
-          DYOB(iz,ibu) = 0.0
-          DZOB(iz,ibu) = 0.0
-          BANGOB(iz,ibu) = 0.0
-          BLOCKNAME(iz,ibu) = ' '
-          LNBLOCKNAME(iz,ibu) = 0
-          BLOCKMAT(iz,ibu) = ' '
-          LNBLOCKMAT(iz,ibu) = 0
-  55    continue
+C Obstructions - if the original model has obstructions then
+C we will use them.
 
   42  continue
 
@@ -2666,8 +2735,71 @@ C << on a separate line with a tag.
      &        outsd(1:lnblnk(outsd)),'  # ',isu
  144      continue
 
-C << obstruction information goes here >>
+C Shading calculation directives in the form of:
+C *shad_calc,all_applic,20 # list of surfs
+          if(nsurfcalc(nsz).eq.0)then
+            write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# shading directives'
+            write(ifilg,'(a)',IOSTAT=ios,ERR=13)
+     &        '*shad_calc,none  # no temporal shading requested'
+          elseif(nsurfcalc(nsz).gt.0)then
+            write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# shading directives'
+            if(iaplic(nsz,1).eq.1)then
+              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+     &        '*shad_calc,all_applicable ',nsurfcalc(nsz),
+     &        ' # list of surfs'
+              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+     &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
+            elseif(iaplic(nsz,1).eq.0)then
+              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+     &        '*shad_directive,list',nsurfcalc(nsz),
+     &        ' # list of surfs'
+              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+     &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
+            endif
+          endif
 
+C Insolation calculation directives.
+C *insol_calc,all_applic,2 # insolation sources
+          write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
+     &      '# insolation directives'
+          if(nsurfinso(nsz).eq.0)then
+            write(ifilg,'(a)',IOSTAT=ios,ERR=13)
+     &        '*insol_calc,none  # no insolation requested'
+          elseif(nsurfinso(nsz).gt.0)then
+            if(iaplic(nsz,2).eq.1)then
+              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+     &        '*insol_calc,all_applicable ',nsurfinso(nsz),
+     &        ' # insolation sources'
+              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+     &        (isurfinso(nsz,J),J=1,nsurfinso(nsz))
+            elseif(iaplic(nsz,2).eq.0)then
+              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+     &        '*insol_calc,list',nsurfinso(nsz),
+     &        ' # insolation sources'
+              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+     &        (isurfinso(nsz,J),J=1,nsurfinso(nsz))
+            endif
+          endif
+
+C Obstruction information lines.
+          if(nbobs(nsz).gt.0)then
+            write(ifilg,'(a)',IOSTAT=IOS,ERR=13)
+     &        '#  *obs = solar obstructions'
+            write(ifilg,'(2a,i2,i3,a)',IOSTAT=IOS,ERR=13) 
+     &        '*solar_grid',tab,NOX(nsz),NOZ(nsz),
+     &        ' # solar gridding density'
+            do 55 ib=1,nbobs(nsz)
+              write(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &          '*obs',tab,XOB(nsz,ib),YOB(nsz,ib),ZOB(nsz,ib),
+     &          DXOB(nsz,ib),DYOB(nsz,ib),DZOB(nsz,ib),
+     &          BANGOB(nsz,ib),BLOCKNAME(nsz,ib),
+     &          BLOCKMAT(nsz,ib)
+              call SDELIM(outs,outsd,'C',IW)
+              write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+     &          outsd(1:lnblnk(outsd)),'  # block ',ib
+  55        continue
+          endif
+	  
 C << usage information goes here >>
 
 C Idea control information is work in progress.
