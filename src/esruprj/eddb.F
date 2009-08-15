@@ -44,6 +44,7 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+C MCMPDBFL (miscellaneous components database)
 C default file names for databases
       
       integer lnblnk  ! function definition
@@ -66,15 +67,21 @@ C Default esp-r distribution path.
       common/deflt4/dinstpath
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/texted/tedlbl,teditor
 
       logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical moddb,browse,modcon,QUIET
+      logical moddb,browse,modcon,QUIET,concat
       logical haveconstr
+      logical unixok  ! to check for database path file separators
+      integer iglib  ! for detecting GTK or X11
 
       character H*72,path*72
-      character*72 ITEMS(15)
+      character*72 ITEMS(16)
       character dinstpath*48
-
+      character longtfile*144,llitem*144,longtfiledos*144
+      character LTMP*96,doit*248,tedlbl*20,teditor*20
+      character tmode*8
+      
 C Strings for dos version of source and destination of db file.
 C      character rootpdos*72,upathdos*72
 
@@ -114,14 +121,16 @@ C Begin with menu of default dbs.
         WRITE(ITEMS(10),'(2A)')'h std optical properties : ',
      &    LOPTDB(1:44)
       endif
-      WRITE(ITEMS(11),'(A)')'i mould & mycotoxins     : None'
-      ITEMS(12)='  _______________________________ '
-      ITEMS(13)='? help                            '
-      ITEMS(14)='- exit this menu                  '
+      WRITE(ITEMS(11),'(A)')   'i mould & mycotoxins     : None'
+      WRITE(ITEMS(12),'(2A)')  'j miscel components      : ',
+     &  MCMPDBFL(1:44)
+      ITEMS(13)='  _______________________________ '
+      ITEMS(14)='? help                            '
+      ITEMS(15)='- exit this menu                  '
 
 C Try to compact the width of the menu.
       IW=0
-      do 141 ij=1,14
+      do 141 ij=1,15
         if(lnblnk(ITEMS(ij)).gt.IW)IW=lnblnk(ITEMS(ij))
  141  continue
 
@@ -148,12 +157,12 @@ C Help text for this menu.
       H(19)='/usr/esru/esp-r/climate & /usr/esru/esp-r/databases.'
 
       if(MMOD.EQ.8)then
-        CALL VWMENU('Database Maintenance',ITEMS,14,0,0,IW,irpx,irpy,
+        CALL VWMENU('Database Maintenance',ITEMS,15,0,0,IW,irpx,irpy,
      &               INO)
       else
-        CALL EMENU('Database Maintenance',ITEMS,14,INO)
+        CALL EMENU('Database Maintenance',ITEMS,15,INO)
       endif
-      IF(INO.EQ.14)THEN
+      IF(INO.EQ.15)THEN
         if(browse)return
         if(cfgok.and.moddb)then
           dok=.true.
@@ -292,7 +301,62 @@ C Place holder for mould database
          call UsrMsg(
      &   'Project Manager does not yet invoke the mould',
      &   'db manager. Start `mld` manually.','W')
-      ELSEIF(INO.EQ.13)THEN
+      ELSEIF(INO.EQ.12)THEN
+
+C Special materials/miscel components database.
+C Use file browser if in GTK mode, in X11 user must type file name.
+C If vi then spawn a new window to do the editing in.
+        H(1)='The Special materials/miscel components database can'
+        H(2)='be edited using the current defined text editor'
+        H(3)='(as defined in the default file).'
+        H(4)='BE CAREFUL!'
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        write(LTMP,'(a)') MCMPDBFL(1:72)
+        write(llitem,'(a)') MCMPDBFL(1:lnblnk(MCMPDBFL))
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LTMP,'ASCII file name?',
+     &      ' ',96,'xxx.rep','ASCII file',IER,4)
+          write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'ASCII file name?',
+     &      ' ',144,'xxx.rep','ASCII file',IER,4)
+        else
+          CALL EASKF(LTMP,'ASCII file name?',
+     &      ' ',96,'xxx.rep','ASCII file',IER,4)
+          write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
+        endif
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 3  ! redisplay menu.
+        endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(llitem,longtfile,concat)
+        else
+          call addpath(llitem,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        tmode='graph'
+        if(teditor(1:2).eq.'vi')tmode='text'
+        write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &    longtfile(1:lnblnk(longtfile))
+        call runit(doit,tmode)
+
+        h(1)='Exercise care when editing this text file as the'
+        h(2)='format may be sensitive to user edits! '
+        dok=.false.
+        CALL ASKOK('  ','Use this edited database?',OK,dok,2)
+        if(OK)then
+          write(MCMPDBFL,'(a)') llitem(1:lnblnk(llitem))
+        endif
+
+      ELSEIF(INO.EQ.14)THEN
 
 C Menu help text.
         H(1)='Information on each databases is provided.'

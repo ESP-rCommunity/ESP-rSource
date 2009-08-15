@@ -262,6 +262,10 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
+C Defaults for some of the obscure files.
+      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+
 C Temporal definition commons.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -579,12 +583,12 @@ C Note: escdef must come after scan of .esprc file.
       LOPTDB=DOPTDB
       LPRFDB=DPRFDB
       LPCDB =DPCDB
+      MCMPDBFL=DMCMPDBFL
 
 C Clear the model common blocks.
       call clrprb
 
       LUALF='UNKNOWN'
-      MCMPDBFL='UNKNOWN'
       bidirfile='UNKNOWN'
       CALENAME='UNKNOWN'
       if(iutdf.eq.0)IUTDF=IFIL+7  ! set if not already done so.
