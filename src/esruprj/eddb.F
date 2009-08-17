@@ -2304,7 +2304,7 @@ C
      &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
 
       CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
-      character LLASCI*144,LASCI*72
+      character LLASCI*144
       character longtfile*144,LCOPY*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER OUTS*124,OUTS248*248
@@ -2587,33 +2587,12 @@ C code is general rather than specific (for later consolidation).
         else
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
-          write(outs248,'(2a)') 'The current source file is:',
-     &      LPRFDB(1:lnblnk(LPRFDB))
-          call edisp248(iuout,outs248,100)
-          lltmp=LPRFDB
-          llt=lnblnk(lltmp)
-          iglib = igraphiclib()
-          if(iglib.eq.1.or.iglib.eq.3)then
-            if(llt.lt.96)then
-              CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
-     &          96,DPRFDB,'binary events db',IER,2)
-            elseif(llt.ge.96.and.llt.lt.124)then
-              CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
-     &          124,DPRFDB,'binary events db',IER,2)
-            elseif(llt.ge.124.and.llt.le.144)then
-              CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
-     &          144,DPRFDB,'binary events db',IER,2)
-            endif
-            sourcefile = lltmp
-          elseif(iglib.eq.2)then
-            CALL EASKF(lltmp,' Event Profiles db (source)?',' ',
-     &        144,DPRFDB,'binary events db',IER,2)
-            sourcefile = lltmp
-          else
-            CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
-     &        96,DPRFDB,'binary events db',IER,2)
-            sourcefile = lltmp
-          endif
+
+          lltmp='  '
+          CALL EASKXORGTKF(LPRFDB,
+     &      'Event Profiles db (source)?',' ',
+     &      DPRFDB,lltmp,'binary events db',IER,2)
+          sourcefile = lltmp
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
@@ -2710,31 +2689,10 @@ C Ask for the binary file name and then confirm the ASCII db name.
         H(2)='profiles created via a diary entry format. This'
         H(3)='otion converts from binary to asci version of the '
         H(4)='file. '
-        lltmp=LPRFDB
-        llt=lnblnk(lltmp)
-
-C The X11 version will be returning only the name of the
-C file, while the GTK version will be returning the
-C name with the full path.
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        96,DPRFDB,'binary events db',IER,4)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        124,DPRFDB,'binary events db',IER,4)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        144,DPRFDB,'binary events db',IER,4)
-          endif
-        elseif(iglib.eq.2)then
-          CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      144,DPRFDB,'binary events db',IER,4)
-        else
-          CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      96,DPRFDB,'binary events db',IER,4)
-        endif
+        lltmp='  '
+        CALL EASKXORGTKF(LPRFDB,
+     &    'Event Profiles db (source)?',' ',
+     &    DPRFDB,lltmp,'binary events db',IER,2)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -2782,20 +2740,19 @@ C Ask for the ASCII file name and then confirm the binary db name.
 C Check the last two characters of the file name.
         llt=lnblnk(LPRFDB)
 	if(LPRFDB(llt-1:llt).eq.'.a')then
-          if(llt.le.69)then 
-            write(LASCI,'(a)') LPRFDB(1:llt)
-          else
-            write(LASCI,'(a)') LPRFDB(1:72)
-          endif
+          LLASCI=LPRFDB
         else
-          if(llt.le.69)then 
-            write(LASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+          if(llt.le.141)then 
+            write(LLASCI,'(2a)') LPRFDB(1:llt),'.a'
           else
-            write(LASCI,'(2a)') LPRFDB(1:69),'.a'
+            write(LLASCI,'(2a)') LPRFDB(1:141),'.a'
           endif
         endif
-        CALL EASKS(LASCI,' ASCII event profile source? ',
-     &    ' ',72,'profiles.db1.a','ascii events db',IER,6)
+
+        CALL EASKXORGTKF(LLASCI,
+     &    'Event Profiles db (ASCII source)?',' ',
+     &    DPRFDB,lltmp,'ascii events db',IER,2)
+        LLASCI=lltmp  ! copy returned name to LLASCI
 
         H(1)='The existing binary events db will be overwritten'
         H(2)='with the data from the ASCII version.'
@@ -2807,26 +2764,9 @@ C for the binary that has the .a stripped off.
         else
           write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
         endif
-        llt=lnblnk(lltmp)
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        96,DPRFDB,'binary events db',IER,2)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        124,DPRFDB,'binary events db',IER,2)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        144,DPRFDB,'binary events db',IER,2)
-          endif
-        elseif(iglib.eq.2)then
-          CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      144,DPRFDB,'binary events db',IER,2)
-        else
-          CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      96,DPRFDB,'binary events db',IER,2)
-        endif
+        CALL EASKXORGTKF(LPRFDB,
+     &    'Event Profiles db?',' ',
+     &    DPRFDB,lltmp,'binary events db',IER,2)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -2839,7 +2779,7 @@ C If user request jump back and re-display the menu.
 C Do conversion and then to prove that the file was correctly
 C converted proceed to browse/edit the details.
           LPRFDB=lltmp
-          CALL TRIPRO(IAF,LASCI,IER)
+          CALL TRIPRO(IAF,LLASCI,IER)
           moddb=.true.
           goto 44
         else
