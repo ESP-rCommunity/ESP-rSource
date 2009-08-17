@@ -825,7 +825,7 @@ C EASKXORGTKF Generic file edit/browse for X11 or GTK using easkf calls.
       integer lnblnk  ! function definition
 
 C Parameters
-      CHARACTER*(*) FILEN   ! initial file name
+      CHARACTER*(*) FILEN   ! initial file name (never changed)
       CHARACTER*(*) PROMP1,PROMP2  ! prompts for dialogs
       CHARACTER*(*) DFILE   ! default file name
       CHARACTER*(*) RETFILE ! returned file name
@@ -840,25 +840,49 @@ C Parameters
 
       character dh*72
       dimension dh(60)
-      CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124
+      CHARACTER WORD144*144,A*1,LASTS*144,outs248*248
       character llitem*144   ! local string buffer
-      character LTMP*96      ! local string buffer
+      character LTMP96*96      ! local string buffer
+      character LTMP124*124      ! local string buffer
       LOGICAL OK,DOK
-      integer iglib  ! for detecting GTK or X11
+      integer iglib      ! for detecting GTK or X11
+      INTEGER llt,lfn    ! length of the local string buffer
 
 C Depending on whether it is X11 or GTK or text setup dialogs. The
-C X11 and text will work with 96 char string.
+C X11 and text will work with 96 or 124 char string.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-      write(LTMP,'(a)') FILEN(1:96)   ! for X11 and text editing
-      write(llitem,'(a)') FILEN(1:lnblnk(FILEN))  ! for GTK dialog
+      lfn=lnblnk(FILEN)
+      if(lfn.lt.96)then
+        write(LTMP96,'(a)') FILEN(1:lfn)   ! for X11 and text editing
+      else
+        write(LTMP96,'(a)') FILEN(1:96)    ! for X11 and text editing
+      endif
+      if(lfn.lt.124)then
+        write(LTMP124,'(a)') FILEN(1:lfn)  ! for X11 and text editing
+      else
+        write(LTMP124,'(a)') FILEN(1:124)  ! for X11 and text editing
+      endif
+      write(llitem,'(a)') FILEN(1:lfn)     ! for GTK dialog
+      llt=lnblnk(llitem)
+      write(outs248,'(2a)') 'The current file is:',llitem(1:llt)
+      call edisp248(iuout,outs248,100)
       if(iglib.eq.1.or.iglib.eq.3)then
-        CALL EASKF(LTMP,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
-        write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
+
+C Adjust dialog depending on initial length of file name.
+        if(llt.lt.96)then
+          CALL EASKF(LTMP96,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
+          write(llitem,'(a)') LTMP96(1:lnblnk(LTMP96))
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(LTMP124,PROMP1,PROMP2,124,DFILE,ERMSG,IER,NHELP)
+          write(llitem,'(a)') LTMP124(1:lnblnk(LTMP124))
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(llitem,PROMP1,PROMP2,144,DFILE,ERMSG,IER,NHELP)
+        endif
       elseif(iglib.eq.2)then
         CALL EASKF(llitem,PROMP1,PROMP2,144,DFILE,ERMSG,IER,NHELP)
       else
-        CALL EASKF(LTMP,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
-        write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
+        CALL EASKF(LTMP96,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
+        write(llitem,'(a)') LTMP96(1:lnblnk(LTMP96))
       endif
 
 C If user request cancel set RFILE ot FILEN.

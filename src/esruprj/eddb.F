@@ -77,13 +77,12 @@ C Defaults for some of the obscure files.
       logical moddb,browse,modcon,QUIET,concat
       logical haveconstr
       logical unixok  ! to check for database path file separators
-      integer iglib  ! for detecting GTK or X11
 
       character H*72,path*72
       character*72 ITEMS(16)
       character dinstpath*48
       character longtfile*144,llitem*144,longtfiledos*144
-      character LTMP*96,doit*248,tedlbl*20,teditor*20
+      character doit*248,tedlbl*20,teditor*20
       character tmode*8
       
 C Strings for dos version of source and destination of db file.
@@ -319,22 +318,6 @@ C If vi then spawn a new window to do the editing in.
      &    'Special materials/misc. comp file name?',' ',
      &    DMCMPDBFL,llitem,'Special materials file',IER,4)
      
-C        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-C        write(LTMP,'(a)') MCMPDBFL(1:72)
-C        write(llitem,'(a)') MCMPDBFL(1:lnblnk(MCMPDBFL))
-C        if(iglib.eq.1.or.iglib.eq.3)then
-C          CALL EASKF(LTMP,'ASCII file name?',
-C     &      ' ',96,'xxx.rep','ASCII file',IER,4)
-C          write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
-C        elseif(iglib.eq.2)then
-C          CALL EASKF(llitem,'ASCII file name?',
-C     &      ' ',144,'xxx.rep','ASCII file',IER,4)
-C        else
-C          CALL EASKF(LTMP,'ASCII file name?',
-C     &      ' ',96,'xxx.rep','ASCII file',IER,4)
-C          write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
-C        endif
-
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
           goto 3  ! redisplay menu.
@@ -2014,33 +1997,12 @@ C code is general rather than specific (for later consolidation).
         else
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
-          write(outs248,'(2a)') 'The current source file is:',
-     &      LPCDB(1:lnblnk(LPCDB))
-          call edisp248(iuout,outs248,100)
-          lltmp=LPCDB
-          llt=lnblnk(lltmp)
-          iglib = igraphiclib()
-          if(iglib.eq.1.or.iglib.eq.3)then
-            if(llt.lt.96)then
-              CALL EASKF(lltmp,' ','Plant templates db?',
-     &          96,DPCDB,'plant templates database',IER,2)
-            elseif(llt.ge.96.and.llt.lt.124)then
-              CALL EASKF(lltmp,' ','Plant templates db?',
-     &          124,DPCDB,'plant templates database',IER,2)
-            elseif(llt.ge.124.and.llt.le.144)then
-              CALL EASKF(lltmp,' ','Plant templates db?',
-     &          144,DPCDB,'plant templates database',IER,2)
-            endif
-            sourcefile = lltmp
-          elseif(iglib.eq.2)then
-            CALL EASKF(lltmp,' ','Plant templates db?',
-     &        144,DPCDB,'plant templates database',IER,2)
-            sourcefile = lltmp
-          else
-            CALL EASKF(lltmp,' ','Plant templates db?',
-     &        96,DPCDB,'plant templates database',IER,2)
-            sourcefile = lltmp
-          endif
+          lltmp='  '
+          CALL EASKXORGTKF(LPCDB,
+     &      'Plant template file name (source)?',' ',
+     &      DPCDB,lltmp,'plant templates database',IER,2)
+
+          sourcefile = lltmp   ! remember this
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
