@@ -69,6 +69,10 @@ C Default esp-r distribution path.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/texted/tedlbl,teditor
 
+C Defaults for some of the obscure files.
+      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+
       logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,browse,modcon,QUIET,concat
       logical haveconstr
@@ -310,21 +314,26 @@ C If vi then spawn a new window to do the editing in.
         H(2)='be edited using the current defined text editor'
         H(3)='(as defined in the default file).'
         H(4)='BE CAREFUL!'
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        write(LTMP,'(a)') MCMPDBFL(1:72)
-        write(llitem,'(a)') MCMPDBFL(1:lnblnk(MCMPDBFL))
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LTMP,'ASCII file name?',
-     &      ' ',96,'xxx.rep','ASCII file',IER,4)
-          write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
-        elseif(iglib.eq.2)then
-          CALL EASKF(llitem,'ASCII file name?',
-     &      ' ',144,'xxx.rep','ASCII file',IER,4)
-        else
-          CALL EASKF(LTMP,'ASCII file name?',
-     &      ' ',96,'xxx.rep','ASCII file',IER,4)
-          write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
-        endif
+	llitem=' '    ! reset return string
+        CALL EASKXORGTKF(MCMPDBFL,
+     &    'Special materials/misc. comp file name?',' ',
+     &    DMCMPDBFL,llitem,'Special materials file',IER,4)
+     
+C        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+C        write(LTMP,'(a)') MCMPDBFL(1:72)
+C        write(llitem,'(a)') MCMPDBFL(1:lnblnk(MCMPDBFL))
+C        if(iglib.eq.1.or.iglib.eq.3)then
+C          CALL EASKF(LTMP,'ASCII file name?',
+C     &      ' ',96,'xxx.rep','ASCII file',IER,4)
+C          write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
+C        elseif(iglib.eq.2)then
+C          CALL EASKF(llitem,'ASCII file name?',
+C     &      ' ',144,'xxx.rep','ASCII file',IER,4)
+C        else
+C          CALL EASKF(LTMP,'ASCII file name?',
+C     &      ' ',96,'xxx.rep','ASCII file',IER,4)
+C          write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
+C        endif
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then

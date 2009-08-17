@@ -817,6 +817,65 @@ C of the choices has been chosen. See EASKATOG for parameter documentation.
       RETURN
       END
 
+C ******************** EASKXORGTKF
+C EASKXORGTKF Generic file edit/browse for X11 or GTK using easkf calls.
+      SUBROUTINE EASKXORGTKF(FILEN,PROMP1,PROMP2,DFILE,RETFILE,ERMSG,
+     &  IER,NHELP)
+
+      integer lnblnk  ! function definition
+
+C Parameters
+      CHARACTER*(*) FILEN   ! initial file name
+      CHARACTER*(*) PROMP1,PROMP2  ! prompts for dialogs
+      CHARACTER*(*) DFILE   ! default file name
+      CHARACTER*(*) RETFILE ! returned file name
+      CHARACTER*(*) ERMSG   ! message in case of error
+      integer ier           ! zero is ok, -3 is cancel
+      integer NHELP         ! number of help lines
+
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/OUTIN/IUOUT,IUIN
+      character h*72
+      common/pophelp/h(60)
+
+      character dh*72
+      dimension dh(60)
+      CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124
+      character llitem*144   ! local string buffer
+      character LTMP*96      ! local string buffer
+      LOGICAL OK,DOK
+      integer iglib  ! for detecting GTK or X11
+
+C Depending on whether it is X11 or GTK or text setup dialogs. The
+C X11 and text will work with 96 char string.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      write(LTMP,'(a)') FILEN(1:96)   ! for X11 and text editing
+      write(llitem,'(a)') FILEN(1:lnblnk(FILEN))  ! for GTK dialog
+      if(iglib.eq.1.or.iglib.eq.3)then
+        CALL EASKF(LTMP,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
+        write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
+      elseif(iglib.eq.2)then
+        CALL EASKF(llitem,PROMP1,PROMP2,144,DFILE,ERMSG,IER,NHELP)
+      else
+        CALL EASKF(LTMP,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
+        write(llitem,'(a)') LTMP(1:lnblnk(LTMP))
+      endif
+
+C If user request cancel set RFILE ot FILEN.
+      if(ier.eq.-3)then
+        write(RETFILE,'(a)') FILEN(1:lnblnk(FILEN))
+        return
+      endif
+
+C If ier is zero then set RFILE to llitem.
+      if(ier.eq.0)then
+        write(RETFILE,'(a)') llitem(1:lnblnk(llitem))
+        return
+      endif
+      
+      RETURN
+      END
+
 
 C ******************** bSPEqual ******************
 C bSPEqual determines if two SP numbers are within machine round-off error.
