@@ -35,6 +35,7 @@ C  EASKABC: Generic A/B/C choice facility returning 1, 2 or 3 according
 C           to which of the choices has been chosen.
 C  EASKABCD: Generic A/B/C/D choice facility returning 1-4 according
 C           to which of the choices has been chosen.
+C  EASKXORGTKF: Generic file edit/browse for X11 or GTK using easkf calls.
 C  iCountWords: Counts the number of space/tab/comma-separated
 C           words in a string.
 C  CHITMS, CHITMS400, LCHITMS: Legacy interfaces to iCountWords.

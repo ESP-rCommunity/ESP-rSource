@@ -3309,41 +3309,11 @@ C Also scan utility files if they exist.
         H(14)='be copied to your user area to give you write'
         H(15)='permission. Other example models are available'
         H(16)='via the `exemplars` option.'
-        if(LCMDFL(1:4).eq.'UNKN'.or.LCMDFL(1:4).eq.'unkn')then
-          LTMP=' '
-        else
-          LTMP=LCMDFL
-        endif
 
-C Call EASKF depending on the current file name length.
-C Use ifdefs because the X11 version will be returning only the
-C name of the file.
-        llt=lnblnk(ltmp)
-
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-
-        if(iglib.eq.1.or.iglib.eq.3)then
-          if(llt.lt.96)then
-            CALL EASKF(LTMP,' ','System configuration file?',96,DFCFG,
-     &      'config file name',IER,16)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(LTMP,' ','System configuration file?',124,DFCFG,
-     &      'config file name',IER,16)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(LTMP,' ','System configuration file?',144,DFCFG,
-     &      'config file name',IER,16)
-          endif
-        elseif(iglib.eq.2)then
-
-C Note for GTK, LTMP will be returned with the absolute path to the
-C folder even if prj started up in the cfg folder. There is subsequent
-C logic which determines if we actually are browsing.
-          CALL EASKF(LTMP,' ',' System configuration file?',144,DFCFG,
-     &      'config file name',IER,16)
-        else
-          CALL EASKF(LTMP,' ','System configuration file?',96,DFCFG,
-     &      'config file name',IER,16)
-        endif
+	LTMP=' '    ! reset return string
+        CALL EASKXORGTKF(LCMDFL,
+     &    'System configuration file?',' ',
+     &    DFCFG,LTMP,'config file name',IER,16)
 
 C Cancel request, return and ensure that the calling
 C routine deals with the -3 ier passed back.
