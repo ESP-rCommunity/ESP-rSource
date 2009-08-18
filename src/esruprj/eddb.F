@@ -3779,33 +3779,12 @@ C and LCOPY for the system cp call.
         else
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
-          write(outs248,'(2a)') 'The current source file is:',
-     &      lapres(1:lnblnk(lapres))
-          call edisp248(iuout,outs248,100)
-          lltmp=lapres
-          llt=lnblnk(lltmp)
-          iglib = igraphiclib()
-          if(iglib.eq.1.or.iglib.eq.3)then
-            if(llt.lt.96)then
-              CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &          96,dapres,'pressure coef database',IER,2)
-            elseif(llt.ge.96.and.llt.lt.124)then
-              CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &          124,dapres,'pressure coef database',IER,2)
-            elseif(llt.ge.124.and.llt.le.144)then
-              CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &          144,dapres,'pressure coef database',IER,2)
-            endif
-            sourcefile = lltmp
-          elseif(iglib.eq.2)then
-            CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &        144,dapres,'pressure coef database',IER,2)
-            sourcefile = lltmp
-          else
-            CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &        96,dapres,'pressure coef database',IER,2)
-            sourcefile = lltmp
-          endif
+
+          lltmp='  '
+          CALL EASKXORGTKF(LPRFDB,
+     &      'Pressure coefficients db (source)?',' ',
+     &      dapres,lltmp,'pressure coef database',IER,2)
+          sourcefile = lltmp
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
