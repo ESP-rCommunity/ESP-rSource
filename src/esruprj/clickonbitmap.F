@@ -746,7 +746,7 @@ C Load an X11 bitmap file (user required to convert to the format).
      &    'e large for gridding','f large with ticks for gridding',
      &    'g user defined bitmap',' ',' ',' ',' ',' ',inptb,idno,9)
 
-C << the xbm files should be located via the installed path >>
+C Locate the xbm files via the installed path.
         call isunix(unixok)
         if(unixok)then
           fs = char(47)
@@ -776,21 +776,11 @@ C << the xbm files should be located via the installed path >>
         else
           goto 142
         endif
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        write(longtfile,'(a)') fname(1:lnblnk(fname))
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(fname,'X11 bitmap file name?',
-     &      ' ',96,'xxx.xbm','bitmap file',IER,3)
-          write(longtfile,'(a)') fname(1:lnblnk(fname))
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtfile,'X11 bitmap file name?',
-     &      ' ',144,'xxx.xbm','bitmap file',IER,3)
-          write(fname,'(a)') longtfile(1:95)
-        else
-          CALL EASKF(fname,'X11 bitmap file name?',
-     &      ' ',96,'xxx.xbm','bitmap file',IER,3)
-        endif
-
+	longtfile=' '    ! reset return string
+        CALL EASKXORGTKF(fname,'X11 bitmap file name?',' ',
+     &    'xxx.xbm',longtfile,'bitmap file',IER,9)
+        write(fname,'(a)') longtfile(1:lnblnk(longtfile))
+     
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
           goto 142  ! redisplay menu.
