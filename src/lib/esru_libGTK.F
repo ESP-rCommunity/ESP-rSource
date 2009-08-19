@@ -2629,19 +2629,14 @@ C from a yes no (with default indicated) prompt (supports help).
 C In the case of a graphic menu the messages will appear in a
 C dialogue box at the bottom of the graphic window.
 C If NHELP=-1 there is no default option.
-
-C Use ifdef statements to use a different graphic function
-C for the case of F90 complers (espokbox faults with F90)
       SUBROUTINE ASKOK(MSG1,MSG2,OK,DOK,NHELP)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       CHARACTER*(*) MSG1,MSG2
-      CHARACTER ANS*2,MSG3*124,H*72,opta*8,optb*8,optc*14
-#ifdef F90
+      CHARACTER ANS*2,MSG3*124,H*72,opta*14,optb*14,optc*14
       character optd*2,opte*2,optf*2,optg*2
-#endif
       character head*12
       character prompt*144
       logical ok,dok,DEFLT
@@ -2712,42 +2707,38 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
         endif
         opta='yes'
         optb='no'
-#ifdef F90
+        optc='  '
         optd='  '
         opte='  '
         optf='  '
         optg='  '
-#endif
         if (DEFLT) then
           if(DOK)then
             id=1
-            optc='default (yes)'
-#ifdef F90
+            iw=1
+            opta='default (yes)'
+            optb='no'
             call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,
-     &        IW)
-#else
-            call espokbox(prompt,opta,optb,optc,id,IW)
-#endif
+     &        iw)
           else
             id=2
-            optc='default (no)'
-#ifdef F90
+            iw=2
+            opta='yes'
+            optb='default (no)'
             call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,
-     &        IW)
-#else
-            call espokbox(prompt,opta,optb,optc,id,IW)
-#endif
+     &        iw)
           endif
         else
           id=0
-          optc=' '
-#ifdef F90
+          iw=0
+          opta='yes'
+          optb='no'
+          optc='  '
           call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,IW)
-#else
-          call espokbox(prompt,opta,optb,optc,ID,IW)
-#endif
         endif
-        write(6,*) 'espokbox selected id iw ',id,iw
+	
+C Debug.
+C        write(6,*) 'espabcbox selected id iw ',id,iw,opta,optb,optc
         IF(IW.eq.1)THEN
           OK=.TRUE.
         ELSEIF(IW.eq.2)THEN

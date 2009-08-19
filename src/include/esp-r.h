@@ -199,9 +199,6 @@ void	espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
           int dopt_len, int eopt_len, int fopt_len, int gopt_len,
           int hopt_len, int iopt_len, int jopt_len, int kopt_len,
           int lopt_len);
-void	espokbox_ (char *msg1, char *aopt, char *bopt, char *copt, 
-          long int *idef,long int *ipick,int msg1_len,
-          int aopt_len,int bopt_len,int copt_len);
 
 /* Shared functions esp_text.c */
 void	inserttext_ ( char *message , int len);
