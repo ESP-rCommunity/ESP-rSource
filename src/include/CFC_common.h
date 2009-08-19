@@ -84,15 +84,15 @@ C-------------------------------------------------------------------------------
 C Normal Longwave Radiative properties for each layer of CFC imported from
 C *.GSL files.
 
-      COMMON/impCFClw/rim_lwRf(mcom,mcfc,me),
-     &                rim_lwRb(mcom,mcfc,me),
+      COMMON/impCFClw/rim_lwEf(mcom,mcfc,me),
+     &                rim_lwEb(mcom,mcfc,me),
      &                rim_lwT(mcom,mcfc,me) 
 
-C Front reflectance of each element (facing exterior)
-      REAL rim_lwRf
+C Front emissivity of each element (facing exterior)
+      REAL rim_lwEf
 
-C Back reflectance of each element(facing interior)
-      REAL rim_lwRb
+C Back emissivity of each element(facing interior)
+      REAL rim_lwEb
 
 C Transmittance of each element
       REAL rim_lwT
@@ -247,12 +247,12 @@ C SEE IMPORT COMMONS SECTIONS ABOVE FOR VARIABLE DEFINITIONS OF THE FOLLOWING:
       REAL visRB
       REAL visT
 
-      COMMON/CFClw/rlwRF(mcom,mcfc,me),
-     &             rlwRB(mcom,mcfc,me),
+      COMMON/CFClw/rlwEF(mcom,mcfc,me),
+     &             rlwEB(mcom,mcfc,me),
      &             rlwT(mcom,mcfc,me)
 
-      REAL rlwRF
-      REAL rlwRB
+      REAL rlwEF
+      REAL rlwEB
       REAL rlwT
 
       COMMON/CFCvb/vb_w(mcom,mcfc),
@@ -292,15 +292,15 @@ C-------------------------------------------------------------------------------
 C Common to save longwave properties as given in *.cfc file
 C     -these are used as input for determining effective layer properties
 
-      COMMON/CFClwS/rlwRF_sv(mcom,mcfc,me),
-     &              rlwRB_sv(mcom,mcfc,me),
+      COMMON/CFClwS/rlwEF_sv(mcom,mcfc,me),
+     &              rlwEB_sv(mcom,mcfc,me),
      &              rlwT_sv(mcom,mcfc,me)
 
-C Front reflectance of each element (facing exterior)
-      REAL rlwRF_sv
+C Front emissivity of each element (facing exterior)
+      REAL rlwEF_sv
 
-C Back reflectance of each element(facing interior)
-      REAL rlwRB_sv
+C Back emissivity of each element(facing interior)
+      REAL rlwEB_sv
 
 C Transmittance of each element
       REAL rlwT_sv
@@ -526,7 +526,8 @@ C
 C THIS SECTION IS WORK IN PROGRESS.
 C---------------------------------------------------------------------------------
 
-      COMMON/CFCslatcontrl/vb_phiOld(mcom,mcfc),vb_phiNew(mcom,mcfc)
+      COMMON/CFCslatcontrl/vb_phiOld(mcom,mcfc),vb_phiNew(mcom,mcfc),
+     &                     i_shd(mcom,mcfc)
 
 C Slat angle for previous time-step (deg.)
       REAL vb_phiOld
@@ -534,7 +535,46 @@ C Slat angle for previous time-step (deg.)
 C Slat angle for future time-step (deg.)
       REAL vb_phiNew
 
+C Time-step shading ON/OFF flag
+      INTEGER i_shd
+
 C---------------------------------------------------------------------------------
+C CFC shading/control schedule data
+      COMMON/CFC_shd_schedule/n_ctl_periods(mcom,mcfc,mdty),
+     &      i_ctl_start(mcom,mcfc,mdty,24),
+     &      i_ctl_end(mcom,mcfc,mdty,24),
+     &      i_shdONorOFF(mcom,mcfc,mdty,24),
+     &      slat_angle(mcom,mcfc,mdty,24),
+     &      i_CFC_control(mcom,mcfc)
+
+C Number of control periods
+      integer n_ctl_periods
+
+C Period start
+      integer i_ctl_start
+
+C Period end
+      integer i_ctl_end
+
+C Shading flag for period - 1=ON, 0=OFF
+      integer i_shdONorOFF
+
+C Control flag for period - 1=control active, 0=no control
+      integer i_CFC_control
+      
+C Period slat angle for CFCs with slat-type shading layers
+      real slat_angle
+
+C---------------------------------------------------------------------------------
+C CFC shading/control hourly states
+      COMMON/CFC_shd_schedule2/slat_angleHR(mcom,mcfc,mdty,MT),
+     &      i_shdONorOFF_HR(mcom,mcfc,mdty,MT)
+
+C Hourly slat angle determined from shading schedule
+      real slat_angleHR
+ 
+C Hourly shade ON/OFF state determined from shading schedule
+      integer i_shdONorOFF_HR
 
 C---------------------------------------------------------------------------------
 C CFC SOLAR AND VISIBLE OPTICAL PROPERTIES COMMONS

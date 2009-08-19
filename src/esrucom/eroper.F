@@ -128,6 +128,7 @@ C Maximum number of casual gains/day       MC=20
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -584,6 +585,53 @@ C Check to see if gain labels have been added to the end of the file
 C Gain reporting if requested.
       if(ITRC.GE.1)call CASINF(ICOMP,ITRU)
 
+C CFC shading schedule information.
+C      CALL STRIPC(IUO,OUTSTR,0,ND,1,'no. CFC types',IER)
+C      K=0
+C      CALL EGETWI(OUTSTR,K,ireader,0,mcfc,'W','no. CFC types',IER)      
+C      ncfc(icomp)=ireader
+C      if(ncfc(icomp).gt.0)then
+C      DO 799 icfctp=1,ncfc(icomp)
+C  222   DO 800 IDTY=1,NBDAYTYPE
+C          CALL STRIPC(IUO,OUTSTR,0,ND,1,'flow periods',IER)
+C          K=0
+C          CALL EGETWI(OUTSTR,K,ireader,0,MA,'W','periods',IER)
+C          n_ctl_periods(icomp,icfctp,IDTY)=IREADER
+C          IF(n_ctl_periods(icomp,icfctp,IDTY).EQ.0)goto 800
+C          DO 11 I=1,n_ctl_periods(icomp,icfctp,IDTY)
+C            CALL STRIPC(IUO,OUTSTR,0,ND,1,
+C     &      'Period shading details',IER)
+C            K=0
+C            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W',
+C     &      'w shading start',IER)
+C            i_ctl_start(icomp,icfctp,IDTY,I)=IREADER
+C            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W',
+C     &      'w shading end',IER)
+C            i_ctl_end(icomp,icfctp,IDTY,I)=IREADER
+C            CALL EGETWI(OUTSTR,K,IREADER,0,1,'W','w shade ON/OFF',IER)
+C            i_shdONorOFF(icomp,icfctp,IDTY,I)=IREADER
+C            CALL EGETWR(OUTSTR,K,READER,-89.99,89.99,'W',
+C     &      'w slat angle',IER)
+C            slat_angle(icomp,icfctp,IDTY,I)=READER
+C            IF(i_ctl_start(icomp,icfctp,IDTY,I).GT.
+C     &      i_ctl_end(icomp,icfctp,IDTY,I))then
+
+C Found a period out of order, warn user and carry on.
+C              write(loutstr,'(6a)')
+C     &        ' day type ',calentag(idty),
+C     &        ' CFC shading start-end mismatch in...',
+C     &        outstr(1:50),' of operation file ',
+C     &        currentfile(1:lnblnk(currentfile))
+C              call edisp248(iuout,loutstr,100)
+C              IER=1
+C            ENDIF
+C 11       CONTINUE
+C 800    CONTINUE
+C 799  CONTINUE
+C      endif
+
+      IF(IER.NE.0) goto 1002
+        
 C Now free project data file.
       CALL ERPFREE(IUO,ISTAT)
       RETURN
@@ -1435,6 +1483,36 @@ C Write out the type labels to the file for future reference
       WRITE(IUO,'(a)')'# Labels for gain types '
       WRITE(IUO,'(3(1X,A6))',IOSTAT=IOS,ERR=1) 
      &  (lodlabel(icomp,I),I=1,3)
+
+C Place CFC shading/control data here
+C      WRITE(IUO,'(A)',IOSTAT=ISTAT,ERR=1)
+C     & '# CFC shading schedule/control data'
+C      WRITE(IUO,'(I5,A)',IOSTAT=ISTAT,ERR=1)
+C     & ncfc(icomp), '    no. of CFC types' 
+C      if(ncfc(icomp).gt.0)then
+C        DO 499 icfctp=1,ncfc(icomp)
+C        WRITE(IUO,'(1X,I5,A)',IOSTAT=ISTAT,ERR=1)
+C     &    icfctp,'   # CFC type'
+C          DO 500 IDTY=1,NBDAYTYPE
+C            WRITE(IUO,'(1X,I5,3A,I5)',IOSTAT=ISTAT,ERR=1)
+C     &      n_ctl_periods(icomp,icfctp,IDTY),
+C     &      '   # number of CFC shading periods in day type: ',
+C     &      calentag(idty), 'CFC type:', icfctp
+C            IF (n_ctl_periods(icomp,icfctp,IDTY).GT.0)THEN
+C              WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
+C     &        '# start, stop, Shading ON/OFF, Slat Angle'
+C              DO 2120 I = 1,n_ctl_periods(icomp,icfctp,IDTY)
+C                WRITE(IUO,5480,IOSTAT=IOS,ERR=1)
+C     &          i_ctl_start(icomp,icfctp,IDTY,I),
+C     &          i_ctl_end(icomp,icfctp,IDTY,I),
+C     &          i_shdONorOFF(icomp,icfctp,IDTY,I),
+C     &          slat_angle(icomp,icfctp,IDTY,I)
+C 2120         CONTINUE
+C            ENDIF
+C 500      CONTINUE
+C 499    CONTINUE
+C      endif
+      
       CALL ERPFREE(IUO,ISTAT)
       RETURN
 

@@ -686,9 +686,6 @@ C ***** Notice that an active description button has been pressed.
 C Control
       common/cctlnm/ctldoc,lctlf
 
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
-
 C Images.
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
@@ -701,8 +698,7 @@ C Images.
       CHARACTER LCFD*72
       CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72,LPRJLG*72
       CHARACTER ctldoc*248,lctlf*72
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248,CNTMDESC*124,CONTMNAM*12
+      character CNTMDESC*124,CONTMNAM*12
 
       call usrmsg('Scanning for related images. Please wait...',' ','-')
       if(act.eq.'r')then

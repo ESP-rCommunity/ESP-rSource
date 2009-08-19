@@ -21,10 +21,30 @@ C Boston, MA 02111-1307 USA.
 C This file contains the following routines:
 
 C  makeCFCfile          Creates a *.cfc file from imported GSLedit data.
+
 C  importGSLedit        Imports data from *.GSL files and stores in CFC
 C                       import commons
+
 C  read_in_cfc_file     Reads an annotated ASCII *.cfc file and stores
 C                       CFC data in commons
+
+C  editCFC_shading_schedule
+C                       Facility for editing CFC shading schedule and 
+C                       control. Launched from zone operations menu. 
+
+C  askCFCtype           Presents list of CFC types in zone and asks user
+C                       to select a CFC type for editing shading schedule.
+
+C  plot_CFC_schedules   Plots CFC shading schedule
+
+C  editCFC_period_data  Edit CFC shading schedule period data
+
+C  addCFC_period_data   Add CFC shading schedule period data in correct
+C                       location
+
+C  chkCFC_period_data   Check CFC shading period data for overlapping periods
+
+C  cpdelCFC_period_data Copy/Delete CFC shading period data
 
 
 C ********************************************************************
@@ -459,28 +479,28 @@ C commons.
 
         write(outs,'(a,a)')
      &      '# For each layer: normal longwave radiative properties - ',
-     &      'R_fr, R_bk, Tran.'
+     &      'EmisF, EmisB, Tran.'
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
         do 150 ie=1,im_ncfc_el(icomp,it)
 
               if(im_cfcltp(icomp,it,ie).eq.2)then
-                write(outs,'(3F8.3,a)')rim_lwRf(icomp,it,ie),
-     &            rim_lwRb(icomp,it,ie),rim_lwT(icomp,it,ie),
+                write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
+     &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
      &            '   # slat-type blind '
                 WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &                        outs(1:lnblnk(outs))
 
               elseif(im_cfcltp(icomp,it,ie).eq.1)then
-                write(outs,'(3F8.3,a)')rim_lwRf(icomp,it,ie),
-     &            rim_lwRb(icomp,it,ie),rim_lwT(icomp,it,ie),
+                write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
+     &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
      &            '   # glazing '
                 WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &                        outs(1:lnblnk(outs))
 
               elseif(im_cfcltp(icomp,it,ie).eq.0)then
-                write(outs,'(3F8.3,a)')rim_lwRf(icomp,it,ie),
-     &            rim_lwRb(icomp,it,ie),rim_lwT(icomp,it,ie),
+                write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
+     &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
      &            '   # gas gap '
                 WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &                        outs(1:lnblnk(outs))
@@ -788,11 +808,11 @@ C curvature ratio), slat thickness and slat apparent thickness
      &            'long wave transmission',IER)
             rim_lwT(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave reflectance - front',IER)
-            rim_lwRf(icomp,icfctp,i)=1.-rprop
+     &            'long wave emissivity - front',IER)
+            rim_lwEf(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave reflectance - back',IER)
-            rim_lwRb(icomp,icfctp,i)=1.-rprop
+     &            'long wave emissivity - back',IER)
+            rim_lwEb(icomp,icfctp,i)=rprop
 
          elseif(im_cfcltp(icomp,icfctp,i).eq.2)then
 
@@ -829,11 +849,11 @@ C to GSLedit
      &            'long wave transmission',IER)
             rim_lwT(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave reflectance - front',IER)
-            rim_lwRf(icomp,icfctp,i)=1.-rprop
+     &            'long wave emissivity - front',IER)
+            rim_lwEf(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave reflectance - back',IER)
-            rim_lwRb(icomp,icfctp,i)=1.-rprop
+     &            'long wave emissivity - back',IER)
+            rim_lwEb(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.3,'F',
      &            'slat thickness (m)',IER)
             rim_vb_t(icomp,icfctp)=rprop*1000.  ![convert to mm]
@@ -851,8 +871,8 @@ C assign optical properties for air gap
          rim_VisRf(icomp,icfctp,i+1)=     0.0001
          rim_VisRb(icomp,icfctp,i+1)=     0.0001
          rim_lwT(icomp,icfctp,i+1)  =     0.0001
-         rim_lwRf(icomp,icfctp,i+1) =     0.0001
-         rim_lwRb(icomp,icfctp,i+1) =     0.0001
+         rim_lwEf(icomp,icfctp,i+1) =     0.0001
+         rim_lwEb(icomp,icfctp,i+1) =     0.0001
         endif
 
  20   continue
@@ -1103,12 +1123,12 @@ C Read long-wave properties for complex fenestration construction.
         K=0
         CALL EGETWR(OUTSTR,K,VAL,0.,0.999,'W','front lw emiss.',
      &              IER)
-        rlwRF(ICOMP,i,j)=VAL
-        rlwRF_sv(icomp,i,j)=VAL
+        rlwEF(ICOMP,i,j)=VAL
+        rlwEF_sv(icomp,i,j)=VAL
         CALL EGETWR(OUTSTR,K,VAL,0.,0.999,'W','back lw emiss. ',
      &              IER)
-        rlwRB(ICOMP,i,j)=VAL
-        rlwRB_sv(icomp,i,j)=VAL
+        rlwEB(ICOMP,i,j)=VAL
+        rlwEB_sv(icomp,i,j)=VAL
         CALL EGETWR(OUTSTR,K,VAL,0.,0.999,'W','lw trans.',
      &              IER)
         rlwT(ICOMP,i,j)=VAL
@@ -1140,7 +1160,7 @@ C Reporting
          CALL EDISP(ITRU,
      &      ' Normal longwave-optical prop. front/back/tran. ')
          do 34 j=1,ncfc_el(icomp,i)
-         WRITE(OUTS,'(2X,3F7.3)')rlwRF(icomp,i,j),rlwRB(icomp,i,j),
+         WRITE(OUTS,'(2X,3F7.3)')rlwEF(icomp,i,j),rlwEB(icomp,i,j),
      &                           rlwT(icomp,i,j)
   34     continue
          CALL EDISP(ITRU,OUTS)
@@ -1333,4 +1353,1339 @@ C Error messages.
       CALL USRMSG(outs,' and try the model again!','W')
       IER=1
       goto 1000
+      end
+
+C ********************************************************************
+C                    --editCFC_shading_schedule--
+C
+C UNDER CONSTRUCTION
+C Based on subroutine EDAIR2
+C
+C ********************************************************************
+      subroutine editCFC_shading_schedule(icomp,icfctype,ier)
+# include "building.h"
+# include "CFC_common.h"   
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      character zname*12, zdesc*64
+      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+      integer MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+      common/pophelp/h(60)
+      character H*72
+
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      
+      character title*32, vert(35)*33, KEY*1
+      integer mvert     !number of actual items displayed
+      integer ivert     !menu selection
+      !integer iCFC_ctl(icomp,icfctype) !CFC control flag
+      integer istartcount, iendcount, L
+      logical XST,closezero,closeone,closetwo
+      integer KSTR(MDTY)
+      
+C Initial menu entry setup.
+      idtyp=1
+  5   MHEAD=3
+      MCTL=5
+      ILEN=n_ctl_periods(1,icfctype,idtyp)*3
+      IPACT=1!CREATE
+      CALL EKPAGE(IPACT)
+      IER=0
+      IVERT=-3
+
+C Check period data and plot CFC schedules
+      call chkCFC_period_data(icomp,icfctype)
+      if (MMOD.eq.8) call plot_CFC_schedules(ICOMP,icfctype,idtyp)
+
+      
+C Set up top of menu.
+  44  if (i_CFC_control(icomp,icfctype).eq.0) then 
+        write(VERT(1),'(A)') '1 CFC shading control (none)'
+      else
+        write(VERT(1),'(A)') '1 control:  CFC control ON'
+      endif
+      vert(2) =              '  -----------------------------'
+      write(vert(3),'(3a,i2,a)') '> CFC schedule >> ',
+     & calentag(idtyp)(1:10),'(',n_ctl_periods(icomp,icfctype,idtyp),')'
+
+C Loop through the items until the page to be displayed. M is the 
+C current menu line index. Build up text strings for the menu.     
+      M=MHEAD
+
+C Day type loop
+      istartcount=1
+      iendcount=0
+      do 10 L=1,n_ctl_periods(icomp,icfctype,idtyp)
+
+C Ensure that all three lines can be written. If on subsequent
+C pages then check loosely in order to catch an item that 
+C would have otherwise spanned the page divide.
+        iendcount=istartcount+2
+        if(istartcount.GE.IST.AND.(iendcount.LE.(IST+MIFULL)))then
+          continue
+        elseif(istartcount+2.GE.IST.AND.
+     &        (iendcount.LE.(IST+MIFULL)))then
+          continue
+        else
+          istartcount=iendcount+1
+          goto 10
+        endif
+        M=M+1
+        call EMKEY(M-MHEAD,KEY,IER)
+        write (VERT(M),'(2a,i3,a,i3)') KEY,' period:',
+     &    i_ctl_start(icomp,icfctype,idtyp,L),'-',
+     &    i_ctl_end(icomp,icfctype,idtyp,L)
+        M=M+1
+        call EMKEY(M-MHEAD,KEY,IER)
+        write (VERT(M),'(2a,i3)') KEY,'  Shade ON/OFF:',
+     &            i_shdONorOFF(icomp,icfctype,idtyp,L)   
+        M=M+1
+        call EMKEY(M-MHEAD,KEY,IER)
+        write (VERT(M),'(2a,f6.2)') KEY,'  Slat angle:',
+     &            slat_angle(icomp,icfctype,idtyp,L)   
+ 
+        istartcount=iendcount+1
+ 10   continue
+
+C Number of actual items displayed.
+      MVERT=M+MCTL
+
+C If a long list include page facility text.      
+      IF(IPFLG.EQ.0)THEN
+        VERT(M+1)=           '  -----------------------------'
+      ELSE
+        WRITE(VERT(M+1),15)IPM,MPM 
+   15   FORMAT             ('0 Page --- Part: ',I2,' of ',I2,' ---')
+      ENDIF
+      VERT(M+2) = '+ add/delete/copy/import period'
+      VERT(M+3) = '! list current information     '
+      VERT(M+4) = '? help                         '
+      VERT(M+5) = '- exit this menu               '
+
+C Now display the menu.      
+      write(title,'(a,i2,2a)')'CFC type',icfctype,
+     & ' schedule in ',zname(icomp)(1:lnblnk(zname(icomp)))
+      CALL EMENU(title,vert,mvert,IVERT)
+
+C Help text for this menu.
+      H(1)='CFC shading schedule help'
+      
+      if (IVERT.EQ.MVERT) then
+        return
+      elseif (IVERT.EQ.(MVERT-1)) then
+        CALL PHELPD('CFC shading schedule',1,'-',0,0,IER)
+      elseif (IVERT.EQ.(MVERT-2)) then
+C List current
+      ! nothing here yet
+      elseif (IVERT.EQ.(MVERT-3)) then
+
+C Add delete copy period or import from another zone
+
+        H(1)='The options: '
+        H(2)='The add/delete/copy/import option are as follows.'
+        H(3)=' add - adds a period to one or all day types.' 
+        H(4)=' '
+        H(5)=' delete - deletes one or more periods (within a list'
+        H(6)='   of all periods in all days).'
+        H(7)=' '
+        H(8)=' copy - copies periods for different days e.g. Weekdays'
+        H(9)='   -> Sundays or Saturdays -> Sundays'
+        CALL EASKATOG(' ','Options (see help):',
+     &    'add period','delete period','copy period',
+     &    'import from other zone','import pattern','cancel',' ',IW,9)
+
+C Add period
+        if (IW.EQ.1) then 
+          CALL EASKAB(' ','Add period to ','one day type',
+     &     'all day types',IY,35)
+          IF(IY.EQ.1)THEN
+            IX=1
+            CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
+     &      ,12,nbdaytype,calentag,'Choose daytype',IER,35)
+            call edisp(iuout,'choose daytype to add period in')
+            IDT=KSTR(1)
+            idtyp=idt
+            IF(n_ctl_periods(icomp,icfctype,IDT).EQ.MA)THEN
+              CALL USRMSG('Sorry, too many periods in day type ',
+     &        calentag(idt),'W')
+            ELSE
+              IPER=0
+              CALL editCFC_period_data(ICOMP,icfctype,IDT,IPER,-1)
+            ENDIF
+          ELSEIF(IY.EQ.2)THEN
+            IDT=-1
+            DO 400 IDTY=1,NBDAYTYPE
+            IF(n_ctl_periods(icomp,icfctype,IDTY).EQ.MA)THEN
+              CALL USRMSG('Sorry, too many periods in day type ',
+     &        calentag(idt),'W')
+              CALL EDISP(IUOUT,
+     &        'Add periods by individually choosing each day type')
+              IDT=0
+            ENDIF
+ 400        CONTINUE
+            IF(IDT.NE.0)THEN
+              IDT=-1
+              IPER=0
+              call editCFC_period_data(ICOMP,icfctype,IDT,IPER,-1)
+            ENDIF
+          ENDIF
+        elseif (IW.EQ.2) then 
+          call cpdelCFC_period_data(icomp,icfctype,1)    ! delete one or more periods
+        elseif (IW.EQ.3) then
+          call cpdelCFC_period_data(icomp,icfctype,2)    ! copy a period
+        elseif (IW.EQ.4.or.IW.eq.5) then
+
+            
+        elseif(iw.eq.5)then
+
+        endif
+        
+      elseif (IVERT.EQ.(MVERT-4)) then
+
+C If there are enough items allow paging control via EKPAGE.
+        IF(IPFLG.EQ.1)THEN
+          IPACT=EDIT
+          CALL EKPAGE(IPACT)
+          ILEN=n_ctl_periods(1,icfctype,idtyp)*3
+          goto 44
+        ENDIF
+      elseif (IVERT.EQ.1) then
+
+C CFC Control.
+C        call EDAFCTL(ICOMP,IER)
+      elseif (IVERT.EQ.3) then
+
+C Increment the daytype focus.
+        idtyp = idtyp + 1
+        if(idtyp.gt.nbdaytype) idtyp = 1
+        goto 5
+      elseif (IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1)) then
+
+C Edit block identified by KEYIND.
+        CALL KEYIND(MVERT,IVERT,I,IO)
+
+C Depending on currently defined gains work out day type of selected
+C item. Also calculate period index in day type. Adjust for 2nd page
+        if(ipm.eq.2.and.I.gt.1) I=I-1  ! adjust for 2nd page
+        if(ipm.eq.3.and.I.gt.1) I=I-2  ! adjust for 3rd page
+        if(ipm.eq.4.and.I.gt.1) I=I-3  ! adjust for 4th page
+
+C Items are in groups of 3. If i/3 has no remainder I is 3,6,9,etc.
+C so the period is just the nearest integer to I/3.0. If there is
+C a remainder then I is 1,2 or 4,5 and it is one more than the
+C nearest integer.
+        trymod=amod(real(I),3.0)
+        call eclose(trymod,0.0,0.001,closezero)
+        call eclose(trymod,1.0,0.001,closeone)
+        call eclose(trymod,2.0,0.001,closetwo)
+        if(closezero.or.closetwo)then
+          try=real(I)/3.0
+          iper=nint(try)
+        endif
+        if(closeone)then
+          try=real(I)/3.0
+          iper=nint(try)+1
+        endif
+        IDT=idtyp
+        if(closeone)then
+          call editCFC_period_data(ICOMP,icfctype,IDT,IPER,1)
+        endif
+        if(closetwo)then
+          call editCFC_period_data(ICOMP,icfctype,IDT,IPER,2)
+        endif
+        if(closezero)then
+          call editCFC_period_data(ICOMP,icfctype,IDT,IPER,0)
+        endif
+      endif
+      
+C Redisplay menu.
+      IVERT=-4
+      GOTO 5
+      
+      END
+
+C ********************************************************************
+C                          --askCFCtype--
+C
+C Presents a list of CFC types to select from and returns icfctype
+C UNDER CONSTRUCTION
+C Based on subroutine ASKZONE
+C
+C     - check if *.cfc file exists for this zone
+C     - determine number of CFC types
+C
+C ********************************************************************
+      
+C ASKZONE presents  a list of zones to select from.
+C It is passed a prompt, menu title, default
+C index and indicates current index (if zero then says no prior
+C selection). It is assumed that the user will make one selection only.
+C MOD display modifier - `c` note constructions defined, `o` note
+C operations defined, `s` note shading defined, `z` note zone attrib
+C complete, `v` note view factors, `g` casual gain ctl, `d` domain flow,
+C `h` heat transfer (comvective) methods, `-` zone names only.
+      subroutine askCFCtype(icomp,icfctype,IER)
+#include "building.h"
+#include "epara.h"
+#include "CFC_common.h"
+
+      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
+      integer nzsur,nztv
+
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      CHARACTER SSPARENT*12
+
+      COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
+      integer izstocn
+
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      
+      COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
+
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+      common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
+
+C Version of operations file. ip3ver=0 standard, =1 sorted with header
+C =2 with more than 3 day types allowed and sorted
+      common/p3ver/ip3ver(MCOM)
+
+      LOGICAL SELECT,XST
+      CHARACTER title*72
+      
+      DIMENSION VERT(35)
+      CHARACTER VERT*27,KEY*1,zname*12,zdesc*64,prompt2*36
+      character h*72,mod*1,outs*124
+      CHARACTER*72 LCFD
+      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      integer ncfctypes,nlast
+      
+      character OUTSTR*124
+      integer IUA, NS, K, M, L, i, j, icn, II, IO
+
+      DIMENSION IVA(MS)
+      
+      IUA=IFIL+1
+      ncfctypes=0
+      nlast=0
+      
+      XST=.false.
+
+      SELECT=.FALSE.
+   5  MHEAD=0
+      MCTL=3
+
+C Initial menu entry setup.
+   92 IER=0
+      IVERT=-3
+
+C find *.cfc file for this zone and read it in      
+      call FINDFIL(lcfcin(icomp),XST)
+      
+      IF(XST.and.icfc(icomp).eq.1)then
+
+C Read CFC type index from zone *.cfc file
+        CALL EFOPSEQ(IUA,lcfcin(icomp),1,IER)
+        IF(IER.NE.0)THEN
+         IER=1
+         goto 1000
+        ENDIF
+
+C read in number of surfaces in zone
+        CALL STRIPC(IUA,OUTSTR,1,ND,1,'no zone surfaces',IER)
+        IF(IER.NE.0)GOTO 1001
+        K=0
+        CALL EGETWI(OUTSTR,K,NS,4,MS,'W','no zone cfc surf',IER)
+
+C Read pointer to type of CFC for each surface, strip comments etc.
+C Determine number of CFC types in zone
+        IRVA=NS
+        CALL EGETWIA(IUA,IVA,IRVA,0,MCFC,'W','cfc list',IER)
+        ncfc(icomp)=0
+        DO 10 I=1,NS
+          icfcfl(icomp,i)=iva(i)
+          IF(icfcfl(icomp,i).GT.ncfc(icomp))
+     &    ncfc(icomp)=icfcfl(icomp,i)
+   10   CONTINUE
+
+        ILEN=ncfc(icomp)
+        IPACT=1!CREATE
+        CALL EKPAGE(IPACT)
+        
+        M=MHEAD
+        do 20 L=1,ILEN
+            M=M+1
+            CALL EMKEY(L,KEY,IER)
+            WRITE(VERT(M),'(a1, 1x, a10, i2)')KEY, 'CFC type ', L
+   20   continue
+
+C write out corresponding surfaces to each CFC type in zone
+        VERT(M+1)=  '  ______________________'
+        VERT(M+2)=  'Corresponding surface(s)'
+        VERT(M+3)=' '
+        M=M+3
+
+        do 30 LL=1,ILEN
+        M=M+1
+          WRITE(VERT(M),'(a10, i2)')
+     &         '  CFC type', LL
+
+          do 40 j=1,NS
+            if(icfcfl(icomp,j).eq.LL)then
+              icn=izstocn(icomp,j)
+              M=M+1
+              WRITE(VERT(M), '(a6,a12)')'',SSNAME(icn)
+            endif
+   40     continue
+
+   30   continue
+   
+
+C If a long list include page facility text and info on portion seen.      
+        IF(IPFLG.EQ.0)THEN
+          VERT(M+1)=  '  ______________________'
+        ELSE
+          WRITE(VERT(M+1),15)IPM,MPM 
+   15     FORMAT ('0 page part: ',I1,' -- of:',I1)
+        ENDIF
+
+        VERT(M+2)  ='? help                  '
+        VERT(M+3)  ='- exit this menu        '
+
+C Number of actual items displayed
+        MVERT=M+MCTL
+        
+C Help message for this menu.
+        H(1)='Select CFC type to apply shading schedule/control.'
+
+C Display the menu.
+        write(title,'(2a)')'Select CFC type in ',
+     &  zname(icomp)(1:lnblnk(zname(icomp)))
+        CALL EMENU(title,VERT,MVERT,IVERT)        
+        
+C Get user selection
+        if (IVERT.EQ.MVERT) then
+          return
+        elseif (IVERT.EQ.(MVERT-1)) then
+          CALL PHELPD('Choose CFC type',1,'-',0,0,IER)
+        elseif (IVERT.GT.MHEAD.AND.IVERT.LT.(ILEN+1)) then
+          icfctype=IVERT
+          goto 1000
+        else
+          !do nothing
+        end if
+      
+C Redisplay menu.
+      IVERT=-4
+      GOTO 5      
+
+      ELSE
+      
+        H(1)='*.cfc file not found'
+        H(2)=''
+        H(3)='CFC input data must first be imported before'
+        H(4)='editing the shading schedule can commence.'
+       
+        CALL PHELPD('CFC file not found',4,'-',0,0,IER)      
+        
+      ENDIF
+ 
+c Free file.
+ 1000 CALL ERPFREE(IUA,ISTAT)
+      return
+
+C Error messages.
+ 1001 CALL USRMSG(' Problem reading data in:',OUTSTR,'W')
+      IER=1
+      goto 1000
+C 1002 write(outs,'(a,a)') ' Please check data in: ',LUA(1:lnblnk(LUA))
+C      CALL USRMSG(outs,' and try the model again!','W')
+C      IER=1
+C      goto 1000 
+      
+      END
+
+C ********************************************************************
+C                          --plot_CFC_schedules--
+C
+C Plots CFC shading schedule
+C UNDER CONSTRUCTION
+C Based on subroutine PLTAIR
+C
+C ********************************************************************
+      subroutine plot_CFC_schedules(ICOMP,icfctype,idtyp)
+#include "building.h"
+#include "CFC_common.h"
+
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/PREC2/VOL(MCOM)
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT,IDTY,IDAY,JDAY,KDAY
+      REAL ACI,ACV,TA
+
+      character zname*12,zdesc*64,outs*124
+      dimension TACI(24),TACV(24)
+#ifdef OSX
+      integer ipltwd,igheight  ! for use with axiscale
+      integer iside,isize,ifont     ! passed to viewtext
+      integer iupdown,isym    ! passed to etplot
+#else
+      integer*8 ipltwd,igheight  ! for use with axiscale
+      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iupdown,isym    ! passed to etplot
+#endif
+
+      IDTY=IDTYP
+      IDAY=IDTY-1
+      JDAY=IDTY
+      KDAY=IDTY+1
+      IF(IDAY.LE.0)IDAY=NBDAYTYPE
+      IF(KDAY.GT.NBDAYTYPE)KDAY=1
+
+C Scan each days gains and find maximum flow.
+      YMAX=1.
+      MXPERS=max(n_ctl_periods(icomp,icfctype,IDAY),
+     &           n_ctl_periods(icomp,icfctype,JDAY),
+     &           n_ctl_periods(icomp,icfctype,KDAY))
+      do 10 I=1,MXPERS
+       YMAX=amax1(YMAX,slat_angle(icomp,icfctype,IDAY,I),
+     &  slat_angle(icomp,icfctype,JDAY,I),
+     &  slat_angle(icomp,icfctype,KDAY,I))
+ 10   continue
+
+C Clear and setup plot area.
+      CALL startbuffer()
+      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
+      igw=igr-igl
+      igwh=igb-igt
+      igheight=igwh
+
+C Calculate plotting box locations.
+      ipltwd=int(igw/3)-6
+      iglsat=igl + int(ipltwd) + 9
+      iglsun=igl+2*(int(ipltwd)+9)
+      plxmin=0.
+      plxmax=24.
+      YMAX=90.
+      YMIN=-YMAX
+      YMAXF=YMAX
+
+C Scale and draw right hand ON/OFF axis first.
+      CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
+     &                                         xsc,ysc,sca,xadd,yadd)
+      call vrtaxis(0.,1.,igr,igb,igt,0.,20.,0,1,'Shade ON/OFF')
+
+C Scale and draw for first day type requested
+      CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
+      call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,
+     &             'Slat Angle (deg)')
+      call linescale(igl,xadd,xsc,igb,yadd,ysc)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+
+C Draw 0 axis line
+      CALL etplot(plxmin,0.,-1,isym)      
+      CALL etplot(plxmax,0.,-1,isym)
+      
+C Scale and draw second day type requested
+      CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
+      call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmin,YMIN,iupdown,isym)
+
+C Draw 0 axis line
+      CALL etplot(plxmin,0.,-1,isym)      
+      CALL etplot(plxmax,0.,-1,isym)
+
+C Scale and draw third day type requested
+      CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
+      call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
+      iupdown=0
+      isym=0
+      CALL etplot(plxmin,YMIN,iupdown,isym)
+      iupdown=1
+      CALL etplot(plxmin,YMAX,iupdown,isym)
+      CALL etplot(plxmax,YMAX,iupdown,isym)
+
+C Draw 0 axis line
+      iupdown=0
+      CALL etplot(plxmin,0.,0,isym)      
+      iupdown=1
+      CALL etplot(plxmax,0.,-1,isym)
+
+C Draw right hand axis on top of scaled ON/OFF axis to fill in gap
+      iupdown=0
+      CALL etplot(plxmax,YMIN,iupdown,isym)      
+      iupdown=1
+      CALL etplot(plxmax,YMAX,iupdown,isym)     
+      
+C Display slat angle and shading ON/OFF curves.
+C first day type requested
+
+      do 50 IHR=1,24
+        TACI(IHR)=0.
+        TACV(IHR)=0.
+ 50   continue
+      do 60 IP=1,n_ctl_periods(icomp,icfctype,IDAY)
+        do 65 IHR=i_ctl_start(icomp,icfctype,IDAY,IP),
+     &            i_ctl_end(icomp,icfctype,IDAY,IP)-1
+          TACI(IHR+1)=i_shdONorOFF(icomp,icfctype,IDAY,IP)
+          TACV(IHR+1)=slat_angle(icomp,icfctype,IDAY,IP)
+ 65     continue
+ 60   continue
+      do 70 IHR=1,24
+        XST=real(IHR-1)
+        XFN=real(IHR)
+        call linescale(igl,xadd,xsc,igb,0.,20.)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACI(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,TACI(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
+        endif
+        call linescale(igl,xadd,xsc,igb,yadd,ysc)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACV(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,TACV(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACV(IHR+1),iupdown,isym)
+        endif
+ 70   continue
+
+C second day type requested
+      do 150 IHR=1,24
+        TACI(IHR)=0.
+        TACV(IHR)=0.
+ 150  continue
+      do 160 IP=1,n_ctl_periods(icomp,icfctype,JDAY)
+       do 165 IHR=i_ctl_start(icomp,icfctype,JDAY,IP),
+     &            i_ctl_end(icomp,icfctype,JDAY,IP)-1
+          TACI(IHR+1)=i_shdONorOFF(icomp,icfctype,JDAY,IP)
+          TACV(IHR+1)=slat_angle(icomp,icfctype,JDAY,IP)
+ 165    continue
+ 160  continue
+      do 170 IHR=1,24
+        XST=real(IHR-1)
+        XFN=real(IHR)
+        call linescale(iglsat,xadd,xsc,igb,0.,20.)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACI(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,TACI(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
+        endif
+        call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACV(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,TACV(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACV(IHR+1),iupdown,isym)
+        endif
+ 170  continue
+      call forceflush()
+
+C third day type requested
+      do 250 IHR=1,24
+        TACI(IHR)=0.
+        TACV(IHR)=0.
+ 250  continue
+      do 260 IP=1,n_ctl_periods(icomp,icfctype,KDAY)
+       do 265 IHR=i_ctl_start(icomp,icfctype,KDAY,IP),
+     &            i_ctl_end(icomp,icfctype,KDAY,IP)-1
+          TACI(IHR+1)=i_shdONorOFF(icomp,icfctype,KDAY,IP)
+          TACV(IHR+1)=slat_angle(icomp,icfctype,KDAY,IP)
+ 265    continue
+ 260  continue
+      do 270 IHR=1,24
+        XST=real(IHR-1)
+        XFN=real(IHR)
+        call linescale(iglsun,xadd,xsc,igb,0.,20.)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACI(IHR),iupdown,isym)
+        iupdown=-4
+        CALL etplot(XFN,TACI(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
+        endif
+        call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
+        iupdown=0
+        isym=0
+        CALL etplot(XST,TACV(IHR),iupdown,isym)
+        iupdown=1
+        CALL etplot(XFN,TACV(IHR),iupdown,isym)
+        if (IHR.ne.24)then
+          CALL etplot(XFN,TACV(IHR+1),iupdown,isym)
+        endif
+ 270  continue
+
+C Title and labels.
+      write (outs,'(a,i2,2a)') 'Shading schedule for CFC type ',
+     &                    icfctype,' in ',ZNAME(ICOMP)
+      iside=1
+      isize=1
+      ifont=1
+      call viewtext(outs,iside,isize,ifont)
+
+      call wstxpt(igl+20,igt-65,'Shading ON/OFF')
+      call wstxpt(igr-100,igt-65,'Slat Angle')
+      call pixel2u(igl+120,igt-69,gx,gy)
+      iupdown=0
+      isym=0
+      CALL etplot(gx,gy,iupdown,isym)
+      call pixel2u(igl+180,igt-69,gx,gy)
+      iupdown=-4
+      CALL etplot(gx,gy,iupdown,isym)
+      call pixel2u(igr-120,igt-69,gx,gy)
+      iupdown=0
+      CALL etplot(gx,gy,iupdown,isym)
+      call pixel2u(igr-180,igt-69,gx,gy)
+      iupdown=1
+      CALL etplot(gx,gy,iupdown,isym)
+
+      ioff=(int(ipltwd)/3)
+      call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
+      call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
+      call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
+      call forceflush()
+
+      return
+      end
+
+C ********************************************************************
+C                        --editCFC_period_data--
+C
+C Edit CFC shading schedule period data
+C UNDER CONSTRUCTION
+C Based on subroutine EDAIRFL
+C
+C  ICOMP zone number
+C  IDT day type
+C  IPER period (=0 then new)
+C  itype is what attributes to edit (=-1 all, =1 period,
+C     =2 shade ON/OFF, =0 slat angle.
+C ********************************************************************
+      subroutine editCFC_period_data(ICOMP,icfctype,IDT,IPER,itype)
+#include "building.h"
+#include "CFC_common.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+
+      COMMON/PREC2/VOL(MCOM)
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+     
+      character OUTS*124,HOLD*16,h*72,zname*12,zdesc*64
+
+C Working variables
+      real slatX         !shade ON/OFF, slat angle
+      integer IctlSX,IctlFX,ishdX   !period start, period end
+      real Xslat
+      
+C << This subroutine will need further code changes to implement
+C << user cancel actions.
+
+C If new period then set defaults otherwise get data from common.
+      if (IPER.eq.0) then
+        IctlSX=0
+        IctlFX=24
+        ishdX=0
+        slatX=0.
+      ELSEIF(IDT.GT.0)THEN
+        IctlSX=i_ctl_start(icomp,icfctype,IDT,IPER)
+        IctlFX=i_ctl_end(icomp,icfctype,IDT,IPER)
+        ishdX=i_shdONorOFF(icomp,icfctype,IDT,IPER)
+        slatX=slat_angle(icomp,icfctype,IDT,IPER)
+      endif
+
+C Ask for start and finish times.
+      if(itype.eq.-1.or.itype.eq.1)then
+ 10     write (OUTS,'(A)') 'Start and finish hours for period?'
+        write (HOLD,'(2i5,a)') IctlSX,IctlFX,'  '
+        h(1)='Period during which CFC shading schedule applies.'
+        CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','CFC st-fn hr',IER,1)
+        K=0
+        CALL EGETWI(HOLD,K,IVS,0,24,'F','period start',IER)
+        CALL EGETWI(HOLD,K,IVF,IVS+1,24,'F','period end',IER)
+        if (IER.ne.0) goto 10
+        IctlSX=IVS
+        IctlFX=IVF
+      endif
+
+C Ask for shading ON/OFF and/or slat angle.
+      if(itype.eq.-1.or.itype.eq.2.or.itype.eq.0)then
+        if(itype.eq.0)goto 11
+        h(1)='Specify whether CFC shading for current period is ON'
+        h(2)='or OFF (ie. is shading layer deployed or retracted).'
+        IGU=1
+        CALL EASKAB(' ','CFC shading layer','ON',
+     &     'OFF',IGU,2)
+        if (IGU.eq.1) then
+          ishdX=1
+        elseif(IGU.eq.2)then
+          ishdX=0
+        endif
+
+  11    if(itype.eq.-1.or.itype.eq.0)then
+  20        Xslat=slatX
+            h(1)='Supply the slat angle in degrees from horizontal.'
+            call EASKR(Xslat,' ','Slat angle?',
+     &        -89.9,'F',89.9,'F',0.0,'slat angle (deg)',IERI,1)
+            if(IERI.eq.0)then
+              slatX=Xslat
+            elseif(ieri.eq.-3)then
+              call edisp(iuout,'Cancel not implemented.')
+            else
+              goto 20
+            endif          
+        endif
+
+      endif
+
+C If day type -1 then add data to all day types.
+      if (IDT.eq.-1) then
+        ILOOP=NBDAYTYPE
+      else
+        ILOOP=1
+      endif
+
+C If new period then work out where to insert data.
+      do 400 ILDT=1,ILOOP
+
+C If looping through day types then set day type (IDT) to current 
+C value of loop counter (ILDT).  Otherwise IDT will have the value 
+C that was passed to the subroutine.
+        if (ILOOP.NE.1) IDT=ILDT
+        call addCFC_period_data
+     &   (icomp,icfctype,IPER,IDT,IctlSX,IctlFX,ishdX,slatX)
+ 400  continue
+
+      return
+      end
+
+C ********************************************************************
+C                        --addCFC_period_data--
+C
+C Add CFC shading schedule period data in correct location (time based).
+C Other routines assume that periods have been added in the order 
+C resulting from the sorting done here.
+C UNDER CONSTRUCTION
+C Based on subroutine ADDAFP
+C
+C IPER=0 if its a new period
+C IDT=day type wkday=1, sat=2, sun=3, other types if specified
+C IctlS,IctlF period start and finish time
+C shdON, slat_angle - shading ON/OFF and shade layer slat angle
+C IPT,TA ventilation source zone, if IPT=0 then TA is source temperature
+C ********************************************************************
+      subroutine addCFC_period_data
+     &(icomp,icfctype,IPER,IDT,IctlSX,IctlFX,ishdONX,slat_angleX)
+#include "building.h"
+#include "CFC_common.h"
+
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+
+      integer ILPER, I, INC
+      integer icomp,icfctype,IPER,IDT,IctlSX,IctlFX,ishdONX
+      real slat_angleX
+      
+      if (IPER.eq.0) then
+        ILPER=1
+        DO 401 I=1,n_ctl_periods(icomp,icfctype,IDT)
+          if (iabs(i_ctl_start(icomp,icfctype,IDT,I)).le.
+     &    iabs(IctlSX)) then
+            ILPER=I
+            if (i_ctl_start(icomp,icfctype,IDT,I).lt.IctlSX) then
+              ILPER=I+1
+            elseif(i_ctl_start(icomp,icfctype,IDT,I).eq.IctlSX.and.
+     &      i_ctl_end(icomp,icfctype,IDT,I).gt.IctlFX)then
+              ILPER=I
+            endif
+          endif
+ 401    CONTINUE
+        n_ctl_periods(icomp,icfctype,IDT)=
+     &  n_ctl_periods(icomp,icfctype,IDT)+1
+        INC=n_ctl_periods(icomp,icfctype,IDT)
+      else
+        ILPER=IPER
+        INC=IPER
+      endif
+
+C Now update common blocks.
+      do 300 IX=INC,ILPER,-1
+        if (IX.eq.ILPER) then
+          i_ctl_start(icomp,icfctype,IDT,IX)=IctlSX
+          i_ctl_end(icomp,icfctype,IDT,IX)=IctlFX
+          i_shdONorOFF(icomp,icfctype,IDT,IX)=ishdONX
+          slat_angle(icomp,icfctype,IDT,IX)=slat_angleX
+        else
+          i_ctl_start(icomp,icfctype,IDT,IX)=
+     &    i_ctl_start(icomp,icfctype,IDT,IX-1) 
+          i_ctl_end(icomp,icfctype,IDT,IX)=
+     &    i_ctl_end(icomp,icfctype,IDT,IX-1) 
+          i_shdONorOFF(icomp,icfctype,IDT,IX)=
+     &    i_shdONorOFF(icomp,icfctype,IDT,IX-1)
+          slat_angle(icomp,icfctype,IDT,IX)=
+     &    slat_angle(icomp,icfctype,IDT,IX-1) 
+        endif
+ 300  continue
+
+      return
+      end      
+
+C ********************************************************************
+C                        --chkCFC_period_data--
+C
+C Check CFC shading period data for overlapping periods.
+C Based on subroutine CHKAIRFL
+C
+C ********************************************************************
+      subroutine chkCFC_period_data(icomp,icfctype)
+#include "building.h"
+#include "CFC_common.h"
+
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      
+      logical RECHECK
+
+      integer Ifrom, Ito, Inew, I, J
+      
+ 5    RECHECK=.false.
+      Ifrom=0
+      Ito=0
+      Inew=0
+
+C Check all daytypes.
+      DO 400 IDTY=1,NBDAYTYPE
+
+C I is the earlier of the two periods being checked.
+C J is the later of the two periods.
+C If periods I and J overlap (start time for J within period I) then
+C copy data for all periods up one slot (if room) and insert new period.
+C Therefore the data in period J becomes J+1 and the new period J is the 
+C overlapping period of the two initial periods.
+      do 10 I=1,n_ctl_periods(icomp,icfctype,IDTY)
+        if (I+1.le.n_ctl_periods(icomp,icfctype,IDTY)) then
+        do 15 J=I+1,n_ctl_periods(icomp,icfctype,IDTY)
+          if (i_ctl_start(icomp,icfctype,IDTY,J).ge.
+     &    i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &    i_ctl_start(icomp,icfctype,IDTY,J).lt.
+     &    i_ctl_end(icomp,icfctype,IDTY,I)) then
+
+C Start time of period J is between start and finish times of period I.
+C Create a new period by splitting period J, only if start or finish time 
+C of overlapping periods in not equal.
+C     |-------------------------|
+C     |                         |
+C     ||.or.|-----------| ..or.||.or.| 
+C     ||    |           |      ||    |
+C  -----------------------------
+
+            if (i_ctl_start(icomp,icfctype,IDTY,J).eq.
+     &      i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &      i_ctl_end(icomp,icfctype,IDTY,J).gt.
+     &      i_ctl_end(icomp,icfctype,IDTY,I)) then
+C
+C     |----I------------|
+C     |                 |
+C     ||---J------- ----|--| J
+C     ||                |  |
+C  -----------------------------
+              Ifrom=J
+              Ito=I
+              Inew=I
+              i_ctl_start(icomp,icfctype,IDTY,J)=
+     &        i_ctl_end(icomp,icfctype,IDTY,I)
+            elseif (i_ctl_start(icomp,icfctype,IDTY,J).eq.
+     &      i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &      i_ctl_end(icomp,icfctype,IDTY,J).lt.
+     &      i_ctl_end(icomp,icfctype,IDTY,I)) then
+
+C
+C     |----I------------|
+C     |                 |
+C     ||---J-------|    |
+C     ||           |    |  
+C  -----------------------------
+              Ifrom=J
+              Ito=I
+              Inew=I
+
+C By starting period I at finish of J periods will be out of order,
+C so swap period data from I to J and J to I.
+              i_ctl_start(icomp,icfctype,IDTY,I)=
+     &        i_ctl_end(icomp,icfctype,IDTY,J)
+              i_ctl_startTMP=i_ctl_start(icomp,icfctype,IDTY,I)
+              i_ctl_endTMP=i_ctl_end(icomp,icfctype,IDTY,I)
+              i_shdONorOFF_TMP=i_shdONorOFF(icomp,icfctype,IDTY,I)
+              slat_angleTMP=slat_angle(icomp,icfctype,IDTY,I)
+              i_ctl_start(icomp,icfctype,IDTY,I)=
+     &        i_ctl_start(icomp,icfctype,IDTY,J)
+              i_ctl_end(icomp,icfctype,IDTY,I)=
+     &        i_ctl_end(icomp,icfctype,IDTY,J)
+              i_shdONorOFF(icomp,icfctype,IDTY,I)=
+     &        i_shdONorOFF(icomp,icfctype,IDTY,J)
+              slat_angle(icomp,icfctype,IDTY,I)=
+     &        slat_angle(icomp,icfctype,IDTY,J)
+              i_ctl_start(icomp,icfctype,IDTY,J)=i_ctl_startTMP
+              i_ctl_end(icomp,icfctype,IDTY,J)=i_ctl_endTMP
+              i_shdONorOFF(icomp,icfctype,IDTY,J)=i_shdONorOFF_TMP
+              slat_angle(icomp,icfctype,IDTY,J)=slat_angleTMP
+ 
+            elseif (i_ctl_end(icomp,icfctype,IDTY,J).eq.
+     &      i_ctl_end(icomp,icfctype,IDTY,I).and.
+     &      i_ctl_start(icomp,icfctype,IDTY,J).ne.
+     &      i_ctl_start(icomp,icfctype,IDTY,I)) then
+
+C     |---I------------|
+C     |                |
+C     |   |---J-------||
+C     |.  |           ||
+C  -----------------------------
+C Finishes are the same and starts are different.
+              Ifrom=I
+              Ito=J
+              Inew=J
+              i_ctl_end(icomp,icfctype,IDTY,I)=
+     &        i_ctl_start(icomp,icfctype,IDTY,J)
+
+            elseif (i_ctl_start(icomp,icfctype,IDTY,J).gt.
+     &      i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &      i_ctl_end(icomp,icfctype,IDTY,J).lt.
+     &      i_ctl_end(icomp,icfctype,IDTY,I)) then
+
+C     |---I------------|
+C     |                |
+C     |...|---J-----|  |
+C     |.  |         |  |
+C  -----------------------------
+C Later period starts after earlier period and later period finishes before
+C the earlier period.
+              if (n_ctl_periods(icomp,icfctype,IDTY).lt.MA) then
+                Ifrom=I
+                Ito=J
+                Inew=J
+                do 16 K=n_ctl_periods(icomp,icfctype,IDTY),J,-1
+                  i_ctl_start(icomp,icfctype,IDTY,K+1)=
+     &            i_ctl_start(icomp,icfctype,IDTY,K)
+                  i_ctl_end(icomp,icfctype,IDTY,K+1)=
+     &            i_ctl_end(icomp,icfctype,IDTY,K)
+                  i_shdONorOFF(icomp,icfctype,IDTY,K+1)=
+     &            i_shdONorOFF(icomp,icfctype,IDTY,K)
+                  slat_angle(icomp,icfctype,IDTY,K+1)=
+     &            slat_angle(icomp,icfctype,IDTY,K)
+ 16             continue
+                n_ctl_periods(icomp,icfctype,IDTY)=
+     &          n_ctl_periods(icomp,icfctype,IDTY)+1
+                i_ctl_end(icomp,icfctype,IDTY,J+1)=
+     &          i_ctl_end(icomp,icfctype,IDTY,I)
+                i_ctl_end(icomp,icfctype,IDTY,I)=
+     &          i_ctl_start(icomp,icfctype,IDTY,J)
+                i_ctl_start(icomp,icfctype,IDTY,J+1)=
+     &          i_ctl_end(icomp,icfctype,IDTY,J)
+                i_shdONorOFF(icomp,icfctype,IDTY,J+1)=
+     &          i_shdONorOFF(icomp,icfctype,IDTY,I)
+                slat_angle(icomp,icfctype,IDTY,J+1)=
+     &          slat_angle(icomp,icfctype,IDTY,I)
+
+              else
+                Ifrom=0
+                call USRMSG('CFC shading periods overlap and maximum',
+     &                      'number of periods defined. ','W')
+              endif
+
+            elseif (i_ctl_start(icomp,icfctype,IDTY,J).gt.
+     &      i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &      i_ctl_end(icomp,icfctype,IDTY,J).gt.
+     &      i_ctl_end(icomp,icfctype,IDTY,I)) then
+
+C     |---I------------|
+C     |                |
+C     |...|---J--------|--|
+C     |.  |            |  |
+C  -----------------------------
+C If later period starts after earlier period and latter period finishes
+C after the earlier period.
+              if (n_ctl_periods(icomp,icfctype,IDTY).lt.MA) then
+                Ifrom=J+1
+                Ito=I
+                Inew=J
+                do 17 K=n_ctl_periods(icomp,icfctype,IDTY),J,-1
+                  i_ctl_start(icomp,icfctype,IDTY,K+1)=
+     &            i_ctl_start(icomp,icfctype,IDTY,K)
+                  i_ctl_end(icomp,icfctype,IDTY,K+1)=
+     &            i_ctl_end(icomp,icfctype,IDTY,K)
+                  i_shdONorOFF(icomp,icfctype,IDTY,K+1)=
+     &            i_shdONorOFF(icomp,icfctype,IDTY,K)
+                  slat_angle(icomp,icfctype,IDTY,K+1)=
+     &            slat_angle(icomp,icfctype,IDTY,K)
+ 17             continue
+                n_ctl_periods(icomp,icfctype,IDTY)=
+     &            n_ctl_periods(icomp,icfctype,IDTY)+1
+
+                i_ctl_end(icomp,icfctype,IDTY,J)=
+     &          i_ctl_end(icomp,icfctype,IDTY,I)
+                i_ctl_end(icomp,icfctype,IDTY,I)=
+     &          i_ctl_start(icomp,icfctype,IDTY,J)
+                i_ctl_start(icomp,icfctype,IDTY,J+1)=
+     &          i_ctl_end(icomp,icfctype,IDTY,J)
+
+              else
+                Ifrom=0
+                call USRMSG('Air flow periods overlap and maximum',
+     &                      'number of periods defined. ','W')
+              endif
+            else
+              call USRMSG(
+     & 'New CFC shading period defined for same period as existing',
+     & 'period. Combining data, please check/ edit existing.','W')
+              Ifrom=0
+
+              i_shdONorOFF(icomp,icfctype,IDTY,I)=1
+              slat_angle(icomp,icfctype,IDTY,I)=0.
+
+              do 18 K=I,n_ctl_periods(icomp,icfctype,IDTY)
+                if ((K+1).gt.MA) then
+                  i_ctl_start(icomp,icfctype,IDTY,K)=0
+                  i_ctl_end(icomp,icfctype,IDTY,K)=0
+                  i_shdONorOFF(icomp,icfctype,IDTY,K)=0
+                  slat_angle(icomp,icfctype,IDTY,K)=0.
+                else
+                  i_ctl_start(icomp,icfctype,IDTY,K)=
+     &            i_ctl_start(icomp,icfctype,IDTY,K+1)
+                  i_ctl_end(icomp,icfctype,IDTY,K)=
+     &            i_ctl_end(icomp,icfctype,IDTY,K+1)
+                  i_shdONorOFF(icomp,icfctype,IDTY,K)=
+     &            i_shdONorOFF(icomp,icfctype,IDTY,K+1)
+                  slat_angle(icomp,icfctype,IDTY,K)=
+     &            slat_angle(icomp,icfctype,IDTY,K+1)
+                endif
+ 18           continue
+              n_ctl_periods(icomp,icfctype,IDTY)=
+     &          n_ctl_periods(icomp,icfctype,IDTY)-1
+            endif
+
+C Try and set data in new period.
+            if (Ifrom.gt.0) then
+              i_shdONorOFF(icomp,icfctype,IDTY,Inew)=1
+              slat_angle(icomp,icfctype,IDTY,Inew)=0.
+
+C Jump out of loop and start checking again.
+              RECHECK=.true.
+              goto 10
+            endif
+          endif
+ 15     continue
+        endif
+ 10   continue
+ 400  CONTINUE
+
+C If changes have been made then recheck all definitions.
+      if (RECHECK) goto 5
+      return
+      end
+
+C ********************************************************************
+C                        --cpdelCFC_period_data--
+C
+C Copy/Delete CFC shading period data
+C ICD - copy (=2) delete (=1) flag
+C Based on subroutine CDAIRFL
+C
+C ********************************************************************
+      subroutine cpdelCFC_period_data(icomp,icfctype,ICD)
+#include "building.h"
+#include "CFC_common.h"
+
+      common/pophelp/h(60)
+
+      COMMON/precz/zname(MCOM),zdesc(MCOM)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+      INTEGER NAC,IACS,IACF,IPT
+      REAL ACI,ACV,TA
+      
+      character zname*12,zdesc*64,h*72,VERT(3*MA)*35,OUTS*124,OUT*4
+      INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilen,ilm,IJ,L,M
+
+      integer IctlSX,IctlFX,ishdONX
+      real slat_angleX
+      
+      dimension IVERT(3*MA),ITEMP(3*MA)
+
+      ILEN=0
+
+C Set up menu of current definitions.
+      DO 399 IDTY=1,NBDAYTYPE
+        ILEN=ILEN+n_ctl_periods(icomp,icfctype,IDTY)
+ 399  CONTINUE
+
+C Loop through the items until the page to be displayed.
+C Build up text strings for the menu. 
+      M=0
+      DO 400 IDTY=1,NBDAYTYPE
+        DO 10 L=1,n_ctl_periods(icomp,icfctype,IDTY)
+          M=M+1
+          write(out,'(A)')calentag(idty)(1:4)
+          
+          write(VERT(M),323)OUT,i_ctl_start(icomp,icfctype,IDTY,L),
+     &    i_ctl_end(icomp,icfctype,IDTY,L),
+     &    i_shdONorOFF(icomp,icfctype,IDTY,L),
+     &    slat_angle(icomp,icfctype,IDTY,L)
+     
+  323     FORMAT(A,' ',3i4,1x,f6.2)
+ 10     continue
+ 400  CONTINUE
+
+C To delete period(s) redisplay the menu and allow user to indicate
+C which one, then collapse the period list.
+      if (ICD.eq.1) then
+        H(1)='One or more of the periods may be deleted.'
+        call EPICKS(ILEN,IVERT,' ','CFC shading period(s) to delete:',
+     &         35,M,VERT,'CFC shading period to delete',IER,1)
+
+C Delete items in IVERT array. Sort IVERT first.
+        if (ILEN.gt.0) then
+          KFLAG=-1
+          call SORTI(IVERT,ITEMP,NBDAYTYPE*MA,KFLAG)
+          do 100 IJ=1,ILEN
+            IAFP=IVERT(IJ)
+            IGOON=1
+            ILET=0
+            ILM=0
+            DO 401 IDT=1,NBDAYTYPE
+              IF(IGOON.EQ.1)THEN
+                ILET=ILET+n_ctl_periods(icomp,icfctype,IDT)
+                IF(IAFP.GT.ILET)THEN
+                  IGOON=1
+                  ILM=ILM+n_ctl_periods(icomp,icfctype,IDT)
+                ELSE
+                  IGOON=0
+                ENDIF
+                IDTY=IDT
+              ENDIF
+ 401        CONTINUE
+            DO 402 IX=IAFP-ILM,n_ctl_periods(icomp,icfctype,IDTY)
+              if (IX.ne.MA) then
+
+                i_ctl_start(icomp,icfctype,IDTY,IX)=
+     &          i_ctl_start(icomp,icfctype,IDTY,IX+1) 
+                i_ctl_end(icomp,icfctype,IDTY,IX)=
+     &          i_ctl_end(icomp,icfctype,IDTY,IX+1) 
+                i_shdONorOFF(icomp,icfctype,IDTY,IX)=
+     &          i_shdONorOFF(icomp,icfctype,IDTY,IX+1)
+                slat_angle(icomp,icfctype,IDTY,IX)=
+     &          slat_angle(icomp,icfctype,IDTY,IX+1) 
+     
+              endif
+ 402        CONTINUE
+            n_ctl_periods(icomp,icfctype,IDTY)=
+     &      n_ctl_periods(icomp,icfctype,IDTY)-1
+            M=M-1
+ 100      continue
+        endif
+
+      else
+
+C Copy periods.
+        h(1)='All the CFC shading periods associated with a'
+        h(2)='specified day type can be copied to another day type.'
+        IX=1
+        CALL EDISP(IUOUT,'choose daytype to copy periods from')
+        CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods from',
+     &  12,nbdaytype,calentag,'Choose daytype',IER,35)
+        IDTY=KSTR(1)
+        CALL EDISP(IUOUT,'choose daytype to copy periods to')
+        CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods to',
+     &  12,nbdaytype,calentag,'Choose daytype',IER,35)
+        IDT=KSTR(1)
+     	do 210 IX=1,n_ctl_periods(icomp,icfctype,IDTY)
+     	  if (n_ctl_periods(icomp,icfctype,IDT).lt.MA) then
+     	    IPER=0
+
+          IctlSX=i_ctl_start(icomp,icfctype,IDTY,IX)
+          IctlFX=i_ctl_end(icomp,icfctype,IDTY,IX)
+          ishdONX=i_shdONorOFF(icomp,icfctype,IDTY,IX)
+          slat_angleX=slat_angle(icomp,icfctype,IDTY,IX)
+
+          call addCFC_period_data(icomp,icfctype,IPER,IDT,IctlSX,
+     &                            IctlFX,ishdONX,slat_angleX)
+
+     	    call chkCFC_period_data(icomp,icfctype)
+          
+          ELSE
+            WRITE(OUTS,'(2a)')'Sorry, too many periods in day type ',
+     &      calentag(idt)
+            call usrmsg(' ',outs,'W')
+     	  endif
+ 210 	continue
+      endif
+      return
       end

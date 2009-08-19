@@ -34,8 +34,6 @@ C an ascii file.
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
 
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -48,8 +46,6 @@ C an ascii file.
       character outs*248,outsd*248
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       character DS*7,DS1*10,DE*7,DE1*10,SSTR*96,SSTR1*96,SSTR2*248
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248
       logical Vldtng
 
       IER=0
@@ -370,7 +366,7 @@ C Write control data and compact, if very long then use two lines.
   480 CONTINUE
 
 C Optical control information.
-  13  if(NOF.eq.0)goto 12
+  13  if(NOF.eq.0)goto 101
       WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1) '* Optics'
       ln=max(1,LNBLNK(opticdoc))      
       WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)opticdoc(1:ln)
@@ -439,6 +435,80 @@ C Write control data and compact, if very long then use two lines.
   200   CONTINUE
   100 CONTINUE
 
+C Complex fenestration control information.
+  101 IF(nCFCctlloops.EQ.0)goto 12
+      WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1) '* CFC'
+      LN=max(1,LNBLNK(CFCctldoc))
+      WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)CFCctldoc(1:ln)
+
+      WRITE(IUNIT,'(I4,A)',IOSTAT=ios,ERR=1)nCFCctlloops,
+     & '  # No. of functions'
+
+      DO 109 I=1,nCFCctlloops
+        II=I
+        WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)'* Control function'
+        CALL EVCNTRL(6,II,1,1,'S',SSTR)
+        LN=max(1,LNBLNK(SSTR))
+        WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# ',SSTR(1:ln)
+        WRITE(IUNIT,'(4I5,A)',IOSTAT=ios,ERR=1)
+     &   (iCFCsensor(II,J),J=1,4),
+     &  '  # sensor data'
+        CALL EVCNTRL(6,II,1,1,'A',SSTR)
+        LN=max(1,LNBLNK(SSTR))
+        WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# actuates ',
+     &     SSTR(1:ln)
+        WRITE(IUNIT,'(3I5,A)',IOSTAT=ios,ERR=1)
+     &   (iCFCactuator(II,J),J=1,3),
+     &  '  # actuator data'
+        WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)nCFCctldaytypes(II),
+     &  ' # No. day types'
+        NN=nCFCctldaytypes(II)
+        IF(NN.EQ.0)NN=3
+
+        DO 209 J=1,NN
+          JJ=J
+          CALL STDATE(IYEAR,iCFCctldatevalid(II,JJ,1),DS,DS1)
+          CALL STDATE(IYEAR,iCFCctldatevalid(II,JJ,2),DE,DE1)
+          write(outs,'(4a)') '  # valid ',DS1,' - ',DE1
+          WRITE(IUNIT,'(2I5,a)',IOSTAT=ios,ERR=1)
+     &     (iCFCctldatevalid(II,JJ,K),K=1,2),outs(1:lnblnk(outs))
+          WRITE(IUNIT,'(I6,A)',IOSTAT=ios,ERR=1)
+     &     nCFCdayctlperiods(II,JJ),'  # No. of periods in day'
+          LL=nCFCdayctlperiods(II,JJ)
+
+          DO 309 K=1,LL
+            KK=K
+            CALL EVCNTRLAW(6,II,JJ,KK,SSTR,SSTR2)
+            LN=max(1,LNBLNK(SSTR))
+            WRITE(IUNIT,'(2I5,F8.3,3A)',IOSTAT=ios,ERR=1)
+     &      iCFCctltype(II,JJ,KK),iCFCctllaw(II,JJ,KK),
+     &      CFCctlperiodstart(II,JJ,KK),'  # ctl type, law (',
+     &      SSTR(1:ln),'), start @'
+            WRITE(IUNIT,'(F8.0,A)',IOSTAT=ios,ERR=1)
+     &      CFCmiscdata(II,JJ,KK,1),'  # No. of data items'
+            NITEMS=INT(CFCmiscdata(II,JJ,KK,1))+1
+            IF(NITEMS.EQ.1)GOTO 309
+
+C Write control data and compact, if very long then use two lines.
+            if(NITEMS.lt.20)then
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (CFCmiscdata(II,JJ,KK,L),L=2,NITEMS)
+              call SDELIM(outs,outsd,'S',IW)
+              write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
+            else
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (CFCmiscdata(II,JJ,KK,L),L=2,19)
+              call SDELIM(outs,outsd,'S',IW)
+              write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
+              WRITE(outs,'(20f11.3)',IOSTAT=ios,ERR=1)
+     &          (CFCmiscdata(II,JJ,KK,L),L=20,nitems)
+              call SDELIM(outs,outsd,'S',IW)
+              write(IUNIT,'(2x,a)')outsd(1:lnblnk(outsd))
+            endif
+  309     CONTINUE
+  209   CONTINUE
+  109 CONTINUE
+  
    12 CALL ERPFREE(IUNIT,ios)
       RETURN
 

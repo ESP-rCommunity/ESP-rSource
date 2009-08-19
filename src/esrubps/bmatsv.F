@@ -1139,6 +1139,10 @@ C Update ground reflectivity depending on the model used (constant
 C reflectivity; simple model; or advanced model)
             CALL MZGREF
 
+C Execute complex fenestration control to determine state of shading
+C layers for the current time step.
+            call CFC_control()
+      
 C Consider each zone in turn.
             do 40 l=1,ncomp
               icomp=l

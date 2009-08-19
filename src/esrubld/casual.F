@@ -1372,12 +1372,12 @@ C Close transfer file.
             else
               call edisp(iuout,'Using information from illum database.')
             endif
-          ENDIF
-        endif
+          ENDIF !  (N.EQ.1) then
+        endif ! sun is up, not startup, not "no radiation" ...
 
 C Average illumination for this light zone:
         zelum(N)=suma/float(NDF(ICOMP,N))
-      ELSE
+      ELSE ! IDFST(ICOMP,N) not = 3, 4 or 5 ... i.e. IDFST(ICOMP,N) = 1 or 2
 
 C Loop through each sensor point, calculate the illumination due
 C to each external window and summate.  Each window will

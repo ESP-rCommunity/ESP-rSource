@@ -23,7 +23,7 @@ C Geometry.
       PARAMETER (MS=62)		!- Surfaces/zone (set MNSBZ in cfd.h to MS).
       PARAMETER (MCON=2000)	!- Edges/zone.
       PARAMETER (MTV=200)	!- Vertices/zone.
-      PARAMETER (MV=24)		!- Vertices/surface.
+      PARAMETER (MV=40)		!- Vertices/surface (default=24).
       PARAMETER (MST=MS)	!- Used with view factors.
       PARAMETER (MSM=MS+6)	!- Used with view factors.
 

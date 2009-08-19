@@ -54,6 +54,7 @@ C and should just write out this data.
       SUBROUTINE PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,IVER)
 
 #include "building.h"
+#include "CFC_common.h"      
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -108,7 +109,7 @@ C updated when the user exits).
       logical gotviabrowse
 
       CHARACTER tcname*248
-      CHARACTER ITEM(14)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
+      CHARACTER ITEM(15)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -118,6 +119,12 @@ C updated when the user exits).
       LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
  
+      integer IUA,NS,K,j
+      dimension IVA(MS)
+      
+      IUA=IFIL+1
+      XST=.false.
+      
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -275,6 +282,9 @@ C Instanciate for current day types prior to scanning the source operation file.
       DO 400 IDTY=1,NBDAYTYPE
         NAC(IDTY)=0
         NCAS(IDTY)=0
+        do 4401 j=1,mcfc
+            n_ctl_periods(icomp,j,IDTY)=0
+ 4401    continue
         ctlstr(icomp,IDTY)='no control of air flow  '
  400  CONTINUE
       oprdesc(icomp)='no operations notes (yet)'
@@ -880,7 +890,12 @@ C Edit air flows.
 
 C Edit casual gains.
         CALL EDCAS(ICOMP,MODOPR,sorted,IER)
-      ELSEIF(INO.EQ.10)THEN
+      ELSEIF(INO.EQ.9)THEN
+C Edit CFC shading schedule
+        icfctype=0
+        call askCFCtype(icomp,icfctype,IER)
+        call editCFC_shading_schedule(icomp,icfctype,ier)
+      ELSEIF(INO.EQ.11)THEN
 
 C List flows and gains.
         CALL VENTINF(ICOMP,ITRU)

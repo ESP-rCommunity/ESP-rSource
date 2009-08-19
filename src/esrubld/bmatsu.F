@@ -397,15 +397,6 @@ C by MZSETU.
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
 
-C Control CFC properties here before solar/thermal processing.
-      nc=nconst(icomp)
-      do 10 i=1,nc
-            icfctp=icfcfl(icomp,i)
-            if(icfctp.gt.0)then
-                  call CFC_shading_control(icomp,icfctp)
-            end if
- 10   continue
-
       CALL MZSOLR(ICOMP)
       CALL MZELWE(ICOMP)
       CALL MZCASI(ICOMP)

@@ -1150,11 +1150,15 @@ C Simulation parameter sets.
 
 C IPV description via ipvdata.h.
 
-C Control documentation common
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248     
+C Season definitions (from climatelist file). 2 periods for winter
+C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
+C and one period for summer.
+c      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
+c     &              is2sprs,is2sprf,is1sums,is1sumf
+
+C Typical periods win1|trn1|sum|trn2|win2 with start,finish
+c      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
+c     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf   
   
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248  
@@ -2216,9 +2220,7 @@ C the file with minimum interaction.
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
-#include "seasons.h"
-C seasons.h provides typper and typsea
-#include "ipvdata.h"
+#include "control.h"
       
       integer lnblnk  ! function definition
 
@@ -2284,11 +2286,15 @@ C Simulation parameter sets.
 
 C IPV description via ipvdata.h.
 
-C Control documentation common
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248     
+C Season definitions (from climatelist file). 2 periods for winter
+C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
+C and one period for summer.
+      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
+     &              is2sprs,is2sprf,is1sums,is1sumf
+
+C Typical periods win1|trn1|sum|trn2|win2 with start,finish
+      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
+     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf   
   
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248  

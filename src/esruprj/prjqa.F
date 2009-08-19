@@ -106,9 +106,6 @@ C LPNF (72 char) plant network file name.
 C AIM-2.
       common/aim2def/iAIM2,LAIM2
 
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
-
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
@@ -189,8 +186,6 @@ C Remember if each zone is fully attributed.
       character aok*17,CTLDOC*248,LCTLF*72,items*33
       character xfile*144,tg*1,delim*1,head*21,mlcmatch*12
       character outs*124,outs248*248
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248
       character dstmp*24,mlcname*12
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248

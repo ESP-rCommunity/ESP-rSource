@@ -2169,7 +2169,7 @@ C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
       CHARACTER GENFIL*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character outs*124,outsd*124,outs72*72,OTHSTR*30
+      character outs*184,outsd*184,outs72*72,OTHSTR*30
       character tab*1    ! separator
       character dstmp*24
       character phrase*36 ! for thermal bridge tag
@@ -2244,7 +2244,7 @@ C Edge list. Write as a packed list comma separated.
      &  '# tag, number of vertices followed by list of associated vert'
 
       DO 970 I = 1,NZSUR(ICOMP)
-        write(outs,'(a,25I4)',IOSTAT=ios,ERR=13) '*edges ',NVER(I),
+        write(outs,'(a,41I4)',IOSTAT=ios,ERR=13) '*edges ',NVER(I),
      &     (JVN(I,J),J=1,NVER(I))
         call SDELIM(outs,outsd,'C',IW)
         write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 

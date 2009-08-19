@@ -124,7 +124,7 @@ C Uncertainty.
       logical newgeo  ! to use for testing if new/old geometry file.
       integer iglib   ! to test for X11 interface
 
-      dimension ITEMS(29)
+      dimension ITEMS(30)
       character*72 LCNN
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
@@ -237,19 +237,25 @@ C are active.
       else
         WRITE(ITEMS(17),'(A,I2,A)')'n global system (',ngf,' loops)'
       endif
-      WRITE(ITEMS(18),'(A)')       ' _____________________________   '
-      ITEMS(19)  ='o define uncertainties         '
-      ITEMS(20)  =' _____________________________ '
-      ITEMS(21)  =' ... Actions.....              '
-      ITEMS(22)  ='p visualisation                '
-      ITEMS(23)  ='q simulation                   '
-      ITEMS(24)  ='r results analysis             '
-      ITEMS(25)  ='s results & QA reporting       '
-      ITEMS(26)  =' _____________________________ '
-      ITEMS(27)  ='! save model                   '
-      ITEMS(28)  ='? help                         '
-      ITEMS(29)  ='- exit this menu               '
-      nitems=29
+      if(nCFCctlloops.eq.0)then
+        WRITE(ITEMS(18),'(A)')     'o complex fenestration '
+      else
+        WRITE(ITEMS(18),'(A,I2,A)')
+     &   'o complex fenestration (',nCFCctlloops,' loops)'
+      endif
+      WRITE(ITEMS(19),'(A)')       ' _____________________________   '
+      ITEMS(20)  ='p define uncertainties         '
+      ITEMS(21)  =' _____________________________ '
+      ITEMS(22)  =' ... Actions.....              '
+      ITEMS(23)  ='q visualisation                '
+      ITEMS(24)  ='r simulation                   '
+      ITEMS(25)  ='s results analysis             '
+      ITEMS(26)  ='t results & QA reporting       '
+      ITEMS(27)  =' _____________________________ '
+      ITEMS(28)  ='! save model                   '
+      ITEMS(29)  ='? help                         '
+      ITEMS(30)  ='- exit this menu               '
+      nitems=30
 
 C Help text for this menu.
       H(1)='A model, as defined within the system configuration file,'
@@ -958,7 +964,14 @@ C Global control description.
         icfoc=3
         CALL CONTRL(ITRC,ITRU,icfoc,IER)
         CTLOK=.TRUE.
-      ELSEIF(INO.EQ.19)THEN
+      ELSEIF(INO.EQ.18)THEN
+
+C Complex fenestration control description.
+        call tstamp('>','PRJ: enter complex fen. control')
+        icfoc=6
+        CALL CONTRL(ITRC,ITRU,icfoc,IER)
+        CTLOK=.TRUE.
+      ELSEIF(INO.EQ.20)THEN
 
 C Call uncertainty definition controller.
         H(1)='This option is password protected because it is'
@@ -970,7 +983,7 @@ C Call uncertainty definition controller.
           call tstamp('>','PRJ: enter uncertainty control')
           call UNCERTA(LUALF)
         endif
-      ELSEIF(INO.EQ.22)THEN
+      ELSEIF(INO.EQ.23)THEN
 
 C Select visualisation option.
         IF(CFGOK)THEN
@@ -990,12 +1003,12 @@ C Select visualisation option.
           CALL USRMSG(' ','Please define your model first!','W')
         ENDIF
         goto 3
-      ELSEIF(INO.EQ.23)THEN
+      ELSEIF(INO.EQ.24)THEN
 
 C Call simulation controller.
         call tstamp('>','PRJ: enter simulation setup')
         call simula(ier)
-      ELSEIF(INO.EQ.24)THEN
+      ELSEIF(INO.EQ.25)THEN
 
 C Call results analysis module assuming same simulation parameter
 C set as the last simulation. If isset not instanciated then set = 1.
@@ -1163,7 +1176,7 @@ C an offset from prj start position.
         call usrmsg('Starting assessment recovery via',doit,'-')
         call runit(doit,tmode)
 
-      ELSEIF(INO.EQ.25)THEN
+      ELSEIF(INO.EQ.26)THEN
 
 C Execute editor and report generation tools.
         call tstamp('>','PRJ: enter report controller')

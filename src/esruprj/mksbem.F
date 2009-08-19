@@ -76,11 +76,7 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
  
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248
       character LTDF*72,LTDFA*72
       CHARACTER DFILE*72,LIMP*72,LEXP*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
