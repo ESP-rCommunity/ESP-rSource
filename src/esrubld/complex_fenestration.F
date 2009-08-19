@@ -4071,7 +4071,7 @@ C Perform actual control of shade ON/OFF and slat angle here
               i_shd(iact2,iact3)     = 1                    ! shade state ON
           elseif(iact1.eq.3)then
               vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
+              i_shd(iact2,iact3)     = 3                    ! shade state ON, "closed"
           endif
         elseif(solrad.lt.shdOFFsetpoint)then
           if(iact1.eq.0)then
@@ -4082,12 +4082,12 @@ C Perform actual control of shade ON/OFF and slat angle here
               i_shd(iact2,iact3)     = 1                    ! shade state ON     
           elseif(iact1.eq.3)then
               vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON     
+              i_shd(iact2,iact3)     = 1                    ! shade state ON, but "open"     
           endif
         else ! solrad is in interval between off and on set points
           if (iact1.eq.3) then
               vb_phiNew(iact2,iact3) = shdINTslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON     
+              i_shd(iact2,iact3)     = 2                    ! shade state ON, intermediate angle     
           endif
         endif
 

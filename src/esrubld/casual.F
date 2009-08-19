@@ -385,13 +385,13 @@ C Zone floor area
 
 C Get the casual sensible gains from occupants (using the percentage of 
 C latent occupant gains here)
-        QOCCCASC=(QTOTOCCUP-((QTOTOCCUP*ITMAR(1,3))/100))/2
+        QOCCCASC=(QTOTOCCUP-((QTOTOCCUP*ITMAR(1,3))/100.0))/2.0
 
 C Convective and radiative occupant gains are the same at the moment (50%)
         QOCCCASR=QOCCCASC
 
 C Using again the percentage of latent gains for the occupants' latent heat gains
-        QOCCLATN=((QTOTOCCUP*ITMAR(1,3))/100)
+        QOCCLATN=((QTOTOCCUP*ITMAR(1,3))/100.0)
 
 C Total EQUIPMENT gains are equal to: equipment gains in w/m2*fraction*
 C Zone floor area
@@ -399,11 +399,11 @@ C Zone floor area
 
 C C Get the casual sensible gains from equipment (using the percentage of 
 C latent equipment gains)
-        QEQUIPCASC=(QTOTEQUIP-((QTOTEQUIP*ITMAR(1,5))/100))/2
+        QEQUIPCASC=(QTOTEQUIP-((QTOTEQUIP*ITMAR(1,5))/100.0))/2.0
 
 C Convective and radiative equipment gains are the same at the moment (50%)
         QEQUIPCASR=QEQUIPCASC
-        QEQUIPLATN=((QTOTEQUIP*ITMAR(1,5))/100)        
+        QEQUIPLATN=((QTOTEQUIP*ITMAR(1,5))/100.0)        
 
 C If UK notional model then assign the value of 3.75 W/m2 per 100 lux. Number of
 C lux and fraction of opearation is still taken from then activity database (tdf).
@@ -411,7 +411,7 @@ C Additional logic in the future should separate office/storage/industrial space
 C for notional building that take 3.75 W/m2 per 100 lux from "other spaces 
 C that take 5.2 W/m2 per 100 lux.
         IF(INOTI.EQ.1)THEN
-          QTOTLIGHT=3.75*(ITMAR(1,6)/100)*VAL(ISD+1)*ZBASEA(ICOMP)
+          QTOTLIGHT=3.75*(ITMAR(1,6)/100.0)*VAL(ISD+1)*ZBASEA(ICOMP)
         ELSE
 
 C Need type of light and then a value
@@ -425,7 +425,7 @@ C In PDRL(ILIGHT_IN_SBEMDB,2): 2 means commercial buildings. This is the only op
 C for the moment. Additional logic required to add: 1, which is for industrial
 C buildings in the NCM methodology
             QTOTLIGHT=
-     &      PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100)*VAL(ISD+1)*
+     &      PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100.0)*VAL(ISD+1)*
      &      ZBASEA(ICOMP)
           ELSEIF(ILIGHTUSER(ICOMP).EQ.1)THEN
 
@@ -435,11 +435,11 @@ C User specfied gains from lights (NCM purposes)
         ENDIF
         
 C Convective and radiative equipment gains are the same at the moment (50%)
-        QLIGHTCASC=QTOTLIGHT/2
+        QLIGHTCASC=QTOTLIGHT/2.0
         QLIGHTCASR=QLIGHTCASC
 
 C For lighting heat gains assume latent gains are zero
-        QLIGHTLATN=0
+        QLIGHTLATN=0.0
 C       QTOTGAIN=QTOTOCCUP+QTOTEQUIP+QTOTLIGHT
 
         QCASC(2)=QOCCCASC+QEQUIPCASC+QLIGHTCASC
@@ -734,7 +734,8 @@ C  FRAC : fraction of casual gain (returned value)
 
 C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
-      
+#include "CFC_common.h"
+
       integer lnblnk  ! function definition
 
       COMMON/BTIME/BTIMEP,BTIMEF
@@ -859,7 +860,7 @@ C time-row.  For conversion from radians to degrees.
       CALL MZSINT(ICOMP,QDIR,QDIF)
 
       PI = 4.0 * ATAN(1.0)
-      TODEG=180/PI
+      TODEG=180.0/PI
       RAD=PI/180.
 
 C Transform direct normal to horizontal irradiance as only horizontal
@@ -1120,6 +1121,15 @@ C If IBOFOT()=1, then blind/shutter is ON.
                   RATIO = 1.0
                 ENDIF
               ENDIF
+              ! Is this surface / construction a CFC?
+              IF(ICFCFL(ICOMP,I).GT.0)THEN
+                ! Keep track of the blind setting. This value is transported to radiance via the temporary file.
+                ! However, radiance uses "iblind=0" as a kind of default setting. So, we have to make sure
+                ! we use iblind=0 as basis ... ((this will only work for models that do not have a "retracted blind"
+                ! state in a CFC, as then i_shd() = 0 ...))
+                IBLIND = i_shd(ICOMP,icfcfl(icomp,I))-1
+                RATIO = 1.0 ! whats this?? it is used in a different block below ... ???
+              ENDIF
 31          CONTINUE
 
 C Check if sensor values already in illuminance database and set accuracies.
@@ -1275,7 +1285,7 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               endif
               call FPOPEN(IUNIT,ISTAT,1,2,LTMPFLA)
               write (OUTCMD,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
-        write (*,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
+        write (77,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
               write(doit,'(3a,i3,3a)')'e2r -file ',
@@ -1349,16 +1359,20 @@ C data has been calculated by Radiance for all sensors so should be available ..
                 suma=suma+subT
                 selum(N,I)=subT
 
-C Copy new information to illuminance DB.
+C Copy new information to illuminance DB. Transform to integer ... (why?)
                 DBILLS(NDBENT,N,I)=int(subT)
 
+                ift_old=ift
+                ift=1
 C Trace output:
                 if(IFT.EQ.1)then
-                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
+c                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
+                  write(78,111)N,I,selum(N,I),SETPT(ICOMP,N)
   111             format(I6,I5,' N/A ','  N/A  ','   N/A   ','  N/A ',
      &               '   N/A  ','   N/A  ',F7.1,F6.0,'   N/A   ')
                   call edisp(itu,outs)
                 endif
+                ift=ift_old
    19         CONTINUE
 
 C Close transfer file.
