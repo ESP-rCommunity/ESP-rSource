@@ -3975,7 +3975,7 @@ C Actuator controls slat angle of slat-type shade layer
         shdONslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,4)
         shdOFFslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,5) 
 C Schedule
-        elseif(iact1.eq.2)then
+      elseif(iact1.eq.2)then
         ischedule_shdstateONorOFF = 
      &  INT(CFCmiscdata(ictlfun,idaytype,iperiod,2))
         schedule_slat_angle = CFCmiscdata(ictlfun,idaytype,iperiod,3)
@@ -4337,6 +4337,9 @@ C ********************************************************************
 
       real RGap1, RGap2, Rsi, Rse, SBOLTZ, T0
       
+      real solrad_dir               ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
+      real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
+
       integer i,j,k,l,nn,nc,ne,icfctp,icomp,ivblayr
       integer iH3K_NameLen(2)
 
@@ -4397,6 +4400,14 @@ C CFC venetian blind slat angle
 C CFC Direct and diffuse radiation incidence
 C       RadIncDirS(icomp,i)
 C       RadIncDifS(icomp,i),
+            call get_incident_solrad(icomp,i,solrad_dir, solrad_diff)
+
+            call add_to_xml_reporting (
+C     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
+     &           solrad_dir + solrad_diff,
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/totRad',
+     &           'units', '(W/m2)',
+     &           'CFC total radiation incidence (dir+diff)' )
 
 C CFC beam and diffuse transmission
 

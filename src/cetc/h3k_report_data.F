@@ -523,7 +523,7 @@ C.....Pad zone index to 'XX'
       else
         write (cZone_Chars,'(A,I1)') '0', iZone
       endif
-
+      
       cZoneName='z' // cZone_Chars
       cAllZonesName='all_z'
       cSurfaceRootName='s'
@@ -619,7 +619,7 @@ C-----------------------------------------------------------------------
 C     Determine if flux is injection or extraction.
 C-----------------------------------------------------------------------
 
-      if ( Q_ZONE .GT. 0) then
+      if ( Q_ZONE .GT. 0.0) then
 
          Q_Heat = Q_ZONE
          Q_Cool = 0.
@@ -714,10 +714,12 @@ C.......Pad surface index to 'XX'
         endif
 C.......Create base name for surface values output
         H3K_rep_NAME = cBuildingName  
-     &              // cSep // cZoneName
+     &              // cSep // zname(iZone)(1:lnzname(iZone))
      &              // cSep // cSurfaceRootName // cSurf_Chars
 
-        iH3K_NameLen=lnblnk(H3K_rep_NAME)
+        iH3K_NameLen = 3+1+lnzname(iZone)+1+3
+
+c        iH3K_NameLen=lnblnk(H3K_rep_NAME)
 
 C-----------------------------------------------------------------------
 C       Report total short wave radiation on this surface.
@@ -1171,9 +1173,11 @@ C.....Any changes to this code should be made within
 C.....the H3Kreports demarcaration comments
 C.....Set format depending on number of zones
 
-C ... create base name for zone data output
-      H3K_rep_NAME = cBuildingName//cSep//cZoneName
-      iH3K_NameLen = lnblnk(H3K_rep_NAME)
+C.......Create base name for zone data output
+        H3K_rep_NAME = cBuildingName  
+     &              // cSep // zname(iZone)(1:lnzname(iZone))
+
+        iH3K_NameLen = 3+1+lnzname(iZone)
 
 C.....AIR POINT TEMPERATURE
 
@@ -1896,10 +1900,11 @@ C.......below should also make use of.
          endif
 
 C.......Create base name for surface values output
-        H3K_rep_NAME = cBuildingName // cSep // cZoneName
-     &                 // cSep // cSurfaceRootName // cSurf_Chars
+        H3K_rep_NAME = cBuildingName  
+     &              // cSep // zname(iZone)(1:lnzname(iZone))
+     &              // cSep // cSurfaceRootName // cSurf_Chars
 
-        iH3K_NameLen=lnblnk(H3K_rep_NAME)
+        iH3K_NameLen = 3+1+lnzname(iZone)+1+3
 
 C........Radiant heat injection associated with plant containment.
          call add_to_xml_reporting (
@@ -2004,14 +2009,14 @@ C......NODE DATA (ignore nodes 1 and N, as these are output as "outside" and "in
               write(cNode_Chars, '(A,I1)') '0', iNode
             endif
 
-C.......Extend surface base name for node values output
-        H3K_rep_NAME = cBuildingName
-     &                 //cSep//cZoneName
-     &                 //cSep//cSurfaceRootName//cSurf_Chars
-     &                 //cSep//cNodeRootName//cNode_Chars
+C.......Create base name for node values output
+        H3K_rep_NAME = cBuildingName  
+     &              // cSep // zname(iZone)(1:lnzname(iZone))
+     &              // cSep // cSurfaceRootName // cSurf_Chars
+     &              //cSep//cNodeRootName//cNode_Chars
 
-        iH3K_NameLen=lnblnk(H3K_rep_NAME)
-
+        iH3K_NameLen = 3+1+lnzname(iZone)+1+3+1+3
+        
 C...........MLC layer temperature 
             call add_to_xml_reporting (
      &         tfc(iZone,iSurface,iNode),
