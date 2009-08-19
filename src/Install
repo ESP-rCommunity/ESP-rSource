@@ -663,10 +663,10 @@ if [ "$mode" = "interactive" ]; then
   noX_prompt="3"
   default="$X11_prompt"
   
-  if [ "$compiler" = "sunF90" ];  then
-    # Is GTK really incompatable with f90 on sun?
-    GTK_prompt="-"
-  fi
+  # Iif [ "$compiler" = "sunF90" ];  then
+  # I  # Is GTK really incompatable with f90 on sun?
+  # I  GTK_prompt="-"
+  # Ifi
 
   if [ "$platform" = "mingw" ]; then
     # MinGW by definition excludes X11.
@@ -1110,7 +1110,11 @@ esac
 case $xml_support in
   yes) 
        # Link xml libraries, along with stdc++.
-       ULIBS="$ULIBS -lXML -lstdc++";
+       case $compiler in
+         sunF90)  ULIBS="$ULIBS -lXML -lCstd";;
+         GNU)     ULIBS="$ULIBS -lXML -lstdc++";;
+         intel)   ULIBS="$ULIBS -lXML -lstdc++";;
+       esac;
 
        # If libxslt is available, link it too
        case $xsl_libs_available in
