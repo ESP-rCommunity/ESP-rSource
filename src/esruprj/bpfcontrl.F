@@ -9124,7 +9124,7 @@ C -------------------------------------------------------------------
                 elseif(ictype.eq.4)then    ! senses solar radiation, actuates slat angle
                   if((isen1.eq.-3.and.(isen2.eq.4.or.isen2.eq.5))
      &                            .or.isen1.eq.-4)then               
-                    if(iact1.eq.1.and.ilaw.eq.1)then
+                    if((iact1.eq.1 .or.iact1.eq. 3) .and.ilaw.eq.1)then
                       checkOK=.true.
                     else
                       checkOK=.false.

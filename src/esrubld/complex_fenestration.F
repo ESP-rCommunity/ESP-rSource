@@ -3860,7 +3860,7 @@ C      real slat_angleX
       integer ischedule_shdstateONorOFF
       real shdONsetpoint
       real shdOFFsetpoint
-      real shdONslatPOSITION
+      real shdONslatPOSITION, shdINTslatPOSITION
       real shdOFFslatPOSITION
       real schedule_slat_angle
       real temp                     ! temperature [C] control parameter - can be dbt, dbt/mrt, sol-air
@@ -3960,7 +3960,7 @@ C -------------------------------------------------------------------
 C Determine actuator type and copy control data to working variables
 C -------------------------------------------------------------------
 
-  12  iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule
+  12  iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule, 3=three positions
       iact2 = iCFCactuator(ictlfun,2)           ! zone index
       iact3 = iCFCactuator(ictlfun,3)           ! CFC type
 
@@ -3979,6 +3979,13 @@ C Schedule
         ischedule_shdstateONorOFF = 
      &  INT(CFCmiscdata(ictlfun,idaytype,iperiod,2))
         schedule_slat_angle = CFCmiscdata(ictlfun,idaytype,iperiod,3)
+C Actuator controls slat angle of slat-type shade layer between 3 choices
+      elseif(iact1.eq.3)then
+        shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
+        shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)
+        shdONslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,4)
+        shdINTslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,5) 
+        shdOFFslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,6) 
       endif
 
 C -------------------------------------------------------------------
@@ -4062,6 +4069,9 @@ C Perform actual control of shade ON/OFF and slat angle here
           elseif(iact1.eq.1)then
               vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
               i_shd(iact2,iact3)     = 1                    ! shade state ON
+          elseif(iact1.eq.3)then
+              vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+              i_shd(iact2,iact3)     = 1                    ! shade state ON
           endif
         elseif(solrad.lt.shdOFFsetpoint)then
           if(iact1.eq.0)then
@@ -4069,6 +4079,14 @@ C Perform actual control of shade ON/OFF and slat angle here
               i_shd(iact2,iact3)     = 0                    ! shade state OFF
           elseif(iact1.eq.1)then
               vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+              i_shd(iact2,iact3)     = 1                    ! shade state ON     
+          elseif(iact1.eq.3)then
+              vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+              i_shd(iact2,iact3)     = 1                    ! shade state ON     
+          endif
+        else ! solrad is in interval between off and on set points
+          if (iact1.eq.3) then
+              vb_phiNew(iact2,iact3) = shdINTslatPOSITION   ! set new slag angle
               i_shd(iact2,iact3)     = 1                    ! shade state ON     
           endif
         endif
