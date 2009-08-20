@@ -139,6 +139,23 @@ C.....Surface orientation flags
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient
 
+C Casual gain data.
+C NCGPER - number of periods for each gain (zone, day type, gain type)
+C TCGS - start time of gain (zone, day type, gain type, period)
+C CGSENR - sensible gain radiant portion (zone, day type, gain type, period)
+C CGSENC - sensible gain convective portion (zone, day type, gain type, period)
+C CGLAT - latent gain (zone, day type, gain type, period)
+C CGCTL - gain control fraction (zone, present/future, gain type)
+C ICGCTL - pointer to controlled gain type.
+      common/CASGNS/NCGPER(MCOM,MDTY,MGTY),TCGS(MCOM,MDTY,MGTY,MGPER),
+     &        CGSENC(MCOM,MDTY,MGTY,MGPER),CGSENR(MCOM,MDTY,MGTY,MGPER),
+     &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(MCOM,2,MGTY)
+      integer ncgper
+      real tcgs,cgsenc,cgsenr,cglat,cgctl
+
+      COMMON/LIGHTS/ICGCTL(MCOM)
+      integer icgctl
+
       COMMON/CasDat/            ! Building casual gains
      &     Cas_Rad_dat(MCOM),   !  - Radiant (W)
      &     Cas_Con_dat(MCOM),   !  - Convective (W)
@@ -1543,6 +1560,14 @@ C.....Zone solar gains coinciding with heating loads !cooling loads?
      & 'units', '(W)',
      & 'Solar gains admitted through glazing that increase cooling '
      & // 'loads')
+
+C.....ARTIFICIAL LIGHTING GAIN FRACTION
+
+      call add_to_xml_reporting (
+     &         CGCTL(iZone,2,ICGCTL(iZone)),
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/lighting/frac',
+     &         'units', '(-)',
+     &         'Zone lighting gain fraction (controlled) FRAC' )
 
 C.....TOTAL CASUAL GAINS
       call add_to_xml_reporting (
