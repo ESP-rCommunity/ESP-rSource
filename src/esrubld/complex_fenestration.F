@@ -3808,6 +3808,7 @@ C ********************************************************************
 #include "building.h"
 #include "control.h"
 #include "CFC_common.h"
+#include "e2r_common.h" ! for NABS, the number of alternative blind states
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
 
@@ -3985,7 +3986,8 @@ C Actuator controls slat angle of slat-type shade layer between 3 choices
         shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)
         shdONslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,4)
         shdINTslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,5) 
-        shdOFFslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,6) 
+        shdOFFslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,6)
+        NABS=2 ! we have two alternative blind states here (for Radiance coupling) ...  !!HACK!!
       endif
 
 C -------------------------------------------------------------------

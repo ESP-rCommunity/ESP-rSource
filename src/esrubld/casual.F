@@ -1341,7 +1341,8 @@ C ... any other light zones get lost with radiance coupling).
 C USE ONLY ONE LIGHTING ZONE WITH RADIANCE COUPLING seems to 
 C be the consequence ... "outloop" this internal loop (DO 19)  over all lighting zones? The 
 C data has been calculated by Radiance for all sensors so should be available ...  
-              DO 19 I=1,NDF(ICOMP,N)
+             DO 199 NN=1,NLITZ(ICOMP)
+              DO 19 I=1,NDF(ICOMP,NN)
                 sumJ=0.
                 CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'t var illum',IER)
                 if (IER.ne.0) then
@@ -1357,23 +1358,26 @@ C data has been calculated by Radiance for all sensors so should be available ..
                 CALL EGETWR(OUTSTR,K,si,0.,0.,'-','sen illum',IER)
                 subT=si
                 suma=suma+subT
-                selum(N,I)=subT
+                selum(NN,I)=subT
 
 C Copy new information to illuminance DB. Transform to integer ... (why?)
-                DBILLS(NDBENT,N,I)=int(subT)
+                DBILLS(NDBENT,NN,I)=int(subT)
 
                 ift_old=ift
                 ift=1
 C Trace output:
                 if(IFT.EQ.1)then
 c                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
-                  write(78,111)N,I,selum(N,I),SETPT(ICOMP,N)
+                  write(78,111)NN,I,selum(NN,I),SETPT(ICOMP,NN)
   111             format(I6,I5,' N/A ','  N/A  ','   N/A   ','  N/A ',
      &               '   N/A  ','   N/A  ',F7.1,F6.0,'   N/A   ')
                   call edisp(itu,outs)
                 endif
                 ift=ift_old
    19         CONTINUE
+C                                   Average illumination for this light zone:
+              zelum(NN)=suma/float(NDF(ICOMP,NN))
+  199        CONTINUE ! loop through all lighting zones
 
 C Close transfer file.
               call ERPFREE(IUNIT,ISTAT)
@@ -1390,7 +1394,9 @@ C Close transfer file.
         endif ! sun is up, not startup, not "no radiation" ...
 
 C Average illumination for this light zone:
-        zelum(N)=suma/float(NDF(ICOMP,N))
+c        zelum(N)=suma/float(NDF(ICOMP,N))
+C === END of Radiance coupling
+
       ELSE ! IDFST(ICOMP,N) not = 3, 4 or 5 ... i.e. IDFST(ICOMP,N) = 1 or 2
 
 C Loop through each sensor point, calculate the illumination due
