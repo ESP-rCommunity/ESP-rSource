@@ -3808,7 +3808,8 @@ C ********************************************************************
 #include "building.h"
 #include "control.h"
 #include "CFC_common.h"
-#include "e2r_common.h" ! for NABS, the number of alternative blind states
+C  for NABS, the number of alternative blind states:
+#include "e2r_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
 
@@ -4333,17 +4334,13 @@ C ********************************************************************
       real qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       real tfa,qfa
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       real pazi,pelv
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &              HCOF(MCOM,MS)
       real hcip,hcif,hcop,hcof
-      COMMON/MOIST81/TNC(MS,MN),QNcnst
-      real tnc,qncnst
-      COMMON/MOIST82/TNS(MS),QNsrf
-      real tns,qnsrf
-      COMMON/COE32J/QTMCA(MS,MN,2)
-      real qtmca
 
       COMMON/PVANG/fInc_angle(MS)
       real fInc_angle
@@ -4371,7 +4368,7 @@ C ********************************************************************
 
       logical TGU,DGU
       
-      SBOLTZ=5.6697E-08 ! Stefan Bolzmann Constant
+      SBOLTZ=5.6697E-08 ! Stefan Boltzmann Constant
       T0=273.15         ! 0°C in K
 
 C Basic names (should be defined in a header, somewhere ...)
@@ -4465,9 +4462,6 @@ C build name for layer properties:
 
             iH3K_NameLen(2) = 3+1+lnzname(icomp)+1+3+1+3
 
-C CFC layer temperature "out", "middle" and "in" (this should be allready available via standard layer data ...):
-C       tnc(i,(l*2)-1),tnc(i,l*2),tnc(i,(l*2)+1)
-
             if ( icfcltp(icomp,icfctp,l).eq.0 ) then
 C CFC gap resistance if layer is gap (convective, only!)
               call add_to_xml_reporting (
@@ -4476,16 +4470,6 @@ C CFC gap resistance if layer is gap (convective, only!)
      &             'units', '(m2 K/W)',
      &             'CFC gap resistance (convective only!)' )
             endif
-
-C CFC layer long wave heat flux "out", "middle" and "in":
-C       qcfc_lw(icomp,i,(l*2)-1,2)
-C       qcfc_lw(icomp,i,l*2,2)
-C       qcfc_lw(icomp,i,(l*2)+1,2)
-
-C CFC layer convective heat flux "out", "middle" and "in":
-C       qcfc_cv(icomp,i,(l*2)-1,2)
-C       qcfc_cv(icomp,i,l*2,2)
-C       qcfc_cv(icomp,i,(l*2)+1,2)
 
 C Calculate U-value for IGU in CFC ...
 C Layer type index  >>icfcltp<<  : 
@@ -4505,42 +4489,46 @@ C glass layers - interspersed with gas layers, of course - in the CFC ...
                     DGU = .false.
                     TGU = .true. ! triple glazing unit
                     Rsi = 0.13 ! actual internal convective resistance
-                    ! radiative part
-                    RGap2 = SBOLTZ*ABS(((T0+tnc(i,(l*2)-1))**4.0
-     &                                  - (T0+tnc(i,(l*2)+1))**4.0))
-                    RGap2 = RGap2/(  1.0/(1.0-rlwEB_sv(i,icfctp,l-1))
-     &                             + 1.0/(1.0-rlwEF_sv(i,icfctp,l+1))
+                    ! radiative part (heat transfer)
+                    RGap2 = SBOLTZ*ABS((T0+tfc(icomp,i,(l*2)-1))**4.0
+     &                               - (T0+tfc(icomp,i,(l*2)+1))**4.0)
+                    RGap2 = RGap2/ABS(tfc(icomp,i,(l*2)-1)
+     &                                 - tfc(icomp,i,(l*2)+1))
+                    RGap2 = RGap2/(  1.0/rlwEB_sv(icomp,icfctp,l-1)
+     &                             + 1.0/rlwEF_sv(icomp,icfctp,l+1)
      &                             - 1.0 )
+                    ! overall gap resistance:
+                    RGap2 = RGap2 + 1.0/cfcRgap(icomp,i,l,2)
                     RGap2 = 1.0/RGap2
-                    ! add convective part
-                    RGap2 = RGap2 + cfcRgap(icomp,i,l,2)
-                    ! add third glass layer resistance
-                    RGap2 = RGap2 + 0.0
+                    ! add third glass layer resistance (lam = 1.0 W/(m2 K), assume 6 mm glass pane)
+                    RGap2 = RGap2 + 0.006/1.0
                   else
                     DGU = .true.
                     Rse = 0.04 ! actual external convective resistance
                     Rsi = 0.13 ! actual internal convective resistance
-                    ! radiative part
-                    RGap1 = SBOLTZ*ABS(((T0+tnc(i,(l*2)-1))**4.0
-     &                                  - (T0+tnc(i,(l*2)+1))**4.0))
-                    RGap1 = RGap1/(  1.0/(1.0-rlwEB_sv(i,icfctp,l-1))
-     &                             + 1.0/(1.0-rlwEF_sv(i,icfctp,l+1))
+                    ! radiative part (as heat transfer coefficient)
+                    RGap1 = SBOLTZ*ABS((T0+tfc(icomp,i,(l*2)-1))**4.0
+     &                               - (T0+tfc(icomp,i,(l*2)+1))**4.0)
+                    RGap1 = RGap1/ABS(tfc(icomp,i,(l*2)-1)
+     &                               - tfc(icomp,i,(l*2)+1))
+                    RGap1 = RGap1/(  1.0/rlwEB_sv(icomp,icfctp,l-1)
+     &                             + 1.0/rlwEF_sv(icomp,icfctp,l+1)
      &                             - 1.0 )
+                    ! overall gap resistance:
+                    RGap1 = RGap1 + 1.0/cfcRgap(icomp,i,l,2)
                     RGap1 = 1.0/RGap1
-                    ! add convective part
-                    RGap1 = RGap1 + cfcRgap(icomp,i,l,2)
-                    ! add first and second glass layer resistances 
-                    RGap1 = RGap1 + 0.0
-                  endif
-                endif
-              endif
-            endif
+                    ! add first and second glass layer resistances (for simplicity, assume 6 mm glass per pane, lam=1.0 W/(m2 K))
+                    RGap1 = RGap1 + 0.012/1.0
+                  endif ! DGU or TGU
+                endif ! following layer is glass
+              endif ! previous layer is glass
+            endif ! current layer is gas
 C Debug ...
 c          if (l .eq. ne) then
 c           write(*,*)'Typ=',icfctp,' RGap1=',RGap1,' RGap2=',RGap2
 c          endif
 
-          end if
+          end if ! filter layer type
  15     continue  ! loop through layers of construction
 
 C Now calculate and output U-value for IGU of this construction
