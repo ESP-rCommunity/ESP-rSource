@@ -480,8 +480,8 @@ C been reported on set tok to true.
       
       pi=4.0*atan(1.0)
       r=pi/180.
-      ca=cos(bangob(iz,ibn)*r)
-      sa=sin(bangob(iz,ibn)*r)
+      ca=cos(bangob(iz,ibn,1)*r)
+      sa=sin(bangob(iz,ibn,1)*r)
       xc(1)=xob(iz,ibn)
       yc(1)=yob(iz,ibn)
       zc(1)=zob(iz,ibn)+dzob(iz,ibn)

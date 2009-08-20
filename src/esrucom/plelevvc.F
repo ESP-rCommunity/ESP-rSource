@@ -121,7 +121,7 @@ C establish maximum and minimum site coordinates.
           do 20 i=1,nbobs(newfoc)
             call cnvblk(xob(newfoc,i),yob(newfoc,i),zob(newfoc,i),
      &        xob(newfoc,i),dyob(newfoc,i),dzob(newfoc,i),
-     &        bangob(newfoc,i))
+     &        bangob(newfoc,i,1))
             do 30 j=1,8
               xmn=amin1(xmn,xb(j))
               ymn=amin1(ymn,yb(j))
@@ -268,7 +268,7 @@ C common block via CNVBLK.
         DO 420 IB= 1,nbobs(newfoc)
           CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
-     &      BANGOB(newfoc,IB))
+     &      BANGOB(newfoc,IB,1))
           DO 422 I=1,6   ! for each surface in the block
             J=JVNB(I,1)
             iupdown=0

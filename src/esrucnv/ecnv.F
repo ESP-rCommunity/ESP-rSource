@@ -843,7 +843,9 @@ C << what about newer >>
               DXOB(ivv,nbo)=TDX
               DYOB(ivv,nbo)=TDY
               DZOB(ivv,nbo)=TDZ
-              BANGOB(ivv,nbo)=TBANG
+              BANGOB(ivv,nbo,1)=TBANG
+              BANGOB(ivv,nbo,2)=0.0
+              BANGOB(ivv,nbo,3)=0.0
             endif
             goto 142
  143        continue
@@ -865,7 +867,7 @@ C << need for a separate obstructions file
             do 144 ibx=1,nbobs(ivv)
               write(iotmp2,'(7f9.4,a)')XOB(ivv,ibx),YOB(ivv,ibx),
      &          ZOB(ivv,ibx),DXOB(ivv,ibx),DYOB(ivv,ibx),
-     &          DZOB(ivv,ibx),BANGOB(ivv,ibx),' dxf # block '
+     &          DZOB(ivv,ibx),BANGOB(ivv,ibx,1),' dxf # block '
  144        continue
             write(iotmp2,'(a)')'# grid opq X opq Z win X win Z'
             write(iotmp2,'(a)')'    20    20     5     5'

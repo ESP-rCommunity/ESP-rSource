@@ -1131,7 +1131,7 @@ C then assign the block index as the name via internal read.
           DYOB(icomp,I)=VY
           DZOB(icomp,I)=VZ
           CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang',IER)
-          BANGOB(icomp,I)=VX
+          BANGOB(icomp,I,1)=VX
           IF(ND.EQ.7)THEN
             IF(I.LE.9)THEN
               WRITE(BLOCKNAME(ICOMP,I),77)I
@@ -1198,8 +1198,9 @@ C Trace.
           llbm=LNBLOCKMAT(ICOMP,I)
           llbn=LNBLOCKNAME(ICOMP,I)
           WRITE(OUTSTR,9994)I,XOB(ICOMP,I),YOB(ICOMP,I),ZOB(ICOMP,I),
-     &      DXOB(ICOMP,I),DYOB(ICOMP,I),DZOB(ICOMP,I),BANGOB(ICOMP,I),
-     &      BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm)
+     &      DXOB(ICOMP,I),DYOB(ICOMP,I),DZOB(ICOMP,I),
+     &      BANGOB(ICOMP,I,1),BLOCKNAME(ICOMP,I)(1:llbn),
+     &      BLOCKMAT(ICOMP,I)(1:llbm)
  9994     FORMAT(I3,7F8.1,' ',a,' ',a)
           CALL EDISP(ITRU,OUTSTR)
  9995   CONTINUE
@@ -1259,7 +1260,7 @@ C For each block write info, use space as item separation.
         llbn=LNBLOCKNAME(ICOMP,I)
         WRITE(outl,34,IOSTAT=IOS,ERR=3)XOB(icomp,I),YOB(icomp,I),
      &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
-     &    BANGOB(icomp,I),
+     &    BANGOB(icomp,I,1),
      &    BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm),I
   34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)
         call SDELIM(outl,outld,'S',IW)

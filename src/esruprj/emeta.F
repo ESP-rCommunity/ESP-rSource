@@ -1399,7 +1399,9 @@ C in the file.
             DXOB(iz,ibu) = 0.0
             DYOB(iz,ibu) = 0.0
             DZOB(iz,ibu) = 0.0
-            BANGOB(iz,ibu) = 0.0
+            BANGOB(iz,ibu,1) = 0.0
+            BANGOB(iz,ibu,2) = 0.0
+            BANGOB(iz,ibu,3) = 0.0
             BLOCKNAME(iz,ibu) = ' '
             LNBLOCKNAME(iz,ibu) = 0
             BLOCKMAT(iz,ibu) = ' '
@@ -1888,7 +1890,7 @@ C An obstruction block to be associated with the current zone.
         CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
         DZOB(nsz,nob)=val1
         CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
-        BANGOB(nsz,nob)=val1
+        BANGOB(nsz,nob,1)=val1
         CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
         write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
         LNBLOCKNAME(nsz,nob)=lnblnk(BLOCKNAME(nsz,nob))
@@ -2792,7 +2794,7 @@ C Obstruction information lines.
               write(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &          '*obs',tab,XOB(nsz,ib),YOB(nsz,ib),ZOB(nsz,ib),
      &          DXOB(nsz,ib),DYOB(nsz,ib),DZOB(nsz,ib),
-     &          BANGOB(nsz,ib),BLOCKNAME(nsz,ib),
+     &          BANGOB(nsz,ib,1),BLOCKNAME(nsz,ib),
      &          BLOCKMAT(nsz,ib)
               call SDELIM(outs,outsd,'C',IW)
               write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 

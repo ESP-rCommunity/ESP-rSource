@@ -1132,7 +1132,7 @@ C          CALL edisp(iuout,outs)
         DO 301 IB=1,nbobs(newfoc)
           CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
-     &      BANGOB(newfoc,IB))
+     &      BANGOB(newfoc,IB,1))
 
 C Work out the colour for each block by looping
 C through each of the MLC and finding a match (for first 12 char).

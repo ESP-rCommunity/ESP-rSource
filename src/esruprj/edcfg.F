@@ -1931,7 +1931,7 @@ C obstruction data.
                 YR=YYY*CA-XXX*SA
                 XOB(ncomp,ij)=XR+X1
                 YOB(ncomp,ij)=YR+Y1
-                BANGOB(ncomp,ij)=BANGOB(ncomp,ij)+VAL
+                BANGOB(ncomp,ij,1)=BANGOB(ncomp,ij,1)+VAL
   88          continue
             endif
 
@@ -4392,7 +4392,7 @@ C Rotate any obstructions associated with this zone.
                 YR=YYY*CA-XXX*SA
                 XOB(iicomp,ij)=XR+X1
                 YOB(iicomp,ij)=YR+Y1
-                BANGOB(iicomp,ij)=BANGOB(iicomp,ij)+VAL
+                BANGOB(iicomp,ij,1)=BANGOB(iicomp,ij,1)+VAL
   86          continue
               CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
             endif
@@ -4431,7 +4431,7 @@ C apply the transform and write the file back out.
                 YR=YYY*CA-XXX*SA
                 XOB(iicomp,ij)=XR+X1
                 YOB(iicomp,ij)=YR+Y1
-                BANGOB(iicomp,ij)=BANGOB(iicomp,ij)+VAL
+                BANGOB(iicomp,ij,1)=BANGOB(iicomp,ij,1)+VAL
   87          continue
               call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
             endif

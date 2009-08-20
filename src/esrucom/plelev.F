@@ -201,7 +201,7 @@ C common block via CNVBLK.
         DO 420 IB= 1,nbobs(newfoc)
           CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
-     &      BANGOB(newfoc,IB))
+     &      BANGOB(newfoc,IB,1))
           DO 422 I=1,6   ! for each surface in the block
             J=JVNB(I,1)
             iupdown=0

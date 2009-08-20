@@ -2554,7 +2554,9 @@ C Ask for name.
           DXOB(IC,nbo)=twid
           DYOB(IC,nbo)=tdepth
           DZOB(IC,nbo)=Z2
-          BANGOB(IC,nbo)=RO
+          BANGOB(IC,nbo,1)=RO
+          BANGOB(IC,nbo,2)=0.0
+          BANGOB(IC,nbo,3)=0.0
           call usrmsg(' ',' ','-')
           call edisp(iuout,' ')
           call edisp(iuout,

@@ -402,7 +402,7 @@ C Rotation choices.
               YR=YYY*CA-XXX*SA
               XOB(ICOMP,IFOC)=XR+X1
               YOB(ICOMP,IFOC)=YR+Y1
-              BANGOB(ICOMP,IFOC)=BANGOB(ICOMP,IFOC)+ANG
+              BANGOB(ICOMP,IFOC,1)=BANGOB(ICOMP,IFOC,1)+ANG
   86        continue
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
@@ -479,7 +479,9 @@ C To delete the last obstruction, dereference the file and exit.
                 DXOB(icomp,IDV)=DXOB(icomp,IDV+1)
                 DYOB(icomp,IDV)=DYOB(icomp,IDV+1)
                 DZOB(icomp,IDV)=DZOB(icomp,IDV+1)
-                BANGOB(icomp,IDV)=BANGOB(icomp,IDV+1)
+                BANGOB(icomp,IDV,1)=BANGOB(icomp,IDV+1,1)
+                BANGOB(icomp,IDV,2)=BANGOB(icomp,IDV+1,2)
+                BANGOB(icomp,IDV,3)=BANGOB(icomp,IDV+1,3)
                 BLOCKNAME(icomp,IDV)=BLOCKNAME(icomp,IDV+1)
                 LNBLOCKNAME(icomp,IDV)=LNBLOCKNAME(icomp,IDV+1)
                 BLOCKMAT(icomp,IDV)=BLOCKMAT(icomp,IDV+1)
@@ -500,7 +502,9 @@ C To delete the last obstruction, dereference the file and exit.
             DXOB(icomp,nbo)=1.0
             DYOB(icomp,nbo)=1.0
             DZOB(icomp,nbo)=1.0
-            BANGOB(icomp,nbo)=0
+            BANGOB(icomp,nbo,1)=0.0
+            BANGOB(icomp,nbo,2)=0.0
+            BANGOB(icomp,nbo,3)=0.0
             BLOCKNAME(icomp,nbo)='new_blk'
             LNBLOCKNAME(icomp,nbo)=7
             BLOCKMAT(icomp,nbo)='NONE'
@@ -575,7 +579,9 @@ C Ask for transform distance for obstruction and then apply.
             DXOB(icomp,nbo)=DXOB(icomp,IFOC)
             DYOB(icomp,nbo)=DYOB(icomp,IFOC)
             DZOB(icomp,nbo)=DZOB(icomp,IFOC)
-            BANGOB(icomp,nbo)=BANGOB(icomp,IFOC)
+            BANGOB(icomp,nbo,1)=BANGOB(icomp,IFOC,1)
+            BANGOB(icomp,nbo,2)=BANGOB(icomp,IFOC,2)
+            BANGOB(icomp,nbo,3)=BANGOB(icomp,IFOC,3)
             BLOCKMAT(icomp,nbo)=BLOCKMAT(icomp,IFOC)
             LNBLOCKMAT(icomp,nbo)=LNBLOCKMAT(icomp,nbo)
             MODIFY=.TRUE.
@@ -795,7 +801,9 @@ C the dummy obstruction in the zone geometry file.
         DXOB(icomp,1)=1.0
         DYOB(icomp,1)=1.0
         DZOB(icomp,1)=1.0
-        BANGOB(icomp,1)=0
+        BANGOB(icomp,1,1)=0.0
+        BANGOB(icomp,1,2)=0.0
+        BANGOB(icomp,1,3)=0.0
         BLOCKNAME(ICOMP,1)='First'
         LNBLOCKNAME(ICOMP,1)=5
         BLOCKMAT(ICOMP,1)='NONE'
@@ -965,7 +973,9 @@ C Provide default values for the new obstructions file.
         DXOB(icomp,1)=1.0
         DYOB(icomp,1)=1.0
         DZOB(icomp,1)=1.0
-        BANGOB(icomp,1)=0
+        BANGOB(icomp,1,1)=0.0
+        BANGOB(icomp,1,2)=0.0
+        BANGOB(icomp,1,3)=0.0
         BLOCKNAME(ICOMP,1)='First'
         LNBLOCKNAME(ICOMP,1)=5
         BLOCKMAT(ICOMP,1)='NONE'
@@ -1063,7 +1073,8 @@ C file or geometry file.
 C Extract coordinates for corners for the current block to 
 C display in the command menu.
       CALL CNVBLK(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
-     &  DXOB(ICOMP,IB),DYOB(ICOMP,IB),DZOB(ICOMP,IB),BANGOB(ICOMP,IB))
+     &  DXOB(ICOMP,IB),DYOB(ICOMP,IB),DZOB(ICOMP,IB),
+     &  BANGOB(ICOMP,IB,1))
       ITOBS = IB
 
 C Set menu header text.
@@ -1071,7 +1082,7 @@ C Set menu header text.
      &  YOB(ICOMP,IB),ZOB(ICOMP,IB)
       WRITE(VERT(2),'(A,3F6.2)')  'b block  W D H:',DXOB(ICOMP,IB),
      &  DYOB(ICOMP,IB),DZOB(ICOMP,IB)
-      WRITE(VERT(3),'(A,F7.2)')   'c rotation    : ',BANGOB(ICOMP,IB)
+      WRITE(VERT(3),'(A,F7.2)')   'c rotation    : ',BANGOB(ICOMP,IB,1)
       WRITE(VERT(4),'(A,A)')      'd name        : ',BLOCKNAME(ICOMP,IB)
       llbm=LNBLOCKMAT(ICOMP,IB)
       WRITE(VERT(5),'(A,A)')      'e construction: ',
@@ -1233,11 +1244,11 @@ C Now display the menu.
       ELSEIF(IVERT.EQ.3)THEN
         H(1)='Rotation is anticlockwise degrees between the '
         H(2)='length side of the obstruction and the X axis.'
- 44     VX=BANGOB(ICOMP,IB)
+ 44     VX=BANGOB(ICOMP,IB,1)
         CALL EASKR(VX,MSG,' Block rotation? ',
      &       -359.0,'W',359.0,'W',0.0,'block rotation',IER,2)
         if(ier.ne.0)goto 44
-        BANGOB(ICOMP,IB)=VX
+        BANGOB(ICOMP,IB,1)=VX
         MODIFY=.TRUE.
         MODBND=.TRUE.
         MODLEN=.TRUE.
@@ -1476,7 +1487,9 @@ C Create the sill obstruction.
       DXOB(icomp,nbo)=DDX+OWID+OWID
       DYOB(icomp,nbo)=RTK
       DZOB(icomp,nbo)=OWID
-      BANGOB(icomp,nbo)=RO
+      BANGOB(icomp,nbo,1)=RO
+      BANGOB(icomp,nbo,2)=0.0
+      BANGOB(icomp,nbo,3)=0.0
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'s'
       LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -1499,7 +1512,9 @@ C Create the head obstruction.
       DXOB(icomp,nbo)=DDX+OWID+OWID
       DYOB(icomp,nbo)=RTK
       DZOB(icomp,nbo)=OWID
-      BANGOB(icomp,nbo)=RO
+      BANGOB(icomp,nbo,1)=RO
+      BANGOB(icomp,nbo,2)=0.0
+      BANGOB(icomp,nbo,3)=0.0
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'h'
       LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -1520,7 +1535,9 @@ C Create the left side fin.
       DXOB(icomp,nbo)=OWID
       DYOB(icomp,nbo)=RTK
       DZOB(icomp,nbo)=DDZ+OWID+OWID
-      BANGOB(icomp,nbo)=RO
+      BANGOB(icomp,nbo,1)=RO
+      BANGOB(icomp,nbo,2)=0.0
+      BANGOB(icomp,nbo,3)=0.0
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'l'
       LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -1541,7 +1558,9 @@ C Create the right side fin.
       DXOB(icomp,nbo)=OWID
       DYOB(icomp,nbo)=RTK
       DZOB(icomp,nbo)=DDZ+OWID+OWID
-      BANGOB(icomp,nbo)=RO
+      BANGOB(icomp,nbo,1)=RO
+      BANGOB(icomp,nbo,2)=0.0
+      BANGOB(icomp,nbo,3)=0.0
       write(BLOCKNAME(icomp,nbo),'(a,a1)')
      &  blkroot(1:lnblnk(blkroot)),'r'
       LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))

@@ -1998,7 +1998,7 @@ C Read another line to get the actual blocks.
             DYOB(icomp,nbo)=VY
             DZOB(icomp,nbo)=VZ
             CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang',IER)
-            BANGOB(icomp,nbo)=VX
+            BANGOB(icomp,nbo,1)=VX
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2454,7 +2454,7 @@ C geometry file also write the NOX and NOZ values.
           WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &      '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
      &      DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
-     &      BANGOB(icomp,ib),BLOCKNAME(icomp,ib),
+     &      BANGOB(icomp,ib,1),BLOCKNAME(icomp,ib),
      &      BLOCKMAT(icomp,ib)
           call SDELIM(outs,outsd,'C',IW)
           write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 

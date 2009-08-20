@@ -124,7 +124,7 @@ C Use the GB1 common block via CNVBLK.
 
               CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &          DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
-     &          BANGOB(newfoc,IB))
+     &          BANGOB(newfoc,IB,1))
 
 C Write obstruction information after inverting edges.
               DO 320 J=1,6
@@ -345,7 +345,7 @@ C obstruction.
             write(ioout,'(a)')' 43'
             write(ioout,'(f9.1)')DZOB(mz,IB)*1000.
             write(ioout,'(a)')' 50'
-            write(ioout,'(f9.1)')BANGOB(mz,IB)
+            write(ioout,'(f9.1)')BANGOB(mz,IB,1)
             write(ioout,'(a)')'  0'
   43      continue
 
@@ -537,7 +537,7 @@ C     &      0,0,iuout,IER)
 C Use the GB1 common block via CNVBLK
               CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
      &          DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
-     &          BANGOB(newfoc,IB))
+     &          BANGOB(newfoc,IB,1))
 
 C Write obstruction information as a clump of surfaces.
               WRITE(ioout,'(a)')'YIN  8'

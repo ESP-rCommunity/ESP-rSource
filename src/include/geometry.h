@@ -69,9 +69,9 @@ C Obstruction block commons (whole model)
       integer nbobs     ! number of zone obstructions
       real XOB,YOB,ZOB  ! coordinates of each block origin.
       real DXOB,DYOB,DZOB  ! width depth and height of each block
-      real BANGOB       ! rotation angle of block
+      real BANGOB       ! three rotation angles of block
       common/GS7/nbobs(MCOM),XOB(MCOM,MB),YOB(MCOM,MB),ZOB(MCOM,MB),
-     &  DXOB(MCOM,MB),DYOB(MCOM,MB),DZOB(MCOM,MB),BANGOB(MCOM,MB)
+     &  DXOB(MCOM,MB),DYOB(MCOM,MB),DZOB(MCOM,MB),BANGOB(MCOM,MB,3)
 
 C BLOCKNAMEM (12 char) name of obstruction block.
 C BLOCKMAT (32 char) obstruction block construction (for Radiance).

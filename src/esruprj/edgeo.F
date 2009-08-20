@@ -1615,7 +1615,7 @@ C Rotate any obstructions associated with this zone.
                 YR=YYY*CA-XXX*SA
                 XOB(icomp,ij)=XR+X1
                 YOB(icomp,ij)=YR+Y1
-                BANGOB(icomp,ij)=BANGOB(icomp,ij)+VAL
+                BANGOB(icomp,ij,1)=BANGOB(icomp,ij,1)+VAL
   86          continue
               CALL MKGOMST(IFIL+2,ZOBS(ICOMP),ICOMP,IER)
             endif
@@ -1641,7 +1641,7 @@ C so now apply the transform to the obstructions (only).
                 YR=YYY*CA-XXX*SA
                 XOB(icomp,ij)=XR+X1
                 YOB(icomp,ij)=YR+Y1
-                BANGOB(icomp,ij)=BANGOB(icomp,ij)+VAL
+                BANGOB(icomp,ij,1)=BANGOB(icomp,ij,1)+VAL
   87          continue
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
@@ -2056,7 +2056,7 @@ C Display obstructions if newgeom is true.
                 lnbm=LNBLOCKMAT(icomp,I)
                 WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
      &            ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
-     &            DZOB(icomp,I),BANGOB(icomp,I),
+     &            DZOB(icomp,I),BANGOB(icomp,I,1),
      &            BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
  9994           FORMAT(I3,7F8.1,' ',a,' ',a)
                 call edisp(iuout,outs)
