@@ -78,6 +78,7 @@ C   IEXP = 99 check number of items and return in ITEMS
       SUBROUTINE STRIPCB(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
       CHARACTER*124 tmp,STRING,OUTSTR,MSG1
       CHARACTER*(*) MSG
+      logical unixok
       
       integer lnblnk  ! function definition
 
@@ -129,8 +130,13 @@ C Find out the number of separate words/string groupings.
         CALL USRMSG(' ',tmp,'-')
       ENDIF
       goto 4
- 1    write(6,*) 'STRIPCB: error writing warning re: ',OUTSTR
-      RETURN
+
+C Trap for I/O error.
+ 1    call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      write(6,*) 'STRIPCB: error writing warning re: ',OUTSTR
+      return
+
       END
 
 
@@ -141,6 +147,7 @@ C overwriting the string passed, deal with a copy.
       SUBROUTINE CHITMSB(A,IW)
       CHARACTER*(*) A
       CHARACTER B*124,C*1
+      logical unixok
       
       integer lnblnk  ! function definition
 
@@ -160,8 +167,13 @@ C Loop character by character until separator is found.
       IF(K.GE.LNBLNK(B))RETURN
       IF(C.EQ.',') GOTO 102
       GOTO 20
- 1    write(6,*) 'CHITMS: error in internal write: ',A
-      RETURN
+
+C Trap for I/O error.
+ 1    call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      write(6,*) 'CHITMS: error in internal write: ',A
+      return
+
       END
 
 

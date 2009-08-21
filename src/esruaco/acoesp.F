@@ -240,6 +240,7 @@ C length : Length of zdescr
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       CHARACTER zdescr*80,outs*244,outsd*80
+      logical unixok
 
       length=0
       do 42 i=1,nzg
@@ -268,7 +269,11 @@ C length : Length of zdescr
         return
       endif
 
-      write(6,*) 'ZLIST: error writing zone names: ',outs
+C If we got to this point must have been an error
+      call isunix(unixok)
+      if(unixok)then
+        write(6,*) 'ZLIST: error writing zone names: ',outs
+      endif
       ierr=1
       return
       END
