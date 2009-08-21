@@ -612,6 +612,7 @@ C Find out if there are geometry files in the ../zones folder.
 
 C Debug.
 C            write(6,*) ltmp
+
           else
 
 C User did not select a file. Take them back to the question.
@@ -832,6 +833,7 @@ C Find out if there are operation files in the model ../zones folder.
 
 C Debug.
 C                write(6,*) ltmp
+
               else
                 LTMP=DFILE
               endif
@@ -892,6 +894,7 @@ C Find out if there are construction files in the model ../zones folder.
 
 C Debug.
 C                write(6,*) ltmp
+
               else
                 LTMP=DFILE
               endif
@@ -942,6 +945,7 @@ C Find out if there are CAD (zip) files in ../zones folder.
 
 C Debug.
 C            write(6,*) ltmp
+
           else
             write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
           endif

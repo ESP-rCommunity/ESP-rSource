@@ -379,6 +379,7 @@ C ITHLS = 3 partial attributes
 C Debug...
 C          write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
 C     &      ithls,ithlz,ISTOK
+
         else
           IPEN= 1
         endif
@@ -415,6 +416,7 @@ C common/G8 for hints as to alternate greys or dots.
 C Debug..
 C            write(6,*) 'nap nbp nbedgdup iedge j',nap,nbp,nbedgdup(icc),
 C     &        iedge,j
+
             if(NAP.ne.NBP)then
               call eswline(iixlast,iiylast,iix,iiy)
             elseif(icc.eq.0)then

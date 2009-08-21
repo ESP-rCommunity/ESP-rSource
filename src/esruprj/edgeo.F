@@ -581,7 +581,10 @@ C Read current zone back in and then update the configuration file.
 
 C Do a bound check on the current zone and update display.
 C Set all surfaces to standard line width.
+
+C Debug.
 C      write(6,*)nzg,nznog(1),nznog(2),nznog(3)
+
       CALL INLNST(1)
       itsnm=0
       nzg=1
@@ -1226,7 +1229,10 @@ C Read current zone back in and then update the configuration file.
 
 C Determine the match in the system topology and update it. 
               CALL SURADJ(ICOMP,ISS,IE,TMP,IZC,ISC,IC,DESCRC)
-              if(ioc.ne.ic)write(6,*) 'edgeo mismatch ic ioc ',ic,ioc
+              if(ioc.ne.ic)then
+                write(outs,*) 'edgeo mismatch ic ioc ',ic,ioc
+                call edisp(iuout,outs)
+              endif
               IC1(IC)=ICOMP
               IE1(IC)=ISS
               IF(IOS.EQ.1)THEN
@@ -2861,6 +2867,7 @@ C Note: use display width of 41 char.
 
 C Debug...
 C        write(6,*) 'act np iva ',act,np,iva
+
       endif
       RETURN
       END
@@ -6256,7 +6263,10 @@ C which results in no deviation.
                   XX(KK) = X(JVN(is,KK+1))  ! take next coords
                   YY(KK) = Y(JVN(is,KK+1))
                   ZZ(KK) = Z(JVN(is,KK+1))
-                  write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
+
+C Debug.
+C                  write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
+
                 elseif(loop.eq.NVER(is))then
                   if(kk.lt.NVER(is))then
                     XX(KK) = X(JVN(is,KK))  ! no need to skip
@@ -6266,7 +6276,10 @@ C which results in no deviation.
                     XX(KK) = X(JVN(is,1))   ! take first coords
                     YY(KK) = Y(JVN(is,1))
                     ZZ(KK) = Z(JVN(is,1))
-                    write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
+
+C Debug.
+C                    write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
+
                   endif
                 else
                   XX(KK) = X(JVN(is,KK))    ! no need to skip
@@ -6283,7 +6296,8 @@ C See if any points are out of the plane.
               call CHECKWARP(1,iuout,is,N,XX,YY,ZZ,iwhich,ofby,ivoff)
 
 C Debug.
-              write(6,*) is,iwhich,ofby,ivoff
+C              write(6,*) is,iwhich,ofby,ivoff
+
               if(ivoff.gt.0)then
                 goto 59
               else
@@ -6697,9 +6711,11 @@ C Assign edges for the top surface in reverse order of the original.
             iecount=NTV
             do 144 ix = 1,ibaseedge
               JVN(itopsurf,ix)=iecount
+
 C Debug.
 C              write(6,*) ' top ',ix,iecount,JVN(itopsurf,ix),
 C     &          X(iecount),Y(iecount),Z(iecount)
+
               iecount=iecount-1
   144       continue
             NVER(itopsurf)=ibaseedge
@@ -6729,6 +6745,7 @@ C than ibasecount and one rather than itopcount+1.
             JVN(NSUR+1,3)=iv3
             JVN(NSUR+1,4)=iv4
             NVER(NSUR+1)=4
+
 C Debug.
 C            write(6,*) ' iv1 iv2 iv3 iv4 ',iv1,iv2,iv3,iv4
 
@@ -7157,7 +7174,7 @@ C hit and then loop through each of the vertices for something close.
 
 C If there were only two points to find, check if user clicked on edge.
             if(inpick.eq.2)then
-              write(6,*) 'code for edge check in progress'
+              call edisp(iuout,'code for edge check in progress')
             endif
             goto 46
           endif
@@ -7450,9 +7467,14 @@ C Recover the remainder of the line.
       IF(IER.NE.0)goto 1001
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','COM',IFLAG)
-      write(6,*) 'the overall file name is ',WORD
-      lwd=lnblnk(WORD)
-      write(6,*) 'the file name is ',WORD(2:lwd-1)
+
+C Debug.
+C      write(6,*) 'the overall file name is ',WORD
+
+C Debug.
+C      lwd=lnblnk(WORD)
+C      write(6,*) 'the file name is ',WORD(2:lwd-1)
+
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'zip date',IER)
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'blank line',IER)
 

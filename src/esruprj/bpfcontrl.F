@@ -1965,8 +1965,11 @@ C Weighted auxiliary sensors mode,
      &          0.,'F',100.,'F',50.,' Aux sensor weighting',IER,2)
 126         continue
           else
-            ndx=nint(cm(1))  ! set this so scaling next to last entry. 
-            write(6,*) 'lastndx and ndx ',lastndx,ndx,cm(1)   
+            ndx=nint(cm(1))  ! set this so scaling next to last entry.
+
+C Debug.
+C            write(6,*) 'lastndx and ndx ',lastndx,ndx,cm(1) 
+  
           endif
 
 C At end of data add in scaling factor and offset. Typically
@@ -3051,7 +3054,10 @@ C the negatives at the end of the array
             do 144 ipassback=1,6 
               cmlocal(ipassback*2)=sortmerge(ipassback)
               cmlocal(ipassback*2+1)=sortset(ipassback)
+
+C Debug.
 C              write(6,*) sortmerge(ipassback),'  ',sortset(ipassback)
+
   144       continue             
             do 13 ij=1,misc
               cm(ij)=cmlocal(ij)

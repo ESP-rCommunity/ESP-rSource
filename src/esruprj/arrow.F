@@ -150,9 +150,10 @@ C Corner 3 is a 180deg rotation.
         CORNER(4,I)=A(I)-(VECC(I)*SF)
  71   continue
 
-C debug...
+C Debug.
 C      write(6,*) 'Pln eq ',Plane
 C      write(6,*) 'Axlen  & dist & SF iaxis ',AXLEN,DIST,SF,IAXIS
+
 C Draw the damn thing!
       CALL VECTRN(P,TEMAT,COG2,IER)
       CALL VECTRN(COG2,ETSMAT,COG3,IER)

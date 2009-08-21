@@ -856,8 +856,10 @@ C If bitmap is taller, adjust so we start with lower left corner.
 
 C After loading the bitmap populate the display with corners, north,
 C origin if these have been defined.
+
 C Debug.
 C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
+
               call winscl('z',0)
               iid1=ixbul; iid2=iybul;
               call esymbol(iid1,iid2,6,1)
@@ -2380,7 +2382,8 @@ C Find which quadrant. Use logic from EREVEAL
           endif
           elev=0.0
           call AZ2UV(azim,elev,vdx,vdy,vdz)
-C Debug...
+
+C Debug.
 C          write(6,*) 'az azim vdx vdy vdz ',az,azim,vdx,vdy,vdz
 
 C Check if tollerably close to an axis.
@@ -2488,7 +2491,8 @@ C between point 2 & 3 draw the two extra lines that complete the box.
               call eswline(iid1,iid2,iixx3,iiyy3)
             endif
           endif
-C Debug..
+
+C Debug.
 C          write(6,*) ixx3,ixx2,ixx1,ioffx,ixx1+ioffx
 C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
 
@@ -2673,8 +2677,10 @@ C If user defined interval only set on the first pass.
 
 C Remember position of first and last line for use in horizontal lines.
           if(i.eq.int(viewlim(1)))ixaxl=ix
-C Debug...
+
+C Debug.
 C          write(6,'(a,f8.4,3i6)') 'grid info',xp,ix,ily,iuy
+
           if(ix.gt.ixbul.and.ix.lt.ixblr)then
 
 C If within display range draw vertical line. If spacing less than 1m
@@ -2809,8 +2815,10 @@ C If user defined interval only set on the first pass.
             ypl=float(i)
           endif
           iy=iyo-int(yp*factor)
-C Debug...
+
+C Debug.
 C          write(6,'(a,f8.4,3i6)') 'grid info',yp,ilx,irx,iy
+
           if(iy.gt.iybul.and.iy.lt.iyblr)then
             if(iwmg.eq.3.or.iwmg.eq.4.or.iwmg.eq.5.or.iwmg.eq.6)then
               if(greyok)call winscl('i',nifgrey-4)
@@ -2823,7 +2831,10 @@ C          write(6,'(a,f8.4,3i6)') 'grid info',yp,ilx,irx,iy
             elseif(iwmg.eq.2)then
 
 C Do every other metre.
+
+C Debug.
 C              write(6,*) 'i mod ',i,mod(i,2)
+
               if(mod(i,2).eq.0)then
                 if(greyok)call winscl('i',nifgrey-4)
                 iilx=ilx
@@ -3015,6 +3026,7 @@ C Other is the grid distance if user supplied (iwmg=7).
 
 C Debug.
 C      write(6,*) 'refresh bitmap'
+
       call startbuffer()
       call winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
      &  15,15,ixbul,iybul,ixblr,iyblr)
@@ -3229,6 +3241,7 @@ C inpm is the input mode.
 
 C Debug...
 C      write(6,*) 'offsets ',ixoffset,iyoffset
+
       if(IWM.eq.1)then
         return
       elseif(IWM.eq.2)then

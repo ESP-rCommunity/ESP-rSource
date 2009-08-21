@@ -399,9 +399,10 @@ C ITHLS = 3 partial attributes
             endif
           endif
 
-C Debug...
+C Debug.
 C          write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
 C     &      ithls,ithlz,ISTOK
+
         else
           IPEN= 1
         endif
@@ -435,9 +436,11 @@ C move cursor to vertex and remember position.
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
 C common/G8 for hints as to alternate greys or dots.
-C Debug..
+
+C Debug.
 C            write(6,*) 'nap nbp nbedgdup iedge j',nap,nbp,nbedgdup(icc),
 C     &        iedge,j
+
             if(NAP.ne.NBP)then
               call eswline(iixlast,iiylast,iix,iiy)
             else
@@ -452,7 +455,10 @@ C with the co-planer.
                 else
                   LD=4
                   call edline(iixlast,iiylast,iix,iiy,LD)
-                  write(6,*) 'duplicate edge.'
+
+C Debug.
+C                  write(6,*) 'duplicate edge.'
+
                   found=.true.
                 endif
               endif
@@ -513,7 +519,10 @@ C with the co-planer.
                 else
                   LD=4
                   call edline(iixlast,iiylast,iix,iiy,LD)
-                  write(6,*) 'duplicate edge.'
+
+C Debug.
+C                  write(6,*) 'duplicate edge.'
+
                   found=.true.
                 endif
               endif

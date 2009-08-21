@@ -1730,8 +1730,9 @@ C << what about using CALL ESCZONE(ICOMP) and then CALL ERCZONE(ICOMP)? >>
             SSOTHER(ICN,3)=TOTHER(IJ,3)
   323     continue
   
-C Debug
+C Debug.
 C          write(6,*) (TOTHER(ij,1),ij=1,10)
+
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iz) =1.1
@@ -2589,6 +2590,7 @@ C IVERT is the menu position, MVERT the current number of menu lines.
       endif
   31  MHEAD=3
       MCTL=4
+
 C Debug
 C      write(6,*) 'naloc mhead mctl ',naloc,mhead,mctl
 
@@ -3019,8 +3021,9 @@ C against the climate list to see related db for climate name.
         if(clmdb(1:4).ne.'UNKN')then
           LCLIM=clmdb
 
-C Debug
+C Debug.
 C          write(6,*)'using new climate db ',clmdb
+
           call tstamp('>','PRJ: IDST update climate in configuration')
           call tstamp('>',LCFGF)
           CALL EMKCFG('-',IER)

@@ -852,9 +852,11 @@ C the name for this layer of this construction
               if(found.and.close)then
                 close1 = .true.
                 iconmatpointer(ino,IL)=ij
+
 C Debug..
 C                write(6,*) 'air mat->layer',ino,il,ij,iprndx(ij),
 C     &            thkiprndx(ij),iglassndx(ij),riair(ij)
+
               endif
             else
 
@@ -864,9 +866,11 @@ C If solid then check if thickness is unique.
               if(found.and.close)then
                 close1 = .true.
                 iconmatpointer(ino,IL)=ij
-C Debug..
+
+C Debug.
 C                write(6,*) 'mat->layer',ino,il,ij,iprndx(ij),
 C     &            thkiprndx(ij),iglassndx(ij),nameiprndx(ij)
+
               endif
             endif
  240      continue
@@ -1182,6 +1186,8 @@ C If the current periods gain is a new max for the type then update loadcasp.
             endif
  85       continue
         endif
+
+C Debug.
 C        write(6,*)'loadcasp sens ',loadcasp(mz,1,1),loadcasp(mz,2,1),
 C     &    loadcasp(mz,3,1)
 C        write(6,*)'loadcasp latn ',loadcasp(mz,1,2),loadcasp(mz,2,2),
@@ -1235,6 +1241,7 @@ C Also do placeholder of there are no gains of this type on this day.
 C Debug
 C              write(6,*) 'Lights wk CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
+
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF1(J),':00',com,totfrac,com
             endif
@@ -1268,9 +1275,11 @@ C If there are no saturday periods or no lights write standard placeholder.
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
-C Debug
+
+C Debug.
 C              write(6,*) 'Lights sat CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
+
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF2(J),':00',com,totfrac,com
             endif
@@ -1307,9 +1316,11 @@ C Again for sunday.
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
-C Debug
+
+C Debug.
 C              write(6,*) 'Lights sun CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
+
               if(j.lt.NCAS3)then
 
 C If the next period is of the same casual gain type then write
@@ -1413,6 +1424,7 @@ C Go through loops for weekdays, saturdays and sundays for small power gains.
 C Debug.
 C              write(6,*) 'SmP wkd CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
+
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF1(J),':00',com,totfrac,com
             endif
@@ -1449,6 +1461,7 @@ C     &          CGNS,CGNL,totcgnsl,totfrac
 C Debug.
 C              write(6,*) 'SmP sat CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
+
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF2(J),':00',com,totfrac,com
             endif
@@ -1489,6 +1502,7 @@ C And small power for Sunday.
 C Debug
 C              write(6,*) 'SmP sun CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
+
               if(j.lt.NCAS3)then
                 WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &            '  Until: ',ICGF3(J),':00',com,totfrac,com
@@ -1591,9 +1605,11 @@ C Go through loops for weekdays, saturdays and sundays for occupants.
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
-C Debug
+
+C Debug.
 C              write(6,*) 'People wkd CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
+
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF1(J),':00',com,totfrac,com
             endif
@@ -1626,9 +1642,11 @@ C     &          CGNS,CGNL,totcgnsl,totfrac
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
+
 C Debug
 C              write(6,*) 'People sat CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
+
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF2(J),':00',com,totfrac,com
             endif
@@ -1665,9 +1683,11 @@ C And for Sunday.
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
-C Debug
+
+C Debug.
 C              write(6,*) 'People sun CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
+
               if(j.lt.NCAS3)then
 
 C If the next period is of the same casual gain type then write
@@ -1956,6 +1976,7 @@ C 2nd and 3rd (going around the top of the door) is ~90
      &          Y(IWHICH2),Z(IWHICH2),X(IWHICH3),Y(IWHICH3),Z(IWHICH3),
      &          ang2)
               call eclose(ang2,90.00,5.00,closeb)
+
 C Debug.
 C              write(6,*) '2nd & 3rd angles are ',ang1,ang2
 
@@ -1973,8 +1994,10 @@ C If first edge and 5th edge are at same height then a door.
                 call eclose(Z(JVN(IS,5)),Z(JVN(IS,6)),0.01,closec)
                 if(closea.and.closeb.and.closec)then
                   call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
-                  write(6,'(3a,a)') 'Surface ',ZSDES(1:lnblnk(ZSDES)),
+                  write(outs,'(3a,a)') 'Surface ',
+     &              ZSDES(1:lnblnk(ZSDES)),
      &              ' probably wraps around a door'
+                  call edisp(iuout,outs)
                   COORD(1,1)=X(JVN(IS,1))
                   COORD(1,2)=Y(JVN(IS,1))
                   COORD(1,3)=Z(JVN(IS,1))
@@ -1992,12 +2015,13 @@ C If first edge and 5th edge are at same height then a door.
               endif
             endif
 
-C Debug...
+C Debug.
 C            write(6,*) 'for surface ',is,' corners resolve to...'
 C            write(6,*) COORD(1,1),COORD(1,2),COORD(1,3)
 C            write(6,*) COORD(2,1),COORD(2,2),COORD(2,3)
 C            write(6,*) COORD(3,1),COORD(3,2),COORD(3,3)
 C            write(6,*) COORD(4,1),COORD(4,2),COORD(4,3)
+
           endif
 
 C Have not yet worked out equivalent to a constant boundary condition.
@@ -2426,10 +2450,8 @@ C for geometry.
      
       return
 
-
-
 C Error.
-  103 write(6,*) 'Error opening climate file.'
+  103 call edisp(iuout,'Error opening climate file.')
       return
 
 C Error messages from header.

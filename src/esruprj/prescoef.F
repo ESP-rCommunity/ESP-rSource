@@ -1879,7 +1879,8 @@ C prepended.
      &      lapres(1:lnblnk(lapres))
 
 C Debug.
-          write(6,*) 'working pressure coef ',lworking
+C          write(6,*) 'working pressure coef ',lworking
+
           CALL EFOPSEQ(IUM,lworking,1,IER)
         endif
       else

@@ -1040,6 +1040,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Debug.
 C        write(6,*) 'edcfg res remote is ',remote,nsset
+
         if(nsset.gt.0)then
 
 C If there are simulation parameter sets use the names of the results
@@ -1067,6 +1068,7 @@ C files splres or sblres and prepend user home folder if remote is true.
                 endif
 C Debug.
 C                write(6,*) 'remote so reset tfile to ',longtfile
+
               endif
               havefile=.true.
             else
@@ -1099,6 +1101,7 @@ C                write(6,*) 'remote so reset tfile to ',longtfile
                 endif
 C Debug.
 C                write(6,*) 'remote so reset tfile to ',longtfile
+
               endif
               havefile=.true.
             else
@@ -1611,8 +1614,10 @@ C If control exists confirm update to zone links (assume no control
 C in the copied zone).  Begin by reading the existing control before
 C incrementing the ncomp.
           OKC=.false.
+
 C Debug.
 C          write(6,*) 'lctlf is ',LCTLF
+
           if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
             continue
           else
@@ -2051,6 +2056,7 @@ C Find out if there are construction files in the model ../zones folder.
 
 C Debug.
 C                write(6,*) CFILE
+
                 LTHRM(NCOMP)=CFILE
               endif
             endif
@@ -2069,8 +2075,10 @@ C Find out if there are tmc files in the model ../zones folder.
                 if(snpfile(1:2).ne.'  ')then
                   write(DFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &              snpfile(1:lnblnk(snpfile))
+
 C Debug.
 C                  write(6,*) DFILE
+
                   LTWIN(NCOMP)=DFILE
                   ITW(NCOMP)=1
                 endif
@@ -2145,8 +2153,10 @@ C Find out if there are operation files in the model ../zones folder.
               if(snpfile(1:2).ne.'  ')then
                 write(DFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
+
 C Debug.
 C                write(6,*) DFILE
+
                 LPROJ(NCOMP)=DFILE
               endif
             endif
@@ -2210,6 +2220,7 @@ C Find out if there are viewfactor files in the model ../zones folder.
 
 C Debug.
 C                  write(6,*) DFILE
+
                   LVIEW(NCOMP)=DFILE
                   IVF(NCOMP)=1
                 endif
@@ -2272,6 +2283,7 @@ C Find out if there are casual gain control files in the model ../zones folder.
 
 C Debug.
 C                  write(6,*) DFILE
+
                   LCGCIN(NCOMP)=DFILE
                   ICGC(NCOMP)=1
                 endif
@@ -2334,6 +2346,7 @@ C Find out if there are casual gain control files in the model ../zones folder.
 
 C Debug.
 C                  write(6,*) DFILE
+
                   LHCCO(NCOMP)=DFILE
                   IHC(NCOMP)=1
                 endif
@@ -3429,6 +3442,7 @@ C writtn to (if iaccess is something other than one.)
 
 C Debug.
 C          write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
+
           if(iaccess.eq.1)then
             call tstamp('>','PRJ: on browse mode')
             browse=.true.
@@ -3455,6 +3469,7 @@ C it was a root name).
 
 C Debug.
 C      write(6,*) 'c iaccess is ',iaccess,icerr,ifold,LCMDFL
+
       if(ifold.eq.0.and.icerr.eq.0)then
         CALL ERPFREE(IFCFG,ISTAT)
         call FINDFIL(LCFGF,XST)
@@ -3488,6 +3503,7 @@ C works. If path begins with /usr/esru then no need to prepend odir.
 
 C Debug.
 C          write(6,*) ' subpath of folder is ',subpath(1:lnblnk(subpath))
+
 #endif
 #ifdef MINGW
 C In MINGW slightly different logic. If path ls ./ then standard logic
@@ -3534,6 +3550,7 @@ C Try to use information gathered from file scan.
 
 C Debug.
 C              write(6,*) 'sfile is ',sfile
+
               call fdroot(sfile,path,LCFGF)
               CALL ERPFREE(IFCFG,ISTAT)
               call FINDFIL(LCFGF,XST)

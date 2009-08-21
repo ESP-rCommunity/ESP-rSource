@@ -575,7 +575,10 @@ C Pop up the help text.
       goto 33
 
 C Error.
- 901  write(6,*) 'Unable to open IDF file ',LFIL,' on ',ioout
+ 901  call isunix(unixok)
+      if(unixok)then
+        write(6,*) 'Unable to open IDF file ',LFIL,' on ',ioout
+      endif
       return
      
       END
@@ -1677,7 +1680,10 @@ C in users home folder.
 C Can user write at the curdir folder?
         ifold=-1
         call ckaccess(ifold,iaccess,icerr,curdir)
-        if(iaccess.eq.1)write(6,*) 'cannot write at',curdir(1:lcd)
+        if(iaccess.eq.1)then
+          call isunix(unixok)
+          if(unixok)write(6,*) 'cannot write at',curdir(1:lcd)
+        endif
 
 C Determine how to treat the path. See if the root name falls into the
 C path somewhere.
@@ -1726,7 +1732,10 @@ C so then easy to write, if not then try for the token before that).
 C Can user write at the path folder?
       ifold=-1
       call ckaccess(ifold,iaccess,icerr,path)
-      if(iaccess.eq.1)write(6,*) 'cannot write at',path(1:lnblnk(path))
+      if(iaccess.eq.1)then
+        call isunix(unixok)
+        if(unixok)write(6,*) 'cannot write at',path(1:lnblnk(path))
+      endif
 
 C Determine how to treat the path. If the start of the path matches
 C the root name check for rootname/cfg folders.
@@ -1750,7 +1759,10 @@ C are now so this can be subtracted from curdir for testing.
      &            fs,WORDS(IW)(1:lnblnk(WORDS(IW)))
           llf=lnblnk(LF)
           write(LF,'(a)') curdir(1:lcd-llf)
-          write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
+
+C Debug.
+          call isunix(unixok)
+          if(unixok)write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
           ifold=-1
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
@@ -1784,7 +1796,10 @@ C are now so this can be subtracted from curdir for testing.
           write(LF,'(a)') WORDS(IW)(1:lnblnk(WORDS(IW)))
           llf=lnblnk(LF)
           write(LF,'(a)') curdir(1:lcd-llf)
-          write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
+
+C Debug.
+          call isunix(unixok)
+          if(unixok)write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
           ifold=-1
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
@@ -1970,6 +1985,9 @@ C Write non-specific demads.
       endif
 
 C Non-linear thermophysical properties configuration file.
+
+C << ?? why write to unit 6 rather than iunit ?? >>
+
       if(INTHPS)then
         WRITE(6,'(2A)') '*nlt ',LNLTHP(1:lnblnk(LNLTHP))
       endif

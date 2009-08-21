@@ -109,11 +109,13 @@ C If the action is `new` then setup model folder(s) and the registration
 C level configuration file via call to pregist in `sn` mode.
 C If action is `cont` then there is no pre-registration task. If action
 C is `update` then there is no pre-registration task.
+
 C Debug
 C      write(6,*)  'action ',action,' ',root,' ',folder
 C      write(6,*)  'menu ',menu
 C      write(6,*)  'mpath ',mpath
 C      write(6,*)  'weather ',weather
+
       if(action(1:3).eq.'new')then
         call pregist('sn',root,mpath,folder,menu,ier)
       elseif(action(1:6).eq.'within')then
@@ -526,7 +528,7 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character act*2
       character subpath*72,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
-      character sn*12,constr*12,opt*12
+      character sn*12,constr*12,opt*12,outs*124
       LOGICAL browse,OKC,XST,unixok
       logical willneedtmc  !  if a tmc file will be required.
       logical closev       !  mass is close to vertical
@@ -1057,8 +1059,10 @@ C the initial description (usefile) and use(3) parameters.
      &    dinstpath(1:lnblnk(dinstpath)),fs,'training',fs,'pattern',fs
         write(sfile,'(2a)')subpath(1:lnblnk(subpath)),
      &    usefile(1:lnblnk(usefile))
+
 C Debug.
-C        write(6,*) 'pattern file is ',sfile(1:lnblnk(sfile))
+C        write(outs,*) 'pattern file is ',sfile(1:lnblnk(sfile))
+C        call edisp(iuout,outs)
 
 C Clear commons.
         DO 401 IDTY=1,NBDAYTYPE
@@ -1118,7 +1122,8 @@ C Update configuration file to know about the construction files.
       return
 
 C Errors when creating string buffers.
-   1  write(6,*) 'error creating subpath: ',subpath
+   1  write(outs,*) 'error creating subpath: ',subpath
+      call edisp(iuout,outs)
       ier=2
       return
 
@@ -1512,9 +1517,10 @@ C *action,new,boxer,single,/tmp/boxer
           CALL EGETRM(OUTSTR,K,mpath,'W','model folder',IER)
 
 C Debug.
-          write(6,*)  's action ',actions,' root ',root
-          write(6,*)  's folder ',folder
-          write(6,*)  's mpath ',mpath
+C          write(6,*)  's action ',actions,' root ',root
+C          write(6,*)  's folder ',folder
+C          write(6,*)  's mpath ',mpath
+
         elseif(actions(1:4).eq.'cont')then
           continue
         endif
@@ -1646,7 +1652,11 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
           nipvassmt=0
           simact='i1d   '
         endif
-        write(6,*) 'the value of simact is ',simact
+
+C Feedback. << but simact is not passed to anything >>
+        write(outs,*) 'the value of simact is ',simact
+	call edisp(iuout,outs)
+
         goto 43
       elseif(WORD(1:8).eq.'*cooling')then
         CALL EGETWR(OUTSTR,K,cl_Setpoint(nsz),-102.,102.,'W',
@@ -2240,6 +2250,7 @@ C          write(6,*) 'nbmass',nbmass
 C          write(6,*) 'nbedges',nbedges
 C          write(6,*) 'nbcord',nbcord
 C          write(6,*) 'list',list
+
           call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
      &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,rotateit(isz),nbglz(isz),hasglaze,
@@ -2385,10 +2396,10 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       CHARACTER OUTSTR*248,outs*124,outsd*124
       character dstmp*24
 
-      character act*1  ! action requested.
-      character ipvact*1 ! action for clearipvdat
-C      character simact*6 ! action for creating assessments.
-      character subpath*72
+      character act*1      ! action requested.
+      character ipvact*1   ! action for clearipvdat
+C      character simact*6  ! action for creating assessments.
+      character subpath*72 ! not yet used
 
 C At the head of the file is a menu string and a description
 C silentmenu (char 32) and silentdoc (char 248) which identifies
@@ -2463,9 +2474,11 @@ C first list any files with .cfg in name.
 
 C If subpath is less than 72 char with odir + path use that
 C otherwise just use path.
+
 C Debug...
-      write(6,*) 'usrdir is ',odir
-      write(6,*) 'path is ',path
+C      write(6,*) 'usrdir is ',odir
+C      write(6,*) 'path is ',path
+
       subpath=' '
       lnodir=lnblnk(odir)
       lnpath=lnblnk(path)
@@ -2475,9 +2488,11 @@ C Debug...
       else
         write(subpath,'(a)') path(1:lnpath)
       endif
-      write(outs,'(2a)') 'configuration files in ',
-     &  subpath(1:lnblnk(subpath))
-C      write(6,*) outs(1:lnblnk(outs))
+
+C Debug.
+C      write(outs,'(2a)') 'configuration files in ',
+C     &  subpath(1:lnblnk(subpath))
+C      call edisp(iuout,outs)
 
 C Instanciate the sz array structures. The logic is to scan all of the
 C zone details and then write into the file.

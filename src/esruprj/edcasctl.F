@@ -1043,12 +1043,20 @@ C status.
           DO 51 I=1,NSUR
             IF(ITMCFL(ICOMP,I).gt.0)then
               NTMC=ITMCFL(ICOMP,I)
-C              write(6,*) 'TMC No. =',NTMC            
+
+C Debug.
+C              write(6,*) 'TMC No. =',NTMC 
+           
               IF(IBCMT(ICOMP,NTMC).EQ.1) NDCFS(ig) = 2
+
+C Debug.
 C              write(6,*) 'Suface No. =',I
 C              write(6,*) 'Blind flag = ',IBCMT(ICOMP,NTMC)
+
             ENDIF
 51        CONTINUE
+
+C Debug.
 C          write(6,*) 'No. of DC stages = ',NDCFS(ig)
          
 C Set all daylight coefficients to -1 for this sensor (i.e. not calculated yet)

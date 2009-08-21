@@ -1487,6 +1487,7 @@ C the U and UA reporting below.
 C Debug.
 C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
 C     &            ii,UVH,UVU,UVD,UVI
+
               else
                 continue
               endif

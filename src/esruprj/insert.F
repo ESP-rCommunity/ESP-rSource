@@ -386,9 +386,11 @@ C reference in the parent. Use addvert to do the deletion.
                   if(jvn1(ichildloop).eq.jvn(isurloop,iverloop))then
                     foundone=jvn1(ichildloop)
                     foundonepos=iverloop
+
 C Debug.
 C                    write(6,*) 'found shared ',foundone,foundonepos,
 C     &                ' at',iverloop,ichildloop,parentedges
+
                   endif
   749           continue
 
@@ -399,8 +401,10 @@ C surface and then decrement nver for the parent surface.
                 else
                   do 750 IV=foundonepos,parentedges-1
                     JVN(isurloop,IV)=JVN(isurloop,IV+1)
+
 C Debug.
 C                    write(6,*) 'packing jvn ',iv,iv+1,parentedges
+
   750             continue
                   JVN(isurloop,parentedges)=0    ! zero last position
                   NVER(isurloop)=NVER(isurloop)-1 ! decrement list length
@@ -431,8 +435,10 @@ C list. If the surface does not have another child then do this
 C test and if it does have another child then best not to modify
 C the jvn list of the parent surface.
                 if(JVN(isurloop,1).eq.JVN(isurloop,NVER(isurloop)))then
+
 C Debug.
 C                  write(6,*) 'clean first last duplicate vertex ',jjver
+
                   JVN(isurloop,NVER(isurloop))=0
                   NVER(isurloop)=NVER(isurloop)-1
                 endif
@@ -443,8 +449,10 @@ C identical entries in jvn in which case the 2nd can be deleted.
                   IIVER=JVN(isurloop,iver)    ! the vertex to compare against
                   JJVER=JVN(isurloop,iver+1)  ! the next position
                   if(JJVER.eq.IIVER)then
+
 C Debug.
 C                    write(6,*) 'clean 2nd duplicate vertex ',jjver
+
                     do 754 IV=JJVER,parentedges-1
                       JVN(isurloop,IV)=JVN(isurloop,IV+1)
   754               continue
@@ -493,9 +501,11 @@ C of the shared vertex, then decrement nver() for the other surface.
                   if(ijj.eq.jvn(iwhich,iverloop))then
                     foundone=ijj
                     foundonepos=iverloop
+
 C Debug.
 C                    write(6,*) 'found shared ',foundone,foundonepos,
 C     &                ' at',iverloop,nver(iwhich),iwhich
+
                   endif
   755           continue
                 if(foundone.eq.0.or.foundonepos.eq.0)then
@@ -503,8 +513,10 @@ C     &                ' at',iverloop,nver(iwhich),iwhich
                 else
                   do 756 IV=foundonepos,nver(iwhich)-1
                     JVN(iwhich,IV)=JVN(iwhich,IV+1)
+
 C Debug.
 C                    write(6,*) 'packing oth jvn ',iv,iv+1,iwhich
+
   756             continue
                   JVN(iwhich,nver(iwhich))=0    ! zero last position
                   NVER(iwhich)=NVER(iwhich)-1 ! decrement list length

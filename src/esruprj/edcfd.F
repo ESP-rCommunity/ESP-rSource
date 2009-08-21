@@ -747,9 +747,11 @@ C anything other than zero.
             endif
           endif
   43    continue
+  
 C debug       write(6,*) ilx,(XSS(j),j=1,ilx)
 C debug       write(6,*) ily,(YSS(j),j=1,ily)
 C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
+
         if(NREG(1,ICFD).eq.0)NREG(1,ICFD)=ilx-1
         if(NREG(2,ICFD).eq.0)NREG(2,ICFD)=ily-1
         if(NREG(3,ICFD).eq.0)NREG(3,ICFD)=ilz-1
@@ -781,6 +783,7 @@ C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
             ntcx = ntcx + NCELX(ij,ICFD)
   44      continue
         endif
+
 C debug        write(6,*) xd,tolx,int(xd/tolx)
 C debug        write(6,*) 'ncellx ',NCELX
 
@@ -811,6 +814,7 @@ C debug        write(6,*) 'ncellx ',NCELX
             ntcy = ntcy + NCELY(ij,ICFD)
   45      continue
         endif
+
 C debug        write(6,*) yd,toly,int(yd/toly)
 C debug        write(6,*) 'ncelly ',NCELY
 
@@ -841,8 +845,10 @@ C debug        write(6,*) 'ncelly ',NCELY
             ntcz = ntcz + NCELZ(ij,ICFD)
   46      continue
         endif
+
 C debug        write(6,*) zd,tolz,int(zd/tolz)
 C debug        write(6,*) 'ncellz ',NCELZ
+
       elseif(INO.EQ.7)then
 
 C Grid X-axis.
@@ -4432,12 +4438,12 @@ C Act silently.
       endif
 
 C Debug...
-      do 30 I=1,NNPK
-        IP=NODPS(ICPK(I))
-        IN=NODNE(ICPK(I))
-        IC=ITPCON(ICPK(I))
-        write(6,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
- 30   continue
+C      do 30 I=1,NNPK
+C        IP=NODPS(ICPK(I))
+C        IN=NODNE(ICPK(I))
+C        IC=ITPCON(ICPK(I))
+C        write(6,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
+C 30   continue
 
       return
       end

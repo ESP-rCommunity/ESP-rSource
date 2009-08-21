@@ -1140,7 +1140,7 @@ C yet made that it is hourly and full year.
         IER=0
         call supplyandcheck(LTDFA,'T',ier)
         if(ier.ne.0)then
-          write(6,*) 'non-zero error after call to supplyandcheck'
+          call edisp(iuout,'non-zero error supplyandcheck call.')
         endif
       endif
       if(ISBEM.EQ.1)THEN
@@ -1159,8 +1159,11 @@ C Set entries in ascending order.
         DO 622 IZ=1,NCOMP
           ctl_Zonelink_match=.false.
           if(iactiv_tdf_item(IZ).ne.iactiv_tdf_item(IZ-1))then
-            write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
-     &                 iactiv_tdf_item(IZ-1)
+
+C Debug.
+C            write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
+C     &                 iactiv_tdf_item(IZ-1)
+
 C Reset the counter iskipandmatch to use for the opposite case (i.e.
 C where iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1)
 C See comments at the place where iskipandmatch is used for more details
@@ -1168,7 +1171,9 @@ C about this counter
             iskipandmatch=1     
             icountnotequal=icountnotequal+1
             iforuseintdfentry(icountnotequal)=iactiv_tdf_item(IZ)
-            write(6,*)'a:', icountnotequal
+
+C Debug.
+C            write(6,*)'a:', icountnotequal
 
 C Control items
 C Need a counter here to skip common non-sorted activities and match the right one
@@ -1214,9 +1219,12 @@ C Update the control file and link the control loop to the correct zone.
             icascf(iCTLlink)=icountnotequal
           elseif(iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1))then
             iskipandmatch=iskipandmatch+1
-            write(6,*)'iz_b: ',iactiv_tdf_item(IZ),'iz_b-1: ',
-     &                 iactiv_tdf_item(IZ-1)
-            write(6,*)'b:', icountnotequal
+
+C Debug.
+C            write(6,*)'iz_b: ',iactiv_tdf_item(IZ),'iz_b-1: ',
+C     &                 iactiv_tdf_item(IZ-1)
+C            write(6,*)'b:', icountnotequal
+
             i2skipandmatch=0
             iCTLlink=1
             do while(.not.ctl_Zonelink_match.and.iCTLlink.le.ncomp)
@@ -1528,7 +1536,11 @@ C End of file encountered, close the file and return to menu.
 
 C<<<<<<Change this in the future >>>>>>>>>>>>>
 C<<<Need to add "errors when creating string buffers." ??>>>>>>>>>>>>>
-  212     write(6,*) 'subpath: ',subpath    
+  212   continue
+
+C Debug.
+C        write(6,*) 'subpath: ',subpath
+   
   2     continue 
         NTSPH=1
         itdbdoy=1

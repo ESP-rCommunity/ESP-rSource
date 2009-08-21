@@ -243,6 +243,7 @@ C Debug.
 C            write(6,*) 'the browsed file is ',ltmp(1:lnblnk(ltmp))
 C            write(6,*) 'the zonepth is ',zonepth(1:lnblnk(zonepth))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
             gotviabrowse=.true.
           else
             LTMP=GFILE
@@ -518,8 +519,9 @@ C of the distribution and let the user select one.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -604,8 +606,9 @@ C The from scratch should intially be version 2.0
           CALL PHELPD('operation setup',23,'-',0,0,IER)
           call initcasday(ier)
 
-C debug
+C Debug.
 C          write(6,*) 'after ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
+
           MODOPR=.true.
           sorted=.true.
         elseif(igu.eq.3.or.igu.eq.4.or.igu.eq.6.or.igu.eq.7)then
@@ -660,8 +663,9 @@ C user select one.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -1576,6 +1580,7 @@ C File browse from patterns.
 C Debug.
 C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -2023,6 +2028,7 @@ C File browse from patterns.
 C Debug.
 C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -3851,9 +3857,11 @@ C File browsing from pattern folder.
               call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
      &          iier)
               if(snpfile(1:2).ne.'  ')then
+
 C Debug.
 C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -5719,6 +5727,8 @@ C initcasday does initial setup of all casual day types.
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
+
+C Debug.
 C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.

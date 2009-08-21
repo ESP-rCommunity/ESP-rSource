@@ -56,6 +56,14 @@ C espriou.h provides currentfile, defdbfl exemfl.
       
       integer lnblnk  ! function definition
 
+C IEEE callback (Solaris)
+#ifdef SUN
+#ifdef F90
+      external SIGFPE_bps      
+      integer SIGFPE_bps      
+#endif
+#endif
+
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
@@ -337,9 +345,13 @@ C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
 C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
 C           only if: Sun-3 f77 with -f68881 or -ffpa option
 C                or: Sun-4 f77.
-C      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
-C      ieeer=ieee_handler('set','common',SIGFPE_bps)
-C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set!'
+#ifdef SUN
+#ifdef F90
+      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
+      ieeer=ieee_handler('set','common',SIGFPE_bps)
+      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
+#endif
+#endif
 
 C Initialise output device, assume minimal trace and a standard
 C display.  If passed zero size and offsets use default, if size
@@ -428,6 +440,8 @@ C esprc may be updated if the alternate version is found.
         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
       call scesprc(esprc,IFIL+5,0,IIER)
+
+C Debug.
 C      write(6,*) 'upath',upath
 C      write(6,*) 'esprc',esprc
 
@@ -655,8 +669,10 @@ C If it is, extract configuration file name and command data.
             cmdn=' '
  22         CALL STRIPC(IFCFG,OUTSTR,0,ND,0,'idst tags',IIER)
             if(iier.ne.0)then
+
 C Debug.
 C              write(6,*)'idst naloc =',nidst,naloc
+
               goto 23
             endif
             if(OUTSTR(1:9).eq.'*abs_path')then
@@ -845,6 +861,7 @@ C Pass information to C library code if running in graphic mode.
 
 C Debug.
 C      write(6,*) ' model management browse status ',browse
+
       if(CFGOK)then
         if(browse)then
           ITEMS(7) =  ' .... Current model (browse) ....'
@@ -2289,6 +2306,7 @@ C one timestep in the hour.
 
 C There is temporal data so must save at each timestep.
 C              write(6,*) 'temporal data found so save each timestep'
+
               isavgh=0
             else
               H(1)='The ESP-r Simulator calculates the value of each'
@@ -2755,6 +2773,7 @@ C Logic to react when browsing a model.
             remote=.true.
           endif
         endif
+
 C Debug.
 C        write(6,*) 'status of browse and remote ',browse,remote
 
@@ -2775,8 +2794,10 @@ C        write(6,*) 'status of browse and remote ',browse,remote
      &              filen(1:lnblnk(filen))
                 endif
               endif
+
 C Debug.
 C              write(6,*) 'reset tfile to ',tfile
+
             endif
 
             h(1)='IPV recovery assumes that the relevant results'
@@ -2816,8 +2837,10 @@ C            call usrmsg('Beginning performance recovery via',doit,'-')
      &              filen(1:lnblnk(filen))
                 endif
               endif
+
 C Debug.
 C              write(6,*) 'itr3 reset tfile to ',tfile
+
             endif
             if(iappw.gt.0.and.iappw.le.200)then
               write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
@@ -2851,8 +2874,10 @@ C            call edisp(iuout,'* IPV report complete.')
      &            filen(1:lnblnk(filen))
               endif
             endif
+
 C Debug.
 C            write(6,*) ' irt2 reset tfile to ',tfile
+
           endif
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
@@ -5741,6 +5766,8 @@ C ".db3.a"
       END
 
 C In support of floating point exceptions.
+#ifdef SUN
+#ifdef F90
       integer function SIGFPE_bps(sig,code,context)
       integer sig,code,context(5)
       character label*16
@@ -5752,3 +5779,5 @@ C In support of floating point exceptions.
       write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
       SIGFPE_bps = loc(code)
       end
+#endif
+#endif

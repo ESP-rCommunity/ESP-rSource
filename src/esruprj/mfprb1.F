@@ -2515,8 +2515,8 @@ C Note works if ventilation is always from only one other zone.
  402          CONTINUE
 
 C Debug.
-              write(6,*) 'iz finfmax fvntmax isrczforvent',iz,
-     &          finfmax(iz),fvntmax(iz),isrczforvent(iz)
+C              write(6,*) 'iz finfmax fvntmax isrczforvent',iz,
+C     &          finfmax(iz),fvntmax(iz),isrczforvent(iz)
 
               call ECLOSE(finfmax(iz),0.0,0.0001,closeiz)
               call ECLOSE(fvntmax(iz),0.0,0.0001,closevz)
@@ -2684,6 +2684,7 @@ C Debug.
 C                      write(6,*) 'a icfv isfv itis ',icompforvent(itis),
 C     & isrczforvent(itis),iz,icaas(isrczforvent(itis)),isrczforvent(iz),
 C     & icaas(isrczforvent(iz))
+
                       NODPS(NCNN)=icaas(isrczforvent(iz))
                     endif
                     NODNE(NCNN)=nodeforcurrent
@@ -2722,9 +2723,12 @@ C Add connection using the new component (remember component index in ITPCON).
 C Use isrczforvent to get the index of the zone where ventilation is
 C coming from and then use this as an index for icompforvent to get
 C the actual component index.
-                      write(6,*) 'b icfv isfv iz ',icompforvent(iz),
-     &                  isrczforvent(iz),iz,icaas(iz),
-     &                  icaas(isrczforvent(iz))
+
+C Debug.
+C                      write(6,*) 'b icfv isfv iz ',icompforvent(iz),
+C     &                  isrczforvent(iz),iz,icaas(iz),
+C     &                  icaas(isrczforvent(iz))
+
                       NODPS(NCNN)=icaas(isrczforvent(iz))
                     endif
                     NODNE(NCNN)=nodeforcurrent
@@ -2755,9 +2759,12 @@ C and connection for ventilation.
      &                'which is not yet implemented. Using inf_source.')
                     NODPS(NCNN)=1
                   else
-                      write(6,*) 'c icfv isfv iz ',icompforvent(iz),
-     &                  isrczforvent(iz),iz,icaas(iz),
-     &                  icaas(isrczforvent(iz))
+
+C Debug.
+C                      write(6,*) 'c icfv isfv iz ',icompforvent(iz),
+C     &                  isrczforvent(iz),iz,icaas(iz),
+C     &                  icaas(isrczforvent(iz))
+
                     NODPS(NCNN)=icaas(isrczforvent(iz))
                   endif
                   NODNE(NCNN)=nodeforcurrent

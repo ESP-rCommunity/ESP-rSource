@@ -1758,6 +1758,7 @@ C Take into account the current value of whichdbpath.
         write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
      &    lpcdb(1:lnblnk(lpcdb))
       endif
+
 C Debug.
 C      write(6,*) 'previous plant ',lprev(1:lnblnk(lprev))
 
@@ -2236,8 +2237,10 @@ C implied path.
       elseif(ipathpcdb.eq.2)then
         longtfile=lltmp
       endif
+
 C Debug.
 C      write(6,*) 'longtfile plant b ',longtfile(1:lnblnk(longtfile))
+
       call EFOPRAN(ipcdb,longtfile,IRECLN,1,IER)
       IF(ier.eq.0)THEN
         IREC = 1
@@ -2982,6 +2985,7 @@ C Take into account the current value of whichdbpath.
         write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
      &    loptdb(1:lnblnk(loptdb))
       endif
+
 C Debug.
 C      write(6,*) 'previous optics ',lprev(1:lnblnk(lprev))
 
@@ -3544,6 +3548,7 @@ C Take into account the current value of whichdbpath.
         write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
      &    lapres(1:lnblnk(lapres))
       endif
+
 C Debug.
 C      write(6,*) 'previous pres coef ',lprev(1:lnblnk(lprev))
 
@@ -4016,6 +4021,7 @@ C otherwise edit the database contents.
 
 C Debug.
 C        write(6,*) 'working pressure coef ',lworking
+
         CALL EFOPSEQ(IAPRES,lworking,1,IER)
       endif
       IF(IER.NE.0) GOTO 60

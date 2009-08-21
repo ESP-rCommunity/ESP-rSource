@@ -332,7 +332,10 @@ C if that is selected decrement ncf and return.
 
 C Initialise and edit array of start times.
             call initperr(IP,rper,rperf,'i')
+
+C Debug.
 C            write(6,*) rper
+
             do 784 IDP=1,IP
               if(IDP.eq.1)then
                 tbcps(ncf,ik,IDP)=0.
@@ -408,7 +411,9 @@ C Initial setup of day types.
 
 C Initialise and edit array of start times.
             call initperr(IP,rper,rperf,'i')
+C Debug.
 C            write(6,*) rper
+
             do 287 IDP=1,IP
               if(IDP.eq.1)then
                 tpcps(ncl,ik,IDP)=0.
@@ -483,7 +488,10 @@ C Initial setup of day types.
 
 C Initialise and edit array of start times.
             call initperr(IP,rper,rperf,'i')
+
+C Debug.
 C            write(6,*) rper
+
             do 586 IDP=1,IP
               if(IDP.eq.1)then
                 tfcps(ncc,ik,IDP)=0.
@@ -593,7 +601,10 @@ C if that is selected decrement ncf and return.
 
 C Initialise and edit array of start times.
             call initperr(IP,rper,rperf,'i')
+
+C Debug.
 C            write(6,*) rper
+
             do 6 IDP=1,IP
               if(IDP.eq.1)then
                 tocps(ncf,ik,IDP)=0.

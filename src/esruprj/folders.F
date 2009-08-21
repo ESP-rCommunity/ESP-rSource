@@ -138,14 +138,20 @@ C Silent continue, there is nothing to do (currently).
       elseif(act(1:2).eq.'sn')then
 
 C Silent new within the pre-registration process.
-        write(6,*)  ' pregist ',root,' ',folder
-        write(6,*)  ' pregist ',mpath
+
+C Debug.
+C        write(6,*)  ' pregist ',root,' ',folder
+C        write(6,*)  ' pregist ',mpath
+
         write(LCFTMP,'(a)') root(1:lnblnk(root))
       elseif(act(1:2).eq.'sw')then
 
 C Silent within the pre-registration process.
-        write(6,*)  ' pregist ',root,' ',folder
-        write(6,*)  ' pregist ',mpath
+
+C Debug.
+C        write(6,*)  ' pregist ',root,' ',folder
+C        write(6,*)  ' pregist ',mpath
+
         write(LCFTMP,'(a)') root(1:lnblnk(root))
 
       elseif(act(1:1).eq.'i')then
@@ -822,9 +828,11 @@ C first list any files with .cfg in name.
 
 C If subpath is less than 72 char with odir + path use that
 C otherwise just use path.
+
 C Debug...
 C      write(6,*) 'usrdir is ',odir
 C      write(6,*) 'path is ',path
+
       subpath=' '
       lnodir=lnblnk(odir)
       lnpath=lnblnk(path)
@@ -843,7 +851,10 @@ C works. If path begins with /usr/esru then no need to prepend odir.
       if(path(1:2).eq.'./')then
         continue
       elseif(path(1:9).eq.'/usr/esru')then
-        write(6,*) 'OSX path is ',path
+
+C Debug.
+C        write(6,*) 'OSX path is ',path
+
         subpath=' '
         write(subpath,'(a)') path(1:lnblnk(path))
         write(outs,'(2a)') 'configuration files in ',
@@ -948,10 +959,12 @@ C Help text for this menu.
             sfile=' '
             snpfile=' '
             call browsefilelist('b','zon','geo',sfile,snpfile,nli,iier)
-C Debug...
+
+C Debug.
 C            write(6,*) 'selected file is ',sfile
 C            write(6,*) 'selected file is ',snpfile
 C            write(6,*) 'iier is ',iier,nli
+
           endif
         else
           sfile=' '
