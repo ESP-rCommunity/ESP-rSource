@@ -651,6 +651,8 @@ C Installed location of climate file. If GTK then use file browser.
         H(1)='This is the `installed` location of the climate file.'
         h(2)='(remember to copy new climate files to this folder)'
         write(llasci,'(a)') lclim(1:lnblnk(lclim))
+
+C Debug.
 C        write(6,*) llasci
   290   llt=lnblnk(llasci)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.

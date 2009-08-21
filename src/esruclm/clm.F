@@ -96,6 +96,7 @@ C Name of current application
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72
+      character blank*2   ! string for edisp of blank line
       LOGICAL OK,DOK,unixok,there,silent
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -257,13 +258,13 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      call edisp(IUOUT,' ')
+      call edisp(IUOUT,blank)
       CALL ESPrVersion("summary",cAppName,IUOUT)
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow, Scotland.'
       call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      call edisp(IUOUT,blank)
 
 
 C Find the user's home folder then get user's custom settings.
@@ -350,7 +351,9 @@ C Import climate data from ASCII file.
           call tstamp('>','Finished climate module conversion ASCI2BIN')
           write(outs248,'(5a)')'Climate_conversion',tab,
      &      pascif(1:lnblnk(pascif)),tab,LCMDFL(1:lnblnk(LCMDFL))
-          write(6,*)outs248(1:lnblnk(outs248))
+
+C Debug.
+C          write(6,*)outs248(1:lnblnk(outs248))
           CALL EPAGEND
           STOP
         elseif(paction(1:8).eq.'bin2asci')then
@@ -369,7 +372,9 @@ C Write out this data to an asci file.
           call tstamp('>','Finished climate module conversion BIN2ASCI')
           write(outs248,'(5a)')'Climate_conversion',tab,
      &      LCMDFL(1:lnblnk(LCMDFL)),tab,pascif(1:lnblnk(pascif))
-          write(6,*)outs248(1:lnblnk(outs248))
+
+C Debug,
+C          write(6,*)outs248(1:lnblnk(outs248))
           CALL EPAGEND
           STOP
         elseif(paction(1:7).eq.'epw2bin')then
@@ -387,7 +392,9 @@ C Import climate data from EPW file.
           call tstamp('>','Finished climate module conversion EPW2BIN')
           write(outs248,'(5a)')'Climate_conversion',tab,
      &      pascif(1:lnblnk(pascif)),tab,LCMDFL(1:lnblnk(LCMDFL))
-          write(6,*)outs248(1:lnblnk(outs248))
+
+C Debug.
+C          write(6,*)outs248(1:lnblnk(outs248))
           CALL EPAGEND
           STOP
         else
@@ -395,9 +402,9 @@ C Import climate data from EPW file.
 C In interactive mode so do splash-screen and then read
 C in the climate file name via list
 C selection, editing or accepting the LCMDFL.
-          call edisp(IUOUT,' ')
+          call edisp(IUOUT,blank)
           CALL ESPrVersion("summary",cAppName,IUOUT)
-          call edisp(IUOUT,' ')
+          call edisp(IUOUT,blank)
           paction='INTERACTIVE'
           silent=.false.
           CALL CFILIN(silent)
@@ -407,9 +414,9 @@ C selection, editing or accepting the LCMDFL.
 C In interactive mode so do splash-screen and then read
 C in the climate file name via list
 C selection, editing or accepting the LCMDFL.
-        call edisp(IUOUT,' ')
+        call edisp(IUOUT,blank)
         CALL ESPrVersion("summary",cAppName,IUOUT)
-        call edisp(IUOUT,' ')
+        call edisp(IUOUT,blank)
         paction='INTERACTIVE'
         silent=.false.
         CALL CFILIN(silent)
@@ -478,7 +485,9 @@ C Present the opening display and control menu.
         call usrmsg(' Closing clmate module...',' ','P')
         write(outs248,'(3a)')'Climate_selected',tab,
      &    LCMDFL(1:lnblnk(LCMDFL))
-        write(6,*)outs248(1:lnblnk(outs248))
+
+C Debug.
+C        write(6,*)outs248(1:lnblnk(outs248))
         call tstamp('>','Finished climate module')
         CALL EPAGEND
         STOP
@@ -874,7 +883,7 @@ C Cast back to 72 char name and do the conversion.
           endif
           call tstamp('>','CLM: import climate data')
           CALL EDISP(IUOUT,'Modified climate file saved')
-          CALL EDISP(IUOUT,' ')
+          CALL EDISP(IUOUT,blank)
         elseif(IICT.eq.3)then
 
 C Import climate data from Korean Met Office XXXH.dat ASCII file
@@ -1037,6 +1046,7 @@ C hour in any specified day.
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
       character outs*124,xfile*144,tg*1,delim*1,h*72
+      character blank*2  ! for edisp of blank line
       logical ok,dok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -1067,7 +1077,7 @@ C displaying the following data.
       ENDIF
 
 C Determine day to be displayed.
-    5 call edisp(iuout,' ')
+    5 call edisp(iuout,blank)
       call edisp(iuout,' Day to be displayed...')
       IDD=ID1
       IMM=IM1
@@ -1090,7 +1100,7 @@ C Output all values in tabular form.
          WRITE(outs,6)IDD,IMM
     6    FORMAT('           Period: Day',I3,' of month',I3)
          call edisp(itru,outs)
-         call edisp(itru,' ')
+         call edisp(itru,blank)
          WRITE(outs,61)
    61    FORMAT(' Hr d.b. temp. dr.n. rad. df.h. rad.',
      &          ' wd. vel. wd. dir. rel. h.')
@@ -1099,7 +1109,7 @@ C Output all values in tabular form.
    62    FORMAT(6X,'deg.C',6X,'W/m2 ',6X,'W/m2 ',6X,'m/s',
      &          4X,'deg.f.n.',3X,'pct')
          call edisp(itru,outs)
-         call edisp(itru,' ')
+         call edisp(itru,blank)
       ELSEIF(IDNGH.EQ.123)THEN
          WRITE(outs,63)IDD,IMM
    63    FORMAT('           Period: Day',I3,' of month',I3)
@@ -1112,7 +1122,7 @@ C Output all values in tabular form.
    65    FORMAT(6X,'deg.C',6X,'w/m2 ',6X,'w/m2 ',6X,'m/s',
      &          4X,'deg.f.n.',3X,'pct')
          call edisp(itru,outs)
-         call edisp(itru,' ')
+         call edisp(itru,blank)
       ENDIF
       DO 10 I=1,24
       C1=CDIF(I)
@@ -1258,8 +1268,10 @@ C IER=0 OK, IER=1 problem.
 C BTIM and PETIM are in terms of decimal fractions of a day.
       SUBROUTINE PERSTR(IYEAR,IBDOY,IBTIM,IEDOY,IETIM,NTSPH,
      &           IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
+      COMMON/OUTIN/IUOUT,IUIN
       CHARACTER T1H*5, T1D*5, T2H*5, T2D*5
       CHARACTER PERST1*14,PERST2*40,PERST3*40,DS*7,DS1*10,DE*7,DE1*10
+      character outs*124
 
       IER=0
 
@@ -1312,7 +1324,11 @@ C Generate view period string based on IBDOY,IEDOY,BTIM,ETIM
         ENDIF
       ENDIF
       RETURN
-  10  write(6,*) 'EPERSTR: error writing warning or strings.'
+
+C Error trapped from I/O above.
+  10  write(outs,*) 'EPERSTR: error writing warning or strings.'
+      call edisp(iuout,outs)
+
       END
 
 
