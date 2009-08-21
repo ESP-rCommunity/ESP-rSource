@@ -286,7 +286,7 @@ C enthmaxy enthalpy y axis maximum
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       logical close,colok,cscaleok
-      CHARACTER puts*12
+      CHARACTER puts*16
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSX
