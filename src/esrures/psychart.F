@@ -54,7 +54,8 @@ C component status, act = 'u' for user supplied points.
       CHARACTER H*72,HOLD*24,act*1,pcname*15,pcnam1*15,head*124
       CHARACTER DESCRH*5,outs*124,DESCR*7,DESCR1*10
       CHARACTER ETEXT*124,PDESCR*60,SDESCR*44
-      logical ok,dok,ask
+      logical ok,dok,ask,unixok
+      
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -356,8 +357,10 @@ C indx is the plant component number in the network.
 
 C Obtain the data for this selected component
             CALL fnddat(itstep,mcomp(1),ier)
+            call isunix(unixok)
             if(ier.ne.0)then
-              write(6,*) 'An error in fnddat ',itstep,mcomp(1),ier
+              if(unixok)write(6,*) 'An error in fnddat ',itstep,
+     &          mcomp(1),ier
               goto 99
             endif
 
@@ -407,7 +410,7 @@ C Ask whether user wants to step forwards, backwards or return.
       elseif(ino.eq.7)then
 
 C Several timesteps.
-C TSTART and TFINISH - start and finish timesteps from 00h00 on the 
+C TSTART and TFINSH - start and finish timesteps from 00h00 on the 
 C first day of output.
         if(IMDRW2.eq.0)then
           call edisp(iuout,'Nothing to plot yet...')
@@ -426,9 +429,12 @@ C first day of output.
         istart=((ioh1-1)+(iods-IPSDS)*24)*npts
         if(istart.eq.0)istart=1
         iend  =((ioh2)+(iodf-IPSDS)*24)*npts-1
-        TSTART=float(istart)
-        TFINSH=float(iend)
-        write(6,*) 'start and finish for ',TSTART,TFINSH,ctime
+
+C Debug.
+C        TSTART=float(istart)
+C        TFINSH=float(iend)
+C        write(6,*) 'start and finish for ',TSTART,TFINSH,ctime
+
         do 200 ii=istart, iend, nout
           ctime=ctime+(enterval*float(nout))
           iday=INT(ctime)
@@ -453,7 +459,10 @@ C first day of output.
               WRITE(DESCRH,'(i2,a1,i2)')INT(TIME),'h',MINU
             ENDIF
           endif
-          write(6,*) ' *200 ii ctime iday time ',ii,ctime,iday,time
+
+C Debug.
+C          write(6,*) ' *200 ii ctime iday time ',ii,ctime,iday,time
+
           write(outs,'(a,i4,4a)') 'The timestep (',ii,') is ',
      &      descrh,' on ',DESCR1
 
@@ -477,8 +486,9 @@ C indx is the plant component number in the network.
 
 C Obtain the data for this selected component
             CALL fnddat(ii,mcomp(1),ier)
+            call isunix(unixok)
             if(ier.ne.0)then
-              write(6,*) 'An error in fnddat ',ii,mcomp(1),ier
+              if(unixok)write(6,*)'An error in fnddat ',ii,mcomp(1),ier
               goto 98
             endif
 
@@ -990,8 +1000,10 @@ C Case where TD<60 and GS>30
             ENDIF
             call forceflush()
           ENDIF
-C Debug...
+
+C Debug.
 C          write(6,*) TD,xmax,xmax/2.
+
           call eclose(TD,real(int(xmax/2.)),0.001,close)
 C          IF(TD.EQ.int(xmax/2.)) THEN
           IF(close) THEN

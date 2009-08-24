@@ -80,7 +80,10 @@ C name with the full path.
       IER=0
 
 C Find the path and local file name.
+
+C Debug.
 C      write(6,*) 'MOCFD: current path is ',path
+
       iunit=IFIL+14
       call fdroot(LCMDFL,path,LTMP)
       CALL ERPFREE(iunit,ISTAT)
@@ -872,9 +875,11 @@ C Read data from res file.
           ISTREC=ISTREC+NRCFDOM(I)
  10     continue
       endif
-      
+
+C Debug.    
 C      write (6,*) 'ISTREC ',ISTREC,NCFDSZ,ITS,NRCFDOM(1),NRCFDOM(2)
 C      write(6,*)'ieqsv ',(ieqsv(i),i=1,5+nctm)
+
       IREC=ISTREC
       do 100 K=2,NK
         do 101 J=2,NJ

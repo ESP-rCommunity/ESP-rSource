@@ -123,8 +123,9 @@ C If the network flow file has not yet been opened request information.
         continue
       else
 
-C Debug...
+C Debug.
 C        write(6,*) 'iairn,lafres ',iairn,lafres
+
         if(iairn.ge.1)then
 
 C If there was a flow network defined ask for the flow results file.
@@ -647,7 +648,10 @@ C Assume fully occupied.
                 endif
  410          continue
               call eddisp(itru,louts)
+
+C Debug.
 C             write(6,*)TIME,(FLOWVALS(IXY),IXY=1,NMFGET)
+
               goto 10
             endif
 
@@ -1129,6 +1133,7 @@ C (absolute value of INODE).
 
       CHARACTER H*72,VRT(MCNN)*43
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
+      logical unixok
 
 C Set up array of menu strings.
       NITMS=0
@@ -1174,11 +1179,13 @@ C Act silently.
       endif
 
 C Debug...
+      call isunix(unixok)
       do 30 I=1,NNPK
         IP=NODPS(ICPK(I))
         IN=NODNE(ICPK(I))
         IC=ITPCON(ICPK(I))
-        write(6,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
+        if(unixok)write(6,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
+     &    CMNAM(IC)
  30   continue
 
       return

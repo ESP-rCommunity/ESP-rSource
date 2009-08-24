@@ -50,6 +50,7 @@ C day and VAL(2...) are timestep fields.
 
       dimension VAL(MBITS+2)
       character OUTS*124
+      logical unixok
 
 C Reset error and initialise returned VAL.
       DO 2 I=1,MBITS+2
@@ -76,9 +77,11 @@ C Scan TAB columns. Find difference between start of simulation and
 C the start of the TDF db.  If positive then need to add an offset to
 C the 'IP'.  
       idshift = ISDS - itdbdoy
-C debug...
+
+C Debug.
 C      write(6,*)'isds itdbdoy itdedoy itcnst idshift ID IJ ',isds,
 C     &  itdbdoy,itdedoy,idshift,ID,IJ
+
       ISDAT=2
       VAL(1)=RDOTY
 
@@ -124,7 +127,8 @@ C Copy appropriate fields into VAL.
       IF(ITRC.GT.1)CALL EDISP(IUOUT,' Day | Field data...')
 
 C Reporting.
-      IF(ITRC.GT.1)THEN
+      call isunix(unixok)
+      IF(ITRC.GT.1.and.unixok)THEN
         WRITE(6,'(27F7.2)')(VAL(J),J=1,MBITS)
       ENDIF
 

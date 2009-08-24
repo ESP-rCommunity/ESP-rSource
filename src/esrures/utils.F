@@ -611,6 +611,7 @@ C Get common block precz/lnprecz from geometry.h
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       CHARACTER zdescr*80,outs*244,outsd*80
+      logical unixok
 
       length=0
       do 42 i=1,NZ
@@ -641,7 +642,11 @@ C Get common block precz/lnprecz from geometry.h
         return
       endif
 
-   1  write(6,*) 'ZLIST: error writing zone names: ',outs
+C I/O error trap.
+   1  call isunix(unixok)
+      if(unixok)then
+        write(6,*) 'ZLIST: error writing zone names: ',outs
+      endif
       ierr=1
       return
       END
@@ -657,6 +662,8 @@ C a different colour for each name.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       character word*24
+      logical unixok
+      
 #ifdef OSX
       integer iix,iiy
 #else
@@ -833,7 +840,10 @@ C Then get index of colour for this zone, then plot text in that colour.
         return
       endif
 
-   1  write(6,*) 'ZLIST: error writing zone names: ',word
+   1  call isunix(unixok)
+      if(unixok)then
+        write(6,*) 'ZLIST: error writing zone names: ',word
+      endif
       ierr=1
       return
       END
@@ -1844,7 +1854,10 @@ C extremes.  Basic version, improvements could be made to intervals.
           endif
         endif
       else
-        write(6,*) 'xdiff exception'
+
+C Debug.
+C        write(6,*) 'xdiff exception'
+
         XDIFF=(XMAX-XMIN)/100.0
         BXMIN = XMIN-XDIFF
         BXMAX = XMAX+XDIFF

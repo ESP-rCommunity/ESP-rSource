@@ -1213,9 +1213,11 @@ C Note: return INPKT and NNPKT for total entering.
             NMFGET=NMFGET-1
             goto 1
           endif
-C Debug...
+
+C Debug.
 C          write(6,*) 'after easkabcd itotal & nnpk ',itotal,nnpk,inpk
 C          write(6,*) 'after easkabcd itotal & nnpkt ',itotal,nnpkt,inpkt
+
         else
           INODE=0
           itotal=0
@@ -1240,9 +1242,11 @@ C ask for one.
 C Ask for connections if required otherwise use value of NNPK from
 C nodes questions above. I.E. total flow entering was requested.
         if(itotal.eq.0)call ASKMFCON(INODE,NNPK,ICPK)
-C DEbug...
+
+C Debug.
 C        write(6,*) 'after itotal & nnpk ',itotal,nnpk,inpk
 C        write(6,*) 'after itotal & nnpkt ',itotal,nnpkt,inpkt
+
         lsf=lnblnk(SUFFIX)
         if (NNPK.gt.0) then
           if (INODE.gt.0) then
@@ -1992,9 +1996,11 @@ C return +ive, -ive or net flow.
           endif
           icompindex=ITPCON(IMFGETNO(I,2))
           icomptype=ITPCMP(icompindex)
-C Debug...
+
+C Debug.
 C          write(6,*) 'the component index is ',icompindex
 C          write(6,*) 'the component type is ',icomptype
+
           if(icomptype.eq.40)then
             area=SUPCMP(icompindex,2)
           elseif(icomptype.eq.50)then
@@ -2016,8 +2022,9 @@ C          write(6,*) 'the component type is ',icomptype
             area=1.0
           endif
 
-C Debug...
+C Debug.
 C          write(6,*) 'area of component type ',icomptype,' is ',area
+
           FLOWVALS(I)=FLOWVALS(I)/area
         elseif (IMFGETNO(I,1).eq.7) then
 
@@ -2552,8 +2559,11 @@ C Mark connection identified by KEYIND.
         INCGET(ORDER(IFOC))=INCGET(ORDER(IFOC))+1
         if (INCGET(ORDER(IFOC)).gt.1) INCGET(ORDER(IFOC))=0
         if (INCGET(ORDER(IFOC)).eq.1) then
-          write(6,*) 'selected ifoc order(ifoc) incget(()) ',ifoc,
-     &      order(ifoc),INCGET(ORDER(IFOC)),SMFLABEL(ORDER(ifoc))
+
+C Debug.
+C          write(6,*) 'selected ifoc order(ifoc) incget(()) ',ifoc,
+C     &      order(ifoc),INCGET(ORDER(IFOC)),SMFLABEL(ORDER(ifoc))
+
         endif
       endif
       goto 3

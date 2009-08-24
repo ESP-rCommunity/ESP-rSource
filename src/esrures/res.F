@@ -130,8 +130,12 @@ C Name of current application
       common/APPNAME/cAppName
 
 C IEEE callback (Solaris)
-C      external SIGFPE_bps      
-C      integer SIGFPE_bps      
+#ifdef SUN
+#ifdef F90
+      external SIGFPE_bps      
+      integer SIGFPE_bps      
+#endif
+#endif
       
       character cAppName*12      
       
@@ -258,9 +262,13 @@ C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
 C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
 C           only if: Sun-3 f77 with -f68881 or -ffpa option
 C                or: Sun-4 f77.
-C      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
-C      ieeer=ieee_handler('set','common',SIGFPE_bps)
-C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
+#ifdef SUN
+#ifdef F90
+      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
+      ieeer=ieee_handler('set','common',SIGFPE_bps)
+      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
+#endif
+#endif
 
 C Initialise output device.
       MMOD=MODL
@@ -948,15 +956,19 @@ C Dummy routines from common3dv.F
       end
 
 C In support of floating point exceptions. Comment out for NON SOLAIRS.
-C      integer function SIGFPE_bps(sig,code,context)
-C      integer sig,code,context(5)
-C      character label*16
-C      if(loc(code).eq.208) label = 'invalid'
-C      if(loc(code).eq.200) label = 'division by zero'
-C      if(loc(code).eq.212) label = 'overflow'
-C      if(loc(code).eq.204) label = 'underflow'
-C      if(loc(code).eq.196) label = 'inexact'
-C      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
-C      SIGFPE_bps = loc(code)
-C      end
+#ifdef SUN
+#ifdef F90
+      integer function SIGFPE_bps(sig,code,context)
+      integer sig,code,context(5)
+      character label*16
+      if(loc(code).eq.208) label = 'invalid'
+      if(loc(code).eq.200) label = 'division by zero'
+      if(loc(code).eq.212) label = 'overflow'
+      if(loc(code).eq.204) label = 'underflow'
+      if(loc(code).eq.196) label = 'inexact'
+      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
+      SIGFPE_bps = loc(code)
+      end
+#endif
+#endif
 

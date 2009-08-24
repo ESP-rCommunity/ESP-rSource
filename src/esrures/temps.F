@@ -30,7 +30,8 @@ C MODEWP computes the dew point temperature given dry bulb
 C temperature and % saturation.
 
       SUBROUTINE MODEWP(TAI,PSAT,DPT)
-C      character outs*124
+      COMMON/OUTIN/IUOUT,IUIN
+      character outs*124
       IF(TAI.LT.11.)then
         FS=-0.0000073*TAI+1.00444
       elseif(TAI.GE.11.0.AND.TAI.LT.26.0)then
@@ -38,8 +39,9 @@ C      character outs*124
       elseif(TAI.GE.26.0.AND.TAI.LE.60.0)then
         FS=0.0000405*TAI+1.003497
       elseif(TAI.GT.60.0.OR.TAI.LT.0.1)then
-        write(6,'(a,F7.2,a)') 'MODEWP: ',TAI,
+        write(outs,'(a,F7.2,a)') 'MODEWP: ',TAI,
      &    ' out of range: 60 > dbt > 0, setting dp = 0.0 '
+        call edisp(iuout,outs)
         DPT=0.0
         return
       endif
@@ -50,12 +52,14 @@ C      character outs*124
         PSS=10**(X)
       endif
       if(PSAT.gt.100.0)then
-        write(6,'(a,F7.2,a)') 'MODEWP: ',PSAT,
+        write(outs,'(a,F7.2,a)') 'MODEWP: ',PSAT,
      &    ' out of range: 100 > psat > 0, setting psat = 100.0 '
+        call edisp(iuout,outs)
         PSAT=100.0
       elseif(PSAT.le.0.0)then
-        write(6,'(a,F7.2,a)') ' MODEWP: ',PSAT,
+        write(outs,'(a,F7.2,a)') ' MODEWP: ',PSAT,
      &    ' out of range: 100 > psat > 0, setting psat = 1.0 '
+        call edisp(iuout,outs)
         PSAT=1.0
       endif
       GSS=(0.62197*FS*PSS)/(1013.25-(FS*PSS))
@@ -88,6 +92,7 @@ C      character outs*124
     4 DPT=DPT+.1
       RETURN
       END
+
       FUNCTION XLHSPS(DPT)
       X=31.59051-8.2*ALOG10(DPT+273.16)+0.0024804*(DPT+273.16)-
      &3142.31/(DPT+273.16)

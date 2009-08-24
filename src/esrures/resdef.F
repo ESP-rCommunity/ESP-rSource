@@ -169,7 +169,6 @@ C      call edisp248(iuout,outs248,100)
 
       CALL ERPFREE(iunit,ISTAT)
       call FINDFIL(ltmp,xst)
-C      write(6,*) 'MORFIL: exist is ',xst
       IF(XST)THEN
 
 C See if this is a plant result file.
@@ -180,11 +179,17 @@ C That is if record 32=-1 or -2.
            irec=32
            read(iunit,rec=irec,iostat=ios,err=13)iftype
            if(iftype.eq.-1) then
+
+C Debug.
 C             write(6,*) 'MORFIL: older plant ',iftype
+
              IPLIB=1
              return
            elseif(iftype.eq.-2) then
+
+C Debug.
 C             write(6,*) 'MORFIL: newer plant ',iftype
+
 	     IPLIB=2
              iftype=-1
              return
@@ -409,6 +414,8 @@ C that izver = 3 or earlier does not include explicit separate
 C casual gains data items.
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NSIM,nzrl,izver,IMET
+
+C Debug.
 C      write(6,*) 'uncertainty analysis method ',IMET
 
 C If there is more than one result-set then check to see if ISAVE=const for 
@@ -933,9 +940,11 @@ C read again.
         IREC=30+2
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
         if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
-          write(6,*) 'WARNING: ncomp at record was dubious',NCOMP,IREC
-          write(6,*) 'this results file needs to be scanned with'
-          write(6,*) 'an older version of res.'
+          write(outs,*) 'WARNING: ncomp at record was dubious',NCOMP,
+     &       IREC
+	  call edisp(iuout,outs)
+	  call edisp(iuout,'this results file needs to be scanned')
+	  call edisp(iuout,'with an older version of res.')
         endif
       endif
       IREC=IREC+1
@@ -1059,6 +1068,7 @@ C Also assing NZSUR common.
 C Debug...
 C      write(6,*) 'nconst=',nconst
 C      write(6,*) 'nzsur=',nzsur
+
       IREC=IREC+1
   202 DO 30 I=1,NCOMP
         NN=NCONST(I)
@@ -1177,7 +1187,10 @@ C this model.
       IF(NAME.EQ.'CONFIG')THEN
         IREC=IREC+1
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1006)longtmp
+
+C Debug.
 C        write(6,*) longtmp
+
         IREC=IREC+1
       ELSE
  45     H(1)='The system configuration file name is being requested'

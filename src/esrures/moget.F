@@ -4238,8 +4238,8 @@ C IGET = 47 Renewables/advanced materials secondary output.
       elseif(IGETNO(KGET,1).eq.50)then
 
 C IGETNO(KGET,1) = 50 Local PPD: delta T head/ feet.
-        write(6,*) 
-     &        'Missing information on local air T, setting dT to zero.'
+        call edisp(iuout,
+     &    'Missing information on local air T, setting dT to zero.')
         DO  1406 J2=ISTART,IEND
           iflag=1
           dT=0.
