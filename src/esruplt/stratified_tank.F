@@ -1064,7 +1064,10 @@ C---- Local variables
       REAL UAs                 ! auxiliary variable
       REAL QLoss_step          ! tank heat loss during one internal step
       LOGICAL CLOSEA
-     
+
+      integer iuout,iuin
+      common/outin/iuout,iuin
+      
 C-----------------------------------------------------------------------
 C     Initialization
 C-----------------------------------------------------------------------
@@ -1215,9 +1218,9 @@ C     the calculation of the right-hand side
         QLoss = QLoss + Mdot1*Cp*(TIn1-TBoil)*dt
       endif
       if (QLoss .GT. 0.) then
-        write(6,*) 'Warning: stratified tank model'
-        write(6,*) 'Boiling temperature of fluid exceeded!'
-        write(6,*) 'Please check components leading to tank'
+        call edisp(iuout,'Warning: stratified tank model')
+        call edisp(iuout,'Boiling temperature of fluid exceeded!')
+        call edisp(iuout,'Please check components leading to tank')
       endif
 
 

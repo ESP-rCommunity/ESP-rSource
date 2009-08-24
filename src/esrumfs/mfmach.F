@@ -1363,10 +1363,16 @@ C Control is being applied to bi-directional component.
 C Apply value of ctlpos to WDTH if component controlled.
         if(ctlpos(icnn).lt.0.0)then
           WDTH=0.00
-          write(6,*) 'door width reset to 0mm'
+
+C Debug.
+C          write(6,*) 'door width reset to 0mm'
+
         else
           WDTH=SUPCMP(ICMP,2)*ctlpos(icnn)
+
+C Debug.
 C          write(6,*) 'door width reset to ',WDTH,ctlpos(icnn)
+
         endif
       endif
 
@@ -3094,7 +3100,10 @@ C write out contaminant data if contaminant simulation was invoked
           IMFREC=IMFREC+1
           write (IFRES,REC=IMFREC,IOSTAT=ISTAT,ERR=1000)
      &                            (real(CCONC(I,ICONTM)*1000),I=1,NNOD)
-c          write(6,*) imfrec,(CCONC(I,ICONTM),I=1,nnod),nsinc
+
+C Debug.
+C          write(6,*) imfrec,(CCONC(I,ICONTM),I=1,nnod),nsinc
+
  300    CONTINUE
       ENDIF
 

@@ -751,17 +751,26 @@ C A window on the (Roof 5th surface) of the box.
       elseif(WORD(1:17).eq.'*Lighting_density'.or.
      &       WORD(1:17).eq.'*lighting_density')then
         CALL EGETWR(OUTSTR,K,densityof(2),0.,0.,'-','lt density',IER)
+
+C Debug.
 C        write(6,*) 'lt density ',densityof(2)
+
         goto 43
       elseif(WORD(1:18).eq.'*Equipment_density'.or.
      &       WORD(1:18).eq.'*equipment_density')then
         CALL EGETWR(OUTSTR,K,densityof(3),0.,0.,'-','sp density',IER)
+
+C Debug.
 C        write(6,*) 'sp density ',densityof(3)
+
         goto 43
       elseif(WORD(1:17).eq.'*Occupant_density'.or.
      &       WORD(1:17).eq.'*occupant_density')then
         CALL EGETWR(OUTSTR,K,densityof(1),0.,0.,'-','ocup density',IER)
-        write(6,*) 'occupant density ',densityof(1)
+
+C Debug.
+C        write(6,*) 'occupant density ',densityof(1)
+
         goto 43
       elseif(WORD(1:9).eq.'*Lighting'.or.
      &       WORD(1:9).eq.'*lighting')then
@@ -769,12 +778,18 @@ C        write(6,*) 'sp density ',densityof(3)
       elseif(WORD(1:17).eq.'*Summer_set_point'.or.
      &       WORD(1:17).eq.'*summer_set_point')then
         CALL EGETWR(OUTSTR,K,setpoints(2),0.,0.,'-','cooling setpt',IER)
+
+C Debug.
 C        write(6,*) 'cooling setpoint ',setpoints(2)
+
         goto 43
       elseif(WORD(1:17).eq.'*Winter_set_point'.or.
      &       WORD(1:17).eq.'*winter_set_point')then
         CALL EGETWR(OUTSTR,K,setpoints(1),0.,0.,'-','heating setpt',IER)
+
+C Debug.
 C        write(6,*) 'heating setpoint ',setpoints(1)
+
         goto 43
       elseif(WORD(1:9).eq.'*run_type')then
 
