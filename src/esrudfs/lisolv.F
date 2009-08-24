@@ -618,6 +618,7 @@ C     &               IG+I,A(IG+I),I,F(I)
 C   5  CONTINUE 
 C 202  FORMAT(8(I3,':',F7.4,' '),' F[',I3,']:',F7.4)
 C      WRITE(6,'(a)') 'END DUMP A'
+
       IT = IG + N
       ITM = IT + M
       IQ = ITM + N

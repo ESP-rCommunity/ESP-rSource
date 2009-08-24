@@ -140,6 +140,7 @@ C Common blocks for blockages and small supply openings
       LOGICAL OK,LINVOL,CALLMA,CALPOL
       CHARACTER*12 POLNAM,SRCE,SSNAME,VOLNAME,VCsurf
       REAL POL3D(ntcelx,ntcely,ntcelz),SRCSTR(MNVLS,MNZ)
+      logical unixok
 
 C Set itrc to zero for no debugging and 1 to turn on trace.
       itrc=0
@@ -259,8 +260,9 @@ C Should loop through conc sources here.
         endif
  60   continue
 
-C Debug ...
-      if(itrc.ge.1)then
+C Debug.
+      call isunix(unixok)
+      if(itrc.ge.1.and.unixok)then
         write(6,*)'srcstr ',(srcstr(iv,icfd),iv=13,nvol(icfd))
         write(6,*)'volpol ',(VOLPOL(ICTM,IV,ICFD),iv=13,nvol(icfd))
       endif
@@ -542,6 +544,8 @@ C always of the zero-gradient type.
 
       LOGICAL INCALU,INCALV,INCALW,INCALT,INCALK,INCALD,IMITZ
       LOGICAL IZEROT,IZanKE,CALLMA,CALPOL
+      logical unixok
+      
       CHARACTER POLNAM*12
       ICTM=ICTMNO
 
@@ -888,7 +892,10 @@ C High wall.
 C Here the average value of concentration in the outlets is calculated. 
 C << Need to make an output of the average outlet-concentration >>
 C << on screen and make it available during testing (ltest-variable) >>
-      if (ITRC.eq.1) then
+
+C Debug.
+      call isunix(unixok)
+      if (ITRC.eq.1.and.unixok) then
         write(6,*)'Average concentration =',AVECON/anotzero(SUMFLU)
       endif
 C 

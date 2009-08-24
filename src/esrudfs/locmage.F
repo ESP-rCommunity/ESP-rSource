@@ -652,10 +652,15 @@ C High wall.
  415  CONTINUE
 
 C Here te average value of LMA in the outlets is calculated 
+
+C Debug.
 C      write(6,*)'AVELMA,sumflu=',AVELMA,SUMFLU
 
       AVELMA=AVELMA/(anotzero(SUMFLU))
+
+C Debug.
 C      write(6,*)'average LMA in outlets=',AVELMA
+
 C <<Here we need to make an output of the average outlet-LMA on 
 C screen - probably the best is to do it with the monitoring values>>
 
