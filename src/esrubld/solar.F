@@ -1152,7 +1152,7 @@ C Trap also the zeros in case of corrupted data
      &            TRINTERNAL(IBIDIR,IBISET_timestep)))/Rs_glazing
                 endif
 
-C Debug
+C Debug.
 C              write(6,*) Rs_glazing,'  ',qi_bidirectional
 C              write(6,*) a_inner_layer,'  ', a_outer_layer
 C End Debug
@@ -2096,8 +2096,11 @@ C for possible averaging in MZLS3.
       q2rem(2)=rdifr*zarea
       q1tot=q1outs(2)+q1adjz(2)
       q2tot=q2tmc(2)+q2wall(2)+q2rem(2)+q2cfc(2)
+
+C Debug.
 C      write(6,*) 'solsum solar ',BTIMEF,ICOMP,q1adjz(2),q1outs(2),
 C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)
+
       q1adjf(icomp)=q1adjz(2)
       q1outf(icomp)=q1outs(2)
       q2adjf(icomp)=q2adjz(2)
@@ -3895,9 +3898,12 @@ C Check number of periods in each day and the start and finish times
 C Call in the future here different subroutines for different controls
               ictl_constrdbindex_number=ioan(1,2)
 
-C<<<<<<< IMPORTANT: TAKE ONLY THE 1ST 12 CHARS FROM "DESC">>>>>>
+C **** IMPORTANT: TAKE ONLY THE 1ST 12 CHARS FROM "DESC" ****
+
+C Debug.
 C        write(6,*) 'desc', DESC(ictl_constrdbindex_number)
-C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))  
+C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))
+ 
               write(ctl_constrdb_name,'(a)') 
      &             DESC(ictl_constrdbindex_number)(1:12)      
               write(name_constr_ofStudy,'(a)') 
@@ -3912,6 +3918,8 @@ C<<< Consider changing ioan(1,1) in the future to ioan(iol,1)>>>>
 C Current zone temperature sensor
 C<<<Check if instead if iosn(1,1) we should use iosn(iol,1) as in bcfunc.F>>>
                   if(iosn(1,1).eq.0)then
+
+C Debug.
 C                    write(6,*) 'TFA: ', TFA(ICOMP),'     ','time: ',btimef
 C                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
  

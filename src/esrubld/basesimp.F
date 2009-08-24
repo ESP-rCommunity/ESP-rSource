@@ -436,6 +436,7 @@ C BSFCCTL     Controls calculation of BASESIMP heat loss factors.
       SUBROUTINE BSFCCTL
 #include "building.h"
 
+      common/outin/iuout,iuin
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -447,6 +448,7 @@ C BSFCCTL     Controls calculation of BASESIMP heat loss factors.
      &                Bphase999(MCOM)
 
       logical close99
+      character outs*124
 
 C This subroutine controls the calcualtion of the BASESIMP heat loss
 C factors for the foundation under consideration. It makes appropriate
@@ -477,8 +479,8 @@ C Set the BASESIMP configuration and foundation insulation variables:
           rsi = bsRSI(icomp)
 
 C Debug (start)
-c          write(6,*) 'NCON = ',NCON, '   icon = ', icon, 
-c     &                 '   iconfig = ', iconfig, '  icomp = ', icomp
+C          write(6,*) 'NCON = ',NCON, '   icon = ', icon, 
+C     &                 '   iconfig = ', iconfig, '  icomp = ', icomp
 C Debug (end)
 
 C If iconfig = 999 no calculation of heat loss factors is necessary.
@@ -493,21 +495,25 @@ C was spefied with the incorrect version number).
               Sbgvar(icon) = Sbgvar999(icomp)
               Bphase(icon) = Bphase999(icomp)
             ELSE
-              write(6,*) 'Version number does not match with ',
+              write(outs,*) 'Version number does not match with ',
      &                     'BASESIMP configuration number.'
-              write(6,*) 'Configuration 999 requires an input file ',
+              call edisp(iuout,outs)
+              write(outs,*) 'Configuration 999 requires an input file ',
      &                     'with version number 99 and ',
      &                      'corresponding structure.'
+              call edisp(iuout,outs)
               STOP 'BASESIMP: unresolvable error'
             ENDIF
           ELSE
 C Check first to see if version 99 was used with incorrect iconfig number
             CALL ECLOSE(bsVrsnNmbr(icomp),99.0,0.0001,CLOSE99)
             IF(CLOSE99 .and. iconfig.ne.999) THEN
-              write(6,*) 'BASESIMP configuration number does not ',
+              write(outs,*) 'BASESIMP configuration number does not ',
      &                     'match with version number.'
-              write(6,*) 'Version 99 requires BASESIMP ',
+              call edisp(iuout,outs)
+              write(outs,*) 'Version 99 requires BASESIMP ',
      &                     'configuration 999.'
+              call edisp(iuout,outs)
               STOP 'BASESIMP: unresolvable error'
             ENDIF
 

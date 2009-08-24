@@ -1084,6 +1084,8 @@ C
 C CETC's implementation:
 C
       if (bInStartup())then
+
+C Debug.
 C       write(6,*) 'bInstartup is true'
 C       write(6,*) IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS,BTIMEP,
 C     &    BTIMEF,ISSNY,IDAY,ISDS,ISDF
@@ -1092,9 +1094,12 @@ C While in startup check if ISSNY is 1 and if IDAY is 1 reset ISSNY.
           if(issny.eq.1.and.iday.eq.1) issny=0
        return
       else
+
+C Debug.
 C       write(6,*) 'bInstartup is false'
 C       write(6,*) IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS,BTIMEP,
 C     &    BTIMEF,ISSNY,IDAY,ISDS,ISDF
+
       endif
 
 C Previous implementation:
@@ -1288,6 +1293,8 @@ C Store the currently computed value.
       ZSPMP2(ICOMP)=ZSPMF2(ICOMP)    
  
 C Write out solar zone info (to see if similar to that of solar.F)
+
+C Debug.
 C      write(6,*) 'solsum blibsv',BTIMEF,ICOMP,q1adjz(2),q1outs(2),
 C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)
 
@@ -1649,8 +1656,11 @@ C If the bems flag is active then write out the current zone temperature to the 
 C output file (fort.60). Currently only write out the data for optimum start
 C stop. This will later be replaced by a dedicated call to res. 
           if(ibems.gt.0) then
+
+C Debug.
 C            WRITE(*,'(A,I2)') 'Dumpimg BEMS data ..... Zone ',ICOMP
             WRITE(60,*) '#Zone  Day  Time   Temperature '
+	    
             CALL ECLOSE(BTIMEF,1.000,0.001,CLOSE)
             IF(CLOSE)THEN
               WRITE(60,'(I6,1X,F8.4,1X,F8.4,1X,F8.4)') 

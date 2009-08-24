@@ -87,6 +87,7 @@ C Electrical network results library details.
       dimension iflg(MCOM)
 
 C Check and see if in a remote folder.
+
 C Debug.
 C      write(6,*) ' path is ',path
 C      write(6,*) ' users home is ',upath
@@ -110,7 +111,7 @@ C results files should be saved to the users home folder.
         endif
       endif
 
-C Debug...
+C Debug.
 C      write(6,*) 'MZLIBF remote statis is now ',remote
 
 C Skip building library if plant only configuration
@@ -159,8 +160,10 @@ C If remote path then use EFOPRAN otherwise FPRAND.
       endif
 
 C Tell the user (and any log file) that their library will be used.
+
 C Debug.
 C      write(6,'(2A)')' Library file: ',RFILE
+
       write(outs,'(2A)')' Library file: ',RFILE
       call edisp(iuout,outs)
       call tstamp('>','BLD: create zone results')
@@ -282,6 +285,7 @@ C file path name use FPOPEN.
 
 C Debug.
 C        write(6,'(2A)')' Flow results file: ',LAFRES(1:lnblnk(LAFRES))
+
         write(outs,'(2A)')' Flow results file: ',LAFRES
         call edisp(iuout,outs)
         call tstamp('>','BLD: create flow results')
@@ -330,8 +334,11 @@ C file path name use FPRAND.
 
 C Write out the electrical results header to the file. 
         CALL ENETLIBH
+
+C Debug.
 C        write(6,'(2A)')' Power results file: ',
 C     &    ERESLIB(1:lnblnk(ERESLIB))
+
         write(outs,'(2A)')' Power results file: ',ERESLIB
         call edisp(iuout,outs)
         call tstamp('>','BLD: create power results')
@@ -382,8 +389,11 @@ C file path name use FPOPEN.
         endif
 
 C Echo to display and log file the moisture library file name.
-        write(6,'(2A)')' Moisture results file: ',
-     &    MSTRFILE(1:lnblnk(MSTRFILE))
+
+C Debug.
+C        write(6,'(2A)')' Moisture results file: ',
+C     &    MSTRFILE(1:lnblnk(MSTRFILE))
+
         write(outs,'(2A)')' Moisture results file: ',MSTRFILE
         call edisp(iuout,outs)
         call tstamp('>','BLD: create moisture results')

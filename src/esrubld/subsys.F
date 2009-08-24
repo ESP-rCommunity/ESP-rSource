@@ -1309,8 +1309,8 @@ C depending on the unit of flow (ifunit).
 
 C Debug.
         CALL DAYCLK(IDYP,BTIMEF,6)
-        write(6,*)'tdf infil data @',btimef,' is item',itdi,
-     &   ' values ',ifunit,aci,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
+C        write(6,*)'tdf infil data @',btimef,' is item',itdi,
+C     &   ' values ',ifunit,aci,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
 
         CVVF=0.
         SUM=0.

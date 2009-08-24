@@ -532,8 +532,9 @@ C Setpoint to be read from temporal file.
            CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
            TCTL=VAL(ISD)
 C Debug.
-           write(6,*)'tdf ctl data @',btimef,' is item',itdi,
-     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+C           write(6,*)'tdf ctl data @',btimef,' is item',itdi,
+C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+
          else
            write(outs,'(a)')
      &     'CFVAR: ISETPTT does not point to a valid temporal item'
@@ -697,6 +698,7 @@ C database.
 C Debug.
 C           write(6,*)'CFMVAR:tdf ctl data @',btimef,' is item',itdi,
 C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+
           else
             write(outs,'(a)')
      &      'CFMVAR: ISETPTT does not point to a valid temporal item'
@@ -3512,7 +3514,8 @@ C pro rata temperature control.
       TEMPLO=(SCALEF*TEMPLO)+OFFSET
       TEMPAV=(SCALEF*TEMPAV)+OFFSET
       TEMPWT=(SCALEF*TEMPWT)+OFFSET
-C Debug...
+
+C Debug.
 C      write(6,*) '*OFFSET,SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT',OFFSET,
 C     & SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT
 
@@ -5373,6 +5376,7 @@ C Evaporation common block for use in MZVAPC.
 
       CHARACTER OUTS*124
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical unixok
 
 C Fatal error test.
 c      IF((BMISCD(ICF,IDTYP,IPER,1).NE.1.0).OR.
@@ -5456,7 +5460,7 @@ C Read in surface details and calculate the area weighted radiant temperature.
   20    continue
         tsurf=tsurf/atot
 
-C     Pool basin energy balance:
+C Pool basin energy balance:
         Qconv=alpha*Abas*(Tbas-TD)
         Qrad=alphar*Abas*(Tbas-Tsurf)
         Fevap=Ev
@@ -5473,7 +5477,8 @@ C rest of the building model.
       endif
 
 C Dump output
-      if(mode.eq.1)then
+      call isunix(unixok)
+      if(mode.eq.1.and.unixok)then
         write(6,*) ' Pool balance '
         write(6,*) ' t       ',IHRF,' (h)'
         write(6,*) ' Tair    ',TD,' (C)'
@@ -5920,8 +5925,8 @@ C seems that is always set to 2 (and it is also used in few other places as 2).
       CSP=VAL(COLUMNSETP)
         
 C Debug.
-c       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
-c     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+C       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
+C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
       
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
 

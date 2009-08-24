@@ -176,10 +176,12 @@ C Zone-by-zone.
 C Surface-by-surface.
         IC=ICASCF(ICOMP)
         IF(IC.NE.0)THEN
-C debug...
+
+C Debug.
 C          write(6,'(A,4I3,4F8.2)')'ic,IBAN(1-3),qps,qfs,qpltp,qpltf=',
 C     &      ic,IBAN(IC,1),IBAN(IC,2),IBAN(IC,3),QPS(ICOMP),QFS(ICOMP),
 C     &      QPLTP(ICOMP),QPLTF(ICOMP)
+
         endif
         DO 10 I=1,NC
           ATP(ICOMP,I)=ATFS(ICOMP,I)
@@ -335,7 +337,7 @@ C     &         + fSurface_radiant_gain(iCPLE,iSCPLE,iFuture)
 C     &         / sna(iCPLE,iSCPLE)
 
 
-C Debug...
+C Debug.
 C      write(6,'(A,4I4,4F8.2)')'iz is oiz ois qr QCASRT zoa sna=',
 C     &        icomp,i,ICPLE,ISCPLE,qradcas(I),QCASRT(ICPLE),
 C     &        zonetotsurfacearea(ICPLE),sna(ICPLE,ISCPLE)

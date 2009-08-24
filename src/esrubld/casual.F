@@ -551,12 +551,14 @@ C If adaptive comfort algorithm is active add sensible heat gains when on
       call eclose(PREVSTATFAN,1.00,0.01,closea)
       IF(CLOSEA)THEN
 
-C Debug...
+C Debug.
 C        write(6,*)"before addition",QCASC(2)
+
         QCASC(2)=QCASC(2)+TOTPWR(ICOMP)
 
-C Debug...
+C Debug.
 C        write(6,*)"after addition",QCASC(2)
+
       ENDIF
 
 C BEGIN NRCan casual-gain -> electrical coupling code.
@@ -1279,9 +1281,12 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               write(doit,'(3a,i3,3a)')'e2r -file ',
      &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
      &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
-              write(6,'(3a,i3,3a)')'e2r -file ',
-     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
-     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
+
+C Debug.
+C              write(6,'(3a,i3,3a)')'e2r -file ',
+C     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
+C     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
+
               call edisp(icout,'Lighting simulation has now commenced.')
               call runit(doit,'-')
 
@@ -2410,7 +2415,7 @@ C sky patch:
          z1 = sin(alt(nzone)*RAD)
       endif
 
-C Debug
+C Debug.
 C      write(6,*) 'x3: ',x3,' y3: ',y3,'z3: ',z3
 C      write(6,*) 'x2: ',x2,' y2: ',y2,'z2: ',z2
 C      write(6,*) 'x1: ',x1,' y1: ',y1,'z1: ',z1

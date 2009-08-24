@@ -1037,7 +1037,7 @@ C has reciprocal information.
           endif
         endif
 
-C Debug...
+C Debug.
 C        write(6,*) 'i,ioc,nz2,ns2,IC1(ioc),IE1(ioc)',i,ioc,nz2,ns2,
 C     &    IC1(ioc),IE1(ioc)
 
@@ -1204,8 +1204,11 @@ C Find out which was most often used in terms of ground temperatures.
           igumaxindex=ij
         endif
   8   continue
-      write(6,*) igmax,igmaxindex,igarray
-      write(6,*) igumax,igumaxindex,iguarray
+
+C Debug.
+C      write(6,*) igmax,igmaxindex,igarray
+C      write(6,*) igumax,igumaxindex,iguarray
+
       if(igmaxindex.eq.0.and.igumaxindex.eq.0)then
 
 C Nothing specified as a connection so use UK monthly mean
@@ -1238,7 +1241,8 @@ C More user defined profiles used so get from UGRDTP
           GTMP(ij)=UGRDTP(ij,igumaxindex)
   5     continue
       endif
-C Debug...
+
+C Debug.
 C      write(6,*) 'lw gtmp is ',GTMP
 
 C Identify special materials file & call routine to read it.
@@ -1433,7 +1437,10 @@ C whether to save every timestep to the file.
           irdact=0
         endif
         tstepok=.true.
-        write(6,*) 'in input irdact & isavgh are ',irdact,isavgh 
+
+C Debug.
+C        write(6,*) 'in input irdact & isavgh are ',irdact,isavgh
+ 
       endif
 
 C << Need to do plant timesteps >>
@@ -1498,9 +1505,10 @@ C Check that we have enough info to proceede if autook
         spfileok=.true.
       endif
 
-C Debug...
+C Debug.
 C      write(6,*)'spfileok,perok,tstepok,saveok,autook,exitok,startupok'
 C      write(6,*)spfileok,perok,tstepok,saveok,autook,exitok,startupok
+
       return
       end
 
