@@ -149,7 +149,10 @@ C second is the zone name, if more items then not a proper name.
       read(ioin,'(A)',end=44,err=900) tmp
       OUTSTR=tmp(1:LNBLNK(tmp))
       CALL CHITMS(OUTSTR,ND)
-      write(6,*)' ',outstr(1:40)
+
+C Debug.
+C      write(6,*)' ',outstr(1:40)
+
   81  continue
       K=0
       IF(ND.eq.1.or.ND.gt.2)THEN

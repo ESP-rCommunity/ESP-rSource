@@ -73,7 +73,7 @@ C esprdbfile.h provides gendbfn
 
       dimension thrmtg(ME),gaptg(ME),mattag(ME),DT(ME)
       dimension IP(ME),DRA(ME,3),laydesc(ME)
-      character act*1,outs*248,outsd*248,WORD*20
+      character act*1,outs*248,outsd*248,WORD*20,out*124
       character itdat*248,itrep*248,ittag*12,itmenu*32
       character symname*12,othcolr*12,incolr*12,othacou*12,inacou*12
       character OTF*4,OPT*12,cnstimp*12
@@ -84,7 +84,10 @@ C Unit strings for constructions:  ituntstr='------cccc------b-----'
       if(act(1:1).eq.'G'.or.act(1:1).eq.'g')then
         outs=' '
         write(outs,'(a)')itdat(1)(1:lnblnk(itdat(1)))
-        write(6,*)itdat(1)
+
+C Debug
+C        write(6,*)itdat(1)
+
         K=0
         CALL EGETW(outs,K,symname,'-','symetr name',IER)
         CALL EGETW(outs,K,othcolr,'-','other colour name',IER)
@@ -100,15 +103,19 @@ C Unit strings for constructions:  ituntstr='------cccc------b-----'
         CALL EGETW(outs,K,cnstimp,'-','constr impact name',IER)
         CALL EGETWI(outs,K,nlay,0,8,'F','layers',IER)
         if(nbitrep(iit).ne.nlay)then
-          write(6,*) 'In prsmlc get mode nbitrep ',nbitrep(iit),
+          write(out,*) 'In prsmlc get mode nbitrep ',nbitrep(iit),
      &      ' ne nlay ',nlay,' for item ',iit
+          call edisp(iuout,out)
         endif
 
 C Extract layer data.
         do 40 il=1,nlay
           outs=' '
           write(outs,'(a)')itrep(il)(1:lnblnk(itrep(il)))
-          write(6,*)itrep(il)
+
+C Debug.
+C          write(6,*)itrep(il)
+
           K=0
           call EGETW(outs,K,WORD,'-','therm layr tag',IER)
           thrmtg(il)=WORD(1:1)
@@ -135,8 +142,9 @@ C Extract layer data.
 C Write layer data. Note there may be spaces in laydesc so append this
 C to the comma separated string.
         if(nbitrep(iit).ne.nlay)then
-          write(6,*) 'In prsmlc put mode nbitrep ',nbitrep(iit),
+          write(out,*) 'In prsmlc put mode nbitrep ',nbitrep(iit),
      &      ' ne nlay ',nlay,' for item ',iit
+          call edisp(iuout,out)
         endif
         do 39 il=1,nlay
           outs=' '
@@ -201,7 +209,10 @@ C roughness, misc1 and misc2 are optional real parameters.
       if(act(1:1).eq.'G'.or.act(1:1).eq.'g')then
         outs=' '
         write(outs,'(a)')itdat(1)(1:lnblnk(itdat(1)))
-        write(6,*)itdat(1)
+
+C Debug.
+C        write(6,*)itdat(1)
+
         K=0
         CALL EGETW(outs,K,acoutag,'-','accoustic name',IER)
         CALL EGETW(outs,K,colormtag,'-','colour name',IER)
@@ -280,7 +291,10 @@ C a colour calculation or pattern file name.
       if(act(1:1).eq.'G'.or.act(1:1).eq.'g')then
         outs=' '
         write(outs,'(a)')itdat(1)(1:lnblnk(itdat(1)))
-        write(6,*)itdat(1)
+
+C Debug.
+C        write(6,*)itdat(1)
+
         K=0
         CALL EGETWI(outs,K,IR255,0,256,'W','red 0-255',IER)
         CALL EGETWI(outs,K,IG255,0,256,'W','green 0-255',IER)
@@ -407,7 +421,10 @@ C      call lstcat(6,ict,ier)
       if(act(1:1).eq.'G'.or.act(1:1).eq.'g')then
         outs=' '
         write(outs,'(a)')itdat(1)(1:lnblnk(itdat(1)))
-        write(6,*)itdat(1)
+
+C Debug.
+C        write(6,*)itdat(1)
+
         K=0
         CALL EGETW(outs,K,lassurn,'-','cnstr assembly surf',IER)
         CALL EGETW(outs,K,laspern,'-','cnstr assembly perm',IER)
@@ -509,7 +526,10 @@ C      call lstcat(6,ict,ier)
       if(act(1:1).eq.'G'.or.act(1:1).eq.'g')then
         outs=' '
         write(outs,'(a)')itdat(1)(1:lnblnk(itdat(1)))
-        write(6,*)itdat(1)
+
+C Debug.
+C        write(6,*)itdat(1)
+
         K=0
         CALL EGETW(outs,K,trbsn(1),'-','1st transport name',IER)
         CALL EGETWR(outs,K,dtrbs(1),0.,0.,'-','1st trn dist',IER)
@@ -972,7 +992,10 @@ C If we have reached the 5th colum or NOP period then write outs.
               icol=0
               icount=icount+1
               write(itrep(icount),'(a)') outs(1:lnblnk(outs))
-              write(6,*) icount,outs(1:lnblnk(outs))
+
+C Debug.
+C              write(6,*) icount,outs(1:lnblnk(outs))
+
               outs=' '
             endif
   43      continue

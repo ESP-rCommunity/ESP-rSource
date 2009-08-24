@@ -878,8 +878,10 @@ C SI db unit number.
       write(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
      &                                            (isadd(i),i=1,12)
       irec=2
-C Debug
+
+C Debug.
 C      write(6,*)irecx,nsurs,msurs
+
       write(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsurs,msurs
 
 C Record 3 reserved for future use, skip to 4.
@@ -897,6 +899,7 @@ C Write shading factors.
 
 C Debug.
 C         write(6,*)(pso(i,j),j=1,24)
+
          write(ifilsi,rec=irec,iostat=istat,err=1000)(pso(i,j),j=1,24)
          irec=irec+1
          write(ifilsi,rec=irec,iostat=istat,err=1000)(psof(i,j),j=1,24)
@@ -913,6 +916,7 @@ C Write insolation factors.
  
 C Debug.
 C            write(6,*)(insst(i,k,j),k=1,24)
+
             write(ifilsi,rec=irec,iostat=istat,err=1000)
      &                                     (insst(i,k,j),k=1,24)
             irec=irec+1

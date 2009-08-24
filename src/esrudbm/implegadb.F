@@ -357,8 +357,10 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in pressc file is ',lastr(idbh),
-     &  lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in pressc file is ',lastr(idbh),
+C     &  lastr(idbh)+1
 
 C Close file before exiting.
       call ERPFREE(IFMAT,IOS)
@@ -698,7 +700,9 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in gdb file is ',lastr(idbh),lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in gdb file is ',lastr(idbh),lastr(idbh)+1
 
 C Close file before exiting.
       CALL ERPFREE(IFA,IOS)
@@ -903,8 +907,10 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in pressc file is ',lastr(idbh),
-     &  lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in pressc file is ',lastr(idbh),
+C     &  lastr(idbh)+1
 
 C Close file before exiting.
       CALL ERPFREE(IFA,IOS)
@@ -1129,8 +1135,10 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in profile file is ',lastr(idbh),
-     &  lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in profile file is ',lastr(idbh),
+C     &  lastr(idbh)+1
 
 C Close file before exiting.
       CALL ERPFREE(IFA,IOS)

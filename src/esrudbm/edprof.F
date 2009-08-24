@@ -483,6 +483,7 @@ C   IEXP = 99 check number of items and return in ITEMS
       CHARACTER*600 OUTSTR,STRING,TMP
       CHARACTER loutstr*248
       CHARACTER*(*) MSG
+      logical unixok
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
@@ -551,7 +552,10 @@ C Find out the number of separate words/string groupings.
         CALL LUSRMSG(' ',loutstr,'-')
       ENDIF
       goto 4
-   1  write(6,*) 'ELSTRIPC: error writing warning re: ',OUTSTR
+
+C I/O error trap.
+   1  call isunix(unixok)
+      if(unixok)write(6,*)'ELSTRIPC: error writing warning re: ',OUTSTR
 
       END
 
@@ -687,6 +691,7 @@ C overwriting the string passed, deal with a copy.
       integer lnblnk  ! function definition
       CHARACTER*(*) A
       CHARACTER B*600,C*1
+      logical unixok
 
       lastcc = MIN0(LNBLNK(A),599)
       WRITE(B,'(A)',IOSTAT=ISTAT,ERR=1) A(1:lastcc+1)
@@ -714,7 +719,10 @@ C Loop character by character until separator is found.
       IF(K.GE.LNBLNK(B))RETURN
       IF(C.EQ.' ') GOTO 102
       GOTO 20
-   1  write(6,*) 'CHITMS: error in internal write: ',A
+
+C I/O error trap
+   1  call isunix(unixok)
+      if(unixok)write(6,*) 'CHITMS: error in internal write: ',A
  
       END
 

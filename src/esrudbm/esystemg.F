@@ -2856,20 +2856,20 @@ C The initial part of the path matches so only save the file name w/o path.
       endif
 
 C Debug.
-      write(6,*) file
-      if(topic(1:3).eq.'opt')then
-        write(6,*) loptdb
-        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
-      elseif(topic(1:3).eq.'pdb')then
-        write(6,*) LPCDB
-        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
-      elseif(topic(1:3).eq.'prs')then
-        write(6,*) lapres
-        write(6,*) 'findwhichdbpath ipath is ',ipathapres
-      elseif(topic(1:3).eq.'sbm')then
-        write(6,*) lsbem
-        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
-      endif
+C      write(6,*) file
+C      if(topic(1:3).eq.'opt')then
+C        write(6,*) loptdb
+C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
+C      elseif(topic(1:3).eq.'pdb')then
+C        write(6,*) LPCDB
+C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+C      elseif(topic(1:3).eq.'prs')then
+C        write(6,*) lapres
+C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
+C      elseif(topic(1:3).eq.'sbm')then
+C        write(6,*) lsbem
+C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+C      endif
 
       return
       end

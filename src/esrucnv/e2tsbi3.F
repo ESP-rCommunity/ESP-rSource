@@ -1283,8 +1283,10 @@ C Find the matching mlc index.
      &              DBSHT,E,AE,DRV,TITL,NAM)
                 endif
                 gvt=0.00
+
 C Debug.
 C                write(6,*) 'matching ',imm,' ',DESC(imm),AE,IPR(IMM,1)
+
                 goto 702
               endif
  701        CONTINUE

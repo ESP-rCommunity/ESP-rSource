@@ -99,6 +99,7 @@ C Active domain common.
       logical CFDOK,concat
 
 C Check and see if in a remote folder.
+
 C Debug.
 C      write(6,*) ' path is ',path
 C      write(6,*) ' users home is ',upath
@@ -139,6 +140,7 @@ C user can write to.
 
 C Debug.
 C      write(6,*) 'reslib.F spfileok remote ',spfileok,remote
+
       if(.not.spfileok) then
         iw=0
         call dealremote('zi',remote,LTMP,IW)

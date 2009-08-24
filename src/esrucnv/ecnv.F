@@ -495,7 +495,7 @@ C to be scanned.
               goto 28
             endif
   27      continue
-          write(6,*) 'end of cfg file without finding * building'
+          call edisp(iuout,'end of cfg file without finding *building')
 	else
           call mksyshd(filname2,ier)
         endif
@@ -1349,9 +1349,11 @@ C Matches or adds a vertex to a zone.
       subroutine matchv(iz,is,match,x1,y1,z1)
 #include "building.h"
 #include "geometry.h"
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      logical clx,cly,clz,match
+      logical clx,cly,clz,match,unixok
+      character outs*124
 
 C NZTV(IZ)= NVT, NZSUR(IZ)=NSUR,  VCOORD(IZ,K,3)= x,y,z
 C NZNVER(icc) = NVER(J), NZJVN(icc,K) = JVN(J,K)
@@ -1371,7 +1373,11 @@ C Update the surface topology.
   40    continue
       endif
       icc=IZSTOCN(iz,is)
-      if(icc.eq.0) write(6,*) 'connection index zero for ',iz,is
+      call isunix(unixok)
+      if(icc.eq.0.and.unixok)then
+        write(outs,*) 'connection index zero for ',iz,is
+        call edisp(iuout,outs)
+      endif
       if(match)then
         NZNVER(icc) = NZNVER(icc)+1
         NZJVN(icc,NZNVER(icc))=ivmatch

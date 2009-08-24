@@ -392,8 +392,10 @@ C      ld=LNBLNK(gendbfn(4))
         IWD=30
       endif
       IWE=MAX0(38,IWA,IWC)
-      write(6,*) la,lb,lc,le,lf,lg,lh,li,lj,lk,lm,ln,lo,
-     &  '  ',IWA,IWB,IWC,IWD,IWE
+
+C Debug.
+C      write(6,*) la,lb,lc,le,lf,lg,lh,li,lj,lk,lm,ln,lo,
+C     &  '  ',IWA,IWB,IWC,IWD,IWE
 
       WRITE(ITEM(1),'(A,1X,A)')   'a model:',LCFGF(1:IWD)
       WRITE(ITEM(2),'(A,1X,A)')   '  path :',path(1:IWD)
@@ -1050,7 +1052,9 @@ C << ? is the next line necessary? >>
           elseif(iter.eq.1)then
 
 C << what to do here? ask if new file required? >>
-            write(6,*) 'file not found: ',gendbfn(idp)
+C Debug.
+C            write(6,*) 'file not found: ',gendbfn(idp)
+
             gendbok(idp)=.false.
           elseif(iter.eq.2)then
 
@@ -1059,7 +1063,10 @@ C scan the ASCII file.
             lenf=lnblnk(gendbfn(idp))
             write(outs,*) 'ASCII ',gendbfn(idp)(1:lenf),' to BINARY...'
             call edisp(iuout,outs)
-            write(6,*) 'asci generic asci needing conversion'
+
+C Debug.
+C            write(6,*) 'asci generic asci needing conversion'
+
             LAGENDB=gendbfn(idp)
             LTMP=gendbfn(idp)
             IAFIL=IFIL+1
@@ -1309,7 +1316,9 @@ C << ? is the next line necessary? >>
         elseif(iter.eq.1)then
 
 C << what to do here? ask if new file required? >>
-          write(6,*) 'file not found: ',gendbfn(idp)
+C Debug.
+C          write(6,*) 'file not found: ',gendbfn(idp)
+
           gendbok(idp)=.false.
         elseif(iter.eq.2)then
 
@@ -1318,7 +1327,6 @@ C scan the ASCII file.
           lenf=lnblnk(gendbfn(idp))
           write(outs,*) 'ASCII ',gendbfn(idp)(1:lenf),' to BINARY...'
           call edisp(iuout,outs)
-          write(6,*) 'asci generic asci needing conversion'
           LAGENDB=gendbfn(idp)
           LTMP=gendbfn(idp)
           IAFIL=IFIL+1

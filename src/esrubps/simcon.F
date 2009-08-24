@@ -1780,7 +1780,8 @@ C values have been set.
         CALL EDAY(isd1,ism1,isds)
         CALL EDAY(isd2,ism2,isdf)
 
-        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
+C Debug.
+C        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
 
         IFDAY=1
         ICFDYS=ISDS

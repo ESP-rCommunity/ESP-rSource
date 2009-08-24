@@ -985,6 +985,7 @@ C translate the casual gains.
 
 C Debug.
 C        write(6,*) IZ,IP3VER(IZ)
+
         if(ip3ver(iz).eq.0)then
           write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',IZ,' periods being sorted!'
@@ -1342,8 +1343,11 @@ C Find out which was most often used in terms of ground temperatures.
           igumaxindex=ij
         endif
   8   continue
+
+C Debug.
 C      write(6,*) igmax,igmaxindex,igarray
 C      write(6,*) igumax,igumaxindex,iguarray
+
       if(igmaxindex.eq.0.and.igumaxindex.eq.0)then
 
 C Nothing specified as a connection so use UK monthly mean
@@ -1664,7 +1668,8 @@ C whether to save every timestep to the file.
         tstepok=.true.
 
 C Debug.
-C       write(6,*) 'in input irdact & isavgh are ',irdact,isavgh 
+C       write(6,*) 'in input irdact & isavgh are ',irdact,isavgh
+ 
       endif
 
 C Plant timesteps and plant time increment and
@@ -1791,11 +1796,12 @@ C or from another location.
             ERESLIB=selres(i)
           endif
 
-C Debug...
+C Debug.
 C          write(6,*) ' input.F usesps rfile ',i,rfile
 C          write(6,*) ' input.F usesps lafres ',i,LAFRES
 C          write(6,*) ' input.F usesps pfile ',i,pfile
 C          write(6,*) ' input.F usesps splres ',i,splres
+
           if(match)goto 43
         endif
    42 continue
@@ -1824,9 +1830,10 @@ C Check that we have enough info to proceede if autook
         spfileok=.true.
       endif
 
-C Debug...
+C Debug.
 C      write(6,*)'spfileok,perok,tstepok,saveok,autook,exitok,startupok'
 C      write(6,*)spfileok,perok,tstepok,saveok,autook,exitok,startupok
+
       return
       end
 
