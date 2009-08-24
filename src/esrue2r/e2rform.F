@@ -1532,13 +1532,19 @@ C xform needs the file preceeded by ./   Pause briefly between
 C runit calls to allow OS to detect new file creation.
         write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &    '; xform -e ./',rofil(1:lnblnk(rofil)),' >exprofil'
+
+C Debug.
 C        write(6,*) doit
+
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &    '; mv ./',rofil(1:lnblnk(rofil)),' ',
      &    rofil(1:lnblnk(rofil)),'-'
+
+C Debug.
 C        write(6,*) doit
+
         call runit(doit,'-')
         call usrmsg('expanding obstructions...done.',' ','-')
 

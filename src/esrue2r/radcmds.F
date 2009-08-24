@@ -759,7 +759,10 @@ C not try and display.
      &               RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC))),' &'
           endif
         endif
-        write(6,*) doit
+
+C Debug.
+C        write(6,*) doit
+
         call runit(doit,'-')
 
 C Display helpful messages while the image is rendering.
@@ -899,7 +902,10 @@ C call rad to create image(s) based on current setting of ipckvew.
      &        '; rad -e -v ',rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
      &        ' ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
             endif
-            write(6,*) doit
+
+C Debug.
+C            write(6,*) doit
+
             write(outs,'(2a,i3,F6.2)') 'Currently working on...',
      &        NMTHNM(IAMO),IADO,CURT
             call edisp(iuout,outs)
@@ -909,13 +915,19 @@ C Generate a label and put into tpic.
             write(doit,'(2a,i3,F6.2,4a)') 'psign -h 18 ',NMTHNM(IAMO),
      &        IADO,CURT,' | pcompos ',pf(1:lnblnk(pf)),' 0 0 - 2 2 > ',
      &        tpicd(1:lnblnk(tpicd))
-            write(6,*) doit
+
+C Debug.
+C            write(6,*) doit
+
             call runit(doit,'-')
 
 C Generate command to convert to a gif.
             write(doit,'(4a)') 'ra_gif ',tpicd(1:lnblnk(tpicd)),' ',
      &        tgifd(1:lnblnk(tgifd))
-            write(6,*) doit
+
+C Debug.
+C            write(6,*) doit
+
             call runit(doit,'-')
 
 C Increment the current time.
@@ -980,7 +992,10 @@ C Set file name including path and open.
      &       '; rad -e -v ',rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
      &                 ' ',RIFNAME(IRIFFOC)(1:lnblnk(RIFNAME(IRIFFOC)))
         endif
-        write(6,*) doit
+
+C Debug.
+C        write(6,*) doit
+
         call edisp(iuout,'Look in the text window for progress.')
         call runit(doit,'-')
         if (ITP.eq.1)call dispimage(1)
@@ -1305,7 +1320,10 @@ C Run findglare to identify glare sources.
      &            '; findglare -ga 5-',glst(1:lnblnk(glst)),':5 -p ',
      &             pf(1:lnblnk(pf)),' ',rendopt(1:lnblnk(rendopt)),' ',
      &             octfil(1:lnblnk(octfil)),' > ',gf(1:lnblnk(gf))
-      write(6,*) doit
+
+C Debug.
+C      write(6,*) doit
+
       call runit(doit,'-')
 
       return

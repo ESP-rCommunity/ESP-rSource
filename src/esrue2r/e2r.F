@@ -534,14 +534,20 @@ C copied into the ../rad folder.
       write(tfile,'(a,a)')path(1:lnblnk(path)),LRADCF(1:lnblnk(LRADCF))
       INQUIRE (FILE=tfile,EXIST=XST)
       if(XST)then
-C debug   write(6,*) tfile
+
+C Debug.
+C        write(6,*) tfile
+
         continue
       else
         lnrp=lnblnk(runpath)
         write(tfile,'(a,a)')runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
         INQUIRE (FILE=tfile,EXIST=XST)
         if(XST)then
-C debug    write(6,*) tfile
+
+C Debug.
+C          write(6,*) tfile
+
           continue
         else
 
@@ -1000,7 +1006,10 @@ C shifted to a *.df- file so check that as well.
           call ERPFREE(ITA1,ISTAT)
           call FPOPEN(ITA1,ISTAT,1,1,ltmp)
           if(ISTAT.eq.0)then
-C debug	    write(6,*) 'found  ',ltmp
+
+C Debug.
+C            write(6,*) 'found  ',ltmp
+
             continue
           else
             write(df,'(2a)')SCENERT(NRIF)(1:lnblnk(SCENERT(NRIF))),
@@ -1009,7 +1018,10 @@ C debug	    write(6,*) 'found  ',ltmp
             call ERPFREE(ITA1,ISTAT)
             call FPOPEN(ITA1,ISTAT,1,1,ltmp)
             if(ISTAT.eq.0)then
-C debug	      write(6,*) 'found  ',ltmp
+
+C Debug.
+C              write(6,*) 'found  ',ltmp
+
               continue
             else
               call edisp(iuout,
@@ -1066,7 +1078,7 @@ C Check for existing file names based on available view and picture info.
             write(valt(npics),'(a)') rvewsh(iv)
             IPVALV(npics)=iv
           else
-            write(6,*) 'file ',pf(1:lnblnk(pf)),' not found...'
+            call usrmsg('Cannot find... ',pf(1:lnblnk(pf)),'W')
           endif
  3331   continue
         npics=npics+1
