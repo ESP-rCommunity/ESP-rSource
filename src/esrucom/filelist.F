@@ -47,6 +47,7 @@ C espriou.h for parameter MFFOLD
       
       integer lnblnk  ! function definition
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/uhome/upath
       common/rpath/path
@@ -317,10 +318,16 @@ C Try to use information gathered from file scan.
           if(ix.eq.1)then
             write(sfile,'(3a)')relative(1:lnblnk(relative)),fs,
      &        listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
-            write(6,*) sfile
+
+C Debug.
+C            write(6,*) sfile
+
             write(snpfile,'(a)') 
      &        listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
-            write(6,*) snpfile
+
+C Debug.
+C            write(6,*) snpfile
+
           else
 
 C Nothing selected, revert to original name. << expand logic here >>
@@ -329,6 +336,7 @@ C Nothing selected, revert to original name. << expand logic here >>
           endif
         else
           write(outs,'(2a)') relative(1:lnblnk(relative)),'. Reverting.'
+          call edisp(iuout,outs)
           call usrmsg('There are no files matching the criteria in',
      &      relative,'W')
           sfile=tsfile
@@ -341,21 +349,25 @@ C          write(sfile,'(a)')relative(1:lnblnk(relative))
 
 C Errors when creating string buffers.
    1  if(IOS.eq.2)then
-        write(6,*) 'browsefilelist: no permission to creat subpath: ',
+        write(outs,*)'browsefilelist: no permission to make subpath: ',
      &    subpath
+        call edisp(iuout,outs)
       else
-        write(6,*) 'browsefilelist: error creating subpath: ',subpath
+        write(outs,*)'browsefilelist: error creating subpath: ',subpath
+        call edisp(iuout,outs)
       endif
       ier=2
       return
 
    2  if(IOS.eq.2)then
-        write(6,*) 
-     &  'browsefilelist: no permission to create relative path: ',
-     &  relative
+        write(outs,*) 
+     &    'browsefilelist: no permission to create relative path: ',
+     &    relative
+        call edisp(iuout,outs)
       else
-        write(6,*) 'browsefilelist: error creating relative path: ',
-     &  relative
+        write(outs,*) 'browsefilelist: error creating relative path: ',
+     &    relative
+        call edisp(iuout,outs)
       endif
       ier=2
       return

@@ -1084,7 +1084,7 @@ C flow connection.
         endif
   43  continue
 
-C Debug...
+C Debug.
 C      write(6,*) (deltah(j),j=1,20)
 
 C Now revisit each icon connection, identify component end and the
@@ -1103,9 +1103,11 @@ C This icon connection starts with a component and thus it cannot
 C be the start of a flow connection. Skip on to the next icheck
             itest=ICNS(icheck)
             iotest=ICNE(icheck)
-C debug...
-             write(6,*) 'Skipping ',icheck,' icon connection begins ',
-     &         'with an icon component ',itest
+
+C Debug.
+C             write(6,*) 'Skipping ',icheck,' icon connection begins ',
+C     &         'with an icon component ',itest
+
              goto 144
           endif
 

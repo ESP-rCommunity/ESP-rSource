@@ -66,7 +66,10 @@ C Make a menu of available generic items.
 C Help text...
       ELSEIF(INO.GE.2.AND.INO.LE.M+1)THEN
         IFG=IVAL(INO)
-        write(6,*) 'picked ',ifg,ino
+
+C Debug.
+C        write(6,*) 'picked ',ifg,ino
+
         RETURN
       ELSE
         INO=-1

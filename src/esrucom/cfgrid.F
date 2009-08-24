@@ -459,7 +459,10 @@ C Now loop through XU corrds within this bit of the upper curve.
 C chkdist is againt the west facade to the end of the current line segment.
         chkdist1 = crowxyz(X(ivxhigh(1)),Y(ivxhigh(1)),z1,x1,y1,z1)
         chkdist2 = crowxyz(X(ivxhigh(1)),Y(ivxhigh(1)),z1,x2,y2,z1)
-        write(6,*) 'distances ',xdist,chkdist1,chkdist2,xm
+
+C Debug.
+C        write(6,*) 'distances ',xdist,chkdist1,chkdist2,xm
+
         do 334 ixgp = iold,is
           if(XU(ixgp).le.chkdist2)then
             xst= XU(ixgp)-chkdist1

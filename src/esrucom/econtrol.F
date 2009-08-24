@@ -1164,12 +1164,17 @@ C Remember connection index for this -4 associated control.
             iasocc(ii,ICCN)=ICNN
             nfsup(ii)=nsup
             if(nsup.eq.0)then
+
+C Debug.
 C              write(6,*) ' supplementary node data zeroed...'
+
               NDSCNN(ICNN,1)=0
             else
 C If supplementary node names for this component read them.
-C Debug...
+
+C Debug.
 C              write(6,*) ' supplementary node names to be read in...'
+
               do 91 isup=1,nsup
                 CALL EGETW(OUTSTR,KG,WORD,'W','suppl node',IER)
                 NODID=WORD(1:12)

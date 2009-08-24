@@ -1663,8 +1663,9 @@ C the constructions database.
                   OPT='OPAQUE'
                 endif
 		if(WORD(1:lnblnk(WORD)).ne.OPT(1:lnblnk(OPT)))then
-		  write(6,*) 'Optics in geo file ',WORD,
+		  write(outs,*) 'Optics in geo file ',WORD,
      &              ' does not match optics of the MLC ',OPT
+                  call edisp(iuout,outs)
                 endif
                 write(SOTF(NS),'(a)') OPT
                 if(havec24) write(SSOTF(icn),'(a)') OPT
@@ -2650,8 +2651,11 @@ C Assign corners of the box assuming no rotation.
 C Do a B angle of rotation first. No Y changes required.
 C X(1) and X(4) do not change. 
 C X(2) and X(3) change based on DX length.
-      write(6,*) CB
-      write(6,*) DX
+
+C Debug.
+C      write(6,*) CB
+C      write(6,*) DX
+
       X(2)=X(1)+(DX*CB); X(3)=X(4)+(DX*CB)
 
 C X(5) & X(8) change based on DZ length. 
@@ -2674,8 +2678,11 @@ C Moving now to the Y rotation
 C Do an A angle of rotation. No Z changes required.
 C X(1) does not change.       
 C X(2) changes based on [X(2)-X(1)] length
+
+C Debug.
 C      write(6,*) CA
 C      write(6,*) DX
+
       X(2)=X(1)+(CB*DX)*CA
       X(3)=X(2)-(SA*DY)
       X(4)=X(1)-(SA*DY)
@@ -2886,8 +2893,11 @@ C Assign corners of the box assuming no rotation.
 C Do a B angle of rotation first. No Y changes required.
 C XB(1) and XB(4) do not change. 
 C XB(2) and XB (3) change based on DX length.
-      write(6,*) CB
-      write(6,*) DX
+
+C Debug.
+C      write(6,*) CB
+C      write(6,*) DX
+
       XB(2)=XB(1)+(DX*CB); XB(3)=XB(4)+(DX*CB)
 
 C XB(5) & XB(8) change based on DZ length. 
@@ -2910,8 +2920,11 @@ C Moving now to the Y rotation
 C Do an A angle of rotation. No Z changes required.
 C XB(1) does not change.       
 C XB(2) changes based on [XB(2)-XB(1)] length
-      write(6,*) CA
-      write(6,*) DX
+
+C Debug.
+C      write(6,*) CA
+C      write(6,*) DX
+
       XB(2)=XB(1)+(CB*DX)*CA
       XB(3)=XB(2)-(SA*DY)
       XB(4)=XB(1)-(SA*DY)
@@ -2930,14 +2943,14 @@ C YB(1) does not change.
       YB(7)=YB(8)+((CB*DX)*SA)           
 
 C Debug      
-      write(6,*) 'xb1: ',XB(1),'...','yb1: ',YB(1),'...','zb1: ',ZB(1)
-      write(6,*) 'xb2: ',XB(2),'...','yb2: ',YB(2),'...','zb2: ',ZB(2)
-      write(6,*) 'xb3: ',XB(3),'...','yb3: ',YB(3),'...','zb3: ',ZB(3)
-      write(6,*) 'xb4: ',XB(4),'...','yb4: ',YB(4),'...','zb4: ',ZB(4)
-      write(6,*) 'xb5: ',XB(5),'...','yb5: ',YB(5),'...','zb5: ',ZB(5)
-      write(6,*) 'xb6: ',XB(6),'...','yb6: ',YB(6),'...','zb6: ',ZB(6)      
-      write(6,*) 'xb7: ',XB(7),'...','yb7: ',YB(7),'...','zb7: ',ZB(7)      
-      write(6,*) 'xb8: ',XB(8),'...','yb8: ',YB(8),'...','zb8: ',ZB(8)      
+C      write(6,*) 'xb1: ',XB(1),'...','yb1: ',YB(1),'...','zb1: ',ZB(1)
+C      write(6,*) 'xb2: ',XB(2),'...','yb2: ',YB(2),'...','zb2: ',ZB(2)
+C      write(6,*) 'xb3: ',XB(3),'...','yb3: ',YB(3),'...','zb3: ',ZB(3)
+C      write(6,*) 'xb4: ',XB(4),'...','yb4: ',YB(4),'...','zb4: ',ZB(4)
+C      write(6,*) 'xb5: ',XB(5),'...','yb5: ',YB(5),'...','zb5: ',ZB(5)
+C      write(6,*) 'xb6: ',XB(6),'...','yb6: ',YB(6),'...','zb6: ',ZB(6)      
+C      write(6,*) 'xb7: ',XB(7),'...','yb7: ',YB(7),'...','zb7: ',ZB(7)      
+C      write(6,*) 'xb8: ',XB(8),'...','yb8: ',YB(8),'...','zb8: ',ZB(8)      
 
 C End debug          
 
@@ -3543,7 +3556,8 @@ C Link back to start vertex.
         vdis=0.0
         vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
         SSPERIM(icc)=SSPERIM(icc)+vdis
-C Debug...
+
+C Debug.
 C        write(6,*) 'perimeter of ',ssname(icc),icc,' is ',ssperim(icc)
 
 C Derive the equation of the polygon.
@@ -3748,9 +3762,11 @@ C duplicate edge is found also remember it.
                 kes=JVN(isurf,1)
               endif
               kee=JVN(isurf,n)
-C Debug...
+
+C Debug.
 C              write(6,*) 'edges for conn ',icc,' are ',
 C     &          jes,jee,kes,kee
+
               if(jes.EQ.kes.AND.jee.EQ.kee)then
                 nbedgdup(icc)=nbedgdup(icc)+2
                 iedgdup(icc,m)=1
@@ -3885,6 +3901,7 @@ C likely that these are duplicate surfaces.
 C Debug
 C                  write(6,*) 'Probable dup surfaces ',iosurf,isurf,
 C     &              NVER(iosurf),NVER(isurf)
+
                   continue
                 else
                   KFLAG = -1
@@ -4051,6 +4068,7 @@ C     &        iduplist(isur,1),idupv(isur,2),iduplist(isur,2),
 C     &        idupv(isur,3),iduplist(isur,3),idupv(isur,4),
 C     &        iduplist(isur,4)
 C          endif
+
   11    continue
   10  continue
 
@@ -4111,6 +4129,7 @@ C that we have duplicate surfaces.
 C Debug.
 C              write(6,*) 'Probable dup surfaces ',jsur,isur,
 C     &          NVER(jsur),NVER(isur)
+
               goto 105
             endif
           endif
@@ -4141,14 +4160,19 @@ C << the parent surface.
             nbchild(isur)=nbchild(isur)+1
             isgrandchild(isur,nbchild(isur))=1
             childname(isur,1)=SSNAME(JCC)
-C Debug...
+
+C Debug.
 C            WRITE(6,*)'CHILD OF ',ICC,SSNAME(ICC),' IS ',
 C     &        childname(isur,1)
+
           endif
  105      continue
  102    CONTINUE
  101  CONTINUE
+
+C Debug.
 C      write(6,*) 'nbchild ',nbchild
+
       RETURN
       END
 
@@ -4698,6 +4722,7 @@ C and length is its maximum length.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER sdescr*80,sn*12
+      logical unixok
 
 C Find out overall length and build 1D array iva.
       length=0
@@ -4744,11 +4769,15 @@ C Write indices into one packed string sdescr (i.e. truncate).
         return
       endif
 
-   1  if(IOS.eq.2)then
-        write(6,*) 'SURLIST: permission error writing surface names:',
-     &    sdescr
-      else
-        write(6,*) 'SURLIST: error writing surface names: ',sdescr
+C Only give feedback if non-DOS.
+   1  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,*) 'SURLIST: permission error writing surf names:',
+     &      sdescr
+        else
+          write(6,*) 'SURLIST: error writing surface names: ',sdescr
+        endif
       endif
       ierr=1
       return

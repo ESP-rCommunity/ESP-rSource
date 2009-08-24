@@ -1500,7 +1500,10 @@ C        if(iv1.eq.37)idataloop=1369
  143        continue
             CALL EGETWR(OUTSTR,K,T2,0.,1.,'-','dirdif trn',IER)
             TMTSOB(ibitype,ibset,ihangindex,ivangindex)=T2
+
+C Debug.
 C          write(6,*) ibitype,ibset,T1,T2
+
             goto 44
           elseif(IBIDATATYPE.eq.2)then
             CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)

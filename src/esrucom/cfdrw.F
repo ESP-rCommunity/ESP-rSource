@@ -1362,13 +1362,20 @@ C Read data and match to volume with same name.
 C Assume data in order.
             CALL EGETWR(OUTSTR,K,VALS,-10.,99.,'-','src heat',IER)
             VOLHeat(IV,ICFD)=VALS
-*      write(6,*)'volheat',volheat(15,1),volheat(16,1)
+
+C Debug.
+C      write(6,*)'volheat',volheat(15,1),volheat(16,1)
+
             CALL EGETWI(OUTSTR,K,IVALS,0,MGTY,'-','cas gn id',IER)
             IDcasgn(IV,ICFD)=IVALS
-*      write(6,*)'idcasgn',idcasgn(15,1),idcasgn(16,1)
+C Debug.
+C      write(6,*)'idcasgn',idcasgn(15,1),idcasgn(16,1)
+
             CALL EGETWR(OUTSTR,K,VALS,0.,1.,'-','frac of gain',IER)
             Fcasgn(IV,ICFD)=VALS
-*      write(6,*)'fcasgn',fcasgn(15,1),fcasgn(16,1)
+C Debug.
+C      write(6,*)'fcasgn',fcasgn(15,1),fcasgn(16,1)
+
             DO 109 ICTM=1,NCTM
               CALL EGETWR(OUTSTR,K,VALS,0.,1.,'-','ctm generation',IER)
               VOLPOL(ICTM,IV,ICFD)=VALS
@@ -2455,6 +2462,7 @@ C Passed parameter.
       INTEGER IYZET(NTCELY,NTCELZ),IXZNT(NTCELX,NTCELZ)
       INTEGER IXYLL(NTCELX,NTCELY),IYZWT(NTCELY,NTCELZ)
       LOGICAL WARN
+      logical unixok
 
        DO 45 II=1,NTCX
          DO 46 KK=1,NTCZ
@@ -2472,10 +2480,12 @@ C Passed parameter.
            IYZWT(JJ,KK)=0         
  49      CONTINUE
  48    CONTINUE
-*      do 901 iz=1,ntcz
-*      write(6,*)(ixzst(ix,iz),ix=1,ntcx)
-* 901  continue
-*       write(6,*)'ntcx,ntcy,ntcz',ntcx,ntcy,ntcz
+
+C Debug.
+C      do 901 iz=1,ntcz
+C      write(6,*)(ixzst(ix,iz),ix=1,ntcx)
+C 901  continue
+C       write(6,*)'ntcx,ntcy,ntcz',ntcx,ntcy,ntcz
 
       WARN=.FALSE.
       NBC=NVOL(ICFD)      
@@ -2579,8 +2589,9 @@ C Warn user if cell number starts/stops wrongly
         ENDIF
  1    CONTINUE
 
-C Debug if itrc is other than zero.
-      IF(ITRC.GT.0)THEN
+C Debug if itrc is other than zero and NON DOS.
+      call isunix(unixok)
+      IF(ITRC.GT.0.and.unixok)THEN
         do 900 iz=1,ntcz
           write(6,*)'ixzst ',(ixzst(ix,iz),ix=1,ntcx)
  900    continue

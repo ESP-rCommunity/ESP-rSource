@@ -631,8 +631,10 @@ C Empty bins of hits.
       iunder = 0
       do 520 I=1,NX
         IB = INT(((IX(I) - IBIN1) / IDXBIN) + 1)
-C Debug...
+
+C Debug.
 C        write(6,*) 'ib ix ibin1 idxbin ',ib,ix(i)-ibin1,idxbin
+
         if(IB.LE.0)then
           iunder = iunder +1
           IMISS = IMISS + 1

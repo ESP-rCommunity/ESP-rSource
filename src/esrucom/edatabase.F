@@ -116,8 +116,8 @@ C Also check to see if the file has correct info in
             goto 139  !  a binary file found so carry on.
           endif
  1000     if(IOS.eq.2)then
-            write(6,*) 
-     &      'ERMLDB: permission issue during read of material classes.'
+            call edisp(iuout, 
+     &        'ERMLDB: permission issue reading material classes.')
             CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
           else
             CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
@@ -1148,6 +1148,7 @@ C prepended.
 
 C Debug.
 C        write(6,*) 'working optics ',lworking
+
         CALL EFOPSEQ(IOPTDB,lworking,1,IER)
       endif
       IF(IER.NE.0)THEN

@@ -1800,8 +1800,9 @@ C Zero the loadcount array for the current zone.
  50     CONTINUE
  40   continue
 
-C Debug..
+C Debug.
 C      write(6,*) 'Nb of periods for occ/lt/equip for each day type'
+
       DO 600 IDTY=1,NBDAYTYPE
       if(ncas(IDTY).gt.0)then
         do 41 ij=1,ncas(IDTY)
@@ -1887,7 +1888,7 @@ C Determine if any of the casual gain types were mixed.
       endif
  600  continue
 
-C Debug..
+C Debug.
 C      write(6,*) ' daytype number ',IDTY,
 C     & ' loadcount loadm2count loadmixed'
 C      write(6,*)loadcount(ic,1,1),loadcount(ic,2,1),loadcount(ic,3,1),
@@ -1896,6 +1897,7 @@ C      write(6,*)loadm2count(ic,1,1),loadm2count(ic,2,1),
 C     &  loadm2count(ic,3,1)
 C      write(6,*)loadmixed(ic,1,1),loadmixed(ic,2,1),loadmixed(ic,3,1),
 C     &  loadmixed(ic,4,1),loadmixed(ic,5,1)
+
       return
       end
 
@@ -2418,14 +2420,16 @@ C And if there is no power at the timestep reset PF to zero.
 
 C See if any periods have been added. 
       if(LNCAS(IDT).ne.NCAS(IDT))
-     &write(outs,'(2A)')' Updated daytype: ',calentag(idt)
+     &  write(outs,'(2A)')' Updated daytype: ',calentag(idt)
       IF(IDT.LT.NBDAYTYPE)GOTO 5000
       return
 
   1   if(IOS.eq.2)then
-        write(6,*) 'PROCESSOLDCAS: permission error writing strings.'
+        call edisp(iuout,
+     &    'PROCESSOLDCAS: permission error writing strings.')
       else
-        write(6,*) 'PROCESSOLDCAS: error writing warning or strings.'
+        call edisp(iuout,
+     &    'PROCESSOLDCAS: error writing warning or strings.')
       endif
       return
       end

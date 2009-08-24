@@ -244,6 +244,7 @@ C Open the esprc file, return if not found.
 
 C Debug.
 C      write(6,*) 'lfdef is ',lfdef
+
       call FPOPEN(IFDEF,ISTAT,1,0,LFDEF)
       IF(ISTAT.LT.0)THEN
         CALL ERPFREE(IFDEF,ISTAT)
@@ -294,7 +295,7 @@ C If '*ESPRC' found then read db until '*end' found.
 C Capture rectangular area of screen via capexgf is in wwlib.c 
         CALL EGETP(OUTSTR,K,gprlbl,'W','rect area lbl',IER)
         CALL EGETP(OUTSTR,K,gprcmd,'W','rect area exe',IER)
-        write(outs,'(a,a,2x,a)')' Rectangular area grab: ',gprlbl,gprcmd
+        write(outs,'(a,a,2x,a)')' Rectangular area grab:',gprlbl,gprcmd
         if(itrc.gt.0)call edisp(iuout,outs)
         call capexgf(gprcmd)
       elseif(WORD(1:5).eq.'*gxwd')then
@@ -740,7 +741,7 @@ C Name of current application
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
-
+      IOS=0  ! initial value
       if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
@@ -829,10 +830,13 @@ C          call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parpsf: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parpsf: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)')'parpsf: permission error getting parameters.'
+        else
+          write(6,'(a)')'parpsf: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -857,6 +861,7 @@ C to be passed to the program from the invocation line.
 C NT or Unix version.
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -949,10 +954,13 @@ C          call edisp(iuout,outs)
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parpsff: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parpsff: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)') 'parpsff: permission error getting parameters.'
+        else
+         write(6,'(a)') 'parpsff: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1160,6 +1168,7 @@ C Application name
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1279,10 +1288,13 @@ C Only give feedback if non-DOS.
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsim: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsim: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)') 'parsim: permission error getting parameters.'
+        else
+          write(6,'(a)') 'parsim: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1308,6 +1320,7 @@ C Application name
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1410,10 +1423,13 @@ C          call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parres: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parres: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)') 'parres: permission error getting parameters.'
+        else
+          write(6,'(a)') 'parres: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1441,6 +1457,7 @@ C Application name
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1547,10 +1564,13 @@ C          call edisp(iuout,outs)
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parclm: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parclm: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)') 'parclm: permission error getting parameters.'
+        else
+          write(6,'(a)') 'parclm: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1576,9 +1596,9 @@ C Application name
       character outs*248,zone*16,act*16,ascif*72
       logical unixok
 
-
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1684,10 +1704,13 @@ C         call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsfza: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsfza: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)') 'parsfza: permission error getting parameters.'
+        else
+         write(6,'(a)') 'parsfza: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1716,6 +1739,7 @@ C Application name
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1839,10 +1863,13 @@ C         call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsfza: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsfza: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)') 'parsfza: permission error getting parameters.'
+        else
+         write(6,'(a)') 'parsfza: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1869,6 +1896,7 @@ C Application name
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1962,10 +1990,13 @@ C         call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsfz: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsfz: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)') 'parsfz: permission error getting parameters.'
+        else
+          write(6,'(a)') 'parsfz: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -2197,6 +2228,7 @@ C Application name
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -2304,10 +2336,13 @@ C          call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parse2r: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parse2r: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)') 'parse2r: permission error getting parameters.'
+        else
+         write(6,'(a)') 'parse2r: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -2334,6 +2369,7 @@ C Application name
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -2431,10 +2467,13 @@ C         call edisp248(iuout,outs,90)
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsfact: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsfact: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)')'parsfact: permission error getting parameters.'
+        else
+         write(6,'(a)')'parsfact: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -2475,7 +2514,6 @@ C Get number of arguments and command name.
 
 C If one parameter.
       if(m.eq.0)then
-        write(6,'(a)') 'No arguments - ecnv aborting...'
         stop
       elseif(m.ge.1)then
   41    i= i+1

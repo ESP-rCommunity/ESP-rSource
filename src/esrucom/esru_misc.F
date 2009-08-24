@@ -2146,7 +2146,10 @@ C Check if tollerably close to an axis.
       elseif(vdx.lt.0.0.and.vdy.gt.0.0)then
         azim=360.0-(acos(vdy/dist)/RAD)
       endif
+
+C Debug.
 C      write(6,*)'UV2AZ azim elev <<vdx vdy vdz=',azim,elev,vdx,vdy,vdz
+
       return
       end
 
@@ -2220,7 +2223,10 @@ C Reconstitute the viewing vector.
         vdx = XYDIS*SIN(RYAZI)
         vdy = XYDIS*COS(RYAZI)
       ENDIF
+
+C Debug.
 C      write(6,*)'AZ2UV azim elev >>vdx vdy vdz=',azim,elev,vdx,vdy,vdz
+
       return
       end
 
@@ -3282,6 +3288,7 @@ C Display the menu.
 C Debug.
 C        write(6,*) 'inpic is ',inpic
 C        write(6,*) 'ivals is ',ivals
+
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
@@ -3869,6 +3876,7 @@ C Similar to code ZLIST in esrures/utils.F.
       dimension list(insize)
       CHARACTER zdescr*248,outs*248,outsd*248
       character t124*124
+      logical unixok
 
       t124=' '
       length=0
@@ -3901,10 +3909,14 @@ C First try to use t124 string (so have room for zones label).
         return
       endif
 
-   1  if(IOS.eq.2)then
-        write(6,*) 'ZARLIST: no permission to write zone names: ',outs
-      else
-        write(6,*) 'ZARLIST: error writing zone names: ',outs
+C Trap for I/O errors.
+   1  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,*)'ZARLIST: no permission to write zone names: ',outs
+        else
+          write(6,*)'ZARLIST: error writing zone names: ',outs
+        endif
       endif
       ierr=1
       return

@@ -38,8 +38,10 @@ C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      CHARACTER OUTSTR*124
+      CHARACTER OUTSTR*124,outs*124
       INTEGER IDEBUG,IER,ILOC,IUF,IDEL,IPDR,IFIL,ND,K
       LOGICAL GOON
 
@@ -103,22 +105,30 @@ C Read start time of each period, location and day type
 
 C Debug...
       IF(IDEBUG.EQ.1)THEN
-        WRITE(6,*)'version number = ',VERS
-        WRITE(6,*)'Location Latitude Longitude'
+        WRITE(outs,*)'version number = ',VERS
+        call edisp(iuout,outs)
+        WRITE(outs,*)'Location Latitude Longitude'
+        call edisp(iuout,outs)
         DO 1000 ILOC=1,NLOC
-          WRITE(6,*)LOCRM(ILOC),LOCLT(ILOC),LOCLG(ILOC)
+          WRITE(outs,*)LOCRM(ILOC),LOCLT(ILOC),LOCLG(ILOC)
+          call edisp(iuout,outs)
  1000   CONTINUE
-        WRITE(6,*)'start hr, dy, mth, orientation, day type, location'
+        WRITE(outs,*)
+     &    'start hr, dy, mth, orientation, day type, location'
+        call edisp(iuout,outs)
         DO 1100 IPDR=1,NPDR
-          WRITE(6,*)LHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
+          WRITE(outs,*)LHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
      &    LDTP(IPDR),LLOCT(IPDR)
+          call edisp(iuout,outs)
  1100   CONTINUE
       ENDIF
 
 C Error handling (still to be done)
       IF(IER.NE.0)THEN
-        write(6,*)'some error has occured while reading',LROAM
-        write(6,*)'returning ...'
+        write(outs,*)'some error has occured while reading',LROAM
+        call edisp(iuout,outs)
+        write(outs,*)'returning ...'
+        call edisp(iuout,outs)
       ENDIF
       RETURN
       END

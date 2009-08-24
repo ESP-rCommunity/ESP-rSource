@@ -390,8 +390,9 @@ C see if the next (long) line starts with *synop or *syn1
         if(WORD(1:5).eq.'*syn1')then
           write(ipvsynop,'(a)') LOUTSTR(7:lnblnk(LOUTSTR))
 
-C Debug...
+C Debug.
 C          write(6,*) ipvsynop
+
           goto 43
         elseif(WORD(1:6).eq.'*synop')then
           write(ipvsynop,'(a)') LOUTSTR(8:lnblnk(LOUTSTR))
