@@ -252,7 +252,10 @@ C Recover definitions for current day type and timeF.
         ID=IDWP
       endif
       if (btimef.gt.24.) then
-        write (6,*) 'btimef.gt.24'
+
+C Debug.
+C        write(6,*) 'btimef.gt.24'
+
         btimef=btimef-24.
         ID=IDWF
       endif

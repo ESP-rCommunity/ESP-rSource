@@ -508,12 +508,12 @@ C chkdist is againt the west facade to the end of the current line segment.
  435    iold=ixgp
  433  continue
 
-C Debug...
-      write (6,*) 'ZWest ',(ZWest(II),II=2,ks)
-      write (6,*) 'ZEast ',(ZEast(II),II=2,ks)
-      write (6,*) 'ZHI ',(ZHI(II),II=2,is)
-      write (6,*) 'ZLO ',(ZLO(II),II=2,is)
-      write (6,*) 'IS ',is,'   KS ',ks
+C Debug.
+      write(6,*) 'ZWest ',(ZWest(II),II=2,ks)
+      write(6,*) 'ZEast ',(ZEast(II),II=2,ks)
+      write(6,*) 'ZHI ',(ZHI(II),II=2,is)
+      write(6,*) 'ZLO ',(ZLO(II),II=2,is)
+      write(6,*) 'IS ',is,'   KS ',ks
 
 C Calculate the central grid points (we now know the boundary grid points).
       do 600 IX=2,IS
@@ -524,13 +524,13 @@ C Calculate the central grid points (we now know the boundary grid points).
  610    continue
  600  continue
 
-C Debug...
-      write (6,*) 'Grid points'
-      write (6,'(a,10i6)') ' Z,   X=',(II,II=1,is)
-      do 700 IX=KS,1,-1
-        write (6,'(i10,10f6.2)') IX,(ZWcl(II,IX),II=1,is)
- 700  continue
-
+C Debug.
+C      write(6,*) 'Grid points'
+C      write(6,'(a,10i6)') ' Z,   X=',(II,II=1,is)
+      
+C      do 700 IX=KS,1,-1
+C        write(6,'(i10,10f6.2)') IX,(ZWcl(II,IX),II=1,is)
+C 700  continue
 
       return
       end

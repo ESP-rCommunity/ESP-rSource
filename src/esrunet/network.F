@@ -2326,11 +2326,11 @@ C If domain is primitive part draw a circle and setup ICPP array.
   119         CONTINUE
               KKK=KKK+I
             ENDIF
-
-C Debug.
 C            ICPP(ICN,I,1)=CPP(1,KKK)
 C            ICPP(ICN,I,2)=CPP(2,KKK)
 C            ICPP(ICN,I,3)=CPP(3,KKK)
+
+C Debug.
 C            WRITE(6,*),CPP(1,III),III
 
           else

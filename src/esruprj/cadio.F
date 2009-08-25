@@ -1987,12 +1987,12 @@ C Write non-specific demads.
 C Non-linear thermophysical properties configuration file.
 
 C << ?? why write to unit 6 rather than iunit ?? >>
-
-      if(INTHPS)then
-        WRITE(6,'(2A)') '*nlt ',LNLTHP(1:lnblnk(LNLTHP))
+       call isunix(unixok)
+       if(INTHPS)then
+        if(unixok)WRITE(6,'(2A)') '*nlt ',LNLTHP(1:lnblnk(LNLTHP))
       endif
       if(IGR1D)then
-        WRITE(6,'(2A)') '*g1d ',LGRD1D(1:lnblnk(LGRD1D))
+        if(unixok)WRITE(6,'(2A)') '*g1d ',LGRD1D(1:lnblnk(LGRD1D))
       endif
       if(spflnam(1:4).eq.'UNKN'.or.spflnam(1:2).eq.'  ')then
         continue

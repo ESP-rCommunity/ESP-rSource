@@ -267,7 +267,9 @@ C The loop should not be necessary - keep debug statement as check for
 C multiple CFD domains
 C          do 30 icfd=1,NCONF
             if( icfdnd(icfd).eq.ICOMP )then
-c              write (6,*) 'SURFCONF (ICP,ICOMP,icfd)',ICP,ICOMP,icfd
+
+C Debug.
+C              write(6,*) 'SURFCONF (ICP,ICOMP,icfd)',ICP,ICOMP,icfd
 
 C Initialize the thermophysical variables and some gridding data.
               CALL INICNT     
@@ -436,7 +438,9 @@ C This routine will work for multiple CFD domains in a problem.
 
 C Calculate record number to write to.
       IREC=5+NCTM+(4*(ICOMP-1))
-C      write (6,*) 'saving to IREC ',IREC,' for zone ',ICOMP
+
+C Debug.
+C      write(6,*) 'saving to IREC ',IREC,' for zone ',ICOMP
 
 C Calculate number of records for each domain time step (strictly this 
 C could always be recalculated from the domain size but there is room 
@@ -521,7 +525,7 @@ C use the saves record.
       IREC=IRECPC
 
 C Debug.
-C      write (6,*) 'IRECPCstart ',IRECPC
+C      write(6,*) 'IRECPCstart ',IRECPC
 
 C Loop through all control volumes.
       do 10 K=2,NK
@@ -534,7 +538,7 @@ C Write data to library. Adjust trace to file unit 6 if ntcelz>48
      &                                             (Uf(I,J,K),I=2,NI)
 
 C Debug.
-C            write (6,'(i3,48f9.5)') IREC,(Uf(I,J,K),I=2,NI)
+C            write(6,'(i3,48f9.5)') IREC,(Uf(I,J,K),I=2,NI)
 
           endif
 
@@ -544,7 +548,7 @@ C            write (6,'(i3,48f9.5)') IREC,(Uf(I,J,K),I=2,NI)
      &                                             (Vf(I,J,K),I=2,NI)
 
 C Debug.
-C          write (6,'(i3,48f9.5)') IREC,(Vf(I,J,K),I=2,NI)
+C          write(6,'(i3,48f9.5)') IREC,(Vf(I,J,K),I=2,NI)
 
           endif
 
@@ -554,7 +558,7 @@ C          write (6,'(i3,48f9.5)') IREC,(Vf(I,J,K),I=2,NI)
      &                                             (Wf(I,J,K),I=2,NI)
 
 C Debug.
-C          write (6,'(i3,48f9.5)') IREC,(Wf(I,J,K),I=2,NI)
+C          write(6,'(i3,48f9.5)') IREC,(Wf(I,J,K),I=2,NI)
 
           endif
 
@@ -564,7 +568,7 @@ C          write (6,'(i3,48f9.5)') IREC,(Wf(I,J,K),I=2,NI)
      &                                             (Tf(I,J,K),I=2,NI)
 
 C Debug.
-C          write (6,'(i3,48f9.5)') IREC,(Tf(I,J,K),I=2,NI)
+C          write(6,'(i3,48f9.5)') IREC,(Tf(I,J,K),I=2,NI)
 
           endif
                 
@@ -574,7 +578,7 @@ C          write (6,'(i3,48f9.5)') IREC,(Tf(I,J,K),I=2,NI)
      &                                             (AGEf(I,J,K),I=2,NI)
 
 C Debug
-C          write (6,'(i3,48f9.5)') IREC,(AGEf(I,J,K),I=2,NI)
+C          write(6,'(i3,48f9.5)') IREC,(AGEf(I,J,K),I=2,NI)
 
           endif
                 
@@ -594,7 +598,10 @@ C              write(6,'(i3,48f9.5)') IREC,(POLCONCf(ICTM,I,J,K),I=2,NI)
 
 C Remember current CFD res lib record number.
       IRECPC=IREC
-C      write (6,*) 'IRECPCend ',IRECPC
+
+C Debug.
+C      write(6,*) 'IRECPCend ',IRECPC
+
       return
 
 C Error writing data.

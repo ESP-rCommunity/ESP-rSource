@@ -6322,7 +6322,7 @@ C << of 3 surface to change will have to be increased!        >>
       newgeo=.false.  ! assume older format geometry.
       
 C Debug...
-C      write (6,*) 'BCL 99 ',btimef
+C      write(6,*) 'BCL 99 ',btimef
       
 C If called from solar.F then use the data in common/BSCTL/ otherwise
 C use data in normal ctl common blocks.
@@ -6404,7 +6404,9 @@ C Find version of materials database. If 1.1 then use material arrays.
         call eclose(matver,1.1,0.01,closemat)
       
 C Reset properties by reading in zone descriptor files.
-        write (6,*)'Resetting tp properties at btimef ',btimef
+
+C Debug.
+C        write(6,*)'Resetting tp properties at btimef ',btimef
 
         call eclose(gversion(ICMP),1.1,0.01,newgeo)
         if(newgeo)then
@@ -6446,8 +6448,10 @@ C ii represents the surface to update.
 C ic represents the mlc entry number of the new construction.
 C ic is tested for zero in solar.F
           ic = mldbp(icnsub)
-C        write (6,*) 'Updating thermophysical properties of surface ',ii
-C        write (6,*) 'with construction ',DESC(ic)' at btimef ',btimef
+
+C Debug.
+C        write(6,*) 'Updating thermophysical properties of surface ',ii
+C        write(6,*) 'with construction ',DESC(ic)' at btimef ',btimef
 
 C Put the composite db info into current surface attributes
 C common.  Gather information about each layer. Read in the

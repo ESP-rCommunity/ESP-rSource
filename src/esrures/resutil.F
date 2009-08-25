@@ -251,7 +251,8 @@ C AXISDRW - draw and label axes.
 #endif
 
 
-      write (6,*) 'AXISDRW',(YAXSET(I),I=1,5)
+C Debug.
+C      write(6,*) 'AXISDRW',(YAXSET(I),I=1,5)
 
 C Draw each axis in turn.
       do 10 I=1,5
@@ -283,9 +284,15 @@ C Use log(10) to get scaling factor.
               ISC=int(log10(abs(YMIN(I))))
               if (ISC.lt.0) ISC=ISC-1
               FAC=10.0**ISC
-              write (6,*) 'Current ',YMIN(I),' fac ',FAC, ' IADJ ',IADJ
+
+C Debug.
+C              write(6,*) 'Current ',YMIN(I),' fac ',FAC, ' IADJ ',IADJ
+
               YMIN(I)=FAC*float(int(YMIN(I)/FAC)+IADJ)
-              write (6,*) 'New    ',YMIN(I)
+
+C Debug.
+C              write(6,*) 'New    ',YMIN(I)
+
             endif
           endif
 

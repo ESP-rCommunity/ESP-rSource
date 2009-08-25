@@ -1017,7 +1017,10 @@ C Read climate file name.
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
 	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
-        write(6,*) LCLIM
+
+C Debug.
+C        write(6,*) LCLIM
+
       endif
 
 C Check that this CLIMATE file can still be assigned. << convert >>
@@ -1070,7 +1073,10 @@ C Read plant component file name (long or short)
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         lnfb=lnblnk(firstbit)
 	write(Lpcdb,'(a)') firstbit(1:lnfb)
-        write(6,*) Lpcdb
+
+C Debug.
+C        write(6,*) Lpcdb
+
       elseif(IPLIB.eq.2)then
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
@@ -1292,6 +1298,7 @@ C data are stored in CSV?M and APCOUT arrays respectively.
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
       common/pcresres/ napout(mpcom),apcout(20)
+      logical unixok
 
 C Find data location in result file.
       ier=0
@@ -1337,7 +1344,9 @@ C Read additional output if any.
      &        ERR=1000)(apcout(jj),JJ=1,napout(ipc))
       return
 
- 1000 WRITE(6,'(A,I5)') ' error when reading results for comp ',ipc
+ 1000 call isunix(unixok)
+      if(unixok)WRITE(6,'(A,I5)') 
+     &  ' error when reading results for comp ',ipc
       ier=1
       END
 
@@ -2877,7 +2886,10 @@ C Create string description for time of minimum occurrance.
           write (outs,'(a,1x,2(f8.2,2x,a12,1x),2f9.2)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
-C          write (6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
+C Debug.
+C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
  221    continue
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')
@@ -2916,7 +2928,10 @@ C Create string description for time of minimum occurrance.
           write (outs,'(a,1x,2(f8.2,2x,a12,1x),2f9.2)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
-C          write (6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
+C Debug.
+C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
  230    continue
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')

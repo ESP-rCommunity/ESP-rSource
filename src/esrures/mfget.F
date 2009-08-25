@@ -973,14 +973,16 @@ C Toggle tabular listing label format.
       elseif(INO.EQ.27.and.(MENUTYPE.eq.3.or.MENUTYPE.eq.4))then
 
 C List out data to text feedback or to file or to graphics.
-C Debug...
+
+C Debug.
 C        do 999 I=1,NMFGET
-C          write (6,*) (IMFGETNO(I,K),K=1,7)
-C          write (6,*) SMFLABEL(I)
-C          write (6,*) GMFLABEL(I)
-C          write (6,*) GLMFLABEL(I)
-C          write (6,*) '  '
+C          write(6,*) (IMFGETNO(I,K),K=1,7)
+C          write(6,*) SMFLABEL(I)
+C          write(6,*) GMFLABEL(I)
+C          write(6,*) GLMFLABEL(I)
+C          write(6,*) '  '
 C 999    continue
+
         if (NMFGET.lt.1) then
           call usrmsg('No data to list/ plot!',
      &                'Please choose a metric.','W')
@@ -1745,13 +1747,13 @@ C There has been a problem, so decrement NMFGET.
         endif
       endif
 
-C Debug...
+C Debug.
 C        do 9999 I=1,NMFGET
-C          write (6,*) (IMFGETNO(I,K),K=1,7)
-C          write (6,*) SMFLABEL(I)
-C          write (6,*) GMFLABEL(I)
-C          write (6,*) GLMFLABEL(I)
-C          write (6,*) ' ------------------- '
+C          write(6,*) (IMFGETNO(I,K),K=1,7)
+C          write(6,*) SMFLABEL(I)
+C          write(6,*) GMFLABEL(I)
+C          write(6,*) GLMFLABEL(I)
+C          write(6,*) ' ------------------- '
 C 9999   continue
 
       RETURN
@@ -1857,7 +1859,10 @@ C Recover required records for timestep.
         if (MFRECVR(I).eq.1) then
           IREC=IHREC+I-1
           READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(FRDAT(I,K),K=1,NMRL)
-C          write (6,*) IDAY,IHR,ITS,IREC,I,(FRDAT(I,K),K=1,10)
+
+C Dwebug.
+C          write(6,*) IDAY,IHR,ITS,IREC,I,(FRDAT(I,K),K=1,10)
+
         endif
  10   continue
 
@@ -2165,7 +2170,10 @@ C Find common node.
         elseif (LNNE.and.(.not.LNPS)) then
           NODE=IDNE1
         else
-          write (6,*) 'No common node for connection list.'
+
+C Debug.
+C          write(6,*) 'No common node for connection list.'
+
           return
         endif
 
@@ -2211,7 +2219,10 @@ C or first node then a +ive flow is leaving the node and vice versa).
               FLOUT=FLOUT-FLOW2
             endif
           endif
-C          write (6,'(3i4,4f8.4)') NODE,IDPS,IDNE,FLOW1,FLOW2,FLIN,FLOUT
+
+C Debug.
+C          write(6,'(3i4,4f8.4)') NODE,IDPS,IDNE,FLOW1,FLOW2,FLIN,FLOUT
+
 10      continue
 
 C Negate FLOUT (the above sum results in positive values for both flows).
@@ -2357,7 +2368,9 @@ C or first node then a +ive flow is leaving the node and vice versa).
  351    continue
       endif
 
-C         write (6,'(2F8.4)') FLIN,FLOUT
+C Debug.
+C         write(6,'(2F8.4)') FLIN,FLOUT
+
       return
       end
 

@@ -457,8 +457,10 @@ C In the case of factorial uncertainty analysis decode result set name.
               call EGETWI(TNAME,K,IC,0,0,'-','factorial state',IER)
               IFAFLG(I,IFS)=IC
  722        continue
-          endif   
-          write (6,*) (IFAFLG(I,IXXX),IXXX=1,NFA)   
+          endif
+
+C Debug.
+C          write(6,*) (IFAFLG(I,IXXX),IXXX=1,NFA)   
   
 C Read simulation start and finish days and control name.
           IREC=NST1
@@ -1122,13 +1124,18 @@ C to scan geometry files this line would be needed.
 C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZBASEA(I),I=1,NCOMP)
         IREC=IREC+1
-C        write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
+
+C Debug.
+C        write(6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
       
 C Read area of transparent surfaces connected to external boundary.
 C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZTRANA(I),I=1,NCOMP)
         IREC=IREC+1
-C        write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
+
+C Debug.
+C        write(6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
+
       endif
 
 C Read surface areas in each zone.

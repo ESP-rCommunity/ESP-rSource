@@ -411,6 +411,7 @@ C Initial setup of day types.
 
 C Initialise and edit array of start times.
             call initperr(IP,rper,rperf,'i')
+
 C Debug.
 C            write(6,*) rper
 

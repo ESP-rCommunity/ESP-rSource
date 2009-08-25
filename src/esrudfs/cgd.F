@@ -711,7 +711,7 @@ C If ISTAT = -1 : straddles frustrum
             CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
           ENDIF
 
-C Debug...
+C Debug.
 C          write(6,*)'icc nap nbp nb',icc,nap,nbp,nb,
 C     &      ISTOK,AX(1),AY(1),AZ(1),AX(2),AY(2),AZ(2)
 

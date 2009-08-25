@@ -948,8 +948,8 @@ C Firstly recover the temperature values.
       if (ICP.eq.4) then
 
 C Need dT between CFD cells. set to zero and warn user.
-        write (6,*) 
-     &        ' Missing information on local air T, setting dT to zero.'
+        call edisp(iuout,
+     &    ' Missing information on local air T, setting dT to zero.')
 C        CALL GZQM(IDAY,IZONE,ISET)
       elseif (ICP.eq.5) then
 

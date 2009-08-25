@@ -3239,7 +3239,7 @@ C inpm is the input mode.
       dimension ipxwhis(300),ipywhis(300)
       character fname*72
 
-C Debug...
+C Debug.
 C      write(6,*) 'offsets ',ixoffset,iyoffset
 
       if(IWM.eq.1)then

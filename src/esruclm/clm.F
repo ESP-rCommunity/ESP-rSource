@@ -354,6 +354,7 @@ C Import climate data from ASCII file.
 
 C Debug.
 C          write(6,*)outs248(1:lnblnk(outs248))
+
           CALL EPAGEND
           STOP
         elseif(paction(1:8).eq.'bin2asci')then
@@ -375,6 +376,7 @@ C Write out this data to an asci file.
 
 C Debug,
 C          write(6,*)outs248(1:lnblnk(outs248))
+
           CALL EPAGEND
           STOP
         elseif(paction(1:7).eq.'epw2bin')then
@@ -395,6 +397,7 @@ C Import climate data from EPW file.
 
 C Debug.
 C          write(6,*)outs248(1:lnblnk(outs248))
+
           CALL EPAGEND
           STOP
         else
@@ -488,6 +491,7 @@ C Present the opening display and control menu.
 
 C Debug.
 C        write(6,*)outs248(1:lnblnk(outs248))
+
         call tstamp('>','Finished climate module')
         CALL EPAGEND
         STOP

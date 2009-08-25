@@ -518,7 +518,7 @@ C Do not use these flow values (use values from previous time step).
 
 C Relax the new flow values if time step controller 4 active.
 C      if (itrpas.gt.0) then
-C        write (6,*) 'relaxing'
+C        write(6,*) 'relaxing'
 C        frac=0.25
 C        do 2222 I=1,NCNN
 C          FLW1(I)=(FLW1(I)-FLW1old(I))*frac+FLW1old(I)
@@ -2958,7 +2958,10 @@ C Number of nodes, components and interconnections, version and contaminants
 C Version index set to 2.0 in the first record
       FLRESVER=2.0
       IMFREC=1
-      write (6,*) IFRES
+
+C Debug.
+C      write(6,*) IFRES
+
       IF(NOCNTM.NE.1)NCONTM=0
       write (IFRES,REC=IMFREC,IOSTAT=ISTAT,ERR=1000) NNOD,NCMP,NCNN,
      &  FLRESVER,NCONTM

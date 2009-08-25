@@ -853,7 +853,7 @@ C the name for this layer of this construction
                 close1 = .true.
                 iconmatpointer(ino,IL)=ij
 
-C Debug..
+C Debug.
 C                write(6,*) 'air mat->layer',ino,il,ij,iprndx(ij),
 C     &            thkiprndx(ij),iglassndx(ij),riair(ij)
 

@@ -231,7 +231,7 @@ C Check view factors sum to one (if not then scale).
             FFL(ISENS,I,J)=FFL(ISENS,I,J)/sum
  25       continue
         else
-          write (6,*) 'error in sensor view factors.'
+          call edisp(iuout,'error in sensor view factors.')
         endif
  10   continue
 
@@ -284,12 +284,12 @@ C surface representing the front surface.
         endif
  20   continue
 
-C Debug...
-      write (6,*) (GVAL(I),I=1,NTS)
+C Debug.
+C      write(6,*) (GVAL(I),I=1,NTS)
 
       return
 
- 99   write (6,*) ' reading error in SENMRT'
+ 99   call edisp(iuout,' reading error in SENMRT')
 
       return
       end

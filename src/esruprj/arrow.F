@@ -35,6 +35,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       DIMENSION VEC(3),VECC(3),COG1(3),COG2(3),COG3(3),ipoints(6,2)
       character act*1
 C     character outs*124
+      logical unixok
 
 C Local variables to pass to edline.
 #ifdef OSX
@@ -220,6 +221,8 @@ C Copy pixel locations to ipoints.
 
       RETURN
 
- 9999 write (6,*) 'Error: cannot find smallest coefficient in vector.'
+ 9999 call isunix(unixok)
+      if(unixok) write(6,*) 
+     &  'Error: cannot find smallest coefficient in vector.'
       return
       end

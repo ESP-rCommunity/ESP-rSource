@@ -559,9 +559,11 @@ C If use already aksed for graph and date has change draw again.
           igwh=igb-igt
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
+
 C Debug.
 C          write(6,*)'xx igl igr igt igb igw igwh',
 C     &      igl,igr,igt,igb,igw,igwh
+
           mxmn=.TRUE.
           CALL CLMDRW(IPICK,mxmn,onleft,onright,'s')
           havedrawn = .true.
@@ -654,6 +656,7 @@ C Installed location of climate file. If GTK then use file browser.
 
 C Debug.
 C        write(6,*) llasci
+
   290   llt=lnblnk(llasci)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
@@ -1399,9 +1402,11 @@ C axis are required and then directly call CLMDRW
           igwh=igb-igt
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
+
 C Debug.
 C          write(6,*)'xx igl igr igt igb igw igwh',
 C     &      igl,igr,igt,igb,igw,igwh
+
           mxmn=.TRUE.
           CALL CLMDRW(IPICK,mxmn,onleft,onright,'s')
           havedrawn = .true.

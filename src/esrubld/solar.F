@@ -393,7 +393,8 @@ C Tdf common block to allow using vertical solar radiation data
 
       ZAREA=zonetotsurfacearea(ICOMP)
 
-C      write (6,*) 'solar ',btimef
+C Debug.
+C      write(6,*) 'solar ',btimef
 
 C ---------------- INITIALIZE ----------------
 C                  ----------
@@ -898,8 +899,11 @@ C Update thermophysical properties here - we know the control state
 C so call bcl99 to update thermophysical props of controlled windows.
       ICALL=0
       DO 66 I=1,NC
-C        write (6,'(a,2i4)') 'Blind state: ',IBOFOT(ICOMP,I),
+
+C Debug.
+C        write(6,'(a,2i4)') 'Blind state: ',IBOFOT(ICOMP,I),
 C     &                                       NBPONT(ICOMP,I)
+
         ITMC=ITMCFL(ICOMP,I)
         if(ITMC.GT.0)then
           if(ITPREP(ICOMP,ITMC).gt.0)then
@@ -1323,7 +1327,9 @@ C For internal layer assign the calculated absorptance on the inner layer
               IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
                 FAB=(SKYDIF(I)*ABFSKY+GRDDIF(I)*ABFGND)*(1.-POFF)
               ENDIF
-C              write (6,'(a,i4,6f8.5)') 'Nodal data: ',IBOFOT(ICOMP,I),
+
+C Debug.
+C              write(6,'(a,i4,6f8.5)') 'Nodal data: ',IBOFOT(ICOMP,I),
 C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
 
               EXSHAD(I)=PO(ICOMP,I,IHRF)

@@ -4437,7 +4437,7 @@ C Act silently.
  40     continue
       endif
 
-C Debug...
+C Debug.
 C      do 30 I=1,NNPK
 C        IP=NODPS(ICPK(I))
 C        IN=NODNE(ICPK(I))

@@ -217,9 +217,10 @@ C of the vertical axis.
         if(TABUMX(ITCOL(IFOC,J)).gt.YMAX) YMAX=TABUMX(ITCOL(IFOC,J))
         if(TABUMN(ITCOL(IFOC,J)).lt.YMIN) YMIN=TABUMN(ITCOL(IFOC,J))
 
-C Debug
+C Debug.
 C      write(6,*)'ifoc j isflds ieflds max min ',ifoc,j,isflds,ieflds,
 C     &  ymax,ymin
+
    6  CONTINUE
 
 
@@ -262,6 +263,7 @@ C Round YMIN to a sensible value.
 C Debug.
 C      write(6,*)'ifoc isflds ieflds max min ',ifoc,isflds,ieflds,ymax,
 C     &  ymin
+
       call usrmsg(' ',' ','-')
 
 C Set the viewing period.

@@ -1066,6 +1066,7 @@ C files splres or sblres and prepend user home folder if remote is true.
      &                filen(1:lnblnk(filen))
                   endif
                 endif
+
 C Debug.
 C                write(6,*) 'remote so reset tfile to ',longtfile
 
@@ -1099,6 +1100,7 @@ C                write(6,*) 'remote so reset tfile to ',longtfile
      &                filen(1:lnblnk(filen))
                   endif
                 endif
+
 C Debug.
 C                write(6,*) 'remote so reset tfile to ',longtfile
 

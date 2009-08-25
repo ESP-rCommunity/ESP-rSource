@@ -192,9 +192,9 @@ C Tell the user (and any log file) that their library will be used.
 
 C << the following code is for testing >>
 C Create SQL results database.
-C      write (doit,'(2a)') 'mysqladmin -u root CREATE ',RFILE
-C      write (doit,'(a)') 'mysqladmin -u iain -pxx CREATE fred'
-C      write (6,*) doit
+C      write(doit,'(2a)') 'mysqladmin -u root CREATE ',RFILE
+C      write(doit,'(a)') 'mysqladmin -u iain -pxx CREATE fred'
+C      write(6,*) doit
 C      call runit(doit,'-')
 
 c Does this library contain results ?

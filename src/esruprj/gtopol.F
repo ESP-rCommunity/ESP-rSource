@@ -697,7 +697,7 @@ C inserting the new vertex index.
                         IF(IXV.GT.ivjj+1)GOTO 148
                         JGVN(ivj,ivjj+1)=iwhich3
 
-C Debug...
+C Debug.
 C                       write(6,'(a,30i4)') 'now jgvn is ',
 C     &                  (JGVN(ivj,ii),ii=1,NGVER(ivj))
 
@@ -1012,7 +1012,7 @@ C inserting the new vertex index.
                       IF(IXV.GT.ivjj+1)GOTO 248
                       JGVN(ivj,ivjj+1)=iwhich3
 
-C Debug...
+C Debug.
 C                     write(6,'(a,30i4)') 'now jgvn is ',
 C     &                (JGVN(ivj,ii),ii=1,NGVER(ivj))
 
@@ -1746,7 +1746,7 @@ C inserting the new vertex index.
                       IF(IXV.GT.ivjj+1)GOTO 148
                       JGVN(ivj,ivjj+1)=iwhich3
 
-C Debug...
+C Debug.
 C                      write(6,'(a,30i4)') 'now jgvn is ',
 C     &                  (JGVN(ivj,ii),ii=1,NGVER(ivj))
 
@@ -2308,7 +2308,7 @@ C inserting the new vertex index.
                       IF(IXV.GT.ivjj+1)GOTO 148
                       JGVN(ivj,ivjj+1)=iwhich3
 
-C Debug...
+C Debug.
 C                      write(6,'(a,30i4)') 'now jgvn is ',
 C     &                  (JGVN(ivj,ii),ii=1,NGVER(ivj))
 
@@ -3127,7 +3127,7 @@ C Incrementally write out vertex information (within 72 chars).
   43    CALL EASKS(HOLD,outs,'  ',72,' ','associated vertices',IIER,8)
         CALL CHITMS(hold,NV)
 
-C debug
+C Debug.
 C        write(6,*) 'found nv ',NV
 
         K=0
@@ -3546,7 +3546,7 @@ C remove the triangles listed in ITSEL
           CALL RMTRI(NTSEL,ITSEL,CCR,CENT)
         ENDIF 
 
-C debug...
+C Debug.
 C        DO 334, IPL=1, NGT
 C          write(6,*)'W: triangle no. and verts ',IPL ,JGVN(IPL,1) ,
 C     &    JGVN(IPL,2) ,JGVN(IPL,3)
@@ -3856,7 +3856,9 @@ C find new triangle then compare with ADJTRI
                 ENDIF
               ENDIF
               IF (SELTRI(ADJTRI,3).EQ.1) IVB=JGVN(ADJTRI,3)
-              write (6,*) 'vertices A,B,P: ',IVA,IVB,POINT
+
+C Debug.
+C              write(6,*) 'vertices A,B,P: ',IVA,IVB,POINT
 
 C Look for triangle containing vertices IVA, IVB and POINT
               DO 400, IA=1,NGT
@@ -4127,8 +4129,9 @@ C Calculate angles (rotation from +ive x=0 clockwise).
         CALL UV2AZ(vdx,vdy,vdz,ANGC,elev)
 C Check that the angles are in the correct order. ANGB will 
 C always be larger than ANCC.
-C debug...
-C        write (6,*) 'angles >A, >B, >C: ', ANGA, ANGB, ANGC
+
+C Debug.
+C        write(6,*) 'angles >A, >B, >C: ', ANGA, ANGB, ANGC
 
         IF (ANGB.LT.ANGC) THEN
           ANGB=ANGB+360.0

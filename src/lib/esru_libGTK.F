@@ -178,11 +178,12 @@ C If in graphic mode use graphic faciltiies to edit the number.
         endif
 
 C Debug.
-C        write (6,*) '< askint prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< askint prompt ',PROMPT(1:lnblnk(PROMPT))
+
         CALL askint(PROMPT,IVALUE,IFLG)
 
 C Debug.
-C        write (6,*) 'EASKI',IVALUE,IVAL,IFLG
+C        write(6,*) 'EASKI',IVALUE,IVAL,IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -439,7 +440,7 @@ C If in graphic mode use graphic facilities to edit the number.
         CALL askreal(PROMPT,RVALUE,IFLG)
 
 C Debug.
-C        write (6,*) 'EASKR',RVALUE,IFLG
+C        write(6,*) 'EASKR',RVALUE,IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -689,12 +690,12 @@ C        iquery=0
         endif
 
 C Debug.
-C        write (6,*) '< aske prompt ',PROMPT(1:lnblnk(PROMPT))
-C        write (6,*) '< aske string ',ask(1:lnblnk(ask))
+C        write(6,*) '< aske prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< aske string ',ask(1:lnblnk(ask))
         CALL askdialog(PROMPT,ask,IFLG)
 
 C Debug.
-C        write (6,*) 'aske VAL:',ask,' iflg ',IFLG
+C        write(6,*) 'aske VAL:',ask,' iflg ',IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -922,7 +923,9 @@ C        iquery=0
 C << There are potentially several things that need updating >>
 C << to this call and to askf (within esp_file.c). >>
         CALL askf(PROMPT,FILEN)
-        write (6,*) 'askdialog FILEN:',FILEN
+
+C Debug
+C        write(6,*) 'askdialog FILEN:',FILEN
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1165,12 +1168,13 @@ C        iquery=0
         endif
 
 C Debug.
-C        write (6,*) '< askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
-C        write (6,*) '< askdialog string ',STRVAL(1:lnblnk(STRVAL))
+C        write(6,*) '< askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< askdialog string ',STRVAL(1:lnblnk(STRVAL))
+
         CALL askdialog(PROMPT,STRVAL,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
+C        write(6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1377,12 +1381,13 @@ C For graphic version use the standard GTK widget as does easks.
         endif
 
 C Debug.
-C        write (6,*) '< 248 askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
-C        write (6,*) '< 248 askdialog string ',STRVAL(1:lnblnk(STRVAL))
+C        write(6,*) '< 248 askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< 248 askdialog string ',STRVAL(1:lnblnk(STRVAL))
+
         CALL askdialog248(PROMPT,STRVAL,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
+C        write(6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1430,8 +1435,10 @@ C wishes to use prior/existing string.
 
 C Must have input a character string.
         STRVAL=WORD(1:lnblnk(WORD))
+
 C Debug.
 C        write(6,*) 'eask248 returning ',STRVAL(1:lnblnk(STRVAL))
+
         RETURN
       ELSE
 
@@ -1618,7 +1625,7 @@ C        iquery=0
         CALL askdialogcmd(PROMPT,STRVAL,CMD,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialogcmd STRVAL:',STRVAL,' iflg ',IFLG
+C        write(6,*) 'askdialogcmd STRVAL:',STRVAL,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1821,7 +1828,7 @@ C        iquery=0
         CALL askdialogcncl(PROMPT,STRVAL,CNCL,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialogcncl STRVAL:',STRVAL(1:lnblnk(STRVAL)),
+C        write(6,*) 'askdialogcncl STRVAL:',STRVAL(1:lnblnk(STRVAL)),
 C     &    ' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
@@ -2015,12 +2022,12 @@ C If in terminal type 8 use dialogue box.
         endif
 
 C Debug.
-C        write (6,*) '< askdialog2cmd prompt ',PROMPT(1:lnblnk(PROMPT))
-C        write (6,*) '< askdialog2cmd string ',STRVAL(1:lnblnk(STRVAL))
+C        write(6,*) '< askdialog2cmd prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< askdialog2cmd string ',STRVAL(1:lnblnk(STRVAL))
         CALL askdialog2cmd(PROMPT,STRVAL,CMD,CMD2,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialog2cmd STRVAL:',STRVAL,' iflg ',IFLG
+C        write(6,*) 'askdialog2cmd STRVAL:',STRVAL,' iflg ',IFLG
 
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
@@ -2763,6 +2770,7 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
 	
 C Debug.
 C        write(6,*) 'espabcbox selected id iw ',id,iw,opta,optb,optc
+
         IF(IW.eq.1)THEN
           OK=.TRUE.
         ELSEIF(IW.eq.2)THEN
@@ -2914,7 +2922,8 @@ C Querry which one.
         CALL espabcbox(prompt,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,IW)
 
 C Debug.
-C        write (6,*) 'call to espabcbox returned ',IW
+C        write(6,*) 'call to espabcbox returned ',IW
+
         IF(IW.EQ.-8)THEN
 
 C A probable request for help has been received. Print out the lines
@@ -3098,7 +3107,7 @@ C Querry which one.
      &    HOPT,IOPT,JOPT,KOPT,LOPT,IW)
 
 C Debug.
-C        write (6,*) 'call to espdozenbox returned ',IW
+C        write(6,*) 'call to espdozenbox returned ',IW
         IF(IW.EQ.-8)THEN
 
 C A probable request for help has been received. Print out the lines
@@ -3534,7 +3543,7 @@ c If MMOD set to valid index, assume it, dont ask.
         RETURN
       ELSEIF(MM.eq.'8    '.OR.MODEL.EQ.8)THEN
         MMOD = 8
-        write (HEAD,'(a)') TITLE
+        write(HEAD,'(a)') TITLE
 
 C Take the pixel width and height passed.
 C << figure out how to work with the positon on the screen >>
@@ -3748,7 +3757,8 @@ C x pixel and the last 4 the y pixel.
       if (ino.lt.0) then
 C        ino=-100000000*iuresp-10000*irpx-irpy
 
-C Debug...        write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
+C Debug.
+C        write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
 
       endif
 
@@ -3870,7 +3880,7 @@ C If warning mode then clear continuebox after use clicks continue.
           endif
 
 C Debug.
-C          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
+C          write(6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
           CALL continuebox(prompt,cont)
         ELSEIF(LEVEL.EQ.'P'.OR.LEVEL.EQ.'p')THEN
           CALL msgbox(MSG1,MSG2)
@@ -4012,7 +4022,7 @@ C If warning mode then clear continuebox after use clicks continue.
           endif
 
 C Debug.
-C          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
+C          write(6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
           CALL continuebox(prompt,cont)
         ELSEIF(LEVEL.EQ.'P'.OR.LEVEL.EQ.'p')THEN
           CALL msgbox(MSG1,MSG2)
@@ -4208,6 +4218,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Debug
 C      write(6,*)listact,'  ',ino
+
       if(ino.eq.-1)then
 
 C If no action return.
@@ -4216,6 +4227,7 @@ C If no action return.
 
 C If signaled ok then attempt to write out file.
 C        write(6,*)sstr(1)
+
         tfile=sstr(1)
         ltf=max(1,LNBLNK(tfile))
         iuf=ifil+1
@@ -4351,6 +4363,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Debug.
 C      write(6,*)listact,'  ',ino
+
       if(ino.eq.-1)then
 
 C If no action return.
@@ -4359,6 +4372,7 @@ C If no action return.
 
 C If signaled ok then attempt to write out file.
 C        write(6,*)sstr(1)
+
         tfile=sstr(1)
         ltf=max(1,lnblnk(tfile))
         if(listact(2).eq.1)then
@@ -4368,8 +4382,10 @@ C        write(6,*)sstr(1)
           LN=max(1,lnblnk(gxwdcmd))
           write(gcmd,'(3a)') gxwdcmd(1:LN),' ',tfile(1:ltf)
         endif
+
 C Debug
 C        write(6,*)gcmd
+
         call runit(gcmd,'-')
         return
       elseif(ino.eq.1)then
@@ -4864,6 +4880,7 @@ C Refresh the image.
 C Debug
 C      write(6,*)ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
 C     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
       if(ITPPSW.eq.0)then
 
 C If perspective view do the normal wireframe calls.

@@ -1125,9 +1125,11 @@ C Mass flow connection data for version 2
 C                  CALL EGETW(OUTSTR,K,LCND,'W','Nod in CFD domain',IER)
 C                  CALL EGETW(OUTSTR,K,LXND,'W','Nod outside domain',IER)
 C                  CALL EGETW(OUTSTR,K,LCNN,'W','Connecting comp',IER)
-C                  write (6,*) 'Node in CFD domain ',LCND
-C                  write (6,*) 'Node outside domain ',LXND
-C                  write (6,*) 'Connecting comp ',LCNN
+
+C                  write(6,*) 'Node in CFD domain ',LCND
+C                  write(6,*) 'Node outside domain ',LXND
+C                  write(6,*) 'Connecting comp ',LCNN
+
 C                  call CFMFSU(IV,ITRC,LCND,LXND,LCNN)
 C                  ICFMFS(ICFD)=1
                   IMFACT=1
@@ -1181,9 +1183,11 @@ C Mass flow connection data for version 2
 C                  CALL EGETW(OUTSTR,K,LCND,'W','Nod in CFD domain',IER)
 C                  CALL EGETW(OUTSTR,K,LXND,'W','Nod outside domain',IER)
 C                  CALL EGETW(OUTSTR,K,LCNN,'W','Connecting comp',IER)
-C                  write (6,*) 'Node in CFD domain ',LCND
-C                  write (6,*) 'Node outside domain ',LXND
-C                  write (6,*) 'Connecting comp ',LCNN
+
+C                  write(6,*) 'Node in CFD domain ',LCND
+C                  write(6,*) 'Node outside domain ',LXND
+C                  write(6,*) 'Connecting comp ',LCNN
+
 C                  call CFMFSU(IV,ITRC,LCND,LXND,LCNN)
 C                  ICFMFS(ICFD)=1
                   IMFACT=1
@@ -1216,9 +1220,11 @@ C via this connection.
 C                  CALL EGETW(OUTSTR,K,LCND,'W','Nod in CFD domain',IER)
 C                  CALL EGETW(OUTSTR,K,LXND,'W','Nod outside domain',IER)
 C                  CALL EGETW(OUTSTR,K,LCNN,'W','Connecting comp',IER)
-C                  write (6,*) 'Node in CFD domain ',LCND
-C                  write (6,*) 'Node outside domain ',LXND
-C                  write (6,*) 'Connecting comp ',LCNN
+
+C                  write(6,*) 'Node in CFD domain ',LCND
+C                  write(6,*) 'Node outside domain ',LXND
+C                  write(6,*) 'Connecting comp ',LCNN
+
 C                  call CFMFSU(IV,ITRC,LCND,LXND,LCNN)
 C                  ICFMFS(ICFD)=1
                   CALL USRMSG('An older version of dfd file is in use',
@@ -1254,9 +1260,11 @@ C Mass flow connection data for version 2
 C                  CALL EGETW(OUTSTR,K,LCND,'W','Nod in CFD domain',IER)
 C                  CALL EGETW(OUTSTR,K,LXND,'W','Nod outside domain',IER)
 C                  CALL EGETW(OUTSTR,K,LCNN,'W','Connecting comp',IER)
-C                  write (6,*) 'Node in CFD domain ',LCND
-C                  write (6,*) 'Node outside domain ',LXND
-C                  write (6,*) 'Connecting comp ',LCNN
+
+C                  write(6,*) 'Node in CFD domain ',LCND
+C                  write(6,*) 'Node outside domain ',LXND
+C                  write(6,*) 'Connecting comp ',LCNN
+
 C                  call CFMFSU(IV,ITRC,LCND,LXND,LCNN)
 C                  ICFMFS(ICFD)=1
                   CALL USRMSG('An older version of dfd file is in use',
@@ -1364,17 +1372,17 @@ C Assume data in order.
             VOLHeat(IV,ICFD)=VALS
 
 C Debug.
-C      write(6,*)'volheat',volheat(15,1),volheat(16,1)
+C           write(6,*)'volheat',volheat(15,1),volheat(16,1)
 
             CALL EGETWI(OUTSTR,K,IVALS,0,MGTY,'-','cas gn id',IER)
             IDcasgn(IV,ICFD)=IVALS
 C Debug.
-C      write(6,*)'idcasgn',idcasgn(15,1),idcasgn(16,1)
+C           write(6,*)'idcasgn',idcasgn(15,1),idcasgn(16,1)
 
             CALL EGETWR(OUTSTR,K,VALS,0.,1.,'-','frac of gain',IER)
             Fcasgn(IV,ICFD)=VALS
 C Debug.
-C      write(6,*)'fcasgn',fcasgn(15,1),fcasgn(16,1)
+C           write(6,*)'fcasgn',fcasgn(15,1),fcasgn(16,1)
 
             DO 109 ICTM=1,NCTM
               CALL EGETWR(OUTSTR,K,VALS,0.,1.,'-','ctm generation',IER)

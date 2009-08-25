@@ -238,7 +238,10 @@ C Recover definitions for current day type and timeF.
         ID=IDWP
       endif
       if (btimef.gt.24.) then
-        write (6,*) 'btimef.gt.24'
+
+C Debug.
+C        write(6,*) 'btimef.gt.24'
+
         btimef=btimef-24.
         ID=IDWF
       endif
@@ -632,7 +635,10 @@ C Write out final monitoring/ residual info if not done above.
 
 C Calculate mean age of air, if required, and only if not preliminary CFD 
 C simulation.
-C      write (6,*) 'LMA',CALLMA(ICFD),'  gopher',gophrun
+
+C Debug.
+C      write(6,*) 'LMA',CALLMA(ICFD),'  gopher',gophrun
+
       if (CALLMA(ICFD).and.(.not.gophrun)) call calclma(ITIMST)
       RETURN
       

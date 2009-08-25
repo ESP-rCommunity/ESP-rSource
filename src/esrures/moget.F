@@ -3015,11 +3015,12 @@ C Toggle delimeter.
 
 C Debug...
 C        do 999 I=1,NGET
-C          write (6,*) (IGETNO(I,K),K=1,9)
-C          write (6,*) SLABEL(I)
-C          write (6,*) GLABEL(I)
-C          write (6,*) '  '
+C          write(6,*) (IGETNO(I,K),K=1,9)
+C          write(6,*) SLABEL(I)
+C          write(6,*) GLABEL(I)
+C          write(6,*) '  '
 C 999    continue
+
         if (NGET.lt.1) then
           call usrmsg('No data to list/ plot!',
      &                'Please choose a metric.','W')
@@ -3361,8 +3362,9 @@ C Check for duplicate information.
      &          IGETNO(J,7).eq.IGETNO(I,7).and.
      &          IGETNO(J,8).eq.IGETNO(I,8)) then
 
-C Debug...
-C              write (6,*) ' found match, NGET = ',I,J
+C Debug.
+C              write(6,*) ' found match, NGET = ',I,J
+
               do 920 K=J,(NGET-1)
                 IGETNO(K,1)=IGETNO(K+1,1)
                 IGETNO(K,2)=IGETNO(K+1,2)
@@ -3404,12 +3406,12 @@ C Check that there are still picks left and not adding a line.
       if(MNGET.gt.3)call edisp(iuout,outs)
 C *** user selections have now finished ***
 
-C Debug...
+C Debug.
 C        do 9999 I=1,NGET
-C          write (6,*) (IGETNO(I,K),K=1,9)
-C          write (6,*) SLABEL(I)
-C          write (6,*) GLABEL(I)
-C          write (6,*) '  '
+C          write(6,*) (IGETNO(I,K),K=1,9)
+C          write(6,*) SLABEL(I)
+C          write(6,*) GLABEL(I)
+C          write(6,*) '  '
 C 9999   continue
 
 C Write GOGET info to tmp file.
@@ -3474,8 +3476,10 @@ C If IROC=-1 then integrate data (xx hours).
 C Should realy use previous value (if available) - assume no rate of change.
               XV=0.0
             else
-C debug...        write (6,*) 'KX:',KX,' IX:',IX,' VAL2(KX,IX):',
+
+C debug.        write(6,*) 'KX:',KX,' IX:',IX,' VAL2(KX,IX):',
 C     &               VAL2(KX,IX),' XVALOLD(KX):',XVALOLD(KX)
+
               XV=(VAL2(KX,IX)-XVALOLD(KX))*float(NTS)/float(NOUT)
             endif
             XVALOLD(KX)=VAL2(KX,IX)
@@ -4255,7 +4259,10 @@ C IGETNO(KGET,1) = 51 Local PPD: floor T.
         DO  1404 J2=ISTART,IEND
           iflag=2
           call DISCOMF(iflag,GVAL(J2),PPD)
-          write (6,*) '41 ',IGETNO(KGET,2),GVAL(J2),PPD
+
+C Debug.
+C          write(6,*) '41 ',IGETNO(KGET,2),GVAL(J2),PPD
+
           if (iflag.eq.-1) PPD=101.
           GC(J2)=PPD
  1404   CONTINUE
@@ -4272,7 +4279,10 @@ C IGETNO(KGET,1) = 52 Local PD: ceiling T, assume dT between air and surface.
             iflag=3
           endif
           call DISCOMF(iflag,GVAL(J2),PD)
-          write (6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
+
+C Debug.
+C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
+
           if (iflag.eq.-1) PD=101.
           GC(J2)=PD
  1306   CONTINUE
@@ -4289,7 +4299,10 @@ C IGETNO(KGET,1) = 53 Local PD: assymetric dTrad
             iflag=4
           endif
           call DISCOMF(iflag,GVAL(J2),PD)
-          write (6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
+
+C Debug.
+C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
+
           if (iflag.eq.-1) PD=101.
           GC(J2)=PD
  1308   CONTINUE

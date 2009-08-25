@@ -207,7 +207,7 @@ C Flow rate is -ve for flow going out from CFD domain
 698     CONTINUE
       ENDIF
 
-C Debug ...
+C Debug.
 C      write(6,*)'srcstr ',srcstr
 
 C Get turbulent Schmidt number for this contaminant

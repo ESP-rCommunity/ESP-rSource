@@ -1235,7 +1235,10 @@ C Read opt file so as rendering parameters can be set for rtrace.
       xval=-1.
       call RADPAR('dj',xval)
       if (xval.gt.0.) then
-        write (6,*) ' -dj',xval
+
+C Debug.
+C        write(6,*) ' -dj',xval
+
         write (ltmp,'(2a,f4.2,1x)') 
      &       rendopt(1:lnblnk(rendopt)),' -dj ',xval
         write (rendopt,'(a)') ltmp
@@ -1519,8 +1522,8 @@ C Found the DF for the current sensor.
  20     continue
  10   continue
 
-C Debug...
-C      write (6,*) DFmaxdiff
+C Debug.
+C      write(6,*) DFmaxdiff
 
 C Display current results and ambient rendering parameters.
       call DFGRIDLBL('d')

@@ -171,9 +171,9 @@ C      write(6,'(2A)')' Library file: ',RFILE
 
 C << the following code is for testing >>
 C Create SQL results database.
-C      write (doit,'(2a)') 'mysqladmin -u root CREATE ',RFILE
-C      write (doit,'(a)') 'mysqladmin -u iain -pxx CREATE fred'
-C      write (6,*) doit
+C      write(doit,'(2a)') 'mysqladmin -u root CREATE ',RFILE
+C      write(doit,'(a)') 'mysqladmin -u iain -pxx CREATE fred'
+C      write(6,*) doit
 C      call runit(doit,'-')
 
 c Does this library contain results ?

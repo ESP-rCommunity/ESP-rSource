@@ -506,7 +506,7 @@ C Determine operating system
         fs = char(92)
       endif
 
-C Debug...
+C Debug.
 C      write(6,*) 'usrdir is ',odir
 
 C Set logicals for locations of windows.

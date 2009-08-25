@@ -211,8 +211,10 @@ C Stop copying if end of name reached.
       K=0
       DO 99 I=1,illstr
         IF(string(I:I).NE.' '.OR.K.GE.1)THEN
+
 C Debug.
 C          write(6,'(a,I4)')string(I:I),ichar(string(I:I))
+
           if(ichar(string(I:I)).lt.32)goto 100
           if(I.gt.ilname)goto 100
           K=K+1
@@ -290,6 +292,7 @@ C Stop copying if end of name reached.
 
 C Debug.
 C        write(6,'(a,I4)')string(I:I),ichar(string(I:I))
+
         K=K+1
         if(string(I:I).eq.char(34))then
           phrase(K:K)='_'
@@ -355,6 +358,7 @@ C between words and dtop copying if end of name reached.
 
 C Debug.
 C          write(6,'(a,I4)')string(I:I),ichar(string(I:I))
+
           if(ichar(string(I:I)).lt.32)goto 100
           if(I.gt.ilname)goto 100
           K=K+1
@@ -589,12 +593,14 @@ C IUN, ISTAT, MODE, and IXIST;  FNARG is the file name.
         SUBROUTINE FPOPEN(IUN,ISTAT,MODE,IXIST,FNARG)
         CHARACTER*(*) FNARG
         LOGICAL        XST
+	logical unixok
 
         lfn=max(1,LNBLNK(fnarg))
 
+        call isunix(unixok)
         IF (FNARG(1:min(lfn,7)).eq.'UNKNOWN'
      &        .or.FNARG(1:min(lfn,2)).eq.'  ') THEN
-          WRITE (6,*)' !+Files named UNKNOWN cannot be opened'
+          if(unixok)WRITE(6,*)' !+Files named UNKNOWN cannot be opened'
           ISTAT=-400
           RETURN
         ENDIF
@@ -603,7 +609,7 @@ C Check if file exists and its type
         INQUIRE (FILE=FNARG,EXIST=XST)
 
         IF (XST.AND.(IXIST.EQ.2)) THEN
-            WRITE (6,*)' !+File already exists',fnarg
+            if(unixok)WRITE(6,*)' !+File already exists',fnarg
             ISTAT=-300
             RETURN
         ENDIF
@@ -612,8 +618,8 @@ C Check if file exists and its type
 
 C File does not exist, set error and return.
           IF ( IXIST .EQ. 1 )THEN
-            call edisp(6,' File doesn`t exist: ')
-            call edisp(6,FNARG)
+            if(unixok)call edisp(6,' File doesn`t exist: ')
+            if(unixok)call edisp(6,FNARG)
           ENDIF
           ISTAT=-301
           RETURN
@@ -715,10 +721,13 @@ C       >0      (LENG  ) words per record, ff BINARY   records
 C IUN,ISTAT, and IXIST are the same as standard conventions.
         SUBROUTINE FPRAND(IUN,ISTAT,LENG,IXIST,FNARG)
         CHARACTER*(*) FNARG
+	logical unixok
+	
         lfn = lnblnk(FNARG)
 
+        call isunix(unixok)
         IF (FNARG(1:min(lfn,7)).eq.'UNKNOWN') THEN
-          WRITE (6,*)' !+Files named UNKNOWN cannot be opened'
+          if(unixok)WRITE(6,*)' !+Files named UNKNOWN cannot be opened'
           ISTAT=-400
           RETURN
         ENDIF
@@ -1790,6 +1799,7 @@ C Dos.
 
 C Debug.
 C         WRITE(6,'(a,I4)')cstr(I:I),ichar(cstr(I:I))
+
           if(ichar(cstr(I:I)).lt.32)goto 100
           K=K+1
           if(K.gt.LEN(fstr))goto 100
@@ -1975,6 +1985,7 @@ C information back into common PMENU.
 
 C Debug.
 C        write(6,*) 'Number of nested levels is',MILEV
+
       endif
       do 42 j=5,2,-1
         i=j-1
@@ -2015,6 +2026,7 @@ C This is useful if returning from a second menu.  See also EPMENSV.
 
 C Debug.
 C        write(6,*) 'Number of nested levels is',MILEV
+
         MILEV=0
       endif
       MHEAD=MHEAD1(1)
@@ -6043,7 +6055,10 @@ C DNOTZERO returns a non zero value with the same sign.
 
 C Value is approx zero, return small with correct sign.
         DNOTZERO=SIGN(SMALL,A)
-C        write (6,*) 'dzero ',A,DNOTZERO
+
+C Debug.
+C        write(6,*) 'dzero ',A,DNOTZERO
+
       else
         DNOTZERO=A
       endif
@@ -6061,7 +6076,10 @@ C ANOTZERO returns a non zero value with the same sign.
 
 C Value is approx zero, return small with correct sign.
         ANOTZERO=SIGN(SMALL,A)
-C        write (6,*) 'Azero ',A,ANOTZERO
+
+C Debug.
+C        write(6,*) 'Azero ',A,ANOTZERO
+
       else
         ANOTZERO=A
       endif

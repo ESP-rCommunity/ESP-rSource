@@ -84,7 +84,7 @@ C     &     'CREATE TABLE ',zname(I),' (time DATETIME,',
 C     &     ' ait_T REAL, plant REAL, inf REAL, vent REAL, tmcon REAL,',
 C     &     ' outopq REAL, outtrn REAL, QW1 REAL, QW2 REAL)',
 C     &     QT,'|mysql -u iain -pxx fred'
-C        write (6,*) doit
+C        write(6,*) doit
 C        call runit(doit,'-')
 C 10   continue
 
@@ -244,13 +244,17 @@ C Save floor area of each zone.
 C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZBASEA(I),I=1,NCOMP)
       IREC = IREC + 1
-C      write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
+
+C Debug.
+C      write(6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
 
 C Save area of transparent surfaces connected to external type BC.
 C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZTRANA(I),I=1,NCOMP)
       IREC = IREC + 1
-C      write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
+
+C Debug.
+CC      write(6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
 
 C Save surface area of each surface in each zone. Record width is
 C sensitive to the number of surfaces in the zone.
@@ -1635,21 +1639,21 @@ C     & 'replace INTO indoor_climate (ref, ic_code, datetime, ',
 C     & 'ic_item, value) VALUES ("',cfgroot(1:lnblnk(cfgroot)),'_',
 C     & ICOMP,'","ESP",',DT,',"DB",',TMA,')',QT,
 C     & '|mysql -u manager -pmanager -h130.159.102.16 merit'
-C          write (6,*) doit
+C          write(6,*) doit
 C          call runit(doit,'-')
 C          write (doit,'(6a,i2.2,3a,f7.3,3a)') 'echo ',QT,
 C     & 'replace INTO indoor_climate (ref, ic_code, datetime, ',
 C     & 'ic_item, value) VALUES ("',cfgroot(1:lnblnk(cfgroot)),'_',
 C     & ICOMP,'","ESP",',DT,',"RH",',ZRH,')',QT,
 C     & '|mysql -u manager -pmanager -h130.159.102.16 merit'
-C          write (6,*) doit
+C          write(6,*) doit
 C          call runit(doit,'-')
 C          write (doit,'(6a,i2.2,3a,2(f8.1,a),2a)') 'echo ',QT,
 C     & 'replace INTO energy (ref, meter_id, fuel_type, r_type,',
 C     & 'to_datetime, dial_1, tot) VALUES ("',cfgroot(1:lnblnk(cfgroot)),
 C     & '_',ICOMP,'","HF","HF","ESP",',DT,',',QM,',',QM,')',QT,
 C     & '|mysql -u manager -pmanager -h130.159.102.16 merit'
-C          write (6,*) doit
+C          write(6,*) doit
 C          call runit(doit,'-')
 
 C If the bems flag is active then write out the current zone temperature to the bems
