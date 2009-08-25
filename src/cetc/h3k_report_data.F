@@ -1563,11 +1563,13 @@ C.....Zone solar gains coinciding with heating loads !cooling loads?
 
 C.....ARTIFICIAL LIGHTING GAIN FRACTION
 
-      call add_to_xml_reporting (
+      if (ICGCTL(iZone).gt.0) then
+        call add_to_xml_reporting (
      &         CGCTL(iZone,2,ICGCTL(iZone)),
      &         H3K_rep_Name(1:iH3K_NameLen)// '/lighting/frac',
      &         'units', '(-)',
      &         'Zone lighting gain fraction (controlled) FRAC' )
+      endif
 
 C.....TOTAL CASUAL GAINS
       call add_to_xml_reporting (

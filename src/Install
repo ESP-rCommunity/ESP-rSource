@@ -1437,9 +1437,9 @@ echo " Installing ESP-r system. This may take some time."
 
  # Ensure that the URL is from ESP-r central. Code built from
  # other repositories is to be designated 'unversioned'
- URLcvsdude=` echo $URL | grep "https*://[a-zA-Z0-9]*@*svn[0-9]*.cvsdude.com/espr/esp-r/"`
- URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/espr/esp-r/"`
-
+ URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
+ URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
+ 
  if [ "$svnnotfound" != "" ]    ||
     [ "$notworkingcopy" != "" ] ||
     [ "$svnrevision"    =  "" ] ;   then
