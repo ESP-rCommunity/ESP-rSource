@@ -19,7 +19,7 @@ Edited by Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 14 August 2009
+Version of 26 August 2009
 .sp 2
 .SH
 Introduction
@@ -198,6 +198,7 @@ the published checklist. Indeed, this document must
 also be a work-in-progress and requires that others 
 test it and update it to reflect the current state
 of ESP-r.
+.bp
 .SH
 The ESP-r distribution structure
 .LP
@@ -928,6 +929,7 @@ Further details about the source files and the API of ESP-r
 can be found in the document \fIStructure of the ESP-r Source
 Code Archive\fR (January 2008).  The raw troff document is
 held in the source code distribition in the \fIarchive\fR folder.
+.bp
 .sp
 .SH
 Supported Platforms and Development Environments
@@ -1109,6 +1111,7 @@ rather than
 .fam C
 \s-2C:\\Documents and Settings\\Fred\\Current Models\\ \s0
 .fam T
+.bp
 .sp
 .SH
 Installing ESP-r
@@ -1568,6 +1571,7 @@ based on heating and cooling degree days and solar radiation patterns.
 a block of text up to 60 lines which provides a summary of the
 climate. This block is auto-generated within \fBclm\fR and
 you can edit it and extend it if required.
+.bp
 .sp
 .SH
 CODE DOCUMENTATION
@@ -1835,6 +1839,7 @@ Comments can be added to the end of any code line using the '!' character.  This
 makes commenting blocks of variable definitions and short code lines easier to read.
 However, in-line comments must not be embedded within statements spanning multiple
 lines as some compilers will experience problems when parsing such comments.
+.bp
 .sp
 .SH
 Coding Style and use of FORTRAN/C
@@ -2069,6 +2074,7 @@ between the X11 and GTK implementations or
 to differentiate between F90 and F77 code. Ifdefs are not
 needed for Windows/Linux/Unix differences as an \fIisunix\fR
 function is provided.
+.bp
 .sp
 .SH
 QUALITY ASSURANCE TASKS
@@ -2478,6 +2484,7 @@ compiler but is potentially confusing to those reading the code.
 .LP
 The archivist has the option of requiring reported warnings and errors to 
 be fixed prior to taking the code into the main development branch.
+.bp
 .sp
 .SH
 Working with the ESP-r repository
@@ -2624,6 +2631,8 @@ the development branch to ensure that all relevant commits
 have been accounted for. Annotating a copy of the subversion
 log file to indicate which commits have been taken and
 which are pending is a useful technique.
+.bp
+.sp
 .SH
 Merging changes from the development branch
 .LP
@@ -3917,6 +3926,7 @@ already adept at doing-the-dance. For those who are joining the ESP-r
 community there is a need for additional guidance. The following
 discussion of svn commands may be helpful.
 .bp
+.sp
 .SH
 SUBVERSION GUIDE
 .LP
@@ -4049,6 +4059,15 @@ To perform a checkout, use the following command:
   svn checkout https://esp-r.net/espr/esp-r/branches/<sub-branch_name>
 .ES
 Provide your developer's account name and password when prompted.
+.LP
+If you are working
+on a computer with Cygwin or the Native Windows development environment (MSYS and
+MinGW) you can also use an extension to Windows Explorer called Tortoisesvn from
+<http://tortoisesvn.tigris.org>.  Tortiosesvn allows you to right click on folders
+in Windows Explorer to accomplish many svn commands. For the compile cycle you
+will also need a command line svn enviroment - this is available under Cygwin
+but you will have to acquire a command line Subversion client such as is
+available from CollabNet <http://www.open.collab.net/downloads/subversion/>.
 .LP
 Note that changes that you make in your working directory are NOT recorded
 in your branch of the repository until you issue a relevant subversion command. 
