@@ -35,6 +35,8 @@ C  parres: allows terminal, size, results file, action and silent arguments
 C         to be passed to res
 C  parclm: allows terminal, size, input file, action and silent arguments
 C         and output (converted) file to be passed to clm
+C  parsish: allows the module ish to be passed a terminal, size, config file,
+C         zone focus and actions arguments from the invocation line.  
 C parsfza: allows a terminal, size, config file, zone focus and actions arguments
 C         to be passed to the program
 C parsprj: allows terminal, size, config file, zone focus and actions arguments
@@ -1044,16 +1046,21 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'       [-zone <name|index>]')
         call edisp(iuout,'       [-s < width, offset left & top>]')
         call edisp(iuout,'       [-act {recalculate|update_silent}]')
-        call edisp(iuout,'       [-act { <action> }')
         call edisp(iuout,'       [-act [recalculate|update_silent]}')
-        call edisp(iuout,'       [-act { <action> <file>]}')
+        call edisp(iuout,'       [     { <action> <file>]}')
         call edisp(iuout,'   (where action {asci2bin|bin2asci}]')
         call edisp(iuout,'   (where file is asci input or output file)')
+        call edisp(iuout,'       [-act [useupdate_silent]}')
         call edisp(iuout,' ')
         call edisp(iuout,'  where -act recalculate')
         call edisp(iuout,'    interactively recalculates shading.')
         call edisp(iuout,'  where -act update_silent')
         call edisp(iuout,'    no usr interaction during recalculation.')
+        call edisp(iuout,'  where -act useupdate_silent')
+        call edisp(iuout,'    no usr interaction during recalculation')
+        call edisp(iuout,'    and any existing ascii shading file is')
+        call edisp(iuout,'    converted to a binary file otherwise a')
+        call edisp(iuout,'    full calculation is performed')
         call edisp(iuout,' ')
       elseif(appn(1:3).eq.'mfs')then
         call edisp(iuout,'The stand-alone network flow solver. ')

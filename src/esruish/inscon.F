@@ -79,11 +79,17 @@ C Fill the itmc and isc arrays.
   4   call findtmc(icomp,act,nboftmc)
       ntmc=nboftmc
 
-C If no insolation sources return from inscon.
+C If no insolation sources return from inscon. Do not pause
+C for warning if update_silent or useupdate_silent.
       if(ntmc.eq.0)then
-         call usrmsg('No insolation source surfaces found!',' ','W')
+        if(paction(1:13).eq.'update_silent'.or.
+     &     paction(1:16).eq.'useupdate_silent')then
          return
-       endif
+        else
+          call usrmsg('No insolation source surfaces found!',' ','W')
+          return
+        endif
+      endif
     
 C Check that at least one surface has been chosen or gleaned
 C from the zone geometry file.
@@ -305,9 +311,14 @@ C Clear return array and select all applicable surfaces.
                endif
   13        continue
             if(ntmc.eq.0)then
-               call usrmsg('No insolation source surfaces found!',
-     &                         ' ','W')
+              if(paction(1:13).eq.'update_silent'.or.
+     &           paction(1:16).eq.'useupdate_silent')then
                return
+              else
+                call usrmsg('No insolation source surfaces found!',
+     &            ' ','W')
+                return
+              endif
             endif
             iaplic(icomp,2)=1
          else
