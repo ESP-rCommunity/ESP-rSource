@@ -119,9 +119,15 @@ C Convert obstruction block geometry to (/gb1/) and
 C establish maximum and minimum site coordinates.
         if(nbobs(newfoc).gt.0)then
           do 20 i=1,nbobs(newfoc)
-            call cnvblk(xob(newfoc,i),yob(newfoc,i),zob(newfoc,i),
-     &        xob(newfoc,i),dyob(newfoc,i),dzob(newfoc,i),
-     &        bangob(newfoc,i,1))
+            if(BLOCKTYP(newfoc,i)(1:4).eq.'obs ')then
+              call cnvblk(xob(newfoc,i),yob(newfoc,i),zob(newfoc,i),
+     &          xob(newfoc,i),dyob(newfoc,i),dzob(newfoc,i),
+     &          bangob(newfoc,i,1))
+            elseif(BLOCKTYP(newfoc,i)(1:4).eq.'obs3')then
+
+C << to be done >>
+            endif
+
             do 30 j=1,8
               xmn=amin1(xmn,xb(j))
               ymn=amin1(ymn,yb(j))
@@ -266,9 +272,15 @@ C Now draw each obstruction block by first converting to GB1
 C common block via CNVBLK.
         if(nbobs(newfoc).eq.0)goto 54
         DO 420 IB= 1,nbobs(newfoc)
-          CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
-     &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
-     &      BANGOB(newfoc,IB,1))
+          if(BLOCKTYP(newfoc,IB)(1:4).eq.'obs ')then
+            CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
+     &        DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
+     &        BANGOB(newfoc,IB,1))
+          elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obs3')then
+
+C << to be done >>
+          endif
+
           DO 422 I=1,6   ! for each surface in the block
             J=JVNB(I,1)
             iupdown=0

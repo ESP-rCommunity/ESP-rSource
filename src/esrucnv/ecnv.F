@@ -846,6 +846,7 @@ C << what about newer >>
               BANGOB(ivv,nbo,1)=TBANG
               BANGOB(ivv,nbo,2)=0.0
               BANGOB(ivv,nbo,3)=0.0
+              BLOCKTYP(ivv,nbo)='obs '
             endif
             goto 142
  143        continue

@@ -1177,6 +1177,9 @@ C Confirm inclusion of obstructions.
           do 43 ib=1,nbobs(newfoc)
 
 C Create a genbox command to match the obstruction.
+
+C << to be done - find out syntax for blocks with multiple rotations >>
+
             if(BLOCKMAT(newfoc,ib)(1:4).eq.'NONE')then
               WRITE(irofil,'(a,a,3f9.3,a,f9.3,a,3f9.3)')
      &          '!genbox rc_ex_unknown ',

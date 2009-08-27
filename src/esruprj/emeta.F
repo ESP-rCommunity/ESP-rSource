@@ -1411,6 +1411,7 @@ C in the file.
             LNBLOCKNAME(iz,ibu) = 0
             BLOCKMAT(iz,ibu) = ' '
             LNBLOCKMAT(iz,ibu) = 0
+            BLOCKTYP(iz,ibu) = 'obs '
   55      continue
           do 53 isu=1,MTV   ! clear the coordinates
             szcoords(iz,isu,1)=0.0
@@ -1882,7 +1883,39 @@ C grid is found after the token *solar_grid.
         CALL EGETWI(OUTSTR,K,NOX(nsz),4,20,'F','opq grid X',IER)
         CALL EGETWI(OUTSTR,K,NOZ(nsz),4,20,'F','opq grid Z',IER)
         goto 43
-      elseif(WORD(1:4).eq.'*obs')then
+      elseif(WORD(1:5).eq.'*obs3')then
+
+C A 3 rotation obstruction block to be associated with the current zone.
+        nbobs(nsz)=nbobs(nsz)+1
+        nob=nbobs(nsz)
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
+        XOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
+        YOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','Z org',IER)
+        ZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','X dis',IER)
+        DXOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Y dis',IER)
+        DYOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
+        DZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
+        BANGOB(nsz,nob,1)=val1
+        CALL EGETWR(OUTSTR,K,val1,-180.,180.,'W','rot b',IER)
+        BANGOB(nsz,nob,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-180.,180.,'W','rot c',IER)
+        BANGOB(nsz,nob,3)=val1
+        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKNAME(nsz,nob)=lnblnk(BLOCKNAME(nsz,nob))
+        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKMAT(nsz,nob)=lnblnk(BLOCKMAT(nsz,nob))
+        BLOCKTYP(nsz,nob)='obs3'
+        if(iobs(nsz).eq.0) iobs(nsz)=2  ! mark where obstructions held
+        goto 43
+      elseif(WORD(1:5).eq.'*obs ')then
 
 C An obstruction block to be associated with the current zone.
         nbobs(nsz)=nbobs(nsz)+1
@@ -1907,6 +1940,7 @@ C An obstruction block to be associated with the current zone.
         CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
         write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
         LNBLOCKMAT(nsz,nob)=lnblnk(BLOCKMAT(nsz,nob))
+        BLOCKTYP(nsz,nob)='obs '
         if(iobs(nsz).eq.0) iobs(nsz)=2  ! mark where obstructions held
         goto 43
       elseif(WORD(1:7).eq.'*origin')then
@@ -2798,7 +2832,8 @@ C *insol_calc,all_applic,2 # insolation sources
             endif
           endif
 
-C Obstruction information lines.
+C Obstruction information lines.  Write out slightly different
+C format if type 'obs' and 'obs3'
           if(nbobs(nsz).gt.0)then
             write(ifilg,'(a)',IOSTAT=IOS,ERR=13)
      &        '#  *obs = solar obstructions'
@@ -2806,14 +2841,25 @@ C Obstruction information lines.
      &        '*solar_grid',tab,NOX(nsz),NOZ(nsz),
      &        ' # solar gridding density'
             do 55 ib=1,nbobs(nsz)
-              write(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &          '*obs',tab,XOB(nsz,ib),YOB(nsz,ib),ZOB(nsz,ib),
-     &          DXOB(nsz,ib),DYOB(nsz,ib),DZOB(nsz,ib),
-     &          BANGOB(nsz,ib,1),BLOCKNAME(nsz,ib),
-     &          BLOCKMAT(nsz,ib)
-              call SDELIM(outs,outsd,'C',IW)
-              write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
-     &          outsd(1:lnblnk(outsd)),'  # block ',ib
+              if(BLOCKTYP(nsz,ib)(1:4).eq.'obs ')then
+                write(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &            '*obs',tab,XOB(nsz,ib),YOB(nsz,ib),ZOB(nsz,ib),
+     &            DXOB(nsz,ib),DYOB(nsz,ib),DZOB(nsz,ib),
+     &            BANGOB(nsz,ib,1),BLOCKNAME(nsz,ib),
+     &            BLOCKMAT(nsz,ib)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd)),'  # block ',ib
+              elseif(BLOCKTYP(nsz,ib)(1:4).eq.'obs3')then
+                write(outs,'(2a,9F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &            '*obs3',tab,XOB(nsz,ib),YOB(nsz,ib),ZOB(nsz,ib),
+     &            DXOB(nsz,ib),DYOB(nsz,ib),DZOB(nsz,ib),
+     &            BANGOB(nsz,ib,1),BANGOB(nsz,ib,2),BANGOB(nsz,ib,3),
+     &            BLOCKNAME(nsz,ib),BLOCKMAT(nsz,ib)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd)),'  # block ',ib
+              endif
   55        continue
           endif
 	  

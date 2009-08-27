@@ -122,9 +122,14 @@ C     &      0,0,iuout,IER)
 
 C Use the GB1 common block via CNVBLK.
 
-              CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
-     &          DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
-     &          BANGOB(newfoc,IB,1))
+              if(BLOCKTYP(newfoc,IB)(1:4).eq.'obs ')then
+                CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),
+     &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
+     &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1))
+              elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obs3')then
+
+C << to be done >>
+              endif
 
 C Write obstruction information after inverting edges.
               DO 320 J=1,6
@@ -327,6 +332,9 @@ C Inclusion of obstructions.
 
 C Convert block into insertion and scaling for a block named
 C obstruction.
+
+C << what about 3 rotation obstruction? >>
+
             write(ioout,'(a)')'INSERT'
             write(ioout,'(a)')'  8'
             write(ioout,'(a,a)') 'OBS_',ZN(:lnblnk(ZN))
@@ -535,9 +543,14 @@ C     &      0,0,iuout,IER)
             DO 301 IB=1,nbobs(newfoc)
 
 C Use the GB1 common block via CNVBLK
-              CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
-     &          DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
-     &          BANGOB(newfoc,IB,1))
+              if(BLOCKTYP(newfoc,IB)(1:4).eq.'obs ')then
+                CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),
+     &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
+     &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1))
+              elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obs3')then
+
+C << to be done >>
+              endif
 
 C Write obstruction information as a clump of surfaces.
               WRITE(ioout,'(a)')'YIN  8'

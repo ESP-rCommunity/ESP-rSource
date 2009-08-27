@@ -486,6 +486,7 @@ C To delete the last obstruction, dereference the file and exit.
                 LNBLOCKNAME(icomp,IDV)=LNBLOCKNAME(icomp,IDV+1)
                 BLOCKMAT(icomp,IDV)=BLOCKMAT(icomp,IDV+1)
                 LNBLOCKMAT(icomp,IDV)=LNBLOCKMAT(icomp,IDV+1)
+                BLOCKTYP(icomp,IDV)=BLOCKTYP(icomp,IDV+1)
   791         CONTINUE
               nbobs(icomp)=nbobs(icomp)-1
   143       continue
@@ -509,6 +510,7 @@ C To delete the last obstruction, dereference the file and exit.
             LNBLOCKNAME(icomp,nbo)=7
             BLOCKMAT(icomp,nbo)='NONE'
             LNBLOCKMAT(icomp,nbo)=4
+            BLOCKTYP(icomp,nbo)='obs '
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(newgeo)then
@@ -583,7 +585,8 @@ C Ask for transform distance for obstruction and then apply.
             BANGOB(icomp,nbo,2)=BANGOB(icomp,IFOC,2)
             BANGOB(icomp,nbo,3)=BANGOB(icomp,IFOC,3)
             BLOCKMAT(icomp,nbo)=BLOCKMAT(icomp,IFOC)
-            LNBLOCKMAT(icomp,nbo)=LNBLOCKMAT(icomp,nbo)
+            LNBLOCKMAT(icomp,nbo)=LNBLOCKMAT(icomp,IFOC)
+            BLOCKTYP(icomp,nbo)=BLOCKTYP(icomp,IFOC)
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(newgeo)then
@@ -808,6 +811,7 @@ C the dummy obstruction in the zone geometry file.
         LNBLOCKNAME(ICOMP,1)=5
         BLOCKMAT(ICOMP,1)='NONE'
         LNBLOCKMAT(ICOMP,1)=4
+        BLOCKTYP(ICOMP,1)='obs '
         NOX(icomp)=20
         NOZ(icomp)=20
         if(newgeo)then
@@ -980,6 +984,7 @@ C Provide default values for the new obstructions file.
         LNBLOCKNAME(ICOMP,1)=5
         BLOCKMAT(ICOMP,1)='NONE'
         LNBLOCKMAT(ICOMP,1)=4
+        BLOCKTYP(ICOMP,1)='obs '
         NOX(icomp)=20
         NOZ(icomp)=20
 
@@ -1072,12 +1077,20 @@ C file or geometry file.
 
 C Extract coordinates for corners for the current block to 
 C display in the command menu.
-      CALL CNVBLK(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
-     &  DXOB(ICOMP,IB),DYOB(ICOMP,IB),DZOB(ICOMP,IB),
-     &  BANGOB(ICOMP,IB,1))
+      if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs ')then
+        CALL CNVBLK(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
+     &    DXOB(ICOMP,IB),DYOB(ICOMP,IB),DZOB(ICOMP,IB),
+     &    BANGOB(ICOMP,IB,1))
+      elseif(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
+
+C << to be done >>
+      endif
       ITOBS = IB
 
 C Set menu header text.
+
+C << adjust menu to allow space for other rotations >>
+
       WRITE(VERT(1),'(A,3F6.2)')  'a origin X Y Z:',XOB(ICOMP,IB),
      &  YOB(ICOMP,IB),ZOB(ICOMP,IB)
       WRITE(VERT(2),'(A,3F6.2)')  'b block  W D H:',DXOB(ICOMP,IB),
@@ -1495,6 +1508,7 @@ C Create the sill obstruction.
       LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
+      BLOCKTYP(icomp,nbo)='obs '
 
 C If newer geometry file it may include obstructions.
       if(newgeo)then
@@ -1520,6 +1534,7 @@ C Create the head obstruction.
       LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
+      BLOCKTYP(icomp,nbo)='obs '
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1543,6 +1558,7 @@ C Create the left side fin.
       LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
+      BLOCKTYP(icomp,nbo)='obs '
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
@@ -1566,6 +1582,7 @@ C Create the right side fin.
       LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
       write(BLOCKMAT(icomp,nbo),'(a)') mat(1:lnblnk(mat))
       LNBLOCKMAT(icomp,nbo)=lnblnk(mat)
+      BLOCKTYP(icomp,nbo)='obs '
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else

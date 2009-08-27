@@ -333,8 +333,14 @@ C is 2 then re-read the version 1.1 zone geometry file.
       ENDIF
 
       DO 301 IB=1,nbobs(ifoc)
-        CALL CNVBLK(XOB(ifoc,IB),YOB(ifoc,IB),ZOB(ifoc,IB),
-     &    DXOB(ifoc,IB),DYOB(ifoc,IB),DZOB(ifoc,IB),BANGOB(ifoc,IB,1))
+        if(BLOCKTYP(ifoc,IB)(1:4).eq.'obs ')then
+          CALL CNVBLK(XOB(ifoc,IB),YOB(ifoc,IB),ZOB(ifoc,IB),
+     &      DXOB(ifoc,IB),DYOB(ifoc,IB),DZOB(ifoc,IB),
+     &      BANGOB(ifoc,IB,1))
+        elseif(BLOCKTYP(ifoc,IB)(1:4).eq.'obs3')then
+
+C << to be done >>
+        endif
 
 C If block names are to be displayed place near first vertex.
 C Transform the location into eyepoint and then screen coords.
@@ -1020,8 +1026,13 @@ C should be included in image.
           DO 301 IB=1,nbobs(iz)
 
 C Conversion using cnvblk and common GB1.
-            CALL CNVBLK(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
-     &        DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB,1))
+            if(BLOCKTYP(iz,IB)(1:4).eq.'obs ')then
+              CALL CNVBLK(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
+     &          DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB,1))
+            elseif(BLOCKTYP(iz,IB)(1:4).eq.'obs3')then
+
+C << to be done >>
+            endif
 
 C Write obstruction information to the viewer file. First invert edges.
             DO 320 J=1,6

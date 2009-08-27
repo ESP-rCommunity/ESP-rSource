@@ -2047,7 +2047,8 @@ C And also report other zone summary fields as in the QA report.
         context=.true.
         CALL SURINFO(ICOMP,iuout,context)
 
-C Display obstructions if newgeom is true.
+C Display obstructions if newgeom is true. Write out report
+C format for each type of obstruction.
         if(newgeo)then
           if(iobs(icomp).eq.2)then
             if(nbobs(icomp).gt.0)then
@@ -2060,12 +2061,22 @@ C Display obstructions if newgeom is true.
               DO 9995 I=1,nbobs(icomp)
                 lnbn=LNBLOCKNAME(icomp,I)
                 lnbm=LNBLOCKMAT(icomp,I)
-                WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
-     &            ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
-     &            DZOB(icomp,I),BANGOB(icomp,I,1),
-     &            BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
- 9994           FORMAT(I3,7F8.1,' ',a,' ',a)
-                call edisp(iuout,outs)
+                if(BLOCKTYP(icomp,I)(1:4).eq.'obs ')then
+                  WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
+     &              ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
+     &              DZOB(icomp,I),BANGOB(icomp,I,1),
+     &              BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
+ 9994             FORMAT(I3,7F8.1,' ',a,' ',a)
+                  call edisp(iuout,outs)
+                elseif(BLOCKTYP(icomp,I)(1:4).eq.'obs3')then
+                  WRITE(outs,9993)I,XOB(icomp,I),YOB(icomp,I),
+     &              ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
+     &              DZOB(icomp,I),BANGOB(icomp,I,1),BANGOB(icomp,I,2),
+     &              BANGOB(icomp,I,3),BLOCKNAME(icomp,I)(1:lnbn),
+     &              BLOCKMAT(icomp,I)(1:lnbm)
+ 9993             FORMAT(I3,6F8.1,3F7.2,' ',a,' ',a)
+                  call edisp(iuout,outs)
+                endif
  9995         CONTINUE
               call edisp(iuout,' ')
             endif

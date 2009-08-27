@@ -2395,8 +2395,17 @@ C Check where obstructions are located. Details are in common.
         ENDIF
         if(nbobs(mz).gt.0)then
           DO 301 IB=1,nbobs(mz)
-            CALL CNVBLK(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
-     &        DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),BANGOB(mz,IB,1))
+
+C For each obstruction convert and write out equivalent syntax.
+C depending on whether 'obs' or 'obs3'.
+            if(BLOCKTYP(mz,IB)(1:4).eq.'obs ')then
+              CALL CNVBLK(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
+     &          DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),BANGOB(mz,IB,1))
+            elseif(BLOCKTYP(mz,IB)(1:4).eq.'obs3')then
+
+C << to be done >>
+            endif
+
             do 302 ibs=1,6   ! for each of the 6 surfaces of block
               WRITE(ioout,'(a)',iostat=ios,err=6) ' '
               WRITE(ioout,'(2a)',iostat=ios,err=6) 

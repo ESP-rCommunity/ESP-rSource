@@ -1977,11 +1977,45 @@ C there are insufficient tokens on line set both to 20.
             NOZ(icomp)=20
           endif
 
-C Read another line to get the actual blocks.
+C Read another line to get the actual blocks. There are slightly different
+C formats depending on whether the key is '*obs' or '*obs3'.
    72     CALL STRIPC(IUNIT,OUTSTR,99,ND,0,'*obs tags',IER)
           k=0
           CALL EGETP(OUTSTR,K,phrase,'W','block tag',IER)
-          if(phrase(1:4).eq.'*obs')then
+          if(phrase(1:5).eq.'*obs3')then
+            if(iobs(icomp).eq.1) goto 72  ! keep reading till *end_block
+            if(iobs(icomp).eq.0) iobs(icomp)=2
+            nbobs(icomp)=nbobs(icomp)+1
+            nbo=nbobs(icomp)
+            CALL EGETWR(OUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
+            CALL EGETWR(OUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
+            CALL EGETWR(OUTSTR,K,VZ, -99., 99.,'W','obs Z org',IER)
+            XOB(icomp,nbo)=VX
+            YOB(icomp,nbo)=VY
+            ZOB(icomp,nbo)=VZ
+            CALL EGETWR(OUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
+            CALL EGETWR(OUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
+            CALL EGETWR(OUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+            DXOB(icomp,nbo)=VX
+            DYOB(icomp,nbo)=VY
+            DZOB(icomp,nbo)=VZ
+            CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang a',IER)
+            BANGOB(icomp,nbo,1)=VX
+            CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang b',IER)
+            BANGOB(icomp,nbo,2)=VX
+            CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang c',IER)
+            BANGOB(icomp,nbo,3)=VX
+            CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+            BLOCKNAME(icomp,nbo)=WORD(1:12)
+            LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
+
+C The name of the construction might contain spaces so use EGETP.
+            CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            write(BLOCKMAT(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
+            LNBLOCKMAT(icomp,nbo)=lnblnk(BLOCKMAT(icomp,nbo))
+            BLOCKTYP(icomp,nbo)='obs3'
+            goto 72
+          elseif(phrase(1:4).eq.'*obs')then
             if(iobs(icomp).eq.1) goto 72  ! keep reading till *end_block
             if(iobs(icomp).eq.0) iobs(icomp)=2
             nbobs(icomp)=nbobs(icomp)+1
@@ -2000,6 +2034,8 @@ C Read another line to get the actual blocks.
             DZOB(icomp,nbo)=VZ
             CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang',IER)
             BANGOB(icomp,nbo,1)=VX
+            BANGOB(icomp,nbo,2)=0.0   ! there is no 2nd rotation
+            BANGOB(icomp,nbo,3)=0.0   ! there is no 3rd rotation
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
@@ -2008,6 +2044,7 @@ C The name of the construction might contain spaces so use EGETP.
             CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
             write(BLOCKMAT(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKMAT(icomp,nbo)=lnblnk(BLOCKMAT(icomp,nbo))
+            BLOCKTYP(icomp,nbo)='obs '
             goto 72
           elseif(phrase(1:4).eq.'*mrt')then
 
@@ -2452,14 +2489,25 @@ C geometry file also write the NOX and NOZ values.
         write(ifilg,'(2a,i2,i3,a)',IOSTAT=IOS,ERR=13) 
      &  '*block_start',tab,NOX(icomp),NOZ(icomp),' # geometric blocks'
         do 89 ib=1,nbobs(icomp)
-          WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
-     &      '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
-     &      DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
-     &      BANGOB(icomp,ib,1),BLOCKNAME(icomp,ib),
-     &      BLOCKMAT(icomp,ib)
-          call SDELIM(outs,outsd,'C',IW)
-          write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
-     &      outsd(1:lnblnk(outsd)),'  # block ',ib
+          if(BLOCKTYP(icomp,ib)(1:4).eq.'obs3')then
+            WRITE(outs,'(2a,9F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*obs3',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
+     &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
+     &        BANGOB(icomp,ib,1),BANGOB(icomp,ib,2),BANGOB(icomp,ib,3),
+     &        BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # block ',ib
+          elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obs ')then
+            WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
+     &        DXOB(icomp,ib),DYOB(icomp,ib),DZOB(icomp,ib),
+     &        BANGOB(icomp,ib,1),BLOCKNAME(icomp,ib),
+     &        BLOCKMAT(icomp,ib)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # block ',ib
+          endif
   89    continue
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '*end_block'
       endif

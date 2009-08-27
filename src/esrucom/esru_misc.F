@@ -1113,6 +1113,9 @@ C Read each obstruction block, if 7 items found then unattributed, if
 C 8 items assume the last is a name for the obstruction block, if 9 items
 C then the last is the construction attribute. If no  name & or construction
 C then assign the block index as the name via internal read.
+
+C Note: legacy zone obstruction files only contain the single type
+C of obstruction with one angle of rotation.
       DO 10 I=1,nbobs(icomp)
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'obstruction block',IER)
         IF(IER.NE.0)GOTO 99
@@ -1144,12 +1147,14 @@ C then assign the block index as the name via internal read.
             ENDIF
             BLOCKMAT(ICOMP,I)='NONE'
             LNBLOCKMAT(ICOMP,I)=4
+            BLOCKTYP(ICOMP,I)='obs '
           ELSEIF(ND.EQ.8)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(ICOMP,I)=WORD(1:12)
             LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
             BLOCKMAT(ICOMP,I)='NONE'
             LNBLOCKMAT(ICOMP,I)=4
+            BLOCKTYP(ICOMP,I)='obs '
           ELSEIF(ND.EQ.9)THEN
 
 C Get name of obstruction block and its construction (which might
@@ -1160,6 +1165,7 @@ C contain spaces).
             CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
             write(BLOCKMAT(ICOMP,I),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKMAT(icomp,i)=lnblnk(BLOCKMAT(icomp,i))
+            BLOCKTYP(ICOMP,I)='obs '
           ENDIF
         ELSE
           CALL USRMSG(' mismatch block descr in',OUTSTR,'W')
@@ -1190,7 +1196,8 @@ C Trace.
      &           I2,' by ',I2,' for surfaces.')
         CALL EDISP(ITRU,OUTSTR)
         WRITE(OUTSTR,9996)nbobs(icomp)
- 9996   FORMAT('There are ',I2,' blocks associated with the zone.')
+ 9996   FORMAT('There are ',I2,
+     &         ' obstructions associated with the zone.')
         CALL EDISP(ITRU,OUTSTR)
         CALL EDISP(ITRU,
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')

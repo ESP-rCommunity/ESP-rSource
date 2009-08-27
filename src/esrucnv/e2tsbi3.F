@@ -1117,9 +1117,6 @@ C Write differently if opaque or transparent.
 C If there are obstructions associated with this zone convert
 C into GB1 commons and write them out using similar logic.
         if(IOBS(newfoc).EQ.1)then
-C          CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),0,0,iuout,IER)
-C          WRITE(outs,'(a,a)')' Scanning : ',ZOBS(newfoc)
-C          CALL edisp(iuout,outs)
           WRITE(ioout,'(a)')' '
           WRITE(ioout,'(3a)')'# zone ',zname(newfoc),
      &      'obstructions start here....'
@@ -1130,9 +1127,14 @@ C          CALL edisp(iuout,outs)
         endif
         if(nbobs(newfoc).eq.0) goto 302
         DO 301 IB=1,nbobs(newfoc)
-          CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
-     &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
-     &      BANGOB(newfoc,IB,1))
+          if(BLOCKTYP(newfoc,IB)(1:4).eq.'obs ')then
+            CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
+     &        DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
+     &        BANGOB(newfoc,IB,1))
+          elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obs3')then
+
+C << to be done >>
+          endif
 
 C Work out the colour for each block by looping
 C through each of the MLC and finding a match (for first 12 char).

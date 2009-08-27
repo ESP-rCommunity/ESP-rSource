@@ -455,6 +455,8 @@ C anticlockwise uppermost and verticed 5-8 are anticlockwise lowermost.
 C At this stage the coordinates are relative to the original
 C coordinate system.
 
+C << to be done - process differently if BLOCKTYP is 'obs ' and 'obs3' >>
+
       subroutine cornr(iz,ibn)
 #include "building.h"
 #include "geometry.h"
@@ -480,32 +482,37 @@ C been reported on set tok to true.
       
       pi=4.0*atan(1.0)
       r=pi/180.
-      ca=cos(bangob(iz,ibn,1)*r)
-      sa=sin(bangob(iz,ibn,1)*r)
-      xc(1)=xob(iz,ibn)
-      yc(1)=yob(iz,ibn)
-      zc(1)=zob(iz,ibn)+dzob(iz,ibn)
-      xc(5)=xc(1)
-      yc(5)=yc(1)
-      zc(5)=zob(iz,ibn)
-      xc(2)=xc(1)+dxob(iz,ibn)*ca
-      yc(2)=yc(1)+dxob(iz,ibn)*sa
-      zc(2)=zc(1)
-      xc(6)=xc(2)
-      yc(6)=yc(2)
-      zc(6)=zc(5)
-      xc(3)=xc(2)-dyob(iz,ibn)*sa
-      yc(3)=yc(2)+dyob(iz,ibn)*ca
-      zc(3)=zc(1)
-      xc(7)=xc(3)
-      yc(7)=yc(3)
-      zc(7)=zc(5)
-      xc(4)=xc(1)-dyob(iz,ibn)*sa
-      yc(4)=yc(1)+dyob(iz,ibn)*ca
-      zc(4)=zc(1)
-      xc(8)=xc(4)
-      yc(8)=yc(4)
-      zc(8)=zc(5)
+      if(BLOCKTYP(iz,ibn)(1:4).eq.'obs ')then
+        ca=cos(bangob(iz,ibn,1)*r)
+        sa=sin(bangob(iz,ibn,1)*r)
+        xc(1)=xob(iz,ibn)
+        yc(1)=yob(iz,ibn)
+        zc(1)=zob(iz,ibn)+dzob(iz,ibn)
+        xc(5)=xc(1)
+        yc(5)=yc(1)
+        zc(5)=zob(iz,ibn)
+        xc(2)=xc(1)+dxob(iz,ibn)*ca
+        yc(2)=yc(1)+dxob(iz,ibn)*sa
+        zc(2)=zc(1)
+        xc(6)=xc(2)
+        yc(6)=yc(2)
+        zc(6)=zc(5)
+        xc(3)=xc(2)-dyob(iz,ibn)*sa
+        yc(3)=yc(2)+dyob(iz,ibn)*ca
+        zc(3)=zc(1)
+        xc(7)=xc(3)
+        yc(7)=yc(3)
+        zc(7)=zc(5)
+        xc(4)=xc(1)-dyob(iz,ibn)*sa
+        yc(4)=yc(1)+dyob(iz,ibn)*ca
+        zc(4)=zc(1)
+        xc(8)=xc(4)
+        yc(8)=yc(4)
+        zc(8)=zc(5)
+      elseif(BLOCKTYP(iz,ibn)(1:4).eq.'obs3')then
+
+C << to be done >>
+      endif
 
       if(tok)then
          call edisp(icout,' ')

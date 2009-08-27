@@ -2561,6 +2561,7 @@ C Ask for name.
           BANGOB(IC,nbo,1)=RO
           BANGOB(IC,nbo,2)=0.0
           BANGOB(IC,nbo,3)=0.0
+          BLOCKTYP(IC,nbo)='obs '
           call usrmsg(' ',' ','-')
           call edisp(iuout,' ')
           call edisp(iuout,
