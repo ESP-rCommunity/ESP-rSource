@@ -346,6 +346,7 @@ C then check for spaces in name and change / to \.
         CALL ASKOK('  ','Use this edited database?',OK,dok,2)
         if(OK)then
           write(MCMPDBFL,'(a)') llitem(1:lnblnk(llitem))
+          moddb=.true.   ! set so user is asked to update cfg file
         endif
 
       ELSEIF(INO.EQ.14)THEN
