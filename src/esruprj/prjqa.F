@@ -215,6 +215,8 @@ C in the current model. A -1 means not applicable
       integer destination
 
       integer iercl  ! error state returned for scanning climate list.
+      integer llbm,llbn  ! string lengths for obstructions
+      integer ivz        ! index of current zone in list
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1756,12 +1758,29 @@ C Remind user of standard optics as well as the alternatives.
 
 C Note optional zone extensions.
         if(zoneextrainfo.ge.1)then
-          if(IVF(IVALS(IZ)).EQ.1)call edisp(itu,
+          ivz=IVALS(IZ)   ! remember the selected zone
+          if(IVF(ivz).EQ.1)call edisp(itu,
      &      ' Explicit viewfactors have been derived for this zone.')
-          if(ICGC(IVALS(IZ)).EQ.1)call edisp(itu,
+          if(ICGC(ivz).EQ.1)call edisp(itu,
      &      ' Casual gains are controlled in this zone.')
-          if(ISI(IVALS(IZ)).EQ.1)then
-            call FINDFIL(LSHAD(IVALS(IZ)),XST)
+
+          if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
+            call edisp(itu,
+     &   'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
+            DO 9995 I=1,nbobs(ivz)
+              llbm=LNBLOCKMAT(ivz,I)
+              llbn=LNBLOCKNAME(ivz,I)
+              WRITE(OUTS,9994)I,XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
+     &          DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
+     &          BANGOB(ivz,I,1),BANGOB(ivz,I,2),
+     &          BLOCKNAME(ivz,I)(1:llbn),BLOCKMAT(ivz,I)(1:llbm)
+ 9994         FORMAT(I3,8F8.1,' ',a,' ',a)
+              call edisp(itu,OUTS)
+ 9995       CONTINUE
+            CALL EDISP(itu,' ')
+          endif
+          if(ISI(ivz).EQ.1)then
+            call FINDFIL(LSHAD(ivz),XST)
             if(XST)then
               call edisp(itu,
      &          ' Shading patterns have been calculated for this zone.')
@@ -1770,15 +1789,15 @@ C Note optional zone extensions.
      &          ' Shading patterns have not yet been calculated.')
             endif
           endif
-          if(IHC(IVALS(IZ)).EQ.1)then
+          if(IHC(ivz).EQ.1)then
             if(zoneextrainfo.eq.1)then
               call edisp(itu,
      &         ' Non-default convection regimes are used in this zone.')
             elseif(zoneextrainfo.eq.2)then
-              call FINDFIL(LHCCO(IVALS(IZ)),XST)
+              call FINDFIL(LHCCO(ivz),XST)
               IF(XST)THEN
-                call ehtcff(LHCCO(IVALS(IZ)),IUF,itrc,IER)
-                call listhtc(itu,IVALS(IZ),IER)
+                call ehtcff(LHCCO(ivz),IUF,itrc,IER)
+                call listhtc(itu,ivz,IER)
               endif
             endif
           endif

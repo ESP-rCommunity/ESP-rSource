@@ -1097,17 +1097,21 @@ C display in the command menu.
       
       ITOBS = IB
 
-C Set menu header text.
-
-C << adjust menu to allow space for other rotations >>
-
+C Set menu header text. No support for angled obstructions in legacy
+C geometry files.
       WRITE(VERT(1),'(A,3F6.2)')  'a origin X Y Z:',XOB(ICOMP,IB),
      &  YOB(ICOMP,IB),ZOB(ICOMP,IB)
       WRITE(VERT(2),'(A,3F6.2)')  'b block  W D H:',DXOB(ICOMP,IB),
      &  DYOB(ICOMP,IB),DZOB(ICOMP,IB)
-      WRITE(VERT(3),'(A,F7.2)')   'c rotation (Z): ',BANGOB(ICOMP,IB,1)
-      WRITE(VERT(4),'(A,F7.2)')   'd rotation (Y): ',BANGOB(ICOMP,IB,2)
-      WRITE(VERT(5),'(A,F7.2)')   'e tilt (NA)   : ',BANGOB(ICOMP,IB,3)
+      if(newgeo)then
+        WRITE(VERT(3),'(A,F7.2)') 'c rotation (Z): ',BANGOB(ICOMP,IB,1)
+        WRITE(VERT(4),'(A,F7.2)') 'd rotation (Y): ',BANGOB(ICOMP,IB,2)
+        WRITE(VERT(5),'(A,F7.2)') 'e tilt (NA)   : ',BANGOB(ICOMP,IB,3)
+      else
+        WRITE(VERT(3),'(A,F7.2)') 'c rotation (Z): ',BANGOB(ICOMP,IB,1)
+        WRITE(VERT(4),'(A,F7.2)') 'd elev (NA)   : ',BANGOB(ICOMP,IB,2)
+        WRITE(VERT(5),'(A,F7.2)') 'e tilt (NA)   : ',BANGOB(ICOMP,IB,3)
+      endif
       WRITE(VERT(6),'(A,A)')      'f name        : ',BLOCKNAME(ICOMP,IB)
       llbm=LNBLOCKMAT(ICOMP,IB)
       WRITE(VERT(7),'(A,A)')      'g construction: ',
@@ -1299,6 +1303,15 @@ C Now display the menu.
         MODLEN=.TRUE.
         call warnmod(ICOMP,'ob+')
       ELSEIF(IVERT.EQ.4)THEN
+
+C If newer geometry file offer a 2nd axis of rotation.
+        if(newgeo)then
+          continue
+        else
+          call usrmsg('Older format file does not support the',
+     &      'second rotation.','W')
+          goto 92
+        endif
         H(1)='Second rotation: Assuming the block has no first '
         H(2)='rotation, the 2nd axis of rotation is about the Y axis'
         H(3)='with the angle being measured between the base face'
