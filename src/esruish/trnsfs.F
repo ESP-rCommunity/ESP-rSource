@@ -455,6 +455,19 @@ C anticlockwise uppermost and verticed 5-8 are anticlockwise lowermost.
 C At this stage the coordinates are relative to the original
 C coordinate system.
 
+C The ordering of the coordinates is shown below:
+C
+C        4____________3
+C       /|          /|
+C     1/_|_________/2|
+C     |  |         | |
+C     |  |         | |
+C     |  |8........|.|7
+C     | /          | /
+C     |/___________|/ . . .W->
+C      5           6
+C
+
 C << to be done - process differently if BLOCKTYP is 'obs ' and 'obs3' >>
 
       subroutine cornr(iz,ibn)
@@ -469,6 +482,7 @@ C Parameter
       common/obs/xc(8),yc(8),zc(8)
       integer iobstrtrace  ! set to non-zero if already written
       common/obstrc/iobstrtrace(mcom,mb)
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
       character outs*124
       logical tok
@@ -480,35 +494,27 @@ C been reported on set tok to true.
         if(iobstrtrace(iz,ibn).eq.0) tok=.true.
       endif
       
-      pi=4.0*atan(1.0)
-      r=pi/180.
       if(BLOCKTYP(iz,ibn)(1:4).eq.'obs ')then
-        ca=cos(bangob(iz,ibn,1)*r)
-        sa=sin(bangob(iz,ibn,1)*r)
-        xc(1)=xob(iz,ibn)
-        yc(1)=yob(iz,ibn)
-        zc(1)=zob(iz,ibn)+dzob(iz,ibn)
-        xc(5)=xc(1)
-        yc(5)=yc(1)
-        zc(5)=zob(iz,ibn)
-        xc(2)=xc(1)+dxob(iz,ibn)*ca
-        yc(2)=yc(1)+dxob(iz,ibn)*sa
-        zc(2)=zc(1)
-        xc(6)=xc(2)
-        yc(6)=yc(2)
-        zc(6)=zc(5)
-        xc(3)=xc(2)-dyob(iz,ibn)*sa
-        yc(3)=yc(2)+dyob(iz,ibn)*ca
-        zc(3)=zc(1)
-        xc(7)=xc(3)
-        yc(7)=yc(3)
-        zc(7)=zc(5)
-        xc(4)=xc(1)-dyob(iz,ibn)*sa
-        yc(4)=yc(1)+dyob(iz,ibn)*ca
-        zc(4)=zc(1)
-        xc(8)=xc(4)
-        yc(8)=yc(4)
-        zc(8)=zc(5)
+
+C Use cnvblk to get the standard layout of xyz coordinates.
+        CALL CNVBLK(XOB(iz,ibn),YOB(iz,ibn),ZOB(iz,ibn),
+     &    DXOB(iz,ibn),DYOB(iz,ibn),DZOB(iz,ibn),BANGOB(iz,ibn,1))
+
+C Copy across from GB1 to obs common block. Treat the Z coordinates
+C individually to map to the coordinate layout used within the obs
+C common block.
+        do 42 ib=1,8
+          xc(ib)=XB(ib)
+          yc(ib)=YB(ib)
+  42    continue
+        zc(1)=ZB(5)
+	zc(2)=ZB(6)
+	zc(3)=ZB(7)
+	zc(4)=ZB(8)
+	zc(5)=ZB(1)
+	zc(6)=ZB(2)
+	zc(7)=ZB(3)
+	zc(8)=ZB(4)
       elseif(BLOCKTYP(iz,ibn)(1:4).eq.'obs3')then
 
 C << to be done >>
