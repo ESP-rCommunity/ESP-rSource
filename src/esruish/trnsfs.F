@@ -516,8 +516,25 @@ C common block.
 	zc(7)=ZB(3)
 	zc(8)=ZB(4)
       elseif(BLOCKTYP(iz,ibn)(1:4).eq.'obs3')then
+        CALL CNVBLK3A(XOB(iz,ibn),YOB(iz,ibn),ZOB(iz,ibn),
+     &    DXOB(iz,ibn),DYOB(iz,ibn),DZOB(iz,ibn),
+     &    BANGOB(iz,ibn,1),BANGOB(iz,ibn,2),BANGOB(iz,ibn,3))
 
-C << to be done >>
+C Copy across from GB1 to obs common block. Treat the Z coordinates
+C individually to map to the coordinate layout used within the obs
+C common block.
+        do 43 ib=1,8
+          xc(ib)=XB(ib)
+          yc(ib)=YB(ib)
+  43    continue
+        zc(1)=ZB(5)
+	zc(2)=ZB(6)
+	zc(3)=ZB(7)
+	zc(4)=ZB(8)
+	zc(5)=ZB(1)
+	zc(6)=ZB(2)
+	zc(7)=ZB(3)
+	zc(8)=ZB(4)
       endif
 
       if(tok)then

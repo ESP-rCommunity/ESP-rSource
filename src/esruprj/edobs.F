@@ -1044,17 +1044,20 @@ C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       LOGICAL MODIFY,MODLEN,MODBND
-      DIMENSION VERT(19),IVLST(MTV)
+      DIMENSION VERT(21),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S12*12
       character HOLD*32,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical close   ! to see if non-zero block elevation.
       integer llbm    ! length for material
+      real top        ! for the highest point of the block
 
 C Initial values for point at angle facility.
       V1=1.0
       AZ=0.0
       EL=0.0
+      top=0.0
 
       newgeo=.false.  ! assume older format geometry.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -1081,10 +1084,17 @@ C display in the command menu.
         CALL CNVBLK(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
      &    DXOB(ICOMP,IB),DYOB(ICOMP,IB),DZOB(ICOMP,IB),
      &    BANGOB(ICOMP,IB,1))
+        top=ZB(5)
       elseif(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
-
-C << to be done >>
+        CALL CNVBLK3A(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
+     &    DXOB(ICOMP,IB),DYOB(ICOMP,IB),DZOB(ICOMP,IB),
+     &    BANGOB(ICOMP,IB,1),BANGOB(ICOMP,IB,2),BANGOB(ICOMP,IB,3))
+        if(ZB(5).gt.top) top=ZB(5)
+        if(ZB(6).gt.top) top=ZB(6)
+        if(ZB(7).gt.top) top=ZB(7)
+        if(ZB(8).gt.top) top=ZB(8)
       endif
+      
       ITOBS = IB
 
 C Set menu header text.
@@ -1095,25 +1105,27 @@ C << adjust menu to allow space for other rotations >>
      &  YOB(ICOMP,IB),ZOB(ICOMP,IB)
       WRITE(VERT(2),'(A,3F6.2)')  'b block  W D H:',DXOB(ICOMP,IB),
      &  DYOB(ICOMP,IB),DZOB(ICOMP,IB)
-      WRITE(VERT(3),'(A,F7.2)')   'c rotation    : ',BANGOB(ICOMP,IB,1)
-      WRITE(VERT(4),'(A,A)')      'd name        : ',BLOCKNAME(ICOMP,IB)
+      WRITE(VERT(3),'(A,F7.2)')   'c rotation (Z): ',BANGOB(ICOMP,IB,1)
+      WRITE(VERT(4),'(A,F7.2)')   'd rotation (Y): ',BANGOB(ICOMP,IB,2)
+      WRITE(VERT(5),'(A,F7.2)')   'e tilt (NA)   : ',BANGOB(ICOMP,IB,3)
+      WRITE(VERT(6),'(A,A)')      'f name        : ',BLOCKNAME(ICOMP,IB)
       llbm=LNBLOCKMAT(ICOMP,IB)
-      WRITE(VERT(5),'(A,A)')      'e construction: ',
+      WRITE(VERT(7),'(A,A)')      'g construction: ',
      &  BLOCKMAT(ICOMP,IB)(1:llbm)
-      VERT(6)                  =  '  ____________________________ '
-      VERT(7)                  =  '  block coords    X       Y   '
-      WRITE(VERT(8),'(A,2F8.3)')  '  front left  :',XB(1),YB(1)
-      WRITE(VERT(9),'(A,2F8.3)')  '  front right :',XB(2),YB(2)
-      WRITE(VERT(10),'(A,2F8.3)') '  back right  :',XB(3),YB(3)
-      WRITE(VERT(11),'(A,2F8.3)') '  back left   :',XB(4),YB(4)
-      WRITE(VERT(12),'(A,F8.3,A)')'  top @       :',ZB(5),' (Z)'
-      VERT(13)                  = '  ____________________________  '
-      VERT(14)                  = '  zone bounds  X    Y     Z     '
-      WRITE(VERT(15),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),ZZMX(iz)
-      WRITE(VERT(16),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),ZZMN(iz)
-      VERT(17)                  = '  ____________________________  '
-      VERT(18)                  = '? help                          '
-      VERT(19)                  = '- exit                          '
+      VERT(8)                  =  '  ____________________________ '
+      VERT(9)                  =  '  block coords    X       Y   '
+      WRITE(VERT(10),'(A,2F8.3)')  '  front left  :',XB(1),YB(1)
+      WRITE(VERT(11),'(A,2F8.3)')  '  front right :',XB(2),YB(2)
+      WRITE(VERT(12),'(A,2F8.3)') '  back right  :',XB(3),YB(3)
+      WRITE(VERT(13),'(A,2F8.3)') '  back left   :',XB(4),YB(4)
+      WRITE(VERT(14),'(A,F8.3,A)')'  top @       :',top,' (Z)'
+      VERT(15)                  = '  ____________________________  '
+      VERT(16)                  = '  zone bounds  X    Y     Z     '
+      WRITE(VERT(17),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),ZZMX(iz)
+      WRITE(VERT(18),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),ZZMN(iz)
+      VERT(19)                  = '  ____________________________  '
+      VERT(20)                  = '? help                          '
+      VERT(21)                  = '- exit                          '
 
 C Display the zone.
       nzg=1
@@ -1122,28 +1134,45 @@ C Display the zone.
       CALL ADJVIEW(IER)
 
 C Help text for this menu.
-      H(1)='The specification of obstructions is currently based'
-      H(2)='on an obstruction being a prism.  Assuming there is'
-      H(3)='no rotation the width of the block is its distance'
-      H(4)='along the X axis, the depth is along the Y axis, and'
-      H(5)='the height is along the Z axis.  The block may then'
-      H(6)='be rotated with the angle being measured anticlockwise'
-      H(7)='from the X axis.  Note this is currently a different'
-      H(8)='syntax from the rotation of zones.'
-      H(9)=' '
-      H(10)='To assist in determining the placement of obstruc- '
-      H(11)='tion blocks the site coordinates of the 4 corners:'
-      H(12)=' Front Left  = Block origin, '
-      H(13)=' Front Right = Right side (along initial X axis), '
-      H(14)=' Back Right  = Side diagonal from block origin '
-      H(15)=' '
-      H(16)='The associated zone bounds are also show. '
-      H(17)='The construction gives surfaces properties for use'
-      H(18)='in visualisation applications. '
+      H(1) ='The specification of obstructions is currently based'
+      H(2) ='on an obstruction being a prism.  Assuming there is'
+      H(3) ='no rotation the width of the block is its distance'
+      H(4) ='along the X axis, the depth is along the Y axis, and'
+      H(5) ='the height is along the Z axis.'
+      H(6) ='  '
+      H(7) ='Rotations: '
+      H(8) =' First rotation: Assuming the block length dimension is'
+      H(9) =' along the X axis the 1st rotation is in the Z axis'
+      H(10)=' with a positive angle being measured anticlockwise'
+      H(11)=' from the X axis. Note this is currently a different'
+      H(12)=' syntax from the rotation of zones.'
+      H(13)=' '
+      H(14)=' Second rotation: Assuming the block has no first '
+      H(15)=' rotation, the 2nd axis of rotation is about the Y axis'
+      H(16)=' with the angle being measured between the base face'
+      H(17)=' and the horizon + is elevation, - is depression.'
+      H(18)=' '
+      H(19)=' Third rotation: Tilt is not yet implemented but will.'
+      H(20)=' be in the X axis (assuming no other rotations).'
+      H(21) ='  '
+      H(22) =' The combination of two rotations can be use to make'
+      H(23)=' a sloped roof eve or an external shading slat that'
+      H(24)=' is horizonal along its length but slanted in a short'
+      H(25)=' dimension.'
+      H(26) ='  '
+      H(27)='To assist in determining the placement of obstruc- '
+      H(28)='tion blocks the site coordinates of the 4 corners:'
+      H(29)=' Front Left  = Block origin, '
+      H(30)=' Front Right = Right side (along initial X axis), '
+      H(31)=' Back Right  = Side diagonal from block origin '
+      H(32)=' '
+      H(33)='The associated zone bounds are also show. '
+      H(34)='The construction gives surfaces properties for use'
+      H(35)='in visualisation applications. '
 
 C Now display the menu.
-      CALL EMENU('Block Details',VERT,19,IVERT)
-      IF(IVERT.EQ.19)THEN
+      CALL EMENU('Block Details',VERT,21,IVERT)
+      IF(IVERT.EQ.21)THEN
         ITOBS = 0
         CALL ADJVIEW(IER)
         RETURN
@@ -1255,11 +1284,14 @@ C Now display the menu.
         MODLEN=.TRUE.
         call warnmod(ICOMP,'ob+')
       ELSEIF(IVERT.EQ.3)THEN
-        H(1)='Rotation is anticlockwise degrees between the '
-        H(2)='length side of the obstruction and the X axis.'
+        H(1)='First rotation: Assuming the block length dimension is'
+        H(2)='along the X axis the 1st rotation is in the Z axis'
+        H(3)='with a positive angle being measured anticlockwise'
+        H(4)='from the X axis. Note this is currently a different'
+        H(5)='syntax from the rotation of zones.'
  44     VX=BANGOB(ICOMP,IB,1)
-        CALL EASKR(VX,MSG,' Block rotation? ',
-     &       -359.0,'W',359.0,'W',0.0,'block rotation',IER,2)
+        CALL EASKR(VX,MSG,' Block Z rotation? ',
+     &       -359.0,'W',359.0,'W',0.0,'block Z rotation',IER,5)
         if(ier.ne.0)goto 44
         BANGOB(ICOMP,IB,1)=VX
         MODIFY=.TRUE.
@@ -1267,6 +1299,32 @@ C Now display the menu.
         MODLEN=.TRUE.
         call warnmod(ICOMP,'ob+')
       ELSEIF(IVERT.EQ.4)THEN
+        H(1)='Second rotation: Assuming the block has no first '
+        H(2)='rotation, the 2nd axis of rotation is about the Y axis'
+        H(3)='with the angle being measured between the base face'
+        H(4)='and the horizon: + is elevation, - is depression.'
+        H(5)='  '
+        H(6)='The combination of two rotations can be use to make'
+        H(7)='a sloped roof eve or an external shading slat that'
+        H(8)='is horizonal along its length but slanted in a short'
+        H(9)='dimension.'
+ 45     VX=BANGOB(ICOMP,IB,2)
+        CALL EASKR(VX,MSG,' Block Y rotation (see help)? ',
+     &       -180.0,'W',180.0,'W',0.0,'block Y rotation',IER,9)
+        if(ier.ne.0)goto 45
+	call eclose(VX,0.0,0.1,close)
+        if(.NOT.close)then
+          BANGOB(ICOMP,IB,2)=VX
+          BLOCKTYP(ICOMP,IB)='obs3'   ! alter the type if non-zero
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        endif
+      ELSEIF(IVERT.EQ.5)THEN
+        call edisp(iuout,'Tilting obstruction is not yet supported.')
+        goto 92
+      ELSEIF(IVERT.EQ.6)THEN
         H(1)='A descriptive name (up to 12 char) is recommended.'
         S12=BLOCKNAME(ICOMP,IB)
         CALL EASKS(S12,' ',' Name of obstruction? ',
@@ -1276,7 +1334,7 @@ C Now display the menu.
           LNBLOCKNAME(ICOMP,IB)=lnblnk(S12)
         endif
         MODIFY=.TRUE.
-      ELSEIF(IVERT.EQ.5)THEN
+      ELSEIF(IVERT.EQ.7)THEN
 
 C Note: this logic only picks up the first 12 char of construction.
         CALL EPMENSV
@@ -1293,8 +1351,8 @@ C Note: this logic only picks up the first 12 char of construction.
           CALL USRMSG(' ',
      &    'A problem was encountered with the block construction','W')
         ENDIF
-      ELSEIF(IVERT.EQ.18)THEN
-        CALL PHELPD('obstr menu',18,'-',0,0,IER)
+      ELSEIF(IVERT.EQ.20)THEN
+        CALL PHELPD('obstr menu',35,'-',0,0,IER)
       ELSE
         GOTO 92
       ENDIF

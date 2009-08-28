@@ -865,14 +865,15 @@ C description from commons and then get its bounds.
           if(nbobs(ivz).gt.0)then
             do 301 IB=1,nbobs(ivz)
 
-C Use the GB1 common block and CNVBLK to find bounds
+C Use the GB1 common block and CNVBLK or CNVBLK3A to find bounds.
               if(BLOCKTYP(ivz,IB)(1:4).eq.'obs ')then
                 call CNVBLK(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
      &            DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),
      &            BANGOB(ivz,IB,1))
               elseif(BLOCKTYP(ivz,IB)(1:4).eq.'obs3')then
-
-C << to be done >>
+                call CNVBLK3A(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
+     &            DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),
+     &            BANGOB(ivz,IB,1),BANGOB(ivz,IB,2),BANGOB(ivz,IB,3))
               endif
 
               do 302 I=1,8    ! for each vertex in block

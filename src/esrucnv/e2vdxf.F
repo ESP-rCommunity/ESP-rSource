@@ -120,15 +120,16 @@ C     &      0,0,iuout,IER)
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
 
-C Use the GB1 common block via CNVBLK.
-
+C Use the GB1 common block via CNVBLK or CNVBLK3A.
               if(BLOCKTYP(newfoc,IB)(1:4).eq.'obs ')then
                 CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),
      &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
      &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1))
               elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obs3')then
-
-C << to be done >>
+                CALL CNVBLK3A(XOB(newfoc,IB),YOB(newfoc,IB),
+     &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
+     &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1),
+     &            BANGOB(newfoc,IB,2),BANGOB(newfoc,IB,3))
               endif
 
 C Write obstruction information after inverting edges.
@@ -534,10 +535,6 @@ C Write surface information to the THF file.
             WRITE(ioout,'(I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
    50     continue
 
-C Read in obstruction file.
-C          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
-C     &      0,0,iuout,IER)
-
           if(nbobs(newfoc).ge.1)then
             if(incobs.eq.0)goto 4
             DO 301 IB=1,nbobs(newfoc)
@@ -548,8 +545,10 @@ C Use the GB1 common block via CNVBLK
      &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
      &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1))
               elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obs3')then
-
-C << to be done >>
+                CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),
+     &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
+     &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1),
+     &            BANGOB(newfoc,IB,2),BANGOB(newfoc,IB,3))
               endif
 
 C Write obstruction information as a clump of surfaces.

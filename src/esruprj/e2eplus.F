@@ -2402,8 +2402,9 @@ C depending on whether 'obs' or 'obs3'.
               CALL CNVBLK(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
      &          DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),BANGOB(mz,IB,1))
             elseif(BLOCKTYP(mz,IB)(1:4).eq.'obs3')then
-
-C << to be done >>
+              CALL CNVBLK3A(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
+     &          DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),BANGOB(mz,IB,1),
+     &          BANGOB(mz,IB,2),BANGOB(mz,IB,3))
             endif
 
             do 302 ibs=1,6   ! for each of the 6 surfaces of block

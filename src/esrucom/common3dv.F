@@ -338,8 +338,9 @@ C is 2 then re-read the version 1.1 zone geometry file.
      &      DXOB(ifoc,IB),DYOB(ifoc,IB),DZOB(ifoc,IB),
      &      BANGOB(ifoc,IB,1))
         elseif(BLOCKTYP(ifoc,IB)(1:4).eq.'obs3')then
-
-C << to be done >>
+          CALL CNVBLK3A(XOB(ifoc,IB),YOB(ifoc,IB),ZOB(ifoc,IB),
+     &      DXOB(ifoc,IB),DYOB(ifoc,IB),DZOB(ifoc,IB),
+     &      BANGOB(ifoc,IB,1),BANGOB(ifoc,IB,2),BANGOB(ifoc,IB,3))
         endif
 
 C If block names are to be displayed place near first vertex.
@@ -1025,13 +1026,14 @@ C should be included in image.
         if(nbobs(iz).gt.0)then
           DO 301 IB=1,nbobs(iz)
 
-C Conversion using cnvblk and common GB1.
+C Conversion using cnvblk or cvnblk3a and common GB1.
             if(BLOCKTYP(iz,IB)(1:4).eq.'obs ')then
               CALL CNVBLK(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
      &          DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB,1))
             elseif(BLOCKTYP(iz,IB)(1:4).eq.'obs3')then
-
-C << to be done >>
+              CALL CNVBLK3A(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
+     &          DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB,1),
+     &          BANGOB(iz,IB,2),BANGOB(iz,IB,3))
             endif
 
 C Write obstruction information to the viewer file. First invert edges.
