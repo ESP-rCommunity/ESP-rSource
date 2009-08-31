@@ -156,7 +156,7 @@ C storage.
       NSIGFIG=3
       matver=0.0   ! initial assumption of binary materials database
 
-      cAppName = 'encv'
+      cAppName = 'ecnv'
 
 C Get command line parameters.
       call parcnv(iverb,conv,incobs,ichop,itmprm,iformat,oformat,inf,

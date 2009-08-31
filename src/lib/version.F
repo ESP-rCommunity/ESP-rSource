@@ -121,7 +121,7 @@ C Deterimine of summary or details
       else
 C cType is set programmically,
 C and needs only rudementry error trapping.
-        STOP " Arguement to ESPrVersion must be 'summary' or 'details'"
+        STOP " Argument to ESPrVersion must be 'summary' or 'details'"
       endif 
 
 C Determine index of current application in cBinNames/cBinDesc arrays      
