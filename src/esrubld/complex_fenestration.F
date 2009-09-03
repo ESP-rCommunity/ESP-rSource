@@ -1222,29 +1222,45 @@ C set beam-diffuse eq. 0
 
        elseif(itype.eq.2)then   ! currently only slat-type blinds are considered 
 
+        if (i_shd(icomp,icfctp) .eq.0) then ! blind is retracted, treat as air layer ...
+          SolTFbb(icomp,isurf,icfctp,i)=0.99999999
+          SolTBbb(icomp,isurf,icfctp,i)=0.99999999
+          SolRFbb(icomp,isurf,icfctp,i)=0.0
+          SolRBbb(icomp,isurf,icfctp,i)=0.0
+          SolTFbd(icomp,isurf,icfctp,i)=0.0
+          SolTBbd(icomp,isurf,icfctp,i)=0.0
+          SolRFbd(icomp,isurf,icfctp,i)=0.0
+          SolRBbd(icomp,isurf,icfctp,i)=0.0
+          SolTFdd(icomp,isurf,icfctp,i)=0.99999999
+          SolTBdd(icomp,isurf,icfctp,i)=0.99999999
+          SolRFdd(icomp,isurf,icfctp,i)=0.0
+          SolRBdd(icomp,isurf,icfctp,i)=0.0
+          
+        else ! continue as usual
+
 C set beam-beam reflectances to zero
-        SolRFbb(icomp,isurf,icfctp,i)=0.0
-        SolRBbb(icomp,isurf,icfctp,i)=0.0
+         SolRFbb(icomp,isurf,icfctp,i)=0.0
+         SolRBbb(icomp,isurf,icfctp,i)=0.0
 !         VisRFbb(icomp,isurf,icfctp,i)=0.0
 !         VisRBbb(icomp,isurf,icfctp,i)=0.0
 
 C assign direct normal solar/visible properties to local variables
-        SolRufs=solRF(icomp,icfctp,i)
-        SolRdfs=solRB(icomp,icfctp,i)
-        SolTslat=solT(icomp,icfctp,i)
+         SolRufs=solRF(icomp,icfctp,i)
+         SolRdfs=solRB(icomp,icfctp,i)
+         SolTslat=solT(icomp,icfctp,i)
 !         VisRdfs=visRF(icomp,icfctp,i)
 !         VisRufs=visRB(icomp,icfctp,i)
 !         VisTslat=visT(icomp,icfctp,i)
 
 C assign slat blind descriptors to local variables
-        w=vb_w(icomp,icfctp)
-        s=vb_s(icomp,icfctp)
-        phi=vb_phiNew(icomp,icfctp)*r
-        crown=vb_crown(icomp,icfctp)
-        wr=vb_wr(icomp,icfctp)
-        t=vb_t(icomp,icfctp)
+         w=vb_w(icomp,icfctp)
+         s=vb_s(icomp,icfctp)
+         phi=vb_phiNew(icomp,icfctp)*r
+         crown=vb_crown(icomp,icfctp)
+         wr=vb_wr(icomp,icfctp)
+         t=vb_t(icomp,icfctp)
 
-        if(crown.gt.1.0.and.crown.gt.t)then !slat is CURVED
+         if(crown.gt.1.0.and.crown.gt.t)then !slat is CURVED
 
             sl_rad_overw=1./wr
 
@@ -1290,7 +1306,7 @@ C calculate back effective diffuse properties adn assign to commons
             SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
             SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
-        else ! slat is considered FLAT with thickness t [mm]
+         else ! slat is considered FLAT with thickness t [mm]
 
 C calculate front effective solar optical properties and assign to commons
             call VB_SOL46_THICK(s,w,t,phi,proang,
@@ -1334,7 +1350,8 @@ C calculate back effective diffuse properties adn assign to commons
             SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
             SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
-        end if
+         end if ! slat considered flat
+        endif !  i_shd() .eq. 0 
 
        elseif(itype.eq.0)then
 C set gas gap properties to 0 except for bb and dd transmission, set to 1. 
@@ -3790,7 +3807,7 @@ C********************************************************************
 
       return
       end
- 
+
 C ********************************************************************
 C                         --CFC_control--
 C
@@ -4019,7 +4036,7 @@ C Perform actual control of shade ON/OFF and slat angle here
               i_shd(iact2,iact3)     = 0                    ! shade state OFF
           elseif(iact1.eq.1)then                            ! actuate slat angle
               vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state OFF     
+              i_shd(iact2,iact3)     = 1                    ! shade state ON     
           endif
         endif
         
@@ -4090,7 +4107,7 @@ C Perform actual control of shade ON/OFF and slat angle here
               i_shd(iact2,iact3)     = 0                    ! shade state OFF
           elseif(iact1.eq.1)then
               vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state OFF     
+              i_shd(iact2,iact3)     = 1                    ! shade state ON     
           endif
          endif        
         endif
@@ -4113,7 +4130,7 @@ C Perform actual control of shade ON/OFF and slat angle here
               i_shd(iact2,iact3)     = 0                    ! shade state OFF
           elseif(iact1.eq.1)then
               vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state OFF     
+              i_shd(iact2,iact3)     = 1                    ! shade state ON     
           endif
          endif  
         endif
