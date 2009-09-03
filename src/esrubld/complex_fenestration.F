@@ -3912,30 +3912,8 @@ C control loop are valid for current calendar day
   20        continue
           ENDIF
 
-  10    continue  
-  
-      ELSE
-      
-C assign default slat angle and shading state in all zones and all CFC types
-C containing a slat-type shade layer
-        do 30 i = 1, ncomp
-         if(icfc(i).eq.1)then
-          do 31 j = 1, ncfc(i)
-            do 32 k = 1, ncfc_el(i,j)
-              if(icfcltp(i,j,k).eq.2)then
-                vb_phiNew(i,j) = vb_phi(i,j)
-                i_shd(i,j)     = 1
-              endif
-  32        continue
-  31      continue   
-         endif
-  30    continue  
-        goto 9999
-        
-      ENDIF
-
 C If we are here then no control for this time step. Go to Return.    
-      goto 9999
+        goto 9999
       
 C Commence control solution      
   11  if(btimef.gt.24.)btimef = btimef - 24.  
@@ -4160,6 +4138,28 @@ C send warning error message and overwrite angle to 89.9 deg
           CALL EDISP(IUOUT,outs)
           vb_phiNew(icomp,icfctp)=89.9
       end if
+
+  10    continue  
+  
+      ELSE ! nCFCctlloops .eq. 0 , i.e. no control loops defined ...
+      
+C assign default slat angle and shading state in all zones and all CFC types
+C containing a slat-type shade layer
+        do 30 i = 1, ncomp
+         if(icfc(i).eq.1)then
+          do 31 j = 1, ncfc(i)
+            do 32 k = 1, ncfc_el(i,j)
+              if(icfcltp(i,j,k).eq.2)then
+                vb_phiNew(i,j) = vb_phi(i,j)
+                i_shd(i,j)     = 1
+              endif
+  32        continue
+  31      continue   
+         endif
+  30    continue  
+c        goto 9999
+
+      ENDIF
 
  9999 return
       end
