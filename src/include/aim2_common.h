@@ -143,7 +143,7 @@ C Number of zones that receive infiltration.
         INTEGER  AIM2_num_zones_infil
 
 C Matrix holding indices of zones that receive infiltration.
-        INTEGER AIM2_zone_infil(10)  
+        INTEGER AIM2_zone_infil(MCOM)  
 C 10 zones should be plenty for H3K.
 
 C Zone number of basement (basements treated differently that living space in terms of
@@ -222,10 +222,7 @@ C House volume in m^3.
         REAL  AIM2_house_vol
 
 C Matrix holding the infiltration rate apportioned to each zone.
-        REAL AIM2_infil_to_zones(10)
-
-
-      
+        REAL AIM2_infil_to_zones(MCOM)
 
 C     ********************************************************************************
 C     ************************* AIM2_H2K_DUMMY ***************************************
