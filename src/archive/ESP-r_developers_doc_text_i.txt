@@ -19,7 +19,7 @@ Edited by Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 26 August 2009
+Version of 27 August 2009
 .sp 2
 .SH
 Introduction
@@ -2692,11 +2692,11 @@ Testing summary:
 - Ran tester.pl against the latest development branch with no reported
   differences!
 - Interactive tests of prj and clm and bps and res during development
-  stages of the commits that were re-merged. ÊBoth X11 and GTK
+  stages of the commits that were re-merged. Both X11 and GTK
   versions were tested earlier.
 
 All sub-branches of 'development_branch' should now be synchronized
-with 'development_branch'. ÊThese actions are to be completed by the owners
+with 'development_branch'. These actions are to be completed by the owners
 of these sub-branches following the instructions included in
 src/archive/subversion.trf.
 
