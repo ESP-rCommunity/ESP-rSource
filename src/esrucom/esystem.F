@@ -1986,9 +1986,9 @@ C Number of building zones.
       IF(IER.NE.0) GOTO 1
 
 C Reporting.
-      WRITE(OUTS,'(2a)')' The system name is ',LSNAM(1:LNBLNK(LSNAM))
-      if(MMOD.ne.8)CALL EDISP(iuout,OUTS)
       IF(ITRC.GE.1)THEN
+        WRITE(OUTS,'(2a)')' The system name is ',LSNAM(1:LNBLNK(LSNAM))
+        CALL EDISP(iuout,OUTS)
         CALL EDISP(iuout,' ')
         if(NCOMP.gt.10)then
           call edisp(iuout,' Please wait...')

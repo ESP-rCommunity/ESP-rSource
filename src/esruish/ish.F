@@ -410,8 +410,11 @@ C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
          lcmdfl=inf
          write(outs248,'(2a)')'Input file is: ',lcmdfl
-         if(pact(1:13).ne.'update_silent')then
-            call edisp248(iuout,outs248,80)
+         if(pact(1:13).eq.'update_silent'.or.
+     &      pact(1:16).eq.'useupdate_silent')then
+           continue
+         else
+           call edisp248(iuout,outs248,80)
          endif
       else
          lcmdfl=' '
@@ -422,8 +425,11 @@ C on a single zone.
       if(inz(1:1).ne.' ')then
          inzone=inz
          write(outs,'(2a)')'Input zone is: ',inzone
-         if(pact(1:13).ne.'update_silent')then
-            call edisp(iuout,outs)
+         if(pact(1:13).eq.'update_silent'.or.
+     &      pact(1:16).eq.'useupdate_silent')then
+           continue
+         else
+           call edisp(iuout,outs)
          endif
          write(outs,'(2a)')'Ish: the input zone is: ',inzone
          call tstamp('>',outs)
@@ -509,9 +515,13 @@ C to also fill data structures for obstructions.
          inquire(file=lcmdfl,exist=xst)
          if(xst)then
             call fdroot(lcmdfl,path,lcfgf)
-            if(paction(1:13).ne.'update_silent')then
-               call usrmsg('Scanning the model...',' ','-')
+            if(paction(1:13).eq.'update_silent'.or.
+     &         paction(1:16).eq.'useupdate_silent')then
+              continue
+            else
+              call usrmsg('Scanning the model...',' ','-')
             endif
+            iuout=6     ! reset in case corrupted
             mode='ALL '
             call ersys_mmode(lcfgf,ifcfg,iairp,mode,0,ier,silent)
 
@@ -526,8 +536,11 @@ C Open core of databases if not already done so.
               endif
             endif
 	    
-            if(paction(1:13).ne.'update_silent')then
-               call usrmsg('Scanning the model...done.',' ','-')
+            if(paction(1:13).eq.'update_silent'.or.
+     &         paction(1:16).eq.'useupdate_silent')then
+              continue
+            else
+              call usrmsg('Scanning the model...done.',' ','-')
             endif
             if(ier.eq.0)then
                cfgok=.true.
@@ -721,9 +734,12 @@ C starting calculations.
                call erpfree(ifilsi,istst)
                call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
                write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
-               if(paction(1:13).ne.'update_silent')then
-                  call edisp(iuout,' ')
-                  call edisp(iuout,outs)
+               if(paction(1:13).eq.'update_silent'.or.
+     &            paction(1:16).eq.'useupdate_silent')then
+                 continue
+               else
+                 call edisp(iuout,' ')
+                 call edisp(iuout,outs)
                endif
                call efdelet(ifilsi,istat)
                call sifile(icomp,istat)
@@ -740,13 +756,23 @@ C Proceed with shading and then insolation calculations.
             if(iobs(icomp).gt.0)then
                write(outs,'(3a)')'Shading calculations for ',
      &           zname(icomp)(1:lnzname(icomp)),'...'
-               call edisp(iuout,outs)
+               if(paction(1:13).eq.'update_silent'.or.
+     &            paction(1:16).eq.'useupdate_silent')then
+                 continue
+               else
+                 call edisp(iuout,outs)
+               endif
                call tstamp('>','Ish: re-calculate shading')
                call shdcon(icomp,ier,'s')
                changed_existing=.true.  ! so we know to update ASCII on exit
                write(outs,'(3a)')'Shading calculations for ',
      &           zname(icomp)(1:lnzname(icomp)),'...done.'
-               call edisp(iuout,outs)
+               if(paction(1:13).eq.'update_silent'.or.
+     &            paction(1:16).eq.'useupdate_silent')then
+                 continue
+               else
+                 call edisp(iuout,outs)
+               endif
             else
                call edisp(iuout,
      &           'No obstructions, calculating insolation.')
@@ -754,20 +780,29 @@ C Proceed with shading and then insolation calculations.
             icstat=0
             write(outs,'(3a)')'Insolation calculations for ',
      &        zname(icomp)(1:lnzname(icomp)),'...'
-            call edisp(iuout,outs)
+            if(paction(1:13).eq.'update_silent'.or.
+     &         paction(1:16).eq.'useupdate_silent')then
+              continue
+            else
+              call edisp(iuout,outs)
+            endif
             call tstamp('>','Ish: start insolation computation')
             call inscon(icomp,icstat,'s')
             changed_existing=.true.  ! so we know to update ASCII on exit
             write(outs,'(3a)')'Insolation calculations for ',
      &        zname(icomp)(1:lnzname(icomp)),'...done.'
-            call edisp(iuout,outs)
+            if(paction(1:13).eq.'update_silent'.or.
+     &         paction(1:16).eq.'useupdate_silent')then
+              continue
+            else
+              call edisp(iuout,outs)
+            endif
          else
             call usrmsg('Unknown Zone Shading & Insolation file.',
      &                  'Cannot recalculate!','W')
          endif
          if(paction(1:13).eq.'update_silent'.or.
      &      paction(1:16).eq.'useupdate_silent')then
-            call usrmsg('Recalculation complete cleaning up.',' ','-')
 
 C Finished silent recalculation so exit program, delete the transitional
 C shading files. If a single month calculation has been done then
@@ -791,9 +826,6 @@ C not be deleted.
                      if(ier.eq.0)call efdelet(iunit,istat)
  156              continue
  155           continue
-               call usrmsg(
-     &           'Recalculation complete cleaning up done...exiting.',
-     &           ' ','-')
                call pauses(1)
             endif
          endif
@@ -801,7 +833,8 @@ C not be deleted.
 C Computations finished, write out the ascii version of the database.
          lnshd=lnblnk(lshad(icomp))
          write(exportfile,'(2a)') lshad(icomp)(1:lnshd),'a'
-         if(paction(1:13).eq.'update_silent')then
+         if(paction(1:13).eq.'update_silent'.or.
+     &      paction(1:16).eq.'useupdate_silent')then
            continue
          else
            write(outs,'(2a)') ' Creating ASCII file ',
@@ -1092,9 +1125,12 @@ C If there is already data in the file ask user what to do.
                   call erpfree(ifilsi,istst)
                   call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
                   write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
-                  if(paction(1:13).ne.'update_silent')then
-                     call edisp(iuout,' ')
-                     call edisp(iuout,outs)
+                  if(paction(1:13).eq.'update_silent'.or.
+     &               paction(1:16).eq.'useupdate_silent')then
+                    continue
+                  else
+                    call edisp(iuout,' ')
+                    call edisp(iuout,outs)
                   endif
                   call efdelet(ifilsi,istat)
                   call sifile(icomp,istat)
@@ -1246,9 +1282,12 @@ C source surfaces.
                   call erpfree(ifilsi,istst)
                   call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
                   write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
-                  if(paction(1:13).ne.'update_silent')then
-                     call edisp(iuout,' ')
-                     call edisp(iuout,outs)
+                  if(paction(1:13).eq.'update_silent'.or.
+     &               paction(1:16).eq.'useupdate_silent')then
+                    continue
+                  else
+                    call edisp(iuout,' ')
+                    call edisp(iuout,outs)
                   endif
                   call efdelet(ifilsi,istat)
                   call sifile(icomp,istat)
@@ -1746,8 +1785,10 @@ C a special case with no interaction.
  139  CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
+        if(iuout.eq.0) iuout=6  ! reset in case lost
         CALL ERMLDB(0,IUOUT,IER)
-        if(paction(1:13).eq.'update_silent')then
+        if(paction(1:13).eq.'update_silent'.or.
+     &     paction(1:16).eq.'useupdate_silent')then
           if(IER.eq.1)then
             MLDBOK=.FALSE.
           elseif(IER.eq.2)then

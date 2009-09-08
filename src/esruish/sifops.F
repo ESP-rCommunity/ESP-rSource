@@ -420,8 +420,6 @@ C hold 62 indices before it hits an overflow state.
            if(mnth.gt.12)then
               write(iuj,'(A)',iostat=istat,err=1002) '* end'
               call erpfree(iuj,istat)
-              call edisp(iuout,' ')
-              call edisp(iuout,'Export file closed.')
               goto 6
            endif
            call sifrd(icomp,mnth,ier)
@@ -435,8 +433,6 @@ C hold 62 indices before it hits an overflow state.
          else
             write(iuj,'(A)',iostat=istat,err=1002) '* end'
             call erpfree(iuj,istat)
-            call edisp(iuout,' ')
-            call edisp(iuout,'Export file closed.')
          endif
 C End of `export` menu selection.
 
@@ -1107,8 +1103,6 @@ C for the next month then jump back to the '* month' writing line.
       if(mnth.gt.12)then
          write(iuj,'(A)',iostat=istat,err=1002) '* end'
          call erpfree(iuj,istat)
-         call edisp(iuout,' ')
-         call edisp(iuout,'Export file closed.')
          return
       endif
       call sifrd(icomp,mnth,ier)
