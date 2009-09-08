@@ -1924,6 +1924,11 @@ C obstruction data.
                 XOB(ncomp,ij)=XOB(ncomp,ij)+VALX
                 YOB(ncomp,ij)=YOB(ncomp,ij)+VALY
                 ZOB(ncomp,ij)=ZOB(ncomp,ij)+VALZ
+                do 95 ibe=1,8
+                  XBP(ncomp,ij,ibe)=XBP(ncomp,ij,ibe)+VALX
+                  YBP(ncomp,ij,ibe)=YBP(ncomp,ij,ibe)+VALY
+                  ZBP(ncomp,ij,ibe)=ZBP(ncomp,ij,ibe)+VALZ
+   95           continue
    85         continue
             endif
             if(OKZR)then
@@ -1939,6 +1944,14 @@ C obstruction data.
                 XOB(ncomp,ij)=XR+X1
                 YOB(ncomp,ij)=YR+Y1
                 BANGOB(ncomp,ij,1)=BANGOB(ncomp,ij,1)+VAL
+                do 89 ibe=1,8
+                  XXX=XBP(ncomp,ij,ibe)-X1
+                  YYY=YBP(ncomp,ij,ibe)-Y1
+                  XR=XXX*CA+YYY*SA
+                  YR=YYY*CA-XXX*SA
+                  XBP(ncomp,ij,ibe)=XR+X1
+                  YBP(ncomp,ij,ibe)=YR+Y1
+  89            continue
   88          continue
             endif
 
@@ -4130,6 +4143,7 @@ C      of obstruction data.
       integer iuf   ! file type 
       integer iicomp  ! index of current zone
       integer itrc,ij,i,iz  ! types for local variables
+      integer ibe   ! loop for faces of obstruction
        
       IUF=IFIL+2
       DO 83 IZ=1,izlistnb
@@ -4216,6 +4230,11 @@ C transform origin.
                 XOB(iicomp,ij)=XOB(iicomp,ij)+VALX
                 YOB(iicomp,ij)=YOB(iicomp,ij)+VALY
                 ZOB(iicomp,ij)=ZOB(iicomp,ij)+VALZ
+                do 88 ibe=1,8
+                  XBP(iicomp,ij,ibe)=XBP(iicomp,ij,ibe)+VALX
+                  YBP(iicomp,ij,ibe)=YBP(iicomp,ij,ibe)+VALY
+                  ZBP(iicomp,ij,ibe)=ZBP(iicomp,ij,ibe)+VALZ
+  88            continue
   63          continue
               CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
             endif
@@ -4239,6 +4258,11 @@ C apply the transform and write the file back out.
                   XOB(iicomp,ij)=XOB(iicomp,ij)+VALX
                   YOB(iicomp,ij)=YOB(iicomp,ij)+VALY
                   ZOB(iicomp,ij)=ZOB(iicomp,ij)+VALZ
+                  do 89 ibe=1,8
+                    XBP(iicomp,ij,ibe)=XBP(iicomp,ij,ibe)+VALX
+                    YBP(iicomp,ij,ibe)=YBP(iicomp,ij,ibe)+VALY
+                    ZBP(iicomp,ij,ibe)=ZBP(iicomp,ij,ibe)+VALZ
+  89              continue
   64            continue
                 call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
               endif
@@ -4314,6 +4338,7 @@ C      of obstruction data.
       character outs*124
       logical DOK,OK
       integer itrc,iuf,iicomp,ij,iz,i
+      integer ibe   ! loop for faces of obstruction
       real A,pi,XR,YR,XXX,YYY,CA,SA
        
       IUF=IFIL+2
@@ -4412,55 +4437,71 @@ C Rotate any obstructions associated with this zone.
                 XOB(iicomp,ij)=XR+X1
                 YOB(iicomp,ij)=YR+Y1
                 BANGOB(iicomp,ij,1)=BANGOB(iicomp,ij,1)+VAL
+                do 89 ibe=1,8
+                  XXX=XBP(iicomp,ij,ibe)-X1
+                  YYY=YBP(iicomp,ij,ibe)-Y1
+                  XR=XXX*CA+YYY*SA
+                  YR=YYY*CA-XXX*SA
+                  XBP(iicomp,ij,ibe)=XR+X1
+                  YBP(iicomp,ij,ibe)=YR+Y1
+  89            continue
   86          continue
               CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
-            endif
-          endif
-          write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
+              write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
      &          '... done.'
-          if(.NOT.silent)CALL USRMSG(' ',outs,'-')
-          call sumrchg(IICOMP,'r',silent)
-        elseif(IOBS(IICOMP).EQ.2)then
+              if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+              call sumrchg(IICOMP,'r',silent)
+            endif
+          elseif(IOBS(IICOMP).EQ.2)then
 
 C If obstructions are held in the geometry file,
 C apply the transform and write the file back out.
-          if(newgeo)then
-            if(silent)then
-              ok= .true.
-            else
-              dok=.true.
-              write(outs,'(2a)') 'Transforms obstructions of ',
-     &        zn(1:lnblnk(zn))
-              h(1)='You rotated the zone and so will probably'
-              h(2)='want to rotate the solar obstructions which'
-              h(3)='are associated with it as well. '
-              write(outs,'(2a)') 'Rotate obstructions of ',
+            if(newgeo)then
+              if(silent)then
+                ok= .true.
+              else
+                dok=.true.
+                write(outs,'(2a)') 'Transforms obstructions of ',
      &          zn(1:lnblnk(zn))
-              call askok(outs,' ?',OK,dok,3)
+                h(1)='You rotated the zone and so will probably'
+                h(2)='want to rotate the solar obstructions which'
+                h(3)='are associated with it as well. '
+                write(outs,'(2a)') 'Rotate obstructions of ',
+     &            zn(1:lnblnk(zn))
+                call askok(outs,' ?',OK,dok,3)
+              endif
+              if(OK)then
+                PI = 4.0 * ATAN(1.0)
+                A=-VAL*PI/180.
+                CA=COS(A)
+                SA=SIN(A)
+                do 87 ij=1,nbobs(iicomp)
+                  XXX=XOB(iicomp,ij)-X1
+                  YYY=YOB(iicomp,ij)-Y1
+                  XR=XXX*CA+YYY*SA
+                  YR=YYY*CA-XXX*SA
+                  XOB(iicomp,ij)=XR+X1
+                  YOB(iicomp,ij)=YR+Y1
+                  BANGOB(iicomp,ij,1)=BANGOB(iicomp,ij,1)+VAL
+                  do 90 ibe=1,8
+                    XXX=XBP(iicomp,ij,ibe)-X1
+                    YYY=YBP(iicomp,ij,ibe)-Y1
+                    XR=XXX*CA+YYY*SA
+                    YR=YYY*CA-XXX*SA
+                    XBP(iicomp,ij,ibe)=XR+X1
+                    YBP(iicomp,ij,ibe)=YR+Y1
+  90              continue
+  87            continue
+                call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
+                write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
+     &            '... done.'
+                if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+                call sumrchg(IICOMP,'r',silent)
+              endif
             endif
-            if(OK)then
-              PI = 4.0 * ATAN(1.0)
-              A=-VAL*PI/180.
-              CA=COS(A)
-              SA=SIN(A)
-              do 87 ij=1,nbobs(iicomp)
-                XXX=XOB(iicomp,ij)-X1
-                YYY=YOB(iicomp,ij)-Y1
-                XR=XXX*CA+YYY*SA
-                YR=YYY*CA-XXX*SA
-                XOB(iicomp,ij)=XR+X1
-                YOB(iicomp,ij)=YR+Y1
-                BANGOB(iicomp,ij,1)=BANGOB(iicomp,ij,1)+VAL
-  87          continue
-              call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
-            endif
-          endif
-          write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
-     &      '... done.'
-          if(.NOT.silent)CALL USRMSG(' ',outs,'-')
-          call sumrchg(IICOMP,'r',silent)
+          endif  ! obstr in geometry file
         endif
-  84  continue
+  84  continue   ! loop zones in list
 
       return
       end
