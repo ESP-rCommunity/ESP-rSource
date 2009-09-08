@@ -128,6 +128,8 @@ C establish maximum and minimum site coordinates.
      &          xob(newfoc,i),dyob(newfoc,i),dzob(newfoc,i),
      &          bangob(newfoc,i,1),bangob(newfoc,i,2),
      &          bangob(newfoc,i,3))
+            elseif(BLOCKTYP(newfoc,i)(1:4).eq.'obsp')then
+              call cnvblkp(newfoc,i) ! convert obsp type.
             endif
 
             do 30 j=1,8
@@ -283,6 +285,8 @@ C common block via CNVBLK.
      &        DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
      &        BANGOB(newfoc,IB,1),BANGOB(newfoc,IB,2),
      &        BANGOB(newfoc,IB,3))
+          elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obsp')then
+            CALL CNVBLKP(newfoc,IB) ! convert obsp type.
           endif
 
           DO 422 I=1,6   ! for each surface in the block

@@ -1770,12 +1770,19 @@ C Note optional zone extensions.
             DO 9995 I=1,nbobs(ivz)
               llbm=LNBLOCKMAT(ivz,I)
               llbn=LNBLOCKNAME(ivz,I)
-              WRITE(OUTS,9994)I,XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
-     &          DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
-     &          BANGOB(ivz,I,1),BANGOB(ivz,I,2),
-     &          BLOCKNAME(ivz,I)(1:llbn),BLOCKMAT(ivz,I)(1:llbm)
- 9994         FORMAT(I3,8F8.1,' ',a,' ',a)
-              call edisp(itu,OUTS)
+              if(BLOCKTYP(ivz,I)(1:4).eq.'obs '.or.
+     &           BLOCKTYP(ivz,I)(1:4).eq.'obs3')then
+                WRITE(OUTS,9994)I,XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
+     &            DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
+     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),
+     &            BLOCKNAME(ivz,I)(1:llbn),BLOCKMAT(ivz,I)(1:llbm)
+ 9994           FORMAT(I3,8F8.1,' ',a,' ',a)
+                call edisp(itu,OUTS)
+              else
+                WRITE(OUTS,'(i3,a,44x,3a)')I,' user defined coords ',
+     &            BLOCKNAME(ivz,I)(1:llbn),' ',BLOCKMAT(ivz,I)(1:llbm)
+                call edisp(itu,OUTS)
+              endif
  9995       CONTINUE
             CALL EDISP(itu,' ')
           endif

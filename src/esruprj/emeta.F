@@ -1412,6 +1412,11 @@ C in the file.
             BLOCKMAT(iz,ibu) = ' '
             LNBLOCKMAT(iz,ibu) = 0
             BLOCKTYP(iz,ibu) = 'obs '
+            do 56 ibe=1,8
+              XBP(iz,ibu,ibe)=0.0
+              YBP(iz,ibu,ibe)=0.0
+              ZBP(iz,ibu,ibe)=0.0
+  56        continue
   55      continue
           do 53 isu=1,MTV   ! clear the coordinates
             szcoords(iz,isu,1)=0.0
@@ -1915,6 +1920,84 @@ C A 3 rotation obstruction block to be associated with the current zone.
         BLOCKTYP(nsz,nob)='obs3'
         if(iobs(nsz).eq.0) iobs(nsz)=2  ! mark where obstructions held
         goto 43
+      elseif(WORD(1:5).eq.'*obsp')then
+
+C A general polygon obstruction to be associated with the current zone.
+C The first line includes (current fixed) integer number of vertices
+C followed by number of faces and the name and material.
+C The 2nd line has the first 4 coordinates and the 3rd line has the 
+C next 4 coordinates. The surface and edge ordering is as in a 
+C standard obstruction block when converted into a GB1 common block.
+        nbobs(nsz)=nbobs(nsz)+1
+        nob=nbobs(nsz)
+        CALL EGETWI(OUTSTR,K,ival,8,8,'F','obs nb vertices',IER)
+        CALL EGETWI(OUTSTR,K,ival,6,6,'F','pbs nb faces',IER)
+        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKNAME(nsz,nob)=lnblnk(BLOCKNAME(nsz,nob))
+        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKMAT(nsz,nob)=lnblnk(BLOCKMAT(nsz,nob))
+        BLOCKTYP(nsz,nob)='obsp'
+        if(iobs(nsz).eq.0) iobs(nsz)=2  ! mark where obstructions held
+
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'first 4 coordinates',IER)
+        IF(IER.NE.0)goto 1000
+        K=0
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 1',IER)
+        XBP(nsz,nob,1)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 1',IER)
+        YBP(nsz,nob,1)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 1',IER)
+        ZBP(nsz,nob,1)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 2',IER)
+        XBP(nsz,nob,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 2',IER)
+        YBP(nsz,nob,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 2',IER)
+        ZBP(nsz,nob,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 3',IER)
+        XBP(nsz,nob,3)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 3',IER)
+        YBP(nsz,nob,3)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 3',IER)
+        ZBP(nsz,nob,3)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 4',IER)
+        XBP(nsz,nob,4)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 4',IER)
+        YBP(nsz,nob,4)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 4',IER)
+        ZBP(nsz,nob,4)=val1
+
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'2nd 4 coordinates',IER)
+        IF(IER.NE.0)goto 1000
+        K=0
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 5',IER)
+        XBP(nsz,nob,5)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 5',IER)
+        YBP(nsz,nob,5)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 5',IER)
+        ZBP(nsz,nob,5)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 6',IER)
+        XBP(nsz,nob,6)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 6',IER)
+        YBP(nsz,nob,6)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 6',IER)
+        ZBP(nsz,nob,6)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 7',IER)
+        XBP(nsz,nob,7)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 7',IER)
+        YBP(nsz,nob,7)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 7',IER)
+        ZBP(nsz,nob,7)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 8',IER)
+        XBP(nsz,nob,8)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 8',IER)
+        YBP(nsz,nob,8)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 8',IER)
+        ZBP(nsz,nob,8)=val1
+        goto 43
+
       elseif(WORD(1:5).eq.'*obs ')then
 
 C An obstruction block to be associated with the current zone.
@@ -2859,6 +2942,31 @@ C format if type 'obs' and 'obs3'
                 call SDELIM(outs,outsd,'C',IW)
                 write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
      &            outsd(1:lnblnk(outsd)),'  # block ',ib
+              elseif(BLOCKTYP(nsz,ib)(1:4).eq.'obsp')then
+                WRITE(outs,'(2a,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &          '*obsp',' 8 6 ',BLOCKNAME(nsz,ib),BLOCKMAT(nsz,ib)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(2a,i2,a)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd)),'  # block ',ib,
+     &            ' coords follow:'
+
+                WRITE(outs,'(12F9.3)',IOSTAT=ios,ERR=13) 
+     &            XBP(nsz,ib,1),YBP(nsz,ib,1),ZBP(nsz,ib,1),
+     &            XBP(nsz,ib,2),YBP(nsz,ib,2),ZBP(nsz,ib,2),
+     &            XBP(nsz,ib,3),YBP(nsz,ib,3),ZBP(nsz,ib,3),
+     &            XBP(nsz,ib,4),YBP(nsz,ib,4),ZBP(nsz,ib,4)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(A)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd))
+
+                WRITE(outs,'(12F9.3)',IOSTAT=ios,ERR=13) 
+     &            XBP(nsz,ib,5),YBP(nsz,ib,5),ZBP(nsz,ib,5),
+     &            XBP(nsz,ib,6),YBP(nsz,ib,6),ZBP(nsz,ib,6),
+     &            XBP(nsz,ib,7),YBP(nsz,ib,7),ZBP(nsz,ib,7),
+     &            XBP(nsz,ib,8),YBP(nsz,ib,8),ZBP(nsz,ib,8)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(A)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd))
               endif
   55        continue
           endif

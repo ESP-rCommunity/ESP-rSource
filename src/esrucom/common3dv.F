@@ -341,6 +341,8 @@ C is 2 then re-read the version 1.1 zone geometry file.
           CALL CNVBLK3A(XOB(ifoc,IB),YOB(ifoc,IB),ZOB(ifoc,IB),
      &      DXOB(ifoc,IB),DYOB(ifoc,IB),DZOB(ifoc,IB),
      &      BANGOB(ifoc,IB,1),BANGOB(ifoc,IB,2),BANGOB(ifoc,IB,3))
+        elseif(BLOCKTYP(ifoc,IB)(1:4).eq.'obsp')then
+          call CNVBLKP(ifoc,IB) ! convert obsp type.
         endif
 
 C If block names are to be displayed place near first vertex.
@@ -1034,6 +1036,8 @@ C Conversion using cnvblk or cvnblk3a and common GB1.
               CALL CNVBLK3A(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
      &          DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB,1),
      &          BANGOB(iz,IB,2),BANGOB(iz,IB,3))
+            elseif(BLOCKTYP(iz,IB)(1:4).eq.'obsp')then
+              call CNVBLKP(iz,IB) ! convert obsp type.
             endif
 
 C Write obstruction information to the viewer file. First invert edges.

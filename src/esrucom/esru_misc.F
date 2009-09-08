@@ -462,6 +462,29 @@ C Zone level common blocks.
           SNAME(IX,IXS)=' '
    43   continue
 
+C Clear obstructions in all zones.
+        do 55 ibu=1,MB
+          XOB(ix,ibu) = 0.0
+          YOB(ix,ibu) = 0.0
+          ZOB(ix,ibu) = 0.0
+          DXOB(ix,ibu) = 0.0
+          DYOB(ix,ibu) = 0.0
+          DZOB(ix,ibu) = 0.0
+          BANGOB(ix,ibu,1) = 0.0
+          BANGOB(ix,ibu,2) = 0.0
+          BANGOB(ix,ibu,3) = 0.0
+          BLOCKNAME(ix,ibu) = ' '
+          LNBLOCKNAME(ix,ibu) = 0
+          BLOCKMAT(ix,ibu) = ' '
+          LNBLOCKMAT(ix,ibu) = 0
+          BLOCKTYP(ix,ibu) = 'obs '
+          do 56 ibe=1,8
+            XBP(ix,ibu,ibe)=0.0
+            YBP(ix,ibu,ibe)=0.0
+            ZBP(ix,ibu,ibe)=0.0
+  56      continue
+  55    continue
+
 C Clear SHOCC zone information as well.
         bZoneSHOCCed(IX)=.false.
         SHOCCshzFile(IX)=' '

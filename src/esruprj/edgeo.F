@@ -2076,6 +2076,10 @@ C format for each type of obstruction.
      &              BLOCKMAT(icomp,I)(1:lnbm)
  9993             FORMAT(I3,6F8.1,3F7.2,' ',a,' ',a)
                   call edisp(iuout,outs)
+                elseif(BLOCKTYP(icomp,I)(1:4).eq.'obsp')then
+                  WRITE(outs,'(i3,5a)')I,' ',BLOCKNAME(icomp,I)(1:lnbn),
+     &              ' ',BLOCKMAT(icomp,I)(1:lnbm),
+     &              ' 6 sided obstruction' 
                 endif
  9995         CONTINUE
               call edisp(iuout,' ')

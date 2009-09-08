@@ -468,8 +468,6 @@ C     |/___________|/ . . .W->
 C      5           6
 C
 
-C << to be done - process differently if BLOCKTYP is 'obs ' and 'obs3' >>
-
       subroutine cornr(iz,ibn)
 #include "building.h"
 #include "geometry.h"
@@ -527,6 +525,24 @@ C common block.
           xc(ib)=XB(ib)
           yc(ib)=YB(ib)
   43    continue
+        zc(1)=ZB(5)
+	zc(2)=ZB(6)
+	zc(3)=ZB(7)
+	zc(4)=ZB(8)
+	zc(5)=ZB(1)
+	zc(6)=ZB(2)
+	zc(7)=ZB(3)
+	zc(8)=ZB(4)
+      elseif(BLOCKTYP(iz,ibn)(1:4).eq.'obsp')then
+        CALL CNVBLKP(iz,ibn) ! convert obsp type.
+
+C Copy across from GB1 to obs common block. Treat the Z coordinates
+C individually to map to the coordinate layout used within the obs
+C common block.
+        do 44 ib=1,8
+          xc(ib)=XB(ib)
+          yc(ib)=YB(ib)
+  44    continue
         zc(1)=ZB(5)
 	zc(2)=ZB(6)
 	zc(3)=ZB(7)

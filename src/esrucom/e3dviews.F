@@ -874,6 +874,8 @@ C Use the GB1 common block and CNVBLK or CNVBLK3A to find bounds.
                 call CNVBLK3A(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
      &            DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),
      &            BANGOB(ivz,IB,1),BANGOB(ivz,IB,2),BANGOB(ivz,IB,3))
+              elseif(BLOCKTYP(ivz,IB)(1:4).eq.'obsp')then
+                call CNVBLKP(ivz,IB) ! convert obsp type.
               endif
 
               do 302 I=1,8    ! for each vertex in block

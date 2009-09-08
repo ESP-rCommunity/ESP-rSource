@@ -84,11 +84,13 @@ C LPRFDB,IPRODB (for event profile database)
       logical newgeo  ! to use for testing if new/old geometry file.
       logical silent  ! to signal quiet dependency resolution
       integer llbm,llbn  ! for length of block material and name
+      logical havesaved  ! to signal zone file written
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
 
       modcfg=.false.
+      havesaved=.false.
       ITOBS = 0
 
 C Obstructions for whole model are in common blocks there should
@@ -227,6 +229,7 @@ C This is necessary because obstructions are not true zones.
         else
           CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
         endif
+        havesaved=.true.
       endif
 
 C If editing the obstructions and user has asked for an update of the
@@ -237,6 +240,10 @@ C read of file).
       nznog(1)=ICOMP
       izgfoc=ICOMP
       CALL ADJVIEW(IER)
+
+C Having updated the view (which uses MODIFY), if havesaved is true
+C then we can unset MODIFY.
+      if(havesaved.and.MODIFY) MODIFY=.false.
 
 C Help text for this menu.
       H(1)='In order to account for external shading devices, '
@@ -390,6 +397,7 @@ C Rotation choices.
               CALL EASKR(y1,' ',' Y coordinate (m)?',
      &            0.0,'-',0.0,'-',0.0,'y point',IER,1)
             endif
+
             PI = 4.0 * ATAN(1.0)
             A=-ANG*PI/180.
             CA=COS(A)
@@ -403,6 +411,14 @@ C Rotation choices.
               XOB(ICOMP,IFOC)=XR+X1
               YOB(ICOMP,IFOC)=YR+Y1
               BANGOB(ICOMP,IFOC,1)=BANGOB(ICOMP,IFOC,1)+ANG
+              do 89 ibe=1,8
+                XXX=XBP(icomp,IFOC,ibe)-X1
+                YYY=YBP(icomp,IFOC,ibe)-Y1
+                XR=XXX*CA+YYY*SA
+                YR=YYY*CA-XXX*SA
+                XBP(icomp,IFOC,ibe)=XR+X1
+                YBP(icomp,IFOC,ibe)=YR+Y1
+  89          continue
   86        continue
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
@@ -428,6 +444,11 @@ C Rotation choices.
             XOB(icomp,IFOC)=XOB(icomp,IFOC)+VALX
             YOB(icomp,IFOC)=YOB(icomp,IFOC)+VALY
             ZOB(icomp,IFOC)=ZOB(icomp,IFOC)+VALZ
+            do 88 ibe=1,8
+              XBP(icomp,IFOC,ibe)=XBP(icomp,IFOC,ibe)+VALX
+              YBP(icomp,IFOC,ibe)=YBP(icomp,IFOC,ibe)+VALY
+              ZBP(icomp,IFOC,ibe)=ZBP(icomp,IFOC,ibe)+VALZ
+  88        continue
   87      continue
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
@@ -487,6 +508,11 @@ C To delete the last obstruction, dereference the file and exit.
                 BLOCKMAT(icomp,IDV)=BLOCKMAT(icomp,IDV+1)
                 LNBLOCKMAT(icomp,IDV)=LNBLOCKMAT(icomp,IDV+1)
                 BLOCKTYP(icomp,IDV)=BLOCKTYP(icomp,IDV+1)
+                do 792 ibe=1,8
+                  XBP(icomp,IDV,ibe)=XBP(icomp,IDV+1,ibe)
+                  YBP(icomp,IDV,ibe)=YBP(icomp,IDV+1,ibe)
+                  ZBP(icomp,IDV,ibe)=ZBP(icomp,IDV+1,ibe)
+  792           continue
   791         CONTINUE
               nbobs(icomp)=nbobs(icomp)-1
   143       continue
@@ -546,7 +572,8 @@ C Copy obstruction.
           CALL EPMENRC
           IFOC=IVALB(1)
           if(nbo+1.LE.MB.and.IFOC.ne.0)then
-            nbobs(icomp)=nbobs(icomp)+1
+            nbobs(icomp)=nbobs(icomp)+1  ! increment count nbobs and nbo
+            nbo=nbo+1
  244        write(tbn,'(a)') BLOCKNAME(ICOMP,IFOC)
             H(1)='Supply a unique block name for this copy (perhaps'
             H(2)='modifying thenname of the original block) '
@@ -587,6 +614,11 @@ C Ask for transform distance for obstruction and then apply.
             BLOCKMAT(icomp,nbo)=BLOCKMAT(icomp,IFOC)
             LNBLOCKMAT(icomp,nbo)=LNBLOCKMAT(icomp,IFOC)
             BLOCKTYP(icomp,nbo)=BLOCKTYP(icomp,IFOC)
+            do 245 ibe=1,8
+              XBP(icomp,nbo,ibe)=XBP(icomp,IFOC,ibe)+VALX
+              YBP(icomp,nbo,ibe)=YBP(icomp,IFOC,ibe)+VALY
+              ZBP(icomp,nbo,ibe)=ZBP(icomp,IFOC,ibe)+VALZ
+  245       continue
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
             if(newgeo)then
@@ -1005,7 +1037,8 @@ C Write to geometry file or the obstructions file.
       END
 
 C ************* EDOBSB 
-C EDOBSB: Edit details of an obstruction block.
+C EDOBSB: Edit details of an obstruction block. Adapt interface
+C if user requests conversion to a general 6 sided polygon.
       SUBROUTINE EDOBSB(ITRU,IUF,ICOMP,IB,IER)
 #include "building.h"
 #include "geometry.h"
@@ -1044,12 +1077,13 @@ C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       LOGICAL MODIFY,MODLEN,MODBND
-      DIMENSION VERT(21),IVLST(MTV)
+      DIMENSION VERT(22),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S12*12
       character HOLD*32,outs*124
       CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
       logical close   ! to see if non-zero block elevation.
+      logical havesaved  ! to signal zone file written
       integer llbm    ! length for material
       real top        ! for the highest point of the block
 
@@ -1059,6 +1093,7 @@ C Initial values for point at angle facility.
       EL=0.0
       top=0.0
 
+      havesaved=.false.
       newgeo=.false.  ! assume older format geometry.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
 
@@ -1076,10 +1111,11 @@ C file or geometry file.
         else
           CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
         endif
+        havesaved=.true.
       endif
 
 C Extract coordinates for corners for the current block to 
-C display in the command menu.
+C display in the command menu (depending on obstruction type).
       if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs ')then
         CALL CNVBLK(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
      &    DXOB(ICOMP,IB),DYOB(ICOMP,IB),DZOB(ICOMP,IB),
@@ -1093,49 +1129,106 @@ C display in the command menu.
         if(ZB(6).gt.top) top=ZB(6)
         if(ZB(7).gt.top) top=ZB(7)
         if(ZB(8).gt.top) top=ZB(8)
+      elseif(BLOCKTYP(ICOMP,IB)(1:4).eq.'obsp')then
+        call CNVBLKP(ICOMP,IB) ! convert obsp type.
+        if(ZB(5).gt.top) top=ZB(5)
+        if(ZB(6).gt.top) top=ZB(6)
+        if(ZB(7).gt.top) top=ZB(7)
+        if(ZB(8).gt.top) top=ZB(8)
       endif
       
       ITOBS = IB
 
 C Set menu header text. No support for angled obstructions in legacy
 C geometry files.
-      WRITE(VERT(1),'(A,3F6.2)')  'a origin X Y Z:',XOB(ICOMP,IB),
-     &  YOB(ICOMP,IB),ZOB(ICOMP,IB)
-      WRITE(VERT(2),'(A,3F6.2)')  'b block  W D H:',DXOB(ICOMP,IB),
-     &  DYOB(ICOMP,IB),DZOB(ICOMP,IB)
-      if(newgeo)then
-        WRITE(VERT(3),'(A,F7.2)') 'c rotation (Z): ',BANGOB(ICOMP,IB,1)
-        WRITE(VERT(4),'(A,F7.2)') 'd rotation (Y): ',BANGOB(ICOMP,IB,2)
-        WRITE(VERT(5),'(A,F7.2)') 'e tilt (NA)   : ',BANGOB(ICOMP,IB,3)
+      if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs '.or.
+     &   BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
+        WRITE(VERT(1),'(A,3F6.2)')  'a origin X Y Z:',XOB(ICOMP,IB),
+     &    YOB(ICOMP,IB),ZOB(ICOMP,IB)
+        WRITE(VERT(2),'(A,3F6.2)')  'b block  W D H:',DXOB(ICOMP,IB),
+     &    DYOB(ICOMP,IB),DZOB(ICOMP,IB)
+        if(newgeo)then
+          WRITE(VERT(3),'(A,F7.2)') 'c rotation (Z): ',
+     &      BANGOB(ICOMP,IB,1)
+          WRITE(VERT(4),'(A,F7.2)') 'd rotation (Y): ',
+     &      BANGOB(ICOMP,IB,2)
+          WRITE(VERT(5),'(A,F7.2)') 'e tilt (NA)   : ',
+     &      BANGOB(ICOMP,IB,3)
+        else
+          WRITE(VERT(3),'(A,F7.2)') 'c rotation (Z): ',
+     &      BANGOB(ICOMP,IB,1)
+          WRITE(VERT(4),'(A,F7.2)') 'd elev (NA)   : ',
+     &      BANGOB(ICOMP,IB,2)
+          WRITE(VERT(5),'(A,F7.2)') 'e tilt (NA)   : ',
+     &      BANGOB(ICOMP,IB,3)
+        endif
+        WRITE(VERT(6),'(A,A)')      'f name        : ',
+     &    BLOCKNAME(ICOMP,IB)
+        llbm=LNBLOCKMAT(ICOMP,IB)
+        WRITE(VERT(7),'(A,A)')      'g construction: ',
+     &    BLOCKMAT(ICOMP,IB)(1:llbm)
+        VERT(8)                  =  '  ____________________________ '
+        VERT(9)                  =  '  block coords    X       Y   '
+        WRITE(VERT(10),'(A,2F8.3)') '  front left  :',XB(1),YB(1)
+        WRITE(VERT(11),'(A,2F8.3)') '  front right :',XB(2),YB(2)
+        WRITE(VERT(12),'(A,2F8.3)') '  back right  :',XB(3),YB(3)
+        WRITE(VERT(13),'(A,2F8.3)') '  back left   :',XB(4),YB(4)
+        WRITE(VERT(14),'(A,F8.3,A)')'  top @       :',top,' (Z)'
+        VERT(15)                  = '  ____________________________  '
+        VERT(16)                  = '  zone bounds  X    Y     Z     '
+        WRITE(VERT(17),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),
+     &    ZZMX(iz)
+        WRITE(VERT(18),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
+     &    ZZMN(iz)
+        VERT(19)                  = '  ____________________________  '
+        VERT(20)                  = '* convert to general polygons   '
+        VERT(21)                  = '? help                          '
+        VERT(22)                  = '- exit                          '
       else
-        WRITE(VERT(3),'(A,F7.2)') 'c rotation (Z): ',BANGOB(ICOMP,IB,1)
-        WRITE(VERT(4),'(A,F7.2)') 'd elev (NA)   : ',BANGOB(ICOMP,IB,2)
-        WRITE(VERT(5),'(A,F7.2)') 'e tilt (NA)   : ',BANGOB(ICOMP,IB,3)
-      endif
-      WRITE(VERT(6),'(A,A)')      'f name        : ',BLOCKNAME(ICOMP,IB)
-      llbm=LNBLOCKMAT(ICOMP,IB)
-      WRITE(VERT(7),'(A,A)')      'g construction: ',
-     &  BLOCKMAT(ICOMP,IB)(1:llbm)
-      VERT(8)                  =  '  ____________________________ '
-      VERT(9)                  =  '  block coords    X       Y   '
-      WRITE(VERT(10),'(A,2F8.3)')  '  front left  :',XB(1),YB(1)
-      WRITE(VERT(11),'(A,2F8.3)')  '  front right :',XB(2),YB(2)
-      WRITE(VERT(12),'(A,2F8.3)') '  back right  :',XB(3),YB(3)
-      WRITE(VERT(13),'(A,2F8.3)') '  back left   :',XB(4),YB(4)
-      WRITE(VERT(14),'(A,F8.3,A)')'  top @       :',top,' (Z)'
-      VERT(15)                  = '  ____________________________  '
-      VERT(16)                  = '  zone bounds  X    Y     Z     '
-      WRITE(VERT(17),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),ZZMX(iz)
-      WRITE(VERT(18),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),ZZMN(iz)
-      VERT(19)                  = '  ____________________________  '
-      VERT(20)                  = '? help                          '
-      VERT(21)                  = '- exit                          '
+        VERT(1)                   =  ' coords   X     Y      Z      '
+        WRITE(VERT(2),'(A,3F8.3)')  'a 1:',XBP(iz,ib,1),YBP(iz,ib,1),
+     &    ZBP(iz,ib,1)
+        WRITE(VERT(3),'(A,3F8.3)')  'b 2:',XBP(iz,ib,2),YBP(iz,ib,2),
+     &    ZBP(iz,ib,2)
+        WRITE(VERT(4),'(A,3F8.3)')  'c 3:',XBP(iz,ib,3),YBP(iz,ib,3),
+     &    ZBP(iz,ib,3)
+        WRITE(VERT(5),'(A,3F8.3)')  'd 4:',XBP(iz,ib,4),YBP(iz,ib,4),
+     &    ZBP(iz,ib,4)
+        WRITE(VERT(6),'(A,3F8.3)')  'e 5:',XBP(iz,ib,5),YBP(iz,ib,5),
+     &    ZBP(iz,ib,5)
+        WRITE(VERT(7),'(A,3F8.3)')  'f 6:',XBP(iz,ib,6),YBP(iz,ib,6),
+     &    ZBP(iz,ib,6)
+        WRITE(VERT(8),'(A,3F8.3)')  'g 7:',XBP(iz,ib,7),YBP(iz,ib,7),
+     &    ZBP(iz,ib,7)
+        WRITE(VERT(9),'(A,3F8.3)')  'h 8:',XBP(iz,ib,8),YBP(iz,ib,8),
+     &    ZBP(iz,ib,8)
+        VERT(10)                  = '  ____________________________ '
+        WRITE(VERT(11),'(A,A)')     'i name        : ',
+     &    BLOCKNAME(ICOMP,IB)
+        llbm=LNBLOCKMAT(ICOMP,IB)
+        WRITE(VERT(12),'(A,A)')     'j construction: ',
+     &    BLOCKMAT(ICOMP,IB)(1:llbm)
+        VERT(13)                  = '  ____________________________ '
+        VERT(14)                  = '  zone bounds  X    Y     Z     '
+        WRITE(VERT(15),'(A,3F8.3)') '  max: ',ZXMX(iz),ZYMX(iz),
+     &    ZZMX(iz)
+        WRITE(VERT(16),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
+     &    ZZMN(iz)
+        VERT(17)                  = '  ____________________________  '
+        VERT(18)                  = '? help                          '
+        VERT(19)                  = '- exit                          '
 
+      endif
+      
 C Display the zone.
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
       CALL ADJVIEW(IER)
+
+C Having updated the view (which uses MODIFY), if havesaved is true
+C then we can unset MODIFY.
+      if(havesaved.and.MODIFY) MODIFY=.false.
 
 C Help text for this menu.
       H(1) ='The specification of obstructions is currently based'
@@ -1173,203 +1266,457 @@ C Help text for this menu.
       H(33)='The associated zone bounds are also show. '
       H(34)='The construction gives surfaces properties for use'
       H(35)='in visualisation applications. '
+      H(36)=' '
+      H(37)='A block type obstruction can be converted into a general'
+      H(38)='polygon enclosure with six sides (as long as each face is'
+      H(39)='flat). Such general obstructions could represent non- '
+      H(40)='rectangular objects. '
+      H(41)=' '
+      H(42)='The base of a general polygon obstruction is made up of'
+      H(43)='vertices 1 4 3 2. The upper surface is 5 6 7 8. The front'
+      H(44)='surface is 1 2 6 5. The left surface is 4 1 5 8. The '
+      H(45)='right surface is 2 3 7 6. The back surface is 3 4 8 7.'
+      H(46)=' '
 
 C Now display the menu.
-      CALL EMENU('Block Details',VERT,21,IVERT)
-      IF(IVERT.EQ.21)THEN
-        ITOBS = 0
-        CALL ADJVIEW(IER)
-        RETURN
-      ELSEIF(IVERT.EQ.1)THEN
-  42    H(1)='You can edit the origin of the block, make it the same'
-        H(2)='as a vertex in the zone, or the same as a vertex in the'
-        H(3)='zone after editing.'
-        CALL EASKABCD(' Choices:',' ','edit origin','use zone vertex',
-     &     '@ angle&dist from vertex','continue',IBOPT,3)
-        if(IBOPT.eq.1)then
-          HOLD=' '
-          WRITE(HOLD,'(1x,3f9.4)')XOB(ICOMP,IB),YOB(ICOMP,IB),
-     &      ZOB(ICOMP,IB)
-        elseif(IBOPT.eq.2)then
-          inpick=1
-          CALL EPMENSV
-          call EPKVERT(INPICK,IVLST,'Vertices for origin',
-     &      'Select a vertex to define the origin...',' ',3,ier)
-          CALL EPMENRC
-          if(inpick.eq.1)then
-            iwhich1=IVLST(1)
-            HOLD=' '
-            WRITE(HOLD,'(1x,3f9.4)')X(iwhich1),Y(iwhich1),Z(iwhich1)
-            MODIFY=.TRUE.
-          else
-            goto 92
-          endif
-        elseif(IBOPT.eq.3)then
-          inpick=1
-          CALL EPMENSV
-          call EPKVERT(INPICK,IVLST,'Vertice in zone',
-     &      'Select a vertex to begin from...',' ',3,ier)
-          CALL EPMENRC
-          if(inpick.eq.1)then
-            iwhich1=IVLST(1)
-            write(hold,'(f10.4,f9.3,f8.3)') V1,AZ,EL
-            H(1)='Distance is in metres, azimuth assumes north=0 '
-            H(2)='+ degrees clockwise, elevation 90 is vertical. '
- 342        CALL EASKS(HOLD,
-     &      'Distance (m), azimuth (north=0, east=90), elev (vert=90):',
-     &      ' ',32,' 1. 0. 0. ','dist azim elev',IER,2)
-            K=0
-            CALL EGETWR(HOLD,K,V1,-999.9,999.9,'W','dist',IER)
-            CALL EGETWR(HOLD,K,AZ,-359.9,359.9,'W','azim',IER)
-            CALL EGETWR(HOLD,K,EL,-90.0,90.0,'W','elev',IER)
-            if(ier.ne.0)goto 342
-            PI = 4.0 * ATAN(1.0)
-            RAD = PI/180.
-            RYAZI = AZ*RAD
-            RSALT = EL*RAD
-            z3 = V1*SIN(RSALT)
-            XYDIS = V1*COS(RSALT)
-            IF (XYDIS .LT. 1E-6)THEN
-              x3 = 0.
-              y3 = 0.
-            ELSE
-              x3 = XYDIS*SIN(RYAZI)
-              y3 = XYDIS*COS(RYAZI)
-            ENDIF
-            write(outs,'(a,3f10.4)') ' Point @ X,Y,Z:',x3+X(iwhich1),
-     &        y3+Y(iwhich1),z3+Z(iwhich1)
-            call edisp(itru,outs)
-            x3=x3+X(iwhich1)
-            y3=y3+Y(iwhich1)
-            z3=z3+Z(iwhich1)
-            HOLD=' '
-            WRITE(HOLD,'(1x,3f9.4)')x3,y3,z3
-            MODIFY=.TRUE.
-          else
-            goto 92
-          endif
-        elseif(IBOPT.eq.4)then
-          goto 92
-        endif
-        H(1)='The origin of the block is in site coords. '
-        WRITE(MSG,'(a,I3,a)')'For block ',IB,' origin: '
-        CALL EASKS(HOLD,MSG,
-     &     ' X Y Z coords ',32,' 1.0 1.0 0.0  ','blk org xyz',IER,1)
-        K=0
-        CALL EGETWR(HOLD,K,VX,-999.0,999.9,'W','blk orgx',IER)
-        CALL EGETWR(HOLD,K,VY,-999.0,999.9,'W','blk orgy',IER)
-        CALL EGETWR(HOLD,K,VZ,-99.0,999.9,'W','blk orgz',IER)
-        XOB(ICOMP,IB)=VX
-        YOB(ICOMP,IB)=VY
-        ZOB(ICOMP,IB)=VZ
-        if(ier.ne.0)goto 42
-        MODIFY=.TRUE.
-        MODBND=.TRUE.
-        MODLEN=.TRUE.
-        call warnmod(ICOMP,'ob+')
-      ELSEIF(IVERT.EQ.2)THEN
-  43    HOLD=' '
-        WRITE(HOLD,'(1x,3f8.3)')DXOB(ICOMP,IB),DYOB(ICOMP,IB),
-     &    DZOB(ICOMP,IB)
-        H(1)='The width (with no rotation) is along the X axis.'
-        WRITE(MSG,'(a,I3,a)')'For block ',IB,' dimensions: '
-        CALL EASKS(HOLD,MSG,' width (X), depth (Y), height (Z) ',
-     &     32,' 1.0 1.0 1.0  ','blk WDH',IER,1)
-        K=0
-        CALL EGETWR(HOLD,K,VX,0.001,99.9,'W','obs blk wid',IER)
-        CALL EGETWR(HOLD,K,VY,0.001,99.9,'W','obs blk dep',IER)
-        CALL EGETWR(HOLD,K,VZ,0.001,99.9,'W','obs blk hgt',IER)
-        if(ier.ne.0)goto 43
-        DXOB(ICOMP,IB)=VX
-        DYOB(ICOMP,IB)=VY
-        DZOB(ICOMP,IB)=VZ
-        MODIFY=.TRUE.
-        MODBND=.TRUE.
-        MODLEN=.TRUE.
-        call warnmod(ICOMP,'ob+')
-      ELSEIF(IVERT.EQ.3)THEN
-        H(1)='First rotation: Assuming the block length dimension is'
-        H(2)='along the X axis the 1st rotation is in the Z axis'
-        H(3)='with a positive angle being measured anticlockwise'
-        H(4)='from the X axis. Note this is currently a different'
-        H(5)='syntax from the rotation of zones.'
- 44     VX=BANGOB(ICOMP,IB,1)
-        CALL EASKR(VX,MSG,' Block Z rotation? ',
-     &       -359.0,'W',359.0,'W',0.0,'block Z rotation',IER,5)
-        if(ier.ne.0)goto 44
-        BANGOB(ICOMP,IB,1)=VX
-        MODIFY=.TRUE.
-        MODBND=.TRUE.
-        MODLEN=.TRUE.
-        call warnmod(ICOMP,'ob+')
-      ELSEIF(IVERT.EQ.4)THEN
+      if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs '.or.
+     &   BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
+        CALL EMENU('Block Details',VERT,22,IVERT)
+      else
+        CALL EMENU('Obstruction Details',VERT,19,IVERT)
+      endif
 
-C If newer geometry file offer a 2nd axis of rotation.
-        if(newgeo)then
-          continue
-        else
-          call usrmsg('Older format file does not support the',
-     &      'second rotation.','W')
-          goto 92
-        endif
-        H(1)='Second rotation: Assuming the block has no first '
-        H(2)='rotation, the 2nd axis of rotation is about the Y axis'
-        H(3)='with the angle being measured between the base face'
-        H(4)='and the horizon: + is elevation, - is depression.'
-        H(5)='  '
-        H(6)='The combination of two rotations can be use to make'
-        H(7)='a sloped roof eve or an external shading slat that'
-        H(8)='is horizonal along its length but slanted in a short'
-        H(9)='dimension.'
- 45     VX=BANGOB(ICOMP,IB,2)
-        CALL EASKR(VX,MSG,' Block Y rotation (see help)? ',
-     &       -180.0,'W',180.0,'W',0.0,'block Y rotation',IER,9)
-        if(ier.ne.0)goto 45
-	call eclose(VX,0.0,0.1,close)
-        if(.NOT.close)then
-          BANGOB(ICOMP,IB,2)=VX
-          BLOCKTYP(ICOMP,IB)='obs3'   ! alter the type if non-zero
+C One set of interface actions if type 'obs' or 'obs3'.
+      if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs '.or.
+     &   BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
+        if(IVERT.EQ.22)then
+          ITOBS = 0
+          CALL ADJVIEW(IER)
+          RETURN
+        elseif(IVERT.EQ.1)then
+  42      H(1)='You can edit the origin of the block, make it the same'
+          H(2)='as a vertex in the zone, or the same as a vertex in'
+          H(3)='the zone after editing.'
+          CALL EASKABCD('Choices:',' ','edit origin','use zone vertex',
+     &      '@ angle&dist from vertex','continue',IBOPT,3)
+          if(IBOPT.eq.1)then
+            HOLD=' '
+            WRITE(HOLD,'(1x,3f9.4)')XOB(ICOMP,IB),YOB(ICOMP,IB),
+     &        ZOB(ICOMP,IB)
+            MODIFY=.TRUE.
+          elseif(IBOPT.eq.2)then
+            inpick=1
+            CALL EPMENSV
+            call EPKVERT(INPICK,IVLST,'Vertices for origin',
+     &        'Select a vertex to define the origin...',' ',3,ier)
+            CALL EPMENRC
+            if(inpick.eq.1)then
+              iwhich1=IVLST(1)
+              HOLD=' '
+              WRITE(HOLD,'(1x,3f9.4)')X(iwhich1),Y(iwhich1),Z(iwhich1)
+              MODIFY=.TRUE.
+            else
+              goto 92
+            endif
+          elseif(IBOPT.eq.3)then
+            inpick=1
+            CALL EPMENSV
+            call EPKVERT(INPICK,IVLST,'Vertice in zone',
+     &        'Select a vertex to begin from...',' ',3,ier)
+            CALL EPMENRC
+            if(inpick.eq.1)then
+              iwhich1=IVLST(1)
+              write(hold,'(f10.4,f9.3,f8.3)') V1,AZ,EL
+              H(1)='Distance is in metres, azimuth assumes north=0 '
+              H(2)='+ degrees clockwise, elevation 90 is vertical. '
+ 342          CALL EASKS(HOLD,
+     &    'Distance (m), azimuth (north=0, east=90), elev (vert=90):',
+     &    ' ',32,' 1. 0. 0. ','dist azim elev',IER,2)
+              K=0
+              CALL EGETWR(HOLD,K,V1,-999.9,999.9,'W','dist',IER)
+              CALL EGETWR(HOLD,K,AZ,-359.9,359.9,'W','azim',IER)
+              CALL EGETWR(HOLD,K,EL,-90.0,90.0,'W','elev',IER)
+              if(ier.ne.0)goto 342
+              PI = 4.0 * ATAN(1.0)
+              RAD = PI/180.
+              RYAZI = AZ*RAD
+              RSALT = EL*RAD
+              z3 = V1*SIN(RSALT)
+              XYDIS = V1*COS(RSALT)
+              IF (XYDIS .LT. 1E-6)THEN
+                x3 = 0.
+                y3 = 0.
+              ELSE
+                x3 = XYDIS*SIN(RYAZI)
+                y3 = XYDIS*COS(RYAZI)
+              ENDIF
+              write(outs,'(a,3f10.4)') ' Point @ X,Y,Z:',x3+X(iwhich1),
+     &          y3+Y(iwhich1),z3+Z(iwhich1)
+              call edisp(itru,outs)
+              x3=x3+X(iwhich1)
+              y3=y3+Y(iwhich1)
+              z3=z3+Z(iwhich1)
+              HOLD=' '
+              WRITE(HOLD,'(1x,3f9.4)')x3,y3,z3
+              MODIFY=.TRUE.
+            else
+              goto 92
+            endif
+          elseif(IBOPT.eq.4)then
+            goto 92
+          endif
+          H(1)='The origin of the block is in site coords. '
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' origin: '
+          CALL EASKS(HOLD,MSG,
+     &     ' X Y Z coords ',32,' 1.0 1.0 0.0  ','blk org xyz',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,-999.0,999.9,'W','blk orgx',IER)
+          CALL EGETWR(HOLD,K,VY,-999.0,999.9,'W','blk orgy',IER)
+          CALL EGETWR(HOLD,K,VZ,-99.0,999.9,'W','blk orgz',IER)
+          XOB(ICOMP,IB)=VX
+          YOB(ICOMP,IB)=VY
+          ZOB(ICOMP,IB)=VZ
+          if(ier.ne.0)goto 42
           MODIFY=.TRUE.
           MODBND=.TRUE.
           MODLEN=.TRUE.
           call warnmod(ICOMP,'ob+')
-        endif
-      ELSEIF(IVERT.EQ.5)THEN
-        call edisp(iuout,'Tilting obstruction is not yet supported.')
-        goto 92
-      ELSEIF(IVERT.EQ.6)THEN
-        H(1)='A descriptive name (up to 12 char) is recommended.'
-        S12=BLOCKNAME(ICOMP,IB)
-        CALL EASKS(S12,' ',' Name of obstruction? ',
-     &    12,'obstruction','Block name',IER,1)
-        IF(S12(1:2).NE.'  ')then
-          BLOCKNAME(ICOMP,IB)=S12
-          LNBLOCKNAME(ICOMP,IB)=lnblnk(S12)
-        endif
-        MODIFY=.TRUE.
-      ELSEIF(IVERT.EQ.7)THEN
+        ELSEIF(IVERT.EQ.2)THEN
+  43      HOLD=' '
+          WRITE(HOLD,'(1x,3f8.3)')DXOB(ICOMP,IB),DYOB(ICOMP,IB),
+     &      DZOB(ICOMP,IB)
+          H(1)='The width (with no rotation) is along the X axis.'
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' dimensions: '
+          CALL EASKS(HOLD,MSG,' width (X), depth (Y), height (Z) ',
+     &      32,' 1.0 1.0 1.0  ','blk WDH',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,0.001,99.9,'W','obs blk wid',IER)
+          CALL EGETWR(HOLD,K,VY,0.001,99.9,'W','obs blk dep',IER)
+          CALL EGETWR(HOLD,K,VZ,0.001,99.9,'W','obs blk hgt',IER)
+          if(ier.ne.0)goto 43
+          DXOB(ICOMP,IB)=VX
+          DYOB(ICOMP,IB)=VY
+          DZOB(ICOMP,IB)=VZ
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        ELSEIF(IVERT.EQ.3)THEN
+          H(1)='First rotation: Assuming the block length dimension is'
+          H(2)='along the X axis the 1st rotation is in the Z axis'
+          H(3)='with a positive angle being measured anticlockwise'
+          H(4)='from the X axis. Note this is currently a different'
+          H(5)='syntax from the rotation of zones.'
+ 44       VX=BANGOB(ICOMP,IB,1)
+          CALL EASKR(VX,MSG,' Block Z rotation? ',
+     &       -359.0,'W',359.0,'W',0.0,'block Z rotation',IER,5)
+          if(ier.ne.0)goto 44
+          BANGOB(ICOMP,IB,1)=VX
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        ELSEIF(IVERT.EQ.4)THEN
+
+C If newer geometry file offer a 2nd axis of rotation.
+          if(newgeo)then
+            continue
+          else
+            call usrmsg('Older format file does not support the',
+     &        'second rotation.','W')
+            goto 92
+          endif
+          H(1)='Second rotation: Assuming the block has no first '
+          H(2)='rotation, the 2nd axis of rotation is about the Y axis'
+          H(3)='with the angle being measured between the base face'
+          H(4)='and the horizon: + is elevation, - is depression.'
+          H(5)='  '
+          H(6)='The combination of two rotations can be use to make'
+          H(7)='a sloped roof eve or an external shading slat that'
+          H(8)='is horizonal along its length but slanted in a short'
+          H(9)='dimension.'
+ 45       VX=BANGOB(ICOMP,IB,2)
+          CALL EASKR(VX,MSG,' Block Y rotation (see help)? ',
+     &       -180.0,'W',180.0,'W',0.0,'block Y rotation',IER,9)
+          if(ier.ne.0)goto 45
+	  call eclose(VX,0.0,0.1,close)
+          if(.NOT.close)then
+            BANGOB(ICOMP,IB,2)=VX
+            BLOCKTYP(ICOMP,IB)='obs3'   ! alter the type if non-zero
+            MODIFY=.TRUE.
+            MODBND=.TRUE.
+            MODLEN=.TRUE.
+            call warnmod(ICOMP,'ob+')
+          endif
+        ELSEIF(IVERT.EQ.5)THEN
+          call edisp(iuout,'Tilting obstruction is not yet supported.')
+          goto 92
+        ELSEIF(IVERT.EQ.6)THEN
+          H(1)='A descriptive name (up to 12 char) is required.'
+          S12=BLOCKNAME(ICOMP,IB)
+          CALL EASKS(S12,' ',' Name of obstruction? ',
+     &      12,'obstruction','Block name',IER,1)
+          IF(S12(1:2).NE.'  ')then
+            BLOCKNAME(ICOMP,IB)=S12
+            LNBLOCKNAME(ICOMP,IB)=lnblnk(S12)
+          endif
+          MODIFY=.TRUE.
+        ELSEIF(IVERT.EQ.7)THEN
 
 C Note: this logic only picks up the first 12 char of construction.
-        CALL EPMENSV
-        CALL EPKMLC(ISEL,
-     &    'Select an OPAQUE construction from the list to',
-     &    'associate with the block for visualisation purposes.',IER)
-        CALL EPMENRC
-        IF(ISEL.GT.0)then
-          WRITE(BLOCKMAT(icomp,IB),'(A)')DESC(ISEL)(1:12)
-          LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
+          CALL EPMENSV
+          CALL EPKMLC(ISEL,
+     &      'Select an OPAQUE construction from the list to',
+     &      'associate with the block for visualisation purposes.',IER)
+          CALL EPMENRC
+          IF(ISEL.GT.0)then
+            WRITE(BLOCKMAT(icomp,IB),'(A)')DESC(ISEL)(1:12)
+            LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
+            MODIFY=.TRUE.
+          endif
+          IF(IER.EQ.1)THEN
+            CALL USRMSG(' ',
+     &     'A problem was encountered with the block construction','W')
+          ENDIF
+        ELSEIF(IVERT.EQ.20)THEN
+
+C Convert current obstruction block into general polygon obstruction.
+          if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs ')then
+            CALL CNVBLK(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
+     &        DXOB(ICOMP,IB),DYOB(ICOMP,IB),DZOB(ICOMP,IB),
+     &        BANGOB(ICOMP,IB,1))
+          elseif(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
+            CALL CNVBLK3A(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
+     &        DXOB(ICOMP,IB),DYOB(ICOMP,IB),DZOB(ICOMP,IB),
+     &        BANGOB(ICOMP,IB,1),BANGOB(ICOMP,IB,2),BANGOB(ICOMP,IB,3))
+          endif
+          do 56 ibe=1,8
+            XBP(ICOMP,IB,ibe)=XB(ibe)
+            YBP(ICOMP,IB,ibe)=YB(ibe)
+            ZBP(ICOMP,IB,ibe)=ZB(ibe)
+  56      continue
+	  
+          BLOCKTYP(ICOMP,IB)='obsp'
+          DXOB(ICOMP,IB)=0.0  ! reset unused data
+          DYOB(ICOMP,IB)=0.0
+          DZOB(ICOMP,IB)=0.0
+          XOB(ICOMP,IB)=0.0
+          YOB(ICOMP,IB)=0.0
+          ZOB(ICOMP,IB)=0.0
+          BANGOB(ICOMP,IB,1)=0.0
+          BANGOB(ICOMP,IB,2)=0.0
+          BANGOB(ICOMP,IB,3)=0.0
           MODIFY=.TRUE.
-        endif
-        IF(IER.EQ.1)THEN
-          CALL USRMSG(' ',
-     &    'A problem was encountered with the block construction','W')
+          call warnmod(ICOMP,'ob+')
+          GOTO 92
+	  
+        ELSEIF(IVERT.EQ.21)THEN
+          CALL PHELPD('obstr menu',46,'-',0,0,IER)
+        ELSE
+          GOTO 92
         ENDIF
-      ELSEIF(IVERT.EQ.20)THEN
-        CALL PHELPD('obstr menu',35,'-',0,0,IER)
-      ELSE
         GOTO 92
-      ENDIF
-      GOTO 92
+      else
+
+C Interface options if a general polygon obstruction.
+        if(IVERT.EQ.19)then
+          ITOBS = 0
+          CALL ADJVIEW(IER)
+          RETURN
+        elseif(IVERT.EQ.2)then
+  431     HOLD=' '
+          WRITE(HOLD,'(1x,3f8.3)')XBP(ICOMP,IB,1),YBP(ICOMP,IB,1),
+     &      ZBP(ICOMP,IB,1)
+          H(1)='The first coordinate is the lower front left.'
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' lower front left: '
+          CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
+     &      32,' 1.0 1.0 1.0  ','lower front left',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,0.001,99.9,'W','obs v1 X',IER)
+          CALL EGETWR(HOLD,K,VY,0.001,99.9,'W','obs v1 Y',IER)
+          CALL EGETWR(HOLD,K,VZ,0.001,99.9,'W','obs v1 Z',IER)
+          if(ier.ne.0)goto 431
+          XBP(ICOMP,IB,1)=VX
+          YBP(ICOMP,IB,1)=VY
+          ZBP(ICOMP,IB,1)=VZ
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        elseif(IVERT.EQ.3)then
+  432     HOLD=' '
+          WRITE(HOLD,'(1x,3f8.3)')XBP(ICOMP,IB,2),YBP(ICOMP,IB,2),
+     &      ZBP(ICOMP,IB,2)
+          H(1)='The 2nd coordinate is the lower front right.'
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' lower front right: '
+          CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
+     &      32,' 1.0 1.0 1.0  ','lower front right',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,-99.9,99.9,'W','obs v2 X',IER)
+          CALL EGETWR(HOLD,K,VY,-99.9,99.9,'W','obs v2 Y',IER)
+          CALL EGETWR(HOLD,K,VZ,-99.9,99.9,'W','obs v2 Z',IER)
+          if(ier.ne.0)goto 432
+          XBP(ICOMP,IB,2)=VX
+          YBP(ICOMP,IB,2)=VY
+          ZBP(ICOMP,IB,2)=VZ
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        elseif(IVERT.EQ.4)then
+  433     HOLD=' '
+          WRITE(HOLD,'(1x,3f8.3)')XBP(ICOMP,IB,3),YBP(ICOMP,IB,3),
+     &      ZBP(ICOMP,IB,3)
+          H(1)='The 3rd coordinate is the lower back right.'
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' lower back right: '
+          CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
+     &      32,' 1.0 1.0 1.0  ','lower back right',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,-99.9,99.9,'W','obs v3 X',IER)
+          CALL EGETWR(HOLD,K,VY,-99.9,99.9,'W','obs v3 Y',IER)
+          CALL EGETWR(HOLD,K,VZ,-99.9,99.9,'W','obs v3 Z',IER)
+          if(ier.ne.0)goto 433
+          XBP(ICOMP,IB,3)=VX
+          YBP(ICOMP,IB,3)=VY
+          ZBP(ICOMP,IB,3)=VZ
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        elseif(IVERT.EQ.5)then
+  434     HOLD=' '
+          WRITE(HOLD,'(1x,3f8.3)')XBP(ICOMP,IB,4),YBP(ICOMP,IB,4),
+     &      ZBP(ICOMP,IB,4)
+          H(1)='The 4th coordinate is the lower back left.'
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' lower back left: '
+          CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
+     &      32,' 1.0 1.0 1.0  ','lower back left',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,-99.9,99.9,'W','obs v4 X',IER)
+          CALL EGETWR(HOLD,K,VY,-99.9,99.9,'W','obs v4 Y',IER)
+          CALL EGETWR(HOLD,K,VZ,-99.9,99.9,'W','obs v4 Z',IER)
+          if(ier.ne.0)goto 434
+          XBP(ICOMP,IB,4)=VX
+          YBP(ICOMP,IB,4)=VY
+          ZBP(ICOMP,IB,4)=VZ
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        elseif(IVERT.EQ.6)then
+  435     HOLD=' '
+          WRITE(HOLD,'(1x,3f8.3)')XBP(ICOMP,IB,5),YBP(ICOMP,IB,5),
+     &      ZBP(ICOMP,IB,5)
+          H(1)='The 5th coordinate is the upper front left.'
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' upper front left: '
+          CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
+     &      32,' 1.0 1.0 1.0  ','upper front left',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,-99.9,99.9,'W','obs v5 X',IER)
+          CALL EGETWR(HOLD,K,VY,-99.9,99.9,'W','obs v5 Y',IER)
+          CALL EGETWR(HOLD,K,VZ,-99.9,99.9,'W','obs v5 Z',IER)
+          if(ier.ne.0)goto 435
+          XBP(ICOMP,IB,5)=VX
+          YBP(ICOMP,IB,5)=VY
+          ZBP(ICOMP,IB,5)=VZ
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        elseif(IVERT.EQ.7)then
+  436     HOLD=' '
+          WRITE(HOLD,'(1x,3f8.3)')XBP(ICOMP,IB,6),YBP(ICOMP,IB,6),
+     &      ZBP(ICOMP,IB,6)
+          H(1)='The 6th coordinate is the upper front right.'
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' upper front right: '
+          CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
+     &      32,' 1.0 1.0 1.0  ','upper front right',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,-99.9,99.9,'W','obs v6 X',IER)
+          CALL EGETWR(HOLD,K,VY,-99.9,99.9,'W','obs v6 Y',IER)
+          CALL EGETWR(HOLD,K,VZ,-99.9,99.9,'W','obs v6 Z',IER)
+          if(ier.ne.0)goto 436
+          XBP(ICOMP,IB,6)=VX
+          YBP(ICOMP,IB,6)=VY
+          ZBP(ICOMP,IB,6)=VZ
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        elseif(IVERT.EQ.8)then
+  437     HOLD=' '
+          WRITE(HOLD,'(1x,3f8.3)')XBP(ICOMP,IB,7),YBP(ICOMP,IB,7),
+     &      ZBP(ICOMP,IB,7)
+          H(1)='The 7th coordinate is the upper back right.'
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' upper back right: '
+          CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
+     &      32,' 1.0 1.0 1.0  ','upper back right',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,-99.9,99.9,'W','obs v7 X',IER)
+          CALL EGETWR(HOLD,K,VY,-99.9,99.9,'W','obs v7 Y',IER)
+          CALL EGETWR(HOLD,K,VZ,-99.9,99.9,'W','obs v7 Z',IER)
+          if(ier.ne.0)goto 437
+          XBP(ICOMP,IB,7)=VX
+          YBP(ICOMP,IB,7)=VY
+          ZBP(ICOMP,IB,7)=VZ
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        elseif(IVERT.EQ.9)then
+  438     HOLD=' '
+          WRITE(HOLD,'(1x,3f8.3)')XBP(ICOMP,IB,8),YBP(ICOMP,IB,8),
+     &      ZBP(ICOMP,IB,8)
+          H(1)='The 8th coordinate is the upper back left.'
+          WRITE(MSG,'(a,I3,a)')'For block ',IB,' upper back left: '
+          CALL EASKS(HOLD,MSG,' X(m) Y(m) Z(m) (see help)',
+     &      32,' 1.0 1.0 1.0  ','upper back left',IER,1)
+          K=0
+          CALL EGETWR(HOLD,K,VX,-99.9,99.9,'W','obs v8 X',IER)
+          CALL EGETWR(HOLD,K,VY,-99.9,99.9,'W','obs v8 Y',IER)
+          CALL EGETWR(HOLD,K,VZ,-99.9,99.9,'W','obs v8 Z',IER)
+          if(ier.ne.0)goto 438
+          XBP(ICOMP,IB,8)=VX
+          YBP(ICOMP,IB,8)=VY
+          ZBP(ICOMP,IB,8)=VZ
+          MODIFY=.TRUE.
+          MODBND=.TRUE.
+          MODLEN=.TRUE.
+          call warnmod(ICOMP,'ob+')
+        elseif(IVERT.EQ.11)then
+          H(1)='A descriptive name (up to 12 char) is required.'
+          S12=BLOCKNAME(ICOMP,IB)
+          CALL EASKS(S12,' ',' Name of obstruction? ',
+     &      12,'obstruction','Block name',IER,1)
+          IF(S12(1:2).NE.'  ')then
+            BLOCKNAME(ICOMP,IB)=S12
+            LNBLOCKNAME(ICOMP,IB)=lnblnk(S12)
+          endif
+          MODIFY=.TRUE.
+        ELSEIF(IVERT.EQ.12)THEN
+
+C Note: this logic only picks up the first 12 char of construction.
+          CALL EPMENSV
+          CALL EPKMLC(ISEL,
+     &      'Select an OPAQUE construction from the list to',
+     &      'associate with the block for visualisation purposes.',IER)
+          CALL EPMENRC
+          IF(ISEL.GT.0)then
+            WRITE(BLOCKMAT(icomp,IB),'(A)')DESC(ISEL)(1:12)
+            LNBLOCKMAT(icomp,IB)=lnblnk(BLOCKMAT(icomp,IB))
+            MODIFY=.TRUE.
+          endif
+          IF(IER.EQ.1)THEN
+            CALL USRMSG(' ',
+     &     'A problem was encountered with the block construction','W')
+          ENDIF
+        ELSEIF(IVERT.EQ.18)THEN
+          CALL PHELPD('obstr menu',46,'-',0,0,IER)
+        ELSE
+          GOTO 92
+        ENDIF
+        GOTO 92
+      endif
 
       END
 

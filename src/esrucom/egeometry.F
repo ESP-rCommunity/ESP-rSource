@@ -2015,7 +2015,88 @@ C The name of the construction might contain spaces so use EGETP.
             LNBLOCKMAT(icomp,nbo)=lnblnk(BLOCKMAT(icomp,nbo))
             BLOCKTYP(icomp,nbo)='obs3'
             goto 72
+
+          elseif(phrase(1:5).eq.'*obsp')then
+
+C A general polygon obstruction to be associated with the current zone.
+C The first line includes (current fixed) integer number of vertices
+C followed by number of faces and the name and material.
+C The 2nd line has the first 4 coordinates and the 3rd line has the 
+C next 4 coordinates. The surface and edge ordering is as in a 
+C standard obstruction block when converted into a GB1 common block.
+            if(iobs(icomp).eq.1) goto 72  ! keep reading till *end_block
+            if(iobs(icomp).eq.0) iobs(icomp)=2
+            nbobs(icomp)=nbobs(icomp)+1
+            nbo=nbobs(icomp)
+            CALL EGETWI(OUTSTR,K,ival,8,8,'F','obs nb vertices',IER)
+            CALL EGETWI(OUTSTR,K,ival,6,6,'F','obs nb faces',IER)
+            CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+            write(BLOCKNAME(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
+            LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
+            CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            write(BLOCKMAT(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
+            LNBLOCKMAT(icomp,nbo)=lnblnk(BLOCKMAT(icomp,nbo))
+            BLOCKTYP(icomp,nbo)='obsp'
+
+            CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'first 4 coord',IER)
+            IF(IER.NE.0)goto 1001
+            K=0
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 1',IER)
+            XBP(icomp,nbo,1)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 1',IER)
+            YBP(icomp,nbo,1)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 1',IER)
+            ZBP(icomp,nbo,1)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 2',IER)
+            XBP(icomp,nbo,2)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 2',IER)
+            YBP(icomp,nbo,2)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 2',IER)
+            ZBP(icomp,nbo,2)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 3',IER)
+            XBP(icomp,nbo,3)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 3',IER)
+            YBP(icomp,nbo,3)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 3',IER)
+            ZBP(icomp,nbo,3)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 4',IER)
+            XBP(icomp,nbo,4)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 4',IER)
+            YBP(icomp,nbo,4)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 4',IER)
+            ZBP(icomp,nbo,4)=val1
+
+            CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'2nd 4 coord',IER)
+            IF(IER.NE.0)goto 1001
+            K=0
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 5',IER)
+            XBP(icomp,nbo,5)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 5',IER)
+            YBP(icomp,nbo,5)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 5',IER)
+            ZBP(icomp,nbo,5)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 6',IER)
+            XBP(icomp,nbo,6)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 6',IER)
+            YBP(icomp,nbo,6)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 6',IER)
+            ZBP(icomp,nbo,6)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 7',IER)
+            XBP(icomp,nbo,7)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 7',IER)
+            YBP(icomp,nbo,7)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 7',IER)
+            ZBP(icomp,nbo,7)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 8',IER)
+            XBP(icomp,nbo,8)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 8',IER)
+            YBP(icomp,nbo,8)=val1
+            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 8',IER)
+            ZBP(icomp,nbo,8)=val1
+            goto 72
+
           elseif(phrase(1:4).eq.'*obs')then
+
             if(iobs(icomp).eq.1) goto 72  ! keep reading till *end_block
             if(iobs(icomp).eq.0) iobs(icomp)=2
             nbobs(icomp)=nbobs(icomp)+1
@@ -2498,6 +2579,32 @@ C geometry file also write the NOX and NOZ values.
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # block ',ib
+          elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obsp')then
+            WRITE(outs,'(2a,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &        '*obsp',' 8 6 ',BLOCKNAME(icomp,ib),BLOCKMAT(icomp,ib)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2a,i2,a)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # block ',ib,
+     &        ' coords follow:'
+
+            WRITE(outs,'(12F9.3)',IOSTAT=ios,ERR=13) 
+     &        XBP(icomp,ib,1),YBP(icomp,ib,1),ZBP(icomp,ib,1),
+     &        XBP(icomp,ib,2),YBP(icomp,ib,2),ZBP(icomp,ib,2),
+     &        XBP(icomp,ib,3),YBP(icomp,ib,3),ZBP(icomp,ib,3),
+     &        XBP(icomp,ib,4),YBP(icomp,ib,4),ZBP(icomp,ib,4)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2A)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # 1-4 '
+
+            WRITE(outs,'(12F9.3)',IOSTAT=ios,ERR=13) 
+     &        XBP(icomp,ib,5),YBP(icomp,ib,5),ZBP(icomp,ib,5),
+     &        XBP(icomp,ib,6),YBP(icomp,ib,6),ZBP(icomp,ib,6),
+     &        XBP(icomp,ib,7),YBP(icomp,ib,7),ZBP(icomp,ib,7),
+     &        XBP(icomp,ib,8),YBP(icomp,ib,8),ZBP(icomp,ib,8)
+            call SDELIM(outs,outsd,'C',IW)
+            write(ifilg,'(2A)',IOSTAT=IOS,ERR=13) 
+     &        outsd(1:lnblnk(outsd)),'  # 5-8 '
+
           elseif(BLOCKTYP(icomp,ib)(1:4).eq.'obs ')then
             WRITE(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
      &        '*obs',tab,XOB(icomp,ib),YOB(icomp,ib),ZOB(icomp,ib),
@@ -3001,6 +3108,63 @@ C      write(6,*) 'xb7: ',XB(7),'...','yb7: ',YB(7),'...','zb7: ',ZB(7)
 C      write(6,*) 'xb8: ',XB(8),'...','yb8: ',YB(8),'...','zb8: ',ZB(8)      
 
 C End debug          
+
+C Number the vertices in each face anticlockwise from the bottom
+C left-hand point when face viewed from the outside.  Top is
+C numbered anitclockwise from point 5 and when viewed from the outside.
+C base is numbered anticlockwise from point 1 when viewed from outside 
+C (below).
+      DO 30 I=1,NSB
+        IF(I.LE.4)THEN
+          DO 40 J=1,4
+            IF(J.LE.2)THEN
+              IF(J.EQ.1)JVNB(I,J)=I
+              IF(J.NE.1)JVNB(I,J)=I+1
+              IF(I.EQ.4.AND.J.EQ.2)JVNB(I,J)=1
+            ELSE
+              JVNB(I,J)=8+I-J
+              IF(I.EQ.4.AND.J.EQ.3)JVNB(I,J)=5
+            ENDIF
+   40     CONTINUE
+        ELSEIF(I.EQ.6)THEN
+          JVNB(I,1)=1
+          DO 50 J=2,4
+            K=6-J
+            JVNB(I,J)=K
+   50     CONTINUE
+        ELSEIF(I.EQ.5)THEN
+          K=I-1
+          DO 60 J=1,4
+            K=K+1
+            JVNB(I,J)=K
+   60     CONTINUE
+        ENDIF
+   30 CONTINUE
+      RETURN
+      END
+
+C ******************** CNVBLKP 
+C CNVBLK3A converts a six sided obstuction 'obsp' into GB1 common block.
+C The first 8 point of common block GB1 are filled and the standard
+C JVNB edges are filled.
+      SUBROUTINE CNVBLKP(IZ,IB)
+#include "building.h"
+#include "geometry.h"
+
+C Parameters
+      integer iz,ib  ! IZ is the zone index and IB is the block inde
+            
+      real XB,YB,ZB
+      integer JVNB
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      integer NSB     ! number of sides
+     
+      NSB=6
+      DO 20 I=1,8
+        XB(I)=XBP(IZ,IB,I)
+        YB(I)=YBP(IZ,IB,I)
+        ZB(I)=ZBP(IZ,IB,I)
+  20  CONTINUE
 
 C Number the vertices in each face anticlockwise from the bottom
 C left-hand point when face viewed from the outside.  Top is

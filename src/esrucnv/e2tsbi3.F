@@ -1136,6 +1136,8 @@ C into GB1 commons and write them out using similar logic.
      &        DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
      &        BANGOB(newfoc,IB,1),BANGOB(newfoc,IB,2),
      &        BANGOB(newfoc,IB,3))
+          elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obsp')then
+            call CNVBLKP(newfoc,IB) ! convert obsp type.
           endif
 
 C Work out the colour for each block by looping
