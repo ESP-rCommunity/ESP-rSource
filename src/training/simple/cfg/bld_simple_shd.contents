@@ -2,7 +2,7 @@ Synopsis
  
 This is a synopsis of the model L-shaped reception, external shading,
 convective heating, ideal control defined in bld_simple_shd.cfg generated on
-Fri Jul 17 10:43:27 2009. Notes associated with the model are in
+Wed Sep  9 17:15:32 2009. Notes associated with the model are in
 bld_simple_shd.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -10,22 +10,22 @@ from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.25.
  
-Project name:  not yet defined
-Building address:  not yet defined
-Building city:  not yet defined
-Building Postcode:  not yet defined
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
  
-Building owner name:  not yet defined
-Building owner telephone:  not yet defined
-Building owner address:  not yet defined
-Building owner city:  not yet defined
-Building owner Postcode:  not yet defined
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
  
-Simulationist name:  not yet defined
-Simulationist telephone:  not yet defined
-Simulationist address:  not yet defined
-Simulationist city:  not yet defined
-Simulationist postcode:  not yet defined
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
 Primary energy conversions (demand kWhr to primary kWhr) are:
@@ -131,6 +131,17 @@ ID Zone         Volume|          Surface
  Insolation sources (all applicable):
 glz_s east_glz
  
+ 
+Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
+  1    -4.9    -7.0     0.0     5.8     1.0     3.0     0.0     0.0 blk_1 extern_wall
+  2     1.2    -7.0     0.0     3.6     1.0     3.0     0.0     0.0 blk_2 extern_wall
+  3 user defined coords                                             blk_3 extern_wall
+  4    11.0    -5.0     0.0     0.4     0.4     1.0     0.0     0.0 blk_4 door
+  5 user defined coords                                             gable extern_wall
+  6     1.2    -7.0     3.1     3.6     1.0     2.9     0.0     0.0 xblk_2 extern_wall
+  7 user defined coords                                             xblk_3 extern_wall
+  8 user defined coords                                             tree extern_wall
+  9    -4.9    -7.0     6.1     6.0     2.0     0.4     0.0    10.0 new_blk NONE
  
  Shading patterns have not yet been calculated.
  

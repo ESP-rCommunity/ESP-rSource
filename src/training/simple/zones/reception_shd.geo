@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,reception # tag version, format, zone name
-*date Fri Jul 17 10:43:07 2009  # latest file modification 
+*date Wed Sep  9 17:13:34 2009  # latest file modification 
 reception describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,1.00000,1.00000,0.00000  #   1
@@ -67,11 +67,11 @@ reception describes a...
 *surf,west,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ceiling,CEIL,-,-,-,roof_1,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,floor,FLOR,-,-,-,floor_1,OPAQUE,CONSTANT,10,00  #   9 ||< constant @ 10dC &   0W rad
-*surf,glz_s,VERT,-,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  10 ||< external
-*surf,door_p,VERT,-,-,-,door,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,door_a,VERT,-,-,-,door,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,door_w,VERT,-,-,-,door,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,east_glz,VERT,-,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,glz_s,VERT,south,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  10 ||< external
+*surf,door_p,VERT,passage,-,-,door,OPAQUE,EXTERIOR,0,0  #  11 ||< external
+*surf,door_a,VERT,part_a,-,-,door,OPAQUE,EXTERIOR,0,0  #  12 ||< external
+*surf,door_w,VERT,west,-,-,door,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,east_glz,VERT,east,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  14 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -89,10 +89,19 @@ reception describes a...
 *block_start,20 20 # geometric blocks
 *obs,-4.900,-7.000,0.000,5.800,1.000,2.950,0.000,blk_1,extern_wall  # block  1
 *obs,1.200,-7.000,0.000,3.600,1.000,2.950,0.000,blk_2,extern_wall  # block  2
-*obs,5.200,-7.000,0.000,3.600,1.000,2.950,0.000,blk_3,extern_wall  # block  3
-*obs,9.100,-7.000,0.000,10.800,1.000,2.950,0.000,blk_4,extern_wall  # block  4
-*obs,-4.900,-7.000,3.100,5.800,1.000,2.900,0.000,xblk_1,extern_wall  # block  5
+*obsp,8,6,blk_3,extern_wall  # block  3 coords follow:
+5.200,-7.000,0.000,8.800,-7.000,0.000,8.300,-6.000,0.000,5.200,-6.000,0.000  # 1-4 
+5.200,-7.000,2.950,8.800,-7.000,2.950,8.300,-6.000,2.950,5.200,-6.000,2.950  # 5-8 
+*obs,11.000,-5.000,0.000,0.400,0.400,1.000,0.000,blk_4,door  # block  4
+*obsp,8,6,gable,extern_wall  # block  5 coords follow:
+-4.900,-7.000,3.100,0.900,-7.000,3.100,0.900,-6.000,3.100,-4.900,-6.000,3.100  # 1-4 
+-4.900,-7.000,6.000,0.900,-7.000,7.000,0.900,-6.000,7.000,-4.900,-6.000,6.000  # 5-8 
 *obs,1.200,-7.000,3.100,3.600,1.000,2.900,0.000,xblk_2,extern_wall  # block  6
-*obs,5.200,-7.000,3.100,3.600,1.000,2.900,0.000,xblk_3,extern_wall  # block  7
-*obs,9.100,-7.000,3.100,10.800,1.000,2.900,0.000,xblk_4,extern_wall  # block  8
+*obsp,8,6,xblk_3,extern_wall  # block  7 coords follow:
+5.200,-7.000,3.100,8.800,-7.000,3.100,8.300,-6.000,3.100,5.200,-6.000,3.100  # 1-4 
+5.200,-7.000,6.000,8.800,-7.000,6.000,8.300,-6.000,6.000,5.200,-6.000,6.000  # 5-8 
+*obsp,8,6,tree,extern_wall  # block  8 coords follow:
+10.400,-5.600,1.100,12.000,-5.600,1.100,12.000,-4.000,1.100,10.400,-4.000,1.100  # 1-4 
+10.800,-5.200,5.100,11.600,-5.200,5.100,11.600,-4.400,5.100,10.800,-4.400,5.100  # 5-8 
+*obs3,-4.900,-7.000,6.100,6.000,2.000,0.400,0.000,10.000,0.000,new_blk,NONE  # block  9
 *end_block
