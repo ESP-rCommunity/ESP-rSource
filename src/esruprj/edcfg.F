@@ -3499,11 +3499,12 @@ C configuration files.
         call ckaccess(ifold,iaccess,icerr,t144)
         if(ifold.eq.1.and.icerr.eq.0)then
           lex=MIN0(lnblnk(LCMDFL),24)
-          write(cfgroot,'(a)') LCMDFL(1:lex)
+          write(cfgroot,'(a)',IOSTAT=ios,ERR=13) LCMDFL(1:lex)
           subpath=' '
           call usrdir(odir)
-          write(subpath,'(3a)') odir(1:lnblnk(odir)),fs,
-     &      t144(1:lnblnk(t144))
+          write(subpath,'(3a)',IOSTAT=ios,ERR=14) 
+     &      odir(1:lnblnk(odir)),fs,t144(1:lnblnk(t144))
+     
 #ifdef OSX
 C In OSX slightly different logic. If path ls ./ then standard logic
 C works. If path begins with /usr/esru then no need to prepend odir.
@@ -3511,7 +3512,7 @@ C works. If path begins with /usr/esru then no need to prepend odir.
             continue
           elseif(path(1:9).eq.'/usr/esru')then
             subpath=' '
-            write(subpath,'(a)') path(1:lnblnk(path))
+            write(subpath,'(a)',IOSTAT=ios,ERR=14) path(1:lnblnk(path))
           else
             continue
           endif
@@ -3530,18 +3531,25 @@ C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
      &           path(1:2).eq.'E:'.or.path(1:2).eq.'e:'.or.
      &           path(1:2).eq.'F:'.or.path(1:2).eq.'f:')then
             subpath=' '
-            write(subpath,'(a)') path(1:lnblnk(path))
+            write(subpath,'(a)',IOSTAT=ios,ERR=14) path(1:lnblnk(path))
           elseif(path(4:7).eq.'user')then
             subpath=' '
-            write(subpath,'(a)') path(1:lnblnk(path))
+            write(subpath,'(a)',IOSTAT=ios,ERR=14) path(1:lnblnk(path))
           else
             continue
           endif
 #endif
-          action='cfg'
-          write(outs,*) 'models in folder ',subpath
+          write(outs,*,IOSTAT=ios,ERR=16) 'models in folder ',subpath
           call edisp(iuout,outs)
           call clearfilelist(listf,MFFOLD)
+
+C Re-establish action and file separator prior to call to getfilelist.
+          action='cfg'
+          if(unixok)then
+            fs = char(47)
+          else
+            fs = char(92)
+          endif
           call getfilelist(subpath,action,listf,nwlistf,nlistf)
           call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
           call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
@@ -3554,13 +3562,18 @@ C Try to use information gathered from file scan.
             ix=1
             do 76 ij=1,nlistf
               listfc70(ij)=' '
-              write(listfc70(ij),'(a)') listfc(ij)(1:nwlistf(ij))
+              lex=MIN0(nwlistf(ij),70)  ! trap file names longer than 70
+              write(listfc70(ij),'(a)',IOSTAT=ios,ERR=13) 
+     &          listfc(ij)(1:lex)
   76        continue
+            if(maxw.gt.70) maxw=70  ! ensure list fits
             CALL EPICKS(IX,ivlist,outs,' ',
      &        maxw,nlistf,listfc70,'Available files',IER,3)
             if(ix.eq.1)then
-              write(t144,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
-              write(sfile,'(3a)') t144(1:lnblnk(t144)),fs,
+              write(t144,'(3a)',IOSTAT=ios,ERR=17)
+     &          LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
+              write(sfile,'(3a)',IOSTAT=ios,ERR=17) 
+     &          t144(1:lnblnk(t144)),fs,
      &          listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
 
 C Debug.
@@ -3574,9 +3587,9 @@ C              write(6,*) 'sfile is ',sfile
         endif
       else
         if(lnblnk(LCMDFL).le.72)then
-          write(LCFGF,'(a)') LCMDFL(1:lnblnk(LCMDFL))
+          write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:lnblnk(LCMDFL))
         else
-          write(LCFGF,'(a)') LCMDFL(1:72)
+          write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:72)
         endif
       endif
 
@@ -3591,14 +3604,16 @@ C LCFGF into tokens and check the last token for .cfg.
         lwcfgl=lwcfgr-3
         if(lwcfgr.gt.4)then
           if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-            write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
+            lex=MIN0((lwcfgl-1),24)  ! ensure cfgroot within length
+            write(cfgroot,'(a)',IOSTAT=ios,ERR=13)WORDS(IW)(1:lwcfgl-1)
           else
-            write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-            write(LTMP,'(a,a)') LTMP(1:lcfgr),'.cfg'
+            lex=MIN0(lwcfgr,24)  ! ensure cfgroot within length
+            write(cfgroot,'(a)',IOSTAT=ios,ERR=13) WORDS(IW)(1:lwcfgr)
+            write(LTMP,'(a,a)',IOSTAT=ios,ERR=19) LTMP(1:lcfgr),'.cfg'
           endif
         elseif(lwcfgr.le.4)then
-          write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-          write(LTMP,'(a,a)') LTMP(1:lcfgr),'.cfg'
+          write(cfgroot,'(a)',IOSTAT=ios,ERR=13) WORDS(IW)(1:lwcfgr)
+          write(LTMP,'(a,a)',IOSTAT=ios,ERR=19) LTMP(1:lcfgr),'.cfg'
         endif
 
 
@@ -3617,15 +3632,23 @@ C Check to see if LCFGF is in a cfg folder.
           lwcfgl=lwcfgr-3
           if(lwcfgr.gt.4)then
             if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-              write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
-              write(t96,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgl-1),'.cfg'
+              write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
+     &          WORDS(IW)(1:lwcfgl-1)
+              write(t96,'(4a)',IOSTAT=ios,ERR=20) 'cfg',fs,
+     &          LTMP(1:lcfgl-1),'.cfg'
             else
-              write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-              write(t96,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgr),'.cfg'
+              write(cfgroot,'(a)',IOSTAT=ios,ERR=13)WORDS(IW)(1:lwcfgr)
+              lex=MIN0((3+1+4+lcfgr),96)
+              if(lex.ge.96)call usrmsg(
+     &          'The overall path is more than 96 char.',
+     &          'Suggest relocating model.','W')
+              write(t96,'(4a)',IOSTAT=ios,ERR=20) 'cfg',fs,
+     &          LTMP(1:lcfgr),'.cfg'
             endif
           elseif(lwcfgr.le.4)then
-            write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-            write(t96,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgr),'.cfg'
+            write(cfgroot,'(a)',IOSTAT=ios,ERR=13) WORDS(IW)(1:lwcfgr)
+            write(t96,'(a,a1,a,a)',IOSTAT=ios,ERR=20) 'cfg',fs,
+     &        LTMP(1:lcfgr),'.cfg'
           endif
           if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
             XST=.false.
@@ -3643,17 +3666,31 @@ C name as that the user entered.
               lwcfgl=lwcfgr-3
               if(lwcfgr.gt.4)then
                 if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-                  write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
-                  write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgl-1),fs,
+                  write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
+     &              WORDS(IW)(1:lwcfgl-1)
+                  lex=MIN0((lcfgl+1+3+1+lcfgl+4),96)
+                  if(lex.ge.96)call usrmsg(
+     &              'The overall path is more than 96 char.',
+     &              'Suggest relocating model.','W')
+                  write(t96,'(6a)',IOSTAT=ios,ERR=20) 
+     &              LTMP(1:lcfgl-1),fs,
      &              'cfg',fs,LTMP(1:lcfgl-1),'.cfg'
                 else
-                  write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-                  write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,'cfg',
+                  write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
+     &              WORDS(IW)(1:lwcfgr)
+                  lex=MIN0((lcfgr+1+3+1+lcfgr+4),96)
+                  if(lex.ge.96)call usrmsg(
+     &              'The overall path is more than 96 char.',
+     &              'Suggest relocating model.','W')
+                  write(t96,'(6a)',IOSTAT=ios,ERR=20) 
+     &              LTMP(1:lcfgr),fs,'cfg',
      &              fs,LTMP(1:lcfgr),'.cfg'
                 endif
               elseif(lwcfgr.le.4)then
-                write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-                write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,'cfg',fs,
+                write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
+     &            WORDS(IW)(1:lwcfgr)
+                write(t96,'(6a)',IOSTAT=ios,ERR=20) 
+     &            LTMP(1:lcfgr),fs,'cfg',fs,
      &            LTMP(1:lcfgr),'.cfg'
               endif
               if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
@@ -3671,17 +3708,27 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
                   lwcfgl=lwcfgr-3
                   if(lwcfgr.gt.4)then
                     if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-                      write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
-                      write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgl-1),fs,
+                      write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
+     &                  WORDS(IW)(1:lwcfgl-1)
+                      write(t96,'(6a)',IOSTAT=ios,ERR=20) 
+     &                  LTMP(1:lcfgl-1),fs,
      &                  'cfg',fs,cfgroot(1:lnblnk(cfgroot)),'.cfg'
                     else
-                      write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-                      write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,
+                      write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
+     &                  WORDS(IW)(1:lwcfgr)
+                      lex=MIN0((lcfgr+1+3+1+lcfgr+4),96)
+                      if(lex.ge.96)call usrmsg(
+     &                  'The overall path is more than 96 char.',
+     &                  'Suggest relocating model.','W')
+                      write(t96,'(6a)',IOSTAT=ios,ERR=20) 
+     &                  LTMP(1:lcfgr),fs,
      &                  'cfg',fs,cfgroot(1:lnblnk(cfgroot)),'.cfg'
                     endif
                   elseif(lwcfgr.le.4)then
-                    write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
-                    write(t96,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,
+                    write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
+     &                WORDS(IW)(1:lwcfgr)
+                    write(t96,'(6a)',IOSTAT=ios,ERR=20) 
+     &                LTMP(1:lcfgr),fs,
      &                'cfg',fs,cfgroot(1:lnblnk(cfgroot)),'.cfg'
                   endif
                   if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
@@ -3884,6 +3931,58 @@ C Open default databases (user can alter later).
         endif
       ENDIF
       return
+
+C Error messages.
+   13 if(IOS.eq.2)then
+        CALL USRMSG('No permission to write cfgroot',cfgroot,'W')
+      else
+        CALL USRMSG('String write error in cfgroot',cfgroot,'W')
+      endif
+      IER=1
+      return
+   14 if(IOS.eq.2)then
+        CALL USRMSG('No permission to write subpath',subpath,'W')
+      else
+        CALL USRMSG('String write error in subpath',subpath,'W')
+      endif
+      IER=1
+      return
+   16 if(IOS.eq.2)then
+        CALL USRMSG('No permission to write outs',outs,'W')
+      else
+        CALL USRMSG('String write error in outs',outs,'W')
+      endif
+      IER=1
+      return
+   17 if(IOS.eq.2)then
+        CALL LUSRMSG('No permission to write t144',t144,'W')
+      else
+        CALL LUSRMSG('String write error in t144',t144,'W')
+      endif
+      IER=1
+      return
+   18 if(IOS.eq.2)then
+        CALL LUSRMSG('No permission to write LCFGF',LCFGF,'W')
+      else
+        CALL LUSRMSG('String write error in LCFGF',LCFGF,'W')
+      endif
+      IER=1
+      return
+   19 if(IOS.eq.2)then
+        CALL USRMSG('No permission to write LTMP',LTMP,'W')
+      else
+        CALL USRMSG('String write error in LTMP',LTMP,'W')
+      endif
+      IER=1
+      return
+   20 if(IOS.eq.2)then
+        CALL USRMSG('No permission to write t96',t96,'W')
+      else
+        CALL USRMSG('String write error in t96',t96,'W')
+      endif
+      IER=1
+      return
+
       end
 
 C ***** visualz
