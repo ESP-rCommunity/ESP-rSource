@@ -3188,7 +3188,9 @@ C which was written. Delm is delimeter between items.
       COMMON/OUTIN/IUOUT,IUIN
       dimension rlist(inrs)
       character*(*) pckstr
-      CHARACTER item*16,delm*1,outs*124
+      CHARACTER item*16,delm*1
+
+C      character outs*124  ! for debug statement
 
       itrunc=0
       LS=LEN(pckstr)
@@ -3236,10 +3238,15 @@ C rlist index.
       length=ixl
       return
 
+C The full array could not be packed into the string so return
+C the position this happened so calling code can deal with it.
    1  continue
-      write(outs,*) 'ARLIST: truncation writing array at item: ',
-     &  itrunc,' & pos ',length
-      call edisp(iuout,outs)
+
+C Debug.
+C      write(outs,*) 'ARLIST: truncation writing array at item: ',
+C     &  itrunc,' & pos ',length
+C      call edisp(iuout,outs)
+
       return
       END
 
@@ -3254,7 +3261,9 @@ C which was written. Delm is delimeter between items.
       COMMON/OUTIN/IUOUT,IUIN
       dimension ilist(inisz)
       character*(*) pckstr
-      CHARACTER item*10,delm*1,outs*124
+      CHARACTER item*10,delm*1
+
+C      character outs*124  ! for debug statement
 
       itrunc=0
       LS=LEN(pckstr)
@@ -3302,10 +3311,15 @@ C single character then ixl is ix.
       length=ixl
       return
 
+C The full array could not be packed into the string so return
+C the position this happened so calling code can deal with it.
    1  continue
-      write(outs,*) 'AILIST: truncation writing array at item: ',
-     &  itrunc,' & pos ',length
-      call edisp(iuout,outs)
+
+C Debug.
+C      write(outs,*) 'AILIST: truncation writing array at item: ',
+C     &  itrunc,' & pos ',length
+C      call edisp(iuout,outs)
+
       return
       END
 
@@ -3321,7 +3335,9 @@ C that each string array item is less than 32 characters wide.
       COMMON/OUTIN/IUOUT,IUIN
       dimension list(inisz)
       character*(*) pckstr,list
-      CHARACTER item*32,delm*1,outs*124
+      CHARACTER item*32,delm*1
+
+C      character outs*124  ! for debug statement
 
       itrunc=0
       LS=LEN(pckstr)
@@ -3369,10 +3385,15 @@ C single character then ixl is ix.
       length=ixl
       return
 
+C The full array could not be packed into the string so return
+C the position this happened so calling code can deal with it.
    1  continue
-      write(outs,*) 'ASLIST: truncation writing array at item: ',
-     &  itrunc,' & pos ',length
-      call edisp(iuout,outs)
+
+C Debug.
+C      write(outs,*) 'ASLIST: truncation writing array at item: ',
+C     &  itrunc,' & pos ',length
+C      call edisp(iuout,outs)
+
       return
       END
 
@@ -3390,7 +3411,9 @@ C that each string array item is less than 24 characters wide.
       COMMON/OUTIN/IUOUT,IUIN
       dimension list(inisz,inisz2)
       character*(*) pckstr,list
-      CHARACTER item*24,delm*1,outs*124
+      CHARACTER item*24,delm*1
+
+C      character outs*124  ! for debug statement
 
       itrunc=0
       LS=LEN(pckstr)
@@ -3438,10 +3461,15 @@ C single character then ixl is ix.
       length=ixl
       return
 
+C The full array could not be packed into the string so return
+C the position this happened so calling code can deal with it.
    1  continue
-      write(outs,*) 'ASLIST2: truncation writing array at item: ',
-     &  itrunc,' & pos ',length
-      call edisp(iuout,outs)
+
+C Debug.
+C      write(outs,*) 'ASLIST2: truncation writing array at item: ',
+C     &  itrunc,' & pos ',length
+C      call edisp(iuout,outs)
+
       return
       END
 
