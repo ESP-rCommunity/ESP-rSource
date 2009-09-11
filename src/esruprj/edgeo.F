@@ -197,7 +197,7 @@ C been created. Check to see if it has.
         NCCODE(ICOMP)=ICOMP
       ELSEIF(ICOMP.GT.MCOM)THEN
         CALL USRMSG('There is not sufficient space for another',
-     &    'zone within this configuration! ','W')
+     &    'zone within this model! ','W')
         RETURN
       ENDIF
 
@@ -594,14 +594,10 @@ C      write(6,*)nzg,nznog(1),nznog(2),nznog(3)
 
 C Test edge adjacencies and subsurfaces if it is the first time
 C in to the zone or if the geometry has benn modified.
-
-C << test check parent and child by changing act='c' >>
-C << NOTE: parent - child not yet held in geometry file >>
       if(.NOT.browse)then
         if(firstin.or.MODGEO)then
           act = 'c'
-C          act = '-'
-          call suredgeadj(0,act,icomp,ier)
+          call suredgeadj(0,act,icomp,ier) ! determine child surfaces
           firstin=.false.
         endif
       endif
@@ -859,7 +855,7 @@ C << graphic network flow file to reflect changes in zone volume.
             MODGEO=.false.
           endif
         endif
-        MODIFY=.TRUE.
+        MODIFY=.TRUE.   ! set so zone is re-drawn
       ELSEIF(INO.EQ.ITEMC+7)THEN
 
 C Vertex-surface association editing.
@@ -2007,6 +2003,8 @@ C zone mirroring may require boundary nodes to be updated.
         elseif(INOR.eq.1.or.INOR.eq.6.or.INOR.eq.10.or.INOR.eq.15)then
           goto 77
         endif
+
+C Ensure that the zone is redrawn and boundaries are checked.
         MODIFY=.TRUE.
         MODBND=.TRUE.
         MODGEO=.TRUE.
@@ -2056,8 +2054,10 @@ C format for each type of obstruction.
               write(outs,'(a,i2,a,i2,a)')'Shading based on grids of ',
      &          NOX(icomp),' by ',NOZ(icomp),' for surfaces.'
               call edisp(iuout,outs)
-              call edisp(iuout,
-     &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
+              write(outs,'(2a)')
+     &        'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. ',
+     &        'Orientation Name Material'
+	      call edisp(iuout,outs)
               DO 9995 I=1,nbobs(icomp)
                 lnbn=LNBLOCKNAME(icomp,I)
                 lnbm=LNBLOCKMAT(icomp,I)
@@ -2066,7 +2066,7 @@ C format for each type of obstruction.
      &              ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
      &              DZOB(icomp,I),BANGOB(icomp,I,1),
      &              BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
- 9994             FORMAT(I3,7F8.1,' ',a,' ',a)
+ 9994             FORMAT(I3,6F8.2,F7.2,' ',a,' ',a)
                   call edisp(iuout,outs)
                 elseif(BLOCKTYP(icomp,I)(1:4).eq.'obs3')then
                   WRITE(outs,9993)I,XOB(icomp,I),YOB(icomp,I),
@@ -2074,12 +2074,13 @@ C format for each type of obstruction.
      &              DZOB(icomp,I),BANGOB(icomp,I,1),BANGOB(icomp,I,2),
      &              BANGOB(icomp,I,3),BLOCKNAME(icomp,I)(1:lnbn),
      &              BLOCKMAT(icomp,I)(1:lnbm)
- 9993             FORMAT(I3,6F8.1,3F7.2,' ',a,' ',a)
+ 9993             FORMAT(I3,6F8.2,3F7.2,' ',a,' ',a)
                   call edisp(iuout,outs)
                 elseif(BLOCKTYP(icomp,I)(1:4).eq.'obsp')then
                   WRITE(outs,'(i3,5a)')I,' ',BLOCKNAME(icomp,I)(1:lnbn),
      &              ' ',BLOCKMAT(icomp,I)(1:lnbm),
-     &              ' 6 sided obstruction' 
+     &              ' is a 6 sided polygon obstruction' 
+                  call edisp(iuout,outs)
                 endif
  9995         CONTINUE
               call edisp(iuout,' ')

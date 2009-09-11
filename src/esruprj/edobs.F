@@ -42,6 +42,7 @@ C LPRFDB,IPRODB (for event profile database)
 
       common/pophelp/h(60)
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -79,6 +80,7 @@ C LPRFDB,IPRODB (for event profile database)
       character holds*36,SFIL*72,DSFIL*72,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
+      character outs*124
       LOGICAL MODIFY,MODLEN,MODBND,modcfg
       LOGICAL comold,tmcold,vwfold,ishold,unixok,cfcold
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -167,7 +169,7 @@ C Initial rotation values.
 
 C Setup for multi-page menu.
    91 MHEAD=4
-      MCTL=7
+      MCTL=8
       ILEN=nbobs(icomp)
       IPACT=CREATE
       CALL EKPAGE(IPACT)
@@ -217,8 +219,9 @@ C If a long list include page facility text.
       VERT(M+3)  ='~ rotate/transfrm obstructions'
       VERT(M+4)  ='@ create window reveal        '
       VERT(M+5)  ='> shading & insolation        '
-      VERT(M+6)  ='? help                        '
-      VERT(M+7)  ='- exit this menu              '
+      VERT(M+6)  ='! list obstruction details    '
+      VERT(M+7)  ='? help                        '
+      VERT(M+8)  ='- exit this menu              '
 
 C If a modification has been done then update the obstruction
 C file and/or the zone geometry file so that changes can be drawn.
@@ -246,24 +249,72 @@ C then we can unset MODIFY.
       if(havesaved.and.MODIFY) MODIFY=.false.
 
 C Help text for this menu.
-      H(1)='In order to account for external shading devices, '
-      H(2)='window reveals, trees, outside walls, etc. in a '
+      H(1)='In order to account for external shading devices,'
+      H(2)='window reveals, trees, outside walls, etc. in a'
       H(3)='detailed shading analysis the user should approx-'
       H(4)='imate such objects as one or more prisms.'
       H(5)=' '
-      H(6)='The obstruction composition defaults to NONE, but '
-      H(7)='can be set to a multi-layer construction for use in '
+      H(6)='The obstruction composition defaults to NONE, but'
+      H(7)='can be set to a multi-layer construction for use in'
       H(8)='visualisation studies. '
+      H(9)=' '
+      H(10)='After defining obstructions you should re-check the'
+      H(11)='shading and insolation directives for this zone (found'
+      H(12)='in the `solar dist. & calc directives` menu item.'
 
 C Now display the menu.
       CALL EMENU('Obstructions',VERT,MVERT,IVERT)
+
       IF(IVERT.EQ.MVERT)THEN
         silent = .false.
         call sumrchg(ICOMP,'r',silent)
         RETURN
+
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('obstr menu',8,'-',0,0,IER)
-       ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+        CALL PHELPD('obstr menu',12,'-',0,0,IER)
+
+      ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C List details of obstructions.
+        if(nbobs(icomp).gt.0)then
+          call edisp(iuout,'Details of obstruction blocks:')
+          write(outs,'(a,i2,a,i2,a)')'Shading based on grids of ',
+     &      NOX(icomp),' by ',NOZ(icomp),' for surfaces.'
+          call edisp(iuout,outs)
+          write(outs,'(2a)')
+     &      'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. ',
+     &      'Orientation Name Material'
+	  call edisp(iuout,outs)
+          DO 9995 I=1,nbobs(icomp)
+            lnbn=LNBLOCKNAME(icomp,I)
+            lnbm=LNBLOCKMAT(icomp,I)
+            if(BLOCKTYP(icomp,I)(1:4).eq.'obs ')then
+              WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
+     &          ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
+     &          DZOB(icomp,I),BANGOB(icomp,I,1),
+     &          BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
+ 9994         FORMAT(I3,6F8.2,F7.2,' ',a,' ',a)
+              call edisp(iuout,outs)
+            elseif(BLOCKTYP(icomp,I)(1:4).eq.'obs3')then
+              WRITE(outs,9993)I,XOB(icomp,I),YOB(icomp,I),
+     &          ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
+     &          DZOB(icomp,I),BANGOB(icomp,I,1),BANGOB(icomp,I,2),
+     &          BANGOB(icomp,I,3),BLOCKNAME(icomp,I)(1:lnbn),
+     &          BLOCKMAT(icomp,I)(1:lnbm)
+ 9993         FORMAT(I3,6F8.2,3F7.2,' ',a,' ',a)
+              call edisp(iuout,outs)
+            elseif(BLOCKTYP(icomp,I)(1:4).eq.'obsp')then
+              WRITE(outs,'(i3,5a)')I,' ',BLOCKNAME(icomp,I)(1:lnbn),
+     &          ' ',BLOCKMAT(icomp,I)(1:lnbm),
+     &          ' is a 6 sided polygon obstruction' 
+              call edisp(iuout,outs)
+            endif
+ 9995     CONTINUE
+          call edisp(iuout,' ')
+        endif
+
+      ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
 C Allow user to start shading analysis or at least mark preferences.
          H(1)='Having defined obstructions, you must run a separate'
@@ -307,18 +358,19 @@ C start interactive session.
            endif
            ishold=.false.
          endif
-       ELSEIF(IVERT.EQ.(MVERT-3))THEN
+
+      ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Compose a window reveal from 4 obstructions. Ask for which surface,
 C then get a root name for obstructions, the get thickness of the
 C wall.
-        H(1)='For shading and daylighting analysis it is useful to '
-        H(2)='use obstruction blocks to represent the thickness  '
-        H(3)='of an opening (ie. window reveal). This is automated '
-        H(4)='by adding 4 blocks 5mm away from the surface with a '
-        H(5)='thickness of the adjacent wall.  '
+        H(1)='For shading and daylighting analysis it is useful to'
+        H(2)='use obstruction blocks to represent the thickness '
+        H(3)='of an opening (ie. window reveal). This is automated'
+        H(4)='by adding 4 blocks 5mm away from the surface with a'
+        H(5)='thickness of the adjacent wall.'
         H(6)=' '
-        H(7)='Each of the blocks will share an root name.  '
+        H(7)='Each of the blocks will share an root name.'
         CALL PHELPD('obstr reveal',7,'-',0,0,IER)
 
         CALL EPMENSV
@@ -361,7 +413,8 @@ C Material to associate with the reveal.
           call warnmod(ICOMP,'ob+')
           CALL ADJVIEW(IER)
         endif
-      ELSEIF(IVERT.EQ.(MVERT-4))THEN
+
+      ELSEIF(IVERT.EQ.(MVERT-5))THEN
 
 C Rotate an obstruction.
         H(1)='Choose one or more blocks to rotate or transform'
@@ -455,7 +508,8 @@ C Rotation choices.
         else
           GOTO 92
         endif
-      ELSEIF(IVERT.EQ.(MVERT-5))THEN
+
+      ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
 C +- Obstruction.
         h(1)='Use this to add / delete / copy obstructions. '
@@ -641,13 +695,15 @@ C Edit the copied block.
         elseif(IW.EQ.4)THEN
           GOTO 92
         ENDIF
-      ELSEIF(IVERT.EQ.(MVERT-6))THEN
+
+      ELSEIF(IVERT.EQ.(MVERT-7))THEN
 
 C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
         ENDIF
+
       ELSEIF(IVERT.EQ.1)THEN
 
 C Surface X & Z grid density. 
@@ -667,6 +723,7 @@ C Surface X & Z grid density.
         if(ier.ne.0)goto 42
         MODIFY=.TRUE.
         call warnmod(ICOMP,'ob+')
+
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Edit block identified by KEYIND.
