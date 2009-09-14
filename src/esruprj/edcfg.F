@@ -3293,7 +3293,7 @@ C Defaults.
       CHARACTER dinstpath*48,dirpath*48
 
 C Passed parameters for pregist.
-      character root*24,mpath*72,folder*12,menu*32
+      character root*24,mpath*72,folder*12,menu*72
 
       integer igraphiclib  ! external definition
       integer numberofzones ! to pass to updwire rather than ncomp

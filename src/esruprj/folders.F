@@ -35,7 +35,7 @@ C but model is assumed to be created silently within the current folder.
 C root (24 char) root name (for 'sn' case)
 C mpath (72 char) path to model folder (for 'sn' case)
 C folder (12 char) is 'single' or 'distributed' folder structure
-C menu (32 char) brief title of model
+C menu (72 char) brief title of model
       subroutine pregist(act,root,mpath,folder,menu,ier)
 #include "building.h"
 #include "espriou.h"
@@ -93,7 +93,7 @@ C Calendar.
       dimension nwlistf(MFFOLD)
 
 C Passed in parameters.
-      character root*24,mpath*72,folder*12,menu*32
+      character root*24,mpath*72,folder*12,menu*72
 
       logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok,clkok

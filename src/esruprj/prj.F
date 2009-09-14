@@ -32,6 +32,7 @@ C   FNCNGR: changes the name of file ORIGNAM by appending APP
 C ********** MAIN
       program prj
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -203,9 +204,10 @@ C Name of current application
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
       CHARACTER dinstpath*48,dirpath*48
       character useraction*8  ! returned from exemplar access call.
+      character menu*72       ! blank model title for pregist call
 
 C Passed parameters for pregist.
-      character root*24,mpath*72,folder*12,menu*32,doc*248
+      character root*24,mpath*72,folder*12
 
 C Returned parameters from silentread.
       character theprimedirective*8
@@ -565,11 +567,10 @@ C and if so do what it says.
             call clrprb  ! clear the model common blocks prior to scan
             write(longtfile,'(a)') LCMDFL(1:lnblnk(LCMDFL))
             IUNIT=IFIL+1
-            call silentread(iunit,longtfile,'-',menu,doc,
-     &        theprimedirective,ier)
+            call silentread(iunit,longtfile,'-',theprimedirective,ier)
             call edisp(iuout,theprimedirective)
-            call edisp(iuout,menu)
-            call edisp248(iuout,doc,80)
+            call edisp(iuout,modeltitle)
+            call edisp248(iuout,modeldocblock,80)
             if(theprimedirective(1:3).eq.'new')then
               call usrmsg('Processing of silent file complete.',
      &          'Exiting from project manager','P')

@@ -46,6 +46,7 @@ C ************************************************************
 
       program runesp
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "uncertainty.h"
 #include "espriou.h"
@@ -385,6 +386,7 @@ C parent action: 'create_silent' or 'create_model' or 'create_run_model'
       integer MSZ   ! number of silent zones array sizes
       PARAMETER (MSZ=10) 
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 #include "esprdbfile.h"
 C espriou.h provides currentfile.
@@ -434,8 +436,7 @@ C Local string values.
       character wallconstr*32,roofconstr*32,floorconstr*32
       character windowconstr*32,skylightconstr*32
 
-C Documentation for silentread file.
-      character silentmenu*32
+C Documentation (modeltitle) comes from model.h
 
 C Paremeters passed to:silentzone
       character name*12   ! name given to the zone
@@ -825,7 +826,7 @@ C there is more information available?)
 
 C Always create a single folder. Fill in default menu and doc.
       folder='single'
-      write(silentmenu,'(a)') 'auto generation of warehouse'
+      write(modeltitle,'(a)') 'auto generation of warehouse'
 
 C Place the origin of the model at the site origin.
       origin(1)=0.0
@@ -923,16 +924,13 @@ C folder /tmp/box/cfg if mpath is /tmp/box. If 'within' and
 C single folder then no folder is created.
       if(parentaction(1:13).eq.'create_silent')then
         action='new'
-        call silentmodel(action,root,mpath,folder,silentmenu,weather,
-     &    ier)
+        call silentmodel(action,root,mpath,folder,weather,ier)
       elseif(parentaction(1:12).eq.'create_model')then
         action='within'
-        call silentmodel(action,root,mnpath,folder,silentmenu,weather,
-     &    ier)
+        call silentmodel(action,root,mnpath,folder,weather,ier)
       elseif(parentaction(1:16).eq.'create_run_model')then
         action='new'
-        call silentmodel(action,root,mpath,folder,silentmenu,weather,
-     &    ier)
+        call silentmodel(action,root,mpath,folder,weather,ier)
       endif
 
 C Generate the zone and zone files.
@@ -1052,6 +1050,7 @@ C day with occupents as m2 per person, lights in W/m2 and
 C small power in W/m2. Occupied times are 9-21h each day.
       subroutine setschedule(ICOMP,name,densityof)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
       COMMON/FILEP/IFIL
       integer nccode,indutl

@@ -24,6 +24,7 @@ C viewpoint is changed.
 
       SUBROUTINE SETUP(MODSIT,ITRC,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -48,7 +49,7 @@ C Initial view.
       character LFIL*96,H*72,longtfile*144,llitem*144,longtfiledos*144
       character ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character tmode*8,hold32*32
-      character menu*32,doc*248,ureturn*8
+      character ureturn*8  ! info back from silentread
 
 C Set initial states to false and clear text buffers.
       MODSIT=.false.
@@ -615,15 +616,15 @@ C If vi then spawn a new window to do the editing in.
      
         IUNIT=IFIL+1
         if(IW.EQ.1)then
-          call silentread(iunit,longtfile,'?',menu,doc,ureturn,ier)
+          call silentread(iunit,longtfile,'?',ureturn,ier)
           call edisp(iuout,ureturn)
-          call edisp(iuout,menu)
-          call edisp248(iuout,doc,80)
+          call edisp(iuout,modeltitle)
+          call edisp248(iuout,modeldocblock,80)
         elseif(IW.eq.2)then
-          call silentread(iunit,longtfile,'-',menu,doc,ureturn,ier)
+          call silentread(iunit,longtfile,'-',ureturn,ier)
           call edisp(iuout,ureturn)
-          call edisp(iuout,menu)
-          call edisp248(iuout,doc,80)
+          call edisp(iuout,modeltitle)
+          call edisp248(iuout,modeldocblock,80)
           return
         elseif(IW.eq.3)then
           continue

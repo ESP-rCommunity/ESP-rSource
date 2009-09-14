@@ -41,8 +41,9 @@ C weather (32 char) the weather file name (no path included)
 
 C Current functionality is to update the climate & site data.
 
-      subroutine silentmodel(action,root,mpath,folder,menu,weather,ier)
+      subroutine silentmodel(action,root,mpath,folder,weather,ier)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies lclim.
@@ -77,7 +78,7 @@ C Calendar commons.
       character calename*32,calentag*12,calendayname*32 
 
 C Passed in parameters.
-      character action*8,root*24,mpath*72,folder*12,menu*32
+      character action*8,root*24,mpath*72,folder*12,menu*72
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
       character weathergr*36   ! file name for weather related ground temps (no path)
@@ -111,16 +112,18 @@ C If action is `cont` then there is no pre-registration task. If action
 C is `update` then there is no pre-registration task.
 
 C Debug
-C      write(6,*)  'action ',action,' ',root,' ',folder
-C      write(6,*)  'menu ',menu
-C      write(6,*)  'mpath ',mpath
-C      write(6,*)  'weather ',weather
+      write(6,*)  'action ',action,' ',root,' ',folder
+      write(6,*)  'menu ',modeltitle
+      write(6,*)  'mpath ',mpath
+      write(6,*)  'weather ',weather
 
       if(action(1:3).eq.'new')then
+        write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
         call pregist('sn',root,mpath,folder,menu,ier)
       elseif(action(1:6).eq.'within')then
 
 C Assume the model folders exist when calling pregist.
+        write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
         call pregist('sw',root,mpath,folder,menu,ier)
       elseif(action(1:4).eq.'cont')then
 
@@ -1135,11 +1138,11 @@ C based on 3rd party generators. If act is '?' then return a
 C menu and descriptive text block for the file. Otherwise scan
 C and act on the information within the file.
  
-       SUBROUTINE SILENTREAD(IUNIT,LFILE,act,silentmenu,silentdoc,
-     &   silentreturndirec,IER)
+       SUBROUTINE SILENTREAD(IUNIT,LFILE,act,silentreturndirec,IER)
        integer MSZ   ! number of silent zones array sizes
        PARAMETER (MSZ=10) 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -1231,10 +1234,9 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       character simact*6 ! action for creating assessments.
       character subpath*72
 
-C At the head of the file is a menu string and a description
-C silentmenu (char 32) and silentdoc (char 248) which can be
+C At the head of the file is a title and a description
+C modeltitle (char 72) and modeldocblock (char 248) from model.h which can be
 C used by scanning code to identify the contents of a silent file.
-      character silentmenu*32,silentdoc*248
       character weather*32     ! file name for the location (no path)
       character*(*) lfile      ! name of the file
       character fs*1           ! file separator
@@ -1354,8 +1356,8 @@ C in the file.
         root=' '
         folder=' '
         mpath=' '
-        silentmenu=' '
-        silentdoc=' '
+        modeltitle=' '
+        modeldocblock=' '
         weather=' '
         hourlysnowfile=' '
         groundreflmodel=0
@@ -1501,11 +1503,15 @@ C to 1000 to see if there are zones to process.
       if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
         CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
         goto 43
-      elseif(WORD(1:5).eq.'*menu')then
-        CALL EGETRM(OUTSTR,K,silentmenu,'W','silent menu',IER)
+      elseif(WORD(1:5).eq.'*menu')then  ! depreciated
+        CALL EGETRM(OUTSTR,K,modeltitle,'W','meta title',IER)
+        goto 43
+      elseif(WORD(1:6).eq.'*title')then
+        CALL EGETRM(OUTSTR,K,modeltitle,'W','meta title',IER)
         goto 43
       elseif(WORD(1:4).eq.'*doc')then
-        CALL EGETRM(OUTSTR,K,silentdoc,'W','silent documentation',IER)
+        CALL EGETRM(OUTSTR,K,modeldocblock,'W','meta documentation',
+     &    IER)
         if(act(1:1).eq.'?')then
           return
         else
@@ -2220,8 +2226,7 @@ C Create new model. Note for a single folder option the
 C configuration will be in /tmp/box if mpath is /tmp/box. For the
 C distributed folder option the onfiguration file will be in the
 C folder /tmp/box/cfg if mpath is /tmp/box.
-      call silentmodel(actions,root,mpath,folder,silentmenu,weather,
-     &  ier)
+      call silentmodel(actions,root,mpath,folder,weather,ier)
 
 C Add in site information if tokens were included.
       if(havesite)then
@@ -2421,6 +2426,7 @@ C the file with minimum interaction.
        integer MSZ   ! number of meta zones array sizes
        PARAMETER (MSZ=10) 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -2519,10 +2525,8 @@ C      character simact*6  ! action for creating assessments.
       character subpath*72 ! not yet used
 
 C At the head of the file is a menu string and a description
-C silentmenu (char 32) and silentdoc (char 248) which identifies
-C the contents of the file.
-C << user must supply this >>
-      character silentmenu*32,silentdoc*248
+C modeltitle (char 72) and modeldocblock (char 248) which identifies
+C the contents of the file via model.h.
       character weather*32     ! file name for the location (no path)
       character*(*) lfile      ! name of the file
       character fs*1           ! file separator
@@ -2629,8 +2633,8 @@ C single folder model, otherwise use distributed folders.
         write(folder,'(a)') 'distributed'  ! multiple folders
       endif
       write(mpath,'(a)') cfgroot  ! model folder will take root name
-      write(silentmenu,'(a)') LSNAM(1:31)
-      write(silentdoc,'(a)')  LSNAM(1:lnblnk(LSNAM))
+      write(modeltitle,'(a)') LSNAM(1:lnblnk(LSNAM))
+      write(modeldocblock,'(a)')  LSNAM(1:lnblnk(LSNAM))
 
 C Site data.
 C << for weather we need to use logic sort of like finddbpath >>
@@ -2742,10 +2746,10 @@ C Write header lines from file, the 1.1 version looks like:
 C *silent_input
       tab=','    ! make the separator a comma.
       write(ifilg,'(a)',IOSTAT=ios,ERR=13) '*silent_input'
-      write(ifilg,'(3a)',IOSTAT=ios,ERR=13)'*menu',tab,
-     &  silentmenu(1:lnblnk(silentmenu))
+      write(ifilg,'(3a)',IOSTAT=ios,ERR=13)'*title',tab,
+     &  modeltitle(1:lnblnk(modeltitle))
       write(ifilg,'(3a)',IOSTAT=ios,ERR=13)'*doc',tab,
-     &  silentdoc(1:lnblnk(silentdoc))
+     &  modeldocblock(1:lnblnk(modeldocblock))
       write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)'*date',tab,dstmp,
      &  '  # latest file modification '
       write(ifilg,'(9a)',IOSTAT=IOS,ERR=13)'*action',tab,
