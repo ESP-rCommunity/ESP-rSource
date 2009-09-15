@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C The file emeta.f is a collection of support facilities for 
 C reading and creating esp-r model meta files:
-C  silentmodel creates an/or updates a model from passed parameters.
+C  silentmodel creates a model from passed parameters.
 C  silentzone: creates a zone (or limited complexity) based on parameters
 C              passed to it.
 C  silentread: Reads esp-r meta file zones geometry data.
@@ -28,12 +28,12 @@ C  metawrite:  Creates an esp-r meta file. Data input is from
 C              the current zones common blocks.
 
 C ************* silentmodel
-C silentmodel creates an/or updates a model from passed parameters.
+C silentmodel creates a model from passed parameters.
 C The parameters are:
-C action (8 char) as follows: 'new' creates model folders based on information
-C    in root, mpath folder parameters. 'cont' continues with current model,
-C    'update' updates the current model weather data, 'within' assumes that
-C    the current folder will be used.
+C action (8 char) as follows: 
+C    'new' creates model folders based on information
+C       in root, mpath folder parameters. 
+C    'within' assumes that the current folder will be used.
 C root   (24 char) the root name of the model
 C mpath  (72 char) the path to the folder with cfg file.
 C folder (12 char) model folder layout: 'single' or 'distributed'
@@ -108,8 +108,7 @@ C Determine operating system
 
 C If the action is `new` then setup model folder(s) and the registration
 C level configuration file via call to pregist in `sn` mode.
-C If action is `cont` then there is no pre-registration task. If action
-C is `update` then there is no pre-registration task.
+C If the action is `within` do not create new folders for the model.
 
 C Debug
       write(6,*)  'action ',action,' ',root,' ',folder
@@ -125,16 +124,6 @@ C Debug
 C Assume the model folders exist when calling pregist.
         write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
         call pregist('sw',root,mpath,folder,menu,ier)
-      elseif(action(1:4).eq.'cont')then
-
-C Assume the folder exists
-        root=' '
-        mpath=' '
-        folder=' '
-      elseif(action(1:6).eq.'update')then
-        root=' '
-        mpath=' '
-        folder=' '
       endif
 
 C If there is a line with the root name of a climate file look
@@ -1260,8 +1249,8 @@ C Paremeters passed to:silentzone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
       integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
-      integer nbglz(MSZ)       ! nb of windows
-      integer nbdoor(MSZ)      ! nb of doors
+      integer nbglz(MSZ)       ! nb of windows (META directive)
+      integer nbdoor(MSZ)      ! nb of doors (META directive)
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real rotateit(MSZ)        ! angle of rotation
       real origin(3),szorigin(MSZ,3)      ! values dependant on shape
@@ -1520,18 +1509,15 @@ C An action line is like this:
 C *action,new,boxer,single,/tmp/boxer
         CALL EGETW(OUTSTR,K,actions,'W','action string',IER)
         silentreturndirec=actions
-        if(actions(1:3).eq.'new')then
+        if(actions(1:3).eq.'new'.or.actions(1:6).eq.'within')then
           CALL EGETW(OUTSTR,K,root,'W','root name',IER)
           CALL EGETW(OUTSTR,K,folder,'W','folder directive',IER)
           CALL EGETRM(OUTSTR,K,mpath,'W','model folder',IER)
 
 C Debug.
-C          write(6,*)  's action ',actions,' root ',root
-C          write(6,*)  's folder ',folder
-C          write(6,*)  's mpath ',mpath
-
-        elseif(actions(1:4).eq.'cont')then
-          continue
+          write(6,*)  's action ',actions,' root ',root
+          write(6,*)  's folder ',folder
+          write(6,*)  's mpath ',mpath
         endif
         goto 43
       elseif(WORD(1:12).eq.'*assessments')then
