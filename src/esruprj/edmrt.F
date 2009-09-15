@@ -28,6 +28,7 @@ C calculations will be commissioned. If silent the viewfactor file name
 C will have been defined prior to calling edmrt.
       SUBROUTINE EDMRT(ITRC,ITRU,IUF,ICOMP,silent,act,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
       
@@ -43,10 +44,6 @@ C will have been defined prior to calling edmrt.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -626,6 +623,7 @@ C ************* EDMRTS
 C EDMRTS: Edit details of a MRT sensor block.
       SUBROUTINE EDMRTS(ICOMP,ICUB,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -634,10 +632,6 @@ C EDMRTS: Edit details of a MRT sensor block.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 

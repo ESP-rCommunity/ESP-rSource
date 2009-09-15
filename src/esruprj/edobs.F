@@ -32,6 +32,7 @@ C then use separate obstructions file and allow user to create one.
 C Use file unit IPRODB temporarily.
       SUBROUTINE EDOBS(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -50,10 +51,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       character DESC*48
@@ -748,6 +745,7 @@ C the block information.  Because this is called from several
 C code blocks it is still necessary to re-scan the zone files.
       SUBROUTINE ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/precz/GS5/GS6.
 #include "geometry.h"
@@ -757,10 +755,6 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
@@ -1098,6 +1092,7 @@ C EDOBSB: Edit details of an obstruction block. Adapt interface
 C if user requests conversion to a general 6 sided polygon.
       SUBROUTINE EDOBSB(ITRU,IUF,ICOMP,IB,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
 C Parameters
@@ -1122,10 +1117,6 @@ C Parameters
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -1796,6 +1787,7 @@ C IRS is the selected surface, AZI is its asimuth, RTK is the thickness
 C of the reveal (adj wall), OWID is the width of the obstruction block.
       SUBROUTINE EREVEAL(ICOMP,IRS,azim,elev,RTK,OWID,blkroot,mat,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -1816,10 +1808,6 @@ C Parameters
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 

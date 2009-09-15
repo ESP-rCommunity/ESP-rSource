@@ -37,6 +37,7 @@ C EDSITE Edits site/general information for system configuration file.
 C ITRU unit number for user output, IER=0 indicates no error.
       SUBROUTINE EDSITE(ITRC,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
@@ -55,10 +56,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/PREC8/SLAT,SLON
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
@@ -3556,15 +3553,12 @@ C EDDSHD Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       

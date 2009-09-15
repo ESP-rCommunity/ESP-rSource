@@ -205,15 +205,12 @@ C Clear IPV common blocks. If act = 'b' blank all the data, if act = 'i'
 C then include initial data for energy demand sets and metrics.
       subroutine clearipvdat(act)
 #include "building.h"
+#include "model.h"
 #include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Comments about common blocks are in ripvdat.
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
 

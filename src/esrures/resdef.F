@@ -857,8 +857,6 @@ C NCON    - total number of intra-zone connections.
 C NFP     - defines the internal plane at
 C           which solar energy is injected in the absence
 C           of internal insolation information.
-C LSNAM   - is the name of the entire system.
-C NCCODE  - zone code.
 C ZNAME   - zone name (from geometry.h).
 C NCONST  - number of multilayered constructions in
 C           each zone.
@@ -875,6 +873,7 @@ C ISTREC is the start record.
 C ier is zero if no problems and -3 if user issued a cancel.
       SUBROUTINE MOINIT(ISTREC,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 
@@ -890,10 +889,6 @@ C ier is zero if no problems and -3 if user issued a cancel.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/DNORGH/IRTYPE

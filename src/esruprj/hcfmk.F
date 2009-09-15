@@ -38,6 +38,7 @@ C control file.
 
       SUBROUTINE HCFMK(ITRU,IUF,ICOMP,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
@@ -49,10 +50,6 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth

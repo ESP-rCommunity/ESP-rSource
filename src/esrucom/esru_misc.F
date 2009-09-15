@@ -64,6 +64,7 @@ C CLRPRB clears the zone based memory in preparation for reading
 C in a new model file. 
       SUBROUTINE CLRPRB
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "geometry.h"
@@ -82,10 +83,6 @@ C << G7 and G8 need to be cleared >>
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation. 
 C   toggle for assessment where:
@@ -692,16 +689,13 @@ C Loop through all zones to see if there is a domain flow description.
 C ***** Notice that an active description button has been pressed.
       subroutine cfgpk(act)
 #include "building.h"
+#include "model.h"
 #include "net_flow.h"
 #include "control.h"
       common/pophelp/h(60)
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C23/IFPNF,LPNF
       COMMON/LOG/LPRJLG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -834,6 +828,7 @@ C ERUTIL Reads a zone utility file and fills the common blocks INDICS
 C and UDESC. ITRU unit number for user output, IER=0 OK. 
       SUBROUTINE ERUTIL(IFIL,LFIL,IZ,IER)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
@@ -841,10 +836,6 @@ C espriou.h provides currentfile.
 
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -1246,6 +1237,7 @@ C MKGOMST: Creates an annotated site obstruction file based
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
 #include "building.h"
+#include "model.h"
 C geometry.h provides common block GS5/GS6/GS7/GS8
 #include "geometry.h"
       
@@ -1253,10 +1245,6 @@ C geometry.h provides common block GS5/GS6/GS7/GS8
 
       common/OUTIN/IUOUT,IUIN
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       CHARACTER Z*72
       character outl*124,outld*124
       integer llbm  ! length of block material
@@ -2471,6 +2459,7 @@ C If MOD = t or T then the focus is thermophysical.
 C It is assumed that the user will make one selection only.
       SUBROUTINE EASKGEOF(PROMPT,CFGOK,IZONE,MOD,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 
@@ -2478,10 +2467,6 @@ C It is assumed that the user will make one selection only.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/user/browse
       LOGICAL CFGOK,SELECT,delzone,browse,cpyzone,XST
 
@@ -2756,6 +2741,7 @@ C complete, `v` note view factors, `g` casual gain ctl, `d` domain flow,
 C `h` heat transfer (comvective) methods, `-` zone names only.
       SUBROUTINE ASKZONE(IZONE,IDZONE,prompt,title,mod,errmsg,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 
@@ -2765,10 +2751,6 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -3062,6 +3044,7 @@ C `h` heat transfer (comvective) methods, 'b' obstruction blocks,
 C `-` zone names only.
       SUBROUTINE ASKMULTIZONE(INPIC,IVALS,prompt,title,mod,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
       
@@ -3073,8 +3056,6 @@ C `-` zone names only.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -3089,7 +3070,7 @@ C =2 with more than 3 day types allowed and sorted
       DIMENSION VERT(35),IVALS(MCOM)
       CHARACTER VERT*27,KEY*1,prompt2*36
       character h*72,mod*1,outs*124
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD
+      CHARACTER*72 LCFD
       character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
 C Clear IVALS and INPICK.

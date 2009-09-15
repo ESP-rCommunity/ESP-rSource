@@ -25,6 +25,7 @@ C THF (THINGS) file for use in MicroGDS.
 
       subroutine e2vdxf(itrc,incobs,ichop)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/precz/GS5.
 #include "geometry.h"
@@ -36,10 +37,6 @@ C geometry.h provides commons G0/G2/precz/GS5.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
@@ -463,6 +460,7 @@ C THF (THINGS) file for use in MicroGDS.
 
       subroutine e2thf(itrc,incobs,ichop)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -470,10 +468,6 @@ C THF (THINGS) file for use in MicroGDS.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)

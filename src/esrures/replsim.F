@@ -30,6 +30,7 @@ C MZINPT code in espbps/input.f.
 
       SUBROUTINE MOGCFG
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
@@ -41,10 +42,6 @@ C MZINPT code in espbps/input.f.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
@@ -190,6 +187,7 @@ C SYNOPF displays the names of the files used in a simulation
 
       SUBROUTINE SYNOPF
 #include "building.h"
+#include "model.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -197,11 +195,6 @@ C SYNOPF displays the names of the files used in a simulation
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/CCTLNM/CTLDOC,LCTLF
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)

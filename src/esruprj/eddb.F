@@ -34,6 +34,7 @@ C ITRU is channel for user output, IER=0 means no errors encountered.
 
       SUBROUTINE EDDB(IER)
 #include "building.h"
+#include "model.h"
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "esprdbfile.h"
@@ -56,10 +57,6 @@ C default file names for databases
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/rpath/path
       common/user/browse
 
@@ -4063,6 +4060,7 @@ C     use the APP characters.
 C from version manager
       SUBROUTINE EDDBCLM(moddb,APP,ISHD)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -4080,10 +4078,6 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/appw/iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/rpath/path

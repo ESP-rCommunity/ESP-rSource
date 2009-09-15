@@ -681,6 +681,7 @@ C
       SUBROUTINE MFNDES(MOD,INOD)
 #include "net_flow.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -692,10 +693,6 @@ C LAPRES,IAPRES (for window pressure databases)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1831,14 +1828,11 @@ C Fluid flow model file: edit or input wind speed reduction factor
 
 #include "net_flow.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
@@ -2076,6 +2070,7 @@ C << should mode Z be visible when user first enters flow facility? >>
 
       SUBROUTINE MFNAUTO(MODE,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
@@ -2106,11 +2101,6 @@ C << should mode Z be visible when user first enters flow facility? >>
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 
-C LPROJ   - zone scheduling (operation file)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT

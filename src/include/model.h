@@ -6,3 +6,14 @@ C The title and summary of the model
       character modeltitle*72  ! title of the model (to replace LSNAM)
       character modeldocblock*248   ! text block of documentation for model
       common/modeltd/modeltitle,modeldocblock
+
+      integer nccode  ! zone code.
+      integer indutl  ! zone utilities file index: 0= none 1= used (deprediated)
+      character LSNAM*72 ! is the title of the entire model
+      character LPROJ*72 ! zone scheduling (operation files)
+      character LGEOM*72 ! zone geometry file
+      character LSHAD*72 ! zone temporal shading and insolation file
+      character LTHRM*72 ! zone construction file
+      character LUTIL*72 ! zone utilities file name (legacy file)
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

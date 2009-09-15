@@ -1821,6 +1821,7 @@ C prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "control.h"
       
@@ -1834,10 +1835,6 @@ C prior to each simulation commencing.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/PREC7/ITCNST
 
       COMMON/C6/INDCFG
@@ -2475,6 +2472,7 @@ C if itru=33 then works as a header to the trace.
 
       subroutine mzinfo(itru)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "control.h"
       
@@ -2485,10 +2483,6 @@ C if itru=33 then works as a header to the trace.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 

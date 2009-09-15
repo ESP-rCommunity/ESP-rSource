@@ -358,6 +358,7 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDGGRD(izone,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "cfd.h"
 
@@ -371,11 +372,6 @@ C IER=0 indicates no error.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -1684,6 +1680,7 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDBVAR(IZONE,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "cfd.h"
 
@@ -1697,11 +1694,6 @@ C IER=0 indicates no error.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/ICFNOD/ICFD,ICP
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)

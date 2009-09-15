@@ -33,6 +33,7 @@ C MENU1D generates the 1D moisture node distribution menu.
 C *********************************************************************
       SUBROUTINE MENU1M(IDRW1,IDRW2,ITRC)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
@@ -50,10 +51,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/MOIST02/LMOIST(MCOM)

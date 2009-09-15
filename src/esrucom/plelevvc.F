@@ -32,6 +32,7 @@ C instead uses the VCOORD coordinates.
 
       SUBROUTINE PLELEV(direc)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/precz/GS5/GS6.
 #include "geometry.h"
@@ -45,10 +46,6 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       integer izstocn
       common/c24/izstocn(mcom,ms)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,

@@ -2382,6 +2382,7 @@ C << if needed.
 
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/G7/precz.
 #include "geometry.h"
@@ -2396,10 +2397,6 @@ C geometry.h provides commons G0/G2/G7/precz.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV

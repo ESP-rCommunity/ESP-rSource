@@ -38,6 +38,7 @@ C folder (12 char) is 'single' or 'distributed' folder structure
 C menu (72 char) brief title of model
       subroutine pregist(act,root,mpath,folder,menu,ier)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 C espriou.h provides currentfile and MFFOLD.
       
@@ -49,10 +50,6 @@ C espriou.h provides currentfile and MFFOLD.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C4/XLAT,XLON
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
@@ -763,6 +760,7 @@ C ********** pfolders
 C Maintain model folders.
       subroutine pfolders(act,ier)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -776,10 +774,6 @@ C geometry.h provides commons G0 and G2.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
@@ -1300,6 +1294,7 @@ C EDBUILD edits building information for system configuration file.
 C ITRU unit number for user output. IER=0 indicates no error. 
       subroutine edbuild(IZ,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "CFC_common.h"
       
@@ -1313,10 +1308,6 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/CFGV/icfgv
       common/user/browse
 

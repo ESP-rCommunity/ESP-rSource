@@ -3157,6 +3157,7 @@ c         receiving internal surfaces.
 
       SUBROUTINE MZSHDO(IYRD)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "CFC_common.h"
 
@@ -3166,10 +3167,6 @@ c         receiving internal surfaces.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)

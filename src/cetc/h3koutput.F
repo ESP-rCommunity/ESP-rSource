@@ -47,6 +47,7 @@ C     This is the main subroutine of the H3k Output. Iterates through systems
       
       SUBROUTINE H3KOUTPUT_MAIN(IWU)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "hvac_parameters.h"
@@ -72,16 +73,11 @@ c     NTSTEP is used to norlamlise the values to one hour.
 c     RFILE is the the results library filename.
       
       common/C21/IFCFG,cfgroot,LCFGF
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &     lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-c     LCFGF is the configuration file used.
-c     lsnam is the description of the building.
       character*72 LBSIMP
       character LTMP*72,h*72,outs*124
       character PFILE*72,MSTRFILE*72,LAFRES*72
       character cfgroot*24,tab*1
-      character*72 lsnam,lproj,lgeom
-      character*72 lshad,lthrm,lutil,lcfgf,rfile
+      character*72 lcfgf,rfile
       DIMENSION MTHNAM(12)
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
       logical OK

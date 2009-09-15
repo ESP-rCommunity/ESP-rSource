@@ -64,7 +64,7 @@ C SREF    - Snow reflectivity
 C NSNOW   - (12) Monthly values of number of days with snow on ground
 C SNFNAM  - *72 Name of the file containing hourly snow depth information
 
-C LSNAM   - is the name of the entire system.
+C LSNAM   - is the name of the entire system from model.h.
 
 C NCOMP   - number of zones comprising the model to be simulated.
 C NCCODE  - zone code (for eventual database reference).
@@ -117,6 +117,7 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYSG(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/prec2/precz/c20.
 #include "geometry.h"
@@ -164,10 +165,6 @@ C IFIL base file unit number (set in MAIN of each application).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 

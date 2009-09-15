@@ -31,6 +31,7 @@ C ********************* sbmedit
 C sbmedit define high level data associated with UK NCM methodology.
       subroutine sbmedit
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "sbem.h"
 #include "tdf2.h"
@@ -44,10 +45,6 @@ C sbmedit define high level data associated with UK NCM methodology.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -1610,6 +1607,7 @@ C All networks (plant, airflow, contaminants etc) are removed from the
 C model.
       SUBROUTINE EMKSBM
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "sbem.h"
 #include "esprdbfile.h"
@@ -1625,10 +1623,6 @@ C model.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF

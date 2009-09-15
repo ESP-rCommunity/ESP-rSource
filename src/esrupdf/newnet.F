@@ -1036,6 +1036,7 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
 
 #include "plant.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       common/outin/iuout,iuin
@@ -1050,11 +1051,6 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       dimension ival(mpcom), cnttyp(4)
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
@@ -2532,6 +2528,7 @@ C D - delete
       SUBROUTINE EDBPLINK(MODE,IS)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "plant.h"
 #include "control.h"
@@ -2554,10 +2551,6 @@ C Common for the building plant lin
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR

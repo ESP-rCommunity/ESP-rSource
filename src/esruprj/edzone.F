@@ -34,6 +34,7 @@ C SCRZONE provides initial form of an enclosure as either a prism or
 C an extrusion. IER=0 OK. 
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
+#include "model.h"
 
 C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
 #include "geometry.h"
@@ -54,10 +55,6 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -523,6 +520,7 @@ C ************* NEWZONE
 C NEWZONE controls the creation of a new zone. IER=0 OK. 
       SUBROUTINE NEWZONE(ITRC,IC,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -539,10 +537,6 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
@@ -992,6 +986,7 @@ C ************* DELZONE
 C DELZONE systematicly removes a thermal zone.
       SUBROUTINE DELZONE(ITRC,IWHICH,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
@@ -1014,10 +1009,6 @@ C espriou.h provides currentfile.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -1654,12 +1645,9 @@ C act = 'ob+' or 'ob-' obstruction changes.
 C IER=0 OK. 
       SUBROUTINE WARNMOD(ICOMP,act)
 #include "building.h"
+#include "model.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
@@ -1745,6 +1733,7 @@ C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
       SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "CFC_common.h"
       
@@ -1752,10 +1741,6 @@ C IER=0 OK.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
@@ -1881,6 +1866,7 @@ C     = 'ira'  interactive recalculation (of all files)
 C     = 'in '  interactive new
       subroutine comissionish(iz,act,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -1892,10 +1878,6 @@ C     = 'in '  interactive new
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/appw/iappw,iappx,iappy
 
       character LCFGF*72

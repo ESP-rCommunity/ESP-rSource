@@ -838,6 +838,7 @@ C VCpyDr
 C *********************************************************************
       SUBROUTINE VCpyDr(NPER,ier)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -852,10 +853,6 @@ C geometry.h provides commons G0 and G2.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/uhome/upath
@@ -1003,6 +1000,7 @@ C         files.
 C *********************************************************************
       SUBROUTINE VSaveP(NPER,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1011,10 +1009,6 @@ C *********************************************************************
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GR1D05/LGRD1D
       COMMON/GR1D06/IGR1D
       common/cctlnm/ctldoc,lctlf

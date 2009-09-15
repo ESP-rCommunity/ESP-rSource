@@ -32,6 +32,7 @@ C system in the plane of the face in which the window is
 C situated.
       SUBROUTINE zipcnv(upgcfg,LOUT,itrc,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
 #include "geometry.h"
@@ -42,10 +43,6 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C3F/LCNN
       common/CFGV/icfgv
       common/C21/IFCFG,cfgroot,LCFGF

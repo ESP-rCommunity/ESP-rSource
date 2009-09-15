@@ -38,6 +38,7 @@ C with the db at simulation time.
 
       subroutine sifops(icomp)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -48,10 +49,6 @@ C with the db at simulation time.
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)
@@ -948,6 +945,7 @@ C    this would be a name derived from the zone shading file).
 C  ier (integer) is zero if no problems, -3 if empty.
       subroutine sifexp(icomp,exportfile,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -957,10 +955,6 @@ C  ier (integer) is zero if no problems, -3 if empty.
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)
@@ -1143,6 +1137,7 @@ C  ier (integer) is zero if no problems, -3 if empty,
 C     -2 not found, -1 wrong type of file, -4 wrong zone.
       subroutine sifimport(icomp,exportfile,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -1150,10 +1145,6 @@ C     -2 not found, -1 wrong type of file, -4 wrong zone.
       common/outin/iuout,iuin
       common/filep/ifil
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)
       common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)

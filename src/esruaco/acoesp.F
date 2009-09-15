@@ -283,6 +283,7 @@ C ************* ZoneDisp
 C ZoneDisp - displays zone based information and allows....
       SUBROUTINE ZoneDisp(icomp)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
 #include "geometry.h"
@@ -295,10 +296,6 @@ C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
@@ -484,6 +481,7 @@ C          1 = textual feedback or 2 = File
       SUBROUTINE DispTRev(Mode,IOctave,ISE,Method,IAirAb, IChanel)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "acoustic.h"
 
@@ -494,10 +492,6 @@ C          1 = textual feedback or 2 = File
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN

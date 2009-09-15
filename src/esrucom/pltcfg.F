@@ -29,8 +29,6 @@ C Common block variables are:
 C INDCFG      - configuration file index
 C                2 = plant only
 
-C LSNAM       - the name of the entire system
-
 C IFLWN       - plant fluid flow simulation index (1 = on)
 C ICFFS       - fluid flow network node associated with each plant
 C               component. NB fluid flow network and plant energy

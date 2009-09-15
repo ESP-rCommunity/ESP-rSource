@@ -29,6 +29,7 @@ C zph,zpc are zone heating/cooling capacities.
 C tzph,tzpc are zone heating/cooling use over time.
       SUBROUTINE MZOUTP
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "sbem.h"
@@ -46,10 +47,6 @@ C tzph,tzpc are zone heating/cooling use over time.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       character LTMP*72,h*72,outs*124,louts*248

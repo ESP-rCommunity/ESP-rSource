@@ -29,6 +29,7 @@ C ********** exportcad
 C exportcad: controls model export facilities.
       subroutine exportcad(itrc,IER)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -36,10 +37,6 @@ C exportcad: controls model export facilities.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/appw/iappw,iappx,iappy
@@ -1518,6 +1515,7 @@ C and if the user is browsing the model.
 C << to be done - then name file generated is never cleaned up >>
       subroutine archiveit(ier)
 #include "building.h"
+#include "model.h"
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -1537,10 +1535,6 @@ C ICLIM,LCLIM (for climate file)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF

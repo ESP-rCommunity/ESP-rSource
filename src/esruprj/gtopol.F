@@ -28,6 +28,7 @@ C  INPOLY - Polygon point containment test.
 C ****** GTOPOL
       SUBROUTINE GTOPOL(itrc,ier)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -47,10 +48,6 @@ C ****** GTOPOL
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C6/INDCFG
 
       character DESC*48

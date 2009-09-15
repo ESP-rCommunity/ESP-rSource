@@ -155,6 +155,7 @@ c after the start-up period.
 
       subroutine zngrph(iss,isf,instep,mode)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "monitor.h"
       
@@ -165,10 +166,6 @@ C Parameters for eline calls.
       parameter (LNMVAB=1, LNDRAB=0, LNMVRL=3, LNDRRL=2)
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       

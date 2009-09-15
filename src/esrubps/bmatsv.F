@@ -32,6 +32,7 @@ C Include files req'd for deleting temporary files after the simulation is compl
 C HOT3000: Fuel cell.
 #include "SOFC.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "plant.h"
@@ -61,10 +62,6 @@ C CWEC Degree Day and ground temperature parameters
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/c6/indcfg
 
       COMMON/PREC7/ITCNST

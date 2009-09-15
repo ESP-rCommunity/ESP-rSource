@@ -83,6 +83,7 @@ C Sets up defaults and offers main menu.
 
       program ish
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
@@ -126,10 +127,6 @@ C IEEE callback (Solaris)
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c21/ifcfg,cfgroot,lcfgf
       common/indics/ivf(mcom),isi(mcom),ihc(mcom),
      &              itw(mcom),icgc(mcom),iobs(mcom)
@@ -1519,6 +1516,7 @@ C  ifstat = 8  new file filled via import of ascii file
 
       subroutine shdprb(silent,icomp,ifstat)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -1528,10 +1526,6 @@ C  ifstat = 8  new file filled via import of ascii file
       common/pophelp/h(60)
       common/filep/ifil
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/indics/ivf(mcom),isi(mcom),ihc(mcom),
      &              itw(mcom),icgc(mcom),iobs(mcom)
       common/gzonpik/izgfoc,nzg,nznog(mcom)

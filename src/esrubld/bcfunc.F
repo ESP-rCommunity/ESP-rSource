@@ -5342,6 +5342,7 @@ C if 0 for a wetted surface 1 for a swiming pool.
 
       SUBROUTINE BCL20
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -5359,12 +5360,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/ATPRES/PATMOS
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-
 
 C In support of ZRH calculations.
       common/concoe/hcip(mcom,ms),hcif(mcom,ms),hcop(mcom,ms),
@@ -6232,6 +6227,7 @@ C ICALL = 2 signals call from solar with request for alternative props.
 
       subroutine bcl99(ICALL)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -6268,11 +6264,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/prec12/ei(mcom,ms),ee(mcom,ms),ai(mcom,ms),ae(mcom,ms)
       COMMON/PREC14/emarea(MCOM)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)

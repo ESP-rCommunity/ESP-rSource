@@ -846,6 +846,7 @@ C Icomp : Zone number
 C Iskip : If = 0, then skip the list of surfaces menu
       SUBROUTINE ZoneDisp(icomp, iskip)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 
@@ -857,10 +858,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -1444,6 +1441,7 @@ C
 
       SUBROUTINE LCAcalc(itrc,Ichanel)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
@@ -1469,10 +1467,6 @@ C
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -2492,6 +2486,7 @@ C phylosophy as LCACalc
 
       SUBROUTINE LCADet(itrc,Ichanel)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
@@ -2517,10 +2512,6 @@ C phylosophy as LCACalc
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)

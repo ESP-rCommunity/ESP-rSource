@@ -30,6 +30,7 @@ C This version uses generic databases.
       SUBROUTINE EMKCFGG(act,IER)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "uncertainty.h"
@@ -53,10 +54,6 @@ C ICLIM,LCLIM (for climate file)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C3F/LCNN
       COMMON/C4/XLAT,XLON
@@ -1083,6 +1080,7 @@ C CEN 13791 boundary condition.
 C ****** Scan and report current mis-matches.
       subroutine ckcurmatch(prob,iprob)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/c20.
 #include "geometry.h"
@@ -1100,11 +1098,6 @@ C Parameters
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       logical dup,first
       logical newgeo  ! to use for testing if new/old geometry file.
