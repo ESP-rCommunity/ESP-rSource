@@ -543,7 +543,7 @@ C Use the GB1 common block via CNVBLK
      &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
      &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1))
               elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obs3')then
-                CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),
+                CALL CNVBLK3A(XOB(newfoc,IB),YOB(newfoc,IB),
      &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
      &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1),
      &            BANGOB(newfoc,IB,2),BANGOB(newfoc,IB,3))
