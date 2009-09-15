@@ -445,8 +445,6 @@ C#include "esprdbfile.h"
      &             dbspth
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -502,7 +500,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       dimension textmass(4,3)
      
       DIMENSION XX(MS),YY(MS)
-      CHARACTER LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8

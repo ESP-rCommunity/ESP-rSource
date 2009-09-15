@@ -304,8 +304,6 @@ C geometry.h provides commons G0 and G2.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/GTFIL/GTGEOM
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/rad1m/matfil,rmmfil
       common/radif/irofil,irzfil,imatfil,iglzfil
@@ -318,7 +316,6 @@ C geometry.h provides commons G0 and G2.
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(17)
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character*72 matfil,rmmfil,tfile
       character runpath*72,pathtype*24
@@ -563,8 +560,6 @@ C If ACT='i' then interactive, ACT='s' for silent.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C TMC data
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -631,7 +626,6 @@ C Arrays of material properties.
       DIMENSION SVALS(3),TVALS(3),TFORM(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil

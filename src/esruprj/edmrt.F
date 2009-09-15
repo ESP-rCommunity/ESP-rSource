@@ -46,8 +46,6 @@ C will have been defined prior to calling edmrt.
 
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -66,7 +64,6 @@ C will have been defined prior to calling edmrt.
       CHARACTER VERT*46,H*72,CUBN*6,LTMP*72,cfgroot*24
       CHARACTER LCFGF*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character doit*248,tmode*8,tfile*72,ZN*12

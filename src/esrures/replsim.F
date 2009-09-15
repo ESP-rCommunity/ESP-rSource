@@ -196,12 +196,7 @@ C SYNOPF displays the names of the files used in a simulation
       COMMON/C1/NCOMP,NCON
       COMMON/CCTLNM/CTLDOC,LCTLF
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCTLF
-
       CHARACTER*248 CTLDOC
       CHARACTER*21 LABELS(8)
 

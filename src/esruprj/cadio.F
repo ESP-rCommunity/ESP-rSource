@@ -1539,8 +1539,6 @@ C ICLIM,LCLIM (for climate file)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
       common/C3F/LCNN
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/LOG/LPRJLG
       common/radcfg/LRADCF
@@ -1586,7 +1584,7 @@ C ICLIM,LCLIM (for climate file)
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
       character LPRJLG*72,LPNF*72,LMOIST*72
       character*72 LCNN
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
+      character*72 LCFD
       character LCMDFL*144,LFIL*72
       
 C The string buffer doit is only used within ifdef code.

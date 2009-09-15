@@ -27,3 +27,12 @@ C Indicators for locations or existance of zone supplimental files.
                    ! separate file, two included in zone geometry file
       COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
      &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+
+C File names for zone supplimental files.
+      character LVIEW*72  ! zone view factor file
+      character LHCCO*72  ! zone hc coef file
+      character LTWIN*72  ! zone optical properties file
+      character LCGCIN*72 ! zone casual gain control file
+      character ZOBS*72   ! zone obstructions file (if separate from geo file)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)

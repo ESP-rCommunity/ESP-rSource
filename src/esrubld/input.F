@@ -1264,9 +1264,6 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       COMMON/CHANNL/NOCHAN
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       common/dllerr/dllsubr,dllmesg
@@ -1279,7 +1276,6 @@ C Residential hydrogen cogen: control file
                                 !- controller inputs
 
       CHARACTER*5 NAME
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LBSIMP
       character dllsubr*12,dllmesg*124,outs*124
       LOGICAL dll

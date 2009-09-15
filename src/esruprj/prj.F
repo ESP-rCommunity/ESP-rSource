@@ -3300,8 +3300,6 @@ C to include the path and create a string to drive the modules.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
@@ -3313,7 +3311,7 @@ C to include the path and create a string to drive the modules.
       character SSPARENT*12
       CHARACTER*72 LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16,zn*12
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
+      CHARACTER*72 LAPROB
 
       logical XST,asked,dok,sorted,problem
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob,dup
@@ -4476,8 +4474,6 @@ C Path to model and command line file (if any).
      &  smstres(MSPS),selres(MSPS),sipvres
 
       common/cctlnm/ctldoc,lctlf
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -4500,7 +4496,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       character CNTMFIL*72,LCNN*72
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LAPROB
+      CHARACTER*72 LAPROB
       CHARACTER*24 zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth
       CHARACTER*24 dbspth,cfgroot
       CHARACTER OUTSTR*124

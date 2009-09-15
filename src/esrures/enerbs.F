@@ -52,9 +52,6 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
@@ -68,7 +65,6 @@ C =2 with more than 3 day types
       character SSPARENT*12
       CHARACTER SN*12,ZN*12
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,outs*124
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
 C Read in the zone geometry data.
       newgeo=.false.  ! assume older format geometry.

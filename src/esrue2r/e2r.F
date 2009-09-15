@@ -1490,12 +1490,9 @@ C geometry.h provides commons G0 and G2.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       common/radabs/NABS
 
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124
 
       logical XST

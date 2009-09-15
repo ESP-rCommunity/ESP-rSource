@@ -1632,8 +1632,6 @@ C << G1 is probably not the common block to use for this >>
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -1659,7 +1657,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,LCNN*72,NNAME*72,H*72
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       CHARACTER OUTS*124,GUESS*24,ADF*124,SNM*12,SNM2*12,USE*8,USE2*8
       character doit*248,guesstype*24,dinstpath*48

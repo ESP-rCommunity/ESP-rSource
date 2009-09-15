@@ -1178,14 +1178,11 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       DIMENSION IV(60),IZLST(MCON),ISLST(MCON),ILZNO(MCON),ILSNO(MCON)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character H*72,ST(60)*22,outs*124,LMRT*72,CUBN*6
 
       IER=0

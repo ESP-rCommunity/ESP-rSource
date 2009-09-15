@@ -120,8 +120,6 @@ C HOT3000: AIM-2.
       COMMON/C23/IFPNF,LPNF
       common/cctl/icascf(mcom)
       COMMON/PREC8/SLAT,SLON
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Radiance scenes file.
       common/radcfg/LRADCF
@@ -251,7 +249,6 @@ C IPV data comes via ipvdata.h
       character SSPARENT*12
 
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -832,14 +829,11 @@ C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
       common/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
       common/MOIST01/MSTROK,MSTRZN(MCOM)
       common/MOIST02/LMOIST(MCOM)
 
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character LFIL*72,OUTSTR*124
       logical BLDG3D,ZONE3D,MSTROK,MSTRZN
@@ -2747,8 +2741,6 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
@@ -2762,7 +2754,6 @@ C =2 with more than 3 day types allowed and sorted
       CHARACTER VERT*27,KEY*1,prompt2*36
       character h*72,mod*1,outs*124
       CHARACTER*72 LCFD
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -3052,8 +3043,6 @@ C `-` zone names only.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
@@ -3067,7 +3056,6 @@ C =2 with more than 3 day types allowed and sorted
       CHARACTER VERT*27,KEY*1,prompt2*36
       character h*72,mod*1,outs*124
       CHARACTER*72 LCFD
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
 C Clear IVALS and INPICK.
       IER=0

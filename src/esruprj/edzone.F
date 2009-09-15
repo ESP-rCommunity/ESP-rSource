@@ -1024,9 +1024,6 @@ C espriou.h provides currentfile.
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
@@ -1045,7 +1042,6 @@ C Anchor data.
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER LAPROB*72,LCFGF*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -1645,11 +1641,8 @@ C IER=0 OK.
 #include "model.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER act*3
 
       LOGICAL XST,comold,tmcold,vwfold,ishold,cfcold
@@ -1736,12 +1729,9 @@ C IER=0 OK.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
       common/C21/IFCFG,cfgroot,LCFGF
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER H*72,act*1
       character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET

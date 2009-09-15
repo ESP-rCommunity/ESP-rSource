@@ -1407,9 +1407,6 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       COMMON/ICFNOD/ICFD,ICP
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/ndcfd/NCFDND,ICFDND(MNZ),NCONF
@@ -1434,7 +1431,7 @@ C Residential hydrogen cogen: control file
 
       CHARACTER NAME*5,OUTSTR*124
       CHARACTER*72 LCFD,Lflpar
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,lfil
+      CHARACTER*72 lfil
       CHARACTER*72 LBSIMP
       character dllsubr*12,dllmesg*124,outs*124
 

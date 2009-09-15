@@ -92,8 +92,6 @@ C LPNF (72 char) plant network file name.
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -172,7 +170,7 @@ C Remember if each zone is fully attributed.
       dimension items(25)
 
       character*72 LTMP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
+      character*72 GTGEOM
       character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
@@ -2087,8 +2085,6 @@ C not browsing.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/CFGV/icfgv
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
       common/p3ver/ip3ver(MCOM)
@@ -2109,7 +2105,6 @@ C Images.
       common/imagfi/noimg,iton
 
       character cfgroot*24,LCFGF*72,h*72,outs*124
-      character LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12

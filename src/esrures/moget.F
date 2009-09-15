@@ -3510,9 +3510,6 @@ C This recovers one day.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       COMMON/RECV5/SNA(MCOM,MS)
       common/PREC18/ZTRANA(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
@@ -3531,7 +3528,6 @@ C =2 with more than 3 day types
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124,CSTR*25
       dimension CQ(MTS),GC(MTS)
       logical newgeo  ! to use for testing if new/old geometry file.

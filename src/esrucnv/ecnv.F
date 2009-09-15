@@ -68,8 +68,6 @@ C ESP-r commons.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/C3F/LCNN
       COMMON/C6/INDCFG
       common/CFGV/icfgv
@@ -110,7 +108,6 @@ C Material data array.
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
       character RZNAME*24,head*4,ZN*12,LTMP*144
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character path*72,upath*72,LCNN*72
       character upgcfg*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

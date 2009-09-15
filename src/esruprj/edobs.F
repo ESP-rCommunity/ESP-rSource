@@ -46,8 +46,6 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -65,7 +63,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
       dimension IVALB(MB)
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*33 VERT(35)
       character*32 PICK(MB)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -753,14 +750,11 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
       CHARACTER H*72,LTMP*72,OFILE*72
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character sfile*72,snpfile*72,fs*1
@@ -1113,9 +1107,6 @@ C Parameters
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
 C ZXMN(),ZYMN(),ZZMN() are the zone minimum bounds.
 C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
@@ -1124,7 +1115,6 @@ C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
       DIMENSION VERT(22),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S12*12
       character HOLD*32,outs*124
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
       logical close   ! to see if non-zero block elevation.
       logical havesaved  ! to signal zone file written
@@ -1804,9 +1794,6 @@ C Parameters
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       DIMENSION  XX(MV),YY(MV),ZZ(MV),XXW(4),YYW(4),ZZW(4)
       DIMENSION  TMAT(4,4),RMAT(4,4),VP(3),EP(3),EQN(4)
 
@@ -1814,7 +1801,6 @@ C Parameters
 
 C Note: mat is only passed as the first 12 char of construction.
       CHARACTER HOLDS*36,H*72
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical newgeo  ! to use for testing if new/old geometry file.
       integer nbo     ! local counter
 

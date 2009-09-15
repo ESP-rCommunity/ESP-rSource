@@ -846,8 +846,6 @@ C geometry.h provides commons G0 and G2.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -860,7 +858,6 @@ C geometry.h provides commons G0 and G2.
       character h*72,doit*124,cfgroot*24,MODE*4
       CHARACTER*72 upath,path,VlDirR,VlDirL,LCFGF
       character LCMDFL*144
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
       logical xst
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1003,14 +1000,11 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/GR1D05/LGRD1D
       COMMON/GR1D06/IGR1D
       common/cctlnm/ctldoc,lctlf
 
       CHARACTER*72 LGRD1D
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER ctldoc*248,LCTLF*72
 
       logical QUIET,IGR1D,XST

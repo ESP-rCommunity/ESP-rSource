@@ -86,8 +86,6 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 
 C prec17 common is described in geometry.h.
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -121,7 +119,6 @@ C prec17 common is described in geometry.h.
       CHARACTER ITEMS*33,ITEMSS*32,trnalt*33,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,T64*64,D64*64
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER LAPROB*72
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SN*12,CUBN*6,act*1
       character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16,msgv*42

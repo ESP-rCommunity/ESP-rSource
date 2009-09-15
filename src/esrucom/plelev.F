@@ -48,8 +48,6 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -59,7 +57,6 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER sstr*90,blabel*4,direc*1
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale

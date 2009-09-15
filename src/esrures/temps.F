@@ -183,13 +183,12 @@ C IOPT - specific temperature differences.
 
       SUBROUTINE SENMRT(IDAY,IZONE,ISENS,ISET,IOPT)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
@@ -200,7 +199,6 @@ C IOPT - specific temperature differences.
 
       DIMENSION XD(MZS),surarea(6),stemp(6)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124,LMRT*72,CUBN*6
 
 C Recover sensor vievfactors.

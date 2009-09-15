@@ -77,8 +77,6 @@ C Common blocks as in esystem.F (some omitted).
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFLG/ITEMSTD
@@ -228,7 +226,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 FILE,LCFD,LCNN
       character*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,ZN*12
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48

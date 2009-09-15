@@ -1222,8 +1222,6 @@ C output, IER=0 indicates no error.
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/appw/iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -1268,7 +1266,6 @@ C Flag noting whether casual gain periods are currently sorted.
       dimension jsname(MS),jsparent(MS),jsuse(ms,3)
 
       character*72 CFILE,DFILE,LTMP,LCFD
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character LCFGF*72,H*72,SFIL*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -4199,9 +4196,6 @@ C      of obstruction data.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       integer NSUR,JVN,NVER,NTV
       real X,Y,Z
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -4219,7 +4213,6 @@ C      of obstruction data.
       logical newgeo  ! to use for testing if new/old geometry file.
       
       character*72 LTMP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character ZN*12,h*72
       character outs*124
       logical DOK,OK
@@ -4394,9 +4387,6 @@ C      of obstruction data.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
@@ -4410,7 +4400,6 @@ C      of obstruction data.
       logical newgeo  ! to use for testing if new/old geometry file.
       
       character*72 LTMP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character ZN*12,h*72
       character outs*124
       logical DOK,OK

@@ -1311,9 +1311,6 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/CFGV/icfgv
       common/user/browse
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
 C CFD
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/GR3D100/BLDG3D,ZONE3D(MCOM)
@@ -1325,7 +1322,6 @@ C CFD
 
       logical browse,BLDG3D,ZONE3D,MSTROK,MSTRZN
       logical newgeo  ! to use for testing if new/old geometry file.
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       dimension ITEMS(25)
       character ITEMS*72,head*25,path*72,L*72,ZN*12

@@ -1251,6 +1251,7 @@ C for use with a 'Coupling' scene purpose.
 
       SUBROUTINE SENLOC
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -1267,9 +1268,6 @@ C for use with a 'Coupling' scene purpose.
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -1277,7 +1275,6 @@ C for use with a 'Coupling' scene purpose.
       common/rad2/mono,intext,ifocz
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCGCINT,LDFGRID
       character outs*124,runpath*72,pathtype*24
 
@@ -1448,6 +1445,7 @@ C gain control file.
 
       SUBROUTINE RDCFTMP(LFTMP,ISET)
 #include "building.h"
+#include "model.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1471,12 +1469,8 @@ C MDCFV - max no of sky patches.
       COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
      & IDCFID(MCOM,MLCOM,MDF)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       common/rad2/mono,intext,ifocz
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCGCINT,LFTMP
       character outs*124
 

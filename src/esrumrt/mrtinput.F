@@ -32,8 +32,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
@@ -52,7 +50,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       DIMENSION VERT(35),radtemp(MCUB)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr
       CHARACTER VERT*29,H*72,CUBN*6
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124
 
 C Initialise zone vertex menu size variables based on window size. 

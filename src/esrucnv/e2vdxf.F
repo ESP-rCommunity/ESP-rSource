@@ -43,8 +43,6 @@ C geometry.h provides commons G0/G2/precz/GS5.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
@@ -52,7 +50,6 @@ C geometry.h provides commons G0/G2/precz/GS5.
       logical newgeo  ! to use for testing if new/old geometry file.
 
       character oformat*24,head*4,ZN*12,outs*124
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 
@@ -472,15 +469,12 @@ C THF (THINGS) file for use in MicroGDS.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
       LOGICAL doobs
 
       character oformat*24,head*4,ZN*12,outs*124
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       logical newgeo  ! to use for testing if new/old geometry file.

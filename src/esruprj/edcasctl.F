@@ -76,9 +76,6 @@ C TMC common block:
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
 
-
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/RAY3/MODIFY,MODLEN,MODBND
 
       DIMENSION ITMC2DF(30),KSTR(MDTY)
@@ -89,7 +86,6 @@ C TMC common block:
       logical browse
 
       character H*72,outs*124,LTMP*72,DTMP*64
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24

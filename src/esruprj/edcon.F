@@ -60,8 +60,6 @@ C geometry.h provides commons G0/G2/c20/precz.
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       common/PRECT4/TOPTIC(MCOM,MTMC)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -77,7 +75,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       DIMENSION VERT(35),libcmt(MTMC)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,CFILE
+      CHARACTER*72 CFILE
       CHARACTER*72 DFILE
       CHARACTER SFILE*72,H*72,LTMP*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -1408,6 +1406,7 @@ C optical properties as gathered from the optical database.  Make use of
 C the number of composite layers to build this up.
       SUBROUTINE MKTWIN(IFU,ICOMP,QUIET,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -1420,9 +1419,6 @@ C Parameter
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1439,7 +1435,6 @@ C Parameter
       logical XST
 
       dimension ival(MS)
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER H*72,TOPTIC*12,louts*248
 
 C If in quiet mode then the file should exist, but if it is not a 

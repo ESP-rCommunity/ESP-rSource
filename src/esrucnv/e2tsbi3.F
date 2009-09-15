@@ -756,8 +756,6 @@ C creates a grey-scale VRML 2.0 world.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/GTFIL/GTGEOM
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
@@ -787,7 +785,7 @@ C Arrays of material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
+      CHARACTER*72 GTGEOM
       character GDESCR*36,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
       CHARACTER cfgroot*24,LCFGF*72
