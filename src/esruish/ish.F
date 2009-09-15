@@ -128,8 +128,6 @@ C IEEE callback (Solaris)
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c21/ifcfg,cfgroot,lcfgf
-      common/indics/ivf(mcom),isi(mcom),ihc(mcom),
-     &              itw(mcom),icgc(mcom),iobs(mcom)
 
 C Path to model and command line file (if any).
       common/rpath/path
@@ -1526,8 +1524,6 @@ C  ifstat = 8  new file filled via import of ascii file
       common/pophelp/h(60)
       common/filep/ifil
 
-      common/indics/ivf(mcom),isi(mcom),ihc(mcom),
-     &              itw(mcom),icgc(mcom),iobs(mcom)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/ray3/modify,modlen,modbnd
       common/ract/paction

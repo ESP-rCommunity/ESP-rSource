@@ -16,3 +16,14 @@ C The title and summary of the model
       character LUTIL*72 ! zone utilities file name (legacy file)
       COMMON/C2/NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
+C Indicators for locations or existance of zone supplimental files.
+      integer IVF  ! zone view factor file zero is not used, one exists 
+      integer ISI  ! zone shading/insolation file zero is not used, one exists
+      integer IHC  ! zone hc coef file zero is not used, one exists
+      integer ITW  ! zone optical properties file zero is not used, one exists
+      integer ICGC ! zone casual gain control file zero is not used, one exists
+      integer IOBS ! zone obstructions zero is not used, one exists in a
+                   ! separate file, two included in zone geometry file
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)

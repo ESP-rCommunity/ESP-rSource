@@ -440,14 +440,14 @@ C << ITCTL needs to be updated for day type and period >>
         elseif(WORD(1:7).eq.'*Period'.or.WORD(1:7).eq.'*period')then
           iperiod=iperiod+1
           CALL EGETWI(OUTSTR,K,IVS,0,24,'W','opr period start',IER)
-          CALL EGETWI(OUTSTR,K,IVF,0,24,'W','opr period finish',IER)
+          CALL EGETWI(OUTSTR,K,IVFIN,0,24,'W','opr period finish',IER)
           CALL EGETWR(OUTSTR,K,VALA,0.,2000.,'W','w infil',IER)
           CALL EGETWR(OUTSTR,K,VALB,0.,2000.,'W','w vent',IER)
           CALL EGETWI(OUTSTR,K,IVZ,0,NCOMP,'W','w vent z',IER)
           CALL EGETWR(OUTSTR,K,VALC,0.,0.,'-','w vent tmp',IER)
           NAC(idaytype)=NAC(idaytype)+1
           IACS(idaytype,iperiod)=IVS
-          IACF(idaytype,iperiod)=IVF
+          IACF(idaytype,iperiod)=IVFIN
           ACI(idaytype,iperiod)=VALA
           ACV(idaytype,iperiod)=VALB
           IPT(idaytype,iperiod)=IVZ

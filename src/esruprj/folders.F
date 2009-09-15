@@ -1311,8 +1311,6 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/CFGV/icfgv
       common/user/browse
 
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 

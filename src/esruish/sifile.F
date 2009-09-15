@@ -83,8 +83,6 @@ C  ifstat = 5  error writing record 4 of file
       common/outin/iuout,iuin
       common/filep/ifil
 
-      common/indics/ivf(mcom),isi(mcom),ihc(mcom),
-     &              itw(mcom),icgc(mcom),iobs(mcom)
       common/ract/paction
 
       dimension isadd(12),ishd(12),idum(ms)

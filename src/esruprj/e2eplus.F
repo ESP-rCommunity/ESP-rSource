@@ -77,8 +77,6 @@ C BLDR viewfactor from external surfaces to other buildings & obstructions
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header

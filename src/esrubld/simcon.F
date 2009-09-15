@@ -203,6 +203,7 @@ C and information on the saved result set.
 
       SUBROUTINE MZSIML
 #include "building.h"
+#include "model.h"
 #include "plant.h"
 #include "monitor.h"
 
@@ -231,8 +232,6 @@ C and information on the saved result set.
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
      &               ibplot,irecpb(MDPH),mbstv
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

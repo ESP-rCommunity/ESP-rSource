@@ -49,7 +49,7 @@ C           string (sdescr) to be used in headers.
  
 C ******************** EGOMIN 
 C EGOMIN reads zone geometry data from a user-constructed data
-C file. There are three levels of geometry data input corresponding
+C file (LGEOMF). There are three levels of geometry data input corresponding
 C to RECtangular (REC), REGular (REG) and GENeral (GEN) shaped zones.
 C If IR=1 then range checking is enabled, otherwise only minimal checking
 C is performed on the data as read in.
@@ -90,7 +90,7 @@ C With REC and REG type input the simpler input data is read and
 C passed to subroutines ERECC and EREGC respectively where
 C conversion to the 'G1' format takes place.
  
-       SUBROUTINE EGOMIN(IUNIT,LGEOM,ICOMP,IR,ITRC,ITRU,IER)
+       SUBROUTINE EGOMIN(IUNIT,LGEOMF,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
 
 C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
@@ -247,7 +247,7 @@ C MLC commons to recover optical property name.
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       
-      CHARACTER LGEOM*72,WORD*20,loutstr*248
+      CHARACTER LGEOMF*72,WORD*20,loutstr*248
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -270,9 +270,9 @@ C Check if running in dll mode.
       call isadll(dll)
 
 C Initialise geometry data file. and set currentfile.
-      CALL EFOPSEQ(IUNIT,LGEOM,1,IER)
+      CALL EFOPSEQ(IUNIT,LGEOMF,1,IER)
       IF(IER.LT.0)THEN
-        write(outs,'(3a)') 'Geometry file ',LGEOM(1:lnblnk(LGEOM)),
+        write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
      &      ' could not be opened.'
         if(dll)then
           dllsubr='EGOMIN'
@@ -285,7 +285,8 @@ C Initialise geometry data file. and set currentfile.
           RETURN
         endif
       ENDIF
-      write(currentfile,'(a)') LGEOM(1:lnblnk(LGEOM))
+      write(currentfile,'(a)') LGEOMF(1:lnblnk(LGEOMF))
+      
 C Read lines from file, if one item then assumed to 
 C be CTYPE, if 2 then the second is the zone name which
 C is tested for illegal characters, if '*Geometry 1.1'
@@ -303,7 +304,7 @@ C the should use georead to scan the file.
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
         gversion(icomp) = 1.1   ! set the version number.
         CALL ERPFREE(IUNIT,ios)
-        call georead(IUNIT,LGEOM,ICOMP,IR,ITRU,IER)
+        call georead(IUNIT,LGEOMF,ICOMP,IR,ITRU,IER)
         return
       else
         K=0
@@ -472,7 +473,7 @@ C Rotate if required.
 C Unrecognized keyword.      
       ELSE
         write(outs,'(2a)') ' Geometry shape type illegal in ',
-     &    LGEOM(1:lnblnk(LGEOM))
+     &    LGEOMF(1:lnblnk(LGEOMF))
         if(dll)then
           dllsubr='EGOMIN'
           dllmesg=outs
@@ -1195,7 +1196,7 @@ C Error messages.
       END
  
 C ******************** GEOREAD 
-C GEOREAD reads V1.1 zone geometry data from a user-constructed data
+C GEOREAD reads V1.1 zone geometry data (LGEOMF) from a user-constructed data
 C file. Data input is based on an extended GENeral (GEN) shaped zones.
 
 C GEN - any polyhedral-shaped zone comprised of 'M' planes.
@@ -1213,8 +1214,9 @@ C       anticlockwise order which comprise each surface and the
 C       rotation angle from the site X-axis to east (anticlockwise
 C       +ve).
  
-      SUBROUTINE GEOREAD(IUNIT,LGEOM,ICOMP,IR,ITRU,IER)
+      SUBROUTINE GEOREAD(IUNIT,LGEOMF,ICOMP,IR,ITRU,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
@@ -1230,9 +1232,6 @@ C Parameters
       integer IR     ! IR 1 range checking is enabled, otherwise only minimal checking
       integer ITRU   ! file unit for feedback
       integer IER    ! zero is ok
-
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C X,Y & Z   - coordinates of the vertices defining the zone
 C NSUR      - Number of faces comprising zone
@@ -1314,7 +1313,7 @@ C GS7/GS8 are defined in geometry.h
 
       DIMENSION IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER OUTSTR*124,LGEOM*72,WORD*32
+      CHARACTER OUTSTR*124,LGEOMF*72,WORD*32
       CHARACTER tmpvfc*4,tother*15,tother1*15,tother2*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -1355,9 +1354,9 @@ C Check if running in dll mode.
       call isadll(dll)
 
 C Initialise geometry data file. and set currentfile.
-      CALL EFOPSEQ(IUNIT,LGEOM,1,IER)
+      CALL EFOPSEQ(IUNIT,LGEOMF,1,IER)
       IF(IER.LT.0)THEN
-        write(outs,'(3a)') 'Geometry file ',LGEOM(1:lnblnk(LGEOM)),
+        write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
      &      ' could not be opened.'
         if(dll)then
           dllsubr='GEOREAD'
@@ -1370,7 +1369,7 @@ C Initialise geometry data file. and set currentfile.
           RETURN
         endif
       ENDIF
-      write(currentfile,'(a)') LGEOM(1:lnblnk(LGEOM))
+      write(currentfile,'(a)') LGEOMF(1:lnblnk(LGEOMF))
 
 C Read header lines from file, the 1.1 version looks like: 
 C *Geometry 1.1,GEN,manager  # tag version, format, zone name (tbd allow spaces)
@@ -1425,14 +1424,14 @@ C file so close the file and set error message.
         CALL ERPFREE(IUNIT,ios)
         ier=2
         call usrmsg('Attempt to read older geometry file in georead.',
-     &    LGEOM,'W')
+     &    LGEOMF,'W')
         return
       endif
 
       IF(CTYPE(icomp)(1:3).EQ.'REC')THEN
 
 C Zone is of type REC, subroutine EGOMIN should have been used.
-        write(outs,'(3a)') 'Geometry file ',LGEOM(1:lnblnk(LGEOM)),
+        write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
      &      ' has REC format so it must be a legacy file.'
         if(dll)then
           dllsubr='GEOREAD'
@@ -1447,7 +1446,7 @@ C Zone is of type REC, subroutine EGOMIN should have been used.
       ELSEIF(CTYPE(icomp)(1:3).EQ.'REG')THEN
 
 C Zone is of type REG, subroutine EGOMIN should have been used.
-        write(outs,'(3a)') 'Geometry file ',LGEOM(1:lnblnk(LGEOM)),
+        write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
      &      ' has REG format so it must be a legacy file.'
         if(dll)then
           dllsubr='GEOREAD'
@@ -2163,7 +2162,7 @@ C Fall through position. Warn and loop back to see if more.
 
       ELSE
         write(outs,'(2a)') ' Geometry shape type illegal in ',
-     &    LGEOM(1:lnblnk(LGEOM))
+     &    LGEOMF(1:lnblnk(LGEOMF))
         if(dll)then
           dllsubr='EGOMIN'
           dllmesg=outs
@@ -2253,6 +2252,7 @@ C geometry file.
 
       SUBROUTINE GEOWRITE(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "espriou.h"
       
@@ -2280,9 +2280,6 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
 C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC (64 char) - zone notes (from geometry.h).
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
                
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
@@ -4632,13 +4629,12 @@ C file.
 C << update documentation as well as reporting based on files >>
       SUBROUTINE INSINFO(ICOMP,ITRU)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 

@@ -38,6 +38,7 @@ C ******************** MZCONV ********************
        SUBROUTINE MZCONV
 
 #include "building.h"
+#include "model.h"
 #include "cfd.h"
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/TC/ITC,ICNT
@@ -51,8 +52,6 @@ C ******************** MZCONV ********************
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/BTIME/BTIMEP,BTIMEF
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -618,8 +617,7 @@ C surface when `type 2' control over convection calculations is imposed.
       SUBROUTINE SELCOR2(ICOMP,ISUR,inRout,ICOR)
 
 #include "building.h"
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+#include "model.h"
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),
@@ -670,11 +668,10 @@ C surface when `type 3' control over convection calculations is imposed.
       SUBROUTINE SELCOR3(ICOMP,ISUR,inRout,ICOR)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),

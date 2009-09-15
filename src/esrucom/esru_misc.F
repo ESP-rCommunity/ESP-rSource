@@ -120,8 +120,6 @@ C HOT3000: AIM-2.
       COMMON/C23/IFPNF,LPNF
       common/cctl/icascf(mcom)
       COMMON/PREC8/SLAT,SLON
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -834,8 +832,6 @@ C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/GR3D100/BLDG3D,ZONE3D(MCOM)

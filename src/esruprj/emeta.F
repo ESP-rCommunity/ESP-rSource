@@ -445,8 +445,6 @@ C#include "esprdbfile.h"
      &             dbspth
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
      &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
@@ -1161,8 +1159,6 @@ C SNFNAM  - *72 Name of the file containing hourly snow depth information
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Obstruction blocks via geometry.h.
 

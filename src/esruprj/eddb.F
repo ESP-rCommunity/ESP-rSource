@@ -4085,8 +4085,6 @@ C espriou.h provides currentfile.
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/deflt4/dinstpath
 
 C Calendar.

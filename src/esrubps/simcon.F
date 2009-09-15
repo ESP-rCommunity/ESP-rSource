@@ -270,6 +270,7 @@ C and information on the saved result set.
 
       SUBROUTINE MZSIML
 #include "building.h"
+#include "model.h"
 #include "plant.h"
 #include "net_flow.h"
 #include "monitor.h"
@@ -310,8 +311,6 @@ C Tolerance for iteration of hydrogen flow matrix
       common /montrv/mnpc,mcomp(mpcom),mcnod(mpcom),mstate,monitr,
      &               ymin,ymax
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
