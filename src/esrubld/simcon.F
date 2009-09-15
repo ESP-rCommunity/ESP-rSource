@@ -1556,7 +1556,7 @@ C Write out appropriate message.
      &  LCFGF(1:lnblnk(LCFGF))
       call edisp(icout,outs)
       write(outs,'(a,a)')  ' Configuration name   : ',
-     &  LSNAM(1:lnblnk(LSNAM))
+     &  modeltitle(1:lnblnk(modeltitle))
       call edisp(icout,outs)
       call edisp(icout,' ')
       if(NCF.eq.0)then
@@ -2051,7 +2051,7 @@ C if itru=33 then works as a header to the trace.
       call edisp248(itru,louts,100)
       write(outs,'(A,A)')' Configuration file  :  ',LCFGF
       call edisp(itru,outs)
-      write(outs,'(A,A)')' Configuration descr :  ',LSNAM
+      write(outs,'(A,A)')' Configuration descr :  ',modeltitle
       call edisp(itru,outs)
       call edisp(itru,' ')
       IF(NCF.EQ.0)then

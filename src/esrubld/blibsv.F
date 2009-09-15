@@ -96,7 +96,7 @@ C Clear dummy zones variable (in place of old NDOORS array).
       IF(NCOMP.GT.18)NCP=18
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCOMP,NCON
       IREC = IREC + 1
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSNAM
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)modeltitle
       IREC = IREC + 1
 
 C Record width is slightly sensitive to the number of zones in the model

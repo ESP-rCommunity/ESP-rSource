@@ -272,7 +272,7 @@ C Materials db on channel IFIL+4.
 C System configuration file on channel IFIL+5. 
       IFCFG=IFIL+5
       LCFGF='UNKNOWN'
-      LSNAM='UNKNOWN'
+      modeltitle='UNKNOWN'
 
 C Mass flow network, profiles and optical dbs on channel IFIL+6. 
       IOPTDB=IFIL+6

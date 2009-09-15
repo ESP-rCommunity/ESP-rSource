@@ -729,7 +729,7 @@ C Images.
 C Registration, show all available images.
         call imgdisp(0,'****',ier)
         h(1)='The current model is named:'
-        write(h(2),'(a)')LSNAM
+        write(h(2),'(a)')modeltitle
         h(3)='The model is documented in: '
         write(h(4),'(a)')LPRJLG
         h(5)=' '
@@ -742,7 +742,7 @@ C Registration, show all available images.
 C Zone button, show zone/site/gridding related images.
         call imgdisp(1,'FZON',ier)
         h(1)='The current model is named:'
-        write(h(2),'(a)')LSNAM
+        write(h(2),'(a)')modeltitle
         h(3)=' '
         write(h(4),'(a,i3,a,i4,a)')'It is composed of',NCOMP,
      &    ' zones and',NCON,' surfaces.'

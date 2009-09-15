@@ -522,7 +522,7 @@ C Materials db on channel IFIL+4.
 C System configuration file on channel IFIL+5. 
       IFCFG=IFIL+5
       LCFGF='UNKNOWN'
-      LSNAM='UNKNOWN'
+      modeltitle='UNKNOWN'
 
 C Mass flow network, profiles and optical dbs on channel IFIL+6. 
       IOPTDB=IFIL+6
@@ -738,7 +738,8 @@ C current number of zones if a model has been loaded.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+            WRITE(etext,'(2A)')'Model: ',
+     &        modeltitle(1:lnblnk(modeltitle))
             iside=1
             isize=1
             ifont=1
@@ -813,7 +814,8 @@ C Pass information to C library code if running in graphic mode.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
                 call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-                WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+                WRITE(etext,'(2A)')'Model: ',
+     &            modeltitle(1:lnblnk(modeltitle))
                 iside=1
                 isize=1
                 ifont=1
@@ -825,7 +827,8 @@ C Pass information to C library code if running in graphic mode.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
               call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-              WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+              WRITE(etext,'(2A)')'Model: ',
+     &          modeltitle(1:lnblnk(modeltitle))
               iside=1
               isize=1
               ifont=1
@@ -870,7 +873,7 @@ C      write(6,*) ' model management browse status ',browse
         WRITE(ITEMS(8),'(2A)') '  cfg  : ',LCFGF(1:22)
         WRITE(ITEMS(9),'(2A)') '  path : ',path(1:22)
         WRITE(ITEMS(10),'(2A)')'g root : ',cfgroot(1:22)
-        WRITE(ITEMS(11),'(2A)')'h title: ',LSNAM(1:22)
+        WRITE(ITEMS(11),'(2A)')'h title: ',modeltitle(1:22)
         WRITE(ITEMS(12),'(A)') 'j variants'
         ITEMS(14)=  '                            '
       else
@@ -949,7 +952,8 @@ C Re-draw the configuration buttons.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+            WRITE(etext,'(2A)')'Model: ',
+     &        modeltitle(1:lnblnk(modeltitle))
             iside=1
             isize=1
             ifont=1
@@ -1278,14 +1282,14 @@ C Title of the model.
           H(2)='which should be suitably informative, e.g.:'
           H(3)=' '
           H(4)=' `PV-facade office, daylight controlled, base case.`'
-          ltmp=LSNAM
+          ltmp=modeltitle
           CALL EASKS(ltmp,' ','Model description?',
      &         72,'base case simulation','model description',IER,4)
           if(ltmp(1:2).eq.'  '.or.ltmp(1:4).eq.'UNKN')then
             call usrmsg('Blank description not allowed!',' ','W')
             goto 246
           else
-            LSNAM=ltmp
+            modeltitle=ltmp
           endif
           changedit=.true.
         endif
@@ -4160,10 +4164,10 @@ C Ask for changes to be made
         CALL EDISP(IUOUT,OUTS)
 
 C Change string holding cfg description
-        CALL EASKS(LSNAM,' ','Description for this variant?',
+        CALL EASKS(modeltitle,' ','Description for this variant?',
      &     72,'project','description modifier',IER,35)
 C        CALL EDISP(IUOUT,'* New project description will be ')
-C        CALL EDISP(IUOUT,LSNAM)
+C        CALL EDISP(IUOUT,modeltitle)
 
 C Set up menu for different variants
         LRCR=0

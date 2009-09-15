@@ -2641,7 +2641,8 @@ C Update the image if not in one of the silent modes.
           if(MMOD.EQ.8)then
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &        iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+            WRITE(ETEXT,'(2A)')'Model: ',
+     &        modeltitle(1:lnblnk(modeltitle))
             iside=1
             isize=1
             ifont=1
@@ -2768,7 +2769,8 @@ C Update the image if in non-silent mode
           if(MMOD.EQ.8)then
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &        iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+            WRITE(ETEXT,'(2A)')'Model: ',
+     &        modeltitle(1:lnblnk(modeltitle))
             iside=1
             isize=1
             ifont=1

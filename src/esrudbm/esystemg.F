@@ -64,7 +64,7 @@ C SREF    - Snow reflectivity
 C NSNOW   - (12) Monthly values of number of days with snow on ground
 C SNFNAM  - *72 Name of the file containing hourly snow depth information
 
-C LSNAM   - is the name of the entire system from model.h.
+C modeltitle - is the name of the entire model from model.h.
 
 C NCOMP   - number of zones comprising the model to be simulated.
 C NCCODE  - zone code (for eventual database reference).
@@ -1505,9 +1505,9 @@ C Read more ground related information.
      &       OUTSTR(1:10).eq.'* BUILDING')then
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'building name',IER)
         IF(IER.NE.0)goto 1
-        LSNAM=OUTSTR(1:72)
+        modeltitle=OUTSTR(1:72)
       else
-        LSNAM=OUTSTR(1:72)
+        modeltitle=OUTSTR(1:72)
       endif
 
 C If ground information was read in but still registration level then exit.
@@ -1524,7 +1524,8 @@ C Number of building zones.
       IF(IER.NE.0) GOTO 1
 
 C Reporting.
-      WRITE(OUTS,'(2a)')' The system name is ',LSNAM(1:LNBLNK(LSNAM))
+      WRITE(OUTS,'(2a)')' The model title is ',
+     &  modeltitle(1:LNBLNK(modeltitle))
       if(MMOD.ne.8)CALL EDISP(iuout,OUTS)
       IF(ITRC.GE.1)THEN
         CALL EDISP(iuout,' ')
@@ -2398,12 +2399,12 @@ C be set to 2.
           IF(INDCFG.EQ.2)then
             CALL STRIPC(IUC,OUTSTR,0,ND,1,'model name',IIER)
             IF(IIER.eq.0)then
-              LSNAM=OUTSTR(1:72)
+              modeltitle=OUTSTR(1:72)
             elseif(IIER.eq.2)then
-              LSNAM=OUTSTR(1:72)
+              modeltitle=OUTSTR(1:72)
               iier=0
             else
-              write(lsnam,'(2a)') 'Systems model ',cfgroot
+              write(modeltitle,'(2a)') 'Systems model ',cfgroot
             endif
           endif
         ENDIF

@@ -239,7 +239,7 @@ c Find minimum and maximum values for x-axis.
       xmax=float(nhours)
 
 c Display header information.
-      write(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+      write(etext,'(2A)')'Project: ',modeltitle(1:lnblnk(modeltitle))
       iside=1
       isize=1
       ifont=1

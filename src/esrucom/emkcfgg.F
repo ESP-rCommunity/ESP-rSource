@@ -768,7 +768,8 @@ C 3D ground files.
 
 C If registration.
       if(INDCFG.EQ.0)then
-        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) LSNAM(1:lnblnk(LSNAM))
+        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
+     &    modeltitle(1:lnblnk(modeltitle))
         goto 9028
       endif
 
@@ -776,7 +777,8 @@ C If plant only jump.
       IF(INDCFG.EQ.2)GOTO 9021
 
 C Fabric portion of description.
-      WRITE(IFCFG,5006,IOSTAT=IOS,ERR=2) LSNAM(1:lnblnk(LSNAM))
+      WRITE(IFCFG,5006,IOSTAT=IOS,ERR=2) 
+     &  modeltitle(1:lnblnk(modeltitle))
  5006 FORMAT('* Building',/,A)
 
       WRITE(IFCFG,'(I7,A)',IOSTAT=IOS,ERR=2) NCOMP,'  # no of zones'

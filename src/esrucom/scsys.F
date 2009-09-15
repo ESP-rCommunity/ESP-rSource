@@ -981,9 +981,9 @@ C Read more ground related information.
      &       OUTSTR(1:10).eq.'* BUILDING')then
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'model name',IER)
         IF(IER.NE.0)goto 1
-        LSNAM=OUTSTR(1:72)
+        modeltitle=OUTSTR(1:72)
       else
-        LSNAM=OUTSTR(1:72)
+        modeltitle=OUTSTR(1:72)
       endif
 
 C If ground information was read in but still registration level then exit.

@@ -358,7 +358,7 @@ C If user canceled the wireframe export loop back.
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
           iside=1
           isize=1
           ifont=1

@@ -251,7 +251,8 @@ C Write header of file.
       WRITE(ioout,'(a)',iostat=ios,err=2)  '!- ESP-r -> EnergyPlus'
       WRITE(ioout,'(2a)',iostat=ios,err=2) '!- MODEL based on ',
      &  LCFGF(1:lnblnk(LCFGF))
-      WRITE(ioout,'(2a)',iostat=ios,err=2) '!- ',LSNAM(1:lnblnk(LSNAM))
+      WRITE(ioout,'(2a)',iostat=ios,err=2) '!- ',
+     &  modeltitle(1:lnblnk(modeltitle))
       WRITE(ioout,'(2a)',iostat=ios,err=2) '!- DATE: ',dstmp
       WRITE(ioout,'(a)',iostat=ios,err=2)  ' '
       if(iver.eq.12)then

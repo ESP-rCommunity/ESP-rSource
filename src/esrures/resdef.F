@@ -958,7 +958,7 @@ C read again.
   301   CONTINUE
   300 CONTINUE
       goto 4
-    3 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LSNAM
+    3 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)modeltitle
       IREC=IREC+1
       NCP=NCOMP
       IF(NCP.GT.20)NCP=20

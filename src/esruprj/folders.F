@@ -261,13 +261,13 @@ C dialogs.
           uname=' '
           call usrname(uname)
           call usrdir(pwd)
-          write(LSNAM,'(a)') menu(1:lnblnk(menu))
+          write(modeltitle,'(a)') menu(1:lnblnk(menu))
           write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
           write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
           IUNIT=IFIL+1
           CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
           write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
-          write(iunit,'(2a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
+          write(iunit,'(2a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
           write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
           write(iunit,'(2a)')'By: ',uname(1:lnblnk(uname))
           call dstamp(dstmp)
@@ -369,13 +369,13 @@ C Write out the model log file.
         uname=' '
         call usrname(uname)
         call usrdir(pwd)
-        write(LSNAM,'(a)') menu(1:lnblnk(menu))
+        write(modeltitle,'(a)') menu(1:lnblnk(menu))
         write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
         write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
         IUNIT=IFIL+1
         CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
         write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
-        write(iunit,'(2a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
+        write(iunit,'(2a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
         write(iunit,'(2a)')'By: ',uname(1:lnblnk(uname))
         call dstamp(dstmp)
@@ -523,12 +523,12 @@ C General description of the model.
   52  H(1)='A model has an associated descriptor (<72 characters,'
       H(2)='which is used later as an identifier, e.g. Low energy'
       H(3)='building with optimum start/stop plant control.'
-      LSNAM='  '
-      ltmp=LSNAM
+      modeltitle='  '
+      ltmp=modeltitle
       CALL EASKS(ltmp,' ','Model description?',
      &           72,'Base case model','model description',IER,3)
       if(ltmp(1:2).ne.'  '.or.lnblnk(ltmp).gt.3)then
-        LSNAM=ltmp
+        modeltitle=ltmp
       else
         call usrmsg('Sorry, a blank line is not acceptable.',
      &    'Enter a meaningful description (<7 characters)','W')
@@ -573,7 +573,7 @@ C information.
         write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
         CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
         write(iunit,'(a,a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
-        write(iunit,'(a,a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
+        write(iunit,'(a,a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(a,a)')'In folder: ',pwd(1:lnblnk(pwd))
         write(iunit,'(a,a)')'By: ',uname(1:lnblnk(uname))
         call dstamp(dstmp)

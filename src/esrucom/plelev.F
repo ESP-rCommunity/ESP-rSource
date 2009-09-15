@@ -255,11 +255,14 @@ C If there is a ground, ITDSP is flagged and plan view draw it.
 C Print labels and return to default font.
       call winfnt(IFS)
       if(direc.eq.'P')then
-        WRITE(sstr,'(a,a)')'Site Plan of: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'Site Plan of: ',
+     &    modeltitle(1:lnblnk(modeltitle))
       elseif(direc.eq.'S')then
-        WRITE(sstr,'(a,a)')'South elev of: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'South elev of: ',
+     &    modeltitle(1:lnblnk(modeltitle))
       elseif(direc.eq.'E')then
-        WRITE(sstr,'(a,a)')'East elev of: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'East elev of: ',
+     &    modeltitle(1:lnblnk(modeltitle))
       endif
       iiy= igt-10
       iix = igl

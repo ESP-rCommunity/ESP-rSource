@@ -2627,8 +2627,9 @@ C single folder model, otherwise use distributed folders.
         write(folder,'(a)') 'distributed'  ! multiple folders
       endif
       write(mpath,'(a)') cfgroot  ! model folder will take root name
-      write(modeltitle,'(a)') LSNAM(1:lnblnk(LSNAM))
-      write(modeldocblock,'(a)')  LSNAM(1:lnblnk(LSNAM))
+
+C Currently set the block of text to the model title.
+      write(modeldocblock,'(a)')  modeltitle(1:lnblnk(modeltitle))
 
 C Site data.
 C << for weather we need to use logic sort of like finddbpath >>

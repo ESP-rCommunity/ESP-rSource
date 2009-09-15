@@ -91,7 +91,7 @@ c Save option is zero.
       call edisp(IWU,louts)
       write(outs,'(3a)')'Configuration file',tab,LCFGF
       call edisp(IWU,outs)
-      write(outs,'(3a)')'Configuration descr',tab,LSNAM
+      write(outs,'(3a)')'Configuration descr',tab,modeltitle
       call edisp(IWU,outs)
 
 C Generate view period string.

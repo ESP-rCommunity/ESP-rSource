@@ -278,7 +278,7 @@ C Energy demand sets.
       elseif(act.eq.'i'.or.act.eq.'I')then
         ipvsimu=' '
         lr=lnblnk(cfgroot)
-        write(ipvtitl,'(a)') LSNAM(1:40)
+        write(ipvtitl,'(a)') modeltitle(1:40)
         write(ipvvers,'(2a)') 'Version ',cfgroot(1:lr)
         write(ipvsynop,'(2a)') ':The ',cfgroot(1:lr)
 

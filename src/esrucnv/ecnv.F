@@ -475,11 +475,11 @@ C If we started by scanning an existing esp-r configuration file
 C there is not much need to call mksyshd.  Just loop until
 C you get to the line * Building.
       if(oformat(1:3).eq.'esp')then
-        LSNAM='Translation from AutoCAD'
+        modeltitle='Translation from AutoCAD'
         if(upgcfg(1:7).eq.'upgrade')then
         
 C Read ioout until * Building then write out the new value
-C of LSNAM and then jump to 28 to allow data from DXF file
+C of modeltitle and then jump to 28 to allow data from DXF file
 C to be scanned.
           do 27 i=1,100
             read(ioout,'(A)') buffer
@@ -488,7 +488,8 @@ C to be scanned.
               call edisp(iuout,outs)
             endif
             if(buffer(1:10).eq.'* Building') then
-              write(ioout,'(A)',IOSTAT=IOS,ERR=2)LSNAM(1:lnblnk(LSNAM))
+              write(ioout,'(A)',IOSTAT=IOS,ERR=2)
+     &          modeltitle(1:lnblnk(modeltitle))
               goto 28
             endif
   27      continue
@@ -1598,7 +1599,7 @@ C Write primary energy conversions if these have been set.
       write(ioout,'(a)')'* PROJ LOG'
       WRITE(ioout,'(A)')LPRJLG(1:lnblnk(LPRJLG))
       write(ioout,'(a)')'* Building'
-      WRITE(ioout,'(A)')LSNAM(1:lnblnk(LSNAM))
+      WRITE(ioout,'(A)')modeltitle(1:lnblnk(modeltitle))
       return
 
     2 CALL edisp(iuout,' Problem writing config data config...')

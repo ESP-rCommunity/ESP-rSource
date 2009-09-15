@@ -307,7 +307,8 @@ C Re-draw the configuration buttons.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+            WRITE(ETEXT,'(2A)')'Model: ',
+     &        modeltitle(1:lnblnk(modeltitle))
             iside=1
             isize=1
             ifont=1
@@ -469,12 +470,12 @@ C Domains associated with the model.
           endif
         endif
         IF(MMOD.EQ.8)then
-          LN=max(1,LNBLNK(LSNAM))
+          LN=max(1,LNBLNK(modeltitle))
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:ln)
+          WRITE(ETEXT,'(2A)')'Model: ',modeltitle(1:ln)
           iside=1
           isize=1
           ifont=1
@@ -1362,7 +1363,7 @@ C (Re)Set all surfaces to standard line width.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
           iside=1
           isize=1
           ifont=1
@@ -3787,7 +3788,7 @@ C If there is a ground topology read it.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                           iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
           iside=1
           isize=1
           ifont=1

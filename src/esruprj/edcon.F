@@ -470,7 +470,7 @@ C has resized the display, redraw.
       if(MMOD.EQ.8)then
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &               iicfgz,iicfgn,iicfgc,iicfgdfn)
-        WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
         iside=1
         isize=1
         ifont=2

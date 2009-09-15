@@ -9,11 +9,10 @@ C The title and summary of the model
 
       integer nccode  ! zone code.
       integer indutl  ! zone utilities file index: 0= none 1= used (deprediated)
-      character LSNAM*72 ! is the title of the entire model
       character LPROJ*72 ! zone scheduling (operation files)
       character LGEOM*72 ! zone geometry file
       character LSHAD*72 ! zone temporal shading and insolation file
       character LTHRM*72 ! zone construction file
       character LUTIL*72 ! zone utilities file name (legacy file)
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+      COMMON/C2/NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)

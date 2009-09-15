@@ -138,7 +138,7 @@ C If site grid or ground is asked for draw now.
       IF(ITDSP.EQ.6)return
 
 C Remind user of which project.
-      WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+      WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
       iside=1
       isize=1
       ifont=1

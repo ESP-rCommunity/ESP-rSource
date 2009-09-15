@@ -654,7 +654,7 @@ C Generate report sorted by surface attributes.
         call tstamp('>','PRJ: global reporting by attribution')
         write(outs,'(A,A)') 'cfg: ',LCFGF(1:lnblnk(LCFGF))
         call edisp(itu,outs)
-        write(outs,'(A,A)') 'project: ',LSNAM(1:lnblnk(LSNAM))
+        write(outs,'(A,A)') 'model: ',modeltitle(1:lnblnk(modeltitle))
         call edisp(itu,outs)
         call dstamp(dstmp)
         write(outs,'(A,A)') 'print date: ',dstmp
@@ -886,8 +886,9 @@ C Generate the QA report.
       call edisp(itu,'Synopsis')
       call edisp(itu,' ')
       write(outs248,'(9A)') 'This is a synopsis of the model ',
-     &  LSNAM(1:lnblnk(LSNAM)),' defined in ',LCFGF(1:lnblnk(LCFGF)),
-     &  ' generated on ',dstmp,'. Notes associated with the model',
+     &  modeltitle(1:lnblnk(modeltitle)),' defined in ',
+     &  LCFGF(1:lnblnk(LCFGF)),' generated on ',
+     &  dstmp,'. Notes associated with the model',
      &  ' are in ',LPRJLG(1:lnblnk(LPRJLG))
       call edisp248(itu,outs248,80)
       call edisp(itu,' ')

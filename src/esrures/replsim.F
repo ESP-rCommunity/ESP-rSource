@@ -220,8 +220,8 @@ C SYNOPF displays the names of the files used in a simulation
      &            ' Zone cfc constr.  : '/
 
 C Echo names of files for visual check.
-      write(outs,59)LSNAM
-   59 format('These files were used in simulation: ',A42)
+      write(outs,59)modeltitle
+   59 format('These files were used in model: ',A42)
       call edisp(iuout,outs)
       write(outs,'(A)') ' with control scheme '
       call edisp(iuout,outs)

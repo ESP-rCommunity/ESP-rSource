@@ -50,7 +50,7 @@ C           8= user defined
  
 C gref    - external ground reflectivity
  
-C lsnam   - the name of the entire system
+C modeltitle - the name of the entire system
  
 C ncomp   - number of zones comprising the system to be simulated
 C nccode  - zone code (for eventual database reference)

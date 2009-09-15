@@ -98,7 +98,7 @@ C If viewpoint or bounds different then initialise viewing paramters.
         ENDIF
 
 C Remind user of which model even when looking at one zone.
-        WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(ETEXT,'(2A)')'Project: ',modeltitle(1:lnblnk(modeltitle))
         iside=1
         isize=1
         ifont=1

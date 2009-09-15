@@ -107,7 +107,7 @@ C of the esp-r configuration file.
 
 C If esp-r then generate initial portion of configuration file.
       if(oformat(1:3).eq.'esp')then
-        LSNAM='Translation from XZIP'
+        modeltitle='Translation from XZIP'
         call mksyshd(LOUT,ier)
         if(upgcfg(1:7).eq.'upgrade')then
           write(ioout,'(I7,a)')nz,'  # no of zones'
