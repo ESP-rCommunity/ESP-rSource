@@ -57,7 +57,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/PREC8/SLAT,SLON
 
-      common/C5R/SKYR,GRDR,BLDR
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
@@ -135,7 +134,7 @@ C Initial string for site exposure.
       SALT(7)='totally enclosed       '
       SALT(8)='user defined           '
 C      WRITE(SALT(8),53)SKYR,GRDR,BLDR
-      SEXP=SALT(IXPOS)
+      SEXP=SALT(siteexposureindex)
 
 C Begin with high level menu.
     3 INO=-4
@@ -358,9 +357,9 @@ C  53    FORMAT('user defined)
           GOTO 3
         ENDIF
 
-        IXPOS=IVALS(1)
-        SEXP=SALT(IXPOS)
-        IF(IXPOS.EQ.8)THEN
+        siteexposureindex=IVALS(1)
+        SEXP=SALT(siteexposureindex)
+        IF(siteexposureindex.EQ.8)THEN
           H(1)='0 <= Sky view factor <= .99'
   290     CALL EASKR(SKYR,' ','Sky view factor?',
      &         0.0,'W',0.99,'W',0.33,'sky view factor',IER,1)

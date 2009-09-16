@@ -182,7 +182,7 @@ C At some point switch from default version 3 to v4.
       SLAT=55.9
       XLON=-4.1
       SLON=-4.1
-      IXPOS=1
+      siteexposureindex=1
       GREF=0.2
       NCOMP=0
       noimg=0

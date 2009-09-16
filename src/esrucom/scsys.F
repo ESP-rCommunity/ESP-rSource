@@ -62,7 +62,6 @@ C espriou.h provides currentfile.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
@@ -440,12 +439,13 @@ C Get site exposure and ground reflectance.
       CALL STRIPC(IUC,OUTSTR,99,ND,1,'ground reflectance',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWI(OUTSTR,K,IXPOS,1,8,'W','Site exposure',IER)
+      CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
+     &  'Site exposure index',IER)
       CALL EGETWR(OUTSTR,K,GREF,0.,1.,'W','Ground reflect',IER)
       IF(IER.NE.0) GOTO 1
 
 C Index of exposure has user defined data associated with it.
-      IF(IXPOS.EQ.8) THEN
+      IF(siteexposureindex.EQ.8) THEN
         CALL STRIPC(IUC,OUTSTR,3,ND,1,'user defined site exposure',IER)
         IF(IER.NE.0)goto 1
         K=0

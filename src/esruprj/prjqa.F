@@ -60,7 +60,6 @@ C espriou.h provides currentfile.
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C4/XLAT,XLON
-      common/C5R/SKYR,GRDR,BLDR
       common/C6/INDCFG
       common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
@@ -897,21 +896,21 @@ C Site information.
      &    ' simulations is ',IYEAR,' and weekends occur on ', 
      &     wkd1(1:lnblnk(wkd1)),' and ',wkd2(1:lnblnk(wkd2)),'.'
         call edisp248(itu,outs248,80)
-        if(ixpos.eq.1)then
+        if(siteexposureindex.eq.1)then
           WRITE(outs,'(a)')'site exposure is typical city centre'
-        elseif(ixpos.eq.2)then
+        elseif(siteexposureindex.eq.2)then
           WRITE(outs,'(a)')'site exposure is typical urban site'
-        elseif(ixpos.eq.3)then
+        elseif(siteexposureindex.eq.3)then
           WRITE(outs,'(a)')'site exposure is typical rural site'
-        elseif(ixpos.eq.4)then
+        elseif(siteexposureindex.eq.4)then
           WRITE(outs,'(a)')'site exposure is city: = sky, grnd, bldgs'
-        elseif(ixpos.eq.5)then
+        elseif(siteexposureindex.eq.5)then
           WRITE(outs,'(a)')'site exposure is city: below surroundings'
-        elseif(ixpos.eq.6)then
+        elseif(siteexposureindex.eq.6)then
           WRITE(outs,'(a)')'site exposure is isolated rural site site'
-        elseif(ixpos.eq.7)then
+        elseif(siteexposureindex.eq.7)then
           WRITE(outs,'(a)')'site exposure is totally enclosed (no sky)'
-        elseif(ixpos.eq.8)then
+        elseif(siteexposureindex.eq.8)then
           WRITE(outs,53)SKYR,GRDR,BLDR
   53      FORMAT('site exposure is sky=',F4.2,' ground=',F4.2,
      &      ' other buildings=',F4.2)

@@ -54,10 +54,9 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C4/XLAT,XLON
 
-C SKYR viewfactor from external surfaces to the sky
+C SKYR viewfactor from external surfaces to the sky (site.h)
 C GRDR viewfactor from external surfaces to the ground
 C BLDR viewfactor from external surfaces to other buildings & obstructions
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -273,28 +272,28 @@ C Write header of file.
      &  '   !- North Axis {deg}'
 
 C Interpret site position.
-      if(IXPOS.eq.1)then
+      if(siteexposureindex.eq.1)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','City',com,
      &    '   !- Terrain'
-      elseif(IXPOS.eq.2)then
+      elseif(siteexposureindex.eq.2)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Suburbs',com,
      &    '   !- Terrain'
-      elseif(IXPOS.eq.3)then
+      elseif(siteexposureindex.eq.3)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Country',com,
      &    '   !- Terrain'
-      elseif(IXPOS.eq.4)then
+      elseif(siteexposureindex.eq.4)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','City',com,
      &    '   !- Terrain'
-      elseif(IXPOS.eq.5)then
+      elseif(siteexposureindex.eq.5)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','City',com,
      &    '   !- Terrain'
-      elseif(IXPOS.eq.6)then
+      elseif(siteexposureindex.eq.6)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Country',com,
      &    '   !- Terrain'
-      elseif(IXPOS.eq.7)then
+      elseif(siteexposureindex.eq.7)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','City',com,
      &    '   !- Terrain'
-      elseif(IXPOS.eq.8)then
+      elseif(siteexposureindex.eq.8)then
         WRITE(ioout,'(3a)',iostat=ios,err=2) '  ',com,
      &    '   !- Terrain (user specified in ESP-r)'
       endif
@@ -2125,10 +2124,11 @@ C Generate combined zone & generate surface names as identifiers.
 
 C Also include viewfactor to ground value depending on orientation
 C and site exposure.
-            if(ixpos.ne.8)then
+            if(siteexposureindex.ne.8)then
               if(SSVFC(icc)(1:4).eq.'VERT')then
                 WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
-     &            PROPG(IXPOS),com,'   !- View Factor to Ground'
+     &            PROPG(siteexposureindex),com,
+     &            '   !- View Factor to Ground'
               elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                 WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
      &            com,'   !- View Factor to Ground'
@@ -2221,10 +2221,11 @@ C Other face environment.
      &              'SunExposed',com,'   !- Sun Exposure'
                   WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
      &              'WindExposed',com,'   !- Wind Exposure'
-                  if(ixpos.ne.8)then
+                  if(siteexposureindex.ne.8)then
                     if(SSVFC(icc)(1:4).eq.'VERT')then
                       WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
-     &                  PROPG(IXPOS),com,'   !- View Factor to Ground'
+     &                  PROPG(siteexposureindex),com,
+     &                  '   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                       WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
      &                  com,'   !- View Factor to Ground'

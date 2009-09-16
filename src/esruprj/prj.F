@@ -4439,7 +4439,6 @@ C Path to model and command line file (if any).
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      common/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -4675,8 +4674,8 @@ C Selection strings for site exposure.
         CALL EPICKS(IX,IVALSS,' ',' Site exposure:',
      &         31,8,SALT,'site exposure',IER,4)
         IF(IX.EQ.0)GOTO 563
-        IXPOS=IVALSS(1)
-        IF(IXPOS.EQ.8)THEN
+        siteexposureindex=IVALSS(1)
+        IF(siteexposureindex.EQ.8)THEN
           H(1)='0 <= Sky view factor <= .99'
   290     CALL EASKR(SKYR,' ',' Sky view factor?',
      &         0.0,'W',0.99,'W',0.33,'sky view factor',IER,1)

@@ -2,7 +2,7 @@ C This header relates to site-related model entities in ESP-r. It is
 C dependant on building.h and should follow building.h so that
 C parameters will have been defined.
 
-      integer IXPOS  ! site exposure index :
+      integer siteexposureindex  ! site exposure index :
                      ! 1= city centre, normal case; 2= urban site, normal case
                      ! 3= rural site, normal case;
                      ! 4= city centre, equal sky, ground & building view factors
@@ -19,4 +19,11 @@ C parameters will have been defined.
       real SREF      ! uncorrected snow covered ground reflectivity
       integer NSNOW  ! monthly number of days with snow on the ground
       character*72 SNFNAM ! file containing hourly snow depth information
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      COMMON/C5/siteexposureindex,GREF,ITGREF,GREF12(12),
+     &  SREF,NSNOW(12),SNFNAM
+
+C Site viewfactors from building surfaces to the site.
+      real SKYR  ! viewfactor to the sky vault (0.0 - 1.0) 
+      real GRDR  ! viewfactor to the ground (0.0 - 1.0)
+      real BLDR  ! viewfactor to buildings (0.0 - 1.0)
+      COMMON/C5R/SKYR,GRDR,BLDR

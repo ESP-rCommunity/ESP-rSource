@@ -1429,7 +1429,6 @@ C << to write only the header portion.
 
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
@@ -1513,9 +1512,9 @@ C Comment for configuration index (upgrade registration level).
 
       WRITE(ioout,'(F7.3,2X,F7.3,a)')XLAT,XLON,
      &'   # Latitude & Longitude '
-      WRITE(ioout,'(I7,2X,F6.3,a)') IXPOS,GREF,
+      WRITE(ioout,'(I7,2X,F6.3,a)') siteexposureindex,GREF,
      &'   # Site exposure & ground refl'
-      IF(IXPOS.EQ.8)WRITE(ioout,'(3F8.3,A)')
+      IF(siteexposureindex.EQ.8)WRITE(ioout,'(3F8.3,A)')
      &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
       write(ioout,'(a)')'* DATABASES'
 

@@ -550,7 +550,7 @@ C Clear the connection list.
       icfgv=3
       NCON=0
       ncomp=0
-      IXPOS=1
+      siteexposureindex=1
       GREF=0.2
       ITGREF=1
       SREF=0.4

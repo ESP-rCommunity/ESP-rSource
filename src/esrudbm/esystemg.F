@@ -46,7 +46,7 @@ C XLAT,   - Site latitude and the longitudinal difference between the
 C XLON      site and the reference time zone (east +ve).
 
 C Data from site.h:
-C IXPOS   - Site exposure index :
+C siteexposureindex   - Site exposure index :
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
 C           4= city centre, equal sky, ground & building view factors
@@ -173,10 +173,9 @@ C xlon      site and the reference time zone (east +ve).
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-C SKYR viewfactor from external surfaces to the sky
+C SKYR viewfactor from external surfaces to the sky (site.h)
 C GRDR viewfactor from external surfaces to the ground
 C BLDR viewfactor from external surfaces to other buildings & obstructions
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
@@ -769,12 +768,13 @@ C Get site exposure and ground reflectance.
       CALL STRIPC(IUC,OUTSTR,99,ND,1,'ground reflectance',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWI(OUTSTR,K,IXPOS,1,8,'W','Site exposure',IER)
+      CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
+     &  'Site exposure index',IER)
       CALL EGETWR(OUTSTR,K,GREF,0.,1.,'W','Ground reflect',IER)
       IF(IER.NE.0) GOTO 1
 
 C Index of exposure has user defined data associated with it.
-      IF(IXPOS.EQ.8) THEN
+      IF(siteexposureindex.EQ.8) THEN
         CALL STRIPC(IUC,OUTSTR,3,ND,1,'user defined site exposure',IER)
         IF(IER.NE.0)goto 1
         K=0
@@ -2495,24 +2495,23 @@ C system configuration file.
       integer lnblnk  ! function definition
 
       COMMON/C4/XLAT,XLON
-      COMMON/C5R/SKYR,GRDR,BLDR
       CHARACTER POS*124,OUTSTR*124,sdesc*16
 
-      IF(IXPOS.EQ.1)THEN
+      IF(siteexposureindex.EQ.1)THEN
         POS='typical city centre.'
-      ELSEIF(IXPOS.EQ.2)THEN
+      ELSEIF(siteexposureindex.EQ.2)THEN
         POS='typical urban.'
-      ELSEIF(IXPOS.EQ.3)THEN
+      ELSEIF(siteexposureindex.EQ.3)THEN
         POS='typical rural.'
-      ELSEIF(IXPOS.EQ.4)THEN
+      ELSEIF(siteexposureindex.EQ.4)THEN
         POS='city center, equal views to sky, ground and buildings.'
-      ELSEIF(IXPOS.EQ.5)THEN
+      ELSEIF(siteexposureindex.EQ.5)THEN
         POS='city center below mean height of surrounding buildings.'
-      ELSEIF(IXPOS.EQ.6)THEN
+      ELSEIF(siteexposureindex.EQ.6)THEN
         POS='isolated rural.'
-      ELSEIF(IXPOS.EQ.7)THEN
+      ELSEIF(siteexposureindex.EQ.7)THEN
         POS='within a totally enclosed building.'
-      ELSEIF(IXPOS.EQ.8)THEN
+      ELSEIF(siteexposureindex.EQ.8)THEN
         POS='user defined exposure as follows: '
       ENDIF
 
@@ -2527,7 +2526,7 @@ C Get lat:long description.
       WRITE(OUTSTR,'(2a)')' Site exposure ',POS(1:LNBLNK(POS))
       CALL EDISP(ITRU,OUTSTR)
 
-      IF(IXPOS.EQ.8)THEN
+      IF(siteexposureindex.EQ.8)THEN
         WRITE(OUTSTR,98911)SKYR
 98911   FORMAT(' User defined sky ratio =',F6.4)
         CALL EDISP(ITRU,OUTSTR)

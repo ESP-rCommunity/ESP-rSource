@@ -1153,7 +1153,6 @@ C           3= advanced model (monthly albedo, snow depth read from file)
 C SREF    - Snow reflectivity
 C NSNOW   - (12) Monthly values of number of days with snow on ground
 C SNFNAM  - *72 Name of the file containing hourly snow depth information
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON
 
@@ -1273,7 +1272,6 @@ C Site related local variables.
       real snowrefl            ! snow reflectivity
       integer dayswithsnow(12) ! days with snow in each month
       logical havesnowdays     ! true if days with snow defined
-      integer siteexposureindex  ! same as ixpos
       character hourlysnowfile*72  ! same as SNFNAM
       logical havehourlysnowfile   ! true if set
       real hoursGTM   ! hours before or after GTM 
@@ -2210,8 +2208,7 @@ C Add in site information if tokens were included.
         SLAT=XLAT
         XLON=sitelong
         SLON=XLON
-        IXPOS=siteexposureindex
-        if(IXPOS.EQ.8)then
+        if(siteexposureindex.EQ.8)then
           SKYR=skyview
           GRDR=groundview
           BLDR=buildingview
@@ -2421,7 +2418,6 @@ C seasons.h provides typper and typsea
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C4/XLAT,XLON
 
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON
 
@@ -2520,7 +2516,6 @@ C Site related local variables.
       real snowrefl            ! snow reflectivity
       integer dayswithsnow(12) ! days with snow in each month
       logical havesnowdays     ! true if days with snow defined
-      integer siteexposureindex  ! same as ixpos
       character hourlysnowfile*72  ! same as SNFNAM
       logical havehourlysnowfile   ! true if set
       real hoursGTM   ! hours before or after GTM 
@@ -2609,7 +2604,6 @@ C The hourlysnowfile is SNFNAM.
       write(hourlysnowfile,'(a)') SNFNAM
       sitelat=XLAT
       sitelong=XLON
-      siteexposureindex=IXPOS
       skyview=SKYR
       groundview=GRDR
       buildingview=BLDR

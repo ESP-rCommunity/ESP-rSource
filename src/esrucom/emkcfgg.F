@@ -59,7 +59,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C4/XLAT,XLON
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
@@ -406,10 +405,11 @@ C Begin writing the file.
  800  FORMAT(F7.3,2X,F7.3,
      &  '   # Latitude & Longitude (diff from meridian)')
 
-      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) IXPOS,GREF
+      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) siteexposureindex,GREF
 8001  FORMAT(I7,2X,F6.3,'   # Site exposure & ground reflectivity')
-      IF(IXPOS.EQ.8)WRITE(IFCFG,'(3F8.3,A)',IOSTAT=IOS,ERR=2)
-     &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
+      IF(siteexposureindex.EQ.8)
+     &  WRITE(IFCFG,'(3F8.3,A)',IOSTAT=IOS,ERR=2)
+     &    SKYR,GRDR,BLDR,'   # views to sky ground buildings'
 
 C Write databases related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* DATABASES'

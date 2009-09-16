@@ -280,7 +280,6 @@ C  difference between the external ambient and surface temperatures.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C5R/SKYR,GRDR,BLDR
 
       COMMON/COE33/QELWP(MS),QELWF(MS)
       COMMON/COE33Z/QELWS(MCOM,MS)
@@ -392,16 +391,16 @@ C Set initial cloud cover = 0.4
 
 C << place to use connection based viewfactors >>
 C << props/propg/propb would be replaced by vfgr vfsk vfbl vfob >>
-      IF(IXPOS.NE.8)goto 101
+      IF(siteexposureindex.NE.8)goto 101
       PROPS(8)=SKYR
       PROPG(8)=GRDR
       PROPB(8)=BLDR
 
 C Depending on the Index of Exposure the proportions of the
 C surroundings are assigned new variable names.
-  101 AV=PROPB(IXPOS)
-      BV=PROPS(IXPOS)
-      CV=PROPG(IXPOS)
+  101 AV=PROPB(siteexposureindex)
+      BV=PROPS(siteexposureindex)
+      CV=PROPG(siteexposureindex)
 
 C For each surface calculate the ratio of sky vault,
 C surrounding building(s) and ground associated with the
@@ -899,7 +898,7 @@ C Sum all components.
         QELWF(I)=QELWFB(I)+QELWFK(I)+QELWFG(I)
 
 C Use equation of Berdahl and Martin, if INDEX OF EXPOSURE is 8
-C      IF(IXPOS.EQ.8)THEN
+C      IF(siteexposureindex.EQ.8)THEN
 C        QELWF(I)=QELWFB(I)+QELWFC(I)+QELWFG(I)
 C      ENDIF
 

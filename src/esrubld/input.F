@@ -39,7 +39,7 @@ C           2= plant only, 3= building and plant
 C xlat,   - Site latitude and the longitudinal difference between the 
 C xlon      site and the reference time zone (east +ve).
  
-C ixpos   - Site exposure index (site.h):
+C siteexposureindex - Site exposure index (site.h):
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
 C           4= city centre, equal sky, ground & building view factors
