@@ -2110,7 +2110,7 @@ C Images.
       character SSPARENT*12
       character ZN*12
       character ipvaction*3  ! to instruct it to read from external IPV file
-      logical ok,dok,ddok,found,XST,anyish,unixok
+      logical ok,dok,XST,anyish,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical allnew  ! if true then all zones are v1.1 or newer.
       logical forceupgrade  ! if any other zone is version 1.1
@@ -2453,46 +2453,6 @@ C string for the image documentation.
 C Update the model configuration file.
           CALL EMKCFG('-',IER)
 
-C Check if there were zone utility files and if so check and see if
-C they can be deleted.
-          found=.false.
-          if(ncomp.gt.0)then
-            do 2 iz=1,ncomp
-              if(INDUTL(iz).eq.1)then
-                XST=.false.
-                call FINDFIL(LUTIL(iz),XST)
-                if(XST)found=.true.
-              endif
-  2         continue
-            if(found)then
-              dok=.true.
-              h(1)='This must be an ancient ESP-r model. It has some'
-              h(2)='data held in an obsolete file and you should'
-              h(3)='allow this to be put in the current format.'
-              call askok('Remove legacy zone utility files?',' ',
-     &          ddok,dok,3)
-              do 4 iz=1,ncomp
-                if(INDUTL(iz).eq.1)then
-                  XST=.false.
-                  call FINDFIL(LUTIL(iz),XST)
-                  if(XST)then
-                    if(ddok)then 
-                      INDUTL(iz)=0
-                      call usrmsg('Removing file: ',LUTIL(iz),'-')
-                      CALL ERPFREE(IUF,ISTAT)
-                      CALL EFOPSEQ(IUF,LUTIL(iz),1,IER)
-                      CALL EFDELET(IUF,ISTAT)
-                    else
-                      INDUTL(iz)=0
-                      call usrmsg('Dereferencing file: ',LUTIL(iz),'-')
-                    endif
-                  endif
-                  CALL EMKCFG('-',IER)
-                  call usrmsg(' ',' ','-')
-                endif
-  4           continue
-            endif
-          endif
         else
           return
         endif

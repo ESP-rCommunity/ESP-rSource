@@ -116,7 +116,7 @@ C Uncertainty.
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse
-      logical foundutl,xst,clkok,havefile,unixok
+      logical xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
       logical newgeo  ! to use for testing if new/old geometry file.
       integer iglib   ! to test for X11 interface
@@ -126,13 +126,13 @@ C Uncertainty.
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
-      character LCFGF*72,H*72,ITEMS*34,t24*24,ETEXT*82
+      character LCFGF*72,H*72,ITEMS*34,ETEXT*82
       character NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,entflnam*72,upath*72,remainder*72
+      character selres*72,entflnam*72,upath*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
       character CXITM*43,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
@@ -356,42 +356,6 @@ C in older format.
           goto 89
         endif
         if(icfgv.eq.3.or.icfgv.eq.4)then
-          foundutl=.false.
-          DO 45 I=1,ncomp
-            if(INDUTL(I).ne.0)foundutl=.true.
-  45      CONTINUE
-          if(foundutl)then
-            CALL EASKAB(
-     &      'The loaded onfiguration file includes legacy utility',
-     &      'file names. Options:','Save in current format','continue',
-     &      IW,3)
-            if(IW.EQ.1)then
-              icfgv=4
-
-C Get root name and ensure that configuration file ends in .cfg.
-              lcfgr=lnblnk(LCFGF)
-              lcfgl=lcfgr-3
-              if(lcfgr.gt.4)then
-                if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-                  write(cfgroot,'(a)') LCFGF(1:lcfgl-1)
-                else
-                  write(cfgroot,'(a)') LCFGF(1:lcfgr)
-                  write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
-                endif
-              else
-                write(cfgroot,'(a)') LCFGF(1:lcfgr)
-                write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
-              endif
-              h(1)='This `root` name will be used in the creation'
-              h(2)='of model file names (control, connections etc).'
-              t24=cfgroot
-              CALL EASKS(t24,' ','Project root name (<24 chars)',
-     &                   24,'project','root name',IER,2)
-              if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
-            elseif(IW.eq.2)then
-              goto 3
-            endif
-          endif
 
 C Also check about connections file.
           if(ncon.gt.1)then

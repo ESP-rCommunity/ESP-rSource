@@ -7850,8 +7850,6 @@ C Update the connection list and then the model configuration.
       NZSUR(NCOMP)=NSUR
       NZTV(NCOMP)=NTV
       NCCODE(NCOMP)=NCOMP
-      INDUTL(NCOMP)=0
-      LUTIL(NCOMP)=' '
       ICCC=NCON
 
 C If surface attributes are adaibetic or similar then use these in

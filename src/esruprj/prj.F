@@ -174,7 +174,7 @@ C Name of current application
 
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
-      logical unixok,isdok,Vldtng,changedit,foundutl
+      logical unixok,isdok,Vldtng,changedit
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -1367,43 +1367,6 @@ C If configuration file format is version 3 then check to see if there
 C are any utility files. If found then ask is the user wants to save
 C in older format.
         if(icfgv.ge.3)then
-          foundutl=.false.
-          DO 45 I=1,ncomp
-            if(INDUTL(I).ne.0)foundutl=.true.
-  45      CONTINUE
-          if(foundutl)then
-            CALL EASKAB(
-     &      ' Configuration file loaded includes legacy utility file',
-     &      ' names. Options:','Update to current format','continue',
-     &      IW,3)
-            if(IW.EQ.1)then
-              icfgv=4
-
-C Get root name and ensure that configuration file ends in .cfg.
-              lcfgr=lnblnk(LCFGF)
-              lcfgl=lcfgr-3
-              if(lcfgr.gt.4)then
-                if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-                  write(cfgroot,'(a)') LCFGF(1:lcfgl-1)
-                else
-                  write(cfgroot,'(a)') LCFGF(1:lcfgr)
-                  write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
-                endif
-              else
-                write(cfgroot,'(a)') LCFGF(1:lcfgr)
-                write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
-              endif
-              h(1)='This `root name` will be used to create'
-              h(2)='system level file names (control, connections).'
-              h(3)='It is derived from the configuration file name.'
-              t24=cfgroot
-              CALL EASKS(t24,' Root name for the project?',
-     &         '(single word <24 char)',24,'project','root name',IER,3)
-              if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
-            elseif(IW.eq.2)then
-              goto 3
-            endif
-          endif
 
 C Also check about connections file.
           if(ncon.gt.1)then

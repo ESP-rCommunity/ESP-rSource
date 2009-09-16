@@ -58,8 +58,6 @@ C nccode  - zone code (for eventual database reference)
 C lproj   - zone scheduling (operation file)
 C lgeom   - zone geometry file      
 C lthrm   - zone construction file
-C indutl  - Zone utilities file index: 0= none 1= zone utility file supplied
-C lutil   - Zone utilities file name.
  
 C ncon    - total number of intra-zone connections
  

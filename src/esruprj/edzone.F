@@ -681,8 +681,6 @@ C Update the connection list and then the model configuration.
         NZSUR(NCOMP)=NSUR
         NZTV(NCOMP)=NTV
         NCCODE(NCOMP)=NCOMP
-        INDUTL(NCOMP)=0
-        LUTIL(NCOMP)=' '
         if(OKC)then
           icascf(NCOMP)=0
           call CTLWRT(ICTLF,IER)
@@ -1509,8 +1507,6 @@ C and zone based data.
         LGEOM(IX)=LGEOM(IX+1)
         LTHRM(IX)=LTHRM(IX+1)
         LSHAD(IX)=LSHAD(IX+1)
-        INDUTL(IX)=INDUTL(IX+1)
-        LUTIL(IX)=LUTIL(IX+1)
         LVIEW(IX)=LVIEW(IX+1)
         LHCCO(IX)=LHCCO(IX+1)
         LTWIN(IX)=LTWIN(IX+1)

@@ -95,8 +95,6 @@ C NCCODE  - zone code (for eventual database reference).
 C LPROJ   - zone scheduling (operation file).
 C LGEOM   - zone geometry file.
 C LTHRM   - zone construction file.
-C INDUTL  - Zone utilities file index: 0= none 1= zone utility file supplied
-C LUTIL   - Zone utilities file name (legacy file).
 
 C NCON    - total number of intra-zone connections.
 C IC1 &   - zone and surface numbers defining the start
@@ -516,7 +514,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       character lradcf*72
-      CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
+      CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
@@ -543,6 +541,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character HDR*12
       character ipvact*3   ! to singnal internal or external IPV file
       character pstring*40 ! for season days and months
+      integer INDU    ! to detect old zone utility files
       logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
@@ -2020,7 +2019,9 @@ C Zone file names.
         elseif(WORD(1:4).eq.'*con')then
           LTHRM(icomp)=text(1:72)
         elseif(WORD(1:4).eq.'*utl')then
-          indutl(icomp)=1
+          msgl2='This is no longer supported. Skipping...'
+          call usrmsg('Detected a ANCIENT zone utility file.',
+     &      msgl2,'W')
         elseif(WORD(1:4).eq.'*obs')then
           iobs(icomp)=1
           ZOBS(icomp)=text(1:72)
@@ -2198,23 +2199,17 @@ C in then proceed to check zone names.
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'utility flag',IER)
           IF(IER.NE.0)goto 1
           K=0
-          CALL EGETWI(OUTSTR,K,INDUTL(ICOMP),0,1,'F','utility flg',IER)
+          CALL EGETWI(OUTSTR,K,INDU,0,1,'F','utility flg',IER)
           IF(IER.NE.0) GOTO 1
 
-C Read utility file name and scan files into common.
-          LUTIL(ICOMP)=' '
-          if(INDUTL(ICOMP).EQ.1)then
-            CALL STRIPC(IUC,OUTSTR,0,ND,1,'utility file',IER)
-            IF(IER.NE.0)goto 1
-            LOCUTIL=OUTSTR(1:72)
-            call FINDFIL(LOCUTIL,XST)
-            if(XST)then
-              CALL ERUTIL(IUF,LOCUTIL,ICOMP,IER)
-            else
-              msgl2='  '
-              CALL USRMSG(' utility file not found ',msgl2,'W')
-            endif
-            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+C Warn user about old utility file.
+          if(INDU.EQ.1)then
+            call edisp(iuout,'Manual update: edit the entries in the')
+            call edisp(iuout,'zone utility file and add them to the')
+            call edisp(iuout,'model cfg file via a text editor.')
+            msgl2='This is no longer supported. Skipping...'
+            call usrmsg('Detected a ANCIENT zone utility file.',
+     &        msgl2,'W')
           endif
    20   CONTINUE
       endif
