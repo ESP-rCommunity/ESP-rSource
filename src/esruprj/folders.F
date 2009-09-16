@@ -39,6 +39,7 @@ C menu (72 char) brief title of model
       subroutine pregist(act,root,mpath,folder,menu,ier)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "espriou.h"
 C espriou.h provides currentfile and MFFOLD.
       
@@ -52,8 +53,6 @@ C espriou.h provides currentfile and MFFOLD.
       common/C1/NCOMP,NCON
       common/C4/XLAT,XLON
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv

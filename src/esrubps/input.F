@@ -39,7 +39,7 @@ C           2= plant only, 3= building and plant
 C xlat,   - Site latitude and the longitudinal difference between the 
 C xlon      site and the reference time zone (east +ve).
  
-C ixpos   - Site exposure index :
+C ixpos   - Site exposure index (from site.h):
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
 C           4= city centre, equal sky, ground & building view factors
@@ -167,6 +167,7 @@ C                         use the inside surface node temperature
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
+#include "site.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
@@ -200,8 +201,6 @@ C Path to model and command line file name.
       common/rpath/path
       common/rcmd/LCMDFL
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/c6/indcfg
       common/CFGV/icfgv
 

@@ -4413,6 +4413,7 @@ C << message to user that such a file does not exist
       SUBROUTINE VERMAN(APE,ILM,LRCR)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "ipvdata.h"
@@ -4438,8 +4439,6 @@ C Path to model and command line file (if any).
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 

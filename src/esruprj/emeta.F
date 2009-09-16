@@ -1124,6 +1124,7 @@ C and act on the information within the file.
        PARAMETER (MSZ=10) 
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -1142,6 +1143,7 @@ C seasons.h provides typper and typsea
       COMMON/C4/XLAT,XLON
       COMMON/FILEP/IFIL
 
+C Data from site.h:
 C GREF    - External ground reflectivity.
 C GREF12  - (12) Monthly values of ground reflectivity
 C ITGREF  - Type of ground reflectivity model
@@ -1151,8 +1153,6 @@ C           3= advanced model (monthly albedo, snow depth read from file)
 C SREF    - Snow reflectivity
 C NSNOW   - (12) Monthly values of number of days with snow on ground
 C SNFNAM  - *72 Name of the file containing hourly snow depth information
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON
@@ -2403,6 +2403,7 @@ C the file with minimum interaction.
        PARAMETER (MSZ=10) 
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -2420,17 +2421,6 @@ C seasons.h provides typper and typsea
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C4/XLAT,XLON
 
-C GREF    - External ground reflectivity.
-C GREF12  - (12) Monthly values of ground reflectivity
-C ITGREF  - Type of ground reflectivity model
-C           1= constant albedo
-C           2= simple model (monthly albedo, number of days with snow on ground
-C           3= advanced model (monthly albedo, snow depth read from file)
-C SREF    - Snow reflectivity
-C NSNOW   - (12) Monthly values of number of days with snow on ground
-C SNFNAM  - *72 Name of the file containing hourly snow depth information
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON

@@ -31,6 +31,7 @@ C ioout (integer) is the file unit to write to
 C ver (real) should be 1.2, 1.3, 1.4 or 2.0
 #include "building.h"
 #include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/GS5/GS6.
 #include "geometry.h"
@@ -52,8 +53,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C4/XLAT,XLON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
 
 C SKYR viewfactor from external surfaces to the sky
 C GRDR viewfactor from external surfaces to the ground

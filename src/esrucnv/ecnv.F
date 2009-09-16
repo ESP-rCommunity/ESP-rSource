@@ -1420,6 +1420,7 @@ C << to write only the header portion.
       subroutine mksyshd(LOUT,ier)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -1428,8 +1429,6 @@ C << to write only the header portion.
 
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF

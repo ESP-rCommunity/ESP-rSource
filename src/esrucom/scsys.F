@@ -25,6 +25,7 @@ C been checked elsewhere.
       SUBROUTINE ESCSYS(FILE,IUC,IUF,IER)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "net_flow.h"
 #include "tdf2.h"
@@ -61,8 +62,6 @@ C espriou.h provides currentfile.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP

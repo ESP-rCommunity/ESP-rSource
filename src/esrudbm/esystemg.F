@@ -45,6 +45,7 @@ C ICFGV   - version of the model configuration file.
 C XLAT,   - Site latitude and the longitudinal difference between the 
 C XLON      site and the reference time zone (east +ve).
 
+C Data from site.h:
 C IXPOS   - Site exposure index :
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
@@ -116,6 +117,7 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
       SUBROUTINE ERSYSG(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/prec2/precz/c20.
 #include "geometry.h"
@@ -170,8 +172,6 @@ C xlat,   - Site latitude and the longitudinal difference between the
 C xlon      site and the reference time zone (east +ve).
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
 
 C SKYR viewfactor from external surfaces to the sky
 C GRDR viewfactor from external surfaces to the ground
@@ -2490,12 +2490,11 @@ C SITEINFO provides an English description of the site information in
 C common blocks C4, C5, C5R, PREC8 which are filled by reading the
 C system configuration file.
       SUBROUTINE SITEINFO(ITRU)
+#include "site.h"
       
       integer lnblnk  ! function definition
 
       COMMON/C4/XLAT,XLON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
       CHARACTER POS*124,OUTSTR*124,sdesc*16
 

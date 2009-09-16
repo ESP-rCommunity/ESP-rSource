@@ -2546,9 +2546,7 @@ C  and ground reflected components.
 
       SUBROUTINE MZSRAD0(SLOPE,QD,QF,CAI,SRADDO,SRADF,SKYDIF,GRDDIF)
 #include "building.h"
-
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER SNFNAM*72
+#include "site.h"
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
@@ -3333,14 +3331,8 @@ C-----------------------------------------------------------------------
       
 C ESP-r Commons      
 #include "building.h"
-      INTEGER IXPOS
-      REAL GREF         ! actual snow covered ground reflectivity for the hour
-      INTEGER ITGREF    ! flag for ground reflectivity model used
-      REAL GREF12       ! no snow ground reflectivity for each month
-      REAL SREF         ! uncorrected snow covered ground reflectivity
-      INTEGER NSNOW     ! monthly number of days with snow on the ground
-      CHARACTER*72 SNFNAM ! snow depth file name 
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+#include "site.h"
+C site.h has common C5
 
       REAL BTIMEP,BTIMEF ! Present and future building side time step
                          ! Number between 0. and 24.            
@@ -3519,15 +3511,8 @@ C     DECLARATIONS
 C-----------------------------------------------------------------------
       
 C ESP-r Commons
-      INTEGER IXPOS
-      REAL GREF         ! actual snow covered ground reflectivity 
-                        ! for the hour
-      INTEGER ITGREF    ! flag for ground reflectivity model used
-      REAL GREF12       ! no snow ground reflectivity for each month
-      REAL SREF         ! uncorrected snow covered ground reflectivity
-      INTEGER NSNOW     ! monthly number of days with snow on the ground
-      CHARACTER*72 SNFNAM ! snow depth file name       
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+#include "site.h"
+C site.h has common C5
 
       INTEGER IFIL      ! Unit number used for processing input/output files      
       COMMON/FILEP/IFIL
@@ -3658,6 +3643,8 @@ C     DECLARATIONS
 C-----------------------------------------------------------------------
       
 C ESP-r Commons      
+#include "site.h"
+C site.h has common C5
       REAL GTP,GTF,QGLP,QGLF,QGGP,QGGF,GC,
      &TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH,
      &TBSUTH,TBEAST,TBWEST
@@ -3667,15 +3654,6 @@ C ESP-r Commons
 
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-
-      INTEGER IXPOS
-      REAL GREF         ! actual snow covered ground reflectivity for the hour
-      INTEGER ITGREF    ! flag for ground reflectivity model used
-      REAL GREF12       ! no snow ground reflectivity for each month
-      REAL SREF         ! uncorrected snow covered ground reflectivity
-      INTEGER NSNOW     ! monthly number of days with snow on the ground
-      CHARACTER*72 SNFNAM ! snow depth file name        
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
 
       REAL SAZI,SALT    ! solar azimuth and altitude in degrees
       INTEGER ISUNUP    ! flag indicating whether sun is up or down

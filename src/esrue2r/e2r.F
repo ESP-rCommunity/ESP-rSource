@@ -1155,6 +1155,7 @@ C *************** MODLSU ***************
 C MODLSU read in supplied configuration file and set up paths.
       subroutine MODLSU
 #include "building.h"
+#include "site.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -1176,8 +1177,6 @@ C Path to model.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/GTFIL/GTGEOM
 

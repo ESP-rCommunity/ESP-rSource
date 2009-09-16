@@ -64,6 +64,7 @@ C in a new model file.
       SUBROUTINE CLRPRB
 #include "building.h"
 #include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "geometry.h"
@@ -112,8 +113,6 @@ C HOT3000: AIM-2.
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C4/XLAT,XLON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
       common/cctl/icascf(mcom)

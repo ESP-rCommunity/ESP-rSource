@@ -39,7 +39,7 @@ C           2= plant only, 3= building and plant
 C xlat,   - Site latitude and the longitudinal difference between the 
 C xlon      site and the reference time zone (east +ve).
  
-C ixpos   - Site exposure index :
+C ixpos   - Site exposure index (site.h):
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
 C           4= city centre, equal sky, ground & building view factors
@@ -48,7 +48,7 @@ C              buildings
 C           6= rural site, isolated; 7= totally enclosed building
 C           8= user defined
  
-C gref    - external ground reflectivity
+C gref    - external ground reflectivity (site.h)
  
 C modeltitle - the name of the entire system
  
@@ -99,6 +99,7 @@ C laprob  - fluid flow description file
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
+#include "site.h"
 #include "plant.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
@@ -119,8 +120,6 @@ C Path to model and command line file name.
       common/rpath/path
       common/rcmd/LCMDFL
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/c6/indcfg
       common/CFGV/icfgv
 

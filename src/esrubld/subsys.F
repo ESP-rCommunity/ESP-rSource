@@ -250,6 +250,7 @@ C  difference between the external ambient and surface temperatures.
 
       SUBROUTINE MZELWE(ICOMP)
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 #include "CFC_common.h"
       
@@ -279,8 +280,6 @@ C  difference between the external ambient and surface temperatures.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       COMMON/C5R/SKYR,GRDR,BLDR
 
       COMMON/COE33/QELWP(MS),QELWF(MS)

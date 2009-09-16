@@ -29,6 +29,7 @@ C the current model.
       subroutine prjqa(ier)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/G7/prec2/precz/c20.
 #include "geometry.h"
@@ -59,8 +60,6 @@ C espriou.h provides currentfile.
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C4/XLAT,XLON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/C5R/SKYR,GRDR,BLDR
       common/C6/INDCFG
       common/C14/UGRDTP(12,MGRDP),NGRDP
