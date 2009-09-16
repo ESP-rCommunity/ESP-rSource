@@ -774,7 +774,6 @@ C geometry.h provides commons G0 and G2.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C3F/LCNN
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
@@ -795,7 +794,6 @@ C Remember width of file/folder names passed back from getfilelist.
 
       character*72 path,LFIL,odir
       character LCFGF*72,H*72,cfgroot*24
-      character*72 LCNN
       character doit*248,tfile*72,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20

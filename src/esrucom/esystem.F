@@ -196,9 +196,6 @@ C IFIL base file unit number (set in MAIN of each application).
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
-C LCNN (72 char) model connections file name.
-      common/C3F/LCNN
-
 C xlat,   - Site latitude and the longitudinal difference between the 
 C xlon      site and the reference time zone (east +ve).
       COMMON/C4/XLAT,XLON
@@ -505,7 +502,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
-      CHARACTER*72 LCFD,LCNN
+      CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
       character lworking*144

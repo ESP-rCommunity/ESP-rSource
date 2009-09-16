@@ -63,7 +63,6 @@ C LPRFDB,IPRODB (for event profile database)
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C3F/LCNN
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -122,7 +121,6 @@ C Uncertainty.
       integer iglib   ! to test for X11 interface
 
       dimension ITEMS(29)
-      character*72 LCNN
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144

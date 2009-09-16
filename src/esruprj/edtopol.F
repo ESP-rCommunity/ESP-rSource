@@ -55,7 +55,6 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -94,7 +93,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       CHARACTER CXSTR*78,H*72,outs*124,ITEMS1*34,CFGFN*72
       CHARACTER LCFGF*72
       character cfgroot*24
-      character DCNN*72,LCNN*72
+      character DCNN*72
       character bl*2
 
 C Check if Unix-based or DOS based.
@@ -784,7 +783,6 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/RAY6/LINSTY(MCON)
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -817,7 +815,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER H*72
-      character LCNN*72,DCNN*72,cfgroot*24,LCFGF*72,bl*2
+      character DCNN*72,cfgroot*24,LCFGF*72,bl*2
       integer izselfcheck  ! the surface being tested
       logical selfcheck  ! set true if currently looking within zone
 

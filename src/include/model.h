@@ -13,6 +13,10 @@ C The title and summary of the model
       character LTHRM*72 ! zone construction file
       COMMON/C2/LPROJ(MCOM),LGEOM(MCOM),LSHAD(MCOM),LTHRM(MCOM)
 
+C Files associated with the model configuration file.
+      character LCNN*72  ! model connections file name.
+      common/C3F/LCNN
+
 C Indicators for locations or existance of zone supplimental files.
       integer IVF  ! zone view factor file zero is not used, one exists 
       integer ISI  ! zone shading/insolation file zero is not used, one exists

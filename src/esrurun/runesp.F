@@ -63,7 +63,6 @@ C ************************************************************
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -122,7 +121,6 @@ C Uncertainty.
       character LUALF*72,LCNG*15,LLOC*15
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character*72 LCNN
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2

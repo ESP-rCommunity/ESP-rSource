@@ -43,7 +43,6 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C3F/LCNN
       common/CFGV/icfgv
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -57,7 +56,7 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
       DIMENSION XX(MS),YY(MS),ndum(MS),ddum(MS),ngld(MS)
       CHARACTER OUTSTR*124,WORD*20,phrase*64
       CHARACTER*72 upgcfg,LCFGF
-      character GFILE*72,ZN*12,outs*124,tmp*124,LCNN*72,cfgroot*24
+      character GFILE*72,ZN*12,outs*124,tmp*124,cfgroot*24
       character oformat*24,head*4,LOUT*72,SOTF*4,SN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,dstmp*24

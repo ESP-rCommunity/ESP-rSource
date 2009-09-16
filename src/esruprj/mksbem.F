@@ -1624,7 +1624,6 @@ C model.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -1656,7 +1655,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER SSPARENT*12,SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,LCNN*72,NNAME*72,H*72
+      CHARACTER LCFGF*72,NNAME*72,H*72
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       CHARACTER OUTS*124,GUESS*24,ADF*124,SNM*12,SNM2*12,USE*8,USE2*8
       character doit*248,guesstype*24,dinstpath*48

@@ -111,7 +111,6 @@ C HOT3000: AIM-2.
       common/aim2def/iAIM2,LAIM2
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
       common/C4/XLAT,XLON
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
       CHARACTER*72 SNFNAM
@@ -240,7 +239,7 @@ C   losspercent and is assumed to apply to all zones in the model.
 
 C IPV data comes via ipvdata.h
       
-      CHARACTER*72 LCFD,LCNN
+      CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPRJLG,LPNF
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12

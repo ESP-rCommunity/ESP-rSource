@@ -68,7 +68,6 @@ C ESP-r commons.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
       COMMON/C6/INDCFG
       common/CFGV/icfgv
       common/C21/IFCFG,cfgroot,LCFGF
@@ -108,7 +107,7 @@ C Material data array.
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
       character RZNAME*24,head*4,ZN*12,LTMP*144
-      character path*72,upath*72,LCNN*72
+      character path*72,upath*72
       character upgcfg*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -1427,7 +1426,6 @@ C << to write only the header portion.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/C3F/LCNN
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
@@ -1469,7 +1467,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER LCFGF*72
-      CHARACTER LCNN*72,LPRJLG*72,LOUT*72
+      CHARACTER LPRJLG*72,LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24

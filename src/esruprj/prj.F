@@ -77,7 +77,6 @@ C IEEE callback (Solaris)
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C3F/LCNN
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
@@ -181,7 +180,7 @@ C Name of current application
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
       character*72 LCFGF,H,LPRJLG
-      character*72 LCNN,LTMP
+      character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124,outs248*248
       character path*72,upath*72,cfgroot*24,exemplar*144
@@ -4426,7 +4425,6 @@ C Path to model and command line file (if any).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
       common/FILEP/IFIL
       common/IPVF/lipvdatf
@@ -4456,7 +4454,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       dimension ivalsv(MCOM),ivalsg(MCOM)
 
       character*72 sblres,sflres,splres,smstres,sipvres,selres
-      character CNTMFIL*72,LCNN*72
+      character CNTMFIL*72
       CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
       CHARACTER*72 LAPROB
