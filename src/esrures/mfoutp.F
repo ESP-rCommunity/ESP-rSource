@@ -483,7 +483,7 @@ C Empty bins of hits.
 C Write graph head and set up axis positions and draw.
         call MOMFGHED
         call AXISPOS
-        call AXISDRW(TSTART-1.0,TFINSH,ALABEL,'-')
+        call AXISDRW(TSTART,TFINSH,ALABEL,'-')
       endif
 
 C Recover and plot data. If listing to file or text feedback then
@@ -1128,6 +1128,7 @@ C (absolute value of INODE).
       SUBROUTINE ASKMFCON(INODE,NNPK,ICPK)
 #include "net_flow.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1139,6 +1140,7 @@ C (absolute value of INODE).
 
       CHARACTER H*72,VRT(MCNN)*43
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
+      character outs*124
       logical unixok
 
 C Set up array of menu strings.
@@ -1184,14 +1186,19 @@ C Act silently.
  40     continue
       endif
 
-C Debug...
+C Give feedback to user on selected entities.
       call isunix(unixok)
+      call edisp(iuout,'Selected flow entities are:')
+      call edisp(iuout,' node         node         component')
       do 30 I=1,NNPK
         IP=NODPS(ICPK(I))
         IN=NODNE(ICPK(I))
         IC=ITPCON(ICPK(I))
-        if(unixok)write(6,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
-     &    CMNAM(IC)
+        if(unixok)then
+	  write(outs,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
+     &      CMNAM(IC)
+          call edisp(iuout,outs)
+        endif
  30   continue
 
       return
