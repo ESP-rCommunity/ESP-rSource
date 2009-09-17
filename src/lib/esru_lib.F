@@ -187,6 +187,7 @@ C           an external file
 C  SDELIM:  Replaces blanks in a string A with alternative delimiter.
 C  EDDISP:  As edisp with text separated with current delimiter.
 C EDISP248 Displays a 248 char block of text (text or graphic).
+C EDDISP248 Displays a 248 char block of text (text or graphic) with current delimiter.
 C clrtextbuf: Clears the graphic text buffer common blocks.
 
 C  UPDVIEW: Called from C to pass back updates to common VIEWPX & GFONT
@@ -6416,6 +6417,33 @@ C Tagging is handled when the initial string is created.
         if (delim.eq.'X') dg='C'
         call SDELIM(MSG,WWMSG,dg,IW)
         call edisp(itru,WWMSG)
+      endif
+      return
+      END
+
+C ********************* EDDISP248
+C EDDISP248 is a generic routine which displays long lines of text passed
+C to it in a format depending on the terminal type and the currently set
+C delimiter:
+      SUBROUTINE EDDISP248(ITRU,MSG,iwid)
+      common/exporttg/xfile,tg,delim
+      COMMON/EXPORTI/ixopen,ixunit,ixpunit
+      CHARACTER*(*) MSG
+      CHARACTER WWMSG*248
+      character xfile*144,tg*1,delim*1,dg*1
+      integer iwid
+
+C If delimiter set to alternative then process text before edisp call.
+      if(delim.eq.'-')then
+        call edisp248(itru,MSG,iwid)
+      else
+
+C If using X delimeter (tagged data) then set the delimeter to a comma.
+C Tagging is handled when the initial string is created.
+        dg=delim
+        if (delim.eq.'X') dg='C'
+        call SDELIM(MSG,WWMSG,dg,IW)
+        call edisp248(itru,WWMSG,iwid)
       endif
       return
       END

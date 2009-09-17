@@ -3535,7 +3535,8 @@ C For types -6 writes to ICOUT,
 C For type 8 manages the text which is passed to egdisp for
 C treatment as a scrolling window.
 C Use egdispclr to clear the display window on a new page.
-C The maximum width of text which can be accommodated is 124 characters.
+C The maximum width of text which can be accommodated to a graphic
+C context is 124 characters.
       SUBROUTINE EDISP(ITRU,MSG)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
