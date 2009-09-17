@@ -2528,6 +2528,15 @@ C Site related local variables.
       integer isilentncf !silent decide how many control functions needed
       character tab*1
       integer lnzp,lnnp,lncp,lndcp,lndbp ! lengths of paths to model folders
+
+C  The following data statements carry the proportions of
+C  surrounding buildings, sky vault and ground assumed
+C  to be seen by a vertical surface for a particular site
+C  defined by the Index of Exposure.
+      DIMENSION PROPB(8),PROPS(8),PROPG(8)
+      DATA PROPB/0.28,0.18,0.1,0.34,0.52,0.0,1.0,0.0/
+      DATA PROPS/0.36,0.41,0.45,0.33,0.15,0.5,0.0,0.0/
+      DATA PROPG/0.36,0.41,0.45,0.33,0.33,0.5,0.0,0.0/
         
       IER=0
 
@@ -2598,6 +2607,16 @@ C The hourlysnowfile is SNFNAM.
       write(hourlysnowfile,'(a)') SNFNAM
       sitelat=XLAT
       sitelongdif=XLON
+
+C Depending on the Index of Exposure the proportions of the
+C surroundings are assigned new variable names.
+      if(siteexposureindex.eq.8)then
+        continue
+      else
+        buildingview=PROPB(siteexposureindex)
+        skyview=PROPS(siteexposureindex)
+        groundview=PROPG(siteexposureindex)
+      endif
 
 C Number of days with snow on the ground (if ground refl model 2)
       if(groundreflmodel.EQ.2)then
