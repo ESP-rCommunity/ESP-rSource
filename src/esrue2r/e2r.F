@@ -1217,7 +1217,7 @@ C Configuration file and path are held in common/rcmd/LCMDFL
       if(IER.eq.0)then
         call inqu_tmc
         CFGOK=.TRUE.
-        rgrfl=GREF
+        rgrfl=groundrefl
         NZONES=NCOMP
         ITRC=0
         ISFSUM=0

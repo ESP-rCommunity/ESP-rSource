@@ -2600,7 +2600,7 @@ C and absorption.
 C  The ground reflected component: assume isotropic
 C  ground conditions.
       SRADT=QF+(QD*SIN(SALT*R))
-      GRDDIF=0.5*GREF*(1.0-COS(BETA*R))*SRADT
+      GRDDIF=0.5*groundrefl*(1.0-COS(BETA*R))*SRADT
 
 C  The sky diffuse component.
       SKYDIF=QF*0.5*(1.0+COS(BETA*R))
@@ -2636,7 +2636,7 @@ C and absorption.
 C  The ground reflected component: assume isotropic
 C  ground conditions.
       SRADT=ADJF+(ADJD*SIN(SALT*R))
-      GRDDIF=0.5*GREF*(1.0-COS(BETA*R))*SRADT
+      GRDDIF=0.5*groundrefl*(1.0-COS(BETA*R))*SRADT
 
 C  The sky diffuse component.
       SKYDIF=ADJF*0.5*(1.0+COS(BETA*R))
@@ -2684,7 +2684,7 @@ C if SRADDO is less than 5 W/m2 or if solar altitude <3deg.
 C  The ground reflected component : assume isotropic
 C  ground conditions.
       SRADT=QF+(QD*SIN(SALT*R))
-      GRDDIF=0.5*GREF*(1.0-COS(BETA*R))*SRADT
+      GRDDIF=0.5*groundrefl*(1.0-COS(BETA*R))*SRADT
 
       ENDIF
 C *** END Muneer.
@@ -2784,7 +2784,7 @@ C and absorption.
 C The ground reflected component: assume isotropic
 C ground conditions.
       SRADT=QF+(QD*SIN(SALT*R))
-      GRDDIF=0.5*GREF*(1.0-COS(BETA*R))*SRADT
+      GRDDIF=0.5*groundrefl*(1.0-COS(BETA*R))*SRADT
       ENDIF
 C *** END Perez 1987.
 
@@ -2857,7 +2857,7 @@ C and absorption.
 C The ground reflected component: assume isotropic
 C ground conditions.
       SRADT=QF+(QD*SIN(SALT*R))
-      GRDDIF=GREF*(1.0-COS(BETA*R))*SRADT/2.
+      GRDDIF=groundrefl*(1.0-COS(BETA*R))*SRADT/2.
       ENDIF
 C *** END Perez 1990 model.
 
@@ -3319,7 +3319,7 @@ C              for ESP-r" Prepared Levelton Consultants, Richmond B.C.,
 C              for Natural Resources Canada, June 30th 2005.
 
 C OUTPUTS:
-C       GREF   actual snow reflectivity for the hour         
+C       groundrefl   actual snow reflectivity for the hour         
 C *********************************************************************
       SUBROUTINE MZGREF
 
@@ -3382,12 +3382,12 @@ C Ground reflectivity is a weighted average of the no-snow and
 C snow reflectivities. The weighting factor is the fraction of
 C the month with snow on the ground.
 
-      IF (ITGREF.EQ.2) THEN
+      IF (groundreflmodel.EQ.2) THEN
         IDYAUX=IDYP                    ! day of year
         IF(IHRF.EQ.1) IDYAUX=IDYF      ! end of day: use next day
         CALL EDAYR(IDYAUX,ID,IM)       ! calculate day and month
-        AUX=MAX(MIN(FLOAT(NSNOW(IM))/FLOAT(MONTH(IM)),1.),0.)
-        GREF=GREF12(IM)*(1.-AUX)+SREF*AUX
+        AUX=MAX(MIN(FLOAT(dayswithsnow(IM))/FLOAT(MONTH(IM)),1.),0.0)
+        groundrefl=groundreflmonth(IM)*(1.-AUX)+snowgroundrefl*AUX
 
 C CASE 3: ADVANCED MODEL
 C If snow depth is 5 cm or more:
@@ -3401,7 +3401,7 @@ C If snow depth is less than 5 cm, use a weighted average of the
 C no-snow and snow reflectivities (snow depth being used as the 
 C weighting factor), and assume the snow is melting
 
-      ELSEIF (ITGREF.EQ.3) THEN
+      ELSEIF (groundreflmodel.EQ.3) THEN
  
 C Get current day and hour and see if snow properties need to be reevaluated.
         IDYAUX=IDYP                    ! day of year
@@ -3422,7 +3422,7 @@ C Determine whether there is snow melt.
           
 C Recalculate snow reflectivity as if snow depth is greater than 5 cm.
           IF (SNDEP.GT.SNDEPLS) THEN
-            SREFP=SREF
+            SREFP=snowgroundrefl
           ELSEIF (SNMLT) THEN
             SREFP=SREFLS*(.97**.04166666)
           ELSE
@@ -3431,9 +3431,9 @@ C Recalculate snow reflectivity as if snow depth is greater than 5 cm.
 
 C Calculate actual snow reflectivity, depending on snow depth.
           IF (SNDEP.GT.5.) THEN
-            GREF = SREFP
+            groundrefl = SREFP
           ELSE
-            GREF=GREF12(IM)*(1.-SNDEP/5.)+SREFP*SNDEP/5.
+            groundrefl=groundreflmonth(IM)*(1.-SNDEP/5.)+SREFP*SNDEP/5.
           ENDIF
           
 C Save snow reflectivity information.
@@ -3445,7 +3445,7 @@ C Save snow reflectivity information.
       ENDIF
 
 C Pass time step ground reflectivity for XML output.
-      call add_to_xml_reporting(GREF,
+      call add_to_xml_reporting(groundrefl,
      &  'Building/Ground_Reflectivity','units','dimensionless',
      &  'Reflectivity of the ground for solar radiation')
 
@@ -3467,10 +3467,10 @@ C Subroutine and simulation time info
       CALL DAYCLK(IDYP,BTIMEF,ITU)
 
 C Print ground reflectivity and, if advanced model, snow depth ground. 
-      IF (ITGREF.LE.2) THEN
-        WRITE(OUTS,910) GREF
+      IF (groundreflmodel.LE.2) THEN
+        WRITE(OUTS,910) groundrefl
       ELSE
-        WRITE(OUTS,920) GREF,SNDEP
+        WRITE(OUTS,920) groundrefl,SNDEP
       ENDIF
       CALL EDISP(ITU,OUTS)
       GOTO 9999
@@ -3532,7 +3532,7 @@ C Local variables
 
 C Set default error code and return if not advanced albedo model
       IER=0
-      IF (ITGREF.NE.3) RETURN
+      IF (groundreflmodel.NE.3) RETURN
 
 C CHECK EXISTENCE OF FILE, ASK FOR NEW FILE IF NOT FOUND, EXIT WITH
 C ERROR IF CANNOT BE FOUND
@@ -3696,7 +3696,7 @@ C (direct and diffuse), convection heat transfer between the
 C snow surface and the ambient air, longwave radiation exchange
 C with the sky, conduction through the snow layer, and conduction
 C to the ground surface.
-      TSNOW=((1.-GREF)*QT+4*ESNOW*SBC*(TSKY**4)
+      TSNOW=((1.-groundrefl)*QT+4*ESNOW*SBC*(TSKY**4)
      &       +GHTC*(TP+ZEROK)+(KSNOW/(SNDEP*CMTOM))*(GTF(1)+ZEROK))
      &      /(4*ESNOW*SBC*(TSKY**3)+GHTC+KSNOW/(SNDEP*CMTOM))
       TSNOW=TSNOW-ZEROK   

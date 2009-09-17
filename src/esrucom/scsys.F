@@ -441,7 +441,7 @@ C Get site exposure and ground reflectance.
       K=0
       CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
      &  'Site exposure index',IER)
-      CALL EGETWR(OUTSTR,K,GREF,0.,1.,'W','Ground reflect',IER)
+      CALL EGETWR(OUTSTR,K,groundrefl,0.,1.,'W','Ground reflect',IER)
       IF(IER.NE.0) GOTO 1
 
 C Index of exposure has user defined data associated with it.
@@ -449,9 +449,10 @@ C Index of exposure has user defined data associated with it.
         CALL STRIPC(IUC,OUTSTR,3,ND,1,'user defined site exposure',IER)
         IF(IER.NE.0)goto 1
         K=0
-        CALL EGETWR(OUTSTR,K,SKYR,0.,1.,'W','Sky expos',IER)
-        CALL EGETWR(OUTSTR,K,GRDR,0.,1.,'W','Ground expos',IER)
-        CALL EGETWR(OUTSTR,K,BLDR,0.,1.,'W','Building expos',IER)
+        CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky view',IER)
+        CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W','Ground view',IER)
+        CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W','Building view',
+     &    IER)
         IF(IER.NE.0) GOTO 1
       ENDIF
 
@@ -499,18 +500,20 @@ C Read databases until '* PROJ LOG' found.
       elseif(WORD(1:5).eq.'*gref')then
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
-        CALL EGETWI(OUTSTR,K,ITGREF,1,3,'F','ground refl. model',IER)
+        CALL EGETWI(OUTSTR,K,groundreflmodel,1,3,'F',
+     &    'ground reflection model',IER)
         DO 441 I=1,12
-          CALL EGETWR(OUTSTR,K,GREF12(I),0.,1.,'W',
+          CALL EGETWR(OUTSTR,K,groundreflmonth(I),0.,1.,'W',
      &      'monthly gr. refl.',IER)
   441   CONTINUE
-        CALL EGETWR(OUTSTR,K,SREF,0.,1.,'W','snow refl.',IER)  
+        CALL EGETWR(OUTSTR,K,snowgroundrefl,0.,1.,'W','snow refl.',IER)  
 
       elseif(WORD(1:5).eq.'*snow')then
 
 C Number of days with snow on the ground (if ground refl model 2)
         DO 442 I=1,12
-          CALL EGETWI(OUTSTR,K,NSNOW(I),0,31,'W','days with snow',IER)
+          CALL EGETWI(OUTSTR,K,dayswithsnow(I),0,31,'W',
+     &      'days with snow each month',IER)
   442   CONTINUE
 
       elseif(WORD(1:5).eq.'*sndf')then

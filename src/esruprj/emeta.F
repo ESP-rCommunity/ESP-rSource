@@ -1144,15 +1144,15 @@ C seasons.h provides typper and typsea
       COMMON/FILEP/IFIL
 
 C Data from site.h:
-C GREF    - External ground reflectivity.
-C GREF12  - (12) Monthly values of ground reflectivity
-C ITGREF  - Type of ground reflectivity model
+C groundrefl - External ground reflectivity.
+C groundreflmonth  - (12) Monthly values of ground reflectivity
+C groundreflmodel  - Type of ground reflectivity model
 C           1= constant albedo
 C           2= simple model (monthly albedo, number of days with snow on ground
 C           3= advanced model (monthly albedo, snow depth read from file)
-C SREF    - Snow reflectivity
-C NSNOW   - (12) Monthly values of number of days with snow on ground
-C SNFNAM  - *72 Name of the file containing hourly snow depth information
+C snowgroundrefl - Snow reflectivity
+C dayswithsnow - (12) Monthly values of number of days with snow on ground
+C SNFNAM - *72 Name of the file containing hourly snow depth information
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON
 
@@ -1263,19 +1263,12 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
 
 C Site related local variables.
-      real sitelat,sitelong  ! latitude and longitude difference
+      real sitelat,sitelongdif  ! latitude and longitude difference
       logical havesite       ! true if tokens included
-      real groundreflanual   ! ground reflectance (single value)
-      logical havegroundreflanual ! true if ground reflectance included
-      real groundreflmonth(12) ! ground reflectance (monthly vlues)
-      integer groundreflmodel  ! index to ground reflectance model
-      real snowrefl            ! snow reflectivity
-      integer dayswithsnow(12) ! days with snow in each month
       logical havesnowdays     ! true if days with snow defined
       character hourlysnowfile*72  ! same as SNFNAM
       logical havehourlysnowfile   ! true if set
       real hoursGTM   ! hours before or after GTM 
-      real skyview,groundview,buildingview ! user defined viewfactors
       real groundtemps(12,MGRDP)
       real GVA(12)  ! temporary array to hold a dozen values.
       integer groundtempsets
@@ -1342,7 +1335,6 @@ C in the file.
         groundview=0.0
         buildingview=0.0
         havesite=.false.
-        havegroundreflanual=.false.
         havesnowdays=.false.
         havehourlysnowfile=.false.
         havegroundtempsets=.false.
@@ -1696,9 +1688,8 @@ C surface area to have as glazing.
         endif
         goto 43
       elseif(WORD(1:19).eq.'*ground_refl_annual')then
-        CALL EGETWR(OUTSTR,K,groundreflanual,0.,1.,'W',
+        CALL EGETWR(OUTSTR,K,groundrefl,0.,1.,'W',
      &    'Ground reflectance annual value',IER)
-        havegroundreflanual=.true.
         goto 43
       elseif(WORD(1:20).eq.'*ground_refl_monthly')then
 
@@ -1709,7 +1700,7 @@ C Ground reflectivity model, no-snow monthly albedos, snow albedo
           CALL EGETWR(OUTSTR,K,groundreflmonth(I),0.,1.,'W',
      &      'monthly gr. refl.',IER)
   441   CONTINUE
-        CALL EGETWR(OUTSTR,K,snowrefl,0.,1.,'W','snow refl.',IER)  
+        CALL EGETWR(OUTSTR,K,snowgroundrefl,0.,1.,'W','snow refl.',IER)  
         goto 43
       elseif(WORD(1:8).eq.'*heating')then
         CALL EGETWR(OUTSTR,K,ht_Setpoint(nsz),-102.,102.,'W',
@@ -1795,7 +1786,7 @@ C And this is followed by one line each for each profile.
 C Number of days with snow on the ground (if ground refl model 2)
         DO 442 I=1,12
           CALL EGETWI(OUTSTR,K,dayswithsnow(I),0,31,'W',
-     &      'days with snow',IER)
+     &      'days with snow in each month',IER)
   442   CONTINUE
         havesnowdays=.true.
         goto 43
@@ -2040,23 +2031,51 @@ C Get the assessment independant simulation parameters.
         CALL EGETWI(OUTSTR,K,simsavelevel,0,6,'W','save_lv',IER)
         havesimparameters=.true.
         goto 43
+      elseif(WORD(1:9).eq.'*site_loc')then
+
+C The *site_loc line includes latitute, longitude difference from time
+C meridian, time zone (hours before or after GMT). 
+        CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
+        CALL EGETWR(OUTSTR,K,sitelongdif,-15.,15.,'W',
+     &    'Longitude dif from time meridian',IER)
+        CALL EGETWR(OUTSTR,K,hoursGTM,-12.,12.,'W','Hours +-GMT',IER)
+        havesite=.true.
+        goto 43
+      elseif(WORD(1:9).eq.'*site_exp')then
+
+C The *site_exp line includes site exposure and if
+C siteexposureindex is 8 then read three more numbers
+C for the general exposure to sky, ground and other buildings. 
+        CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
+     &    'Site exposure',IER)
+        if(siteexposureindex.eq.8)then
+          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky viewfactor',IER)
+          CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W',
+     &      'Ground viewfactor',IER)
+          CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W',
+     &      'Building viewfactor',IER)
+        endif
+        havesite=.true.
+        goto 43
       elseif(WORD(1:5).eq.'*site')then
 
-C The site line includes latitute, longitude difference from time
+C The *site line includes latitute, longitude difference from time
 C meridian, time zone (hours before or after GMT), site exposure
 C and if siteexposureindex is 8 then read three more numbers
-C for the general exposure to sky, ground and other buildings. 
+C for the general exposure to sky, ground and other buildings.
+C This format is included for older META files. 
         CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
-        CALL EGETWR(OUTSTR,K,sitelong,-15.,15.,'W','Longitude dif',IER)
+        CALL EGETWR(OUTSTR,K,sitelongdif,-15.,15.,'W',
+     &    'Longitude dif from time meridian',IER)
         CALL EGETWR(OUTSTR,K,hoursGTM,-12.,12.,'W','Hours +-GMT',IER)
         CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
      &    'Site exposure',IER)
         if(siteexposureindex.eq.8)then
-          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky exposure',IER)
+          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky viewfactor',IER)
           CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W',
-     &      'Ground exposure',IER)
+     &      'Ground viewfactor',IER)
           CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W',
-     &      'Building exposure',IER)
+     &      'Building viewfactor',IER)
         endif
         havesite=.true.
         goto 43
@@ -2206,26 +2225,8 @@ C Add in site information if tokens were included.
       if(havesite)then
         XLAT=sitelat
         SLAT=XLAT
-        XLON=sitelong
+        XLON=sitelongdif
         SLON=XLON
-        if(siteexposureindex.EQ.8)then
-          SKYR=skyview
-          GRDR=groundview
-          BLDR=buildingview
-        endif
-      endif
-      if(havegroundreflanual)GREF=groundreflanual
-      if(groundreflmodel.gt.0)then
-        ITGREF=groundreflmodel
-        do 443 i=1,12
-          GREF12(I)=groundreflmonth(I)
-  443   continue
-        SREF=snowrefl
-      endif
-      if(havesnowdays)then
-        do 444 i=1,12
-          NSNOW(I)=dayswithsnow(I)
-  444   continue
       endif
       if(havehourlysnowfile)then
         SNFNAM=hourlysnowfile
@@ -2508,18 +2509,11 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       dimension stextmass(MSZ,4,3)
 
 C Site related local variables.
-      real sitelat,sitelong  ! latitude and longitude difference
-      real groundreflanual   ! ground reflectance (single value)
-      logical havegroundreflanual ! true if ground reflectance included
-      real groundreflmonth(12) ! ground reflectance (monthly vlues)
-      integer groundreflmodel  ! index to ground reflectance model
-      real snowrefl            ! snow reflectivity
-      integer dayswithsnow(12) ! days with snow in each month
+      real sitelat,sitelongdif  ! latitude and longitude difference
       logical havesnowdays     ! true if days with snow defined
       character hourlysnowfile*72  ! same as SNFNAM
       logical havehourlysnowfile   ! true if set
       real hoursGTM   ! hours before or after GTM 
-      real skyview,groundview,buildingview ! user defined viewfactors
       real groundtemps(12,MGRDP)
       integer groundtempsets
       logical havegroundtempsets
@@ -2603,37 +2597,15 @@ C << for weather we need to use logic sort of like finddbpath >>
 C The hourlysnowfile is SNFNAM.
       write(hourlysnowfile,'(a)') SNFNAM
       sitelat=XLAT
-      sitelong=XLON
-      skyview=SKYR
-      groundview=GRDR
-      buildingview=BLDR
+      sitelongdif=XLON
 
-C Ground related information.
-      groundreflmodel=ITGREF
-      groundreflanual=GREF
-      havegroundreflanual=.true.
-
-C Ground reflectivity model, no-snow monthly albedos, snow albedo
-C (if ground reflectivity model 2 or 3)
-      if(groundreflmodel.NE.1)then
-        DO 443 I=1,12
-          groundreflmonth(I)=GREF12(I)
-  443   CONTINUE
-        snowrefl=SREF
-      endif
-
-C Number of days with snow on the ground 
-C (if ground reflectivity model 2)
-      if(ITGREF.EQ.2)then
 C Number of days with snow on the ground (if ground refl model 2)
-        DO 444 I=1,12
-          dayswithsnow(I)=NSNOW(I)
-  444   CONTINUE
+      if(groundreflmodel.EQ.2)then
         havesnowdays=.true.
       endif
 
 C Snow depth file (if ground reflectivity model 3)
-      if(ITGREF.EQ.3)then
+      if(groundreflmodel.EQ.3)then
         write(hourlysnowfile,'(a)') SNFNAM(1:lnblnk(SNFNAM))
         havehourlysnowfile=.true.
       endif
@@ -2716,31 +2688,37 @@ C *silent_input
      &  folder(1:lnblnk(folder)),tab,mpath(1:lnblnk(mpath))
       write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)'*weather_station',tab,
      &  weather(1:lnblnk(weather)),'  # climate file'
+
+C Depending on site exposure write two lines.
       if(siteexposureindex.eq.8)then
-        write(ifilg,'(2a,F6.3,a,F6.3,a,F5.2,a,i2,a,F5.2,a,
-     &    F5.2,a,F5.2,a)',IOSTAT=IOS,ERR=13)
-     &    '*site',tab,sitelat,tab,sitelong,tab,
-     &    hoursGTM,tab,siteexposureindex,tab,skyview,tab,
+        write(ifilg,'(2a,F6.3,a,F6.3,a,F5.2,a)',IOSTAT=IOS,ERR=13)
+     &    '*site_loc',tab,sitelat,tab,sitelongdif,tab,
+     &    hoursGTM,' # latitude deg long-diff deg time-zone GMT'
+        write(ifilg,'(2a,i2,a,F5.2,a,F5.2,a,F5.2,a)',IOSTAT=IOS,ERR=13)
+     &    '*site_exp',tab,siteexposureindex,tab,skyview,tab,
      &    groundview,tab,buildingview,
-     &    ' # latitude long-diff time-zone exposure-index'
+     &    ' # exposure-index (user) sky ground building views'
       else
-        write(ifilg,'(2a,F6.3,a,F6.3,a,F5.2,a,i2,a)',IOSTAT=IOS,ERR=13)
-     &    '*site',tab,sitelat,tab,sitelong,tab,
-     &    hoursGTM,tab,siteexposureindex,
-     &    ' # latitude long-diff time-zone exposure-index'
+        write(ifilg,'(2a,F6.3,a,F6.3,a,F5.2,a)',IOSTAT=IOS,ERR=13)
+     &    '*site_loc',tab,sitelat,tab,sitelongdif,tab,hoursGTM,
+     &    ' # latitude deg long-diff deg time-zone GMT'
+        write(ifilg,'(2a,i2,a,F5.2,a,F5.2,a,F5.2,a)',IOSTAT=IOS,ERR=13)
+     &    '*site_exp',tab,siteexposureindex,tab,skyview,tab,
+     &    groundview,tab,buildingview,
+     &    ' # exposure-index (std) sky ground building views'
       endif
-      if(havegroundreflanual)then
-        write(ifilg,'(2a,F6.3,a)',IOSTAT=IOS,ERR=13)
-     &    '*ground_refl_annual',tab,groundreflanual,
-     &    ' # ground reflection (avg for year)'
-      endif
+
+C Write the static ground reflction value from the model.
+      write(ifilg,'(2a,F6.3,a)',IOSTAT=IOS,ERR=13)
+     &  '*ground_refl_annual',tab,groundrefl,
+     &  ' # ground reflection (avg for year)'
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
       if(groundreflmodel.gt.1)then
         WRITE(ifilg,803,IOSTAT=IOS,ERR=14)
      &    '*ground_refl_monthly',tab,groundreflmodel,
-     &    tab,(groundreflmonth(I),I=1,12),snowrefl
+     &    tab,(groundreflmonth(I),I=1,12),snowgroundrefl
   803   FORMAT(2A,I1,A,13(1X,F5.3))
       endif
 
@@ -2756,11 +2734,12 @@ C Do something about monthly snow data etc.
      &    hourlysnowfile(1:lnblnk(hourlysnowfile)),' # snow depth file'
       endif
 
-C Ground temperatures.
+C Ground temperatures (monthly profiles). Header followed by one
+C line of 12 values for each included profile.
       if(havegroundtempsets)then
         write(ifilg,'(2a,I3,a)',IOSTAT=IOS,ERR=13)
      &    '*monthly_profile',tab,groundtempsets,
-     &    '  # ground temperature profiles'
+     &    '  # nb of ground temperature profiles'
         DO 28 IGRDP=1,groundtempsets
           WRITE(ifilg,933,IOSTAT=IOS,ERR=14)
      &      (groundtemps(J,IGRDP),J=1,12)

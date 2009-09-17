@@ -78,14 +78,14 @@ C              buildings
 C           6= rural site, isolated; 7= totally enclosed building
 C           8= user defined
 
-C GREF    - External ground reflectivity.
-C GREF12  - (12) Monthly values of ground reflectivity
-C ITGREF  - Type of ground reflectivity model
+C groundrefl    - External ground reflectivity.
+C groundreflmonth  - (12) Monthly values of ground reflectivity
+C groundreflmodel  - Type of ground reflectivity model
 C           1= constant albedo
 C           2= simple model (monthly albedo, number of days with snow on ground
 C           3= advanced model (monthly albedo, snow depth read from file)
-C SREF    - Snow reflectivity
-C NSNOW   - (12) Monthly values of number of days with snow on ground
+C snowgroundrefl - Snow reflectivity
+C dayswithsnow - (12) Monthly values of number of days with snow on ground
 C SNFNAM  - *72 Name of the file containing hourly snow depth information
 
 C modeltitle - is the name of the entire system.
@@ -203,9 +203,9 @@ C xlon      site and the reference time zone (east +ve).
       COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-C SKYR viewfactor from external surfaces to the sky (site.h)
-C GRDR viewfactor from external surfaces to the ground
-C BLDR viewfactor from external surfaces to other buildings & obstructions
+C skyview viewfactor from external surfaces to the sky (site.h)
+C groundview viewfactor from external surfaces to the ground
+C buildingview viewfactor from external surfaces to other buildings & obstructions
       COMMON/C6/INDCFG
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
@@ -819,7 +819,7 @@ C Get site exposure and ground reflectance.
       K=0
       CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
      &  'Site exposure index',IER)
-      CALL EGETWR(OUTSTR,K,GREF,0.,1.,'W','Ground reflect',IER)
+      CALL EGETWR(OUTSTR,K,groundrefl,0.,1.,'W','Ground reflect',IER)
       IF(IER.NE.0) GOTO 1
 
 C Index of exposure has user defined data associated with it.
@@ -827,13 +827,14 @@ C Index of exposure has user defined data associated with it.
         CALL STRIPC(IUC,OUTSTR,3,ND,1,'user defined site exposure',IER)
         IF(IER.NE.0)goto 1
         K=0
-        CALL EGETWR(OUTSTR,K,SKYR,0.,1.,'W','Sky expos',IER)
-        CALL EGETWR(OUTSTR,K,GRDR,0.,1.,'W','Ground expos',IER)
-        CALL EGETWR(OUTSTR,K,BLDR,0.,1.,'W','Building expos',IER)
+        CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky view',IER)
+        CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W','Ground view',IER)
+        CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W','Building vew',IER)
         IF(IER.NE.0) GOTO 1
 
 C Range checking.
-        IF(ABS(SKYR+GRDR+BLDR-1.).GT..001) CALL USRMSG(
+        IF(ABS(skyview+groundview+buildingview-1.).GT..001) 
+     &    CALL USRMSG(
      &    ' Total exposure out of range in',OUTSTR,'W')
       ENDIF
 
@@ -897,6 +898,8 @@ C set the lapres common block string via call to findwhichdbpath.
         CALL EGETRM(LOUTSTR,K,LPRFDB,'W','profiles db',IER)
       elseif(WORD(1:4).eq.'*clm')then
 
+C << to be done - introduce *stdclm to signal standard location >>
+
 C Read name of standard climate file and set a flag indicating
 C that a single-year climate database has been defined
         CALL EGETRM(LOUTSTR,K,LCLIM,'W','climate db',IER)
@@ -951,18 +954,21 @@ C SBEM database file in standard location.
       elseif(WORD(1:5).eq.'*gref')then
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
-        CALL EGETWI(LOUTSTR,K,ITGREF,1,3,'F','ground refl. model',IER)
+        CALL EGETWI(LOUTSTR,K,groundreflmodel,1,3,'F',
+     &    'ground reflection model',IER)
         DO 441 I=1,12
-          CALL EGETWR(LOUTSTR,K,GREF12(I),0.,1.,'W',
+          CALL EGETWR(LOUTSTR,K,groundreflmonth(I),0.,1.,'W',
      &      'monthly gr. refl.',IER)
   441   CONTINUE
-        CALL EGETWR(LOUTSTR,K,SREF,0.,1.,'W','snow refl.',IER)  
+        CALL EGETWR(LOUTSTR,K,snowgroundrefl,0.,1.,'W',
+     &    'snow ground reflection',IER)  
 
       elseif(WORD(1:5).eq.'*snow')then
 
 C Number of days with snow on the ground (if ground refl model 2)
         DO 442 I=1,12
-          CALL EGETWI(LOUTSTR,K,NSNOW(I),0,31,'W','days with snow',IER)
+          CALL EGETWI(LOUTSTR,K,dayswithsnow(I),0,31,'W',
+     &      'days with snow each month',IER)
   442   CONTINUE
 
       elseif(WORD(1:5).eq.'*sndf')then
@@ -3027,13 +3033,13 @@ C Get lat:long description.
      &  ' of local meridian.'
       CALL EDISP(ITRU,OUTSTR)
 
-      IF(ITGREF.EQ.1)THEN
+      IF(groundreflmodel.EQ.1)THEN
         WRITE(OUTSTR,'(a,F4.2,a)')
-     &    ' Ground reflectivity: constant = ',GREF,'.'
-      ELSEIF(ITGREF.EQ.2)THEN
+     &    ' Ground reflectivity: constant = ',groundrefl,'.'
+      ELSEIF(groundreflmodel.EQ.2)THEN
         WRITE(OUTSTR,'(a)')
      &    ' Ground reflectivity: variable (simple model).'
-      ELSEIF(ITGREF.EQ.3)THEN
+      ELSEIF(groundreflmodel.EQ.3)THEN
         WRITE(OUTSTR,'(a)')
      &    ' Ground reflectivity: variable (advanced model).'
       ENDIF
@@ -3043,13 +3049,13 @@ C Get lat:long description.
       CALL EDISP(ITRU,OUTSTR)
 
       IF(siteexposureindex.EQ.8)THEN
-        WRITE(OUTSTR,98911)SKYR
+        WRITE(OUTSTR,98911)skyview
 98911   FORMAT(' User defined sky ratio =',F6.4)
         CALL EDISP(ITRU,OUTSTR)
-        WRITE(OUTSTR,98912)GRDR
+        WRITE(OUTSTR,98912)groundview
 98912   FORMAT('           ground ratio =',F6.4)
         CALL EDISP(ITRU,OUTSTR)
-        WRITE(OUTSTR,98913)BLDR
+        WRITE(OUTSTR,98913)buildingview
 98913   FORMAT('         building ratio =',F6.4)
         CALL EDISP(ITRU,OUTSTR)
       ENDIF

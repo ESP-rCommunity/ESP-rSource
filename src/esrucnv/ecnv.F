@@ -1512,10 +1512,11 @@ C Comment for configuration index (upgrade registration level).
 
       WRITE(ioout,'(F7.3,2X,F7.3,a)')XLAT,XLON,
      &'   # Latitude & Longitude '
-      WRITE(ioout,'(I7,2X,F6.3,a)') siteexposureindex,GREF,
+      WRITE(ioout,'(I7,2X,F6.3,a)') siteexposureindex,groundrefl,
      &'   # Site exposure & ground refl'
       IF(siteexposureindex.EQ.8)WRITE(ioout,'(3F8.3,A)')
-     &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
+     &  skyview,groundview,buildingview,
+     &  '   # views to sky ground buildings'
       write(ioout,'(a)')'* DATABASES'
 
 C << updated to use ipath* >>
@@ -1533,19 +1534,21 @@ C     &      SHOCCshlFile(1:lnblnk(SHOCCshlFile))
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
-      IF(ITGREF.NE.1) WRITE(ioout,803) '*gref ',ITGREF,
-     &      (GREF12(I),I=1,12),SREF
+      IF(groundreflmodel.NE.1) 
+     &  WRITE(ioout,803) '*gref ',groundreflmodel,
+     &       (groundreflmonth(I),I=1,12),snowgroundrefl
   803 FORMAT(A,I1,13(1X,F5.3))
 
 C Number of days with snow on the ground 
 C (if ground reflectivity model 2)
-      IF(ITGREF.EQ.2) WRITE(ioout,805) '*snow',(NSNOW(I),I=1,12)
+      IF(groundreflmodel.EQ.2) 
+     &  WRITE(ioout,805) '*snow',(dayswithsnow(I),I=1,12)
   805 FORMAT(A,12(1X,I2))
 
 C Snow depth file
 C (if ground reflectivity model 3)
-      IF(ITGREF.EQ.3) WRITE(ioout,'(A,A)',IOSTAT=IOS,ERR=2) '*sndf ',
-     &      SNFNAM(1:lnblnk(SNFNAM))
+      IF(groundreflmodel.EQ.3) WRITE(ioout,'(A,A)',IOSTAT=IOS,ERR=2) 
+     &  '*sndf ',SNFNAM(1:lnblnk(SNFNAM))
 
       if(lnblnk(lctlf).eq.0.or.lctlf(1:7).eq.'UNKNOWN')then
         continue

@@ -551,12 +551,12 @@ C Clear the connection list.
       NCON=0
       ncomp=0
       siteexposureindex=1
-      GREF=0.2
-      ITGREF=1
-      SREF=0.4
+      groundrefl=0.2
+      groundreflmodel=1
+      snowgroundrefl=0.4
       DO 60 I=1,12
-        GREF12(I)=GREF
-        NSNOW(I)=0
+        groundreflmonth(I)=groundrefl
+        dayswithsnow(I)=0
    60 CONTINUE
       SNFNAM=' '
 

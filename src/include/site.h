@@ -9,21 +9,21 @@ C parameters will have been defined.
                      ! 5= city centre, below mean height of surrounding buildings
                      ! 6= rural site, isolated; 7= totally enclosed building
                      ! 8= user defined
-      real GREF      ! current ground reflectivity (for the site if no snow data or
+      real groundrefl ! current ground reflectivity (for the site if no snow data or
                      ! from GREF12 or actual hourly snow covered ground reflectivity)
-      integer ITGREF ! flag for ground reflectivity model used
+      integer groundreflmodel ! flag for ground reflectivity model used
                      ! 1= constant albedo
                      ! 2= simple model (monthly albedo, number of days with snow on ground
                      ! 3= advanced model (monthly albedo, snow depth read from file)
-      real GREF12    ! no snow ground reflectivity for each month
-      real SREF      ! uncorrected snow covered ground reflectivity
-      integer NSNOW  ! monthly number of days with snow on the ground
+      real groundreflmonth ! no snow ground reflectivity for each month
+      real snowgroundrefl  ! uncorrected snow covered ground reflectivity
+      integer dayswithsnow  ! monthly number of days with snow on the ground
       character*72 SNFNAM ! file containing hourly snow depth information
-      COMMON/C5/siteexposureindex,GREF,ITGREF,GREF12(12),
-     &  SREF,NSNOW(12),SNFNAM
+      COMMON/C5/siteexposureindex,groundrefl,groundreflmodel,
+     &  groundreflmonth(12),snowgroundrefl,dayswithsnow(12),SNFNAM
 
 C Site viewfactors from building surfaces to the site.
-      real SKYR  ! viewfactor to the sky vault (0.0 - 1.0) 
-      real GRDR  ! viewfactor to the ground (0.0 - 1.0)
-      real BLDR  ! viewfactor to buildings (0.0 - 1.0)
-      COMMON/C5R/SKYR,GRDR,BLDR
+      real skyview      ! viewfactor to the sky vault (0.0 - 1.0) 
+      real groundview   ! viewfactor to the ground (0.0 - 1.0)
+      real buildingview ! viewfactor to buildings (0.0 - 1.0)
+      COMMON/C5R/skyview,groundview,buildingview

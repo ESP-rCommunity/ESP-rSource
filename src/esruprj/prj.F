@@ -4664,7 +4664,7 @@ C Selection strings for site exposure.
         SALT(5)='city: below surroundings       '
         SALT(6)='isolated rural site            '
         SALT(7)='totally enclosed (no sky)      '
-        WRITE(SALT(8),53)SKYR,GRDR,BLDR
+        WRITE(SALT(8),53)skyview,groundview,buildingview
   53    FORMAT('sky=',F4.2,' grnd=',F4.2,' bld=',F4.2)
         H(1)='The site exposure defines the relative view factors'
         H(2)='between a vertical surface and the sky, ground and'
@@ -4677,22 +4677,22 @@ C Selection strings for site exposure.
         siteexposureindex=IVALSS(1)
         IF(siteexposureindex.EQ.8)THEN
           H(1)='0 <= Sky view factor <= .99'
-  290     CALL EASKR(SKYR,' ',' Sky view factor?',
+  290     CALL EASKR(skyview,' ',' Sky view factor?',
      &         0.0,'W',0.99,'W',0.33,'sky view factor',IER,1)
           H(1)='0 <= Ground view factor <= .99'
-          CALL EASKR(GRDR,' ',' Ground view factor?',
+          CALL EASKR(groundview,' ',' Ground view factor?',
      &         0.0,'W',0.99,'W',0.33,'ground view factor',IER,1)
           H(1)='0 <= Surroundings view factor <= .99'
-          CALL EASKR(BLDR,' ',' Surroundings view factor?',
+          CALL EASKR(buildingview,' ',' Surroundings view factor?',
      &         0.0,'W',0.99,'W',0.33,'surroundings view factor',IER,1)
-          IF(ABS(SKYR+GRDR+BLDR-1.).GT..001)THEN
+          IF(ABS(skyview+groundview+buildingview-1.).GT..001)THEN
             CALL USRMSG(' Error: view factor summation > 1.0',
      &                  ' ','W')
             GOTO 290
           ENDIF
         ENDIF
         H(1)='0 <= ground reflectance <= .99'
-        CALL EASKR(GREF,' ',' Ground reflectance?',
+        CALL EASKR(groundrefl,' ',' Ground reflectance?',
      &       0.0,'W',0.99,'W',0.2,'ground reflectance',IER,1)
         MODSIT=.true.
         msg1='updating model for site exposure changes...'

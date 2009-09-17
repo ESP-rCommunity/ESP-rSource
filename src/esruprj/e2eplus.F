@@ -54,9 +54,9 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C4/XLAT,XLON
 
-C SKYR viewfactor from external surfaces to the sky (site.h)
-C GRDR viewfactor from external surfaces to the ground
-C BLDR viewfactor from external surfaces to other buildings & obstructions
+C skyview viewfactor from external surfaces to the sky (site.h)
+C groundview viewfactor from external surfaces to the ground
+C buildingview viewfactor from external surfaces to other buildings & obstructions
       COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -2143,7 +2143,7 @@ C and site exposure.
             else
               if(SSVFC(icc)(1:4).eq.'VERT')then
                 WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
-     &           GRDR,com,'   !- View Factor to Ground'
+     &           groundview,com,'   !- View Factor to Ground'
               elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                 WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
      &            com,'   !- View Factor to Ground'
@@ -2240,7 +2240,7 @@ C Other face environment.
                   else
                     if(SSVFC(icc)(1:4).eq.'VERT')then
                       WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
-     &                  GRDR,com,'   !- View Factor to Ground'
+     &                  groundview,com,'   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                       WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
      &                  com,'   !- View Factor to Ground'

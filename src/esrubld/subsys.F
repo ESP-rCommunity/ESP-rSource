@@ -392,9 +392,9 @@ C Set initial cloud cover = 0.4
 C << place to use connection based viewfactors >>
 C << props/propg/propb would be replaced by vfgr vfsk vfbl vfob >>
       IF(siteexposureindex.NE.8)goto 101
-      PROPS(8)=SKYR
-      PROPG(8)=GRDR
-      PROPB(8)=BLDR
+      PROPS(8)=skyview
+      PROPG(8)=groundview
+      PROPB(8)=buildingview
 
 C Depending on the Index of Exposure the proportions of the
 C surroundings are assigned new variable names.
@@ -676,7 +676,7 @@ C End For NT
 C Ground solar gain. 
       QGGF=0.0
       IF(ISUNUP.EQ.0)goto 305
-      QGGF=QT*(1.0-GREF)
+      QGGF=QT*(1.0-groundrefl)
   305 CONTINUE
 
 C Completing ground model matrix.

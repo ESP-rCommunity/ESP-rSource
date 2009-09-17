@@ -340,7 +340,7 @@ C If the power flow simulation flag is set then set up the electrical network.
 
 C Advanced albedo model: pre-process snow depth file. The ascii file is
 C read and converted to a binary file
-      IF (ITGREF.EQ.3) THEN
+      IF (groundreflmodel.EQ.3) THEN
         CALL PPGREF(IER)
         IF (IER.NE.0) RETURN
       ENDIF

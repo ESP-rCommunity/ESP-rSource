@@ -911,12 +911,12 @@ C Site information.
         elseif(siteexposureindex.eq.7)then
           WRITE(outs,'(a)')'site exposure is totally enclosed (no sky)'
         elseif(siteexposureindex.eq.8)then
-          WRITE(outs,53)SKYR,GRDR,BLDR
+          WRITE(outs,53)skyview,groundview,buildingview
   53      FORMAT('site exposure is sky=',F4.2,' ground=',F4.2,
      &      ' other buildings=',F4.2)
         endif
         write(outs248,'(3a,f4.2,a)') 'The ',outs(1:lnblnk(outs)),
-     &    ' and the ground reflectance is ',GREF,'.'
+     &    ' and the ground reflectance is ',groundrefl,'.'
         call edisp248(itu,outs248,80)
         call edisp(itu,' ')
 

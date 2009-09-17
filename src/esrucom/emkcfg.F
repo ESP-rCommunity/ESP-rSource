@@ -462,11 +462,12 @@ C Begin writing the file with version number in the header.
  800  FORMAT(F7.3,2X,F7.3,
      &  '   # Latitude & Longitude (diff from meridian)')
 
-      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) siteexposureindex,GREF
+      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) siteexposureindex,groundrefl
 8001  FORMAT(I7,2X,F6.3,'   # Site exposure & ground reflectivity')
       IF(siteexposureindex.EQ.8)
      &  WRITE(IFCFG,'(3F8.3,A)',IOSTAT=IOS,ERR=2)
-     &    SKYR,GRDR,BLDR,'   # views to sky ground buildings'
+     &    skyview,groundview,buildingview,
+     &    '   # views to sky ground buildings'
 
 C Write databases related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* DATABASES'
@@ -504,19 +505,20 @@ C reflect whether the standard database folder is being used.
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
-      IF(ITGREF.NE.1) WRITE(IFCFG,803) '*gref ',ITGREF,
-     &      (GREF12(I),I=1,12),SREF
+      IF(groundreflmodel.NE.1) WRITE(IFCFG,803) '*gref ',
+     &   groundreflmodel,(groundreflmonth(I),I=1,12),snowgroundrefl
   803 FORMAT(A,I1,13(1X,F5.3))
 
 C Number of days with snow on the ground 
 C (if ground reflectivity model 2)
-      IF(ITGREF.EQ.2) WRITE(IFCFG,805) '*snow',(NSNOW(I),I=1,12)
+      IF(groundreflmodel.EQ.2)  
+     &  WRITE(IFCFG,805) '*snow',(dayswithsnow(I),I=1,12)
   805 FORMAT(A,12(1X,I2))
 
 C Snow depth file
 C (if ground reflectivity model 3)
-      IF(ITGREF.EQ.3) WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*sndf ',
-     &      SNFNAM(1:lnblnk(SNFNAM))
+      IF(groundreflmodel.EQ.3) WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) 
+     &  '*sndf ',SNFNAM(1:lnblnk(SNFNAM))
 
 C Multiyear climate database
       if ( bMY_climates_defined ) then 
