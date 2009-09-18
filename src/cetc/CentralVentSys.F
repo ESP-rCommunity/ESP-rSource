@@ -29,6 +29,7 @@ c ---
      
 c
       Implicit None
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"
 #include "aim2_common.h"
 #include "Ventilation_Data.h"

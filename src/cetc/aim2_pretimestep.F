@@ -130,6 +130,7 @@ C ------------------------------------------------------------------------------
       SUBROUTINE AIM2_READIN
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 #include "espriou.h"
@@ -792,6 +793,7 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -842,6 +844,7 @@ C      USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
 
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -966,6 +969,7 @@ C     USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
 
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -1018,6 +1022,7 @@ C      USE AIM2_CALC_DATA
 C      USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
       COMMON/OUTIN/IUOUT,IUIN
@@ -1332,6 +1337,7 @@ C      USE AIM2_INPUT_DATA
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
       COMMON/OUTIN/IUOUT,IUIN
@@ -1436,6 +1442,7 @@ C      USE AIM2_INPUT_DATA
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
       COMMON/OUTIN/IUOUT,IUIN

@@ -108,6 +108,7 @@ C      USE AIM2_CALC_DATA
 C      USE HVAC_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -405,6 +406,7 @@ C      USE AIM2_INPUT_DATA
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -459,6 +461,7 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -606,6 +609,7 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -649,6 +653,7 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -737,6 +742,7 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -779,6 +785,7 @@ C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -835,6 +842,7 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"
 #include "aim2_common.h"
 
@@ -882,6 +890,7 @@ C      USE AIM2_INPUT_DATA
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -973,6 +982,7 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
 
@@ -1139,6 +1149,7 @@ C ------------------------------------------------------------------------------
 C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
+#include "building.h" ! for MCOM in aim2_common.h
 #include "aim2_parameters.h"      
 #include "aim2_common.h"
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
