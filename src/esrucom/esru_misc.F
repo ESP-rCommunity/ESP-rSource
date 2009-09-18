@@ -112,7 +112,6 @@ C HOT3000: AIM-2.
       common/aim2def/iAIM2,LAIM2
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C4/XLAT,XLON
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
       common/cctl/icascf(mcom)
@@ -432,9 +431,9 @@ C Clear image related data.
       IAIRN=0
       LAPROB='UNKNOWN'
 
-      XLAT=50.0
+      sitelat=50.0
       SLAT=50.
-      XLON=0.0
+      sitelongdif=0.0
       SLON=0.
 
 C Season data.

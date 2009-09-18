@@ -36,8 +36,8 @@ C Common block variables are:
 C indcfg  - is the configuration file index where: 1= building only,
 C           2= plant only, 3= building and plant
 
-C xlat,   - Site latitude and the longitudinal difference between the 
-C xlon      site and the reference time zone (east +ve).
+C sitelat,   - Site latitude and the longitudinal difference between the 
+C sitelongdif  site and the reference time zone (east +ve).
  
 C siteexposureindex - Site exposure index (from site.h):
 C           1= city centre, normal case; 2= urban site, normal case
@@ -840,6 +840,7 @@ C IREP=1 implies no reporting or data checking.
       SUBROUTINE MZPREC(IREP,IER)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
@@ -863,7 +864,6 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C During setup scan for inbuilt and user defined ground temperatures.
@@ -871,7 +871,6 @@ C igttype: if > 1 then index points to most often used standard profile
 C         if < 1 then index points to most often used user profile
 C         if = 0 then use compiled pattern.
       common/C25/igttype,GTMP(12)
-      common/ground/grdtmp(12,mgrdp)
 
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)

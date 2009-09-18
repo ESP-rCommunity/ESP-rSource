@@ -62,10 +62,8 @@ C ICLIM,LCLIM (for climate file)
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -458,9 +456,9 @@ C Begin writing the file with version number in the header.
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)
 
-      WRITE(IFCFG,800,IOSTAT=IOS,ERR=2) XLAT,XLON
+      WRITE(IFCFG,800,IOSTAT=IOS,ERR=2) sitelat,sitelongdif
  800  FORMAT(F7.3,2X,F7.3,
-     &  '   # Latitude & Longitude (diff from meridian)')
+     &  '   # Latitude & Longitude (diff from time meridian)')
 
       WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) siteexposureindex,groundrefl
 8001  FORMAT(I7,2X,F6.3,'   # Site exposure & ground reflectivity')

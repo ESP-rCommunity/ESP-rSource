@@ -549,13 +549,12 @@ C and saturated vapour pressure gradients.
 
       SUBROUTINE MOPRES(ICOMP,ISUR)
 #include "building.h"
+#include "site.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/ground/grdtmp(12,mgrdp)
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
 
@@ -851,6 +850,7 @@ C period.
       SUBROUTINE FINDCND(ICOMP)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -871,9 +871,7 @@ C period.
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/ground/grdtmp(12,mgrdp)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV

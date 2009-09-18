@@ -766,6 +766,7 @@ C the user to confirm before writing to temporary configuration file.
      &  M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,OTHEROK)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "prj3dv.h"
       
@@ -783,8 +784,6 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/RAY6/LINSTY(MCON)
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-      common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -1767,6 +1766,7 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -1782,9 +1782,7 @@ C Parameters: logical variables set the context of what to check
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/ground/grdtmp(12,mgrdp)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)

@@ -198,16 +198,12 @@ C IFIL base file unit number (set in MAIN of each application).
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
-C xlat,   - Site latitude and the longitudinal difference between the 
-C xlon      site and the reference time zone (east +ve).
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C skyview viewfactor from external surfaces to the sky (site.h)
 C groundview viewfactor from external surfaces to the ground
 C buildingview viewfactor from external surfaces to other buildings & obstructions
       COMMON/C6/INDCFG
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
 C Seasons.
       character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
@@ -807,10 +803,11 @@ C Latitude & Longitude.
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'latitude & long dif',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWR(OUTSTR,K,XLAT,-90.,90.,'W','Latitude',IER)
-      SLAT=XLAT
-      CALL EGETWR(OUTSTR,K,XLON,-15.,15.,'W','Longitude dif',IER)
-      SLON=XLON
+      CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
+      SLAT=sitelat
+      CALL EGETWR(OUTSTR,K,sitelongdif,-15.,15.,'W',
+     &  'Longitude dif from time meridian',IER)
+      SLON=sitelongdif
       IF(IER.NE.0) GOTO 1
 
 C Get site exposure and ground reflectance.
@@ -3002,11 +2999,11 @@ C SITEINFO provides an English description of the site information in
 C common blocks C4, C5, C5R, PREC8 which are filled by reading the
 C system configuration file.
       SUBROUTINE SITEINFO(ITRU)
+#include "building.h"
 #include "site.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/C4/XLAT,XLON
       CHARACTER POS*124,OUTSTR*124,sdesc*16
 
       IF(siteexposureindex.EQ.1)THEN
@@ -3028,7 +3025,7 @@ C system configuration file.
       ENDIF
 
 C Get lat:long description.
-      call sitell2s(XLAT,XLON,sdesc)
+      call sitell2s(sitelat,sitelongdif,sdesc)
       WRITE(OUTSTR,'(3a)')' Site location: ',sdesc,
      &  ' of local meridian.'
       CALL EDISP(ITRU,OUTSTR)

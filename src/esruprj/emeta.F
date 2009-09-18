@@ -44,6 +44,7 @@ C Current functionality is to update the climate & site data.
       subroutine silentmodel(action,root,mpath,folder,weather,ier)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "espriou.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies lclim.
@@ -60,8 +61,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
 C Climate data.
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
-      COMMON/C4/XLAT,XLON
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
@@ -236,13 +235,13 @@ C Impose climate site data on the model.
         IREC=368
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
         CALL ERPFREE(ICLIM,ISTAT)
-        XLAT=CLAT
-        XLON=CLONG
+        sitelat=CLAT
+        sitelongdif=CLONG
         IYEAR=ICYEAR
         write(outs,'(A,F7.3,A,F7.3,a,i4,i5,a,2F7.3,a)')
      &    'The climate lat is ',clat,' & long diff is ',
      &    clong,' & Year DN flag ',IYEAR,ICDNGH,
-     &    '. Previously used ',xlat,xlon,'.'
+     &    '. Previously used ',sitelat,sitelongdif,'.'
         call edisp(iuout,outs)
 
 C Write calendar information (just the default one for the moment)       
@@ -413,6 +412,7 @@ C IER=0 OK.
      &  boundarytype,datamass,textmass,use,usefile,IER)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "geometry.h"
 C#include "esprdbfile.h"
       
@@ -438,7 +438,6 @@ C#include "esprdbfile.h"
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -1140,7 +1139,6 @@ C seasons.h provides typper and typsea
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C4/XLAT,XLON
       COMMON/FILEP/IFIL
 
 C Data from site.h:
@@ -1153,7 +1151,6 @@ C           3= advanced model (monthly albedo, snow depth read from file)
 C snowgroundrefl - Snow reflectivity
 C dayswithsnow - (12) Monthly values of number of days with snow on ground
 C SNFNAM - *72 Name of the file containing hourly snow depth information
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON
 
 C Obstruction blocks via geometry.h.
@@ -1263,7 +1260,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
 
 C Site related local variables.
-      real sitelat,sitelongdif  ! latitude and longitude difference
       logical havesite       ! true if tokens included
       logical havesnowdays     ! true if days with snow defined
       character hourlysnowfile*72  ! same as SNFNAM
@@ -2223,10 +2219,8 @@ C folder /tmp/box/cfg if mpath is /tmp/box.
 
 C Add in site information if tokens were included.
       if(havesite)then
-        XLAT=sitelat
-        SLAT=XLAT
-        XLON=sitelongdif
-        SLON=XLON
+        SLAT=sitelat
+        SLON=sitelongdif
       endif
       if(havehourlysnowfile)then
         SNFNAM=hourlysnowfile
@@ -2417,9 +2411,7 @@ C seasons.h provides typper and typsea
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C4/XLAT,XLON
 
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -2509,7 +2501,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       dimension stextmass(MSZ,4,3)
 
 C Site related local variables.
-      real sitelat,sitelongdif  ! latitude and longitude difference
       logical havesnowdays     ! true if days with snow defined
       character hourlysnowfile*72  ! same as SNFNAM
       logical havehourlysnowfile   ! true if set
@@ -2605,8 +2596,6 @@ C << for weather we need to use logic sort of like finddbpath >>
 
 C The hourlysnowfile is SNFNAM.
       write(hourlysnowfile,'(a)') SNFNAM
-      sitelat=XLAT
-      sitelongdif=XLON
 
 C Depending on the Index of Exposure the proportions of the
 C surroundings are assigned new variable names.

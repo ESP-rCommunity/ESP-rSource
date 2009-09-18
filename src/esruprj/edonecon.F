@@ -37,6 +37,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "epara.h"
 #include "building.h"
 #include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -50,9 +51,7 @@ C geometry.h provides commons G0 and G2.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/ground/grdtmp(12,mgrdp)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),

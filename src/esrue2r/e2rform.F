@@ -26,13 +26,13 @@ C  mkriofil Write inside/outside materials and composition files.
 C ******* Sky calculations. *******
       SUBROUTINE SKYFORM(IER)
 #include "building.h"
+#include "site.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/C4/XLAT,XLON
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -87,8 +87,8 @@ C If daylight factors then set sky to CIE overcast.
       if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') isky=1
 
 10    INO = -4
-      write(ITEM(1),'(A,F6.1)') 'a Site Latitude: ',XLAT
-      write(ITEM(2),'(A,F6.1)') 'b Longitude diff: ',XLON
+      write(ITEM(1),'(A,F6.1)') 'a Site Latitude: ',sitelat
+      write(ITEM(2),'(A,F6.1)') 'b Longitude diff: ',sitelongdif
 
       write(ITEM(3),'(A,I6)')   'c Year: ',iryear
       call STDATE(IRYEAR,irdoy,DESCR,DESCR1)
@@ -144,7 +144,7 @@ C Help text for the menu.
       CALL EMENU('  Sky description',ITEM,NITEMS,INO)
       IF(INO.EQ.1)THEN
         H(1)='The site latitude should be in degrees. '
-        CALL EASKR(XLAT,' ',' Site Latitude ? ',
+        CALL EASKR(sitelat,' ',' Site Latitude ? ',
      &           -89.0,'W',89.,'W',50.2,'latitude',IER,1)
         skydone=.false.
       elseif(INO.EQ.2)then
@@ -156,8 +156,9 @@ C Help text for the menu.
         H(6)='radiance.  Also, if a meridian other than the prime '
         H(7)='is defined in a sky file this will be reset to 0 and'
         H(8)='the longtitude difference calculated accordingly. '
-        CALL EASKR(XLON,' ',' Longitude difference from reference?',
-     &       -15.0,'W',15.0,'W',0.0,'site longitude',IER,8)
+        CALL EASKR(sitelongdif,' ',
+     &    'Longitude difference from reference time meridian?',
+     &     -15.0,'W',15.0,'W',0.0,'site longitude diff',IER,8)
         skydone=.false.
       elseif(INO.EQ.3)then
         H(1)='The year is requred to sort out days of the week. '
@@ -196,7 +197,8 @@ C Generate skydone information. Begin by creating a command line
 C which includes redirection of output to the sky definition file.
         CALL EDAYR(irdoy,IDO,IMO)
         write(outs,'(a,2i3,f6.2,a,a,f5.2,2(a,f7.1),a)')'gensky',IMO,IDO,
-     &     RTIME,skopt,' -g ',rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
+     &    RTIME,skopt,' -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
+     &    ' -m 0.0'
         CALL wrtsky(outs)
         call RRSKY(ITA2,rskyfil,ga,IER)
         if (RIFPURP(IRIFFOC)(1:8).eq.'External') then

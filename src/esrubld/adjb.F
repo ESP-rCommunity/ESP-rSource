@@ -53,6 +53,7 @@ C ARF    - future time adjacent incident radiation & casual etc.
 
       SUBROUTINE MZADJC
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 #include "control.h"
 
@@ -79,14 +80,10 @@ C izsceil is the index (within the zone) of a ceiling surface in each zone
 C  (zero is no surface is close to horizontal facing down).
       COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
-      COMMON/GROUND/GRDTMP(12,MGRDP)
-
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
-
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
      &            ARF(MCOM,MS)

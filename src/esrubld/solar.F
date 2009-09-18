@@ -3511,6 +3511,7 @@ C     DECLARATIONS
 C-----------------------------------------------------------------------
       
 C ESP-r Commons
+#include "building.h"
 #include "site.h"
 C site.h has common C5
 
@@ -3643,6 +3644,7 @@ C     DECLARATIONS
 C-----------------------------------------------------------------------
       
 C ESP-r Commons      
+#include "building.h"
 #include "site.h"
 C site.h has common C5
       REAL GTP,GTF,QGLP,QGLF,QGGP,QGGF,GC,

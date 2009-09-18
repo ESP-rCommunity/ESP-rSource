@@ -4439,7 +4439,6 @@ C Path to model and command line file (if any).
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP

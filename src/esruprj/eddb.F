@@ -4061,6 +4061,7 @@ C from version manager
       SUBROUTINE EDDBCLM(moddb,APP,ISHD)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -4083,7 +4084,6 @@ C espriou.h provides currentfile.
       common/rpath/path
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/deflt4/dinstpath
 
@@ -4718,17 +4718,17 @@ C otherwise create with 0 length.
       write(outs,'(A,F7.3,A,F7.3,a,i4,i5,a,2F7.3,a)')
      &   'The climate lat is ',clat,
      &   ' & long diff is ',clong,' & Year & DN flag ',ICYEAR,ICDNGH,
-     &   '. The model currently uses ',xlat,xlon,'.'
+     &   '. The model currently uses ',sitelat,sitelongdif,'.'
       dok=.false.
       h(1)='Typically the project location will not deviate'
       h(2)='by much from the location of Climate db.'
       CALL ASKOK(outs,
      &  'Update your model with climate data?',OK,DOK,3)
       IF(OK)THEN
-        XLAT=CLAT
-        XLON=CLONG
-        WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'A latitude of ',xlat,
-     &    ' and longitude diff of ',xlon,
+        sitelat=CLAT
+        sitelongdif=CLONG
+        WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'A latitude of ',sitelat,
+     &    ' and longitude diff of ',sitelongdif,
      &    ' is associated with the model.'
         CALL EDISP(IUOUT,OUTS)
         CALL EDISP(IUOUT,' ')

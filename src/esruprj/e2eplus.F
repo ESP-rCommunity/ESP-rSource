@@ -52,13 +52,7 @@ C ICLIM,LCLIM (for climate file)
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C4/XLAT,XLON
 
-C skyview viewfactor from external surfaces to the sky (site.h)
-C groundview viewfactor from external surfaces to the ground
-C buildingview viewfactor from external surfaces to other buildings & obstructions
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-      common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -471,10 +465,10 @@ C the configuration file data for lat and long.
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','not_yet_set',com,
      &    '   !- LocationName'
       endif
-      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '  ',XLAT,com,
+      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '  ',sitelat,com,
      &  '   !- Latitude {deg}'
 
-      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '  ',XLON,com,
+      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '  ',sitelongdif,com,
      &  '   !- Longitude {deg} [check this value]'
 
 C Ask user where the current time meridian is.

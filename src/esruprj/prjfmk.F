@@ -4346,11 +4346,11 @@ C Gain as W - require gain only.
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
-        call EGETWR(HOLD,K,XLAT,0.,100000.0,'W','latent gain',IER)
+        call EGETWR(HOLD,K,XLATGN,0.,100000.0,'W','latent gain',IER)
         if (IER.ne.0) goto 20
         if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
         CMGSX=XSEN
-        CMGLX=XLAT
+        CMGLX=XLATGN
       elseif (IGU.eq.2) then
 
 C Gain as W/m^2 - require gain per square meter.
@@ -4365,15 +4365,15 @@ C Gain as W/m^2 - require gain per square meter.
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-        call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
+        call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 30
         if (ICGTX.eq.1) then
           CMGSX=XSEN*zb
-          CMGLX=XLAT*zb
+          CMGLX=XLATGN*zb
         else
           if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
           CMGSX=XSEN
-          CMGLX=XLAT
+          CMGLX=XLATGN
         endif
       elseif (IGU.eq.3) then
 
@@ -4400,11 +4400,11 @@ C << an actual cancel option not yet implemented >>
      &          ' ',24,'  0.   0. ','casual gn info',IER,24)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-        call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
+        call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 40
         if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
         CMGSX=XSEN*real(NOBJ)
-        CMGLX=XLAT*real(NOBJ)
+        CMGLX=XLATGN*real(NOBJ)
       elseif (IGU.eq.4) then
 
 C Gain as m^2/object - floor area of an object and gain per object.
@@ -4435,11 +4435,11 @@ C If user cancels go back to initial question.
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
             K=0
             call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-            call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
+            call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
             if (IER.ne.0) goto 50
             if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
             CMGSX=XSEN*zb/FLA
-            CMGLX=XLAT*zb/FLA
+            CMGLX=XLATGN*zb/FLA
           endif
         elseif(ieri.eq.-3)then
           goto 10

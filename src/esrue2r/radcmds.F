@@ -44,14 +44,13 @@ C  else simulate the scene by calling simscene
 
       SUBROUTINE autorad
 #include "building.h"
+#include "site.h"
       
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       common/expath/runpath,pathtype
-
-      COMMON/C4/XLAT,XLON
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
@@ -119,10 +118,11 @@ C Generate sky command use a sun for all skys except for daylight factors.
      &          RIFPURP(IRIFFOC)(1:5).eq.'Glare') then
           call settime(IRM,IRD,XRT)
           write(outs,'(a,2i3,f6.2,a,f5.2,2(a,f7.1),a)')'gensky',IRM,IRD,
-     &          XRT,' +s -g ',rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
+     &      XRT,' +s -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
+     &      ' -m 0.0'
         elseif (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') then
           write(outs,'(a,f5.2,2(a,f7.1),a)') 'gensky 6 20 12.0 -c -g ',
-     &                        rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
+     &      rgrfl,' -a ',sitelat,' -o ',-sitelongdif,' -m 0.0'
         elseif (RIFPURP(IRIFFOC)(1:8).eq.'Coupling') then
 
 C gendaylit -ang 60 0 -L QDIRILL QDIFILL
@@ -652,6 +652,7 @@ C genimage generates an image to screen or file.
 C ITP =1 - image only; =2 - glare info to display on image.
       SUBROUTINE genimage(ITP)
 #include "building.h"
+#include "site.h"
       
       integer lnblnk  ! function definition
 
@@ -660,7 +661,6 @@ C ITP =1 - image only; =2 - glare info to display on image.
       common/pophelp/h(60)
 
       common/expath/runpath,pathtype
-      COMMON/C4/XLAT,XLON
 
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
@@ -851,8 +851,8 @@ C Loop from start and increment until at or past the finish time.
           CURT=ATIMEST
           do while (idone.ne.0)
             write(outs,'(a,2i3,f7.3,a,f5.2,2(a,f7.1),a)')'gensky',IAMO,
-     &        IADO,CURT,' +s -g ',rgrfl,' -a ',XLAT,' -o ',-XLON,
-     &        ' -m 0.0'
+     &        IADO,CURT,' +s -g ',rgrfl,' -a ',sitelat,' -o ',
+     &        -sitelongdif,' -m 0.0'
             CALL wrtsky(outs)
 
 C We will need pic & gif file for this time. Write out and then use

@@ -40,6 +40,7 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 #include "net_flow.h"
 #include "building.h"
 #include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/c20/GS5.
 #include "geometry.h"
@@ -59,9 +60,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/ground/grdtmp(12,mgrdp)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -2891,6 +2890,7 @@ C << possible to alter the inside/outside hc from this interface? >>
       SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,IER)
 #include "building.h"
 #include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -2914,9 +2914,7 @@ C Optical and geometric properties.
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/ground/grdtmp(12,mgrdp)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW

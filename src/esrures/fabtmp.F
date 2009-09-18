@@ -366,6 +366,7 @@ C VAL1(1+NN+2) inside air temperature.
 
       SUBROUTINE MOFGET(ICOMP,ISUR,IDAY)
 #include "building.h"
+#include "site.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -374,8 +375,6 @@ C VAL1(1+NN+2) inside air temperature.
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-      common/ground/grdtmp(12,mgrdp)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)

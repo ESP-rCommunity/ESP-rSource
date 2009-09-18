@@ -53,11 +53,9 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/PREC8/SLAT,SLON
 
-      common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
 
@@ -139,8 +137,8 @@ C      WRITE(SALT(8),53)skyview,groundview,buildingview
 C Begin with high level menu.
     3 INO=-4
       IER=0
-      WRITE(ITEMS(1),'(A,F6.2)')'a site latitude: ',XLAT
-      WRITE(ITEMS(2),'(A,F6.2)')'b longitude difference:',XLON
+      WRITE(ITEMS(1),'(A,F6.2)')'a site latitude: ',sitelat
+      WRITE(ITEMS(2),'(A,F6.2)')'b longitude difference:',sitelongdif
       if(iSlr_half_hr_flg.eq.0)then
         WRITE(ITEMS(3),'(A)')   'c solar timing: hour centred'
       elseif(iSlr_half_hr_flg.eq.1)then
@@ -299,7 +297,7 @@ C Produce help text for the menu.
         H(2)='for Glasgow.'
         CALL EASKR(SLAT,' ','Site latitude?',
      &       -89.9,'W',89.9,'W',55.9,'site latitude',IER,2)
-        IF(IER.EQ.0)XLAT=SLAT
+        IF(IER.EQ.0)sitelat=SLAT
         MODSIT=.true.
         modish=.true.
 
@@ -310,7 +308,7 @@ C Produce help text for the menu.
         H(3)='-4.1 for Glasgow (relative to the Greenwich Meridian).'
         CALL EASKR(SLON,' ','Longitude difference?',
      &       -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,3)
-        IF(IER.EQ.0)XLON=SLON
+        IF(IER.EQ.0)sitelongdif=SLON
         MODSIT=.true.
         modish=.true.
 
@@ -3439,10 +3437,10 @@ C ********** EDDGTP **************
 C EDDGTP Sets up ground temperature profiles
       SUBROUTINE EDDGTP(modsit)
 #include "building.h"
+#include "site.h"
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/C14/UGRDTP(12,MGRDP),NGRDP
 
       CHARACTER H*72,HOLD*72,OUTS*124
       LOGICAL MODSIT

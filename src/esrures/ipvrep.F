@@ -33,6 +33,7 @@ C *********** ipvrep
 C Write IPV report based on description held in common.
       subroutine ipvrep(iier)
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "ipvdata.h"
@@ -47,7 +48,6 @@ C Write IPV report based on description held in common.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C4/XLAT,XLON
       COMMON/CLMDT1/CLMLOC
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/BL1/dmdsdesc,bdmds
@@ -505,9 +505,9 @@ C Open the climate file and get its location name.
         CALL  ERPFREE(IUNITC,ISTAT)
         write(outs,'(a,a1,a)') '*climate',tab,CLMLOC
         call edisp(itru,outs)
-        write(outs,'(a,a1,f6.2)') '*latitude',tab,XLAT
+        write(outs,'(a,a1,f6.2)') '*latitude',tab,sitelat
         call edisp(itru,outs)
-        write(outs,'(a,a1,f6.2)') '*longitude',tab,XLON
+        write(outs,'(a,a1,f6.2)') '*longitude',tab,sitelongdif
         call edisp(itru,outs)
 
 C Write synopsis out as one long string.

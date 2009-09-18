@@ -1427,7 +1427,6 @@ C << to write only the header portion.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
@@ -1510,8 +1509,8 @@ C Comment for configuration index (upgrade registration level).
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)
 
-      WRITE(ioout,'(F7.3,2X,F7.3,a)')XLAT,XLON,
-     &'   # Latitude & Longitude '
+      WRITE(ioout,'(F7.3,2X,F7.3,a)')sitelat,sitelongdif,
+     &'   # Latitude & Longitude diff'
       WRITE(ioout,'(I7,2X,F6.3,a)') siteexposureindex,groundrefl,
      &'   # Site exposure & ground refl'
       IF(siteexposureindex.EQ.8)WRITE(ioout,'(3F8.3,A)')

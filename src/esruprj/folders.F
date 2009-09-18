@@ -51,7 +51,6 @@ C espriou.h provides currentfile and MFFOLD.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C4/XLAT,XLON
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
@@ -178,9 +177,9 @@ C User did not cancel so instantiate data for new model.
 C At some point switch from default version 3 to v4.
       icfgv=4   ! alter this to 4 when working correctly
       INDCFG=0
-      XLAT=55.9
+      sitelat=55.9
       SLAT=55.9
-      XLON=-4.1
+      sitelongdif=-4.1
       SLON=-4.1
       siteexposureindex=1
       groundrefl=0.2
@@ -686,14 +685,14 @@ C Ask for site position.
         H(2)='for Glasgow.'
         CALL EASKR(SLAT,' ','Site latitude?',
      &       -89.9,'W',89.9,'W',55.9,'site latitude',IER,2)
-        IF(IER.EQ.0)XLAT=SLAT
+        IF(IER.EQ.0)sitelat=SLAT
 
         H(1)='Site longitude difference is the difference in degrees'
         H(2)='from the local reference meridian, East is +ve, e.g.'
         H(3)='-4.1 for Glasgow (relative to the Greenwich Meridian).'
         CALL EASKR(SLON,' ','Longitude difference?',
      &       -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,3)
-        IF(IER.EQ.0)XLON=SLON
+        IF(IER.EQ.0)sitelongdif=SLON
 
 C Ask for year, initialise and then print out the calendar if the
 C user does not cancel the operation.

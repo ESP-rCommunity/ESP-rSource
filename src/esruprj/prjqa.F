@@ -59,9 +59,7 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C4/XLAT,XLON
       common/C6/INDCFG
-      common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
 
 C IFPNF is the unit for the plant network file.
@@ -890,8 +888,8 @@ C Generate the QA report.
 C Site information.
       if(siteinfo.gt.0)then
         write(outs248,'(a,f7.2,a,f6.2,2a,i4,5a)') 
-     &    'The model is located at latitude ',XLAT,
-     &    ' with a longitude difference of ',XLON,
+     &    'The model is located at latitude ',sitelat,
+     &    ' with a longitude difference of ',sitelongdif,
      &    ' from the local time meridian. The year used in',
      &    ' simulations is ',IYEAR,' and weekends occur on ', 
      &     wkd1(1:lnblnk(wkd1)),' and ',wkd2(1:lnblnk(wkd2)),'.'

@@ -60,10 +60,8 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -429,10 +427,11 @@ C Now read all configuration data from file; start with site data.
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'latitude & long dif',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWR(OUTSTR,K,XLAT,-90.,90.,'W','Latitude',IER)
-      SLAT=XLAT
-      CALL EGETWR(OUTSTR,K,XLON,-15.,15.,'W','Longitude dif',IER)
-      SLON=XLON
+      CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
+      SLAT=sitelat
+      CALL EGETWR(OUTSTR,K,sitelongdif,-15.,15.,'W',
+     &  'Longitude dif from time meridian',IER)
+      SLON=sitelongdif
       IF(IER.NE.0) GOTO 1
 
 C Get site exposure and ground reflectance.
