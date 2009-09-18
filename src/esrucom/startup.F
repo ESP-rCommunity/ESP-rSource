@@ -178,7 +178,7 @@ C temporary files in the users home folder.
         foldexe='xfs '
         cadlbl='CAD package'
         cadexe='xzip'
-        cadfmt='ZIP'
+        cadfmt='dxf' ! was 'ZIP'
         replbl='No report generator'
         repexe='UNKNOWN'
         gprcmd='UNKNOWN'
