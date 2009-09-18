@@ -1124,10 +1124,11 @@ C If IBOFOT()=1, then blind/shutter is ON.
               ! Is this surface / construction a CFC?
               IF(ICFCFL(ICOMP,I).GT.0)THEN
                 ! Keep track of the blind setting. This value is transported to radiance via the temporary file.
-                ! However, radiance uses "iblind=0" as a kind of default setting. So, we have to make sure
-                ! we use iblind=0 as basis ... ((this will only work for models that do not have a "retracted blind"
-                ! state in a CFC, as then i_shd() = 0 ...))
-                IBLIND = i_shd(ICOMP,icfcfl(icomp,I))-1
+                ! As Radiance uses "IBLIND=0" as default setting, we have to make sure we use IBLIND=0 as basis.
+                ! To date, only one IBLIND value is possible (DBILLA). So, if there is more than one CFC type in 
+                ! current zone, use highest blind setting - high means "more closed". This is a conservative approach
+                ! in regard to lighting heat gains (the heat gains will be estimated high)
+                IBLIND = max(IBLIND,i_shd(ICOMP,icfcfl(icomp,I))-1)                  
                 RATIO = 1.0 ! whats this?? it is used in a different block below ... ???
               ENDIF
 31          CONTINUE
