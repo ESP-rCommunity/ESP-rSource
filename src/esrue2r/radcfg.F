@@ -128,13 +128,10 @@ C Now read number of scenes contained.
       K=0
       CALL EGETWI(OUTSTR,K,NSCENE,1,MCOM+1,'W','no of scenes',IER)
 
-C For each scene read 5 items of data
+C For each scene read (at least) 5 items of data
       IER=0
       do 10 I=1,NSCENE
         irif=0 ! initialize rif counter
-C Reset the number of modelled blind states to zero.
-C        NBSRIF(I)=-1
-c        NBSRIF(ifocz,I)=1 ! default rif is no./index 1
  30     CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif data',IER)
         if (OUTSTR(1:9).eq.'*sceneEND') goto 20
         if (IER.eq.0) then
@@ -143,19 +140,25 @@ c        NBSRIF(ifocz,I)=1 ! default rif is no./index 1
           if (WORD(1:4).eq.'*snm') then
             CALL EGETW(OUTSTR,K,SCENE(I),'W','scene name',IFLAG)
           elseif (WORD(1:4).eq.'*rnm') then
+C Entry for .rif file found:
+c            CALL EGETW(OUTSTR,K,tmp_rifname,'W','rif name',IFLAG)
+            ! evaluate for which zone this rif file (and thus the scene) is used !! ((18.09.09 TODO !!))
+            !! ***
+               ! code from "checkrif()" ??
+c            i_scene_zone = 
+               ! if subsequent rifs in this Scene have different zone => fatal error!
+               ! if subsequent scenes have same zone and same purpose => fatal error! ((how???))
+            !! ***
             irif=irif+1 ! increment the number of rif files in this scene
+c            write(RIFNAME(i_scene_zone,I,irif),(a))tmp_rifname
 C First rif name corresponds to default blind state, subsquent rifs within 
 C this scene represent alternate blind states (when no control is defined in .tmc file, NABS=0).
             if (irif.gt.(NABS+1)) then
               call usrmsg('Scene has too many rif files.','  ','W')
             endif
-c            if (NBSRIF(I).eq.0) then
             CALL EGETW(OUTSTR,K,RIFNAME(ifocz,I,irif),
      &                                     'W','rif name',IFLAG)
-c            else
-c              CALL EGETW(OUTSTR,K,LBSRIF(I),'W','bl st',IFLAG)
-c            endif
-c            NBSRIF(ifocz,I)=NBSRIF(ifocz,I)+1 
+c End of .rif file logic
           elseif (WORD(1:4).eq.'*srt') then
             CALL EGETW(OUTSTR,K,SCENERT(I),'W','scene root',IFLAG)
           elseif (WORD(1:4).eq.'*rde') then
@@ -172,6 +175,7 @@ c            NBSRIF(ifocz,I)=NBSRIF(ifocz,I)+1
         endif
         goto 30
  20     continue
+c        NBSRIF(i_scene_zone,I)=irif ! store number of rif files for this scene
         NBSRIF(ifocz,I)=irif ! store number of rif files for this scene
  10   continue
 
