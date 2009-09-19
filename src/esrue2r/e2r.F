@@ -1473,6 +1473,7 @@ C inqu_tmc: Check if tmc control active.
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
 #include "e2r_common.h"
+#include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1533,6 +1534,20 @@ C Check if tmc control found.
         endif
  10   continue
 
+C Now do "the same" for CFC ...
+	  if (nCFCctlloops.gt.0) then
+        do 20 ictlfun=1,nCFCctlloops
+		  if (iCFCactuator(ictlfun,1) .eq.0) then
+			NABS=max(NABS,1)
+		  elseif (iCFCactuator(ictlfun,1) .eq.1) then
+		    NABS=max(NABS,1)
+		  elseif (iCFCactuator(ictlfun,1) .eq.2) then
+		    NABS=max(NABS,1)
+		  elseif (iCFCactuator(ictlfun,1) .eq.3) then
+		    NABS=max(NABS,2)
+		  endif
+20      continue
+      endif
 
       return
       end
