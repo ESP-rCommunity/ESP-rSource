@@ -59,10 +59,17 @@ C RADCFGIN reads the contents of the radiance configuration file.
       character pfile*72,path*72,runpath*72,pathtype*24,fs*1
       integer lnrp  ! length of run path
 
+      integer ifocz_tmp(MBP+1)
+
       logical unixok
       logical browse
       
       IRCFG = IFIL+17
+
+C from checkrif ... file pointes for .rif??
+      ITA2=IFIL+7
+      ITA3=IFIL+10
+C --
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -141,23 +148,30 @@ C For each scene read (at least) 5 items of data
             CALL EGETW(OUTSTR,K,SCENE(I),'W','scene name',IFLAG)
           elseif (WORD(1:4).eq.'*rnm') then
 C Entry for .rif file found:
-c            CALL EGETW(OUTSTR,K,tmp_rifname,'W','rif name',IFLAG)
+            irif=irif+1 ! increment the number of rif files in this scene
+            CALL EGETW(OUTSTR,K,tmp_rifname,'W','rif name',IFLAG)
             ! evaluate for which zone this rif file (and thus the scene) is used !! ((18.09.09 TODO !!))
             !! ***
-               ! code from "checkrif()" ??
-c            i_scene_zone = 
-               ! if subsequent rifs in this Scene have different zone => fatal error!
-               ! if subsequent scenes have same zone and same purpose => fatal error! ((how???))
+			! ifocz is set in RRIF:
+            call RRIF(ITA2,ITA3,tmp_rifname,'s',IER)
+			ifocz_tmp(irif)=ifocz ! store current value of ifocz
+            if (irif .gt. 1) then
+			  if (ifocz_tmp(irif-1) .ne. ifocz) then
+                ! if subsequent rifs in this Scene have different zone => fatal error!
+                call usrmsg('Scene rif files use different zones',
+     &			                                          '  ','F')
+			  endif
+			endif
+			write(RIFNAME(ifocz,I,irif),'(a)')tmp_rifname			
+			! if subsequent scenes have same zone and same purpose => fatal error! ((how???))
             !! ***
-            irif=irif+1 ! increment the number of rif files in this scene
-c            write(RIFNAME(i_scene_zone,I,irif),(a))tmp_rifname
 C First rif name corresponds to default blind state, subsquent rifs within 
 C this scene represent alternate blind states (when no control is defined in .tmc file, NABS=0).
             if (irif.gt.(NABS+1)) then
               call usrmsg('Scene has too many rif files.','  ','W')
             endif
-            CALL EGETW(OUTSTR,K,RIFNAME(ifocz,I,irif),
-     &                                     'W','rif name',IFLAG)
+cc            CALL EGETW(OUTSTR,K,RIFNAME(ifocz,I,irif),
+cc     &                                     'W','rif name',IFLAG)
 c End of .rif file logic
           elseif (WORD(1:4).eq.'*srt') then
             CALL EGETW(OUTSTR,K,SCENERT(I),'W','scene root',IFLAG)
