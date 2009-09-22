@@ -167,4 +167,4 @@ C Miscellaneous.
       PARAMETER (MVAR=5)
       PARAMETER (MIMG=10)	!- Images associated with model.
       PARAMETER (MCFC=7)	! Maximum number of different CFC types within a zone.
-      PARAMETER (MNSCN=5) ! Maximum number of Radiance scenes per zone
+      PARAMETER (MNSCN=10) ! Maximum number of Radiance scenes (now per .rcf, should be per zone)

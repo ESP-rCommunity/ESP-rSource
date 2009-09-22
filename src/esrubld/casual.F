@@ -1369,9 +1369,11 @@ C Copy new information to illuminance DB. Transform to integer ... (why?)
 C Trace output:
                 if(IFT.EQ.1)then
 c                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
-                  write(78,111)NN,I,selum(NN,I),SETPT(ICOMP,NN)
-  111             format(I6,I5,' N/A ','  N/A  ','   N/A   ','  N/A ',
-     &               '   N/A  ','   N/A  ',F7.1,F6.0,'   N/A   ')
+                  write(78,111)BTIMEP,zname(ICOMP),IBLIND,NN,I,
+     &              selum(NN,I),SETPT(ICOMP,NN)
+  111             format(I6,' ',(a),I5,I5,I5,' N/A ','  N/A  ',
+     &               '  N/A  ','  N/A ',
+     &               '  N/A  ','  N/A  ',F7.1,F6.0,'  N/A  ')
                   call edisp(itu,outs)
                 endif
                 ift=ift_old

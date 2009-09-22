@@ -292,8 +292,8 @@ C Recreate octree, setting rtrace options, and run rtrace.
         if ( (iblnds.ne.0 .and.NBSRIF(ifocz,ISCENE).eq.1) .or. 
      &                 (iblnds.gt.(NBSRIF(ifocz,ISCENE)-1)) ) then
 C Error file missing for simulation of switched blinds.
-          write(outs,'(a,I3,a,I3,a,I3,a)')
-     &  'In zone ',ifocz,
+          write(outs,'(a,I3,a,I3,a,I3,a,I3,a)')
+     &  'In zone ',ifocz,', scene ',ISCENE,
      &  ' in .rcf: Too few .rif (',NBSRIF(ifocz,ISCENE),
      &  ') for number of TMC replacement properties (',
      &  iblnds,') available!'

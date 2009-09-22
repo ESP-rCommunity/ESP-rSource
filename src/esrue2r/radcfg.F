@@ -42,6 +42,7 @@ C RADCFGIN reads the contents of the radiance configuration file.
       SUBROUTINE RADCFGIN
 #include "building.h"
 #include "e2r_common.h"
+#include "control.h"
 
       integer lnblnk  ! function definition
 
@@ -57,6 +58,9 @@ C RADCFGIN reads the contents of the radiance configuration file.
       character docpth*24,tmppth*24,dbspth*24
       character WORD*124, OUTS*124, OUTSTR*124
       character pfile*72,path*72,runpath*72,pathtype*24,fs*1
+      
+      character tmp_rifname*72
+      
       integer lnrp  ! length of run path
 
       integer ifocz_tmp(MBP+1)
@@ -66,7 +70,7 @@ C RADCFGIN reads the contents of the radiance configuration file.
       
       IRCFG = IFIL+17
 
-C from checkrif ... file pointes for .rif??
+C from checkrif ... file pointers for .rif??
       ITA2=IFIL+7
       ITA3=IFIL+10
 C --
@@ -113,6 +117,9 @@ C        call runit(outs,'-')
 C Set file name including path.
       write (pfile,'(a,a)') runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
 
+C Check if TMC (or CFC) control is active ... this sets "NABS"
+      call inqu_tmc
+
 C Initialise radiance cfg file.
       call ERPFREE(IRCFG,ISTAT)
       call FPOPEN(IRCFG,ISTAT,1,1,pfile)
@@ -138,7 +145,7 @@ C Now read number of scenes contained.
 C For each scene read (at least) 5 items of data
       IER=0
       do 10 I=1,NSCENE
-        irif=0 ! initialize rif counter
+        irif=0 ! initialize rif counter for current scene
  30     CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'rif data',IER)
         if (OUTSTR(1:9).eq.'*sceneEND') goto 20
         if (IER.eq.0) then
@@ -152,26 +159,24 @@ C Entry for .rif file found:
             CALL EGETW(OUTSTR,K,tmp_rifname,'W','rif name',IFLAG)
             ! evaluate for which zone this rif file (and thus the scene) is used !! ((18.09.09 TODO !!))
             !! ***
-			! ifocz is set in RRIF:
+			      ! ifocz is set in RRIF:
             call RRIF(ITA2,ITA3,tmp_rifname,'s',IER)
-			ifocz_tmp(irif)=ifocz ! store current value of ifocz
+			      ifocz_tmp(irif)=ifocz ! store current value of ifocz
             if (irif .gt. 1) then
-			  if (ifocz_tmp(irif-1) .ne. ifocz) then
+			        if (ifocz_tmp(irif-1) .ne. ifocz) then
                 ! if subsequent rifs in this Scene have different zone => fatal error!
                 call usrmsg('Scene rif files use different zones',
      &			                                          '  ','F')
-			  endif
-			endif
-			write(RIFNAME(ifocz,I,irif),'(a)')tmp_rifname			
-			! if subsequent scenes have same zone and same purpose => fatal error! ((how???))
+			        endif
+			      endif
+			      write(RIFNAME(ifocz,I,irif),'(a)')tmp_rifname
+			      ! if subsequent scenes have same zone and same purpose => fatal error! ((how???))
             !! ***
 C First rif name corresponds to default blind state, subsquent rifs within 
 C this scene represent alternate blind states (when no control is defined in .tmc file, NABS=0).
             if (irif.gt.(NABS+1)) then
               call usrmsg('Scene has too many rif files.','  ','W')
             endif
-cc            CALL EGETW(OUTSTR,K,RIFNAME(ifocz,I,irif),
-cc     &                                     'W','rif name',IFLAG)
 c End of .rif file logic
           elseif (WORD(1:4).eq.'*srt') then
             CALL EGETW(OUTSTR,K,SCENERT(I),'W','scene root',IFLAG)
@@ -189,9 +194,8 @@ c End of .rif file logic
         endif
         goto 30
  20     continue
-c        NBSRIF(i_scene_zone,I)=irif ! store number of rif files for this scene
         NBSRIF(ifocz,I)=irif ! store number of rif files for this scene
- 10   continue
+ 10   continue ! loop through all scenes in .rcf file
 
       CALL ERPFREE(IRCFG,ISTAT)
       RETURN
@@ -233,8 +237,8 @@ C Write header first.
 C Now write number of rif files contained.
       write(IRCFG,'(i3,a)') NSCENE,' # No. of scenes'
       
-C For each rif write 1) name. 2) root identifier. 3) short description 
-C and 4) intended use/ purpose.
+C For each scene write 1) name, 2) rif name(s), 3) root identifier. 4) short description 
+C and 5) intended use/ purpose as well as optional data
 
       do 10 I=1,NSCENE
 
@@ -246,18 +250,19 @@ C Find the longest string in this scene.
           ISLENG=LNBLNK(RIFNAME(ifocz,I,irif))
           IF(ISLENG.GT.IML)IML=ISLENG
  66     continue
-c        ISLENG=LNBLNK(LBSRIF(I))
-c        IF(ISLENG.GT.IML)IML=ISLENG
+
         ISLENG=LNBLNK(SCENERT(I))
         IF(ISLENG.GT.IML)IML=ISLENG
         ISLENG=LNBLNK(SCENEDESC(I))
         IF(ISLENG.GT.IML)IML=ISLENG
         ISLENG=LNBLNK(SCENEPURP(I))
         IF(ISLENG.GT.IML)IML=ISLENG
-
+C 1)
         write(IRCFG,'(a,i3)') '# Scene number',I
         OUTS=SCENE(I)
         write(IRCFG,'(a,a,a)')'*snm ',OUTS(1:IML),' # Scene name'
+
+C 2)
         do 67 irif= 1,NBSRIF(ifocz,I)
           if (scenepurp(I)(1:6) .eq. 'Extern') then
             OUTS=RIFNAME(1,I,irif)
@@ -265,20 +270,22 @@ c        IF(ISLENG.GT.IML)IML=ISLENG
             OUTS=RIFNAME(ifocz,I,irif)
           endif
           write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Rif name'
-c        if (NBSRIF(I).gt.0) then
-c          OUTS=LBSRIF(I)
-c          write(IRCFG,'(a,a,a)')'*rnm ',OUTS(1:IML),' # Alternate rif'
-c        endif
+          if (scenepurp(I)(1:6) .eq. 'Extern') goto 68 !! 21/09/09 experimental
  67     continue
+ 68     continue ! jump tag for 'Extern' scene; 21/09/09 experimental
+
+C 3), 4) and 5)
         OUTS=SCENERT(I)
         write(IRCFG,'(a,a,a)')'*srt ',OUTS(1:IML),' # Scene prefix'
         OUTS=SCENEDESC(I)
         write(IRCFG,'(a,a,a)')'*rde ',OUTS(1:IML),' # Description'
         OUTS=SCENEPURP(I)
         write(IRCFG,'(a,a,a)')'*rpu ',OUTS(1:IML),' # Intended use'
+
         if (SCENEPURP(I)(1:8).eq.'Day_fact') then
           OUTS=LDFGRID
           write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # DF grid data'
+
         elseif (SCENEPURP(I)(1:8).eq.'Coupling') then
           OUTS=LDFGRID
           write(IRCFG,'(a,a,a)')'*slc ',OUTS(1:IML),
@@ -413,7 +420,6 @@ C be deleted or copied, respectively.
               SCENERT(I)='UNKNOWN'
               SCENEDESC(I)='UNKNOWN'
               SCENEPURP(I)='UNKNOWN'
-c              LBSRIF(I)='NONE'
             else
               SCENE(I)=SCENE(I+1)
               do 67 irif= 1,NBSRIF(ifocz,I+1)
@@ -422,7 +428,6 @@ c              LBSRIF(I)='NONE'
               SCENERT(I)=SCENERT(I+1)
               SCENEDESC(I)=SCENEDESC(I+1)
               SCENEPURP(I)=SCENEPURP(I+1)
-c              LBSRIF(I)=LBSRIF(I+1)
             endif
  1110     continue
           NSCENE=NSCENE-1
@@ -437,7 +442,6 @@ c              LBSRIF(I)=LBSRIF(I+1)
           SCENERT(NSCENE)=SCENERT(IFOC)
           SCENEDESC(NSCENE)=SCENEDESC(IFOC)
           SCENEPURP(NSCENE)=SCENEPURP(IFOC)
-c          LBSRIF(I)=LBSRIF(IFOC)
           ISCENE=NSCENE
 
 C Check new scenes data by calling newscene.  As newscene adds one to NSCENE 
@@ -767,8 +771,6 @@ C Set default names based on above.
         write (rifname(ifocz,iscene,irif),'(a,a)') 
      &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
  66   continue
-c      write (LBSRIF(ISCENE),'(a,a)') 
-c     &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
 
 C Additional details for specific purposes.
       if (IRP.eq.4) then
@@ -815,8 +817,6 @@ C Ask for root name and use this for rif name.
           write (rifname(ifocz,iscene,irif),'(a,a)') 
      &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.rif'
  67     continue
-c        write (LBSRIF(ISCENE),'(a,a)') 
-c     &      SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
 
 C Ask for additional description.
  25     H(1)='The description is used as an additional aide to'
@@ -1392,27 +1392,26 @@ C If rcf file does exist then search for existing rif file.
       if (filexst.eq.'o') then
         do 10 I=1,NSCENE
           if (SCENEPURP(I)(1:5).eq.aim(1:5)) then
-
-C Possible match, further check - look at rif file.
-c            ifocz=-1 ! does not seem necessary
-            call RRIF(ITA2,ITA3,RIFNAME(izone,I,1),'s',IER) !! possible call with izone=-1 !!
-            if (ifocz.eq.izone) then
-
+C Possible match, further check - look at rif file if not UNKNOWN (not set) for zone,scene ...
+            if (RIFNAME(izone,I,1)(1:4) .ne. 'UNKN') then
+              call RRIF(ITA2,ITA3,RIFNAME(izone,I,1),'s',IER)
+              if (ifocz.eq.izone) then
 C Got match.
-              ISCENE=I
-
+                ISCENE=I
 C Update sensor information from cgc file.
-              if(aim(1:8).eq.'Coupling'.or.aim(1:8).eq.'Day_coef')then
-                call SENLOC
-              endif
+                if(aim(1:8).eq.'Coupling'.or.aim(1:8).eq.'Day_coef')then
+                  call SENLOC
+                endif
 
 C If daylight coefficients and act=create and model exists then issue warning.
-              if(aim(1:8).eq.'Day_coef'.and.act(1:6).eq.'Create')then
-                call usrmsg('Model already exists!',
-     &                      'Using existing model.','W')
-                act='Calculate'
+                if(aim(1:8).eq.'Day_coef'.and.act(1:6).eq.'Create')then
+                  call usrmsg('Model already exists!',
+     &                         'Using existing model.','W')
+                  act='Calculate'
+                endif
+                modscene=.true.
+                return ! one match should be enough ...
               endif
-              modscene=.true.
             endif
           endif
  10     continue

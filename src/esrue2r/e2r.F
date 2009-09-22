@@ -1535,19 +1535,20 @@ C Check if tmc control found.
  10   continue
 
 C Now do "the same" for CFC ...
-	  if (nCFCctlloops.gt.0) then
-        do 20 ictlfun=1,nCFCctlloops
-		  if (iCFCactuator(ictlfun,1) .eq.0) then
-			NABS=max(NABS,1)
-		  elseif (iCFCactuator(ictlfun,1) .eq.1) then
-		    NABS=max(NABS,1)
-		  elseif (iCFCactuator(ictlfun,1) .eq.2) then
-		    NABS=max(NABS,1)
-		  elseif (iCFCactuator(ictlfun,1) .eq.3) then
-		    NABS=max(NABS,2)
-		  endif
-20      continue
-      endif
+       write(*,*)'***inqu_tmc: nCFCctlloops= ',nCFCctlloops
+	     if (nCFCctlloops.gt.0) then
+         do 20 ictlfun=1,nCFCctlloops
+		       if (iCFCactuator(ictlfun,1) .eq.0) then
+			       NABS=max(NABS,1)
+		       elseif (iCFCactuator(ictlfun,1) .eq.1) then
+		         NABS=max(NABS,1)
+		       elseif (iCFCactuator(ictlfun,1) .eq.2) then
+		         NABS=max(NABS,1)
+		       elseif (iCFCactuator(ictlfun,1) .eq.3) then
+		         NABS=max(NABS,2)
+		       endif
+20       continue
+       endif
 
       return
       end
