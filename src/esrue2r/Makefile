@@ -1,5 +1,6 @@
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
+CTLdir = $(SRCdir)/esructl
 MFSdir = $(SRCdir)/esrumfs
 MRTdir = $(SRCdir)/esrumrt
 PRJdir = $(SRCdir)/esruprj
@@ -11,9 +12,9 @@ PROG = e2r$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = e2r.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o ctlexp.o ctread.o \
-	  dossupport.o e2rfile.o e2rform.o e2rvp.o e3dviews.o ecasctl.o econstr.o \
+	  dossupport.o e2rfile.o e2rform.o e2rvp.o e3dviews.o ecasctl.o econstr.o econtrol.o \
 	  edatabase.o edcondb.o egeometry.o egtgeom.o emfnetw.o enetmisc.o \
-	  eroper.o esru_misc.o esystem.o grid.o inside.o item.o mfcdat.o \
+	  eroper.o esru_misc.o esystem.o grid.o initalc.o inside.o item.o mfcdat.o \
 	  msurf.o nwkrewr.o plelev.o pltcfg.o radcfg.o radcmds.o \
 	  radctl.o readTrnsys.o rifform.o rwipv.o rwsbem.o sort.o startup.o tdfile.o
 
@@ -53,6 +54,9 @@ ecasctl.F:
 econstr.F:
 	rm -f econstr.F
 	ln -s $(COMdir)/econstr.F .
+econtrol.F:
+	rm -f econtrol.F
+	ln -s $(COMdir)/econtrol.F .
 edatabase.F:
 	rm -f edatabase.F
 	ln -s $(COMdir)/edatabase.F .
@@ -80,6 +84,9 @@ esru_misc.F:
 esystem.F:
 	rm -f esystem.F
 	ln -s $(COMdir)/esystem.F .
+initalc.F:
+	rm -f initalc.F
+	ln -s $(CTLdir)/initalc.F .
 inside.F:
 	rm -f inside.F
 	ln -s $(MRTdir)/inside.F .
@@ -126,6 +133,6 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F e3dviews.F \
-	dossupport.F ecasctl.F econstr.F edcondb.F edatabase.F egeometry.F egtgeom.F \
-	emfnetw.F enetmisc.F eroper.F esru_misc.F esystem.F inside.F item.F mfcdat.F \
+	dossupport.F ecasctl.F econstr.F econtrol.F edcondb.F edatabase.F egeometry.F egtgeom.F \
+	emfnetw.F enetmisc.F eroper.F esru_misc.F esystem.F initalc.F inside.F item.F mfcdat.F \
 	nwkrewr.F plelev.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F  sort.F startup.F tdfile.F

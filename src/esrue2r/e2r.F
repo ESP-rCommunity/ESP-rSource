@@ -188,8 +188,6 @@ C Make case insensitive.
         SCENERT(I)='UNKNOWN'
         SCENEDESC(I)='UNKNOWN'
         SCENEPURP(I)='UNKNOWN'
-c        LBSRIF(I)='NONE'
-c        NBSRIF(I)=-1
  9    continue
 
       do 91 IZON=1,MCOM
@@ -1505,6 +1503,12 @@ C NABS = number of alternative blind states.
       NABS=0
       newgeo=.false.  ! assume older format geometry.
 
+C Control file. Call to initialize commons in control.h
+      ICTLF=IFIL+2
+c      if (ctldoc(1:4) .ne. 'NONE') then
+      CALL EZCTLR(ICTLF,0,IUOUT,IER)
+c      endif
+
 C Loop through zones checking if a tmc file has been referenced.
       do 10 ICOMP=1,NCOMP
         if (ITW(ICOMP).eq.1) then
@@ -1535,7 +1539,7 @@ C Check if tmc control found.
  10   continue
 
 C Now do "the same" for CFC ...
-       write(*,*)'***inqu_tmc: nCFCctlloops= ',nCFCctlloops
+c       write(*,*)'***inqu_tmc: nCFCctlloops= ',nCFCctlloops
 	     if (nCFCctlloops.gt.0) then
          do 20 ictlfun=1,nCFCctlloops
 		       if (iCFCactuator(ictlfun,1) .eq.0) then

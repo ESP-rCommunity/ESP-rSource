@@ -117,9 +117,6 @@ C        call runit(outs,'-')
 C Set file name including path.
       write (pfile,'(a,a)') runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
 
-C Check if TMC (or CFC) control is active ... this sets "NABS"
-      call inqu_tmc
-
 C Initialise radiance cfg file.
       call ERPFREE(IRCFG,ISTAT)
       call FPOPEN(IRCFG,ISTAT,1,1,pfile)
@@ -175,7 +172,7 @@ C Entry for .rif file found:
 C First rif name corresponds to default blind state, subsquent rifs within 
 C this scene represent alternate blind states (when no control is defined in .tmc file, NABS=0).
             if (irif.gt.(NABS+1)) then
-              call usrmsg('Scene has too many rif files.','  ','W')
+             call usrmsg('Scene has too many rif files.','  ','W')
             endif
 c End of .rif file logic
           elseif (WORD(1:4).eq.'*srt') then
