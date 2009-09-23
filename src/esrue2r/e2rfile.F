@@ -372,7 +372,8 @@ C Test if e2r information structure can be recovered.
       goto 39
 
 C Close and then re-open the file.
- 102  call usrmsg('  ','  ','-')
+ 102  continue
+      ! call usrmsg('  ','  ','-')
       call ERPFREE(ITA2,ISTAT)
       call FPOPEN(ITA2,ISTAT,1,1,tfile)
 
@@ -463,7 +464,8 @@ C Echo and save render settings.
       endif
       goto 42
 
-900   call usrmsg('  ','  ','-')
+900   continue
+      ! call usrmsg('  ','  ','-')
       CALL ERPFREE(ITA2,ISTAT)
 
       return

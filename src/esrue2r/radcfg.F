@@ -237,7 +237,16 @@ C Now write number of rif files contained.
 C For each scene write 1) name, 2) rif name(s), 3) root identifier. 4) short description 
 C and 5) intended use/ purpose as well as optional data
 
+
       do 10 I=1,NSCENE
+
+C first, we must make sure that we have the correct zone value for the current scene ...
+        do 55 IZ=1,NCOMP
+          if (RIFNAME(IZ,I,1)(1:4) .ne. 'UNKN') then
+            ! set focus zone to correct value for first .rif in current scene
+            ifocz=IZ
+          endif
+55      continue
 
 C Find the longest string in this scene.
         IML=10
