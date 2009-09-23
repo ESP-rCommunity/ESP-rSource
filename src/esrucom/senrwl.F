@@ -534,7 +534,7 @@ C Arrays of material properties.
 
       character matname*32,matdoc*248,matopaq*1
       common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-      logical closemat
+      logical closemat1,closemat2
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
@@ -554,7 +554,8 @@ C List distributions.
         call edisp (iuout,'  ')
         write(outs,'(a,i4)')'Number of distributions defined:',NICNG
         call edisp (iuout,outs)
-        call eclose(matver,1.1,0.01,closemat)
+        call eclose(matver,1.1,0.01,closemat1)
+        call eclose(matver,1.2,0.01,closemat2)
         do 10 I=1,NICNG
           if (IELM.eq.0.or.IELM.eq.I) then
             call edisp (iuout,'  ')
@@ -562,18 +563,26 @@ C List distributions.
             call edisp (iuout,outs)
             if (IDTYP(I).eq.1) then
               IDB=IDMAT(I,1)
-              if(closemat)then
+              if(closemat1.or.closemat2)then
                 legmat=IDB   ! which legacy index
                 if(legmat.ge.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
-                  E=matdbine(matarrayindex)
-                  A=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
-                  write(NAM,'(a)') matname(matarrayindex)(1:32)
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+                  if(matarrayindex.eq.0)then
+                    DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                    E=0.99; A=0.99; DRV=1.0
+                    TITL='GAPS'; NAM='AIR'
+                  else
+                    DBCON=matdbcon(matarrayindex)
+                    DBDEN=matdbden(matarrayindex)
+                    DBSHT=matdbsht(matarrayindex)
+                    E=matdbine(matarrayindex)
+                    A=matdbina(matarrayindex)
+                    DRV=matdbdrv(matarrayindex)
+                    write(TITL,'(a)') 'placeholder'
+                    write(NAM,'(a)') matname(matarrayindex)(1:32)
+                  endif
                 endif
               else
                 CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
@@ -601,18 +610,26 @@ C List distributions.
                 call edisp (iuout,'Undefined')
               else
                 IDB=IDMAT(I,1)
-                if(closemat)then
+                if(closemat1.or.closemat2)then
                   legmat=IDB   ! which legacy index
                   if(legmat.ge.0)then
                     matarrayindex=mathash(legmat)  ! find matching array index
-                    DBCON=matdbcon(matarrayindex)
-                    DBDEN=matdbden(matarrayindex)
-                    DBSHT=matdbsht(matarrayindex)
-                    E=matdbine(matarrayindex)
-                    A=matdbina(matarrayindex)
-                    DRV=matdbdrv(matarrayindex)
-                    write(TITL,'(a)') 'placeholder'
-                    write(NAM,'(a)') matname(matarrayindex)(1:32)
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+                    if(matarrayindex.eq.0)then
+                      DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                      E=0.99; A=0.99; DRV=1.0
+                      TITL='GAPS'; NAM='AIR'
+                    else
+                      DBCON=matdbcon(matarrayindex)
+                      DBDEN=matdbden(matarrayindex)
+                      DBSHT=matdbsht(matarrayindex)
+                      E=matdbine(matarrayindex)
+                      A=matdbina(matarrayindex)
+                      DRV=matdbdrv(matarrayindex)
+                      write(TITL,'(a)') 'placeholder'
+                      write(NAM,'(a)') matname(matarrayindex)(1:32)
+                    endif
                   endif
                 else
                   CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,

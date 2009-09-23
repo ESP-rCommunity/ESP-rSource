@@ -577,6 +577,11 @@ C TMC data
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      
+      integer IPRMAT  ! similar to IPR but with the index to
+                      ! matdatarray array rather than DB position
+      common/MLCMA/IPRMAT(MMLC,ME)
+
       common/grdisk/grdd,grcx,grcy
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/rad1a/aglzfil
@@ -613,15 +618,8 @@ C Arrays of material properties.
      &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
      &  matdbthick(MGIT)
 
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ZSN(MS),iskip(MMLC),VP(3),EQN(4)
@@ -656,7 +654,8 @@ C Arrays of material properties.
       lnrp=lnblnk(runpath)
 
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
 
 C Create a glazing file, default type is 'glass' with user choice 
 C to treat as 'mkillum'.
@@ -841,10 +840,9 @@ C Pick up general description of the composite.
         ENDIF
 
 C For the inside and outside layer get surface properties.
-        if(closemat)then
-          legmat=IPR(IM,1)   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
+        if(closemat1.or.closemat2)then
+          matarrayindex=IPRMAT(IM,1)   ! which array index
+          if(matarrayindex.ge.0)then
             E=matdbine(matarrayindex)
             AE=matdbina(matarrayindex)
           endif
@@ -852,10 +850,9 @@ C For the inside and outside layer get surface properties.
           CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &      DBSHT,E,AE,DRV,TITL,NAM)
         endif
-        if(closemat)then
-          legmat=IPR(IM,LAYERS(IM))   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
+        if(closemat1.or.closemat2)then
+          matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which legacy index
+          if(matarrayindex.ge.0)then
             E=matdbine(matarrayindex)
             AI=matdbina(matarrayindex)
           endif

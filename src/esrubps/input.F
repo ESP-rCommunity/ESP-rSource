@@ -278,7 +278,7 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
-      logical dll,close,unixok
+      logical dll,closemat1,closemat2,unixok
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -610,12 +610,14 @@ C code from esruprj/eddb.F subroutine opendb.
      &            'found or file was corrupt','W')
               endif
             else
-              call eclose(matver,1.1,0.001,close)
-              if(close) MATDBOK=.TRUE.
+              call eclose(matver,1.1,0.001,closemat1)
+              call eclose(matver,1.2,0.001,closemat2)
+              if(closemat1.or.closemat2) MATDBOK=.TRUE.
             endif
           elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,close)
-            if(close) MATDBOK=.TRUE.
+            call eclose(matver,1.1,0.001,closemat1)
+            call eclose(matver,1.2,0.001,closemat2)
+            if(closemat1.or.closemat2) MATDBOK=.TRUE.
           endif
         endif
       ENDIF

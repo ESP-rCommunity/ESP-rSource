@@ -459,7 +459,8 @@ C Material data arrays.
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
-      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
       DIMENSION ICLN(30)
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
@@ -501,8 +502,9 @@ C Check to see if the file has correct info.
      &                  'or file was corrupt','W')
             MATDBOK=.FALSE.
           else
-            call eclose(matver,1.1,0.001,close)
-            if(close)then
+            call eclose(matver,1.1,0.001,closemat1)
+            call eclose(matver,1.2,0.001,closemat2)
+            if(closemat1.or.closemat2)then
               MATDBOK=.TRUE.
             else
               call usrmsg(
@@ -512,8 +514,9 @@ C Check to see if the file has correct info.
             endif
           endif
         elseif(ier.eq.0)then
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
             MATDBOK=.TRUE.
           endif
         endif
@@ -567,8 +570,9 @@ C to a binary file.
      &                        'found or the file was corrupt.','W')
                   MATDBOK=.FALSE.
                 else
-                  call eclose(matver,1.1,0.001,close)
-                  if(close)then
+                  call eclose(matver,1.1,0.001,closemat1)
+                  call eclose(matver,1.1,0.001,closemat2)
+                  if(closemat1.or.closemat2)then
 
 C Materials data in place, set this as the new file name and then
 C try and re-scan the Constructions database.
@@ -743,7 +747,8 @@ C Default ESP-r distribution path.
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical moddb,modcon,unixok,copydef,clkok,chgdb,close
+      logical moddb,modcon,unixok,copydef,clkok,chgdb
+      logical closemat1,closemat2
 
       character H*72,LTMP*72,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -887,11 +892,12 @@ C then proceed with matver still set to zero.
           modcon=.true.
           LFMAT=LTMP
           call tstamp('>','PRJ: enter materials db')
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
 
 C Offer display of material common blocks.
-            CALL ELISTMAT(iw,chgdb,'M',IER)
+            CALL ELISTMAT(iw,chgdb,'M',imatarryindex,IER)
           else
             CALL ELISTC(iw,chgdb,'M',IER)
           endif
@@ -910,8 +916,9 @@ C Materials db did not scan. Could be wrong machine type.
 
 C Having returned from editing/browsing the materials, offer to
 C make a backup copy if the initial file was binary.
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
             continue
           else
             if(chgdb)then
@@ -1212,8 +1219,9 @@ C ascii version of this new Materials db.
             return
           else
             IAF=IFIL+1
-            call eclose(matver,1.1,0.001,close)
-            if(close)then
+            call eclose(matver,1.1,0.001,closemat1)
+            call eclose(matver,1.2,0.001,closemat2)
+            if(closemat1.or.closemat2)then
               CALL mkascimat(IAF,LASCI,IER)
             else
               CALL MKAPRC(LASCI,IAF,IER)
@@ -1254,8 +1262,9 @@ C Confirm suggested name and then write out ascii file.
         if(clkok)then
           return
         else
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
             CALL mkascimat(IAF,LASCI,IER)
           else
             CALL MKAPRC(LASCI,IAF,IER)
@@ -1318,7 +1327,7 @@ C re-read as a legacy materials file.
         endif
 
 C Offer display of materials common blocks.
-        CALL ELISTMAT(iw,chgdb,'M',IER)
+        CALL ELISTMAT(iw,chgdb,'M',imatarryindex,IER)
 
         DFILE='./newmat.db1a'
         clkok=.false.

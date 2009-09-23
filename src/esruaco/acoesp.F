@@ -47,7 +47,8 @@ C Material data arrays.
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
-      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
       DIMENSION ICLN(30)
 
       character SOPT*12,outs*124,GDESCR*36
@@ -87,8 +88,9 @@ C Also check to see if the file has correct info in
      &                  'or file was corrupt','W')
             MATDBOK=.FALSE.
           else
-            call eclose(matver,1.1,0.001,close)
-            if(close)then
+            call eclose(matver,1.1,0.001,closemat1)
+            call eclose(matver,1.2,0.001,closemat2)
+            if(closemat1.or.closemat2)then
               call edisp(iuout,' Filled material data arrays...')
               MATDBOK=.TRUE.
             else
@@ -99,8 +101,9 @@ C Also check to see if the file has correct info in
             endif
           endif
         elseif(ier.eq.0)then
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
             call edisp(iuout,' Filled material data arrays...')
             MATDBOK=.TRUE.
           endif

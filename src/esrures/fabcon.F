@@ -438,7 +438,7 @@ C Arrays of material properties.
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
 
       character outs*124,H*72,NAM*72,TITL*72
       logical ok,dok
@@ -452,7 +452,8 @@ C Get element thicknesses for this construction.
       CALL MOTHKE(IZ,ISUR)
 
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
 
 C Convert to node-related thicknesses.
       NN=2*NE(ISUR)+1
@@ -466,18 +467,26 @@ C Determine diffusion resistance factor for each element.
       call edisp(iuout,' Diffusion resistance factor for:')
       call edisp(iuout,' ')
       DO 20 I=1,NE(ISUR)
-        if(closemat)then
+        if(closemat1.or.closemat2)then
           legmat=IPRZ(ISUR,I)   ! which legacy index
           if(legmat.ge.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-            DRVAL=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
-            write(NAM,'(a)') matname(matarrayindex)(1:32)
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              E=0.99; A=0.99; DRVAL=1.0
+              TITL='GAPS'; NAM='AIR'
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRVAL=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
           endif
         else
           CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
@@ -909,7 +918,7 @@ C Arrays of material properties.
       character SSPARENT*12
       character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1
       integer legmat  ! local variable for legacy index.
-      logical closemat
+      logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
 C Set chosen result set.
@@ -961,7 +970,8 @@ C Read (silently) construction file.
       ENDIF
 
 C Check which version of materials database.
-      call eclose(matver,1.1,0.001,closemat)
+      call eclose(matver,1.1,0.001,closemat1)
+      call eclose(matver,1.2,0.001,closemat2)
 
       write(outs,'(A,A)') ' Condensation search in: ',ZN(1:lnblnk(ZN))
       call edisp(iuout,outs)
@@ -975,18 +985,26 @@ C Determine diffusion resistance factor for each element
 C from ascii or binary materials db and compute layer thickness.
         DO 24 I=1,NE(ISUR)
           ETHK(I)=THK(ISUR,I)*1000.0
-          if(closemat)then
+          if(closemat1.or.closemat2)then
             legmat=IPRZ(ISUR,I)   ! which legacy index
             if(legmat.ge.0)then
               matarrayindex=mathash(legmat)  ! find matching array index
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRVAL=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+              if(matarrayindex.eq.0)then
+                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                E=0.99; A=0.99; DRVAL=1.0
+                TITL='GAPS'; NAM='AIR'
+              else
+                DBCON=matdbcon(matarrayindex)
+                DBDEN=matdbden(matarrayindex)
+                DBSHT=matdbsht(matarrayindex)
+                E=matdbine(matarrayindex)
+                A=matdbina(matarrayindex)
+                DRVAL=matdbdrv(matarrayindex)
+                write(TITL,'(a)') 'placeholder'
+                write(NAM,'(a)') matname(matarrayindex)(1:32)
+              endif
             endif
           else
             CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,

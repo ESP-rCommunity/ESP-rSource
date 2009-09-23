@@ -154,11 +154,11 @@ C Name of current application.
       common/appname/cAppName
 
 C Material data arrays.
+      real matver
       character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
       common/matheader/matver,matcats,matdbitems,matcatitems(mgcl),
      &  matdbdate,matdbdoc,matcatname(mgcl),matcatdoc(mgcl)
 
-      real matver
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
       character*72 lname,ltrns,tbase,h
       character*72 lcfgf
@@ -1705,7 +1705,8 @@ C Material data arrays.
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
-      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
       DIMENSION ICLN(30)
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
@@ -1748,8 +1749,9 @@ C Check to see if the file has correct info.
      &                  'or file was corrupt','W')
             MATDBOK=.FALSE.
           else
-            call eclose(matver,1.1,0.001,close)
-            if(close)then
+            call eclose(matver,1.1,0.001,closemat1)
+            call eclose(matver,1.2,0.001,closemat2)
+            if(closemat1.or.closemat2)then
               MATDBOK=.TRUE.
             else
               call usrmsg(
@@ -1759,8 +1761,9 @@ C Check to see if the file has correct info.
             endif
           endif
         elseif(ier.eq.0)then
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
             MATDBOK=.TRUE.
           endif
         endif
@@ -1828,8 +1831,9 @@ C to a binary file.
      &                        'found or the file was corrupt.','W')
                   MATDBOK=.FALSE.
                 else
-                  call eclose(matver,1.1,0.001,close)
-                  if(close)then
+                  call eclose(matver,1.1,0.001,closemat1)
+                  call eclose(matver,1.2,0.001,closemat2)
+                  if(closemat1.or.closemat2)then
 
 C Materials data in place, set this as the new file name and then
 C try and re-scan the Constructions database.

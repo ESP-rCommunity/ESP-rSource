@@ -52,7 +52,7 @@ C Arrays of material properties.
       character CLSDES*48,IDESC*72,H*72,KEY*1,outs*124
       character xfile*144,tg*1,delim*1
       character TYPEDES(5)*20,t32*32,d32*32
-      logical close
+      logical closemat1,closemat2
       
 C Define material types.
       TYPEDES(1)='unknown'
@@ -126,8 +126,9 @@ C is similar to that used in eddb.F
             IER=1
             return
           else
-            call eclose(matver,1.1,0.001,close)
-            if(close)then
+            call eclose(matver,1.1,0.001,closemat1)
+            call eclose(matver,1.2,0.001,closemat2)
+            if(closemat1.or.closemat2)then
               goto 40
             else
               call usrmsg(
@@ -138,8 +139,9 @@ C is similar to that used in eddb.F
             endif
           endif
         elseif(ier.eq.0)then
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
             goto 40
           endif
         endif

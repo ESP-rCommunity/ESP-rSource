@@ -387,7 +387,7 @@ Category (13) Glass with additional single layer optical properties (some estima
 Category (14) Earth includes loose materials. Also check the stone category for other gravels. Based on data traditionally distributed with ESP-r.
 *item,earth infusorial,261,14,Infusorial (9% mc)
 0.090,480.000,180.000,0.900,0.900,0.850,0.850,5.000,200.0,-
-*item,gravel,262,14,Gravel based
+*item,gravel based,262,14,Gravel based
 0.520,2050.000,184.000,0.900,0.900,0.850,0.850,2.000,200.0,-
 *item,earth std,263,14,Common_earth
 1.280,1460.000,879.000,0.900,0.900,0.850,0.850,5.000,200.0,-

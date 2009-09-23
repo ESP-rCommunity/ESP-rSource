@@ -60,7 +60,7 @@ C Arrays of material properties.
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
 
       LOGICAL     OK,dok,MODDB,chgdb
       DIMENSION ICLN(30),CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
@@ -86,7 +86,8 @@ C Check that the primitive db is not empty.
       ENDIF
 
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
 
 C Setup for menu.
 C Gather the names of the various classes and present this list.
@@ -167,18 +168,26 @@ C List one or more classifications.
             IDB=IC*20-20
             DO 47 J=1,NE
               IDB=IDB+1
-              if(closemat)then
+              if(closemat1.or.closemat2)then
                 legmat=IDB   ! which legacy index
                 if(legmat.ge.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
-                  E=matdbine(matarrayindex)
-                  A=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
-                  write(NAM,'(a)') matname(matarrayindex)(1:32)
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+                  if(matarrayindex.eq.0)then
+                    DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                    E=0.99; A=0.99; DRV=1.0
+                    TITL='GAPS'; NAM='AIR'
+                  else
+                    DBCON=matdbcon(matarrayindex)
+                    DBDEN=matdbden(matarrayindex)
+                    DBSHT=matdbsht(matarrayindex)
+                    E=matdbine(matarrayindex)
+                    A=matdbina(matarrayindex)
+                    DRV=matdbdrv(matarrayindex)
+                    write(TITL,'(a)') 'placeholder'
+                    write(NAM,'(a)') matname(matarrayindex)(1:32)
+                  endif
                 endif
               else
                 CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
@@ -243,18 +252,26 @@ C arrays for manipulation.
           IDB=IC*20-20
           DO 20 J=1,NE
             IDB=IDB+1
-            if(closemat)then
+            if(closemat1.or.closemat2)then
               legmat=IDB   ! which legacy index
               if(legmat.ge.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRV=matdbdrv(matarrayindex)
-                write(TITL,'(a)') 'placeholder'
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+                if(matarrayindex.eq.0)then
+                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                  E=0.99; A=0.99; DRV=1.0
+                  TITL='GAPS'; NAM='AIR'
+                else
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  E=matdbine(matarrayindex)
+                  A=matdbina(matarrayindex)
+                  DRV=matdbdrv(matarrayindex)
+                  write(TITL,'(a)') 'placeholder'
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
+                endif
               endif
             else
               CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
@@ -604,7 +621,8 @@ C Material data arrays.
       common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
      &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
-      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
       DIMENSION ICLN(30)
 
       character SOPT*12,outs*124,GDESCR*36
@@ -644,8 +662,9 @@ C Also check to see if the file has correct info.
      &                  'or file was corrupt','W')
             MATDBOK=.FALSE.
           else
-            call eclose(matver,1.1,0.001,close)
-            if(close)then
+            call eclose(matver,1.1,0.001,closemat1)
+            call eclose(matver,1.2,0.001,closemat2)
+            if(closemat1.or.closemat2)then
               call edisp(iuout,' Filled material data arrays...')
               MATDBOK=.TRUE.
             else
@@ -656,8 +675,9 @@ C Also check to see if the file has correct info.
             endif
           endif
         elseif(ier.eq.0)then
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
             call edisp(iuout,' Filled material data arrays...')
             MATDBOK=.TRUE.
           endif
@@ -2503,6 +2523,10 @@ C phylosophy as LCACalc
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      
+      integer IPRMAT  ! similar to IPR but with the index to
+                      ! matdatarray array rather than DB position
+      common/MLCMA/IPRMAT(MMLC,ME)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -2613,15 +2637,11 @@ C Arrays of material properties.
      &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
      &  matdbthick(MGIT)
 
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
       character matname*32,matdoc*248,matopaq*1
       common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
 
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(NbSteps+5)
@@ -2658,7 +2678,8 @@ C Arrays of material properties.
       INTEGER NbEIALay, ICalType
  
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
 
       dupedges=.false.
       newgeo=.false.  ! assume older format geometry.
@@ -3644,18 +3665,25 @@ C -------------
      &              M.EQ.13 .OR. M.EQ.14) THEN
                 DO 11 J=1,NbLays
                   ICurMat = IMatID(ICurComp,J)
-                  if(closemat)then
-                    legmat=IPR(ICurComp,J)   ! which legacy index
-                    if(legmat.ge.0)then
-                      matarrayindex=mathash(legmat)  ! find matching array index
-                      DBCON=matdbcon(matarrayindex)
-                      DBDEN=matdbden(matarrayindex)
-                      DBSHT=matdbsht(matarrayindex)
-                      E=matdbine(matarrayindex)
-                      A=matdbina(matarrayindex)
-                      DRV=matdbdrv(matarrayindex)
-                      write(TITL,'(a)') 'placeholder'
-                      write(NAM,'(a)') matname(matarrayindex)(1:32)
+                  if(closemat1.or.closemat2)then
+                    matarrayindex=IPRMAT(ICurComp,J)   ! which arrat index
+                    if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+                      if(matarrayindex.eq.0)then
+                        DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                        E=0.99; A=0.99; DRV=1.0
+                        TITL='GAPS'; NAM='AIR'
+                      else
+                        DBCON=matdbcon(matarrayindex)
+                        DBDEN=matdbden(matarrayindex)
+                        DBSHT=matdbsht(matarrayindex)
+                        E=matdbine(matarrayindex)
+                        A=matdbina(matarrayindex)
+                        DRV=matdbdrv(matarrayindex)
+                        write(TITL,'(a)') 'placeholder'
+                        write(NAM,'(a)') matname(matarrayindex)(1:32)
+                      endif
                     endif
                   else
                     CALL ERPCDB(IFMAT,IPR(ICurComp,J),iuout,IER,

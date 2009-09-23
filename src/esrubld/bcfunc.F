@@ -6296,7 +6296,7 @@ C Arrays of material properties.
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
       character titl*72,nam*72
@@ -6392,7 +6392,8 @@ C Update or reset properties based on above logic.
         CHANGED=.true.
 
 C Find version of materials database. If 1.1 then use material arrays.
-        call eclose(matver,1.1,0.01,closemat)
+        call eclose(matver,1.1,0.01,closemat1)
+        call eclose(matver,1.2,0.01,closemat2)
       
 C Reset properties by reading in zone descriptor files.
 
@@ -6446,10 +6447,10 @@ C        write(6,*) 'with construction ',DESC(ic)' at btimef ',btimef
 
 C Put the composite db info into current surface attributes
 C common.  Gather information about each layer. Read in the
-C primitive db info. 
+C material db info. 
           ne(ii)=layers(ic)
           do 223 i=1,layers(ic)
-            if(closemat)then
+            if(closemat1.or.closemat2)then
               legmat=ipr(ic,i)   ! which legacy index
               if(legmat.ge.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index

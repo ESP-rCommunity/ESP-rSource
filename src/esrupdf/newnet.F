@@ -2102,6 +2102,11 @@ C The routine presents a list of surface layers.
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+      
+      integer IPRMAT  ! similar to IPR but with the index to
+                      ! matdatarray array rather than DB position
+      common/MLCMA/IPRMAT(MMLC,ME)
+
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
@@ -2119,15 +2124,11 @@ C Arrays of material properties.
      &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
      &  matdbthick(MGIT)
 
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
       character matname*32,matdoc*248,matopaq*1
       common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
 
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
 
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
@@ -2148,7 +2149,8 @@ C Check composite name of surface with composite name in MLC common.
          call edisp(iuout,'Error: probably no MLC defined!')
          return
       endif
-      call eclose(matver,1.1,0.01,closemat)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
         
 C Write menu displaying a list of layer names
       header=4
@@ -2160,18 +2162,25 @@ C Write menu displaying a list of layer names
       do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-        if(closemat)then
-          legmat=IPR(imatch,j)   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-            DRV=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
-            write(NAM,'(a)') matname(matarrayindex)(1:32)
+        if(closemat1.or.closemat2)then
+          matarrayindex=IPRMAT(imatch,j)   ! which array index
+          if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              E=0.99; A=0.99; DRV=1.0
+              TITL='GAPS'; NAM='AIR'
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRV=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
           endif
         else
           CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
