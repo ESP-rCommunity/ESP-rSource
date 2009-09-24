@@ -187,9 +187,9 @@
 # layers  description   optics name   symmetry tag
     3    party_wall_n  OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  112    0.0130  Plasterboard (wallboard) : Plasterboard (UK code)
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
   293    0.0500  Min wool quilt 50mm tb : Studwork
-  112    0.0130  Plasterboard (wallboard) : Plasterboard (UK code)
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description   optics name   symmetry tag
     5    Wall_NI_noti  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -197,7 +197,7 @@
   294    0.0900  Mineral wool batt 90mm : Insul
    40    0.1000  Concrete med density (1800) : Blockwork (UK code)
     0    0.0220  air  0.180 0.180 0.180
-  112    0.0130  Plasterboard (wallboard) : Plasterboard (UK code)
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description   optics name   symmetry tag
     5    Wall_EW_noti  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -205,7 +205,7 @@
   294    0.0900  Mineral wool batt 90mm : Insul
    40    0.1000  Concrete med density (1800) : Blockwork (UK code)
     0    0.0220  air  0.180 0.180 0.180
-  112    0.0130  Plasterboard (wallboard) : Plasterboard (UK code)
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description   optics name   symmetry tag
     8    Wall_Scot_no  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -216,7 +216,7 @@
   295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 50 mm)
    40    0.1000  Concrete med density (1800) : Blockwork (UK code)
     0    0.0250  air  0.180 0.180 0.180
-  112    0.0130  Plasterboard (wallboard) : Plasterboard (UK code)
+  112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description   optics name   symmetry tag
     3    opDoorWind_n  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R

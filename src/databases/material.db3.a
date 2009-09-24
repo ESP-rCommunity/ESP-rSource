@@ -187,7 +187,7 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 0.210,900.000,1000.000,0.910,0.910,0.260,0.260,11.000,13.0,-
 *item,Plasterboard (ceiling),111, 6,Plasterboard Gypsum (10 mm) (UK code)
 0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,9.5,-
-*item,Plasterboard (wallboard),112, 6,Plasterboard (UK code)
+*item,Plasterboard (UK code),112, 6,Plasterboard (UK code)
 0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,13.0,-
 # class index |nb items|description (32 char)
 *class, 7,12,Screeds and renders
