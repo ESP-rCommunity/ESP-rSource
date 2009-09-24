@@ -7,12 +7,14 @@ C Materials common blocks:
       integer matcats     ! number of categories
       integer matdbitems  ! number of items (overall) in database
       integer matcatitems ! number of items in each category
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL)
+
       character matdbdate*24 ! date stamp for the database
       character matdbdoc*248 ! documentation for the materials database
       character matcatname*32 ! identity/name of category
       character matcatdoc*248  ! documentation for the category
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+      common/matheadertxt/matdbdate,matdbdoc,matcatname(MGCL),
+     &  matcatdoc(MGCL)
 
 C Strings associated with a material
 C matname for legacy materials the name is a combination of
@@ -101,5 +103,18 @@ C which is based on the name and documentation of the material from the
 C materials database. To assist in recovering materials for which there is
 C no legacy index (-99) this text is used.  This array is filled when the
 C MLC database is scanned and should be updated when new materials are selected.
+C The string buffer DESC is included in MLCTXT so that MLC is all data.
       character LAYDESC*124  ! first 124 char of layer text
-      common/MLCTXT/LAYDESC(MMLC,ME)
+      character DESC*48 ! string which holds 12 char name, 4 char opaque tag, 
+                        ! 12 char optical tag and SYMMETRIC or NONSYMMETRIC tag
+      common/MLCTXT/LAYDESC(MMLC,ME),DESC(MMLC)
+
+C Data structures associated with multi-layer constructions and their
+C references to materials (index within materials database).
+      integer NMLC      ! number of MLC in database
+      integer IPR       ! index of each layer material (legacy)
+      integer LAYERS    ! number of layers in a MLC
+      real DTHK         ! thickness of each layer (m)
+      real DRAIR        ! air gap resistance at 1=vert 2=floor/ceil 3=other
+      COMMON/MLC/NMLC,DTHK(MMLC,ME),IPR(MMLC,ME),LAYERS(MMLC),
+     &           DRAIR(MMLC,ME,3)

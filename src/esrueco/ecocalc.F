@@ -159,14 +159,10 @@ C NM (Integer): dummy variable : Material ID related to Ist Composite and the Jt
       SUBROUTINE PRECALC
 #include "building.h"
 #include "LCA.h"
+#include "esprdbfile.h"
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/EIAScnPt/FabPt(MMAT),TrPt(MMAT,MNbTrans),
      &                RecyPt(MMAT),ReTrPt(MMAT,MNbTrans),

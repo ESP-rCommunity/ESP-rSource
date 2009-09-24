@@ -6247,12 +6247,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
-     &           layers(mmlc),drair(mmlc,me,3)
-
       common/fvala/tfa(mcom),qfa(mcom)
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
 

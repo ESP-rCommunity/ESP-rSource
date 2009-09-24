@@ -358,12 +358,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/spmatlbl/spmlabel(mspmnod)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
 C << rewrite logic using G6 common block >>
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),

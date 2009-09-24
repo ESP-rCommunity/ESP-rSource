@@ -48,12 +48,6 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,layermatch
@@ -478,11 +472,8 @@ C << note if transparent also should check optical properties >>
       subroutine ismlcsymmetric(ifoc,layermatch) 
 
 #include "building.h"
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+#include "esprdbfile.h"
+#include "material.h"
 
       logical layermatch,closea,closeb,closec,closed,closee
 
@@ -600,12 +591,6 @@ C construction based on contents of common MLC.
 #include "material.h"
       
       integer lnblnk  ! function definition
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       
       COMMON/GVALCAL/CLAMDA(MMLC)
 
@@ -824,12 +809,6 @@ C on contents of common MLC. Logic is a variant of ETMLDB.
       
       integer lnblnk  ! function definition
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
 C Material properties.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -958,14 +937,10 @@ C Information is available via common block MLC.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EPKMLC(ISEL,PROMPT1,PROMPT2,IER)
 #include "building.h"
-C#include "esprdbfile.h"
+#include "esprdbfile.h"
+#include "material.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -1106,12 +1081,6 @@ C This subroutine uses the material array data in matdatarray if available.
 #include "material.h"
       
       integer lnblnk  ! function definition
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
      
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

@@ -1355,17 +1355,12 @@ C     if blank then no file name change implied.
       SUBROUTINE EDDBMLC(moddb,modcon,APP)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      common/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
