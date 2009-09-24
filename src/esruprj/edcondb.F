@@ -504,7 +504,9 @@ C ELISTMAT: Controls display and editing of materials commons.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.
       SUBROUTINE ELISTMAT(iwhich,chgdb,ACTION,imatarrayindex,IER)
+#include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -519,37 +521,6 @@ C Parameters
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       LOGICAL OK,DOK,MODDB
-
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      real matirtran,matsoldrtrn,matsoldrotrfl,matsoldrinrfl
-      real matvistran,matvisotrfl,matvisinrfl,matrender
-      common/matwisarray/matirtran(MGIT),matsoldrtrn(MGIT),
-     &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
-     &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
-
-      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
-      real matgapares
-      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2),
-     &  matgapares(MGIT,3)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
 
 C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
@@ -1265,39 +1236,13 @@ C ************* EDONEMAT
 C EDONEMAT: Edits a material in the common block at array index index.
 C mod is returned as true if data has changed.
       SUBROUTINE EDONEMAT(index,mod,IER)
+#include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
       common/pophelp/h(60)
-
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      real matirtran,matsoldrtrn,matsoldrotrfl,matsoldrinrfl
-      real matvistran,matvisotrfl,matvisinrfl,matrender
-      common/matwisarray/matirtran(MGIT),matsoldrtrn(MGIT),
-     &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
-     &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
-
-      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
-      real matgapares
-      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2),
-     &  matgapares(MGIT,3)
 
       DIMENSION PELM(29)
       CHARACTER H*72,PELM*40,tnam*32,tdoc*248,message*32
@@ -1778,6 +1723,7 @@ C id string.
 #include "building.h"
 #include "epara.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -1793,38 +1739,11 @@ C If this parameter is changed also change it in subroutine GVALUE
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
-      character LAYDESC*124  ! first 124 char of layer text
-      common/MLCTXT/LAYDESC(MMLC,ME)
-      
-      integer IPRMAT  ! similar to IPR but with the index to
-                      ! matdatarray array rather than DB position
-      common/MLCMA/IPRMAT(MMLC,ME)
       
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GVALCAL/CLAMDA(MMLC)
-
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
@@ -2459,6 +2378,7 @@ C assumes that -99 entities may be gasses.
 C geometry.h provides commons G0/G2/G7/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -2480,13 +2400,6 @@ C geometry.h provides commons G0/G2/G7/precz.
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
-      character LAYDESC*124  ! first 124 char of layer text
-      common/MLCTXT/LAYDESC(MMLC,ME)
-      
-      integer IPRMAT  ! similar to IPR but with the index to
-                      ! matdatarray array rather than DB position
-      common/MLCMA/IPRMAT(MMLC,ME)
       
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -2494,29 +2407,7 @@ C geometry.h provides commons G0/G2/G7/precz.
       logical newgeo  ! to use for testing if new/old geometry file.
 
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
-      real matgapares
-      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2),
-     &  matgapares(MGIT,3)
-
+C Material properties.
       integer matarrayindex ! the index within matdatarray
       real guessthick ! initial thickness if from version 1.1 or 1.2
 

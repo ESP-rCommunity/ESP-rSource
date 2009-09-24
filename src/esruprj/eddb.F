@@ -443,7 +443,9 @@ C then scan new ascii format and if that does not work try the
 C older ascii materials file to fill the materials data arrays.
 
       subroutine opendb(ier)
+#include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -451,13 +453,6 @@ C older ascii materials file to fill the materials data arrays.
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
@@ -722,7 +717,9 @@ C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
 
       SUBROUTINE EDDBMAT(moddb,modcon,APP)
+#include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -739,12 +736,6 @@ C Default ESP-r distribution path.
       common/deflt4/dinstpath
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,modcon,unixok,copydef,clkok,chgdb

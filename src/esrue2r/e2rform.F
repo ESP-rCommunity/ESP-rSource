@@ -547,6 +547,7 @@ C If ACT='i' then interactive, ACT='s' for silent.
 #include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -577,10 +578,6 @@ C TMC data
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      
-      integer IPRMAT  ! similar to IPR but with the index to
-                      ! matdatarray array rather than DB position
-      common/MLCMA/IPRMAT(MMLC,ME)
 
       common/grdisk/grdd,grcx,grcy
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
@@ -603,20 +600,6 @@ C TMC data
       common/radgt/iglzty
       common/radabs/NABS
       common/expath/runpath,pathtype
-
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2

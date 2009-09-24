@@ -3269,6 +3269,7 @@ C databases have been opened.
       subroutine asksnode(icomp,is,ilay,inode,ier)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -3278,24 +3279,10 @@ C databases have been opened.
       real DTHK,DRAIR
       COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
      &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-      
-      integer IPRMAT  ! similar to IPR but with the index to
-                      ! matdatarray array rather than DB position
-      common/MLCMA/IPRMAT(MMLC,ME)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
 
 C Special materials file flag
       DIMENSION PNAM(ME),item(ME+10)

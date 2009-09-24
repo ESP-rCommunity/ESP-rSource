@@ -88,6 +88,7 @@ C Sets up defaults and offers main menu.
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "material.h"
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
 #include "prj3dv.h"
@@ -152,12 +153,6 @@ C Significant figure reporting limit.
 
 C Name of current application.
       common/appname/cAppName
-
-C Material data arrays.
-      real matver
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(mgcl),
-     &  matdbdate,matdbdoc,matcatname(mgcl),matcatdoc(mgcl)
 
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
       character*72 lname,ltrns,tbase,h
@@ -1687,7 +1682,9 @@ C then scan new ascii format and if that does not work try the
 C older ascii materials file to fill the materials data arrays.
 
       subroutine opendb(ier)
+#include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -1697,13 +1694,6 @@ C older ascii materials file to fill the materials data arrays.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/ract/paction
       character paction*16
-
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2

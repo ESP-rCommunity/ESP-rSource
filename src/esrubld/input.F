@@ -103,6 +103,7 @@ C laprob  - fluid flow description file
 #include "plant.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
+#include "material.h"
       PARAMETER (MSTMC=20)
       integer igraphiclib  ! external definition
       integer lnblnk  ! function definition
@@ -174,13 +175,6 @@ C igshp=1 indicates GSHP models are active; 0 indicates no GSHP models.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
- 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 

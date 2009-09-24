@@ -87,15 +87,7 @@ C matdbine (real) is the inside face long wave emissivity (-)
 C matdbouta (real) is the outside face short wave absorbtivity (-)
 C matdbina (real) is the inside face short wave absorbtivity (-)
 C matdbdrv (real) is the diffusion resistance (?)
-C matdbthick (real) default thickness (mm) for item (this is a new attribute
-C   which might be useful in regions where there are standard thickness
-C   of products
-C      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-C      real matdbouta,matdbina,matdbdrv,matdbthick
-C      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-C     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-C     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-C     &  matdbthick(MGIT)
+C matdbthick (real) default thickness (mm) for item
 
 C So called 'G-value' calculations require the sorts of single layer optical
 C properties which ESP-r does not current hold. Also the lack of this data
@@ -103,41 +95,29 @@ C makes it difficult to work with optical tools such as WIS
 
 C Based on WIS single layer data the following data could be held based
 C on the assumtion that the default thickness was used by the construction:
-C matirtran        IR transmittance
-C matsoldrtrn    solar direct transmittance
-C matsoldrotrfl outer solar direct reflectance
-C matsoldrinrfl inner solar direct reflectance
-C matvistran    visable transmittance
-C matvisotrfl   outer visable reflectance
-C matvisinrfl   inner visable reflectance
-C matrender     colour rendering index
-C      real matirtran,matsoldrtrn,matsoldrotrfl,matsoldrinrfl
-C      real matvistran,matvisotrfl,matvisinrfl,metrendering
-C      common/matwisarray/matirtran(MGIT),matsoldrtrn(MGIT),
-C     &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
-C     &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
+C matirtran (real)     IR transmittance
+C matsoldrtrn  (real)  solar direct transmittance
+C matsoldrotrfl (real) outer solar direct reflectance
+C matsoldrinrfl (real) inner solar direct reflectance
+C matvistran (real)    visable transmittance
+C matvisotrfl (real)   outer visable reflectance
+C matvisinrfl (real)   inner visable reflectance
+C matrender (real)      colour rendering index
 
 C For air gaps WIS supplies some additional data.
-C matgapcnd(4)  gap conduction at -10C 0C 10C 20C
-C matvisco(4) gap viscosity at -10C 0C 10C 20C
-C matgapden(4)  gap density at -10C 0C 10C 20C
-C matprandtl(2) prandtl number and extra field for T correct
-C matgapsht(2) gap specific heat and T correct.
-C matgapares(3) air gap resistance (i.e. DRAIR) 1=vert 2=floor/ceil 3=other
+C matgapcnd (real) (4)  gap conduction at -10C 0C 10C 20C
+C matvisco (real)(4)    gap viscosity at -10C 0C 10C 20C
+C matgapden (real)(4)   gap density at -10C 0C 10C 20C
+C matprandtl (real)(2)  prandtl number and extra field for T correct
+C matgapsht (real)(2)   gap specific heat and T correct.
 C UK EPBD method uses the 1st array index for the value and
 C the 2nd array index for T derivitive.
-C      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
-C      real matgapares
-C      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-C     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2),
-C     &  matgapares(MGIT,3)
+C matgapares (real)(3)  air gap resistance (i.e. DRAIR) 1=vert 2=floor/ceil 3=other
 
 C mathash is a pointer to the array index in matdatarray for a
 C   given legacy index e.g array_index = mathash(legacy_index)
 C   if return is negative then there is no pointer. Index includes
 C   zero to accommodate the implied air material.
-C    integer mathash
-C    common/mathasharray/mathash(0:600)
 
 C << What further information differences are there with
 C << EnergyPlus and DOE-2?
@@ -190,7 +170,9 @@ C ************* rlegacymat
 C rlegacymat: Fills common matdatarray and matnamearray from
 C legacy ASCII material database LASCI opened on unit IFA. 
       subroutine rlegacymat(IFA,LASCI,IER)
+#include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
@@ -200,37 +182,6 @@ C Parameters
       integer IFA         ! ascii file unit number
       character LASCI*72  ! ascii file name
       integer IER         ! error return where zero is ok
-
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      real matirtran,matsoldrtrn,matsoldrotrfl,matsoldrinrfl
-      real matvistran,matvisotrfl,matvisinrfl,matrender
-      common/matwisarray/matirtran(MGIT),matsoldrtrn(MGIT),
-     &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
-     &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
-
-      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
-      real matgapares
-      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2),
-     &  matgapares(MGIT,3)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
 
       DIMENSION VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124
@@ -427,7 +378,9 @@ C mkascimat: creates ascii material file (version 1.1 or 1.2) based on
 C current information in common matdatarray, matnamearray and matgaparray.
 C ASCII file LASCI opened on unit IFA. 
       subroutine mkascimat(IFA,LASCI,IER)
+#include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -436,37 +389,6 @@ C Parameters
       character LASCI*72  ! ascii file name
       integer IER         ! error return where zero is ok
 
-C Notes on variables at top of file.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      real matirtran,matsoldrtrn,matsoldrotrfl,matsoldrinrfl
-      real matvistran,matvisotrfl,matvisinrfl,matrender
-      common/matwisarray/matirtran(MGIT),matsoldrtrn(MGIT),
-     &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
-     &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
-
-      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
-      real matgapares
-      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2),
-     &  matgapares(MGIT,3)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
       character tab*1,outs*248,outsd*248
 
       integer matcount,matcatcount  ! used to increment arrays
@@ -628,7 +550,9 @@ C ************* rascimat
 C rascimat: Fills common matdatarray and matnamearray from
 C current ASCII material database LASCI opened on unit IFA. 
       subroutine rascimat(IFA,LASCI,IER)
+#include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -637,37 +561,6 @@ C Parameters
       integer IFA         ! ascii file unit number
       character LASCI*72  ! ascii file name
       integer IER         ! error return where zero is ok
-
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      real matirtran,matsoldrtrn,matsoldrotrfl,matsoldrinrfl
-      real matvistran,matvisotrfl,matvisinrfl,matrender
-      common/matwisarray/matirtran(MGIT),matsoldrtrn(MGIT),
-     &  matsoldrotrfl(MGIT),matsoldrinrfl(MGIT),matvistran(MGIT),
-     &  matvisotrfl(MGIT),matvisinrfl(MGIT),matrender(MGIT)
-
-      real matgapcnd,matvisco,matgapden,matprandtl,matgapsht
-      real matgapares
-      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2),
-     &  matgapares(MGIT,3)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
 
       DIMENSION VAL(19)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124,WORD*24
@@ -982,13 +875,14 @@ C of legacy material indices.
 C Where: ip is point to start looking from
 C        inext is slot found.
       subroutine getnextascislot(ip,inext)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
 
 C mathash is a pointer to the array index in matdatarray for a
 C   given legacy index e.g array_index = mathash(legacy_index)
 C   if return is negative then there is no pointer. The array
 C   starts at zero to account for the implied air magerial.
-      integer mathash
-      common/mathasharray/mathash(0:600)
       integer ip,inext,ilook
 
 C Set inext to 601 in case nothing found. If mathash array item

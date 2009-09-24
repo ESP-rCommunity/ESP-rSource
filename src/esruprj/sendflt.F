@@ -29,6 +29,7 @@ C SDDFLT001 set defaults based on material type.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -38,13 +39,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/exporttgi/ixopen,ixloc,ixunit
 
       common/UADFLT/MATTYPE(30),DFLTMAT(5,6)
-
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       DIMENSION ICLN(30),CLSDES(40),CLSSEL(30),ICLSSEL(30)
 
