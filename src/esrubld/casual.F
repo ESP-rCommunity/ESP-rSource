@@ -799,7 +799,8 @@ C Switch off delay time memory common block
       common/sus/issny
 
 C Illuminance database.
-      common/ILDB/NDBENT,DBILLA(MILDB,5),DBILLS(MILDB,MLCOM,MDF)
+      common/ILDB/NDBENT,DBILLA(MCOM,MILDB,5),
+     &                   DBILLS(MCOM,MILDB,MLCOM,MDF)
 
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
       DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)
@@ -1153,19 +1154,17 @@ C Check for no direct solar (effectively use dayfactor).
  3111           continue
  311          continue
               do 310 IDB=1,NDBENT
-                if ((DBILLA(IDB,3).lt.QDRACC).and.
-     &              (IBLIND.eq.nint(DBILLA(IDB,5)))) then
-
-                  write (66,*) ' Found a diffuse match: '
-                  write (66,*) 'Dir: ',DBILLA(IDB,3),
-     &                         ' Blind: ',DBILLA(IDB,5)
-
+                if ((DBILLA(ICOMP,IDB,3).lt.QDRACC).and.
+     &              (IBLIND.eq.nint(DBILLA(ICOMP,IDB,5)))) then
+                  IDB_MATCH=IDB
                   NMATCH=NMATCH+1
+                  ! for every match found, add up database entries ...
                   do 321 ILZ=1,MLCOM
                     do 3211 IDF=1,MDF
                       SENTMP(ILZ,IDF)=SENTMP(ILZ,IDF)+
-     &                                DBILLS(IDB,ILZ,IDF)
-                      QDFTMP(ILZ,IDF)=QDFTMP(ILZ,IDF)+DBILLA(IDB,4)
+     &                                DBILLS(ICOMP,IDB,ILZ,IDF)
+                      QDFTMP(ILZ,IDF)=QDFTMP(ILZ,IDF)+
+     &                                DBILLA(ICOMP,IDB,4)
  3211               continue
  321              continue
                 endif
@@ -1177,23 +1176,26 @@ C Check for no direct solar (effectively use dayfactor).
                     if (QDFTMP(ILZ,IDF).gt.0.0) then
 
 C Assume that the diffuse regresses to a straight line: y=mx
-C The SENTMP and QDFTMP both need divided by NMATCH hence NMATCH
-C cancels iff y=mx assumption holds.
+C The SENTMP and QDFTMP both need to be divided by NMATCH hence NMATCH
+C cancels if y=mx assumption holds.
                       SENTMP(ILZ,IDF)=SENTMP(ILZ,IDF)*QDIF
                       selum(ILZ,IDF)=SENTMP(ILZ,IDF)/QDFTMP(ILZ,IDF)
                     else
-                      selum(ILZ,IDF)=0.
+                      selum(ILZ,IDF)=0.0
                     endif
  3221             continue
  322            continue
 
+                write (66,*) ' Found a diffuse match: '
+                write (66,*) 'Dir: ',DBILLA(ICOMP,IDB_MATCH,3),
+     &                       ' Blind: ',DBILLA(ICOMP,IDB_MATCH,5)
                 write (66,*) 'Estimated illuminances:'
-                write (66,'(9(f7.1,1x))') (selum(1,IDFT),IDFT=1,MDF)
-                write (66,'(9(f7.1,1x))') (selum(2,IDFT),IDFT=1,MDF)
-                write (66,'(9(f7.1,1x))') (selum(3,IDFT),IDFT=1,MDF)
-                write (66,'(9(f7.1,1x))') (selum(4,IDFT),IDFT=1,MDF)
+                do 432 ILZ=1,NLITZ(ICOMP)
+                  write(66,'(9(f7.1,1x))') 
+     &               (selum(ILZ,IDFT),IDFT=1,NDF(ICOMP,ILZ))
+ 432            continue
               endif
-            else
+            else ! direct radiation is larger than 5 W/m2
 
 C Check for similar sun position.
               NMATCH=0
@@ -1201,42 +1203,48 @@ C Check for similar sun position.
                 do 4111 IDF=1,MDF
                   SENTMP(ILZ,IDF)=0.0
                   QDFTMP(ILZ,IDF)=0.0
+                  ! also initialize regression coefficients ... (ag 24/09/09) ??
+                  Aa(ILZ,IDF)=0.0
+                  Ab(ILZ,IDF)=0.0
+                  Ac(ILZ,IDF)=0.0
+                  Ya(ILZ,IDF)=0.0
+                  Yb(ILZ,IDF)=0.0
  4111           continue
  411          continue
               do 320 IDB=1,NDBENT
-                SOLDIF=esind(90.0-DBILLA(IDB,1))*esind(90.0-SALT)*
-     &                 ecosd(DBILLA(IDB,2)-RSAZI)
-                SOLDIF=SOLDIF+ecosd(90.0-DBILLA(IDB,1))*ecosd(90.0-SALT)
+                SOLDIF=esind(90.0-DBILLA(ICOMP,IDB,1))*
+     &              esind(90.0-SALT)*ecosd(DBILLA(ICOMP,IDB,2)-RSAZI)
+                SOLDIF=SOLDIF+ecosd(90.0-DBILLA(ICOMP,IDB,1))*
+     &                   ecosd(90.0-SALT)
                 SOLDIF=acos(SOLDIF)*180.0/PI
-C                AZIDIF=abs(DBILLA(IDB,1)-SALT)
-C                ALTDIF=abs(DBILLA(IDB,2)-RSAZI)
+C                AZIDIF=abs(DBILLA(ICOMP,IDB,1)-SALT)
+C                ALTDIF=abs(DBILLA(ICOMP,IDB,2)-RSAZI)
                 if ((SOLDIF.lt.AZIACC).and.
-     &              (IBLIND.eq.nint(DBILLA(IDB,5)))) then
+     &              (IBLIND.eq.nint(DBILLA(ICOMP,IDB,5)))) then
                   NMATCH=NMATCH+1
+                  IDB_MATCH=IDB
+                  do 421 ILZ=1,MLCOM ! use number of lighting zones of this zone?
+                    do 4211 IDF=1,MDF ! use number of sensors of this zone?
 
-            write (66,*) ' Found a direct/ diffuse match: '
-            write (66,*) 'Dir: ',DBILLA(IDB,3),' Dif: ',DBILLA(IDB,4),
-     &                    ' Blind: ',DBILLA(IDB,5)
-
-                  do 421 ILZ=1,MLCOM
-                    do 4211 IDF=1,MDF
-
-C Generate coefficients of least squares arrays.
-                      if (ILZ.eq.1.and.IDF.eq.1) then
-                        Aa(ILZ,IDF)=DBILLA(IDB,3)**2
-                        Ab(ILZ,IDF)=DBILLA(IDB,3)*DBILLA(IDB,4)
-                        Ac(ILZ,IDF)=DBILLA(IDB,4)**2
-                        Ya(ILZ,IDF)=DBILLA(IDB,3)*DBILLS(IDB,ILZ,IDF)
-                        Yb(ILZ,IDF)=DBILLA(IDB,4)*DBILLS(IDB,ILZ,IDF)
+C Generate coefficients of least squares arrays and ad up for each match
+                      if (ILZ.eq.1 .and.IDF.eq.1) then
+                        Aa(ILZ,IDF)=DBILLA(ICOMP,IDB,3)**2
+                        Ab(ILZ,IDF)=DBILLA(ICOMP,IDB,3)*
+     &                                         DBILLA(ICOMP,IDB,4)
+                        Ac(ILZ,IDF)=DBILLA(ICOMP,IDB,4)**2
+                        Ya(ILZ,IDF)=DBILLA(ICOMP,IDB,3)*
+     &                                   DBILLS(ICOMP,IDB,ILZ,IDF)
+                        Yb(ILZ,IDF)=DBILLA(ICOMP,IDB,4)*
+     &                                   DBILLS(ICOMP,IDB,ILZ,IDF)
                       else
-                        Aa(ILZ,IDF)=Aa(ILZ,IDF)+DBILLA(IDB,3)**2
-                        Ab(ILZ,IDF)=Ab(ILZ,IDF)+DBILLA(IDB,3)*
-     &                                                    DBILLA(IDB,4)
-                        Ac(ILZ,IDF)=Ac(ILZ,IDF)+DBILLA(IDB,4)**2
-                        Ya(ILZ,IDF)=Ya(ILZ,IDF)+DBILLA(IDB,3)*
-     &                                              DBILLS(IDB,ILZ,IDF)
-                        Yb(ILZ,IDF)=Yb(ILZ,IDF)+DBILLA(IDB,4)*
-     &                                              DBILLS(IDB,ILZ,IDF)
+                        Aa(ILZ,IDF)=Aa(ILZ,IDF)+DBILLA(ICOMP,IDB,3)**2
+                        Ab(ILZ,IDF)=Ab(ILZ,IDF)+DBILLA(ICOMP,IDB,3)*
+     &                                             DBILLA(ICOMP,IDB,4)
+                        Ac(ILZ,IDF)=Ac(ILZ,IDF)+DBILLA(ICOMP,IDB,4)**2
+                        Ya(ILZ,IDF)=Ya(ILZ,IDF)+DBILLA(ICOMP,IDB,3)*
+     &                                    DBILLS(ICOMP,IDB,ILZ,IDF)
+                        Yb(ILZ,IDF)=Yb(ILZ,IDF)+DBILLA(ICOMP,IDB,4)*
+     &                                    DBILLS(ICOMP,IDB,ILZ,IDF)
                       endif
  4211               continue
  421              continue
@@ -1247,28 +1255,35 @@ C Generate coefficients of least squares arrays.
                 do 422 ILZ=1,MLCOM
                   do 4221 IDF=1,MDF
 
-C Calculate regression coefficients GRADQR and GRADQF.
-                    GRADQF= Ya(ILZ,IDF) * (Ab(ILZ,IDF) / Aa(ILZ,IDF))
-                    GRADQF= GRADQF - Yb(ILZ,IDF)
-                    GRADQF= GRADQF / 
-     &                 ( ( (Ab(ILZ,IDF)**2) /Aa(ILZ,IDF)) - Ac(ILZ,IDF))
-                    GRADQR= Ya(ILZ,IDF) - (Ab(ILZ,IDF) * GRADQF)
-                    GRADQR= GRADQR / Aa(ILZ,IDF)
-                    selum(ILZ,IDF)=(GRADQR*QDIR) + (GRADQF*QDIF)
+C Calculate regression coefficients GRADQR and GRADQF and then selum()
+                    if (Aa(ILZ,IDF).gt.0.0) then
+                      GRADQF= Ya(ILZ,IDF)*(Ab(ILZ,IDF)/Aa(ILZ,IDF))
+                      GRADQF= GRADQF - Yb(ILZ,IDF)
+                      GRADQF= GRADQF / 
+     &                  (((Ab(ILZ,IDF)**2)/Aa(ILZ,IDF))-Ac(ILZ,IDF))
+                      GRADQR= Ya(ILZ,IDF) - (Ab(ILZ,IDF) * GRADQF)
+                      GRADQR= GRADQR / Aa(ILZ,IDF)
+                      selum(ILZ,IDF)=(GRADQR*QDIR) + (GRADQF*QDIF)
+                    else
+                      selum(ILZ,IDF)=0.0
+                    endif
  4221             continue
  422            continue
 
+                write (66,*) 'Found direct/ diffuse match: '
+                write (66,*) ' Zone: ',zname(ICOMP),
+     &                       ' Dir: ',DBILLA(ICOMP,IDB_MATCH,3),
+     &                       ' Dif: ',DBILLA(ICOMP,IDB_MATCH,4),
+     &                       ' Blind: ',DBILLA(ICOMP,IDB_MATCH,5)
                 write (66,*) 'Estimated illuminances:'
-                write (66,'(9(f7.1,1x))') (selum(1,IDFT),IDFT=1,MDF)
-                write (66,'(9(f7.1,1x))') (selum(2,IDFT),IDFT=1,MDF)
-                write (66,'(9(f7.1,1x))') (selum(3,IDFT),IDFT=1,MDF)
-                write (66,'(9(f7.1,1x))') (selum(4,IDFT),IDFT=1,MDF)
+                do 433 ILZ=1,NLITZ(ICOMP)
+                  write(66,'(9(f7.1,1x))') 
+     &               (selum(ILZ,IDFT),IDFT=1,NDF(ICOMP,ILZ))
+ 433            continue
               endif
-            endif
+            endif ! end of search for reuse of prior results
 
-C Call e2r to calculate illuminances.
-C ** Set this as the default treatment ** <= why? This turns off "reuse" of Radiance calcs, it seems ... (29/6/2009, AG)
-C            ILLDBM=0
+C If no reuse possible, call e2r to calculate illuminances.
             if (ILLDBM.eq.0) then
 
 C Create transfer file (format: .PID.tmp) LTMPFL is the file name (passed
@@ -1305,11 +1320,11 @@ C warning and overwrite last entry from now on ...
                 write(*,*)' *** DBILLA full - Runtime increase!! ***'
                 NDBENT=MILDB
               endif
-              DBILLA(NDBENT,1)=SALT
-              DBILLA(NDBENT,2)=RSAZI
-              DBILLA(NDBENT,3)=QDIR
-              DBILLA(NDBENT,4)=QDIF
-              DBILLA(NDBENT,5)=float(IBLIND)
+              DBILLA(ICOMP,NDBENT,1)=SALT
+              DBILLA(ICOMP,NDBENT,2)=RSAZI
+              DBILLA(ICOMP,NDBENT,3)=QDIR
+              DBILLA(ICOMP,NDBENT,4)=QDIF
+              DBILLA(ICOMP,NDBENT,5)=float(IBLIND)
 
 C Recover new illuminance data.
 C Open transfer file.
@@ -1337,68 +1352,64 @@ C Loop through till 'OUTCMD' string found.
               endif
               if (OUTSTR(1:60).ne.OUTCMD(1:60)) goto 777
 
-C Now read sensor data (for lighting zone N=1, as only this is looped through
-C ... any other light zones get lost with radiance coupling).
-C USE ONLY ONE LIGHTING ZONE WITH RADIANCE COUPLING seems to 
-C be the consequence ... "outloop" this internal loop (DO 19)  over all lighting zones? The 
-C data has been calculated by Radiance for all sensors so should be available ...  
-             DO 199 NN=1,NLITZ(ICOMP)
-              DO 19 I=1,NDF(ICOMP,NN)
-                sumJ=0.
-                CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'t var illum',IER)
-                if (IER.ne.0) then
-                 write(outs,'(2a)')' Fatal error: Radiance simulation',
+C Now read sensor data for all lighting zones
+              DO 199 NN=1,NLITZ(ICOMP)
+                DO 19 I=1,NDF(ICOMP,NN)
+                  sumJ=0.
+                  CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'t var illum',IER)
+                  if (IER.ne.0) then
+                    write(outs,'(2a)')
+     &              ' Fatal error: Radiance simulation',
      &              ' produced no data.'
-                  call edisp(iuout,outs)
-                  CALL EPWAIT
-                  CALL EPAGEND
-                  stop
-                endif
-                K=0
-                si=0.0
-                CALL EGETWR(OUTSTR,K,si,0.,0.,'-','sen illum',IER)
-                subT=si
-                suma=suma+subT
-                selum(NN,I)=subT
+                    call edisp(iuout,outs)
+                    CALL EPWAIT
+                    CALL EPAGEND
+                    stop
+                  endif
+                  K=0
+                  si=0.0
+                  CALL EGETWR(OUTSTR,K,si,0.,0.,'-','sen illum',IER)
+                  subT=si
+                  suma=suma+subT
+                  selum(NN,I)=subT
 
 C Copy new information to illuminance DB. Transform to integer ... (why?)
-                DBILLS(NDBENT,NN,I)=int(subT)
+                  DBILLS(ICOMP,NDBENT,NN,I)=int(subT)
 
-                ift_old=ift
-                ift=1
+                  ift_old=ift
+                  ift=1
 C Trace output:
-                if(IFT.EQ.1)then
+                  if(IFT.EQ.1)then
 c                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
-                  write(78,111)NSINC,zname(ICOMP),IBLIND,
-     &              NN,I,selum(NN,I),SETPT(ICOMP,NN)
-  111             format(I6,' ',(a),I5,I5,I5,' N/A ','  N/A  ',
+                    write(78,111)NSINC,zname(ICOMP),IBLIND,
+     &               NN,I,selum(NN,I),SETPT(ICOMP,NN),NDBENT
+  111               format(I6,' ',(a),I5,I5,I5,' N/A ','  N/A  ',
      &               '  N/A  ','  N/A ',
-     &               '  N/A  ','  N/A  ',F7.1,F6.0,'  N/A  ')
-                  call edisp(itu,outs)
-                endif
-                ift=ift_old
-   19         CONTINUE
-C                                   Average illumination for this light zone:
-              zelum(NN)=suma/float(NDF(ICOMP,NN))
-  199        CONTINUE ! loop through all lighting zones
+     &               '  N/A  ','  N/A  ',F7.1,F6.0,I7)
+                    call edisp(itu,outs)
+                  endif
+                  ift=ift_old
+   19           CONTINUE ! loop through sensors of lighting zone NN
+C                                        Average illumination for this light zone:
+                zelum(NN)=suma/float(NDF(ICOMP,NN))
+  199         CONTINUE ! loop through all lighting zones
 
 C Close transfer file.
               call ERPFREE(IUNIT,ISTAT)
 
-              write (66,*) 'Calculated illuminances:'
-              write (66,'(9(f7.1,1x))') (selum(1,IDFT),IDFT=1,MDF)
-              write (66,'(9(f7.1,1x))') (selum(2,IDFT),IDFT=1,MDF)
-              write (66,'(9(f7.1,1x))') (selum(3,IDFT),IDFT=1,MDF)
-              write (66,'(9(f7.1,1x))') (selum(4,IDFT),IDFT=1,MDF)
+              write (66,*) 'Calculated illuminances for zone',
+     &                                            zname(ICOMP),':'
+              do 434 ILZ=1,NLITZ(ICOMP)
+                write(66,'(9(f7.1,1x))') 
+     &               (selum(ILZ,IDFT),IDFT=1,NDF(ICOMP,ILZ))
+ 434          continue
             else
               call edisp(iuout,'Using information from illum database.')
             endif
           ENDIF !  (N.EQ.1) then
         endif ! sun is up, not startup, not "no radiation" ...
-
-C Average illumination for this light zone:
-c        zelum(N)=suma/float(NDF(ICOMP,N))
 C === END of Radiance coupling
+
 
       ELSE ! IDFST(ICOMP,N) not = 3, 4 or 5 ... i.e. IDFST(ICOMP,N) = 1 or 2
 
