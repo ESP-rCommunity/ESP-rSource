@@ -799,7 +799,7 @@ C Switch off delay time memory common block
       common/sus/issny
 
 C Illuminance database.
-      common/ILDB/NDBENT,DBILLA(MCOM,MILDB,5),
+      common/ILDB/NDBENT(MCOM),DBILLA(MCOM,MILDB,5),
      &                   DBILLS(MCOM,MILDB,MLCOM,MDF)
 
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
@@ -1084,6 +1084,7 @@ C in pre-calculation period (via call to bInStartup):
         instart=.false.
         if (bInStartup())then
           instart=.true.
+          NDBENT(ICOMP)=0
         endif
 C        IF((ISSNY.EQ.1.AND.IDYP.EQ.365.AND.IHRP.EQ.24.AND.ISDS.EQ.1)
 C     &    .OR.(ISSNY.EQ.0.AND.(IDYP.GE.ISDS.OR.
@@ -1153,7 +1154,7 @@ C Check for no direct solar (effectively use dayfactor).
                   QDFTMP(ILZ,IDF)=0.0
  3111           continue
  311          continue
-              do 310 IDB=1,NDBENT
+              do 310 IDB=1,NDBENT(ICOMP)
                 if ((DBILLA(ICOMP,IDB,3).lt.QDRACC).and.
      &              (IBLIND.eq.nint(DBILLA(ICOMP,IDB,5)))) then
                   IDB_MATCH=IDB
@@ -1211,7 +1212,7 @@ C Check for similar sun position.
                   Yb(ILZ,IDF)=0.0
  4111           continue
  411          continue
-              do 320 IDB=1,NDBENT
+              do 320 IDB=1,NDBENT(ICOMP)
                 SOLDIF=esind(90.0-DBILLA(ICOMP,IDB,1))*
      &              esind(90.0-SALT)*ecosd(DBILLA(ICOMP,IDB,2)-RSAZI)
                 SOLDIF=SOLDIF+ecosd(90.0-DBILLA(ICOMP,IDB,1))*
@@ -1315,16 +1316,17 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
 
 C Create new entry in illuminance database if MILDB is not exceeded - otherwise, give
 C warning and overwrite last entry from now on ...
-              NDBENT=NDBENT+1
-              if (NDBENT .gt. MILDB) then
-                write(*,*)' *** DBILLA full - Runtime increase!! ***'
-                NDBENT=MILDB
+              NDBENT(ICOMP)=NDBENT(ICOMP)+1
+              if (NDBENT(ICOMP) .gt. MILDB) then
+                write(*,*)' *** DBILLA full in zone ',
+     &             zname(ICOMP),' - Runtime increase!! ***'
+                NDBENT(ICOMP)=MILDB
               endif
-              DBILLA(ICOMP,NDBENT,1)=SALT
-              DBILLA(ICOMP,NDBENT,2)=RSAZI
-              DBILLA(ICOMP,NDBENT,3)=QDIR
-              DBILLA(ICOMP,NDBENT,4)=QDIF
-              DBILLA(ICOMP,NDBENT,5)=float(IBLIND)
+              DBILLA(ICOMP,NDBENT(ICOMP),1)=SALT
+              DBILLA(ICOMP,NDBENT(ICOMP),2)=RSAZI
+              DBILLA(ICOMP,NDBENT(ICOMP),3)=QDIR
+              DBILLA(ICOMP,NDBENT(ICOMP),4)=QDIF
+              DBILLA(ICOMP,NDBENT(ICOMP),5)=float(IBLIND)
 
 C Recover new illuminance data.
 C Open transfer file.
@@ -1374,7 +1376,7 @@ C Now read sensor data for all lighting zones
                   selum(NN,I)=subT
 
 C Copy new information to illuminance DB. Transform to integer ... (why?)
-                  DBILLS(ICOMP,NDBENT,NN,I)=int(subT)
+                  DBILLS(ICOMP,NDBENT(ICOMP),NN,I)=int(subT)
 
                   ift_old=ift
                   ift=1
@@ -1382,7 +1384,7 @@ C Trace output:
                   if(IFT.EQ.1)then
 c                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
                     write(78,111)NSINC,zname(ICOMP),IBLIND,
-     &               NN,I,selum(NN,I),SETPT(ICOMP,NN),NDBENT
+     &               NN,I,selum(NN,I),SETPT(ICOMP,NN),NDBENT(ICOMP)
   111               format(I6,' ',(a),I5,I5,I5,' N/A ','  N/A  ',
      &               '  N/A  ','  N/A ',
      &               '  N/A  ','  N/A  ',F7.1,F6.0,I7)
