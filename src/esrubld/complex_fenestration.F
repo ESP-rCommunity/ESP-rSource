@@ -1072,7 +1072,7 @@ C for both curved slats and flat slats with thickness correction.
 C Refer to Chapter 4 in B.Lomanowski MASc Thesis (2008) for model
 C details. 
 C
-C **STILL NEED VISIBLE PROPERTY CALCULATION
+C Visible properties enabled & necessary extensions inserted. A.G., 25.09.2009
 C
 C ********************************************************************
       subroutine cfc_eff_opt_prop(icomp,isurf,icfctp,anginc,proang)
@@ -1095,7 +1095,7 @@ C need thickness of glass layers for Fresnel calcs
 
 C temporary INPUT variables to hold solar and visible properties as
 C read from *.cfc file
-      real SolRufs,SolRdfs,SolTslat!,VisRufs,VisRdfs,VisTslat
+      real SolRufs,SolRdfs,SolTslat,VisRufs,VisRdfs,VisTslat
 C temporary OUTPUT variables to hold effective solar and visible properties
       real OutRFbd,OutTFbb,OutTFbd,OutRBbd,OutTBbb,OutTBbd
       real OutRFdd,OutRBdd,OutTFdd,OutTBdd
@@ -1153,18 +1153,18 @@ C index.
 C Calculate beam OFF-NORMAL incidence transmittance and reflectance for
 C reference glass based on extinction coefficient and refractive index 
 C using Snell's law, Fresnel equations.
-	THETA2 = ASIN((SIN(THETA1))/N2)
-	TAU_A = EXP(-1.0*KL/COS(THETA2))
-	RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
-	RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
-	TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
+        THETA2 = ASIN((SIN(THETA1))/N2)
+        TAU_A = EXP(-1.0*KL/COS(THETA2))
+        RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
+        RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
+        TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
-	TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
+        TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
      &            (1.0-(RPARL*RPARL*TAU_A*TAU_A))
-	RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
-	RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
-	TclearON = (TAUPERP+TAUPARL)/2.0
-	RclearON = (RHOPERP+RHOPARL)/2.0
+        RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
+        RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
+        TclearON = (TAUPERP+TAUPARL)/2.0
+        RclearON = (RHOPERP+RHOPARL)/2.0
 
         END IF
 
@@ -1181,22 +1181,36 @@ C and reflectance based on clear glass off-normal and normal values.
         SolRBbb(icomp,isurf,icfctp,i)=1.-
      &      (((1.-RclearON)/(1.-RclearDN))*(1.-SolRB(icomp,icfctp,i)))
 
+C Calculate glazing layer beam OFF-NORMAL front and back visual transmittance
+C and reflectance based on clear glass off-normal and normal values.
+        VisTFbb(icomp,isurf,icfctp,i)=
+     &      (TclearON/TclearDN)*VisT(icomp,icfctp,i)
+
+        VisTBbb(icomp,isurf,icfctp,i)=VisTFbb(icomp,isurf,icfctp,i)
+
+        VisRFbb(icomp,isurf,icfctp,i)=1.-
+     &      (((1.-RclearON)/(1.-RclearDN))*(1.-VisRF(icomp,icfctp,i)))
+
+        VisRBbb(icomp,isurf,icfctp,i)=1.-
+     &      (((1.-RclearON)/(1.-RclearDN))*(1.-VisRB(icomp,icfctp,i)))
+
+
 C Calculate DIFFUSE-DIFFUSE incidence transmittance and reflectance
 C for glass template based on extinction coefficient and refractive
 C index.
         THETA1=51.*r
-	THETA2 = ASIN((SIN(THETA1))/N2)
-	TAU_A = EXP(-1.0*KL/COS(THETA2))
-	RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
-	RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
-	TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
+	      THETA2 = ASIN((SIN(THETA1))/N2)
+	      TAU_A = EXP(-1.0*KL/COS(THETA2))
+	      RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
+	      RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
+	      TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
-	TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
+	      TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
      &            (1.0-(RPARL*RPARL*TAU_A*TAU_A))
-	RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
-	RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
-	TclearON = (TAUPERP+TAUPARL)/2.0
-	RclearON = (RHOPERP+RHOPARL)/2.0
+	      RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
+	      RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
+	      TclearON = (TAUPERP+TAUPARL)/2.0
+	      RclearON = (RHOPERP+RHOPARL)/2.0
 
 C calculate diffuse-diffuse for given glass layer
         SolTFdd(icomp,isurf,icfctp,i)=
@@ -1205,20 +1219,33 @@ C calculate diffuse-diffuse for given glass layer
         SolTBdd(icomp,isurf,icfctp,i)=SolTFdd(icomp,isurf,icfctp,i)
 
         SolRFdd(icomp,isurf,icfctp,i)=1.-
-     &      (((1.-RclearON)/(1.-RclearDN))*(1.-SolRF(icomp,icfctp,i)))
+     &     (((1.-RclearON)/(1.-RclearDN))*(1.-SolRF(icomp,icfctp,i)))
 
         SolRBdd(icomp,isurf,icfctp,i)=1.-
-     &      (((1.-RclearON)/(1.-RclearDN))*(1.-SolRB(icomp,icfctp,i)))
+     &     (((1.-RclearON)/(1.-RclearDN))*(1.-SolRB(icomp,icfctp,i)))
+
+C calculate visual diffuse-diffuse for given glass layer
+        VisTFdd(icomp,isurf,icfctp,i)=
+     &      (TclearON/TclearDN)*VisT(icomp,icfctp,i)
+
+        VisTBdd(icomp,isurf,icfctp,i)=VisTFdd(icomp,isurf,icfctp,i)
+
+        VisRFdd(icomp,isurf,icfctp,i)=1.-
+     &     (((1.-RclearON)/(1.-RclearDN))*(1.-VisRF(icomp,icfctp,i)))
+
+        VisRBdd(icomp,isurf,icfctp,i)=1.-
+     &     (((1.-RclearON)/(1.-RclearDN))*(1.-VisRB(icomp,icfctp,i)))
 
 C set beam-diffuse eq. 0
         SolTFbd(icomp,isurf,icfctp,i)=0.0
         SolTBbd(icomp,isurf,icfctp,i)=0.0
         SolRFbd(icomp,isurf,icfctp,i)=0.0
         SolRBbd(icomp,isurf,icfctp,i)=0.0
-!         VisTFbd(icomp,isurf,icfctp,i)=0.0
-!         VisTBbd(icomp,isurf,icfctp,i)=0.0
-!         VisRFbd(icomp,isurf,icfctp,i)=0.0
-!         VisRBbd(icomp,isurf,icfctp,i)=0.0
+        
+        VisTFbd(icomp,isurf,icfctp,i)=0.0
+        VisTBbd(icomp,isurf,icfctp,i)=0.0
+        VisRFbd(icomp,isurf,icfctp,i)=0.0
+        VisRBbd(icomp,isurf,icfctp,i)=0.0
 
        elseif(itype.eq.2)then   ! currently only slat-type blinds are considered 
 
@@ -1235,22 +1262,37 @@ C set beam-diffuse eq. 0
           SolTBdd(icomp,isurf,icfctp,i)=0.99999999
           SolRFdd(icomp,isurf,icfctp,i)=0.0
           SolRBdd(icomp,isurf,icfctp,i)=0.0
-          
+
+          VisTFbb(icomp,isurf,icfctp,i)=0.99999999
+          VisTBbb(icomp,isurf,icfctp,i)=0.99999999
+          VisRFbb(icomp,isurf,icfctp,i)=0.0
+          VisRBbb(icomp,isurf,icfctp,i)=0.0
+          VisTFbd(icomp,isurf,icfctp,i)=0.0
+          VisTBbd(icomp,isurf,icfctp,i)=0.0
+          VisRFbd(icomp,isurf,icfctp,i)=0.0
+          VisRBbd(icomp,isurf,icfctp,i)=0.0
+          VisTFdd(icomp,isurf,icfctp,i)=0.99999999
+          VisTBdd(icomp,isurf,icfctp,i)=0.99999999
+          VisRFdd(icomp,isurf,icfctp,i)=0.0
+          VisRBdd(icomp,isurf,icfctp,i)=0.0
+
         else ! continue as usual
 
 C set beam-beam reflectances to zero
          SolRFbb(icomp,isurf,icfctp,i)=0.0
          SolRBbb(icomp,isurf,icfctp,i)=0.0
-!         VisRFbb(icomp,isurf,icfctp,i)=0.0
-!         VisRBbb(icomp,isurf,icfctp,i)=0.0
+         
+         VisRFbb(icomp,isurf,icfctp,i)=0.0
+         VisRBbb(icomp,isurf,icfctp,i)=0.0
 
 C assign direct normal solar/visible properties to local variables
          SolRufs=solRF(icomp,icfctp,i)
          SolRdfs=solRB(icomp,icfctp,i)
          SolTslat=solT(icomp,icfctp,i)
-!         VisRdfs=visRF(icomp,icfctp,i)
-!         VisRufs=visRB(icomp,icfctp,i)
-!         VisTslat=visT(icomp,icfctp,i)
+         
+         VisRufs=visRF(icomp,icfctp,i)
+         VisRdfs=visRB(icomp,icfctp,i)
+         VisTslat=visT(icomp,icfctp,i)
 
 C assign slat blind descriptors to local variables
          w=vb_w(icomp,icfctp)
@@ -1260,7 +1302,7 @@ C assign slat blind descriptors to local variables
          wr=vb_wr(icomp,icfctp)
          t=vb_t(icomp,icfctp)
 
-         if(crown.gt.1.0.and.crown.gt.t)then !slat is CURVED
+         if(crown.gt. 1.0 .and.crown.gt.t)then !slat is CURVED
 
             sl_rad_overw=1./wr
 
@@ -1272,17 +1314,23 @@ C calculate front effective solar optical properties and assign to commons
             SolTFbd(icomp,isurf,icfctp,i)=OutTFbd
 
 C calculate front effective visible properties and assign to commons
-!           call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
-!      &            VisRdfs,VisRufs,VisTslat,OutRFbd,OutTFbb,OutTFbd)
-!           VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
-!           VisRFbd(icomp,isurf,icfctp,i)=OutRFbd
-!           VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
+     &            VisRdfs,VisRufs,VisTslat,OutRFbd,OutTFbb,OutTFbd)
+            VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
+            VisRFbd(icomp,isurf,icfctp,i)=OutRFbd
+            VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
 
 C calculate front effective diffuse properties and assign to commons
             call vb_eff_diff_properties(w,s,phi/r,SolRufs,
      &            SolRdfs,SolTslat,OutRFdd,OutTFdd)
             SolTFdd(icomp,isurf,icfctp,i)=OutTFdd
             SolRFdd(icomp,isurf,icfctp,i)=OutRFdd
+
+C calculate front effective visible diffuse properties and assign to commons
+            call vb_eff_diff_properties(w,s,phi/r,VisRufs,
+     &            VisRdfs,VisTslat,OutRFdd,OutTFdd)
+            VisTFdd(icomp,isurf,icfctp,i)=OutTFdd
+            VisRFdd(icomp,isurf,icfctp,i)=OutRFdd
 
             phi=phi*(-1.0)
 
@@ -1294,17 +1342,23 @@ C calculate back effective solar optical properties adn assign to commons
             SolTBbd(icomp,isurf,icfctp,i)=OutTBbd
 
 C calculate back effective visible properties and assign to commons
-!           call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
-!      &            VisRdfs,VisRufs,VisTslat,OutRBbd,OutTBbb,OutTBbd)
-!           VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
-!           VisRBbd(icomp,isurf,icfctp,i)=OutRBbd
-!           VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
+            call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
+     &            VisRdfs,VisRufs,VisTslat,OutRBbd,OutTBbb,OutTBbd)
+            VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
+            VisRBbd(icomp,isurf,icfctp,i)=OutRBbd
+            VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
 
-C calculate back effective diffuse properties adn assign to commons
+C calculate back effective diffuse properties and assign to commons
             call vb_eff_diff_properties(w,s,phi/r,SolRufs,
      &            SolRdfs,SolTslat,OutRBdd,OutTBdd)
             SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
             SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
+
+C calculate back effective visible diffuse properties and assign to commons
+            call vb_eff_diff_properties(w,s,phi/r,VisRufs,
+     &            VisRdfs,VisTslat,OutRBdd,OutTBdd)
+            VisTBdd(icomp,isurf,icfctp,i)=OutTBdd
+            VisRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
          else ! slat is considered FLAT with thickness t [mm]
 
@@ -1316,17 +1370,23 @@ C calculate front effective solar optical properties and assign to commons
             SolTFbd(icomp,isurf,icfctp,i)=OutTFbd
 
 C calculate front effective visible properties and assign to commons
-!           call VB_SOL46_THICK(s,w,t,phi,proang,
-!      &            VisRdfs,VisRufs,VisTslat,OutRFbd,OutTFbb,OutTFbd)
-!           VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
-!           VisRFbd(icomp,isurf,icfctp,i)=OutRFbd
-!           VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            call VB_SOL46_THICK(s,w,t,phi,proang,
+     &            VisRdfs,VisRufs,VisTslat,OutRFbd,OutTFbb,OutTFbd)
+            VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
+            VisRFbd(icomp,isurf,icfctp,i)=OutRFbd
+            VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
 
-C calculate front effective diffuse properties adn assign to commons
+C calculate front effective diffuse properties and assign to commons
             call VB_SOL_DD_THICK(s,w,t,phi,SolRufs,SolRdfs,
      &            SolTslat,OutRFdd,OutTFdd)
             SolTFdd(icomp,isurf,icfctp,i)=OutTFdd
             SolRFdd(icomp,isurf,icfctp,i)=OutRFdd
+
+C calculate front effective visible diffuse properties and assign to commons
+            call VB_SOL_DD_THICK(s,w,t,phi,VisRufs,VisRdfs,
+     &            VisTslat,OutRFdd,OutTFdd)
+            VisTFdd(icomp,isurf,icfctp,i)=OutTFdd
+            VisRFdd(icomp,isurf,icfctp,i)=OutRFdd
 
             phi=phi*(-1.0)
 
@@ -1338,17 +1398,23 @@ C calculate back effective solar optical properties adn assign to commons
             SolTBbd(icomp,isurf,icfctp,i)=OutTBbd
 
 C calculate back effective visible properties and assign to commons
-!           call VB_SOL46_THICK(s,w,t,phi,proang,
-!      &            VisRdfs,VisRufs,VisTslat,OutRBbd,OutTBbb,OutTBbd)
-!           VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
-!           VisRBbd(icomp,isurf,icfctp,i)=OutRBbd
-!           VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
+            call VB_SOL46_THICK(s,w,t,phi,proang,
+     &            VisRdfs,VisRufs,VisTslat,OutRBbd,OutTBbb,OutTBbd)
+            VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
+            VisRBbd(icomp,isurf,icfctp,i)=OutRBbd
+            VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
 
-C calculate back effective diffuse properties adn assign to commons
+C calculate back effective diffuse properties and assign to commons
             call VB_SOL_DD_THICK(s,w,t,phi,SolRufs,SolRdfs,
      &            SolTslat,OutRBdd,OutTBdd)
             SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
             SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
+
+C calculate back effective diffuse properties and assign to commons
+            call VB_SOL_DD_THICK(s,w,t,phi,VisRufs,VisRdfs,
+     &            VisTslat,OutRBdd,OutTBdd)
+            VisTBdd(icomp,isurf,icfctp,i)=OutTBdd
+            VisRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
          end if ! slat considered flat
         endif !  i_shd() .eq. 0 
@@ -1367,6 +1433,19 @@ C set gas gap properties to 0 except for bb and dd transmission, set to 1.
         SolTBdd(icomp,isurf,icfctp,i)=0.99999999
         SolRFdd(icomp,isurf,icfctp,i)=0.0
         SolRBdd(icomp,isurf,icfctp,i)=0.0
+
+        VisTFbb(icomp,isurf,icfctp,i)=0.99999999
+        VisTBbb(icomp,isurf,icfctp,i)=0.99999999
+        VisRFbb(icomp,isurf,icfctp,i)=0.0
+        VisRBbb(icomp,isurf,icfctp,i)=0.0
+        VisTFbd(icomp,isurf,icfctp,i)=0.0
+        VisTBbd(icomp,isurf,icfctp,i)=0.0
+        VisRFbd(icomp,isurf,icfctp,i)=0.0
+        VisRBbd(icomp,isurf,icfctp,i)=0.0
+        VisTFdd(icomp,isurf,icfctp,i)=0.99999999
+        VisTBdd(icomp,isurf,icfctp,i)=0.99999999
+        VisRFdd(icomp,isurf,icfctp,i)=0.0
+        VisRBdd(icomp,isurf,icfctp,i)=0.0
 
        else
 
@@ -1402,6 +1481,7 @@ C GBM - External beam solar irradiance [W/m2]
 C GDF - External diffuse solar irradiance [W/m2]
 C IBM - Internal beam solar irradiance [W/m2]
 C IDF - Internal diffuse solar irradiance [W/m2]
+C isolvis - Switch for solar (0) or visual (1) data
 C 
 C OUTPUT:
 C TRANSBB_SYS - Total transmitted beam solar flux [W/m2]
@@ -1411,12 +1491,12 @@ C AbsSol - Absorbed solar flux at each layer [W/m2]
 C
 C ********************************************************************
       subroutine solar_multilayer(icomp,isurf,icfctp,GBM,GDF,IBM,IDF,
-     &           TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+     &           isolvis,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
       IMPLICIT NONE
 #include "building.h"
 #include "CFC_common.h"
 
-      INTEGER LayNo,n,m,i,icomp,isurf,icfctp
+      INTEGER LayNo,n,m,i,icomp,isurf,icfctp,isolvis
       REAL GBM, GDF, IDF,IBM	
       REAL TRANSBB_SYS, TRANSBD_SYS, TRANSDD_SYS, REFL_SYS
       REAL TRANSD_SYS
@@ -1441,8 +1521,10 @@ C ********************************************************************
 
       LayNo=ncfc_el(icomp,icfctp)
 
-C Assign optical properties for each layer from commons to temp arrays
-      do 10 i=1,LayNo
+C Assign optical properties for each layer from commons to temp arrays depending
+C on isolvis
+      if (isolvis .eq. 0) then
+        do 10 i=1,LayNo
             rfbb(i)=SolRFbb(icomp,isurf,icfctp,i)
             rbbb(i)=SolRBbb(icomp,isurf,icfctp,i)
             tfbb(i)=SolTFbb(icomp,isurf,icfctp,i)
@@ -1455,8 +1537,24 @@ C Assign optical properties for each layer from commons to temp arrays
             rbdd(i)=SolRBdd(icomp,isurf,icfctp,i)
             tfdd(i)=SolTFdd(icomp,isurf,icfctp,i)
             tbdd(i)=SolTBdd(icomp,isurf,icfctp,i)
- 10   continue
-
+ 10     continue
+      else ! visual properties
+        do 11 i=1,LayNo
+            rfbb(i)=VisRFbb(icomp,isurf,icfctp,i)
+            rbbb(i)=VisRBbb(icomp,isurf,icfctp,i)
+            tfbb(i)=VisTFbb(icomp,isurf,icfctp,i)
+            tbbb(i)=VisTBbb(icomp,isurf,icfctp,i)
+            rfbd(i)=VisRFbd(icomp,isurf,icfctp,i)
+            rbbd(i)=VisRBbd(icomp,isurf,icfctp,i)
+            tfbd(i)=VisTFbd(icomp,isurf,icfctp,i)
+            tbbd(i)=VisTBbd(icomp,isurf,icfctp,i)
+            rfdd(i)=VisRFdd(icomp,isurf,icfctp,i)
+            rbdd(i)=VisRBdd(icomp,isurf,icfctp,i)
+            tfdd(i)=VisTFdd(icomp,isurf,icfctp,i)
+            tbdd(i)=VisTBdd(icomp,isurf,icfctp,i)
+ 11     continue
+      endif
+ 
 !MULTILAYER CALCULATION
       n=LayNo+2
       m=2*n-4
@@ -1494,31 +1592,54 @@ C Assign optical properties for each layer from commons to temp arrays
             D(i)=DD(i)+BD(i)
       ENDDO
       D(m+1)=DD(m+1)+BD(m+1)
+      
+      if (isolvis .eq. 0) then
+c        if ((GBM .gt. 0.0).or.(GDF .gt. 0.0)) then
 !Transmittance and Reflectance Calculation
-      TRANSBB_SYS = BB(1)! /GBM
-      TRANSBD_SYS = BD(1)! /GBM
-      TRANSDD_SYS = DD(1)! /GDF
-      TRANSD_SYS=TRANSDD_SYS+TRANSBD_SYS
+          TRANSBB_SYS = BB(1)! /GBM
+          TRANSBD_SYS = BD(1)! /GBM
+          TRANSDD_SYS = DD(1)! /GDF
+          TRANSD_SYS=TRANSDD_SYS+TRANSBD_SYS
 !      TRANS_SYS =(BB(1)+D(1)) !/(GBM+GDF)
-      REFL_SYS=(BB(m+1)+D(m+1))! /(GBM+GDF)
-!Layer Absorptance Calculation
-      DO i=1,n-2,1
-            xx=2*i-1
-            Bminus(n-i)=BB(xx)
-            Dminus(n-i)=D(xx)
-            xx=2*i
-            Bplus(n-i)=BB(xx)
-            Dplus(n-i)=D(xx)
-      ENDDO
-      Bminus(1)=GBM
-      Bplus(1)=BB(m+1)
-      Dminus(1)=GDF
-      Dplus(1)=D(m+1)
-      DO i=1,n-2,1
-          SS(i)=(Bminus(i)-Bplus(i)+Bplus(i+1)-Bminus(i+1)+ Dminus(i)
-     &                  -Dplus(i)+Dplus(i+1)-Dminus(i+1)) !/ (GBM+GDF)
-          AbsSol(i)=SS(i)
-      ENDDO
+          REFL_SYS=(BB(m+1)+D(m+1))! /(GBM+GDF)
+! Layer Absorptance Calculation
+          DO i=1,n-2,1
+                xx=2*i-1
+                Bminus(n-i)=BB(xx)
+                Dminus(n-i)=D(xx)
+                xx=2*i
+                Bplus(n-i)=BB(xx)
+                Dplus(n-i)=D(xx)
+          ENDDO
+          Bminus(1)=GBM
+          Bplus(1)=BB(m+1)
+          Dminus(1)=GDF
+          Dplus(1)=D(m+1)
+          DO i=1,n-2,1
+            SS(i)=(Bminus(i)-Bplus(i)+Bplus(i+1)-Bminus(i+1)+Dminus(i)
+     &                    -Dplus(i)+Dplus(i+1)-Dminus(i+1)) !/ (GBM+GDF)
+            AbsSol(i)=SS(i)
+          ENDDO
+c        endif ! only calculate values if SW radiation present
+      else ! visual data
+!  Visual transmittance and reflectance calculation, for visual, we want fractions
+        if (GBM .gt. 0.0) then
+          TRANSBB_SYS = BB(1)/GBM
+          TRANSBD_SYS = BD(1)/GBM
+        endif
+        if (GDF .gt. 0.0) then
+          TRANSDD_SYS = DD(1)/GDF
+        endif
+        TRANSD_SYS=max(0.0,TRANSDD_SYS+TRANSBD_SYS)
+!      TRANS_SYS =(BB(1)+D(1)) !/(GBM+GDF)
+        if ((GBM+GDF) .gt. 0.0) then
+          REFL_SYS=(BB(m+1)+D(m+1))/(GBM+GDF)
+        endif
+! Visual absorptance not of interest
+        do i=1,n-2,1
+          AbsSol(i)=0.0001
+        enddo
+      endif
 
       IF (GBM.lt.0.01) THEN
             GBM=0.0     ! reset back to zero
@@ -3502,9 +3623,11 @@ C      real btimep,btimef
       integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
 C      common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
 C     &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
+c     &      transBB_V(mcom,ms),transD_V(mcom,ms),refl_V(mcom,ms),
 C     &      issur_self_shd(mcom,ms), proang_s(mcom,mcfc,ms),
 C     &      qtmca_ext(mcom,ms,mn)
 C      real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
+C      real transBB_V,transD_V,refl_V
 C      real issur_self_shd,proang_s,qtmca_ext
 
       integer icomp,icfctp!,isur,is_shd
@@ -3598,9 +3721,11 @@ C ********************************************************************
 
       common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
      &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
+     &      transBB_V(mcom,ms),transD_V(mcom,ms),refl_V(mcom,ms),
      &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
      &      qtmca_ext(mcom,ms,mn)
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
+      real transBB_V,transD_V,refl_V
       real proang_s,qtmca_ext
       integer issur_self_shd
 
@@ -4364,9 +4489,11 @@ C ********************************************************************
 
       common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
      &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
+     &      transBB_V(mcom,ms),transD_V(mcom,ms),refl_V(mcom,ms),
      &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
      &      qtmca_ext(mcom,ms,mn)
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
+      real transBB_V,transD_V,refl_V
       real issur_self_shd,proang_s,qtmca_ext
 
       real RGap1, RGap2, Rsi, Rse, SBOLTZ, T0
@@ -4444,7 +4571,6 @@ C     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
      &           'CFC total radiation incidence (dir+diff)' )
 
 C CFC beam and diffuse transmission
-
             call add_to_xml_reporting (
      &           transBB_S(icomp,i),
      &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transBB',
@@ -4456,6 +4582,19 @@ C CFC beam and diffuse transmission
      &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transD',
      &           'units', '(W/m2)',
      &           'CFC diffuse transmission' )
+
+C CFC beam and diffuse transmission for light
+            call add_to_xml_reporting (
+     &           transBB_V(icomp,i),
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transBB_V',
+     &           'units', '(W/m2)',
+     &           'CFC direct beam transmission, light' )
+     
+            call add_to_xml_reporting (
+     &           transD_V(icomp,i),
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transD_V',
+     &           'units', '(W/m2)',
+     &           'CFC diffuse transmission, light' )
 
 
         do 15 l=1,ne

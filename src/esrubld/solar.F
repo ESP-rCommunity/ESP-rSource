@@ -328,15 +328,18 @@ C Required for WATSUN-PV model
 C COMMONS FOR CFC type CONSTRUCTIONS 
       common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
      &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
+     &      transBB_V(mcom,ms),transD_V(mcom,ms),refl_V(mcom,ms),
      &      issur_self_shd(mcom,ms), proang_s(mcom,mcfc,ms),
      &      qtmca_ext(mcom,ms,mn)
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
+      real transBB_V,transD_V,refl_V
       real issur_self_shd,proang_s,qtmca_ext
 
       REAL fInc_angle          ! Angle of incidence for surface
 
       real proang
       real TRANSBB_SYS,TRANSD_SYS,REFL_SYS,CFCabs
+      real TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,CFCabsV
 
       logical VTSOL,vsolfl,closea,neglum
 
@@ -358,7 +361,7 @@ C tdtrace is the direct transmission at the current timestep for each surface.
 C tfftrace is the diffuse transmission at the current timestep for each surface.
       dimension tdtrace(MS),tfftrace(MS)
 
-      dimension AbsSol(me)
+      dimension AbsSol(me),AbsVis(me)
 
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
@@ -1618,7 +1621,11 @@ C layers have profile angle dependency
 C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
 C and absorbed fluxes in each CFC layer.
              call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &       tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+     &       tmpIBM,tmpIDF,0,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+
+C Calculate CFC system visual beam transmitted, diffuse transmitted.
+             call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
+     &       tmpIBM,tmpIDF,1,TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,AbsVis)
 
             ELSE     !surface is self-shaded
 
@@ -1634,7 +1641,11 @@ C each CFC layer. Incidence and profile angles set to 0 since self-shaded.
 C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
 C and absorbed fluxes in each CFC layer.
              call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &       tmpIBM,tmpIDF,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+     &       tmpIBM,tmpIDF,0,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+
+C Calculate CFC system visual beam transmitted, diffuse transmitted.
+             call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
+     &       tmpIBM,tmpIDF,1,TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,AbsVis)
 
             END IF
 
@@ -1642,9 +1653,14 @@ C save multilayer results for CFC output
              RadIncDirS(icomp,i)=EXDIR(I)
              RadIncDifS(icomp,i)=EXDIF(I)
              issur_self_shd(icomp,i)=ians(i)
+C solar data
              transBB_S(icomp,i)=TRANSBB_SYS!*SNA(ICOMP,I)
              transD_S(icomp,i)=TRANSD_SYS!*SNA(ICOMP,I)
              refl_S(icomp,i)=REFL_SYS!*SNA(ICOMP,I)
+C visual data
+             transBB_V(icomp,i)=TRANSBB_SYSV!*SNA(ICOMP,I)
+             transD_V(icomp,i)=TRANSD_SYSV!*SNA(ICOMP,I)
+             refl_V(icomp,i)=REFL_SYSV!*SNA(ICOMP,I)
 
 C Calculate total absorbed in CFC
              CFCabs=0.
@@ -1818,7 +1834,7 @@ C and absorbed fluxes in each CFC layer.Here, the transmitted component is actua
 C the reflected component on the inside surface since the source is from the
 C inside.
                 call solar_multilayer(icomp,ks,icfcfl(icomp,ks),
-     &          temp1,temp2,temp3,X1,TRANSBB_SYS,TRANSD_SYS,
+     &          temp1,temp2,temp3,X1,0,TRANSBB_SYS,TRANSD_SYS,
      &          REFL_SYS,AbsSol)
 
                 QIREF=QIREF+TRANSD_SYS*PAREA    !reflected 
@@ -1900,7 +1916,7 @@ C and absorbed fluxes in each CFC layer.Here, the transmitted component is actua
 C the reflected component on the inside surface since the source is from the
 C inside.
                 call solar_multilayer(icomp,k,icfcfl(icomp,k),
-     &          temp1,temp2,temp3,X2,TRANSBB_SYS,TRANSD_SYS,
+     &          temp1,temp2,temp3,X2,0,TRANSBB_SYS,TRANSD_SYS,
      &          REFL_SYS,AbsSol)
 
                 QIREF=QIREF+TRANSD_SYS*SNA(ICOMP,K)         !reflected
@@ -1988,7 +2004,7 @@ C and absorbed fluxes in each CFC layer.Here, the transmitted component is actua
 C the reflected component on the inside surface since the source is from the
 C inside.
              call solar_multilayer(icomp,i,icfcfl(icomp,i),
-     &       temp1,temp2,temp3,RDIFR,TRANSBB_SYS,TRANSD_SYS,
+     &       temp1,temp2,temp3,RDIFR,0,TRANSBB_SYS,TRANSD_SYS,
      &       REFL_SYS,AbsSol)
 
              RREF=RREF+TRANSD_SYS*SNA(ICOMP,i)              !reflected
