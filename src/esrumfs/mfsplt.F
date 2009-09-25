@@ -122,11 +122,8 @@ C based on most recent results
       COMMON/PTIME/PTIMEP,PTIMEF
 
       COMMON/PCLSOL/ICFP,IDTYPP,IPERP
-
-C Variables for weekdays, and weekends.
-C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
-      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
-      character*10 wkd1, wkd2
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -147,26 +144,24 @@ C Set up day type and period pointers
       NDAYT=NPCDT(ICFP)
 
 C If NDAYT=0 set data to weekday, saturday and sunday format
-      IF(NDAYT.EQ.0) THEN
-         IDTYPP=1
-         IDW=IDWP
-         IF(IHRP.EQ.24) IDW=IDWF
-         IF(IDW.EQ.idwe1) IDTYPP=2
-         IF(IDW.EQ.idwe2) IDTYPP=3
-      ELSE
-         DO 10 IDTYPP=1,NDAYT
-         IDS=IPCDV(ICFP,IDTYPP,1)
-         IDF=IPCDV(ICFP,IDTYPP,2)
-         IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
-   10    CONTINUE
-         CALL ELINC(3)
-         WRITE(IUOUT,*) ' MFCNTL: plant control loop ',ICFP
-         WRITE(IUOUT,*) '         no valid day type for year-day ',IDAY
-         STOP ' MFCNTL: cannot locate appropriate day type'
-      END IF
+      NIN=0
+      IF(NDAYT.EQ.0)THEN
+        NDAYT=NBDAYTYPE
+        NIN=-1*NBDAYTYPE
+      ENDIF
+      DO 10 IDTYPP=1,NDAYT
+        IDS=IPCDV(ICFP,IDTYPP,1)
+        IDF=IPCDV(ICFP,IDTYPP,2)
+        IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
+   10 CONTINUE
+      CALL ELINC(3)
+      WRITE(IUOUT,*) ' MFCNTL: plant control loop ',ICFP
+      WRITE(IUOUT,*) '         no valid day type for year-day ',IDAY
+      STOP ' MFCNTL: cannot locate appropriate day type'
         
 C Check number of periods in each day and the start and finish times
-   20 NDAYP=NPCDP(ICFP,IDTYPP)
+   20 if(NIN.LE.-1.OR.ndayt.lt.1)idtypp=icalender(iday)
+      NDAYP=NPCDP(ICFP,IDTYPP)
       IF(NDAYP.EQ.0) STOP ' MFCNTL: no day-periods defined'
       DO 22 IDAYP=1,NDAYP
       IPERP=IDAYP

@@ -6106,8 +6106,8 @@ signal set point                                                      0.0000
     3 UA modulus (W/K)
       Value =    7.0000        Range (Min Max):     7.0000        7.0000
  BDATA variables:
-    1 Heat exchanger effectiveness (-)
-      Value =    0.8000        Range (Min Max):     0.0100        1.0000
+    1 Heat exchanger effectiveness (%)
+      Value =    80.000        Range (Min Max):     0.0100        1.0000
     2 Moisture recovery (%)
       Value =   25.0000        Range (Min Max):    0.00000       100.000
 

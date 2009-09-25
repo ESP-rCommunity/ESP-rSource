@@ -248,6 +248,11 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "   $ ./Install -d ~/esru"
   echo " "
+  echo " For MSWindows environment using the following "
+  echo " command ensures databases are also copied"
+  echo " "
+  echo "   $ ./Install -d c:/Esru "
+  echo " "
   echo " It is also possible to build esp-r executables "
   echo " individually, by specifying the name(s) of the "
   echo " desired program(s), eg:"
@@ -712,9 +717,6 @@ else
     echo " The $xLibs libraries will be used."
   fi 
 fi
-
-
-
 
 #---------------------------------------------------------
 # Prepend approprate grapics library to target list

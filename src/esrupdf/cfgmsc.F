@@ -28,7 +28,7 @@ C file.
       subroutine pcwrt
 #include "plant.h"
 #include "building.h"
-#include "esprdbfile.h"
+
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
 
@@ -73,7 +73,7 @@ C Strings describing component input
       common/hfpar/hfpdsc(mpcom,madata)
       character hfpdsc*68
 
-      character pcdesc*80, pcname*15,LPNF*72
+      character pcdesc*80, pcname*15,LPNF*72,dstmp*24
       character lpnam*72, laprob*72
 
 C Common controlling format of plant network file
@@ -87,9 +87,10 @@ C Open the file.
         return 
       endif
 
-C Write plant component data base name.
-      write(IFPNF,'(a)') '# Plant component data base:'
-      write(IFPNF,'(a)') lpcdb
+C Write plant file heading
+      call dstamp(dstmp)
+      write(IFPNF,'(2a)') 
+     &'ESP-r plant file version 2 written on: ',dstmp
 
 C Write lpnam of problem.
       write(IFPNF,'(a)') '# Project title:'
@@ -133,9 +134,6 @@ C ...or optionally dump comments along with parameters
               enddo
  1120       format (A,g12.5,A,I3,A,A)              
             endif 
-
-
-            
          endif
          if(ipcelf(ipcomp).gt.0) then
            write(IFPNF,'(a)')'# Component electrical details.'
@@ -213,9 +211,9 @@ C Write mass flow network information.
  1002    format('# Mass flow network definition.')
          write(IFPNF,'(I5)') iflwn
          write(IFPNF,1010)
- 1010    format('# Mapping of mass flow network connections to',/,
-     &          '# plant network connections.')
-            write(IFPNF,1011)
+ 1010    format('Mapping of mass flow network connections to',/,
+     &          'plant network connections.')
+         write(IFPNF,1011)
      &               (icffs(jj),jj=1,npcon)
  1011       format(12(6(I4,1x),/))
             if(amod(float(icffs(jj)),6.0).eq.0.0) backspace IFPNF

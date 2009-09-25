@@ -35,8 +35,6 @@ C IFLWN       - plant fluid flow simulation index (1 = on)
 C ICFFS       - fluid flow network node associated with each plant
 C               component. NB fluid flow network and plant energy
 C               network need not be matched
-C LAPROB      - fluid flow problem description file
-C LAFRES      - fluid flow network results file
 
 C LPNAM       - the name of the plant system
 
@@ -163,15 +161,9 @@ C LPCDB/IPCDB (for plant template database)
       COMMON/C11/NCONT,IPCC(MPCOM),INDCP(MPCOM),CNTDAT(MPCOM,3)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       COMMON/C13PS/NPMCOE,NPNOD,NPMTYP
-
       COMMON/FFN/IFLWN,ICFFS(MPCON)
-
       COMMON/PCPAR/NPI(MPCOM), TADATA(MPCOM,MADATA)
       common /datdsc/ mscdsc(madata), cvrdsc(mconvr)
-
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-      COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-
       common /pcddsc/ pcdesc(maxpc), npref(mpcom)
       common/pcnam/pcname(mpcom)
 
@@ -180,44 +172,29 @@ C Electrical details for specified plant components
       common/elpcp/NPEL,PFP(mpcom),IPFP(mpcom),PWRP(mpcom),
      &BVOLTP(mpcom),IPHP(mpcom)
 
-      LOGICAL close,unixok
-      CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24,fs*1
-      CHARACTER LAPROB*72,LPNAM*72
-      character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      LOGICAL close,FOUNDNUM(10)
+      CHARACTER OUTSTR*124,OUTS*124,word*20,LLTMP*144,cmsg*24
+      CHARACTER LPNAM*72
       CHARACTER PZDESCR*25
       character*68 mscdsc, cvrdsc      
-      character loutstr*248,louts*248
+      character loutstr*248
       DIMENSION NPSTA(MAXPC),RVA(MMISCD),RVB(MPCON)
       DIMENSION RVC(MADATA), NEP(MPCOM)
 
 C CEDATE required when reading plant data base record
 C containing NMISC.
-      CHARACTER CEDATE*16,pcdesc*80,pcname*15,CNTSTR*20
+      CHARACTER CEDATE*16,pcdesc*80,pcname*15,CNTSTR*20,NUM*1
 
       INTEGER   id_trnsysCMP  !trnsys component number
       integer lnpcdb ! length of file name
 
       call usrmsg(' ','Reading plant network description...','P')
 
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-      lndbp=lnblnk(standarddbpath)
-
-C Note: although the configuration file can hold the name of
-C the plant template database with or without path according to
-C whether it is in the standard database folder, the plant network
-C file does not make this distinction.
-
-C Identify plant components database; skip if this is '* Plant' record.
-C The next line is the name of the plant components db, but skip
-C this as the db is contained in the configuration file. Use a longer
-C string buffer as the file name may be long.
-      lnpcdb=lnblnk(LPCDB)
+C Older plant files may hold plant components database name as first
+C non-comment entry in plant file. Even older files may hold plant
+C components database name as the second non-comment line (The first
+C being '* PLANT' or '* Plant'). Newer files do not hold any references
+C to databases but have a title line.
 
       CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'* plant',IER)
       IF(IER.NE.0)RETURN
@@ -225,38 +202,22 @@ C string buffer as the file name may be long.
       IF(LLTMP.EQ.'* Plant'.OR.LLTMP.EQ.'* PLANT') THEN
         CALL LSTRIPC(iuc,LOUTSTR,0,ND,1,'* plant',IER)
         IF(IER.NE.0)RETURN
+      ELSEIF(LLTMP(1:5).EQ.'ESP-r')THEN 
 
-C Warn the user if the file in the plant network is different
-C from that of the cfg file plant component database.
-        LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
-        if(LLTMP(1:lnblnk(LLTMP)).ne.LPCDB(1:lnpcdb))then
-          call lusrmsg(
-     &     'Mismatch: plant db in configuration & db in plant network',
-     &     LPCDB,'W')
-        endif
-      else
-        LLTMP=LOUTSTR(1:lnblnk(LOUTSTR))
-      endif
-
-C If plant only model then we need to actually use the string in the
-C plant network file as the plant template database file name,
-C otherwise the configuration file already has this name.
-      if(INDCFG.eq.2)then
-        call findwhichdbpath('pdb',LLTMP,ier)
-      else
-
-C Pay attention to the implied path of the plant template db from cfg file.
-C debug.
-        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
-          lltmp=LPCDB
-        elseif(ipathpcdb.eq.2)then
-          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
-     &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
-        endif
+C New version plant file, get version number which should be fifth word 
+C in the line. 
+        K=0
+        CALL EGETW(LOUTSTR,K,WORD,'W','irrelevant word',IER)
+        CALL EGETW(LOUTSTR,K,WORD,'W','irrelevant word',IER)
+        CALL EGETW(LOUTSTR,K,WORD,'W','irrelevant word',IER)
+        CALL EGETW(LOUTSTR,K,WORD,'W','irrelevant word',IER)
+        CALL EGETWI(LOUTSTR,K,IPFVER,0,3,'F','file ver number',IER)
       endif
 
 C Open plant components database on IUNIT1. IRECLN is width of plantdb
 C -> but don't open the database if save-level 0 or 5 are specified!
+      lnpcdb=lnblnk(LPCDB)
+      LLTMP=LPCDB(1:LNPCDB)
       IRECLN=20
       call EFOPRAN(IUNIT1,LLTMP,IRECLN,1,IER)   
       IF(IER.ne.0) GOTO 950
@@ -665,68 +626,73 @@ C Check if there is a plant fluid flow network available: 0 = no
    50   CALL STRIPC(iuc,OUTSTR,0,ND,1,'plant info',IER)
         IF(IER.NE.0)RETURN
         K=0
-        CALL EGETWI(OUTSTR,K,IFLWN,0,1,'W','plant fluid index',IER
-     &   )
+        CALL EGETWI(OUTSTR,K,IFLWN,0,1,'W','plant fluid index',IER)
         IF(IFLWN.EQ.0) goto 606
 
-C << NOTE: none of this is really necessary. Even in stand-alone
-C << mode the configuration file will have these entries. 
+C If version 2 file then skip read of duplicated mass flow information
+        NREAD=0
+        IF(IPFVER.EQ.2)GOTO 3456
 
-C Read names of PROBLEM, PRESSURE DISTRIBUTION and RESULTS files, un-
-C less this was already done above (building side air flow wanted)
-C Note that some older models may be missing the names of the flow
-C network, pressure db and flow results file. If there are more than
-C one item on the lines then do not bother setting the variable and
-C warn the user.
+C It is possible that version number is not held in some version 2
+C files. So need to perform following check
+C If version number is held in plant file then no need to perform the
+C following check otherwise determine which file version this is
+        CALL STRIPC(iuc,OUTSTR,0,ND,1,'plant info',IER)
 
-C << should this be updated for ipath* >>
-        IF(IAIRN.ge.0) THEN
-          CALL STRIPC(iuc,OUTSTR,99,ND,1,'network file',IER)
-          if(ND.gt.1)then
-            call usrmsg('plant looking for mass flow network and foud',
-     &        outstr(1:48),'W')
-          else
-            write(LAPROB,'(a)') OUTSTR(1:lnblnk(outstr))
-          endif	
-          CALL LSTRIPC(iuc,LOUTSTR,99,ND,1,'pressure file',IER)
-          if(ND.gt.1)then
-            call usrmsg('plant looking for pressure db and foud',
-     &        outstr(1:48),'W')
-          else
-            write(LAPRES,'(a)') LOUTSTR(1:144)
-          endif	
-          CALL STRIPC(iuc,OUTSTR,99,ND,1,'mfs res file',IER)
-          if(ND.gt.1)then
-            call usrmsg('looking for mass flow results and foud',
-     &        outstr(1:48),'W')
-          else
-            LAFRES=OUTSTR(1:72)
-          endif	
-          IF(IER.NE.0)RETURN
+C Assume newer format version 2
+        INEW=1
+        K=0
+        CALL EGETW(OUTSTR,K,WORD,'W','first word',IER)
+        ILEN=LNBLNK(WORD)
+        IF(ILEN.GT.10)ILEN=10 ! Only check maximum of first ten characters
 
-C Reporting.
-          IF(ITRC.GE.1)THEN
-            WRITE(OUTS,'(A,A)') '  network file : ',
-     &            LAPROB(1:LNBLNK(LAPROB))
-            CALL EDISP(itu,OUTS)
-            WRITE(LOUTS,'(A,A)') '  press. coeff.: ',
-     &            LAPRES(1:LNBLNK(LAPRES))
-            CALL EDISP248(itu,LOUTS,100)
-            WRITE(OUTS,'(A,A)') '  results file : ',
-     &            LAFRES(1:LNBLNK(LAFRES))
-            CALL EDISP(itu,OUTS)
+C Check first word of this line. If all are numbers then newer format
+C version 2 otherwise older format
+        DO 141 IL=1,ILEN
+          NUM=WORD(IL:IL)
+          FOUNDNUM(IL)=.FALSE.
+          DO 142 IN=48,57 ! Check for ASCII characters 0 to 9
+            IF(.NOT.FOUNDNUM(IL))THEN
+              IF(NUM.EQ.CHAR(IN))FOUNDNUM(IL)=.TRUE.
+            ENDIF
+ 142      CONTINUE
+          IF(FOUNDNUM(IL).AND.INEW.EQ.1)THEN
+            INEW=1
+          ELSE
+            INEW=0
           ENDIF
+ 141    CONTINUE
+
+C If older format file then the line just read was address of mass flow
+C file. This can be safely ignored and also the next two lines
+        IF(INEW.EQ.0)THEN
+          CALL STRIPC(iuc,OUTSTR,0,ND,1,'duplicate information',IER)
+          CALL STRIPC(iuc,OUTSTR,0,ND,1,'duplicate information',IER)
+        ELSEIF(INEW.EQ.1)THEN
+
+C This is newer format file the line just read was connection numbers
+C Convert this line to numbers
+          IF(NPCON.GE.6)THEN
+            NREAD=6 ! Only expect six numbers on the line
+          ELSE
+            NREAD=NPCON
+          ENDIF
+          K=0
+          DO 143 IREAD=1,NREAD
+            CALL EGETWI(OUTSTR,K,ICFFS(IREAD),0,MPCOM,'F',
+     &          'plt-afn link numbers',IER)
+ 143      CONTINUE
         ENDIF
 
 C Determine plant inter-connection/fluid flow connection mapping
 C Checks will be performed by MZPMXT
-        IRVB=NPCON
+ 3456   IRVB=NPCON-NREAD
         IF(IRVB.GT.0) THEN
-          CALL  EGETWRA(iuc,RVB,IRVB,0.,0.,'-','plt con lst',IER)
+          CALL EGETWRA(iuc,RVB,IRVB,0.,0.,'-','plt con lst',IER)
           DO 135 KV=1,IRVB
-            ICFFS(KV)=INT(RVB(KV))
+            ICFFS(KV+nread)=INT(RVB(KV))
   135     CONTINUE
-        END IF
+        ENDIF
 
 C Plant/mfs connections mapping.
         IF(ITRC.GE.1)THEN

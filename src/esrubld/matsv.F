@@ -1830,11 +1830,9 @@ C defined.
       common/glbctl/global,glbrwd
       common/sysctl/ipassr  
 
-C Variables for weekdays, and weekends.
-C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
-      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
 
-      character*10 wkd1, wkd2
       character outs*144,h*72
       logical OK,dok,global,glbrwd
 
@@ -1866,24 +1864,20 @@ C Test for control.
       if(ihrp.eq.24)iday=idyf
 
 C If number of building control day types are 0 then
-C revert to weekday, saturday and sunday format.
+C same control on all day types
       n=nbcdt(icf)
-      if(n.eq.0)goto 21
+      NIN=0
+      if(n.eq.0)then
+        NIN=-1*NBDAYTYPE
+        n=nbdaytype
+      endif
       do 20 i=1,n
       idtyp=i
       if(iday.le.ibcdv(icf,i,2).and.iday.ge.ibcdv(icf,i,1))goto 4
    20 continue
-      goto 22
-
-C Weekday, saturday and sunday format.
-   21 idtyp=1
-      if(idwp.eq.idwe1)idtyp=2
-      if(idwp.eq.idwe2)idtyp=3
-      if(iday.le.ibcdv(icf,idtyp,2).and.iday.
-     &ge.ibcdv(icf,idtyp,1))goto 4
 
 C Error!
-   22 if(icflg1(icf).eq.1)goto 2
+      if(icflg1(icf).eq.1)goto 2
       write(outs,'(a,i3,a)') ' Control loop',icf,
      &  ' is being referenced outside its dates of validity.'
       call edisp(iuout,outs)
@@ -1908,7 +1902,12 @@ C Error!
       goto 9999
 
 C Commence control solution.
-    4 if(btimef.gt.24.)btimef=btimef-24.
+    4 if(nin.le.-1.or.n.lt.1)idtyp=icalender(idyp)
+      if(btimef.gt.24.)then
+        btimef=btimef-24.
+        idtyp=icalender(idyp+1)
+        if(idyp.eq.365)idtyp=icalender(1)
+      endif
       n=nbcdp(icf,idtyp)
       do 30 i=1,n
       iper=i
@@ -1940,22 +1939,14 @@ C Error!
 C Set up day type and period for nested control loop.    
    11 if(ibsn(icf,4).eq.0)goto 12
       jcf=ibsn(icf,4)
-      if(nbcdt(jcf).eq.0)goto 70
-      do 71 i=1,nbcdt(jcf)
+      if(nbcdt(jcf).eq.0)ndt=nbdaytype
+      do 71 i=1,ndt
       idtypx=i
       if(iday.le.ibcdv(icf,i,2).and.iday.ge.ibcdv(icf,i,1))goto 72
    71 continue
-      goto 73
-
-C Weekday, Saturday and Sunday format.
-   70 idtypx=1
-      if(idwp.eq.6)idtypx=2
-      if(idwp.eq.7)idtypx=3
-      if(iday.le.ibcdv(jcf,idtypx,2).and.iday.
-     &     ge.ibcdv(jcf,idtypx,1))goto 72
 
 C Error: issue warning and set day type 1.
-   73 write(outs,74)jcf
+      write(outs,74)jcf
    74 format(' Warning: Control function',I3,' is being referenced')
       call edisp(iuout,outs)
       call edisp(iuout,' outside its dates of validity.')

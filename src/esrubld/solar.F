@@ -2197,6 +2197,7 @@ c Britain).
       SUBROUTINE MZSANG
 #include "building.h"
 #include "geometry.h"
+#include "roam.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -2213,6 +2214,7 @@ c Britain).
 
       character outs*124
       logical close
+      INTEGER IPDR,IYDN,IRD,IRM
 
       ISUNUP=1
       PI = 4.0 * ATAN(1.0)
@@ -2233,6 +2235,46 @@ C      DEC=23.45*ESIND(A)
 C Get month and day.
       IDAY=INT(DAY)
       CALL EDAYR(IDAY,IDY,IMT)
+
+C If roaming is activated update latitude & longitude
+C Roaming is used to describe location for movable bodies e.g. ships
+      IF(IROAM.EQ.1)THEN
+
+C Figure out if within roaming period
+        DO 100 IPDR=1,NPDR
+
+C Calculate roaming day of year
+          IRD=LDYS(IPDR)
+          IRM=LMTS(IPDR)
+          CALL EDAY(IRD,IRM,IYDN)
+          RTIME=REAL(IYDN)+XLHRS(IPDR)/24.0 ! Calculate roaming time 
+          STIME=REAL(IDAY)+HOUR/24.0        ! Calculate simulation time
+
+          IF(STIME.LT.RTIME)THEN ! Roaming not started yet
+            CONTINUE
+          ELSEIF(STIME.GE.RTIME)THEN 
+            IF(LLOCT(IPDR).NE.0)THEN ! i.e. at a location (not moving)
+              SLAT=XLOCLT(LLOCT(IPDR))
+              SLON=XLOCLG(LLOCT(IPDR))
+
+C Moving between locations so work out new location by interpolation
+            ELSEIF(IPDR.LT.NPDR)THEN
+              IRD=LDYS(IPDR+1)
+              IRM=LMTS(IPDR+1)
+              CALL EDAY(IRD,IRM,IYDN)
+              RNTIME=REAL(IYDN)+XLHRS(IPDR+1)/24.0
+              XINTPF=(STIME-RTIME)/(RNTIME-RTIME)
+              SLAT=(XLOCLT(LLOCT(IPDR+1))-SLAT)*XINTPF+SLAT
+              SLON=(XLOCLT(LLOCT(IPDR+1))-SLON)*XINTPF+SLON
+
+C Else if last period of roaming is moving (i.e. no final destination
+C is available) do not change location
+            ELSE
+              CONTINUE
+            ENDIF
+          ENDIF
+ 100    CONTINUE
+      ENDIF
 
 C Calculate declination (DEC) and equation of time (EQT).
 C Use equations published in Muneer (Solar Radiation and Daylight Models
@@ -3775,10 +3817,6 @@ C Tdf common block to allow using different bidirectional datasets
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       
-C Variables for weekdays, and weekends.
-C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
-      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
-      character*10 wkd1, wkd2
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
 
 C Daylight coeff specific common block data definition:
@@ -3821,6 +3859,8 @@ C Definitions for daylight coefficient patch altitude:
                          !which zone. It will take the value of iosn(1,1).
 
       integer IDAYPD
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
            
 C If there is a tdf item that defines which bidirectional dataset 
 C to use then use it. Otherwise use the first set.
@@ -3848,33 +3888,30 @@ C<<<probably there is no need for this >>>>>
 C Set up day type and period pointers
           NDAYT=NOCDT(iol)
 
-C If NDAYT=0 set data to weekday, saturday and sunday format
-          IF(NDAYT.EQ.0) THEN
-            IDTYP=1
-            IDW=IDWP
-            IF(IHRP.EQ.24) IDW=IDWF
-            IF(IDW.EQ.idwe1) IDTYP=2
-            IF(IDW.EQ.idwe2) IDTYP=3
-          ELSE
-            DO 10 IDTYP=1,NDAYT
-              IDS=IOCDV(iol,IDTYP,1)
-              IDF=IOCDV(iol,IDTYP,2)
-              IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
-   10       CONTINUE
-            WRITE(outs,'(a,I3)') ' CONTRL: optical control loop ',iol
-            call edisp(iuout,outs)
-            WRITE(outs,'(9x,a,I4)') 'no valid day type for year-day ',
-     &            IDAY
-            call edisp(iuout,outs)
-            call edisp(iuout,
-     &           ' CONTRL: cannot locate appropriate day type')
-            call epwait
-            call epagend
-            STOP
+C If NDAYT=0 set data to all day types
+          NIN=0
+          IF(NDAYT.EQ.0)THEN
+            NIN=NBDAYTYPE
+            NDAYT=0
           ENDIF
+          DO 10 IDTYP=1,NDAYT
+            IDS=IOCDV(iol,IDTYP,1)
+            IDF=IOCDV(iol,IDTYP,2)
+            IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
+   10     CONTINUE
+          WRITE(outs,'(a,I3)') ' CONTRL: optical control loop ',iol
+          call edisp(iuout,outs)
+          WRITE(outs,'(9x,a,I4)') 'no valid day type for year-day ',IDAY
+          call edisp(iuout,outs)
+          call edisp(iuout,
+     &         ' CONTRL: cannot locate appropriate day type')
+          call epwait
+          call epagend
+          STOP
 
 C Check number of periods in each day and the start and finish times
-   20     NDAYP=NOCDP(IOFP,IDTYP)
+   20     if(nin.le.-1.or.ndayt.lt.1)idtyp=icalender(iday)
+          NDAYP=NOCDP(IOFP,IDTYP)
           IF(NDAYP.EQ.0)then
             call edisp(iuout,' CONTRL: no day-periods defined')
             call epwait

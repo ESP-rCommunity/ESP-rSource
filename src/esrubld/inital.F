@@ -103,7 +103,7 @@ C injections to each node in the discretisation scheme.
       subroutine mznasg(icomp)
 
 #include "building.h"
-
+#include "roam.h"
       common/pvalc/tpc(mcom,ms,mn),qpc(mcom)
       common/pvals/tps(mcom,ms),qps(mcom)
       common/pvala/tpa(mcom),qpa(mcom)
@@ -180,5 +180,7 @@ C Set the previous time step zone-side power consumption totals initial values.
       ZONPPP(ICOMP)=0.0
       ZONQPP(ICOMP)=0.0
 
+C Read roaming data if roaming is activated
+      if(iroam.eq.1)call rroam
       return
       end

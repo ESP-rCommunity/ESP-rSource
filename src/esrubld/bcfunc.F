@@ -24,7 +24,6 @@ C      MZBCTL: control executive.
 C      MZMIXT: calculate `weighted' zone temperature.
 C      CFVAR: get sensed condition for single sensor control.
 C      CFMVAR: get sensed conditions for multi-sensor control.
-C      CFFNGR: function generator.
 C      BCL00: `weighted' temperature control.
 C      BCL01: basic control.
 C      BCL02: free float.
@@ -731,276 +730,6 @@ C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
 
       RETURN
       END
-
-C ******************** CFFNGR ********************
-
-C CFFNGR is a function generator.
-
-      SUBROUTINE CFFNGR(IFNC,TCTL)
-#include "building.h"
-#include "control.h"
-
-      COMMON/BTIME/BTIMEP,BTIMEF
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      
-      COMMON/TC/ITC,ICNT
-      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
-    
-      logical bfngn
-
-C Trace output
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(40).NE.0) THEN
-         CALL DAYCLK(IDYP,btimef,ITU)
-         WRITE(ITU,*) ' Entering subroutine CFFNGR'
-      END IF
-
-C Type 1: Step function generator.
-      if(ifnc.eq.1) then
-
-C Assign data as defined in table above.
-         start =cfgsd(icf,1)
-         finish=cfgsd(icf,2)
-         vmax  =cfgsd(icf,3)
-         vmin  =cfgsd(icf,4)
-
-C Determine function shape.
-         tctl=vmin
-         if(btimef.gt.start.and.btimef.lt.finish) tctl=vmax
-
-C Type 2: ramp function generator.
-      elseif(ifnc.eq.2) then
-
-C Assign data as defined in table above.
-         start =cfgsd(icf,1)
-         finish=cfgsd(icf,2)
-         vmax  =cfgsd(icf,3)
-         vmin  =cfgsd(icf,4)
-
-C Determine function shape.
-         tctl=vmin
-         if(btimef.gt.start.and.btimef.lt.finish) then
-
-C Calculate ratio for interpolation.
-            ratio=(vmax-vmin)/(finish-start)
-
-C Calculate value by interpolation.
-            tctl=vmax-ratio*(finish-btimef)
-         endif
-
-C Type 3: Square wave, sine series.
-      elseif(ifnc.eq.3) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-         vmean=(vmax+vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         sinsum=0.0
-         half=(tps+tpf)/2.0
-         f=1.0
-
-C Approximate series with 100 terms.
-         do 10 iterm=1, 100
-            sinsum=1.0/f * sin((pi*btimef*f*freq/half))+sinsum
-            f=f+2.0
-   10    continue
-         tctl=sinsum*(4.0*amp)/pi+vmean
-
-C Type 4: Square wave, cosine series.
-      elseif(ifnc.eq.4) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-         vmean=(vmax+vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         cossum=0.0
-         half=(tps+tpf)/2.0
-         f=1.0
-         isign=1
-
-C Approximate series with 100 terms.
-         do 20 iterm=1, 100
-            cossum=isign * 1.0/f * cos((pi*btimef*f*freq/half))+cossum
-            f=f+2.0
-            isign=isign*(-1)
-   20    continue
-         tctl=cossum*(4.0*amp)/pi+vmean
-
-C Type 5: Triangular wave.
-      elseif(ifnc.eq.5) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-         vmean=(vmax+vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         cossum=0.0
-         half=(tps+tpf)/2.0
-         f=1.0
-
-C Approximate series with 100 terms.
-         do 30 iterm=1, 100
-            cossum=1.0/(f)**2 * cos((pi*btimef*f*freq/half))+cossum
-            f=f+2.0
-   30    continue
-         tctl=cossum*(8.0*amp)/(pi)**2 +vmean
-
-C Type 6: Saw tooth wave.
-      elseif(ifnc.eq.6) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-         vmean=(vmax+vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         sinsum=0.0
-         half=(tps+tpf)/2.0
-         f=1.0
-         isign=1
-
-C Approximate series with 100 terms.
-         do 40 iterm=1, 100
-            sinsum=isign * 1.0/f * sin((pi*btimef*f*freq/half))+sinsum
-            f=f+1.0
-            isign=isign*(-1)
-   40    continue
-         tctl=sinsum*(2.0*amp)/pi +vmean
-
-C Type 7: Sine wave.
-      elseif(ifnc.eq.7) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-         shift=cfgsd(icf,4)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         half=(tps+tpf)/2.0
-         tctl=amp*(sin(pi*freq*(btimef-shift)/half)+1.0) + vmin
-
-C Type 8: Cosine wave.
-      elseif(ifnc.eq.8) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-         shift=cfgsd(icf,4)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         half=(tps+tpf)/2.0
-         tctl=amp*(cos(pi*freq*(btimef-shift)/half)+1.0) + vmin
-
-C Type 9: Use sensed property tctl.
-      elseif(ifnc.eq.9) then
-         sclfac=cfgsd(icf,5)
-         offset=cfgsd(icf,6)
-         tctl=(sclfac*tctl)+offset
-      endif
-
-C Trace output
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(40).NE.0) then
-         write(itu,'(I5)') ' Function type is',ifnc
-         write(itu,'(F10.4)') ' btimef=',btimef
-         write(itu,'(F10.4)') ' tctl =',tctl
-         WRITE(ITU,*) ' Leaving subroutine CFFNGR'
-      endif
-      
-      return
-      end
 
 C ******************** BCL00
 
@@ -2368,6 +2097,10 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
       DIMENSION ICPL(MPCOM,2),IXTC(MPCOM,2)
 
@@ -2404,17 +2137,30 @@ C Fatal error tests
          STOP
       endif
 
-
       QFUT=0.
       TFUT=TNP
       INEX=0
+      XMDR=1.0 ! Mass diversion fraction for fluid flow to zone
 
 C Determine coupled supply plant component and node.
-
       IF(ISIND.NE.4) THEN 
         IPCMP=IFIX(BMISCD(ICF,IDTYP,IPER,2))
         IPNOD=IFIX(BMISCD(ICF,IDTYP,IPER,3))
         IN=NPCDAT(IPCMP,9)+IPNOD-1
+
+C Get the connections this node sends mass to 
+        IBLDGZ=NINT(BMISCD(ICF,IDTYP,IPER,7))
+        ICON=0
+        DO 1 IPCON=1,NPCON
+          IF(IPC2(IPCON).EQ.IN)THEN
+            IF(PCONSD(IPCON,1).EQ.IBLDGZ)THEN
+              ICON=IPCON
+              XMDR=PCONDR(ICON)
+            ENDIF
+          ENDIF
+ 1      CONTINUE
+        IF(ICON.EQ.0)CALL EDISP(ITU,
+     &  'BCL06: Mass diversion for plant zone link not found')
       ELSEIF(ISIND.EQ.4) THEN
 
 C Set the embedded flag to zero after finding ipcmp.
@@ -2502,7 +2248,7 @@ C      from the previous time step to calculate the resulting heat injection.
 
 C Temperature, 1st and 2nd mass flow rate of plant injection node
          TMPN=CSVF(IN,1) 
-         AMFR=CSVF(IN,2)
+         AMFR=CSVF(IN,2)*xmdr
          VMFR=CSVF(IN,3)
 
 C Heat capcity of dry air & vapor:
