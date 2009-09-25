@@ -1399,8 +1399,8 @@ C                                        Average illumination for this light zon
 C Close transfer file.
               call ERPFREE(IUNIT,ISTAT)
 
-              write (66,*) 'Calculated illuminances for zone',
-     &                                            zname(ICOMP),':'
+              write (66,*) 'Calculated illuminances for zone ',
+     &                            zname(ICOMP)(1:lnzname(ICOMP)),':'
               do 434 ILZ=1,NLITZ(ICOMP)
                 write(66,'(9(f7.1,1x))') 
      &               (selum(ILZ,IDFT),IDFT=1,NDF(ICOMP,ILZ))
@@ -1443,7 +1443,7 @@ C information.
 C Continue only if this surface is vertical, is TMC, has 4 vertices
 C and is connected to either the exterior or another real zone.  
 C Keep track of total windows in zone with nt. Exclude skylights.
-            IF(ITMCFL(ICOMP,J).GT.0)THEN
+            IF(ITMCFL(ICOMP,J).GT.0)THEN   !  .or. CFC ??
               call eclose(PELV(ICOMP,J),0.00,0.70,close)
               IF(close)THEN
                 IF((NVER(J).NE.4).and.(IDFST(ICOMP,N).ne.2))then
@@ -1518,7 +1518,7 @@ C same way as for external, but do not check for sun dir illuminance:
      &                       F7.1,F6.0,F9.0)
                       call edisp(itu,outs)
                     endif
-                  ELSE
+                  ELSE ! IES .eq. 0, i.e. external surface
 
 C Determine the angles of view to window from the sensor point,
 C convert to degrees between 0 & 360, and compare with the
@@ -1583,8 +1583,8 @@ C glazing and get current visible transmission of glazing.
                         call edisp(itu,outs)
                       endif
                     ELSE
-                      suncon=0.
                       CALL DWINVT(ICOMP,J,V,RATIO)
+                      suncon=0.
                       skycon=esky*DFDAT(ICOMP,N,J,I)*V
                       subT=skycon
                       if(IFT.EQ.1)then
@@ -2177,6 +2177,7 @@ C the visible transmittance.
 
       SUBROUTINE DWINVT(IZONE,ISURF,VT,BLIND)
 #include "building.h"
+#include "CFC_common.h"
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
@@ -2190,30 +2191,41 @@ C the visible transmittance.
 C TMC blind control flag
       COMMON/TMCB4/IBOFOT(MCOM,MS),NBPONT(MCOM,MS),ECRAT(MCOM,MS)
 
+C  Split subroutine "if TMC" and "if CFC" ...
+      if (ITMCFL(IZONE,ISURF).gt.0) then
 C Test here if blind/shutter control is on for this
 C TMC surface.
-      BLIND = 0.0
-      ITVTR=ITMCFL(IZONE,ISURF)
-      IF(ITVTR.GT.0.AND.IBCMT(IZONE,ITVTR).EQ.1)THEN
+        BLIND = 0.0
+        ITVTR=ITMCFL(IZONE,ISURF)
+        IF(ITVTR.GT.0 .AND.IBCMT(IZONE,ITVTR).EQ.1)THEN
 C TMC blind/shutter is in place. Test if it is active.
 C NP is no. of control periods for this TMC type.
-        NP=NBCTMC(IZONE,ITVTR)
-        DO 43 KK=1,NP
-          IT1=IBCST(IZONE,KK,ITVTR)
-          IT2=IBCFT(IZONE,KK,ITVTR)
-          IF(IHRF.GT.IT1.AND.IHRF.LE.IT2.AND.
-     &      IBOFOT(IZONE,ISURF).EQ.1)THEN
-            BLIND = 1.0
-            VT=TVTR2(IZONE,ITVTR,KK)
-          ELSE
-            BLIND = 0.0
-            VT=TVTR(IZONE,ITVTR)
-          ENDIF
-   43   CONTINUE
-      ELSE
-        BLIND = 0.0
-        VT=TVTR(IZONE,ITVTR)
-      ENDIF
+          NP=NBCTMC(IZONE,ITVTR)
+          DO 43 KK=1,NP
+            IT1=IBCST(IZONE,KK,ITVTR)
+            IT2=IBCFT(IZONE,KK,ITVTR)
+            IF(IHRF.GT.IT1.AND.IHRF.LE.IT2.AND.
+     &                  IBOFOT(IZONE,ISURF).EQ.1)THEN
+              BLIND = 1.0
+              VT=TVTR2(IZONE,ITVTR,KK)
+            ELSE
+              BLIND = 0.0
+              VT=TVTR(IZONE,ITVTR)
+            ENDIF
+  43      CONTINUE
+        ELSE
+          BLIND = 0.0
+          VT=TVTR(IZONE,ITVTR)
+        ENDIF
+C Now check for CFC
+      elseif (icfcfl(IZONE,ISURF).gt.0) then
+      ! For CFC, it is of no concern if blind control is active or not, as
+      ! visual transmittance values for the system include time step blind setting!
+      ! Which value???
+!        VT=transD_V(IZONE,ISURF)
+        VT=transBB_V(IZONE,ISURF)
+        BLIND=0.0
+      endif ! either TMC or CFC
 
       RETURN
       END
