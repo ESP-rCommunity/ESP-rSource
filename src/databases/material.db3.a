@@ -18,7 +18,7 @@
 # class index |nb items|description (32 char)
 *class, 1,10,Brick
 Category ( 1) Brick includes a range of brick types. Based on data traditionally distributed with ESP-r.
-*item,paviour brick,  1, 1,Paviour brick
+*item,Paviour brick,  1, 1,Paviour brick
 0.960,2000.000,840.000,0.930,0.930,0.700,0.700,12.000,100.0,-
 *item,breeze block,  2, 1,Breeze block
 0.440,1500.000,650.000,0.900,0.900,0.650,0.650,15.000,100.0,-
@@ -28,7 +28,7 @@ Category ( 1) Brick includes a range of brick types. Based on data traditionally
 0.960,2000.000,650.000,0.900,0.900,0.930,0.930,25.000,100.0,-
 *item,vermic insul brk,  5, 1,Vermiculite insulating brick
 0.270,700.000,840.000,0.900,0.900,0.650,0.650,12.000,100.0,-
-*item,lt brown brick,  6, 1,Light brown brick
+*item,Lt brown brick,  6, 1,Light brown brick
 0.960,2000.000,650.000,0.900,0.900,0.700,0.700,25.000,100.0,-
 *item,brick (MK),  7, 1,Brick (milton keyns)
 0.840,1700.000,800.000,0.900,0.900,0.700,0.700,25.000,100.0,-

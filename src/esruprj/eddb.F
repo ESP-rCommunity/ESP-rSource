@@ -434,13 +434,15 @@ C      call usrmsg(' ',' ','-')
 
 C ********** opendb
 C NOTE: if this code change - be sure to update the copy of this
-C subroutine embedded within esruish/ish.F
+C subroutine embedded within esruish/ish.F and esrueco/ecoesp.F
 
 C Open materials constructions, multi-layer constructions and
 C optical properties databases. In the case of materials, first
 C assume it is a binary file, check its contents and if a problem
 C then scan new ascii format and if that does not work try the
 C older ascii materials file to fill the materials data arrays.
+C If sucessful the material common blocks will be filled and
+C closemat1 or closemat2 will be set.
 
       subroutine opendb(ier)
 #include "building.h"
@@ -456,64 +458,67 @@ C older ascii materials file to fill the materials data arrays.
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      DIMENSION ICLN(30)
       character H*72,LASCI*72,DFILE*72
       character SOPT*12,outs*124,GDESCR*36
       character t144*144   ! for use with erprcdb
 
       IER=0
 
-C Open currently named Materials database.  Note that
-C by a minor rewrite of ICLN in rec 601 we can get by
-C with changing this to 24 words wide.
-      CALL ERPFREE(IFMAT,ISTAT)
-      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
-      IF(ier.ne.0)THEN
-        write(outs,'(3a)') ' Materials db ',
-     &     LFMAT(1:lnblnk(LFMAT)),' not found!'
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MATDBOK=.FALSE.
-      else
-
-C Check to see if the file has correct info. 
-        IREC=601
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
-     &    (ICLN(I),I=1,30)
-        if(NCLASS.LE.0)then
-          goto 1000   ! no classifications so try alternatives
+C Scan the binary file data into materials commons and if this was
+C sucessful and matver was set to 1.1 in matformbin then we can
+C carry on using the materials common blocks for subsequent access.
+      call MATFROMBIN(IER)  ! fill materials common blocks
+      if(ier.eq.0)then
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
+          goto 139  !  commons filled carry on.
         else
           MATDBOK=.TRUE.
           matver = 0.0
           goto 139  !  a binary file found so carry on.
         endif
- 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-        if(ier.eq.-2)then
-          ier=0
-          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-          if(ier.ne.0)then
-            call usrmsg('No readable materials database was not found',
-     &                  'or file was corrupt','W')
-            MATDBOK=.FALSE.
-          else
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2)then
-              MATDBOK=.TRUE.
-            else
-              call usrmsg(
-     &          'No readable Materials database was found!',
-     &          ' ','W')
-              MATDBOK=.FALSE.
-            endif
-          endif
-        elseif(ier.eq.0)then
+      elseif(ier.eq.-2.or.ier.eq.-3)then
+        ier=0  ! clear error state prior to rascimat call
+        goto 1000
+      elseif(ier.eq.-1)then
+        write(outs,'(3a)') ' Materials db ',
+     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MATDBOK=.FALSE.
+        ier=0  ! clear error state before continuing
+        goto 139  !  try the other databases.
+      endif
+
+C Check for ascii versions of the materials database.
+ 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
+      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
+        ier=0
+        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+        if(ier.ne.0)then
+          call usrmsg('No readable materials database was not found',
+     &                'or file was corrupt','W')
+          MATDBOK=.FALSE.
+        else
           call eclose(matver,1.1,0.001,closemat1)
           call eclose(matver,1.2,0.001,closemat2)
           if(closemat1.or.closemat2)then
             MATDBOK=.TRUE.
+          else
+            call usrmsg(
+     &        'No readable Materials database was found!',
+     &        ' ','W')
+            MATDBOK=.FALSE.
           endif
+        endif
+      elseif(ier.eq.0)then
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
         endif
       endif
 
@@ -548,112 +553,75 @@ C Label 155 is a jump back point for the case of users supplying a name.
   155     CALL EFOPSEQ(IAF,LASCI,1,IER)
           if(ier.eq.0)then
 
-C If the ascii version exists there is no need to convert it.
-C Ask whether to scan it into the materials arrays or convert
-C to a binary file.
-            CALL EASKABC(
-     &        'Ascii version of Materials database found.',
-     &        'Options:','use it',
-     &        'convert to a binary file','cancel',IW,5)
-            if(iw.eq.1)then
-              call rascimat(IAF,LASCI,IER)  ! try current ascii format
-              if(ier.eq.-2)then
-                ier=0
-                call rlegacymat(IAF,LASCI,ier)  ! try older ascii format
-                if(ier.ne.0)then
-                  call usrmsg('No readable Materials database was',
-     &                        'found or the file was corrupt.','W')
-                  MATDBOK=.FALSE.
-                else
-                  call eclose(matver,1.1,0.001,closemat1)
-                  call eclose(matver,1.1,0.001,closemat2)
-                  if(closemat1.or.closemat2)then
+C If the ascii version exists there is no need to convert it just
+C scan it into common blocks.
+            call rascimat(IAF,LASCI,IER)  ! try current ascii format
+            if(ier.eq.-2)then
+              ier=0
+              call rlegacymat(IAF,LASCI,ier)  ! try older ascii format
+              if(ier.ne.0)then
+                call usrmsg('No readable Materials database was',
+     &                      'found or the file was corrupt.','W')
+                MATDBOK=.FALSE.
+              else
+                call eclose(matver,1.1,0.001,closemat1)
+                call eclose(matver,1.1,0.001,closemat2)
+                if(closemat1.or.closemat2)then
 
 C Materials data in place, set this as the new file name and then
 C try and re-scan the Constructions database.
-                    call usrmsg(
-     &                'An ASCII Materials db was found and used.',
-     &                'Re-scanning constructions...','P')
-                    MATDBOK=.TRUE.
-                    LFMAT=LASCI
-                    CALL ERPFREE(IFMUL,ISTAT)
-                    call FINDFIL(LFMUL,XST)
-                    if(XST)then
-                      CALL ERMLDB(0,IUOUT,IER)
-                      if(ier.eq.0)then
-                        MLDBOK=.TRUE.
-                        call usrmsg(
+                  call usrmsg(
+     &              'An ASCII Materials db was found and used.',
+     &              'Re-scanning constructions...','P')
+                  MATDBOK=.TRUE.
+                  LFMAT=LASCI
+                  CALL ERPFREE(IFMUL,ISTAT)
+                  call FINDFIL(LFMUL,XST)
+                  if(XST)then
+                    CALL ERMLDB(0,IUOUT,IER)
+                    if(ier.eq.0)then
+                      MLDBOK=.TRUE.
+                      call usrmsg(
      &                  'An ASCII Materials db was found and used.',
      &                  'Re-scanning constructions...done.','-')
-                      else
-                        MLDBOK=.FALSE.
-                        call usrmsg(
+                    else
+                      MLDBOK=.FALSE.
+                      call usrmsg(
      &                  'An ASCII Materials db was found and used.',
      &                  'Re-scanning constructions...failed.','W')
-                      endif
                     endif
-                  else
-                    call usrmsg(
-     &                'No readable Material db was found.',
-     &                'Check other warnings for advice.','W')
-                    MATDBOK=.FALSE.
                   endif
+                else
+                  call usrmsg(
+     &              'No readable Material db was found.',
+     &              'Check other warnings for advice.','W')
+                  MATDBOK=.FALSE.
                 endif
-              elseif(ier.eq.0)then
+              endif
+            elseif(ier.eq.0)then
 
 C Materials data in place, set this as the new file name and then
 C try and re-scan the constructions database.
-                call usrmsg(
-     &            'An ASCII Materials db was found and used.',
-     &            'Re-scanning constructions...','P')
-                MATDBOK=.TRUE.
-                LFMAT=LASCI
-                CALL ERPFREE(IFMUL,ISTAT)
-                call FINDFIL(LFMUL,XST)
-                if(XST)then
-                  CALL ERMLDB(0,IUOUT,IER)
-                  if(ier.eq.0)then
-                    MLDBOK=.TRUE.
-                    call usrmsg(
-     &                'An ASCII Materials db was found and used.',
-     &                'Re-scanning constructions...done.','-')
-                  else
-                    MLDBOK=.FALSE.
-                    call usrmsg(
-     &                'An ASCII Materials db was found and used.',
-     &                'Re-scanning constructions...failed.','W')
-                  endif
-                endif
-              endif
-            elseif(iw.eq.2)then
-              CALL ERPFREE(IAF,ISTAT)
-              call edisp(iuout,
-     &          'Attempting to convert an ASCII Materials db to a')
-              call edisp(iuout,
-     &          'binary version matching the Constructions db.')
-              CALL MKBPRC(IAF,LASCI,IER)
-              if(ier.eq.0)then
-                call usrmsg(
-     &            'An ASCII Materials db was found and converted.',
-     &            'Re-scanning constructions...','P')
+              call usrmsg(
+     &          'An ASCII Materials db was found and used.',
+     &          'Re-scanning constructions...','P')
+              MATDBOK=.TRUE.
+              LFMAT=LASCI
+              CALL ERPFREE(IFMUL,ISTAT)
+              call FINDFIL(LFMUL,XST)
+              if(XST)then
                 CALL ERMLDB(0,IUOUT,IER)
                 if(ier.eq.0)then
                   MLDBOK=.TRUE.
                   call usrmsg(
-     &              'An ASCII Materials db was found and converted.',
+     &              'An ASCII Materials db was found and used.',
      &              'Re-scanning constructions...done.','-')
                 else
                   MLDBOK=.FALSE.
                   call usrmsg(
-     &              'An ASCII Materials db was found and converted.',
+     &              'An ASCII Materials db was found and used.',
      &              'Re-scanning constructions...failed.','W')
                 endif
-              else
-                call usrmsg(
-     &          'A Materials db was not found or was not readable.',
-     &          'Please correct this before using constructions.',
-     &             'W')
-                MLDBOK=.FALSE.
               endif
             endif
           else

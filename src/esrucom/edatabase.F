@@ -205,7 +205,8 @@ C NOTE: in case there are multiple items with the same characters
 C in the name also check to see if the legacy index associated
 C with the found item matches the IPR scanned above.
             if(closemat1.or.closemat2)then
-              call parsematdesc(NAM,matarrayindex)
+              ileghope=IPR(I,IL)   ! what we hope we will find a match for
+              call parsematdesc(ileghope,NAM,matarrayindex)
               if(matarrayindex.ne.0)then
                 if(matlegindex(matarrayindex).ne.IPR(I,IL))then
                   write(outs,'(a,i3,a,i3,2a)') 
@@ -537,22 +538,47 @@ C If opposite matches continue otherwise set layermatch to false and exit.
 
 C ******* parsematdesc
 C Parse the NAM string from the MLC common block returning the index
-C of the version 1.1 or 1.2 materials array.
-      subroutine parsematdesc(NAM,matarrayindex)
+C of the version 1.1 or 1.2 materials array.  Newer MLC databases
+C will include lines in the form:
+C   104    0.0130  gypsum plaster : Gypsum based plaster
+C and older MLC databases wil include lines in the form:
+C   104    0.0130  Gypsum plaster
+C So for newer MLC we are searching for ' : ' but in older
+C files there will not be such a string.
+
+C The logic initially looks for ' : ' and trys to match the matname 
+C variable and if that fails it trys without ' : ' and if that
+C fails it trys against matdoc. Lastly the value of
+C ileghope is checked against matlegindex.
+      subroutine parsematdesc(ileghope,NAM,matarrayindex)
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
       
-      integer lnblnk  ! function definition
-      character NAM*72,PNAM*72
+      integer lnblnk        ! function definition
+      integer ileghope      ! the legacy index to match against
+      character NAM*72      ! passed string from MLC
+      integer matarrayindex ! returned index in materials array
 
       integer lnam,ltnam    ! length of material name
       integer ipos,i2pos,iepos ! position start, 2 char along, end
-      character testname*32
+      character testname*32 ! local name for comparison
+      character PNAM*72     ! local string variable for scanning
+      logical foundcolon    ! true if ' : ' found
+
+C Initial assumptions.
+      foundcolon=.false.
+      matarrayindex=0
+
+C If the ileghope is zero then we are dealing with the standard (implied)
+C air gap and so no name is going to match and we can return with the
+C initial matarrayindex=0.
+      if(ileghope.eq.0)then
+        return
+      endif
 
 C Copy NAM to PNAM and then search for ' : ' in PNAM and save to local
 C strings the matname.
-      matarrayindex=0
       PNAM=NAM
       lnam=lnblnk(PNAM)
       ipos=1   ! initial positions
@@ -563,14 +589,27 @@ C strings the matname.
 
 C Save the string prior to ' : ' in testname and then see if any of
 C the matname matches.
+          foundcolon=.true.
           write(testname,'(a)') PNAM(1:ipos-1)
           ltnam=lnblnk(testname)
 
-C Find a matching matname
+C Find a matching matname, if the legacy index associated with this item
+C matches ileghope then our search is complete.  If it does not match
+C ileghope then there could be duplicate names to check further. If
+C ileghope is -99 then return what was found as an index match not possible.
           do 43 imt=1,matdbitems
             if(testname(1:ltnam).eq.matname(imt)(1:ltnam))then
-              matarrayindex=imt
-              return
+              if(matlegindex(imt).eq.ileghope)then
+                matarrayindex=imt
+                return
+              else
+                if(ileghope.eq.-99)then
+                  matarrayindex=imt
+                  return
+                else
+                  continue   ! keep looking for a text and index match
+                endif
+              endif
             endif
   43      continue
         else
@@ -578,6 +617,54 @@ C Find a matching matname
           i2pos=i2pos+1
         endif
   42  continue
+
+C If we did not find a ' : ' then take the PNAM literally and check against both
+C the matname and if that fails against matdoc
+      if(.NOT.foundcolon)then
+
+C Find a matching matname.
+        do 44 imt=1,matdbitems
+          if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
+            write(6,*) imt,' name x: match ',PNAM(1:lnam),' ',
+     &        matname(imt)(1:lnam)
+            matarrayindex=imt
+            return
+          endif
+  44    continue
+
+C If we got to this point also check for a matching matdoc string.
+        do 45 imt=1,matdbitems
+          if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
+            write(6,*) imt,' doc x: match ',PNAM(1:lnam),' ',
+     &        matdoc(imt)(1:lnam)
+            matarrayindex=imt
+            return
+          endif
+  45    continue
+      endif
+
+C There might have been a ' : ' but a text mismatch for matname so check matdoc.
+      do 46 imt=1,matdbitems
+        if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
+          write(6,*) imt,' doc match ',PNAM(1:lnam),' ',
+     &      matdoc(imt)(1:lnam)
+          matarrayindex=imt
+          return
+        endif
+  46  continue
+
+C Could not find it via a string match so see if there is a legacy index that
+C matches the required index.  This sometimes happens if the current version
+C materials database has a material name edited and the MLC database does not
+C have a matching string (but the legacy index is correct non-the less).
+      do 47 imt=1,matdbitems
+        if(matlegindex(imt).eq.ileghope)then
+          write(6,*) imt,ileghope,matlegindex(imt),' index match ',
+     &      PNAM(1:lnam),' ',matname(imt)(1:lnam)
+          matarrayindex=imt
+          return
+        endif
+  47  continue
   
       return
       end

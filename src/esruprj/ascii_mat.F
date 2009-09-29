@@ -181,7 +181,8 @@ C espriou.h provides currentfile.
 C Parameters
       integer IFA         ! ascii file unit number
       character LASCI*72  ! ascii file name
-      integer IER         ! error return where zero is ok
+      integer IER         ! error return where zero is ok, 
+                          ! ier=-1 file not found, ier=-2 no classes
 
       DIMENSION VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124
@@ -209,7 +210,10 @@ C Initiate documentation for the database (new concept).
 
 C Proceed.
       CALL STRIPC(IFA,OUTSTR,0,ND,1,'no classes',IER)
-      IF(IER.NE.0)RETURN
+      if(IER.NE.0)then
+        ier=-2
+        RETURN
+      endif
       K=0
       CALL EGETWI(OUTSTR,K,matcats,1,MGCL,'W','nb mat classes',IER)
       IF(IER.NE.0.or.matcats.le.0)RETURN  ! if no categories return
@@ -243,15 +247,19 @@ C matdbitems counter and creating a new name.
           matlegindex(matdbitems)=NCODE
           matcatindex(matdbitems)=I
 
-C If later the order of the array changes then it will probably
-C be necessary to rebuild the mathash array. << ?? >>
-
           if(NCODE.ge.0.and.NCODE.le.600)then
             mathash(NCODE)=matdbitems  ! set up pointer from legacy index to array
           endif
-          write(matname(matdbitems),'(a,i3.3)') 'mat_',ncode
 
           CALL EGETRM(OUTSTR,K,IDESC,'W','mat description',IER)
+
+C The MLC database will expect to find the name of the material matching the
+C description NDESC initial characters. The logic that started all matnames
+C with mat_ does not help. Writ the initial 32 char of NDESC as the name.
+          lex=MIN0(lnblnk(IDESC),32)
+          write(matname(matdbitems),'(a)') IDESC(1:lex)
+C          write(matname(matdbitems),'(a,i3.3)') 'mat_',ncode
+
           write(matdoc(matdbitems),'(a)') IDESC(1:lnblnk(IDESC))
 
           CALL STRIPC(IFA,OUTSTR,0,ND,1,'the raw data line',IER)
@@ -560,7 +568,8 @@ C current ASCII material database LASCI opened on unit IFA.
 C Parameters
       integer IFA         ! ascii file unit number
       character LASCI*72  ! ascii file name
-      integer IER         ! error return where zero is ok
+      integer IER         ! error return where zero is ok and -2 signals
+                          ! that the expected header was not found
 
       DIMENSION VAL(19)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124,WORD*24
@@ -899,3 +908,233 @@ C be sure to instanciate mathash with the material array index.
       endif
       return
       end
+
+C ************* MATFROMBIN 
+C MATFROMBIN: Fills materials common blocks via scan of binary materials
+C database.  It should be called after an initial scan of the binary
+C file establishes that the file is ok for scanning. Other code blocks
+C can check the value of natdbitems is non-zero. If the returned value
+C of IER is zero then 
+      SUBROUTINE MATFROMBIN(IER)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+#include "espriou.h"
+
+C Parameters
+      integer IER   ! error return where zero is ok, 
+                    ! ier=-1 file not found, ier=-2 no classes
+                    ! ier=-3 read error
+
+      integer lnblnk  ! function definition
+      integer icln
+      real val
+      DIMENSION ICLN(30),VAL(6)
+      CHARACTER IDESC*72,NDESC*72
+
+C Open the binary materials database (in clase it was closed elsewhere).
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+      if(ier.ne.0)then
+        ier=-1
+        return
+      endif
+      write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
+
+C Reset ier state prior to reading data.
+      ier=0
+
+C Get date stamp for the materials arrays.
+      call dstamp(matdbdate)
+
+C Fill the hash table with not included marker (-1)
+      do 42 ih=0,600
+        mathash(ih)=-1
+  42  continue
+
+C Initiate documentation for the database (new concept).
+      write(matdbdoc,'(4a)')
+     & 'ESP-r Materials based on scan of a binary materials',
+     & 'database. Information in the file is recorded as found. ',
+     & 'Additional infomation and documentation uses standard ',
+     & 'assumptions which should be updated as required.' 
+
+C Check binary contents. As this subroutine will often be passed
+C the ASCII version of the file and a read fail will indicate that
+C the file is not binary there is no need to inform the user.
+      IREC=601
+      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=999)NCLASS,(ICLN(K),K=1,30)
+      IF(NCLASS.LE.0)THEN
+        CALL USRMSG('binary materials database empty!',' ','W')
+        IER=-2
+        RETURN
+      ENDIF
+      matcats=NCLASS
+      matdbitems = 0   ! reset the total number of items.
+
+C Proceed with the assumption that ICLN increments in the same order as
+C 1 -> NCLASS increments. ICLN is not held in the common blocks.
+      DO 10 I=1,NCLASS
+        IC=ICLN(I)
+        IREC=IC*20-19
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
+
+C Save number of entities in the class and the 1st 32 char as a name for class.
+        matcatitems(I)=NE
+        write(matcatname(I),'(a)') IDESC(1:32)
+
+C Create initial classification documentation
+        write(matcatdoc(I),'(a,i2,3a)')
+     &    'Category (',I,') was initially named ',
+     &    IDESC(1:lnblnk(IDESC)),'. No other documentation (yet).'
+
+C If the class has some entries loop.
+        IF(NE.GT.0)then
+          DO 20 J=1,NE
+            matdbitems=matdbitems+1   ! increment counter
+            IREC=IREC+1
+            READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
+     &        NDESC
+            NCODE=IREC-1
+            matlegindex(matdbitems)=NCODE
+            matcatindex(matdbitems)=I
+            if(NCODE.ge.0.and.NCODE.le.600)then
+              mathash(NCODE)=matdbitems  ! set up pointer from legacy index to array
+            endif
+
+C The MLC database will expect to find the name of the material matching the
+C description NDESC initial characters. The logic that started all matnames
+C with mat_ does not help. Writ the initial 32 char of NDESC as the name.
+            lex=MIN0(lnblnk(NDESC),32)
+            write(matname(matdbitems),'(a)') NDESC(1:lex)
+C            write(matname(matdbitems),'(a,i3.3)') 'mat_',ncode
+            write(matdoc(matdbitems),'(a)') NDESC(1:lnblnk(NDESC))
+            matdbcon(matdbitems)=VAL(1)
+            matdbden(matdbitems)=VAL(2)
+            matdbsht(matdbitems)=VAL(3)
+            matdboute(matdbitems)=VAL(4)
+            matdbine(matdbitems)=VAL(4)
+            matdbouta(matdbitems)=VAL(5)
+            matdbina(matdbitems)=VAL(5)
+            matdbdrv(matdbitems)=VAL(6)
+            matopaq(matdbitems)='-'
+
+C Default thickness does not exist in legacy file so set a place
+C holder based on typcial classes (for databases with 15-17 classes)
+            if(matcats.ge.15.and.matcats.le.17)then
+              if(I.eq.1.or.I.eq.2)then
+                matdbthick(matdbitems)=100.0
+              elseif(I.eq.3)then
+                matdbthick(matdbitems)=5.0
+              elseif(I.eq.4)then
+                matdbthick(matdbitems)=25.0
+              elseif(I.eq.5)then
+                matdbthick(matdbitems)=200.0
+              elseif(I.eq.6)then
+                matdbthick(matdbitems)=12.5
+              elseif(I.eq.7)then
+                matdbthick(matdbitems)=50.0
+              elseif(I.eq.8.or.I.eq.9.or.I.eq.10)then
+                matdbthick(matdbitems)=6.0
+              elseif(I.eq.11)then
+                matdbthick(matdbitems)=100.0
+              elseif(I.eq.12)then
+                matdbthick(matdbitems)=5.0
+              elseif(I.eq.13)then
+
+C Assume that this category is glass. ?? WIS data
+                write(matdoc(matdbitems),'(2a)') IDESC(1:lnblnk(IDESC)),
+     &          ' with placeholder single layer optics'
+                matdbthick(matdbitems)=6.0
+                matopaq(matdbitems)='t'
+                matirtran(matdbitems)=0.0
+                matsoldrtrn(matdbitems)=0.0
+                matsoldrotrfl(matdbitems)=0.0
+                matsoldrinrfl(matdbitems)=0.0
+                matvistran(matdbitems)=0.0
+                matvisotrfl(matdbitems)=0.0
+                matvisinrfl(matdbitems)=0.0
+                matrender(matdbitems)=0.0
+              elseif(I.eq.14)then
+                matdbthick(matdbitems)=200.0
+              elseif(I.eq.15)then
+                matdbthick(matdbitems)=100.0
+              else
+                matdbthick(matdbitems)=100.0
+              endif
+            else
+              matdbthick(matdbitems)=100.0
+              matopaq(matdbitems)='o'
+            endif
+   20     CONTINUE
+        ENDIF
+   10 CONTINUE
+
+C If there has been no air material read in then add in one more
+C category for air and fill it with the default information that
+C the standard call to ERPCDB would have returned.
+      if(mathash(0).eq.-1)then
+        matcats=matcats+1
+        matcatitems(matcats)=1
+        write(matcatname(matcats),'(a)') 'GAPS'
+        write(matcatdoc(matcats),'(a,i2,a)')
+     &    'Category (',matcats,') holds the implied air material '
+        matdbitems=matdbitems+1   ! increment counter
+        matlegindex(matdbitems)=0
+        matcatindex(matdbitems)=matcats
+        mathash(0)=matdbitems  ! set up pointer from legacy index to array
+        write(matname(matdbitems),'(a)') 'mat_000'
+        write(matdoc(matdbitems),'(a)') 
+     &    'Air layer with default properties'
+        matdbcon(matdbitems)=0.0
+        matdbden(matdbitems)=0.0
+        matdbsht(matdbitems)=0.0
+        matdboute(matdbitems)=0.99
+        matdbine(matdbitems)=0.99
+        matdbouta(matdbitems)=0.99
+        matdbina(matdbitems)=0.99
+        matdbdrv(matdbitems)=1.0
+        matdbthick(matdbitems)=25.0
+        matopaq(matdbitems)='-'
+        matirtran(matdbitems)=0.0
+        matsoldrtrn(matdbitems)=0.0
+        matsoldrotrfl(matdbitems)=0.0
+        matsoldrinrfl(matdbitems)=0.0
+        matvistran(matdbitems)=0.0
+        matvisotrfl(matdbitems)=0.0
+        matvisinrfl(matdbitems)=0.0
+        matrender(matdbitems)=0.0
+        matgapares(matdbitems,1)=0.17
+        matgapares(matdbitems,2)=0.17
+        matgapares(matdbitems,3)=0.17
+      endif
+
+      matver = 1.1   ! set version of materials structures.
+
+C Debug.
+C      write(6,*) 'b matdbitems ',matdbitems
+C      write(6,*) 'b matcatitems ',matcatitems
+C      write(6,*) ' '
+C      write(6,*) 'b mathash ',mathash
+C      write(6,*) ' '
+C      write(6,*) 'b matlegindex ',matlegindex
+C      write(6,*) ' '
+
+      RETURN
+
+C File errors.
+  999 IER= -3
+      matver = 0.0   ! signal that we have not filled commons.
+      return
+
+ 1000 CALL USRMSG(' NE,NDESC read error in ',LFMAT,'W')
+      matver = 0.0   ! signal that we have not filled commons.
+      IER= -3
+      return
+
+ 1001 CALL USRMSG(' Layer data read error in ',LFMAT,'W')
+      matver = 0.0   ! signal that we have not filled commons.
+      IER= -3
+      return
+
+      END

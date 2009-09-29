@@ -2231,7 +2231,8 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
 C Use the text within the MLC database to find the data.
                 lex=MIN0(72,lnblnk(LAYDESC(IWH,ILAY)))
                 write(NAM99,'(a)')LAYDESC(IWH,ILAY)(1:lex)
-                call parsematdesc(NAM99,matarrayindex)
+                ileghope=IPR(IWH,ILAY)   ! what we hope we will find a match for
+                call parsematdesc(ileghope,NAM99,matarrayindex)
                 if(matarrayindex.ne.0)then
                   DBCON=matdbcon(matarrayindex)
                   DBDEN=matdbden(matarrayindex)
