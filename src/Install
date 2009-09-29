@@ -2122,7 +2122,7 @@ zzz
 
    cd ${SRCdir}/databases
    echo -n "   - Copying ASCII databases..."
-   cp multicon.db1 multicon.db2 north_american.constrdb optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
+   cp multicon.db1 multicon.db2 multicon.db3 north_american.constrdb optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
 
 fi
