@@ -1,5 +1,5 @@
 *connections  for cellular_master
-*Date Fri Jul 17 09:56:17 2009
+*Date Wed Sep 30 09:18:18 2009
      40   # number of connections
    1   1   3   2   1  #    1 pt_general in manager_a >|< pt_general in manager_b
    1   2   3   3   8  #    2 part_frame in manager_a >|< part_frame in coridor
