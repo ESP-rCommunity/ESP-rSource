@@ -1,8 +1,8 @@
 Synopsis
  
 This is a synopsis of the model Ventilation system with mech inlet
-(restricted) and mech extract defined in vent_det.cfg generated on Wed Jul 22
-09:51:13 2009. Notes associated with the model are in vent_det.log
+(restricted) and mech extract defined in vent_det.cfg generated on Wed Sep 30
+17:12:09 2009. Notes associated with the model are in vent_det.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 2000 and
@@ -32,7 +32,7 @@ An Integrated Performance View is incomplete or missing.
 Databases associated with the model:
  pressure distributions : pressc.db1
  materials              : /usr/esru/esp-r/databases/constr.db2.a
- constructions          : /usr/esru/esp-r/databases/multicon.db1
+ constructions          : ./multicon.db1
  plant components       : plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
  optical properties     : optics.db1

@@ -1,5 +1,5 @@
 *connections  for CFD_room_bouy
-*Date Wed Nov 26 15:50:29 2008
+*Date Wed Sep 30 16:48:40 2009
       8   # number of connections
    1   1   0   0   0  #    1 south in room is External
    1   2   0   0   0  #    2 east in room is External
