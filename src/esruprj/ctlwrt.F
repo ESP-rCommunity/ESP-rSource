@@ -41,8 +41,12 @@ C an ascii file.
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/Vld20/Vldtng
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
 
-      CHARACTER lctlf*72,ctldoc*248
+      CHARACTER lctlf*72,ctldoc*248,daytype*12
       character outs*248,outsd*248
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       character DS*7,DS1*10,DE*7,DE1*10,SSTR*96,SSTR1*96,SSTR2*248
@@ -76,7 +80,7 @@ C Building control information.
 
       DO 10 I=1,NCF
         II=I
-        WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)'* Control function'
+        WRITE(IUNIT,'(A,i4)',IOSTAT=ios,ERR=1)'* Control function ',I
         CALL EVCNTRL(0,II,1,1,'S',SSTR)
         LN=max(1,LNBLNK(SSTR))
         WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# ',SSTR(1:ln)
@@ -91,8 +95,14 @@ C Building control information.
         WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NBCDT(II),
      &  ' # No. day types'
         NN=NBCDT(II)
-        IF(NN.EQ.0)NN=3
-
+        IF(NN.EQ.0)THEN ! All day types have individual controls
+          NN=nbdaytype
+          daytype='individual'
+        ELSEIF(NN.EQ.1)THEN ! All day types have same controls
+          daytype='all daytypes'
+        ELSE ! Day types are not used but periods of validity are active
+          daytype=' '
+        ENDIF
         DO 20 J=1,NN
           JJ=J
           CALL STDATE(IYEAR,IBCDV(II,JJ,1),DS,DS1)
@@ -100,8 +110,10 @@ C Building control information.
           write(outs,'(4a)') '  # valid ',DS1,' - ',DE1
           WRITE(IUNIT,'(2I5,a)',IOSTAT=ios,ERR=1)(IBCDV(II,JJ,K),K=1,2),
      &      outs(1:lnblnk(outs))
-          WRITE(IUNIT,'(I6,A)',IOSTAT=ios,ERR=1)NBCDP(II,JJ),
-     &      '  # No. of periods in day'
+          IF(DAYTYPE(1:1).NE.' '.OR.DAYTYPE(1:12).NE.'all daytypes')
+     &    DAYTYPE=CALENTAG(J)
+          WRITE(IUNIT,'(I6,2A)',IOSTAT=ios,ERR=1)NBCDP(II,JJ),
+     &      '  # No. of periods in day: ',DAYTYPE
           LL=NBCDP(II,JJ)
 
           DO 30 K=1,LL
@@ -111,7 +123,6 @@ C Building control information.
             WRITE(IUNIT,'(2I5,F8.3,3A)',IOSTAT=ios,ERR=1)
      &        IBCTYP(II,JJ,KK),IBCLAW(II,JJ,KK),TBCPS(II,JJ,KK),
      &        '  # ctl type, law (',SSTR(1:ln),'), start @'
-    9       FORMAT(2I5,F8.3)
             WRITE(IUNIT,'(F8.0,A)',IOSTAT=ios,ERR=1)BMISCD(II,JJ,KK,1),
      &        '  # No. of data items'
    11       FORMAT(F8.1)
@@ -154,7 +165,7 @@ C Plant control information.
      
       DO 40 I=1,NCL
         II=I
-        WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1) '* Control loops'
+        WRITE(IUNIT,'(A,I4)',IOSTAT=ios,ERR=1) '* Control loops ',I
         CALL EVCNTRL(1,II,1,1,'S',SSTR)
         LN=max(1,LNBLNK(SSTR))
         WRITE(IUNIT,'(2A)',IOSTAT=ios,ERR=1)'# ',SSTR(1:ln)
@@ -168,7 +179,14 @@ C Plant control information.
         WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NPCDT(II),
      &  ' # No. day types'
         NN=NPCDT(II)
-        IF(NN.EQ.0)NN=3
+        IF(NN.EQ.0)THEN ! All day types have individual controls
+          NN=nbdaytype
+          daytype='individual'
+        ELSEIF(NN.EQ.1)THEN ! All day types have same controls
+          daytype='all daytypes'
+        ELSE ! Day types are not used but periods of validity are active
+          daytype=' '
+        ENDIF
 
         DO 50 J=1,NN
           JJ=J
@@ -177,8 +195,10 @@ C Plant control information.
           write(outs,'(4a)') '  # valid ',DS1,' - ',DE1
           WRITE(IUNIT,'(2I5,a)',IOSTAT=ios,ERR=1)(IPCDV(II,JJ,K),K=1,2),
      &      outs(1:lnblnk(outs))
-          WRITE(IUNIT,'(I6,A)',IOSTAT=ios,ERR=1)NPCDP(II,JJ),
-     &      '  # No. of periods in day'
+          IF(DAYTYPE(1:1).NE.' '.OR.DAYTYPE(1:12).NE.'all daytypes')
+     &    DAYTYPE=CALENTAG(J)
+          WRITE(IUNIT,'(I6,2A)',IOSTAT=ios,ERR=1)NPCDP(II,JJ),
+     &      '  # No. of periods in day: ',daytype
           LL=NPCDP(II,JJ)
 
           DO 60 K=1,LL
@@ -223,7 +243,7 @@ C Flow control information.
      
       DO 401 I=1,NCC
         II=I
-        WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)'* Control mass'
+        WRITE(IUNIT,'(A,I4)',IOSTAT=ios,ERR=1)'* Control mass ',I
         CALL EVCNTRL(2,II,1,1,'S',SSTR)
         LN=max(1,LNBLNK(SSTR))
         WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# ',SSTR(1:ln)
@@ -238,7 +258,14 @@ C Flow control information.
         WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NFCDT(II),
      &  ' # No. day types'
         NN=NFCDT(II)
-        IF(NN.EQ.0)NN=3
+        IF(NN.EQ.0)THEN ! All day types have individual controls
+          NN=nbdaytype
+          daytype='individual'
+        ELSEIF(NN.EQ.1)THEN ! All day types have same controls
+          daytype='all daytypes'
+        ELSE ! Day types are not used but periods of validity are active
+          daytype=' '
+        ENDIF
 
         DO 501 J=1,NN
           JJ=J
@@ -247,8 +274,10 @@ C Flow control information.
           write(outs,'(4a)') '  # valid ',DS1,' - ',DE1
           WRITE(IUNIT,'(2I5,a)',IOSTAT=ios,ERR=1)(IFCDV(II,JJ,K),K=1,2),
      &      outs(1:lnblnk(outs))
-          WRITE(IUNIT,'(I6,A)',IOSTAT=ios,ERR=1)NFCDP(II,JJ),
-     &      '  # No. of periods in day'
+          IF(DAYTYPE(1:1).NE.' '.OR.DAYTYPE(1:12).NE.'all daytypes')
+     &    DAYTYPE=CALENTAG(J)
+          WRITE(IUNIT,'(I6,2A)',IOSTAT=ios,ERR=1)NFCDP(II,JJ),
+     &      '  # No. of periods in day: ',daytype
           LL=NFCDP(II,JJ)
 
           DO 601 K=1,LL
@@ -320,27 +349,48 @@ C Global.
 
 C Global control information.
       WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)glctldoc(1:lnblnk(glctldoc))
-      WRITE(IUNIT,'(I4)',IOSTAT=ios,ERR=1)NGF
+      WRITE(IUNIT,'(I4,a)',IOSTAT=ios,ERR=1)NGF,
+     &' # number of control loops defined'
      
       DO 480 I=1,NGF
         II=I
         WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1) '* Global control '
-        WRITE(IUNIT,'(3I5)',IOSTAT=ios,ERR=1)(IGSN(II,J),J=1,3)
-        WRITE(IUNIT,'(3I5)',IOSTAT=ios,ERR=1)(IGAN(II,J),J=1,3)
-        WRITE(IUNIT,'(I6)',IOSTAT=ios,ERR=1)NGCDT(II)
+        WRITE(IUNIT,'(3I5,a)',IOSTAT=ios,ERR=1)(IGSN(II,J),J=1,3),
+     &' # sensor data'
+        WRITE(IUNIT,'(3I5,a)',IOSTAT=ios,ERR=1)(IGAN(II,J),J=1,3),
+     &' # actuator data'
+        WRITE(IUNIT,'(I6,a)',IOSTAT=ios,ERR=1)NGCDT(II),
+     &' # number of day types'
         NN=NGCDT(II)
-        IF(NN.EQ.0)NN=3
+        IF(NN.EQ.0)THEN ! All day types have individual controls
+          NN=nbdaytype
+          daytype='individual'
+        ELSEIF(NN.EQ.1)THEN ! All day types have same controls
+          daytype='all daytypes'
+        ELSE ! Day types are not used but periods of validity are active
+          daytype=' '
+        ENDIF
 
         DO 450 J=1,NN
           JJ=J
-          WRITE(IUNIT,'(2i5)',IOSTAT=ios,ERR=1)(IGCDV(II,JJ,K),K=1,2)
-          WRITE(IUNIT,'(I6)',IOSTAT=ios,ERR=1)NGCDP(II,JJ)
+          CALL STDATE(IYEAR,IFCDV(II,JJ,1),DS,DS1)
+          CALL STDATE(IYEAR,IFCDV(II,JJ,2),DE,DE1)
+          write(outs,'(4a)') '  # valid ',DS1,' - ',DE1
+          WRITE(IUNIT,'(2i5,a)',IOSTAT=ios,ERR=1)(IGCDV(II,JJ,K),K=1,2),
+     &      outs(1:lnblnk(outs))
+          WRITE(IUNIT,'(I6,2a)',IOSTAT=ios,ERR=1)NGCDP(II,JJ),
+     &      '  # No. of periods in day: ',daytype
           LL=NGCDP(II,JJ)
 
           DO 460 K=1,LL
             KK=K
-            WRITE(IUNIT,9,IOSTAT=ios,ERR=1)IGCTYP(II,JJ,KK),
-     &            IGCLAW(II,JJ,KK),TGCPS(II,JJ,KK)
+            CALL EVCNTRL(3,II,JJ,KK,'T',SSTR)
+            LN=max(1,LNBLNK(SSTR))
+            CALL EVCNTRLAW(3,II,JJ,KK,SSTR1,SSTR2)
+            WRITE(IUNIT,'(2I5,F8.3,5a)',IOSTAT=ios,ERR=1)
+     &        IGCTYP(II,JJ,KK),IGCLAW(II,JJ,KK),TGCPS(II,JJ,KK),
+     &        '  # ctl type (',SSTR(1:ln),'), law (',
+     &        SSTR2(1:ln2),'), starting @'
             WRITE(IUNIT,11,IOSTAT=ios,ERR=1)GMISCD(II,JJ,KK,1)
             NITEMS=INT(GMISCD(II,JJ,KK,1))+1
             IF(NITEMS.EQ.1)goto 460
@@ -375,7 +425,7 @@ C Optical control information.
 
       DO 100 I=1,NOF
         II=I
-        WRITE(IUNIT,'(A)',IOSTAT=ios,ERR=1)'* Control optics'
+        WRITE(IUNIT,'(A,I4)',IOSTAT=ios,ERR=1)'* Control optics ',I
         CALL EVCNTRL(5,II,1,1,'S',SSTR)
         LN=max(1,LNBLNK(SSTR))
         WRITE(IUNIT,'(A,A)',IOSTAT=ios,ERR=1)'# ',SSTR(1:ln)
@@ -390,7 +440,14 @@ C Optical control information.
         WRITE(IUNIT,'(I5,A)',IOSTAT=ios,ERR=1)NOCDT(II),
      &  ' # No. day types'
         NN=NOCDT(II)
-        IF(NN.EQ.0)NN=3
+        IF(NN.EQ.0)THEN ! All day types have individual controls
+          NN=nbdaytype
+          daytype='individual'
+        ELSEIF(NN.EQ.1)THEN ! All day types have same controls
+          daytype='all daytypes'
+        ELSE ! Day types are not used but periods of validity are active
+          daytype=' '
+        ENDIF
 
         DO 200 J=1,NN
           JJ=J
@@ -399,8 +456,10 @@ C Optical control information.
           write(outs,'(4a)') '  # valid ',DS1,' - ',DE1
           WRITE(IUNIT,'(2I5,a)',IOSTAT=ios,ERR=1)(IOCDV(II,JJ,K),K=1,2),
      &      outs(1:lnblnk(outs))
-          WRITE(IUNIT,'(I6,A)',IOSTAT=ios,ERR=1)NOCDP(II,JJ),
-     &      '  # No. of periods in day'
+          IF(DAYTYPE(1:1).NE.' '.OR.DAYTYPE(1:12).NE.'all daytypes')
+     &    DAYTYPE=CALENTAG(J)
+          WRITE(IUNIT,'(I6,2A)',IOSTAT=ios,ERR=1)NOCDP(II,JJ),
+     &      '  # No. of periods in day: ',daytype
           LL=NOCDP(II,JJ)
 
           DO 300 K=1,LL

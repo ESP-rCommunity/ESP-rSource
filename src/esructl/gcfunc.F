@@ -20,6 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C This file contains the following routines:
 C     MZGCTL: global control executive.
+C      CFFNGR: function generator.
 
       SUBROUTINE MZGCTL
 #include "building.h"
@@ -29,6 +30,8 @@ C     MZGCTL: global control executive.
       COMMON/GCLSOL/igf,IDTYPG,IPERG
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/btime/btimep,btimef
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
 
       character outs*124
 
@@ -44,29 +47,30 @@ C Determine year day number of present day
 C Set up day type and period pointers
       NDAYT=NGCDT(igf)
 
-C If NDAYT=0 set data to weekday, saturday and sunday format
-      IF(NDAYT.EQ.0) THEN
-         IDTYPG=1
-         IF(IDWP.EQ.6) IDTYPG=2
-         IF(IDWP.EQ.7) IDTYPG=3
-      ELSE
-         DO 10 IDTYPG=1,NDAYT
-         IDS=IGCDV(igf,IDTYPG,1)
-         IDF=IGCDV(igf,IDTYPG,2)
-         IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
-   10    CONTINUE
-         WRITE(outs,*) ' MZGCTL: global control '
-         call edisp(iuout,outs)
-         WRITE(outs,*) '         no valid day type for year-day ',IDAY
-         call edisp(iuout,outs)
-         call edisp(iuout,
-     &          ' MZGCTL: cannot locate appropriate day type')
-         CALL EPAGEND
-         STOP
-      END IF
+C If NDAYT=0 set data to all day types
+      NIN=0
+      IF(NDAYT.EQ.0)THEN
+        NDAYT=NBDAYTYPE
+        NIN=-1*NBDAYTYPE
+      ENDIF
+      DO 10 IDTYPG=1,NDAYT
+        IDS=IGCDV(igf,IDTYPG,1)
+        IDF=IGCDV(igf,IDTYPG,2)
+        IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
+   10 CONTINUE
+      WRITE(outs,*) ' MZGCTL: global control '
+      call edisp(iuout,outs)
+      WRITE(outs,*) '	      no valid day type for year-day ',IDAY
+      call edisp(iuout,outs)
+      call edisp(iuout,
+     &       ' MZGCTL: cannot locate appropriate day type')
+      CALL EPAGEND
+      STOP
+
 
 C Check number of periods in each day and the start and finish times
-   20 NDAYPG=NGCDP(igf,IDTYPG)
+   20 if(NIN.LE.-1.OR.ndayt.lt.1)idtypg=icalender(iday)
+      NDAYPG=NGCDP(igf,IDTYPG)
       IF(NDAYPG.EQ.0) STOP ' MZGCTL: no day-periods defined'
       DO 22 IDAYG=1,NDAYPG
       IPERG=IDAYG
@@ -100,6 +104,10 @@ C Global control law 4: Global Free-float Controller.
       ELSE IF(IGCLAW(igf,IDTYPG,IPERG).EQ.4)THEN
          CALL GCL04
    
+C Global control law 5: Global Multi-sensing Controller.
+      ELSE IF(IGCLAW(igf,IDTYPG,IPERG).EQ.5)THEN
+         CALL GCL05
+   
 C New global controllers inserted here!
       ELSE
         WRITE(outs,*) 'MZGCTL: invalid global control law ',
@@ -114,6 +122,276 @@ C New global controllers inserted here!
 
  999  RETURN
       END
+
+C ******************** CFFNGR ********************
+
+C CFFNGR is a function generator.
+
+      SUBROUTINE CFFNGR(IFNC,TCTL)
+#include "building.h"
+#include "control.h"
+
+      COMMON/BTIME/BTIMEP,BTIMEF
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
+    
+      logical bfngn
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(40).NE.0) THEN
+         CALL DAYCLK(IDYP,btimef,ITU)
+         WRITE(ITU,*) ' Entering subroutine CFFNGR'
+      END IF
+
+C Type 1: Step function generator.
+      if(ifnc.eq.1) then
+
+C Assign data as defined in table above.
+         start =cfgsd(icf,1)
+         finish=cfgsd(icf,2)
+         vmax  =cfgsd(icf,3)
+         vmin  =cfgsd(icf,4)
+
+C Determine function shape.
+         tctl=vmin
+         if(btimef.gt.start.and.btimef.lt.finish) tctl=vmax
+
+C Type 2: ramp function generator.
+      elseif(ifnc.eq.2) then
+
+C Assign data as defined in table above.
+         start =cfgsd(icf,1)
+         finish=cfgsd(icf,2)
+         vmax  =cfgsd(icf,3)
+         vmin  =cfgsd(icf,4)
+
+C Determine function shape.
+         tctl=vmin
+         if(btimef.gt.start.and.btimef.lt.finish) then
+
+C Calculate ratio for interpolation.
+            ratio=(vmax-vmin)/(finish-start)
+
+C Calculate value by interpolation.
+            tctl=vmax-ratio*(finish-btimef)
+         endif
+
+C Type 3: Square wave, sine series.
+      elseif(ifnc.eq.3) then
+
+C Assign data as defined in table above.
+         vmax=cfgsd(icf,1)
+         vmin=cfgsd(icf,2)
+         freq=cfgsd(icf,3)
+
+C Find control period start and finish hour.
+         NDAYP=NBCDP(icf,IDTYP)
+         TPS=TBCPS(icf,IDTYP,iper)
+         IF(iper.LT.NDAYP) THEN
+            TPF=TBCPS(icf,IDTYP,iper+1)
+         ELSE
+           TPF=24.
+         END IF
+
+C Find amplitude and mean value of wave.
+         amp=(vmax-vmin)/2.
+         vmean=(vmax+vmin)/2.
+
+C Now evaluate sine series.
+         pi=4.0*atan(1.0)
+         sinsum=0.0
+         half=(tps+tpf)/2.0
+         f=1.0
+
+C Approximate series with 100 terms.
+         do 10 iterm=1, 100
+            sinsum=1.0/f * sin((pi*btimef*f*freq/half))+sinsum
+            f=f+2.0
+   10    continue
+         tctl=sinsum*(4.0*amp)/pi+vmean
+
+C Type 4: Square wave, cosine series.
+      elseif(ifnc.eq.4) then
+
+C Assign data as defined in table above.
+         vmax=cfgsd(icf,1)
+         vmin=cfgsd(icf,2)
+         freq=cfgsd(icf,3)
+
+C Find control period start and finish hour.
+         NDAYP=NBCDP(icf,IDTYP)
+         TPS=TBCPS(icf,IDTYP,iper)
+         IF(iper.LT.NDAYP) THEN
+            TPF=TBCPS(icf,IDTYP,iper+1)
+         ELSE
+           TPF=24.
+         END IF
+
+C Find amplitude and mean value of wave.
+         amp=(vmax-vmin)/2.
+         vmean=(vmax+vmin)/2.
+
+C Now evaluate sine series.
+         pi=4.0*atan(1.0)
+         cossum=0.0
+         half=(tps+tpf)/2.0
+         f=1.0
+         isign=1
+
+C Approximate series with 100 terms.
+         do 20 iterm=1, 100
+            cossum=isign * 1.0/f * cos((pi*btimef*f*freq/half))+cossum
+            f=f+2.0
+            isign=isign*(-1)
+   20    continue
+         tctl=cossum*(4.0*amp)/pi+vmean
+
+C Type 5: Triangular wave.
+      elseif(ifnc.eq.5) then
+
+C Assign data as defined in table above.
+         vmax=cfgsd(icf,1)
+         vmin=cfgsd(icf,2)
+         freq=cfgsd(icf,3)
+
+C Find control period start and finish hour.
+         NDAYP=NBCDP(icf,IDTYP)
+         TPS=TBCPS(icf,IDTYP,iper)
+         IF(iper.LT.NDAYP) THEN
+            TPF=TBCPS(icf,IDTYP,iper+1)
+         ELSE
+           TPF=24.
+         END IF
+
+C Find amplitude and mean value of wave.
+         amp=(vmax-vmin)/2.
+         vmean=(vmax+vmin)/2.
+
+C Now evaluate sine series.
+         pi=4.0*atan(1.0)
+         cossum=0.0
+         half=(tps+tpf)/2.0
+         f=1.0
+
+C Approximate series with 100 terms.
+         do 30 iterm=1, 100
+            cossum=1.0/(f)**2 * cos((pi*btimef*f*freq/half))+cossum
+            f=f+2.0
+   30    continue
+         tctl=cossum*(8.0*amp)/(pi)**2 +vmean
+
+C Type 6: Saw tooth wave.
+      elseif(ifnc.eq.6) then
+
+C Assign data as defined in table above.
+         vmax=cfgsd(icf,1)
+         vmin=cfgsd(icf,2)
+         freq=cfgsd(icf,3)
+
+C Find control period start and finish hour.
+         NDAYP=NBCDP(icf,IDTYP)
+         TPS=TBCPS(icf,IDTYP,iper)
+         IF(iper.LT.NDAYP) THEN
+            TPF=TBCPS(icf,IDTYP,iper+1)
+         ELSE
+           TPF=24.
+         END IF
+
+C Find amplitude and mean value of wave.
+         amp=(vmax-vmin)/2.
+         vmean=(vmax+vmin)/2.
+
+C Now evaluate sine series.
+         pi=4.0*atan(1.0)
+         sinsum=0.0
+         half=(tps+tpf)/2.0
+         f=1.0
+         isign=1
+
+C Approximate series with 100 terms.
+         do 40 iterm=1, 100
+            sinsum=isign * 1.0/f * sin((pi*btimef*f*freq/half))+sinsum
+            f=f+1.0
+            isign=isign*(-1)
+   40    continue
+         tctl=sinsum*(2.0*amp)/pi +vmean
+
+C Type 7: Sine wave.
+      elseif(ifnc.eq.7) then
+
+C Assign data as defined in table above.
+         vmax=cfgsd(icf,1)
+         vmin=cfgsd(icf,2)
+         freq=cfgsd(icf,3)
+         shift=cfgsd(icf,4)
+
+C Find control period start and finish hour.
+         NDAYP=NBCDP(icf,IDTYP)
+         TPS=TBCPS(icf,IDTYP,iper)
+         IF(iper.LT.NDAYP) THEN
+            TPF=TBCPS(icf,IDTYP,iper+1)
+         ELSE
+           TPF=24.
+         END IF
+
+C Find amplitude and mean value of wave.
+         amp=(vmax-vmin)/2.
+
+C Now evaluate sine series.
+         pi=4.0*atan(1.0)
+         half=(tps+tpf)/2.0
+         tctl=amp*(sin(pi*freq*(btimef-shift)/half)+1.0) + vmin
+
+C Type 8: Cosine wave.
+      elseif(ifnc.eq.8) then
+
+C Assign data as defined in table above.
+         vmax=cfgsd(icf,1)
+         vmin=cfgsd(icf,2)
+         freq=cfgsd(icf,3)
+         shift=cfgsd(icf,4)
+
+C Find control period start and finish hour.
+         NDAYP=NBCDP(icf,IDTYP)
+         TPS=TBCPS(icf,IDTYP,iper)
+         IF(iper.LT.NDAYP) THEN
+            TPF=TBCPS(icf,IDTYP,iper+1)
+         ELSE
+           TPF=24.
+         END IF
+
+C Find amplitude and mean value of wave.
+         amp=(vmax-vmin)/2.
+
+C Now evaluate sine series.
+         pi=4.0*atan(1.0)
+         half=(tps+tpf)/2.0
+         tctl=amp*(cos(pi*freq*(btimef-shift)/half)+1.0) + vmin
+
+C Type 9: Use sensed property tctl.
+      elseif(ifnc.eq.9) then
+         sclfac=cfgsd(icf,5)
+         offset=cfgsd(icf,6)
+         tctl=(sclfac*tctl)+offset
+      endif
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(40).NE.0) then
+         write(itu,'(I5)') ' Function type is',ifnc
+         write(itu,'(F10.4)') ' btimef=',btimef
+         write(itu,'(F10.4)') ' tctl =',tctl
+         WRITE(ITU,*) ' Leaving subroutine CFFNGR'
+      endif
+      
+      return
+      end
 
 C ******************** GCFVAR
 
@@ -523,17 +801,169 @@ C *******  GCL04 Global "Free-float" Controller.
 
       SUBROUTINE GCL04
 #include "building.h"
-#include "control.h"
 
-      common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
-      COMMON/GCLSOL/igf,IDTYPG,IPERG
-      common/globct/qfutgb(mcf),tfutgb(mcf),tnpgb(mcf)
       common/glbctl/global,glbrwd
-      common/sysctl/ipassr
-
       logical global,glbrwd
-      
+
       glbrwd=.false.
 
+      RETURN
+      END
+
+C *******  GCL05 Global Multi sensing Controller.
+
+      SUBROUTINE GCL05
+#include "building.h"
+#include "control.h"
+#include "net_flow.h"
+c#include "plant.h"
+      COMMON/GCLSOL/igf,IDTYPG,IPERG
+      COMMON/PCLOP8/LASTOUT(MCF)
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      COMMON/PCLSOL/ICFP,IDTYPP,IPERP
+c      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/mfctl/ctlpos(MCNN)
+
+      LOGICAL CLOSER
+
+      idebug=0
+      nclp=(nint(gmiscd(igf,IDTYPG,IPERG,1))+1)/3
+
+      if(idebug.eq.1)write(96,*)'sensing control loops =',nclp
+      sign=0. ; signt=0.
+      DO 5050 ICLP=1,NCLP
+        IDOM=NINT(GMISCD(igf,IDTYPG,IPERG,ICLP*3-1))
+        ILPS=NINT(GMISCD(igf,IDTYPG,IPERG,ICLP*3))
+
+C Only read action if there is one loop (for NOT/SLAVE) for more than one
+C loops read action (AND/OR) at the end of do loop to apply to next loop
+        if(nclp.eq.1)IACT=NINT(GMISCD(igf,IDTYPG,IPERG,ICLP*3+1))
+        ISTE=1
+
+C Get state of control loop (ON -> ISTE=1 and OFF -> ISTE=0)
+        IF(IDOM.EQ.1)THEN ! mass flow domain
+          ICFPD=ILPS
+          CLOSER=.TRUE.
+          if(ifan(ICFPd,1).eq.-3)then
+
+C Controlling a connection.
+            CALL ECLOSE(CTLPOS(ifan(icfpD,2)),0.0,0.01,CLOSER)
+            IF(ICLP.EQ.1)SIGNT=CTLPOS(IFAN(ICFPD,2))
+            SIGN=CTLPOS(IFAN(ICFPD,2))
+          else
+
+C controlling a component.
+            do 1 icnn=1,ncnn
+              if((ifan(icfpD,2).eq.ITPCON(ICNN)).and.
+     &        (NDSCNN(ICNN,1).gt.0))then
+                CALL ECLOSE(CTLPOS(ifan(icfpD,2)),0.0,0.01,CLOSER)
+                IF(ICLP.EQ.1)SIGNT=CTLPOS(IFAN(ICFPD,2))
+                SIGN=CTLPOS(IFAN(ICFPD,2))
+              endif
+ 1          continue
+          endif
+          IF(CLOSER)THEN
+            ISTE=0
+          ENDIF
+      if(idebug.eq.1)
+     &write(96,*)'this loop is currently on/off =',iste,', % =',
+     &CTLPOS(IFAN(ICFPD,2))
+          
+        ELSEIF(IDOM.EQ.2)THEN ! plant domain
+          ICFPD=ILPS
+          ISTE=LASTOUT(ICFPD)
+        ELSE
+          CONTINUE ! Other domains not supported
+        ENDIF
+
+C Get logical action with next control loop
+        IF(ICLP.EQ.1)ISTF=ISTE
+        IF(IACT.EQ.4)THEN ! SLAVE
+          ISTF=ISTE
+        ELSEIF(IACT.EQ.3)THEN ! NOT
+          ISTF=1-ISTE
+        ELSEIF(IACT.EQ.2.AND.ICLP.GT.1)THEN ! OR (only check from 2nd control loop onwards)
+          IF(ISTE.EQ.1.OR.ISTF.EQ.1)THEN
+            ISTF=1
+          ELSE
+            ISTF=0
+          ENDIF
+        ELSEIF(IACT.EQ.1.AND.ICLP.GT.1)THEN ! AND (only check from 2nd control loop onwards)
+	  IF(ISTE.EQ.1.AND.ISTF.EQ.1)THEN
+	    ISTF=1
+	  ELSE
+	    ISTF=0
+	  ENDIF
+        ELSEIF(IACT.EQ.5)THEN ! MAX (only used for flow)
+          SIGNT=MAX(SIGNT,SIGN)
+        ELSEIF(IACT.EQ.6)THEN ! MIN (only used for flow)
+          SIGNT=MIN(SIGNT,SIGN)
+        ENDIF
+        ILAT=IACT
+        IACT=NINT(GMISCD(igf,IDTYPG,IPERG,ICLP*3+1))
+
+C Debug...
+      if(idebug.eq.3)write(96,*)'loop signal  ',sign
+
+ 5050 CONTINUE
+
+C Debug...
+      if(idebug.eq.3)write(96,*)'final signal ',signt
+
+C Get actuated loop now
+      IDOM=NINT(GMISCD(igf,IDTYPG,IPERG,NCLP*3+1))
+      IALP=NINT(GMISCD(igf,IDTYPG,IPERG,NCLP*3+2))
+
+C Global controller runs after all other domains have been controlled so
+C The variables for daytype and period are not modified.
+C For flow domain
+      IF(IDOM.EQ.1)THEN
+        ICFPD=IALP
+        if(ifan(ICFPd,1).eq.-3)then
+
+C Controlling a connection.
+          IF(ILAT.GE.5)THEN
+            CTLPOS(IFAN(ICFPD,2))=SIGNT
+          ELSE
+            CTLPOS(IFAN(ICFPD,2))=REAL(ISTF)
+          ENDIF
+        else
+
+C controlling a component.
+          do 2 icnn=1,ncnn
+            if((ifan(icfpD,2).eq.ITPCON(ICNN)).and.
+     &      (NDSCNN(ICNN,1).gt.0))then
+              IF(ILAT.GE.5)THEN
+                CTLPOS(IFAN(ICFPD,2))=SIGNT
+              ELSE
+                CTLPOS(IFAN(ICFPD,2))=REAL(ISTF)
+              ENDIF
+            endif
+ 2        continue
+        endif
+      if(idebug.eq.3)write(96,*)'actuating control loop =',ialp
+      if(idebug.eq.3)write(96,*)'actuated loop is currently ',
+     &CTLPOS(IFAN(ICFPD,2))
+      if(idebug.eq.3)write(96,*)' '
+
+C For plant domain
+      ELSEIF(IDOM.EQ.2)THEN
+        ICFPD=ICFP
+        ICFP=IALP
+C Uncomment following line when CLVAR is shifted to a file that is
+C contained in esrumfs/Makefile
+c        CALL CLVAR(SVCTL,IPCMP,IPCVR)
+        ICFP=ICFPD
+        ICFPD=IALP
+
+C Presently only turn plant controls off, there is no provision to turn
+C these on because only absolute value are used for plant controller and
+C fractional values are not used.
+!        IF(ISTF.EQ.0)CDATA(IPCMP,IPCVR)=0.
+! When uncommenting above line also uncomment the C9 common block above
+! and the plant.h include statement
+      ENDIF
       RETURN
       END

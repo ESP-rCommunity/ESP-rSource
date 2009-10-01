@@ -339,7 +339,6 @@ C PFGRSD is used to obtain the supplementary data items required for
 C the plant-side type -6 `Function Generator` sensor.
 
       SUBROUTINE PFGRSD
-#include "plant.h"
 #include "building.h"
 #include "control.h"
       

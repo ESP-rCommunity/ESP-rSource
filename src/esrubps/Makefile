@@ -37,7 +37,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  moistr.o monitor.o montrb.o mstmsc.o mzmrx5.o mzout6.o mzoutp.o nwkrewr.o \
 	  pcloop.o pcomp1.o pcomp2.o pcomp3.o pcomp4.o pcomps.o pcomps1.o \
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
-	  reslib.o rnor.o rwipv.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
+	  reslib.o rnor.o rwipv.o rwroam.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
 	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o trstyp.o \
 	  tscon.o utilf.o aim2_pretimestep.o aim2_timestep.o\
 	  MechVentIN.o CentralVentSys.o \
@@ -367,6 +367,9 @@ rnor.F:
 rwipv.F:
 	rm -f rwipv.F
 	ln -s $(COMdir)/rwipv.F .
+rwroam.F:
+	rm -f rwroam.F
+	ln -s $(COMdir)/rwroam.F .
 rwsbem.F:
 	rm -f rwsbem.F
 	ln -s $(COMdir)/rwsbem.F .
@@ -673,7 +676,7 @@ clean:
 	mzout6.F mzoutp.F nwkrewr.F pcloop.F pcomp1.F pcomp2.F pcomp3.F pcomp4.F pcomps1.F \
 	pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F plt_zone_gain_coupling.F \
 	pmatrx.F pplib.F ppsub.F precal.F \
-	psychro.F rnor.F rwipv.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
+	psychro.F rnor.F rwipv.F rwroam.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F \
 	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \

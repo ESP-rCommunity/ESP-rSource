@@ -109,6 +109,10 @@
 *cfg	/usr/esru/esp-r/training/cellular_pv/cfg/cellular_pv.cfg
 *root	/usr/esru/esp-r/training/cellular_pv
 *item
+*name	... with multiple input single output controller
+*cfg	/usr/esru/esp-r/training/cellular_miso/cfg/cellular_miso.cfg
+*root	/usr/esru/esp-r/training/cellular_miso
+*item
 *name	... with occupant controlled natural ventilation
 *cfg	/usr/esru/esp-r/training/cellular_natv/cfg/cellular_natv.cfg
 *root	/usr/esru/esp-r/training/cellular_natv

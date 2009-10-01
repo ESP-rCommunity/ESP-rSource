@@ -343,7 +343,10 @@ C espriou.h provides currentfile.
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
-
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
       DIMENSION IVA(MCOM),RVA(misc)
       CHARACTER HDG*5,ctldoc*248,LCTLF*72,OUTSTR*124,SSTR*96
       CHARACTER PERST1*14,PERST2*44,PERST3*44,NODID*12,
@@ -583,18 +586,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(NBCDT(II).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &      ' The function day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,78)NBCDT(II)
-  78        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For building control')
+          CALL EDISP(ITRU,' the following day types have been defined')
+          DO 78 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 78       CONTINUE
         ENDIF
 
         nn=nbcdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=NBDAYTYPE
         do 20 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
@@ -655,7 +655,6 @@ C Reporting:
   42          continue
               IF(IER.NE.0)GOTO 99
             ENDIF
-
 
 C Set building-side function generator flag.
             if(ibsn(ii,1).eq.-6)then
@@ -856,18 +855,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(npcdt(ii).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &      ' The loop day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,378)npcdt(ii)
- 378        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For plant control')
+          CALL EDISP(ITRU,' the following day types have been defined')
+          DO 378 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 378       CONTINUE
         ENDIF
 
         nn=npcdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 50 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'validity',IER)
@@ -1092,18 +1088,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(nfcdt(ii).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &    ' The function day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,388)nfcdt(ii)
- 388        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For mass flow network control')
+          CALL EDISP(ITRU,' The following day types have been defined')
+          DO 788 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 788       CONTINUE
         ENDIF
 
         nn=nfcdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 71 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
@@ -1339,18 +1332,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(necdt(ii).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &        ' The day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,578)necdt(ii)
- 578        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For electrical control')
+          CALL EDISP(ITRU,' The following day types have been defined')
+          DO 578 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 578      CONTINUE
         ENDIF
 
         nn=necdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 57 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'validity',IER)
@@ -1510,18 +1500,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(ngcdt(ii).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &        ' The day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,488)ngcdt(ii)
- 488        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For global control')
+          CALL EDISP(ITRU,' The following day types have been defined')
+          DO 478 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 478      CONTINUE
         ENDIF
 
         nn=ngcdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 89 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
@@ -1680,18 +1667,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(NOCDT(II).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &      ' The function day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,'(a,i2,a)')' There have been ',NOCDT(II),
-     &        ' day types defined.'
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For global control')
+          CALL EDISP(ITRU,' The following day types have been defined')
+          DO 678 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 678      CONTINUE
         ENDIF
 
         nn=nocdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 200 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
@@ -2512,7 +2496,8 @@ C Return actuator type. << check to see if any other values allowed >>
         SSTR='undefined law '
         IF(igctyp(II,JJ,KK).eq.1)SSTR= 'Global on-off controller'
         IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global capacity controller'
-        IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global schedule on controller'
+        IF(igctyp(II,JJ,KK).eq.3)SSTR= 'Global schedule on controller'
+        IF(igctyp(II,JJ,KK).eq.5)SSTR= 'Global multisensor'
       ENDIF
       RETURN
 
@@ -3397,7 +3382,7 @@ C Append the sensor msg to the end of lmsg and increment lx position.
 
 C Tell the user about the multi sensor data.
           call SDELIM(lmsg,message,'S',IW)
-C          call edisp248(6,message,80)
+          call edisp248(6,message,80)
 
 C Nicol Occupant resopnse model for control
         elseif(IFCLAW(II,JJ,KK).EQ.4)then
@@ -3437,8 +3422,59 @@ C than -3 allowed for sensor >>.
         SSTR='undefined law '
         IF(igctyp(II,JJ,KK).eq.1)SSTR= 'Global on-off controller'
         IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global capacity controller'
-        IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global schedule on controller'
+        IF(igctyp(II,JJ,KK).eq.3)SSTR= 'Global schedule on controller'
         lmsg='not yet coded for global controls.'
+
+C Multisensing controller
+
+        IF(igctyp(II,JJ,KK).eq.5)THEN
+          SSTR= 'Global multisensor controller'
+          DO 90 I=1,MISC
+            cm(I)=gmiscd(II,JJ,KK,I)
+ 90       CONTINUE
+          nclp=(nint(cm(1)))/3
+          LMSG='Currently sensing'
+          DO 5050 ICLP=1,NCLP
+            IF(NINT(CM(ICLP*3-1)).EQ.1)THEN
+              MSG2=' mass flow loop #'
+            ELSEIF(NINT(CM(ICLP*3-1)).EQ.2)THEN
+              MSG2=' plant loop #'
+            ENDIF
+            MSG1=' '
+            IF(ICLP.NE.NCLP.OR.ICLP.EQ.1)THEN
+              IADR=NINT(CM(ICLP*3+1))
+              IF(IADR.EQ.1)THEN
+                msg1=' AND'
+              ELSEIF(IADR.EQ.2)THEN
+                msg1=' OR'
+              ELSEIF(IADR.EQ.3)THEN
+                msg1=' acting as NOT and'
+              ELSEIF(IADR.EQ.4)THEN
+                msg1=' acting as SLAVE and'
+              ELSEIF(IADR.EQ.5)THEN
+                msg1=' acting as MAX and'
+              ELSEIF(IADR.EQ.6)THEN
+                msg1=' acting as MIN and'
+              ENDIF
+            ENDIF
+            NLPS=NINT(CM(ICLP*3))
+            LN1=LNBLNK(MSG1)
+            LN2=LNBLNK(MSG2)
+            LN=LNBLNK(LMSG)
+            WRITE(LMSG,'(3A,i4,2a)')LMSG(1:LN),MSG2(1:LN2),' ',
+     &      nlps,' ',MSG1(1:LN1)
+ 5050     CONTINUE
+	  IF(NINT(CM(NCLP*3+1)).EQ.1)THEN
+	    MSG2='Actuates massflow loop #'
+	  ELSEIF(NINT(CM(NCLP*3+1)).EQ.2)THEN
+	    MSG2='Actuates plant loop #'
+	  ENDIF
+          IALP=NINT(CM(NCLP*3+2))
+          LN=LNBLNK(LMSG)
+          LN2=LNBLNK(MSG2)
+          WRITE(LMSG,'(4A,I4)')LMSG(1:LN),'. ',MSG2(1:LN2),' ',IALP
+        ENDIF
+        call SDELIM(lmsg,message,'S',IW)
         return
       ENDIF
 
@@ -3706,10 +3742,8 @@ C Print out first 9 miscellaneous data if applicable.
      &        outsc(1:lnblnk(outsc))
           CALL EDISP(ITRU,outs)
 
-C For zone & flow controls list out the verbose decoding of the misc items.
-          if(icfoc.eq.0)then
-            call edisp248(itru,ltmp,90)
-          elseif(icfoc.eq.2)then
+C For zone, flow and global controls list out the verbose decoding of the misc items.
+          if(icfoc.eq.0.or.icfoc.eq.2.or.icfoc.eq.3)then
             call edisp248(itru,ltmp,90)
           endif
         elseif(NITEMS.eq.0)then
@@ -4224,7 +4258,6 @@ C control loops for legality.
 
       common/OUTIN/IUOUT,IUIN
       common/cctl/icascf(mcom)
-
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
@@ -4419,7 +4452,6 @@ C Actuation on zone under consideration.
 
 C Actuation is on a zone node.
    14 if(ian1.ne.icfz)goto 1004
-   
 C To avoid classes with optical controls additional logic added. The initial code was:
 C  131 if(ian2.lt.0.or.ian2.gt.nzsur(ian1))goto 1005   
   131 if((ian2.lt.0.and.((nof.eq.0).or.(ian1.ne.-5))).or.
@@ -4445,6 +4477,7 @@ c actuation is on a mass flow connection.
 
 c actuation is on a mass flow component.
    25 if((ian2.lt.0).or.((ian2.gt.ncnn).and.(ian2.gt.ncmp)))goto 1005
+
    20 continue
       endif         ! <- matches ' if ( nbp .gt. 0 ) then' ...
    10 continue

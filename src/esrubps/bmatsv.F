@@ -46,6 +46,7 @@ C HOT3000: Fuel cell.
 #include "bc_data.h"
 #include "lookup_data.h"
 #include "control.h"
+#include "roam.h"
 
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
@@ -243,6 +244,8 @@ C    BLIND,FIXED  BLIND,MOVE (??explicit blinds)
 C    otherwise  -,- )
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      COMMON/TRANSO/LTROR,PAZIO(MCOM,MS)
 
 C SHOCC: iblnd - SHOCC blinds corresponding to ESP-r TMCs:
 C   0, no; else, a f77 index [1,~] to access SHOCC zone blind data structure
@@ -1213,6 +1216,34 @@ C Remember the rotation.
                   zrotp(icomp)=OBROT
                 endif
               endif
+
+C If roaming is activated then rotate the zone if applicable. Rotation
+C using roaming is considered to be better than using temporal
+C definition because only azimuth angles for surfaces will change and
+C file read/write and various calls to subroutines will not be performed
+C as is the case with tdf (above)
+              IF(IROAM.EQ.1)THEN
+                HOUR=BTIMEF
+                S_TIME=REAL(IDYP)+HOUR/24.0        ! Calculate simulation time
+                DO 130 IPDR=1,NPDR
+
+C Calculate roaming day of year
+                  IRoamD=LDYS(IPDR)
+                  IRoamM=LMTS(IPDR)
+                  CALL EDAY(IRoamD,IRoamM,IYDNRoam)
+                  RTIME=REAL(IYDNRoam)+XLHRS(IPDR)/24.0 ! Calculate roaming time 
+                  IF(S_TIME.LT.RTIME)THEN ! Roaming not started yet
+                    CONTINUE
+                  ELSEIF(S_TIME.GE.RTIME)THEN 
+                    DO 131 ISurf=1,MS
+                      PAZI(ICOMP,ISurf)=PAZIO(ICOMP,ISurf)+LORNT(IPDR)
+                      IF(PAZI(ICOMP,ISurf).GT.360.)
+     &                PAZI(ICOMP,ISurf)=PAZI(ICOMP,ISurf)-360.
+                      LTROR=LORNT(IPDR)
+ 131                CONTINUE
+                  ENDIF
+ 130            CONTINUE
+              ENDIF
 
 C For 1D zone model.
               IF(INDX3.EQ.1)THEN

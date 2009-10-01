@@ -11,7 +11,7 @@ C Re-compile all control-related modules if this file is altered.
       PARAMETER (MCF=28)
       INTEGER MCDP ! Max. periods per day
       PARAMETER (MCDP=8)
-      INTEGER MISCC ! Max. periods per day
+      INTEGER MISCC ! Max. miscellaneous data items
       PARAMETER (MISCC=41)
 
 C Domain specific control descriptions
