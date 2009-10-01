@@ -2509,7 +2509,9 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
             endif
 
 C If g or h air gap and version 1.2 then assign DRAIR
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            if(matarrayindex.eq.0)then
+              continue
+	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)

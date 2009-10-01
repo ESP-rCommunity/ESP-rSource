@@ -274,7 +274,7 @@ C If g or h air gap and version 1.2 then assign DRAIR
 C And check the matarray index in case this is a gap and assign values.
               if(closemat1.or.closemat2)then
                 matarrayindex=IPRMAT(I,IL)
-                if(matarrayindex.ne.0)then
+                if(matarrayindex.gt.0)then
 
 C If g or h air gap and version 1.2 then assign DRAIR
 	          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
@@ -626,7 +626,7 @@ C Find a matching matname.
         do 44 imt=1,matdbitems
           if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
             write(6,*) imt,' name x: match ',PNAM(1:lnam),' ',
-     &        matname(imt)(1:lnam)
+     &        matname(imt)(1:lnblnk(matname(imt)))
             matarrayindex=imt
             return
           endif
@@ -660,7 +660,7 @@ C have a matching string (but the legacy index is correct non-the less).
       do 47 imt=1,matdbitems
         if(matlegindex(imt).eq.ileghope)then
           write(6,*) imt,ileghope,matlegindex(imt),' index match ',
-     &      PNAM(1:lnam),' ',matname(imt)(1:lnam)
+     &      PNAM(1:lnam),' ',matname(imt)(1:lnblnk(matname(imt)))
           matarrayindex=imt
           return
         endif
@@ -764,8 +764,10 @@ C Make up NAM as combination of matnam and matdoc.
             endif
 
 C Also check if it is a gap.
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h')then
+            if(matarrayindex.eq.0)then
+              continue
+            elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &             matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
                 DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
@@ -773,12 +775,6 @@ C Also check if it is a gap.
                 RT=RT+DRAIR(IFOC,IL,1)  ! while we know
                 RSI=DRAIR(IFOC,IL,1)
               endif
-            else
-
-C << a place to establish RT and RSI for non-gaps if we
-C << can figure out how not to double count for the case
-C << of IPR zero
-
             endif
           else
 
@@ -952,7 +948,9 @@ C Make up NAM as combination of matnam and matdoc.
             endif
 
 C Also check if it is a gap.
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            if(matarrayindex.eq.0)then
+              continue
+	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
@@ -1220,7 +1218,7 @@ C of DRAIR.
 C Re-establish data.
             if(closemat1.or.closemat2)then
               matarrayindex=IPRMAT(I,IL)
-              if(matarrayindex.ne.0)then
+              if(matarrayindex.gt.0)then
                 DBCON=matdbcon(matarrayindex)
                 DBDEN=matdbden(matarrayindex)
                 DBSHT=matdbsht(matarrayindex)
@@ -1247,7 +1245,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
                   DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
                   E=0.99; A=0.99; DRV=1.0
                   TITL='GAPS'; NAM='AIR'
-                else
+                elseif(matarrayindex.gt.0)then
                   DBCON=matdbcon(matarrayindex)
                   DBDEN=matdbden(matarrayindex)
                   DBSHT=matdbsht(matarrayindex)
