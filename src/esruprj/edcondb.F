@@ -2848,7 +2848,7 @@ C Take the legacy index and assign it to this layer.
             IPR(IFOC,ILN)=IWHICH
             if(iw.eq.2)LAYERS(IFOC)=ILN
 
-C Make up LAYDESC as combination of matnam and matdoc based on
+C Make up LAYDESC and PNAM as combination of matnam and matdoc based on
 C the newly selected material. This is necessary so that other
 C code can recover the details of a -99 item.
             if(closemat1.or.closemat2)then
@@ -2858,6 +2858,10 @@ C code can recover the details of a -99 item.
                 write(LAYDESC(IFOC,ILN),'(3a)') 
      &            matname(matarrayindex)(1:lnam),' : ',
      &            matdoc(matarrayindex)(1:lfordoc)
+                write(PNAM(IFOC),'(3a)')
+     &            matname(matarrayindex)(1:lnam),' : ',
+     &            matdoc(matarrayindex)(1:lfordoc)
+                IPRMAT(IFOC,ILN)=matarrayindex  ! update array index for this layer as well
               endif
             endif
 
@@ -3245,6 +3249,8 @@ C reference.
             continue
           endif
         else
+
+C Allow user to type in legacy index. If possible recover the material array index.
           IWHICH=IPR(IFOC,ILED-8)
           H(1)='Each item in the materials database has a'
           H(2)='reference number.'
@@ -3262,12 +3268,19 @@ C reference.
             ILED=-1
             GOTO 3
           endif 
+          if(closemat1.or.closemat2)then
+            if(IWHICH.ge.0)then
+              matarrayindex=mathash(IWHICH)  ! find matching array index
+              IPRMAT(IFOC,ILED-8)=matarrayindex
+            endif
+          endif
         endif
         IPR(IFOC,ILED-8)=IWHICH
 
-C Make up LAYDESC as combination of matnam and matdoc based on
+C Make up LAYDESC and PNAM as combination of matnam and matdoc based on
 C the newly selected material. This is necessary so that other
-C code can recover the details of a -99 item.
+C code can recover the details of a -99 item and to update the
+C menu display.
         if(closemat1.or.closemat2)then
 	  if(matarrayindex.gt.0)then
             lnam=lnblnk(matname(matarrayindex))
@@ -3275,6 +3288,10 @@ C code can recover the details of a -99 item.
             write(LAYDESC(IFOC,ILED-8),'(3a)') 
      &        matname(matarrayindex)(1:lnam),' : ',
      &        matdoc(matarrayindex)(1:lfordoc)
+            write(PNAM(IFOC),'(3a)')
+     &        matname(matarrayindex)(1:lnam),' : ',
+     &        matdoc(matarrayindex)(1:lfordoc)
+            IPRMAT(IFOC,ILED-8)=matarrayindex ! update array index for this layer
           endif
         endif
 
@@ -3366,6 +3383,7 @@ C material is a [g] or [h] and might have air gap values.
      &    1.0,'W',300.0,'W',100.0,'layer thickness mm',IER,3)
         DTHK(IFOC,ILED-8)=VAL*0.001
         moddb = .true.
+        goto 2   ! re-establish the menu strings
       else
         ILED=-1
         GOTO 3
