@@ -2004,7 +2004,7 @@ C.......RADIATION HEAT TRANSFER COEFFICIENT
 C     &         ZHRS(iZone,iSurface)/(TFS(iZone,iSurface)-trsum), ! <= problems with DT approx. zero !
 C          Incropera et. al., page 10:
      &        EI(iZone,iSurface)*SBC*
-     &            (TFS(iZone,iSurface)+trsum+2*273.15)*
+     &            (TFS(iZone,iSurface)+trsum+2.0*273.15)*
      &            ((TFS(iZone,iSurface)+273.15)**2+(trsum+273.15)**2),
      &         H3K_rep_NAME(1:iH3K_NameLen)//'/HRi',
      &         'units', '(W/(m2 K))',
@@ -3863,14 +3863,6 @@ C Connections: fixed input data
       Real          HGTNE ! - height of -ve linkage point relative to NODNE (m)
       integer     ITPCON ! - number of linking fluid flow component
       integer     NDSCNN ! - connection level component supplementary node numbers
-      
-C Contaminants (see esrumfs/cntmnt.F):
-      COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
-      integer NCONTM, NOCNTM ! Number of contaminants, ???
-      character*12 CONTMNAM    ! Contaminant name
-
-      COMMON/CONTM8/CCONC(MNOD,MCONTM)
-      real CCONC  ! Concentration at each node
 
 C Output data
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
@@ -4086,7 +4078,7 @@ C.........Loop through all interconnections in a flow network
                if (b_noveloc .eqv. .false.) THEN
         ! Now get density of "sending" node. If flw1(jj) is negative, use density of 
         ! node "i_neg". Densit() returns density in kg/m3
-                  if (FLW1(jj) .lt. 0) THEN
+                  if (FLW1(jj) .lt. 0.0) THEN
                     rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
                   Else
                     rhon=DENSIT(NDFLD(ii),TNOD(ii))

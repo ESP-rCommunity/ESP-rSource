@@ -3621,14 +3621,6 @@ C      COMMON/BTIME/BTIMEP,BTIMEF
 C      real btimep,btimef
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-C      common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
-C     &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
-c     &      transBB_V(mcom,ms),transD_V(mcom,ms),refl_V(mcom,ms),
-C     &      issur_self_shd(mcom,ms), proang_s(mcom,mcfc,ms),
-C     &      qtmca_ext(mcom,ms,mn)
-C      real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
-C      real transBB_V,transD_V,refl_V
-C      real issur_self_shd,proang_s,qtmca_ext
 
       integer icomp,icfctp!,isur,is_shd
 C      real proang,tfa_old
@@ -3718,16 +3710,6 @@ C ********************************************************************
 
       COMMON/PVANG/fInc_angle(MS)
       real fInc_angle
-
-      common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
-     &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
-     &      transBB_V(mcom,ms),transD_V(mcom,ms),refl_V(mcom,ms),
-     &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
-     &      qtmca_ext(mcom,ms,mn)
-      real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
-      real transBB_V,transD_V,refl_V
-      real proang_s,qtmca_ext
-      integer issur_self_shd
 
       integer i,j,k,l,nn,nc,ne,icfctp,icomp,ivblayr
 
@@ -4486,15 +4468,6 @@ C ********************************************************************
 
       COMMON/PVANG/fInc_angle(MS)
       real fInc_angle
-
-      common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
-     &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
-     &      transBB_V(mcom,ms),transD_V(mcom,ms),refl_V(mcom,ms),
-     &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
-     &      qtmca_ext(mcom,ms,mn)
-      real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
-      real transBB_V,transD_V,refl_V
-      real issur_self_shd,proang_s,qtmca_ext
 
       real RGap1, RGap2, Rsi, Rse, SBOLTZ, T0
       
