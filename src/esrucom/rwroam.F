@@ -42,7 +42,7 @@ C espriou.h provides currentfile.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       CHARACTER OUTSTR*124,outs*124
-      INTEGER IDEBUG,IER,ILOC,IUF,IDEL,IPDR,IFIL,ND,K
+      INTEGER IDEBUG,IER,ILOC,IUF,IDEL,IPDR,IFIL,ND,K,ISTAT
       LOGICAL GOON
 
 C Read in file and initialise variables
@@ -67,6 +67,7 @@ C Read version number (currently 0.1)
 C Read location information
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'Roaming file',IER)
       IF(OUTSTR(1:9).NE.'*location')IER=1
+
       DO WHILE(OUTSTR(1:13).NE.'*end_location')
         IF(GOON)THEN
           CALL STRIPC(IUF,OUTSTR,99,ND,1,'Roaming file',IER)
@@ -74,8 +75,8 @@ C Read location information
         ENDIF
         ILOC=ILOC+1
         K=0
-        CALL EGETWR(OUTSTR,K,LOCLT(ILOC),-90.,90.,'W','latitude',IER)
-        CALL EGETWR(OUTSTR,K,LOCLG(ILOC),-180.,180.,'W','longitude',IER)
+        CALL EGETWR(OUTSTR,K,XLOCLT(ILOC),-90.,90.,'W','latitude',IER)
+        CALL EGETWR(OUTSTR,K,XLOCLG(ILOC),-180.,180.,'W','longtude',IER)
         CALL EGETWI(OUTSTR,K,IDEL,0,0,'-','location #',IER)
         CALL EGETRM(OUTSTR,K,LOCRM(ILOC),'W','location name',IER)
         NLOC=ILOC
@@ -93,7 +94,7 @@ C Read start time of each period, location and day type
         ENDIF
         IPDR=IPDR+1
         K=0
-        CALL EGETWI(OUTSTR,K,LHRS(IPDR),0,0,'-','start hour',IER)
+        CALL EGETWR(OUTSTR,K,XLHRS(IPDR),0.,0.,'-','start hour',IER)
         CALL EGETWI(OUTSTR,K,LDYS(IPDR),0,0,'-','start hour',IER)
         CALL EGETWI(OUTSTR,K,LMTS(IPDR),0,0,'-','start hour',IER)
         CALL EGETWI(OUTSTR,K,LORNT(IPDR),0,0,'-','start hour',IER)
@@ -110,14 +111,14 @@ C Debug...
         WRITE(outs,*)'Location Latitude Longitude'
         call edisp(iuout,outs)
         DO 1000 ILOC=1,NLOC
-          WRITE(outs,*)LOCRM(ILOC),LOCLT(ILOC),LOCLG(ILOC)
+          WRITE(outs,*)LOCRM(ILOC),XLOCLT(ILOC),XLOCLG(ILOC)
           call edisp(iuout,outs)
  1000   CONTINUE
         WRITE(outs,*)
      &    'start hr, dy, mth, orientation, day type, location'
         call edisp(iuout,outs)
         DO 1100 IPDR=1,NPDR
-          WRITE(outs,*)LHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
+          WRITE(outs,*)XLHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
      &    LDTP(IPDR),LLOCT(IPDR)
           call edisp(iuout,outs)
  1100   CONTINUE
@@ -130,6 +131,7 @@ C Error handling (still to be done)
         write(outs,*)'returning ...'
         call edisp(iuout,outs)
       ENDIF
+      CALL ERPFREE(IUF,ISTAT)
       RETURN
       END
 
@@ -153,56 +155,58 @@ C Set output channel
       CALL EFOPSEQ(IUF,LROAM,3,IER)
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'*version 0.1'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'*location information # latitude, longitude, location'
+     &'*location information # '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# Enter your locations starting with latitude and longitude'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# of the locations. Then index number (1,2,3...) & finally'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# the name of the location. Eight sample locations follow next'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# these should be replaced by your own. You can input a maximum'
+     &'# '
       WRITE(IUF,'(A,1X,I4,1X,A)',IOSTAT=IOS,ERR=1)
-     &'# of, ',MLOC,' locations.'
-      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'25.8 -80.3 1 Miami, Florida'
-      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'19.5 -72.0 2 Labadee, Haiti'
+     &'# , ',MLOC,' '
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'0.0 -0.0 1 AAA'
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'0.0 -0.0 2 BBB'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'18.5 -78.0 3 Montego Bay, Jamaica'
+     &'0.0 -0.0 3 CCC'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'19.5 -81.5 4 George Town, Grand Cayman'
-      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'20.5 -87.0 5 Cozumel, Mexico'
+     &'0.0 -0.0 4 DDD'
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'0.0 -0.0 5 EEE'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'18.5 -66.0 6 San Juan, Puerto Rico'
+     &'0.0 -0.0 6 FFF'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'17.5 -63.0 7 Philipsburg, St. Maartin'
-      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'19.5 -72.0 8 Labadee, Haiti'
+     &'0.0 -0.0 7 GGG'
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'0.0 -0.0 8 HHH'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'*end_location information'
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=1)'*start hour, day, month, ',
-     &'orientation, day type, location (0 for cruising)'
+     &'orientation, day type, '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# You should now enter the start hour, start day, start month,'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# orientation, day type and location index for each period'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# Orientation is bearing of the model, clockwise from North'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# Day type is an index that indicates which day type to use for'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# that period. These day types and associated profiles are taken'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# from the operations files definitions for each zone'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# Location index is the index (1,2,3...) as defined in the '
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# previous section of this file. 0 should be entered if the '
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# model is moving between two locations for that time.'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# The following seven lines indicate a sample cruising route.'
+     &'# '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# Delete these lines to add your own. You can input a maximum'
+     &'# '
       WRITE(IUF,'(A,1X,I4,1X,A)',IOSTAT=IOS,ERR=1)
-     &'# of, ',MPDR,' periods.'
+     &'# , ',MPDR,' '
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
+     &'# Finally you may delete all lines begining with # (optional)'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'1 1 3 0 1 3'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'18 1 3 0 1 0'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'8 2 3 0 1 4'
@@ -212,7 +216,11 @@ C Set output channel
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'7 5 3 0 1 1'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)'*end_temporal information'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
-     &'# Finally you may delete all lines begining with # (optional)'
+     &'##################### IMPORTANT #######################'
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
+     &'# '
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=1)
+     &'# '
 
       RETURN
 

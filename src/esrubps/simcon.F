@@ -687,13 +687,10 @@ C Common for electrical file
       COMMON/GR1D04/GAM,RGAM
       COMMON/GRSD100/IndxSt
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
-      COMMON/PREC8/SLAT,SLON
       COMMON/AIRWAT/WATERZ(MCOM),WATCAP
       COMMON/VERSOL/ipkzon(mzs),ipksf(mzs),ivsolfil,vsol,VTSOL,vsnam
       common/filep/ifil
       COMMON/Vld30/Tinitial
-
-
 
 C Treatment of solar radiation data in weather file
 C ESP-r operates on hourly-centered data. That is, the amount of solar
@@ -2186,7 +2183,6 @@ C ICNT    - counts trace output for page numbering purposes
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
-      COMMON/PREC8/SLAT,SLON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)

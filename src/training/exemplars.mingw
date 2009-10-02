@@ -100,6 +100,10 @@
 *cfg	C:\Esru\esp-r\training\cellular_pv\cfg\cellular_pv.cfg
 *root	C:\Esru\esp-r\training\cellular_pv
 *item
+*name	... with multiple input single output controller
+*cfg	C:\Esru\esp-r\training\cellular_miso\cfg\cellular_miso.cfg
+*root	C:\Esru\esp-r\training\cellular_miso
+*item
 *name	two offices and passage with occupant controlled nat vent
 *cfg	C:\Esru\esp-r\training\cellular_natv\cfg\cellular_natv.cfg
 *root	C:\Esru\esp-r\training\cellular_natv

@@ -180,7 +180,8 @@ C Begin with high level menu.
       ITEMS(23)=                '  ___________________________    '
       WRITE(ITEMS(24),'(a,i3)') 's define images: ',noimg
       ITEMS(25)=                't UK NCM specifications          '
-      ITEMS(26)=                'u transient orientation          '
+c      ITEMS(26)=                'u transient orientation          '
+      ITEMS(26)=                '          '
       ITEMS(27)=                ' _____________________________ '
       ITEMS(28)=                '? help                           '
       ITEMS(29)=                '- exit this menu                 '
@@ -938,7 +939,8 @@ C Enter the definitions for UK NCM related data.
       ELSEIF(INO.eq.26)then
 
 C Changing orientation as a function of time.
-        CALL ROAMING
+C        CALL ROAMING
+        CONTINUE
       ELSE
         GOTO 3
       ENDIF
@@ -970,18 +972,18 @@ C Initialise variables
       DOK=.TRUE.
 
 C Help message
-      H(1) ='This facility is used to change orientation of the model'
-      H(2) ='as a function of time. For this purpose a roaming file is'
-      H(3) ='required. This file includes information about locations'
-      H(4) ='that a model will exist at and the times of validity.'
+      H(1) =' '
+      H(2) =' '
+      H(3) =' '
+      H(4) =' '
       H(5) =' '
-      H(6) ='When defining the file for the first time in a model the '
-      H(7) ='user should generate a template (option to do this follows'
-      H(8) ='this message) and use a text editor to add information to '
-      H(9) ='the template. If you have previously defined a roaming '
-      H(10)='file then you can just view its contents within Project'
-      H(11)='Manager. All editing should be done by a third party text'
-      H(12)='editor.'
+      H(6) =' '
+      H(7) =' '
+      H(8) =' '
+      H(9) =' '
+      H(10)=' '
+      H(11)=' '
+      H(12)=' '
       H(13)=' '
       H(14)=' '
       H(15)=' '
@@ -1022,7 +1024,7 @@ C Display file contents
      &  'Location                      Latitude Longitude')
         DO 1000 ILOC=1,NLOC
           WRITE(OUTS,'(A30,1X,F5.1,5X,F5.1)')
-     &    LOCRM(ILOC),LOCLT(ILOC),LOCLG(ILOC)
+     &    LOCRM(ILOC),XLOCLT(ILOC),XLOCLG(ILOC)
           CALL EDISP(IUOUT,OUTS)
  1000   CONTINUE
         CALL ASKOK('View cruise schedule?',' ',OK,dok,19)
@@ -1035,8 +1037,8 @@ C Display file contents
             ELSE
               TEMPSTR=LOCRM(LLOCT(IPDR))
             ENDIF
-            WRITE(OUTS,'(5X,I3,1X,I3,2X,I3,7X,I4,5X,I2,7X,A30)')
-     &      LHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
+            WRITE(OUTS,'(5X,F3.0,1X,I3,2X,I3,7X,I4,5X,I2,7X,A30)')
+     &      XLHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
      &      LDTP(IPDR),TEMPSTR
           CALL EDISP(IUOUT,OUTS)
  1100     CONTINUE
@@ -2742,14 +2744,14 @@ C If a long list include page facility text.
 
 C Help text for this menu.
       H(1)='This facilitiy sets up and manages a calendar of day'
-      H(2)='types which (can eventually) be associated with zone'
-      H(3)='casual gains, infiltration schedues, zone controls.'
+      H(2)='types which can be associated with zone casual gains,'
+      H(3)='infiltration schedues and controls.'
       H(4)=' '
-      H(5)='This facility is work-in-progress and the data saved'
-      H(6)='within the configuration file.is not yet used by zone '
-      H(7)='operations'
-      H(8)=' '
-      H(9)='Does not yet hold standard calendars for use by projects'
+      H(5)=' '
+      H(6)=' '
+      H(7)=' '
+      H(8)='This facility is still being developed further and '
+      H(9)='does not yet hold standard calendars for use by projects'
       H(10)='nor does it access typical patterns for differenct '
       H(11)='countries. '
 
@@ -2888,6 +2890,14 @@ C Edit calendar day tag and name.
       ELSEIF(IVERT.EQ.MVERT)THEN
         if(modify.and.(.NOT.browse))then
 
+C Update calendar day types
+          DO 21 IB=1,NBDAYTYPE
+            NBCALDAYS(IB)=0
+ 21       CONTINUE
+          DO 22 IB=1,365
+            NBCALDAYS(ICALENDER(IB))=NBCALDAYS(ICALENDER(IB))+1
+ 22       CONTINUE
+
 C update the model if not browsing 
           CALL EMKCFG('-',IER)
         endif
@@ -2948,30 +2958,59 @@ C user can select one or more.
         IX=1
         CALL EPICKS(IX,IDVALS,' ',' Available day types:',
      &    52,nbdaytype,citem,'available day types',IER,2)
+        h(1)='Days can be selected "one by one" and you can associate'
+        h(2)='any day type with any day. A faster method is to follow'
+        h(3)='a pattern. Here you will first be asked for dates during'
+        h(4)='which the new day type is to be added (called relevant'
+        h(5)='dates) The selected day type will then be added to every'
+        h(6)='Nth day in the relevant dates starting from the first '
+        h(7)='relevant date e.g. N=7 for weekly, N=1 for all days'
         if(ix.ne.0)then
-          idt=idvals(1)
-          do 78 ld=1,365
-            call stdate(iyear,ld,DS,DS1)
-            WRITE(clist(ld),'(3a)') DS1,'  ',
-     &        calentag(icalender(ld))
-  78      continue
-          CALL EPMENSV
-          ixd=365
-          CALL EPICKS(ixd,ixdvals,' ',' Days in the year:',
-     &      52,365,clist,'available days',IER,2)
-          CALL EPMENRC
-          if(ixd.ne.0)then
-            do 79 idayloop=1,ixd
-              ifoc=ixdvals(idayloop)
-              call stdate(iyear,ifoc,DS,DS1)
-              icalender(ifoc)=idt
-              nbcaldays(idt)=nbcaldays(idt) + 1
-              write(outs,*) 'Revised day: ',ifoc,' ',DS1,' ',
-     &          icalender(ifoc),' ',calendayname(icalender(ifoc))
-              call edisp(iuout,outs)
-  79        continue
-            modify=.true.
-          endif
+          IHDT=0
+          CALL EASKABC('How to add day types (see help)?',' ',
+     &    'One by one','Follow pattern','cancel',IHDT,7)
+          IF(IHDT.EQ.1)THEN
+            idt=idvals(1)
+            do 78 ld=1,365
+              call stdate(iyear,ld,DS,DS1)
+              WRITE(clist(ld),'(3a)') DS1,'  ',
+     &          calentag(icalender(ld))
+  78        continue
+            CALL EPMENSV
+            ixd=365
+            CALL EPICKS(ixd,ixdvals,' ',' Days in the year:',
+     &        52,365,clist,'available days',IER,7)
+            CALL EPMENRC
+            if(ixd.ne.0)then
+              do 79 idayloop=1,ixd
+                ifoc=ixdvals(idayloop)
+                call stdate(iyear,ifoc,DS,DS1)
+                icalender(ifoc)=idt
+                nbcaldays(idt)=nbcaldays(idt) + 1
+                write(outs,*) 'Revised day: ',ifoc,' ',DS1,' ',
+     &            icalender(ifoc),' ',calendayname(icalender(ifoc))
+                call edisp(iuout,outs)
+  79          continue
+              modify=.true.
+            endif
+          ELSEIF(IHDT.EQ.2)THEN
+            ISDS=1
+            ISDF=365
+            IFRQ=1
+            call eAskPer('Dates during which to add new day type',
+     &      isds,isdf,ifday,ier)
+
+C Regenerate help string that is clobbered by call to easkper
+        h(1)='Days can be selected "one by one" and you can associate'
+        h(2)='any day type with any day. A faster method is to follow'
+            CALL EASKI(IFRQ,
+     &      ' Enter number of days to repeat pattern after ',
+     &      ' E.g. 7=weekly, 30=monthly, 1=daily ',
+     &      1,'F',30,'F',1,'frequency ',IERI,7)
+            DO 532 IDTT=ISDS,ISDF,IFRQ
+              ICALENDER(IDTT)=idvals(1)
+ 532        CONTINUE
+          ENDIF
         endif
         CALL EPMENRC
       ELSEIF(IVERT.EQ.(MVERT-4))THEN

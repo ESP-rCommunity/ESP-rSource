@@ -182,6 +182,7 @@ c           convection coefficients.
       COMMON/NORMV/XSUM(MS),YSUM(MS),ZSUM(MS)
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      COMMON/TRANSO/LTROR,PAZIO(MCOM,MS)
       COMMON/PREC1I/APRAT(MCOM,MS),HEIGHT(MCOM,MS)
       COMMON/PREC3I/CHARDM(MCOM,MS)
       logical close
@@ -189,29 +190,29 @@ c           convection coefficients.
       PI = 4.0 * ATAN(1.0)
       R=PI/180.
       DO 10 I=1,NSUR
-      PAZI(ICOMP,I)=90.0
-      IF(XSUM(I).LT.0.0)PAZI(ICOMP,I)=-90.0
-      call eclose(XSUM(I),0.0,0.0001,close)
-      IF(close)PAZI(ICOMP,I)=0.0
-      PELV(ICOMP,I)=90.0
-      IF(ZSUM(I).LT.0.0)PELV(ICOMP,I)=-90.0
-      call eclose(ZSUM(I),0.0,0.0001,close)
-      IF(close)PELV(ICOMP,I)=0.0
-      call eclose(YSUM(I),0.0,0.0001,close)
-      if(close)goto 1
-      AZI=ATAN2(XSUM(I),YSUM(I))
-      PAZI(ICOMP,I)=AZI/R
-    1 SRX2Y2=SQRT(XSUM(I)*XSUM(I)+YSUM(I)*YSUM(I))
-      IF(PAZI(ICOMP,I).LT.0.)PAZI(ICOMP,I)=PAZI(ICOMP,I)+360.
-      call eclose(SRX2Y2,0.00,0.001,close)
-      IF(close)goto 2
-      ELV=ATAN2(ZSUM(I),SRX2Y2)
-      PELV(ICOMP,I)=ELV/R
-    2 CONTINUE
-
-      CHARDM(ICOMP,I)=APRAT(ICOMP,I)
-      IF(PELV(ICOMP,I).LE.45..AND.PELV(ICOMP,I).GE.
-     &-45.)CHARDM(ICOMP,I)=HEIGHT(ICOMP,I)
+        PAZI(ICOMP,I)=90.0
+        IF(XSUM(I).LT.0.0)PAZI(ICOMP,I)=-90.0
+        call eclose(XSUM(I),0.0,0.0001,close)
+        IF(close)PAZI(ICOMP,I)=0.0
+        PELV(ICOMP,I)=90.0
+        IF(ZSUM(I).LT.0.0)PELV(ICOMP,I)=-90.0
+        call eclose(ZSUM(I),0.0,0.0001,close)
+        IF(close)PELV(ICOMP,I)=0.0
+        call eclose(YSUM(I),0.0,0.0001,close)
+        if(close)goto 1
+        AZI=ATAN2(XSUM(I),YSUM(I))
+        PAZI(ICOMP,I)=AZI/R
+    1   SRX2Y2=SQRT(XSUM(I)*XSUM(I)+YSUM(I)*YSUM(I))
+        IF(PAZI(ICOMP,I).LT.0.)PAZI(ICOMP,I)=PAZI(ICOMP,I)+360.
+        call eclose(SRX2Y2,0.00,0.001,close)
+        IF(close)goto 2
+        ELV=ATAN2(ZSUM(I),SRX2Y2)
+        PELV(ICOMP,I)=ELV/R
+    2   CONTINUE
+        CHARDM(ICOMP,I)=APRAT(ICOMP,I)
+        IF(PELV(ICOMP,I).LE.45..AND.PELV(ICOMP,I).GE.
+     &  -45.)CHARDM(ICOMP,I)=HEIGHT(ICOMP,I)
+        PAZIO(ICOMP,I)=PAZI(ICOMP,I)
    10 CONTINUE
 
       RETURN
@@ -794,6 +795,7 @@ c           surface respectively
 #include "building.h"
 #include "site.h"
 #include "geometry.h"
+#include "roam.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -831,46 +833,48 @@ c           surface respectively
    20 CONTINUE
 
 c Trace output ?
-      IF(ITRACE(14).EQ.1.AND.IZNTRC(ICOMP).EQ.1)GOTO 5555
-      GOTO 9999
- 5555 write(outs,'(A,I4,a,i3,2x,a)')' Subroutine MZMISC Trace output',
+      IF(ITRACE(14).EQ.1.AND.IZNTRC(ICOMP).EQ.1)THEN
+        write(outs,'(A,I4,a,i3,2x,a)')' Subroutine MZMISC Trace output',
      &  ICNT,' Zone ',ICOMP,zname(ICOMP)
-      call edisp(itu,outs)
-      ICNT=ICNT+1
-      call edisp(itu,' ')
-      call edisp(itu,outs)
-      write(outs,99941)SLAT,SLON
-99941 format('Located at',F5.1,' latitude and ',F5.1,' longitude.')
-      call edisp(itu,outs)
-      write(outs,9993)NCONST(ICOMP)
- 9993 format(' No.of multilayered constructions = ',I2)
-      call edisp(itu,outs)
-      call edisp(itu,' Constr. No.of    No.of    Air Gap')
-      call edisp(itu,'         Elements Air Gaps Position')
-      NN=NCONST(ICOMP)
-      DO 9992 I=1,NN
-      I1=NELTS(ICOMP,I)
-      I2=NGAPS(ICOMP,I)
-      IF(I2.GT.0)goto 9991
-      write(outs,9990)I,I1,I2
- 9990 format(I5,I10,I9)
-      call edisp(itu,outs)
-      goto 9992
- 9991 write(outs,9989)I,I1,I2,(NPGAP(ICOMP,I,J),J=1,I2)
- 9989 format(I5,I10,I9,13I9)
-      call edisp(itu,outs)
- 9992 CONTINUE
-      call edisp(itu,' ')
-      call edisp(itu,' Constr. Internal External Internal External')
-      call edisp(itu,'          Emiss.   Emiss.   Absorp.  Absorp.')
-      call edisp(itu,' ')
-      DO 9979 I=1,NN
-      write(outs,9978)I,EI(ICOMP,I),EE(ICOMP,I),AI(ICOMP,I),
+        call edisp(itu,outs)
+        ICNT=ICNT+1
+        call edisp(itu,' ')
+        call edisp(itu,outs)
+        write(outs,99941)SLAT,SLON
+99941   format('Located at',F5.1,' latitude and ',F5.1,' longitude.')
+        IF(IROAM.EQ.1)write(outs,'(A)')
+     &    'Note that roaming is activated and these will change'
+        call edisp(itu,outs)
+        write(outs,9993)NCONST(ICOMP)
+ 9993   format(' No.of multilayered constructions = ',I2)
+        call edisp(itu,outs)
+        call edisp(itu,' Constr. No.of    No.of    Air Gap')
+        call edisp(itu,'         Elements Air Gaps Position')
+        NN=NCONST(ICOMP)
+        DO 9992 I=1,NN
+          I1=NELTS(ICOMP,I)
+          I2=NGAPS(ICOMP,I)
+          IF(I2.GT.0)goto 9991
+          write(outs,9990)I,I1,I2
+ 9990     format(I5,I10,I9)
+          call edisp(itu,outs)
+          goto 9992
+ 9991     write(outs,9989)I,I1,I2,(NPGAP(ICOMP,I,J),J=1,I2)
+ 9989     format(I5,I10,I9,13I9)
+          call edisp(itu,outs)
+ 9992   CONTINUE
+        call edisp(itu,' ')
+        call edisp(itu,' Constr. Internal External Internal External')
+        call edisp(itu,'          Emiss.   Emiss.   Absorp.  Absorp.')
+        call edisp(itu,' ')
+        DO 9979 I=1,NN
+          write(outs,9978)I,EI(ICOMP,I),EE(ICOMP,I),AI(ICOMP,I),
      &                AE(ICOMP,I)
- 9978 format(I5,4F9.2)
-      call edisp(itu,outs)
- 9979 CONTINUE
- 9999 RETURN
+ 9978     format(I5,4F9.2)
+          call edisp(itu,outs)
+ 9979   CONTINUE
+      ENDIF
+      RETURN
       END
 
 c ******************** PRECOMP ********************

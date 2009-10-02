@@ -3811,7 +3811,7 @@ C     SAFLW  - node coupled sum of absolute mass flow rates (kg/s)
       DOUBLE PRECISION FLWINV(MNOD),FLWUTV(MNOD)
 
 C.....Local variables
-      integer ii,jj                           ! counters
+      integer ii,jj,ICONTM                    ! counters
       CHARACTER*12 fluid                ! fluid type ('air' or 'water')
       character*128 Node_Name     ! node name
       character*128 Connect_Name ! connection name
@@ -3832,6 +3832,14 @@ C.....Commons indicating if meta items have been initialized
      &     bElectMeta
 
       logical  bBuildMeta,bClimMeta,bTimeMeta,bPlantMeta,bElectMeta
+
+C.....Contaminants
+      COMMON/CONTM8/CCONC(MNOD,MCONTM)
+      REAL CCONC            ! Contaminant concentration
+      COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
+      INTEGER NCONTM        ! number of contaminants
+      INTEGER NOCNTM        ! =1 if contaminants file is defined
+      CHARACTER*12 CONTMNAM ! Contaminant name
 
 C.....References
       integer LNBLNK    ! function returning # of non-blank characters in
@@ -4009,6 +4017,23 @@ C.........Loop through all interconnections in a flow network
             endif     !<- end if positive side connection for current node
 
          enddo                  !<- connection loop end
+
+C.........if contaminants are defined output these as well
+         IF(NOCNTM.EQ.1)THEN
+           do ICONTM=1,NCONTM
+
+C.........output contaminant concentration
+         write(H3K_rep_NAME,'(A,A,A)')
+     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              '/',CONTMNAM(ICONTM)
+
+         call add_to_xml_reporting (
+     &              CCONC(II,ICONTM),
+     &              H3K_rep_NAME,
+     &              'units', '(kg/kg)',
+     &              'mfn contaminant concentration' )
+           END DO               !<- contaminants loop end
+         ENDIF
 
         ! whatever *****************************************************
 

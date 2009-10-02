@@ -145,8 +145,11 @@ C during an integrated simulation.
  1    continue
 
 
-C  Call control subroutine
-      call MFCNTR        
+C Call control subroutine
+      call MFCNTR
+
+C Global controllers may be active so invoke these as well
+      call MZGCTL
       
 C Start of iteration loop
 C First zeroise node residual, sum of flows and Jacobian matrix and
@@ -1061,16 +1064,12 @@ C control ratio returned in ctlpos.
       DOUBLE PRECISION DERIV
 
       ICMP=ITPCON(ICNN)
-
       FLOW=SUPCMP(ICMP,2)
 
 C Because FLOW already expressed as mass flow, direction is unimportant.
       FLW1(ICNN)=FLOW*ctlpos(icnn)
-
       FLW2(ICNN)=0.
-
       DERIV=0.0
-
       RETURN
       END
 

@@ -8,7 +8,7 @@ PROG = mfs$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = mfs.o c2fdum.o cntmnt.o ctlexp.o dossupport.o econtrol.o emfnetw.o \
-	  fctlc.o initalc.o mfcdat.o mfcntl.o mfdumb.o mfdumf.o mfdump.o \
+	  fctlc.o gcfunc.o initalc.o mfcdat.o mfcntl.o mfdumb.o mfdumf.o mfdump.o \
 	  mfinit.o mfmach.o mfmode.o mfplot.o mfrlst.o mfrset.o mftabl.o \
 	  mfutil.o psychro.o rnor.o startup.o
 
@@ -30,6 +30,9 @@ econtrol.F:
 emfnetw.F:
 	rm -f emfnetw.F
 	ln -s $(COMdir)/emfnetw.F .
+gcfunc.F:
+	rm -f gcfunc.F
+	ln -s $(CTLdir)/gcfunc.F .
 initalc.F:
 	rm -f initalc.F
 	ln -s $(CTLdir)/initalc.F .
@@ -51,5 +54,5 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	c2fdum.F ctlexp.F dossupport.F econtrol.F emfnetw.F initalc.F \
-	psychro.F rnor.F startup.F 
+	c2fdum.F ctlexp.F dossupport.F econtrol.F emfnetw.F gcfunc.F \
+        initalc.F psychro.F rnor.F startup.F 

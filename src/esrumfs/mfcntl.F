@@ -28,12 +28,10 @@ C Boston, MA 02111-1307 USA.
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
       COMMON/mfctl/ctlpos(MCNN)
       COMMON/MFLCTL/IRY,IRM,IRD,IRH,FLWTIM,IHOUR,IYD,IFYD,ILYD,IPROG
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
 
-C Variables for weekdays, and weekends.
-C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
-      common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       character outs*124
-      character*10 wkd1, wkd2
 
       do 102 i=1,MCNN
  102    ctlpos(i)=1.0
@@ -52,30 +50,30 @@ C Set up day type and period pointers
 c determine current day of the week
       CALL EWEEKD(IRD,IRM,IRY,IDW)
 
-C If NDAYT=0 set data to weekday, saturday and sunday format
-      IF(NDAYT.EQ.0) THEN
-         IDTYPP=1
-         IF(IDW.EQ.idwe1) IDTYPP=2
-         IF(IDW.EQ.idwe2) IDTYPP=3
-      ELSE
-         DO 10 IDTYPP=1,NDAYT
-           IDS=IFCDV(ICFP,IDTYPP,1)
-           IDF=IFCDV(ICFP,IDTYPP,2)
-           IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
-   10    CONTINUE
-         WRITE(outs,*) ' MFCNTR: mass flow control connection ',ICFP
-         call edisp(iuout,outs)
-         WRITE(outs,*) '         no valid day type for year-day ',IDAY
-         call edisp(iuout,outs)
-         call edisp(iuout,
-     &          ' MFCNTR: cannot locate appropriate day type')
-         call epwait
-         CALL EPAGEND
-         STOP
-      END IF
+C If NDAYT=0 set data to all day types
+      NIN=0
+      IF(NDAYT.EQ.0)THEN
+        NDAYT=NBDAYTYPE
+        NIN=-1*NBDAYTYPE
+      ENDIF
+      DO 10 IDTYPP=1,NDAYT
+        IDS=IFCDV(ICFP,IDTYPP,1)
+        IDF=IFCDV(ICFP,IDTYPP,2)
+        IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
+   10 CONTINUE
+      WRITE(outs,*) ' MFCNTR: mass flow control connection ',ICFP
+      call edisp(iuout,outs)
+      WRITE(outs,*) '	      no valid day type for year-day ',IDAY
+      call edisp(iuout,outs)
+      call edisp(iuout,
+     &       ' MFCNTR: cannot locate appropriate day type')
+      call epwait
+      CALL EPAGEND
+      STOP
 
 C Check number of periods in each day and the start and finish times
-   20 NDAYP=NFCDP(ICFP,IDTYPP)
+   20 if(nin.le.-1.or.ndayt.lt.1)idtypp=icalender(iday)
+      NDAYP=NFCDP(ICFP,IDTYPP)
       IF(NDAYP.EQ.0) STOP ' MFCNTR: no day-periods defined'
       DO 22 IDAYP=1,NDAYP
       IPERP=IDAYP
@@ -862,15 +860,9 @@ C climate file commons
 C Time and weather data.
 C Commented common blocks to be uncommented and checked for relevance 
 C when version 2 of the law will be published
-**      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-**      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-**      COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-**      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
      &             DFLP,DFLF,HFLP,HFLF
-**      COMMON/CLIM/IDIF(MT),ITMP(MT),IDNR(MT),IVEL(MT),IDIR(MT),
-**     &            IHUM(MT),IDIFF,ITMPF,IDNRF,IVELF,IDIRF,IHUMF
 
 C Adaptive comfort common
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
@@ -943,19 +935,17 @@ C Get ambient temperature TOUT
 
 C Read data from control file
       ALPHA=fmiscd(ICFP,IDTYPP,IPERP,2)
-
-C The following are implemented in version 2 of the algorithm
-c      Wposs=fmiscd(ICFP,IDTYPP,IPERP,3)
-c      Fposs=fmiscd(ICFP,IDTYPP,IPERP,4)
-c      WNposs=fmiscd(ICFP,IDTYPP,IPERP,5)
-c      ACavail=fmiscd(ICFP,IDTYPP,IPERP,6)
-c      Havail=fmiscd(ICFP,IDTYPP,IPERP,7)
-c      DLposs=fmiscd(ICFP,IDTYPP,IPERP,8)
-c      PWRfan=fmiscd(ICFP,IDTYPP,IPERP,9)
+      Wposs=fmiscd(ICFP,IDTYPP,IPERP,3)
+      Fposs=fmiscd(ICFP,IDTYPP,IPERP,4)
+      WNposs=fmiscd(ICFP,IDTYPP,IPERP,5)
+      ACavail=fmiscd(ICFP,IDTYPP,IPERP,6)
+      Havail=fmiscd(ICFP,IDTYPP,IPERP,7)
+c      Dposs=fmiscd(ICFP,IDTYPP,IPERP,8)
+      PWRfan=fmiscd(ICFP,IDTYPP,IPERP,9)
 c      PWRlight=fmiscd(ICFP,IDTYPP,IPERP,10)
 c      DTfan=fmiscd(ICFP,IDTYPP,IPERP,11)
-c      WD=fmiscd(ICFP,IDTYPP,IPERP,12)
-c      FD=fmiscd(ICFP,IDTYPP,IPERP,13)
+      WD=fmiscd(ICFP,IDTYPP,IPERP,12)
+      FD=fmiscd(ICFP,IDTYPP,IPERP,13)
 c      AIsurf=fmiscd(ICFP,IDTYPP,IPERP,14)
 
 C Calculate running mean outside air temperature TRM
@@ -989,6 +979,8 @@ C based on the control file being used hence is ignored.
       TOP=0.5*TMRT+0.5*TNOD(INOD)
 
 C Calculate comfort temperature TCOMF (based on the summer and winter behaviours)
+C These are algorithm version 1 equations and will be overwritten
+C (retained for historic purposes)
         IF(TRM.GE.10.)TCOMF=0.33*TRM+18.8
         IF(TRM.LT.10.)TCOMF=0.09*TRM+22.6
 
@@ -997,22 +989,27 @@ C Mode = AC air conditioning
 C Mode = NC night cooling
 C Mode = HT heating
 C Mode = FR free running (no heating or air conditioning, may have fan)
+C Calculate mode and Tcomfort.
       IF(ACAVAIL.GT.0..AND.TRM.GT.28.1)THEN
         MODE='AC'
-      ELSEIF(WNposs.GT.0..AND.TRM.GT.28.1)THEN
-        MODE='NC'
+	TCOMF=0.416*TRM+16.5
       ELSEIF(Havail.GT.0..AND.TRM.LT.10.)THEN
         MODE='HT'
+	TCOMF=0.156*TRM+19.1
       ELSE
         MODE='FR'
+	IF(IFANON.EQ.0)THEN
+          TCOMF=0.408*TRM+16.6
+        ELSE
+          TCOMF=0.480*TRM+16.6
+        ENDIF
       ENDIF
 
-C Pakistan fan status determination 
+C Pakistan fan status determination. Note that fans are assumed on
+C in AC mode. If Tout < 23.6 then fans are assumed to be off.
       IF(MODE.EQ.'FR'.AND.Fposs.GT.0.)THEN
-C Algorithms will be added below once paper is published (currently 
-C version 1 of the algorithm is active)
-**        
-**        
+        FUNCF=0.595*(TOP-TCOMF+(IFANON-0.5)*FD)
+        PF=EXP(FUNCF)/(1.+EXP(FUNCF))
         RNF=RNOR()
         RNF=ABS(RNF)
         RNF=1000.*RNF
@@ -1023,29 +1020,20 @@ C version 1 of the algorithm is active)
         ELSE
           IFANON=0
         ENDIF
+      ELSEIF(MODE.EQ.'AC'.AND.Fposs.GT.0.)THEN
+      	IFANON=1
       ELSE
         IFANON=0
       ENDIF
-
-C Determine comfort temperature based on previously determined fan
-C status
-      IF(MODE.EQ.'FR')THEN
-        IF(IFANON.EQ.0)THEN
-**        
-        ELSE
-**        
-        ENDIF
-
-C These equations may change in future
-      ELSEIF(MODE.EQ.'HT')THEN
-**        
-      ELSEIF(MODE.EQ.'NC')THEN
-**        
-      ELSEIF(MODE.EQ.'AC')THEN
-**        
-      ENDIF
+      IF(TRM.LT.23.6)IFANON=0
+      
+C Pakistan window status determination. If Night cooling then window
+C open if Trm > 28.1, WNposs should only be set to 1 outside of the 
+C occupied hours!! If window opening not effective for cooling then 
+C window is closed - this is currently defined as when Tout>(Top+4).
+C The windows will be forced shut if alpha is set to 0.    
       IF(Wposs.GT.0.)THEN
-**        
+        FUNCW=0.525*(TOP-TCOMF+(IWIN-0.5)*WD)
         PW=EXP(FUNCW)/(1.+EXP(FUNCW))
         RNW=RNOR()
         RNW=ABS(RNW)
@@ -1060,72 +1048,65 @@ C These equations may change in future
       ELSE
         IWIN=0
       ENDIF
-
-C if night cooling mode open window
-      IF(MODE.EQ.'NC')IWIN=1
-
-C If outdoor temperature is more than 5degC higher than indoor
-C temperature then the window will be closed
-      IF(TOUT.GT.(TOP+5.))IWIN=0
-
-C If operative temperature and comfort temperature are within 2K
-C do not modify current state of window. Else calculate probability that
-C window state will be changed.
-      RN=RNOR()
-      RN=ABS(RN)
-      RN=1000.*RN
-      IRN=INT(RN)
-      RN=RN-REAL(IRN)
-      FUNC=0.171*TOP+0.166*TOUT-6.43
-      Pw=EXP(FUNC)/(1.+EXP(FUNC))
-      IF((TOP-TCOMF).GT.2.)THEN
-
-C Hot, so open windows if closed following Nicol logic
-        IF(Pw.GT.RN)IWIN=1
-      ELSEIF((TOP-TCOMF).LT.-2.)THEN
-
-C Cold, so close windows if open following Nicol logic
-        IF(Pw.LT.RN)IWIN=0
-      ELSE
-
-C Within 2K comfort band so do nothing
-      ENDIF
       
-C If ALPHA=0. (<0.1) then the window will be closed - use this to keep
-C shut at night etc.. (ALPHA is normally 0.8 for UK buildings)
-      IF(ALPHA.LT.0.1)IWIN=0
+      IF(TOUT.GT.(TOP+4.).AND.TRM.GT.28.1) IWIN=0
+      IF(WNposs.GT.0.1.AND.TRM.GT.28.1) IWIN=1      
+      IF(MODE.EQ.'AC')IWIN=0   
+      IF(ALPHA.LT.0.1)IWIN=0   
 
-C<< Calculate window opening size fraction ONFRAC (also incorporate
-C<< Extend to controlling components later
-C within remembering previous state of window)
-C Currently ONFRAC=0 or 1
+C Door opening (Aizaz to enable functionality)
+C Currently door opening modelled manually by changing the flow
+C network component crack (closed) to door (open).
+C     IF(Dposs.GT.0.)THEN
+C       FUNCD=0.081*TOP-1.34
+C       PD=EXP(FUNCD)/(1.+EXP(FUNCD))
+C       RNW=RNOR()
+C       RNW=ABS(RNW)
+C       RNW=1000.*RNW    
+C       IRNW=INT(RNW)
+C       RNW=RNW-REAL(IRNW)
+C       IF(PD.GT.RNW)THEN
+C         IDOOR=1
+C       ELSE
+C         IDOOR=0
+C       ENDIF
+C     ELSE
+C       IDOOR=0
+C     ENDIF
+
+C In future - calculate window opening size fraction ONFRAC.
+C Currently set to 0 or 1 (100% of open area in flow network)
+C may vary with season or deltaT(in-out), no data at present.
+
+C Store values for window, fan, door status (Aizaz to enable Door)
       PREVSTATFAN=REAL(IFANON)
       PREVSTATWIN=REAL(IWIN)
       ONFRAC=REAL(IWIN) 
+C     PREVSTATDOOR=REAL(IDOOR)
+      
+      
+C AIRFLOW NETWORK CONTROL CODE HERE:      
       if(ifan(ICFP,1).eq.-3)then
-
 C Controlling a connection. (ICNN not relevant, therefor 0)
           CTLPOS(ifan(icfp,2))=ONFRAC
       elseif(ifan(ICFP,1).eq.-4)then
-
 C Controlling a component. 
         do 1 icnn=1,ncnn
           if((ifan(icfp,2).eq.ITPCON(ICNN)))then
-
 C Establish sensed variable magnitude and actuated node location.
               CTLPOS(icnn)=ONFRAC
           endif
   1     continue
       endif
-
-C Debug...
-c      IF(NSINC.EQ.1)write(96,*)
+      
+C fort.96 file write statement here:    
+c      IF(NSINC.EQ.1.)write(96,*)
 c     &'Top TMRT Tout Trm  Tcomf  FUNCF PF  RNF  FAN FUNCw Pw RNW  WIN M'
 c      write(96,'(F4.1,1X,F4.1,1X,F4.1,1X,F4.1,1X,F4.1,1X,F5.1,1X,F4.1,
 c     & 1X,F4.1,1X,I2,1X,F5.1,1X,F4.1,1X,F4.1,1X,I2,1X,A)')
 c     & Top,TMRT,Tout,Trm,Tcomf,FUNCF,PF,RNF,
 c     & IFANON,FUNCw,Pw,RNW,IWIN,MODE
-
+     
 C node number is ifsn(icfp,3), get zone associated with node
       DO 546 ICOM=1,NCOMP
         IF(IFSN(ICFP,3).EQ.ICAAS(ICOM))THEN
@@ -1134,19 +1115,20 @@ C node number is ifsn(icfp,3), get zone associated with node
         ENDIF
   546 CONTINUE
 
+
+C Gains adding to thermal zone(s). Lights not yet enabled
 C If fan is on add fan power to casual gains for that zone
       IF(IFANON.EQ.1)THEN
         FNPWR=ZBASEA(ICOMP)*PWRfan
       ENDIF
-
 C If light are on add light power to casual gains for that zone
-*      IF(ILIGHTON.EQ.1)THEN
-*        GLNPWR=ZBASEA(ICOMP)*PWRlight
-*      ENDIF
+c      IF(ILIGHTON.EQ.1)THEN
+c        GLNPWR=ZBASEA(ICOMP)*PWRlight
+c      ENDIF
        GLNPWR=0.
-
 C Find total power of the equipment
       TOTPWR(ICOMP)=FNPWR+GLNPWR
+ 
  
       GOTO 9999
   999 H(1) = 'A data i/o error has occured in the program at FCL04'

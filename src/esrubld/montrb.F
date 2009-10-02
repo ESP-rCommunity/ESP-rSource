@@ -57,7 +57,6 @@ c               3: zone temperature and plant flux.
       common/c1/ncomp,ncon
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
      &               ibplot,irecpb(MDPH),mbstv
-      COMMON/PREC8/SLAT,SLON
       common/pophelp/h(60)
 
       dimension IVALS(MCOM)

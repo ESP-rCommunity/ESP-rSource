@@ -64,13 +64,17 @@ C          block sctl to have been filled for the current period.
 
       common/user/browse
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER nbdaytype,nbcaldays,icalender
 
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C mptback is pointer from position in display list to the control loop.
 C ipeerptbk is pointer from position in display to day type.
       dimension mptback(35),iperptbk(35)
-      CHARACTER*43 VERT(35)
+      CHARACTER*56 VERT(35)
       CHARACTER CTLDOC*248,LCTLF*72,KEY*1,LCFGF*72
       CHARACTER outs*124,H*72,LASCI*72,cfgroot*24
       character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
@@ -270,9 +274,9 @@ C Initial menu entry setup, rescan for length of the list.
         write(VERT(4),'(A,I2)')  '  loops      : ',nof
         VERT(5)=                 '                                    '
       endif
-      VERT(6)= ' _________________________________________'
-      VERT(7)= ' cntl| sensor |actuator|day |valid |period'
-      VERT(8)= ' loop|location|location|type|during|in day'
+      VERT(6)= ' ___________________________________________________'
+      VERT(7)= ' cntl| sensor |actuator|    day     | valid  | periods'
+      VERT(8)= ' loop|location|location|    type    | during | in day '
       m=MHEAD
 
 C Keep track of how many items will be in the variable length section
@@ -281,7 +285,7 @@ C of the menu.
       if(icfoc.eq.0.and.ncf.gt.0)then
         do 88 II=1,ncf
           NN=nbcdt(ii)
-          if(nbcdt(ii).eq.0)NN=3
+          if(nbcdt(ii).eq.0)NN=nbdaytype
           do 87 IJ=1,NN
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
@@ -290,29 +294,25 @@ C of the menu.
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(nbcdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)') KEY,II,
      &            IBSN(II,1),IBSN(II,2),IBSN(II,3),IBAN(II,1),
-     &            IBAN(II,2),IBAN(II,3),' wkd',ibcdv(II,IJ,1),
+     &            IBAN(II,2),IBAN(II,3),calentag(ij),ibcdv(II,IJ,1),
      &            ibcdv(II,IJ,2),nbcdp(II,1)
-              elseif(nbcdt(ii).eq.0.and.IJ.eq.2)then
-                iperptbk(m)=2
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sat',ibcdv(II,2,1),ibcdv(II,2,2),nbcdp(II,2)
-              elseif(nbcdt(ii).eq.0.and.IJ.eq.3)then
-                iperptbk(m)=3
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sun',ibcdv(II,3,1),ibcdv(II,3,2),nbcdp(II,3)
+              elseif(nbcdt(ii).eq.0)then
+                iperptbk(m)=ij
+                WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
+     &          calentag(ij),ibcdv(II,2,1),ibcdv(II,2,2),nbcdp(II,2)
               endif
               if(nbcdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)')KEY,II,
      &            IBSN(II,1),IBSN(II,2),IBSN(II,3),IBAN(II,1),
-     &            IBAN(II,2),IBAN(II,3),IJ,ibcdv(II,IJ,1),
+     &            IBAN(II,2),IBAN(II,3),'all daytypes',ibcdv(II,IJ,1),
      &            ibcdv(II,IJ,2),nbcdp(II,IJ)
               elseif(nbcdt(ii).ne.0.and.IJ.gt.1)then
                 iperptbk(m)=IJ
-                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
-     &            IJ,ibcdv(II,IJ,1),ibcdv(II,IJ,2),nbcdp(II,IJ)
+                WRITE(VERT(M),'(A1,23X,a12,3I4)')KEY,'all daytypes',
+     &          ibcdv(II,IJ,1),ibcdv(II,IJ,2),nbcdp(II,IJ)
               endif
             endif
   87      continue
@@ -320,7 +320,7 @@ C of the menu.
       elseif(icfoc.eq.1.and.ncl.gt.0)then
         do 188 II=1,ncl
           NN=NPCDT(II)
-          if(NPCDT(II).eq.0)NN=3
+          if(NPCDT(II).eq.0)NN=nbdaytype
           do 187 IJ=1,NN
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
@@ -329,29 +329,25 @@ C of the menu.
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(npcdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)') KEY,II,
      &            IPSN(II,1),IPSN(II,2),IPSN(II,3),IPAN(II,1),
-     &            IPAN(II,2),IPAN(II,3),' wkd',ipcdv(II,IJ,1),
+     &            IPAN(II,2),IPAN(II,3),calentag(ij),ipcdv(II,IJ,1),
      &            ipcdv(II,IJ,2),npcdp(II,1)
-              elseif(npcdt(ii).eq.0.and.IJ.eq.2)then
-                iperptbk(m)=2
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sat',ipcdv(II,2,1),ipcdv(II,2,2),npcdp(II,2)
-              elseif(npcdt(ii).eq.0.and.IJ.eq.3)then
-                iperptbk(m)=3
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sun',ipcdv(II,3,1),ipcdv(II,3,2),npcdp(II,3)
+              elseif(npcdt(ii).eq.0)then
+                iperptbk(m)=ij
+                WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
+     &          calentag(ij),ipcdv(II,2,1),ipcdv(II,2,2),npcdp(II,2)
               endif
               if(npcdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)')KEY,II,
      &            IPSN(II,1),IPSN(II,2),IPSN(II,3),IPAN(II,1),
-     &            IPAN(II,2),IPAN(II,3),IJ,ipcdv(II,IJ,1),
+     &            IPAN(II,2),IPAN(II,3),'all daytypes',ipcdv(II,IJ,1),
      &            ipcdv(II,IJ,2),npcdp(II,IJ)
               elseif(npcdt(ii).ne.0.and.IJ.gt.1)then
                 iperptbk(m)=IJ
-                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
-     &            IJ,ipcdv(II,IJ,1),ipcdv(II,IJ,2),npcdp(II,IJ)
+                WRITE(VERT(M),'(A1,23X,a12,3I4)')KEY,'all daytypes',
+     &          ipcdv(II,IJ,1),ipcdv(II,IJ,2),npcdp(II,IJ)
               endif
             endif
  187      continue
@@ -359,7 +355,7 @@ C of the menu.
       elseif(icfoc.eq.2.and.ncc.gt.0)then
         do 288 II=1,ncc
           NN=NFCDT(II)
-          if(NFCDT(II).eq.0)NN=3
+          if(NFCDT(II).eq.0)NN=nbdaytype
           do 287 IJ=1,NN
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
@@ -368,29 +364,25 @@ C of the menu.
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(nfcdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)') KEY,II,
      &            IFSN(II,1),IFSN(II,2),IFSN(II,3),IFAN(II,1),
-     &            IFAN(II,2),IFAN(II,3),' wkd',ifcdv(II,IJ,1),
+     &            IFAN(II,2),IFAN(II,3),calentag(ij),ifcdv(II,IJ,1),
      &            ifcdv(II,IJ,2),nfcdp(II,1)
-              elseif(nfcdt(ii).eq.0.and.IJ.eq.2)then
-                iperptbk(m)=2
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sat',ifcdv(II,2,1),ifcdv(II,2,2),nfcdp(II,2)
-              elseif(nfcdt(ii).eq.0.and.IJ.eq.3)then
-                iperptbk(m)=3
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sun',ifcdv(II,3,1),ifcdv(II,3,2),nfcdp(II,3)
+              elseif(nfcdt(ii).eq.0)then
+                iperptbk(m)=ij
+                WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
+     &          calentag(ij),ifcdv(II,2,1),ifcdv(II,2,2),nfcdp(II,2)
               endif
               if(nfcdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)')KEY,II,
      &            IFSN(II,1),IFSN(II,2),IFSN(II,3),IFAN(II,1),
-     &            IFAN(II,2),IFAN(II,3),IJ,ifcdv(II,IJ,1),
+     &            IFAN(II,2),IFAN(II,3),'all daytypes',ifcdv(II,IJ,1),
      &            ifcdv(II,IJ,2),nfcdp(II,IJ)
               elseif(nfcdt(ii).ne.0.and.IJ.gt.1)then
                 iperptbk(m)=IJ
-                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
-     &            IJ,ifcdv(II,IJ,1),ifcdv(II,IJ,2),nfcdp(II,IJ)
+                WRITE(VERT(M),'(A1,23X,a12,3I4)')KEY,'all daytypes',
+     &          ifcdv(II,IJ,1),ifcdv(II,IJ,2),nfcdp(II,IJ)
               endif
             endif
  287      continue
@@ -398,7 +390,7 @@ C of the menu.
       elseif(icfoc.eq.3.and.ngf.gt.0)then
         do 388 II=1,ngf
           NN=NGCDT(II)
-          if(NGCDT(II).eq.0)NN=3
+          if(NGCDT(II).eq.0)NN=nbdaytype
           do 387 IJ=1,NN
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
@@ -407,29 +399,25 @@ C of the menu.
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(ngcdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)') KEY,II,
      &            IGSN(II,1),IGSN(II,2),IGSN(II,3),IGAN(II,1),
-     &            IGAN(II,2),IGAN(II,3),' wkd',igcdv(II,IJ,1),
+     &            IGAN(II,2),IGAN(II,3),calentag(ij),igcdv(II,IJ,1),
      &            igcdv(II,IJ,2),ngcdp(II,1)
-              elseif(ngcdt(ii).eq.0.and.IJ.eq.2)then
-                iperptbk(m)=2
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sat',igcdv(II,2,1),igcdv(II,2,2),ngcdp(II,2)
-              elseif(ngcdt(ii).eq.0.and.IJ.eq.3)then
-                iperptbk(m)=3
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sun',igcdv(II,3,1),igcdv(II,3,2),ngcdp(II,3)
+              elseif(ngcdt(ii).eq.0)then
+                iperptbk(m)=ij
+                WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
+     &          calentag(ij),igcdv(II,2,1),igcdv(II,2,2),ngcdp(II,2)
               endif
               if(ngcdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)')KEY,II,
      &            IGSN(II,1),IGSN(II,2),IGSN(II,3),IGAN(II,1),
-     &            IGAN(II,2),IGAN(II,3),IJ,igcdv(II,IJ,1),
+     &            IGAN(II,2),IGAN(II,3),'all daytypes',igcdv(II,IJ,1),
      &            igcdv(II,IJ,2),ngcdp(II,IJ)
               elseif(ngcdt(ii).ne.0.and.IJ.gt.1)then
                 iperptbk(m)=IJ
-                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
-     &            IJ,igcdv(II,IJ,1),igcdv(II,IJ,2),ngcdp(II,IJ)
+                WRITE(VERT(M),'(A1,23X,a12,3I4)')KEY,'all daytypes',
+     &          igcdv(II,IJ,1),igcdv(II,IJ,2),ngcdp(II,IJ)
               endif
             endif
  387      continue
@@ -442,7 +430,7 @@ C Power controls.
 C Optical controls.
         do 488 II=1,nof
           NN=NOCDT(II)
-          if(NOCDT(II).eq.0)NN=3
+          if(NOCDT(II).eq.0)NN=nbdaytype
           do 487 IJ=1,NN
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
@@ -451,29 +439,25 @@ C Optical controls.
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(nocdt(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)') KEY,II,
      &            IOSN(II,1),IOSN(II,2),IOSN(II,3),IOAN(II,1),
-     &            IOAN(II,2),IOAN(II,3),' wkd',iocdv(II,IJ,1),
+     &            IOAN(II,2),IOAN(II,3),calentag(ij),iocdv(II,IJ,1),
      &            iocdv(II,IJ,2),nocdp(II,1)
-              elseif(nocdt(ii).eq.0.and.IJ.eq.2)then
-                iperptbk(m)=2
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sat',iocdv(II,2,1),iocdv(II,2,2),nocdp(II,2)
-              elseif(nocdt(ii).eq.0.and.IJ.eq.3)then
-                iperptbk(m)=3
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sun',iocdv(II,3,1),iocdv(II,3,2),nocdp(II,3)
+              elseif(nocdt(ii).eq.0)then
+                iperptbk(m)=ij
+                WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
+     &          calentag(ij),iocdv(II,2,1),iocdv(II,2,2),nocdp(II,2)
               endif
               if(nocdt(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)')KEY,II,
      &            IOSN(II,1),IOSN(II,2),IOSN(II,3),IOAN(II,1),
-     &            IOAN(II,2),IOAN(II,3),IJ,iocdv(II,IJ,1),
+     &            IOAN(II,2),IOAN(II,3),'all daytypes',iocdv(II,IJ,1),
      &            iocdv(II,IJ,2),nocdp(II,IJ)
               elseif(nocdt(ii).ne.0.and.IJ.gt.1)then
                 iperptbk(m)=IJ
-                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
-     &            IJ,iocdv(II,IJ,1),iocdv(II,IJ,2),nocdp(II,IJ)
+                WRITE(VERT(M),'(A1,23X,a12,3I4)')KEY,'all daytypes',
+     &          iocdv(II,IJ,1),iocdv(II,IJ,2),nocdp(II,IJ)
               endif
             endif
  487      continue
@@ -485,13 +469,13 @@ C Number of actual items displayed.
 
 C If a long list, include page facility text.      
       IF(IPFLG.EQ.0)THEN
-        VERT(M+1)='  ________________________________________'
+        VERT(M+1)='  _______________________________________________'
       ELSE
         WRITE(VERT(M+1),15)IPM,MPM 
    15   FORMAT   ('0 Page ------- Part: ',I2,' of ',I2,
      &    ' -----------')
       ENDIF
-      VERT(M+2)  ='+ add/delete/copy control loop or day type'
+      VERT(M+2)  ='+ add/delete/copy control loop            '
       VERT(M+3)  ='! list or check current control data      '
       VERT(M+4)  ='> save control data                       '
       VERT(M+5)  ='? help                                    '
@@ -779,11 +763,11 @@ C List control data.
 
 C Add or delete a zone control function.
 C Warn user to update any connections to plant loops.
-        h(1)='Delete/add/copy a control loop or day type'
+        h(1)='Delete/add/copy a control loop'
         h(2)='(unless wkd:sat:sun control).'
         CALL EASKATOG(' ','Options:','delete control loop',
      &     'add control loop','copy control loop',
-     &     'del/add/copy day type','cancel',' ',' ',IW,2)
+     &     'cancel',' ',' ',' ',IW,2)
         if(IW.eq.1)then
           call ADDCNTL(icfoc,'D')
         elseif(IW.eq.2)then
@@ -791,46 +775,6 @@ C Warn user to update any connections to plant loops.
         elseif(IW.eq.3)then
           call ADDCNTL(icfoc,'C')
         elseif(IW.eq.4)then
-
-C Add or delete a control day type (unless Weekday/Sat/Sun).
-C Begin by selecting the loop to focus on.
-          if(icfoc.eq.0)then
-            CALL EASKI(IFOC,' ','Zone control function index?'
-     &          ,0,'F',ncf,'F',0,'associated control',IERI,4)
-            if(ieri.eq.-3) goto 92
-            nn=nbcdt(IFOC)
-          elseif(icfoc.eq.1)then
-            CALL EASKI(IFOC,' ','Plant control function index?',
-     &          0,'F',ncl,'F',0,'associated control',IERI,4)
-            if(ieri.eq.-3) goto 92
-            nn=npcdt(IFOC)
-          elseif(icfoc.eq.2)then
-            CALL EASKI(IFOC,' ','Flow control function index?',
-     &          0,'F',ncc,'F',0,'associated control',IERI,4)
-            if(ieri.eq.-3) goto 92
-            nn=nfcdt(IFOC)
-          elseif(icfoc.eq.3)then
-            CALL EASKI(IFOC,' ','Global control function index?',
-     &          0,'F',ngf,'F',0,'associated control',IERI,4)
-            if(ieri.eq.-3) goto 92
-            nn=ngcdt(IFOC)
-          elseif(icfoc.eq.4)then
-            CALL EASKI(IFOC,' ','Electrical control function index?',
-     &          0,'F',necl,'F',0,'associated control',IERI,4)
-            if(ieri.eq.-3) goto 92
-            nn=necdt(IFOC)
-          elseif(icfoc.eq.5)then
-            CALL EASKI(IFOC,' ','Optical control function index?',
-     &          0,'F',nof,'F',0,'associated control',IERI,4)
-            nn=nocdt(IFOC)
-          endif
-          if(nn.eq.0)then
-            call usrmsg('For the special case of Weekday/Sat/Sun',
-     &      'control add/delete day type is not applicable.','W')
-            goto 92
-          endif 
-          call ADDCTLD(icfoc,IFOC)
-        elseif(IW.eq.5)then
           goto 92
         endif
         call edisp(iuout,
@@ -899,10 +843,31 @@ C Pull up a multi-choice dialog to see what should be edited.
         endif
         idno=0
         isw=0
-        call MENUATOL(outs,'Editing Options',
+        if(icfoc.eq.0)then
+          NN=NBCDT(II)
+        elseif(icfoc.eq.1)then
+          NN=NPCDT(II)
+        elseif(icfoc.eq.2)then
+          NN=NFCDT(II)
+        elseif(icfoc.eq.3)then
+          NN=NGCDT(II)
+        elseif(icfoc.eq.4)then
+          NN=NECDT(II)
+        elseif(icfoc.eq.5)then
+          NN=NOCDT(II)
+        endif
+        IF(NN.EQ.0.OR.NN.EQ.1)THEN
+          call MENUATOL(outs,'Editing Options',
+     &    'a sensor details','b actuator details',
+     &    'c period data',' ',' ',' ',
+     &    ' ',' ',' ',' ',' ',' ',isw,idno,5)
+          IF(ISW.EQ.3)ISW=4
+        ELSE
+          call MENUATOL(outs,'Editing Options',
      &   'a sensor details','b actuator details',
      &   'c period of validity','d period data',' ',' ',
      &   ' ',' ',' ',' ',' ',' ',isw,idno,5)
+        ENDIF
         if(ISW.eq.0)then
           goto 92
         elseif(ISW.eq.1)then
@@ -1074,6 +1039,7 @@ C substitutions will occur.
         elseif(ISW.eq.3)then
 
 C Edit date of validity (day type index is idi).
+C Only applicable if Periods of validity are active.
    48     if(icfoc.eq.0)then 
             IBDOY=IBCDV(II,idi,1)
             IEDOY=IBCDV(II,idi,2)
@@ -1248,30 +1214,43 @@ C Edit building control function II.
 C Plant common required for building/plant flux linkage      
       common/pcdat/nnodes(mpcom),isv(mpcom,mnodec), 
      &               ndcon(mpcom,mnodec)
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
 
       DIMENSION SALT(24),IVALS(24)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*96,TMP*96,SALT*40,hold*40,KEY*1
-      character outsa*84,outsb*84,outsc*84,ltmp*248,SSTRB*48
+      character outsa*84,outsb*84,outsc*84,ltmp*248,SSTRB*48,daytype*28
       logical close1,close2,close3,close4,useold
 
       integer iclawt   ! control law index passed back from editctlperiod
       dimension icsn(5)! for passing sensor location to
-      integer icsn
+      integer icsn,nn
       integer lastndx  ! to keep track of last data position used.
 
 C Number of building functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
+      NN=NBCDT(II)
 
 C Building control day types.
       J=IV
       JJ=J
+      IF(NN.EQ.0)THEN ! All day types have individual controls
+        outs=calentag(jj)
+        write(daytype,'(3a)')' (active on ',outs(1:lnblnk(outs)),')'
+      ELSEIF(NN.EQ.1)THEN ! All day types have same controls
+        daytype=' (active on all daytypes)'
+      ELSE ! Day types are not used but periods of validity are active
+        write(daytype,'(a,i3,a,i3,a)')'(valid from day ',ibcdv(ii,jj,1),
+     &   ' to ',ibcdv(ii,jj,2),')'
+      ENDIF
 
 C Initial menu entry setup.
    92 IER=0
       IVERT=-3
-      WRITE(vert(1),'(a,i3,a,i3)')' function',II,' day type',JJ
+      WRITE(vert(1),'(a,i3,1x,a)')
+     &' control loop',II,daytype
       WRITE(vert(2),'(a,i3)')     ' number of periods:',NBCDP(II,JJ)
       WRITE(vert(3),'(a)') ' ________________________________________'
       WRITE(vert(4),'(a)')
@@ -4600,9 +4579,7 @@ C Window Opening Behaviour and the Influence of Building Design. Tuohy,
 C P., Rijal, H. B., Humphreys, M. A., Nicol, J. F., Samuel, A. A.,
 C Clarke, J. A. Proc. BS 2007. 10th IBPSA Conference and Exhibition.
         elseif(iclaw.eq.4)then
-
-C cm(1)=13 for version 2
-          cm(1)=1
+          cm(1)=13
           H(1)='The windowfan algorithm models occupant behaviour'
           H(2)='and operates windows and fans based on mean operative'
           H(3)='and outdoor mean temperatures automatically.'
@@ -4617,30 +4594,30 @@ C cm(1)=13 for version 2
      &    0.,'F',0.99,'F',0.8,'Running mean response parameter',IER,9)
 
 C Uncomment following code for version 2 of algorithm
-**          CALL EASKR(cm(3),'  ','Fraction window openable in day ? ',
-**     &    0.,'F',1.0,'F',1.0,' Wposs',IER,9)
-**          CALL EASKR(cm(4),' ','Fraction fan available for day use?',
-**     &    0.,'F',1.0,'F',1.0,' Fposs',IER,9)
-**          CALL EASKR(cm(5),' ','Fraction window openable in night ? ',
-**     &    0.,'F',1.0,'F',1.0,' WNposs',IER,9)
-**          CALL EASKR(cm(6),' ','Fraction AC available for day use?',
-**     &    0.,'F',1.0,'F',1.0,' ACavail',IER,9)
-**          CALL EASKR(cm(7),' ','Fraction heating available ?',
-**     &    0.,'F',1.0,'F',1.0,' Havail',IER,9)
-**          CALL EASKR(cm(8),' ','Fraction daylight available?',
-**     &    0.,'F',1.0,'F',1.0,' DLposs',IER,9)
-**          CALL EASKR(cm(9),' ','Power rating of the fan W/m2?',
-**     &    0.,'F',100.,'F',10.0,' PWRfan',IER,9)
-**          CALL EASKR(cm(10),' ','Power rating of the lights W/m2?',
-**     &    0.,'F',100.,'F',10.0,' PWRlight',IER,9)
-**          CALL EASKR(cm(11),' ','Fan comfort temperature adjustment?',
-**     &    0.,'F',4.0,'F',2.0,' DTfan',IER,9)
-**          CALL EASKR(cm(12),' ','Deadband for window open?',
-**     &    0.,'F',8.0,'F',4.0,' WD',IER,9)
-**          CALL EASKR(cm(13),' ','Deadband for fan on?',
-**     &    0.,'F',8.0,'F',2.0,' FD',IER,9)
-**          CALL EASKR(cm(14),' ','Air intake surface ID?',
-**     &    0.,'F',20.,'F',1.0,' AIsurf',IER,9)
+          CALL EASKR(cm(3),'  ','Fraction window openable in day ? ',
+     &    0.,'F',1.0,'F',1.0,' Wposs',IER,9)
+          CALL EASKR(cm(4),' ','Fraction fan available for day use?',
+     &    0.,'F',1.0,'F',1.0,' Fposs',IER,9)
+          CALL EASKR(cm(5),' ','Fraction window openable in night ? ',
+     &    0.,'F',1.0,'F',1.0,' WNposs',IER,9)
+          CALL EASKR(cm(6),' ','Fraction AC available for day use?',
+     &    0.,'F',1.0,'F',1.0,' ACavail',IER,9)
+          CALL EASKR(cm(7),' ','Fraction heating available ?',
+     &    0.,'F',1.0,'F',1.0,' Havail',IER,9)
+          CALL EASKR(cm(8),' ','Fraction daylight available?',
+     &    0.,'F',1.0,'F',1.0,' Dposs',IER,9)
+          CALL EASKR(cm(9),' ','Power rating of the fan W/m2?',
+     &    0.,'F',100.,'F',10.0,' PWRfan',IER,9)
+          CALL EASKR(cm(10),' ','Power rating of the lights W/m2?',
+     &    0.,'F',100.,'F',10.0,' PWRlight',IER,9)
+          CALL EASKR(cm(11),' ','Fan comfort temperature adjustment?',
+     &    0.,'F',4.0,'F',2.0,' DTfan',IER,9)
+          CALL EASKR(cm(12),' ','Deadband for window open?',
+     &    0.,'F',8.0,'F',4.0,' WD',IER,9)
+          CALL EASKR(cm(13),' ','Deadband for fan on?',
+     &    0.,'F',8.0,'F',2.0,' FD',IER,9)
+          CALL EASKR(cm(14),' ','Air intake surface ID?',
+     &    0.,'F',20.,'F',1.0,' AIsurf',IER,9)
 
 C Ask for node associated with operative temperature
           prmpt1='Which node is to be used to represent the '
@@ -4890,20 +4867,20 @@ C of if:elseif:else recover.
 
         H(1)='See ESP-r Data Model Section 9 for details. '
         ino=iclaw
-        ilno=ino
+        if(iclaw.eq.5)ino=4
         idno=1
         write(outs,'(a,i3,a)')'Select a control law (currently: ',
-     &    iclaw,')'
+     &    ino,')'
         call MENUATOL(outs,' Available laws',
      &   'a Global on-off controller','b Global capacity controller',
-     &   'c Global schedule on controller',' ',' ',' ',' ',' ',
-     &   ' ',' ',' ',' ',ino,idno,1)
+     &   'c Global schedule on controller','d Global multisensor ',
+     &   ' ',' ',' ',' ',' ',' ',' ',' ',ino,idno,1)
         if(ino.eq.0)then
           continue
-        elseif(ilno.ne.ino)then
-          iclaw=ino
-          IGCLAW(II,JJ,KK)=iclaw
         endif
+        IF(INO.EQ.4)INO=5
+        iclaw=ino
+        IGCLAW(II,JJ,KK)=iclaw
 
   62    H(1)='See ESP-r Data Model Section 9 for details. '
         CALL EASKR(tcps,' ',' Period start time ? ',
@@ -4989,6 +4966,126 @@ C Global schedule on control.
           K=0
           CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','No. sched lps',IER)
           if(ier.ne.0)goto 37
+        elseif(IGCLAW(II,JJ,KK).eq.5)then
+
+C Global multisensor controller
+C This controller senses the state of other control loops and operates
+C the actuator to either on or off condition based on a logical relation
+C amongst the other control loops. It currently supports the mass flow
+C and plant domains because there are available variables that
+C explicitly define the state of a controller to be on/off in those
+C domains. On the mass flow side this is accomplished by the ctlpos 
+C variable that is a number from 0 to 1 and on the plant side this is 
+C accomplished by the variable lastout which is also 0 to 1 depending
+C upon whether the last output from the loop was on/off respectively.
+          h(1) ='This control senses the state of other control loops'
+          h(2) ='and actuates one named control loop -- overriding the '
+          h(3) ='original actuation state of the actuated loop. '
+          h(4) ='These are termed sensed & actuated loop respectively'
+          h(5) ='Currently it supports the mass flow and plant domains '
+          h(6) =' '
+          h(7) ='A logical relationship amongst the sensed loops exists'
+          h(8) ='of one of the following forms:'
+          h(9) ='AND or OR: Acts on more than one sensed loops and '
+          h(10)='   controls the actuated loop to ON/OFF based on '
+          h(11)='   logical output of the AND/OR relationship'
+          h(12)='NOT: Acts on one or more loops. The actuated loop '
+          h(13)='   is OFF if any one of the sensed loops is ON and '
+          h(14)='   vice versa.'
+          h(15)='SLAVE: Acts on one or more loops. The actuated loop'
+          h(16)='   is OFF if any one of the sensed loops is OFF and '
+          h(17)='   vice versa.'
+          h(18)='For sensed loops that control fractionally between ON/'
+          h(19)='OFF. The above logical relationships assume ON to be '
+          h(20)='anything that is not OFF. Two mechanisms of fractional'
+          h(21)='control are also provided.'
+          h(22)='MAX or MIN: Acts on more than one sensed loops and'
+          h(23)='   controls the actuated loop to maximum/minimum of '
+          h(24)='   sensed loops.'
+          H(25)='NOTE that MAX/MIN is only applicable to flow domain'
+          h(26)='because control is in terms of relative values.'
+          h(27)='(Control in plant may be in terms of absolute or '
+          h(28)='relative values hence MAX/MIN should not be used here)'
+          ICTYP=5
+          nclp=(nint(cm(1))-1)/3
+          WRITE(OUTS,'(a,i4,a)')'Currently sensing ',nclp,' loops'
+          CALL EDISP(IUOUT,OUTS(1:LNBLNK(OUTS)))
+          CALL EASKI(nClp,' ','Number of loops to sense ?',
+     &      0,'F',4,'-',4,'no. loops to sense',IERI,28)
+          CM(1)=REAL(NCLP*3+1)
+          IONE=0
+          DO 5050 ICLP=1,NCLP
+            IDOM=0
+ 1001       IF(NINT(CM(ICLP*3-1)).EQ.1)THEN
+              outs='select domain (currently mass flow)'
+            ELSEIF(NINT(CM(ICLP*3-1)).EQ.2)THEN
+              outs='select domain (currently plant)'
+            ELSE
+              outs='select domain (currently none)'
+            ENDIF
+            iotsl=lnblnk(outs)
+            call edisp(iuout,outs(1:iotsl))
+            call MENUATOL(outs(1:iotsl),outs(1:iotsl),
+     &      'a mass flow','b plant',
+     &      ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',idom,idno,28)
+            IF(IDOM.LE.0)GOTO 1001
+            CM(ICLP*3-1)=REAL(IDOM)
+            NLPS=NINT(CM(ICLP*3))
+            WRITE(OUTS,'(a,i4)')'Current sensed loop number = ',NLPS
+            CALL EDISP(IUOUT,OUTS(1:LNBLNK(OUTS)))
+            CALL EASKI(NLPS,' ','Loop number to sense ?',
+     &      1,'-',1,'-',1,'no. loops to sense',IERI,28)
+            CM(ICLP*3)=REAL(NLPS)
+            IF(ICLP.NE.NCLP.OR.ICLP.EQ.1)THEN
+              IF(IONE.EQ.0)THEN
+                IADR=NINT(CM(ICLP*3+1))
+                IF(IADR.EQ.1)THEN
+                  CALL EDISP(IUOUT,'Current action is AND')
+                ELSEIF(IADR.EQ.2)THEN
+                  CALL EDISP(IUOUT,'Current action is OR')
+                ELSEIF(IADR.EQ.3)THEN
+                  CALL EDISP(IUOUT,'Current action is NOT')
+                  IONE=1
+                ELSEIF(IADR.EQ.4)THEN
+                  CALL EDISP(IUOUT,'Current action is SLAVE')
+                  IONE=1
+                ELSEIF(IADR.EQ.5)THEN
+                  CALL EDISP(IUOUT,'Current action is MAX')
+                  IONE=1
+                ELSEIF(IADR.EQ.6)THEN
+                  CALL EDISP(IUOUT,'Current action is MIN')
+                  IONE=1
+                ENDIF
+                CALL EASKATOG('Logical action variable',
+     &          'with next sensor','AND','OR','NOT','SLAVE',
+     &          'MAX','MIN',' ',iadR,28)
+                CM(ICLP*3+1)=REAL(IADR)
+              ELSE
+                CM(ICLP*3+1)=CM((ICLP-1)*3+1)
+              ENDIF
+            ENDIF
+ 5050     CONTINUE
+          IDOM=0
+ 1002     IF(NINT(CM(NCLP*3+1)).EQ.1)THEN
+            outs='select domain for actuator (currently mass flow)'
+          ELSEIF(NINT(CM(ICLP*3+1)).EQ.2)THEN
+            outs='select domain for actuator (currently plant)'
+          ELSE
+            outs='select domain for actuator (currently none)'
+          ENDIF
+          iotsl=lnblnk(outs)
+          call edisp(iuout,outs(1:iotsl))
+          call MENUATOL(outs(1:iotsl),'select actuation domain',
+     &    'a mass flow','b plant',
+     &    ' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',idom,idno,28)
+          IF(IDOM.LE.0)GOTO 1002
+          CM(NCLP*3+1)=REAL(IDOM)
+          IAPS=NINT(CM(NCLP*3+2))
+          WRITE(OUTS,'(a,i4)')'Current actuated loop number = ',IAPS
+          CALL EDISP(IUOUT,OUTS(1:LNBLNK(OUTS)))
+          CALL EASKI(IAPS,' ','Loop number to actuate ?',
+     &    1,'-',1,'-',1,'loop to actuate',IERI,28)
+          CM(NCLP*3+2)=REAL(IAPS)
         endif
 
 C Extract from working array to gmiscd() common structure
@@ -5003,10 +5100,10 @@ C Extract from working array to gmiscd() common structure
       GOTO 92
 
  3    if(IOS.eq.2)then
-        CALL USRMSG(' ','Permissions issue writing miscellaeeous data.',
+        CALL USRMSG(' ','Permissions issue writing miscellaneous data.',
      &    'W')
       else
-        CALL USRMSG(' ','Problem writing miscellaeeous data.','W')
+        CALL USRMSG(' ','Problem writing miscellaneous data.','W')
       endif
       RETURN
       END

@@ -863,6 +863,7 @@ C geometry.h provides commons G0 and G2.
       logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check if the root validation directory is available.
+      IER=0
       INQUIRE (FILE=VlDirR,EXIST=XST)
       if(.NOT.XST)then
         call usrmsg('  ','The root validation folder is unavailable',

@@ -303,6 +303,7 @@ C STIME  - is used to transfer the simulation time to mfs
 #include "net_flow.h"
 #include "plant.h"
 #include "cfd.h"
+#include "roam.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -320,6 +321,7 @@ C Time and weather data.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      COMMON/TRANSO/LTROR,PAZIO(MCOM,MS)
 
 C Most recent 'future' time-row zone air
 C temperatures saved in MZLS3.
@@ -431,6 +433,13 @@ C Set wind direction index 1-16 corresponding to intervals
 C with mid-points at 0, 22.5, ... , 337.5 deg, relative to
 C surface azimuth (i.e. wind normal to surface = index 1).
           IWDR=NINT((WDIR-SUPNOD(INOD,2))/22.5)+1
+
+C If roaming activated then rotate the model
+          IF(IROAM.EQ.1)THEN
+            ANGLE=SUPNOD(INOD,2)+REAL(LTROR)
+            IF(ANGLE.GE.360.)ANGLE=ANGLE-360.
+            IWDR=NINT((WDIR-ANGLE)/22.5)+1
+          ENDIF
           IF(IWDR.LT.1 ) IWDR=IWDR+16
           IF(IWDR.GT.16) IWDR=IWDR-16
 

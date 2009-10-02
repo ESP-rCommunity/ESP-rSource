@@ -1039,6 +1039,11 @@ C AIM-2, test and see if it exists.
 C Changing orientation definition
         IROAM=1
         call EGETRM(LOUTSTR,K,LROAM,'-','Roaming file name', IER)
+        XST=.FALSE.
+        call FINDFIL(LROAM,XST)
+        if(.NOT.XST)then
+          call usrmsg('Roaming file not found; File name: ',LROAM,'W')
+        endif
       elseif(WORD(1:4).eq.'*tab')then
 
 C Lookup table definition      
