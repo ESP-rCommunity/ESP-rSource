@@ -2155,7 +2155,7 @@ C Get the connections this node sends mass to
         ICON=0
         DO 1 IPCON=1,NPCON
           IF(IPC2(IPCON).EQ.IN)THEN
-            IF(PCONSD(IPCON,1).EQ.IBLDGZ)THEN
+            IF(NINT(PCONSD(IPCON,1)).EQ.IBLDGZ)THEN
               ICON=IPCON
               XMDR=PCONDR(ICON)
             ENDIF

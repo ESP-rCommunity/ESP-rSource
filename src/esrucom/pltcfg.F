@@ -182,9 +182,20 @@ C Electrical details for specified plant components
 C CEDATE required when reading plant data base record
 C containing NMISC.
       CHARACTER CEDATE*16,pcdesc*80,pcname*15,CNTSTR*20,NUM*1
+      character fs*1
 
       INTEGER   id_trnsysCMP  !trnsys component number
       integer lnpcdb ! length of file name
+      integer lndbp   ! for length of standard database path
+      logical unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       call usrmsg(' ','Reading plant network description...','P')
 
@@ -216,6 +227,7 @@ C Pay attention to the implied path of the plant template db from cfg file.
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         lltmp=LPCDB
       elseif(ipathpcdb.eq.2)then
+        lndbp=lnblnk(standarddbpath)
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
       endif
