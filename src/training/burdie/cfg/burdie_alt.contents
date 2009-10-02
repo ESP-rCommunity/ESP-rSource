@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model burdie house detailed model for moisture & IAQ
-defined in burdie.cfg generated on Fri Oct  2 08:16:47 2009. Notes associated
-with the model are in burdie.notes
+This is a synopsis of the model burdie house detailed model (alternate
+contructions) defined in burdie_alt.cfg generated on Fri Oct  2 08:19:29 2009.
+Notes associated with the model are in burdie.notes
  
 The model is located at latitude   50.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 2000 and
@@ -32,7 +32,7 @@ An Integrated Performance View is incomplete or missing.
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
  materials              : /usr/esru/esp-r/databases/constr.db1.a
- constructions          : ../databases/burdie.mdb
+ constructions          : ../databases/burdie.mdb-alt
  plant components       : /usr/esru/esp-r/databases/plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
  optical properties     : /usr/esru/esp-r/databases/optics.db1
@@ -190,8 +190,8 @@ ID Zone         Volume|          Surface
  area of 81.4m^2 & approx floor area of 17.8m^2
  living_room is the ground level lounge
  There is 12.960m2 of exposed surface area, 12.960m2 of which is vertical.
- Outside walls are 49.437 % of floor area & avg U of 0.429 & UA of 3.7630
- Glazing is 23.536 % of floor & 32.253 % facade with avg U of 5.706 & UA of 23.850
+ Outside walls are 49.437 % of floor area & avg U of 0.301 & UA of 2.6460
+ Glazing is 23.536 % of floor & 32.253 % facade with avg U of 2.853 & UA of 11.925
  
  A summary of the surfaces in living_room( 1) follows:
  
@@ -207,7 +207,7 @@ ID Zone         Volume|          Surface
   8  13.3      0.  90. bed_1_r      OPAQUE CEIL ceiling      ||< liv_r:bed_1
   9  4.59      0.   0. store_r      OPAQUE VERT partition    ||< liv_r:store
  10  2.16      0.  90. bed_2_r      OPAQUE CEIL ceiling      ||< liv_r:bed_2
- 11  4.18    180.   0. s_glaz       SC_898 VERT glazing      ||< external
+ 11  4.18    180.   0. s_glaz       DC_807 VERT glazing      ||< external
  
  
  Solar insolation focused on surface floor        (if shading not calculated).
@@ -265,8 +265,8 @@ Wkd 10 EquiptW   22 - 24      0.0      0.0       0.50       0.50
  area of 56.5m^2 & approx floor area of 9.87m^2
  hall describes the lower portion of the entry
  There is 18.360m2 of exposed surface area, 18.360m2 of which is vertical.
- Outside walls are 171.53 % of floor area & avg U of 0.673 & UA of 11.389
- Glazing is 14.488 % of floor & 7.7887 % facade with avg U of 5.706 & UA of 8.1592
+ Outside walls are 171.53 % of floor area & avg U of 0.561 & UA of 9.4898
+ Glazing is 14.488 % of floor & 7.7887 % facade with avg U of 2.853 & UA of 4.0796
  
  A summary of the surfaces in hall( 2) follows:
  
@@ -281,7 +281,7 @@ Wkd 10 EquiptW   22 - 24      0.0      0.0       0.50       0.50
   7  6.51      0.  90. hall_up_r    OPAQUE CEIL ceiling      ||< hall_r:hall_up
   8  2.70     90.   0. kitchrev     OPAQUE VERT partition    ||< hall_r:kitchen
   9  2.00    180.   0. front_door   OPAQUE VERT door         ||< external
- 10  1.43    270.   0. w_glaz       SC_898 VERT glazing      ||< external
+ 10  1.43    270.   0. w_glaz       DC_807 VERT glazing      ||< external
  
  
  Solar insolation focused on surface floor        (if shading not calculated).
@@ -307,8 +307,8 @@ Number of weekday      casual gains=  0
  area of 27.7m^2 & approx floor area of 3.57m^2
  bathroom describes the lower level toilet
  There is 10.260m2 of exposed surface area, 10.260m2 of which is vertical.
- Outside walls are 238.10 % of floor area & avg U of 0.429 & UA of 3.6430
- Glazing is 49.300 % of floor & 17.154 % facade with avg U of 5.706 & UA of 10.042
+ Outside walls are 238.10 % of floor area & avg U of 0.301 & UA of 2.5616
+ Glazing is 49.300 % of floor & 17.154 % facade with avg U of 2.853 & UA of 5.0210
  
  A summary of the surfaces in bathroom( 3) follows:
  
@@ -320,7 +320,7 @@ Number of weekday      casual gains=  0
   4  4.59    270.   0. bath_ex_w    OPAQUE VERT ext_wall_low ||< external
   5  3.44      0.  90. bed_1_r      OPAQUE CEIL ceiling      ||< bath_r:bed_3
   6  3.57      0. -90. floor        OPAQUE FLOR grnd_floor   ||< ground profile  1
-  7  1.76    360.   0. n_glaz       SC_898 VERT glazing      ||< external
+  7  1.76    360.   0. n_glaz       DC_807 VERT glazing      ||< external
   8  0.134     0.  90. air_gap_r    OPAQUE CEIL ceiling      ||< xair_gap_r:bed_3_air_g
  
  
@@ -361,8 +361,8 @@ Wkd  3 EquiptW    9 - 24      0.0      0.0       0.50       0.50
  area of 48.1m^2 & approx floor area of 8.37m^2
  kitchen describes the north facing kitchen
  There is 8.3700m2 of exposed surface area, 8.3700m2 of which is vertical.
- Outside walls are 57.945 % of floor area & avg U of 0.429 & UA of 2.0787
- Glazing is 42.055 % of floor & 42.055 % facade with avg U of 5.706 & UA of 20.084
+ Outside walls are 57.945 % of floor area & avg U of 0.301 & UA of 1.4616
+ Glazing is 42.055 % of floor & 42.055 % facade with avg U of 2.853 & UA of 10.042
  
  A summary of the surfaces in kitchen( 4) follows:
  
@@ -376,7 +376,7 @@ Wkd  3 EquiptW    9 - 24      0.0      0.0       0.50       0.50
   6  8.37      0. -90. floor        OPAQUE FLOR grnd_floor   ||< ground profile  1
   7  4.59    270.   0. bathrm_r     OPAQUE VERT partition    ||< kitch_r:bathroom
   8  3.16      0.  90. bed_1_r      OPAQUE CEIL ceiling      ||< kitch_r:bed_3
-  9  3.52    360.   0. n_glaz       SC_898 VERT glazing      ||< external
+  9  3.52    360.   0. n_glaz       DC_807 VERT glazing      ||< external
  10  0.077     0.  90. xfirst       OPAQUE CEIL ceiling      ||< first:bed_3_air_g
  
  
@@ -438,7 +438,7 @@ Wkd 10 EquiptW   18 - 24      0.0      0.0       0.50       0.50
  area of 32.9m^2 & approx floor area of 4.59m^2
  store describes the back entrance and store
  There is 4.5900m2 of exposed surface area, 4.5900m2 of which is vertical.
- Outside walls are 100.00 % of floor area & avg U of 1.329 & UA of 6.1004
+ Outside walls are 100.00 % of floor area & avg U of 1.257 & UA of 5.7709
  
  A summary of the surfaces in store( 5) follows:
  
@@ -471,8 +471,8 @@ Number of weekday      casual gains=  0
  area of 47.0m^2 & approx floor area of 8.13m^2
  hall_up describes the upper portion of the hall and stairs
  There is 12.557m2 of exposed surface area, 12.557m2 of which is vertical.
- Outside walls are 135.52 % of floor area & avg U of 0.429 & UA of 4.7219
- Glazing is 18.942 % of floor & 12.264 % facade with avg U of 5.706 & UA of 8.7868
+ Outside walls are 135.52 % of floor area & avg U of 0.301 & UA of 3.3203
+ Glazing is 18.942 % of floor & 12.264 % facade with avg U of 2.853 & UA of 4.3934
  
  A summary of the surfaces in hall_up( 6) follows:
  
@@ -488,7 +488,7 @@ Number of weekday      casual gains=  0
   8  6.51      0. -90. hall_r       OPAQUE FLOR ceiling_rev  ||< hall_up_r:hall
   9  1.62      0. -90. liv_r        OPAQUE FLOR ceiling_rev  ||< hall_up_r:living_room
  10  0.402   180.   0. loft         OPAQUE VERT ext_wall_up  ||< hallup_sof:loft
- 11  1.54    180.   0. s_glaz       SC_898 VERT glazing      ||< external
+ 11  1.54    180.   0. s_glaz       DC_807 VERT glazing      ||< external
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -528,8 +528,8 @@ Wkd  3 EquiptW   23 - 24      0.0      0.0       0.50       0.50
  area of 63.5m^2 & approx floor area of 13.3m^2
  bed_1 describes a south facing bedroom
  There is 10.235m2 of exposed surface area, 10.235m2 of which is vertical.
- Outside walls are 52.300 % of floor area & avg U of 0.429 & UA of 2.9722
- Glazing is 24.887 % of floor & 32.242 % facade with avg U of 5.706 & UA of 18.829
+ Outside walls are 52.300 % of floor area & avg U of 0.301 & UA of 2.0900
+ Glazing is 24.887 % of floor & 32.242 % facade with avg U of 2.853 & UA of 9.4144
  
  A summary of the surfaces in bed_1( 7) follows:
  
@@ -544,7 +544,7 @@ Wkd  3 EquiptW   23 - 24      0.0      0.0       0.50       0.50
   7  13.3      0.  90. loft_r       OPAQUE CEIL ceil_loft    ||< bed_1:loft
   8  13.3      0. -90. liv_r        OPAQUE FLOR ceiling_rev  ||< bed_1_r:living_room
   9  0.805   180.   0. loft_s_r     OPAQUE VERT ext_wall_up  ||< bed1_sof:loft
- 10  3.30    180.   0. s_glaz       SC_898 VERT glazing      ||< external
+ 10  3.30    180.   0. s_glaz       DC_807 VERT glazing      ||< external
  
  
  Solar insolation focused on surface liv_r        (if shading not calculated).
@@ -581,8 +581,8 @@ Wkd  2 OccuptW    7 - 24      0.0      0.0       0.50       0.50
  area of 56.9m^2 & approx floor area of 11.9m^2
  bed_2 describes a north facing bedroom
  There is 8.0100m2 of exposed surface area, 8.0100m2 of which is vertical.
- Outside walls are 39.646 % of floor area & avg U of 0.429 & UA of 2.0186
- Glazing is 27.778 % of floor & 41.198 % facade with avg U of 5.706 & UA of 18.829
+ Outside walls are 39.646 % of floor area & avg U of 0.301 & UA of 1.4194
+ Glazing is 27.778 % of floor & 41.198 % facade with avg U of 2.853 & UA of 9.4144
  
  A summary of the surfaces in bed_2( 8) follows:
  
@@ -597,7 +597,7 @@ Wkd  2 OccuptW    7 - 24      0.0      0.0       0.50       0.50
   7  0.630   360.   0. loft_n_r     OPAQUE VERT ext_wall_up  ||< bed2_sof:loft
   8  4.59      0. -90. store_r      OPAQUE FLOR ceiling_rev  ||< bed_2_r:store
   9  5.13      0. -90. kitch_r      OPAQUE FLOR ceiling_rev  ||< bed_2_r:kitchen
- 10  3.30      0.   0. n_glaz       SC_898 VERT glazing      ||< external
+ 10  3.30      0.   0. n_glaz       DC_807 VERT glazing      ||< external
  11  0.142   270.   0. xSurf-10     OPAQUE VERT partition    ||< Surf-10:bed_3_air_g
  12  0.011   270.   0. xbed_2_r     OPAQUE VERT partition    ||< bed_2_r:t_bridge
  
@@ -622,8 +622,8 @@ Number of weekday      casual gains=  0
  area of 52.7m^2 & approx floor area of 10.7m^2
  bed_3 describes room with moisture details
  There is 9.2568m2 of exposed surface area, 9.2568m2 of which is vertical.
- Outside walls are 57.233 % of floor area & avg U of 0.429 & UA of 2.6173
- Glazing is 29.522 % of floor & 34.029 % facade with avg U of 5.706 & UA of 17.973
+ Outside walls are 57.233 % of floor area & avg U of 0.301 & UA of 1.8404
+ Glazing is 29.522 % of floor & 34.029 % facade with avg U of 2.853 & UA of 8.9865
  
  A summary of the surfaces in bed_3( 9) follows:
  
@@ -639,8 +639,8 @@ Number of weekday      casual gains=  0
   8  3.36      0. -90. hall_r       OPAQUE FLOR ceiling_rev  ||< bed_3_r:hall
   9  0.720     0. -90. liv_r        OPAQUE FLOR ceiling_rev  ||< bed_3_r:living_room
  10  0.577   360.   0. loft_n_r     OPAQUE VERT t_bridge     ||< bed_3_r:t_bridge
- 11  1.50    360.   0. n_glaz       SC_898 VERT glazing      ||< external
- 12  1.65    270.   0. w_glaz       SC_898 VERT glazing      ||< external
+ 11  1.50    360.   0. n_glaz       DC_807 VERT glazing      ||< external
+ 12  1.65    270.   0. w_glaz       DC_807 VERT glazing      ||< external
  
  
  Solar insolation focused on surface kitch_r      (if shading not calculated).
@@ -711,7 +711,7 @@ Number of weekday      casual gains=  0
  loft describes the roof space over all rooms
  There is 62.483m2 of exposed surface area, 5.0440m2 of which is vertical.
  Outside walls are 23.073 % of floor area & avg U of 4.645 & UA of 54.200
- Sloped roof is 100.49 % of floor area & avg U of 5.672 & UA of 288.22
+ Sloped roof is 100.49 % of floor area & avg U of 0.427 & UA of 21.716
  
  A summary of the surfaces in loft(11) follows:
  
@@ -761,7 +761,7 @@ Number of saturday     casual gains=  0
  area of 10.4m^2 & approx floor area of 0.000m^2
  collector describes a solar collector (air based)
  There is 5.0002m2 of exposed surface area.
- Sloped roof is 1.0000 % of floor area & avg U of 5.672 & UA of 28.360
+ Sloped roof is 1.0000 % of floor area & avg U of 0.427 & UA of 2.1368
  
  A summary of the surfaces in collector(12) follows:
  
@@ -793,7 +793,7 @@ Number of weekday      casual gains=  0
  area of 12.7m^2 & approx floor area of 0.280m^2
  bed_3_air_g is the air gap on north face of bedroom 3
  There is 6.3049m2 of exposed surface area, 6.1769m2 of which is vertical.
- Outside walls are 2228.9 % of floor area & avg U of 3.815 & UA of 23.807
+ Outside walls are 2228.9 % of floor area & avg U of 3.812 & UA of 23.789
  
  A summary of the surfaces in bed_3_air_g(13) follows:
  
@@ -829,26 +829,30 @@ Number of weekday      casual gains=  0
  Sloped roof area is 55.816m2, flat roof area is 0.0640000m2, skylight area is 0.00m2.
  There is 168.40m2 of outside surface area, 105.83m2 of which is vertical.
  
- Outside walls are 64.918 % of floor area & avg U of 1.299 & UA of 117.32
- Sloped roof is 40.109 % of floor area & avg U of 5.672 & UA of 316.58
- Glazing is 15.938 % of floor & 20.958 % facade with avg U of 5.706 & UA of 126.55
+ Outside walls are 64.918 % of floor area & avg U of 1.202 & UA of 108.59
+ Sloped roof is 40.109 % of floor area & avg U of 0.427 & UA of 23.853
+ Glazing is 15.938 % of floor & 20.958 % facade with avg U of 2.853 & UA of 63.276
  
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of transparent construction: glazing      with SC_8985_04nb optics.
+ Details of transparent construction: glazing      with DC_8074_04nb optics.
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  242    4.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
- ISO 6946 U values (horiz/upward/downward heat flow)=  5.706  6.884  4.645 (partition)  3.770
+ Ext   242    4.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+    2    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   242    4.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.853  3.120  2.561 (partition)  2.270
  
- Clear glass 89/85,     4mm, no blind: with id of: SC_8985_04nb
- with 1 layers [including air gaps] and visible trn: 0.89
+ Clear glass 80/75,     4mm, no blind: with id of: DC_8074_04nb
+ with 3 layers [including air gaps] and visible trn: 0.80
  Direct transmission @ 0, 40, 55, 70, 80 deg
-   0.819 0.802 0.761 0.621 0.376
+   0.676 0.651 0.604 0.441 0.201
  Layer| absorption @ 0, 40, 55, 70, 80 deg
-    1  0.106 0.116 0.124 0.129 0.125
+    1  0.113 0.124 0.134 0.148 0.154
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.087 0.094 0.097 0.087 0.062
  Total area of glazing is     22.18
  
  Details of opaque construction: ext_wall_low
@@ -856,11 +860,9 @@ Number of weekday      casual gains=  0
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight co
-    2    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
-    4    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    2  211  120.0     0.040   250.   840. 0.90 0.30     4.  3.00 Glasswool : Glasswool
  Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.301  0.304  0.298 (partition)  0.293
  Total area of ext_wall_low is     39.65
  
  Details of opaque construction: intern_wall
@@ -897,9 +899,11 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int   207    1.0     0.160  1379.  1004. 0.90 0.60    70.  0.01 PVC : PVC
- ISO 6946 U values (horiz/upward/downward heat flow)=  5.672  6.835  4.623 (partition)  3.755
+ Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
+    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
+ Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.427  0.433  0.420 (partition)  0.412
  Total area of roof is     55.82
  
  Details of opaque construction: partition
@@ -928,20 +932,18 @@ Number of weekday      casual gains=  0
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
     2  121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight co
-    3    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
-    5    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  211  120.0     0.040   250.   840. 0.90 0.30     4.  3.00 Glasswool : Glasswool
  Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.301  0.304  0.298 (partition)  0.293
  Total area of ext_wall_up is     30.76
  
  Details of opaque construction: ceil_loft
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   211   15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
+ Ext   211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 Glasswool : Glasswool
  Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.665  1.753  1.561 (partition)  1.448
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.252  0.253  0.249 (partition)  0.246
  Total area of ceil_loft is     44.15
  
  Details of opaque construction: ext_wall_upr
@@ -949,12 +951,10 @@ Number of weekday      casual gains=  0
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
-    2    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
-    4    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5  121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight co
+    2  211  120.0     0.040   250.   840. 0.90 0.30     4.  3.00 Glasswool : Glasswool
+    3  121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight co
  Int    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.301  0.304  0.298 (partition)  0.293
  Total area of ext_wall_upr is      1.84
  
  Details of opaque construction: soffit
@@ -970,8 +970,8 @@ Number of weekday      casual gains=  0
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int   211   15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.665  1.753  1.561 (partition)  1.448
+ Int   211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 Glasswool : Glasswool
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.252  0.253  0.249 (partition)  0.246
  Total area of ceil_loft_r is     44.16
  
  Details of opaque construction: steel_sheet
