@@ -131,7 +131,6 @@ enableFPE="no"             # FPE-exception handling?
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
-reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading files?
 
 #-----------------------------------------------------------
 # List of targets understood by bps
@@ -139,7 +138,7 @@ reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading fil
 
 # Buildable targets:
 programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew"
-# (bld plt, net are not currently built)
+# (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -197,7 +196,6 @@ if [ $# -ne 0 ]; then
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
         --skip_ish_calcs) skip_ish_calcs="yes";    shift;;
-        --reuse_ish_calcs) reuse_ish_calcs="yes";    shift;;
         clean)          targets="${targets} clean" shift;;
         *)
               # check if target is "buildable",
@@ -332,11 +330,6 @@ if [ $help -eq 1 ]; then
   echo "        This option significantly shortens the time required"
   echo "        to install training and validation files, but shading"
   echo "        files must be updated manually."
-  echo " "
-  echo "    --reuse_ish_calcs: Converts existing ascii shading files "
-  echo "        associated with training and validation exemplars, otherwise"
-  echo "        recalculate shading and insolation. This shortens the time"
-  echo "        required to install training and validation files."
   echo " "
   echo "    --silent: Invoke the silent (non-interactive) installation"
   echo "        mode. Default options will be selected, unless "
@@ -668,10 +661,10 @@ if [ "$mode" = "interactive" ]; then
   noX_prompt="3"
   default="$X11_prompt"
   
-  # Iif [ "$compiler" = "sunF90" ];  then
-  # I  # Is GTK really incompatable with f90 on sun?
-  # I  GTK_prompt="-"
-  # Ifi
+  if [ "$compiler" = "sunF90" ];  then
+    # Is GTK really incompatable with f90 on sun?
+    GTK_prompt="-"
+  fi
 
   if [ "$platform" = "mingw" ]; then
     # MinGW by definition excludes X11.
@@ -1112,11 +1105,7 @@ esac
 case $xml_support in
   yes) 
        # Link xml libraries, along with stdc++.
-       case $compiler in
-         sunF90)  ULIBS="$ULIBS -lXML -lCstd";;
-         GNU)     ULIBS="$ULIBS -lXML -lstdc++";;
-         intel)   ULIBS="$ULIBS -lXML -lstdc++";;
-       esac;
+       ULIBS="$ULIBS -lXML -lstdc++";
 
        # If libxslt is available, link it too
        case $xsl_libs_available in
@@ -1449,8 +1438,8 @@ echo " Installing ESP-r system. This may take some time."
 
  # Ensure that the URL is from ESP-r central. Code built from
  # other repositories is to be designated 'unversioned'
- URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
- URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
+ URLcvsdude=` echo $URL | grep "https*://[a-zA-Z0-9]*@*svn[0-9]*.cvsdude.com/espr/esp-r/"`
+ URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/espr/esp-r/"`
 
  if [ "$svnnotfound" != "" ]    ||
     [ "$notworkingcopy" != "" ] ||
@@ -1787,11 +1776,11 @@ case "${MCTYPE}" in
          echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
          echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
     ;;
-  *)     # Use display as image editor (and what if it's not available?)
-         echo "*image_display,TIF,display" >> ${ESPdir}/esprc
-         echo "*image_display,XBMP,display" >> ${ESPdir}/esprc
-         echo "*image_display,GIF,display" >> ${ESPdir}/esprc
-         echo "*image_display,XWD,display" >> ${ESPdir}/esprc
+  *)     # Use xv as image editor (and what if it's not available?)
+         echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+         echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+         echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+         echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
     ;;
 esac
 echo "*journal,OFF" >> ${ESPdir}/esprc
@@ -1885,9 +1874,12 @@ if [ "$install_training" = "yes" ]; then
      #
      #       Maybe someday...
      
+     ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc >/dev/null
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
-     $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
+     $CLM -mode text -file dec94.clm -act asci2bin silent dec94_clm.txt >/dev/null
      cd ${SRCdir}
+     ./bin/materials_db_conv training/plant/hvac_vav/dbs materials.db.a materials.db >/dev/null
+     ./bin/materials_db_conv training/constr/tp_sub/dbs tp_sub.material.asci tp_sub.material >/dev/null
      echo " Done."
      echo -n "   - Updating materials and climate databases in validation models..."
      cd ${SRCdir}/validation/CEN/13791/databases
@@ -1909,7 +1901,10 @@ if [ "$install_training" = "yes" ]; then
      echo " Done."
      echo -n "   - Removing binary materials db from training models ..."
      cd ${SRCdir}/
-     rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
+     rm -f training/cellular_pv/dbs/cellular_pv.materials
+     rm -f training/constr/tp_sub/dbs/tp_sub.material
+     rm -f training/plant/wch/dbs/db_prc
+     rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
      rm -f validation/CEN/13791/databases/prim.db
      rm -f validation/CEN/13791/databases/WM_A.clm
      rm -f validation/CEN/13791/databases/WM_B.clm
@@ -1956,17 +1951,10 @@ if [ "$install_training" = "yes" ]; then
         if [ ${isi[$((i+2))]} == "*isi" ]; then
           ish_processed_count=$((${ish_processed_count}+1))
 
-          if [ "${reuse_ish_calcs}" = "no" ]; then
-            printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
+          printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
             $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent > /dev/null
             shdfile=${file%/*}/${isi[$((i+3))]}
             mv -f ${shdfile} ${ESPdir}/${shdfile}
-          elif [ "${reuse_ish_calcs}" = "yes" ]; then
-            printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
-            $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act useupdate_silent > /dev/null
-            shdfile=${file%/*}/${isi[$((i+3))]}
-            mv -f ${shdfile} ${ESPdir}/${shdfile}
-          fi
         fi
       fi
       i=2+$(($i))
@@ -2124,7 +2112,7 @@ zzz
 
    cd ${SRCdir}/databases
    echo -n "   - Copying ASCII databases..."
-   cp multicon.db1 multicon.db2 multicon.db3 north_american.constrdb optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
+   cp multicon.db1 multicon.db2 north_american.constrdb optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
 
 fi

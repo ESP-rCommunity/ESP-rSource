@@ -79,10 +79,8 @@ C of ambient temperature from current climate period.
       enthminx= (enthp2(Xmin,Ytmax/1000.))    
       enthminy= (enthp2(Xmin,Ytmin/1000.)) 
       enthmaxy= (enthp2(Xmin,Ytmax/1000.)) 
-
-C Debug.
+C Debug..
 C      write(6,*)'x x ',xmin,xmax,enthmax,enthminx,enthminy,enthmaxy
-
  10   call psychartbackground(Xmin,Xmax,Ytmin,Ytmax,enthmax,
      &  enthminx,enthminy,enthmaxy)
 
@@ -202,10 +200,8 @@ C range of T or RH via colmult.
 C If within temperature range, plot it.
             if(X.ge.Xmin.and.X.le.Xmax)then
               call u2pixel(X,GS,ix,iy)
-
-C Debug.
+C Debug..
 C              write(6,*) ihrplt,colmult,icolindex,ix,iy,CTMP(K),CHUM(K)
-
               ipixhist(ihrplt,1)=ix
               ipixhist(ihrplt,2)=iy
               call esymbol(ix,iy,32,1)
@@ -290,7 +286,7 @@ C enthmaxy enthalpy y axis maximum
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       logical close,colok,cscaleok
-      CHARACTER puts*16
+      CHARACTER puts*12
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSX
@@ -418,10 +414,8 @@ C Case where TD<60 and GS>30
               IPFLAG=1 
             ENDIF                                       
           ENDIF
-
-C Debug.
+C Debug...
 C          write(6,*) TD,xmax,xmax/2.
-
           call eclose(TD,real(int(xmax/2.)),0.001,close)
 C          IF(TD.EQ.int(xmax/2.)) THEN
           IF(close) THEN

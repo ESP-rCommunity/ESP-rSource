@@ -35,15 +35,14 @@ C face are then re-expressed in terms of the new local
 C coordinate system for use in point. This routine is
 C essentially a copy of trnsf1.
 
-      subroutine trnsf1i(izone,is)
+      subroutine trnsf1i(is)
 #include "building.h"
-#include "geometry.h"
 
       common/tracech/icout
-      common/pangl/pazi(ms),pelv(ms),ptilt(ms)
+      common/pangl/pazi,pelv,ptilt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
-      common/c24/izstocn(mcom,ms)
 
       dimension yft(mv)
       character outs*124
@@ -56,6 +55,10 @@ C If trace requested enable writing.
       pi=4.0*atan(1.0)
       r=pi/180.
 
+C Compute the surface azimuth (pazi), elevation (pelv)
+C x-axis tilt (ptilt) angles.
+      call pangs(is)
+
 C Convert pazi, pelv and ptilt to the required coordinate axis
 C rotations as follows.
 C    x-axis - be related to pelv
@@ -63,14 +66,14 @@ C    y-axis - ga related to ptilt
 C    z-axis - al related to pazi
 C Convention: positive angle is anticlockwise when looking along
 C the axis towards the origin.
-      iq=int(pazi(is)/90.0)
+      iq=int(pazi/90.0)
       if(iq.eq.0) goto 1
       goto (1,1,2,2),iq
-    1 al=(180.0-pazi(is))*r
+    1 al=(180.0-pazi)*r
       goto 3
-    2 al=-(pazi(is)-180.0)*r
-    3 be=-pelv(is)*r
-      ga=-ptilt(is)*r
+    2 al=-(pazi-180.0)*r
+    3 be=-pelv*r
+      ga=-ptilt*r
 
 C Set up transform equation coefficients.
 C Transformation order: z-axis (al from pazi) then
@@ -89,20 +92,16 @@ C rotation.
       c(3)=sin(al)*sin(be)*cos(ga)
       c(4)=cos(al)*sin(be)*cos(ga)
       c(5)=cos(be)*cos(ga)
-
-C Get the current connection
-      icc=izstocn(izone,is)
-      ip1=nzjvn(icc,1)
-      xor=vcoord(izone,ip1,1)
-      yor=vcoord(izone,ip1,2)
-      zor=vcoord(izone,ip1,3)
+      ip1=jvn(is,1)
+      xor=x(ip1)
+      yor=y(ip1)
+      zor=z(ip1)
 
 C Transform target surface coordinates.
-      do 10 i=1,nznver(icc)
-         ip=nzjvn(icc,i)
-         xs=vcoord(izone,ip,1)
-         ys=vcoord(izone,ip,2)
-         zs=vcoord(izone,ip,3)
+      do 10 i=1,nver(is)
+         xs=x(jvn(is,i))
+         ys=y(jvn(is,i))
+         zs=z(jvn(is,i))
 
 C Transformed x.
          xft(i)=(xs-xor)*a(1)+(ys-yor)*a(2)-(xs-xor)*a(3)
@@ -117,26 +116,25 @@ C Transformed z.
 
 C Transformed y value should be close to zero; warn if not.
          if(abs(yft(i)).gt.1.E-3)then
-            call edisp(icout,' ')
-            write(outs,9999)is
- 9999       format('TRNSF1I: Surface ',i2,
-     &                         ' is probably not coplanar!')
-            call edisp(icout,outs)
-            write(outs,9998)i,xs,ys,zs
- 9998       format('Vertex ',i2,', which has coordinates ',3f11.6,',')
-            call edisp(icout,outs)
-            write(outs,9997)yft(i)
- 9997       format('has transformed Y value of ',f11.6,
-     &             ' (should be 0).')
-            call edisp(icout,outs)
+             call edisp(icout,' ')
+             write(outs,9999)is
+ 9999        format('TRNSF1I: Surface ',i2,
+     &                          ' is probably not coplanar!')
+             call edisp(icout,outs)
+             write(outs,9998)i,xs,ys,zs
+ 9998        format('Vertex ',i2,', which has coordinates ',3f11.6,',')
+             call edisp(icout,outs)
+             write(outs,9997)yft(i)
+ 9997        format('has transformed Y value of ',f11.6,
+     &              ' (should be 0).')
+             call edisp(icout,outs)
          endif
    10 continue
 
 C Trace output.
       if(tok)then
-         icc=IZSTOCN(izone,is)
          call edisp(icout,' ')
-         write(outs,9996)is,pazi(is),pelv(is),ptilt(is)
+         write(outs,9996)is,pazi,pelv,ptilt
  9996    format('*** TRNSF1I: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
      &          f5.1,'; PTILT= ',f5.1)
          call edisp(icout,outs)
@@ -149,23 +147,25 @@ C Trace output.
      &         'X (BE), Y (GA) & Z (AL) rotations -',be/r,ga/r,al/r
          call edisp(icout,outs)
          call edisp(icout,'ZXY transform equation coefficients:')
-         write(outs,'(a,2x,5f8.2)')'A -',(a(i),i=1,5)
+         write(outs,'(a,2x,5f8.1)')'A -',(a(i),i=1,5)
          call edisp(icout,outs)
-         write(outs,'(a,2x,5f8.2)')'B -',(b(i),i=1,3)
+         write(outs,'(a,2x,5f8.1)')'B -',(b(i),i=1,3)
          call edisp(icout,outs)
-         write(outs,'(a,2x,5f8.2)')'C -',(c(i),i=1,5)
+         write(outs,'(a,2x,5f8.1)')'C -',(c(i),i=1,5)
          call edisp(icout,outs)
-         call edisp(icout,
-     &     'Original XYZ coordinates:    Transformed X`Y`Z` coords:')
-         do 9995 i=1,nznver(icc)
-           ip=nzjvn(icc,i)
-           xs=vcoord(izone,ip,1)
-           ys=vcoord(izone,ip,2)
-           zs=vcoord(izone,ip,3)
-           write(outs,'(i2,2x,3f8.2,2x,3f8.2)')
-     &       i,xs,ys,zs,xft(i),yft(i),zft(i)
-           call edisp(icout,outs)
+         call edisp(icout,'Original XYZ coordinates:')
+         do 9995 i=1,nver(is)
+            xs=x(jvn(is,i))
+            ys=y(jvn(is,i))
+            zs=z(jvn(is,i))
+            write(outs,'(i2,2x,3f8.1)')i,xs,ys,zs
+            call edisp(icout,outs)
  9995    continue
+         call edisp(icout,'Transformed X`Y`Z` coordinates:')
+         do 9994 i=1,nver(is)
+            write(outs,'(i2,2x,3f8.1)')i,xft(i),yft(i),zft(i)
+            call edisp(icout,outs)
+ 9994    continue
       endif
       return
       end

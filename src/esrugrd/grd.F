@@ -36,7 +36,6 @@ C << file names can be in place.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-#include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
 
@@ -83,6 +82,13 @@ C Name of current application
       character cAppName*12      
       
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       LOGICAL MODIFY,MODBND,MODLEN,XST,GRDOK
 
@@ -454,7 +460,7 @@ C Setting izgfoc=0 denotes that not in single zone edit mode.
 C (Re)Set all surfaces to std line width.
         CALL INLNST(1)
         izgfoc=0
-        CALL EVSET('-',IER)
+        CALL EVSET(ITRC,'-',IER)
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display
@@ -477,12 +483,10 @@ C coefficients.
 C *********************************************************************
       SUBROUTINE INTGRD(GRDOK,ITRC)
 #include "building.h"
-#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -491,6 +495,10 @@ C geometry.h provides commons G0 and G2.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
@@ -499,8 +507,14 @@ C geometry.h provides commons G0 and G2.
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND07/VERTX(6,4)
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical closemat1,closemat2
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
       LOGICAL GRDOK
       logical newgeo  ! to use for testing if new/old geometry file.
       DIMENSION ICLN(30)
@@ -520,7 +534,7 @@ C geometry.h provides commons G0 and G2.
       DO 10 ICOMP=1,NCOMP
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
+          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
         endif
@@ -561,19 +575,18 @@ C Also check to see if the file has correct info.
             goto 139  !  a binary file found so carry on.
           endif
  1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
-            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
             if(ier.ne.0)then
               call usrmsg('No readable materials database was found',
      &                  'or file was corrupt','W')
               MATDBOK=.FALSE.
               return
             else
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
-              if(closemat1.or.closemat2)then
+              call eclose(matver,1.1,0.001,close)
+              if(close)then
                 call edisp(iuout,' Filled material data arrays...')
                 MATDBOK=.TRUE.
               else
@@ -585,9 +598,8 @@ C Also check to see if the file has correct info.
               endif
             endif
           elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2)then
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
               call edisp(iuout,' Filled material data arrays...')
               MATDBOK=.TRUE.
             endif
@@ -637,13 +649,6 @@ C Initialise ground coefficients.
 C ***** Dummy display of images.
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
-
-      return
-      end
-
-C Dummy subroutine needed to compile (called from library code).
-      SUBROUTINE PLELEV(direc)
-      CHARACTER direc*1
 
       return
       end

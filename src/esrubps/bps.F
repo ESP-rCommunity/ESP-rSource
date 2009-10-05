@@ -145,7 +145,6 @@ C a subroutine rather than as an application.
 #include "MultiYear_simulations.h"
 #include "cfd.h"
 #include "esprdbfile.h"
-#include "material.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -272,6 +271,13 @@ C      common/TIMEOUT/sTimeout,iTimeoutFlag
 C      character sTimeout*72
 C      integer iTimeoutFlag
 
+C Material data array.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+      
 C Name of current application
       common/APPNAME/cAppName
       
@@ -646,7 +652,7 @@ C Record length of plant results file.
 C Parameter 'nprecl' as defined in 'plant.h'.
       nprl = nprecl
 
-C Unit for materials db in case control -99 is invoked.
+C Unit for primitives constr db in case control -99 is invoked.
       ifmat=ifil+5
 
 C Initialise results averaging flag: 0 means
@@ -1263,7 +1269,7 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
       logical cfgok
       ier=0
       return
@@ -1273,8 +1279,9 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE PLELEV(direc)
+      SUBROUTINE PLELEV(IUF,direc,ier)
       CHARACTER direc*1
+      ier=0
       return
       end
 

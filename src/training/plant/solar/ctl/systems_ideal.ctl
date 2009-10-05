@@ -74,7 +74,7 @@ Flat plate solar collector
 mass_flow ctl
    3
 * Control function
-   -4    0     0   0  
+   -4    0     0    
    -4    4     5    
      1
     1  365
@@ -94,7 +94,7 @@ mass_flow ctl
  south      exch       op_win   exch    
  south      mixed      op_win   mixed
 * Control function
-   -4    12    0   0  
+   -4    12    0    
    -3    22    0    
      1
     1  365
@@ -109,7 +109,7 @@ mass_flow ctl
       1.0
 100.0
 * Control function
-   -4    0     0    0
+   -4    0     0    
    -4    5     2    
      1
     1  365

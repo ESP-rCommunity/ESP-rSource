@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,general # tag version, format, zone name
-*date Fri Jul 17 11:05:01 2009  # latest file modification 
+*date Thu Aug 23 18:21:04 2007  # latest file modification 
 general describes an open plan with 4 desks
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,4.50000,0.00000  #   1
@@ -128,7 +128,7 @@ general describes an open plan with 4 desks
 *edges,16,76,75,79,83,88,89,84,80,85,90,86,87,81,82,78,77  # 32
 # 
 # surf attributes:
-#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -175,20 +175,3 @@ general describes an open plan with 4 desks
  12 18 22 26 30
 # 
 *base_list,1,8,    58.50 0  # zone base list
-# 
-# block entities:
-#  *obs = obstructions
-*block_start,20 20 # geometric blocks
-*obs,3.000,-0.100,3.100,9.000,0.020,0.300,0.000,ob1,NONE  # block  1
-*obs,3.000,-0.300,3.100,9.000,0.020,0.250,0.000,ob2,NONE  # block  2
-*obs,3.000,-0.500,3.100,9.000,0.020,0.220,0.000,ob3,NONE  # block  3
-*obs,3.000,-0.700,3.100,9.000,0.020,0.200,0.000,ob4,NONE  # block  4
-*obs,3.000,-0.900,3.100,9.000,0.020,0.200,0.000,ob5,NONE  # block  5
-*obs,3.000,-1.100,3.100,9.000,0.020,0.200,0.000,ob6,NONE  # block  6
-*obs,12.100,0.100,3.100,6.000,0.020,0.300,90.000,eob1,NONE  # block  7
-*obs,12.300,0.100,3.100,6.000,0.020,0.250,90.000,eob2,NONE  # block  8
-*obs,12.500,0.100,3.100,6.000,0.020,0.220,90.000,eob3,NONE  # block  9
-*obs,12.700,0.100,3.100,6.000,0.020,0.200,90.000,eob4,NONE  # block 10
-*obs,12.900,0.100,3.100,6.000,0.020,0.200,90.000,eob5,NONE  # block 11
-*obs,13.100,0.100,3.100,6.000,0.020,0.200,90.000,eob6,NONE  # block 12
-*end_block

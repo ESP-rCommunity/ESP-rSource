@@ -32,9 +32,8 @@ C system in the plane of the face in which the window is
 C situated.
       SUBROUTINE zipcnv(upgcfg,LOUT,itrc,IER)
 #include "building.h"
-#include "model.h"
 
-C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
+C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -43,6 +42,11 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      common/C3F/LCNN
       common/CFGV/icfgv
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -56,12 +60,11 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
       DIMENSION XX(MS),YY(MS),ndum(MS),ddum(MS),ngld(MS)
       CHARACTER OUTSTR*124,WORD*20,phrase*64
       CHARACTER*72 upgcfg,LCFGF
-      character GFILE*72,ZN*12,outs*124,tmp*124,cfgroot*24
+      character GFILE*72,ZN*12,outs*124,tmp*124,LCNN*72,cfgroot*24
       character oformat*24,head*4,LOUT*72,SOTF*4,SN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,dstmp*24
       logical okform,okant,zipok
-      real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
 
       IER=0
 
@@ -106,7 +109,7 @@ C of the esp-r configuration file.
 
 C If esp-r then generate initial portion of configuration file.
       if(oformat(1:3).eq.'esp')then
-        modeltitle='Translation from XZIP'
+        LSNAM='Translation from XZIP'
         call mksyshd(LOUT,ier)
         if(upgcfg(1:7).eq.'upgrade')then
           write(ioout,'(I7,a)')nz,'  # no of zones'
@@ -145,10 +148,7 @@ C second is the zone name, if more items then not a proper name.
       read(ioin,'(A)',end=44,err=900) tmp
       OUTSTR=tmp(1:LNBLNK(tmp))
       CALL CHITMS(OUTSTR,ND)
-
-C Debug.
-C      write(6,*)' ',outstr(1:40)
-
+      write(6,*)' ',outstr(1:40)
   81  continue
       K=0
       IF(ND.eq.1.or.ND.gt.2)THEN
@@ -193,10 +193,10 @@ C Fill in a default zone name if blank or UNKNOWN.
 
 C Zone is of type REC, look for 7 items on one or two lines.
       IF(CTYPE(ic)(1:3).EQ.'REC')THEN
-        read(ioin,*) XO1,YO1,ZO1,DX1,DY1,DZ1,AR
+        read(ioin,*) XO,YO,ZO,DX,DY,DZ,AR
 
 C Now convert to a gen description.
-        CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,AR)
+        CALL ERECC(XO,YO,ZO,DX,DY,DZ,AR)
         CTYPE(ic)='GEN '
 
 C Zone is of type REG.

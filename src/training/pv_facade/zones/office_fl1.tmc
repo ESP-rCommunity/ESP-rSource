@@ -1,10 +1,10 @@
 # transparent properties of office_fl1 defined in ../zones/office_fl1.tmc
    7   # surfaces
 # tmc index for each surface
-0,0,0,0,0,0,1
+   0  0  0  0  0  0  1
    1  SCF8783_06nb # layers in tmc type 1
 # Transmission @ 5 angles & visible tr.
    0.779   0.759   0.717   0.581   0.348   0.870
 # For each layer absorption @ 5 angles
    0.149   0.163   0.173   0.179   0.169
-   0  # optical control flag
+   0  # blind/shutter control flag

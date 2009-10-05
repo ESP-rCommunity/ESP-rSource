@@ -3015,12 +3015,11 @@ C Toggle delimeter.
 
 C Debug...
 C        do 999 I=1,NGET
-C          write(6,*) (IGETNO(I,K),K=1,9)
-C          write(6,*) SLABEL(I)
-C          write(6,*) GLABEL(I)
-C          write(6,*) '  '
+C          write (6,*) (IGETNO(I,K),K=1,9)
+C          write (6,*) SLABEL(I)
+C          write (6,*) GLABEL(I)
+C          write (6,*) '  '
 C 999    continue
-
         if (NGET.lt.1) then
           call usrmsg('No data to list/ plot!',
      &                'Please choose a metric.','W')
@@ -3362,9 +3361,8 @@ C Check for duplicate information.
      &          IGETNO(J,7).eq.IGETNO(I,7).and.
      &          IGETNO(J,8).eq.IGETNO(I,8)) then
 
-C Debug.
-C              write(6,*) ' found match, NGET = ',I,J
-
+C Debug...
+C              write (6,*) ' found match, NGET = ',I,J
               do 920 K=J,(NGET-1)
                 IGETNO(K,1)=IGETNO(K+1,1)
                 IGETNO(K,2)=IGETNO(K+1,2)
@@ -3406,12 +3404,12 @@ C Check that there are still picks left and not adding a line.
       if(MNGET.gt.3)call edisp(iuout,outs)
 C *** user selections have now finished ***
 
-C Debug.
+C Debug...
 C        do 9999 I=1,NGET
-C          write(6,*) (IGETNO(I,K),K=1,9)
-C          write(6,*) SLABEL(I)
-C          write(6,*) GLABEL(I)
-C          write(6,*) '  '
+C          write (6,*) (IGETNO(I,K),K=1,9)
+C          write (6,*) SLABEL(I)
+C          write (6,*) GLABEL(I)
+C          write (6,*) '  '
 C 9999   continue
 
 C Write GOGET info to tmp file.
@@ -3476,10 +3474,8 @@ C If IROC=-1 then integrate data (xx hours).
 C Should realy use previous value (if available) - assume no rate of change.
               XV=0.0
             else
-
-C debug.        write(6,*) 'KX:',KX,' IX:',IX,' VAL2(KX,IX):',
+C debug...        write (6,*) 'KX:',KX,' IX:',IX,' VAL2(KX,IX):',
 C     &               VAL2(KX,IX),' XVALOLD(KX):',XVALOLD(KX)
-
               XV=(VAL2(KX,IX)-XVALOLD(KX))*float(NTS)/float(NOUT)
             endif
             XVALOLD(KX)=VAL2(KX,IX)
@@ -3500,7 +3496,6 @@ C This recovers one day.
 
       SUBROUTINE GOGETIT(KGET,IDAY,ISTART,IEND)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "control.h"
 
@@ -3510,6 +3505,15 @@ C This recovers one day.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
 
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RECV5/SNA(MCOM,MS)
       common/PREC18/ZTRANA(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
@@ -3528,6 +3532,7 @@ C =2 with more than 3 day types
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124,CSTR*25
       dimension CQ(MTS),GC(MTS)
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -3920,7 +3925,7 @@ C and casual gain control file. << Work towards not reading zone files >>
         IUNIT=IFIL+1
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,0,IUOUT,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
         endif
@@ -4233,8 +4238,8 @@ C IGET = 47 Renewables/advanced materials secondary output.
       elseif(IGETNO(KGET,1).eq.50)then
 
 C IGETNO(KGET,1) = 50 Local PPD: delta T head/ feet.
-        call edisp(iuout,
-     &    'Missing information on local air T, setting dT to zero.')
+        write(6,*) 
+     &        'Missing information on local air T, setting dT to zero.'
         DO  1406 J2=ISTART,IEND
           iflag=1
           dT=0.
@@ -4250,10 +4255,7 @@ C IGETNO(KGET,1) = 51 Local PPD: floor T.
         DO  1404 J2=ISTART,IEND
           iflag=2
           call DISCOMF(iflag,GVAL(J2),PPD)
-
-C Debug.
-C          write(6,*) '41 ',IGETNO(KGET,2),GVAL(J2),PPD
-
+          write (6,*) '41 ',IGETNO(KGET,2),GVAL(J2),PPD
           if (iflag.eq.-1) PPD=101.
           GC(J2)=PPD
  1404   CONTINUE
@@ -4270,10 +4272,7 @@ C IGETNO(KGET,1) = 52 Local PD: ceiling T, assume dT between air and surface.
             iflag=3
           endif
           call DISCOMF(iflag,GVAL(J2),PD)
-
-C Debug.
-C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
-
+          write (6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
           if (iflag.eq.-1) PD=101.
           GC(J2)=PD
  1306   CONTINUE
@@ -4290,10 +4289,7 @@ C IGETNO(KGET,1) = 53 Local PD: assymetric dTrad
             iflag=4
           endif
           call DISCOMF(iflag,GVAL(J2),PD)
-
-C Debug.
-C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
-
+          write (6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
           if (iflag.eq.-1) PD=101.
           GC(J2)=PD
  1308   CONTINUE

@@ -46,7 +46,6 @@ C QLAT   - latent load for present (1) and future (2) time step.
 
       subroutine mzcasi(icomp)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
@@ -60,6 +59,9 @@ C QLAT   - latent load for present (1) and future (2) time step.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
       common/btime/btimep,btimef
+
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Zone lighting and power commons.
       COMMON/ELECFLG/IELF(MCOM)
@@ -250,10 +252,7 @@ C Recover definitions for current day type and timeF.
         ID=IDWP
       endif
       if (btimef.gt.24.) then
-
-C Debug.
-C        write(6,*) 'btimef.gt.24'
-
+        write (6,*) 'btimef.gt.24'
         btimef=btimef-24.
         ID=IDWF
       endif
@@ -552,14 +551,12 @@ C If adaptive comfort algorithm is active add sensible heat gains when on
       call eclose(PREVSTATFAN,1.00,0.01,closea)
       IF(CLOSEA)THEN
 
-C Debug.
+C Debug...
 C        write(6,*)"before addition",QCASC(2)
-
         QCASC(2)=QCASC(2)+TOTPWR(ICOMP)
 
-C Debug.
+C Debug...
 C        write(6,*)"after addition",QCASC(2)
-
       ENDIF
 
 C BEGIN NRCan casual-gain -> electrical coupling code.
@@ -734,7 +731,6 @@ C  FRAC : fraction of casual gain (returned value)
 
       SUBROUTINE INTLUM(ICOMP,FRAC)
 #include "building.h"
-#include "model.h"
 
 C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
@@ -757,6 +753,10 @@ C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
 
 C Zone casual gain control data.
@@ -848,7 +848,7 @@ C If esp pre-processor or user defined df then read in geometry data.
       if(nog)then
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,lgeom(icomp),icomp,0,itu,ier)
+          call georead(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
         else
           call egomin(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
         endif
@@ -1279,12 +1279,9 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               write(doit,'(3a,i3,3a)')'e2r -file ',
      &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
      &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
-
-C Debug.
-C              write(6,'(3a,i3,3a)')'e2r -file ',
-C     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
-C     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
-
+              write(6,'(3a,i3,3a)')'e2r -file ',
+     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
+     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
               call edisp(icout,'Lighting simulation has now commenced.')
               call runit(doit,'-')
 
@@ -2413,7 +2410,7 @@ C sky patch:
          z1 = sin(alt(nzone)*RAD)
       endif
 
-C Debug.
+C Debug
 C      write(6,*) 'x3: ',x3,' y3: ',y3,'z3: ',z3
 C      write(6,*) 'x2: ',x2,' y2: ',y2,'z2: ',z2
 C      write(6,*) 'x1: ',x1,' y1: ',y1,'z1: ',z1

@@ -78,7 +78,7 @@ C to the logic used for the optics database which is also ASCII.
       if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
         CALL EFOPSEQ(IUF,LSBEM,1,IER)
         if(IER.ne.0)then
-          if(unixok)write(6,*) 'error while opening ',LSBEM
+          write(6,*) 'error while opening ',LSBEM
           ier=1
           return
         endif
@@ -88,11 +88,10 @@ C to the logic used for the optics database which is also ASCII.
      &    lsbem(1:lnblnk(lsbem))
 
 C Debug.
-        if(unixok)write(6,*) 'working sbem ',lworking
-
+        write(6,*) 'working sbem ',lworking
         CALL EFOPSEQ(IUF,lworking,1,IER)
         if(IER.ne.0)then
-          if(unixok)write(6,*) 'error while opening ',lworking
+          write(6,*) 'error while opening ',lworking
           ier=1
           return
         endif
@@ -143,8 +142,8 @@ C Read fuel types names and CO2 emission ratings
 
 C Debug...
       IF(IDEBUG.EQ.1)THEN
-        if(unixok)write(6,*)fuelname(ifuel)!,fuelCO2(ifuel)
-        if(unixok)write(6,*)'SBEM db read start'
+        write(6,*)fuelname(ifuel)!,fuelCO2(ifuel)
+        write(6,*)'SBEM db read start'
       ENDIF
       GOTO 1
 
@@ -173,7 +172,7 @@ C Now read system types, default efficiencies & applicable HVAC systems
 
 C Debug...
       IF(IDEBUG.EQ.1)THEN
-        if(unixok)WRITE(6,*)SYSNAM(1:ilen),syseff(isys)
+        WRITE(6,*)SYSNAM(1:ilen),syseff(isys)
       ENDIF
 
       CALL EGETWI(OUTSTR,K,NIT,0,0,'-','nb items',IER)
@@ -196,7 +195,7 @@ C Now read HVAC system types
 
 C Debug...
       IF(IDEBUG.EQ.1)THEN
-        if(unixok)WRITE(6,*)HSYSNAME(IHSYS)
+        WRITE(6,*)HSYSNAME(IHSYS)
       ENDIF
       CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVACGUIDE-HEAT no.s',IER)
       K=15
@@ -240,8 +239,7 @@ C (IBRUKLC.ne.-1111), assuming MCS number of efficiencies are present
      &            'W','default efficiency',IER)
 C Debug...
           IF(IDEBUG.EQ.1)THEN
-            if(unixok)write(6,*)"cool generator eff ",
-     &        syseffc(ics,ihsys),ihsys
+            write(6,*)"cool generator eff ",syseffc(ics,ihsys),ihsys
           ENDIF
  70     CONTINUE
       ENDIF
@@ -277,11 +275,10 @@ C and 3 is for industrial and storage.
         call egetrm(outstr,K,BTYPNAME(IBT),'W',
      &    'building type name',IER)
 
-C Debug.
+C Debug...
         IF(IDEBUG.EQ.1)THEN
-          if(unixok)write(6,*)ibt,ival,IBTYPNDX(IBT),' ',BTYPNAME(IBT)
+          write(6,*)ibt,ival,IBTYPNDX(IBT),' ',BTYPNAME(IBT)
         ENDIF
-
  80   CONTINUE
 
 C Read end of building type information
@@ -303,9 +300,9 @@ C Read building services strategy
      &'low and zero Carbon technology',IER)
       CALL EGETRM(OUTSTR,K,BLDSS(IBT),'W','bldg serv strategy',IER)
 
-C Debug.
+C Debug...
       IF(IDEBUG.EQ.1)THEN
-        if(unixok)write(6,*)ibt,bldif(ibt),bldlzc(ibt),bldss(ibt)
+        write(6,*)ibt,bldif(ibt),bldlzc(ibt),bldss(ibt)
       ENDIF
       GOTO 7
 
@@ -320,9 +317,9 @@ C Read building regulations type
       IBT=IBT+1
       BLDREG(IBT)=OUTSTR(1:LNBLNK(OUTSTR))
 
-C Debug.
+C Debug...
       IF(IDEBUG.EQ.1)THEN
-        if(unixok)write(6,*)ibt,bldreg(ibt)
+        write(6,*)ibt,bldreg(ibt)
       ENDIF
       GOTO 9
 
@@ -368,12 +365,11 @@ C Read DHW generators, efficiencies and BRUKL indices
         CALL EGETWI(OUTSTR,K,IBRUKLW(IBT,IBR),0,0,'-',
      &  'BRUKL DHW indices',IER)
 
-C Debug.
+C Debug...
       IF(IDEBUG.EQ.1)THEN
-        if(unixok)write(6,*)dhwgen(ibt),
-     &    dhweff(ibt,1),dhweff(ibt,2),ibruklw(ibt,ibr)
+        write(6,*)dhwgen(ibt)
+     &  ,dhweff(ibt,1),dhweff(ibt,2),ibruklw(ibt,ibr)
       ENDIF
-
  90   CONTINUE
       IBT=IBT+1
       GOTO 15
@@ -398,9 +394,9 @@ C holds the static data associated with the activity.
       ATYPNAME(IAT)=ACTNAME
       ACTNAME=' '
 
-C Debug.
+C Debug...
       IF(IDEBUG.EQ.1)THEN
-        if(unixok)WRITE(6,*)IAT,NCBTP,' ',ATYPNAME(IAT)
+        WRITE(6,*)IAT,NCBTP,' ',ATYPNAME(IAT)
       ENDIF
 
 C For each of the corresponding building types read in the static
@@ -468,9 +464,7 @@ C s) lighting display W/m2  (display_lighting)
 
         IATYPNDX(IAT,IBTN)=1
         IF(IDEBUG.EQ.1)THEN
-          IF(IATYPNDX(IAT,IBTN).EQ.1)then
-	    if(unixok)WRITE(6,*)' btypes ',BTYPNAME(IBTN)
-          ENDIF
+          IF(IATYPNDX(IAT,IBTN).EQ.1)WRITE(6,*)' btypes ',BTYPNAME(IBTN)
         ENDIF
  130  CONTINUE
       IAT=IAT+1

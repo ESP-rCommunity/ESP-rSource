@@ -129,9 +129,9 @@ C do with the user.
           loop=4
           loopst=1
           if(MMOD.eq.8)then
-            call calenprint(iuout,'g',iyear,loopst,loop)
+            call calenprint(iuout,'g',iyear,loopst,loop,ier)
           else
-            call calenprint(iuout,'t',iyear,loopst,loop)
+            call calenprint(iuout,'t',iyear,loopst,loop,ier)
           endif
         elseif(IW.eq.2)then
           call usrmsg('Go to the Model context -> calendar option',
@@ -147,9 +147,9 @@ C List out the initial months of the calendar.
         loop=4
         loopst=1
         if(MMOD.eq.8)then
-          call calenprint(iuout,'g',iyear,loopst,loop)
+          call calenprint(iuout,'g',iyear,loopst,loop,ier)
         else
-          call calenprint(iuout,'t',iyear,loopst,loop)
+          call calenprint(iuout,'t',iyear,loopst,loop,ier)
         endif
       endif
         
@@ -1438,7 +1438,7 @@ C Zero the dmdloadcount arrays for each gain type (ij) and day type (ik).
  40   continue
 
 C Debug..
-C      write(6,*) 'Nb of daytype periods for dispersed demands...'
+      write(6,*) 'Nb of daytype periods for dispersed demands...'
 
 C Loope through each possible day type (ik) and period (ij).
       do 42 ik=1,10
@@ -1496,17 +1496,16 @@ C Determine if any of the casual gain types were mixed.
  43       continue
 
 C Debug..
-C          write(6,*) ik,' loadcount loadm2count loadmixed'
-C          write(6,*)dmdloadcount(1,ik),dmdloadcount(2,ik),
-C     &      dmdloadcount(3,ik),dmdloadcount(4,ik),dmdloadcount(5,ik),
-C     &      dmdloadcount(6,ik),dmdloadcount(7,ik)
-C          write(6,*)dmdloadm2count(1,ik),dmdloadm2count(2,ik),
-C     &      dmdloadm2count(3,ik),dmdloadm2count(4,ik),
-C     &      dmdloadm2count(5,ik),dmdloadm2count(6,ik)
-C          write(6,*)dmdloadmixed(1,ik),dmdloadmixed(2,ik),
-C     &      dmdloadmixed(3,ik),dmdloadmixed(4,ik),dmdloadmixed(5,ik),
-C     &      dmdloadmixed(6,ik),dmdloadmixed(7,ik)
-
+          write(6,*) ik,' loadcount loadm2count loadmixed'
+          write(6,*)dmdloadcount(1,ik),dmdloadcount(2,ik),
+     &      dmdloadcount(3,ik),dmdloadcount(4,ik),dmdloadcount(5,ik),
+     &      dmdloadcount(6,ik),dmdloadcount(7,ik)
+          write(6,*)dmdloadm2count(1,ik),dmdloadm2count(2,ik),
+     &      dmdloadm2count(3,ik),dmdloadm2count(4,ik),
+     &      dmdloadm2count(5,ik),dmdloadm2count(6,ik)
+          write(6,*)dmdloadmixed(1,ik),dmdloadmixed(2,ik),
+     &      dmdloadmixed(3,ik),dmdloadmixed(4,ik),dmdloadmixed(5,ik),
+     &      dmdloadmixed(6,ik),dmdloadmixed(7,ik)
         endif
  42   continue
       return

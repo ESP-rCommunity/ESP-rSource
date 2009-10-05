@@ -31,12 +31,6 @@ C number of items in the list.
       common/prec17/zbasea(MCOM),ibases(MCOM,12),iuzbasea(MCOM),
      &  izbaselist(MCOM)
 
-C Global coordinates for whole model.
-      real VCOORD    ! X,Y & Z coordinates of vertices in all zones.
-      integer NZNVER ! number of vertices associated with each connection.
-      integer NZJVN  ! topology of vertices associated with each connection.
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
-
 C The following section will hold derived data such as volume and surface
 C areas which are of general interest to many subroutines.
 C vol   - zone bounded volume (m^3)
@@ -61,36 +55,5 @@ C lnzname,lnzdesc - length of strings.
       COMMON/precz/zname(MCOM),zdesc(MCOM)
       integer lnzname,lnzdesc
       common/preczln/lnzname(MCOM),lnzdesc(MCOM)
-
-C Obstruction block commons (whole model)
-      integer NOX,NOZ      ! gridding X and Z resolution of surfaces for shading
-      common/GS6/NOX(MCOM),NOZ(MCOM)
-
-      integer nbobs     ! number of zone obstructions
-      real XOB,YOB,ZOB  ! coordinates of each block origin.
-      real DXOB,DYOB,DZOB  ! width depth and height of each block
-      real BANGOB       ! three rotation angles of block
-      common/GS7/nbobs(MCOM),XOB(MCOM,MB),YOB(MCOM,MB),ZOB(MCOM,MB),
-     &  DXOB(MCOM,MB),DYOB(MCOM,MB),DZOB(MCOM,MB),BANGOB(MCOM,MB,3)
-
-C Eight coordinates for general polygon obstruction 'obsp'. If an
-C obstruction is of type 'obsp' then the XOB,YOB,ZOB and DXOB,DYOB
-C DZOB and BANGOB values will all be zero. This type of obstruction
-C has six sides and eight vertices and each face has 4 edges.
-C The edge ordering is the same as in the GB1 common block.
-      real XBP,YBP,ZBP   ! 8 XYZ coordinates with standard edge linkages.
-      common/GS9/XBP(MCOM,MB,8),YBP(MCOM,MB,8),ZBP(MCOM,MB,8)
-
-C BLOCKNAME (12 char) name of obstruction block.
-C BLOCKMAT (32 char) obstruction block construction (for Radiance).
-C BLOCKTYP (4 char) type of block:
-C   'obs ' - standard block (origin, three dimensions, one rotation)
-C   'obs3' - general block (origin, three dimensions, three rotations)
-C   'obsp' - general polygon (six sides formed from 8 vertices)
-C LNBLOCKNAME,LNBLOCKMAT - length of strings.
-      character BLOCKNAME*12,BLOCKMAT*12,BLOCKTYP*4
-      common/GS8/BLOCKNAME(MCOM,MB),BLOCKMAT(MCOM,MB),BLOCKTYP(MCOM,MB)
-      integer LNBLOCKNAME,LNBLOCKMAT
-      common/GS8LN/LNBLOCKNAME(MCOM,MB),LNBLOCKMAT(MCOM,MB)
 
 

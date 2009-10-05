@@ -623,11 +623,10 @@ C espriou.h provides currentfile.
       common/pophelp/h(60)
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER PDBDESC*40,OUTSTR*124,h*72
+      CHARACTER PDBDESC*40,OUTSTR*124,LASCI*72,h*72
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
       LOGICAL OK,dok
-      CHARACTER*(*) LASCI   ! ascii file name
 
 C The binary file will be overwritten.
       dok=.true.

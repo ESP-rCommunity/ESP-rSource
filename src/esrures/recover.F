@@ -250,10 +250,7 @@ C Averaging.
 
 C Only call MMAPER if output period has changed.
         if (recal) then
-
-C Debug.
-C          write(6,*) 'ask for rescan of db ',recal
-
+          write(6,*) 'ask for rescan of db ',recal
           CALL EDAY(IOD1,IOM1,IODS)
           CALL EDAY(IOD2,IOM2,IODF)
           call MMAPER

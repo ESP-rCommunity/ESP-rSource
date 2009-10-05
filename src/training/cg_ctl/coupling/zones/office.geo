@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,fac_zone_c1 # tag version, format, zone name
-*date Mon Jul 20 16:49:13 2009  # latest file modification 
+*date Thu Aug 23 18:53:53 2007  # latest file modification 
 fac_zone_c1 describes a
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,1.00000,1.00000,0.00000  #   1
@@ -39,7 +39,7 @@ fac_zone_c1 describes a
 *edges,4,19,20,21,22  # 11
 # 
 # surf attributes:
-#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -63,19 +63,3 @@ fac_zone_c1 describes a
 *insol_calc,none  # no insolation requested
 # 
 *base_list,2,5,12,    20.25 0  # zone base list
-# 
-# block entities:
-#  *obs = obstructions
-*block_start,20 20 # geometric blocks
-*obs,0.900,0.700,0.000,0.100,0.299,3.400,0.000,recess_w,Facade_top  # block  1
-*obs,5.501,0.700,0.000,0.100,0.299,3.400,0.000,recess_e,Facade_top  # block  2
-*obs,1.000,0.700,-0.100,4.500,0.299,0.100,0.000,recess_b,Facade_top  # block  3
-*obs,1.000,0.700,3.400,4.500,0.299,0.100,0.000,recess_t,Facade_top  # block  4
-*obs,1.000,0.400,2.050,4.500,0.599,0.010,0.000,LS_ex_t,Light_sh_t  # block  5
-*obs,1.000,0.400,2.040,4.500,0.599,0.010,0.000,LS_ex_b,Light_sh_b  # block  6
-*obs,1.950,0.700,0.980,0.010,0.299,1.070,0.000,Fin_left,Frame  # block  7
-*obs,3.249,0.700,0.980,0.010,0.299,1.070,0.000,Fin_cent,Frame  # block  8
-*obs,4.550,0.700,0.980,0.010,0.299,1.070,0.000,Fin_righ,Frame  # block  9
-*obs,1.000,1.010,2.050,4.500,1.000,0.010,0.000,LS_in_t,Light_sh_t  # block 10
-*obs,1.000,1.010,2.040,4.500,1.000,0.010,0.000,LS_in_b,Light_sh_b  # block 11
-*end_block

@@ -2209,7 +2209,6 @@ C MZGSUP controls the simulation within the 3D ground start up period.
 C *********************************************************************
       SUBROUTINE MZGSUP(ISS)
 #include "building.h"
-#include "model.h"
 #include "tdf2.h"
 
       common/outin/iuout,iuin
@@ -2218,6 +2217,10 @@ C *********************************************************************
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/shad1/iml

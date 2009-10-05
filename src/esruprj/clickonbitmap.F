@@ -33,12 +33,9 @@ C Control interface for defining vertices or a floor plan extrusion
 C via clicking on a bitmap.
       subroutine clickonbitmap(icomp,ier)
 #include "building.h"
-#include "model.h"
 
-C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
+C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20.
 #include "geometry.h"
-#include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -50,6 +47,10 @@ C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -58,9 +59,20 @@ C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -103,11 +115,12 @@ C end indices for each zone.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
       character phrase*124,WORD*48,msg*72,ltmp*72,fs*1
-      character zn*12
+      character zn*12,BLKNAME*8,BLKMAT*12
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
-      CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
+      CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S8*8
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character longtfile*144,fname*96
 
       logical xbmorigin,xbmnorth,xbmscale,xbmgrid,xbmload,xbmsnap
@@ -172,12 +185,12 @@ C plan case(NW), initial base Z (z1) initial top (z2).
       X1=0.0
       other=0.1
 
-C nbobs() is the number of obstruction blocks. NBL is number of
-C historical points for prior blocks (NBL = nbobs*3 because each
+C NB is the number of obstruction blocks. NBL is number of
+C historical points for prior blocks (NBL = NB*3 because each
 C block is defined with an origin point, a point at end of
 C the front face and a point at back right corner). 
       NBFREL=0
-      nbobs(icomp)=0
+      NB=0
 
 C Pixel (upper left and lower right corners) of where the bitmap was draw.
       ixbul=0
@@ -340,7 +353,7 @@ C up and down (by 50 pixel increments).
       if(inpmode.eq.1)then
         ITEMS(8+m+n)='i mode >> pick vertices at one Z'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')'j  Z coordinate @',Z1
-        WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
+        WRITE(ITEMS(10+m+n),'(A,1X,i4)')  'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
@@ -360,8 +373,8 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.3)then
         ITEMS(8+m+n)='i mode >> pick floor plan'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')  'j  floor @  :',Z1
-        WRITE(ITEMS(10+m+n),'(A,1X,F8.4)') 'k  ceiling @:',Z2
-        WRITE(ITEMS(11+m+n),'(A,1X,i2)')   'l  nb. of walls ',NW
+        WRITE(ITEMS(10+m+n),'(A,1X,F8.4)')  'k  ceiling @:',Z2
+        WRITE(ITEMS(11+m+n),'(A,1X,i2)')    'l  nb. of walls ',NW
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
         else
@@ -370,7 +383,7 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.4)then
         ITEMS(8+m+n)='i mode >> elevation (south)'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')'j  Y coordinate @',Y1
-        WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
+        WRITE(ITEMS(10+m+n),'(A,1X,i4)')  'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
@@ -380,7 +393,7 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.5)then
         ITEMS(8+m+n)='i mode >> elevation (east)'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')'j  X coordinate @',X1
-        WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
+        WRITE(ITEMS(10+m+n),'(A,1X,i4)')  'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
@@ -390,7 +403,7 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.6)then
         ITEMS(8+m+n)='i mode >> ground topology'
         ITEMS(9+m+n)='                             '
-        WRITE(ITEMS(10+m+n),'(A,1X,i4)') 'k  nb. of vertices ',INVERT
+        WRITE(ITEMS(10+m+n),'(A,1X,i4)')  'k  nb. of vertices ',INVERT
         ITEMS(11+m+n)='                             '
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
@@ -400,9 +413,8 @@ C up and down (by 50 pixel increments).
       elseif(inpmode.eq.7)then
         ITEMS(8+m+n)='i mode >> obstructions'
         WRITE(ITEMS(9+m+n),'(A,1X,F8.4)')  'j  base @  :',Z1
-        WRITE(ITEMS(10+m+n),'(A,1X,F8.4)') 'k  height:',Z2
-        WRITE(ITEMS(11+m+n),'(A,1X,i2)')   'l  nb. of obs ',
-     &    nbobs(icomp)
+        WRITE(ITEMS(10+m+n),'(A,1X,F8.4)')  'k  height:',Z2
+        WRITE(ITEMS(11+m+n),'(A,1X,i2)')    'l  nb. of obs ',NB
         if(trimmed)then
           ITEMS(12+m+n)='m  start (type `e` end `p` pan)'
         else
@@ -594,9 +606,11 @@ C entry to point clicking.
 C Clear current obstructions and setup for another zones obs.
           INVERT=0
           NBFREL=0
-          nbobs(icomp)=0
-          NOX(icomp)=MOX
-          NOZ(icomp)=MOZ
+          NB=0
+          NOX=MOX
+          NOZ=MOZ
+          NGX=10
+          NGZ=10
           ZN='obstructions'
         else
 
@@ -735,7 +749,7 @@ C Load an X11 bitmap file (user required to convert to the format).
      &    'e large for gridding','f large with ticks for gridding',
      &    'g user defined bitmap',' ',' ',' ',' ',' ',inptb,idno,9)
 
-C Locate the xbm files via the installed path.
+C << the xbm files should be located via the installed path >>
         call isunix(unixok)
         if(unixok)then
           fs = char(47)
@@ -765,11 +779,21 @@ C Locate the xbm files via the installed path.
         else
           goto 142
         endif
-	longtfile=' '    ! reset return string
-        CALL EASKXORGTKF(fname,'X11 bitmap file name?',' ',
-     &    'xxx.xbm',longtfile,'bitmap file',IER,9)
-        write(fname,'(a)') longtfile(1:lnblnk(longtfile))
-     
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        write(longtfile,'(a)') fname(1:lnblnk(fname))
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(fname,'X11 bitmap file name?',
+     &      ' ',96,'xxx.xbm','bitmap file',IER,3)
+          write(longtfile,'(a)') fname(1:lnblnk(fname))
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtfile,'X11 bitmap file name?',
+     &      ' ',144,'xxx.xbm','bitmap file',IER,3)
+          write(fname,'(a)') longtfile(1:95)
+        else
+          CALL EASKF(fname,'X11 bitmap file name?',
+     &      ' ',96,'xxx.xbm','bitmap file',IER,3)
+        endif
+
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
           goto 142  ! redisplay menu.
@@ -845,10 +869,8 @@ C If bitmap is taller, adjust so we start with lower left corner.
 
 C After loading the bitmap populate the display with corners, north,
 C origin if these have been defined.
-
 C Debug.
 C              write(6,*) 'bitmap drawn at ',ixbul,iybul,ixblr,iyblr
-
               call winscl('z',0)
               iid1=ixbul; iid2=iybul;
               call esymbol(iid1,iid2,6,1)
@@ -1274,9 +1296,11 @@ C and ground topology do require intial information.
             NW=0
             INVERT=0
             NBFREL=0
-            nbobs(icomp)=0
-            NOX(icomp)=MOX
-            NOZ(icomp)=MOZ
+            NB=0
+            NOX=MOX
+            NOZ=MOZ
+            NGX=10
+            NGZ=10
             inpmode = inpt
           elseif(inpt.eq.8)then
             continue
@@ -2021,7 +2045,7 @@ C Convert into a gen body and update nzsur and nztv
 
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
-            CALL FILSUR(ICOMP,0)
+            CALL FILSUR(iuout,ICOMP,0)
 
 C Update the connection list.
             ICCC=NCON
@@ -2093,7 +2117,7 @@ C Save this to file before passing into the geometry editing facility.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
             IF(IER.EQ.1)THEN
               CALL usrmsg(' ',' Problem creating geometry file...','W')
@@ -2371,8 +2395,7 @@ C Find which quadrant. Use logic from EREVEAL
           endif
           elev=0.0
           call AZ2UV(azim,elev,vdx,vdy,vdz)
-
-C Debug.
+C Debug...
 C          write(6,*) 'az azim vdx vdy vdz ',az,azim,vdx,vdy,vdz
 
 C Check if tollerably close to an axis.
@@ -2480,14 +2503,13 @@ C between point 2 & 3 draw the two extra lines that complete the box.
               call eswline(iid1,iid2,iixx3,iiyy3)
             endif
           endif
-
-C Debug.
+C Debug..
 C          write(6,*) ixx3,ixx2,ixx1,ioffx,ixx1+ioffx
 C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
 
           write(outs,'(a,i3,a,f8.3,a,f8.3,a,f7.3,a,f7.3,a,f7.3)') 
-     &      'Block ',nbobs(icomp),' @ X',tpx1,' Y',tpy1,' width ',
-     &      twid,'m and depth ',tdepth,'m @ aimuth ',RO
+     &      'Block ',NB,' @ X',tpx1,' Y',tpy1,' width ',twid,
+     &      'm and depth ',tdepth,'m @ aimuth ',RO
           call edisp(iuout,outs)
           call forceflush()
           dok=.true.
@@ -2504,29 +2526,15 @@ C          write(6,*) iyy3,iyy2,iyy1,ioffy,iyy1+ioffy
      &        ipxwhis,ipywhis,iphisznst,iphisznfn,completed,other)
             goto 346
           endif
-          nbobs(icomp)=nbobs(icomp)+1
+          NB=NB+1
           NBFREL=NBFREL+3
 
-C Need to get the associated zone before we can save the names
-C and constructions.
-
-          H(1)=' Pick a zone for these obstructions.'
-          INPIC=1
-          CALL EPICKS(INPIC,IVALS,' ',
-     &      ' Associate which zone with these obstruction(s)? ',
-     &      12,NCOMP,zname,' zone list',IER,1)
-          IC=IVALS(1)
-
 C Ask for name.
-          nbo=nbobs(icomp)
-          H(1)='A descriptive name (up to 12 char) is recommended.'
-          S12='blk_'
-          CALL EASKS(S12,' ',' Name of obstruction? ',
-     &      12,'obstruction','Block name',IER,1)
-          IF(S12(1:2).NE.'  ')then
-            BLOCKNAME(IC,nbo)=S12
-            LNBLOCKNAME(IC,nbo)=lnblnk(S12)
-          endif
+          H(1)='A descriptive name (up to 8 char) is recommended.'
+          S8='blk_'
+          CALL EASKS(S8,' ',' Name of obstruction? ',
+     &      8,'obstruction','Block name',IER,1)
+          IF(S8.NE.' ')BLKNAME(NB)=S8
           H(1)='The base elevation of obstruction is in metres.'
           CALL EASKR(Z1,' ',' Elevation of the base of obstruction?',
      &      0.000,'W',99.9,'W',0.0,'elevation of obs base',IER,1)
@@ -2538,19 +2546,15 @@ C Ask for name.
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(IC,nbo),'(A)')DESC(ISEL)(1:12)
-            LNBLOCKMAT(IC,nbo)=lnblnk(BLOCKMAT(IC,nbo))
+            WRITE(BLKMAT(NB),'(A12)')DESC(ISEL)(1:12)
           endif
-          XOB(IC,nbo)=tpx1
-          YOB(IC,nbo)=tpy1
-          ZOB(IC,nbo)=Z1
-          DXOB(IC,nbo)=twid
-          DYOB(IC,nbo)=tdepth
-          DZOB(IC,nbo)=Z2
-          BANGOB(IC,nbo,1)=RO
-          BANGOB(IC,nbo,2)=0.0
-          BANGOB(IC,nbo,3)=0.0
-          BLOCKTYP(IC,nbo)='obs '
+          XO(NB)=tpx1
+          YO(NB)=tpy1
+          ZO(NB)=Z1
+          DX(NB)=twid
+          DY(NB)=tdepth
+          DZ(NB)=Z2
+          BANG(NB)=RO
           call usrmsg(' ',' ','-')
           call edisp(iuout,' ')
           call edisp(iuout,
@@ -2560,9 +2564,13 @@ C Ask for name.
   347     continue
 
 C Save current batch of obstructions, first ask which zone it is related to.
-
-C << update to work with version 1.1 geometry files. >>
-          if(IC.gt.0.and.nbobs(icomp).gt.0)then
+          H(1)=' Pick a zone for these obstructions.'
+          INPIC=1
+          CALL EPICKS(INPIC,IVALS,' ',
+     &      ' Associate which zone with these obstructions? ',
+     &      12,NCOMP,zname,' zone list',IER,1)
+          IC=IVALS(1)
+          if(IC.gt.0.and.NB.gt.0)then
             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
               WRITE(OFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.obs'
             else
@@ -2667,10 +2675,8 @@ C If user defined interval only set on the first pass.
 
 C Remember position of first and last line for use in horizontal lines.
           if(i.eq.int(viewlim(1)))ixaxl=ix
-
-C Debug.
+C Debug...
 C          write(6,'(a,f8.4,3i6)') 'grid info',xp,ix,ily,iuy
-
           if(ix.gt.ixbul.and.ix.lt.ixblr)then
 
 C If within display range draw vertical line. If spacing less than 1m
@@ -2805,10 +2811,8 @@ C If user defined interval only set on the first pass.
             ypl=float(i)
           endif
           iy=iyo-int(yp*factor)
-
-C Debug.
+C Debug...
 C          write(6,'(a,f8.4,3i6)') 'grid info',yp,ilx,irx,iy
-
           if(iy.gt.iybul.and.iy.lt.iyblr)then
             if(iwmg.eq.3.or.iwmg.eq.4.or.iwmg.eq.5.or.iwmg.eq.6)then
               if(greyok)call winscl('i',nifgrey-4)
@@ -2821,10 +2825,7 @@ C          write(6,'(a,f8.4,3i6)') 'grid info',yp,ilx,irx,iy
             elseif(iwmg.eq.2)then
 
 C Do every other metre.
-
-C Debug.
 C              write(6,*) 'i mod ',i,mod(i,2)
-
               if(mod(i,2).eq.0)then
                 if(greyok)call winscl('i',nifgrey-4)
                 iilx=ilx
@@ -3016,7 +3017,6 @@ C Other is the grid distance if user supplied (iwmg=7).
 
 C Debug.
 C      write(6,*) 'refresh bitmap'
-
       call startbuffer()
       call winlodpart(fname,ixoffset,iyoffset,iwidth,ihight,
      &  15,15,ixbul,iybul,ixblr,iyblr)
@@ -3229,9 +3229,8 @@ C inpm is the input mode.
       dimension ipxwhis(300),ipywhis(300)
       character fname*72
 
-C Debug.
+C Debug...
 C      write(6,*) 'offsets ',ixoffset,iyoffset
-
       if(IWM.eq.1)then
         return
       elseif(IWM.eq.2)then

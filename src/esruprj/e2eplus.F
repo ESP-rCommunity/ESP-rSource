@@ -30,10 +30,8 @@ C itrc (integer) =0 turns off reporting, =1 brief
 C ioout (integer) is the file unit to write to
 C ver (real) should be 1.2, 1.3, 1.4 or 2.0
 #include "building.h"
-#include "model.h"
-#include "site.h"
 
-C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/GS5/GS6.
+C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -41,7 +39,6 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -52,10 +49,29 @@ C ICLIM,LCLIM (for climate file)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C4/XLAT,XLON
+      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      CHARACTER*72 SNFNAM
 
+C SKYR viewfactor from external surfaces to the sky
+C GRDR viewfactor from external surfaces to the ground
+C BLDR viewfactor from external surfaces to other buildings & obstructions
+      COMMON/C5R/SKYR,GRDR,BLDR
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+      common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -64,6 +80,12 @@ C ICLIM,LCLIM (for climate file)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
@@ -98,10 +120,31 @@ C Simulation parameter presets.
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat
 
+      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character GDESCR*36
       CHARACTER NAM*72,TITL*72,outs*124,h*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -109,7 +152,7 @@ C Simulation parameter presets.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,CLMLOC*30,LCFGF*72
       character cfgroot*24
-      character ctldoc*248,LCTLF*72
+      character ctldoc*248,LCTLF*72,BLKNAME*8,BLKMAT*12
       character ZSDES*28,ZSDESC*20,ZSDESS*16,mlcname*12
       character dstmp*24
       CHARACTER LAPROB*72
@@ -216,8 +259,7 @@ C Write header of file.
       WRITE(ioout,'(a)',iostat=ios,err=2)  '!- ESP-r -> EnergyPlus'
       WRITE(ioout,'(2a)',iostat=ios,err=2) '!- MODEL based on ',
      &  LCFGF(1:lnblnk(LCFGF))
-      WRITE(ioout,'(2a)',iostat=ios,err=2) '!- ',
-     &  modeltitle(1:lnblnk(modeltitle))
+      WRITE(ioout,'(2a)',iostat=ios,err=2) '!- ',LSNAM(1:lnblnk(LSNAM))
       WRITE(ioout,'(2a)',iostat=ios,err=2) '!- DATE: ',dstmp
       WRITE(ioout,'(a)',iostat=ios,err=2)  ' '
       if(iver.eq.12)then
@@ -241,28 +283,28 @@ C Write header of file.
      &  '   !- North Axis {deg}'
 
 C Interpret site position.
-      if(siteexposureindex.eq.1)then
+      if(IXPOS.eq.1)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','City',com,
      &    '   !- Terrain'
-      elseif(siteexposureindex.eq.2)then
+      elseif(IXPOS.eq.2)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Suburbs',com,
      &    '   !- Terrain'
-      elseif(siteexposureindex.eq.3)then
+      elseif(IXPOS.eq.3)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Country',com,
      &    '   !- Terrain'
-      elseif(siteexposureindex.eq.4)then
+      elseif(IXPOS.eq.4)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','City',com,
      &    '   !- Terrain'
-      elseif(siteexposureindex.eq.5)then
+      elseif(IXPOS.eq.5)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','City',com,
      &    '   !- Terrain'
-      elseif(siteexposureindex.eq.6)then
+      elseif(IXPOS.eq.6)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','Country',com,
      &    '   !- Terrain'
-      elseif(siteexposureindex.eq.7)then
+      elseif(IXPOS.eq.7)then
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','City',com,
      &    '   !- Terrain'
-      elseif(siteexposureindex.eq.8)then
+      elseif(IXPOS.eq.8)then
         WRITE(ioout,'(3a)',iostat=ios,err=2) '  ',com,
      &    '   !- Terrain (user specified in ESP-r)'
       endif
@@ -440,10 +482,10 @@ C the configuration file data for lat and long.
         WRITE(ioout,'(4a)',iostat=ios,err=2) '  ','not_yet_set',com,
      &    '   !- LocationName'
       endif
-      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '  ',sitelat,com,
+      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '  ',XLAT,com,
      &  '   !- Latitude {deg}'
 
-      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '  ',sitelongdif,com,
+      WRITE(ioout,'(a,f7.3,2a)',iostat=ios,err=2) '  ',XLON,com,
      &  '   !- Longitude {deg} [check this value]'
 
 C Ask user where the current time meridian is.
@@ -550,9 +592,6 @@ C the overall construction and for single glazing this will the
 C the same for EnergyPlus. For multiple layers the data is not
 C quite correct. Assume that visible reflection is based on
 C visible trans and solar absorb.
-
-C << to be done - use if IPRMAT >>
-
         WRITE(OPT,'(A)') DESC(INO)(21:32)
         if(opt(1:6).eq.'OPAQUE')then
           continue
@@ -654,8 +693,7 @@ C Now, for each unique material write description.
       WRITE(ioout,'(a)') ' '
       WRITE(ioout,'(a)') '!- ======= MATERIAL ======'
 
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
+      call eclose(matver,1.1,0.01,closemat)
       do 25 iy = 1,nmat
         if(iprndx(iy).gt.0)then
           WRITE(ioout,'(a)',iostat=ios,err=3) ' '
@@ -665,26 +703,18 @@ C Now, for each unique material write description.
             WRITE(ioout,'(2a)',iostat=ios,err=3) 
      &        'MATERIAL:WINDOWGLASS',com
           endif
-          if(closemat1.or.closemat2)then
+          if(closemat)then
             legmat=iprndx(iy)   ! which legacy index
             if(legmat.ge.0)then
               matarrayindex=mathash(legmat)  ! find matching array index
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-              if(matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                E=0.99; A=0.99; DRV=1.0
-                TITL='GAPS'; NAM='AIR'
-              else
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRV=matdbdrv(matarrayindex)
-                write(TITL,'(a)') 'placeholder'
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
-              endif
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRV=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
           else
             CALL ERPCDB(IFMAT,iprndx(iy),ITRU,IER,DBCON,DBDEN,
@@ -827,11 +857,9 @@ C the name for this layer of this construction
               if(found.and.close)then
                 close1 = .true.
                 iconmatpointer(ino,IL)=ij
-
-C Debug.
+C Debug..
 C                write(6,*) 'air mat->layer',ino,il,ij,iprndx(ij),
 C     &            thkiprndx(ij),iglassndx(ij),riair(ij)
-
               endif
             else
 
@@ -841,11 +869,9 @@ C If solid then check if thickness is unique.
               if(found.and.close)then
                 close1 = .true.
                 iconmatpointer(ino,IL)=ij
-
-C Debug.
+C Debug..
 C                write(6,*) 'mat->layer',ino,il,ij,iprndx(ij),
 C     &            thkiprndx(ij),iglassndx(ij),nameiprndx(ij)
-
               endif
             endif
  240      continue
@@ -1161,8 +1187,6 @@ C If the current periods gain is a new max for the type then update loadcasp.
             endif
  85       continue
         endif
-
-C Debug.
 C        write(6,*)'loadcasp sens ',loadcasp(mz,1,1),loadcasp(mz,2,1),
 C     &    loadcasp(mz,3,1)
 C        write(6,*)'loadcasp latn ',loadcasp(mz,1,2),loadcasp(mz,2,2),
@@ -1216,7 +1240,6 @@ C Also do placeholder of there are no gains of this type on this day.
 C Debug
 C              write(6,*) 'Lights wk CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
-
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF1(J),':00',com,totfrac,com
             endif
@@ -1250,11 +1273,9 @@ C If there are no saturday periods or no lights write standard placeholder.
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
-
-C Debug.
+C Debug
 C              write(6,*) 'Lights sat CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
-
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF2(J),':00',com,totfrac,com
             endif
@@ -1291,11 +1312,9 @@ C Again for sunday.
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
-
-C Debug.
+C Debug
 C              write(6,*) 'Lights sun CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
-
               if(j.lt.NCAS3)then
 
 C If the next period is of the same casual gain type then write
@@ -1399,7 +1418,6 @@ C Go through loops for weekdays, saturdays and sundays for small power gains.
 C Debug.
 C              write(6,*) 'SmP wkd CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
-
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF1(J),':00',com,totfrac,com
             endif
@@ -1436,7 +1454,6 @@ C     &          CGNS,CGNL,totcgnsl,totfrac
 C Debug.
 C              write(6,*) 'SmP sat CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
-
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF2(J),':00',com,totfrac,com
             endif
@@ -1477,7 +1494,6 @@ C And small power for Sunday.
 C Debug
 C              write(6,*) 'SmP sun CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
-
               if(j.lt.NCAS3)then
                 WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &            '  Until: ',ICGF3(J),':00',com,totfrac,com
@@ -1580,11 +1596,9 @@ C Go through loops for weekdays, saturdays and sundays for occupants.
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
-
-C Debug.
+C Debug
 C              write(6,*) 'People wkd CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
-
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF1(J),':00',com,totfrac,com
             endif
@@ -1617,11 +1631,9 @@ C     &          CGNS,CGNL,totcgnsl,totfrac
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
-
 C Debug
 C              write(6,*) 'People sat CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
-
               WRITE(ioout,'(a,i2.2,2a,F7.4,a)',iostat=ios,err=7) 
      &          '  Until: ',ICGF2(J),':00',com,totfrac,com
             endif
@@ -1658,11 +1670,9 @@ C And for Sunday.
               else
                 totfrac=(CGNS+CGNL)/totcgnsl
               endif
-
-C Debug.
+C Debug
 C              write(6,*) 'People sun CGNS CGNL totcgnsl totfrac',
 C     &          CGNS,CGNL,totcgnsl,totfrac
-
               if(j.lt.NCAS3)then
 
 C If the next period is of the same casual gain type then write
@@ -1843,7 +1853,7 @@ C Read in the zone geometry.
         CALL edisp(iuout,outs)
         call eclose(gversion(mz),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
+          call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
         else
           call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
         endif
@@ -1951,7 +1961,6 @@ C 2nd and 3rd (going around the top of the door) is ~90
      &          Y(IWHICH2),Z(IWHICH2),X(IWHICH3),Y(IWHICH3),Z(IWHICH3),
      &          ang2)
               call eclose(ang2,90.00,5.00,closeb)
-
 C Debug.
 C              write(6,*) '2nd & 3rd angles are ',ang1,ang2
 
@@ -1969,10 +1978,8 @@ C If first edge and 5th edge are at same height then a door.
                 call eclose(Z(JVN(IS,5)),Z(JVN(IS,6)),0.01,closec)
                 if(closea.and.closeb.and.closec)then
                   call zsid(mz,is,ZSDES,ZSDESC,ZSDESS)
-                  write(outs,'(3a,a)') 'Surface ',
-     &              ZSDES(1:lnblnk(ZSDES)),
+                  write(6,'(3a,a)') 'Surface ',ZSDES(1:lnblnk(ZSDES)),
      &              ' probably wraps around a door'
-                  call edisp(iuout,outs)
                   COORD(1,1)=X(JVN(IS,1))
                   COORD(1,2)=Y(JVN(IS,1))
                   COORD(1,3)=Z(JVN(IS,1))
@@ -1990,13 +1997,12 @@ C If first edge and 5th edge are at same height then a door.
               endif
             endif
 
-C Debug.
+C Debug...
 C            write(6,*) 'for surface ',is,' corners resolve to...'
 C            write(6,*) COORD(1,1),COORD(1,2),COORD(1,3)
 C            write(6,*) COORD(2,1),COORD(2,2),COORD(2,3)
 C            write(6,*) COORD(3,1),COORD(3,2),COORD(3,3)
 C            write(6,*) COORD(4,1),COORD(4,2),COORD(4,3)
-
           endif
 
 C Have not yet worked out equivalent to a constant boundary condition.
@@ -2105,11 +2111,10 @@ C Generate combined zone & generate surface names as identifiers.
 
 C Also include viewfactor to ground value depending on orientation
 C and site exposure.
-            if(siteexposureindex.ne.8)then
+            if(ixpos.ne.8)then
               if(SSVFC(icc)(1:4).eq.'VERT')then
                 WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
-     &            PROPG(siteexposureindex),com,
-     &            '   !- View Factor to Ground'
+     &            PROPG(IXPOS),com,'   !- View Factor to Ground'
               elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                 WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
      &            com,'   !- View Factor to Ground'
@@ -2124,7 +2129,7 @@ C and site exposure.
             else
               if(SSVFC(icc)(1:4).eq.'VERT')then
                 WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
-     &           groundview,com,'   !- View Factor to Ground'
+     &           GRDR,com,'   !- View Factor to Ground'
               elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                 WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
      &            com,'   !- View Factor to Ground'
@@ -2202,11 +2207,10 @@ C Other face environment.
      &              'SunExposed',com,'   !- Sun Exposure'
                   WRITE(ioout,'(4a)',iostat=ios,err=6) '  ',
      &              'WindExposed',com,'   !- Wind Exposure'
-                  if(siteexposureindex.ne.8)then
+                  if(ixpos.ne.8)then
                     if(SSVFC(icc)(1:4).eq.'VERT')then
                       WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
-     &                  PROPG(siteexposureindex),com,
-     &                  '   !- View Factor to Ground'
+     &                  PROPG(IXPOS),com,'   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                       WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
      &                  com,'   !- View Factor to Ground'
@@ -2221,7 +2225,7 @@ C Other face environment.
                   else
                     if(SSVFC(icc)(1:4).eq.'VERT')then
                       WRITE(ioout,'(a,f5.3,2a)',iostat=ios,err=6) '  ',
-     &                  groundview,com,'   !- View Factor to Ground'
+     &                  GRDR,com,'   !- View Factor to Ground'
                     elseif(SSVFC(icc)(1:4).eq.'CEIL')then
                       WRITE(ioout,'(4a)',iostat=ios,err=6) '  ','0.0',
      &                  com,'   !- View Factor to Ground'
@@ -2364,34 +2368,29 @@ C << a door in a wall or as a surface with two windows in it
           endif
   60    continue
 
-C Check where obstructions are located. Details are in common.
-        IF(IOBS(mz).EQ.2)THEN
+C Check if there are obstructions associated with this zone. If
+C iobs() is 2 and newgeo true then blocks already scanned.
+        IF(IOBS(mz).EQ.0)THEN
+          continue
+        ELSEIF(IOBS(mz).EQ.1)THEN
+          IUF=IFIL+1
+          CALL EGOMST(IUF,ZOBS(mz),0,0,iuout,IER)
+          IF(IER.NE.0) goto 4
+        ELSEIF(IOBS(mz).EQ.2)THEN
           if(.NOT.newgeo)then
             call edisp(iuout,'Confused where obstructions are.')
           endif
         ENDIF
-        if(nbobs(mz).gt.0)then
-          DO 301 IB=1,nbobs(mz)
-
-C For each obstruction convert and write out equivalent syntax.
-C depending on whether 'obs' or 'obs3'.
-            if(BLOCKTYP(mz,IB)(1:4).eq.'obs ')then
-              CALL CNVBLK(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
-     &          DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),BANGOB(mz,IB,1))
-            elseif(BLOCKTYP(mz,IB)(1:4).eq.'obs3')then
-              CALL CNVBLK3A(XOB(mz,IB),YOB(mz,IB),ZOB(mz,IB),
-     &          DXOB(mz,IB),DYOB(mz,IB),DZOB(mz,IB),BANGOB(mz,IB,1),
-     &          BANGOB(mz,IB,2),BANGOB(mz,IB,3))
-            elseif(BLOCKTYP(mz,IB)(1:4).eq.'obsp')then
-              CALL CNVBLKP(mz,IB) ! convert obsp type.
-            endif
-
-            do 302 ibs=1,6   ! for each of the 6 surfaces of block
+        if(NB.gt.0)then
+          DO 301 IB=1,NB
+            CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
+     &        BANG(IB))
+            do 302 ibs=1,6
               WRITE(ioout,'(a)',iostat=ios,err=6) ' '
               WRITE(ioout,'(2a)',iostat=ios,err=6) 
      &          'Surface:Shading:Detached:Building',com
               WRITE(ioout,'(2a,i1,2a)',iostat=ios,err=6) '  ',
-     &          BLOCKNAME(mz,ib)(1:LNBLOCKNAME(mz,ib)),ibs,com,
+     &          BLKNAME(ib)(1:lnblnk(BLKNAME(ib))),ibs,com,
      &          '   !- User Supplied Surface Name'
               WRITE(ioout,'(5a)',iostat=ios,err=6) '  ',com,
      &          '   !- TransSchedShadowSurf'
@@ -2439,8 +2438,10 @@ C for geometry.
      
       return
 
+
+
 C Error.
-  103 call edisp(iuout,'Error opening climate file.')
+  103 write(6,*) 'Error opening climate file.'
       return
 
 C Error messages from header.

@@ -48,7 +48,6 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
-#include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
       
@@ -92,6 +91,12 @@ C Zone information
       COMMON/Displ/SelSurf(MCON)
 
 C Composites information
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -144,9 +149,29 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat
 
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
       LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
@@ -397,7 +422,7 @@ C properties, display it and then present the main menu.
       if(XST)then
         call fdroot(LCMDFL,path,LCFGF)
         call usrmsg('Scanning supplied problem...',' ','-')
-        MODE='ALL '
+        MODE='NONE'
         call ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
         if(IER.eq.0)then
           NZONES=NCOMP
@@ -928,19 +953,18 @@ C Also check to see if the file has correct info.
               goto 139  !  a binary file found so carry on.
             endif
  1000       CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-            call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+            call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
             if(ier.eq.-2)then
               ier=0
-              call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+              call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
               if(ier.ne.0)then
                 call usrmsg('No readable materials database was',
      &                      'found or file was corrupt','W')
                 MATDBOK=.FALSE.
                 goto 10
               else
-                call eclose(matver,1.1,0.001,closemat1)
-                call eclose(matver,1.2,0.001,closemat2)
-                if(closemat1.or.closemat2)then
+                call eclose(matver,1.1,0.001,closemat)
+                if(closemat)then
                   call edisp(iuout,' Filled material data arrays...')
                   MATDBOK=.TRUE.
                 else
@@ -952,9 +976,8 @@ C Also check to see if the file has correct info.
                 endif
               endif
             elseif(ier.eq.0)then
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
-              if(closemat1.or.closemat2)then
+              call eclose(matver,1.1,0.001,closemat)
+              if(closemat)then
                 call edisp(iuout,' Filled material data arrays...')
                 MATDBOK=.TRUE.
               endif
@@ -962,8 +985,7 @@ C Also check to see if the file has correct info.
           endif
 
 C Find version of materials database.
- 139      call eclose(matver,1.1,0.01,closemat1)
-          call eclose(matver,1.2,0.01,closemat2)
+ 139      call eclose(matver,1.1,0.01,closemat)
 
           dok=.true.
           h(1)='If you happen to know the material db index you '
@@ -996,26 +1018,18 @@ C If material database not opened, do it now.
           ENDIF
         endif
 
-        if(closemat1.or.closemat2)then
+        if(closemat)then
           legmat=IWHICH   ! which legacy index
           if(legmat.ge.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRV=1.0
-              TITL='GAPS'; NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
         else
           CALL ERPCDB(IFMAT,IWHICH,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
@@ -1122,13 +1136,6 @@ C Dummy routine (needed for call back from c).
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
      
-      return
-      end
-
-C Dummy subroutine needed to compile (called from library code).
-      SUBROUTINE PLELEV(direc)
-      CHARACTER direc*1
-
       return
       end
 

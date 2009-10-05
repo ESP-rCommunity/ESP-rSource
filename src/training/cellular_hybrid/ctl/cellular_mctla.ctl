@@ -32,14 +32,14 @@ Windows open and fan shuts down for manager_a when ambient temp is between 10 an
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000
     1    3   8.000  # ctl type (dry bulb > flow), law (multi-sensor: normally closed with 3 sensors: For sensor 1 ambient T setpoint 25.00 inverse action AND sensor 2 ambient T setpoint 10.00 direct action AND sensor 3 sense node manager_a setpoint 21.00 direct action.), starting @
      26.  # No. of data items
-  0.00000 3.00000 -3.00000 0.00000 0.00000 0.00000 25.00000 -1.00000 0.00000 1.00000 -3.00000 0.00000 0.00000 0.00000 10.00000 1.00000 0.00000
-  1.00000 -4.00000 1.00000 0.00000 0.00000 21.00000 1.00000 0.00000 1.00000
+  0.000 3.000 -3.000 0.000 0.000 0.000 25.000 -1.000 0.000 1.000 -3.000 0.000 0.000 0.000 10.000 1.000 0.000 1.000
+  -4.000 1.000 0.000 0.000 21.000 1.000 0.000 1.000
     1    0  17.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000
 * Control mass
 # senses node (1) manager_a
    -4    1    0    0  # sensor data
@@ -50,14 +50,14 @@ Windows open and fan shuts down for manager_a when ambient temp is between 10 an
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000
     1    3   8.000  # ctl type (dry bulb > flow), law (multi-sensor: normally closed with 3 sensors: For sensor 1 ambient T setpoint 25.00 inverse action AND sensor 2 ambient T setpoint 10.00 direct action AND sensor 3 sense node manager_a setpoint 21.00 direct action.), starting @
      26.  # No. of data items
-  0.00000 3.00000 -3.00000 0.00000 0.00000 0.00000 25.00000 -1.00000 0.00000 1.00000 -3.00000 0.00000 0.00000 0.00000 10.00000 1.00000 0.00000
-  1.00000 -4.00000 1.00000 0.00000 0.00000 21.00000 1.00000 0.00000 1.00000
+  0.000 3.000 -3.000 0.000 0.000 0.000 25.000 -1.000 0.000 1.000 -3.000 0.000 0.000 0.000 10.000 1.000 0.000 1.000
+  -4.000 1.000 0.000 0.000 21.000 1.000 0.000 1.000
     1    0  17.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000
 * Control mass
 # senses node (1) manager_a
    -4    1    0    0  # sensor data
@@ -68,14 +68,14 @@ Windows open and fan shuts down for manager_a when ambient temp is between 10 an
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000
     1    3   8.000  # ctl type (dry bulb > flow), law (multi-sensor: normally open with 3 sensors: For sensor 1 ambient T setpoint 25.00 inverse action AND sensor 2 ambient T setpoint 10.00 direct action AND sensor 3 sense node manager_a setpoint 21.00 direct action.), starting @
      26.  # No. of data items
-  1.00000 3.00000 -3.00000 0.00000 0.00000 0.00000 25.00000 -1.00000 0.00000 1.00000 -3.00000 0.00000 0.00000 0.00000 10.00000 1.00000 0.00000
-  1.00000 -4.00000 1.00000 0.00000 0.00000 21.00000 1.00000 0.00000 1.00000
+  1.000 3.000 -3.000 0.000 0.000 0.000 25.000 -1.000 0.000 1.000 -3.000 0.000 0.000 0.000 10.000 1.000 0.000 1.000
+  -4.000 1.000 0.000 0.000 21.000 1.000 0.000 1.000
     1    0  17.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000
 * Control mass
 # senses node (1) manager_a
    -4    1    0    0  # sensor data
@@ -86,7 +86,7 @@ Windows open and fan shuts down for manager_a when ambient temp is between 10 an
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000
 * Control mass
 # senses node (1) manager_a
    -4    1    0    0  # sensor data
@@ -97,7 +97,7 @@ Windows open and fan shuts down for manager_a when ambient temp is between 10 an
      1  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000
 * Control mass
 # senses node (1) manager_a
    -4    1    0    0  # sensor data
@@ -108,10 +108,10 @@ Windows open and fan shuts down for manager_a when ambient temp is between 10 an
      3  # No. of periods in day
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000
     1    0   8.000  # ctl type (dry bulb > flow), law (on/off setpoint -100.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
-  -100.00000 1.00000 1.00000
+  -100.000 1.000 1.000
     1    0  17.000  # ctl type (dry bulb > flow), law (on/off setpoint 100.00 direct action ON fraction 0.000.), starting @
       3.  # No. of data items
-  100.00000 1.00000 0.00000
+  100.000 1.000 0.000

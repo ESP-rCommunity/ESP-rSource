@@ -22,7 +22,6 @@ C e2dxf takes an esp-r problem definition and creates a zip
 C file.
       subroutine e2zip(itrc,incobs,ichop)
 #include "building.h"
-#include "model.h"
 
 C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
@@ -32,6 +31,10 @@ C geometry.h provides commons G0/G2/precz.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -60,7 +63,7 @@ C Read in the zone geometry.
         CALL edisp(iuout,outs)
         call eclose(gversion(newfoc),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
         else
           call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
         endif

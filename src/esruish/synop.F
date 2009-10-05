@@ -41,8 +41,10 @@ C a zone transitional shading file.
       common/filep/ifil
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
       common/c24/izstocn(mcom,ms)
@@ -51,7 +53,7 @@ C a zone transitional shading file.
       dimension month(12),iavdec(12)
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-      character outs*124,month*3,sn*12
+      character blkname*8,blkmat*12,outs*124,month*3,sn*12
       logical ok,dok
 
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
@@ -159,7 +161,7 @@ C Total direct shading.
 C Partial direct shading: increment irec by nox to skip over
 C ioshd array.
               elseif(inds.eq.0)then
-                 irec=irec+nox(icomp)
+                 irec=irec+nox
                  read(iunit,rec=irec,iostat=istat,err=1000)pso(i,j),
      &                                                     psof(i,j)
                  irec=irec+1

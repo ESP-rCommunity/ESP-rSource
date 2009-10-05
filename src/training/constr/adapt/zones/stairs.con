@@ -1,4 +1,4 @@
-# thermophysical properties of stairs defined in ../zones/stairs.con
+# thermophysical properties of stairs defined in ../zone/stairs.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
      3,     0  #  1 bin_c        ext_part    
@@ -10,7 +10,7 @@
      4,     0  #  7 w_heat_c     ceiling     
      1,     0  #  8 hall2        int_doors   
 # conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
-# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
+# tivity   |          | heat     | ness(m)|type|  temp | factor | factor |     |  
      0.4200,    1200.0,     837.0,  0.0100,   0,   0.00, 0.00000, 0.00000  #  1  1
      0.5100,    1400.0,    1000.0,  0.1500,   0,   0.00, 0.00000, 0.00000  #     2
      0.4200,    1200.0,     837.0,  0.0100,   0,   0.00, 0.00000, 0.00000  #     3
@@ -38,10 +38,12 @@
      0.1600,     600.0,    1000.0,  0.0250,   0,   0.00, 0.00000, 0.00000  #     4
      0.1900,     700.0,    2390.0,  0.0250,   0,   0.00, 0.00000, 0.00000  #  8  1
 # for each surface: inside face emissivity
- 0.91000,0.90000,0.91000,0.91000,0.91000,0.90000,0.91000,0.90000
+  0.91, 0.90, 0.91, 0.91, 0.91, 0.90, 0.91, 0.90,
 # for each surface: outside face emissivity
- 0.91000,0.90000,0.91000,0.91000,0.90000,0.90000,0.90000,0.90000
+  0.91, 0.90, 0.91, 0.91, 0.90, 0.90, 0.90, 0.90,
 # for each surface: inside face solar absorptivity
- 0.50000,0.65000,0.50000,0.50000,0.50000,0.60000,0.50000,0.65000
+  0.50, 0.65, 0.50, 0.50, 0.50, 0.60, 0.50, 0.65,
 # for each surface: outside face solar absorptivity
- 0.50000,0.65000,0.50000,0.50000,0.60000,0.85000,0.60000,0.65000
+  0.50, 0.65, 0.50, 0.50, 0.60, 0.85, 0.60, 0.65,
+# inside and exterior glazing maintenance factors
+   0.00   0.00

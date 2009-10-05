@@ -8,7 +8,7 @@
    
 #include <stdio.h>
 #include <gtk/gtk.h>
-#include "esp-r.h"
+#include <esp-r.h>
 
 void inserttext_ ( char *message , int len)
 {

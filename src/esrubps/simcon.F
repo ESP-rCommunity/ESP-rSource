@@ -270,7 +270,6 @@ C and information on the saved result set.
 
       SUBROUTINE MZSIML
 #include "building.h"
-#include "model.h"
 #include "plant.h"
 #include "net_flow.h"
 #include "monitor.h"
@@ -311,6 +310,8 @@ C Tolerance for iteration of hydrogen flow matrix
       common /montrv/mnpc,mcomp(mpcom),mcnod(mpcom),mstate,monitr,
      &               ymin,ymax
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1776,8 +1777,7 @@ C values have been set.
         CALL EDAY(isd1,ism1,isds)
         CALL EDAY(isd2,ism2,isdf)
 
-C Debug.
-C        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
+        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
 
         IFDAY=1
         ICFDYS=ISDS
@@ -1817,7 +1817,6 @@ C prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
 #include "building.h"
-#include "model.h"
 #include "esprdbfile.h"
 #include "control.h"
       
@@ -1831,6 +1830,10 @@ C prior to each simulation commencing.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/PREC7/ITCNST
 
       COMMON/C6/INDCFG
@@ -1942,7 +1945,7 @@ C Write out appropriate message.
      &  LCFGF(:lnblnk(LCFGF))
       call edisp(icout,outs)
       write(outs,'(a,a)')   ' Configuration name   : ',
-     &  modeltitle(:lnblnk(modeltitle))
+     &  LSNAM(:lnblnk(LSNAM))
       call edisp(icout,outs)
       call edisp(icout,' ')
       if(NCF.eq.0.and.NCL.eq.0)then
@@ -2467,7 +2470,6 @@ C if itru=33 then works as a header to the trace.
 
       subroutine mzinfo(itru)
 #include "building.h"
-#include "model.h"
 #include "esprdbfile.h"
 #include "control.h"
       
@@ -2478,6 +2480,10 @@ C if itru=33 then works as a header to the trace.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 
@@ -2497,7 +2503,7 @@ C if itru=33 then works as a header to the trace.
       call edisp248(itru,louts,100)
       write(outs,'(A,A)')' Configuration file  :  ',LCFGF
       call edisp(itru,outs)
-      write(outs,'(A,A)')' Configuration descr :  ',modeltitle
+      write(outs,'(A,A)')' Configuration descr :  ',LSNAM
       call edisp(itru,outs)
       call edisp(itru,' ')
       IF(NCF.EQ.0.AND.NCL.EQ.0)then

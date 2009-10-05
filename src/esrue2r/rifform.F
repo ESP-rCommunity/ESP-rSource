@@ -347,10 +347,7 @@ C Set file name including path and open.
           call edisp(iuout,' No view selected using default.')
           write(doit,'(2a)') 'rad -n -e -v xyZv ',fil(1:lnblnk(fil))
         endif
-
-C Debug.
-C        write(6,*) doit
-
+        write(6,*) doit
         call edisp(iuout,'Check text window for the trial results.')
         call runit(doit,'-')
       else

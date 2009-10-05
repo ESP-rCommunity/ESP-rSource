@@ -39,16 +39,13 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
       SUBROUTINE EDZONE(ITRC,ICOMP,IER)
 #include "net_flow.h"
 #include "building.h"
-#include "model.h"
-#include "site.h"
 
-C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/c20/GS5.
+C geometry.h provides commons G0/G2/G4/G7/prec2/prec17/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-#include "material.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -60,8 +57,14 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/ground/grdtmp(12,mgrdp)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -69,7 +72,24 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C Obstruction blocks via geometry.h.
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
+C NB number of obstruction blocks.
+C X0 Y0 Z0 coordinates of each block origin.
+C DX DY DZ width depth and height of each block
+C BANG block rotation angle.
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
+C NOX NOZ gridding resolution of surfaces for shading
+C NGX NGZ not used.
+C BLKNAME (8 char) name of obstruction block.
+C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
+      character BLKNAME*8,BLKMAT*12
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -80,6 +100,10 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 
 C prec17 common is described in geometry.h.
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -113,6 +137,7 @@ C prec17 common is described in geometry.h.
       CHARACTER ITEMS*33,ITEMSS*32,trnalt*33,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,T64*64,D64*64
+      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER LAPROB*72
       character MLCN*12,OTF*4,OPT*12,MLCSYM*12,SN*12,CUBN*6,act*1
       character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16,msgv*42
@@ -130,7 +155,7 @@ C prec17 common is described in geometry.h.
       real areaslproof,areafltroof,areaskylt
       real uavgtran,uavgsky,uavwall,uavfltroof,uavslproof,wallper
 
-      integer lna,lnb,lnbm,lnbn
+      integer lna,lnb
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -183,7 +208,7 @@ C been created. Check to see if it has.
         NCCODE(ICOMP)=ICOMP
       ELSEIF(ICOMP.GT.MCOM)THEN
         CALL USRMSG('There is not sufficient space for another',
-     &    'zone within this model! ','W')
+     &    'zone within this configuration! ','W')
         RETURN
       ENDIF
 
@@ -448,7 +473,7 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                   call edisp(iuout,outs)
                   call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,
+                    call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
      &                iuout,IER)
                   else
                     call egomin(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
@@ -475,7 +500,7 @@ C Logic to decide whether to upgrade other zone geometry format.
      &                iuout,3,IER)
                   else
                     call emkgeo(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                3,IER)
+     &                iuout,3,IER)
                   endif
                   IF(IER.NE.0)CALL USRMSG(
      &              'There was a problem updating the other surface ',
@@ -567,10 +592,7 @@ C Read current zone back in and then update the configuration file.
 
 C Do a bound check on the current zone and update display.
 C Set all surfaces to standard line width.
-
-C Debug.
 C      write(6,*)nzg,nznog(1),nznog(2),nznog(3)
-
       CALL INLNST(1)
       itsnm=0
       nzg=1
@@ -580,10 +602,14 @@ C      write(6,*)nzg,nznog(1),nznog(2),nznog(3)
 
 C Test edge adjacencies and subsurfaces if it is the first time
 C in to the zone or if the geometry has benn modified.
+
+C << test check parent and child by changing act='c' >>
+C << NOTE: parent - child not yet held in geometry file >>
       if(.NOT.browse)then
         if(firstin.or.MODGEO)then
           act = 'c'
-          call suredgeadj(0,act,icomp,ier) ! determine child surfaces
+C          act = '-'
+          call suredgeadj(0,act,icomp,ier)
           firstin=.false.
         endif
       endif
@@ -642,7 +668,7 @@ C Test for saving current or new format geometry file.
             if(newgeo)then
               call geowrite(IFIL+2,LTMP,ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LTMP,ICOMP,3,IER)
+              call emkgeo(IFIL+2,LTMP,ICOMP,iuout,3,IER)
             endif
           endif
 
@@ -819,7 +845,7 @@ C any flow network node associated with this zone.
             if(newgeo)then
               call geowrite(IFIL+2,LTMP,ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LTMP,ICOMP,3,IER)
+              call emkgeo(IFIL+2,LTMP,ICOMP,iuout,3,IER)
             endif
             if(IAIRN.ge.1.and.ICAAS(ICOMP).ne.0)then
               SUPNOD(ICAAS(ICOMP),2)=VOL(ICOMP)
@@ -841,7 +867,7 @@ C << graphic network flow file to reflect changes in zone volume.
             MODGEO=.false.
           endif
         endif
-        MODIFY=.TRUE.   ! set so zone is re-drawn
+        MODIFY=.TRUE.
       ELSEIF(INO.EQ.ITEMC+7)THEN
 
 C Vertex-surface association editing.
@@ -1173,7 +1199,7 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                       call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                       if(newgeo)then
                         call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                    0,iuout,IER)
+     &                    0,0,iuout,IER)
                       else
                         call egomin(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
      &                    0,0,iuout,IER)
@@ -1191,7 +1217,7 @@ C Assign new MLC name to the icoth surface.
      &                  iuout,3,IER)
                       else
                         call emkgeo(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                  3,IER)
+     &                  iuout,3,IER)
                       endif
                       IF(IER.NE.0)CALL USRMSG(
      &                 'Problem updating other surface attribute... ',
@@ -1211,10 +1237,7 @@ C Read current zone back in and then update the configuration file.
 
 C Determine the match in the system topology and update it. 
               CALL SURADJ(ICOMP,ISS,IE,TMP,IZC,ISC,IC,DESCRC)
-              if(ioc.ne.ic)then
-                write(outs,*) 'edgeo mismatch ic ioc ',ic,ioc
-                call edisp(iuout,outs)
-              endif
+              if(ioc.ne.ic)write(6,*) 'edgeo mismatch ic ioc ',ic,ioc
               IC1(IC)=ICOMP
               IE1(IC)=ISS
               IF(IOS.EQ.1)THEN
@@ -1323,7 +1346,7 @@ C Finally update the system configuration file if not browsing.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
 	    silent= .false.
             call sumrchg(ICOMP,'r',silent)
@@ -1359,7 +1382,7 @@ C editing facility.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
             silent = .false.
             call sumrchg(ICOMP,'r',silent)
@@ -1532,7 +1555,7 @@ C Produce help text for the menu.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
 
 C Warn user if there is a flow node associated with this zone that
@@ -1591,19 +1614,19 @@ C Rotate any obstructions associated with this zone.
      &                 'associated with this zone? ',ok,dok,2)
             if(ok)then
               call edisp(iuout,' Obstruction data prior to transform.')
-              CALL EGOMST(IFIL+2,ICOMP,ZOBS(ICOMP),0,ITRC,ITRU,IER)
+              CALL EGOMST(IFIL+2,ZOBS(ICOMP),0,ITRC,ITRU,IER)
               PI = 4.0 * ATAN(1.0)
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 86 ij=1,nbobs(icomp)
-                XXX=XOB(icomp,ij)-X1
-                YYY=YOB(icomp,ij)-Y1
+              do 86 ij=1,NB
+                XXX=XO(ij)-X1
+                YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA
                 YR=YYY*CA-XXX*SA
-                XOB(icomp,ij)=XR+X1
-                YOB(icomp,ij)=YR+Y1
-                BANGOB(icomp,ij,1)=BANGOB(icomp,ij,1)+VAL
+                XO(ij)=XR+X1
+                YO(ij)=YR+Y1
+                BANG(ij)=BANG(ij)+VAL
   86          continue
               CALL MKGOMST(IFIL+2,ZOBS(ICOMP),ICOMP,IER)
             endif
@@ -1622,14 +1645,14 @@ C so now apply the transform to the obstructions (only).
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 87 ij=1,nbobs(icomp)
-                XXX=XOB(icomp,ij)-X1
-                YYY=YOB(icomp,ij)-Y1
+              do 87 ij=1,NB
+                XXX=XO(ij)-X1
+                YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA
                 YR=YYY*CA-XXX*SA
-                XOB(icomp,ij)=XR+X1
-                YOB(icomp,ij)=YR+Y1
-                BANGOB(icomp,ij,1)=BANGOB(icomp,ij,1)+VAL
+                XO(ij)=XR+X1
+                YO(ij)=YR+Y1
+                BANG(ij)=BANG(ij)+VAL
   87          continue
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
@@ -1716,7 +1739,7 @@ C other zone.
             if(newgeo)then
               call geowrite(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
-              call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,3,IER)
+              call emkgeo(IFIL+1,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
             MODIFY=.TRUE.
             MODBND=.TRUE.
@@ -1730,7 +1753,7 @@ C other zone.
             MODBND=.TRUE.
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
+              call georead(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
             else
               call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
             endif
@@ -1747,7 +1770,7 @@ C other zone.
 C User aborted so scan the intial zone prior to returning.
               call eclose(gversion(icomp),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
+                call georead(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
               else
                 call egomin(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
               endif
@@ -1759,7 +1782,7 @@ C User aborted so scan the intial zone prior to returning.
 C Re-establish the initial zone geometry.
             call eclose(gversion(icomp),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
+              call georead(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
             else
               call egomin(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
             endif
@@ -1787,7 +1810,7 @@ C If user has not canceled then perform the transform.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
           if(IAIRN.ge.1.and.ICAAS(ICOMP).ne.0)then
             call usrmsg(
@@ -1831,11 +1854,11 @@ C Transform any obstructions associated with this zone.
      &                 'associated with this zone? ',ok,dok,2)
             if(ok)then
               call edisp(iuout,' Obstruction data prior to transform.')
-              CALL EGOMST(IFIL+2,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
-              do 63 ij=1,nbobs(icomp)
-                XOB(icomp,ij)=XOB(icomp,ij)+VALX
-                YOB(icomp,ij)=YOB(icomp,ij)+VALY
-                ZOB(icomp,ij)=ZOB(icomp,ij)+VALZ
+              CALL EGOMST(IFIL+2,ZOBS(ICOMP),0,ITRC,iuout,IER)
+              do 63 ij=1,NB
+                XO(ij)=XO(ij)+VALX
+                YO(ij)=YO(ij)+VALY
+                ZO(ij)=ZO(ij)+VALZ
   63          continue
               CALL MKGOMST(IFIL+2,ZOBS(ICOMP),ICOMP,IER)
             endif
@@ -1850,10 +1873,10 @@ C so now apply the transform to the obstructions (only).
      &                 'associated with this zone? ',ok,dok,2)
             if(ok.and.newgeo)then
               call edisp(iuout,' Obstruction data prior to transform.')
-               do 65 ij=1,nbobs(icomp)
-                XOB(icomp,ij)=XOB(icomp,ij)+VALX
-                YOB(icomp,ij)=YOB(icomp,ij)+VALY
-                ZOB(icomp,ij)=ZOB(icomp,ij)+VALZ
+              do 65 ij=1,NB
+                XO(ij)=XO(ij)+VALX
+                YO(ij)=YO(ij)+VALY
+                ZO(ij)=ZO(ij)+VALZ
   65          continue
               call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             endif
@@ -1975,7 +1998,7 @@ C Logic for deciding which format of geometry file to write.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
 
 C Warn user if there is a flow node associated with this zone that
@@ -1989,8 +2012,6 @@ C zone mirroring may require boundary nodes to be updated.
         elseif(INOR.eq.1.or.INOR.eq.6.or.INOR.eq.10.or.INOR.eq.15)then
           goto 77
         endif
-
-C Ensure that the zone is redrawn and boundaries are checked.
         MODIFY=.TRUE.
         MODBND=.TRUE.
         MODGEO=.TRUE.
@@ -2031,43 +2052,21 @@ C And also report other zone summary fields as in the QA report.
         context=.true.
         CALL SURINFO(ICOMP,iuout,context)
 
-C Display obstructions if newgeom is true. Write out report
-C format for each type of obstruction.
+C Display obstructions if newgeom is true.
         if(newgeo)then
           if(iobs(icomp).eq.2)then
-            if(nbobs(icomp).gt.0)then
+            if(NB.gt.0)then
               call edisp(iuout,'Details of obstruction blocks:')
               write(outs,'(a,i2,a,i2,a)')'Shading based on grids of ',
-     &          NOX(icomp),' by ',NOZ(icomp),' for surfaces.'
+     &          NOX,' by ',NOZ,' for surfaces.'
               call edisp(iuout,outs)
-              write(outs,'(2a)')
-     &        'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. ',
-     &        'Orientation Name Material'
-	      call edisp(iuout,outs)
-              DO 9995 I=1,nbobs(icomp)
-                lnbn=LNBLOCKNAME(icomp,I)
-                lnbm=LNBLOCKMAT(icomp,I)
-                if(BLOCKTYP(icomp,I)(1:4).eq.'obs ')then
-                  WRITE(outs,9994)I,XOB(icomp,I),YOB(icomp,I),
-     &              ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
-     &              DZOB(icomp,I),BANGOB(icomp,I,1),
-     &              BLOCKNAME(icomp,I)(1:lnbn),BLOCKMAT(icomp,I)(1:lnbm)
- 9994             FORMAT(I3,6F8.2,F7.2,' ',a,' ',a)
-                  call edisp(iuout,outs)
-                elseif(BLOCKTYP(icomp,I)(1:4).eq.'obs3')then
-                  WRITE(outs,9993)I,XOB(icomp,I),YOB(icomp,I),
-     &              ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),
-     &              DZOB(icomp,I),BANGOB(icomp,I,1),BANGOB(icomp,I,2),
-     &              BANGOB(icomp,I,3),BLOCKNAME(icomp,I)(1:lnbn),
-     &              BLOCKMAT(icomp,I)(1:lnbm)
- 9993             FORMAT(I3,6F8.2,3F7.2,' ',a,' ',a)
-                  call edisp(iuout,outs)
-                elseif(BLOCKTYP(icomp,I)(1:4).eq.'obsp')then
-                  WRITE(outs,'(i3,5a)')I,' ',BLOCKNAME(icomp,I)(1:lnbn),
-     &              ' ',BLOCKMAT(icomp,I)(1:lnbm),
-     &              ' is a 6 sided polygon obstruction' 
-                  call edisp(iuout,outs)
-                endif
+              call edisp(iuout,
+     &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
+              DO 9995 I=1,NB
+                WRITE(outs,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
+     &            BANG(I),BLKNAME(I)(1:LNBLNK(BLKNAME(I))),BLKMAT(I)
+ 9994           FORMAT(I3,7F8.1,' ',a,' ',a)
+                call edisp(iuout,outs)
  9995         CONTINUE
               call edisp(iuout,' ')
             endif
@@ -2305,7 +2304,7 @@ C Ask for name of file to put updated information into.
         if(newgeo)then
           call geowrite(IFIL+2,LTMP,ICOMP,iuout,4,IER)
         else
-          call emkgeo(IFIL+2,LTMP,ICOMP,4,IER)
+          call emkgeo(IFIL+2,LTMP,ICOMP,iuout,4,IER)
         endif
         IF(IER.NE.0)THEN
           CALL USRMSG(' ','Problem creating file!','W')
@@ -2337,7 +2336,6 @@ C ************* EDINSUL
 C Edit zone insolation distribution.
       SUBROUTINE EDINSUL(ICOMP,IER)
 #include "building.h"
-#include "model.h"
 
 C Get common blocks g0/g2/g4/precz from geometry.h
 #include "geometry.h"
@@ -2351,8 +2349,14 @@ C Get common blocks g0/g2/g4/precz from geometry.h
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -2482,7 +2486,7 @@ C If any changes update and then save geometry file.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
           changed=.false.
         endif
@@ -2528,7 +2532,7 @@ C If any changes update and then save geometry file before invoking ish.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
           changed=.false.
         endif
@@ -2864,7 +2868,6 @@ C Note: use display width of 41 char.
 
 C Debug...
 C        write(6,*) 'act np iva ',act,np,iva
-
       endif
       RETURN
       END
@@ -2884,11 +2887,8 @@ C << possible to alter the inside/outside hc from this interface? >>
 
       SUBROUTINE EDSURA(ICOMP,ISS,ITRC,MODGEO,IER)
 #include "building.h"
-#include "model.h"
-#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -2903,8 +2903,20 @@ C Optical and geometric properties.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/ground/grdtmp(12,mgrdp)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -2936,7 +2948,6 @@ C Optical and geometric properties.
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
-      real XO1,ZO1  ! to prevent name clash in geometry.h
 
 C Display a selection of surfaces available in the zone. If surface
 C faces another zone, get the other surface connection index. 
@@ -3087,13 +3098,13 @@ C Produce help text for the menu.
 
 C Add/insert a surface, return to higher level menu when done.
 C The 'ii' request an interactive insertion, the parameters
-C XO1,ZO1,XW,ZH are not used in an interactive insert.
+C XO,ZO,XW,ZH are not used in an interactive insert.
         H(1)='Inserting a surface into an existing surface is a'
         H(2)='common way to create a door or window opening.'
         LASTS=NSUR
         call tstamp('>','PRJ: insert surface into another')
-        XO1=0.
-        ZO1=0.
+        XO=0.
+        ZO=0.
         XW=0.
         ZH=0.
         rsname=' '
@@ -3102,7 +3113,7 @@ C XO1,ZO1,XW,ZH are not used in an interactive insert.
         rsuse1=' '
         rsuse2=' '
         rsparent='-'
-        CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO1,ZO1,XW,ZH,
+        CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO,ZO,XW,ZH,
      &    rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
         if(LASTS.ne.NSUR)then
           call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -3113,7 +3124,7 @@ C XO1,ZO1,XW,ZH are not used in an interactive insert.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           endif
           CALL EMKCFG('-',IER)
           call warnmod(ICOMP,'sf+')
@@ -3386,7 +3397,7 @@ C zone.
                     call edisp(iuout,outs)
                     call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                     if(newgeo)then
-                      call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,
+                      call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
      &                  iuout,IER)
                     else
                       call egomin(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
@@ -3409,7 +3420,7 @@ C Logic to decide whether to update other zone geometry format.
      &                  iuout,3,IER)
                     else
                       call emkgeo(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                  3,IER)
+     &                  iuout,3,IER)
                     endif
                     IF(IER.NE.0)CALL USRMSG(
      &               'Problem updating other surface attribute... ',
@@ -3898,7 +3909,7 @@ C Finally update the system configuration file if not browsing.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
           endif
 
 C If user requested other side to be updated do this as well. Read
@@ -3911,7 +3922,7 @@ C other zone) and write out that zones geometry.
             call edisp(iuout,outs)
             call eclose(gversion(IC2(IC)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+2,LGEOM(IC2(IC)),IC2(IC),0,iuout,IER)
+              call georead(IFIL+2,LGEOM(IC2(IC)),IC2(IC),0,0,iuout,IER)
             else
               call egomin(IFIL+2,LGEOM(IC2(IC)),IC2(IC),0,0,iuout,IER)
             endif
@@ -3929,7 +3940,7 @@ C Assign new MLC name to the icoth surface.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(IC2(IC)),IC2(IC),iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(IC2(IC)),IC2(IC),3,IER)
+              call emkgeo(IFIL+2,LGEOM(IC2(IC)),IC2(IC),iuout,3,IER)
             endif
             IF(IER.NE.0)CALL USRMSG(' ',
      &           'Problem updating other surface attribute.','W')
@@ -5853,12 +5864,9 @@ C menu. ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 C Make use of VERINFO to display the current vertex surface connections.
       SUBROUTINE EDVLIST(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 #include "prj3dv.h"
-#include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -5866,6 +5874,10 @@ C Make use of VERINFO to display the current vertex surface connections.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -5873,6 +5885,11 @@ C Make use of VERINFO to display the current vertex surface connections.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -5909,8 +5926,6 @@ C Make use of VERINFO to display the current vertex surface connections.
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
-      real XO1,ZO1  ! to prevent name clash in geometry.h
-      
 #ifdef OSX
       integer iix,iiy
 #else
@@ -6245,10 +6260,7 @@ C which results in no deviation.
                   XX(KK) = X(JVN(is,KK+1))  ! take next coords
                   YY(KK) = Y(JVN(is,KK+1))
                   ZZ(KK) = Z(JVN(is,KK+1))
-
-C Debug.
-C                  write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
-
+                  write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
                 elseif(loop.eq.NVER(is))then
                   if(kk.lt.NVER(is))then
                     XX(KK) = X(JVN(is,KK))  ! no need to skip
@@ -6258,10 +6270,7 @@ C                  write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
                     XX(KK) = X(JVN(is,1))   ! take first coords
                     YY(KK) = Y(JVN(is,1))
                     ZZ(KK) = Z(JVN(is,1))
-
-C Debug.
-C                    write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
-
+                    write(6,*) 'Skipping vertex ',loop,kk,JVN(is,KK)
                   endif
                 else
                   XX(KK) = X(JVN(is,KK))    ! no need to skip
@@ -6278,8 +6287,7 @@ C See if any points are out of the plane.
               call CHECKWARP(1,iuout,is,N,XX,YY,ZZ,iwhich,ofby,ivoff)
 
 C Debug.
-C              write(6,*) is,iwhich,ofby,ivoff
-
+              write(6,*) is,iwhich,ofby,ivoff
               if(ivoff.gt.0)then
                 goto 59
               else
@@ -6416,7 +6424,7 @@ C Delete a surface. If number of surfaces changed then update cfg.
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           endif
           call warnmod(ICOMP,'sf-')
         endif
@@ -6545,11 +6553,11 @@ C the mouse click option.
 
 C Add/insert a surface, return to higher level menu when done.
 C The 'ii' request an interactive insertion, the parameters
-C XO1,ZO1,XW,ZH are not used in an interactive insert. The string
+C XO,ZO,XW,ZH are not used in an interactive insert. The string
 C parameters are currently passed as blanks for interactive mode.
 C << ?? make use of rsname etc in interactive use?? >>
-          XO1=0.
-          ZO1=0.
+          XO=0.
+          ZO=0.
           XW=0.
           ZH=0.
           rsname=' '
@@ -6558,7 +6566,7 @@ C << ?? make use of rsname etc in interactive use?? >>
           rsuse1=' '
           rsuse2=' '
           rsparent='-'
-          CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO1,ZO1,XW,ZH,
+          CALL INSREC(ITRC,ITRU,ICOMP,IS,'ii',XO,ZO,XW,ZH,
      &      rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
         elseif(IRT.eq.4)then
           call tstamp('>','PRJ: copy local surfaces')
@@ -6693,11 +6701,9 @@ C Assign edges for the top surface in reverse order of the original.
             iecount=NTV
             do 144 ix = 1,ibaseedge
               JVN(itopsurf,ix)=iecount
-
 C Debug.
 C              write(6,*) ' top ',ix,iecount,JVN(itopsurf,ix),
 C     &          X(iecount),Y(iecount),Z(iecount)
-
               iecount=iecount-1
   144       continue
             NVER(itopsurf)=ibaseedge
@@ -6727,7 +6733,6 @@ C than ibasecount and one rather than itopcount+1.
             JVN(NSUR+1,3)=iv3
             JVN(NSUR+1,4)=iv4
             NVER(NSUR+1)=4
-
 C Debug.
 C            write(6,*) ' iv1 iv2 iv3 iv4 ',iv1,iv2,iv3,iv4
 
@@ -6900,7 +6905,7 @@ C Record the recent changes and re-display
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           endif
           call warnmod(ICOMP,'sf+')
         endif
@@ -7156,7 +7161,7 @@ C hit and then loop through each of the vertices for something close.
 
 C If there were only two points to find, check if user clicked on edge.
             if(inpick.eq.2)then
-              call edisp(iuout,'code for edge check in progress')
+              write(6,*) 'code for edge check in progress'
             endif
             goto 46
           endif
@@ -7278,7 +7283,6 @@ C << conversion to the 'G1' format takes place.
  
       SUBROUTINE EZIPIN(IUNIT,LZIP,ICOMP,IR,ITRC,ITRU,IER)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "espriou.h"
       
@@ -7372,6 +7376,10 @@ C ZDESC (64 char) - zone notes from geometry.h.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -7403,8 +7411,6 @@ C be inserted.
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
-      real ARX,Z1X,Z2X,DX1,DY1,DZ1  ! to avoid variable clash with geometry.h
-      real XO1,YO1,ZO1
 
       IER=0
       phrasea=' '
@@ -7446,14 +7452,9 @@ C Recover the remainder of the line.
       IF(IER.NE.0)goto 1001
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','COM',IFLAG)
-
-C Debug.
-C      write(6,*) 'the overall file name is ',WORD
-
-C Debug.
-C      lwd=lnblnk(WORD)
-C      write(6,*) 'the file name is ',WORD(2:lwd-1)
-
+      write(6,*) 'the overall file name is ',WORD
+      lwd=lnblnk(WORD)
+      write(6,*) 'the file name is ',WORD(2:lwd-1)
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'zip date',IER)
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'blank line',IER)
 
@@ -7565,9 +7566,9 @@ C Zone is of type REC, look for 7 items on one or two lines.
      &    ' REC line origin was misunderstood.'
         IF(IER.NE.0)goto 1001
         K=0
-        CALL EGETWR(OUTSTR,K,XO1,0.,0.,'-','rec X origin',IER)
-        CALL EGETWR(OUTSTR,K,YO1,0.,0.,'-','rec Y origin',IER)
-        CALL EGETWR(OUTSTR,K,ZO1,0.,0.,'-','rec Z origin',IER)
+        CALL EGETWR(OUTSTR,K,XO,0.,0.,'-','X origin',IER)
+        CALL EGETWR(OUTSTR,K,YO,0.,0.,'-','Y origin',IER)
+        CALL EGETWR(OUTSTR,K,ZO,0.,0.,'-','Z origin',IER)
 
 C If only 3 items on first line read another OUTSTR and try to continue.
         IF(ND.EQ.3) THEN
@@ -7575,13 +7576,13 @@ C If only 3 items on first line read another OUTSTR and try to continue.
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'line 3',IER)
           IF(IER.NE.0)goto 1001
         ENDIF
-        CALL EGETWR(OUTSTR,K,DX1,0.,0.,'-','length',IER)
-        CALL EGETWR(OUTSTR,K,DY1,0.,0.,'-','width',IER)
-        CALL EGETWR(OUTSTR,K,DZ1,0.,0.,'-','height',IER)
-        CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rotation angle',IER)
+        CALL EGETWR(OUTSTR,K,DX,0.,0.,'-','length',IER)
+        CALL EGETWR(OUTSTR,K,DY,0.,0.,'-','width',IER)
+        CALL EGETWR(OUTSTR,K,DZ,0.,0.,'-','height',IER)
+        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rotation angle',IER)
 
 C Now convert to a gen description.
-        CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,ARX)
+        CALL ERECC(XO,YO,ZO,DX,DY,DZ,AR)
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
         CTYPE(icomp)='GEN '
@@ -7594,9 +7595,9 @@ C Zone is of type REG.
         IF(IER.NE.0)goto 1001
         K=0
         CALL EGETWI(OUTSTR,K,NW,3,MS-2,'W','no of walls',IER)
-        CALL EGETWR(OUTSTR,K,Z1X,0.,1000.,'W','floor height',IER)
-        CALL EGETWR(OUTSTR,K,Z2X,Z1X,1000.,'F','ceiling ht',IER)
-        CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rot angle',IER)
+        CALL EGETWR(OUTSTR,K,Z1,0.,1000.,'W','floor height',IER)
+        CALL EGETWR(OUTSTR,K,Z2,Z1,1000.,'F','ceiling ht',IER)
+        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rot angle',IER)
 
 C Read base vertex data.
         DO 60 IW=1,NW
@@ -7608,11 +7609,11 @@ C Read base vertex data.
    60   CONTINUE
 
 C Now convert to GEN body type and place into in common block.
-        CALL EREGC(NW,Z1X,Z2X,XX,YY)
-        IF(ARX.LT.-.01.OR.ARX.GT..01)then
+        CALL EREGC(NW,Z1,Z2,XX,YY)
+        IF(AR.LT.-.01.OR.AR.GT..01)then
           x1=X(1)
           y1=Y(1)
-          CALL ESCROT(ARX,x1,y1)
+          CALL ESCROT(AR,x1,y1)
         endif
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
@@ -7629,7 +7630,7 @@ C Zone is of type GEN.
         CALL EGETWI(OUTSTR,K,NSUR,3,MS,'F','no of surfaces',IER)
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
-        CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rot angle',IER)
+        CALL EGETWR(OUTSTR,K,AR,-360.,360.,'W','rot angle',IER)
 
 C Read each vertex data line, strip any comments, see if 3 items and
 C place in X(),Y(),Z().
@@ -7673,10 +7674,10 @@ C Now proceed to read vertices on one or more lines.
    10   CONTINUE
 
 C Rotate if required.
-        if(ARX.LT.-.01.OR.ARX.GT..01)then
+        if(AR.LT.-.01.OR.AR.GT..01)then
           x1=X(1)
           y1=Y(1)
-          CALL ESCROT(ARX,x1,y1)
+          CALL ESCROT(AR,x1,y1)
         endif
       ELSE
         write(outs,'(2a)') ' Geometry shape type illegal in ',
@@ -7792,7 +7793,7 @@ C IDPN defines the default plane numbers.
 C Surface attributes:
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
-      CALL FILSUR(ICOMP,0)
+      CALL FILSUR(itru,ICOMP,0)
 
 C Estimate base area.
       checkbase=.true.
@@ -7809,7 +7810,7 @@ C Estimate base area.
 C If base area has not yet been calculated, do this now and
 C get surface areas via call to zinfo.
       if(checkbase)then
-        call zinfo(sna,zoa,pazi,pelv,zvol)
+        call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
 	vol(icomp)=zvol
         zonetotsurfacearea(icomp)=zoa
         do 43 ijj=1,NSUR
@@ -7835,6 +7836,8 @@ C Update the connection list and then the model configuration.
       NZSUR(NCOMP)=NSUR
       NZTV(NCOMP)=NTV
       NCCODE(NCOMP)=NCOMP
+      INDUTL(NCOMP)=0
+      LUTIL(NCOMP)=' '
       ICCC=NCON
 
 C If surface attributes are adaibetic or similar then use these in
@@ -7919,7 +7922,7 @@ C Make up a zone geometry file name for this new zone.
       if(newgeo)then
         call geowrite(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
       else
-        call emkgeo(IFIL+2,LGEOM(icomp),icomp,4,IER)
+        call emkgeo(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
       endif
 
 C If there are default windows then attempt to insert them as
@@ -7928,8 +7931,8 @@ C transparent surfaces.
         do 66 idw=1,nbdef
           isurf=iwhichsurfw(idw)
           act='sw'
-          XO1=VALX(idw)
-          ZO1=VALZ(idw)
+          XO=VALX(idw)
+          ZO=VALZ(idw)
           XW=VALW(idw)
           ZH=VALH(idw)
           rsname=' '
@@ -7938,7 +7941,7 @@ C transparent surfaces.
           rsuse1=' '
           rsuse2=' '
           rsparent='-'
-          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO1,ZO1,XW,ZH,
+          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO,ZO,XW,ZH,
      &      rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
   66    continue
       endif
@@ -7948,8 +7951,8 @@ C If there are default doors, attempt to insert them as surfaces.
         do 67 idd=1,nbdor
           isurf=iwhichsurfd(idd)
           act='sd'
-          XO1=VALDX(idd)
-          ZO1=0.0
+          XO=VALDX(idd)
+          ZO=0.0
           XW=VALDW(idd)
           ZH=VALDH(idd)
           rsname=' '
@@ -7958,7 +7961,7 @@ C If there are default doors, attempt to insert them as surfaces.
           rsuse1=' '
           rsuse2=' '
           rsparent='-'
-          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO1,ZO1,XW,ZH,
+          call INSREC(ITRC,ITRU,ICOMP,isurf,act,XO,ZO,XW,ZH,
      &      rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
   67    continue
       endif
@@ -7973,7 +7976,7 @@ C Save zone if more surfaces have been added.
         if(newgeo)then
           call geowrite(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
         else
-          call emkgeo(IFIL+2,LGEOM(icomp),icomp,4,IER)
+          call emkgeo(IFIL+2,LGEOM(icomp),icomp,iuout,4,IER)
         endif
       endif
 
@@ -8069,8 +8072,6 @@ C is a silent call and assumes a thermal bridging of 10% (0.1)
       SUBROUTINE LINTHBRDG(ICOMP,act,THPER)
 #include "building.h"
 #include "geometry.h"
-#include "esprdbfile.h"
-#include "material.h"
  
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -8079,6 +8080,12 @@ C is a silent call and assumes a thermal bridging of 10% (0.1)
 C      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
 C Thermal bridge common block: 
 C nbrdg is the number of thermal bridge types in the zone

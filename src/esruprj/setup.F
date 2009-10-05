@@ -24,7 +24,6 @@ C viewpoint is changed.
 
       SUBROUTINE SETUP(MODSIT,ITRC,IER)
 #include "building.h"
-#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -32,6 +31,7 @@ C geometry.h provides commons G0 and G2.
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+      integer igraphiclib  ! external definition
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -49,7 +49,7 @@ C Initial view.
       character LFIL*96,H*72,longtfile*144,llitem*144,longtfiledos*144
       character ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character tmode*8,hold32*32
-      character ureturn*8  ! info back from silentread
+      character menu*32,doc*248,ureturn*8
 
 C Set initial states to false and clear text buffers.
       MODSIT=.false.
@@ -114,7 +114,7 @@ C Display of time of day.
       elseif(igupgrade.eq.2)then
         ITEMS1(11)='l upgrade files >> save current format        '
       endif
-      ITEMS1(12)  ='* test button (esp-r meta file scan)          '
+      ITEMS1(12)  ='* test button (silent zone creation)          '
       ITEMS1(13) ='? help                                        '
       ITEMS1(14) ='- exit this menu                              '
 
@@ -155,9 +155,6 @@ C Help text for menu.
       H(34)='a text editor, image display tool, CAD tool and the '
       H(35)='location of example models and where the `defaults` '
       H(36)='file (above) is located. '
-      H(37)=' '
-      H(38)='The test button is for scanning the ESP-r meta file.'
-      H(39)='Only use this if no other model is loaded. '
 
       CALL EMENU('Tool preferences',ITEMS1,14,INO1)
       IF(INO1.EQ.1)THEN
@@ -239,9 +236,19 @@ C allow decimal day representation if day format is DOY
 C List out an ASCII file. Use file browser if in GTK mode.
         H(1)='The specified ASCII file will be read and displayed'
         H(2)='in the text window page by page.'
-	longtfile=' '    ! reset return string
-  6     CALL EASKXORGTKF(LFIL,'ASCII file name?',' ',
-     &    'xxx.rep',longtfile,'ASCII file',IER,2)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+  6     if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LFIL,'ASCII file name?',
+     &      ' ',96,'xxx.rep','ASCII file',IER,2)
+          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtfile,'ASCII file name?',
+     &      ' ',144,'xxx.rep','ASCII file',IER,2)
+        else
+          CALL EASKF(LFIL,'ASCII file name?',
+     &      ' ',96,'xxx.rep','ASCII file',IER,2)
+          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+        endif
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -263,9 +270,20 @@ C Allow user to edit a file.  Use file browser if in GTK mode.
 C If vi then spawn a new window to do the editing in.
         H(1)='An ASCII format file can be edited using the current'
         H(2)='defined text editor (as defined in the default file).'
-	llitem=' '    ! reset return string
-        CALL EASKXORGTKF(LFIL,'ASCII file name?',' ',
-     &    'xxx.rep',llitem,'ASCII file',IER,2)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=' '
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LFIL,'ASCII file name?',
+     &      ' ',96,'xxx.rep','ASCII file',IER,2)
+          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'ASCII file name?',
+     &      ' ',144,'xxx.rep','ASCII file',IER,2)
+        else
+          CALL EASKF(LFIL,'ASCII file name?',
+     &      ' ',96,'xxx.rep','ASCII file',IER,2)
+          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
+        endif
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -292,6 +310,9 @@ C then check for spaces in name and change / to \.
 
 C Edit the installed file `defaults'.
         call isunix(unixok)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=defdbfl
+        llt=lnblnk(llitem)
         H(1) ='The edit `defaults` file allows you to change where'
         H(2) ='ESP-r looks for certain files. TAKE CARE when editing'
         H(3) ='this file. The key words are:'
@@ -329,9 +350,24 @@ C Edit the installed file `defaults'.
         H(34)='the next time applications are invoked. '
         H(35)=' '
         H(36)='NOTE: do not change the name of the default file! '
-	llitem=' '    ! reset return string
-        CALL EASKXORGTKF(defdbfl,'ESP-r default files?',' ',
-     &    'default',llitem,'defaults file',IER,36)
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &        96,'default','defaults file',IER,36)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &        124,'default','defaults file',IER,36)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &        144,'default','defaults file',IER,36)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &      144,'default','defaults file',IER,36)
+        else
+          CALL EASKF(llitem,'(see help)','ESP-r default files?',
+     &      96,'default','defaults file',IER,36)
+        endif
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -358,6 +394,9 @@ C then check for spaces in name and change / to \.
 
 C Edit the installed file `esprc'.
         call isunix(unixok)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=esprc
+        llt=lnblnk(llitem)
         H(1) ='The edit `esprc` file allows you to change 3rd party'
         H(2) ='tools used by ESP-r. A standard esprc file is included'
         H(3) ='in the installation folder. ESP-r also checks for a '
@@ -410,9 +449,24 @@ C Edit the installed file `esprc'.
         H(50)='    holds list of climate files.'
         H(51)=' '
         H(52)=' *end  the last line of the file (leave alone)'
-	llitem=' '    ! reset return string
-        CALL EASKXORGTKF(esprc,'ESP-r esprc file?','(see help)',
-     &    'esprc',llitem,'esprc file',IER,52)
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &        96,'esprc','esprc file',IER,52)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &        124,'esprc','esprc file',IER,52)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &        144,'esprc','esprc file',IER,52)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &      144,'esprc','esprc file',IER,52)
+        else
+          CALL EASKF(llitem,'(see help)','ESP-r esprc file?',
+     &      96,'esprc','esprc file',IER,52)
+        endif
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -439,6 +493,9 @@ C then check for spaces in name and change / to \.
 
 C Edit the installed file `climatelist'.
         call isunix(unixok)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=cdblfil
+        llt=lnblnk(llitem)
         H(1) ='The edit `climatelist` file allows you to change the'
         H(2) ='list of climate files available for browsing. TAKE CARE'
         H(3) ='when editing this file. '
@@ -489,9 +546,24 @@ C Edit the installed file `climatelist'.
         H(48)=' '
         H(49)='After edting and saving the information is available'
         H(50)='the next time applications are invoked. '
-	llitem=' '    ! reset return string
-        CALL EASKXORGTKF(cdblfil,'ESP-r climatelist file?',
-     &    '(see help)','climatelist',llitem,'climatelist file',IER,50)
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &        96,'default','climatelist file',IER,50)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &        124,'default','climatelist file',IER,50)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &        144,'default','climatelist file',IER,50)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &      144,'default','climatelist file',IER,50)
+        else
+          CALL EASKF(llitem,'(see help)','ESP-r climatelist file?',
+     &      96,'default','climatelist file',IER,50)
+        endif
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -517,6 +589,9 @@ C then check for spaces in name and change / to \.
 
 C Edit the installed file `exemplars'.
         call isunix(unixok)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        llitem=exemfl
+        llt=lnblnk(llitem)
         H(1) ='The edit `exemplars` file allows you to change the list'
         H(2) ='of example models. TAKE CARE when editing'
         H(3) ='this file. The key words are:'
@@ -540,9 +615,24 @@ C Edit the installed file `exemplars'.
         H(21)=' '
         H(22)='After edting and saving the information is available'
         H(23)='the next time applications are invoked. '
-	llitem=' '    ! reset return string
-        CALL EASKXORGTKF(exemfl,'ESP-r exemplars?','(see help)',
-     &    'exemplars',llitem,'exemplars file',IER,23)
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &        96,'default','exemplars file',IER,23)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &        124,'default','exemplars file',IER,23)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &        144,'default','exemplars file',IER,23)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &      144,'default','exemplars file',IER,23)
+        else
+          CALL EASKF(llitem,'(see help)','ESP-r exemplars?',
+     &      96,'default','exemplars file',IER,23)
+        endif
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -590,41 +680,49 @@ C Toggle file format upgrade opinion.
         endif
       ELSEIF(INO1.EQ.12)THEN
 
-C Test button for ESP-r meta file read testing.
+C Test button for silent zone read testing.
 
 C Add a choice point here - one to carry on with the current model,
 C one to start a fresh model, one to just list the details of the
 C silent file.
-        h(1)='ESp-r can process a file with so-called meta file'
+        h(1)='ESp-r can process a file with so-called silent'
         h(2)='instructions to create one or more zones with'
         h(3)='minimal user intervention. '
         h(4)=' '
         h(5)='You can ask for a synopsis of the file or process'
         h(6)='the information in the file. '
         CALL EASKABCD(' Silent file options',' :',
-     &    'retrieve description','process data','XX','continue',IW,6)
+     &      'retrieve description','process data','XX','continue',IW,6)
 
 C Allow user to edit a file.  Use file browser if in GTK mode.
 C If vi then spawn a new window to do the editing in.
-        h(1)='ESp-r can process a file with so-called meta file'
-        h(2)='instructions to create one or more zones with'
-        h(3)='minimal user intervention. '
         LFIL=' '
-	longtfile=' '    ! reset return string
-        CALL EASKXORGTKF(LFIL,'ESP-r meta file name?',' ',
-     &    'xxx.txt',longtfile,'esp-r meta file',IER,3)
-     
+        H(1)='An ASCII format file can be edited using the current'
+        H(2)='defined text editor.'
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LFIL,'Silent zone file name?',
+     &      ' ',96,'xxx.txt','ASCII file',IER,2)
+          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtfile,'Silent zone file name?',
+     &      ' ',144,'xxx.txt','ASCII file',IER,2)
+        else
+          CALL EASKF(LFIL,'Silent zone file name?',
+     &      ' ',96,'xxx.txt','ASCII file',IER,2)
+          write(longtfile,'(a)') LFIL(1:lnblnk(LFIL))
+        endif
         IUNIT=IFIL+1
         if(IW.EQ.1)then
-          call silentread(iunit,longtfile,'?',ureturn,ier)
+          call silentread(iunit,longtfile,'?',menu,doc,ureturn,ier)
           call edisp(iuout,ureturn)
-          call edisp(iuout,modeltitle)
-          call edisp248(iuout,modeldocblock,80)
+          call edisp(iuout,menu)
+          call edisp248(iuout,doc,80)
         elseif(IW.eq.2)then
-          call silentread(iunit,longtfile,'-',ureturn,ier)
+          call silentread(iunit,longtfile,'-',menu,doc,ureturn,ier)
           call edisp(iuout,ureturn)
-          call edisp(iuout,modeltitle)
-          call edisp248(iuout,modeldocblock,80)
+          call edisp(iuout,menu)
+          call edisp248(iuout,doc,80)
           return
         elseif(IW.eq.3)then
           continue
@@ -634,7 +732,7 @@ C If vi then spawn a new window to do the editing in.
       ELSEIF(INO1.EQ.13)THEN
 
 C User asked for help.
-        CALL PHELPD('general preferences',39,'-',0,0,IER)
+        CALL PHELPD('general preferences',36,'-',0,0,IER)
       ELSEIF(INO1.EQ.14)THEN
         RETURN
       else

@@ -28,11 +28,8 @@ C converts into viewing coords, clips the image and draws it.
 C ier is returned as non-zero if there has been a problem.
       SUBROUTINE DRAWESP(ier)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "prj3dv.h"
-#include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -54,6 +51,16 @@ C Passed parameter.
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -134,7 +141,7 @@ C If site grid or ground is asked for draw now.
       IF(ITDSP.EQ.6)return
 
 C Remind user of which project.
-      WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
+      WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
       iside=1
       isize=1
       ifont=1
@@ -168,7 +175,7 @@ C before going on to the surfaces in the zone itself.
       IF(nznog(IZ).NE.izgfoc)THEN
         call eclose(gversion(nznog(IZ)),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,IUOUT,IER)
+          call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)
         else
           call egomin(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)
         endif
@@ -372,7 +379,6 @@ C ITHLS = 3 partial attributes
 C Debug...
 C          write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
 C     &      ithls,ithlz,ISTOK
-
         else
           IPEN= 1
         endif
@@ -406,11 +412,9 @@ C move cursor to vertex and remember position.
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
 C common/G8 for hints as to alternate greys or dots.
-
-C Debug.
+C Debug..
 C            write(6,*) 'nap nbp nbedgdup iedge j',nap,nbp,nbedgdup(icc),
 C     &        iedge,j
-
             if(NAP.ne.NBP)then
               call eswline(iixlast,iiylast,iix,iiy)
             elseif(icc.eq.0)then

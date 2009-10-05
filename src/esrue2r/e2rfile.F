@@ -109,8 +109,6 @@ C ************** RRSKY **************
 C RRSKY Read radiance sky file.
 
       SUBROUTINE RRSKY(ITA2,rskyfil,ga,IER)
-#include "building.h"
-#include "site.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
@@ -118,6 +116,7 @@ C espriou.h provides current file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/C4/XLAT,XLON
       common/sky1/rgrfl,isky,irdoy,rtime,iryear
       common/expath/runpath,pathtype
 
@@ -182,10 +181,10 @@ C Read the first line and get past '# '.
       elseif(word(1:2).eq.'-g')then
         CALL EGETWR(CMDL,K,rgrfl,0.,0.99,'-','Ground refl',IER)
       elseif(word(1:2).eq.'-a')then
-        CALL EGETWR(CMDL,K,sitelat,-89.,89.,'-','latitude',IER)
+        CALL EGETWR(CMDL,K,XLAT,-89.,89.,'-','latitude',IER)
       elseif(word(1:2).eq.'-o')then
-        CALL EGETWR(CMDL,K,sitelongdif,-15.,15.,'-','longitude',IER)
-        sitelongdif= -sitelongdif
+        CALL EGETWR(CMDL,K,XLON,-15.,15.,'-','longitude',IER)
+        XLON=-XLON
       elseif(word(1:2).eq.'-m')then
         CALL EGETWR(CMDL,K,XM,-15.,15.,'-','meridian',IER)
       else
@@ -193,10 +192,10 @@ C Read the first line and get past '# '.
       endif
       goto 42
 
-C ESP-r sets XM to 0 so that sitelongdif can be relative (Radiance assumes 
-C absolute values) need to update sitelongdif if this is the case.
+C ESP-r sets XM to 0 so that XLON can be relative (Radiance assumes 
+C absolute values) need to update XLON if this is the case.
  43   if (abs(XM).gt.0.1) then
-        sitelongdif=sitelongdif+XM
+        XLON=XLON+XM
       endif
 
 C Read the second line to get solar altitude and azimuth.
@@ -244,7 +243,7 @@ C Confirm.
       call edisp(iuout,' interpretation of sky file header...')
       write(outs,'(a,2i3,f6.2,a,a,f5.2,a,f7.1,a,f6.1,a)') 
      &     ' gensky ',IMO,IDO,rtime,skopt,' -g ',rgrfl,
-     &     ' -a ',sitelat,' -o ',-sitelongdif,' -m 0.0'
+     &     ' -a ',XLAT,' -o ',-XLON,' -m 0.0'
       call edisp(iuout,outs)
       write(outs,'(a,f6.2)') ' ground ambient value = ',ga
       call edisp(iuout,outs)

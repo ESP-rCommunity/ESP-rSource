@@ -35,7 +35,6 @@ C information to be saved into a new file. ITRU unit number for user
 C output; IER=0 indicates no error. 
       subroutine edcfg(ITRC,ITRU,IER)
 #include "building.h"
-#include "model.h"
 
 C geometry.h provides commons G0/G2/G7/prec2/precz.
 #include "geometry.h"
@@ -63,6 +62,11 @@ C LPRFDB,IPRODB (for event profile database)
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      common/C3F/LCNN
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -115,22 +119,23 @@ C Uncertainty.
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       logical DOK,OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical MODIFY,MODLEN,MODBND,browse
-      logical xst,clkok,havefile,unixok
+      logical foundutl,xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
       logical newgeo  ! to use for testing if new/old geometry file.
       integer iglib   ! to test for X11 interface
 
       dimension ITEMS(29)
+      character*72 LCNN
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
-      character LCFGF*72,H*72,ITEMS*34,ETEXT*82
+      character LCFGF*72,H*72,ITEMS*34,t24*24,ETEXT*82
       character NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,entflnam*72,upath*72
+      character selres*72,entflnam*72,upath*72,remainder*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
       character CXITM*43,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
@@ -305,8 +310,7 @@ C Re-draw the configuration buttons.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
             call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Model: ',
-     &        modeltitle(1:lnblnk(modeltitle))
+            WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
             iside=1
             isize=1
             ifont=1
@@ -354,6 +358,42 @@ C in older format.
           goto 89
         endif
         if(icfgv.eq.3.or.icfgv.eq.4)then
+          foundutl=.false.
+          DO 45 I=1,ncomp
+            if(INDUTL(I).ne.0)foundutl=.true.
+  45      CONTINUE
+          if(foundutl)then
+            CALL EASKAB(
+     &      'The loaded onfiguration file includes legacy utility',
+     &      'file names. Options:','Save in current format','continue',
+     &      IW,3)
+            if(IW.EQ.1)then
+              icfgv=4
+
+C Get root name and ensure that configuration file ends in .cfg.
+              lcfgr=lnblnk(LCFGF)
+              lcfgl=lcfgr-3
+              if(lcfgr.gt.4)then
+                if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
+                  write(cfgroot,'(a)') LCFGF(1:lcfgl-1)
+                else
+                  write(cfgroot,'(a)') LCFGF(1:lcfgr)
+                  write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
+                endif
+              else
+                write(cfgroot,'(a)') LCFGF(1:lcfgr)
+                write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
+              endif
+              h(1)='This `root` name will be used in the creation'
+              h(2)='of model file names (control, connections etc).'
+              t24=cfgroot
+              CALL EASKS(t24,' ','Project root name (<24 chars)',
+     &                   24,'project','root name',IER,2)
+              if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
+            elseif(IW.eq.2)then
+              goto 3
+            endif
+          endif
 
 C Also check about connections file.
           if(ncon.gt.1)then
@@ -432,12 +472,12 @@ C Domains associated with the model.
           endif
         endif
         IF(MMOD.EQ.8)then
-          LN=max(1,LNBLNK(modeltitle))
+          LN=max(1,LNBLNK(LSNAM))
           call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(ETEXT,'(2A)')'Model: ',modeltitle(1:ln)
+          WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:ln)
           iside=1
           isize=1
           ifont=1
@@ -710,7 +750,7 @@ C lowest and highest point and cog of surface.
           DO 930 IZ = 1,NCOMP
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
+              call georead(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
             else
               call egomin(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
             endif
@@ -1000,7 +1040,6 @@ C Set folder separator (fs) to \ or / as required.
 
 C Debug.
 C        write(6,*) 'edcfg res remote is ',remote,nsset
-
         if(nsset.gt.0)then
 
 C If there are simulation parameter sets use the names of the results
@@ -1026,10 +1065,8 @@ C files splres or sblres and prepend user home folder if remote is true.
      &                filen(1:lnblnk(filen))
                   endif
                 endif
-
 C Debug.
 C                write(6,*) 'remote so reset tfile to ',longtfile
-
               endif
               havefile=.true.
             else
@@ -1060,10 +1097,8 @@ C                write(6,*) 'remote so reset tfile to ',longtfile
      &                filen(1:lnblnk(filen))
                   endif
                 endif
-
 C Debug.
 C                write(6,*) 'remote so reset tfile to ',longtfile
-
               endif
               havefile=.true.
             else
@@ -1153,7 +1188,6 @@ C Control editing of zone composition ITRU unit number for user
 C output, IER=0 indicates no error.
       SUBROUTINE EDZCOMP(ITRC,ITRU,IER)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -1172,6 +1206,10 @@ C output, IER=0 indicates no error.
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -1181,9 +1219,14 @@ C output, IER=0 indicates no error.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/appw/iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -1228,6 +1271,7 @@ C Flag noting whether casual gain periods are currently sorted.
       dimension jsname(MS),jsparent(MS),jsuse(ms,3)
 
       character*72 CFILE,DFILE,LTMP,LCFD
+      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character LCFGF*72,H*72,SFIL*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -1320,7 +1364,7 @@ C (Re)Set all surfaces to standard line width.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
+          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
           iside=1
           isize=1
           ifont=1
@@ -1568,10 +1612,8 @@ C If control exists confirm update to zone links (assume no control
 C in the copied zone).  Begin by reading the existing control before
 C incrementing the ncomp.
           OKC=.false.
-
 C Debug.
 C          write(6,*) 'lctlf is ',LCTLF
-
           if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
             continue
           else
@@ -1610,7 +1652,7 @@ C Read the geometry to fill in the data below.
           NCOMP=NCOMP+1
           call eclose(gversion(NCOMP),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LTMP,NCOMP,1,iuout,IER)
+            call georead(IFIL+1,LTMP,NCOMP,1,ITRC,iuout,IER)
           else
             call egomin(IFIL+1,LTMP,NCOMP,1,ITRC,iuout,IER)
           endif
@@ -1676,7 +1718,7 @@ C file and then recover the zone commons.
               CALL ESCZONE(NCOMP)
               call FINDFIL(ZOBS(IC),XST)
               IF(XST)THEN
-                CALL EGOMST(IUF,IC,ZOBS(IC),0,ITRC,ITRU,IER)
+                CALL EGOMST(IUF,ZOBS(IC),0,ITRC,ITRU,IER)
                 IOBS(NCOMP)=1 
                 if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
                   WRITE(DFILE,'(2a)') 
@@ -1697,9 +1739,9 @@ C file and then recover the zone commons.
 
 C Zone rotations and transforms.
           if(OKOB)then
-            H(1)='When copying a zone and obstructions the copy is'
-            H(2)='usually shifted away from the position of the '
-            H(3)='source. You can skip such transforms.'
+            H(1)='When copying a zone the copy is usually shifted'
+            H(2)='away from the position of the source.  You can '
+            H(3)='skip such transforms. '
           else
             H(1)='When copying a zone the copy is usually shifted'
             H(2)='away from the position of the source.  You can '
@@ -1854,7 +1896,7 @@ C Now it is ok to write out the copied zone.
             call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           else
 	    iuf=ifil+2
-            call emkgeo(iuf,LGEOM(NCOMP),NCOMP,3,IER)
+            call emkgeo(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           endif
           IF(IER.EQ.1)THEN
             dok=.true.
@@ -1866,21 +1908,15 @@ C Now it is ok to write out the copied zone.
             IF(OK)GOTO 42
           ENDIF
 
-C Do same transformation to obstructions? If so data is in common
-C so modify common block data. Take into account location of
-C obstruction data.
+C Do same transformation to obstructions?
           if(OKOB)then
             CALL ESCZONE(NCOMP)
+            CALL EGOMST(IUF,ZOBS(NCOMP),0,ITRC,ITRU,IER)
             if(OKZT)then
-              do 85 ij=1,nbobs(ncomp)
-                XOB(ncomp,ij)=XOB(ncomp,ij)+VALX
-                YOB(ncomp,ij)=YOB(ncomp,ij)+VALY
-                ZOB(ncomp,ij)=ZOB(ncomp,ij)+VALZ
-                do 95 ibe=1,8
-                  XBP(ncomp,ij,ibe)=XBP(ncomp,ij,ibe)+VALX
-                  YBP(ncomp,ij,ibe)=YBP(ncomp,ij,ibe)+VALY
-                  ZBP(ncomp,ij,ibe)=ZBP(ncomp,ij,ibe)+VALZ
-   95           continue
+              do 85 ij=1,NB
+                XO(ij)=XO(ij)+VALX
+                YO(ij)=YO(ij)+VALY
+                ZO(ij)=ZO(ij)+VALZ
    85         continue
             endif
             if(OKZR)then
@@ -1888,36 +1924,17 @@ C obstruction data.
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 88 ij=1,nbobs(ncomp)
-                XXX=XOB(ncomp,ij)-X1
-                YYY=YOB(ncomp,ij)-Y1
+              do 88 ij=1,NB
+                XXX=XO(ij)-X1
+                YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA
                 YR=YYY*CA-XXX*SA
-                XOB(ncomp,ij)=XR+X1
-                YOB(ncomp,ij)=YR+Y1
-                BANGOB(ncomp,ij,1)=BANGOB(ncomp,ij,1)+VAL
-                do 89 ibe=1,8
-                  XXX=XBP(ncomp,ij,ibe)-X1
-                  YYY=YBP(ncomp,ij,ibe)-Y1
-                  XR=XXX*CA+YYY*SA
-                  YR=YYY*CA-XXX*SA
-                  XBP(ncomp,ij,ibe)=XR+X1
-                  YBP(ncomp,ij,ibe)=YR+Y1
-  89            continue
+                XO(ij)=XR+X1
+                YO(ij)=YR+Y1
+                BANG(ij)=BANG(ij)+VAL
   88          continue
             endif
-
-C If geometry file can hold obstructions save them there
-C otherwise write out write out zone obstruction file.
-            call eclose(gversion(ncomp),1.1,0.01,newgeo)
-            if(newgeo)then
-	      iuf=ifil+2
-              call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
-              IOBS(NCOMP)=2    ! reset to signal obs in geom file
-              ZOBS(NCOMP)='  '
-            else
-              CALL MKGOMST(IUF,ZOBS(NCOMP),NCOMP,IER)
-            endif
+            CALL MKGOMST(IUF,ZOBS(NCOMP),NCOMP,IER)
             CALL ERCZONE(NCOMP)
           endif
 
@@ -1976,7 +1993,7 @@ C Also update lodlabel commons before writing out.
             IF(CFILE.NE.'  ')THEN
               QUIET=.false.
               write(LTHRM(NCOMP),'(a)') CFILE(1:lnblnk(CFILE))
-              CALL EMKCON(LTHRM(NCOMP),IUF,NCOMP,QUIET,IER)
+              CALL EMKCON(LTHRM(NCOMP),IUF,NCOMP,IUOUT,QUIET,IER)
               if(ITW(IC).eq.1)then
 
 C Update itmcfl for the new zone.
@@ -1991,7 +2008,7 @@ C Update itmcfl for the new zone.
                   write(LTWIN(NCOMP),'(a)') DFILE(1:lnblnk(DFILE))
                   ITW(NCOMP)=1
                   QUIET=.false.
-                  CALL MKTWIN(IUF,NCOMP,QUIET,IER)
+                  CALL MKTWIN(ITRU,IUF,NCOMP,QUIET,IER)
                 else
                   goto 90
                 endif
@@ -2023,7 +2040,6 @@ C Find out if there are construction files in the model ../zones folder.
 
 C Debug.
 C                write(6,*) CFILE
-
                 LTHRM(NCOMP)=CFILE
               endif
             endif
@@ -2042,10 +2058,8 @@ C Find out if there are tmc files in the model ../zones folder.
                 if(snpfile(1:2).ne.'  ')then
                   write(DFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &              snpfile(1:lnblnk(snpfile))
-
 C Debug.
 C                  write(6,*) DFILE
-
                   LTWIN(NCOMP)=DFILE
                   ITW(NCOMP)=1
                 endif
@@ -2099,7 +2113,7 @@ C Also update lodlabel commons before writing out.
               lodlabel(ncomp,2)=lodlabel(ic,2)
               lodlabel(ncomp,3)=lodlabel(ic,3)
               CALL ERPFREE(IUF,ISTAT)
-              CALL EMKOPER(IUF,LPROJ(NCOMP),NCOMP,IER)
+              CALL EMKOPER(IUF,LPROJ(NCOMP),NCOMP,iuout,IER)
             else
               goto 91
             endif
@@ -2120,10 +2134,8 @@ C Find out if there are operation files in the model ../zones folder.
               if(snpfile(1:2).ne.'  ')then
                 write(DFILE,'(3a)')zonepth(1:lnblnk(zonepth)),fs,
      &            snpfile(1:lnblnk(snpfile))
-
 C Debug.
 C                write(6,*) DFILE
-
                 LPROJ(NCOMP)=DFILE
               endif
             endif
@@ -2187,7 +2199,6 @@ C Find out if there are viewfactor files in the model ../zones folder.
 
 C Debug.
 C                  write(6,*) DFILE
-
                   LVIEW(NCOMP)=DFILE
                   IVF(NCOMP)=1
                 endif
@@ -2250,7 +2261,6 @@ C Find out if there are casual gain control files in the model ../zones folder.
 
 C Debug.
 C                  write(6,*) DFILE
-
                   LCGCIN(NCOMP)=DFILE
                   ICGC(NCOMP)=1
                 endif
@@ -2313,7 +2323,6 @@ C Find out if there are casual gain control files in the model ../zones folder.
 
 C Debug.
 C                  write(6,*) DFILE
-
                   LHCCO(NCOMP)=DFILE
                   IHC(NCOMP)=1
                 endif
@@ -2343,7 +2352,7 @@ C Update the configuration file.
 C Scan the geometry file and freshen derived geometric common blocks.
           call eclose(gversion(IC),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
+            call georead(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
           endif
@@ -2369,10 +2378,15 @@ c beeen read in so can include the extended surface `context`.
             CALL INSINFO(IC,ITRU)
           endif
 
-C Obstructions are alread in common - no need to scan.
+C If there is an obstructions file read it, if obstructions within
+C the zone geometry file nothing more needs to be done.
+          IUF=IFIL+1
+          if(IOBS(IC).EQ.1)then
+            CALL EGOMST(IUF,ZOBS(IC),IR,ITRC,ITRU,IER)
+          elseif(IOBS(IC).EQ.2)then
+            continue
+          endif
         ENDIF
-
-C Present zone detail editing menu.
         CALL EDZONE(ITRC,IC,IER)
         MODIFY=.TRUE.
 
@@ -2493,7 +2507,7 @@ C File is older format and assumed to be unsorted.
                       continue
                     else
                       ip3ver(icomp)=2
-                      CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+                      CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                     endif
                   else
 
@@ -2514,7 +2528,7 @@ C browsing update the operation file.
                         continue
                       else
                         ip3ver(icomp)=2
-                        CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+                        CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
                       endif
                     endif
                   endif
@@ -2943,7 +2957,7 @@ C CFD.
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
         call eclose(gversion(IC),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
+          call georead(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
         endif
@@ -3194,7 +3208,6 @@ C Parameter returned:
 C  ier = 0 if no problems found.
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
 #include "building.h"
-#include "model.h"
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for parameter MFFOLD
@@ -3214,6 +3227,10 @@ C espriou.h for parameter MFFOLD
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/rcmd/LCMDFL
@@ -3237,12 +3254,12 @@ C Defaults.
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
       character MODE*4,LCFGF*72,H*72,cfgroot*24,fs*1,outs*124
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
+      character OUTSTR*124,ctldoc*248,LCTLF*72,t72*72,t144*144,ETEXT*82
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*48
 
 C Passed parameters for pregist.
-      character root*24,mpath*72,folder*12,menu*72
+      character root*24,mpath*72,folder*12,menu*32
 
       integer igraphiclib  ! external definition
       integer numberofzones ! to pass to updwire rather than ncomp
@@ -3259,7 +3276,7 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
-      t96='  '
+      t72='  '
       t144='  '
 
 C Ask for source file name and if the file exists then read it;
@@ -3286,11 +3303,41 @@ C Also scan utility files if they exist.
         H(14)='be copied to your user area to give you write'
         H(15)='permission. Other example models are available'
         H(16)='via the `exemplars` option.'
+        if(LCMDFL(1:4).eq.'UNKN'.or.LCMDFL(1:4).eq.'unkn')then
+          LTMP=' '
+        else
+          LTMP=LCMDFL
+        endif
 
-	LTMP=' '    ! reset return string
-        CALL EASKXORGTKF(LCMDFL,
-     &    'System configuration file?',' ',
-     &    DFCFG,LTMP,'config file name',IER,16)
+C Call EASKF depending on the current file name length.
+C Use ifdefs because the X11 version will be returning only the
+C name of the file.
+        llt=lnblnk(ltmp)
+
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(LTMP,' ','System configuration file?',96,DFCFG,
+     &      'config file name',IER,16)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(LTMP,' ','System configuration file?',124,DFCFG,
+     &      'config file name',IER,16)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(LTMP,' ','System configuration file?',144,DFCFG,
+     &      'config file name',IER,16)
+          endif
+        elseif(iglib.eq.2)then
+
+C Note for GTK, LTMP will be returned with the absolute path to the
+C folder even if prj started up in the cfg folder. There is subsequent
+C logic which determines if we actually are browsing.
+          CALL EASKF(LTMP,' ',' System configuration file?',144,DFCFG,
+     &      'config file name',IER,16)
+        else
+          CALL EASKF(LTMP,' ','System configuration file?',96,DFCFG,
+     &      'config file name',IER,16)
+        endif
 
 C Cancel request, return and ensure that the calling
 C routine deals with the -3 ier passed back.
@@ -3406,7 +3453,6 @@ C writtn to (if iaccess is something other than one.)
 
 C Debug.
 C          write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
-
           if(iaccess.eq.1)then
             call tstamp('>','PRJ: on browse mode')
             browse=.true.
@@ -3417,6 +3463,10 @@ C            call edisp(iuout,'User can modify this model.')
           endif
         endif
       endif
+
+C Debug.
+C      write(t144,*) 'NEWPRB browse status is ',browse,iaccess
+C      call edisp(iuout,t144)
 
 C Get file separator.
       if(unixok)then
@@ -3433,7 +3483,6 @@ C it was a root name).
 
 C Debug.
 C      write(6,*) 'c iaccess is ',iaccess,icerr,ifold,LCMDFL
-
       if(ifold.eq.0.and.icerr.eq.0)then
         CALL ERPFREE(IFCFG,ISTAT)
         call FINDFIL(LCFGF,XST)
@@ -3448,12 +3497,11 @@ C configuration files.
         call ckaccess(ifold,iaccess,icerr,t144)
         if(ifold.eq.1.and.icerr.eq.0)then
           lex=MIN0(lnblnk(LCMDFL),24)
-          write(cfgroot,'(a)',IOSTAT=ios,ERR=13) LCMDFL(1:lex)
+          write(cfgroot,'(a)') LCMDFL(1:lex)
           subpath=' '
           call usrdir(odir)
-          write(subpath,'(3a)',IOSTAT=ios,ERR=14) 
-     &      odir(1:lnblnk(odir)),fs,t144(1:lnblnk(t144))
-     
+          write(subpath,'(3a)') odir(1:lnblnk(odir)),fs,
+     &      t144(1:lnblnk(t144))
 #ifdef OSX
 C In OSX slightly different logic. If path ls ./ then standard logic
 C works. If path begins with /usr/esru then no need to prepend odir.
@@ -3461,14 +3509,13 @@ C works. If path begins with /usr/esru then no need to prepend odir.
             continue
           elseif(path(1:9).eq.'/usr/esru')then
             subpath=' '
-            write(subpath,'(a)',IOSTAT=ios,ERR=14) path(1:lnblnk(path))
+            write(subpath,'(a)') path(1:lnblnk(path))
           else
             continue
           endif
 
 C Debug.
 C          write(6,*) ' subpath of folder is ',subpath(1:lnblnk(subpath))
-
 #endif
 #ifdef MINGW
 C In MINGW slightly different logic. If path ls ./ then standard logic
@@ -3480,25 +3527,18 @@ C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
      &           path(1:2).eq.'E:'.or.path(1:2).eq.'e:'.or.
      &           path(1:2).eq.'F:'.or.path(1:2).eq.'f:')then
             subpath=' '
-            write(subpath,'(a)',IOSTAT=ios,ERR=14) path(1:lnblnk(path))
+            write(subpath,'(a)') path(1:lnblnk(path))
           elseif(path(4:7).eq.'user')then
             subpath=' '
-            write(subpath,'(a)',IOSTAT=ios,ERR=14) path(1:lnblnk(path))
+            write(subpath,'(a)') path(1:lnblnk(path))
           else
             continue
           endif
 #endif
-          write(outs,*,IOSTAT=ios,ERR=16) 'models in folder ',subpath
+          action='cfg'
+          write(outs,*) 'models in folder ',subpath
           call edisp(iuout,outs)
           call clearfilelist(listf,MFFOLD)
-
-C Re-establish action and file separator prior to call to getfilelist.
-          action='cfg'
-          if(unixok)then
-            fs = char(47)
-          else
-            fs = char(92)
-          endif
           call getfilelist(subpath,action,listf,nwlistf,nlistf)
           call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
           call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
@@ -3511,23 +3551,17 @@ C Try to use information gathered from file scan.
             ix=1
             do 76 ij=1,nlistf
               listfc70(ij)=' '
-              lex=MIN0(nwlistf(ij),70)  ! trap file names longer than 70
-              write(listfc70(ij),'(a)',IOSTAT=ios,ERR=13) 
-     &          listfc(ij)(1:lex)
+              write(listfc70(ij),'(a)') listfc(ij)(1:nwlistf(ij))
   76        continue
-            if(maxw.gt.70) maxw=70  ! ensure list fits
             CALL EPICKS(IX,ivlist,outs,' ',
      &        maxw,nlistf,listfc70,'Available files',IER,3)
             if(ix.eq.1)then
-              write(t144,'(3a)',IOSTAT=ios,ERR=17)
-     &          LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
-              write(sfile,'(3a)',IOSTAT=ios,ERR=17) 
-     &          t144(1:lnblnk(t144)),fs,
+              write(t144,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
+              write(sfile,'(3a)') t144(1:lnblnk(t144)),fs,
      &          listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
 
 C Debug.
 C              write(6,*) 'sfile is ',sfile
-
               call fdroot(sfile,path,LCFGF)
               CALL ERPFREE(IFCFG,ISTAT)
               call FINDFIL(LCFGF,XST)
@@ -3536,9 +3570,9 @@ C              write(6,*) 'sfile is ',sfile
         endif
       else
         if(lnblnk(LCMDFL).le.72)then
-          write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:lnblnk(LCMDFL))
+          write(LCFGF,'(a)') LCMDFL(1:lnblnk(LCMDFL))
         else
-          write(LCFGF,'(a)',IOSTAT=ios,ERR=18) LCMDFL(1:72)
+          write(LCFGF,'(a)') LCMDFL(1:72)
         endif
       endif
 
@@ -3553,16 +3587,14 @@ C LCFGF into tokens and check the last token for .cfg.
         lwcfgl=lwcfgr-3
         if(lwcfgr.gt.4)then
           if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-            lex=MIN0((lwcfgl-1),24)  ! ensure cfgroot within length
-            write(cfgroot,'(a)',IOSTAT=ios,ERR=13)WORDS(IW)(1:lwcfgl-1)
+            write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
           else
-            lex=MIN0(lwcfgr,24)  ! ensure cfgroot within length
-            write(cfgroot,'(a)',IOSTAT=ios,ERR=13) WORDS(IW)(1:lwcfgr)
-            write(LTMP,'(a,a)',IOSTAT=ios,ERR=19) LTMP(1:lcfgr),'.cfg'
+            write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
+            write(LTMP,'(a,a)') LTMP(1:lcfgr),'.cfg'
           endif
         elseif(lwcfgr.le.4)then
-          write(cfgroot,'(a)',IOSTAT=ios,ERR=13) WORDS(IW)(1:lwcfgr)
-          write(LTMP,'(a,a)',IOSTAT=ios,ERR=19) LTMP(1:lcfgr),'.cfg'
+          write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
+          write(LTMP,'(a,a)') LTMP(1:lcfgr),'.cfg'
         endif
 
 
@@ -3581,29 +3613,21 @@ C Check to see if LCFGF is in a cfg folder.
           lwcfgl=lwcfgr-3
           if(lwcfgr.gt.4)then
             if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-              write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
-     &          WORDS(IW)(1:lwcfgl-1)
-              write(t96,'(4a)',IOSTAT=ios,ERR=20) 'cfg',fs,
-     &          LTMP(1:lcfgl-1),'.cfg'
+              write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
+              write(t72,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgl-1),'.cfg'
             else
-              write(cfgroot,'(a)',IOSTAT=ios,ERR=13)WORDS(IW)(1:lwcfgr)
-              lex=MIN0((3+1+4+lcfgr),96)
-              if(lex.ge.96)call usrmsg(
-     &          'The overall path is more than 96 char.',
-     &          'Suggest relocating model.','W')
-              write(t96,'(4a)',IOSTAT=ios,ERR=20) 'cfg',fs,
-     &          LTMP(1:lcfgr),'.cfg'
+              write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
+              write(t72,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgr),'.cfg'
             endif
           elseif(lwcfgr.le.4)then
-            write(cfgroot,'(a)',IOSTAT=ios,ERR=13) WORDS(IW)(1:lwcfgr)
-            write(t96,'(a,a1,a,a)',IOSTAT=ios,ERR=20) 'cfg',fs,
-     &        LTMP(1:lcfgr),'.cfg'
+            write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
+            write(t72,'(a,a1,a,a)') 'cfg',fs,LTMP(1:lcfgr),'.cfg'
           endif
-          if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
+          if((t72(1:2).ne.'  ').and.(t72(1:4).ne.'UNKN'))then
             XST=.false.
-            INQUIRE (FILE=t96,EXIST=XST)
+            INQUIRE (FILE=t72,EXIST=XST)
             if(XST)then
-              call fdroot(t96,path,LCFGF)
+              call fdroot(t72,path,LCFGF)
               goto 444
             else
 
@@ -3615,38 +3639,24 @@ C name as that the user entered.
               lwcfgl=lwcfgr-3
               if(lwcfgr.gt.4)then
                 if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-                  write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
-     &              WORDS(IW)(1:lwcfgl-1)
-                  lex=MIN0((lcfgl+1+3+1+lcfgl+4),96)
-                  if(lex.ge.96)call usrmsg(
-     &              'The overall path is more than 96 char.',
-     &              'Suggest relocating model.','W')
-                  write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &              LTMP(1:lcfgl-1),fs,
+                  write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
+                  write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgl-1),fs,
      &              'cfg',fs,LTMP(1:lcfgl-1),'.cfg'
                 else
-                  write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
-     &              WORDS(IW)(1:lwcfgr)
-                  lex=MIN0((lcfgr+1+3+1+lcfgr+4),96)
-                  if(lex.ge.96)call usrmsg(
-     &              'The overall path is more than 96 char.',
-     &              'Suggest relocating model.','W')
-                  write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &              LTMP(1:lcfgr),fs,'cfg',
+                  write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
+                  write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,'cfg',
      &              fs,LTMP(1:lcfgr),'.cfg'
                 endif
               elseif(lwcfgr.le.4)then
-                write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
-     &            WORDS(IW)(1:lwcfgr)
-                write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &            LTMP(1:lcfgr),fs,'cfg',fs,
+                write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
+                write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,'cfg',fs,
      &            LTMP(1:lcfgr),'.cfg'
               endif
-              if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
+              if((t72(1:2).ne.'  ').and.(t72(1:4).ne.'UNKN'))then
                 XST=.false.
-                INQUIRE (FILE=t96,EXIST=XST)
+                INQUIRE (FILE=t72,EXIST=XST)
                 if(XST)then
-                  call fdroot(t96,path,LCFGF)
+                  call fdroot(t72,path,LCFGF)
                   goto 444
                 else
 
@@ -3657,34 +3667,24 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
                   lwcfgl=lwcfgr-3
                   if(lwcfgr.gt.4)then
                     if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-                      write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
-     &                  WORDS(IW)(1:lwcfgl-1)
-                      write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &                  LTMP(1:lcfgl-1),fs,
+                      write(cfgroot,'(a)') WORDS(IW)(1:lwcfgl-1)
+                      write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgl-1),fs,
      &                  'cfg',fs,cfgroot(1:lnblnk(cfgroot)),'.cfg'
                     else
-                      write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
-     &                  WORDS(IW)(1:lwcfgr)
-                      lex=MIN0((lcfgr+1+3+1+lcfgr+4),96)
-                      if(lex.ge.96)call usrmsg(
-     &                  'The overall path is more than 96 char.',
-     &                  'Suggest relocating model.','W')
-                      write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &                  LTMP(1:lcfgr),fs,
+                      write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
+                      write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,
      &                  'cfg',fs,cfgroot(1:lnblnk(cfgroot)),'.cfg'
                     endif
                   elseif(lwcfgr.le.4)then
-                    write(cfgroot,'(a)',IOSTAT=ios,ERR=13) 
-     &                WORDS(IW)(1:lwcfgr)
-                    write(t96,'(6a)',IOSTAT=ios,ERR=20) 
-     &                LTMP(1:lcfgr),fs,
+                    write(cfgroot,'(a)') WORDS(IW)(1:lwcfgr)
+                    write(t72,'(a,a1,a,a1,a,a)') LTMP(1:lcfgr),fs,
      &                'cfg',fs,cfgroot(1:lnblnk(cfgroot)),'.cfg'
                   endif
-                  if((t96(1:2).ne.'  ').and.(t96(1:4).ne.'UNKN'))then
+                  if((t72(1:2).ne.'  ').and.(t72(1:4).ne.'UNKN'))then
                     XST=.false.
-                    INQUIRE (FILE=t96,EXIST=XST)
+                    INQUIRE (FILE=t72,EXIST=XST)
                     if(XST)then
-                      call fdroot(t96,path,LCFGF)
+                      call fdroot(t72,path,LCFGF)
                       goto 444
                     endif
                   endif
@@ -3745,7 +3745,7 @@ C If there is a ground topology read it.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                           iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
+          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
           iside=1
           isize=1
           ifont=1
@@ -3811,7 +3811,7 @@ C Set flag so that bounds are checked.
         ENDIF
 
 C Scan the model topology and report on any problems encountered.
-        call ckcurmatch(prob,iprob)
+        call ckcurmatch(prob,iprob,ier)
         if(prob)then
           call tstamp('>','PRJ: found topology incinsistent')
           if(IPROB.gt.10)then
@@ -3880,58 +3880,6 @@ C Open default databases (user can alter later).
         endif
       ENDIF
       return
-
-C Error messages.
-   13 if(IOS.eq.2)then
-        CALL USRMSG('No permission to write cfgroot',cfgroot,'W')
-      else
-        CALL USRMSG('String write error in cfgroot',cfgroot,'W')
-      endif
-      IER=1
-      return
-   14 if(IOS.eq.2)then
-        CALL USRMSG('No permission to write subpath',subpath,'W')
-      else
-        CALL USRMSG('String write error in subpath',subpath,'W')
-      endif
-      IER=1
-      return
-   16 if(IOS.eq.2)then
-        CALL USRMSG('No permission to write outs',outs,'W')
-      else
-        CALL USRMSG('String write error in outs',outs,'W')
-      endif
-      IER=1
-      return
-   17 if(IOS.eq.2)then
-        CALL LUSRMSG('No permission to write t144',t144,'W')
-      else
-        CALL LUSRMSG('String write error in t144',t144,'W')
-      endif
-      IER=1
-      return
-   18 if(IOS.eq.2)then
-        CALL LUSRMSG('No permission to write LCFGF',LCFGF,'W')
-      else
-        CALL LUSRMSG('String write error in LCFGF',LCFGF,'W')
-      endif
-      IER=1
-      return
-   19 if(IOS.eq.2)then
-        CALL USRMSG('No permission to write LTMP',LTMP,'W')
-      else
-        CALL USRMSG('String write error in LTMP',LTMP,'W')
-      endif
-      IER=1
-      return
-   20 if(IOS.eq.2)then
-        CALL USRMSG('No permission to write t96',t96,'W')
-      else
-        CALL USRMSG('String write error in t96',t96,'W')
-      endif
-      IER=1
-      return
-
       end
 
 C ***** visualz
@@ -4142,7 +4090,6 @@ C      of obstruction data.
      &  silent,itru,ier)
       implicit none
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -4158,10 +4105,24 @@ C      of obstruction data.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      integer ivf,isi,ihc,itw,icgc,iobs
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+
       integer NSUR,JVN,NVER,NTV
       real X,Y,Z
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
+      integer nb
+      real XO,YO,ZO,DX,DY,DZ,BANG
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
       real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
@@ -4175,13 +4136,13 @@ C      of obstruction data.
       logical newgeo  ! to use for testing if new/old geometry file.
       
       character*72 LTMP
+      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character ZN*12,h*72
       character outs*124
       logical DOK,OK
       integer iuf   ! file type 
       integer iicomp  ! index of current zone
       integer itrc,ij,i,iz  ! types for local variables
-      integer ibe   ! loop for faces of obstruction
        
       IUF=IFIL+2
       DO 83 IZ=1,izlistnb
@@ -4194,7 +4155,7 @@ C      of obstruction data.
           LTMP=LGEOM(IICOMP)
           call eclose(gversion(IICOMP),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LTMP,IICOMP,1,iuout,IER)
+            call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
           else
             call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
           endif
@@ -4213,7 +4174,7 @@ C Decide whether to upgrade the geometry file format.
           if(newgeo)then
             call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
           else
-            call emkgeo(IUF,LTMP,IICOMP,3,IER)
+            call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
           endif
 
 C After transform update the g6 & g7 commons and find dependencies.
@@ -4263,16 +4224,11 @@ C transform origin.
               call askok(outs,' ?',OK,dok,2)
             endif
             if(OK)then
-              CALL EGOMST(IUF,IICOMP,ZOBS(IICOMP),0,ITRC,ITRU,IER)
-              do 63 ij=1,nbobs(iicomp)
-                XOB(iicomp,ij)=XOB(iicomp,ij)+VALX
-                YOB(iicomp,ij)=YOB(iicomp,ij)+VALY
-                ZOB(iicomp,ij)=ZOB(iicomp,ij)+VALZ
-                do 88 ibe=1,8
-                  XBP(iicomp,ij,ibe)=XBP(iicomp,ij,ibe)+VALX
-                  YBP(iicomp,ij,ibe)=YBP(iicomp,ij,ibe)+VALY
-                  ZBP(iicomp,ij,ibe)=ZBP(iicomp,ij,ibe)+VALZ
-  88            continue
+              CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
+              do 63 ij=1,NB
+                XO(ij)=XO(ij)+VALX
+                YO(ij)=YO(ij)+VALY
+                ZO(ij)=ZO(ij)+VALZ
   63          continue
               CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
             endif
@@ -4292,15 +4248,10 @@ C apply the transform and write the file back out.
                 call askok(outs,' ?',OK,dok,2)
               endif
               if(OK)then
-                do 64 ij=1,nbobs(iicomp)
-                  XOB(iicomp,ij)=XOB(iicomp,ij)+VALX
-                  YOB(iicomp,ij)=YOB(iicomp,ij)+VALY
-                  ZOB(iicomp,ij)=ZOB(iicomp,ij)+VALZ
-                  do 89 ibe=1,8
-                    XBP(iicomp,ij,ibe)=XBP(iicomp,ij,ibe)+VALX
-                    YBP(iicomp,ij,ibe)=YBP(iicomp,ij,ibe)+VALY
-                    ZBP(iicomp,ij,ibe)=ZBP(iicomp,ij,ibe)+VALZ
-  89              continue
+                do 64 ij=1,NB
+                  XO(ij)=XO(ij)+VALX
+                  YO(ij)=YO(ij)+VALY
+                  ZO(ij)=ZO(ij)+VALZ
   64            continue
                 call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
               endif
@@ -4333,7 +4284,6 @@ C      of obstruction data.
 
       implicit none
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -4349,6 +4299,20 @@ C      of obstruction data.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      integer ivf,isi,ihc,itw,icgc,iobs
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+
+      integer nb
+      real XO,YO,ZO,DX,DY,DZ,BANG
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
       real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
@@ -4362,11 +4326,11 @@ C      of obstruction data.
       logical newgeo  ! to use for testing if new/old geometry file.
       
       character*72 LTMP
+      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character ZN*12,h*72
       character outs*124
       logical DOK,OK
       integer itrc,iuf,iicomp,ij,iz,i
-      integer ibe   ! loop for faces of obstruction
       real A,pi,XR,YR,XXX,YYY,CA,SA
        
       IUF=IFIL+2
@@ -4380,7 +4344,7 @@ C      of obstruction data.
           LTMP=LGEOM(IICOMP)
           call eclose(gversion(IICOMP),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LTMP,IICOMP,1,iuout,IER)
+            call georead(IUF,LTMP,IICOMP,1,0,iuout,IER)
           else
             call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
           endif
@@ -4393,7 +4357,7 @@ C      of obstruction data.
           if(newgeo)then
             call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
           else
-            call emkgeo(IUF,LTMP,IICOMP,3,IER)
+            call emkgeo(IUF,LTMP,IICOMP,ITRU,3,IER)
           endif
 
 C After transform update the g6 & g7 commons and find dependencies.
@@ -4452,84 +4416,68 @@ C Rotate any obstructions associated with this zone.
               call askok(outs,' ?',OK,dok,3)
             endif
             if(OK)then
-              CALL EGOMST(IUF,IICOMP,ZOBS(IICOMP),0,ITRC,ITRU,IER)
+              CALL EGOMST(IUF,ZOBS(IICOMP),0,ITRC,ITRU,IER)
               PI = 4.0 * ATAN(1.0)
               A=-VAL*PI/180.
               CA=COS(A)
               SA=SIN(A)
-              do 86 ij=1,nbobs(iicomp)
-                XXX=XOB(iicomp,ij)-X1
-                YYY=YOB(iicomp,ij)-Y1
+              do 86 ij=1,NB
+                XXX=XO(ij)-X1
+                YYY=YO(ij)-Y1
                 XR=XXX*CA+YYY*SA
                 YR=YYY*CA-XXX*SA
-                XOB(iicomp,ij)=XR+X1
-                YOB(iicomp,ij)=YR+Y1
-                BANGOB(iicomp,ij,1)=BANGOB(iicomp,ij,1)+VAL
-                do 89 ibe=1,8
-                  XXX=XBP(iicomp,ij,ibe)-X1
-                  YYY=YBP(iicomp,ij,ibe)-Y1
-                  XR=XXX*CA+YYY*SA
-                  YR=YYY*CA-XXX*SA
-                  XBP(iicomp,ij,ibe)=XR+X1
-                  YBP(iicomp,ij,ibe)=YR+Y1
-  89            continue
+                XO(ij)=XR+X1
+                YO(ij)=YR+Y1
+                BANG(ij)=BANG(ij)+VAL
   86          continue
               CALL MKGOMST(IUF,ZOBS(IICOMP),IICOMP,IER)
-              write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
-     &          '... done.'
-              if(.NOT.silent)CALL USRMSG(' ',outs,'-')
-              call sumrchg(IICOMP,'r',silent)
             endif
-          elseif(IOBS(IICOMP).EQ.2)then
+          endif
+          write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
+     &          '... done.'
+          if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+          call sumrchg(IICOMP,'r',silent)
+        elseif(IOBS(IICOMP).EQ.2)then
 
 C If obstructions are held in the geometry file,
 C apply the transform and write the file back out.
-            if(newgeo)then
-              if(silent)then
-                ok= .true.
-              else
-                dok=.true.
-                write(outs,'(2a)') 'Transforms obstructions of ',
+          if(newgeo)then
+            if(silent)then
+              ok= .true.
+            else
+              dok=.true.
+              write(outs,'(2a)') 'Transforms obstructions of ',
+     &        zn(1:lnblnk(zn))
+              h(1)='You rotated the zone and so will probably'
+              h(2)='want to rotate the solar obstructions which'
+              h(3)='are associated with it as well. '
+              write(outs,'(2a)') 'Rotate obstructions of ',
      &          zn(1:lnblnk(zn))
-                h(1)='You rotated the zone and so will probably'
-                h(2)='want to rotate the solar obstructions which'
-                h(3)='are associated with it as well. '
-                write(outs,'(2a)') 'Rotate obstructions of ',
-     &            zn(1:lnblnk(zn))
-                call askok(outs,' ?',OK,dok,3)
-              endif
-              if(OK)then
-                PI = 4.0 * ATAN(1.0)
-                A=-VAL*PI/180.
-                CA=COS(A)
-                SA=SIN(A)
-                do 87 ij=1,nbobs(iicomp)
-                  XXX=XOB(iicomp,ij)-X1
-                  YYY=YOB(iicomp,ij)-Y1
-                  XR=XXX*CA+YYY*SA
-                  YR=YYY*CA-XXX*SA
-                  XOB(iicomp,ij)=XR+X1
-                  YOB(iicomp,ij)=YR+Y1
-                  BANGOB(iicomp,ij,1)=BANGOB(iicomp,ij,1)+VAL
-                  do 90 ibe=1,8
-                    XXX=XBP(iicomp,ij,ibe)-X1
-                    YYY=YBP(iicomp,ij,ibe)-Y1
-                    XR=XXX*CA+YYY*SA
-                    YR=YYY*CA-XXX*SA
-                    XBP(iicomp,ij,ibe)=XR+X1
-                    YBP(iicomp,ij,ibe)=YR+Y1
-  90              continue
-  87            continue
-                call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
-                write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
-     &            '... done.'
-                if(.NOT.silent)CALL USRMSG(' ',outs,'-')
-                call sumrchg(IICOMP,'r',silent)
-              endif
+              call askok(outs,' ?',OK,dok,3)
             endif
-          endif  ! obstr in geometry file
+            if(OK)then
+              PI = 4.0 * ATAN(1.0)
+              A=-VAL*PI/180.
+              CA=COS(A)
+              SA=SIN(A)
+              do 87 ij=1,NB
+                XXX=XO(ij)-X1
+                YYY=YO(ij)-Y1
+                XR=XXX*CA+YYY*SA
+                YR=YYY*CA-XXX*SA
+                XO(ij)=XR+X1
+                YO(ij)=YR+Y1
+                BANG(ij)=BANG(ij)+VAL
+  87          continue
+              call geowrite(IUF,LTMP,IICOMP,ITRU,3,IER)
+            endif
+          endif
+          write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),
+     &      '... done.'
+          if(.NOT.silent)CALL USRMSG(' ',outs,'-')
+          call sumrchg(IICOMP,'r',silent)
         endif
-  84  continue   ! loop zones in list
+  84  continue
 
       return
       end

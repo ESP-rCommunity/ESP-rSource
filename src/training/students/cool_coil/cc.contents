@@ -1,8 +1,7 @@
 Synopsis
  
-This is a synopsis of the model Coiling coil model via cc.pnf defined in
-cc.cfg generated on Wed Jul 22 12:22:52 2009. Notes associated with the model
-are in cc.log
+This is a synopsis of the model cc.pnf defined in cc.cfg generated on Wed Nov
+26 16:06:50 2008. Notes associated with the model are in cc.log
  
 The model is located at latitude   50.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 2000 and
@@ -25,17 +24,17 @@ Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
-with hour centred solar data.
+The climate used is: ESP test climate and is held in:
+/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : pressc.db1
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
  materials              : /usr/esru/esp-r/databases/material.db3.a
- constructions          : ./cool_coil.mlc
- plant components       : plantc.db1
+ constructions          : ./multicon.db1
+ plant components       : /usr/esru/esp-r/databases/plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
- optical properties     : optics.db1
+ optical properties     : /usr/esru/esp-r/databases/optics.db1
  
  ____________________________________________________________
  
@@ -55,7 +54,7 @@ no descrip
  
 The model includes a plant network.
  
- The plant network contains  4 components from plantc.db1
+ The plant network contains  4 components from /usr/esru/esp-r/databases/plantc.db1
  
  Component: fan ( 1) code  1, db reference  3
  Control data:    2.500

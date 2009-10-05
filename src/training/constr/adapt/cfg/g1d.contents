@@ -1,0 +1,667 @@
+cfg: g1d.cfg
+project: House with addaptive 1D conduction gridding active.
+print date: Tue Jul 20 16:48:57 1999
+
+ID Zone            Volume|          Surface
+   Name            m^3   | No. Opaque  Transp  ~Floor
+ 1 bin_c           5.0   6    17.7     0.0     2.2 attributed
+ 2 stairs          8.3   8    25.1     0.0     3.8 attributed
+ 3 hall_1          8.3   8    25.1     0.0     3.8 attributed
+ 4 kitchen        26.4  10    53.4     1.4    12.0 attributed
+ 5 liv_room       39.6  11    73.2     2.4    18.0 attributed
+ 6 bathrm         13.2  11    33.6     0.4     6.0 attributed
+ 7 bed1           19.8   8    43.2     1.2     9.0 attributed
+ 8 w_heat_c        3.3   6    14.0     0.0     1.5 attributed
+ 9 hall_2          9.9  11    31.0     0.0     4.5 attributed
+10 bed2           26.4   9    53.8     1.0    12.0 attributed
+11 bed3           19.8   8    43.4     1.0     9.0 attributed
+12 loft           37.8  10   101.8     0.0    31.5 attributed
+   all           218.  106    515.      7.    124.
+
+ ____________________________________________________________
+ Control description: proj cntrl
+
+
+ Zones control: no descrip : 2 functions.
+
+ The sensor for function  1 measures dry bulb temperature in liv_room
+ The actuator for function  1 is the air point in zone. 5
+ There have been  1 day types defined.
+
+ Day type  1 is valid during period: Fri  1 Jan to Fri 31 Dec, 1999 with  4 periods.
+ Per| Start|Sensed   |Actuated   | Control law       | Data
+ no.| time |property |property   |                   |
+  1   0.00  db temp   > flux      free floating
+  2   6.00  db temp   > flux      ideal control         10000.0 0.0 0.0 0.0 21.0 100.0
+  3   9.00  db temp   > flux      free floating
+  4  17.00  db temp   > flux      ideal control         10000.0 0.0 0.0 0.0 21.0 100.0
+
+ The sensor for function  2 measures dry bulb temperature in hall_2
+ The actuator for function  2 is the air point in zone. 9
+ There have been  1 day types defined.
+
+ Day type  1 is valid during period: Fri  1 Jan to Fri 31 Dec, 1999 with  4 periods.
+ Per| Start|Sensed   |Actuated   | Control law       | Data
+ no.| time |property |property   |                   |
+  1   0.00  db temp   > flux      free floating
+  2   6.00  db temp   > flux      ideal control         10000.0 0.0 0.0 0.0 21.0 100.0
+  3   9.00  db temp   > flux      free floating
+  4  20.00  db temp   > flux      ideal control         10000.0 0.0 0.0 0.0 21.0 100.0
+
+ Zone to contol loop linkages:
+ zone ( 1) bin_c        << control  0
+ zone ( 2) stairs       << control  0
+ zone ( 3) hall_1       << control  0
+ zone ( 4) kitchen      << control  0
+ zone ( 5) liv_room     << control  1
+ zone ( 6) bathrm       << control  0
+ zone ( 7) bed1         << control  0
+ zone ( 8) w_heat_c     << control  0
+ zone ( 9) hall_2       << control  2
+ zone (10) bed2         << control  0
+ zone (11) bed3         << control  0
+ zone (12) loft         << control  0
+
+ Flow control: no descrip : 1 loops.
+
+ The sensor for function  1 measures  mass flow node or connection.
+ The actuator for function  1 is mass flow component:   5 windw
+ There have been  1 day types defined.
+
+ Day type  1 is valid during period: Fri  1 Jan to Fri 31 Dec, 1999 with  1 periods.
+ Per| Start|Sensed   |Actuated   | Control law       | Data
+ no.| time |property |property   |                   |
+  1   0.00  dry bulb > flow       on / off              23.0 1.0
+
+ ____________________________________________________________
+ Zone bin_c ( 1) is composed of  6 surfaces and  8 vertices.
+ It encloses a volume of     5.0m^3 of space, with a total opaque surface
+ area of    17.70m^2 & approx floor area of    2.25m^2
+ bin_c describes a...
+
+ A summary of the surfaces in bin_c( 1) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     3.30   0.   0. north        OPAQ VERT ext_wall     ||< external
+  2     3.30 270.   0. porch        OPAQ VERT int_doors    ||< external
+  3     3.30 180.   0. stairs       OPAQ VERT ext_part     ||< bin_c:stairs
+  4     3.30  90.   0. east         OPAQ VERT ext_part     ||< identical environment
+  5     2.25   0.  90. bathrm       OPAQ CEIL ceiling      ||< bin_c:bathrm
+  6     2.25   0. -90. floor        OPAQ FLOR grnd_floor   ||< ground profile  1
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+
+ ____________________________________________________________
+ Zone stairs ( 2) is composed of  8 surfaces and 12 vertices.
+ It encloses a volume of     8.3m^3 of space, with a total opaque surface
+ area of    25.10m^2 & approx floor area of    3.75m^2
+ stairs describes a connecting zone
+
+ A summary of the surfaces in stairs( 2) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     3.30   0.   0. bin_c        OPAQ VERT ext_part     ||< stairs:bin_c
+  2     5.50 270.   0. hall1        OPAQ VERT int_doors    ||< stairs:hall_1
+  3     3.30 180.   0. livrm        OPAQ VERT int_part     ||< stairs:liv_room
+  4     5.50  90.   0. east         OPAQ VERT ext_part     ||< identical environment
+  5     0.75   0.  90. bathrm       OPAQ CEIL ceiling      ||< stairs:bathrm
+  6     3.75   0. -90. floor        OPAQ FLOR grnd_floor   ||< ground profile  1
+  7     1.50   0.  90. w_heat_c     OPAQ CEIL ceiling      ||< stairs:w_heat_c
+  8     1.50   0.  90. hall2        OPAQ CEIL int_doors    ||< stairs:hall_2
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+
+ ____________________________________________________________
+ Zone hall_1 ( 3) is composed of  8 surfaces and 12 vertices.
+ It encloses a volume of     8.3m^3 of space, with a total opaque surface
+ area of    25.10m^2 & approx floor area of    3.75m^2
+ hall_1 is a space adjacent to the ground level stairs
+
+ A summary of the surfaces in hall_1( 3) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     3.30   0.   0. door_ext     OPAQ VERT int_doors    ||< external
+  2     3.30 270.   0. kitchn       OPAQ VERT int_part     ||< hall1:kitchen
+  3     3.30 180.   0. door_living  OPAQ VERT int_doors    ||< door_hall1:liv_room
+  4     5.50  90.   0. stairs       OPAQ VERT int_doors    ||< hall1:stairs
+  5     3.00   0.  90. hall_2       OPAQ CEIL ceiling      ||< hall1:hall_2
+  6     3.75   0. -90. floor        OPAQ FLOR grnd_floor   ||< ground profile  1
+  7     0.75   0.  90. bathrm       OPAQ CEIL ceiling      ||< hall_1:bathrm
+  8     2.20 270.   0. door_kitchn  OPAQ VERT int_doors    ||< door_hall1:kitchen
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+
+ ____________________________________________________________
+ Zone kitchen ( 4) is composed of 10 surfaces and 17 vertices.
+ It encloses a volume of    26.4m^3 of space, with a total opaque surface
+ area of    54.80m^2 & approx floor area of   12.00m^2
+ kitchen describes a room adjacent to living and hall
+
+ A summary of the surfaces in kitchen( 4) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     5.16   0.   0. north        OPAQ VERT ext_wall     ||< external
+  2     8.80 270.   0. west         OPAQ VERT ext_part     ||< identical environment
+  3     6.60 180.   0. living       OPAQ VERT int_part     ||< kitch:liv_room
+  4     3.30  90.   0. hall1        OPAQ VERT int_part     ||< kitchn:hall_1
+  5     9.00   0.  90. bed1         OPAQ CEIL ceiling      ||< kitchn:bed1
+  6    12.00   0. -90. floor        OPAQ FLOR grnd_floor   ||< ground profile  1
+  7     3.00   0.  90. bed2         OPAQ CEIL ceiling      ||< kitch:bed2
+  8     3.30  90.   0. east         OPAQ VERT ext_wall     ||< external
+  9     1.44   0.   0. window       TRAN VERT dbl_glz      ||< external
+ 10     2.20  90.   0. door_hall1   OPAQ VERT int_doors    ||< door_kitchn:hall_1
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  3  3  3
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+Wkd  1 EquiptW    6 -  7    900.0    100.0       0.50       0.50
+Wkd  2 EquiptW   12 - 13   1870.0    200.0       0.50       0.50
+Wkd  3 EquiptW   16 - 17   4160.0   1000.0       0.50       0.50
+Sat  1 EquiptW    9 - 10    900.0    100.0       0.50       0.50
+Sat  2 EquiptW   12 - 13   1870.0    200.0       0.50       0.50
+Sat  3 EquiptW   16 - 17   4160.0   1000.0       0.50       0.50
+Sun  1 EquiptW    9 - 10    900.0    100.0       0.50       0.50
+Sun  2 EquiptW   12 - 13   1870.0    200.0       0.50       0.50
+Sun  3 EquiptW   16 - 17   4160.0   1000.0       0.50       0.50
+
+ ____________________________________________________________
+ Zone liv_room ( 5) is composed of 11 surfaces and 18 vertices.
+ It encloses a volume of    39.6m^3 of space, with a total opaque surface
+ area of    75.60m^2 & approx floor area of   18.00m^2
+ liv_room is a ground level room adjacent to kitchen
+
+ A summary of the surfaces in liv_room( 5) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     3.30   0.   0. stairs       OPAQ VERT int_part     ||< livrm:stairs
+  2     6.60 270.   0. west         OPAQ VERT ext_part     ||< identical environment
+  3     4.20 180.   0. south        OPAQ VERT ext_wall     ||< external
+  4     6.60  90.   0. east         OPAQ VERT ext_part     ||< identical environment
+  5     9.00   0.  90. bed2         OPAQ CEIL ceiling      ||< living:bed2
+  6    18.00   0. -90. floor        OPAQ FLOR grnd_floor   ||< ground profile  1
+  7     3.30   0.   0. door_hall1   OPAQ VERT int_doors    ||< door_living:hall_1
+  8     6.60   0.   0. kitch        OPAQ VERT int_part     ||< living:kitchen
+  9     2.40 180.   0. window       TRAN VERT dbl_glz      ||< external
+ 10     9.00   0.  90. bed3         OPAQ CEIL ceiling      ||< living:bed3
+ 11     6.60 180.   0. TIM          OPAQ VERT ext_wall     ||< external
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  5  2  2
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+Wkd  1 OccuptW    8 - 21    120.0     80.0       0.70       0.30
+Wkd  2 OccuptW    8 -  9    300.0    380.0       0.70       0.30
+Wkd  3 OccuptW    9 - 24     65.0     55.0       0.70       0.30
+Wkd  4 OccuptW   16 - 21    130.0    110.0       0.70       0.30
+Wkd  5 OccuptW   17 - 24     65.0     55.0       0.70       0.30
+Sat  1 OccuptW    8 - 21    260.0    220.0       0.70       0.30
+Sat  2 OccuptW    9 - 24    130.0    110.0       0.70       0.30
+Sun  1 OccuptW    8 - 21    260.0    220.0       0.70       0.30
+Sun  2 OccuptW    9 - 24    130.0    110.0       0.70       0.30
+
+ ____________________________________________________________
+ Zone bathrm ( 6) is composed of 11 surfaces and 18 vertices.
+ It encloses a volume of    13.2m^3 of space, with a total opaque surface
+ area of    34.00m^2 & approx floor area of    6.00m^2
+ bathrm represents the 1st level bathroom
+
+ A summary of the surfaces in bathrm( 6) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     6.20   0.   0. north        OPAQ VERT ext_wall     ||< external
+  2     4.40 270.   0. bed1         OPAQ VERT int_part     ||< bathrm:bed1
+  3     3.30 180.   0. w_heat_c     OPAQ VERT int_part     ||< bathrm:w_heat_c
+  4     4.40  90.   0. east         OPAQ VERT ext_part     ||< identical environment
+  5     6.00   0.  90. loft         OPAQ CEIL loft_ceil    ||< bathrm:loft
+  6     2.25   0. -90. porch        OPAQ FLOR upper_flor   ||< external
+  7     2.25   0. -90. bin_c        OPAQ FLOR upper_flor   ||< bathrm:bin_c
+  8     0.75   0. -90. stairs       OPAQ FLOR upper_flor   ||< bathrm:stairs
+  9     0.75   0. -90. hall_1       OPAQ FLOR upper_flor   ||< bathrm:hall_1
+ 10     3.30 180.   0. door_hall2   OPAQ VERT int_doors    ||< door_bath:hall_2
+ 11     0.40   0.   0. window       TRAN VERT dbl_glz      ||< external
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  3  2  2
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+Wkd  1 EquiptW    6 -  7      0.0    150.0       0.50       0.50
+Wkd  2 EquiptW   18 - 19    100.0    300.0       0.50       0.50
+Wkd  3 EquiptW   10 - 18      0.0     50.0       0.50       0.50
+Sat  1 EquiptW   17 - 18    100.0    300.0       0.50       0.50
+Sat  2 EquiptW   10 - 17      0.0     50.0       0.50       0.50
+Sun  1 EquiptW    9 - 10      0.0    300.0       0.50       0.50
+Sun  2 EquiptW   17 - 18    100.0    300.0       0.50       0.50
+
+ ____________________________________________________________
+ Zone bed1 ( 7) is composed of  8 surfaces and 14 vertices.
+ It encloses a volume of    19.8m^3 of space, with a total opaque surface
+ area of    44.40m^2 & approx floor area of    9.00m^2
+ bed1 describes a 1st level north facing room
+
+ A summary of the surfaces in bed1( 7) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     5.40   0.   0. north        OPAQ VERT ext_wall     ||< external
+  2     6.60 270.   0. west         OPAQ VERT ext_part     ||< identical environment
+  3     6.60 180.   0. bed2         OPAQ VERT int_part     ||< bed1:bed2
+  4     4.40  90.   0. bathrm       OPAQ VERT int_part     ||< bed1:bathrm
+  5     9.00   0.  90. loft         OPAQ CEIL loft_ceil    ||< bed1:loft
+  6     9.00   0. -90. kitchn       OPAQ FLOR upper_flor   ||< bed1:kitchen
+  7     2.20  90.   0. door_hall2   OPAQ VERT int_doors    ||< door_bed1:hall_2
+  8     1.20   0.   0. window       TRAN VERT dbl_glz      ||< external
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  1  1  1
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+Wkd  1 OccuptW    0 -  7    120.0     90.0       0.70       0.30
+Sat  1 OccuptW    0 -  9    120.0     90.0       0.70       0.30
+Sun  1 OccuptW    0 -  9    120.0     90.0       0.70       0.30
+
+ ____________________________________________________________
+ Zone w_heat_c ( 8) is composed of  6 surfaces and  8 vertices.
+ It encloses a volume of     3.3m^3 of space, with a total opaque surface
+ area of    14.00m^2 & approx floor area of    1.50m^2
+ w_heat_c describes the boiler space
+
+ A summary of the surfaces in w_heat_c( 8) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     2.20 270.   0. door_hall2   OPAQ VERT int_doors    ||< door_whc:hall_2
+  2     3.30 180.   0. hall2        OPAQ VERT int_part     ||< w_heater_c:hall_2
+  3     2.20  90.   0. east         OPAQ VERT ext_part     ||< identical environment
+  4     3.30   0.   0. bathrm       OPAQ VERT int_part     ||< w_heat_c:bathrm
+  5     1.50   0.  90. loft         OPAQ CEIL loft_ceil    ||< w_heat_c:loft
+  6     1.50   0. -90. stairs       OPAQ FLOR upper_flor   ||< w_heat_c:stairs
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  1  1  1
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+Wkd  1 EquiptW    0 - 24    200.0      0.0       0.50       0.50
+Sat  1 EquiptW    0 - 24    200.0      0.0       0.50       0.50
+Sun  1 EquiptW    0 - 24    200.0      0.0       0.50       0.50
+
+ ____________________________________________________________
+ Zone hall_2 ( 9) is composed of 11 surfaces and 17 vertices.
+ It encloses a volume of     9.9m^3 of space, with a total opaque surface
+ area of    31.00m^2 & approx floor area of    4.50m^2
+ hall_2 describes the upper level stair landing
+
+ A summary of the surfaces in hall_2( 9) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     3.30   0.   0. door_bath    OPAQ VERT int_doors    ||< door_hall2:bathrm
+  2     2.20 270.   0. door_bed1    OPAQ VERT int_doors    ||< door_hall2:bed1
+  3     4.40 180.   0. bed3         OPAQ VERT int_part     ||< hall2:bed3
+  4     2.20  90.   0. east         OPAQ VERT ext_part     ||< identical environment
+  5     3.30   0.   0. w_heater_c   OPAQ VERT int_part     ||< hall2:w_heat_c
+  6     2.20  90.   0. door_whc     OPAQ VERT int_doors    ||< door_hall2:w_heat_c
+  7     4.50   0.  90. ceiling      OPAQ CEIL loft_ceil    ||< hall2:loft
+  8     3.00   0. -90. hall1        OPAQ FLOR upper_flor   ||< hall_2:hall_1
+  9     2.20 270.   0. door_bed2    OPAQ VERT int_doors    ||< door_hall2:bed2
+ 10     1.50   0. -90. stairs       OPAQ FLOR int_doors    ||< hall2:stairs
+ 11     2.20 180.   0. door_bed3    OPAQ VERT int_doors    ||< door_hall2:bed3
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+
+ ____________________________________________________________
+ Zone bed2 (10) is composed of  9 surfaces and 15 vertices.
+ It encloses a volume of    26.4m^3 of space, with a total opaque surface
+ area of    54.80m^2 & approx floor area of   12.00m^2
+ bed2 is a south facing bedroom over the lounge
+
+ A summary of the surfaces in bed2(10) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     2.20  90.   0. door_hall2   OPAQ VERT int_doors    ||< door_bed2:hall_2
+  2     6.60   0.   0. bed1         OPAQ VERT int_part     ||< bed2:bed1
+  3     8.80 270.   0. west         OPAQ VERT ext_part     ||< identical environment
+  4     5.60 180.   0. south        OPAQ VERT ext_wall     ||< external
+  5     6.60  90.   0. bed3         OPAQ VERT int_part     ||< bed2:bed3
+  6    12.00   0.  90. loft         OPAQ CEIL loft_ceil    ||< bed2:loft
+  7     9.00   0. -90. living       OPAQ FLOR upper_flor   ||< bed2:liv_room
+  8     3.00   0. -90. kitch        OPAQ FLOR upper_flor   ||< bed2:kitchen
+  9     1.00 180.   0. window       TRAN VERT dbl_glz      ||< external
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  2  2  2
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+Wkd  1 OccuptW    0 -  7    120.0     80.0       0.70       0.30
+Wkd  2 OccuptW   21 - 24    120.0     80.0       0.70       0.30
+Sat  1 OccuptW    0 -  8    120.0     80.0       0.70       0.30
+Sat  2 OccuptW   21 - 24    120.0     80.0       0.70       0.30
+Sun  1 OccuptW    0 -  8    120.0     80.0       0.70       0.30
+Sun  2 OccuptW   21 - 24    120.0     80.0       0.70       0.30
+
+ ____________________________________________________________
+ Zone bed3 (11) is composed of  8 surfaces and 14 vertices.
+ It encloses a volume of    19.8m^3 of space, with a total opaque surface
+ area of    44.40m^2 & approx floor area of    9.00m^2
+ bed3 describes a...
+
+ A summary of the surfaces in bed3(11) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     4.40   0.   0. hall2        OPAQ VERT int_part     ||< bed3:hall_2
+  2     6.60 270.   0. bed2         OPAQ VERT int_part     ||< bed3:bed2
+  3     5.60 180.   0. south        OPAQ VERT ext_wall     ||< external
+  4     6.60  90.   0. east         OPAQ VERT ext_part     ||< identical environment
+  5     9.00   0.  90. loft         OPAQ CEIL loft_ceil    ||< bed3:loft
+  6     9.00   0. -90. living       OPAQ FLOR upper_flor   ||< bed3:liv_room
+  7     1.00 180.   0. window       TRAN VERT dbl_glz      ||< external
+  8     2.20   0.   0. door_hall2   OPAQ VERT int_doors    ||< door_bed3:hall_2
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  2  2  2
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+Wkd  1 OccuptW    0 -  7    120.0     80.0       0.70       0.30
+Wkd  2 OccuptW   21 - 24    120.0     80.0       0.70       0.30
+Sat  1 OccuptW    0 -  8    120.0     80.0       0.70       0.30
+Sat  2 OccuptW   21 - 24    120.0     80.0       0.70       0.30
+Sun  1 OccuptW    0 -  8    120.0     80.0       0.70       0.30
+Sun  2 OccuptW   21 - 24    120.0     80.0       0.70       0.30
+
+ ____________________________________________________________
+ Zone loft (12) is composed of 10 surfaces and 17 vertices.
+ It encloses a volume of    37.8m^3 of space, with a total opaque surface
+ area of   101.83m^2 & approx floor area of   31.50m^2
+ loft is the roof space
+
+ A summary of the surfaces in loft(12) follows:
+
+ Sur| Area  |Azim|Elev| surface    |geometry| multilayer   |environment
+    | m^2   |deg |deg | name       |type|loc| constr name  |other side
+  1     6.00   0. -90. bathrm       OPAQ FLOR loft_floor   ||< loft:bathrm
+  2     6.30  90.   0. east         OPAQ VERT ext_part     ||< identical environment
+  3     6.30 270.   0. west         OPAQ VERT ext_part     ||< identical environment
+  4    23.61   0.  63. north        OPAQ SLOP roof         ||< external
+  5    23.61 180.  63. south        OPAQ SLOP roof         ||< external
+  6    12.00   0. -90. bed2         OPAQ FLOR loft_floor   ||< loft:bed2
+  7     9.00   0. -90. bed1         OPAQ FLOR loft_floor   ||< loft:bed1
+  8     4.50   0. -90. hall2        OPAQ FLOR loft_floor   ||< ceiling:hall_2
+  9     1.50   0. -90. w_heat_c     OPAQ FLOR loft_floor   ||< loft:w_heat_c
+ 10     9.00   0. -90. bed3         OPAQ FLOR loft_floor   ||< loft:bed3
+
+
+ All surfaces will receive diffuse insolation.
+ Note: defaults superseded by any shading/insolation file data.
+
+ Description: nil_operations
+ Control: no control of air flow
+
+ Number of Weekday Sat Sun air change periods =  0  0  0
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+
+
+ Description : nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+Day Gain Type   Period Sensible  Latent    Radiant   Convec
+    No.  labl   Hours  Magn.(W)  Magn. (W) Frac    Frac
+
+ ____________________________________________________________
+ Multi-layer constructions used:
+
+ Details of opaque composite: grnd_floor
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  263 0.2500     1.280  1460.   879. 0.90 0.85     5. Common earch
+    2  262 0.1500     0.520  2050.   184. 0.90 0.85     2. Gravel based
+    3   32 0.1500     1.400  2100.   653. 0.90 0.65    19. Heavy mix concrete
+    4  201 0.0200     0.060   300.  1000. 0.90 0.50    13. Fibreboard
+    5  124 0.0500     1.400  2100.   650. 0.91 0.65    19. Cement screed
+    6   67 0.0190     0.150   800.  2093. 0.91 0.65    96. Chipboard
+    7  221 0.0060     0.060   186.  1360. 0.90 0.60    10. Wilton
+ Standardised U value =    0.73
+
+ Details of opaque composite: roof
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  141 0.0100     0.850  1900.   837. 0.90 0.60    52. Clay tile
+    2  161 0.0020     0.500  1700.  1000. 0.90 0.90  1000. Bitumen felt
+    3   67 0.0250     0.150   800.  2093. 0.91 0.65    96. Chipboard
+ Standardised U value =    2.77
+
+ Details of opaque composite: int_doors
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1   69 0.0250     0.190   700.  2390. 0.90 0.65    12. Oak (radial)
+ Standardised U value =    3.23
+
+ Details of opaque composite: ext_wall
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  125 0.0050     0.500  1300.  1000. 0.91 0.50    19. White dry render
+    2    4 0.1000     0.960  2000.   650. 0.90 0.93    25. Outer leaf brick
+    3  201 0.0500     0.060   300.  1000. 0.90 0.50    13. Fibreboard
+    4    3 0.1000     0.620  1800.   840. 0.93 0.70    29. Inner leaf brick
+    5  104 0.0100     0.420  1200.   837. 0.91 0.50    11. Gypsum plaster
+ Standardised U value =    0.76
+
+ Details of opaque composite: ext_part
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  104 0.0100     0.420  1200.   837. 0.91 0.50    11. Gypsum plaster
+    2   28 0.1500     0.510  1400.  1000. 0.90 0.65    10. Block inner (3% mc)
+    3  104 0.0100     0.420  1200.   837. 0.91 0.50    11. Gypsum plaster
+ Standardised U value =    1.92
+
+ Details of opaque composite: int_part
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  102 0.0100     0.160   600.  1000. 0.91 0.50     8. Light plaster
+    2   28 0.1000     0.510  1400.  1000. 0.90 0.65    10. Block inner (3% mc)
+    3  102 0.0100     0.160   600.  1000. 0.91 0.50     8. Light plaster
+ Standardised U value =    2.00
+
+ Details of opaque composite: ceiling
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  221 0.0250     0.060   186.  1360. 0.90 0.60    10. Wilton
+    2   65 0.0250     0.140   600.  1210. 0.91 0.65    14. Flooring
+    3  201 0.0500     0.060   300.  1000. 0.90 0.50    13. Fibreboard
+    4  102 0.0250     0.160   600.  1000. 0.91 0.50     8. Light plaster
+ Standardised U value =    0.57
+
+ Details of opaque composite: upper_flor
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  102 0.0250     0.160   600.  1000. 0.91 0.50     8. Light plaster
+    2  201 0.0500     0.060   300.  1000. 0.90 0.50    13. Fibreboard
+    3   65 0.0250     0.140   600.  1210. 0.91 0.65    14. Flooring
+    4  221 0.0250     0.060   186.  1360. 0.90 0.60    10. Wilton
+ Standardised U value =    0.57
+
+ Details of opaque composite: loft_ceil
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  211 0.0100     0.040   250.   840. 0.90 0.30     4. Glasswool
+    2   67 0.0200     0.150   800.  2093. 0.91 0.65    96. Chipboard
+    3  102 0.0050     0.160   600.  1000. 0.91 0.50     8. Light plaster
+ Standardised U value =    1.69
+
+ Details of opaque composite: loft_floor
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  102 0.0050     0.160   600.  1000. 0.91 0.50     8. Light plaster
+    2   67 0.0200     0.150   800.  2093. 0.91 0.65    96. Chipboard
+    3  211 0.0100     0.040   250.   840. 0.90 0.30     4. Glasswool
+ Standardised U value =    1.69
+
+ Details of transparent composite: dbl_glz      with DCF7365_10nb optics.
+
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|Descr
+      |db  | (m)  |tivity |       |heat  |emis|abs |resis|
+    1  243 0.0040     1.050  2500.   750. 0.83 0.05 19200. 4mm clear float
+    2    0 0.0020     0.000     0.     0. 0.99 0.99     1. air  0.17 0.17 0.17
+    3  243 0.0040     1.050  2500.   750. 0.83 0.05 19200. 4mm clear float
+ Standardised U value =    2.81

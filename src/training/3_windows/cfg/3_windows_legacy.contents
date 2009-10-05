@@ -2,31 +2,15 @@ Synopsis
  
 This is a synopsis of the model Three offices with different window
 representations (legacy network). defined in 3_windows_legacy.cfg generated on
-Fri Oct  2 08:55:09 2009. Notes associated with the model are in 3_windows.log
+Thu Aug 23 17:56:35 2007. Notes associated with the model are in 3_windows.log
  
 The model is located at latitude   55.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 2000 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
- 
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
- 
-Simulationist name: not yet defined
-Simulationist telephone: not yet defined
-Simulationist address: not yet defined
-Simulationist city: not yet defined
-Simulationist postcode: not yet defined
-The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
-with hour centred solar data.
+The climate used is: ESP test climate and is held in:
+/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
 Primary energy conversions (demand kWhr to primary kWhr) are:
  heating   : 1.530
  cooling   : 1.440
@@ -42,15 +26,14 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  fan_pump:  612.00   2.06   7.57
  small pr:  612.00   2.06   7.57
  hot water: 190.00   0.30   0.20
-An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : pressc.db1
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
  materials              : /usr/esru/esp-r/databases/material.db3.a
  constructions          : ../dbs/office_vent_constr.db2
- plant components       : plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
- optical properties     : optics.db1
+ plant components       : /usr/esru/esp-r/databases/plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1
+ optical properties     : /usr/esru/esp-r/databases/optics.db1
  
  ____________________________________________________________
  
@@ -162,7 +145,7 @@ ID Zone         Volume|          Surface
  1 manager        40.5  10    61.6    10.4    13.5  manager describes cellular office
  2 manager_t_b    40.5  12    61.6    10.4    13.5  manager_t_b describes an office with top and bottom openings
  3 manager_bi     40.5  11    61.6    10.4    13.5  manager_bi describes an office with bi-directional opening
-   all           122.   33    185.     31.     41.
+   all           122.   33    185.     31.     40.
  
  
  Zone manager ( 1) is composed of 10 surfaces and 22 vertices.
@@ -186,13 +169,12 @@ ID Zone         Volume|          Surface
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  5.04    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
+ 10  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
- 
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -201,7 +183,7 @@ ID Zone         Volume|          Surface
 Notes:
 one person typical office pattern with gain ramping up between 7h & 9h
 weekdays and saturdays. No lights or small power.
-Number of weekday      casual gains=  7
+ Number of Weekday Sat Sun casual gains=  7  7  0
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
@@ -211,17 +193,13 @@ Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
 Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
 Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
 Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Number of saturday     casual gains=  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Number of sunday       casual gains=  0
+Sat  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Sat  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Sat  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Sat  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Sat  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Sat  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -230,7 +208,7 @@ Number of sunday       casual gains=  0
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager_t_b describes an office with top and bottom openings
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.280 & UA of 1.0293
+ Outside walls are 27.259 % of floor area & avg U of 0.123 & UA of 0.45161
  Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
  
  A summary of the surfaces in manager_t_b( 2) follows:
@@ -246,7 +224,7 @@ Number of sunday       casual gains=  0
   7  2.70    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  3.64    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  5.04    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
+ 10  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
  11  0.840   180.   0. low_glz      DCF7671_ VERT -     dbl_glz      ||< external
  12  0.840   180.   0. high_glz     DCF7671_ VERT -     dbl_glz      ||< external
  
@@ -254,7 +232,6 @@ Number of sunday       casual gains=  0
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
- 
  
  
  Uses same operations as zone manager
@@ -266,7 +243,7 @@ Number of sunday       casual gains=  0
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager_bi describes an office with bi-directional opening
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.280 & UA of 1.0293
+ Outside walls are 27.259 % of floor area & avg U of 0.123 & UA of 0.45161
  Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
  
  A summary of the surfaces in manager_bi( 3) follows:
@@ -282,14 +259,13 @@ Number of sunday       casual gains=  0
   7  2.70    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  3.64    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  5.04    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
+ 10  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
  11  1.68    180.   0. bi-glaz      DCF7671_ VERT -     dbl_glz      ||< external
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
- 
  
  
  Uses same operations as zone manager
@@ -300,23 +276,11 @@ Number of sunday       casual gains=  0
  Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
  There is 27.000m2 of outside surface area, 27.000m2 of which is vertical.
  
- Outside walls are 27.259 % of floor area & avg U of 0.340 & UA of 3.7544
+ Outside walls are 27.259 % of floor area & avg U of 0.235 & UA of 2.5990
  Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 44.858
  
  ____________________________________________________________
  Multi-layer constructions used:
- 
- Details of opaque construction: extern_wall
- 
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick
-    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
-    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
- Total area of extern_wall is      5.40
  
  Details of opaque construction: insul_frame
  

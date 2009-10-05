@@ -55,7 +55,6 @@ C For operational details refer to the ESP-r program user's manual.
       program res
 #include "building.h"
 #include "esprdbfile.h"
-#include "material.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
@@ -131,22 +130,24 @@ C Name of current application
       common/APPNAME/cAppName
 
 C IEEE callback (Solaris)
-#ifdef SUN
-#ifdef F90
-      external SIGFPE_bps      
-      integer SIGFPE_bps      
-#endif
-#endif
+C      external SIGFPE_bps      
+C      integer SIGFPE_bps      
       
       character cAppName*12      
       
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there
 
       CHARACTER ITEM(19)*23
-      CHARACTER*72 H,LCFGF,actf,Lflpar
+      CHARACTER*72 H,LTMP,LCFGF,actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
@@ -156,7 +157,6 @@ C IEEE callback (Solaris)
       character bact*4,pifltog*4,lpifl*72
       character graftitle*64,grlbl*24,LTDF*72,LTDFA*72
       character firstbit*72,secondbit*72
-      character longtmp*144
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -257,13 +257,9 @@ C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
 C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
 C           only if: Sun-3 f77 with -f68881 or -ffpa option
 C                or: Sun-4 f77.
-#ifdef SUN
-#ifdef F90
-      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
-      ieeer=ieee_handler('set','common',SIGFPE_bps)
-      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
-#endif
-#endif
+C      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
+C      ieeer=ieee_handler('set','common',SIGFPE_bps)
+C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
 
 C Initialise output device.
       MMOD=MODL
@@ -449,27 +445,12 @@ C Read the plant configuration file.
           h(4)='that res CANNOT read the PLANT configuration '
           h(5)='file unless it has first read the model '
           h(6)='configuration file.'
-          write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
 
-          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-          if(iglib.eq.1.or.iglib.eq.3)then
-            CALL EASKF(longtmp,' ',
-     &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
-          elseif(iglib.eq.2)then
-            CALL EASKF(longtmp,' ',
-     &      ' Corresponding system configuration file name ? ',
-     &      144,' ','configuration file',IER,4)
-          else
-            CALL EASKF(longtmp,' ',
-     &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
-          endif
-          if(ier.eq.-3) goto 902  ! cancel detected pass back -3 in ier.
+          call easks(LTMP,'Configuration file name ?',
+     &      ' ',72,' ','configuration file',IER,0)
+          call fdroot(LTMP,path,LFCFG)
 
-	  call fdroot(longtmp,path,LCFGF)
-
-C Read the model plant-only configuration file.
+C Read the model configuration file.
           IFCFG=IFIL+1
           IAPROB=IFIL+2  
           MODE='ALL '
@@ -939,31 +920,28 @@ C Dummy routines from common3dv.F
       return
       end
 
-      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
       logical cfgok
       ier=0
       return
       end
 
-      SUBROUTINE PLELEV(direc)
+      SUBROUTINE PLELEV(IUF,direc,ier)
       CHARACTER direc*1
+      ier=0
       return
       end
 
 C In support of floating point exceptions. Comment out for NON SOLAIRS.
-#ifdef SUN
-#ifdef F90
-      integer function SIGFPE_bps(sig,code,context)
-      integer sig,code,context(5)
-      character label*16
-      if(loc(code).eq.208) label = 'invalid'
-      if(loc(code).eq.200) label = 'division by zero'
-      if(loc(code).eq.212) label = 'overflow'
-      if(loc(code).eq.204) label = 'underflow'
-      if(loc(code).eq.196) label = 'inexact'
-      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
-      SIGFPE_bps = loc(code)
-      end
-#endif
-#endif
+C      integer function SIGFPE_bps(sig,code,context)
+C      integer sig,code,context(5)
+C      character label*16
+C      if(loc(code).eq.208) label = 'invalid'
+C      if(loc(code).eq.200) label = 'division by zero'
+C      if(loc(code).eq.212) label = 'overflow'
+C      if(loc(code).eq.204) label = 'underflow'
+C      if(loc(code).eq.196) label = 'inexact'
+C      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
+C      SIGFPE_bps = loc(code)
+C      end
 

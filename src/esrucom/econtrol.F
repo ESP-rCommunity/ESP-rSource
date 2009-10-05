@@ -603,7 +603,7 @@ C Set building-side function generator flag.
    30     CONTINUE
 
 C Reporting of all periods in this day type (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,0,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,0,II,JJ,iier)
    20   CONTINUE
    10 CONTINUE
 
@@ -916,7 +916,7 @@ C Set plant-side function generator flag.
    60     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,1,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,1,II,JJ,iier)
    50   continue
    40 continue
       goto 15
@@ -1118,7 +1118,7 @@ C Get date strings. For this test assume some values.
    72     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,2,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,2,II,JJ,iier)
    71   continue
 
 C If control component active read connections.
@@ -1157,17 +1157,12 @@ C Remember connection index for this -4 associated control.
             iasocc(ii,ICCN)=ICNN
             nfsup(ii)=nsup
             if(nsup.eq.0)then
-
-C Debug.
 C              write(6,*) ' supplementary node data zeroed...'
-
               NDSCNN(ICNN,1)=0
             else
 C If supplementary node names for this component read them.
-
-C Debug.
+C Debug...
 C              write(6,*) ' supplementary node names to be read in...'
-
               do 91 isup=1,nsup
                 CALL EGETW(OUTSTR,KG,WORD,'W','suppl node',IER)
                 NODID=WORD(1:12)
@@ -1357,7 +1352,7 @@ C Write out string describing the controller type.
    67     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,4,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,4,II,JJ,iier)
    57   continue
    47 continue
 
@@ -1688,7 +1683,7 @@ C<<<<<<<Confirm the 0 to 1 range check >>>>>>>>>
   300     CONTINUE
 
 C Reporting of all periods in this day type (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ)
+          IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ,iier)
   200   CONTINUE
   100 CONTINUE
 
@@ -1961,8 +1956,6 @@ C control file sensors, actuator, control types, control laws.
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
-#include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -1975,6 +1968,12 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       CHARACTER SSTR*96,SSTRB*48
       CHARACTER WHICH*1,ZN*12
@@ -2143,17 +2142,10 @@ C Flow actuator.
         SSTR='undefined actuation'
         IF(IFAN(II,1).EQ.-3)THEN
           L=IFAN(II,2)
-          if(ITPCON(L).ne.0)then
-            WRITE(SSTR,'(A,i3,1x,5A)')'flow connection: ',
-     &        L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
-     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),' via ',
-     &        CMNAM(ITPCON(L))(1:lnblnk(CMNAM(ITPCON(L))))
-          else
-            WRITE(SSTR,'(A,i3,1x,4A)')'flow connection: ',
-     &        L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
-     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),
-     &        ' via unknown component.'
-          endif
+          WRITE(SSTR,'(A,i3,1x,5A)')'flow connection: ',
+     &      L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
+     &      NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),' via ',
+     &      CMNAM(ITPCON(L))(1:lnblnk(CMNAM(ITPCON(L))))
         ELSEIF(IFAN(II,1).EQ.-4)THEN
           L=IFAN(II,2)
           if(L.ne.0)then
@@ -3217,18 +3209,12 @@ C Only law 2 for bidirectional data will be used at the moment (May 2008)
 
 C ******** LSTCNTLD
 C List one day type of a building/plant/flow/global/optical control. 
-      SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ)
+      SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ,IER)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
-
-C Parameters
-      integer itru    ! unit to write error
-      integer icfoc   ! control domain to work with 
-      integer II      ! index of the control
-      integer JJ      ! index of day type
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -3260,8 +3246,9 @@ C List data for function II and day type JJ.
       endif
       NTSPH=1
       CALL EPERSTR(IYEAR,IBD,1,IED,24,
-     &       NTSPH,2,0,PERST1,PERST2,PERST3,IIER)
+     &       NTSPH,2,0,PERST1,PERST2,PERST3,IER)
 
+c      call edisp(itru,' ')
       if(icfoc.eq.0)then
         nnd=nbcdt(ii)
       elseif(icfoc.eq.1)then

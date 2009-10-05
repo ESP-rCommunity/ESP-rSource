@@ -54,6 +54,10 @@ C                 in common.
       common/pophelp/h(60)
       common/filep/ifil
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
@@ -74,22 +78,40 @@ C Day of average solar declination in each month.
 
       newgeo=.false.  ! Assume older format geometry.
       iunit=ifil
+      iuf=ifil+1
+
+C Read in the geometry file for the current zone to refresh /g1/.
+C If newgeo is true then the geometry file can include values
+C for /ishdirec/.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(act.eq.'s')then
+         if(newgeo)then
+            call georead(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
+         else
+            call egomin(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
+         endif
+      else
+         if(newgeo)then
+            call georead(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
+         else
+            call egomin(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
+         endif
+      endif
+      if(ier.ne.0)then
+        call edisp(iuout,'Problem detected while trying to read zone')
+        call edisp(iuout,'geometry file - respecify via menu.')
+        return
+      endif
       
 C Fill the itmc and isc arrays.
   4   call findtmc(icomp,act,nboftmc)
       ntmc=nboftmc
 
-C If no insolation sources return from inscon. Do not pause
-C for warning if update_silent or useupdate_silent.
+C If no insolation sources return from inscon.
       if(ntmc.eq.0)then
-        if(paction(1:13).eq.'update_silent'.or.
-     &     paction(1:16).eq.'useupdate_silent')then
+         call usrmsg('No insolation source surfaces found!',' ','W')
          return
-        else
-          call usrmsg('No insolation source surfaces found!',' ','W')
-          return
-        endif
-      endif
+       endif
     
 C Check that at least one surface has been chosen or gleaned
 C from the zone geometry file.
@@ -165,7 +187,7 @@ C can be used.
          ishadf=1
       else
          ishadf=0
-         if(mon.eq.mons)call igeoms(icomp)
+         if(mon.eq.mons)call igeoms
       endif
 
 C Commence computation for each specified month and allow user to
@@ -176,7 +198,7 @@ C update the zone shading & insolation db.
       endif
       call insolc(icomp)
       icstat=1
-      call isave(icomp,ier)
+      call isave(ier)
       mon=mon+1
       if(mon.le.monf)goto 81
 
@@ -199,9 +221,14 @@ C   itmc & isc:   toggles for each surface, if 1 then surface is an
 C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
+      common/filep/ifil
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
       common/contr/mon,isc(ms),iyd
@@ -231,7 +258,30 @@ C isurfinso list of insolation sources.
       logical newgeo  ! Used to test for new/old geometry file.
 
       newgeo=.false.  ! Assume older format geometry.
+      iuf=ifil+1
 
+C Read in the geometry file for the current zone to refresh /g1/.
+C If newgeo is true then the geometry file can include values
+C for /ishdirec/.
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(act.eq.'s')then
+         if(newgeo)then
+            call georead(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
+         else
+            call egomin(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
+         endif
+      else
+         if(newgeo)then
+            call georead(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
+         else
+            call egomin(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
+         endif
+      endif
+      if(ier.ne.0)then
+        call edisp(iuout,'Problem detected while trying to read zone')
+        call edisp(iuout,'geometry file - respecify via menu.')
+        return
+      endif
       ishadf=0
 
 C Establish if any of the surfaces are TMCs or CFCs.
@@ -311,14 +361,9 @@ C Clear return array and select all applicable surfaces.
                endif
   13        continue
             if(ntmc.eq.0)then
-              if(paction(1:13).eq.'update_silent'.or.
-     &           paction(1:16).eq.'useupdate_silent')then
+               call usrmsg('No insolation source surfaces found!',
+     &                         ' ','W')
                return
-              else
-                call usrmsg('No insolation source surfaces found!',
-     &            ' ','W')
-                return
-              endif
             endif
             iaplic(icomp,2)=1
          else
@@ -359,20 +404,23 @@ C ********** IGEOMS **********
 C Establishes the source surface grid if a zone transitional shading
 C file does not exist.
 
-      subroutine igeoms(izone)
+      subroutine igeoms
 #include "building.h"
-#include "geometry.h"
 
-C Parameter
-      integer izone  ! index of zone
-
+      common/pophelp/h(60)
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/tmc/itmc(ms),nwins
+      character blkname*8,blkmat*12,H*72
 
-C Set default surface grid.
-      if(nox(izone).eq.0) nox(izone)=20
-      if(noz(izone).eq.0) noz(izone)=20
+C Set default grid. Note that ngx and ngz relate to old style default
+C windows and are no longer used.
+      ngx=10
+      ngz=10
+      nox=20
+      noz=20
       nwins=0
-      do 10 i=1,nzsur(izone)
+      do 10 i=1,nsur
         if(itmc(i).ne.0)nwins=nwins+1
    10 continue
       return
@@ -398,8 +446,9 @@ C            in the misur list.
 #include "building.h"
 #include "geometry.h"
 
-      common/c24/izstocn(mcom,ms)
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/sunhr/isunhr
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/tshd/ioshd(mox,moz)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad1/isunup
@@ -422,7 +471,7 @@ C performed and is set to 1 when they have.
       common/data1/ical,idifc,init
 
       dimension xf(mtv),yf(mtv),zf(mtv),ydist(mox,moz)
-      character outs*124,paction*16
+      character blkname*8,blkmat*12,outs*124,paction*16
       character*3 month(12)
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -450,11 +499,8 @@ C progress report.
 C Loop through surfaces and for each insolation source perform
 C calculations.
       iwin=0
-      do 20 i=1,nzsur(icomp)
-
-C Get the current connection for surface isrc
+      do 20 i=1,nsur
          isrc=i
-         iccisrc=izstocn(icomp,isrc)
          if(itmc(isrc).eq.0)goto 20
          iwin=iwin+1
          modes=1
@@ -469,10 +515,10 @@ C              surface i in the zone transitional shading file.
 C Partially derive transformation equations by computing time
 C independent part of equation coefficients - equivalent to
 C translation plus three-dimensional plane rotation.
-         call trnsf1i(icomp,isrc)
+         call trnsf1i(isrc)
 
 C Grid the insolation source surface.
-         call mesh(icomp,isrc)
+         call mesh(isrc)
 
 C Proceed hour-by-hour.
          do 30 j=1,24
@@ -490,13 +536,13 @@ C Record first sun-up hour.
             if(isunhr.eq.0)isunhr=j
 
 C Determine angles for all external and internal surfaces.
-            call incai(icomp,ihr)
+            call incai(ihr)
 
 C Initiallise igins, the array of source grid points holding
 C the insolated surface numbers.
-            do 40 m=1,nox(icomp)
-               do 50 n=1,noz(icomp)
-                  call point1(icomp,isrc,xop(m,n),zop(m,n),ians)
+            do 40 m=1,nox
+               do 50 n=1,noz
+                  call point1(isrc,xop(m,n),zop(m,n),ians)
                   if(ians.eq.0)then
 C Outwith source surface.
                      igins(m,n)=-200
@@ -510,13 +556,13 @@ C Not yet defined.
 
 C Take zone transitional shading file information into account.
 C modes=1 indicates that call is for first sun-up hour; 2 otherwise.
-            call inwshd(icomp,isrc,ihr,modes)
+            call inwshd(isrc,ihr,modes)
             modes=2
 
 C If caie is positive then source surface can be considered.
             if(caie(isrc).le.0.0)then
-               do 60 m=1,nox(icomp)
-                  do 70 n=1,noz(icomp)
+               do 60 m=1,nox
+                  do 70 n=1,noz
                      if(igins(m,n).ne.-200)igins(m,n)=-100
    70             continue
    60          continue
@@ -531,24 +577,23 @@ C Exclude a surface that cannot see the source.
                if(intsur.eq.isrc.or.caii(l).le.0.0)goto 80
 
 C Derive the transformation equations for current internal surface.
-               call trnsf1i(icomp,intsur)
+               call trnsf1i(intsur)
 
 C Compute new solar angles relative to internal surface coordinate
 C system.
                call trnsf2i(ihr)
 
 C Set up source surface global coordinates.
-               do 90 inv=1,nznver(iccisrc)
-	          iwhich=nzjvn(iccisrc,inv)
-                  xf(inv)=vcoord(icomp,iwhich,1)
-                  yf(inv)=vcoord(icomp,iwhich,2)
-                  zf(inv)=vcoord(icomp,iwhich,3)
+               do 90 inv=1,nver(isrc)
+                  xf(inv)=x(jvn(isrc,inv))
+                  yf(inv)=y(jvn(isrc,inv))
+                  zf(inv)=z(jvn(isrc,inv))
    90          continue
 
 C Initiate source surface grid point-by-point analysis.
                ipass=0
-               do 100 m=1,nox(icomp)
-                  do 110 n=1,noz(icomp)
+               do 100 m=1,nox
+                  do 110 n=1,noz
                      if(igins(m,n).eq.-200)goto 110
                      if(ioshd(m,n).eq.1)then
                         igins(m,n)=-100
@@ -557,8 +602,8 @@ C Initiate source surface grid point-by-point analysis.
 
 C Convert source surface grid point coordinates back to global
 C coordinates before initiating projection.
-                     call transp(iccisrc,xf,yf,zf,xop(m,n),
-     &                 zop(m,n),xgp,ygp,zgp)
+                     call transp(nver(isrc),xf,yf,zf,xop(m,n),zop(m,n),
+     &                           xgp,ygp,zgp)
                      call trnsf3i(ihr,intsur,ipass,xgp,ygp,zgp)
                      ipass=1
                      if(yp.lt.0.0)goto 110
@@ -566,7 +611,7 @@ C coordinates before initiating projection.
 C Call point containment test; ians is 1 if point is within the
 C receiving surface and striking the side opposite the surface
 C normal.
-                     call point1(icomp,intsur,xp,zp,ians)
+                     call point1(intsur,xp,zp,ians)
                      if(ians.eq.0)goto 110
 
 C Use crowxyz to check real distance between source point (xgp,ygp,zgp)
@@ -636,12 +681,13 @@ C ********** inwshd **********
 C Reads the transitional shading file if one exists and extracts
 C surface shading information.
 
-      subroutine inwshd(izone,isur,ihr,modes)
+      subroutine inwshd(isur,ihr,modes)
 #include "building.h"
-#include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/tshd/ioshd(mox,moz)
       common/sunhr/isunhr
       common/shdfil/ishadf
@@ -649,7 +695,7 @@ C surface shading information.
       common/recshd/irectx
 
       dimension irecs(ms)
-      character outs*124
+      character blkname*8,blkmat*12,outs*124
 
       iushd=ifil
 
@@ -658,8 +704,7 @@ C surface shading information.
 
 C Transfer here for the first hour every day when sun is up.
     2 irec=1
-      read(iushd,rec=irec,iostat=istat,err=1000)
-     &    (irecs(i),i=1,nzsur(izone))
+      read(iushd,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nsur)
       irecn=irecs(isur)
       if(irecn.eq.0)then
           noshad=1
@@ -683,24 +728,23 @@ C Sun not up must be an error!
       if(ians.eq.-1)goto 5
 
 C Read surface shading information.
-      do 10 i=1,nox(izone)
-         read(iushd,rec=irec,iostat=istat,err=1000)
-     &     (ioshd(i,j),j=1,noz(izone))
+      do 10 i=1,nox
+         read(iushd,rec=irec,iostat=istat,err=1000)(ioshd(i,j),j=1,noz)
          irec=irec+1
    10 continue
       goto 4
 
 C Surface is not shaded.
-    1 do 20 i=1,nox(izone)
-         do 30 j=1,noz(izone)
+    1 do 20 i=1,nox
+         do 30 j=1,noz
             ioshd(i,j)=0
    30    continue
    20 continue
       goto 4
 
 C Surface is fully shaded.
-    5 do 40 i=1,nox(izone)
-         do 50 j=1,noz(izone)
+    5 do 40 i=1,nox
+         do 50 j=1,noz
             ioshd(i,j)=1
    50    continue
    40 continue
@@ -717,70 +761,104 @@ C Increment irec to skip record holding pso & psof
       end
 
 C ********** INCAI **********
-C Much of what is calculated in incai is available elsewhere.
-c There are several opportunities to use other common blocks.
-      subroutine incai(icomp,ihour)
-#include "building.h"
-#include "geometry.h"
 
+      subroutine incai(ihour)
+#include "building.h"
+
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/traceout/icout
       common/cai/caii(ms),caie(ms)
       common/tc/itc,icnt
       common/sangl1/sazi1,salt1
-      common/pangl/pazi(ms),pelv(ms),ptilt(ms)
 
+      dimension pazi(ms),pelv(ms)
+      dimension xsum(ms),ysum(ms),zsum(ms)
       character outs*124
-      logical ok,tok
+      logical ok
 
-C If trace is on set tok.
-      tok=.false.
-      if(icout.eq.33)tok=.true.
+      r=atan(1.0)/45.0
+      do 10 i=1,nsur
+         xs=0.
+         ys=0.
+         zs=0.
+         nv=nver(i)
 
-      pi = 4.0 * atan(1.0)
-      r=pi/180.
+C Gross surface area.
+         do 20 j=1,nv
+            k=j+1
+            if(j.eq.nv)k=1
+            ip1=jvn(i,j)
+            ip2=jvn(i,k)
+            xs=xs+y(ip1)*z(ip2)-z(ip1)*y(ip2)
+            ys=ys+z(ip1)*x(ip2)-x(ip1)*z(ip2)
+            zs=zs+x(ip1)*y(ip2)-y(ip1)*x(ip2)
+   20    continue
+         xsum(i)=xs
+         ysum(i)=ys
+         zsum(i)=zs
+   10 continue
+
+C Azimuth and elevation angles.
+      do 30 i=1,nsur
+         pazi(i)=90.0
+         if(abs(xsum(i)).lt.0.00001)pazi(i)=0.0
+         if(xsum(i).lt.0.0)pazi(i)=-90.0
+         pelv(i)=90.0
+         if(abs(zsum(i)).lt.0.00001)pelv(i)=0.0
+         if(zsum(i).lt.0.0)pelv(i)=-90.0
+         if(abs(ysum(i)).lt.0.00001)goto 1
+         pazi(i)=atan2(xsum(i),ysum(i))
+         pazi(i)=pazi(i)/r
+    1    srx2y2=sqrt(xsum(i)*xsum(i)+ysum(i)*ysum(i))
+         if(pazi(i).lt.0.0)pazi(i)=pazi(i)+360.0
+         if(abs(srx2y2).lt.0.00001)goto 30
+         pelv(i)=atan2(zsum(i),srx2y2)
+         pelv(i)=pelv(i)/r
+   30 continue
 
 C  Cosine of the angle of incidence and surface-solar azimuth angle.
-      do 40 i=1,nzsur(icomp)
-        if(salt1.gt.0.0)then
-          psazi=abs(pazi(i)-sazi1)
-          x1=cos(salt1*r)
-          x2=sin((90.-pelv(i))*r)
-          x3=cos(psazi*r)
-          x4=sin(salt1*r)
-          x5=cos((90.-pelv(i))*r)
-          caie(i)=x1*x2*x3+x4*x5
-          paz=pazi(i)+180.0
-          if(pazi(i).gt.180.0)paz=pazi(i)-180.0
-          psazi=abs(paz-sazi1)
-          x3=cos(psazi*r)
-          x1=cos(salt1*r)
-          x2=sin((90.+pelv(i))*r)
-          x3=cos(psazi*r)
-          x4=sin(salt1*r)
-          x5=cos((90.+pelv(i))*r)
-          caii(i)=x1*x2*x3+x4*x5
-        else
-          caii(i)=0.0
-          caie(i)=0.0
-        endif
+      do 40 i=1,nsur
+         if(salt1.gt.0.0)then
+            psazi=abs(pazi(i)-sazi1)
+            x1=cos(salt1*r)
+            x2=sin((90.-pelv(i))*r)
+            x3=cos(psazi*r)
+            x4=sin(salt1*r)
+            x5=cos((90.-pelv(i))*r)
+            caie(i)=x1*x2*x3+x4*x5
+            paz=pazi(i)+180.0
+            if(pazi(i).gt.180.0)paz=pazi(i)-180.0
+            psazi=abs(paz-sazi1)
+            x3=cos(psazi*r)
+            x1=cos(salt1*r)
+            x2=sin((90.+pelv(i))*r)
+            x3=cos(psazi*r)
+            x4=sin(salt1*r)
+            x5=cos((90.+pelv(i))*r)
+            caii(i)=x1*x2*x3+x4*x5
+         else
+            caii(i)=0.0
+            caie(i)=0.0
+         endif
    40 continue
 
-C Trace output, check also that user has asked for detailed trace.
+C  Trace output.
+      if(itc.eq.0)return
       ok=.false.
       if(itc.eq.2)ok=.true.
-      if(tok.and.ok)then
-        call edisp(icout,' ')
-        write(outs,'(a,i3,a,i3)')'*** INCAI: Hour',ihour,' zone',icomp
-        call edisp(icout,outs)
-        call edisp(icout,
-     &  ' Surface    Internal    External    Azimuth    Elevation')
+      if(.not.ok)return
 
-        do 50 i=1,nzsur(icomp)
-          write(outs,2)i,caii(i),caie(i),pazi(i),pelv(i)
-    2     format(i5,8x,f6.4,6x,f6.4,7x,f5.1,6x,f5.1)
-          call edisp(icout,outs)
-   50   continue
-      endif
+      call edisp(icout,' ')
+      write(outs,'(a,i3)')'*** INCAI: Hour',ihour
+      call edisp(icout,outs)
+      call edisp(icout,
+     &' Surface    Internal    External    Azimuth    Elevation')
+
+      do 50 i=1,nsur
+         write(outs,2)i,caii(i),caie(i),pazi(i),pelv(i)
+    2    format(i5,8x,f6.4,6x,f6.4,7x,f5.1,6x,f5.1)
+         call edisp(icout,outs)
+   50 continue
       return
       end
 
@@ -790,17 +868,18 @@ C at hour jj.
 
       subroutine insort(icomp,ii,jj)
 #include "building.h"
-#include "geometry.h"
 
       common/inswin/igins(mox,moz)
       common/pinsol/ins(ms),pins(ms),pinw(ms),pcshad
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/outin/iuout,iuin
       common/c24/izstocn(mcom,ms)
 
       dimension icounts(ms+4),icountw(ms+4),icountt(ms+4)
-      character outs*124
+      character blkname*8,blkmat*12,outs*124
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
 
@@ -815,36 +894,35 @@ C Initialise.
    10 continue
 
 C Count the number of grid points that project onto each surface.
-      do 20 i=1,nox(icomp)
-         do 21 j=1,noz(icomp)
+      do 20 i=1,nox
+         do 21 j=1,noz
             if(igins(i,j).eq.-200)then
-               icountt(nzsur(icomp)+3)=icountt(nzsur(icomp)+3)+1
+               icountt(nsur+3)=icountt(nsur+3)+1
             elseif(igins(i,j).eq.-100)then
-               icountt(nzsur(icomp)+1)=icountt(nzsur(icomp)+1)+1
-            elseif(igins(i,j).ge.1.and.igins(i,j).le.nzsur(icomp))then
+               icountt(nsur+1)=icountt(nsur+1)+1
+            elseif(igins(i,j).ge.1.and.igins(i,j).le.nsur)then
                icounts(igins(i,j))=icounts(igins(i,j))+1
                icountt(igins(i,j))=icountt(igins(i,j))+1
                ihit=ihit+1
-            elseif(igins(i,j).le.-1.and.igins(i,j).ge.
-     &            (-1*nzsur(icomp)))then
+            elseif(igins(i,j).le.-1.and.igins(i,j).ge.(-nsur))then
                icountw(abs(igins(i,j)))=icountw(abs(igins(i,j)))+1
                icountt(abs(igins(i,j)))=icountt(abs(igins(i,j)))+1
                ihit=ihit+1
             else
-               icountt(nzsur(icomp)+2)=icountt(nzsur(icomp)+2)+1
+               icountt(nsur+2)=icountt(nsur+2)+1
             endif
    21    continue
    20 continue
 
 C Initialise insolated surfaces.
-      do 30 i=1,nzsur(icomp)
+      do 30 i=1,nsur
          ins(i)=i
    30 continue
 
 C Bubble sort to give highest count to ins(1) etc.
 C Sort based on total hits on surface (i.e. icountt).
-      do 40 i=1,nzsur(icomp)-1
-         do 41 j=1,nzsur(icomp)-1 
+      do 40 i=1,nsur-1
+         do 41 j=1,nsur-1 
             if(icountt(j).lt.icountt(j+1))then
                itemp=icountt(j)
                icountt(j)=icountt(j+1)
@@ -864,7 +942,7 @@ C Sort based on total hits on surface (i.e. icountt).
 
 C Set insolated planes to zero if there are no hits, i.e. total shading.
       if(ihit.eq.0)then
-         do 45 i=1,nzsur(icomp)
+         do 45 i=1,nsur
             ins(i)=0
             pins(i)=0.0
             pinw(i)=0.0
@@ -875,18 +953,17 @@ C Set insolated planes to zero if there are no hits, i.e. total shading.
 
 C Calculate surface insolation proportion of total zone insolation
 C (i.e. all insolated surfaces add to 1).
-      do 50 i=1,nzsur(icomp)
+      do 50 i=1,nsur
          pins(i)=real(icounts(i))/(real(ihit))
          pinw(i)=real(icountw(i))/(real(ihit))
    50 continue
 
 C pcshad is the proportion of grid points shaded.
-      pcshad=real(icountt(nzsur(icomp)+1))/
-     &           (real(ihit+icountt(nzsur(icomp)+1)))
+      pcshad=real(icountt(nsur+1))/(real(ihit+icountt(nsur+1)))
 
 C Re-allocate proportions for surfaces greater than the maximum 
 C number of insolated surfaces ('misur').
-      do 60 i=(misur+1),nzsur(icomp)
+      do 60 i=(misur+1),nsur
          pinrl=pinrl+pins(i)
          pinrl=pinrl+pinw(i)
    60 continue
@@ -913,7 +990,7 @@ C Checks.
 C ********** TRANSP **********
 C This routine transforms a grid point defined relative to a given
 C surface back to global co-ordinates.
-C     1 - Recover equation of surface (eqn(4)) and centre of 
+C     1 - Find equation of surface (eqn(4)) and centre of 
 C         gravity (vp(3)) via pleqn().
 C     2 - Set up eye point normal to plane at centre of gravity
 C         (ep(3)) and use eyemat() to establish matrix and 
@@ -923,28 +1000,21 @@ C         surface vertex) when transformed to normal view and
 C         apply reverse transformation to give vertices in
 C         global co-ordinates.
 
-      subroutine  transp(icc,x,y,z,dx,dz,xxw,yyw,zzw)
+      subroutine  transp(n,x,y,z,dx,dz,xxw,yyw,zzw)
 #include "building.h"
-#include "geometry.h"
-
-C Parameters
-      integer icc   ! the model surface connection index
-      real x,y,z    ! coordinates passed
-      real dx,dz    ! grid location
-      real xxw,yyw,zzw ! transformed coordinate
 
       dimension x(mtv),y(mtv),z(mtv)
       dimension tmat(4,4),rmat(4,4)
-      dimension vp(3),ep(3)
+      dimension vp(3),ep(3),eqn(4)
 
-C Recover eye point and view point for eyemat.
-      vp(1)=SSURCOG(icc,1)
-      vp(2)=SSURCOG(icc,2)
-      vp(3)=SSURCOG(icc,3)
-      ep(1)=SSURVN(icc,1)
-      ep(2)=SSURVN(icc,2)
-      ep(3)=SSURVN(icc,3)
+C Get center of surface and surface equation.
+      call pleqn(x,y,z,n,vp,eqn,ier)
+      if(ier.lt.0)return
 
+C Find transformation matrices that normalise face.
+      do 10 j=1,3
+         ep(j)=vp(j)+eqn(j)
+   10 continue
       call eyemat(ep,vp,1.0,tmat,rmat)
 
 C Transform first 2 surface vertices.

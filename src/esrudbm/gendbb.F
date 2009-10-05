@@ -228,10 +228,8 @@ C write srcnote into next record.
           IREC=IREC+1
           WRITE(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,srcchr(inbsrc),
      &      srcnote(inbsrc)
-
-C Debug.
-C          WRITE(6,*)irec,c8,srcchr(inbsrc),srcnote(inbsrc)
-
+C Debug...
+          WRITE(6,*)irec,c8,srcchr(inbsrc),srcnote(inbsrc)
         endif
         LW='*SOU'
       elseif(WORD(1:3).eq.'*DD')then
@@ -364,11 +362,8 @@ C for each item.
             LW='*ID '
             goto 5
           else
-
-C Debug.
-C            write(6,*) 'more than one item doc line for item ',iit,' ',
-C     &        ittag(iit),' ',itmenu(iit)
-
+            write(6,*) 'more than one item doc line for item ',iit,' ',
+     &        ittag(iit),' ',itmenu(iit)
             LW='*ID '
             goto 5
           endif
@@ -414,12 +409,10 @@ C Dump out item header and data.
           IREC=IREC+1
           itcat(iit)=icl
           nbitdat(iit)=inbitdat
-
-C Debug.
-C          write(6,*) 'inbitdat nbitdat ',inbitdat,nbitdat(iit)
-C          write(6,*) 'nbitdat nbitrep nbitusc ibitusc ',nbitdat(iit),
-C     &      nbitrep(iit),nbitusc(iit),ibitusc(iit)
-
+C debug...
+          write(6,*) 'inbitdat nbitdat ',inbitdat,nbitdat(iit)
+          write(6,*) 'nbitdat nbitrep nbitusc ibitusc ',nbitdat(iit),
+     &      nbitrep(iit),nbitusc(iit),ibitusc(iit)
           nbitrep(iit)=inbitrep
           irsit(iit)=IREC
           if(idbver(idbh).eq.1)then
@@ -469,10 +462,8 @@ C dump out the last items data.
           IREC=IREC+1
           itcat(iit)=icl
           nbitdat(iit)=inbitdat
-
-C Debug.
-C          write(6,*) 'inbitdat nbitdat ',inbitdat,nbitdat(iit)
-
+C debug...
+          write(6,*) 'inbitdat nbitdat ',inbitdat,nbitdat(iit)
           nbitrep(iit)=inbitrep
           irsit(iit)=IREC
           if(idbver(idbh).eq.1)then
@@ -1377,10 +1368,7 @@ C use calls to RCVITEM and PRSMLC rather than reading from db.
            if(bkdocok.and.(bkdoctyp(1:2).eq.'IL').and.
      &       (indexbk.eq.iit))then
              call RCVITEM(idbh,class,item,iclr,iitr)
-
-C Debug.
-C             write(6,*) idbh,class,item,iclr,iitr,icl,iit
-
+             write(6,*) idbh,class,item,iclr,iitr,icl,iit
            else
              if(idbver(idbh).eq.1)then
                READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)ittag(iit),
@@ -1910,10 +1898,7 @@ C Units and Sources.
      &      unitstr(inbu),unitnote(inbu)
   4     continue
       else
-
-C Debug.
-C        write(6,*) 'In db ',idbh,' found ',nbunit(idbh),' units.'
-
+        write(6,*) 'In db ',idbh,' found ',nbunit(idbh),' units.'
       endif
       if(nbsrc(idbh).gt.0.and.nbsrc(idbh).le.24)then
         errmsg='reading source char source note.'
@@ -1926,10 +1911,7 @@ C Read next record for srcnote.
      &      srcnote(inbsrc)
   5     continue
       else
-
-C Debug.
-C        write(6,*) 'In db ',idbh,' found ',nbsrc(idbh),' sources.'
-
+        write(6,*) 'In db ',idbh,' found ',nbsrc(idbh),' sources.'
       endif
 
 C Db and attribute help records.
@@ -1941,10 +1923,7 @@ C Db and attribute help records.
           read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,dbdoc(i)
   51    continue
       else
-
-C Debug.
-C        write(6,*) 'In db ',idbh,' found ',nbdbdoc(idbh),' doc lines.'
-
+        write(6,*) 'In db ',idbh,' found ',nbdbdoc(idbh),' doc lines.'
       endif
 
 C Read start record of each category.
@@ -1969,10 +1948,9 @@ C Skip to first category record and read cat data.
         read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)cattag(icl),cattype(icl),
      &    catmenu(icl),nbcatdoc(icl),nbcatit(icl),catdate(icl)
 
-C Debug.
-C        write(6,*)'scan ',cattag(icl),
-C     &      catmenu(icl),nbcatdoc(icl),nbcatit(icl)
-
+C Debug...
+        write(6,*)'scan ',cattag(icl),
+     &      catmenu(icl),nbcatdoc(icl),nbcatit(icl)
         errmsg='reading category documentation.'
         do 52 i=1,nbcatdoc(icl)
           IREC=IREC+1

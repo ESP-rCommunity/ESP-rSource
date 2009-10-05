@@ -973,7 +973,6 @@ C SELZON displays the zone selection menu.
 C *********************************************************************
       SUBROUTINE SELZON(ITRC,SZN,ZONOK,IZ)
 #include "building.h"
-#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -984,6 +983,10 @@ C geometry.h provides commons G0 and G2.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
@@ -1013,7 +1016,7 @@ C Show the zone selection menu.
         SZN=zname(IZ)
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
         endif

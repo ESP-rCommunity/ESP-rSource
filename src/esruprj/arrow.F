@@ -35,7 +35,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       DIMENSION VEC(3),VECC(3),COG1(3),COG2(3),COG3(3),ipoints(6,2)
       character act*1
 C     character outs*124
-      logical unixok
 
 C Local variables to pass to edline.
 #ifdef OSX
@@ -151,10 +150,9 @@ C Corner 3 is a 180deg rotation.
         CORNER(4,I)=A(I)-(VECC(I)*SF)
  71   continue
 
-C Debug.
+C debug...
 C      write(6,*) 'Pln eq ',Plane
 C      write(6,*) 'Axlen  & dist & SF iaxis ',AXLEN,DIST,SF,IAXIS
-
 C Draw the damn thing!
       CALL VECTRN(P,TEMAT,COG2,IER)
       CALL VECTRN(COG2,ETSMAT,COG3,IER)
@@ -221,8 +219,6 @@ C Copy pixel locations to ipoints.
 
       RETURN
 
- 9999 call isunix(unixok)
-      if(unixok) write(6,*) 
-     &  'Error: cannot find smallest coefficient in vector.'
+ 9999 write (6,*) 'Error: cannot find smallest coefficient in vector.'
       return
       end

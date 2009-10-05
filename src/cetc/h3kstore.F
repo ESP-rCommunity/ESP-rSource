@@ -1221,7 +1221,6 @@ C     Compute the zone-side latent load
 C     Store the currently computed value.
       ZLLDP(ICOMP)=ZLLDF(ICOMP)
 
-C Debug.
 C     Write out solar zone info (to see if similar to that of solar.F)
 C     write(6,*) 'solsum blibsv',BTIMEF,ICOMP,q1adjz(2),q1outs(2),
 C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)

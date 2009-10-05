@@ -1,21 +1,21 @@
 *Operations 1.0
-*date Fri Jul 10 10:48:16 2009  # latest file modification 
+*date Thu Jul 29 16:02:59 2004  # latest file modification 
 # operations of manager defined in: 
 # ../zones/manager.opr
-one person typical office pattern
+one person typical office pattern  # description
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
-     1   # number of flow periods in day type: weekday     
-# start, stop, infil, ventil, source, data
+     1   # no Weekday flow periods
+# Wkd: start, stop, infil, ventil, source, data
    0, 24,    0.330    0.000    0    0.000
-     1   # number of flow periods in day type: saturday    
-# start, stop, infil, ventil, source, data
+     1   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
    0, 24,    0.330    0.000    0    0.000
-     1   # number of flow periods in day type: sunday      
-# start, stop, infil, ventil, source, data
+     1   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
    0, 24,    0.330    0.000    0    0.000
-     7   # number of casual gains in day type: weekday     
-# type, start, stop, sens, latent, rad_frac, conv_frac
+     7   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
     1,   0,   7,      0.0,      0.0, 0.500, 0.500
     1,   7,   8,     20.0,     10.0, 0.500, 0.500
     1,   8,   9,     60.0,     30.0, 0.500, 0.500
@@ -23,8 +23,8 @@ one person typical office pattern
     1,  12,  14,     65.0,     32.5, 0.500, 0.500
     1,  14,  17,    100.0,     50.0, 0.500, 0.500
     1,  17,  24,      0.0,      0.0, 0.500, 0.500
-     7   # number of casual gains in day type: saturday    
-# type, start, stop, sens, latent, rad_frac, conv_frac
+     7   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
     1,   0,   7,      0.0,      0.0, 0.500, 0.500
     1,   7,   8,     20.0,     10.0, 0.500, 0.500
     1,   8,   9,     60.0,     30.0, 0.500, 0.500
@@ -32,6 +32,6 @@ one person typical office pattern
     1,  12,  14,     65.0,     32.5, 0.500, 0.500
     1,  14,  17,    100.0,     50.0, 0.500, 0.500
     1,  17,  24,      0.0,      0.0, 0.500, 0.500
-     0   # number of casual gains in day type: sunday      
+     0   # no Sunday casual gains 
 # Labels for gain types 
  Occupt Lights Equipt

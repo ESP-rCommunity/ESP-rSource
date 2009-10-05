@@ -145,8 +145,7 @@ C sets and close. Adjust file name depending on location.
      &    lapres(1:lnblnk(lapres))
 
 C Debug.
-C        write(6,*) 'working pressure coef ',lworking
-
+        write(6,*) 'working pressure coef ',lworking
         CALL EFOPSEQ(IAPRES,lworking,1,IER)
       endif
 C      CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
@@ -493,12 +492,9 @@ C at user specified time-step.
 C Check in simulation period (i.e. not in start up).
       if (bInStartup())then
         continue
-
 C Debug.
 C        write(6,*) 'bInstartup is true w/in flow'
-
       else
-
 C Debug.
 C        write(6,*) 'bInstartup is false w/in flow'
 C      if ((IDYP.ge.ISDS).or.

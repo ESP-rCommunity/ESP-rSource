@@ -1,5 +1,5 @@
 # Plant component data base:
-plantc.db1                                                                                                                                      
+/usr/esru/esp-r/databases/plantc.db1                                  
 # Project title:
 single zone AHU.                                                      
 # Total no. of specified components and simulation type
@@ -22,7 +22,7 @@ single zone AHU.
 #->   4, air heating coil; 1 node model ; flux control                           
   prehtg_coil        5
     1        # Component has   1 control variable(s).
-   1000.000    
+ 1000.0
     3
   15.000       1000.0       3.5000    
 #->   5, air duct; 1 node model                                                  
@@ -33,7 +33,7 @@ single zone AHU.
 #->   6, spray/steam humidifier; 1 node model ;  flow rate control               
   humidifier         2
     1        # Component has   1 control variable(s).
-  1.0000000E-03
+ 1.0E-3
     7
   25.000       1000.0       3.5000      0.97000       1.0000      0.15000    
   1.0000    
@@ -45,7 +45,7 @@ single zone AHU.
 #->   8, air cooling coil; 1 node model ; flux control                           
   cooling_coil       4
     1        # Component has   1 control variable(s).
-   1600.000    
+ 1600.0
     3
   15.000       1000.0       3.5000    
 #->   9, air duct; 1 node model                                                  
@@ -56,7 +56,7 @@ single zone AHU.
 #->  10, air heating coil; 1 node model ; flux control                           
   re-heat_coil       5
     1        # Component has   1 control variable(s).
-   2000.000    
+ 2000.0
     3
   15.000       1000.0       3.5000    
 #->  11, air duct; 1 node model                                                  
@@ -67,7 +67,7 @@ single zone AHU.
 #->  12, centrifugal fan, 1 node model ; flow control                            
   fan1               3
     1        # Component has   1 control variable(s).
-  0.2100000    
+ 0.21
     6
   10.000       500.00       7.0000       50.000      0.50000      0.90000    
 #->  13, air duct; 1 node model                                                  
@@ -78,7 +78,7 @@ single zone AHU.
 #->  14, centrifugal fan, 1 node model ; flow control                            
   fan2               3
     1        # Component has   1 control variable(s).
-  0.2100000    
+ 0.21
     6
   10.000       500.00       7.0000       50.000      0.50000      0.90000    
 # The following is a list of component connections.

@@ -1,89 +1,89 @@
 # composite construction db defined in ../dbs/linford.constrdb
-# based on materials db ../dbs/linford.materialdb.a
+# based on materials db ../dbs/linford.materialdb
    15     # no of composites 
 # layers  description   optics name   symmetry tag
     4    ext_wall      OPAQ  OPAQUE        ext_wall_rev  
 # mat ref thickness (m) mat descr & air gap R
-  281    0.1020  brick : brick
-  282    0.0500  cavity wall insulation : cavity wall insulation
-  282    0.0500  cavity wall insulation : cavity wall insulation
-  283    0.1000  block : block
+  281    0.1020  brick
+  282    0.0500  cavity wall insulation
+  282    0.0500  cavity wall insulation
+  283    0.1000  block
 # layers  description   optics name   symmetry tag
     3    int_part_1    OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  284    0.0180  plasterboard : plasterboard
-   28    0.1000  Block inner (3% mc) : Block inner (3% mc)
-  284    0.0180  plasterboard : plasterboard
+  284    0.0180  plasterboard
+   28    0.1000  Block inner (3% mc)
+  284    0.0180  plasterboard
 # layers  description   optics name   symmetry tag
     3    grnd_ceiling  OPAQ  OPAQUE        grd_ceil_rev  
 # mat ref thickness (m) mat descr & air gap R
-  285    0.0190  floorboards : floorboards
+  285    0.0190  floorboards
     0    0.1500  air  0.150 0.150 0.150
-  284    0.0180  plasterboard : plasterboard
+  284    0.0180  plasterboard
 # layers  description   optics name   symmetry tag
     3    int_part_2    OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  284    0.0180  plasterboard : plasterboard
+  284    0.0180  plasterboard
     0    0.1000  air  0.180 0.180 0.180
-  284    0.0180  plasterboard : plasterboard
+  284    0.0180  plasterboard
 # layers  description   optics name   symmetry tag
     6    grnd_floor    OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-  286    0.3000  earth : earth
-  286    0.3000  earth : earth
-  287    0.1500  stone : stone
+  286    0.3000  earth
+  286    0.3000  earth
+  287    0.1500  stone
     0    0.5000  air  0.230 0.230 0.230
-  288    0.1500  concrete : concrete
-  289    0.0500  screed : screed
+  288    0.1500  concrete
+  289    0.0500  screed
 # layers  description   optics name   symmetry tag
     2    1st_ceiling   OPAQ  OPAQUE        1st_ceil_rev  
 # mat ref thickness (m) mat descr & air gap R
-  290    0.1400  roof insulation : roof insulation
-  284    0.0180  plasterboard : plasterboard
+  290    0.1400  roof insulation
+  284    0.0180  plasterboard
 # layers  description   optics name   symmetry tag
     3    double_glaz   TRAN  DCF7672_06nb  SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  291    0.0060  glass : glass
+  291    0.0060  glass
     0    0.0100  air  0.180 0.180 0.180
-  291    0.0060  glass : glass
+  291    0.0060  glass
 # layers  description   optics name   symmetry tag
     1    single_glaz   TRAN  SCF8782_06nb  SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  291    0.0060  glass : glass
+  291    0.0060  glass
 # layers  description   optics name   symmetry tag
     1    roof          OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  292    0.1000  tiles : tiles
+  292    0.1000  tiles
 # layers  description   optics name   symmetry tag
     1    cons_frame    OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-  293    0.0750  glazing frame : glazing frame
+  293    0.0750  glazing frame
 # layers  description   optics name   symmetry tag
     4    cons_floor    OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-  294    0.0360  cons_floor_wood : cons_floor_wood
-  295    0.1500  cons_floor_insul : cons_floor_insul
-  294    0.0250  cons_floor_wood : cons_floor_wood
-  296    0.0480  concrete_slab : concrete_slab
+  294    0.0360  cons_floor_wood
+  295    0.1500  cons_floor_insul
+  294    0.0250  cons_floor_wood
+  296    0.0480  concrete_slab
 # layers  description   optics name   symmetry tag
     4    ext_wall_rev  OPAQ  OPAQUE        ext_wall      
 # mat ref thickness (m) mat descr & air gap R
-  283    0.1000  block : block
-  282    0.0500  cavity wall insulation : cavity wall insulation
-  282    0.0500  cavity wall insulation : cavity wall insulation
-  281    0.1020  brick : brick
+  283    0.1000  block
+  282    0.0500  cavity wall insulation
+  282    0.0500  cavity wall insulation
+  281    0.1020  brick
 # layers  description   optics name   symmetry tag
     3    grd_ceil_rev  OPAQ  OPAQUE        grnd_ceiling  
 # mat ref thickness (m) mat descr & air gap R
-  284    0.0180  plasterboard : plasterboard
+  284    0.0180  plasterboard
     0    0.1500  air  0.150 0.150 0.150
-  285    0.0190  floorboards : floorboards
+  285    0.0190  floorboards
 # layers  description   optics name   symmetry tag
     2    1st_ceil_rev  OPAQ  OPAQUE        1st_ceiling   
 # mat ref thickness (m) mat descr & air gap R
-  284    0.0180  plasterboard : plasterboard
-  290    0.1400  roof insulation : roof insulation
+  284    0.0180  plasterboard
+  290    0.1400  roof insulation
 # layers  description   optics name   symmetry tag
     1    door          OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-   69    0.0250  Oak (radial) : Oak (radial)
+   69    0.0250  Oak (radial)

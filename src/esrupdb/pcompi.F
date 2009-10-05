@@ -898,7 +898,6 @@ C Generic strings.
       character unitchr*4,unitstr*12,unitnote*72
       character srcchr*4,srcnote*248
       character ihold*80,SIGSTR*12,sigstra*12,sigstrb*12
-      character out*124
 
 C Temporary place holder for units discovered as the component is
 C read in.
@@ -1076,15 +1075,13 @@ C number of matrix locations filled with coefficients.
         read(iufil,10204,iostat=istat,err=1) nnode, nmatx
 10204   format(//,23x,i3,38x,i6)
         if(nnode.le.0.or.nnode.gt.maxnod) then
-          write(out,*) 'Component ',ctype,icode,' has ',nnode,
+          write(6,*) 'Component ',ctype,icode,' has ',nnode,
      &      'which is not allowed.'
-          call edisp(iuout,out)
           goto 1
         endif
         if(nmatx.le.0.or.nmatx.gt.maxmtx) then
-          write(out,*) 'Component ',ctype,icode,' has ',nmatx,
+          write(6,*) 'Component ',ctype,icode,' has ',nmatx,
      &      ' matrix locations which is not allowed.'
-          call edisp(iuout,out)
           goto 1
         endif
 
@@ -1100,9 +1097,8 @@ C Position of nonzero matrix locations.
         nnode2=nnode*nnode
         do 32 i=1,nmatx
           if(ncpos(i).lt.0.or.ncpos(i).gt.nnode2) then
-            write(out,*) 'Component ',ctype,icode,i,' has ',ncpos(i),
+            write(6,*) 'Component ',ctype,icode,i,' has ',ncpos(i),
      &      ' matrix position which is not allowed.'
-            call edisp(iuout,out)
             goto 1
           endif
    32   continue
@@ -1127,9 +1123,8 @@ C State variable definition.
 
 C Case for meta component.
       elseif(ctype(1:20).eq.'Meta component      ') then
-        write(out,*) 'Component ',ctype,icode,' is meta ',
+        write(6,*) 'Component ',ctype,icode,' is meta ',
      &      ' which is not yet decoded.'
-        call edisp(iuout,out)
         ictype=1
 
 C Read number of components in meta component.
@@ -1281,39 +1276,25 @@ C flow attributes (isdifc) plus one for itpcmp()
         endif
 
 C Dump out what we have to tustr
-
-C Debug.
-C        write(6,*) iupos,tustr
-C        write(6,*) '  '
+        write(6,*) iupos,tustr
+        write(6,*) '  '
 
 C Create a format statement on the fly - with dashes for each of the
 C adata, bdata, cdata napout and flow fields.
         if(nadata+nbdata+ncdata+napout+nflowus.gt.0)then
           nbitusc(iit)=nadata+nbdata+ncdata+napout+nflowus
-
-C Debug.
-C          write(6,*) iupos,nbitusc(iit)
-
+          write(6,*) iupos,nbitusc(iit)
           write(fmt,'(a,i2,5a)') '(',nbitusc(iit),'(',qu,'-',qu,'))'
           write(ituntstr,fmt)
-
-C Debug.
-C          write(6,*) 'initial ituntstr is ',ituntstr
-
+          write(6,*) 'initial ituntstr is ',ituntstr
           if(iupos.eq.nbitusc(iit))then
             do 1009 ij=1,iupos
               write(ituntstr(ij:ij),'(a)') tustr(ij)
  1009       continue
-
-C Debug.
-C            write(6,*) 'revised ituntstr is ',ituntstr
-
+            write(6,*) 'revised ituntstr is ',ituntstr
           else
-
-C Debug.
-C            write(6,*) 'guess on units and nbitusc differ in comp ',
-C     &        iit,icon,iupos,nbitusc(iit)
-
+            write(6,*) 'guess on units and nbitusc differ in comp ',
+     &        iit,icon,iupos,nbitusc(iit)
           endif
           write(itcnfstr,fmt)
         else
@@ -1701,11 +1682,8 @@ C first position until lu characters before the end.
         do 43 is=1,loop
           if(string(ix:ixl).eq.unitstr(ij)(1:lu))then
             write(uchr,'(a)') unitchr(ij)(1:1)
-
-C Debug.
-C            write(6,*) 'match of ',unitstr(ij)(1:lu),' in ',
-C     &        string(1:lss),' with char of ',uchr
-
+            write(6,*) 'match of ',unitstr(ij)(1:lu),' in ',
+     &        string(1:lss),' with char of ',uchr
             return
           endif
           ix=ix+1

@@ -499,10 +499,7 @@ C Define the beginning and ending dates for the TDF display.
             endif 
             CALL KEYIND(IPDL,INODA,IWHICH,INOUT)
             IPS=IWHICH
-
-C Debug.
-C            write(6,*) 'ips=',ips
-
+            write(6,*) 'ips=',ips
             CALL EDIMPT(ITRC,IFOC,IPS,IER)
             changed = .true.
             edited = .true.

@@ -2083,7 +2083,6 @@ C << file does not need to be scanned to get the surface emissivity.
       SUBROUTINE CASDIST(act)
 
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -2101,9 +2100,18 @@ C << file does not need to be scanned to get the surface emissivity.
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
@@ -2115,6 +2123,7 @@ C =2 with more than 3 day types
       COMMON/SIMPKA/NSIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -2201,7 +2210,7 @@ C Read geometry and construction files and setup labels.
         iunit=ifil+1
         call eclose(gversion(izone),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,LGEOM(izone),izone,0,iuout,ier)
+          call georead(iunit,LGEOM(izone),izone,0,0,iuout,ier)
         else
           call egomin(iunit,LGEOM(izone),izone,0,0,iuout,ier)
         endif

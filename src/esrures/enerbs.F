@@ -32,7 +32,6 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       SUBROUTINE MOSCAS(IZONE,ISFN,IANZSE)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -52,6 +51,15 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
@@ -65,13 +73,14 @@ C =2 with more than 3 day types
       character SSPARENT*12
       CHARACTER SN*12,ZN*12
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,outs*124
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
 C Read in the zone geometry data.
       newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       call eclose(gversion(izone),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUNIT,LGEOM(IZONE),IZONE,0,IUOUT,IER)
+        call georead(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
       else
         call egomin(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
       endif

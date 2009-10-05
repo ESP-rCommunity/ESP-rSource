@@ -315,7 +315,7 @@ c else start plotting.
         endif
    10 continue
 
-C Debug.
+C debug.
 C      write(6,*) icount,instpp,ti,xmax
 
 C Increment count.

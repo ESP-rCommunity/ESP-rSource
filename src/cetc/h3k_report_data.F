@@ -61,7 +61,6 @@ C*******************************************************************************
       SUBROUTINE H3K_transport_build_data(iZone)
       IMPLICIT NONE
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "aim2_common.h"
 #include "control.h"
@@ -273,6 +272,10 @@ C.....Surface area data
      &              HCOF(MCOM,MS)
       real HCIP,HCIF,HCOP,HCOF ! convective heat transfer coefficients "present" and "future"
                                             ! for "inside" and "outside" surface, each
+
+      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      integer IVF,ISI,IHC,ITW,ICGC,IOBS ! indices for "is there"
 
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),
      &              AE(MCOM,MS)

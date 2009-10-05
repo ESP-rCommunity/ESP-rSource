@@ -217,7 +217,7 @@ C Check the point is within bounds
       GOTO 10
 
    92 continue
-      call edisp(iuout,'problem rewinding moisture results file.')
+      write(6,*) 'problem rewinding moisture results file.'
       return
 
       END

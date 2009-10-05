@@ -403,7 +403,7 @@ C errors
         IF(IER.EQ.2) THEN
           WRITE(OUTS,'(A,A,A)')
      &    'END: Finished reading ',BFILE(1:LNBLNK(BFILE)),'.'
-          call edisp(iuout,outs)          
+          WRITE(6,'(A)') OUTS           
           NLINE=ILINE-1
 
 C Write the current time 
@@ -613,7 +613,6 @@ C This subroutine decodes the header strings from labview
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/RBEMDAT/SIMTSTP,NLINE,NCOLS,CURTM,BVAR(MBROW,MBCOL),
      &SENMAP(MBCOL)
 
@@ -621,7 +620,6 @@ C This subroutine decodes the header strings from labview
 
       CHARACTER*8 BHSTR
       CHARACTER*24 BHDSTR1(MBCOL),BHDSTR2(MBCOL),TMPSTR
-      character outs*124
 
       INTEGER NLINE,NCOLS,SENMAP
       REAL SIMTSTP,CURTM,BVAR
@@ -697,9 +695,8 @@ C External (climate parameters)
           ENDIF
         ELSE
 
-          WRITE(outs,'(2A)') 'Error reading the BEMS data ',
-     &      '- not a known measured variable '
-          call edisp(iuout,outs)
+          WRITE(6,'(A)') 'Error reading the BEMS data ',
+     &'- not a known measured variable '
           IERROR=-1
 
         ENDIF

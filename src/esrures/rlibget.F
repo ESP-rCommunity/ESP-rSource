@@ -250,10 +250,7 @@ C Get zone db into GVAL and then into XDUM1.
   21    continue
         DO 22 IQQ=1,N
           call MODEWP(XDUM1(iqq),XDUM(iqq),GVAL(iqq))
-
-C Debug.
 C          write(6,*) 'modewp dbt rh dp',XDUM1(iqq),XDUM(iqq),GVAL(iqq)
-
   22    continue
       ELSE
         call edisp(iuout,
@@ -1474,7 +1471,6 @@ C        write(6,*) 'GSURFB data at ',IDAY,IZONE,ISFN,ITS,TSout,qswrdi,
 C     &    qlwrdi,qconvi,qcondi,qstori,qstore,qconde,qconve,
 C     &    qlwrde,qlwrbd,qlwrsk,qswrde,avqcrioc,avqcrili,
 C     &    avqcrisp,avqcrioth
-
       ELSE
          call edisp(iuout,
      &   ' GSURFB: Save option does not allow access')
@@ -1689,7 +1685,6 @@ C        write(6,*) 'getallcas: ',IDAY,IZ,ISET,ITS,QCASR,QCASC,QCASL,
 C     &    FRAC,perocupc,perlightc,perequipc,otherc,
 C     &    perocupr,perlightr,perequipr,otherr,
 C     &    perocupl,perlightl,perequipl,otherl,theonectld
-
       ELSE
          call edisp(iuout,
      & 'getallcas: Save option does not allow access to casual gains.')
@@ -1746,10 +1741,7 @@ C Return the record number using hash.
             READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(XD(K),K=1,ICJ)
             GVAL(I)=XD(ICJ)
    20     CONTINUE
-
-C Debug.
 C         write(6,*) iset,izone,irj,icj,irec,(GVAL(I),i=1,12)
-
         else
           call edisp(iuout,'GFIXED: results set number is zero. Skip.')
         endif

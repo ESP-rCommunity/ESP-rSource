@@ -38,15 +38,14 @@ C consideration. The x and z coordinates of this object body
 C face are then re-expressed in terms of the new local
 C coordinate system for use in 'point'.
 
-      subroutine trnsf1(izone,is)
+      subroutine trnsf1(is)
 #include "building.h"
-#include "geometry.h"
 
       common/tracech/icout
-      common/pangl/pazi(ms),pelv(ms),ptilt(ms)
+      common/pangl/pazi,pelv,ptilt
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
-      common/c24/izstocn(mcom,ms)
 
       dimension yft(mv)
       character outs*124
@@ -59,6 +58,10 @@ C If trace requested enable writing.
       pi=4.0*atan(1.0)
       r=pi/180.0
 
+C Compute the surface azimuth (pazi), elevation (pelv)
+C X-axis tilt (ptilt) angles.
+      call pangs(is)
+
 C Convert pazi, pelv and ptilt to the required coordinate axis
 C rotations as follows.
 C    x-axis - be related to pelv
@@ -66,14 +69,14 @@ C    y-axis - ga related to ptilt
 C    z-axis - al related to pazi
 C Convention: positive angle is anticlockwise when looking along
 C the axis towards the origin.
-      iq=int(pazi(is)/90.0)
+      iq=int(pazi/90.0)
       if(iq.eq.0)goto 1
       goto (1,1,2,2),iq
-    1 al=(180.0-pazi(is))*r
+    1 al=(180.0-pazi)*r
       goto 3
-    2 al=-(pazi(is)-180.0)*r
-    3 be=-pelv(is)*r
-      ga=-ptilt(is)*r
+    2 al=-(pazi-180.0)*r
+    3 be=-pelv*r
+      ga=-ptilt*r
 
 C Set up transform equation coefficients.
 C Transformation order: z-axis (al from pazi) then
@@ -93,20 +96,17 @@ C rotation.
       c(4)=cos(al)*sin(be)*cos(ga)
       c(5)=cos(be)*cos(ga)
 
-C Get the current connection
-      icc=izstocn(izone,is)
 
-      ip1=nzjvn(icc,1)
-      xor=vcoord(izone,ip1,1)
-      yor=vcoord(izone,ip1,2)
-      zor=vcoord(izone,ip1,3)
+      ip1=jvn(is,1)
+      xor=x(ip1)
+      yor=y(ip1)
+      zor=z(ip1)
 
 C Transform target surface coordinates.
-      do 10 i=1,nznver(icc)
-         ip=nzjvn(icc,i)
-         xs=vcoord(izone,ip,1)
-         ys=vcoord(izone,ip,2)
-         zs=vcoord(izone,ip,3)
+      do 10 i=1,nver(is)
+         xs=x(jvn(is,i))
+         ys=y(jvn(is,i))
+         zs=z(jvn(is,i))
 
 C Transformed x.
          xft(i)=(xs-xor)*a(1)+(ys-yor)*a(2)-(xs-xor)*a(3)
@@ -138,38 +138,39 @@ C Transformed y value should be close to zero; warn if not.
 
 C Trace output.
       if(tok)then
-        icc=izstocn(izone,is)
-        call edisp(icout,' ')
-        write(outs,9996)is,pazi(is),pelv(is),ptilt(is)
- 9996   format('*** TRNSF1: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
-     &         f5.1,'; PTILT= ',f5.1)
-        call edisp(icout,outs)
-        call edisp(icout,' ')
-        call edisp(icout,'Axis translations & rotations:')
-        write(outs,'(a,2x,3f8.2)')'X, Y & Z translations -',
+         call edisp(icout,' ')
+         write(outs,9996)is,pazi,pelv,ptilt
+ 9996    format('*** TRNSF1: Surface ',i2,': PAZI= ',f5.1,'; PELV= ',
+     &          f5.1,'; PTILT= ',f5.1)
+         call edisp(icout,outs)
+         call edisp(icout,' ')
+         call edisp(icout,'Axis translations & rotations:')
+         write(outs,'(a,2x,3f8.1)')'X, Y & Z translations -',
      &                             xor,yor,zor
-        call edisp(icout,outs)
-        write(outs,'(a,2x,3f8.1)')
-     &    'X (BE), Y (GA) & Z (AL) rotations -',be/r,ga/r,al/r
-        call edisp(icout,outs)
-        call edisp(icout,'ZXY transform equation coefficients:')
-        write(outs,'(a,2x,5f8.2)')'A -',(a(i),i=1,5)
-        call edisp(icout,outs)
-        write(outs,'(a,2x,5f8.2)')'B -',(b(i),i=1,3)
-        call edisp(icout,outs)
-        write(outs,'(a,2x,5f8.2)')'C -',(c(i),i=1,5)
-        call edisp(icout,outs)
-        call edisp(icout,
-     &    'Original XYZ coordinates: Transformed X`Y`Z` coords:')
-        do 9995 i=1,nznver(icc)
-          ip=nzjvn(icc,i)
-          xs=vcoord(izone,ip,1)
-          ys=vcoord(izone,ip,2)
-          zs=vcoord(izone,ip,3)
-          write(outs,'(i2,2x,3f8.2,2x,3f8.2)')
-     &      i,xs,ys,zs,xft(i),yft(i),zft(i)
-          call edisp(icout,outs)
- 9995   continue
+         call edisp(icout,outs)
+         write(outs,'(a,2x,3f8.1)')
+     &           'X (BE), Y (GA) & Z (AL) rotations -',be/r,ga/r,al/r
+         call edisp(icout,outs)
+         call edisp(icout,'ZXY transform equation coefficients:')
+         write(outs,'(a,2x,5f8.1)')'A -',(a(i),i=1,5)
+         call edisp(icout,outs)
+         write(outs,'(a,2x,5f8.1)')'B -',(b(i),i=1,3)
+         call edisp(icout,outs)
+         write(outs,'(a,2x,5f8.1)')'C -',(c(i),i=1,5)
+         call edisp(icout,outs)
+         call edisp(icout,'Original XYZ coordinates:')
+         do 9995 i=1,nver(is)
+           xs=x(jvn(is,i))
+           ys=y(jvn(is,i))
+           zs=z(jvn(is,i))
+           write(outs,'(i2,2x,3f8.1)')i,xs,ys,zs
+           call edisp(icout,outs)
+ 9995    continue
+         call edisp(icout,'Transformed X`Y`Z` coordinates:')
+         do 9994 i=1,nver(is)
+           write(outs,'(i2,2x,3f8.1)')i,xft(i),yft(i),zft(i)
+           call edisp(icout,outs)
+ 9994    continue
       endif
       return
       end
@@ -318,10 +319,10 @@ C Trace output.
  9998    format('Intermediate calculations:')
          call edisp(icout,outs)
          write(outs,9997)x1,y1,z1,x2,y2,z2
- 9997    format('X1,Y1,Z1=    ',3f8.1,'; X2,Y2,Z2=    ',3f10.2)
+ 9997    format('X1,Y1,Z1=    ',3f8.1,'; X2,Y2,Z2=    ',3f10.1)
          call edisp(icout,outs)
          write(outs,9996)xt1,yt1,zt1,xt2,yt2,zt2
- 9996    format('XT1,YT1,ZT1= ',3f8.1,'; XT2,YT2,ZT2= ',3f10.2)
+ 9996    format('XT1,YT1,ZT1= ',3f8.1,'; XT2,YT2,ZT2= ',3f10.1)
          call edisp(icout,outs)
          write(outs,9995)dx,dy,dz
  9995    format('DX= ',f10.1,'; DY= ',f10.1,'; DZ= ',f10.1)
@@ -426,144 +427,96 @@ C Tranform and project z.
 
 C Trace output.
       if(tok)then
-        call edisp(icout,' ')
-        write(outs,9999)ibn,ibs,ihr
- 9999   format('*** TRNSF3: projection of obstruction ',i2,
-     &         ', on surface ',i2,', at hour ',i2,'.')
-        call edisp(icout,outs)
-        call edisp(icout,
-     &    'X,Y,Z coordinates:   X`,Y`,Z` coords:  XP,YP,ZP  coords:')
-        do 9998 i=1,4
-          ip=ivorder(ibs,i)
-          write(outs,'(i2,3f8.2,i4,3f8.2,i4,3f8.2)')
-     &      ip,xc(ip),yc(ip),zc(ip),
-     &      i,xt(i),yt(i),zt(i),i,xp(i),yp(i),zp(i)
-          call edisp(icout,outs)
- 9998   continue
-        write(outs,'(a,f5.1,a,f5.1,a,f8.2,a,f8.2)')
-     &   'Pseudo solar angles: ETA1= ',eta1,'; ETA2= ',eta2,
-     &   'TA1= ',ta1,'; TA2= ',ta2
-        call edisp(icout,outs)
+         call edisp(icout,' ')
+         write(outs,9999)ibn,ibs,ihr
+ 9999    format('*** TRNSF3: projection of obstruction block ',i2,
+     &          ', surface ',i2,', hour ',i2,'.')
+         call edisp(icout,outs)
+         call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
+         call edisp(icout,'X,Y,Z coordinates:')
+         do 9998 i=1,4
+            ip=ivorder(ibs,i)
+            write(outs,'(i2,3f10.1)')ip,xc(ip),yc(ip),zc(ip)
+            call edisp(icout,outs)
+ 9998    continue
+         call edisp(icout,'X`,Y`,Z` coordinates:')
+         do 9997 i=1,4
+            write(outs,'(i2,3f10.1)')i,xt(i),yt(i),zt(i)
+            call edisp(icout,outs)
+ 9997    continue
+         write(outs,9996)eta1,eta2
+ 9996    format('Pseudo solar angles: ETA1= ',f5.1,'; ETA2= ',f5.1)
+         call edisp(icout,outs)
+         write(outs,9995)ta1,ta2
+ 9995    format('TA1= ',f8.1,'; TA2= ',f8.1)
+         call edisp(icout,outs)
+         call edisp(icout,'XP,YP,ZP coordinates:')
+         do 9994 i=1,4
+            write(outs,'(i2,3f10.1)')i,xp(i),yp(i),zp(i)
+            call edisp(icout,outs)
+ 9994    continue
       endif
       return
       end
 
 C ************** CORNR ********************
 C Returns the x, y and z coordinates of the 8 vertices of an
-C obstruction block (ibn) in zone (iz), where vertices 1-4 are
-C anticlockwise uppermost and verticed 5-8 are anticlockwise lowermost.
-C At this stage the coordinates are relative to the original
-C coordinate system.
+C obstruction block, where vertices 1-4 are anticlockwise uppermost
+C and verticed 5-8 are anticlockwise lowermost. At this stage the
+C coordinates are relative to the original coordinate system.
 
-C The ordering of the coordinates is shown below:
-C
-C        4____________3
-C       /|          /|
-C     1/_|_________/2|
-C     |  |         | |
-C     |  |         | |
-C     |  |8........|.|7
-C     | /          | /
-C     |/___________|/ . . .W->
-C      5           6
-C
-
-      subroutine cornr(iz,ibn)
+      subroutine cornr(ibn)
 #include "building.h"
-#include "geometry.h"
-
-C Parameter
-      integer iz  ! zone index
-      integer ibn ! index of block
 
       common/tracech/icout
+      common/gs5/nb,xo(mb),y0(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
       common/obs/xc(8),yc(8),zc(8)
-      integer iobstrtrace  ! set to non-zero if already written
-      common/obstrc/iobstrtrace(mcom,mb)
-      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 
       character outs*124
       logical tok
 
-C If the trace unit is 33 and this obstruction has not already
-C been reported on set tok to true.
       tok=.false.
-      if(icout.eq.33)then
-        if(iobstrtrace(iz,ibn).eq.0) tok=.true.
-      endif
-      
-      if(BLOCKTYP(iz,ibn)(1:4).eq.'obs ')then
+      if(icout.eq.33)tok=.true.
 
-C Use cnvblk to get the standard layout of xyz coordinates.
-        CALL CNVBLK(XOB(iz,ibn),YOB(iz,ibn),ZOB(iz,ibn),
-     &    DXOB(iz,ibn),DYOB(iz,ibn),DZOB(iz,ibn),BANGOB(iz,ibn,1))
-
-C Copy across from GB1 to obs common block. Treat the Z coordinates
-C individually to map to the coordinate layout used within the obs
-C common block.
-        do 42 ib=1,8
-          xc(ib)=XB(ib)
-          yc(ib)=YB(ib)
-  42    continue
-        zc(1)=ZB(5)
-	zc(2)=ZB(6)
-	zc(3)=ZB(7)
-	zc(4)=ZB(8)
-	zc(5)=ZB(1)
-	zc(6)=ZB(2)
-	zc(7)=ZB(3)
-	zc(8)=ZB(4)
-      elseif(BLOCKTYP(iz,ibn)(1:4).eq.'obs3')then
-        CALL CNVBLK3A(XOB(iz,ibn),YOB(iz,ibn),ZOB(iz,ibn),
-     &    DXOB(iz,ibn),DYOB(iz,ibn),DZOB(iz,ibn),
-     &    BANGOB(iz,ibn,1),BANGOB(iz,ibn,2),BANGOB(iz,ibn,3))
-
-C Copy across from GB1 to obs common block. Treat the Z coordinates
-C individually to map to the coordinate layout used within the obs
-C common block.
-        do 43 ib=1,8
-          xc(ib)=XB(ib)
-          yc(ib)=YB(ib)
-  43    continue
-        zc(1)=ZB(5)
-	zc(2)=ZB(6)
-	zc(3)=ZB(7)
-	zc(4)=ZB(8)
-	zc(5)=ZB(1)
-	zc(6)=ZB(2)
-	zc(7)=ZB(3)
-	zc(8)=ZB(4)
-      elseif(BLOCKTYP(iz,ibn)(1:4).eq.'obsp')then
-        CALL CNVBLKP(iz,ibn) ! convert obsp type.
-
-C Copy across from GB1 to obs common block. Treat the Z coordinates
-C individually to map to the coordinate layout used within the obs
-C common block.
-        do 44 ib=1,8
-          xc(ib)=XB(ib)
-          yc(ib)=YB(ib)
-  44    continue
-        zc(1)=ZB(5)
-	zc(2)=ZB(6)
-	zc(3)=ZB(7)
-	zc(4)=ZB(8)
-	zc(5)=ZB(1)
-	zc(6)=ZB(2)
-	zc(7)=ZB(3)
-	zc(8)=ZB(4)
-      endif
+      pi=4.0*atan(1.0)
+      r=pi/180.
+      ca=cos(ang(ibn)*r)
+      sa=sin(ang(ibn)*r)
+      xc(1)=xo(ibn)
+      yc(1)=y0(ibn)
+      zc(1)=zo(ibn)+dz(ibn)
+      xc(5)=xc(1)
+      yc(5)=yc(1)
+      zc(5)=zo(ibn)
+      xc(2)=xc(1)+dx(ibn)*ca
+      yc(2)=yc(1)+dx(ibn)*sa
+      zc(2)=zc(1)
+      xc(6)=xc(2)
+      yc(6)=yc(2)
+      zc(6)=zc(5)
+      xc(3)=xc(2)-dy(ibn)*sa
+      yc(3)=yc(2)+dy(ibn)*ca
+      zc(3)=zc(1)
+      xc(7)=xc(3)
+      yc(7)=yc(3)
+      zc(7)=zc(5)
+      xc(4)=xc(1)-dy(ibn)*sa
+      yc(4)=yc(1)+dy(ibn)*ca
+      zc(4)=zc(1)
+      xc(8)=xc(4)
+      yc(8)=yc(4)
+      zc(8)=zc(5)
 
       if(tok)then
          call edisp(icout,' ')
          write(outs,'(a,i2,a)')'*** CORNR: Block ',ibn,
      &                         ' site coordinates (XC,YC,ZC)'
          call edisp(icout,outs)
-         call edisp(icout,'    X-Coord  Y-Coord  Z-Coord')
+         call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
          do 9999 i=1,8
-            write(outs,'(i2,3f9.2)')i,xc(i),yc(i),zc(i)
+            write(outs,'(i2,3f10.1)')i,xc(i),yc(i),zc(i)
             call edisp(icout,outs)
  9999    continue
-         iobstrtrace(iz,ibn)=1
       endif
       return
       end
@@ -582,12 +535,11 @@ C   ptilt - is the angle between the face x-axis and the horizontal
 C           where the x-axis is the line joining the 1st and 2nd
 C           face vertices.
 
-      subroutine pangs(izone,is)
+      subroutine pangs(is)
 #include "building.h"
-#include "geometry.h"
 
-      common/pangl/pazi(ms),pelv(ms),ptilt(ms)
-      common/c24/izstocn(mcom,ms)
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/pangl/pazi,pelv,ptilt
 
       logical bHorizontal
 
@@ -596,48 +548,39 @@ C           face vertices.
       xsum=0.
       ysum=0.
       zsum=0.
-
 C Compute azimuth and elevation angles for face 'IS'.
-C Get the current connection
-      icc=izstocn(izone,is)
-      nv=nznver(icc)
+      nv=nver(is)
       do 10 i=1,nv
          k=i+1
          if(i.eq.nv)k=1
-         ip1=nzjvn(icc,i)
-         ip2=nzjvn(icc,k)
-
-         xsum=xsum+vcoord(izone,ip1,2)*vcoord(izone,ip2,3)-
-     &        vcoord(izone,ip1,3)*vcoord(izone,ip2,2)
-         ysum=ysum+vcoord(izone,ip1,3)*vcoord(izone,ip2,1)-
-     &        vcoord(izone,ip1,1)*vcoord(izone,ip2,3)
-         zsum=zsum+vcoord(izone,ip1,1)*vcoord(izone,ip2,2)-
-     &        vcoord(izone,ip1,2)*vcoord(izone,ip2,1)
+         ip1=jvn(is,i)
+         ip2=jvn(is,k)
+         xsum=xsum+y(ip1)*z(ip2)-z(ip1)*y(ip2)
+         ysum=ysum+z(ip1)*x(ip2)-x(ip1)*z(ip2)
+         zsum=zsum+x(ip1)*y(ip2)-y(ip1)*x(ip2)
    10 continue
-      pazi(is)=90.0
-      if(abs(xsum).lt.0.00001)pazi(is)=0.0
-      if(xsum.lt.0.0)pazi(is)=-90.0
-      pelv(is)=90.0
-      if(abs(zsum).lt.0.00001)pelv(is)=0.0
-      if(zsum.lt.0.0)pelv(is)=-90.0
+      pazi=90.0
+      if(abs(xsum).lt.0.00001)pazi=0.0
+      if(xsum.lt.0.0)pazi=-90.0
+      pelv=90.0
+      if(abs(zsum).lt.0.00001)pelv=0.0
+      if(zsum.lt.0.0)pelv=-90.0
       if(abs(ysum).lt.0.00001)goto 1
-      pazi(is)=atan2(xsum,ysum)/r
+      pazi=atan2(xsum,ysum)/r
     1 srx2y2=sqrt(xsum*xsum+ysum*ysum)
-      if(pazi(is).lt.0.)pazi(is)=pazi(is)+360.
+      if(pazi.lt.0.)pazi=pazi+360.
       if(abs(srx2y2).lt.0.00001)goto 2
-      pelv(is)=atan2(zsum,srx2y2)/r
+      pelv=atan2(zsum,srx2y2)/r
     2 continue
 
 C Now compute local X-axis tilt angle.
-      iv1=nzjvn(icc,1)
-      iv2=nzjvn(icc,2)
-      dz=vcoord(izone,iv2,3)-vcoord(izone,iv1,3)
-      dist=((vcoord(izone,iv2,1)-vcoord(izone,iv1,1))**2+
-     &      (vcoord(izone,iv2,2)-vcoord(izone,iv1,2))**2+
-     &      (vcoord(izone,iv2,3)-vcoord(izone,iv1,3))**2)**.5
-      ptilt(is)=asin(dz/dist)/r
-      if(vcoord(izone,iv1,3).gt.vcoord(izone,iv2,3))
-     &  ptilt(is)=-ptilt(is)
+      iv1=jvn(is,1)
+      iv2=jvn(is,2)
+      dz=z(iv2)-z(iv1)
+      dist=((x(iv2)-x(iv1))**2+(y(iv2)-y(iv1))**2+
+     &(z(iv2)-z(iv1))**2)**.5
+      ptilt=asin(dz/dist)/r
+      if(z(iv1).gt.z(iv2))ptilt=-ptilt
 
 C For the special case of a horizontal surface, the
 C azimuth calculated above is zero. It is now reset to
@@ -645,7 +588,7 @@ C the azimuth of the plane comprising the first two
 C vertices of the face and the same two vertices but with
 C an adjusted Z value.
 
-      call eclose ( abs(pelv(is)), 90., 0.001, bHorizontal )
+      call eclose ( abs(pelv), 90., 0.001, bHorizontal )
 
       if ( bHorizontal ) then
 
@@ -654,52 +597,52 @@ C an adjusted Z value.
         zsum=0.
         do 20 i=1,4
           if(i.eq.1)then
-              ip1=nzjvn(icc,1)
-              ip2=nzjvn(icc,2)
-              xx1=vcoord(izone,ip1,1)
-              xx2=vcoord(izone,ip2,1)
-              yy1=vcoord(izone,ip1,2)
-              yy2=vcoord(izone,ip2,2)
-              zz1=vcoord(izone,ip1,3)
-              zz2=vcoord(izone,ip2,3)
+              ip1=jvn(is,1)
+              ip2=jvn(is,2)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)
+              zz2=z(ip2)
           elseif(i.eq.2)then
-              ip1=nzjvn(icc,2)
-              ip2=nzjvn(icc,2)
-              xx1=vcoord(izone,ip1,1)
-              xx2=vcoord(izone,ip2,1)
-              yy1=vcoord(izone,ip1,2)
-              yy2=vcoord(izone,ip2,2)
-              zz1=vcoord(izone,ip1,3)
-              zz2=vcoord(izone,ip2,3)+0.1
+              ip1=jvn(is,2)
+              ip2=jvn(is,2)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)
+              zz2=z(ip2)+0.1
           elseif(i.eq.3)then
-              ip1=nzjvn(icc,2)
-              ip2=nzjvn(icc,1)
-              xx1=vcoord(izone,ip1,1)
-              xx2=vcoord(izone,ip2,1)
-              yy1=vcoord(izone,ip1,2)
-              yy2=vcoord(izone,ip2,2)
-              zz1=vcoord(izone,ip1,3)+0.1
-              zz2=vcoord(izone,ip2,3)+0.1
+              ip1=jvn(is,2)
+              ip2=jvn(is,1)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)+0.1
+              zz2=z(ip2)+0.1
           elseif(i.eq.4)then
-              ip1=nzjvn(icc,1)
-              ip2=nzjvn(icc,1)
-              xx1=vcoord(izone,ip1,1)
-              xx2=vcoord(izone,ip2,1)
-              yy1=vcoord(izone,ip1,2)
-              yy2=vcoord(izone,ip2,2)
-              zz1=vcoord(izone,ip1,3)+0.1
-              zz2=vcoord(izone,ip2,3)
+              ip1=jvn(is,1)
+              ip2=jvn(is,1)
+              xx1=x(ip1)
+              xx2=x(ip2)
+              yy1=y(ip1)
+              yy2=y(ip2)
+              zz1=z(ip1)+0.1
+              zz2=z(ip2)
           endif
           xsum=xsum+yy1*zz2-zz1*yy2
           ysum=ysum+zz1*xx2-xx1*zz2
           zsum=zsum+xx1*yy2-yy1*xx2
   20    continue
-        pazi(is)=90.0
-        if(abs(xsum).lt.0.00001)pazi(is)=0.0
-        if(xsum.lt.0.0)pazi(is)=-90.0
+        pazi=90.0
+        if(abs(xsum).lt.0.00001)pazi=0.0
+        if(xsum.lt.0.0)pazi=-90.0
         if(abs(ysum).lt.0.00001)goto 3
-        pazi(is)=atan2(xsum,ysum)/r
-    3   if(pazi(is).lt.0.)pazi(is)=pazi(is)+360.
+        pazi=atan2(xsum,ysum)/r
+    3   if(pazi.lt.0.)pazi=pazi+360.
 
       endif
       return

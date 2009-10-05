@@ -127,6 +127,17 @@ typedef struct _window{
 #define BMFROM		02000	/* copy from the given bitmap */
 /* and  BMWIN		04000	   use ddwin->w_bm instead of ddbm */
 /*
+ * define bmgrey arguments are 16 bit values with this or-ed in
+ */
+#define WWREGISTER	0x80000000	/* top bit set for tiling to register */
+# define SHADE1	41120	/* 0120240. 4 in 16 */
+# define SHADE2	42405	/* 0122645. every other pixel, 8 in 16 */
+# define SHADE3	33410	/* 0101202. 4 in 16 */
+# define SHADE4	1025	/* 02001. 2 in 16 */
+# define SHADE5	260	/* 0404. 2 in 16 */
+# define HATCHR	33825	/* 0102041. right diagonal lines, 4 in 16 */
+# define HATCHL	4680	/* 011110. left diagonal lines, 4 in 16 */
+/*
  * define boxop arguments can be one of these
  */
 #define BOXINTERSECT	1	/* return common box between two boxes. if none return 0,0,0,0 */
@@ -253,6 +264,13 @@ typedef struct _wwstate{
 #define SHARE_KEYBOARD	((char *) 5)	/* wwshare should redirect keyboard input to selection holder CAAG */
 
 /*
+ * define dd->d_flags bit settings
+ */
+#define PRINTERR	01	/* print error messages */
+#define WWNOBUFFER	02	/* ignore wwstack calls, basically */
+#define WWINPUTREADY	04	/* input waiting. ipwait would return */
+#define WWNONOISE	010	/* ignore wwnoise calls */
+/*
  * define dd->d_rop and raster operations values. WWNOT can be or-ed with one.
  * one of, but WWNOT can be ored in with any of the others.
  * they have slightly limited meaning for line drawing.
@@ -322,13 +340,38 @@ typedef struct _txinfo{
 	struct _txinfo	*(*tx_check)();	/* 0 or routine called when something about to happen */
 	int		*tx_junk;	/* more irrelevant info */
 }txinfo;
- /* define txvisible arguments can be one of these
+/*
+ * define tx_flags bit settings
+ */
+#define TXVISIBLE	01		/* selection is visible */
+#define TXALLON		02		/* text can all be seen without scrolling */
+#define TXVERT		04		/* centre the text vertically */
+#define TXHORIZ		010		/* centre the text horizontally */
+#define TXCENTRE	(TXHORIZ|TXVERT) /* centre the text */
+#define TXCRMOD		020		/* cr means lf */
+#define TXONHIT		040		/* make selection visible only after button hit */
+/*
+ * define txinsert arguments can be one of these, or a character position
+ */
+#define TXLAST		(-1)	/* at end of text line */
+#define TXCURRENT	(-2)	/* before current selection in text line */
+/*
+ * define txvisible arguments can be one of these
  */
 #define TXSET		1	/* set this txinfo visible */
 #define TXCLEAR		2	/* set this txinfo not visible */
 #define TXCLEARALL	3	/* set all this circular list not visible */
 #define TXWHICH		4	/* return which txinfo in list is visible */
+/*
+ * define tx_check will be given one of these
+ */
+#define TXCOPY		1	/* user wants to copy selection. etc */
+#define TXMOVE		2	/* (values prev fixed for txmenu ajs) */
+#define TXDELETE	3
 
+#define TXSELECT	4
+#define TXEXTEND	5
+#define TXKEY		6	/* input when selection not here */
 /*
  * info about an extension of the txinfo area that is used to hold a filename and where
  * you can wander around the filesystem
@@ -355,11 +398,25 @@ typedef struct _treeinfo{
 #define WWPUSHBUSY	5	/* custack */
 #define WWPUSHON	6	
 /*
+ * define bmdecode arguments can be one of these
+ */
+#define ENLPSTYLE	1	/* lineprinter image of a raster */
+#define ENWWSTYLE	2	/* octal bit image in serial bytes. length&width in 1st 4 bytes */
+#define ENRUNSTYLE	3	/* runlength encoding. length&width&bytelength in 1st 6 bytes */
+/*
  * define ddselect arguments can be one of these
  */
 #define WWSELCLEAR	0
 #define WWSELSET	1
 #define WWSELTEST	2
+/*
+ * define wwask arguments can be one of these
+ */
+#define ASKXPPI		1
+#define ASKYPPI		2
+#define ASKXSCREEN	3
+#define ASKYSCREEN	4
+#define ASKCOLOURS	5
 /*
  * define ww*map arguments can be one of these
  */
@@ -374,6 +431,43 @@ typedef struct _treeinfo{
 #define WWOPENICONISED	02	/* start window iconised */
 #define WWINTERNALSIZE	04	/* size is of inside window, not frame!  */
 #define WWREPORTKILL	010	/* report is user wants/has window killed */
+/*
+ * define xxfeedback arguments can be these ored together
+ */
+#define FBCENTRE	01	/* box is centred at start pos, not cornered */
+#define FBSQUARE	02	/* box is square, not rectangular */
+#define FBNOSORT	04	/* top of box can be lower than bottom etc */
+#define FBZERO		010	/* zero is ok size for box */
+#define FBFIXSIZE	020	/* box is of fixed size (arg at start) */
+#define FBRESTORE	040	/* restore even after last feedback */
+#define FBFIXCORNER	0100	/* box top left is given at start */
+#define FBOFFSET	0200	/* saved box is enlarged by offset */
+/*
+ * define xxpopx arguments can be one of these
+ */
+#define POPREGULAR	0	/* conventional popup linear menu */
+#define POPNOCURSOR	01	/* similar, but no cursor, and x and y movements noted */
+#define POPROTATE	02	/* similar, but text moves! awful */
+#define POPSHIFT	03	/* similar, but whole menu moves! awful */
+#define POPELLIP	04	/* elliptical menu */
+#define POPSEMILIP	05	/* semi-ellipse menu */
+#define POPRIGHT	010	/* ored in: menu is to right of cursor */
+#define POPDOWN		0100	/* ored in: menu is below cursor */
+/*
+ * define xxbar arguments can be these ored together
+ */
+#define BARVERTICAL	01	/* use a vertical not horizontal bar */
+#define BARSELECTION	02	/* use a |___| type presentation */
+/*
+ * define unportask arguments can be one of these
+ */
+#define ASKBMMEMORY	01	/* (bitmap *) -> (char *) perq */
+				/* (bitmap *) -> (struct pixrect *) sun */
+				/* (bitmap *) -> (Pixmap) X */
+#define ASKWINCANVAS	02	/* (window *) -> (Canvas) sun */
+#define ASKWINFRAME	04	/* (window *) -> (Frame) sun */
+#define ASKWINFILE	010	/* (window *) -> file descriptor (int) perq */
+#define ASKWINDOW	020	/* (window *) -> (Window) X */
 /*
  * default pointers set by wwinit.
  */
@@ -390,16 +484,25 @@ extern treeinfo *treebase;
  * External Typing: rest of file generated automatically. BEWARE
  */
 #ifndef WWFULLFUNCTION
+void	 bmbezier();
 void	 bmbox();
 void	 bmcircle();
 box	 bmclip();
 bitmap	*bmcopy();
+bitmap	*bmdecode();
 void	 bmdraw();
+void	 bmellipse();
+char	*bmencode();
+void	 bmexchange();
 int	 bmfill();
 void	 bmfree();
 bitmap	*bmget();
 int	 bmgetclip();
 void	 bmgrey();
+void	 bmmove();
+void	 bmscroll();
+void	 bmslide();
+void	 bmstack();
 void	 bmxbox();
 void	 bmxcopy();
 void	 bmxdraw();
@@ -407,6 +510,7 @@ bitmap	*bmxget();
 box	 boxbuild();
 int	 boxinside();
 box	 boxop();
+box	 boxshift();
 box	 boxzoom();
 int	 copack();
 int	 corep();
@@ -430,32 +534,85 @@ void	 ftstack();
 void	 ftxprint();
 void	 ipset();
 int	 ipwait();
+void	 ipxset();
+int	 ipxwait();
 void	 line();
+void	 lnstack();
+treeinfo	*treecreate();
+treeinfo	*treecwd();
+int	 treefollow();
+void	 treefree();
+txinfo	*txcreate();
+void	 txdelete();
+int	 txfollow();
+void	 txfree();
+void	 txgroup();
+void	 txinsert();
+int	 txmenu();
+void	 txrecreate();
+void	 txscroll();
+int	 txselect();
+void	 txset();
+txinfo	*txvisible();
+int	 unportask();
+void	 winstack();
+int	 wordpopup();
+int	 wordxpop();
+int	 wwask();
+void	 wwcharmap();
 void	 wwexit();
+void	 wwfnbox();
 void	 wwfree();
+window	*wwget();
+window	*wwgetscreen();
 int	 wwinit();
 unsigned	 wwintmap();
 void	 wwnoise();
 void	 wwpanic();
 char	*wwshare();
+void	 wwstack();
 window	*wwxget();
+window	*wwgetsub();
+void	 wwxnoise();
 void	 wwxstack();
+int	 xxbar();
 bitmap	*xxcut();
+void	 xxecho();
+int	 xxfeedback();
 bitmap	*xxgrey();
+void	 xxmag();
 void	 xxneutral();
+void	 xxoutline();
+void	 xxpaste();
+int	 xxpopup();
+int	 xxpopx();
+int	 xxpull();
+int	 xxpullone();
 int	 xxrelease();
+void	 xxrotate();
+box	 xxrubber();
+int	 xxxfeedback();
 #else /* WWFULLFUNCTION */
 
+void	 bmbezier(int x0,int y0,int x1,int y1,int x2,int y2,int x3,int y3,bitmap *bm,int rop);
 void	 bmbox(box b,int flags);
 void	 bmcircle(bitmap *bm,int x,int y,int radius,int flags);
 box	 bmclip(bitmap *bm,box b);
 bitmap	*bmcopy(bitmap *bm,box b,int flags);
+bitmap	*bmdecode(char *pattern,int style);
 void	 bmdraw(int xa,int ya,int xb,int yb,bitmap *bm,int rop);
+void	 bmellipse(bitmap *bm,int x,int y,int a,int b,int flags);
+char	*bmencode(bitmap *bm,int style,int *length);
+void	 bmexchange(bitmap *from,box frombox,bitmap *to,box tobox);
 int	 bmfill(bitmap *bm,bitmap *tile,int x,int y);
 void	 bmfree(bitmap *bm);
 bitmap	*bmget(int width,int height);
 int	 bmgetclip(bitmap *bm,box *b);
 void	 bmgrey(box b,int sh);
+void	 bmmove(box b,int x,int y);
+void	 bmscroll(box b,int xdist,int ydist);
+void	 bmslide(box b,int x,int y);
+void	 bmstack(int flag);
 void	 bmxbox(bitmap *bm,box b,int flags);
 void	 bmxcopy(bitmap *from,box frombox,bitmap *to,box tobox,int rop);
 void	 bmxdraw(int xa,int ya,int xb,int yb,bitmap *bm,int rop,int width);
@@ -463,6 +620,7 @@ bitmap	*bmxget(int width,int height,int colours);
 box	 boxbuild(int left,int top,int right,int bottom);
 int	 boxinside(box b,int x,int y);
 box	 boxop(box a,box b,int flag);
+box	 boxshift(box b,int x,int y);
 box	 boxzoom(box b,int dist);
 int	 copack(int rep,int colour,int flags);
 int	 corep(bitmap *bm,unsigned char *r,unsigned char *g,unsigned char *b,int step,int start,int count,int flags);
@@ -486,19 +644,63 @@ void	 ftstack(int flag);
 void	 ftxprint(int x,int y,char *str,int len,int rop,fontinfo *font,bitmap *bm,int flags);
 void	 ipset(int flag);
 int	 ipwait();
+void	 ipxset(window *wp,int flag);
+int	 ipxwait();
 void	 line(int x,int y,int flag);
+void	 lnstack(int flag);
+treeinfo	*treecreate(treeinfo *tr,box area);
+treeinfo	*treecwd(char *base,box area);
+int	 treefollow(treeinfo *tr);
+void	 treefree(treeinfo *tr);
+txinfo	*txcreate(box b);
+void	 txdelete(txinfo *tx,int from,int count);
+int	 txfollow(txinfo *tx);
+void	 txfree(txinfo *tx);
+void	 txgroup(txinfo *list,txinfo *tx);
+void	 txinsert(txinfo *tx,int where,char *str,int len);
+int	 txmenu(txinfo *tx,txinfo *txfrom);
+void	 txrecreate(txinfo *tx,box b);
+void	 txscroll(txinfo *tx,int by);
+int	 txselect(txinfo *tx,int extend);
+void	 txset(txinfo *tx,int left,int right);
+txinfo	*txvisible(txinfo *tx,int what);
+int	 unportask(void *pointer,int what);
+void	 winstack(int flag);
+int	 wordpopup(char ***words,int **lens,int startdepth,int index,int *retndepth);
+int	 wordxpop(char ***words,int **lens,int startdepth,int index,int *retndepth,int *more);
+int	 wwask(int what);
+void	 wwcharmap(bitmap *bm,box b,unsigned char *map,int flags);
 void	 wwexit();
+void	 wwfnbox(box posn,char **str);
 void	 wwfree(window *win);
+window	*wwget(box size);
+window	*wwgetscreen();
 int	 wwinit();
 unsigned	 wwintmap(bitmap *bm,int x,int y,unsigned set,int flags);
 void	 wwnoise();
 void	 wwpanic(char *s);
 char	*wwshare(char *what,int length,char *filename,int *returnlen);
+void	 wwstack(int flag);
 window	*wwxget(box size,int colours,char *label,int flags);
+window	*wwgetsub(window *win,box size);
+void	 wwxnoise(window *win);
 void	 wwxstack(window *win,int flag);
+int	 xxbar(box b,int min,int max,int from,int to,int flags);
 bitmap	*xxcut(int fullscreen);
+void	 xxecho(char ch);
+int	 xxfeedback(box *b,int flags);
 bitmap	*xxgrey(unsigned int intensity,unsigned int cache);
+void	 xxmag(bitmap *bm,box b,int factor);
 void	 xxneutral();
+void	 xxoutline(bitmap *bm,box b);
+void	 xxpaste(bitmap *cut,int rop);
+int	 xxpopup(char **list,int start);
+int	 xxpopx(char **list,int start,int style,int printflags);
+int	 xxpull(box title,char ***list,bitmap ***bmlist,int *item);
+int	 xxpullone(box title,box currentbox,char **list,bitmap **bmlist);
 int	 xxrelease(box b);
+void	 xxrotate(box b,int size,int rot);
+box	 xxrubber(int x,int y,int flags);
+int	 xxxfeedback(box *b,int flags,int offset);
 #endif /* WWFULLFUNCTION */
 #endif /* _WWINFO_H */

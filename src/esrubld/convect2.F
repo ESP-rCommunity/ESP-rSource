@@ -74,7 +74,6 @@ C The ISO 15099:2003 correlations.
       SUBROUTINE HTBUOY(HC,ICOR,ICOMP,ISUR,DT,HEIGHT,APRAT)
 
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "net_flow.h"
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -84,6 +83,8 @@ C The ISO 15099:2003 correlations.
       COMMON/Fisher/Vdot(MCOM),SAT(MCOM),ADJREF(MCOM,MS),DELTAR(MCOM)
       COMMON/HCcomb/iAandH,iassist
       COMMON/adaptHC/HCctl5
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Commons to support vertical channel hc regime.
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)

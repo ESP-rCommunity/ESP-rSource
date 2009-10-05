@@ -124,8 +124,8 @@ C Detect header and set a version number.
       endif
 
 C Debug.
-C      write(6,*) 'calendar ',calename
-C      write(6,*) 'day types ',nbdaytype
+      write(6,*) 'calendar ',calename
+      write(6,*) 'day types ',nbdaytype
 
 C Loop through all of the calendar day types.
       do 30 idt=1,nbdaytype

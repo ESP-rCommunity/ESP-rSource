@@ -8,7 +8,7 @@ Example of building control via wet central heating.  For more informati see the
 # actuates air point of the current zone
     0    0    0  # actuator data
     1 # No. day types
-    1  365  # valid Sat-01-Jan - Sun-31-Dec
+    1  365  # valid Sat  1 Jan - Sun 31 Dec
      1  # No. of periods in day
     0    6   0.000  # ctl type, law (flux zone/plant), start @
       5.  # No. of data items
@@ -20,23 +20,23 @@ plt ctrl reg
    2  # No. of loops
 * Control loops
 # senses var in compt.  6:thermostat @ node no.  1
-   -1    6    1    0    0  # sensor 
+   -1    6    1    0  # sensor 
 # plant component   1:boiler @ node no.  1
    -1    1    1    0  # actuator 
     1 # No. day types
-    1  365  # valid Sat-01-Jan - Sun-31-Dec
+    1  365  # valid Sat  1 Jan - Sun 31 Dec
      1  # No. of periods in day
    12    3   0.000  # ctl type, law (Prop numerical ctrl.), start @
       5.  # No. of data items
-  0.00000 1.00000 22.30000 22.30000 0.50000
+  0.000 1.000 22.300 22.300 0.500
 * Control loops
 # senses var in compt.  1:boiler @ node no.  1
-   -1    1    1    0    0  # sensor 
+   -1    1    1    0  # sensor 
 # plant component   6:thermostat @ node no.  1
    -1    6    1    0  # actuator 
     1 # No. day types
-    1  365  # valid Sat-01-Jan - Sun-31-Dec
+    1  365  # valid Sat  1 Jan - Sun 31 Dec
      1  # No. of periods in day
    16    3   0.000  # ctl type, law (Prop numerical ctrl.), start @
       5.  # No. of data items
-  0.20000 0.00000 1.00000 0.00000 0.00000
+  0.200 0.000 1.000 0.000 0.000

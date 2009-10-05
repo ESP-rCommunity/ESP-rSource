@@ -10,7 +10,7 @@
      6,     0  #  7 top          earth_top   
      6,     0  #  8 base         below       
 # conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
-# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
+# tivity   |          | heat     |ness(mm)|type|  temp | factor | factor |     |  
      1.2800,    1460.0,     879.0,  0.2500,   0,   0.00, 0.00000, 0.00000  #  1  1
      1.2800,    1460.0,     879.0,  0.2500,   0,   0.00, 0.00000, 0.00000  #     2
      1.2800,    1460.0,     879.0,  0.2500,   0,   0.00, 0.00000, 0.00000  #     3

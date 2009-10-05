@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Systems model of ventilation via ducts, fan &
-mixing box defined in vent.cfg generated on Fri Oct  2 08:32:44 2009. Notes
+mixing box defined in vent.cfg generated on Wed Nov 26 16:16:27 2008. Notes
 associated with the model are in vent.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -25,21 +25,21 @@ Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
-with hour centred solar data.
+The climate used is: ESP test climate and is held in:
+/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : pressc.db1
- materials              : /usr/esru/esp-r/databases/constr.db2.a
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ materials              : /usr/esru/esp-r/databases/constr.db1
  constructions          : ./multicon.db1
- plant components       : plantc.db1
+ plant components       : /usr/esru/esp-r/databases/plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
- optical properties     : optics.db1
+ optical properties     : /usr/esru/esp-r/databases/optics.db1
  
 The model includes a plant network.
  
- The plant network contains  6 components from plantc.db1
+ The plant network contains  6 components from /usr/esru/esp-r/databases/plantc.db1
  
  Component: fresh_duct ( 1) code  1, db reference  6
  No Control data

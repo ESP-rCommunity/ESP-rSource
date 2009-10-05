@@ -14,9 +14,9 @@ LIBxml = libXML.a
 # %.o : %.c
 # 	$(MCC) $(CFLAGS) -c $<
 
-OBJECTSX11 = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_libX11.o esru_x.o esru_util.o
-OBJECTSGTK = esru_ask.o esru_blk.o esru_lib.o esru_libGTK.o esru_nox.o esru.o esru_util.o
-OBJECTSnoX = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_fc.o esru_nox.o esru_util.o
+OBJECTSX11 = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_libX11.o esru_x.o
+OBJECTSGTK = esru_ask.o esru_blk.o esru_lib.o esru_libGTK.o esru_nox.o esru.o
+OBJECTSnoX = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_fc.o esru_nox.o
 GTK_OBJ = esp-r.o esp_menu.o esp_text.o esp_ask.o esp_draw.o esp_file.o
 OBJECTSVersion = version.o
 OBJECTS_FPE_enable = fpe_enable.o
@@ -131,8 +131,6 @@ esru_x.o:
 	$(MCC) $(LD_FLAGS) $(CFLAGS) -I$(XINSTALLDIR)/include -c esru_x.c
 esru_fc.o:
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c esru_fc.f
-esru_util.o:
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c esru_util.c
 version.o:
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c version.F
 

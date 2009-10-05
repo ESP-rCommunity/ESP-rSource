@@ -30,14 +30,12 @@ C Portions of the DXF translation can be traced back (eventually)
 C to code from ABACUS, Department of Architecture & Building Science.
       program ecnv
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-#include "material.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -68,13 +66,24 @@ C ESP-r commons.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+      common/C3F/LCNN
       COMMON/C6/INDCFG
       common/CFGV/icfgv
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
 
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -95,13 +104,21 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12     
 
+C Material data array.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       character filname*144,filname2*144,filname1*144,repfile*40
       character inf*144,ouf*144,layname*72,instring*72,lf*72
       character iformat*24,oformat*24,number*3,fs*1
       character RZNAME*24,head*4,ZN*12,LTMP*144
-      character path*72,upath*72
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      character path*72,upath*72,LCNN*72
       character upgcfg*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -116,7 +133,6 @@ C Name of current application
 C Data types for parcnv call.
       integer itrc,incobs,ichop,itmprm,iverb
       real conv
-      integer nbo  ! local variable for nbobs
  
 C System parameter initializing. Use ioin for the input file,
 C ioout for primary output file, ioblk for block storage,
@@ -268,7 +284,7 @@ C to update commons for configuration.
           call clrprb
           call edisp(iuout,' Scanning the problem before updating...')
           call escdef(iotmp2,IER)
-          MODE='ALL '
+          MODE='NONE'
           call ERSYS(LCFGF,ioout,iotmp2,MODE,itrc,IER)
           if(IER.eq.0)then
           
@@ -372,7 +388,7 @@ C Make temporary use of file unit iotmp2.
 C Find the path and local file name.
         call fdroot(LTMP,path,LCFGF)
         call edisp(iuout,' Scanning the model description...')
-        MODE='ALL '
+        MODE='NONE'
         call ERSYS(LCFGF,ioin,iotmp2,MODE,itrc,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.
@@ -463,11 +479,11 @@ C If we started by scanning an existing esp-r configuration file
 C there is not much need to call mksyshd.  Just loop until
 C you get to the line * Building.
       if(oformat(1:3).eq.'esp')then
-        modeltitle='Translation from AutoCAD'
+        LSNAM='Translation from AutoCAD'
         if(upgcfg(1:7).eq.'upgrade')then
         
 C Read ioout until * Building then write out the new value
-C of modeltitle and then jump to 28 to allow data from DXF file
+C of LSNAM and then jump to 28 to allow data from DXF file
 C to be scanned.
           do 27 i=1,100
             read(ioout,'(A)') buffer
@@ -476,12 +492,11 @@ C to be scanned.
               call edisp(iuout,outs)
             endif
             if(buffer(1:10).eq.'* Building') then
-              write(ioout,'(A)',IOSTAT=IOS,ERR=2)
-     &          modeltitle(1:lnblnk(modeltitle))
+              write(ioout,'(A)',IOSTAT=IOS,ERR=2)LSNAM(1:lnblnk(LSNAM))
               goto 28
             endif
   27      continue
-          call edisp(iuout,'end of cfg file without finding *building')
+          write(6,*) 'end of cfg file without finding * building'
 	else
           call mksyshd(filname2,ier)
         endif
@@ -808,9 +823,8 @@ C connections file.
 C Create a dummy obstruction file for zone. Rewind the temporary
 C block store file and scann for blocks matching the current
 C zone.
-C << what about newer >>
           if(IOBS(ivv).eq.1)then
-            nbobs(ivv)=0
+            NB=0
             INQUIRE(iotobs,OPENED=OPND)
             if(OPND)then
               rewind(iotobs,ERR=999)
@@ -821,18 +835,14 @@ C << what about newer >>
             endif
   142       read(iotobs,*,end=143)ZN,TXO,TYO,TZO,TDX,TDY,TDZ,TBANG
             if(ZN(1:lnblnk(ZN)).eq.zname(ivv)(1:lnzname(ivv)))then
-              nbobs(ivv)=nbobs(ivv)+1
-              nbo=nbobs(ivv)
-              XOB(ivv,nbo)=TXO
-              YOB(ivv,nbo)=TYO
-              ZOB(ivv,nbo)=TZO
-              DXOB(ivv,nbo)=TDX
-              DYOB(ivv,nbo)=TDY
-              DZOB(ivv,nbo)=TDZ
-              BANGOB(ivv,nbo,1)=TBANG
-              BANGOB(ivv,nbo,2)=0.0
-              BANGOB(ivv,nbo,3)=0.0
-              BLOCKTYP(ivv,nbo)='obs '
+              NB=NB+1
+              XO(NB)=TXO
+              YO(NB)=TYO
+              ZO(NB)=TZO
+              DX(NB)=TDX
+              DY(NB)=TDY
+              DZ(NB)=TDZ
+              BANG(NB)=TBANG
             endif
             goto 142
  143        continue
@@ -847,14 +857,12 @@ C << need for a separate obstructions file
             write(iotmp2,'(a,a)')'# associated with zone geom file ',
      &        LGEOM(ivv)(1:lnblnk(LGEOM(ivv)))
             write(iotmp2,'(a)')' 0.0  0.0  # dummy valuse'
-            write(iotmp2,'(I4,a)') nbobs(ivv),
-     &        '     # no obstruction blocks'
+            write(iotmp2,'(I4,a)') NB,'     # no obstruction blocks'
             write(iotmp2,'(a)')
      &       '# origin  X   Y   Z   width  depth  height  angle  descr'
-            do 144 ibx=1,nbobs(ivv)
-              write(iotmp2,'(7f9.4,a)')XOB(ivv,ibx),YOB(ivv,ibx),
-     &          ZOB(ivv,ibx),DXOB(ivv,ibx),DYOB(ivv,ibx),
-     &          DZOB(ivv,ibx),BANGOB(ivv,ibx,1),' dxf # block '
+            do 144 ibx=1,NB
+              write(iotmp2,'(7f9.4,a)')XO(ibx),YO(ibx),ZO(ibx),
+     &           DX(ibx),DY(ibx),DZ(ibx),BANG(ibx),' dxf # block '
  144        continue
             write(iotmp2,'(a)')'# grid opq X opq Z win X win Z'
             write(iotmp2,'(a)')'    20    20     5     5'
@@ -962,6 +970,7 @@ C write esp geometry file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
@@ -1336,11 +1345,10 @@ C Matches or adds a vertex to a zone.
       subroutine matchv(iz,is,match,x1,y1,z1)
 #include "building.h"
 #include "geometry.h"
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
-      logical clx,cly,clz,match,unixok
-      character outs*124
+      logical clx,cly,clz,match
 
 C NZTV(IZ)= NVT, NZSUR(IZ)=NSUR,  VCOORD(IZ,K,3)= x,y,z
 C NZNVER(icc) = NVER(J), NZJVN(icc,K) = JVN(J,K)
@@ -1360,11 +1368,7 @@ C Update the surface topology.
   40    continue
       endif
       icc=IZSTOCN(iz,is)
-      call isunix(unixok)
-      if(icc.eq.0.and.unixok)then
-        write(outs,*) 'connection index zero for ',iz,is
-        call edisp(iuout,outs)
-      endif
+      if(icc.eq.0) write(6,*) 'connection index zero for ',iz,is
       if(match)then
         NZNVER(icc) = NZNVER(icc)+1
         NZJVN(icc,NZNVER(icc))=ivmatch
@@ -1413,15 +1417,22 @@ C << to write only the header portion.
 
       subroutine mksyshd(LOUT,ier)
 #include "building.h"
-#include "model.h"
-#include "site.h"
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      common/C3F/LCNN
+      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      CHARACTER*72 SNFNAM
+      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
@@ -1458,7 +1469,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER LCFGF*72
-      CHARACTER LPRJLG*72,LOUT*72
+      CHARACTER LCNN*72,LPRJLG*72,LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -1503,13 +1514,12 @@ C Comment for configuration index (upgrade registration level).
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)
 
-      WRITE(ioout,'(F7.3,2X,F7.3,a)')sitelat,sitelongdif,
-     &'   # Latitude & Longitude diff'
-      WRITE(ioout,'(I7,2X,F6.3,a)') siteexposureindex,groundrefl,
+      WRITE(ioout,'(F7.3,2X,F7.3,a)')XLAT,XLON,
+     &'   # Latitude & Longitude '
+      WRITE(ioout,'(I7,2X,F6.3,a)') IXPOS,GREF,
      &'   # Site exposure & ground refl'
-      IF(siteexposureindex.EQ.8)WRITE(ioout,'(3F8.3,A)')
-     &  skyview,groundview,buildingview,
-     &  '   # views to sky ground buildings'
+      IF(IXPOS.EQ.8)WRITE(ioout,'(3F8.3,A)')
+     &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
       write(ioout,'(a)')'* DATABASES'
 
 C << updated to use ipath* >>
@@ -1527,21 +1537,19 @@ C     &      SHOCCshlFile(1:lnblnk(SHOCCshlFile))
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
-      IF(groundreflmodel.NE.1) 
-     &  WRITE(ioout,803) '*gref ',groundreflmodel,
-     &       (groundreflmonth(I),I=1,12),snowgroundrefl
+      IF(ITGREF.NE.1) WRITE(ioout,803) '*gref ',ITGREF,
+     &      (GREF12(I),I=1,12),SREF
   803 FORMAT(A,I1,13(1X,F5.3))
 
 C Number of days with snow on the ground 
 C (if ground reflectivity model 2)
-      IF(groundreflmodel.EQ.2) 
-     &  WRITE(ioout,805) '*snow',(dayswithsnow(I),I=1,12)
+      IF(ITGREF.EQ.2) WRITE(ioout,805) '*snow',(NSNOW(I),I=1,12)
   805 FORMAT(A,12(1X,I2))
 
 C Snow depth file
 C (if ground reflectivity model 3)
-      IF(groundreflmodel.EQ.3) WRITE(ioout,'(A,A)',IOSTAT=IOS,ERR=2) 
-     &  '*sndf ',SNFNAM(1:lnblnk(SNFNAM))
+      IF(ITGREF.EQ.3) WRITE(ioout,'(A,A)',IOSTAT=IOS,ERR=2) '*sndf ',
+     &      SNFNAM(1:lnblnk(SNFNAM))
 
       if(lnblnk(lctlf).eq.0.or.lctlf(1:7).eq.'UNKNOWN')then
         continue
@@ -1586,7 +1594,7 @@ C Write primary energy conversions if these have been set.
       write(ioout,'(a)')'* PROJ LOG'
       WRITE(ioout,'(A)')LPRJLG(1:lnblnk(LPRJLG))
       write(ioout,'(a)')'* Building'
-      WRITE(ioout,'(A)')modeltitle(1:lnblnk(modeltitle))
+      WRITE(ioout,'(A)')LSNAM(1:lnblnk(LSNAM))
       return
 
     2 CALL edisp(iuout,' Problem writing config data config...')
@@ -1610,7 +1618,7 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
       logical cfgok
       ier=0
       return
@@ -1622,12 +1630,6 @@ C calls in esru_lib.F
 
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
-      return
-      end
-
-C Dummy subroutine needed to compile (called from library code).
-      SUBROUTINE PLELEV(direc)
-      CHARACTER direc*1
       return
       end
 

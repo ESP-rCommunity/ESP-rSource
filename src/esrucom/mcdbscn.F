@@ -36,10 +36,10 @@ C        the routine.
 
 #include "building.h" 
 #include "power.h" 
-#include "esprdbfile.h" 
       
       integer lnblnk  ! function definition
 
+      COMMON/MCMPDBNAM/MCMPDBFL
       COMMON/FILEP/IFIL
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
@@ -48,7 +48,7 @@ C        the routine.
       DIMENSION SSTR(90),VAR(MPWDAT),SPMISC(MPWDAT)
 
       CHARACTER OUTSTR*124,VSTR*40
-      CHARACTER SSTR*72,ltmp*72,h*72,DFILE*72
+      CHARACTER MCMPDBFL*72,SSTR*72,ltmp*72,h*72,DFILE*72
       CHARACTER DIVR1*6,DIVR2*6,DIVR3*6
       character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       REAL VAR,SPMISC

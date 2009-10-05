@@ -46,12 +46,10 @@ C ************************************************************
 
       program runesp
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "uncertainty.h"
 #include "espriou.h"
 #include "esprdbfile.h"
-#include "material.h"
       PARAMETER (MSTMC=20)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -64,6 +62,11 @@ C ************************************************************
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -106,6 +109,12 @@ C Uncertainty.
       common/imagfi/noimg,iton
       COMMON/BL1/dmdsdesc,bdmds
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
+
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
       
       CHARACTER INTER*144,INF*144
       character path*72,upath*72,cfgroot*24
@@ -116,6 +125,7 @@ C Uncertainty.
       character LUALF*72,LCNG*15,LLOC*15
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
+      character*72 LCNN
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
@@ -265,7 +275,7 @@ C Materials db on channel IFIL+4.
 C System configuration file on channel IFIL+5. 
       IFCFG=IFIL+5
       LCFGF='UNKNOWN'
-      modeltitle='UNKNOWN'
+      LSNAM='UNKNOWN'
 
 C Mass flow network, profiles and optical dbs on channel IFIL+6. 
       IOPTDB=IFIL+6
@@ -375,7 +385,6 @@ C parent action: 'create_silent' or 'create_model' or 'create_run_model'
       integer MSZ   ! number of silent zones array sizes
       PARAMETER (MSZ=10) 
 #include "building.h"
-#include "model.h"
 #include "espriou.h"
 #include "esprdbfile.h"
 C espriou.h provides currentfile.
@@ -425,7 +434,8 @@ C Local string values.
       character wallconstr*32,roofconstr*32,floorconstr*32
       character windowconstr*32,skylightconstr*32
 
-C Documentation (modeltitle) comes from model.h
+C Documentation for silentread file.
+      character silentmenu*32
 
 C Paremeters passed to:silentzone
       character name*12   ! name given to the zone
@@ -496,7 +506,7 @@ C Determine operating system
         fs = char(92)
       endif
 
-C Debug.
+C Debug...
 C      write(6,*) 'usrdir is ',odir
 
 C Set logicals for locations of windows.
@@ -741,26 +751,17 @@ C A window on the (Roof 5th surface) of the box.
       elseif(WORD(1:17).eq.'*Lighting_density'.or.
      &       WORD(1:17).eq.'*lighting_density')then
         CALL EGETWR(OUTSTR,K,densityof(2),0.,0.,'-','lt density',IER)
-
-C Debug.
 C        write(6,*) 'lt density ',densityof(2)
-
         goto 43
       elseif(WORD(1:18).eq.'*Equipment_density'.or.
      &       WORD(1:18).eq.'*equipment_density')then
         CALL EGETWR(OUTSTR,K,densityof(3),0.,0.,'-','sp density',IER)
-
-C Debug.
 C        write(6,*) 'sp density ',densityof(3)
-
         goto 43
       elseif(WORD(1:17).eq.'*Occupant_density'.or.
      &       WORD(1:17).eq.'*occupant_density')then
         CALL EGETWR(OUTSTR,K,densityof(1),0.,0.,'-','ocup density',IER)
-
-C Debug.
-C        write(6,*) 'occupant density ',densityof(1)
-
+        write(6,*) 'occupant density ',densityof(1)
         goto 43
       elseif(WORD(1:9).eq.'*Lighting'.or.
      &       WORD(1:9).eq.'*lighting')then
@@ -768,18 +769,12 @@ C        write(6,*) 'occupant density ',densityof(1)
       elseif(WORD(1:17).eq.'*Summer_set_point'.or.
      &       WORD(1:17).eq.'*summer_set_point')then
         CALL EGETWR(OUTSTR,K,setpoints(2),0.,0.,'-','cooling setpt',IER)
-
-C Debug.
 C        write(6,*) 'cooling setpoint ',setpoints(2)
-
         goto 43
       elseif(WORD(1:17).eq.'*Winter_set_point'.or.
      &       WORD(1:17).eq.'*winter_set_point')then
         CALL EGETWR(OUTSTR,K,setpoints(1),0.,0.,'-','heating setpt',IER)
-
-C Debug.
 C        write(6,*) 'heating setpoint ',setpoints(1)
-
         goto 43
       elseif(WORD(1:9).eq.'*run_type')then
 
@@ -815,7 +810,7 @@ C there is more information available?)
 
 C Always create a single folder. Fill in default menu and doc.
       folder='single'
-      write(modeltitle,'(a)') 'auto generation of warehouse'
+      write(silentmenu,'(a)') 'auto generation of warehouse'
 
 C Place the origin of the model at the site origin.
       origin(1)=0.0
@@ -913,13 +908,16 @@ C folder /tmp/box/cfg if mpath is /tmp/box. If 'within' and
 C single folder then no folder is created.
       if(parentaction(1:13).eq.'create_silent')then
         action='new'
-        call silentmodel(action,root,mpath,folder,weather,ier)
+        call silentmodel(action,root,mpath,folder,silentmenu,weather,
+     &    ier)
       elseif(parentaction(1:12).eq.'create_model')then
         action='within'
-        call silentmodel(action,root,mnpath,folder,weather,ier)
+        call silentmodel(action,root,mnpath,folder,silentmenu,weather,
+     &    ier)
       elseif(parentaction(1:16).eq.'create_run_model')then
         action='new'
-        call silentmodel(action,root,mpath,folder,weather,ier)
+        call silentmodel(action,root,mpath,folder,silentmenu,weather,
+     &    ier)
       endif
 
 C Generate the zone and zone files.
@@ -1039,9 +1037,12 @@ C day with occupents as m2 per person, lights in W/m2 and
 C small power in W/m2. Occupied times are 9-21h each day.
       subroutine setschedule(ICOMP,name,densityof)
 #include "building.h"
-#include "model.h"
 #include "espriou.h"
       COMMON/FILEP/IFIL
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
@@ -1246,14 +1247,15 @@ C Dummy routines from common3dv.F
       return
       end
 
-      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
       logical cfgok
       ier=0
       return
       end
 
-      SUBROUTINE PLELEV(direc)
+      SUBROUTINE PLELEV(IUF,direc,ier)
       CHARACTER direc*1
+      ier=0
       return
       end
 

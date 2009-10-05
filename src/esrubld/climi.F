@@ -287,10 +287,7 @@ C If the last timestep of the day then get profile for the next day.
           X2B(5)=VAL(ISD+4)
           X2B(6)=VAL(ISD+5)
         ENDIF
-
-C Debug.
 C        write(6,*)'tdf clm data recovered @',btimef,' is ',X2B
-
       endif
 
 C Diffuse horizontal radiation. If to be superseded by data from

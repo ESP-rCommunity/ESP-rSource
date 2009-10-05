@@ -502,7 +502,7 @@ C of one of the casual gain types test here.
         call getocup(izone,iday,ih,ioc,ier)
         if(ioc.eq.0)ICMFRT=10
 
-C Debug.
+C Debug...
 C        write(6,*)'icmfrt,izone,iday,ih,ioc',icmfrt,izone,iday,ih,ioc
 
 C Verbal category only printed if activity level is sedentary.
@@ -556,11 +556,10 @@ C (to test for occupancy in the next pass).
       endif
 
       RETURN
-   1  call isunix(unixok)
-      if(IOS.eq.2)then
-        if(unixok)write(6,*)'MOCMFT: no permission to write string.'
+   1  if(IOS.eq.2)then
+         write(6,*) 'MOCMFT: no permission to write string.'
       else
-        if(unixok)write(6,*)'MOCMFT: internal string handling error.'
+         write(6,*) 'MOCMFT: error in internal string handling.'
       endif
       END
 
@@ -735,12 +734,11 @@ C implemented.
           endif
   45    continue
 
-C Debug.
+C Debug...
 C        write(6,*) 'zone:',izone,'  iocut:',iocut,'  iocuset:',iocuset
 C        write(6,*) 'ioucpz (wkd)',(ioucpz(izone,j),j=1,24)
 C        write(6,*) 'ioucpz (sat)',(ioucpz(izone,j),j=25,48)
 C        write(6,*) 'ioucpz (sun)',(ioucpz(izone,j),j=49,72)
-
  42   continue
       return
       end
@@ -848,10 +846,7 @@ C cases of temporal gains.
             elseif(iocut.eq.3)then
               if(close17) ioc=0
             endif
-
-C Debug.
-C            if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
-
+            if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
   141     continue
           return
         endif
@@ -884,10 +879,7 @@ C If close to zero then zone is not occupied.
         elseif(iocut.eq.3)then
           if(close17) ioc=0
         endif
-
-C Debug.
-C        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
-
+        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
         return
       endif
 
@@ -923,10 +915,7 @@ C a decision on the calculation of the lighting gains>>
         elseif(iocut.eq.3)then
           if(close17) ioc=0
         endif
-
-C Debug.
-C        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
-
+        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
       endif
 
       return
@@ -948,8 +937,8 @@ C Firstly recover the temperature values.
       if (ICP.eq.4) then
 
 C Need dT between CFD cells. set to zero and warn user.
-        call edisp(iuout,
-     &    ' Missing information on local air T, setting dT to zero.')
+        write (6,*) 
+     &        ' Missing information on local air T, setting dT to zero.'
 C        CALL GZQM(IDAY,IZONE,ISET)
       elseif (ICP.eq.5) then
 
@@ -984,8 +973,6 @@ C If iflag is returned as -1 then outside bounds of algorithm.
       SUBROUTINE DISCOMF(iflag,XX,PPD)
 
 C At the time of testing lets know what input parameter we have: 
-
-C Debug.
 C    write(6,*)'flag, XX=',iflag,XX 
 
 C Assume nobody is dissatisfied.

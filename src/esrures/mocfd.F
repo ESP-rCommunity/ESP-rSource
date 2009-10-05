@@ -80,10 +80,7 @@ C name with the full path.
       IER=0
 
 C Find the path and local file name.
-
-C Debug.
 C      write(6,*) 'MOCFD: current path is ',path
-
       iunit=IFIL+14
       call fdroot(LCMDFL,path,LTMP)
       CALL ERPFREE(iunit,ISTAT)
@@ -96,10 +93,7 @@ C Check that its a CFD results library.
           irec=1
           read(iunit,rec=irec,iostat=istat) 
      &      IRLEN,ICFDSV,(IEQSV(J),J=1,5+NCTM)
-
-C Debug.
-C          write(6,*) IRLEN,ICFDSV,(IEQSV(J),J=1,5+NCTM)
-
+C          write (6,*) IRLEN,ICFDSV,(IEQSV(J),J=1,5+NCTM)
           if(IRLEN.ne.MCEL1D) return
         endif
       ELSE
@@ -160,16 +154,10 @@ C Set unit number.
 C Read records 2 and 3 (active CFD domains/ simulation period).
       IREC=2
       read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000) (IFCFD(I),I=1,NCOMP)
-
-C Debug.
-C      write(6,*) (IFCFD(I),I=1,NCOMP)
-
+C      write (6,*) (IFCFD(I),I=1,NCOMP)
       IREC=3
       read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000) ICDYS,ICDYF,CFTS,CFTF
-
-C Debug.
-C      write(6,*) IREC,ICDYS,ICDYF,CFTS,CFTF
-
+C      write (6,*) IREC,ICDYS,ICDYF,CFTS,CFTF
       call CFDPER(1)
 
 C Read number of Contaminants and their names (assume zone 1)
@@ -203,9 +191,7 @@ C Read domain size.
           IREC=5+NCTM+(4*(IC-1))
           read (iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000) 
      &                                           IDRSZE,NIM2,NJM2,NKM2
-
-C Debug.
-C          write(6,*) IREC,IDRSZE,NIM2,NJM2,NKM2
+C          write (6,*) IREC,IDRSZE,NIM2,NJM2,NKM2
 
 C NRCFDOM is the number of records for each CFD domain.
           NRCFDOM(NCDOM)=IDRSZE
@@ -220,7 +206,7 @@ C Set up contaminants in correct CFD domain
         POLNAM(ICTM,ICFDZ(NCDOM))=POLNAM(ICTM,ICF)
  1234 CONTINUE
       if (NCDOM.eq.0) then
-        call edisp(iuout,'No CFD zones detected')
+        write (6,*) 'No CFD zones detected'
       elseif (NCDOM.eq.1) then
         ICDOM=1
       else
@@ -235,9 +221,7 @@ C Set up contaminants in correct CFD domain
 C Read domain size of selected domain.
       IREC=5+(4*(ICFDZ(ICDOM)-1))+NCTM
       read (iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000) IDRSZE,NIM2,NJM2,NKM2
-
-C Debug.
-C      write(6,*) IREC,IDRSZE,NIM2,NJM2,NKM2
+C      write (6,*) IREC,IDRSZE,NIM2,NJM2,NKM2
 
 C Set grid variables
       NI=NIM2+2
@@ -250,21 +234,13 @@ C Set grid variables
 C Read domain geometry.
       IREC=IREC+1
       read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000) (XU(I),I=1,NI)
-
-C Debug.
-C      write(6,*) IREC,(XU(I),I=1,NI)
-
+C      write (6,*) IREC,(XU(I),I=1,NI)
       IREC=IREC+1
       read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000) (YV(I),I=1,NJ)
-
-C Debug.
-C      write(6,*) IREC,(YV(I),I=1,NJ)
-
+C      write (6,*) IREC,(YV(I),I=1,NJ)
       IREC=IREC+1
       read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZW(I),I=1,NK)
-
-C Debug.
-C      write(6,*) IREC,(ZW(I),I=1,NK)
+C      write (6,*) IREC,(ZW(I),I=1,NK)
 
 C Set geometric variables.
       call GRIDGEO
@@ -273,10 +249,7 @@ C Set geometric variables.
 
  1000 IER=-1
       call edisp(iuout,'CFD lib header fault. Cannot read file')
-
-C Debug.
-C      write(6,*) 'IREC ',IREC
-
+C      write (6,*) 'IREC ',IREC
       call erpfree(iunit,istat)
       return
       end
@@ -890,9 +863,7 @@ C Calculate number of time steps into CFD results lib.
       else
         ITS=int((float(ICDYOS-ICDYS)*24.0+CFTOS-CFTS)*float(NTS))+1
       endif
-
-C Debug.
-C      write(6,*) 'ITS ',ITS
+C      write (6,*) 'ITS ',ITS
 
 C Read data from res file.
       ISTREC=5+((MCOM-1)*4)+ NCFDSZ*(ITS-1)+NCTM
@@ -901,11 +872,9 @@ C Read data from res file.
           ISTREC=ISTREC+NRCFDOM(I)
  10     continue
       endif
-
-C Debug.    
-C      write(6,*) 'ISTREC ',ISTREC,NCFDSZ,ITS,NRCFDOM(1),NRCFDOM(2)
+      
+C      write (6,*) 'ISTREC ',ISTREC,NCFDSZ,ITS,NRCFDOM(1),NRCFDOM(2)
 C      write(6,*)'ieqsv ',(ieqsv(i),i=1,5+nctm)
-
       IREC=ISTREC
       do 100 K=2,NK
         do 101 J=2,NJ
@@ -914,28 +883,16 @@ C Read data from library. Adjust trace to file unit 6 if ntcelz>48.
           if (ICFDSV.eq.1) then
             IREC=IREC+1
             read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Uf(I,J,K),I=2,NI)
-
-C Debug.
-C            write(6,'(i5,48f9.5)') IREC,(Uf(I,J,K),I=2,NI)
-
+C            write (6,'(i5,48f9.5)') IREC,(Uf(I,J,K),I=2,NI)
             IREC=IREC+1
             read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Vf(I,J,K),I=2,NI)
-
-C Debug.
-C            write(6,'(i5,48f9.5)') IREC,(Vf(I,J,K),I=2,NI)
-
+C            write (6,'(i5,48f9.5)') IREC,(Vf(I,J,K),I=2,NI)
             IREC=IREC+1
             read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Wf(I,J,K),I=2,NI)
-
-C Debug.
-C            write(6,'(i5,48f9.5)') IREC,(Wf(I,J,K),I=2,NI)
-
+C            write (6,'(i5,48f9.5)') IREC,(Wf(I,J,K),I=2,NI)
             IREC=IREC+1
             read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)(Tf(I,J,K),I=2,NI)
-
-C Debug.
-C            write(6,'(i5,48f9.5)') IREC,(Tf(I,J,K),I=2,NI)
-
+C            write (6,'(i5,48f9.5)') IREC,(Tf(I,J,K),I=2,NI)
           else
           
 C Results library version 2.  Each metric is individually flagged if saved.
@@ -943,56 +900,38 @@ C Results library version 2.  Each metric is individually flagged if saved.
               IREC=IREC+1
               read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Uf(I,J,K),I=2,NI)
-
-C Debug.
-C              write(6,*) IREC,' Uf ',(Uf(I,J,K),I=2,NI)
-
+C              write (6,*) IREC,' Uf ',(Uf(I,J,K),I=2,NI)
             endif
             if (IEQSV(2).eq.1) then
               IREC=IREC+1
               read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Vf(I,J,K),I=2,NI)
-
-C Debug.
-C              write(6,*) IREC,' Vf ',(Vf(I,J,K),I=2,NI)
-
+C              write (6,*) IREC,' Vf ',(Vf(I,J,K),I=2,NI)
             endif
             if (IEQSV(3).eq.1) then
               IREC=IREC+1
               read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Wf(I,J,K),I=2,NI)
-
-C Debug.
-C              write(6,*) IREC,' Wf ',(Wf(I,J,K),I=2,NI)
-
+C              write (6,*) IREC,' Wf ',(Wf(I,J,K),I=2,NI)
             endif
             if (IEQSV(4).eq.1) then
               IREC=IREC+1
               read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Tf(I,J,K),I=2,NI)
-
-C Debug.
-C              write(6,*) IREC,' Tf ',(Tf(I,J,K),I=2,NI)
-
+C              write (6,*) IREC,' Tf ',(Tf(I,J,K),I=2,NI)
             endif
             if (IEQSV(5).eq.1) then
               IREC=IREC+1
               read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                           (AGEf(I,J,K),I=2,NI)
-
-C Debug.
-C              write(6,*) IREC,' Age ',(AGEf(I,J,K),I=2,NI)
-
+C              write (6,*) IREC,' Age ',(AGEf(I,J,K),I=2,NI)
             endif
             DO 121 ICTM=1,NCTM
             if (IEQSV(5+NCTM).eq.1) then
               IREC=IREC+1
               read(iunit,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                     (POLCONCf(ICTM,I,J,K),I=2,NI)
-
-C Debug.
-C                  write(6,*)IREC,' pol ',(POLCONCf(ICTM,I,J,K),I=2,NI)
-
+C                  write (6,*)IREC,' pol ',(POLCONCf(ICTM,I,J,K),I=2,NI)
             endif
  121        CONTINUE
           endif
@@ -1018,10 +957,7 @@ C Create vector info.
 
       RETURN
  1000 call edisp(iuout,'CFD read data fault. Cannot read file.')
-
-C Debug.
-C      write(6,*) 'IREC ',IREC
-
+C      write (6,*) 'IREC ',IREC
       call erpfree(iunit,istat)
       return
       END

@@ -38,7 +38,6 @@ C with the db at simulation time.
 
       subroutine sifops(icomp)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -49,6 +48,10 @@ C with the db at simulation time.
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)
@@ -69,7 +72,6 @@ C with the db at simulation time.
       character message*64
       integer isourcecount  ! to help with sourcename list
       integer nboftmc       ! number of insolation sources returned from findtmc
-      integer itu           ! for reporting
 
       logical ok,dok
 
@@ -196,30 +198,30 @@ C Present options menu.
 C *** Listing requested.
   77  continue
       if(ipick.eq.1)then
-         itu=iuout
-         if(ixopen.eq.1)itu=ixunit
+         icout=iuout
+         if(ixopen.eq.1)icout=ixunit
          write(outs,'(3a)')'External surface shading for `',
      &                      month(mnth),'`.'
-         call edisp(itu,' ')
-         call edisp(itu,outs)
+         call edisp(icout,' ')
+         call edisp(icout,outs)
          write(outs,'(2a)')' Surface ___  Shading factors ',
      &         '___________________________________________________'
-         call edisp(itu,outs)
+         call edisp(icout,outs)
          do 20 i=1,nzsur(icomp)
             icn=izstocn(icomp,i)
             sn=ssname(icn)
             write(outs,2)i,sn(1:7),(pso(i,j),j=1,12)
     2       format(I2,' (',a,')  Direct,  01-12 hrs ',12(f4.1))
-            call edisp(itu,outs)
+            call edisp(icout,outs)
             write(outs,3)(pso(i,j),j=13,24)
     3       format(14x,'         13-24 hrs ',12(f4.1))
-            call edisp(itu,outs)
+            call edisp(icout,outs)
             write(outs,4)(psof(i,j),j=1,12)
     4       format(14x,'Diffuse, 01-12 hrs ',12(f4.1))
-            call edisp(itu,outs)
+            call edisp(icout,outs)
             write(outs,5)(psof(i,j),j=13,24)
     5       format(14x,'         13-24 hrs ',12(f4.1))
-            call edisp(itu,outs)
+            call edisp(icout,outs)
    20    continue
 
 C Insolation factors. Call insynp in silent mode.
@@ -417,6 +419,8 @@ C hold 62 indices before it hits an overflow state.
            if(mnth.gt.12)then
               write(iuj,'(A)',iostat=istat,err=1002) '* end'
               call erpfree(iuj,istat)
+              call edisp(iuout,' ')
+              call edisp(iuout,'Export file closed.')
               goto 6
            endif
            call sifrd(icomp,mnth,ier)
@@ -430,6 +434,8 @@ C hold 62 indices before it hits an overflow state.
          else
             write(iuj,'(A)',iostat=istat,err=1002) '* end'
             call erpfree(iuj,istat)
+            call edisp(iuout,' ')
+            call edisp(iuout,'Export file closed.')
          endif
 C End of `export` menu selection.
 
@@ -871,10 +877,8 @@ C SI db unit number.
       write(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
      &                                            (isadd(i),i=1,12)
       irec=2
-
-C Debug.
+C Debug
 C      write(6,*)irecx,nsurs,msurs
-
       write(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsurs,msurs
 
 C Record 3 reserved for future use, skip to 4.
@@ -892,7 +896,6 @@ C Write shading factors.
 
 C Debug.
 C         write(6,*)(pso(i,j),j=1,24)
-
          write(ifilsi,rec=irec,iostat=istat,err=1000)(pso(i,j),j=1,24)
          irec=irec+1
          write(ifilsi,rec=irec,iostat=istat,err=1000)(psof(i,j),j=1,24)
@@ -909,7 +912,6 @@ C Write insolation factors.
  
 C Debug.
 C            write(6,*)(insst(i,k,j),k=1,24)
-
             write(ifilsi,rec=irec,iostat=istat,err=1000)
      &                                     (insst(i,k,j),k=1,24)
             irec=irec+1
@@ -945,7 +947,6 @@ C    this would be a name derived from the zone shading file).
 C  ier (integer) is zero if no problems, -3 if empty.
       subroutine sifexp(icomp,exportfile,ier)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -955,6 +956,10 @@ C  ier (integer) is zero if no problems, -3 if empty.
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)
@@ -1097,6 +1102,8 @@ C for the next month then jump back to the '* month' writing line.
       if(mnth.gt.12)then
          write(iuj,'(A)',iostat=istat,err=1002) '* end'
          call erpfree(iuj,istat)
+         call edisp(iuout,' ')
+         call edisp(iuout,'Export file closed.')
          return
       endif
       call sifrd(icomp,mnth,ier)
@@ -1137,7 +1144,6 @@ C  ier (integer) is zero if no problems, -3 if empty,
 C     -2 not found, -1 wrong type of file, -4 wrong zone.
       subroutine sifimport(icomp,exportfile,ier)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -1145,6 +1151,10 @@ C     -2 not found, -1 wrong type of file, -4 wrong zone.
       common/outin/iuout,iuin
       common/filep/ifil
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
+     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/tmc/itmc(ms),nwins
       common/data2/pso(ms,24),psof(ms,24)
       common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
@@ -1430,8 +1440,6 @@ C value for the first index of insst
         goto 1002
       endif
 
-C End marker of the file reached. Close it and update isadd
-C if not december.
   18  call erpfree(iuj,istat)
       call edisp(iuout,' ')
       call edisp(iuout,'Import file closed.')
@@ -1439,9 +1447,7 @@ C if not december.
       if(ok)then
         call sifwrt(icomp,mnth,lastrec)
         if(lastrec.gt.5)then
-          if(mnth.le.11)then
-            if(isadd(mnth+1).eq.0)isadd(mnth+1)=lastrec
-          endif
+          if(isadd(mnth+1).eq.0) isadd(mnth+1)=lastrec
         endif
       endif
       

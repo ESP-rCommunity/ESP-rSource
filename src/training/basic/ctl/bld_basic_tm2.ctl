@@ -27,7 +27,7 @@ match zone temperatures (loop 2) with 18C fixed 9h-18h (loop 1)
     1 # No. day types
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      1  # No. of periods in day
-    0   11   0.000  # ctl type, law (senses ambient dry bulb temperature.), start @
+    0   11   0.000  # ctl type, law (match temp - ideal), start @
      16.  # No. of data items
   10000.000 0.000 10000.000 0.000 2.000 3.000 -3.000 0.000 0.000 0.000 1.000 0.000 0.000 0.000 1.000 0.000
 # Function:Zone links

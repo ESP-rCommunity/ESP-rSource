@@ -337,7 +337,6 @@ C Data items.
       subroutine EDSPM(ISPM,MODE,ITRU)
 #include "net_flow.h"
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "power.h"
 #include "epara.h"
@@ -345,7 +344,6 @@ C Data items.
 C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure databases)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -358,10 +356,20 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/spmatlbl/spmlabel(mspmnod)
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+
 C << rewrite logic using G6 common block >>
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -374,8 +382,29 @@ C Special materials file flag
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat
 
 C << rewrite logic to use G7 commons instead of these local variables. >>
 
@@ -621,14 +650,14 @@ c      ISO=ispmloc(IVAL,2)
       if(IZ.eq.0) return
       call eclose(gversion(IZ),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
       endif
 
 C << rewrite logic to use G7 common rather than call zinfo >>
 
-      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
 
 C General image option flags.
       ITDSP=1
@@ -675,7 +704,7 @@ c      IVAL=IFOC
 
       call eclose(gversion(IZ),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
       endif
@@ -861,11 +890,11 @@ C For ducted wind turbine - select the position of the DWT outlet
         if(IZ.eq.0) return
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
         endif
-        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+        CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
 C General image option flags.
         ITDSP=1
         ITBND=1
@@ -900,7 +929,7 @@ C General image option flags.
 C Recover the related zone.
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
         endif
@@ -1061,30 +1090,22 @@ C Write menu displaying a list of layer names
         write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
         write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
         item(4)='  ----------------------------'
-        call eclose(matver,1.1,0.01,closemat1)
-        call eclose(matver,1.2,0.01,closemat2)
+        call eclose(matver,1.1,0.01,closemat)
         do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-          if(closemat1.or.closemat2)then
-            matarrayindex=IPRMAT(imatch,j)   ! which array index
-            if(matarrayindex.ge.0)then
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-              if(matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                E=0.99; A=0.99; DRV=1.0
-                TITL='GAPS'; NAM='AIR'
-              else
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRV=matdbdrv(matarrayindex)
-                write(TITL,'(a)') 'placeholder'
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
-              endif
+          if(closemat)then
+            legmat=IPR(imatch,j)   ! which legacy index
+            if(legmat.ge.0)then
+              matarrayindex=mathash(legmat)  ! find matching array index
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRV=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
           else
             CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,

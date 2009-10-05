@@ -776,9 +776,7 @@ C IWA is the minimum menu width to hold repeating items.
           endif
         endif
   32  continue
-
-C Debug.
-C      write(6,*) la,lb,lc,ld,le
+      write(6,*) la,lb,lc,ld,le
 
       WRITE(PDBM(2),'(2A)')'  date: ',catdate(ic)
       lm=MIN0(la,31)
@@ -1047,10 +1045,7 @@ C database for it.
             call CPITEM(IFB,idbh,icorig,iitorig,iccopy,iitcopy,'n',ier)
 
             write(item,'(a)')ittag(iitcopy)
-
-C Debug.
-C            write(6,*)nbitem(idbh),iccopy,iitcopy,item
-
+            write(6,*)nbitem(idbh),iccopy,iitcopy,item
             LGENDB=gendbfn(idbh)
             call recongdb(IAFIL,IFB,LGENDB,idbh,IER)
             if(ier.ne.0)then
@@ -1065,17 +1060,11 @@ C            write(6,*)nbitem(idbh),iccopy,iitcopy,item
                   goto 40
                 else
                   iit=it
-
-C Debug.
-C                  write(6,*)nbitem(idbh),ic,iit,' c ',ittag(iit)
-
+                  write(6,*)nbitem(idbh),ic,iit,' c ',ittag(iit)
                 endif
               endif
   37        continue
-
-C Debug.
-C            write(6,*)nbitem(idbh),ic,iit,' g ',ittag(iit)
-
+            write(6,*)nbitem(idbh),ic,iit,' g ',ittag(iit)
             call rgenitem(IFB,idbh,iit,ier)
             call usrmsg('Copy item within database...done.',bl2,'P')
             goto 39
@@ -1107,10 +1096,7 @@ C of the database to decrement the number of items.
             bkdoctyp='DE'
             indexbk=0
             write(item,'(a)')ittag(iitmove)
-
-C Debug.
-C            write(6,*)nbitem(idbh),icorig,icmove,iitmove,' ',item
-
+            write(6,*)nbitem(idbh),icorig,icmove,iitmove,' ',item
             LGENDB=gendbfn(idbh)
             call recongdb(IAFIL,IFB,LGENDB,idbh,IER)
             if(ier.ne.0)then
@@ -1528,10 +1514,8 @@ C Mark for update of cat documentation.
         do 53 ij=1,nbcatdoc(ic)
           IREC=IREC+1
           read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,catdoc(ij)
-
-C Debug.
-C          write(6,*) catdoc(ij)
-
+C Debug...
+          write(6,*) catdoc(ij)
   53    continue
         H(1)='Documentation of categories is encouraged. You can'
         H(2)='enter one or several lines of text.'

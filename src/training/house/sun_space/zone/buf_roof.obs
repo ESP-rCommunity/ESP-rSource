@@ -1,0 +1,9 @@
+# site obstruction file defined in buf_roof.obs
+# associated with zone geometry filebuf_roof.geo
+# and referenced by zone utility filebuf_roof.utl
+  58.200  -6.200    # latitude & longitude
+    1    # no obstruction blocks
+# origin X  Y  Z  width  depth  height  angle  descr
+ 11.000  1.000  0.000  0.010  0.010  0.010    0.0  o              # block  1
+# grid opq X  opq Z  win X  win Z
+    10    10     5     5

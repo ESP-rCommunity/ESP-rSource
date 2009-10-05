@@ -130,7 +130,6 @@ C CFCALC - CFD solution manager.
       LOGICAL ZEROT,ZandKE,MITzero,Uqinit
       LOGICAL CALPOL,CALLMA
       LOGICAL areaSSO,gophrun,INCALPOL
-      logical unixok
 
       NITER=0
       DT=TSTEP
@@ -238,10 +237,7 @@ C Recover definitions for current day type and timeF.
         ID=IDWP
       endif
       if (btimef.gt.24.) then
-
-C Debug.
-C        write(6,*) 'btimef.gt.24'
-
+        write (6,*) 'btimef.gt.24'
         btimef=btimef-24.
         ID=IDWF
       endif
@@ -303,33 +299,28 @@ C Record ACC actions (begin).
         write(IACC,*) '  Relaxation factors: ',URFU,URFV,URFW,URFP,URFT,
      &                                       URFK,URFE,URFVIS,URFDEN
       else
-
-C Debug.
-        call isunix(unixok)
-	if(unixok)then
-          write(6,*)
-          write(6,*) 'Initiating CFD sim with following parameters:'
-          if(INCALU) write(6,*) '  U-momentum active'
-          if(INCALV) write(6,*) '  V-momentum active'
-          if(INCALW) write(6,*) '  W-momentum active'
-          if(INCALT) write(6,*) '  Energy equation active'
-          if(INCALK) write(6,*) '  k-epsilon turb model active'
-          if(IZanKE) write(6,*) '  k-epsilon + fixed mu-t active'
-          if(IMITZ)  write(6,*) '  Chen & Xu turb model active'
-          if(BUOYA)  write(6,*) '  Buoyancy turned on'
-          if(BOUSSA) write(6,*) '  Boussinesq approximation active',
-     &                          ' with ref temp = ',TBAR
-          do 21 IV=1,NVOL(ICFD)
-            if (IDcasgn(IV,ICFD).gt.0) then
-              write(6,*) 'Heat gain set from casual gain ',
-     &         IDcasgn(IV,ICFD),' to ',VOLHeat(IV,ICFD),'W in volume ',
-     &         VOLNAME(IV,ICFD)
-            endif
- 21       continue
-          write(6,*) '  Convergence criteria: ',MAXIT,SORMAX
-          write(6,*) '  Relaxation factors: ',URFU,URFV,URFW,URFP,URFT,
-     &                                        URFK,URFE,URFVIS,URFDEN
-        endif
+        write(6,*)
+        write(6,*) 'Initiating CFD sim with following parameters:'
+        if(INCALU) write(6,*) '  U-momentum active'
+        if(INCALV) write(6,*) '  V-momentum active'
+        if(INCALW) write(6,*) '  W-momentum active'
+        if(INCALT) write(6,*) '  Energy equation active'
+        if(INCALK) write(6,*) '  k-epsilon turb model active'
+        if(IZanKE) write(6,*) '  k-epsilon + fixed mu-t active'
+        if(IMITZ)  write(6,*) '  Chen & Xu turb model active'
+        if(BUOYA)  write(6,*) '  Buoyancy turned on'
+        if(BOUSSA) write(6,*) '  Boussinesq approximation active',
+     &                  ' with ref temp = ',TBAR
+        do 21 IV=1,NVOL(ICFD)
+          if (IDcasgn(IV,ICFD).gt.0) then
+            write(6,*) 'Heat gain set from casual gain ',
+     &          IDcasgn(IV,ICFD),' to ',VOLHeat(IV,ICFD),'W in volume ',
+     &          VOLNAME(IV,ICFD)
+          endif
+ 21     continue
+        write(6,*) '  Convergence criteria: ',MAXIT,SORMAX
+        write(6,*) '  Relaxation factors: ',URFU,URFV,URFW,URFP,URFT,
+     &                                       URFK,URFE,URFVIS,URFDEN
       ENDIF
 C Record ACC actions (end).
 
@@ -635,10 +626,7 @@ C Write out final monitoring/ residual info if not done above.
 
 C Calculate mean age of air, if required, and only if not preliminary CFD 
 C simulation.
-
-C Debug.
-C      write(6,*) 'LMA',CALLMA(ICFD),'  gopher',gophrun
-
+C      write (6,*) 'LMA',CALLMA(ICFD),'  gopher',gophrun
       if (CALLMA(ICFD).and.(.not.gophrun)) call calclma(ITIMST)
       RETURN
       

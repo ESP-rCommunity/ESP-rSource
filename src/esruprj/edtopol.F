@@ -38,7 +38,6 @@ C Edit/clear/check connection attributes in common blocks via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDCONN(IER)
 #include "building.h"
-#include "model.h"
 
 C geometry.h provides commons G0/G2/c20.
 #include "geometry.h"
@@ -54,7 +53,12 @@ C espriou.h provides currentfile.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -93,7 +97,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       CHARACTER CXSTR*78,H*72,outs*124,ITEMS1*34,CFGFN*72
       CHARACTER LCFGF*72
       character cfgroot*24
-      character DCNN*72
+      character DCNN*72,LCNN*72
       character bl*2
 
 C Check if Unix-based or DOS based.
@@ -169,7 +173,7 @@ C The inital task is to see if there are easily spotted issues with
 C the connections list.
       call usrmsg(
      &  'Checking zone surfaces against master list...',' ','-')
-      call ckcurmatch(prob,iprob)
+      call ckcurmatch(prob,iprob,ier)
       if(prob)then
         call tstamp('>','PRJ: found topology incinsistent')
         if(IPROB.gt.10)then
@@ -522,7 +526,7 @@ C of connections re-establish the IZSTOCN array.
           do 87 IZ=1,NCOMP
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
+              call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
             else
               call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
             endif
@@ -564,7 +568,7 @@ C attributes.
      &      '(adiabetic,similar, constant etc. see help)',OK,dok,9)
           if(OK)then
             call tstamp('>','CFG: import surface attributes')
-            call ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
+            call ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
             MODIFY=.TRUE.
           endif
         elseif(IRT.eq.2)then
@@ -590,7 +594,7 @@ C << show the surface attributes also be cleared?? >>
           do 187 IZ=1,NCOMP
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
+              call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
             else
               call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
             endif
@@ -670,7 +674,7 @@ C attributes.
      &      '(adiabetic,similar, constant etc. see help)',OK,dok,7)
           if(OK)then
             call tstamp('>','CFG: import surface attributes')
-            call ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
+            call ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
             MODIFY=.TRUE.
           endif
         elseif(IRT.eq.3)then
@@ -765,8 +769,6 @@ C the user to confirm before writing to temporary configuration file.
       SUBROUTINE CONFIG(NZONES,CACC,IACC,DACC,M0SKP,M1SKP,M2SKP,M3SKP,
      &  M4SKP,M5SKP,M6SKP,M7SKP,M8SKP,OTHEROK)
 #include "building.h"
-#include "model.h"
-#include "site.h"
 #include "geometry.h"
 #include "prj3dv.h"
       
@@ -783,7 +785,14 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      common/C3F/LCNN
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+      common/ground/grdtmp(12,mgrdp)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -814,7 +823,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER H*72
-      character DCNN*72,cfgroot*24,LCFGF*72,bl*2
+      character LCNN*72,DCNN*72,cfgroot*24,LCFGF*72,bl*2
       integer izselfcheck  ! the surface being tested
       logical selfcheck  ! set true if currently looking within zone
 
@@ -878,7 +887,7 @@ C Remember topology attributes for reference zone.
         IUO=IFIL+1
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUO,LGEOM(IZ),IZ,0,iuout,IER)
+          call georead(IUO,LGEOM(IZ),IZ,0,0,iuout,IER)
         else
           call egomin(IUO,LGEOM(IZ),IZ,0,0,iuout,IER)
         endif
@@ -1707,7 +1716,7 @@ C << what about using CALL ESCZONE(ICOMP) and then CALL ERCZONE(ICOMP)? >>
           call edisp(iuout,' Updating surface attributes...')
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+2,LGEOM(IZ),IZ,0,iuout,IER)
+            call georead(IFIL+2,LGEOM(IZ),IZ,0,0,iuout,IER)
           else
             call egomin(IFIL+2,LGEOM(IZ),IZ,0,0,iuout,IER)
           endif
@@ -1721,9 +1730,8 @@ C << what about using CALL ESCZONE(ICOMP) and then CALL ERCZONE(ICOMP)? >>
             SSOTHER(ICN,3)=TOTHER(IJ,3)
   323     continue
   
-C Debug.
+C Debug
 C          write(6,*) (TOTHER(ij,1),ij=1,10)
-
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iz) =1.1
@@ -1732,7 +1740,7 @@ C          write(6,*) (TOTHER(ij,1),ij=1,10)
           if(newgeo)then
             call geowrite(IFIL+2,LGEOM(IZ),IZ,iuout,3,IER)
           else
-            call emkgeo(IFIL+2,LGEOM(IZ),IZ,3,IER)
+            call emkgeo(IFIL+2,LGEOM(IZ),IZ,iuout,3,IER)
           endif
           IF(IER.NE.0)THEN
             CALL USRMSG(bl,' Problem updating geometry file.','W')
@@ -1762,18 +1770,12 @@ C Ask user if updated information should be saved to different file.
 C ************* ESACON 
 C ESACON import surface connection attributes into the problem topology
 C common block C3 while taking into account confirmation preferences.
-C IER=0 OK, IER=1 problem.
-      SUBROUTINE ESACON(M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
+C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
+      SUBROUTINE ESACON(ITRC,M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP,IER)
 #include "building.h"
-#include "model.h"
-#include "site.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
-
-C Parameters: logical variables set the context of what to check
-      logical M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP
-      integer  IER   ! zero is ok 
 
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1782,7 +1784,13 @@ C Parameters: logical variables set the context of what to check
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/ground/grdtmp(12,mgrdp)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -1795,10 +1803,11 @@ C Parameters: logical variables set the context of what to check
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,close,longpause
+      logical M1SKP,M2SKP,M4SKP,M5SKP,M6SKP,M7SKP
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78,outs*124
-      CHARACTER OUTSTR*124,SO*12,ZN*12,TMP*54,H*72
+      CHARACTER OUTSTR*124,SO*12,TMP*54,H*72
       CHARACTER bl*2
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -1834,7 +1843,7 @@ C and display zone when connection jumps to another zone.
         IF(ICL.NE.IC1(ICC))THEN
           call eclose(gversion(IC1(ICC)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IC1(ICC)),IC1(ICC),1,ITRU,IER)
+            call georead(IFIL+1,LGEOM(IC1(ICC)),IC1(ICC),1,0,ITRU,IER)
           else
             call egomin(IFIL+1,LGEOM(IC1(ICC)),IC1(ICC),1,0,ITRU,IER)
           endif
@@ -1862,13 +1871,6 @@ C surface attribute and ask user if attribute should be used. First
 C check for easy matches.
         ICN=IZSTOCN(IC1(ICC),iss)
         WRITE(SO,'(A)')SSOTHER(ICN,1)(1:12)
-
-C Set connected zone name if one exists.
-        if(IC2(ICC).ne.0)then
-	  write(ZN,'(a)') zname(IC2(ICC))
-        else
-	  ZN='------------'
-        endif
         WRITE(TMP,'(A,I3,A,A15)')'Surface ',ISS,' attribute: ',SO
         WRITE(OUTSTR,'(A,A)')'Topology: ',CXSTR(1:lnblnk(CXSTR))
         IF(SO(1:8).EQ.'EXTERIOR'.AND.ICT(ICC).EQ.0)THEN
@@ -1895,7 +1897,7 @@ C Set connected zone name if one exists.
         ELSEIF(SO(1:7).EQ.'UNKNOWN'.OR.SO(1:2).EQ.'  ')THEN
           CALL EDISP(iuout,' surface attribute was UNKNOWN: skipping.')
           GOTO 123
-        ELSEIF(ICT(ICC).EQ.3.AND.(SO.EQ.ZN))then
+        ELSEIF(ICT(ICC).EQ.3.AND.(SO.EQ.zname(IC2(ICC))))then
           CALL EDISP(iuout,'   connected zone names match.')
           GOTO 123
         ELSEIF(SO(1:7).EQ.'SIMILAR')THEN
@@ -2577,7 +2579,6 @@ C IVERT is the menu position, MVERT the current number of menu lines.
       endif
   31  MHEAD=3
       MCTL=4
-
 C Debug
 C      write(6,*) 'naloc mhead mctl ',naloc,mhead,mctl
 
@@ -2937,10 +2938,8 @@ C << Note: this procedure is somewhat out of date. Its function
 C << should be reviewed for current simulation demands
       subroutine procgdst(itrc,runmode,keepres,donegdst,ier)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "material.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
       
@@ -2953,12 +2952,22 @@ C espriou.h for climatelist file name.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
 C IDST tool commands.
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
@@ -3000,9 +3009,8 @@ C against the climate list to see related db for climate name.
         if(clmdb(1:4).ne.'UNKN')then
           LCLIM=clmdb
 
-C Debug.
+C Debug
 C          write(6,*)'using new climate db ',clmdb
-
           call tstamp('>','PRJ: IDST update climate in configuration')
           call tstamp('>',LCFGF)
           CALL EMKCFG('-',IER)
@@ -3042,7 +3050,7 @@ C updated as well.
                   LTMP=LGEOM(IZ)
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(IUF,LTMP,IZ,1,iuout,IER)
+                    call georead(IUF,LTMP,IZ,1,0,iuout,IER)
                   else
                     call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
                   endif
@@ -3059,7 +3067,7 @@ C updated as well.
                   if(newgeo)then
                     call geowrite(IUF,LTMP,IZ,iuout,3,IER)
                   else
-                    call emkgeo(IUF,LTMP,IZ,3,IER)
+                    call emkgeo(IUF,LTMP,IZ,iuout,3,IER)
                   endif
  243            continue
               endif
@@ -3083,7 +3091,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   LTMP=LGEOM(IZ)
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(IUF,LTMP,IZ,1,iuout,IER)
+                    call georead(IUF,LTMP,IZ,1,0,iuout,IER)
                   else
                     CALL EGOMIN(IUF,LTMP,IZ,1,0,iuout,IER)
                   endif
@@ -3100,7 +3108,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   if(newgeo)then
                     call geowrite(IUF,LTMP,IZ,iuout,3,IER)
                   else
-                    call emkgeo(IUF,LTMP,IZ,3,IER)
+                    call emkgeo(IUF,LTMP,IZ,iuout,3,IER)
                   endif
  244            continue
               endif
@@ -3124,7 +3132,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   LTMP=LGEOM(IZ)
                   call eclose(gversion(IZ),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(IUF,LTMP,IZ,1,iuout,IER)
+                    call georead(IUF,LTMP,IZ,1,0,iuout,IER)
                   else
                     call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
                   endif
@@ -3141,7 +3149,7 @@ C surface attributes. Similar logic to the 'ext_window' case above.
                   if(newgeo)then
                     call geowrite(IUF,LTMP,IZ,iuout,3,IER)
                   else
-                    call emkgeo(IUF,LTMP,IZ,3,IER)
+                    call emkgeo(IUF,LTMP,IZ,iuout,3,IER)
                   endif
  245            continue
               endif
@@ -3326,10 +3334,7 @@ C ******** serchrpl
 C Serchrpl handles search and replace of composition attributes.
       subroutine serchrpl(act,itrc,ier)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
-#include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -3340,12 +3345,22 @@ C Serchrpl handles search and replace of composition attributes.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
 
@@ -3417,7 +3432,7 @@ C Search and replace by finding matching constructions.
               LTMP=LGEOM(IVALS(IZ))
               call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
+                call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
               else
                 call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
               endif
@@ -3460,7 +3475,7 @@ C << of TRAN for SSOTF.
               if(newgeo)then
                 call geowrite(IUF,LTMP,IVALS(IZ),iuout,3,IER)
               else
-                call emkgeo(IUF,LTMP,IVALS(IZ),3,IER)
+                call emkgeo(IUF,LTMP,IVALS(IZ),iuout,3,IER)
               endif
               QUIET=.TRUE.
               write(outs,'(3a)') ' Updating: ',zn(1:lnblnk(zn)),
@@ -3521,7 +3536,7 @@ C Anchor point substitution.
             LTMP=LGEOM(IZ)
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LTMP,IZ,1,iuout,IER)
+              call georead(IUF,LTMP,IZ,1,0,iuout,IER)
             else
               call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
             endif
@@ -3540,7 +3555,7 @@ C << of TRAN for SSOTF.
             if(newgeo)then
               call geowrite(IUF,LTMP,IZ,iuout,3,IER)
             else
-              call emkgeo(IUF,LTMP,IZ,3,IER)
+              call emkgeo(IUF,LTMP,IZ,iuout,3,IER)
             endif
  2243     continue
           QUIET=.FALSE.
@@ -3625,7 +3640,7 @@ C << of TRAN for SSOTF.
             LTMP=LGEOM(IVALS(IZ))
             call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
+              call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
             else
               call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
             endif
@@ -3711,7 +3726,7 @@ C 'any horizontal','any orien.','cancel'.
             if(newgeo)then
               call geowrite(IUF,LTMP,IVALS(IZ),ITRU,3,IER)
             else
-              call emkgeo(IUF,LTMP,IVALS(IZ),3,IER)
+              call emkgeo(IUF,LTMP,IVALS(IZ),ITRU,3,IER)
             endif
             QUIET=.TRUE.
             write(outs,'(3a)') ' Updating: ',zn(1:lnblnk(zn)),

@@ -54,7 +54,6 @@ C and should just write out this data.
       SUBROUTINE PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,IVER)
 
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -66,6 +65,12 @@ C and should just write out this data.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+
+C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
 
@@ -131,7 +136,7 @@ C just write operations file
       IF(IVER.NE.0)then
         ICOMP=IVER
         if(cfgok.and.(.NOT.browse))then
-          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
           IF(IER.LT.0)THEN
             call edisp(iuout,
      &        'Problem saving current operations to the new file.')
@@ -238,7 +243,6 @@ C Debug.
 C            write(6,*) 'the browsed file is ',ltmp(1:lnblnk(ltmp))
 C            write(6,*) 'the zonepth is ',zonepth(1:lnblnk(zonepth))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
             gotviabrowse=.true.
           else
             LTMP=GFILE
@@ -435,7 +439,7 @@ C Write file and return.
      &        'Updating model to reflect changes',
      &        'in zone operations data or file name...','-')
             LPROJ(ICOMP)=LTMP
-            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
             CALL EMKCFG('-',ier)
             call usrmsg(
      &        'Updating model to reflect changes',
@@ -514,9 +518,8 @@ C of the distribution and let the user select one.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
+            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
                 isource=0
               else
 
@@ -601,9 +604,8 @@ C The from scratch should intially be version 2.0
           CALL PHELPD('operation setup',23,'-',0,0,IER)
           call initcasday(ier)
 
-C Debug.
+C debug
 C          write(6,*) 'after ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
-
           MODOPR=.true.
           sorted=.true.
         elseif(igu.eq.3.or.igu.eq.4.or.igu.eq.6.or.igu.eq.7)then
@@ -658,9 +660,8 @@ C user select one.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
+            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
                 isource=0
               else
 
@@ -910,7 +911,7 @@ C Edit or browse for operations file name.
 C Save current information into a descriptive file
 C and rewrite the system configuration file if not browsing.
         if(cfgok.and.(.NOT.browse))then
-   11     CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+   11     CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
           IF(IER.LT.0)THEN
             DOK=.true.
             h(1)='You were presented with this message because a'
@@ -1276,7 +1277,6 @@ C IER=0 is OK.
       SUBROUTINE EDAIR2(ICOMP,IER)
 
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "epara.h"
       
@@ -1285,6 +1285,11 @@ C      integer lnblnk  ! function definition
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
 
@@ -1571,7 +1576,6 @@ C File browse from patterns.
 C Debug.
 C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
                 isource=0
               else
 
@@ -1696,7 +1700,6 @@ C IER=0 is OK.
       SUBROUTINE EDAIR3(ICOMP,IER)
 
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "epara.h"
       
@@ -1705,6 +1708,11 @@ C      integer lnblnk  ! function definition
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
 
@@ -2015,7 +2023,6 @@ C File browse from patterns.
 C Debug.
 C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
                 isource=0
               else
 
@@ -2574,7 +2581,6 @@ C << initial intent to guide later revisions?
       subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
      &  itrc,act,ier)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -2582,6 +2588,12 @@ C << initial intent to guide later revisions?
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+
+C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -2838,7 +2850,7 @@ C Save the destination operation file.
       call usrmsg(
      &  'Updating model to reflect changes in destination',
      &  'operations data or file name...','-')
-      CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
+      CALL EMKOPER(IUO,LPROJ(idest),idest,iuout,IER)
       CALL EMKCFG('-',ier)
       call usrmsg(
      &  'Updating model to reflect changes in destination',
@@ -3735,7 +3747,7 @@ C Add new casual gain period.
      &        'Cancel',ICGTS,3)
           if (ICGTS.ne.4) then
             IQ=0
-            if(.NOT.browse)call checkcascount(icomp)
+            if(.NOT.browse)call checkcascount(icomp,ier)
             call EASKABC('Add period for one or all day types',
      &          ' ','One day type','All day types','Cancel',IOPT,1)
             IF(IOPT.EQ.1)THEN
@@ -3839,11 +3851,9 @@ C File browsing from pattern folder.
               call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
      &          iier)
               if(snpfile(1:2).ne.'  ')then
-
 C Debug.
 C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
-
                 isource=0
               else
 
@@ -4242,7 +4252,7 @@ C If new period then set defaults otherwise get data from common.
         BVOLTX=0.0
       ELSEIF(IDT.GT.0)THEN
         call CPYCASIT(icomp,idt,iper,icgtX,icgsX,icgfX,cmgsX,cmglX,
-     &    radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
+     &    radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
       endif
 
 C If silent jump to insertion logic.
@@ -4346,11 +4356,11 @@ C Gain as W - require gain only.
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
-        call EGETWR(HOLD,K,XLATGN,0.,100000.0,'W','latent gain',IER)
+        call EGETWR(HOLD,K,XLAT,0.,100000.0,'W','latent gain',IER)
         if (IER.ne.0) goto 20
         if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
         CMGSX=XSEN
-        CMGLX=XLATGN
+        CMGLX=XLAT
       elseif (IGU.eq.2) then
 
 C Gain as W/m^2 - require gain per square meter.
@@ -4365,15 +4375,15 @@ C Gain as W/m^2 - require gain per square meter.
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-        call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
+        call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 30
         if (ICGTX.eq.1) then
           CMGSX=XSEN*zb
-          CMGLX=XLATGN*zb
+          CMGLX=XLAT*zb
         else
           if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
           CMGSX=XSEN
-          CMGLX=XLATGN
+          CMGLX=XLAT
         endif
       elseif (IGU.eq.3) then
 
@@ -4400,11 +4410,11 @@ C << an actual cancel option not yet implemented >>
      &          ' ',24,'  0.   0. ','casual gn info',IER,24)
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-        call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
+        call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 40
         if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
         CMGSX=XSEN*real(NOBJ)
-        CMGLX=XLATGN*real(NOBJ)
+        CMGLX=XLAT*real(NOBJ)
       elseif (IGU.eq.4) then
 
 C Gain as m^2/object - floor area of an object and gain per object.
@@ -4435,11 +4445,11 @@ C If user cancels go back to initial question.
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
             K=0
             call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-            call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
+            call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
             if (IER.ne.0) goto 50
             if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
             CMGSX=XSEN*zb/FLA
-            CMGLX=XLATGN*zb/FLA
+            CMGLX=XLAT*zb/FLA
           endif
         elseif(ieri.eq.-3)then
           goto 10
@@ -4611,9 +4621,9 @@ C Now update common blocks. Loop backwards from
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
             call CPYCASTI(icomp,idt,ix,icgtX,icgsX,icgfX,cmgsX,cmglX,
-     &      radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
+     &      radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
           else
-            call CPYCASIJ(icomp,IDT,IX,IX-1)
+            call CPYCASIJ(icomp,IDT,IX,IX-1,ier)
           endif
  300    continue
       ENDIF
@@ -4780,7 +4790,6 @@ C << initial intent to guide later revisions?
       subroutine IMPORTZCASG(isource,idest,actcas,iwatt,sfile,itrc,
      &  act,ier)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -4788,6 +4797,12 @@ C << initial intent to guide later revisions?
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
+
+C LPROJ   - zone scheduling (operation file)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -5129,7 +5144,7 @@ C Save the destination operation file.
      &    'Updating model to reflect changes',
      &    'in destination operation data or file name...','-')
       endif
-      CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
+      CALL EMKOPER(IUO,LPROJ(idest),idest,ITRU,IER)
       CALL EMKCFG('s',ier)
       if(act(1:1).eq.'-')then
         call usrmsg(
@@ -5623,7 +5638,7 @@ C data up.
         ix = ncasX+1
  234    continue
         ix = ix-1
-        call CPYCASIJ(icomp,IDTY,ix,ix-1)
+        call CPYCASIJ(icomp,IDTY,ix,ix-1,ier)
         ncas(IDTY)=ncas(IDTY)+1
         if(ielf(icomp).ne.0)then
           nel(IDTY)=nel(IDTY)+1
@@ -5640,7 +5655,7 @@ C is the last possible period then only decrement counters.
           if(ielf(icomp).ne.0)nel(IDTY)=nel(IDTY)-1
         else
           do 110 IX=IDP,NCAS(IDTY)
-            call CPYCASIJ(icomp,IDTY,ix,ix+1)
+            call CPYCASIJ(icomp,IDTY,ix,ix+1,ier)
             if(ielf(icomp).ne.0)then
               nel(IDTY)=nel(IDTY)-1
             endif
@@ -5704,8 +5719,6 @@ C initcasday does initial setup of all casual day types.
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
-
-C Debug.
 C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.

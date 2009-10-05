@@ -1,14 +1,14 @@
-*connections  for facade_5
-*Date Mon Jul 20 16:14:45 2009
+*connections  for facade_60
+*Date Tue Jul 17 13:11:38 2001
      11   # number of connections
-   1   1   0   0   0  #    1 Frame_bot in fac_zone_c1 is External
-   1   2   1   0   0  #    2 Right_wall in fac_zone_c1 >|< Identical environment
-   1   3   1   0   0  #    3 Rear_wall in fac_zone_c1 >|< Identical environment
-   1   4   1   0   0  #    4 Left_wall in fac_zone_c1 >|< Identical environment
-   1   5   1   0   0  #    5 Floor in fac_zone_c1 >|< Identical environment
-   1   6   1   0   0  #    6 Ceiling in fac_zone_c1 >|< Identical environment
-   1   7   0   0   0  #    7 Facade_top in fac_zone_c1 is External
-   1   8   0   0   0  #    8 Facade_bot in fac_zone_c1 is External
-   1   9   0   0   0  #    9 Frame_top in fac_zone_c1 is External
-   1  10   0   0   0  #   10 Window_bot in fac_zone_c1 is External
-   1  11   0   0   0  #   11 Window_top in fac_zone_c1 is External
+   1   1   0   0   0  #   1  Frame_bot in fac_zone_c1 is External
+   1   2   1   0   0  #   2  Right_wall in fac_zone_c1 >|< Identical environment
+   1   3   1   0   0  #   3  Rear_wall in fac_zone_c1 >|< Identical environment
+   1   4   1   0   0  #   4  Left_wall in fac_zone_c1 >|< Identical environment
+   1   5   1   0   0  #   5  Floor in fac_zone_c1 >|< Identical environment
+   1   6   1   0   0  #   6  Ceiling in fac_zone_c1 >|< Identical environment
+   1   7   0   0   0  #   7  Facade_top in fac_zone_c1 is External
+   1   8   0   0   0  #   8  Facade_bot in fac_zone_c1 is External
+   1   9   0   0   0  #   9  Frame_top in fac_zone_c1 is External
+   1  10   0   0   0  #  10  Window_bot in fac_zone_c1 is External
+   1  11   0   0   0  #  11  Window_top in fac_zone_c1 is External

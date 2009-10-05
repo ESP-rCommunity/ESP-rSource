@@ -1,81 +1,81 @@
 # composite construction db defined in ../dbs/multicon.db
-# based on materials db /usr/esru/esp-r/databases/constr.db1.a
+# based on primitive construction db /usr/esru/esp-r/databases/constr.db1
    14     # no of composites 
-# layers  description   optics name   symmetry tag
-    1    Floor         OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   32    0.2000  Heavy mix concrete : Heavy mix concrete
-# layers  description   optics name   symmetry tag
-    1    Ceiling       OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   32    0.2000  Heavy mix concrete : Heavy mix concrete
-# layers  description   optics name   symmetry tag
-    4    Sparel-pan    OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  241    0.0060  Glass block : Glass block with placeholder single layer optics
+# layers  description   optics 
+    1    Floor         OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   32    0.2000  Heavy mix concrete
+# layers  description   optics 
+    1    Ceiling       OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   32    0.2000  Heavy mix concrete
+# layers  description   optics 
+    4    Sparel-pan    OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+  241    0.0060  Glass block
     0    0.0050  air  0.170 0.170 0.170
-  211    0.1150  Glasswool : Glasswool
-  107    0.0100  Gypsum plasterboard : Gypsum plasterboard
-# layers  description   optics name   symmetry tag
-    1    Frame         OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-   43    0.0050  Aluminium : Aluminium
-# layers  description   optics name   symmetry tag
-    2    Int_wall      OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-    2    0.1500  Breeze block : Breeze block
-  103    0.0120  Perlite plasterboard : Perlite plasterboard
-# layers  description   optics name   symmetry tag
-    3    ECG-clear1    TRAN  EC_50/40-clr  NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0120  Plate glass : Plate glass with placeholder single layer optics
+  211    0.1150  Glasswool
+  107    0.0100  Gypsum plasterboard
+# layers  description   optics 
+    1    Frame         OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+   43    0.0050  Aluminium
+# layers  description   optics 
+    2    Int_wall      OPAQ  OPAQUE              
+# db ref  thick   db name & air gap R 
+    2    0.1500  Breeze block
+  103    0.0120  Perlite plasterboard
+# layers  description   optics 
+    3    ECG-clear1    TRAN  EC_50/40-clr        
+# db ref  thick   db name & air gap R 
+  242    0.0120  Plate glass
     0    0.0120  air  0.530 0.530 0.530
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
-    3    ECG-color1    TRAN  EC_10/10-col  NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0120  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  Plate glass
+# layers  description   optics 
+    3    ECG-color1    TRAN  EC_10/10-col        
+# db ref  thick   db name & air gap R 
+  242    0.0120  Plate glass
     0    0.0120  air  0.530 0.530 0.530
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
-    3    SR-SKN172     TRAN  DCF6533_06n   SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  Plate glass
+# layers  description   optics 
+    3    SR-SKN172     TRAN  DCF6533_06n         
+# db ref  thick   db name & air gap R 
+  242    0.0060  Plate glass
     0    0.0120  air  0.550 0.550 0.550
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
-    3    SR-SKN169     TRAN  DCF6136_06n   SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  Plate glass
+# layers  description   optics 
+    3    SR-SKN169     TRAN  DCF6136_06n         
+# db ref  thick   db name & air gap R 
+  242    0.0060  Plate glass
     0    0.0120  air  0.500 0.500 0.500
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
-    3    SR-EkoPlus    TRAN  DCF6749_06nb  SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  Plate glass
+# layers  description   optics 
+    3    SR-EkoPlus    TRAN  DCF6749_06nb        
+# db ref  thick   db name & air gap R 
+  242    0.0060  Plate glass
     0    0.0120  air  0.320 0.320 0.320
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
-    3    ECG-clear2    TRAN  EC_60/50-clr  NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0120  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  Plate glass
+# layers  description   optics 
+    3    ECG-clear2    TRAN  EC_60/50-clr        
+# db ref  thick   db name & air gap R 
+  242    0.0120  Plate glass
     0    0.0120  air  0.530 0.530 0.530
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
-    3    ECG-color2    TRAN  EC_20/20-col  NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0120  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  Plate glass
+# layers  description   optics 
+    3    ECG-color2    TRAN  EC_20/20-col        
+# db ref  thick   db name & air gap R 
+  242    0.0120  Plate glass
     0    0.0120  air  0.530 0.530 0.530
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
-    3    Planitherm    TRAN  DCF7456_06nb  NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0120  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  Plate glass
+# layers  description   optics 
+    3    Planitherm    TRAN  DCF7456_06nb        
+# db ref  thick   db name & air gap R 
+  242    0.0120  Plate glass
     0    0.0120  air  0.560 0.560 0.560
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
-# layers  description   optics name   symmetry tag
-    3    Glazing       TRAN  EC_50/40-clr  NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
-  242    0.0120  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  Plate glass
+# layers  description   optics 
+    3    Glazing       TRAN  EC_50/40-clr        
+# db ref  thick   db name & air gap R 
+  242    0.0120  Plate glass
     0    0.0120  air  0.530 0.530 0.530
-  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+  242    0.0060  Plate glass

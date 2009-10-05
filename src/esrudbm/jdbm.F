@@ -392,10 +392,8 @@ C      ld=LNBLNK(gendbfn(4))
         IWD=30
       endif
       IWE=MAX0(38,IWA,IWC)
-
-C Debug.
-C      write(6,*) la,lb,lc,le,lf,lg,lh,li,lj,lk,lm,ln,lo,
-C     &  '  ',IWA,IWB,IWC,IWD,IWE
+      write(6,*) la,lb,lc,le,lf,lg,lh,li,lj,lk,lm,ln,lo,
+     &  '  ',IWA,IWB,IWC,IWD,IWE
 
       WRITE(ITEM(1),'(A,1X,A)')   'a model:',LCFGF(1:IWD)
       WRITE(ITEM(2),'(A,1X,A)')   '  path :',path(1:IWD)
@@ -1052,9 +1050,7 @@ C << ? is the next line necessary? >>
           elseif(iter.eq.1)then
 
 C << what to do here? ask if new file required? >>
-C Debug.
-C            write(6,*) 'file not found: ',gendbfn(idp)
-
+            write(6,*) 'file not found: ',gendbfn(idp)
             gendbok(idp)=.false.
           elseif(iter.eq.2)then
 
@@ -1063,10 +1059,7 @@ C scan the ASCII file.
             lenf=lnblnk(gendbfn(idp))
             write(outs,*) 'ASCII ',gendbfn(idp)(1:lenf),' to BINARY...'
             call edisp(iuout,outs)
-
-C Debug.
-C            write(6,*) 'asci generic asci needing conversion'
-
+            write(6,*) 'asci generic asci needing conversion'
             LAGENDB=gendbfn(idp)
             LTMP=gendbfn(idp)
             IAFIL=IFIL+1
@@ -1198,7 +1191,7 @@ C Use standard esp-r common flow for legacy materials db.
                 gendbok(idp)=.false.
                 goto 42
               endif 
-              CALL MKAPRC(afil,IAFIL,IER)
+              CALL MKAPRC(IUOUT,afil,IAFIL,IER)
               IBFIL=IFIL+2
               call imprimmat(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
 
@@ -1316,9 +1309,7 @@ C << ? is the next line necessary? >>
         elseif(iter.eq.1)then
 
 C << what to do here? ask if new file required? >>
-C Debug.
-C          write(6,*) 'file not found: ',gendbfn(idp)
-
+          write(6,*) 'file not found: ',gendbfn(idp)
           gendbok(idp)=.false.
         elseif(iter.eq.2)then
 
@@ -1327,6 +1318,7 @@ C scan the ASCII file.
           lenf=lnblnk(gendbfn(idp))
           write(outs,*) 'ASCII ',gendbfn(idp)(1:lenf),' to BINARY...'
           call edisp(iuout,outs)
+          write(6,*) 'asci generic asci needing conversion'
           LAGENDB=gendbfn(idp)
           LTMP=gendbfn(idp)
           IAFIL=IFIL+1
@@ -1458,7 +1450,7 @@ C Use standard esp-r common flow for legacy materials db.
               gendbok(idp)=.false.
               return
             endif 
-            CALL MKAPRC(afil,IAFIL,IER)
+            CALL MKAPRC(IUOUT,afil,IAFIL,IER)
             IBFIL=IFIL+2
             call imprimmat(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
 
@@ -2207,7 +2199,7 @@ C Use standard esp-r common code for legacy materials db.
               jdbhash=0
               return
             endif 
-            CALL MKAPRC(afil,IAFIL,IER)
+            CALL MKAPRC(IUOUT,afil,IAFIL,IER)
             IBFIL=IFIL+2
 
 C Depending on the type of database call various conversion functions.
@@ -2422,7 +2414,7 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
       logical cfgok
       ier=0
       return
@@ -2438,7 +2430,8 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE PLELEV(direc)
+      SUBROUTINE PLELEV(IUF,direc,ier)
       CHARACTER direc*1
+      ier=0
       return
       end

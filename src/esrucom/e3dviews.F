@@ -20,8 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C The file e3dviews.f is a collection of support facilities for 
 C producing 3d images of configurations, implemented as Fortran 
-C Functions and Subroutines and also making use of C code in
-C the lib source folder.
+C Functions and Subroutines and also making use of C code in wwcut.c.
 
 C e3dviews.f contains the following:
 C LENS:   Initialises viewing parameters.
@@ -765,34 +764,55 @@ C BNDOBJ: Does range checking on objects to be displayed.
       SUBROUTINE BNDOBJ(ITRC,IER)
 #include "building.h"
 
-C geometry.h provides commons G0, G2, GS5/GS6.
+C geometry.h provides commons G0 and G2.
 #include "geometry.h"
 #include "prj3dv.h"
+      
+      integer lnblnk  ! function definition
 
 C XMN,YMN,ZMN are the model minimum bounds.
 C XMX,YMX,ZMX are the model maximum bounds.
 C ZXMN(),ZYMN(),ZZMN() are the zone minimum bounds.
 C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
 C ZBFLG()=0 bounds must be recalculated, ZBFLG()=1 use current value.
+      COMMON/FILEP/IFIL
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Ground geometry.
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
-      LOGICAL ISTOK,CLOSE
+      logical newgeo  ! to use for testing if new/old geometry file.
 
+      LOGICAL   ISTOK,CLOSE
+
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      CHARACTER OUTSTR*124
+
+      newgeo=.false.  ! assume older format geometry.
       if(ITDSP.le.5.and.nzg.lt.1)then
         CALL USRMSG(' ',' No zones to bounds check! ','W')
         IER=1
         RETURN
       ENDIF
+      IF(nzg.gt.4)CALL USRMSG(' ',' Checking bounds...','-')
 
 C Find the centroid of the collection of objects and each object. If 
 C the viewing bounds are not static then find axis max & min.
@@ -817,14 +837,11 @@ C If there is a ground geometry then check its bounds.
   41    continue
       endif
 
+C If site origin has been included then check its bounds as well.
       ISTOK=.TRUE.
       IZ=0
-
-C Point to loop back to.
   100 CONTINUE
-      if(ITORG.EQ.0.AND.ISTOK)then
-
-C If site origin has been included then check its bounds as well.
+      IF(ITORG.EQ.0.AND.ISTOK)THEN
         CALL ORIGESP
         XMN=AMIN1(XMN,-0.2)
         YMN=AMIN1(YMN,-0.2)
@@ -832,12 +849,18 @@ C If site origin has been included then check its bounds as well.
         XMX=AMAX1(XMX,1.0)
         YMX=AMAX1(YMX,1.0)
         ZMX=AMAX1(ZMX,0.0)
-      else
+      ELSE
 
-C Process selected zones.
+C Read in one of the selected geometry files. However, if this
+C matches the one currently being edited take this from the
+C saved common rather than from the zone file.
         IZ=IZ+1
         IF(IZ.GT.nzg)GOTO 200
         IVZ=nznog(IZ)
+
+C If zone bounds known jump to next zone.
+        newgeo=.false.  ! assume older format geometry.
+        call eclose(gversion(IVZ),1.1,0.01,newgeo)
 
 C If bounds ok then update project bounds with saved zone values.
         call eclose(ZBFLG(IVZ),1.0,0.001,CLOSE)
@@ -859,65 +882,81 @@ C If bounds for this zone need checking reset max & min.
           ZZMN(IVZ)=1.E+7
         endif
 
-C If obstructions are to be drawn, transform the obstruction
-C description from commons and then get its bounds.
-        if(ITDSP.EQ.0.or.ITDSP.eq.5)then
-          if(nbobs(ivz).gt.0)then
-            do 301 IB=1,nbobs(ivz)
+C If obstructions are to be drawn, get the name of the
+C obstruction file, read it, transform the obstruction
+C description into a gen body and then get its bounds.
+        IF(ITDSP.EQ.0.or.ITDSP.eq.5)THEN
+          if(IOBS(IVZ).EQ.1)then
+            IUF=IFIL+1
+            if(itrc.gt.1)then
+              WRITE(OUTSTR,'(A,A)')' Bounds: ',
+     &          ZOBS(IVZ)(:lnblnk(ZOBS(IVZ)))
+              CALL USRMSG(' ',OUTSTR,'-')
+            endif
+            CALL EGOMST(IUF,ZOBS(IVZ),0,0,IUOUT,IER)
+          elseif(IOBS(IVZ).EQ.2)then
 
-C Use the GB1 common block and CNVBLK or CNVBLK3A to find bounds.
-              if(BLOCKTYP(ivz,IB)(1:4).eq.'obs ')then
-                call CNVBLK(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
-     &            DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),
-     &            BANGOB(ivz,IB,1))
-              elseif(BLOCKTYP(ivz,IB)(1:4).eq.'obs3')then
-                call CNVBLK3A(XOB(ivz,IB),YOB(ivz,IB),ZOB(ivz,IB),
-     &            DXOB(ivz,IB),DYOB(ivz,IB),DZOB(ivz,IB),
-     &            BANGOB(ivz,IB,1),BANGOB(ivz,IB,2),BANGOB(ivz,IB,3))
-              elseif(BLOCKTYP(ivz,IB)(1:4).eq.'obsp')then
-                call CNVBLKP(ivz,IB) ! convert obsp type.
-              endif
-
-              do 302 I=1,8    ! for each vertex in block
-                if(ITBND.NE.0)then
+C Check geometry file version and scan geometry file to get obstructions.
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
+            endif
+          endif
+          DO 301 IB=1,NB
+            CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
+     &               BANG(IB))
+            DO 302 I=1,NTV
+              IF(ITBND.NE.0)THEN
 
 C Update the overall model bounds to include any obstructions.
-                  XMN=AMIN1(XMN,XB(I))
-                  YMN=AMIN1(YMN,YB(I))
-                  ZMN=AMIN1(ZMN,ZB(I))
-                  XMX=AMAX1(XMX,XB(I))
-                  YMX=AMAX1(YMX,YB(I))
-                  ZMX=AMAX1(ZMX,ZB(I))
-                endif
-  302         continue
-  301       continue
-          endif
-        endif
+                XMN=AMIN1(XMN,X(I))
+                YMN=AMIN1(YMN,Y(I))
+                ZMN=AMIN1(ZMN,Z(I))
+                XMX=AMAX1(XMX,X(I))
+                YMX=AMAX1(YMX,Y(I))
+                ZMX=AMAX1(ZMX,Z(I))
+              ENDIF
+  302       CONTINUE
+  301     CONTINUE
+        ENDIF
 
 C If zone bounds known jump to next zone.
         call eclose(ZBFLG(IVZ),1.0,0.001,CLOSE)
         if(CLOSE)goto 100
 
-C If in single zone mode recover common data from memory. 
+C If in single zone mode recover common data from memory 
+C otherwise read from file.
+        IF(IVZ.NE.izgfoc)THEN
+          call eclose(gversion(IVZ),1.1,0.01,newgeo)
+          WRITE(OUTSTR,78)LGEOM(IVZ)(1:LNBLNK(LGEOM(IVZ)))
+   78     FORMAT(' Bounds: ',A)
+          if(itrc.gt.1)CALL USRMSG(' ',OUTSTR,'-')
+          if(newgeo)then
+            call georead(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
+          else
+            call egomin(IFIL+1,LGEOM(IVZ),IVZ,1,0,IUOUT,IER)
+          endif
+        ELSEIF(IVZ.EQ.izgfoc)THEN
+          CALL ERCZONE(IVZ)
+        ENDIF
       ENDIF
 
 C Zone centre of gravity and update overall model bounds.
 C (No centre of gravity required if this is the site origin).
       IF(IZ.GE.1)THEN
-        DO 402 I=1,nztv(IVZ)
+        DO 402 I=1,NTV
           IF(ITBND.NE.0)THEN
-            ZXMN(IVZ)=AMIN1(ZXMN(IVZ),VCOORD(IVZ,I,1))
-            ZYMN(IVZ)=AMIN1(ZYMN(IVZ),VCOORD(IVZ,I,2))
-            ZZMN(IVZ)=AMIN1(ZZMN(IVZ),VCOORD(IVZ,I,3))
-            ZXMX(IVZ)=AMAX1(ZXMX(IVZ),VCOORD(IVZ,I,1))
-            ZYMX(IVZ)=AMAX1(ZYMX(IVZ),VCOORD(IVZ,I,2))
-            ZZMX(IVZ)=AMAX1(ZZMX(IVZ),VCOORD(IVZ,I,3))
-            XMN=AMIN1(XMN,VCOORD(IVZ,I,1))
-            YMN=AMIN1(YMN,VCOORD(IVZ,I,2))
-            ZMN=AMIN1(ZMN,VCOORD(IVZ,I,3))
-            XMX=AMAX1(XMX,VCOORD(IVZ,I,1))
-            YMX=AMAX1(YMX,VCOORD(IVZ,I,2))
-            ZMX=AMAX1(ZMX,VCOORD(IVZ,I,3))
+            ZXMN(nznog(IZ))=AMIN1(ZXMN(nznog(IZ)),X(I))
+            ZYMN(nznog(IZ))=AMIN1(ZYMN(nznog(IZ)),Y(I))
+            ZZMN(nznog(IZ))=AMIN1(ZZMN(nznog(IZ)),Z(I))
+            ZXMX(nznog(IZ))=AMAX1(ZXMX(nznog(IZ)),X(I))
+            ZYMX(nznog(IZ))=AMAX1(ZYMX(nznog(IZ)),Y(I))
+            ZZMX(nznog(IZ))=AMAX1(ZZMX(nznog(IZ)),Z(I))
+            XMN=AMIN1(XMN,X(I))
+            YMN=AMIN1(YMN,Y(I))
+            ZMN=AMIN1(ZMN,Z(I))
+            XMX=AMAX1(XMX,X(I))
+            YMX=AMAX1(YMX,Y(I))
+            ZMX=AMAX1(ZMX,Z(I))
           ENDIF
   402   CONTINUE
 
@@ -926,90 +965,90 @@ C Set flag to denote that the zone bounds have been calculated.
         ZBFLG(IVZ)=1.0
 
         call eclose(ZXMN(IVZ),0.0,0.001,CLOSE)
-        if(ZXMN(IVZ).LT.0..AND.ZXMX(IVZ).GE.0.0)then
-          ZCOG(IVZ,1)=ZXMN(IVZ)+((ZXMX(IVZ)+ABS(ZXMN(IVZ)))/2.0)
-        elseif(ZXMN(IVZ).LT.0.0.AND.ZXMX(IVZ).LE.0.0)then
-          ZCOG(IVZ,1)=ZXMN(IVZ)+((ABS(ZXMN(IVZ))-ABS(ZXMX(IVZ)))/2.0)
-        elseif(ZXMN(IVZ).GT.0.0.AND.ZXMX(IVZ).GT.0.0)then
-          ZCOG(IVZ,1)=ZXMX(IVZ)-((ZXMX(IVZ)-ZXMN(IVZ))/2.0)
-        elseif(CLOSE.AND.ZXMX(IVZ).GT.0.0)then
-          ZCOG(IVZ,1)=ZXMX(IVZ)/2.0
+        if(ZXMN(IVZ).LT.0..AND.ZXMX(IVZ).GE.0.)then
+          ZCOG(IVZ,1)=ZXMN(IVZ)+((ZXMX(IVZ)+ABS(ZXMN(IVZ)))/2.)
+        elseif(ZXMN(IVZ).LT.0..AND.ZXMX(IVZ).LE.0.)then
+          ZCOG(IVZ,1)=ZXMN(IVZ)+((ABS(ZXMN(IVZ))-ABS(ZXMX(IVZ)))/2.)
+        elseif(ZXMN(IVZ).GT.0..AND.ZXMX(IVZ).GT.0.)then
+          ZCOG(IVZ,1)=ZXMX(IVZ)-((ZXMX(IVZ)-ZXMN(IVZ))/2.)
+        elseif(CLOSE.AND.ZXMX(IVZ).GT.0.)then
+          ZCOG(IVZ,1)=ZXMX(IVZ)/2.
         endif
 
         call eclose(ZYMN(IVZ),0.0,0.001,CLOSE)
-        if(ZYMN(IVZ).LT.0.0.AND.ZYMX(IVZ).GE.0.0)then
-          ZCOG(IVZ,2)=ZYMN(IVZ)+((ZYMX(IVZ)+ABS(ZYMN(IVZ)))/2.0)
-        elseif(ZYMN(IVZ).LT.0.0.AND.ZYMX(IVZ).LE.0.0)then
-          ZCOG(IVZ,2)=ZYMN(IVZ)+((ABS(ZYMN(IVZ))-ABS(ZYMX(IVZ)))/2.0)
-        elseif(ZYMN(IVZ).GT.0.0.AND.ZYMX(IVZ).GT.0.0)then
-          ZCOG(IVZ,2)=ZYMX(IVZ)-((ZYMX(IVZ)-ZYMN(IVZ))/2.0)
-        elseif(CLOSE.AND.ZYMX(IVZ).GT.0.0)then
-          ZCOG(IVZ,2)=ZYMX(IVZ)/2.0
+        if(ZYMN(IVZ).LT.0..AND.ZYMX(IVZ).GE.0.)then
+          ZCOG(IVZ,2)=ZYMN(IVZ)+((ZYMX(IVZ)+ABS(ZYMN(IVZ)))/2.)
+        elseif(ZYMN(IVZ).LT.0..AND.ZYMX(IVZ).LE.0.)then
+          ZCOG(IVZ,2)=ZYMN(IVZ)+((ABS(ZYMN(IVZ))-ABS(ZYMX(IVZ)))/2.)
+        elseif(ZYMN(IVZ).GT.0..AND.ZYMX(IVZ).GT.0.)then
+          ZCOG(IVZ,2)=ZYMX(IVZ)-((ZYMX(IVZ)-ZYMN(IVZ))/2.)
+        elseif(CLOSE.AND.ZYMX(IVZ).GT.0.)then
+          ZCOG(IVZ,2)=ZYMX(IVZ)/2.
         endif
 
         call eclose(ZZMN(IVZ),0.0,0.001,CLOSE)
-        if(ZZMN(IVZ).LT.0.0.AND.ZZMX(IVZ).GE.0.0)then
-          ZCOG(IVZ,3)=ZZMN(IVZ)+((ZZMX(IVZ)+ABS(ZZMN(IVZ)))/2.0)
-        elseif(ZZMN(IVZ).LT.0.0.AND.ZZMX(IVZ).LE.0.0)then
-          ZCOG(IVZ,3)=ZZMN(IVZ)+((ABS(ZZMN(IVZ))-ABS(ZZMX(IVZ)))/2.0)
-        elseif(ZZMN(IVZ).GT.0.0.AND.ZZMX(IVZ).GT.0.0)then
-          ZCOG(IVZ,3)=ZZMX(IVZ)-((ZZMX(IVZ)-ZZMN(IVZ))/2.0)
-        elseif(CLOSE.AND.ZZMX(IVZ).GT.0.0)then
-          ZCOG(IVZ,3)=ZZMX(IVZ)/2.0
+        if(ZZMN(IVZ).LT.0..AND.ZZMX(IVZ).GE.0.)then
+          ZCOG(IVZ,3)=ZZMN(IVZ)+((ZZMX(IVZ)+ABS(ZZMN(IVZ)))/2.)
+        elseif(ZZMN(IVZ).LT.0..AND.ZZMX(IVZ).LE.0.)then
+          ZCOG(IVZ,3)=ZZMN(IVZ)+((ABS(ZZMN(IVZ))-ABS(ZZMX(IVZ)))/2.)
+        elseif(ZZMN(IVZ).GT.0..AND.ZZMX(IVZ).GT.0.)then
+          ZCOG(IVZ,3)=ZZMX(IVZ)-((ZZMX(IVZ)-ZZMN(IVZ))/2.)
+        elseif(CLOSE.AND.ZZMX(IVZ).GT.0.)then
+          ZCOG(IVZ,3)=ZZMX(IVZ)/2.
         endif
       ENDIF
 
-C Loop back for another body and reset ISTOK so origin omitted.
+C Loop back for another body.
       ISTOK=.FALSE.
       GOTO 100
 
-C If site grid then include one extra metre in the bounds if
-C a large site, otherwise include GRDIS to bounds.
+C If site grid then include this in the bounds.
   200 IF(ITGRD.EQ.0)THEN
-        if(GRDIS.gt.2.0)then
-          XMN=XMN-1.0
-          XMX=XMX+1.0
-          YMN=YMN-1.0
-          YMX=YMX+1.0
-        else
-          XMN=XMN-GRDIS
-          XMX=XMX+GRDIS
-          YMN=YMN-GRDIS
-          YMX=YMX+GRDIS
-        endif
+        XMN=XMN-GRDIS
+        XMX=XMX+GRDIS
+        YMN=YMN-GRDIS
+        YMX=YMX+GRDIS
       ENDIF
 
 C All bodies checked so calculate configuration centre of gravity.
       call eclose(XMN,0.0,0.001,CLOSE)
-      if(XMN.LT.0..AND.XMX.GE.0.0)then
-        VIEWM(1)=XMN+((XMX+ABS(XMN))/2.0)
-      elseif(XMN.LT.0.0.AND.XMX.LE.0.)then
-        VIEWM(1)=XMN+((ABS(XMN)-ABS(XMX))/2.0)
-      elseif(XMN.GT.0.0.AND.XMX.GT.0.0)then
-        VIEWM(1)=XMX-((XMX-XMN)/2.0)
-      elseif(CLOSE.AND.XMX.GT.0.0)then
-        VIEWM(1)=XMX/2.0
+      if(XMN.LT.0..AND.XMX.GE.0.)then
+        VIEWM(1)=XMN+((XMX+ABS(XMN))/2.)
+      elseif(XMN.LT.0..AND.XMX.LE.0.)then
+        VIEWM(1)=XMN+((ABS(XMN)-ABS(XMX))/2.)
+      elseif(XMN.GT.0..AND.XMX.GT.0.)then
+        VIEWM(1)=XMX-((XMX-XMN)/2.)
+      elseif(CLOSE.AND.XMX.GT.0.)then
+        VIEWM(1)=XMX/2.
       endif
       call eclose(YMN,0.0,0.001,CLOSE)
-      if(YMN.LT.0..AND.YMX.GE.0.0)then
-        VIEWM(2)=YMN+((YMX+ABS(YMN))/2.0)
-      elseif(YMN.LT.0.0.AND.YMX.LE.0.)then
-        VIEWM(2)=YMN+((ABS(YMN)-ABS(YMX))/2.0)
-      elseif(YMN.GT.0.0.AND.YMX.GT.0.0)then
-        VIEWM(2)=YMX-((YMX-YMN)/2.0)
-      elseif(CLOSE.AND.YMX.GT.0.0)then
-        VIEWM(2)=YMX/2.0
+      if(YMN.LT.0..AND.YMX.GE.0.)then
+        VIEWM(2)=YMN+((YMX+ABS(YMN))/2.)
+      elseif(YMN.LT.0..AND.YMX.LE.0.)then
+        VIEWM(2)=YMN+((ABS(YMN)-ABS(YMX))/2.)
+      elseif(YMN.GT.0..AND.YMX.GT.0.)then
+        VIEWM(2)=YMX-((YMX-YMN)/2.)
+      elseif(CLOSE.AND.YMX.GT.0.)then
+        VIEWM(2)=YMX/2.
       endif
       call eclose(ZMN,0.0,0.001,CLOSE)
-      if(ZMN.LT.0.0.AND.ZMX.GE.0.0)then
-        VIEWM(3)=ZMN+((ZMX+ABS(ZMN))/2.0)
-      elseif(ZMN.LT.0.0.AND.ZMX.LE.0.0)then
-        VIEWM(3)=ZMN+((ABS(ZMN)-ABS(ZMX))/2.0)
-      elseif(ZMN.GT.0.0.AND.ZMX.GT.0.0)then
-        VIEWM(3)=ZMX+((ZMX-ZMN)/2.0)
-      elseif(CLOSE.AND.ZMX.GT.0.0)then
-        VIEWM(3)=ZMX/2.0
+      if(ZMN.LT.0..AND.ZMX.GE.0.)then
+        VIEWM(3)=ZMN+((ZMX+ABS(ZMN))/2.)
+      elseif(ZMN.LT.0..AND.ZMX.LE.0.)then
+        VIEWM(3)=ZMN+((ABS(ZMN)-ABS(ZMX))/2.)
+      elseif(ZMN.GT.0..AND.ZMX.GT.0.)then
+        VIEWM(3)=ZMX+((ZMX-ZMN)/2.)
+      elseif(CLOSE.AND.ZMX.GT.0.)then
+        VIEWM(3)=ZMX/2.
       endif
+
+C If site grid then include this in the bounds.
+C      IF(ITGRD.EQ.0)THEN
+C        ZXMN(I)=ZXMN(I)-GRDIS
+C        ZXMX(I)=ZXMX(I)+GRDIS
+C        ZYMN(I)=ZYMN(I)-GRDIS
+C        ZYMX(I)=ZYMX(I)+GRDIS
+C      ENDIF
 
       RETURN
       END

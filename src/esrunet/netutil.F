@@ -288,7 +288,6 @@ C overwriting the string passed, deal with a copy.
       CHARACTER*(*) A
       CHARACTER*32 WORDS(12)
       CHARACTER B*124,C*1,sep*1
-      logical unixok
 
 C Clear WORDS.
       do 9 i=1,12
@@ -332,16 +331,9 @@ C assign WORDS.
       endif
       IF(C.EQ.' ')GOTO 102
       GOTO 20
-      
-   1  call isunix(unixok)
-      if(unixok)then
-        write(6,*) 'GETUTOKENS: error in internal write: ',A
-      endif
+   1  write(6,*) 'GETUTOKENS: error in internal write: ',A
       return
-   2  call isunix(unixok)
-      if(unixok)then
-        write(6,*) 'GETUTOKENS: error in getting token: ',A
-      endif
+   2  write(6,*) 'GETUTOKENS: error in getting token: ',A
       return
  
       END

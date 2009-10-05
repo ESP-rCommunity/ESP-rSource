@@ -521,7 +521,7 @@ C Do not use these flow values (use values from previous time step).
 
 C Relax the new flow values if time step controller 4 active.
 C      if (itrpas.gt.0) then
-C        write(6,*) 'relaxing'
+C        write (6,*) 'relaxing'
 C        frac=0.25
 C        do 2222 I=1,NCNN
 C          FLW1(I)=(FLW1(I)-FLW1old(I))*frac+FLW1old(I)
@@ -1362,16 +1362,10 @@ C Control is being applied to bi-directional component.
 C Apply value of ctlpos to WDTH if component controlled.
         if(ctlpos(icnn).lt.0.0)then
           WDTH=0.00
-
-C Debug.
-C          write(6,*) 'door width reset to 0mm'
-
+          write(6,*) 'door width reset to 0mm'
         else
           WDTH=SUPCMP(ICMP,2)*ctlpos(icnn)
-
-C Debug.
 C          write(6,*) 'door width reset to ',WDTH,ctlpos(icnn)
-
         endif
       endif
 
@@ -2957,10 +2951,7 @@ C Number of nodes, components and interconnections, version and contaminants
 C Version index set to 2.0 in the first record
       FLRESVER=2.0
       IMFREC=1
-
-C Debug.
-C      write(6,*) IFRES
-
+      write (6,*) IFRES
       IF(NOCNTM.NE.1)NCONTM=0
       write (IFRES,REC=IMFREC,IOSTAT=ISTAT,ERR=1000) NNOD,NCMP,NCNN,
      &  FLRESVER,NCONTM
@@ -3102,10 +3093,7 @@ C write out contaminant data if contaminant simulation was invoked
           IMFREC=IMFREC+1
           write (IFRES,REC=IMFREC,IOSTAT=ISTAT,ERR=1000)
      &                            (real(CCONC(I,ICONTM)*1000),I=1,NNOD)
-
-C Debug.
-C          write(6,*) imfrec,(CCONC(I,ICONTM),I=1,nnod),nsinc
-
+c          write(6,*) imfrec,(CCONC(I,ICONTM),I=1,nnod),nsinc
  300    CONTINUE
       ENDIF
 

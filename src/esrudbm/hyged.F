@@ -254,10 +254,8 @@ C Get the units for each of the data fields.
         call prsunit(idbh,15,ustrg,unote)
         call prsunit(idbh,16,ustrh,unote)
         call prsunit(idbh,17,ustri,unote)
-
-C Debug
-C        write(6,*) ustr,ustra,ustrb,ustrc,ustrd,ustre
-C        write(6,*) ustrf,ustrg,ustrh,ustri
+        write(6,*) ustr,ustra,ustrb,ustrc,ustrd,ustre
+        write(6,*) ustrf,ustrg,ustrh,ustri
 
 C Recover associated text for the material attributes.
         call prsmenu(5,acoutag,acoumenu,iacou,iacoucat)
@@ -558,10 +556,8 @@ C Get the units for each of the data fields.
       call prsunit(idbh,15,ustrg,unote)
       call prsunit(idbh,16,ustrh,unote)
       call prsunit(idbh,17,ustri,unote)
-
-C Debug.
-C      write(6,*) ustr,ustra,ustrb,ustrc,ustrd,ustre
-C      write(6,*) ustrf,ustrg,ustrh,ustri
+      write(6,*) ustr,ustra,ustrb,ustrc,ustrd,ustre
+      write(6,*) ustrf,ustrg,ustrh,ustri
 
 C If user has request a report only display the relevant table.
       if(ACT(1:1).eq.'T'.or.ACT(1:1).eq.'H')then
@@ -1993,12 +1989,9 @@ C displayed.
         isdbhash=8
         ISBFIL=igendbf(8)
         call prsmenu(isdbhash,curitem,menu,index,icurcat)
-
-C Debug.
-C        if(icurcat.ne.0)write(6,*) 'cur item cat type is ',
-C     &    cattype(icurcat)
-C        write(6,*) 'cur db is ',curdb
-
+        if(icurcat.ne.0)write(6,*) 'cur item cat type is ',
+     &    cattype(icurcat)
+        write(6,*) 'cur db is ',curdb
         if(curdb(1:8).eq.'material')then
           headr='Please select a replacement material effect for '
           headc='The current material effect attribute is '
@@ -2101,10 +2094,8 @@ C Generic db commons:
       character curitem*12,menu*32,outs*124,headr*60,headc*60,ctype*8
       character catdoc*248,cattag*12,cattype*8,catmenu*32,catdate*24
 
-C Debug.
-C      write(6,*) 'cur db is ',curdb
-C      write(6,*) 'intended category is ',ctype
-
+      write(6,*) 'cur db is ',curdb
+      write(6,*) 'intended category is ',ctype
       if(db(1:8).eq.'material')then
         isdbhash=2
         ISBFIL=igendbf(2)

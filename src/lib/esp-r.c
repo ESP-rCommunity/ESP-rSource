@@ -30,10 +30,7 @@
 #undef ESP_LIST_MAIN
 
 /* Global variable definitions start here */
-extern FILE *wwc;
-extern int  wwc_ok;   /* from esru_util.c */
-extern int  wwc_macro;   /* from esru_util.c */
-
+FILE *wwc;
 GdkColor cscale[49], zscale[100], gscale[49];
 long int ncscale;   /* number of assigned colours in colour scale */
 long int ngscale;   /* number of assigned colours in grey scale */
@@ -49,6 +46,9 @@ GdkColor gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;	/* interface
 
 gint ter;            /* terminal type passed on initial call */
 gint child_ter;      /* child process terminal type  */
+
+gint  wwc_ok;   /* assume no echo of drawing commands to wwc */
+gint  wwc_macro;   /* assume not in a macro drawing command (etplot) */
 
 gint xold, yold;     /* current 'pen' position used by eline_() */
 gint x_off,y_off;         /* display X & Y offsets in pixels (see linescale) */
@@ -70,12 +70,12 @@ gint f_height;
 gint f_width;
 
 char cappl[5];	/* f77 application name */
-/* char cfgroot[25];	f77 project root name    */
-/* char path[73];	f77 project path    */
-/* char upath[73];	f77 users path    */
-/* char imgpth[25];	f77 relative path to images    */
-/* char docpth[25];	f77 relative path to documents    */
-/* char tmppth[25];	f77 relative path to scratch folder    */
+char cfgroot[25];	/* f77 project root name    */
+char path[73];	/* f77 project path    */
+char upath[73];	/* f77 users path    */
+char imgpth[25];	/* f77 relative path to images    */
+char docpth[25];	/* f77 relative path to documents    */
+char tmppth[25];	/* f77 relative path to scratch folder    */
 char capt_wf_exe[73];	/* command to execute for capture wire frame */
 char capt_tf_file[73];	/* file for text feedback buffer dump */
 char capt_all_exe[73];	/* command for capture all of display */

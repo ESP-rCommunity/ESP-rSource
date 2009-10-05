@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model burdie house detailed model for moisture & IAQ
-defined in burdie.cfg generated on Fri Oct  2 08:16:47 2009. Notes associated
+defined in burdie.cfg generated on Wed Nov 26 17:05:19 2008. Notes associated
 with the model are in burdie.notes
  
 The model is located at latitude   50.00 with a longitude difference of   0.00
@@ -25,13 +25,13 @@ Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
-with hour centred solar data.
+The climate used is: ESP test climate and is held in:
+/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  pressure distributions : /usr/esru/esp-r/databases/pressc.db1
- materials              : /usr/esru/esp-r/databases/constr.db1.a
+ materials              : /usr/esru/esp-r/databases/constr.db1
  constructions          : ../databases/burdie.mdb
  plant components       : /usr/esru/esp-r/databases/plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
@@ -177,7 +177,7 @@ ID Zone         Volume|          Surface
  6 hall_up        19.5  11    45.4     1.5     8.1  hall_up describes the upper portion of the hall and stairs
  7 bed_1          31.8  10    60.2     3.3    13.3  bed_1 describes a south facing bedroom
  8 bed_2          28.5  12    53.6     3.3    11.9  bed_2 describes a north facing bedroom
- 9 bed_3          25.6  12    49.5     3.1    10.7  bed_3 describes room with moisture details
+ 9 bed_3          25.6  12    49.5     3.2    10.7  bed_3 describes room with moisture details
 10 t_bridge        0.0   6     1.6     0.0     0.2  t_bridge describes a thermal bridge
 11 loft           34.6  20   119.6     0.0    50.6  loft describes the roof space over all rooms
 12 collector       0.2   6    10.4     0.0     0.0  collector describes a solar collector (air based)
@@ -274,7 +274,7 @@ Wkd 10 EquiptW   22 - 24      0.0      0.0       0.50       0.50
     | m^2   |deg |deg | name       |type |loca| name         |other side
   1  3.67    180.   0. hall_ex_s    OPAQUE VERT ext_wall_low ||< external
   2  9.99     90.   0. livrm_r      OPAQUE VERT partition    ||< hall_r:living_room
-  3  5.67    360.   0. bathrm_r     OPAQUE VERT partition    ||< hall_r:bathroom
+  3  5.67      0.   0. bathrm_r     OPAQUE VERT partition    ||< hall_r:bathroom
   4  11.3    270.   0. hall_ex_w    OPAQUE VERT ext_wall_low ||< external
   5  3.36      0.  90. bed_3_r      OPAQUE CEIL ceiling      ||< hall_r:bed_3
   6  9.87      0. -90. floor        OPAQUE FLOR grnd_floor   ||< ground profile  1
@@ -288,9 +288,6 @@ Wkd 10 EquiptW   22 - 24      0.0      0.0       0.50       0.50
  No shading analysis requested.
  No insolation analysis requested.
  
- 
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1     0.0    -1.0     2.4     2.1     1.0     0.1     0.0     0.0 First NONE
  
  
  Ventilation & infiltration is assessed via network analysis
@@ -482,7 +479,7 @@ Number of weekday      casual gains=  0
   2  5.04     90.   0. bed_1_r      OPAQUE VERT partition    ||< hallup_r_3:bed_1
   3  2.40    180.   0. bed_1_r2     OPAQUE VERT partition    ||< hallup_r_2:bed_1
   4  2.40     90.   0. bed_1_r3     OPAQUE VERT partition    ||< hallup_r_1:bed_1
-  5  7.92    360.   0. bed_1        OPAQUE VERT partition    ||< hallup_r:bed_3
+  5  7.92      0.   0. bed_1        OPAQUE VERT partition    ||< hallup_r:bed_3
   6  7.44    270.   0. hallup_ex_w  OPAQUE VERT ext_wall_up  ||< external
   7  8.13      0.  90. ceil         OPAQUE CEIL ceil_loft    ||< hallup:loft
   8  6.51      0. -90. hall_r       OPAQUE FLOR ceiling_rev  ||< hall_up_r:hall
@@ -535,9 +532,9 @@ Wkd  3 EquiptW   23 - 24      0.0      0.0       0.50       0.50
  
  Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
     | m^2   |deg |deg | name       |type |loca| name         |other side
-  1  6.94    180.   0. bed1_ex_s    OPAQUE VERT ext_wall_up  ||< external
+  1  6.93    180.   0. bed1_ex_s    OPAQUE VERT ext_wall_up  ||< external
   2  7.44     90.   0. bed1_sim_e   OPAQUE VERT intern_wall  ||< identical environment
-  3  8.64    360.   0. bed_2_r      OPAQUE VERT partition    ||< bed1_r:bed_2
+  3  8.64      0.   0. bed_2_r      OPAQUE VERT partition    ||< bed1_r:bed_2
   4  2.40    270.   0. hallup_r_1   OPAQUE VERT partition    ||< bed_1_r3:hall_up
   5  2.40      0.   0. hallup_r_2   OPAQUE VERT partition    ||< bed_1_r2:hall_up
   6  5.04    270.   0. hallup_r_3   OPAQUE VERT partition    ||< bed_1_r:hall_up
@@ -582,7 +579,7 @@ Wkd  2 OccuptW    7 - 24      0.0      0.0       0.50       0.50
  bed_2 describes a north facing bedroom
  There is 8.0100m2 of exposed surface area, 8.0100m2 of which is vertical.
  Outside walls are 39.646 % of floor area & avg U of 0.429 & UA of 2.0186
- Glazing is 27.778 % of floor & 41.198 % facade with avg U of 5.706 & UA of 18.829
+ Glazing is 27.778 % of floor & 41.199 % facade with avg U of 5.706 & UA of 18.829
  
  A summary of the surfaces in bed_2( 8) follows:
  
@@ -594,10 +591,10 @@ Wkd  2 OccuptW    7 - 24      0.0      0.0       0.50       0.50
   4  7.77    270.   0. bed_3_r      OPAQUE VERT partition    ||< bed_2_r:bed_3
   5  11.9      0.  90. loft_r       OPAQUE CEIL ceil_loft    ||< bed2:loft
   6  2.16      0. -90. liv_r        OPAQUE FLOR ceiling_rev  ||< bed_2_r:living_room
-  7  0.630   360.   0. loft_n_r     OPAQUE VERT ext_wall_up  ||< bed2_sof:loft
+  7  0.630     0.   0. loft_n_r     OPAQUE VERT ext_wall_up  ||< bed2_sof:loft
   8  4.59      0. -90. store_r      OPAQUE FLOR ceiling_rev  ||< bed_2_r:store
   9  5.13      0. -90. kitch_r      OPAQUE FLOR ceiling_rev  ||< bed_2_r:kitchen
- 10  3.30      0.   0. n_glaz       SC_898 VERT glazing      ||< external
+ 10  3.30    360.   0. n_glaz       SC_898 VERT glazing      ||< external
  11  0.142   270.   0. xSurf-10     OPAQUE VERT partition    ||< Surf-10:bed_3_air_g
  12  0.011   270.   0. xbed_2_r     OPAQUE VERT partition    ||< bed_2_r:t_bridge
  
@@ -638,8 +635,8 @@ Number of weekday      casual gains=  0
   7  3.43      0. -90. bath_r       OPAQUE FLOR ceiling_rev  ||< bed_1_r:bathroom
   8  3.36      0. -90. hall_r       OPAQUE FLOR ceiling_rev  ||< bed_3_r:hall
   9  0.720     0. -90. liv_r        OPAQUE FLOR ceiling_rev  ||< bed_3_r:living_room
- 10  0.577   360.   0. loft_n_r     OPAQUE VERT t_bridge     ||< bed_3_r:t_bridge
- 11  1.50    360.   0. n_glaz       SC_898 VERT glazing      ||< external
+ 10  0.577     0.   0. loft_n_r     OPAQUE VERT t_bridge     ||< bed_3_r:t_bridge
+ 11  1.50      0.   0. n_glaz       SC_898 VERT glazing      ||< external
  12  1.65    270.   0. w_glaz       SC_898 VERT glazing      ||< external
  
  
@@ -768,7 +765,7 @@ Number of saturday     casual gains=  0
  Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
     | m^2   |deg |deg | name       |type |loca| name         |other side
   1  5.00    180.  67. first        OPAQUE SLOP roof         ||< external
-  2  5.00    360. -67. xxcollector  OPAQUE SLOP collector    ||< xcollector:loft
+  2  5.00      0. -67. xxcollector  OPAQUE SLOP collector    ||< xcollector:loft
   3  0.100    90.   0. xcoll-e      OPAQUE VERT door         ||< coll-e:loft
   4  0.124     0.  23. xcoll-up     OPAQUE SLOP door         ||< coll-up:loft
   5  0.100   270.   0. xcoll-w      OPAQUE VERT door         ||< coll-w:loft
@@ -826,7 +823,7 @@ Number of weekday      casual gains=  0
  ____________________________________________________________
  
  Project floor area is 139.16m2, wall area is 90.339m2, window area is 22.180m2.
- Sloped roof area is 55.816m2, flat roof area is 0.0640000m2, skylight area is 0.00m2.
+ Sloped roof area is 55.816m2, flat roof area is 0.0640001m2, skylight area is 0.00m2.
  There is 168.40m2 of outside surface area, 105.83m2 of which is vertical.
  
  Outside walls are 64.918 % of floor area & avg U of 1.299 & UA of 117.32
@@ -840,7 +837,7 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  242    4.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+    1  242    4.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.706  6.884  4.645 (partition)  3.770
  
  Clear glass 89/85,     4mm, no blind: with id of: SC_8985_04nb
@@ -855,11 +852,11 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight co
+ Ext   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed
     2    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+    3  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool
     4    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
  Total area of ext_wall_low is     39.65
  
@@ -867,8 +864,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext     2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
- Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
+ Ext     2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block
+ Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.731  1.826  1.619 (partition)  1.498
  Total area of intern_wall is     37.68
  
@@ -876,7 +873,7 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   71   30.0     0.130   630.  2760. 0.90 0.65    12.  0.23 Softwood : Softwood
+    1   71   30.0     0.130   630.  2760. 0.90 0.65    12.  0.23 Softwood
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.495  2.697  2.269 (partition)  2.038
  Total area of door is      4.90
  
@@ -884,12 +881,12 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common earth : Common earth
-    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 Gravel based : Gravel based
-    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
+ Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common earth
+    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 Gravel based
+    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
- Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton
+    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
  Total area of grnd_floor is     44.16
  
@@ -897,8 +894,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int   207    1.0     0.160  1379.  1004. 0.90 0.60    70.  0.01 PVC : PVC
+ Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
+ Int   207    1.0     0.160  1379.  1004. 0.90 0.60    70.  0.01 PVC
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.672  6.835  4.623 (partition)  3.755
  Total area of roof is     55.82
  
@@ -906,9 +903,9 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
+ Ext   104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster
     2    0   57.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster : Gypsum plaster
+ Int   104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 Gypsum plaster
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.488  2.689  2.263 (partition)  2.033
  Total area of partition is    155.03
  
@@ -916,9 +913,9 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Ext   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral)
     2    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int    65   15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring : Flooring
+ Int    65   15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.281  1.332  1.219 (partition)  1.149
  Total area of ceiling_rev is     44.15
  
@@ -926,12 +923,12 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
-    2  121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight co
+ Ext    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
+    2  121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed
     3    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+    4  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool
     5    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
  Total area of ext_wall_up is     30.76
  
@@ -939,8 +936,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   211   15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Ext   211   15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool
+ Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.665  1.753  1.561 (partition)  1.448
  Total area of ceil_loft is     44.15
  
@@ -948,12 +945,12 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard
     2    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+    3  211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool
     4    0   32.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5  121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight co
- Int    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+    5  121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed
+ Int    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.429  0.434  0.421 (partition)  0.413
  Total area of ext_wall_upr is      1.84
  
@@ -961,7 +958,7 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   67   15.0     0.150   800.  2093. 0.91 0.65    96.  0.10 Chipboard : Chipboard
+    1   67   15.0     0.150   800.  2093. 0.91 0.65    96.  0.10 Chipboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.704  4.167  3.226 (partition)  2.778
  Total area of soffit is      6.62
  
@@ -969,8 +966,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int   211   15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool : Glasswool
+ Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard
+ Int   211   15.0     0.040   250.   840. 0.90 0.30     4.  0.38 Glasswool
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.665  1.753  1.561 (partition)  1.448
  Total area of ceil_loft_r is     44.16
  
@@ -978,7 +975,7 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+    1   42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.882  7.142  4.761 (partition)  3.846
  Total area of steel_sheet is      5.79
  
@@ -986,9 +983,9 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    65   15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring : Flooring
+ Ext    65   15.0     0.140   600.  1210. 0.91 0.65    14.  0.11 Flooring
     2    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.281  1.332  1.219 (partition)  1.149
  Total area of ceiling is     44.16
  
@@ -996,8 +993,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight co
- Int    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Ext   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed
+ Int    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.807  4.297  3.304 (partition)  2.835
  Total area of air_gap_extr is      0.58
  
@@ -1005,8 +1002,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Ext   211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool
+ Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.526  0.535  0.515 (partition)  0.502
  Total area of air_gap_int is      5.84
  
@@ -1014,8 +1011,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int   211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool : Glasswool
+ Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard
+ Int   211   67.0     0.040   250.   840. 0.90 0.30     4.  1.68 Glasswool
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.526  0.535  0.515 (partition)  0.502
  Total area of air_gap_intr is      5.84
  
@@ -1023,8 +1020,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed : Lightweight co
+ Ext    42    1.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
+ Int   121   38.0     0.410  1200.   840. 0.90 0.80    30.  0.09 Lightweight concrete screed
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.807  4.297  3.304 (partition)  2.835
  Total area of air_gap_ext is      6.42
  
@@ -1032,8 +1029,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
+ Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
+ Int   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.432  5.112  3.765 (partition)  3.168
  Total area of t_bridge is      0.58
  
@@ -1041,8 +1038,8 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard : Perlite plasterboard
- Int    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ Ext   103   10.0     0.180   800.   837. 0.91 0.60     9.  0.06 Perlite plasterboard
+ Int    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.432  5.112  3.765 (partition)  3.168
  Total area of t_bridge_r is      0.58
  
@@ -1050,6 +1047,6 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  203   50.0     0.030    30.  1764. 0.90 0.50     5.  1.67 UF foam : UF foam
+    1  203   50.0     0.030    30.  1764. 0.90 0.50     5.  1.67 UF foam
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.544  0.554  0.533 (partition)  0.519
  Total area of collector is     10.00

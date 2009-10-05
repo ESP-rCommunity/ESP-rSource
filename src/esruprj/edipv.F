@@ -103,10 +103,7 @@ C Check if IPV file known and fill common blocks before reading command data.
       if(OUTSTR(1:14).eq.'*IDST COMMANDS')then
 222     CALL STRIPC(IFCFG,OUTSTR,0,ND,0,'tags',IIER)
         if(iier.ne.0)then
-
-C Debug.
 C          write(6,*)'idst ',nidst
-
           goto 223
         endif
         if(OUTSTR(1:5).eq.'*note')then
@@ -176,11 +173,8 @@ C Work with temporary string and strip of .prn or .wis at end of the name.
             write(ALOC(nidst),'(a)') word(1:lnblnk(word))
           endif
           CMDLBL(nidst)='ext_window'
-
-C Debug.
 C          write(6,*) word
 C          write(6,*) nidst,ALOC(nidst)
-
         elseif(OUTSTR(1:16).eq.'*name_int_window')then
           k=17
           CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
@@ -200,11 +194,8 @@ C Work with temporary string and strip of .prn or .wis at end of the name.
             write(ALOC(nidst),'(a)') word(1:lnblnk(word))
           endif
           CMDLBL(nidst)='int_window'
-
-C Debug.
 C          write(6,*) word
 C          write(6,*) nidst,ALOC(nidst)
-
         elseif(OUTSTR(1:16).eq.'*name_atr_window')then
           k=17
           CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
@@ -224,11 +215,8 @@ C Work with temporary string and strip of .prn or .wis at end of the name.
             write(ALOC(nidst),'(a)') word(1:lnblnk(word))
           endif
           CMDLBL(nidst)='atr_window'
-
-C Debug.
 C          write(6,*) word
 C          write(6,*) nidst,ALOC(nidst)
-
         elseif(OUTSTR(1:4).eq.'*res')then
           k=4
           CALL EGETRM(OUTSTR,K,CMDRES,'W','idst report',IER)

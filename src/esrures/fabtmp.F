@@ -35,12 +35,15 @@ C the results database.
 
       SUBROUTINE MOTHKE(ICOMP,ISUR)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
@@ -54,7 +57,7 @@ C Read (silently) in the zone geometry data.
       IUNITF=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
+        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
       else
         call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
       endif
@@ -135,7 +138,6 @@ C attributes are known.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -146,12 +148,38 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat
       DIMENSION ICLN(30)
 
       CHARACTER outs*124,NAM*72,TITL*72,CSTR*25
@@ -181,19 +209,18 @@ C Also check to see if the file has correct info.
             goto 139  !  a binary file found so carry on.
           endif
  1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
-            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
             if(ier.ne.0)then
               call usrmsg('No readable materials database was found',
      &                  'or file was corrupt','W')
               MATDBOK=.FALSE.
               return
             else
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
-              if(closemat1.or.closemat2)then
+              call eclose(matver,1.1,0.001,closemat)
+              if(closemat)then
                 call edisp(iuout,' Filled material data arrays...')
                 MATDBOK=.TRUE.
               else
@@ -205,9 +232,8 @@ C Also check to see if the file has correct info.
               endif
             endif
           elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2)then
+            call eclose(matver,1.1,0.001,closemat)
+            if(closemat)then
               call edisp(iuout,' Filled material data arrays...')
               MATDBOK=.TRUE.
             endif
@@ -248,25 +274,18 @@ C Gather information about each layer. Read in the material db info.
 C But we do not do anything with the material properties, why are
 C we reading the raw data?
             DO 23 IL=1,LAYERS(IC)
-              if(closemat1.or.closemat2)then
-                matarrayindex=IPRMAT(IC,IL)   ! which array index
-                if(matarrayindex.ge.0)then
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                  if(matarrayindex.eq.0)then
-                    DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                    E=0.99; A=0.99; DRV=1.0
-                    TITL='GAPS'; NAM='AIR'
-                  else
-                    DBCON=matdbcon(matarrayindex)
-                    DBDEN=matdbden(matarrayindex)
-                    DBSHT=matdbsht(matarrayindex)
-                    E=matdbine(matarrayindex)
-                    A=matdbina(matarrayindex)
-                    DRV=matdbdrv(matarrayindex)
-                    write(TITL,'(a)') 'placeholder'
-                    write(NAM,'(a)') matname(matarrayindex)(1:32)
-                  endif
+              if(closemat)then
+                legmat=IPR(IC,IL)   ! which legacy index
+                if(legmat.ge.0)then
+                  matarrayindex=mathash(legmat)  ! find matching array index
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  E=matdbine(matarrayindex)
+                  A=matdbina(matarrayindex)
+                  DRV=matdbdrv(matarrayindex)
+                  write(TITL,'(a)') 'placeholder'
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
                 endif
               else
                 CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
@@ -350,7 +369,6 @@ C VAL1(1+NN+2) inside air temperature.
 
       SUBROUTINE MOFGET(ICOMP,ISUR,IDAY)
 #include "building.h"
-#include "site.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -359,6 +377,8 @@ C VAL1(1+NN+2) inside air temperature.
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+      common/ground/grdtmp(12,mgrdp)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)

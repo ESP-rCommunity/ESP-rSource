@@ -205,12 +205,15 @@ C Clear IPV common blocks. If act = 'b' blank all the data, if act = 'i'
 C then include initial data for energy demand sets and metrics.
       subroutine clearipvdat(act)
 #include "building.h"
-#include "model.h"
 #include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Comments about common blocks are in ripvdat.
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
 
@@ -278,7 +281,7 @@ C Energy demand sets.
       elseif(act.eq.'i'.or.act.eq.'I')then
         ipvsimu=' '
         lr=lnblnk(cfgroot)
-        write(ipvtitl,'(a)') modeltitle(1:40)
+        write(ipvtitl,'(a)') LSNAM(1:40)
         write(ipvvers,'(2a)') 'Version ',cfgroot(1:lr)
         write(ipvsynop,'(2a)') ':The ',cfgroot(1:lr)
 
@@ -387,9 +390,8 @@ C see if the next (long) line starts with *synop or *syn1
         if(WORD(1:5).eq.'*syn1')then
           write(ipvsynop,'(a)') LOUTSTR(7:lnblnk(LOUTSTR))
 
-C Debug.
+C Debug...
 C          write(6,*) ipvsynop
-
           goto 43
         elseif(WORD(1:6).eq.'*synop')then
           write(ipvsynop,'(a)') LOUTSTR(8:lnblnk(LOUTSTR))
@@ -487,10 +489,8 @@ C out its zones, floor area, weighting and set description.
       elseif(WORD(1:8).eq.'*metric_')then
         imset=imset+1
         CALL EGETWI(OUTSTR,K,imetget(imset),0,99,'W','metric iget',IER)
-        CALL EGETWI(OUTSTR,K,imetmsc(imset,1),0,32,'W','metric msc 1',
-     &    IER)
-        CALL EGETWI(OUTSTR,K,imetmsc(imset,2),0,32,'W','metric msc 2',
-     &    IER)
+        CALL EGETWI(OUTSTR,K,imetmsc(imset,1),0,32,'W','metric msc',IER)
+        CALL EGETWI(OUTSTR,K,imetmsc(imset,2),0,32,'W','metric msc',IER)
         CALL EGETWI(OUTSTR,K,nzmg(imset),0,MCOM,'W','nb of zones',IER)
         CALL EGETWR(OUTSTR,K,emgflr(imset),1.,9999.,'W','metric flr',
      &    IER)

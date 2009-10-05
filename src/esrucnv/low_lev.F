@@ -158,7 +158,6 @@ C autocad and translates it if it is extruded.
       common/dxfe/oformat,indxzon,head
       character instring*72,oformat*24,head*4,RZNAME*24
       logical match,close
-      real dx1,dy1,dz1
 
       sx = 0.      
       sy = 0.
@@ -223,7 +222,7 @@ C autocad and translates it if it is extruded.
          ynorm = thicky
          znorm = thickz
          call initmatrix
-         call xformp(0.,0.,thick, dx1,dy1,dz1)
+         call xformp(0.,0.,thick, dx,dy,dz)
          flag3d=0.       
          xnorm = 0.
          ynorm = 0.
@@ -265,13 +264,13 @@ C update IZSTOCN to reflect this change.
          coory = ey
          coorz = z2
          call putcoods(itrc)        
-         coorx = ex + dx1
-         coory = ey + dy1
-         coorz = z2 + dz1
+         coorx = ex + dx
+         coory = ey + dy
+         coorz = z2 + dz
          call putcoods(itrc)        
-         coorx = sx + dx1
-         coory = sy + dy1
-         coorz = z1 + dz1
+         coorx = sx + dx
+         coory = sy + dy
+         coorz = z1 + dz
          call putcoods(itrc)        
       endif        
       return

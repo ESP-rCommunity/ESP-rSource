@@ -27,9 +27,7 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
 C << there might be an alternative to this for materials arrays >>
 
       SUBROUTINE ELISTCMOD(iwhich,chgdb,ACTION,IER)
-#include "building.h"
 #include "esprdbfile.h"
-#include "material.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
@@ -40,9 +38,29 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat
 
       LOGICAL     OK,dok,MODDB,chgdb
       DIMENSION ICLN(30),CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
@@ -68,8 +86,7 @@ C Check that the primitive db is not empty.
       ENDIF
 
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
+      call eclose(matver,1.1,0.01,closemat)
 
 C Setup for menu.
 C Gather the names of the various classes and present this list.
@@ -150,26 +167,18 @@ C List one or more classifications.
             IDB=IC*20-20
             DO 47 J=1,NE
               IDB=IDB+1
-              if(closemat1.or.closemat2)then
+              if(closemat)then
                 legmat=IDB   ! which legacy index
                 if(legmat.ge.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                  if(matarrayindex.eq.0)then
-                    DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                    E=0.99; A=0.99; DRV=1.0
-                    TITL='GAPS'; NAM='AIR'
-                  else
-                    DBCON=matdbcon(matarrayindex)
-                    DBDEN=matdbden(matarrayindex)
-                    DBSHT=matdbsht(matarrayindex)
-                    E=matdbine(matarrayindex)
-                    A=matdbina(matarrayindex)
-                    DRV=matdbdrv(matarrayindex)
-                    write(TITL,'(a)') 'placeholder'
-                    write(NAM,'(a)') matname(matarrayindex)(1:32)
-                  endif
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  E=matdbine(matarrayindex)
+                  A=matdbina(matarrayindex)
+                  DRV=matdbdrv(matarrayindex)
+                  write(TITL,'(a)') 'placeholder'
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
                 endif
               else
                 CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
@@ -234,26 +243,18 @@ C arrays for manipulation.
           IDB=IC*20-20
           DO 20 J=1,NE
             IDB=IDB+1
-            if(closemat1.or.closemat2)then
+            if(closemat)then
               legmat=IDB   ! which legacy index
               if(legmat.ge.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                if(matarrayindex.eq.0)then
-                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                  E=0.99; A=0.99; DRV=1.0
-                  TITL='GAPS'; NAM='AIR'
-                else
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
-                  E=matdbine(matarrayindex)
-                  A=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
-                  write(NAM,'(a)') matname(matarrayindex)(1:32)
-                endif
+                DBCON=matdbcon(matarrayindex)
+                DBDEN=matdbden(matarrayindex)
+                DBSHT=matdbsht(matarrayindex)
+                E=matdbine(matarrayindex)
+                A=matdbina(matarrayindex)
+                DRV=matdbdrv(matarrayindex)
+                write(TITL,'(a)') 'placeholder'
+                write(NAM,'(a)') matname(matarrayindex)(1:32)
               endif
             else
               CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
@@ -527,7 +528,7 @@ C Add an element, initiate it to the values of last element in class.
               EE(ILNE)=EE(NE)
               EA(ILNE)=EA(NE)
               EDRV(ILNE)=EDRV(NE)
-              CALL EDPELEM(EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
+              CALL EDPELEM(iuout,EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
      &           EE(ILNE),EA(ILNE),EDRV(ILNE),ENAM(ILNE),IER) 
               NE=NE+1
               MODDB=.TRUE.
@@ -545,7 +546,7 @@ C Add an element, initiate it to the values of last element in class.
 
 C Identified one of the elements to edit or select.
           IFOC=INO-7
-          CALL EDPELEM(EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
+          CALL EDPELEM(iuout,EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
      &               EE(IFOC),EA(IFOC),EDRV(IFOC),ENAM(IFOC),IER) 
           if(ACTION.eq.'M')then
             MODDB=.TRUE.
@@ -588,133 +589,113 @@ C Error messages.
       END
 
 C ********** opendb (based on code from eddb.F)
-
 C Open materials constructions, multi-layer constructions and
-C optical properties databases. In the case of materials, first
-C assume it is a binary file, check its contents and if a problem
-C then scan new ascii format and if that does not work try the
-C older ascii materials file to fill the materials data arrays.
-C If sucessful the material common blocks will be filled and
-C closemat1 or closemat2 will be set.
-
+C optical properties databases.
       subroutine opendb(ier)
-#include "building.h"
 #include "esprdbfile.h"
-#include "material.h"
-      
-      integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical closemat1,closemat2
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      DIMENSION ICLN(30)
+
       character SOPT*12,outs*124,GDESCR*36
 
       IER=0
 
-C Scan the binary file data into materials commons and if this was
-C sucessful and matver was set to 1.1 in matformbin then we can
-C carry on using the materials common blocks for subsequent access.
-      call MATFROMBIN(IER)  ! fill materials common blocks
-      if(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-          goto 139  !  commons filled carry on.
+C Open currently named materials database.  Note that
+C by a minor rewrite of ICLN in rec 601 we can get by with changing
+C this to 24 words wide.
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
+      IF(ier.ne.0)THEN
+        write(outs,'(a,a,a)') ' No construction, materials db ',
+     &     LFMAT(1:lnblnk(LFMAT)),' found!'
+        call edisp(iuout,outs)
+        MATDBOK=.FALSE.
+      else
+
+C Also check to see if the file has correct info. 
+        IREC=601
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &    (ICLN(I),I=1,30)
+        if(NCLASS.LE.0)then
+          goto 1000   ! no classifications so try alternatives
         else
           MATDBOK=.TRUE.
           matver = 0.0
           goto 139  !  a binary file found so carry on.
         endif
-      elseif(ier.eq.-2.or.ier.eq.-3)then
-        ier=0  ! clear error state prior to rascimat call
-        goto 1000
-      elseif(ier.eq.-1)then
-        write(outs,'(3a)') ' Materials db ',
-     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MATDBOK=.FALSE.
-        ier=0  ! clear error state before continuing
-        goto 139  !  try the other databases.
-      endif
-
-C Check for ascii versions of the materials database.
- 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
-      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
-        ier=0
-        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-        if(ier.ne.0)then
-          call usrmsg('No readable materials database was not found',
-     &                'or file was corrupt','W')
-          MATDBOK=.FALSE.
-        else
-          call eclose(matver,1.1,0.001,closemat1)
-          call eclose(matver,1.2,0.001,closemat2)
-          if(closemat1.or.closemat2)then
-            MATDBOK=.TRUE.
-          else
-            call usrmsg(
-     &        'No readable Materials database was found!',
-     &        ' ','W')
+ 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        if(ier.eq.-2)then
+          ier=0
+          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          if(ier.ne.0)then
+            call usrmsg('No readable materials database was found',
+     &                  'or file was corrupt','W')
             MATDBOK=.FALSE.
+          else
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              call edisp(iuout,' Filled material data arrays...')
+              MATDBOK=.TRUE.
+            else
+              call usrmsg(
+     &          'No readable material database was found. ',
+     &          'check other warnings for advise.','W')
+              MATDBOK=.FALSE.
+            endif
+          endif
+        elseif(ier.eq.0)then
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            call edisp(iuout,' Filled material data arrays...')
+            MATDBOK=.TRUE.
           endif
         endif
-      elseif(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-        endif
       endif
-
         
 C Read multilayer db information into common.
  139  CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
-        IF(IER.eq.1)then
-          write(outs,'(3a)') 
-     &    ' Problems with materials used by Constructions db',
-     &     LFMAT(1:lnblnk(LFMAT)),'!'
+        IF(IER.NE.0)then
+          write(outs,'(a,a,a)') ' Problem with constr. composites db ',
+     &     LFMAT(1:lnblnk(LFMAT)),' !'
           call edisp(iuout,outs)
-          call edisp(iuout,' ')
           MLDBOK=.FALSE.
-        ELSEIF(IER.eq.2)then
-
-          call edisp(iuout,
-     &      'There were many undefined materials in the constructions')
-          call edisp(iuout,'please check your model.')
         else
-
-C Scan was ok so set mldbok to true.
+          call usrmsg(' Opened constr. composites db.',' ','p')
           MLDBOK=.TRUE.
         endif
       else
-
-C Could not find Constructions db at this time, report to user.
-        write(outs,'(3a)') 'Constructions db ',
-     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
+        write(outs,'(a,a,a)') ' No constr. composites db ',
+     &     LFMAT(1:lnblnk(LFMAT)),' found!'
         call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MLDBOK=.FALSE.
       endif
 
-C Open Ooptical Properties db and read into common.
+C Open optical database and read into common.
       SOPT='ALL'
       CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
       if(ier.ne.0)then
-        call usrmsg('Optical Properties db not found or',
-     &              'there was a problem reading it!','W')
+        call usrmsg(
+     &  ' Optical properties db not found or there was a problem',
+     &  ' reading it!','W')
         OPTKOK=.FALSE.
       else
+        call usrmsg(' Opened optical properties db!',' ','p')
         OPTKOK=.TRUE.
       endif
-
       return
       end
 
@@ -820,7 +801,6 @@ C length : Length of zdescr
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       CHARACTER zdescr*80,outs*244,outsd*80
-      logical unixok
 
       length=0
       do 42 i=1,nzg
@@ -849,12 +829,8 @@ C length : Length of zdescr
         return
       endif
 
-C Trap for I/O error.
- 1    call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      write(6,*) 'ZLIST: error writing zone names: ',outs
+   1  write(6,*) 'ZLIST: error writing zone names: ',outs
       ierr=1
-      
       return
       END
 
@@ -865,7 +841,6 @@ C Icomp : Zone number
 C Iskip : If = 0, then skip the list of surfaces menu
       SUBROUTINE ZoneDisp(icomp, iskip)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 
@@ -877,12 +852,15 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/Displ/SelSurf(MCON)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
 
       DIMENSION VERT(35)
@@ -904,7 +882,7 @@ C Read geometry file for chosen zone.
       itru=6
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
+        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
       else
         call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
       endif
@@ -922,7 +900,7 @@ C Multi-page list
       call edisp(iuout,'Please select surfaces to include in analysis.')
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
       vol(icomp)=zvol
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       OPQ=0.
@@ -1077,11 +1055,15 @@ C HeightCo (Real) : Height [m] of the composite, for LCA calculation.
 
       SUBROUTINE CompoList
 #include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
@@ -1456,11 +1438,9 @@ C
 
       SUBROUTINE LCAcalc(itrc,Ichanel)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -1468,6 +1448,12 @@ C
       COMMON/FILEP/IFIL
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -1477,13 +1463,14 @@ C
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-
-C << Why is SDATA used? >>
-      real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
@@ -1978,11 +1965,11 @@ C If approach is model based, read the current zone information
           ICurZone=nznog(IZ)
           call eclose(gversion(ICurZone),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
           endif
-          call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+          call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
           vol(ICurZone)=zvol
           context=.false.
         ENDIF
@@ -2496,11 +2483,9 @@ C phylosophy as LCACalc
 
       SUBROUTINE LCADet(itrc,Ichanel)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -2508,6 +2493,12 @@ C phylosophy as LCACalc
       COMMON/FILEP/IFIL
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -2517,11 +2508,14 @@ C phylosophy as LCACalc
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
@@ -2604,8 +2598,29 @@ C phylosophy as LCACalc
 
       COMMON/ZFunction/ZFun(NbSteps,MMLC,ME)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(NbSteps+5)
@@ -2642,8 +2657,7 @@ C phylosophy as LCACalc
       INTEGER NbEIALay, ICalType
  
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
+      call eclose(matver,1.1,0.01,closemat)
 
       dupedges=.false.
       newgeo=.false.  ! assume older format geometry.
@@ -3125,13 +3139,13 @@ C If approach is model based, read the current zone information
             ICurZone=nznog(IZ)
             call eclose(gversion(ICurZone),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,
+              call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,
      &          IER)
             else
               call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,
      &          IER)
             endif
-            call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+            call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
             vol(ICurZone)=zvol
             context=.false.
           ENDIF
@@ -3629,25 +3643,18 @@ C -------------
      &              M.EQ.13 .OR. M.EQ.14) THEN
                 DO 11 J=1,NbLays
                   ICurMat = IMatID(ICurComp,J)
-                  if(closemat1.or.closemat2)then
-                    matarrayindex=IPRMAT(ICurComp,J)   ! which arrat index
-                    if(matarrayindex.ge.0)then
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                      if(matarrayindex.eq.0)then
-                        DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                        E=0.99; A=0.99; DRV=1.0
-                        TITL='GAPS'; NAM='AIR'
-                      else
-                        DBCON=matdbcon(matarrayindex)
-                        DBDEN=matdbden(matarrayindex)
-                        DBSHT=matdbsht(matarrayindex)
-                        E=matdbine(matarrayindex)
-                        A=matdbina(matarrayindex)
-                        DRV=matdbdrv(matarrayindex)
-                        write(TITL,'(a)') 'placeholder'
-                        write(NAM,'(a)') matname(matarrayindex)(1:32)
-                      endif
+                  if(closemat)then
+                    legmat=IPR(ICurComp,J)   ! which legacy index
+                    if(legmat.ge.0)then
+                      matarrayindex=mathash(legmat)  ! find matching array index
+                      DBCON=matdbcon(matarrayindex)
+                      DBDEN=matdbden(matarrayindex)
+                      DBSHT=matdbsht(matarrayindex)
+                      E=matdbine(matarrayindex)
+                      A=matdbina(matarrayindex)
+                      DRV=matdbdrv(matarrayindex)
+                      write(TITL,'(a)') 'placeholder'
+                      write(NAM,'(a)') matname(matarrayindex)(1:32)
                     endif
                   else
                     CALL ERPCDB(IFMAT,IPR(ICurComp,J),iuout,IER,

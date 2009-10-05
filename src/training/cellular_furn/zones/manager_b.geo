@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,manager_b # tag version, format, zone name
-*date Fri Jul 10 10:17:48 2009  # latest file modification 
+*date Wed Aug 22 15:44:04 2007  # latest file modification 
 manager_b describes right higher resolution office
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,6.10000,0.00000,0.00000  #   1
@@ -80,7 +80,7 @@ manager_b describes right higher resolution office
 *edges,4,46,45,48,47  # 26
 # 
 # surf attributes:
-#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -121,10 +121,3 @@ manager_b describes right higher resolution office
   9
 # 
 *base_list,4,6,17,18,22,    18.37 0  # zone base list
-# 
-# block entities:
-#  *obs = obstructions
-*block_start,15 15 # geometric blocks
-*obs,6.100,2.700,0.010,0.900,0.700,2.000,0.000,cab_a,insul_frame  # block  1
-*obs,6.100,3.700,0.010,0.900,0.700,2.000,0.000,cab_b,insul_frame  # block  2
-*end_block

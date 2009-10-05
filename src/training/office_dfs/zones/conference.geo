@@ -1,162 +1,144 @@
-*Geometry 1.1,GEN,conference # tag version, format, zone name
-*date Fri Jul 10 10:46:59 2009  # latest file modification 
-conference describes a conference room for 10-12
-# tag, X co-ord, Y co-ord, Z co-ord
-*vertex,3.00000,13.50000,0.00000  #   1
-*vertex,3.00000,18.00000,0.00000  #   2
-*vertex,6.00000,18.00000,0.00000  #   3
-*vertex,9.00000,18.00000,0.00000  #   4
-*vertex,12.00000,18.00000,0.00000  #   5
-*vertex,12.00000,15.00000,0.00000  #   6
-*vertex,12.00000,12.00000,0.00000  #   7
-*vertex,9.00000,12.00000,0.00000  #   8
-*vertex,6.00000,13.50000,0.00000  #   9
-*vertex,3.00000,13.50000,3.00000  #  10
-*vertex,3.00000,18.00000,3.00000  #  11
-*vertex,6.00000,18.00000,3.00000  #  12
-*vertex,9.00000,18.00000,3.00000  #  13
-*vertex,12.00000,18.00000,3.00000  #  14
-*vertex,12.00000,15.00000,3.00000  #  15
-*vertex,12.00000,12.00000,3.00000  #  16
-*vertex,9.00000,12.00000,3.00000  #  17
-*vertex,6.00000,13.50000,3.00000  #  18
-*vertex,6.00000,18.00000,0.90000  #  19
-*vertex,5.00000,18.00000,0.90000  #  20
-*vertex,5.00000,18.00000,0.50000  #  21
-*vertex,4.00000,18.00000,0.50000  #  22
-*vertex,4.00000,18.00000,0.90000  #  23
-*vertex,3.00000,18.00000,0.90000  #  24
-*vertex,3.10000,18.00000,1.00000  #  25
-*vertex,3.10000,18.00000,2.90000  #  26
-*vertex,5.90000,18.00000,2.90000  #  27
-*vertex,5.90000,18.00000,1.00000  #  28
-*vertex,9.00000,18.00000,0.90000  #  29
-*vertex,8.00000,18.00000,0.90000  #  30
-*vertex,8.00000,18.00000,0.50000  #  31
-*vertex,7.00000,18.00000,0.50000  #  32
-*vertex,7.00000,18.00000,0.90000  #  33
-*vertex,6.10000,18.00000,1.00000  #  34
-*vertex,6.10000,18.00000,2.90000  #  35
-*vertex,8.90000,18.00000,2.90000  #  36
-*vertex,8.90000,18.00000,1.00000  #  37
-*vertex,12.00000,18.00000,0.90000  #  38
-*vertex,11.00000,18.00000,0.90000  #  39
-*vertex,11.00000,18.00000,0.50000  #  40
-*vertex,10.00000,18.00000,0.50000  #  41
-*vertex,10.00000,18.00000,0.90000  #  42
-*vertex,9.10000,18.00000,1.00000  #  43
-*vertex,9.10000,18.00000,2.90000  #  44
-*vertex,11.90000,18.00000,2.90000  #  45
-*vertex,11.90000,18.00000,1.00000  #  46
-*vertex,12.00000,15.00000,0.90000  #  47
-*vertex,12.00000,16.00000,0.90000  #  48
-*vertex,12.00000,16.00000,0.50000  #  49
-*vertex,12.00000,17.00000,0.50000  #  50
-*vertex,12.00000,17.00000,0.90000  #  51
-*vertex,12.00000,17.90000,1.00000  #  52
-*vertex,12.00000,15.10000,1.00000  #  53
-*vertex,12.00000,15.10000,2.90000  #  54
-*vertex,12.00000,17.90000,2.90000  #  55
-*vertex,12.00000,12.00000,0.90000  #  56
-*vertex,12.00000,13.00000,0.90000  #  57
-*vertex,12.00000,13.00000,0.50000  #  58
-*vertex,12.00000,14.00000,0.50000  #  59
-*vertex,12.00000,14.00000,0.90000  #  60
-*vertex,12.00000,14.90000,1.00000  #  61
-*vertex,12.00000,14.90000,2.90000  #  62
-*vertex,12.00000,12.10000,2.90000  #  63
-*vertex,12.00000,12.10000,1.00000  #  64
-*vertex,11.90000,12.10000,0.90000  #  65
-*vertex,9.00000,12.10000,0.90000  #  66
-*vertex,11.90000,16.50000,0.90000  #  67
-*vertex,11.10000,12.90000,0.90000  #  68
-*vertex,9.00000,12.90000,0.90000  #  69
-*vertex,5.10000,16.50000,0.90000  #  70
-*vertex,11.10000,14.90000,0.90000  #  71
-*vertex,5.10000,15.00000,0.90000  #  72
-# 
-# tag, number of vertices followed by list of associated vert
-*edges,5,2,1,10,11,24  #  1
-*edges,5,8,7,56,16,17  #  2
-*edges,4,9,8,17,18  #  3
-*edges,4,1,9,18,10  #  4
-*edges,9,18,17,16,15,14,13,12,11,10  #  5
-*edges,9,1,2,3,4,5,6,7,8,9  #  6
-*edges,8,3,2,24,23,22,21,20,19  #  7
-*edges,4,21,22,23,20  #  8
-*edges,12,23,24,25,28,27,26,25,24,11,12,19,20  #  9
-*edges,4,28,25,26,27  # 10
-*edges,8,4,3,19,33,32,31,30,29  # 11
-*edges,4,31,32,33,30  # 12
-*edges,12,33,19,34,37,36,35,34,19,12,13,29,30  # 13
-*edges,4,37,34,35,36  # 14
-*edges,8,5,4,29,42,41,40,39,38  # 15
-*edges,4,40,41,42,39  # 16
-*edges,12,42,29,43,46,45,44,43,29,13,14,38,39  # 17
-*edges,4,46,43,44,45  # 18
-*edges,8,6,5,38,51,50,49,48,47  # 19
-*edges,4,49,50,51,48  # 20
-*edges,12,51,38,52,53,54,55,52,38,14,15,47,48  # 21
-*edges,4,53,52,55,54  # 22
-*edges,8,7,6,47,60,59,58,57,56  # 23
-*edges,4,58,59,60,57  # 24
-*edges,12,60,47,61,64,63,62,61,47,15,16,56,57  # 25
-*edges,4,64,61,62,63  # 26
-*edges,8,67,70,72,71,68,69,66,65  # 27
-*edges,8,70,67,65,66,69,68,71,72  # 28
-# 
-# surf attributes:
-#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
-#  child of (surface name), useage (pair of tags) 
-#  construction name, optical name
-#  boundary condition tag followed by two data items
-*surf,pt_next_off,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,SIMILAR,00,00  #   1 ||< identical environment
-*surf,pt_recp_b,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,ANOTHER,04,06  #   2 ||< pt_recp_b:reception
-*surf,fict_open,VERT,-,-,-,fict,SC_fictit,ANOTHER,04,05  #   3 ||< fict_open:reception
-*surf,pt_recp_a,VERT,-,-,-,gyp_gyp_ptn,OPAQUE,ANOTHER,04,04  #   4 ||< pt_recp_a:reception
-*surf,ceiling,CEIL,-,-,-,ceiling,OPAQUE,ANOTHER,05,03  #   5 ||< ceil_conff:ceil_void
-*surf,floor,FLOR,-,-,-,susp_flr_re,OPAQUE,SIMILAR,00,00  #   6 ||< identical environment
-*surf,spandral,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,vent,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,frame,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,glazing,VERT,-,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  10 ||< external
-*surf,spandral_a,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,vent_a,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,frame_a,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,glazing_a,VERT,-,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  14 ||< external
-*surf,spandral_b,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,vent_b,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,frame_b,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,glazing_b,VERT,-,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,spandral_c,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #  19 ||< external
-*surf,vent_c,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #  20 ||< external
-*surf,frame_c,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #  21 ||< external
-*surf,glazing_c,VERT,-,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  22 ||< external
-*surf,spandral_d,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #  23 ||< external
-*surf,vent_d,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,frame_d,VERT,-,-,-,insul_frame,OPAQUE,EXTERIOR,0,0  #  25 ||< external
-*surf,glazing_d,VERT,-,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #  26 ||< external
-*surf,desk_top,CEIL,-,-,-,door,OPAQUE,ADIABATIC,0,0  #  27 ||< adiabatic
-*surf,conf_bottom,FLOR,-,-,-,door,OPAQUE,ADIABATIC,0,0  #  28 ||< adiabatic
-# 
-*insol,3,0,0,0  # default insolation distribution
-# 
-# shading directives
-*shad_calc,all_applicable  20 # list of surfs
-  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26
-# 
-*insol_calc,all_applicable   5 # insolation sources
- 10 14 18 22 26
-# 
-*base_list,2,6,28,    61.75 0  # zone base list
-# 
-# block entities:
-#  *obs = obstructions
-*block_start,20 20 # geometric blocks
-*obs,12.100,12.000,3.100,6.000,0.020,0.300,90.000,eob1,NONE  # block  1
-*obs,12.300,12.000,3.100,6.000,0.020,0.250,90.000,eob2,NONE  # block  2
-*obs,12.500,12.000,3.100,6.000,0.020,0.220,90.000,eob3,NONE  # block  3
-*obs,12.700,12.000,3.100,6.000,0.020,0.200,90.000,eob4,NONE  # block  4
-*obs,12.900,12.000,3.100,6.000,0.020,0.200,90.000,eob5,NONE  # block  5
-*obs,13.100,12.000,3.100,6.000,0.020,0.200,90.000,eob6,NONE  # block  6
-*end_block
+# geometry of conference defined in: ../zones/conference.geo
+GEN  conference  conference describes a conference room for 10-12  # type, name, descr
+      72      28   0.000    # vertices, surfaces, rotation angle
+#  X co-ord, Y co-ord, Z co-ord
+      3.00000    13.50000     0.00000  # vert   1
+      3.00000    18.00000     0.00000  # vert   2
+      6.00000    18.00000     0.00000  # vert   3
+      9.00000    18.00000     0.00000  # vert   4
+     12.00000    18.00000     0.00000  # vert   5
+     12.00000    15.00000     0.00000  # vert   6
+     12.00000    12.00000     0.00000  # vert   7
+      9.00000    12.00000     0.00000  # vert   8
+      6.00000    13.50000     0.00000  # vert   9
+      3.00000    13.50000     3.00000  # vert  10
+      3.00000    18.00000     3.00000  # vert  11
+      6.00000    18.00000     3.00000  # vert  12
+      9.00000    18.00000     3.00000  # vert  13
+     12.00000    18.00000     3.00000  # vert  14
+     12.00000    15.00000     3.00000  # vert  15
+     12.00000    12.00000     3.00000  # vert  16
+      9.00000    12.00000     3.00000  # vert  17
+      6.00000    13.50000     3.00000  # vert  18
+      6.00000    18.00000     0.90000  # vert  19
+      5.00000    18.00000     0.90000  # vert  20
+      5.00000    18.00000     0.50000  # vert  21
+      4.00000    18.00000     0.50000  # vert  22
+      4.00000    18.00000     0.90000  # vert  23
+      3.00000    18.00000     0.90000  # vert  24
+      3.10000    18.00000     1.00000  # vert  25
+      3.10000    18.00000     2.90000  # vert  26
+      5.90000    18.00000     2.90000  # vert  27
+      5.90000    18.00000     1.00000  # vert  28
+      9.00000    18.00000     0.90000  # vert  29
+      8.00000    18.00000     0.90000  # vert  30
+      8.00000    18.00000     0.50000  # vert  31
+      7.00000    18.00000     0.50000  # vert  32
+      7.00000    18.00000     0.90000  # vert  33
+      6.10000    18.00000     1.00000  # vert  34
+      6.10000    18.00000     2.90000  # vert  35
+      8.90000    18.00000     2.90000  # vert  36
+      8.90000    18.00000     1.00000  # vert  37
+     12.00000    18.00000     0.90000  # vert  38
+     11.00000    18.00000     0.90000  # vert  39
+     11.00000    18.00000     0.50000  # vert  40
+     10.00000    18.00000     0.50000  # vert  41
+     10.00000    18.00000     0.90000  # vert  42
+      9.10000    18.00000     1.00000  # vert  43
+      9.10000    18.00000     2.90000  # vert  44
+     11.90000    18.00000     2.90000  # vert  45
+     11.90000    18.00000     1.00000  # vert  46
+     12.00000    15.00000     0.90000  # vert  47
+     12.00000    16.00000     0.90000  # vert  48
+     12.00000    16.00000     0.50000  # vert  49
+     12.00000    17.00000     0.50000  # vert  50
+     12.00000    17.00000     0.90000  # vert  51
+     12.00000    17.90000     1.00000  # vert  52
+     12.00000    15.10000     1.00000  # vert  53
+     12.00000    15.10000     2.90000  # vert  54
+     12.00000    17.90000     2.90000  # vert  55
+     12.00000    12.00000     0.90000  # vert  56
+     12.00000    13.00000     0.90000  # vert  57
+     12.00000    13.00000     0.50000  # vert  58
+     12.00000    14.00000     0.50000  # vert  59
+     12.00000    14.00000     0.90000  # vert  60
+     12.00000    14.90000     1.00000  # vert  61
+     12.00000    14.90000     2.90000  # vert  62
+     12.00000    12.10000     2.90000  # vert  63
+     12.00000    12.10000     1.00000  # vert  64
+     11.90000    12.10000     0.90000  # vert  65
+      9.00000    12.10000     0.90000  # vert  66
+     11.90000    16.50000     0.90000  # vert  67
+     11.10000    12.90000     0.90000  # vert  68
+      9.00000    12.90000     0.90000  # vert  69
+      5.10000    16.50000     0.90000  # vert  70
+     11.10000    14.90000     0.90000  # vert  71
+      5.10000    15.00000     0.90000  # vert  72
+# no of vertices followed by list of associated vert
+   5,  2,  1, 10, 11, 24,
+   5,  8,  7, 56, 16, 17,
+   4,  9,  8, 17, 18,
+   4,  1,  9, 18, 10,
+   9, 18, 17, 16, 15, 14, 13, 12, 11, 10,
+   9,  1,  2,  3,  4,  5,  6,  7,  8,  9,
+   8,  3,  2, 24, 23, 22, 21, 20, 19,
+   4, 21, 22, 23, 20,
+  12, 23, 24, 25, 28, 27, 26, 25, 24, 11, 12, 19, 20,
+   4, 28, 25, 26, 27,
+   8,  4,  3, 19, 33, 32, 31, 30, 29,
+   4, 31, 32, 33, 30,
+  12, 33, 19, 34, 37, 36, 35, 34, 19, 12, 13, 29, 30,
+   4, 37, 34, 35, 36,
+   8,  5,  4, 29, 42, 41, 40, 39, 38,
+   4, 40, 41, 42, 39,
+  12, 42, 29, 43, 46, 45, 44, 43, 29, 13, 14, 38, 39,
+   4, 46, 43, 44, 45,
+   8,  6,  5, 38, 51, 50, 49, 48, 47,
+   4, 49, 50, 51, 48,
+  12, 51, 38, 52, 53, 54, 55, 52, 38, 14, 15, 47, 48,
+   4, 53, 52, 55, 54,
+   8,  7,  6, 47, 60, 59, 58, 57, 56,
+   4, 58, 59, 60, 57,
+  12, 60, 47, 61, 64, 63, 62, 61, 47, 15, 16, 56, 57,
+   4, 64, 61, 62, 63,
+   8, 67, 70, 72, 71, 68, 69, 66, 65,
+   8, 70, 67, 65, 66, 69, 68, 71, 72,
+# unused index
+  0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+# surfaces indentation (m)
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+ 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
+    3   0   0   0    # default insolation distribution
+# surface attributes follow: 
+# id  surface      geom  loc/  mlc db       environment
+# no  name         type  posn  name         other side
+  1, pt_next_off   OPAQ  VERT  gyp_gyp_ptn  SIMILAR        
+  2, pt_recp_b     OPAQ  VERT  gyp_gyp_ptn  reception      
+  3, fict_open     TRAN  VERT  fict         reception      
+  4, pt_recp_a     OPAQ  VERT  gyp_gyp_ptn  reception      
+  5, ceiling       OPAQ  CEIL  ceiling      ceil_void      
+  6, floor         OPAQ  FLOR  susp_flr_re  SIMILAR        
+  7, spandral      OPAQ  VERT  extern_wall  EXTERIOR       
+  8, vent          OPAQ  VERT  insul_frame  EXTERIOR       
+  9, frame         OPAQ  VERT  insul_frame  EXTERIOR       
+ 10, glazing       TRAN  VERT  dbl_glz      EXTERIOR       
+ 11, spandral_a    OPAQ  VERT  extern_wall  EXTERIOR       
+ 12, vent_a        OPAQ  VERT  insul_frame  EXTERIOR       
+ 13, frame_a       OPAQ  VERT  insul_frame  EXTERIOR       
+ 14, glazing_a     TRAN  VERT  dbl_glz      EXTERIOR       
+ 15, spandral_b    OPAQ  VERT  extern_wall  EXTERIOR       
+ 16, vent_b        OPAQ  VERT  insul_frame  EXTERIOR       
+ 17, frame_b       OPAQ  VERT  insul_frame  EXTERIOR       
+ 18, glazing_b     TRAN  VERT  dbl_glz      EXTERIOR       
+ 19, spandral_c    OPAQ  VERT  extern_wall  EXTERIOR       
+ 20, vent_c        OPAQ  VERT  insul_frame  EXTERIOR       
+ 21, frame_c       OPAQ  VERT  insul_frame  EXTERIOR       
+ 22, glazing_c     TRAN  VERT  dbl_glz      EXTERIOR       
+ 23, spandral_d    OPAQ  VERT  extern_wall  EXTERIOR       
+ 24, vent_d        OPAQ  VERT  insul_frame  EXTERIOR       
+ 25, frame_d       OPAQ  VERT  insul_frame  EXTERIOR       
+ 26, glazing_d     TRAN  VERT  dbl_glz      EXTERIOR       
+ 27, desk_top      OPAQ  CEIL  door         ADIABATIC      
+ 28, conf_bottom   OPAQ  FLOR  door         ADIABATIC      
+# base
+  6 28  0  0  0  0    61.75

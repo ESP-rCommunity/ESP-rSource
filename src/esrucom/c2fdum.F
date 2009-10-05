@@ -40,10 +40,8 @@ C   NWKSLCTC Called from the c-library to determine if a component has been
 C            selected.
       SUBROUTINE NWKSLCTC(IX,IY,IT,IS,ISA)
       character outs*124
-      logical unixok
-      call isunix(unixok)
       write(outs,'(5i4)')'NWKSLCTC ',IX,IY,IT,IS,ISA 
-      if(unixok)write(6,*) outs
+      write(6,*) outs
       RETURN
       END
 
@@ -51,10 +49,8 @@ C   GNWKQUERY Called by the c-library to get the current network viewing
 C             parameters (for drawing scroll bars).
       SUBROUTINE GNWKQUERY(IQ,PV,TV,CV,PH,TH,CH)
       character outs*124
-      logical unixok
-      call isunix(unixok)
       write(outs,*)'GNWKQUERY ',IQ,PV,TV,CV,PH,TH,CH 
-      if(unixok)write(6,*) outs
+      write(6,*) outs
       RETURN
       END
 
@@ -62,10 +58,8 @@ C   NETWSNAP  Calculates the position of grid point co-ordinates
 C             when grid snappping is on.
       SUBROUTINE NETWSNAP(X,Y,XS,YS)
       character outs*124
-      logical unixok
-      call isunix(unixok)
       write(outs,*)'NETWSNAP ',X,Y,XS,YS
-      if(unixok)write(6,*) outs
+      write(6,*) outs
       RETURN
       END
 
@@ -73,10 +67,8 @@ C NETWMIC manages the network icons, can be called from the C-side
 C to handle deletion of icons.
       SUBROUTINE NETWMIC(IMODE,IMOPT)
       character outs*124
-      logical unixok
-      call isunix(unixok)
       write(outs,*)'NETWMIC ',IMODE,IMOPT
-      if(unixok)write(6,*) outs
+      write(6,*) outs
       RETURN
       END
 
@@ -84,10 +76,8 @@ C   GCONAD  The user define a network connection graphically.
 C           called from the c-library.
       SUBROUTINE GCONAD(IX,IY,IXR,IYR,IB)
       character outs*124
-      logical unixok
-      call isunix(unixok)
       write(outs,*)'GCONAD ',IX,IY,IXR,IYR,IB
-      if(unixok)write(6,*) outs
+      write(6,*) outs
       RETURN
       END
 
@@ -95,10 +85,8 @@ C GRIDUPDT is called from the c-library and updates the network grid properties
 C Zoom ,snap, etc, etc.
       SUBROUTINE GRIDUPDT(IZOOM,IGRIDU,IGRIDS,ISNP,IPAN,DX,DY)
       character outs*124
-      logical unixok
-      call isunix(unixok)
       write(outs,*)'GRIDUPDT ',IZOOM,IGRIDU,IGRIDS,ISNP,IPAN,DX,DY
-      if(unixok)write(6,*) outs
+      write(6,*) outs
       RETURN
       END
 
@@ -106,10 +94,8 @@ C   NWKUPDTPOS Called from the c-library and updates component and connection
 C              intermediate point positions  interaction.
       SUBROUTINE NWKUPDTPOS(IS,ISA,IT,IX,IY)
       character outs*124
-      logical unixok
-      call isunix(unixok)
       write(outs,*)'NWKUPDTPOS ',IS,ISA,IT,IX,IY
-      if(unixok)write(6,*) outs
+      write(6,*) outs
       RETURN
       END
 
@@ -120,9 +106,7 @@ C ICNTFM is called from C code interface.
 
       SUBROUTINE NETWMCO(IMODE,IMOPT)     
       character outs*124
-      logical unixok
-      call isunix(unixok)
       write(outs,*)'NETWMCO ',IMODE,IMOPT
-      if(unixok)write(6,*) outs
+      write(6,*) outs
       RETURN
       END

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,kitliv # tag version, format, zone name
-*date Fri Jul 17 11:56:36 2009  # latest file modification 
+*date Thu Aug 23 18:09:28 2007  # latest file modification 
 kitliv describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,8.48800,5.93200,0.00000  #   1
@@ -38,7 +38,7 @@ kitliv describes a...
 *edges,4,21,3,7,22  # 10
 # 
 # surf attributes:
-#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -63,14 +63,3 @@ kitliv describes a...
   7  9
 # 
 *base_list,1,6,    26.04 0  # zone base list
-# 
-# block entities:
-#  *obs = obstructions
-*block_start,20 20 # geometric blocks
-*obs,3.528,8.240,0.600,0.400,0.100,1.450,60.000,nl,NONE  # block  1
-*obs,4.264,7.815,0.600,0.400,0.100,1.450,60.000,nr,NONE  # block  2
-*obs,3.641,8.637,2.200,0.400,1.000,0.100,240.000,nt,NONE  # block  3
-*obs,6.819,6.340,0.600,0.400,0.100,1.450,60.000,sl,NONE  # block  4
-*obs,7.555,5.915,0.600,0.400,0.100,1.450,60.000,sr,NONE  # block  5
-*obs,7.019,6.687,2.200,0.400,1.000,0.100,240.000,st,NONE  # block  6
-*end_block

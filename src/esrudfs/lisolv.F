@@ -618,7 +618,6 @@ C     &               IG+I,A(IG+I),I,F(I)
 C   5  CONTINUE 
 C 202  FORMAT(8(I3,':',F7.4,' '),' F[',I3,']:',F7.4)
 C      WRITE(6,'(a)') 'END DUMP A'
-
       IT = IG + N
       ITM = IT + M
       IQ = ITM + N
@@ -676,8 +675,8 @@ C          G = A(J) - A(I1L+J)*A(IT+J-1)
 
   50  RROLD = RR
 
-C Debug.
-C      WRITE(6,110) NIT, EPSNIT, RRO, RR
+C Debug...
+C      WRITE (6,110) NIT, EPSNIT, RRO, RR
 C 110  FORMAT(' NBAND7: NIT= ', I4, ' EPSNIT= ', F12.4,
 C     &                  ' RRO= ', F9.5, ' RR=', F9.5)
 

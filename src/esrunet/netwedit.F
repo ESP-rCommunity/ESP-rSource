@@ -133,10 +133,7 @@ C Build potentially long list of menu selections. Create a key
 C for each iecdate, but do not include the key in lines which
 C act as labels.
       latrindex=0
-
-C Debug.
-C      write(6,*) 'ilen ',ilen
-
+      write(6,*) 'ilen ',ilen
       DO 707 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
@@ -256,18 +253,12 @@ C << get code from dbm >>
 
 C One of the list. Determine if it is a label (icatie is zero), data
 C that cannot be edited by the user (icatie is zero) or actual data.
-
-C Debug.
-C        write(6,*) 'icatie ',icatie(icout1)
-
+        write(6,*) 'icatie ',icatie(icout1)
         if(icatie(icout1).eq.0)then
           goto 705
         endif
         ifocus = icatie(icout1)
-
-C Debug.
-C        write(6,*) 'ifocus is ',ifocus,icout1
-
+        write(6,*) 'ifocus is ',ifocus,icout1
         ll=lnblnk(ATRMENU(ICN,ifocus))
         write(outs,'(4a)') 'The current value of ',
      &    ATRMENU(ICN,ifocus)(1:ll),' is ',ATRICN(ICN,ifocus,1)
@@ -315,12 +306,10 @@ C returned as -1 then no selection made.
 C If flow network (INWKTYP = 2) and the component is internal unknown
 C pressure (ATRICN(icn,1,1) is zero) and the fluid type is air
 C (ATRICN(icn,2,1) = 1) then import summary atrributes.
-
-C Debug.
-C                write(6,*) 'external data search for ',exttag,ifocus
-C                write(6,*) 'data 1:',ATRICN(icn,1,1),ATRICN(icn,2,1),
-C     &                ATRICN(icn,3,1),ATRICN(icn,4,1),ATRICN(icn,5,1)
-
+C Debug...
+                write(6,*) 'external data search for ',exttag,ifocus
+                write(6,*) 'data 1:',ATRICN(icn,1,1),ATRICN(icn,2,1),
+     &                ATRICN(icn,3,1),ATRICN(icn,4,1),ATRICN(icn,5,1)
                 read(ATRICN(icn,1,1),*,iostat=ios,ERR=99)VALCT
                 read(ATRICN(icn,2,1),*,iostat=ios,ERR=99)VALFT
                 read(ATRICN(icn,4,1),*,iostat=ios,ERR=99)VALV
@@ -328,10 +317,7 @@ C     &                ATRICN(icn,3,1),ATRICN(icn,4,1),ATRICN(icn,5,1)
                 CALL ECLOSE(VALCT,3.00,0.01,CLOSEWT)
                 CALL ECLOSE(VALFT,1.00,0.01,CLOSEFT)
                 if(INWKTYP.eq.2.and.CLOSECT.and.CLOSEFT)then
-
-C Debug.
-C                  write(6,*) 'Internal unknown pressure comp.'
-
+                  write(6,*) 'Internal unknown pressure comp.'
                   call updintunknflow(icn,AVAL,SVAL,VALV)
                   goto 706
                 elseif(INWKTYP.eq.2.and.CLOSEWT.and.CLOSEFT)then
@@ -410,7 +396,7 @@ C attribute so check and update the Z value of the icon to match it.
 
       return
 
-  99  call edisp(iuout,'error composing attribute for editing.')
+  99  write(6,*) 'error composing attribute for editing.'
       return
       end
 
@@ -422,7 +408,6 @@ C updintunknflow update attributes of internal unkn press flow node
       integer lnblnk  ! function definition
 
 C Icon commons       
-      common/outin/iuout,iuin
       COMMON/POPHELP/H(60)
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
      & ATRICN(MICN,MIATRB,3),ATRTAG(MICN,MIATRB,5),ATRMENU(MICN,MIATRB),
@@ -451,9 +436,8 @@ C flow,text,-,-,20.0,user,temperature or node name
 C flow,real,external,*Zones,40.50000,0.0,10000.0,user,volume
 C location,real,external,*Zones,1.50000,-10.0,99.0,user,height
 C location,text,external,*Zones,manager,user,linked zone name
-
-      call edisp(iuout,'Internal unknown pressure comp.')
-      
+C Debug...
+      write(6,*) 'Internal unknown pressure comp.'
       h(1)='As the model is updated in terms of its form or the'
       h(2)='network is adjusted a mismatch was detected between'
       h(3)='the zone volume and the volume of the network node'
@@ -505,11 +489,8 @@ C is the second attribute category.
         if(OK)then
 
 C Store old icon position, find DELTAs between positions.
-
-C Debug.
-C          write(6,*) 'for icon ',icn,'current xyz ',XYZICON(ICN,1),
-C     &      XYZICON(ICN,2),XYZICON(ICN,3)
-
+          write(6,*) 'for icon ',icn,'current xyz ',XYZICON(ICN,1),
+     &      XYZICON(ICN,2),XYZICON(ICN,3)
           OLDPOSX=XYZICON(ICN,1)
           OLDPOSY=XYZICON(ICN,2)
           OLDPOSZ=XYZICON(ICN,3)
@@ -522,26 +503,19 @@ C     &      XYZICON(ICN,2),XYZICON(ICN,3)
           DELTAX=XYZICON(ICN,1)-OLDPOSX
           DELTAY=XYZICON(ICN,2)-OLDPOSY
           DELTAZ=XYZICON(ICN,3)-OLDPOSZ
-
-C Debug.
-C          write(6,*) 'for icon ',icn,'new xyz ',XYZICON(ICN,1),
-C     &      XYZICON(ICN,2),XYZICON(ICN,3),DELTAX,DELTAY,DELTAZ
+          write(6,*) 'for icon ',icn,'new xyz ',XYZICON(ICN,1),
+     &      XYZICON(ICN,2),XYZICON(ICN,3),DELTAX,DELTAY,DELTAZ
 
 C Update the icon vertices.
-
-C Debug.
-C          write(6,*) 'for icon ',icn,'old vert 1 ',VCICON(ICN,1,1),
-C     &      VCICON(ICN,1,2),VCICON(ICN,1,3)
-
+          write(6,*) 'for icon ',icn,'old vert 1 ',VCICON(ICN,1,1),
+     &      VCICON(ICN,1,2),VCICON(ICN,1,3)
           DO 10 I=1,NIVC(ICN) 
             VCICON(ICN,I,1)=VCICON(ICN,I,1)+DELTAX
             VCICON(ICN,I,2)=VCICON(ICN,I,2)+DELTAY
             VCICON(ICN,I,3)=VCICON(ICN,I,3)+DELTAZ
   10      CONTINUE
-
-C Debug.
-C          write(6,*) 'for icon ',icn,'new vert 1 ',VCICON(ICN,1,1),
-C     &      VCICON(ICN,1,2),VCICON(ICN,1,3)
+          write(6,*) 'for icon ',icn,'new vert 1 ',VCICON(ICN,1,1),
+     &      VCICON(ICN,1,2),VCICON(ICN,1,3)
 
           DO 11 I=1,NCONP(ICN)
             CONCP(ICN,I,1)=CONCP(ICN,I,1)+DELTAX
@@ -606,10 +580,8 @@ C  location,text,-,-,glazing,user,linked surface name
       if(exttag(1:10).eq.'*Pressures')then
 
 C AVAL(1) is pressure coef seta.
-
-C Debug.
-C        write(6,*) 'Wind pressure component PC.'
-
+C Debug...
+        write(6,*) 'Wind pressure component PC.'
         call relstr(AVAL(1),vnpstr,ilena,iflag)
         WRITE(ATRICN(ICN,3,1),'(a)') vnpstr
         return
@@ -618,10 +590,8 @@ C        write(6,*) 'Wind pressure component PC.'
 C Map the returned data as follows:
 C AVAL(1) is area, AVAL(2) is azi, AVAL(3) is elev, AVAL(4) is Z(m).
 C SVAL(1) is zone name SVAL(2) is surface name.
-
-C Debug.
-C        write(6,*) 'Window pressure component AZ.'
-
+C Debug...
+        write(6,*) 'Window pressure component AZ.'
         call relstr(AVAL(2),vnpstr,ilena,iflag)
         WRITE(ATRICN(ICN,4,1),'(a)') vnpstr
         call relstr(AVAL(4),vnpstr,ilena,iflag)
@@ -650,12 +620,10 @@ C Check if the location zone name is the same as the zone name.
             WRITE(ATRICN(ICN,7,1),'(a)')SVAL(2)
           endif
         endif
-
-C Debug.
-C        write(6,*) 'data 1:',ATRICN(icn,1,1),
-C     &    ATRICN(icn,2,1),ATRICN(icn,3,1),
-C     &    ATRICN(icn,4,1),ATRICN(icn,5,1),ATRICN(icn,6,1)
-
+C Debug...
+        write(6,*) 'data 1:',ATRICN(icn,1,1),
+     &    ATRICN(icn,2,1),ATRICN(icn,3,1),
+     &    ATRICN(icn,4,1),ATRICN(icn,5,1),ATRICN(icn,6,1)
       endif
       return
       end
@@ -824,10 +792,7 @@ C Build potentially long list of menu selections. Create a key
 C for each iecdate, but do not include the key in lines which
 C act as labels.
       latrindex=0
-
-C Debug.
-C      write(6,*) 'ilen ',ilen
-
+      write(6,*) 'ilen ',ilen
       DO 707 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
@@ -925,18 +890,12 @@ C If there are enough items allow paging control via EKPAGE.
 
 C One of the list. Determine if it is a label (icatie is zero), data
 C that cannot be edited by the user (icatie is zero) or actual data.
-
-C Debug.
-C        write(6,*) 'icatie ',icatie(icout1)
-
+        write(6,*) 'icatie ',icatie(icout1)
         if(icatie(icout1).eq.0)then
           goto 705
         endif
         ifocus = icatie(icout1)
-
-C Debug.
-C        write(6,*) 'ifocus is ',ifocus,icout1
-
+        write(6,*) 'ifocus is ',ifocus,icout1
         ll=lnblnk(ddmenuatr(J,ifocus))
         write(outs,'(4a)') 'The current value of ',
      &    ddmenuatr(J,ifocus)(1:ll),' is ',ddatrib(J,ifocus,1)
@@ -1393,8 +1352,7 @@ C flow,text,-,-,20.0,user,temperature or node name
 C flow,real,external,*Zones,40.50000,0.0,10000.0,user,volume
 C location,real,external,*Zones,1.50000,-10.0,99.0,user,height
 C location,text,external,*Zones,manager,user,linked zone name
-
-C Debug.
+C Debug...
 C                     write(6,*) 'external data search for ',exttag,iast
 C                     write(6,*) 'datcatie 1:',DATCATIE(1,1,1),
 C     &                 DATCATIE(1,2,1),DATCATIE(1,3,1),
@@ -1402,7 +1360,6 @@ C     &                 DATCATIE(1,4,1),DATCATIE(1,5,1)
 C                     write(6,*) 'datcatie 2:',DATCATIE(2,1,1),
 C     &                 DATCATIE(2,2,1),DATCATIE(2,3,1),
 C     &                 DATCATIE(2,4,1)
-
                      read(DATCATIE(1,1,1),*,iostat=ios,ERR=99)VALCT
                      read(DATCATIE(1,2,1),*,iostat=ios,ERR=99)VALFT
                      read(DATCATIE(IAST,4,1),*,iostat=ios,ERR=99)VALV
@@ -1410,10 +1367,7 @@ C     &                 DATCATIE(2,4,1)
                       CALL ECLOSE(VALCT,3.00,0.01,CLOSEWT)
                       CALL ECLOSE(VALFT,1.00,0.01,CLOSEFT)
                       if(INWKTYP.eq.2.and.CLOSECT.and.CLOSEFT)then
-
-C Debug.
 C                        write(6,*) 'Internal unknown pressure comp.'
-
                         CALL ECLOSE(AVAL(1),VALV,0.01,CLOSEV)
                         CALL ECLOSE(AVAL(2),XYZICON(ICN,1),0.001,CLOSEX)
                         CALL ECLOSE(AVAL(3),XYZICON(ICN,2),0.001,CLOSEY)
@@ -1485,11 +1439,8 @@ C is the second attribute category.
                           if(OK)then
 
 C Store old icon position, find DELTAs between positions.
-
-C Debug.
 C       write(6,*) 'for icon ',icn,'current xyz ',XYZICON(ICN,1),
 C     &   XYZICON(ICN,2),XYZICON(ICN,3)
-
                             OLDPOSX=XYZICON(ICN,1)
                             OLDPOSY=XYZICON(ICN,2)
                             OLDPOSZ=XYZICON(ICN,3)
@@ -1502,22 +1453,17 @@ C     &   XYZICON(ICN,2),XYZICON(ICN,3)
                             DELTAX=XYZICON(ICN,1)-OLDPOSX
                             DELTAY=XYZICON(ICN,2)-OLDPOSY
                             DELTAZ=XYZICON(ICN,3)-OLDPOSZ
-
-C Debug.
 C       write(6,*) 'for icon ',icn,'new xyz ',XYZICON(ICN,1),
 C     &   XYZICON(ICN,2),XYZICON(ICN,3),DELTAX,DELTAY,DELTAZ
 
 C Update the icon vertices.
 C       write(6,*) 'for icon ',icn,'old vert 1 ',VCICON(ICN,1,1),
 C     &   VCICON(ICN,1,2),VCICON(ICN,1,3)
-
                             DO 10 I=1,NIVC(ICN) 
                               VCICON(ICN,I,1)=VCICON(ICN,I,1)+DELTAX
                               VCICON(ICN,I,2)=VCICON(ICN,I,2)+DELTAY
                               VCICON(ICN,I,3)=VCICON(ICN,I,3)+DELTAZ
   10                        CONTINUE
-
-C Debug.
 C       write(6,*) 'for icon ',icn,'new vert 1 ',VCICON(ICN,1,1),
 C     &   VCICON(ICN,1,2),VCICON(ICN,1,3)
 
@@ -1563,10 +1509,8 @@ C  location,text,-,-,manager,user,linked zone name
 C  location,text,-,-,glazing,user,linked surface name
                         if(exttag(1:10).eq.'*Pressures')then
 C AVAL(1) is pressure coef seta.
-
-C Debug.
+C Debug...
 C                          write(6,*) 'Wind pressure component PC.'
-
                           call relstr(AVAL(1),vnpstr,ilena,iflag)
                           WRITE(DATCATIE(1,3,1),'(a)') vnpstr
                           WRITE(ATRICN(ICN,ICATIE(1,3),1),'(a)') vnpstr
@@ -1575,10 +1519,8 @@ C                          write(6,*) 'Wind pressure component PC.'
 
 C AVAL(1) is area, AVAL(2) is azi, AVAL(3) is elev, AVAL(4) is Z(m).
 C SVAL(1) is zone name SVAL(2) is surface name.
-
-C Debug.
+C Debug...
 C                          write(6,*) 'Window pressure component AZ.'
-
                           call relstr(AVAL(2),vnpstr,ilena,iflag)
                           WRITE(DATCATIE(1,4,1),'(a)') vnpstr
                           WRITE(ATRICN(ICN,ICATIE(1,4),1),'(a)') vnpstr
@@ -1614,15 +1556,13 @@ C Check if the location zone name is the same as the zone name.
      &                         SVAL(2)
                             endif
                           endif
-
-C Debug.
+C Debug...
 C                          write(6,*) 'datcatie 1:',DATCATIE(1,1,1),
 C     &                      DATCATIE(1,2,1),DATCATIE(1,3,1),
 C     &                      DATCATIE(1,4,1),DATCATIE(1,5,1)
 C                          write(6,*) 'datcatie 2:',DATCATIE(2,1,1),
 C     &                      DATCATIE(2,2,1),DATCATIE(2,3,1),
 C     &                      DATCATIE(2,4,1)
-
                           goto 792
                         endif
                       else
@@ -1705,7 +1645,7 @@ C Restore category menu setup before returning to label 705.
 
       return
 
-  99  call edisp(iuout,'error composing attribute for editing.')
+  99  write(6,*) 'error composing attribute for editing.'
       return
       end
 

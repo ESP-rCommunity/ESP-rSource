@@ -417,7 +417,7 @@ C available and method should check for transp MLC.
       W=WIDTH*HIGH
 
 C Get information about areas of all surfaces opaque and TMC:
-      call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+      call ZINFO(IOUT,SNA,ZOA,PAZI,PELV,ZVOL)
 
       DO 10 I=1,NSUR
       call eclose(PAZI(I),PAZI(J),0.5,close)

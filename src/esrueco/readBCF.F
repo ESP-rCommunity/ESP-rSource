@@ -63,7 +63,6 @@ C   IEXP = 99 check number of items and return in ITEMS
 
       CHARACTER*124 tmp,STRING,OUTSTR,MSG1
       CHARACTER*(*) MSG
-      logical unixok
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
@@ -113,11 +112,7 @@ C Find out the number of separate words/string groupings.
         CALL USRMSG(' ',tmp,'-')
       ENDIF
       goto 4
-
-C Trap for I/O error.
- 1    call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      write(6,*) 'STRIPCB: error writing warning re: ',OUTSTR
+ 1    write(6,*) 'STRIPCB: error writing warning re: ',OUTSTR
       RETURN
       END
 
@@ -131,7 +126,6 @@ C overwriting the string passed, deal with a copy.
       integer lnblnk  ! function definition
       CHARACTER*(*) A
       CHARACTER B*124,C*1
-      logical unixok
 
       lastcc = MIN0(LNBLNK(A),123)
       WRITE(B,'(A)',ERR=1) A(1:lastcc+1)
@@ -149,11 +143,7 @@ C Loop character by character until separator is found.
       IF(K.GE.LNBLNK(B))RETURN
       IF(C.EQ.',') GOTO 102
       GOTO 20
-
-C Trap for I/O error.
- 1    call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      write(6,*) 'CHITMS: error in internal write: ',A
+ 1    write(6,*) 'CHITMS: error in internal write: ',A
       RETURN
       END
 
@@ -361,13 +351,17 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
 #include "building.h"
 #include "LCA.h"
 #include "acoustic.h"
-#include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C21/IFCFG,cfgroot,LCFGF
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/EVGENS/BCFName,System,BCFVer
       COMMON/EVGENL/BCFOK

@@ -18,7 +18,7 @@
 # class index |nb items|description (32 char)
 *class, 1,10,Brick
 Category ( 1) Brick includes a range of brick types. Based on data traditionally distributed with ESP-r.
-*item,Paviour brick,  1, 1,Paviour brick
+*item,paviour brick,  1, 1,Paviour brick
 0.960,2000.000,840.000,0.930,0.930,0.700,0.700,12.000,100.0,-
 *item,breeze block,  2, 1,Breeze block
 0.440,1500.000,650.000,0.900,0.900,0.650,0.650,15.000,100.0,-
@@ -28,7 +28,7 @@ Category ( 1) Brick includes a range of brick types. Based on data traditionally
 0.960,2000.000,650.000,0.900,0.900,0.930,0.930,25.000,100.0,-
 *item,vermic insul brk,  5, 1,Vermiculite insulating brick
 0.270,700.000,840.000,0.900,0.900,0.650,0.650,12.000,100.0,-
-*item,Lt brown brick,  6, 1,Light brown brick
+*item,lt brown brick,  6, 1,Light brown brick
 0.960,2000.000,650.000,0.900,0.900,0.700,0.700,25.000,100.0,-
 *item,brick (MK),  7, 1,Brick (milton keyns)
 0.840,1700.000,800.000,0.900,0.900,0.700,0.700,25.000,100.0,-
@@ -187,7 +187,7 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 0.210,900.000,1000.000,0.910,0.910,0.260,0.260,11.000,13.0,-
 *item,Plasterboard (ceiling),111, 6,Plasterboard Gypsum (10 mm) (UK code)
 0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,9.5,-
-*item,Plasterboard (UK code),112, 6,Plasterboard (UK code)
+*item,Plasterboard (wallboard),112, 6,Plasterboard (UK code)
 0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,13.0,-
 # class index |nb items|description (32 char)
 *class, 7,12,Screeds and renders
@@ -387,7 +387,7 @@ Category (13) Glass with additional single layer optical properties (some estima
 Category (14) Earth includes loose materials. Also check the stone category for other gravels. Based on data traditionally distributed with ESP-r.
 *item,earth infusorial,261,14,Infusorial (9% mc)
 0.090,480.000,180.000,0.900,0.900,0.850,0.850,5.000,200.0,-
-*item,gravel based,262,14,Gravel based
+*item,gravel,262,14,Gravel based
 0.520,2050.000,184.000,0.900,0.900,0.850,0.850,2.000,200.0,-
 *item,earth std,263,14,Common_earth
 1.280,1460.000,879.000,0.900,0.900,0.850,0.850,5.000,200.0,-

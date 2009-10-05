@@ -7,6 +7,7 @@
    abcbox_callback() actions when an abc... choice is made.
    espabcbox_ () initialise abcbox - will use radio buttons for entries
    espdozenbox_ () initialise dozen choices use radio buttons for entries
+   okbox_callback() actions when an ok... choice is made.
 
  */
 static const char rcsid[] = "$Id$";
@@ -16,7 +17,7 @@ static const char rcsid[] = "$Id$";
 #include <esp_list.h>
 #include <gtk/gtkdialog.h>
 #include <string.h>
-#include "esp-r.h"
+#include <esp-r.h>
 
 /* extern void g_get_esp_item_from_list_cb(); from popup */
 
@@ -234,10 +235,12 @@ void espabcbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    title_local = "  ";
 
 /* find out actual length of each prompt and then total length with a space between. */
+   msg1_l = 0;
    f_to_c_l(msg1,&msg1_len,&msg1_l);
    question_local = g_strndup(msg1, (gsize) msg1_l);
 /* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
 
+   aopt_l = bopt_l = copt_l = dopt_l = eopt_l = fopt_l = gopt_l = 0;
    f_to_c_l(aopt,&aopt_len,&aopt_l);
    aopt_local = g_strndup(aopt, (gsize) aopt_l);
    f_to_c_l(bopt,&bopt_len,&bopt_l);
@@ -399,10 +402,13 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
    title_local = "  ";
 
 /* find out actual length of each prompt and then total length with a space between. */
+   msg1_l = 0;
    f_to_c_l(msg1,&msg1_len,&msg1_l);
    question_local = g_strndup(msg1, (gsize) msg1_l);
 /* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
 
+   aopt_l = bopt_l = copt_l = dopt_l = eopt_l = fopt_l = gopt_l = 0;
+   hopt_l = iopt_l = jopt_l = kopt_l = lopt_l = 0;
    f_to_c_l(aopt,&aopt_len,&aopt_l);
    aopt_local = g_strndup(aopt, (gsize) aopt_l);
    f_to_c_l(bopt,&bopt_len,&bopt_l);
@@ -601,5 +607,141 @@ void espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
 
 }
 
+/* *** okbox_callback() actions when an ok... choice is made. *** */
 
+void okbox_callback( GtkWidget *widget,
+                      gpointer  data )
+{
+/* debug g_print ("Hello again - %d was pressed\n", GPOINTER_TO_INT (data)); */
+  abc_pick = GPOINTER_TO_INT (data);	/* see spinbutton example */
+}
+
+/* *** espokbox_ () initialise askok box - will use radio buttons for entries *** */
+void espokbox_ (char *msg1, char *aopt, char *bopt, char *copt,
+                long int *idef,long int *ipick, int msg1_len,
+                int aopt_len, int bopt_len, int copt_len) {
+
+   GtkWidget *askbox, *hbox, *left_col, *right_col, *button, *label;
+   GSList *group;
+   gchar *title_local;
+   gchar *aopt_local, *bopt_local, *copt_local;
+   gchar *question_local;
+   gint result;
+   gint aopt_l,bopt_l,copt_l; /* non-blank lengths */
+   gint msg1_l; /* non-blank lengths for prompt */
+
+/*
+ * Create a frame for the menu to be displayed in, add
+ * title and then add it to the menu area of the main window.
+ */
+   title_local = "  ";
+
+/* find out actual length of prompt  */
+   msg1_l = 0;
+   f_to_c_l(msg1,&msg1_len,&msg1_l);
+
+/* debug  fprintf(stderr,"prompt lengths are %d %d\n",msg1_len,msg1_l); */
+   question_local = g_strndup(msg1, (gsize) msg1_l);
+/* debug  fprintf(stderr,"ask phrase %s\n",question_local); */
+
+   aopt_l = bopt_l = copt_l = 0;
+   f_to_c_l(aopt,&aopt_len,&aopt_l);
+   aopt_local = g_strndup(aopt, (gsize) aopt_l);
+   f_to_c_l(bopt,&bopt_len,&bopt_l);
+   bopt_local = g_strndup(bopt, (gsize) bopt_l);
+   f_to_c_l(copt,&copt_len,&copt_l);
+   copt_local = g_strndup(copt, (gsize) copt_l);
+/* debug  fprintf(stderr,"non-blank lengths are %d %d %d\n",aopt_l,bopt_l,copt_l); */
+   
+   abc_pick = (gint) *idef;	/* Set default abc_pick response to current default */
+
+   /* Create the widgets: first the dialog window, then split the default
+   vbox into two (left_col and right_col) by using a hbox so as the items
+   can be displayed in two columns.
+   */
+   if(*idef==1) {
+     askbox = gtk_dialog_new_with_buttons(title_local,
+       GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
+       GTK_STOCK_HELP, GTK_RESPONSE_HELP,copt_local, 1,
+       GTK_STOCK_OK, GTK_RESPONSE_OK,
+       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,NULL);
+   } else if(*idef==2) {
+     askbox = gtk_dialog_new_with_buttons(title_local,
+       GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
+       GTK_STOCK_HELP, GTK_RESPONSE_HELP,copt_local, 2,
+       GTK_STOCK_OK, GTK_RESPONSE_OK,
+       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,NULL);
+   } else if (idef==0) {
+     askbox = gtk_dialog_new_with_buttons(title_local,
+       GTK_WINDOW (window),GTK_DIALOG_DESTROY_WITH_PARENT,
+       GTK_STOCK_HELP, GTK_RESPONSE_HELP,
+       GTK_STOCK_OK, GTK_RESPONSE_OK,
+       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,NULL);
+   }
+
+   label = gtk_label_new (question_local);
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox), label);
+
+   hbox = gtk_hbox_new (TRUE, 2);
+   gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),hbox);
+   left_col = gtk_vbox_new (TRUE, 2);
+   gtk_box_pack_start (GTK_BOX (hbox),left_col, TRUE, TRUE, 0);
+   right_col = gtk_vbox_new (TRUE, 2);
+   gtk_box_pack_start (GTK_BOX (hbox),right_col, TRUE, TRUE, 0);
+
+   /* Add entries to the columns in turn */
+    button = gtk_radio_button_new_with_label (NULL, aopt_local);
+    gtk_box_pack_start (GTK_BOX (left_col), button, TRUE, TRUE, 0);
+    if ( abc_pick==1 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
+    g_signal_connect (G_OBJECT (button), "pressed",
+                      G_CALLBACK (okbox_callback), GINT_TO_POINTER (1));
+    gtk_widget_show (button);
+    group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (button));
+
+    button = gtk_radio_button_new_with_label (group, bopt_local);
+    gtk_box_pack_start (GTK_BOX (right_col), button, TRUE, TRUE, 0);
+    if ( abc_pick==2 ) {gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (button), TRUE);}
+    g_signal_connect (G_OBJECT (button), "pressed",
+                      G_CALLBACK (okbox_callback), GINT_TO_POINTER (2));
+    gtk_widget_show (button);
+
+   /*
+      Display the new widgets.
+   */
+   gtk_widget_show_all (askbox);
+
+   /* Set dialog properties and wait for user response */
+   gtk_window_set_modal (GTK_WINDOW (askbox), TRUE);
+   gtk_window_set_transient_for(GTK_WINDOW (askbox), GTK_WINDOW (window));
+
+   result = gtk_dialog_run (GTK_DIALOG (askbox));
+   switch (result)
+      {
+       case GTK_RESPONSE_OK:
+       /*   fprintf(stderr,"Goodbye - %d was selected\n", abc_pick); */
+          *ipick = (long int) abc_pick;
+          break;
+       case GTK_RESPONSE_CANCEL:
+       /*   fprintf(stderr,"Goodbye - %d with original choice\n", abc_pick); */
+          *ipick = (long int) abc_pick;
+          break;
+       case GTK_RESPONSE_HELP:
+       /*   fprintf(stderr,"Goodbye - %d help was selected\n", abc_pick); */
+          *ipick = -8;
+          break;
+       case 1:
+       /*   fprintf(stderr,"Goodbye - %d default 1 was selected\n", abc_pick); */
+          *ipick = 1;
+          break;
+       case 2:
+       /*   fprintf(stderr,"Goodbye - %d default 2 was selected\n", abc_pick); */
+          *ipick = 2;
+          break;
+       default:
+          *ipick = -1;
+          break;
+      }
+   gtk_widget_destroy (askbox);
+
+}
 

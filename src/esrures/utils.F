@@ -611,7 +611,6 @@ C Get common block precz/lnprecz from geometry.h
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       CHARACTER zdescr*80,outs*244,outsd*80
-      logical unixok
 
       length=0
       do 42 i=1,NZ
@@ -642,11 +641,7 @@ C Get common block precz/lnprecz from geometry.h
         return
       endif
 
-C I/O error trap.
-   1  call isunix(unixok)
-      if(unixok)then
-        write(6,*) 'ZLIST: error writing zone names: ',outs
-      endif
+   1  write(6,*) 'ZLIST: error writing zone names: ',outs
       ierr=1
       return
       END
@@ -662,8 +657,6 @@ C a different colour for each name.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       character word*24
-      logical unixok
-      
 #ifdef OSX
       integer iix,iiy
 #else
@@ -840,10 +833,7 @@ C Then get index of colour for this zone, then plot text in that colour.
         return
       endif
 
-   1  call isunix(unixok)
-      if(unixok)then
-        write(6,*) 'ZLIST: error writing zone names: ',word
-      endif
+   1  write(6,*) 'ZLIST: error writing zone names: ',word
       ierr=1
       return
       END
@@ -1169,7 +1159,6 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       SUBROUTINE PIKMRTS(IZLST,ISLST,NSEL,IER)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1178,11 +1167,16 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       DIMENSION IV(60),IZLST(MCON),ISLST(MCON),ILZNO(MCON),ILSNO(MCON)
 
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character H*72,ST(60)*22,outs*124,LMRT*72,CUBN*6
 
       IER=0
@@ -1850,10 +1844,7 @@ C extremes.  Basic version, improvements could be made to intervals.
           endif
         endif
       else
-
-C Debug.
-C        write(6,*) 'xdiff exception'
-
+        write(6,*) 'xdiff exception'
         XDIFF=(XMAX-XMIN)/100.0
         BXMIN = XMIN-XDIFF
         BXMAX = XMAX+XDIFF

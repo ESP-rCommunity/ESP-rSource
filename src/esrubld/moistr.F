@@ -294,7 +294,6 @@ C **********************************************************************
       SUBROUTINE MZMTMP(ICOMP)
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
@@ -304,7 +303,6 @@ C **********************************************************************
       COMMON/GR1D03/BCNV,ILUMP(MCOM,MS)
       COMMON/MOIST03/MNDS,MNDZ(MCOM),MNDC(MCOM,MS),MNDL(MCOM,MS,ME)
       COMMON/MOIST23/TMPp(MS,MNM),TMPf(MS,MNM)
-      character outs*124
 
       NC=NCONST(ICOMP)
       DO 10 I=1,NC
@@ -327,8 +325,7 @@ C Trap divition by zero (1.0 is a guessed alternative).
             if(MNDL(ICOMP,I,IL).ne.0)then
               DELXm=THICK/FLOAT(MNDL(ICOMP,I,IL))
             else
-              write(outs,*) 'MNDL out of range @',ICOMP,I,IL
-              call edisp(iuout,outs)
+              write(6,*) 'MNDL out of range @',ICOMP,I,IL
               DELXm=THICK/1.0
             endif
           DO 30 INM=1,MNDL(ICOMP,I,IL)
@@ -338,8 +335,7 @@ C Trap for division by zero.
             if(DELXh.gt.0.0)then
               INH1=INT(XSUMM/DELXh)
             else
-              write(outs,*) 'DELXh out of range @',ICOMP,I,IL
-              call edisp(iuout,outs)
+              write(6,*) 'DELXh out of range @',ICOMP,I,IL
               INH1=INT(XSUMM/1.0)
             endif
             XINTP=XSUMM-DELXh*INH1
@@ -367,16 +363,14 @@ C Trap zero division.
             if(NNT.gt.0)then
               DELXh=THICK/FLOAT(NNT)
             else
-              write(outs,*) 'NNT out of range @',ICOMP,I,IL
-              call edisp(iuout,outs)
+              write(6,*) 'NNT out of range @',ICOMP,I,IL
               DELXh=THICK/FLOAT(1)
             endif
             NMT=MNDL(ICOMP,I,IL)
             if(NMT.gt.0)then
               DELXm=THICK/FLOAT(NMT)
             else
-              write(outs,*) 'NMT out of range @',ICOMP,I,IL
-              call edisp(iuout,outs)
+              write(6,*) 'NMT out of range @',ICOMP,I,IL
               DELXm=THICK/FLOAT(1)
             endif
             XSUMM=0.
@@ -386,8 +380,7 @@ C Trap zero division.
               if(DELXh.gt.0.0)then
                 INTRVL=INT(XSUMM/DELXh)
               else
-                write(outs,*) 'DELXh out of range @',ICOMP,I,IL
-                call edisp(iuout,outs)
+              write(6,*) 'DELXh out of range @',ICOMP,I,IL
                 INTRVL=INT(XSUMM/1.0)
               endif
               XINTP=XSUMM-DELXh*INTRVL
@@ -774,8 +767,7 @@ C Calculate the future time vapour ratio for air.
       if(Psat01(TCfair).ne.0.0)then
         RH=Pnair/Psat01(TCfair)
       else
-        write(outs,*) 'Psat01(TCfair) returning zero',TCfair
-        call edisp(iuout,outs)
+        write(6,*) 'Psat01(TCfair) returning zero',TCfair
       endif
       Ufair=X03(TCfair,RH,PATMpa)
       Usair(ICOMP)=Ufair
@@ -831,8 +823,7 @@ C Estimate the future time water vapor permeability.
               if(Psat01(TCf1).ne.0.0)then
                 RH1=Pn(I,ITM1)/Psat01(TCf1)
               else
-                write(outs,*) 'Psat01(TCf1) returning zero ',TCf1
-                call edisp(iuout,outs)
+                write(6,*) 'Psat01(TCf1) returning zero ',TCf1
               endif
               IF(RH1.GT.RHmax)THEN
                 RH1=RHmax
@@ -842,8 +833,7 @@ C Estimate the future time water vapor permeability.
               if(Psat01(TCp1).ne.0.0)then
                 RH1p=Pp(ICOMP,I,ITM1)/Psat01(TCp1)
               else
-                write(outs,*) 'Psat01(TCp1) returning zero.',TCp1
-                call edisp(iuout,outs)
+                write(6,*) 'Psat01(TCp1) returning zero.',TCp1
               endif
               UM0=PERM(ICOMP,I,IL,1)
               UM100=PERM(ICOMP,I,IL,2)
@@ -865,8 +855,7 @@ C values are small then probably glass so just set dELTf1.
               if(Psat01(TCf2).ne.0.0)then
                 RH2=Pn(I,ITM2)/Psat01(TCf2)
               else
-                write(outs,*) 'Psat01(TCf2) returning zero.',TCf2
-                call edisp(iuout,outs)
+                write(6,*) 'Psat01(TCf2) returning zero.',TCf2
               endif
               IF(RH2.GT.RHmax)THEN
                 RH2=RHmax
@@ -889,8 +878,7 @@ C Step-wise profile for water vapor permeability (DELX's cancled out).
               if((DELTf1+DELTf2).ne.0.0)then
                 DELTf(I,ITM1)=2.*DELTf1*DELTf2/(DELTf1+DELTf2)
               else
-                write(outs,*) 'DELTf1+DELTf2 is zero.',DELTf1,DELTf2
-                call edisp(iuout,outs)
+                write(6,*) 'DELTf1+DELTf2 is zero.',DELTf1,DELTf2
               endif
               DELTs(ICOMP,I,ITM1)=DELTf(I,ITM1)
 
@@ -903,8 +891,7 @@ C Estimate the future time thermal vapor diffusion coefficient.
               if(Psat01(TCp1).ne.0.0)then
                 RH1p=Pp(ICOMP,I,ITM1)/Psat01(TCp1)
               else
-                write(outs,*) 'Psat01(TCp1) returning zero.',TCp1
-                call edisp(iuout,outs)
+                write(6,*) 'Psat01(TCp1) returning zero.',TCp1
               endif
             ENDIF
 
@@ -970,7 +957,6 @@ C *********************************************************************
 #include "building.h"
 #include "geometry.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -1000,7 +986,6 @@ C *********************************************************************
       COMMON/MOIST67/VFINF,VFCPL,VFLST,VFMCH,VFLTN
 
       common/trcm01/ep(MS),ef(MS),TERMcpl
-      character outs*124
 
 C Consider each multilayered construction within current  zone.
       SUMA1=0.
@@ -1039,14 +1024,12 @@ C Estimate the present and future saturated water vapour pressure.
         if(Psp.ne.0.0)then
           SLFp=RXIVpf(I,IM)/Psp
         else
-          write(outs,*) 'Psat01(TC) is zero ',TC
-          call edisp(iuout,outs)
+          write(6,*) 'Psat01(TC) is zero ',TC
         endif
         if(Psf.ne.0.0)then
           SLFf=RXIVpf(I,IM)/Psf
         else
-          write(outs,*) 'Psat01(TC) is zero ',TC
-          call edisp(iuout,outs)
+          write(6,*) 'Psat01(TC) is zero ',TC
         endif
         DTPp2=RGAMm*DTPp(I,IM)*TERM
         DTPf2= GAMm*DTPf(I,IM)*TERM
@@ -1076,14 +1059,12 @@ C Continue with other nodes (homogeneous) in the first layer.
           if(Psp.ne.0.0)then
             SLFp=RXIVpf(I,IM)/Psp
           else
-            write(outs,*) ' Psat01(TC) returns zero ',TC
-            call edisp(iuout,outs)
+            write(6,*) ' Psat01(TC) returns zero ',TC
           endif
           if(Psf.ne.0.0)then
             SLFf=RXIVpf(I,IM)/Psf
           else
-            write(outs,*) ' Psat01(TC) returns zero ',TC
-            call edisp(iuout,outs)
+            write(6,*) ' Psat01(TC) returns zero ',TC
           endif
           DTPp1=RGAMm*DTPp(I,IM1)*TERM
           DTPf1= GAMm*DTPf(I,IM1)*TERM

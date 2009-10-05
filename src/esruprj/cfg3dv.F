@@ -96,8 +96,6 @@ C ier is returned as non-zero if there has been a problem.
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
-#include "esprdbfile.h"
-#include "material.h"
 
 C Passed parameter.
       integer ier
@@ -114,6 +112,11 @@ C Passed parameter.
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -121,9 +124,10 @@ C Passed parameter.
       COMMON/RAY6/LINSTY(MCON)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
-C VCOORD : X,Y & Z coordinates in model (via geometry.h).
+C VCOORD : X,Y & Z coordinates of each vertice in zone.
 C NZNVER : number of vertices associated with each connection.
 C NZJVN : topology of vertices associated with each connection.
+      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -396,10 +400,9 @@ C ITHLS = 3 partial attributes
             endif
           endif
 
-C Debug.
+C Debug...
 C          write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
 C     &      ithls,ithlz,ISTOK
-
         else
           IPEN= 1
         endif
@@ -433,11 +436,9 @@ C move cursor to vertex and remember position.
 
 C Normal (not highlighted) edge being drawn, if NAP = NBP then check
 C common/G8 for hints as to alternate greys or dots.
-
-C Debug.
+C Debug..
 C            write(6,*) 'nap nbp nbedgdup iedge j',nap,nbp,nbedgdup(icc),
 C     &        iedge,j
-
             if(NAP.ne.NBP)then
               call eswline(iixlast,iiylast,iix,iiy)
             else
@@ -452,10 +453,7 @@ C with the co-planer.
                 else
                   LD=4
                   call edline(iixlast,iiylast,iix,iiy,LD)
-
-C Debug.
-C                  write(6,*) 'duplicate edge.'
-
+                  write(6,*) 'duplicate edge.'
                   found=.true.
                 endif
               endif
@@ -516,10 +514,7 @@ C with the co-planer.
                 else
                   LD=4
                   call edline(iixlast,iiylast,iix,iiy,LD)
-
-C Debug.
-C                  write(6,*) 'duplicate edge.'
-
+                  write(6,*) 'duplicate edge.'
                   found=.true.
                 endif
               endif

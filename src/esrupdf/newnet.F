@@ -358,7 +358,7 @@ C Read the existing flow network
 
 C << Note: should check to see if LAPROB is a network flow file or
 C << a graphic network file (as is done in esystem.F) 
-          CALL EMFREAD(IUF,IER)
+          CALL EMFREAD(IUF,0,IER)
           IF(IER.NE.0)THEN
             CALL EDISP(IUOUT,' ')
             CALL EDISP(IUOUT,'ERROR: Problem reading fluid flow file!')
@@ -1036,7 +1036,6 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
 
 #include "plant.h"
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 
       common/outin/iuout,iuin
@@ -1051,6 +1050,11 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
+
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       dimension ival(mpcom), cnttyp(4)
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
@@ -1173,7 +1177,7 @@ C and construction node cntdt3 counted from outside.
             ELSEIF(ICLOC.EQ.2.OR.ICLOC.EQ.3)THEN
               call eclose(gversion(IZ),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+                call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
               else
                 call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
               endif
@@ -2092,17 +2096,42 @@ C The routine presents a list of surface layers.
       subroutine CONTLYR(IZ,IS,IND)
 #include "building.h"
 #include "esprdbfile.h"
-#include "material.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/FILEP/IFIL
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat
 
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
@@ -2123,8 +2152,7 @@ C Check composite name of surface with composite name in MLC common.
          call edisp(iuout,'Error: probably no MLC defined!')
          return
       endif
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
+      call eclose(matver,1.1,0.01,closemat)
         
 C Write menu displaying a list of layer names
       header=4
@@ -2136,25 +2164,18 @@ C Write menu displaying a list of layer names
       do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(imatch,j)   ! which array index
-          if(matarrayindex.ge.0)then
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRV=1.0
-              TITL='GAPS'; NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+        if(closemat)then
+          legmat=IPR(imatch,j)   ! which legacy index
+          if(legmat.ge.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
         else
           CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
@@ -2511,7 +2532,6 @@ C D - delete
       SUBROUTINE EDBPLINK(MODE,IS)
 
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 #include "plant.h"
 #include "control.h"
@@ -2534,6 +2554,10 @@ C Common for the building plant lin
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR
@@ -2704,7 +2728,7 @@ C Determine the linkage type.
 
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+            call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
           endif

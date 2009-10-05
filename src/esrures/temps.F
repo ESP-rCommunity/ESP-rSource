@@ -30,8 +30,7 @@ C MODEWP computes the dew point temperature given dry bulb
 C temperature and % saturation.
 
       SUBROUTINE MODEWP(TAI,PSAT,DPT)
-      COMMON/OUTIN/IUOUT,IUIN
-      character outs*124
+C      character outs*124
       IF(TAI.LT.11.)then
         FS=-0.0000073*TAI+1.00444
       elseif(TAI.GE.11.0.AND.TAI.LT.26.0)then
@@ -39,9 +38,8 @@ C temperature and % saturation.
       elseif(TAI.GE.26.0.AND.TAI.LE.60.0)then
         FS=0.0000405*TAI+1.003497
       elseif(TAI.GT.60.0.OR.TAI.LT.0.1)then
-        write(outs,'(a,F7.2,a)') 'MODEWP: ',TAI,
+        write(6,'(a,F7.2,a)') 'MODEWP: ',TAI,
      &    ' out of range: 60 > dbt > 0, setting dp = 0.0 '
-        call edisp(iuout,outs)
         DPT=0.0
         return
       endif
@@ -52,14 +50,12 @@ C temperature and % saturation.
         PSS=10**(X)
       endif
       if(PSAT.gt.100.0)then
-        write(outs,'(a,F7.2,a)') 'MODEWP: ',PSAT,
+        write(6,'(a,F7.2,a)') 'MODEWP: ',PSAT,
      &    ' out of range: 100 > psat > 0, setting psat = 100.0 '
-        call edisp(iuout,outs)
         PSAT=100.0
       elseif(PSAT.le.0.0)then
-        write(outs,'(a,F7.2,a)') ' MODEWP: ',PSAT,
+        write(6,'(a,F7.2,a)') ' MODEWP: ',PSAT,
      &    ' out of range: 100 > psat > 0, setting psat = 1.0 '
-        call edisp(iuout,outs)
         PSAT=1.0
       endif
       GSS=(0.62197*FS*PSS)/(1013.25-(FS*PSS))
@@ -92,7 +88,6 @@ C temperature and % saturation.
     4 DPT=DPT+.1
       RETURN
       END
-
       FUNCTION XLHSPS(DPT)
       X=31.59051-8.2*ALOG10(DPT+273.16)+0.0024804*(DPT+273.16)-
      &3142.31/(DPT+273.16)
@@ -183,12 +178,13 @@ C IOPT - specific temperature differences.
 
       SUBROUTINE SENMRT(IDAY,IZONE,ISENS,ISET,IOPT)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
@@ -199,6 +195,7 @@ C IOPT - specific temperature differences.
 
       DIMENSION XD(MZS),surarea(6),stemp(6)
 
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124,LMRT*72,CUBN*6
 
 C Recover sensor vievfactors.
@@ -229,7 +226,7 @@ C Check view factors sum to one (if not then scale).
             FFL(ISENS,I,J)=FFL(ISENS,I,J)/sum
  25       continue
         else
-          call edisp(iuout,'error in sensor view factors.')
+          write (6,*) 'error in sensor view factors.'
         endif
  10   continue
 
@@ -282,12 +279,12 @@ C surface representing the front surface.
         endif
  20   continue
 
-C Debug.
-C      write(6,*) (GVAL(I),I=1,NTS)
+C Debug...
+      write (6,*) (GVAL(I),I=1,NTS)
 
       return
 
- 99   call edisp(iuout,' reading error in SENMRT')
+ 99   write (6,*) ' reading error in SENMRT'
 
       return
       end

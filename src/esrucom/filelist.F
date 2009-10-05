@@ -47,7 +47,6 @@ C espriou.h for parameter MFFOLD
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/uhome/upath
       common/rpath/path
@@ -318,16 +317,10 @@ C Try to use information gathered from file scan.
           if(ix.eq.1)then
             write(sfile,'(3a)')relative(1:lnblnk(relative)),fs,
      &        listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
-
-C Debug.
-C            write(6,*) sfile
-
+            write(6,*) sfile
             write(snpfile,'(a)') 
      &        listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
-
-C Debug.
-C            write(6,*) snpfile
-
+            write(6,*) snpfile
           else
 
 C Nothing selected, revert to original name. << expand logic here >>
@@ -336,7 +329,6 @@ C Nothing selected, revert to original name. << expand logic here >>
           endif
         else
           write(outs,'(2a)') relative(1:lnblnk(relative)),'. Reverting.'
-          call edisp(iuout,outs)
           call usrmsg('There are no files matching the criteria in',
      &      relative,'W')
           sfile=tsfile
@@ -349,25 +341,21 @@ C          write(sfile,'(a)')relative(1:lnblnk(relative))
 
 C Errors when creating string buffers.
    1  if(IOS.eq.2)then
-        write(outs,*)'browsefilelist: no permission to make subpath: ',
+        write(6,*) 'browsefilelist: no permission to creat subpath: ',
      &    subpath
-        call edisp(iuout,outs)
       else
-        write(outs,*)'browsefilelist: error creating subpath: ',subpath
-        call edisp(iuout,outs)
+        write(6,*) 'browsefilelist: error creating subpath: ',subpath
       endif
       ier=2
       return
 
    2  if(IOS.eq.2)then
-        write(outs,*) 
-     &    'browsefilelist: no permission to create relative path: ',
-     &    relative
-        call edisp(iuout,outs)
+        write(6,*) 
+     &  'browsefilelist: no permission to create relative path: ',
+     &  relative
       else
-        write(outs,*) 'browsefilelist: error creating relative path: ',
-     &    relative
-        call edisp(iuout,outs)
+        write(6,*) 'browsefilelist: error creating relative path: ',
+     &  relative
       endif
       ier=2
       return
@@ -407,25 +395,20 @@ C ********* copyfilelist
 C copyfilelist takes string array of size iasize which should
 C be equivalent to MFFOLD (char*72 listf(iasize)) returned
 C from call to getfilelist and copies it into another string
-C array (char*72 listfc(iasize)). nwlistf(iasize) is the length of 
-C each string (returned from getfilelist call).
-C maxw is the maximum width of any string in the list of file
-C names.
+C array (char*72 listfc(iasize)). nwlistf(iasize) is the length of each
+C string (returned from getfilelist call).
+C maxw is the maximum width of any string
+C << Kludge necessary to get lnblnk to correctly determine the
+C length of each string >>.
       subroutine copyfilelist(listf,nwlistf,listfc,iasize,maxw)
       character*72 listf(iasize),listfc(iasize)
       dimension nwlistf(iasize)
-      integer loop
-      
-      loop=iasize-1  ! loop is one less than the size
       maxw=0
-      do 42 i=1,loop
+      do 42 i=1,iasize
         listfc(i)=' '
-        if(nwlistf(i).gt.0.and.nwlistf(i).le.72)then
+        if(nwlistf(i).gt.0)then
           if(nwlistf(i).gt.maxw) maxw = nwlistf(i)
           write(listfc(i),'(a)') listf(i)(1:nwlistf(i))
-        elseif(nwlistf(i).gt.72)then
-          maxw = 72
-          write(listfc(i),'(a)') listf(i)(1:72)
         endif
   42  continue
       return

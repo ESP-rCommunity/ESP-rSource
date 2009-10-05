@@ -58,8 +58,7 @@ C plane through point with normal parallel to test line.
       MAJVEC(2)=Y(IVE)-Y(IVS)
       MAJVEC(3)=Z(IVE)-Z(IVS)
 
-C Debug.
-C      write(6,*) 'MAJvec ',(MAJVEC(I),I=1,3)
+C      write (6,*) 'MAJvec ',(MAJVEC(I),I=1,3)
 
       Tmin=999999.9
       Tmax=-999999.9
@@ -72,13 +71,12 @@ C      write(6,*) 'MAJvec ',(MAJVEC(I),I=1,3)
         Tmin=AMIN1(Tmin,T)
  15   continue
 
-C Debug.
-C      write(6,*) 'Tmax ',Tmax,'  Tmin',Tmin
-C      write(6,*) 'Min vert ',(Tmin*MAJVEC(1))+X(IVS),
-C     &                       (Tmin*MAJVEC(2))+Y(IVS),
+C      write (6,*) 'Tmax ',Tmax,'  Tmin',Tmin
+C      write (6,*) 'Min vert ',(Tmin*MAJVEC(1))+X(IVS),
+C     &                        (Tmin*MAJVEC(2))+Y(IVS),
 C     &                        (Tmin*MAJVEC(3))+Z(IVS)
-C      write(6,*) 'Max vert ',(Tmax*MAJVEC(1))+X(IVS),
-C     &                       (Tmax*MAJVEC(2))+Y(IVS),
+C      write (6,*) 'Max vert ',(Tmax*MAJVEC(1))+X(IVS),
+C     &                        (Tmax*MAJVEC(2))+Y(IVS),
 C     &                        (Tmax*MAJVEC(3))+Z(IVS)
 
 C Now find vector in plane perp to defined edge.
@@ -86,13 +84,11 @@ C Now find vector in plane perp to defined edge.
       NVEC(2)=PEQN(2)
       NVEC(3)=PEQN(3)
 
-C Debug.
-C      write(6,*) 'NVEC ',(NVEC(I),I=1,3)
+C      write (6,*) 'NVEC ',(NVEC(I),I=1,3)
 
       call CROSS(NVEC,MAJVEC,MINVEC)
 
-C Debug.
-C      write(6,*) 'MINvec ',(MINVEC(I),I=1,3)
+C      write (6,*) 'MINvec ',(MINVEC(I),I=1,3)
 
 C Now find minimum and maximum extents of surface perp to defined edge.
 C For each vertex find intersection of line through test verts with 
@@ -107,15 +103,13 @@ C plane through point with normal parallel to test line.
         Smax=AMAX1(Smax,S)
         Smin=AMIN1(Smin,S)
  20   continue
-
-C Debug.
-C      write(6,*) 'Smax ',Smax,'  Smin',Smin
-C      write(6,*) 'Min vert ',(Smin*MINVEC(1))+X(IVS),
-C     &                       (Smin*MINVEC(2))+Y(IVS),
-C     &                       (Smin*MINVEC(3))+Z(IVS)
-C      write(6,*) 'Max vert ',(Smax*MINVEC(1))+X(IVS),
-C     &                       (Smax*MINVEC(2))+Y(IVS),
-C     &                       (Smax*MINVEC(3))+Z(IVS)
+C      write (6,*) 'Smax ',Smax,'  Smin',Smin
+C      write (6,*) 'Min vert ',(Smin*MINVEC(1))+X(IVS),
+C     &                        (Smin*MINVEC(2))+Y(IVS),
+C     &                        (Smin*MINVEC(3))+Z(IVS)
+C      write (6,*) 'Max vert ',(Smax*MINVEC(1))+X(IVS),
+C     &                        (Smax*MINVEC(2))+Y(IVS),
+C     &                        (Smax*MINVEC(3))+Z(IVS)
 
 C Find corner of bounding box.
       PA(1)=Tmin*MAJVEC(1)+X(IVS)
@@ -129,11 +123,9 @@ C Find corner of bounding box.
         CB(I)=0.
  22   continue
       call CLOSE3D(PA,MAJVEC,SA,PB,MINVEC,SB,DIST,CA,CB)
-
-C Debug.
-C      write(6,*) 'Intersect A ',(CA(I),I=1,3),' : ',SA,Tmin
-C      write(6,*) 'Intersect B ',(CB(I),I=1,3),' : ',SB,Smin
-C      write(6,*) 'Dist ',DIST
+C      write (6,*) 'Intersect A ',(CA(I),I=1,3),' : ',SA,Tmin
+C      write (6,*) 'Intersect B ',(CB(I),I=1,3),' : ',SB,Smin
+C      write (6,*) 'Dist ',DIST
 
 C The intersect will not be the minimum corner of the bounding box,
 C but will be at a value of zero for SA or SB
@@ -146,9 +138,7 @@ C but will be at a value of zero for SA or SB
         YS=Tmin*MAJVEC(2)+Y(IVS)
         ZS=Tmin*MAJVEC(3)+Z(IVS)
       endif
-
-C Debug.
-C      write(6,*) 'Start corner ',XS,YS,ZS
+C      write (6,*) 'Start corner ',XS,YS,ZS
 
 C Scale direction vectors to equal length of bounding box edges divided 
 C by 2*(number of grid points).
@@ -157,9 +147,8 @@ C by 2*(number of grid points).
         MINVEC(I)=MINVEC(I)*(Smax-Smin)/real(igmin*2)
  25   continue
 
-C Debug.
-C      write(6,*) 'MAJvec ',(MAJVEC(I),I=1,3)
-C      write(6,*) 'MINvec ',(MINVEC(I),I=1,3)
+C      write (6,*) 'MAJvec ',(MAJVEC(I),I=1,3)
+C      write (6,*) 'MINvec ',(MINVEC(I),I=1,3)
 
 C Now make grid points.
       do 30 I=1,igmin
@@ -349,11 +338,11 @@ C Lines are parallel - set SB to -99 to skip further checks.
 C Check if INSIDE is odd.
       INSURF=INSIDE-((INSIDE/2)*2)
 
-C Debug.
+C Debug...
 C      if (INSURF.eq.0) then
-C        write(6,*) 'Point outside surface',INSURF
+C        write (6,*) 'Point outside surface',INSURF
 C      else
-C        write(6,*) 'Point inside surface',INSURF
+C        write (6,*) 'Point inside surface',INSURF
 C      endif
 
       return

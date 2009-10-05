@@ -71,28 +71,6 @@ $CLM -mode text -file $1 -act asci2bin silent $2  >/dev/null 2>/dev/null
 
 }
 
-
-#=====================================================================
-pdb_convert()  # converts plant dbs from iwec.a to binary formats
-#=====================================================================
-{
-SourceName=$1
-TargetName=$2
-TargetFolder=$3
-printf "\r                                                                            "
-printf "\r   - Creating binary plant databases [${TargetName}]..."
-
-$PDB -mode text >/dev/null 2>&1 <<zzz
-$TargetName
-c
-a
-${SourceName}
-e
--
-zzz
-mv $TargetName $TargetFolder
-
-}
 #=====================================================================
 # Main script
 #=====================================================================
@@ -123,7 +101,7 @@ install_training="yes"     #         training files
 install_exes="prompt"      #         executables
 delete_temp_files="yes"    # Delete temporary files.
 preserve_espr_dir="yes"    # save existing ESP-r directory by default
-gnu_version="gcc4"         # flag indicating which version of gcc is in use
+gnu_version="gcc3"         # flag indicating which version of gcc is in use
 make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
 xLibs="X11"                # Default x-library
@@ -131,7 +109,6 @@ enableFPE="no"             # FPE-exception handling?
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
-reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading files?
 
 #-----------------------------------------------------------
 # List of targets understood by bps
@@ -139,7 +116,7 @@ reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading fil
 
 # Buildable targets:
 programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res run vew"
-# (bld plt, net are not currently built)
+# (bld plt, pro net and vww are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -187,17 +164,15 @@ if [ $# -ne 0 ]; then
         --xml)          xml_support=yes;           shift;;
         --gcc32)        gnu_version="gcc32";       shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
-        --gcc3)         gnu_version="gcc3";        shift;;
         --intel)        use_intel="yes";           shift;;
         --X11)          xLibs="X11";               shift;;
         --GTK)          xLibs="GTK";               shift;;
         --noX)          xLibs="noX";               shift;;
-        --gcc3-fpe)     enableFPE="yes";           shift;;
+        --fpe)          enableFPE="yes";           shift;;
         --compiler_version) shift; input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
         --skip_ish_calcs) skip_ish_calcs="yes";    shift;;
-        --reuse_ish_calcs) reuse_ish_calcs="yes";    shift;;
         clean)          targets="${targets} clean" shift;;
         *)
               # check if target is "buildable",
@@ -269,7 +244,7 @@ if [ $help -eq 1 ]; then
   echo " ARGUMENTS: "
   echo " "
   echo "    <NAME> to install one or more named modules (e.g."
-  echo "           'Install clm' for the module clm)"
+  echo "           Install clm for the module clm)"
   echo " "
   echo "    --compiler_version <STRING>: Append <STRING> to the default"
   echo "        compiler binaries. For instance, to invoke the compiler"
@@ -278,38 +253,31 @@ if [ $help -eq 1 ]; then
   echo "        compilation on Apple PPC machines should typically use"
   echo "        '--compiler_version -3.3'."
   echo " "
-  echo "    -d <PATH>,  --destination <PATH>: Install ESP-r in"
-  echo "        <PATH>/esp-r directory. The default path is:"
-  echo "        ${DESTdir}."
+  echo "    -d <PATH>,  --destination <PATH>: Install "
+  echo "        ESP-r in <PATH>/esp-r directory. The "
+  echo "        default path is ${DESTdir}."
   echo " " 
-  echo "    --debug: Include debugging symbols in ESP-r binaries:"
-  echo "        (the default is no debugging symbols). This option also"
-  echo "        preserves the object files, allowing ESP-r to be"
-  echo "        quickly rebuilt during development."
+  echo "    --debug: Include debugging symbols in executable"
+  echo "        the default is no debugging symbols. Note that" 
+  echo "        if you include debugging then you should answer" 
+  echo "        no when asked if you want to install the executables."
   echo " "
-  echo "    --extra-debug: Enable extended debugging options. Adds"
-  echo "        pedantic range checking, floating-point exception "
-  echo "        handling and stack dump capabilities to ESP-r binaries."
-  echo "        This option is only supported by the intel and gcc4"
-  echo "        compilers."
+  echo "    --extra-debug: Enable extended debugging options"
   echo " "
   echo "    --force: Overwrite a corrupted installation. "
   echo " "
-  echo "    --gcc3-fpe: Enable rudamentry gcc3 floating-point-exception"
-  echo "         handling procedures."
-  echo " "
-# Soon to be obsoleted option:  
-#   echo "    --gcc32: Use 3.2 version of GCC provided by the"
-#   echo "         compat-gcc-32, compat-gcc-32-c++, compat-gcc-32-g77"
-#   echo "         and compat-libf2c-32 packages."
-#   echo " "
-  echo "    --gcc3: Use the GCC3 compilers (gcc, g++ and g77)."
-  echo "         NOTE: support for GCC3 is provided for legacy "
-  echo "         applications only, and will be discontinued in the"
-  echo "         future. Please use GCC4, Sun F90 or Intel if possible."
+  echo "    --fpe: Enable compiler-specific floating-point-exception"
+  echo "         handling procedures, if available."
+  echo " " 
+  echo "    --gcc32: Use 3.2 version of GCC provided by the"
+  echo "         compat-gcc-32, compat-gcc-32-c++, compat-gcc-32-g77"
+  echo "         and compat-libf2c-32 packages."
   echo " "
   echo "    --gcc4: Use the GCC4 compilers (gcc, g++ and gFortran)."
-  echo "         (this option is enabled by default)."
+  echo "         NOTE: compilation of ESP-r with GCC4+ is not currently"
+  echo "         supported, and may introduce uncertianty into results."
+  echo "         GCC4-builds of ESP-r should be used for testing purposes"
+  echo "         only."
   echo " "
   echo "    -h, --help:  Display this help message."
   echo " "
@@ -327,11 +295,6 @@ if [ $help -eq 1 ]; then
   echo "        This option significantly shortens the time required"
   echo "        to install training and validation files, but shading"
   echo "        files must be updated manually."
-  echo " "
-  echo "    --reuse_ish_calcs: Converts existing ascii shading files "
-  echo "        associated with training and validation exemplars, otherwise"
-  echo "        recalculate shading and insolation. This shortens the time"
-  echo "        required to install training and validation files."
   echo " "
   echo "    --silent: Invoke the silent (non-interactive) installation"
   echo "        mode. Default options will be selected, unless "
@@ -380,7 +343,7 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
    else
     # Add XML include files to include paths
     xml_libs_found="yes"
-    LIBXML2_INCLUDE="-I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/local/include/xslt"
+    LIBXML2_INCLUDE="-I/usr/include/libxml2 -I/usr/local/include/libxml2"
 
     # xml support may optionally include support for xslt & exslt. Check
     # that libraries are available
@@ -663,10 +626,10 @@ if [ "$mode" = "interactive" ]; then
   noX_prompt="3"
   default="$X11_prompt"
   
-  # Iif [ "$compiler" = "sunF90" ];  then
-  # I  # Is GTK really incompatable with f90 on sun?
-  # I  GTK_prompt="-"
-  # Ifi
+  if [ "$compiler" = "sunF90" ];  then
+    # Is GTK really incompatable with f90 on sun?
+    GTK_prompt="-"
+  fi
 
   if [ "$platform" = "mingw" ]; then
     # MinGW by definition excludes X11.
@@ -1037,7 +1000,7 @@ case $compiler in
              gcc4) FFLAGS="$FFLAGS -DGCC4"            ;;
              *)    FFLAGS="$FFLAGS -finit-local-zero" ;;
            esac ;;
-   intel) FFLAGS="$LOCAL_INCLUDES $fDefType -save -zero -assume byterecl $debug_flag $ExtendedDebugFlags -O0" ;;
+   intel) FFLAGS="$LOCAL_INCLUDES $fDefType -save -zero -assume byterecl $debug_flag $ExtendedDebugFlags" ;;
 esac
 
 if [ "$platform" = "mingw" ] && [ "$xLibs" = "GTK" ]; then
@@ -1089,7 +1052,7 @@ case $platform in
    linux)    ULIBS="-L${SRCdir}/lib ";;
    cygwin)   ULIBS="-L${SRCdir}/lib ";;
    mac)      ULIBS="-L${SRCdir}/lib ";;
-   mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib -L/local/lib";;
+   mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib";;
 esac
 
 # Append versioning information library
@@ -1117,6 +1080,7 @@ case $xml_support in
          GNU)     ULIBS="$ULIBS -lXML -lstdc++";;
          intel)   ULIBS="$ULIBS -lXML -lstdc++";;
        esac;
+#        ULIBS="$ULIBS -lXML -lstdc++";
 
        # If libxslt is available, link it too
        case $xsl_libs_available in
@@ -1449,8 +1413,8 @@ echo " Installing ESP-r system. This may take some time."
 
  # Ensure that the URL is from ESP-r central. Code built from
  # other repositories is to be designated 'unversioned'
- URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
- URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
+ URLcvsdude=` echo $URL | grep "https*://[a-zA-Z0-9]*@*svn[0-9]*.cvsdude.com/espr/esp-r/"`
+ URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/espr/esp-r/"`
 
  if [ "$svnnotfound" != "" ]    ||
     [ "$notworkingcopy" != "" ] ||
@@ -1756,7 +1720,7 @@ if [ "${LinkDB}" = "yes" ]; then
   echo "*prm ${DBInstDir}/databases/material.db3.a" >> ${ESPdir}/default
   echo "*mlc ${DBInstDir}/databases/multicon.db2" >> ${ESPdir}/default
   echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
-  echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
+  echo "*evn ${DBInstDir}/databases/profiles.db2" >> ${ESPdir}/default
   echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default
   echo "*ecdb ${DBInstDir}/databases/elcomp.db1" >> ${ESPdir}/default
   echo "*mcdb ${DBInstDir}/databases/mscomp.db1" >> ${ESPdir}/default
@@ -1787,11 +1751,11 @@ case "${MCTYPE}" in
          echo "*image_display,GIF,iexplore.exe" >> ${ESPdir}/esprc
          echo "*image_display,XWD,iexplore.exe" >> ${ESPdir}/esprc
     ;;
-  *)     # Use display as image editor (and what if it's not available?)
-         echo "*image_display,TIF,display" >> ${ESPdir}/esprc
-         echo "*image_display,XBMP,display" >> ${ESPdir}/esprc
-         echo "*image_display,GIF,display" >> ${ESPdir}/esprc
-         echo "*image_display,XWD,display" >> ${ESPdir}/esprc
+  *)     # Use xv as image editor (and what if it's not available?)
+         echo "*image_display,TIF,xv" >> ${ESPdir}/esprc
+         echo "*image_display,XBMP,xv" >> ${ESPdir}/esprc
+         echo "*image_display,GIF,xv" >> ${ESPdir}/esprc
+         echo "*image_display,XWD,xv" >> ${ESPdir}/esprc
     ;;
 esac
 echo "*journal,OFF" >> ${ESPdir}/esprc
@@ -1885,9 +1849,12 @@ if [ "$install_training" = "yes" ]; then
      #
      #       Maybe someday...
      
+     ./bin/materials_db_conv training/plant/wch/dbs db_prc.a db_prc >/dev/null
      cd ${SRCdir}/training/cg_ctl/daylit_coef/cfg
-     $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
+     $CLM -mode text -file dec94.clm -act asci2bin silent dec94_clm.txt >/dev/null
      cd ${SRCdir}
+     ./bin/materials_db_conv training/plant/hvac_vav/dbs materials.db.a materials.db >/dev/null
+     ./bin/materials_db_conv training/constr/tp_sub/dbs tp_sub.material.asci tp_sub.material >/dev/null
      echo " Done."
      echo -n "   - Updating materials and climate databases in validation models..."
      cd ${SRCdir}/validation/CEN/13791/databases
@@ -1909,7 +1876,10 @@ if [ "$install_training" = "yes" ]; then
      echo " Done."
      echo -n "   - Removing binary materials db from training models ..."
      cd ${SRCdir}/
-     rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
+     rm -f training/cellular_pv/dbs/cellular_pv.materials
+     rm -f training/constr/tp_sub/dbs/tp_sub.material
+     rm -f training/plant/wch/dbs/db_prc
+     rm -f training/cg_ctl/daylit_coef/cfg/dec94.clm
      rm -f validation/CEN/13791/databases/prim.db
      rm -f validation/CEN/13791/databases/WM_A.clm
      rm -f validation/CEN/13791/databases/WM_B.clm
@@ -1956,17 +1926,10 @@ if [ "$install_training" = "yes" ]; then
         if [ ${isi[$((i+2))]} == "*isi" ]; then
           ish_processed_count=$((${ish_processed_count}+1))
 
-          if [ "${reuse_ish_calcs}" = "no" ]; then
-            printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
+          printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
             $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act update_silent > /dev/null
             shdfile=${file%/*}/${isi[$((i+3))]}
             mv -f ${shdfile} ${ESPdir}/${shdfile}
-          elif [ "${reuse_ish_calcs}" = "yes" ]; then
-            printf "\r      -> model ${cfgnum}/${cfgcount} (${file}); zone ${ish_processed_count}/${ish_tag_count}"
-            $ISH -mode text -file ${file:2} -zone ${isi[$((i+1))]} -act useupdate_silent > /dev/null
-            shdfile=${file%/*}/${isi[$((i+3))]}
-            mv -f ${shdfile} ${ESPdir}/${shdfile}
-          fi
         fi
       fi
       i=2+$(($i))
@@ -2064,8 +2027,6 @@ echo " Installing standard databases. This may take some time."
 
   cp ${SRCdir}/databases/SBEM.db1 ${DESTdir}/esp-r/databases/SBEM.db1
   cp ${SRCdir}/databases/UK_notional.constrdb ${DESTdir}/esp-r/databases/UK_notional.constrdb
-  cp ${SRCdir}/databases/profiles.db1.a ${DESTdir}/esp-r/databases/profiles.db1.a
-  cp ${SRCdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
   echo " Done."
     
      cd ${SRCdir}/databases
@@ -2095,11 +2056,37 @@ zzz
    echo " Done."
 
    echo -n "   - Creating binary plant components databases..."
-   
-   # pdb convert: [ source file ] [ dest. file ] [ dest folder ]
-   pdb_convert plantc.db1.a plantc.db1 ${DESTdir}/esp-r/databases
-   pdb_convert plantc.db2.a plantc.db2 ${DESTdir}/esp-r/databases
-   pdb_convert plantc.tt.a  plantc.tt  ${DESTdir}/esp-r/databases
+   $PDB -mode text  >/dev/null 2>/dev/null <<zzz
+${DESTdir}/esp-r/databases/plantc.db1
+c
+a
+plantc.db1.a
+e
+-
+zzz
+
+   $PDB -mode text  >/dev/null 2>/dev/null <<zzz
+${DESTdir}/esp-r/databases/plantc.db2
+c
+a
+plantc.db2.a
+e
+-
+zzz
+     echo " Done."
+
+     
+     
+     echo -n "   - Creating PP binary plant components databases ..."
+     rm -f plantc.tt
+     $PDB -mode text  >/dev/null 2>/dev/null <<zzz
+${DESTdir}/esp-r/databases/plantc.tt
+c
+a
+plantc.tt.a
+e
+-
+zzz
    echo " Done."
 
    echo -n "   - Creating binary climate databases "

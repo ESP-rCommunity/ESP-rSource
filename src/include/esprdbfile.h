@@ -80,10 +80,6 @@ C LCLIM - (144 char) climate file name associated with the model
       COMMON/C22/LCLIM
       character LCLIM*144
 
-C Special materials/Misc components database.
-      CHARACTER MCMPDBFL*72
-      COMMON/MCMPDBNAM/MCMPDBFL
-
 C Default file names for databases (72 char):
 C DCLIM - default climate, DAPRES - default pressure coef
 C DFCON - default materials, DFMUL - default constructions

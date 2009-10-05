@@ -1,41 +1,33 @@
-*Geometry 1.1,GEN,plant # tag version, format, zone name
-*date Tue Jul 21 18:22:40 2009  # latest file modification 
-plant describes a
-# tag, X co-ord, Y co-ord, Z co-ord
-*vertex,10.00000,60.00000,0.00000  #   1
-*vertex,25.00000,60.00000,0.00000  #   2
-*vertex,25.00000,66.00000,0.00000  #   3
-*vertex,10.00000,66.00000,0.00000  #   4
-*vertex,10.00000,60.00000,5.00000  #   5
-*vertex,25.00000,60.00000,5.00000  #   6
-*vertex,25.00000,66.00000,3.00000  #   7
-*vertex,10.00000,66.00000,3.00000  #   8
-# 
-# tag, number of vertices followed by list of associated vert
-*edges,4,1,2,6,5  #  1
-*edges,4,2,3,7,6  #  2
-*edges,4,3,4,8,7  #  3
-*edges,4,4,1,5,8  #  4
-*edges,4,5,6,7,8  #  5
-*edges,4,1,4,3,2  #  6
-# 
-# surf attributes:
-#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
-#  child of (surface name), useage (pair of tags) 
-#  construction name, optical name
-#  boundary condition tag followed by two data items
-*surf,Surf-1,VERT,-,-,-,intern_wall,OPAQUE,ANOTHER,03,15  #   1 ||< plant-r:main-hall
-*surf,Surf-2,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,Surf-3,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,Surf-4,VERT,-,-,-,extern_wall,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,Surf-5,CEIL,-,-,-,roof,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,Surf-6,FLOR,-,-,-,oth_ground,OPAQUE,GROUND,01,00  #   6 ||< ground profile  1
-# 
-*insol,3,0,0,0  # default insolation distribution
-# 
-# shading directives
-*shad_calc,none  # no temporal shading requested
-# 
-*insol_calc,none  # no insolation requested
-# 
-*base_list,1,6,    90.00 0  # zone base list
+# geometry of plant defined in: ../zone/plant.geo
+GEN  plant                  # type   zone name
+       8       6   0.000    # vertices, surfaces, rotation angle 
+#  X co-ord, Y co-ord, Z co-ord 
+     10.00000    60.00000     0.00000  # vert  1
+     25.00000    60.00000     0.00000  # vert  2
+     25.00000    66.00000     0.00000  # vert  3
+     10.00000    66.00000     0.00000  # vert  4
+     10.00000    60.00000     5.00000  # vert  5
+     25.00000    60.00000     5.00000  # vert  6
+     25.00000    66.00000     3.00000  # vert  7
+     10.00000    66.00000     3.00000  # vert  8
+# no of vertices followed by list of associated vert
+   4,  1,  2,  6,  5,
+   4,  2,  3,  7,  6,
+   4,  3,  4,  8,  7,
+   4,  4,  1,  5,  8,
+   4,  5,  6,  7,  8,
+   4,  1,  4,  3,  2,
+# number of default windows within each surface 
+   0  0  0  0  0  0
+# surfaces indentation (m)
+ 0.000 0.000 0.000 0.000 0.000 0.000
+    3   0   0   0    # default insolation distribution
+# surface attributes follow: 
+# id  surface      geom  loc/  mlc db       environment
+# no  name         type  posn  name         other side
+  1, Surf-1        OPAQ  VERT  intern_wall  main-hall      
+  2, Surf-2        OPAQ  VERT  extern_wall  EXTERIOR       
+  3, Surf-3        OPAQ  VERT  extern_wall  EXTERIOR       
+  4, Surf-4        OPAQ  VERT  extern_wall  EXTERIOR       
+  5, Surf-5        OPAQ  CEIL  roof         EXTERIOR       
+  6, Surf-6        OPAQ  FLOR  oth_ground   GROUND         

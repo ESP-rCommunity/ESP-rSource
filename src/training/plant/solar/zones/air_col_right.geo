@@ -1,41 +1,35 @@
-*Geometry 1.1,GEN,air_col_righ # tag version, format, zone name
-*date Tue Jul 21 13:27:29 2009  # latest file modification 
-air_col_righ describes a...
-# tag, X co-ord, Y co-ord, Z co-ord
-*vertex,15.40000,1.73600,3.37700  #   1
-*vertex,17.60000,1.73600,3.37700  #   2
-*vertex,17.60000,2.84000,4.39300  #   3
-*vertex,15.40000,2.84000,4.39300  #   4
-*vertex,15.40000,1.63600,3.47700  #   5
-*vertex,17.60000,1.63600,3.47700  #   6
-*vertex,17.60000,2.74000,4.49300  #   7
-*vertex,15.40000,2.74000,4.49300  #   8
-# 
-# tag, number of vertices followed by list of associated vert
-*edges,4,2,1,4,3  #  1
-*edges,4,5,6,7,8  #  2
-*edges,4,4,1,5,8  #  3
-*edges,4,1,2,6,5  #  4
-*edges,4,2,3,7,6  #  5
-*edges,4,3,4,8,7  #  6
-# 
-# surf attributes:
-#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
-#  child of (surface name), useage (pair of tags) 
-#  construction name, optical name
-#  boundary condition tag followed by two data items
-*surf,base,SLOP,-,-,-,colct_frame,OPAQUE,ANOTHER,06,14  #   1 ||< air_r:roof
-*surf,cover,SLOP,-,-,-,dbl_glz,DCF7671_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,left,VERT,-,-,-,colct_frame,OPAQUE,ANOTHER,08,05  #   3 ||< right:air_col_mid
-*surf,bot_frame,SLOP,-,-,-,colct_frame,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,right,VERT,-,-,-,colct_frame,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,top_frame,SLOP,-,-,-,colct_frame,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-# 
-*insol,3,0,0,0  # default insolation distribution
-# 
-# shading directives
-*shad_calc,none  # no temporal shading requested
-# 
-*insol_calc,none  # no insolation requested
-# 
-*base_list,0,0.00,0  # zone base
+# geometry of air_col_righ defined in: ../zones/air_col_right.geo
+GEN  air_col_righ  air_col_righ describes a...  # type, name, descr
+       8       6   0.000    # vertices, surfaces, rotation angle
+#  X co-ord, Y co-ord, Z co-ord
+     15.40000     1.73600     3.37700  # vert   1
+     17.60000     1.73600     3.37700  # vert   2
+     17.60000     2.84000     4.39300  # vert   3
+     15.40000     2.84000     4.39300  # vert   4
+     15.40000     1.63600     3.47700  # vert   5
+     17.60000     1.63600     3.47700  # vert   6
+     17.60000     2.74000     4.49300  # vert   7
+     15.40000     2.74000     4.49300  # vert   8
+# no of vertices followed by list of associated vert
+   4,  2,  1,  4,  3,
+   4,  5,  6,  7,  8,
+   4,  4,  1,  5,  8,
+   4,  1,  2,  6,  5,
+   4,  2,  3,  7,  6,
+   4,  3,  4,  8,  7,
+# unused index
+ 0,0,0,0,0,0
+# surfaces indentation (m)
+ 0.00,0.00,0.00,0.00,0.00,0.00
+    3   0   0   0    # default insolation distribution
+# surface attributes follow: 
+# id  surface      geom  loc/  construction environment
+# no  name         type  posn  name         other side
+  1, base          OPAQ  SLOP  colct_frame  roof           
+  2, cover         TRAN  SLOP  dbl_glz      EXTERIOR       
+  3, left          OPAQ  VERT  colct_frame  air_col_mid    
+  4, bot_frame     OPAQ  SLOP  colct_frame  EXTERIOR       
+  5, right         OPAQ  VERT  colct_frame  EXTERIOR       
+  6, top_frame     OPAQ  SLOP  colct_frame  EXTERIOR       
+# base
+  0  0  0  0  0  0     0.00 0

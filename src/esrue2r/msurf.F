@@ -163,11 +163,11 @@ C Find minimum and maximum corners (opposites in the bounding box (plane)
         endif
  30   continue
 
-C Debug.
-C      write(6,*) 'min vert, max vert (no in surf) : ',IMIN,IMAX
-C      write(6,*) 'Min vert coords: ',X(jvn(ISURF,IMIN)), 
+C Debug...
+C      write (6,*) 'min vert, max vert (no in surf) : ',IMIN,IMAX
+C      write (6,*) 'Min vert coords: ',X(jvn(ISURF,IMIN)), 
 C     &                            Y(jvn(ISURF,IMIN)), Z(jvn(ISURF,IMIN))
-C      write(6,*) 'Max vert coords: ',X(jvn(ISURF,IMAX)), 
+C      write (6,*) 'Max vert coords: ',X(jvn(ISURF,IMAX)), 
 C     &                            Y(jvn(ISURF,IMAX)), Z(jvn(ISURF,IMAX))
 
 C Check to see that IMAX and IMIN are not the same.
@@ -192,8 +192,8 @@ C vertices IMAX and IMIN.
           prod=vec1(1)*vec2(1)+vec1(2)*vec2(2)+vec1(3)*vec2(3)
           if (abs(prod).lt.0.00001) then
 
-C Debug.
-C      write(6,*) ' perp vert: ',IVERT
+C Debug...
+C      write (6,*) ' perp vert: ',IVERT
 
 C Form parametric equations.
             SVALS(1)=vec2(1)
@@ -219,8 +219,8 @@ C Form parametric equations.
           prod=vec1(1)*vec2(1)+vec1(2)*vec2(2)+vec1(3)*vec2(3)
           if (abs(prod).lt.0.00001) then
 
-C Debug.
-C      write(6,*) ' perpend vert: ',IVERT
+C Debug...
+C      write (6,*) ' perpend vert: ',IVERT
 
 C Form parametric equations.
             SVALS(1)=vec2(1)

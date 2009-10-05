@@ -25,9 +25,8 @@ C THF (THINGS) file for use in MicroGDS.
 
       subroutine e2vdxf(itrc,incobs,ichop)
 #include "building.h"
-#include "model.h"
 
-C geometry.h provides commons G0/G2/precz/GS5.
+C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -37,12 +36,20 @@ C geometry.h provides commons G0/G2/precz/GS5.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
@@ -50,6 +57,7 @@ C geometry.h provides commons G0/G2/precz/GS5.
       logical newgeo  ! to use for testing if new/old geometry file.
 
       character oformat*24,head*4,ZN*12,outs*124
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 
@@ -71,14 +79,14 @@ C If viewer output required.
 
 C Clear properties.
           NTMC=0
-          nbobs(newfoc)=0
+          NB=0
 
 C Read in the zone geometry.
           WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
           CALL edisp(iuout,outs)
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif
@@ -104,54 +112,42 @@ C Write to output file.
             WRITE(ioout,'(2X,I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
    50     continue
 
-C Read in obstruction file.
-C          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,newfoc,ZOBS(newfoc),
-C     &      0,0,iuout,IER)
+C Read in util & obstruction file.
+          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,ZOBS(newfoc),0,0,
+     &      iuout,IER)
 
-          if(nbobs(newfoc).ge.1)then
+          if(NB.ge.1)then
             if(incobs.eq.0)goto 4
-            DO 301 IB=1,nbobs(newfoc)
-
-C Use the GB1 common block via CNVBLK or CNVBLK3A.
-              if(BLOCKTYP(newfoc,IB)(1:4).eq.'obs ')then
-                CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),
-     &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
-     &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1))
-              elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obs3')then
-                CALL CNVBLK3A(XOB(newfoc,IB),YOB(newfoc,IB),
-     &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
-     &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1),
-     &            BANGOB(newfoc,IB,2),BANGOB(newfoc,IB,3))
-              elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obsp')then
-                call CNVBLKP(newfoc,IB) ! convert obsp type.
-              endif
+            DO 301 IB=1,NB
+              CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
+     &                 BANG(IB))
 
 C Write obstruction information after inverting edges.
-              DO 320 J=1,6
-                K=4
+              DO 320 J=1,NSUR
+                K=NVER(J)
                 DO 330 L=1,K/2
-                  ITEMP=JVNB(J,L)
-                  JVNB(J,L)=JVNB(J,K+1-L)
-                  JVNB(J,K+1-L)=ITEMP
+                  ITEMP=JVN(J,L)
+                  JVN(J,L)=JVN(J,K+1-L)
+                  JVN(J,K+1-L)=ITEMP
   330           continue
   320         continue
 
 C Write obstructions to output file.
               WRITE(ioout,'(a,a15,a)')'GEN ',ZN,' obstructions'
-              WRITE(ioout,'(a)')'  8  6'
-              DO 240 J=1,8  ! each of the vertices
-                WRITE(ioout,'(3F8.3)')XB(J),YB(J),ZB(J)
+              WRITE(ioout,'(2I7)')NTV,NSUR
+              DO 240 J=1,NTV
+                WRITE(ioout,'(3F8.3)')X(J),Y(J),Z(J)
   240         continue
-              DO 250 J=1,6  ! each of the surfaces
-                WRITE(ioout,'(a,21I3)') '  4 ',(JVNB(J,K),K=1,4)
+              DO 250 J=1,NSUR
+                WRITE(ioout,'(I5,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
   250         continue
   301       continue
           ENDIF
 
-C Free the viewer file and reread the geometry file.
+C Free the viewer file and eeread in the geometry file.
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif
@@ -302,62 +298,57 @@ C For each zone in the list...
 
 C Clear properties.
         NTMC=0
-        nbobs(mz)=0
+        NB=0
 
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(mz)
         CALL edisp(iuout,outs)
         call eclose(gversion(mz),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
+          call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
         else
           call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
         endif
         call strup(zname(mz),ZN)
 
 C Read in util & obstruction file.
-C        IF(IOBS(mz).EQ.1)THEN
-C          CALL EGOMST(ITA1,mz,ZOBS(mz),0,0,iuout,IER)
-C        endif
+        IF(IOBS(mz).EQ.1)THEN
+          CALL EGOMST(ITA1,ZOBS(mz),0,0,iuout,IER)
+        endif
 
 C Inclusion of obstructions.
-        if(nbobs(mz).ge.1)then
+        if(NB.ge.1)then
           if(incobs.eq.0)goto 61
-          do 43 ib=1,nbobs(mz)
+          do 43 ib=1,NB
 
 C Convert block into insertion and scaling for a block named
 C obstruction.
-
-C << what about 3 rotation obstruction? >>
-
-C << what about 6 sided obstruction? >>
-
             write(ioout,'(a)')'INSERT'
             write(ioout,'(a)')'  8'
             write(ioout,'(a,a)') 'OBS_',ZN(:lnblnk(ZN))
             write(ioout,'(a)')'  2'
             write(ioout,'(a)')'OBSTRUCTION'
             write(ioout,'(a)')' 10'
-            write(ioout,'(f9.1)')XOB(mz,IB)*1000.
+            write(ioout,'(f9.1)')XO(IB)*1000.
             write(ioout,'(a)')' 20'
-            write(ioout,'(f9.1)')YOB(mz,IB)*1000.
+            write(ioout,'(f9.1)')YO(IB)*1000.
             write(ioout,'(a)')' 30'
-            write(ioout,'(f9.1)')ZOB(mz,IB)*1000.
+            write(ioout,'(f9.1)')ZO(IB)*1000.
             write(ioout,'(a)')' 41'
-            write(ioout,'(f9.1)')DXOB(mz,IB)*1000.
+            write(ioout,'(f9.1)')DX(IB)*1000.
             write(ioout,'(a)')' 42'
-            write(ioout,'(f9.1)')DYOB(mz,IB)*1000.
+            write(ioout,'(f9.1)')DY(IB)*1000.
             write(ioout,'(a)')' 43'
-            write(ioout,'(f9.1)')DZOB(mz,IB)*1000.
+            write(ioout,'(f9.1)')DZ(IB)*1000.
             write(ioout,'(a)')' 50'
-            write(ioout,'(f9.1)')BANGOB(mz,IB,1)
+            write(ioout,'(f9.1)')BANG(IB)
             write(ioout,'(a)')'  0'
   43      continue
 
 C Reread in the geometry file.
           call eclose(gversion(mz),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
+            call georead(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
           endif
@@ -455,7 +446,6 @@ C THF (THINGS) file for use in MicroGDS.
 
       subroutine e2thf(itrc,incobs,ichop)
 #include "building.h"
-#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -463,22 +453,32 @@ C THF (THINGS) file for use in MicroGDS.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
       LOGICAL doobs
 
       character oformat*24,head*4,ZN*12,outs*124
+      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
+      CHARACTER BLKNAME*8,BLKMAT*12
       logical newgeo  ! to use for testing if new/old geometry file.
-      integer llbm    ! length of block material
 
 C Setup standard assumptions.
       newgeo=.false.  ! assume older format geometry.
@@ -498,14 +498,14 @@ C If viewer output required.
 
 C Clear properties.
           NTMC=0
-          nbobs(newfoc)=0
+          NB=0
 
 C Read in the zone geometry.
           WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
           CALL edisp(iuout,outs)
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif
@@ -523,35 +523,26 @@ C Write surface information to the THF file.
             WRITE(ioout,'(I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
    50     continue
 
-          if(nbobs(newfoc).ge.1)then
-            if(incobs.eq.0)goto 4
-            DO 301 IB=1,nbobs(newfoc)
+C Read in obstruction file.
+          IF(IOBS(newfoc).EQ.1)CALL EGOMST(ITA1,ZOBS(newfoc),0,0,
+     &      iuout,IER)
 
-C Use the GB1 common block via CNVBLK
-              if(BLOCKTYP(newfoc,IB)(1:4).eq.'obs ')then
-                CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),
-     &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
-     &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1))
-              elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obs3')then
-                CALL CNVBLK3A(XOB(newfoc,IB),YOB(newfoc,IB),
-     &            ZOB(newfoc,IB),DXOB(newfoc,IB),DYOB(newfoc,IB),
-     &            DZOB(newfoc,IB),BANGOB(newfoc,IB,1),
-     &            BANGOB(newfoc,IB,2),BANGOB(newfoc,IB,3))
-              elseif(BLOCKTYP(newfoc,IB)(1:4).eq.'obsp')then
-                call CNVBLKP(newfoc,IB) ! convert obsp type.
-              endif
+          if(NB.ge.1)then
+            if(incobs.eq.0)goto 4
+            DO 301 IB=1,NB
+              CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
+     &                 BANG(IB))
 
 C Write obstruction information as a clump of surfaces.
-              WRITE(ioout,'(a)')'YIN  8'
-              DO 240 J=1,8
-                WRITE(ioout,'(3F9.4)')XB(J),YB(J),ZB(J)
+              WRITE(ioout,'(a,i2)')'YIN ',NTV
+              DO 240 J=1,NTV
+                WRITE(ioout,'(3F9.4)')X(J),Y(J),Z(J)
   240         continue
               WRITE(ioout,'(a)')'0 '
-              WRITE(ioout,'(a)')'6 '
-              DO 250 J=1,6
-                llbm=LNBLOCKMAT(newfoc,J)
-                WRITE(ioout,'(2a)')'1 ',BLOCKMAT(newfoc,J)(1:llbm)
-                WRITE(ioout,'(a,21I3)') '  4 ',(JVNB(J,K),K=1,4)
+              WRITE(ioout,'(I2)')NSUR
+              DO 250 J=1,NSUR
+                WRITE(ioout,'(a,a8)')'1 ',BLKMAT(J)(1:8)
+                WRITE(ioout,'(I3,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
   250         continue
   301       continue
           ENDIF
@@ -561,7 +552,7 @@ C << Still to do - read and convert any ground topology. >>
 C Free the THF file and reread in the geometry file.
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif

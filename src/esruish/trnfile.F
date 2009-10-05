@@ -36,22 +36,327 @@ C Writes the model geometry to the zone transitional shading file.
       subroutine tfile1(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0, G2, GS5, GS6.
+C geometry.h provides commons G0 and G2.
 #include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/contr/mon,isc(ms),iyd
       common/find/irecl
-      character outs*124
+      character blkname*8,blkmat*12,outs*124
 
       iunit=ifil
 
       irec=2
-      write(iunit,rec=irec,iostat=istat,err=1000)mon,
-     &  (isc(i),i=1,nzsur(icomp)),iyd
+      write(iunit,rec=irec,iostat=istat,err=1000)mon,(isc(i),i=1,nsur),
+     &                                           iyd
+      irec=irec+1
+      write(iunit,rec=irec,iostat=istat,err=1000)ctype(icomp),nsur,ntv,
+     &                                           (nver(i),i=1,nsur)
       irec=irec+1
 
+C Write topology.
+      do 10 i=1,nsur
+         nv=nver(i)
+         write(iunit,rec=irec,iostat=istat,err=1000)(jvn(i,j),j=1,nv)
+         irec=irec+1
+   10 continue
+
+C Write topography.
+      if(ntv.le.20)then
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,ntv)
+         irec=irec+1
+      elseif(ntv.gt.20.and.ntv.le.40)then
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,ntv)
+         irec=irec+1
+      elseif(ntv.gt.40.and.ntv.le.60)then
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,ntv)
+         irec=irec+1
+      elseif(ntv.gt.60.and.ntv.le.80)then
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,ntv)
+         irec=irec+1
+      elseif(ntv.gt.80.and.ntv.le.100)then
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=81,ntv)
+         irec=irec+1
+      elseif(ntv.gt.100.and.ntv.le.120)then
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=101,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=101,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=101,ntv)
+         irec=irec+1
+      elseif(ntv.gt.120.and.ntv.le.140)then
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=101,120)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=121,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=101,120)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=121,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=101,120)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=121,ntv)
+         irec=irec+1
+      elseif(ntv.gt.140.and.ntv.le.160)then
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=101,120)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=121,140)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=141,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=101,120)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=121,140)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=141,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=101,120)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=121,140)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=141,ntv)
+         irec=irec+1
+      elseif(ntv.gt.160.and.ntv.le.180)then
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=101,120)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=121,140)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=141,160)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=161,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=101,120)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=121,140)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=141,160)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=161,ntv)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,80)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=81,100)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=101,120)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=121,140)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=141,160)
+         irec=irec+1
+         write(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=161,ntv)
+         irec=irec+1
+      else
+         goto 1000
+      endif
+
+      write(iunit,rec=irec,iostat=istat,err=1000)nb
+      irec=irec+1
+      do 20 I=1,nb
+         write(iunit,rec=irec,iostat=istat,err=1000)xo(i),yo(i),zo(i),
+     &                                       dx(i),dy(i),dz(i),ang(i)
+         irec=irec+1
+   20 continue
+      write(iunit,rec=irec,iostat=istat,err=1000)nox,noz
       irecl=irec+1
       return
 
@@ -65,33 +370,27 @@ C ********** TFILE2 **********
 C Transfers the transformed coordinates of the target surface
 C to the zone transitional shading file.
 
-      subroutine tfile2(icomp,is)
+      subroutine tfile2(is)
 #include "building.h"
-#include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
       common/find/irecl
-      common/c24/izstocn(mcom,ms)
 
       dimension irecs(ms)
       character outs*124
-      integer nv,icc,nzs   ! local for vertex, connection and surface
 
       iunit=ifil
 
-C Get the current connection and number of surfaces in zone.
-      icc=izstocn(icomp,is)
-      nzs=nzsur(icomp)
-
 C Recover and update irecs for surface `is`.
       irec=1
-      read(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nzs)
+      read(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nsur)
       irecs(is)=irecl
-      write(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nzs)
+      write(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nsur)
       irec=irecs(is)
-      nv=nznver(icc)
+      nv=nver(is)
       write(iunit,rec=irec,iostat=istat,err=1000)(xft(i),i=1,nv)
       irec=irec+1
       write(iunit,rec=irec,iostat=istat,err=1000)(zft(i),i=1,nv)
@@ -111,13 +410,15 @@ C and computes the overall direct and diffuse shading factors.
 
       subroutine tfile3(icomp,is,mode)
 #include "building.h"
-#include "geometry.h"
 
       common/outin/iuout,iuin
       common/tracech/icout
       common/filep/ifil
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      common/g1t/xft(mv),zft(mv)
       common/grid3/ogrida(ms)
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
@@ -129,7 +430,7 @@ C and computes the overall direct and diffuse shading factors.
 
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-      character outs*248,mode*3
+      character blkname*8,blkmat*12,outs*124,mode*3
       logical tok
 
 C If trace requested enable writing.
@@ -137,9 +438,6 @@ C If trace requested enable writing.
       if(icout.eq.33)tok=.true.
 
       iunit=ifil
-
-C Get the current connection and number of surfaces in zone.
-      icc=IZSTOCN(icomp,is)
 
 C mode = dup; therefore use diffuse shading factors as calculated
 C for last hour.
@@ -170,8 +468,8 @@ C Sun not up.
 
     2 is1=-1
       is2=-2
-      do 10 i=1,nox(icomp)
-         do 20 j=1,noz(icomp)
+      do 10 i=1,nox
+         do 20 j=1,noz
             if(ioshd(i,j).eq.-1)goto 20
             if(ioshd(i,j).eq.0)is1=0
             if(ioshd(i,j).eq.1)is2=1
@@ -204,16 +502,16 @@ C Partial direct shading, is1= 0; write ioshd to zone transitional
 C shading file.
     4 write(iunit,rec=irec,iostat=istat,err=1000)is1
       irec=irec+1
-      do 30 i=1,nox(icomp)
+      do 30 i=1,nox
          write(iunit,rec=irec,iostat=istat,err=1000)
-     &     (ioshd(i,j),j=1,noz(icomp))
+     &                                        (ioshd(i,j),j=1,noz)
          irec=irec+1
    30 continue
 
 C Calculate overall shading on target surface, gssa (gssa is
 C initialised in shadc before direct and diffuse processing).
-    1 do 40 k=1,nox(icomp)
-         do 50 l=1,noz(icomp)
+    1 do 40 k=1,nox
+         do 50 l=1,noz
             if(ioshd(k,l).eq.-1)goto 50
             if(mode.eq.'dir')gssa=gssa+ioshd(k,l)*ogrida(is)
 
@@ -222,8 +520,9 @@ C Next line only reached after all sky patches have been processed.
   50     continue
   40  continue
 
-C Recover gross surface area, gsa.
-      gsa=ssna(icc)
+C Calculate gross surface area, gsa.
+      nv=nver(is)
+      call area(nv,xft,zft,gsa)
 
       if(mode.eq.'dir')pso(is,ihour)=gssa/gsa
       if(mode.eq.'dif')then
@@ -243,25 +542,25 @@ C Check for inappropriate shading values.
          write(outs,'(3a,f5.3,a,i2,a)') 'Direct shading factor for ',
      &        ssname(icn),' is ',pso(is,ihour),' @ ',ihour,
      &        'hrs - saved as 1.0.'
-         call edisp248(iuout,outs,124)
+         call edisp(iuout,outs)
          pso(is,ihour)=1.0
       elseif(mode.eq.'dir'.and.pso(is,ihour).lt.0.0)then
          write(outs,'(3a,f5.3,a,i2,a)') 'Direct shading factor for ',
      &        ssname(icn),' is ',pso(is,ihour),' @ ',ihour,
      &        'hrs - saved as 0.0.'
-         call edisp248(iuout,outs,124)
+         call edisp(iuout,outs)
          pso(is,ihour)=0.0
       elseif(mode.eq.'dif'.and.psof(is,ihour).gt.1.0)then
         write(outs,'(3a,f5.3,a,i2,a)') 'Diffuse shading factor for ',
      &        ssname(icn),' is ',psof(is,ihour),' @ ',ihour,
      &        'hrs - saved as 1.0.'
-        call edisp248(iuout,outs,124)
+        call edisp(iuout,outs)
         psof(is,ihour)=1.0
       elseif(mode.eq.'dif'.and.psof(is,ihour).lt.0.0)then
         write(outs,'(3a,f5.3,a,i2,a)') 'Diffuse shading factor for ',
      &        ssname(icn),' is ',psof(is,ihour),' @ ',ihour,
      &        'hrs - saved as 0.0.'
-        call edisp248(iuout,outs,124)
+        call edisp(iuout,outs)
         psof(is,ihour)=0.0
       endif
 
@@ -292,8 +591,8 @@ C Trace output.
  9995    format('Direct shading = ',f8.4)
          call edisp(icout,outs)
          call edisp(icout,'IOSHD:')
-         do 9994 j=noz(icomp),1,-1
-            write(outs, 9993) (ioshd(i,j),i=1,nox(icomp))
+         do 9994 j=noz,1,-1
+            write(outs, 9993) (ioshd(i,j),i=1,nox)
  9993       format(50i3)
             call edisp(icout,outs)
  9994    continue
@@ -302,8 +601,8 @@ C Trace output.
  9992    format('Diffuse shading = ',f8.4)
          call edisp(icout,outs)
          call edisp(icout,'FOSHD:')
-         do 9991 j=noz(icomp),1,-1
-            write(outs, 9990) (foshd(i,j),i=1,nox(icomp))
+         do 9991 j=noz,1,-1
+            write(outs, 9990) (foshd(i,j),i=1,nox)
  9990       format(50f7.3)
             call edisp(icout,outs)
  9991    continue
@@ -323,25 +622,330 @@ C shading file as previously written by tfile1 and tfile12.
       subroutine retrv1(icomp)
 #include "building.h"
 
-C geometry.h provides commons G0,G2,GS5,GS6,GS7,GS8.
+C geometry.h provides commons G0 and G2.
 #include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
+      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+      common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
+      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
 
-      character outs*124
+      character outs*124,blkname*8,blkmat*12
 
       iunit=ifil
       
+      irec=3
+      read(iunit,rec=irec,iostat=istat,err=1000)ctype(icomp),nsur,ntv,
+     &                                              (nver(i),i=1,nsur)
       irec=1
-      read(iunit,rec=irec,iostat=istat,err=1000)
-     &  (irecs(i),i=1,nzsur(icomp))
+      read(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,nsur)
       irec=2
-      read(iunit,rec=irec,iostat=istat,err=1000)mon,
-     &  (isc(i),i=1,nzsur(icomp)),iyd
+      read(iunit,rec=irec,iostat=istat,err=1000)mon,(isc(i),i=1,nsur),
+     &                                          iyd
+
+C Read topology.
+      irec=4
+      do 10 i=1,nsur
+         nv=nver(i)
+         read(iunit,rec=irec,iostat=istat,err=1000)(jvn(i,j),j=1,nv)
+         irec=irec+1
+   10 continue
+   
+C Read topography.
+      if(ntv.le.20)then
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,ntv)
+         irec=irec+1
+      elseif(ntv.gt.20.and.ntv.le.40)then
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,ntv)
+         irec=irec+1
+      elseif(ntv.gt.40.and.ntv.le.60)then
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,ntv)
+         irec=irec+1
+      elseif(ntv.gt.60.and.ntv.le.80)then
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,ntv)
+         irec=irec+1
+      elseif(ntv.gt.80.and.ntv.le.100)then
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=81,ntv)
+         irec=irec+1
+      elseif(ntv.gt.100.and.ntv.le.120)then
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=101,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=101,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=101,ntv)
+         irec=irec+1
+      elseif(ntv.gt.120.and.ntv.le.140)then
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=101,120)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=121,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=101,120)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=121,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=101,120)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=121,ntv)
+         irec=irec+1
+      elseif(ntv.gt.140.and.ntv.le.160)then
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=101,120)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=121,140)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=141,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=101,120)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=121,140)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=141,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=101,120)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=121,140)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=141,ntv)
+         irec=irec+1
+      elseif(ntv.gt.160.and.ntv.le.180)then
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=101,120)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=121,140)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=141,160)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(x(i),i=161,ntv)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),i=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),I=101,120)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),I=121,140)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),I=141,160)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(y(i),I=161,NTV)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),I=1,20)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),I=21,40)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),I=41,60)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),I=61,80)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),I=81,100)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),I=101,120)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=121,140)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=141,160)
+         irec=irec+1
+         read(iunit,rec=irec,iostat=istat,err=1000)(z(i),i=161,ntv)
+         irec=irec+1
+      else
+         goto 1000
+      endif
       
+      read(iunit,rec=irec,iostat=istat,err=1000)nb
+      irec=irec+1
+      do 20 i=1,nb
+         read(iunit,rec=irec,iostat=istat,err=1000)xo(i),yo(i),zo(i),
+     &                                       dx(i),dy(i),dz(i),ang(i)
+         irec=irec+1
+   20 continue
+      read(iunit,rec=irec,iostat=istat,err=1000)nox,noz
       return
 
  1000 write(outs,1001)irec

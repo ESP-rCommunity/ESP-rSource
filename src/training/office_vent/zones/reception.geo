@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,reception # tag version, format, zone name
-*date Fri Jul 17 11:05:01 2009  # latest file modification 
+*date Thu Aug 23 18:21:04 2007  # latest file modification 
 reception of office group adj to conference room
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,3.00000,6.00000,0.00000  #   1
@@ -71,7 +71,7 @@ reception of office group adj to conference room
 *edges,8,5,3,1,8,9,12,14,17  # 18
 # 
 # surf attributes:
-#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -104,14 +104,3 @@ reception of office group adj to conference room
  10 14
 # 
 *base_list,1,16,    10.10 0  # zone base list
-# 
-# block entities:
-#  *obs = obstructions
-*block_start,20 20 # geometric blocks
-*obs,12.100,6.000,3.100,6.000,0.020,0.300,90.000,eob1,NONE  # block  1
-*obs,12.300,6.000,3.100,6.000,0.020,0.250,90.000,eob2,NONE  # block  2
-*obs,12.500,6.000,3.100,6.000,0.020,0.220,90.000,eob3,NONE  # block  3
-*obs,12.700,6.000,3.100,6.000,0.020,0.200,90.000,eob4,NONE  # block  4
-*obs,12.900,6.000,3.100,6.000,0.020,0.200,90.000,eob5,NONE  # block  5
-*obs,13.100,6.000,3.100,6.000,0.020,0.200,90.000,eob6,NONE  # block  6
-*end_block

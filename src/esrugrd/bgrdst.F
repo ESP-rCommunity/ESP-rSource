@@ -1466,7 +1466,6 @@ C SLCTZN displays the zone selection menu.
 C *********************************************************************
       SUBROUTINE SLCTZN(ITRC,SZN,IZ,ZONOK)
 #include "building.h"
-#include "model.h"
 
 C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
@@ -1477,6 +1476,10 @@ C geometry.h provides commons G0/G2/precz.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/PREC8/SLAT,SLON
@@ -1515,7 +1518,7 @@ C Show the zone selection menu.
         SZN=zname(IZ)
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
         endif
@@ -1766,11 +1769,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer iix,iiy,iix1,iiy1,iix2,iiy2
+      integer iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
+      integer*8 iix1,iiy1,iix2,iiy2
 #endif
 
 C Return if not in graghical mode.
@@ -1803,24 +1806,24 @@ C Display header information.
       call viewtext(Title,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL U2PIXEL(XMin,YMin,iix,iiy)
-      CALL ELINE(iix,iiy,1)
+      CALL U2PIXEL(XMin,YMin,IX,IY)
+      CALL ELINE(IX,IY,1)
       X=XMax*.25
-      CALL U2PIXEL(X,YMin,iix,iiy)
-      CALL ELINE(iix,iiy,0)
-      CALL ESYMBOL(iix,iiy,24,ITFS+2)
+      CALL U2PIXEL(X,YMin,IX,IY)
+      CALL ELINE(IX,IY,0)
+      CALL ESYMBOL(IX,IY,24,ITFS+2)
       X=X*1.5
       ipos=0
       isize=itfs+2
       CALL ETLABEL('Column',X,YMin,ipos,isize)
 
 C Draw a scale vertical axis.
-      CALL U2PIXEL(XMin,YMin,iix,iiy)
-      CALL ELINE(iix,iiy,1)
+      CALL U2PIXEL(XMin,YMin,IX,IY)
+      CALL ELINE(IX,IY,1)
       Y=YMax*0.25
-      CALL U2PIXEL(XMin,Y,iix,iiy)
-      CALL ELINE(iix,iiy,0)
-      CALL ESYMBOL(iix,iiy,24,ITFS+2)
+      CALL U2PIXEL(XMin,Y,IX,IY)
+      CALL ELINE(IX,IY,0)
+      CALL ESYMBOL(IX,IY,24,ITFS+2)
       Y=YMax*0.35
       CALL ETLABEL('Layer',XMin,Y,ipos,isize)
 
@@ -1855,10 +1858,10 @@ C Define the X and Y coordinates for the corners of the current CV.
 
 C Up edge details.
           IF(IMatU.EQ.0)THEN
-            CALL U2PIXEL(X1,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X2,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X1,Y2,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X2,Y2,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow,ICol,ILay+1)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -1866,17 +1869,21 @@ C Up edge details.
               CALL ETLABEL(Label,X,Y+2.0,ipos,isize)
             ENDIF
           ELSEIF(IMatU.GT.0)THEN
-            CALL U2PIXEL(X1,Y2,iix1,iiy1)
-            CALL U2PIXEL(X2,Y2,iix2,iiy2)
+            CALL U2PIXEL(X1,Y2,IX1,IY1)
+            CALL U2PIXEL(X2,Y2,IX2,IY2)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
             CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
 
 C Down edge details.
           IF(IMatD.EQ.0)THEN
-            CALL U2PIXEL(X1,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X2,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X1,Y1,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X2,Y1,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow,ICol,ILay-1)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -1887,10 +1894,10 @@ C Down edge details.
 
 C Left edge details.
           IF(IMatL.EQ.0)THEN
-            CALL U2PIXEL(X1,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X1,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X1,Y1,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X1,Y2,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow,ICol-1,ILay)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -1901,10 +1908,10 @@ C Left edge details.
 
 C Right edge details.
           IF(IMatR.EQ.0)THEN
-            CALL U2PIXEL(X2,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X2,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X2,Y1,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X2,Y2,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow,ICol+1,ILay)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -1912,8 +1919,12 @@ C Right edge details.
               CALL ETLABEL(Label,X+2.0,Y,ipos,isize)
             ENDIF
           ELSEIF(IMatR.GT.0)THEN
-            CALL U2PIXEL(X2,Y1,iix1,iiy1)
-            CALL U2PIXEL(X2,Y2,iix2,iiy2)
+            CALL U2PIXEL(X2,Y1,IX1,IY1)
+            CALL U2PIXEL(X2,Y2,IX2,IY2)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
             CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
         ENDIF
@@ -1943,11 +1954,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer iix,iiy,iix1,iiy1,iix2,iiy2
+      integer iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
+      integer*8 iix1,iiy1,iix2,iiy2
 #endif
 
 C Return if not in graghical mode.
@@ -1980,24 +1991,24 @@ C Display header information.
       call viewtext(Title,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL U2PIXEL(XMax,YMax,iix,iiy)
-      CALL ELINE(iix,iiy,1)
+      CALL U2PIXEL(XMax,YMax,IX,IY)
+      CALL ELINE(IX,IY,1)
       X=XMax*0.75
-      CALL U2PIXEL(X,YMax,iix,iiy)
-      CALL ELINE(iix,iiy,0)
-      CALL ESYMBOL(iix,iiy,24,ITFS+2)
+      CALL U2PIXEL(X,YMax,IX,IY)
+      CALL ELINE(IX,IY,0)
+      CALL ESYMBOL(IX,IY,24,ITFS+2)
       X=XMax*0.6
       ipos=0
       isize=itfs+2
       CALL ETLABEL('Layer',X,YMax,ipos,isize)
 
 C Draw a scale vertical axis.
-      CALL U2PIXEL(XMax,YMax,iix,iiy)
-      CALL ELINE(iix,iiy,1)
+      CALL U2PIXEL(XMax,YMax,IX,IY)
+      CALL ELINE(IX,IY,1)
       Y=YMax*0.75
-      CALL U2PIXEL(XMax,Y,iix,iiy)
-      CALL ELINE(iix,iiy,0)
-      CALL ESYMBOL(iix,iiy,24,ITFS+2)
+      CALL U2PIXEL(XMax,Y,IX,IY)
+      CALL ELINE(IX,IY,0)
+      CALL ESYMBOL(IX,IY,24,ITFS+2)
       Y=YMax*0.65
       CALL ETLABEL('Row',XMax,Y,ipos,isize)
 
@@ -2034,10 +2045,10 @@ C Define the X and Y coordinates for the corners of the current CV.
 
 C Up edge details.
           IF(IMatU.EQ.0)THEN
-            CALL U2PIXEL(X1,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X2,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X1,Y1,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X2,Y1,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow-1,ICol,ILay)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -2048,10 +2059,10 @@ C Up edge details.
 
 C Down edge details.
           IF(IMatD.EQ.0)THEN
-            CALL U2PIXEL(X1,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X2,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X1,Y2,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X2,Y2,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow+1,ICol,ILay)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -2059,17 +2070,21 @@ C Down edge details.
               CALL ETLABEL(Label,X,Y-2.0,ipos,isize)
             ENDIF
           ELSEIF(IMatD.GT.0)THEN
-            CALL U2PIXEL(X1,Y2,iix1,iiy1)
-            CALL U2PIXEL(X2,Y2,iix2,iiy2)
+            CALL U2PIXEL(X1,Y2,IX1,IY1)
+            CALL U2PIXEL(X2,Y2,IX2,IY2)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
             CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
 
 C Left edge details.
           IF(IMatL.EQ.0)THEN
-            CALL U2PIXEL(X2,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X2,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X2,Y1,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X2,Y2,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow,ICol,ILay+1)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -2077,18 +2092,22 @@ C Left edge details.
               CALL ETLABEL(Label,X-2.0,Y,ipos,isize)
             ENDIF
           ELSEIF(IMatL.GT.0)THEN
-            CALL U2PIXEL(X2,Y1,iix1,iiy1)
-            CALL U2PIXEL(X2,Y2,iix2,iiy2)
+            CALL U2PIXEL(X2,Y1,IX1,IY1)
+            CALL U2PIXEL(X2,Y2,IX2,IY2)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
             CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
         ENDIF
 
 C Right edge details.
         IF(IMatR.EQ.0)THEN
-          CALL U2PIXEL(X1,Y1,iix,iiy)
-          CALL ELINE(iix,iiy,1)
-          CALL U2PIXEL(X1,Y2,iix,iiy)
-          CALL ELINE(iix,iiy,0)
+          CALL U2PIXEL(X1,Y1,IX,IY)
+          CALL ELINE(IX,IY,1)
+          CALL U2PIXEL(X1,Y2,IX,IY)
+          CALL ELINE(IX,IY,0)
           I=IGridN(IRow,ICol,ILay-1)
           IBnd=IndSN(I)
           IF(IBnd.GT.0)THEN
@@ -2122,11 +2141,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer iix,iiy,iix1,iiy1,iix2,iiy2
+      integer iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
-      integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
+      integer*8 iix1,iiy1,iix2,iiy2
 #endif
 
 C Return if not in graghical mode.
@@ -2159,24 +2178,24 @@ C Display header information.
       call viewtext(Title,iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL U2PIXEL(XMin,YMax,iix,iiy)
-      CALL ELINE(iix,iiy,1)
+      CALL U2PIXEL(XMin,YMax,IX,IY)
+      CALL ELINE(IX,IY,1)
       X=XMax/4.0
-      CALL U2PIXEL(X,YMax,iix,iiy)
-      CALL ELINE(iix,iiy,0)
-      CALL ESYMBOL(iix,iiy,24,ITFS+2)
+      CALL U2PIXEL(X,YMax,IX,IY)
+      CALL ELINE(IX,IY,0)
+      CALL ESYMBOL(IX,IY,24,ITFS+2)
       X=X*1.5
       ipos=0
       isize=itfs+2
       CALL ETLABEL('Column',X,YMax,ipos,isize)
 
 C Draw a scale vertical axis.
-      CALL U2PIXEL(XMin,YMax,iix,iiy)
-      CALL ELINE(iix,iiy,1)
+      CALL U2PIXEL(XMin,YMax,IX,IY)
+      CALL ELINE(IX,IY,1)
       Y=YMax*0.75
-      CALL U2PIXEL(XMin,Y,iix,iiy)
-      CALL ELINE(iix,iiy,0)
-      CALL ESYMBOL(iix,iiy,24,ITFS+2)
+      CALL U2PIXEL(XMin,Y,IX,IY)
+      CALL ELINE(IX,IY,0)
+      CALL ESYMBOL(IX,IY,24,ITFS+2)
       Y=YMax*0.65
       CALL ETLABEL('Row',XMin,Y,ipos,isize)
 
@@ -2211,10 +2230,10 @@ C Define the X and Y coordinates for the corners of the current CV.
 
 C Up edge details.
           IF(IMatU.EQ.0)THEN
-            CALL U2PIXEL(X1,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X2,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X1,Y1,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X2,Y1,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow-1,ICol,ILay)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -2225,10 +2244,10 @@ C Up edge details.
 
 C Down edge details.
           IF(IMatD.EQ.0)THEN
-            CALL U2PIXEL(X1,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X2,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X1,Y2,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X2,Y2,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow+1,ICol,ILay)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -2236,17 +2255,21 @@ C Down edge details.
               CALL ETLABEL(Label,X,Y-2.0,ipos,isize)
             ENDIF
           ELSEIF(IMatD.GT.0)THEN
-            CALL U2PIXEL(X1,Y2,iix1,iiy1)
-            CALL U2PIXEL(X2,Y2,iix2,iiy2)
+            CALL U2PIXEL(X1,Y2,IX1,IY1)
+            CALL U2PIXEL(X2,Y2,IX2,IY2)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
             CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
 
 C Left edge details.
           IF(IMatL.EQ.0)THEN
-            CALL U2PIXEL(X1,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X1,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X1,Y1,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X1,Y2,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow,ICol-1,ILay)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -2257,10 +2280,10 @@ C Left edge details.
 
 C Right edge details.
           IF(IMatR.EQ.0)THEN
-            CALL U2PIXEL(X2,Y1,iix,iiy)
-            CALL ELINE(iix,iiy,1)
-            CALL U2PIXEL(X2,Y2,iix,iiy)
-            CALL ELINE(iix,iiy,0)
+            CALL U2PIXEL(X2,Y1,IX,IY)
+            CALL ELINE(IX,IY,1)
+            CALL U2PIXEL(X2,Y2,IX,IY)
+            CALL ELINE(IX,IY,0)
             I=IGridN(IRow,ICol+1,ILay)
             IBnd=IndSN(I)
             IF(IBnd.GT.0)THEN
@@ -2268,8 +2291,12 @@ C Right edge details.
               CALL ETLABEL(Label,X+2.0,Y,ipos,isize)
             ENDIF
           ELSEIF(IMatR.GT.0)THEN
-            CALL U2PIXEL(X2,Y1,iix1,iiy1)
-            CALL U2PIXEL(X2,Y2,iix2,iiy2)
+            CALL U2PIXEL(X2,Y1,IX1,IY1)
+            CALL U2PIXEL(X2,Y2,IX2,IY2)
+            iix1=IX1
+            iiy1=IY1
+            iix2=IX2
+            iiy2=IY2
             CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
           ENDIF
         ENDIF

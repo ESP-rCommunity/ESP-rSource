@@ -285,26 +285,17 @@ C Ask for WIS report file and then attempt to scan it.
             IRVA=20
             call EGETAGWRA(outstr,K,iwin4,IRVA,RVA,0.00,1.00,'W',
      &        'solar outside direct trans',IER)
-
-C Debug.
 C            write(6,*) 'sol out ',RVA
-
           elseif(word(1:18).eq.'*sol_i_tran_direct')then
             IRVA=20
             call EGETAGWRA(outstr,K,iwin4,IRVA,RVA,0.00,1.00,'W',
      &        'solar inside direct trans',IER)
-
-C Debug.
 C            write(6,*) 'sol in',RVA
-
           elseif(word(1:8).eq.'*sol_int')then
             IRVA=23
             call EGETAGWIA(outstr,K,iwin4,IRVA,IVA,0,20,'W',
      &        'solar int list',IER)
-
-C Debug.
 C            write(6,*) 'sol int',IVA
-
           endif
           goto 77
  78       CALL ERPFREE(iwin4,ios)
@@ -490,7 +481,6 @@ C prepended.
 
 C Debug.
 C        write(6,*) 'EDOPT working optics ',lworking
-
         CALL EFOPSEQ(IOPTDB,lworking,1,IER)
         loptdbl=lworking
       endif
@@ -1771,7 +1761,7 @@ C File with raw bi-directional data.
 
 C Open and scan the file.
         iua=IPRODB
-        call erbiwin(itru,iua,bidirfile,ier)
+        call erbiwin(itrc,itru,iua,bidirfile,ier)
         if(ier.eq.0)then
           call edisp(iuout,'The bi-directional data was sucessfully')
           call edisp(iuout,'scanned. Now indicate which surfaces are')

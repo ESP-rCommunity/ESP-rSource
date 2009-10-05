@@ -240,7 +240,6 @@ C AXISDRW - draw and label axes.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
-      real TST,TFI,TSCR  ! for hourly version
 
       character ALABEL(5)*12,act*1
 
@@ -252,8 +251,7 @@ C AXISDRW - draw and label axes.
 #endif
 
 
-C Debug.
-C      write(6,*) 'AXISDRW',(YAXSET(I),I=1,5)
+      write (6,*) 'AXISDRW',(YAXSET(I),I=1,5)
 
 C Draw each axis in turn.
       do 10 I=1,5
@@ -285,15 +283,9 @@ C Use log(10) to get scaling factor.
               ISC=int(log10(abs(YMIN(I))))
               if (ISC.lt.0) ISC=ISC-1
               FAC=10.0**ISC
-
-C Debug.
-C              write(6,*) 'Current ',YMIN(I),' fac ',FAC, ' IADJ ',IADJ
-
+              write (6,*) 'Current ',YMIN(I),' fac ',FAC, ' IADJ ',IADJ
               YMIN(I)=FAC*float(int(YMIN(I)/FAC)+IADJ)
-
-C Debug.
-C              write(6,*) 'New    ',YMIN(I)
-
+              write (6,*) 'New    ',YMIN(I)
             endif
           endif
 
@@ -322,11 +314,9 @@ C Draw horizontal (time) axis.
       else
 C- Hardwired to display hours instead of timesteps on x-axis
 C- To revert back to original remove npts from following statement
-        if(npts.eq.0) npts=1
-        TST=TSTART/real(npts)
-        TFI=TFINISH/real(npts)
-	TSCR=TSC*real(npts)
-        call horaxis(TST,TFI,igl,igr,igb,Xadd,TSCR,1,'Time Hrs')
+        call horaxis
+     &(TSTART/npts,TFINISH/npts,igl,igr,igb,Xadd,TSC*
+     &real(npts),1,'Time Hrs')
       endif
       RETURN
       END

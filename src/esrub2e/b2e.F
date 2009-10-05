@@ -296,7 +296,7 @@ C Dummy routines from common3dv.F
       return
       end
 
-      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
       logical cfgok
       ier=0
       return
@@ -312,8 +312,9 @@ C Dummy routines from common3dv.F
       return
       end
 
-      SUBROUTINE PLELEV(direc)
+      SUBROUTINE PLELEV(IUF,direc,ier)
       CHARACTER direc*1
+      ier=0
       return
       end
 
