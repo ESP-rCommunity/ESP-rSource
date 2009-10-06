@@ -1,4 +1,4 @@
-# thermophysical properties of bin_c defined in ../zone/bin_c.con
+# thermophysical properties of bin_c defined in ../zones/bin_c.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
      5,     0  #  1 north        ext_wall    
@@ -8,7 +8,7 @@
      4,     0  #  5 bathrm       ceiling     
      7,     0  #  6 floor        grnd_floor  
 # conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
-# tivity   |          | heat     | ness(m)|type|  temp | factor | factor |     |  
+# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
      0.5000,    1300.0,    1000.0,  0.0050,   0,   0.00, 0.00000, 0.00000  #  1  1
      0.9600,    2000.0,     650.0,  0.1000,   0,   0.00, 0.00000, 0.00000  #     2
      0.0600,     300.0,    1000.0,  0.0500,   0,   0.00, 0.00000, 0.00000  #     3
@@ -33,12 +33,10 @@
      0.1500,     800.0,    2093.0,  0.0190,   0,   0.00, 0.00000, 0.00000  #     6
      0.0600,     186.0,    1360.0,  0.0060,   0,   0.00, 0.00000, 0.00000  #     7
 # for each surface: inside face emissivity
-  0.91, 0.90, 0.91, 0.91, 0.91, 0.90,
+ 0.91000,0.90000,0.91000,0.91000,0.91000,0.90000
 # for each surface: outside face emissivity
-  0.91, 0.90, 0.91, 0.91, 0.90, 0.90,
+ 0.91000,0.90000,0.91000,0.91000,0.90000,0.90000
 # for each surface: inside face solar absorptivity
-  0.50, 0.65, 0.50, 0.50, 0.50, 0.60,
+ 0.50000,0.65000,0.50000,0.50000,0.50000,0.60000
 # for each surface: outside face solar absorptivity
-  0.50, 0.65, 0.50, 0.50, 0.60, 0.85,
-# inside and exterior glazing maintenance factors
-   0.00   0.00
+ 0.50000,0.65000,0.50000,0.50000,0.60000,0.85000

@@ -30,6 +30,7 @@ C MZHCFV reads the convection regime file.
 
       SUBROUTINE MZHCFV(ICOMP)
 #include "building.h"
+#include "model.h"
 
       COMMON/ER/IER
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -44,15 +45,12 @@ C MZHCFV reads the convection regime file.
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),
      &            IcEuse(MCOM,MS,MBP),icnvKY(MCOM,MS,MBP),
      &            CVdat(MS*MBP,8)
       COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124,OUTSTR*124,h*72
       logical OK,dok
 
@@ -324,6 +322,7 @@ C MZHCFV2 reads the convection-regime file (version 2)
 
       SUBROUTINE MZHCFV2(ICOMP)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -341,8 +340,6 @@ C MZHCFV2 reads the convection-regime file (version 2)
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/HCTL/iCTLTP(MCOM,MBP),IcIuse(MCOM,MS,MBP),
      &            IcEuse(MCOM,MS,MBP),icnvKY(MCOM,MS,MBP),
      &            CVdat(MS*MBP,8)
@@ -350,7 +347,6 @@ C MZHCFV2 reads the convection-regime file (version 2)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
       COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124,OUTSTR*124,word*24,h*72
       character hcfpdescr*72
       logical OK,dok,newer
@@ -686,6 +682,7 @@ c later within the simulation time-stepping.
 
       SUBROUTINE MZSHIN(ICOMP)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
@@ -694,10 +691,6 @@ c later within the simulation time-stepping.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/rsolmax/maxrec(mcom)
 
@@ -894,6 +887,7 @@ c        or not.
 
       SUBROUTINE MZVFIN(ICOMP)
 #include "building.h"
+#include "model.h"
 
       COMMON/ER/IER
       COMMON/OUTIN/IUOUT,IUIN
@@ -902,13 +896,9 @@ c        or not.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       COMMON/V2/CFB(MCOM,MST,MST)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124
 
 C Read viewfactor & MRT sensor file.

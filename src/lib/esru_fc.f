@@ -94,12 +94,12 @@ C      subroutine windcl(n,ir,ig,ib)
 C      return
 C      end
 
-      subroutine f_to_c_l(msg,if_len,ilen)
-      character*(*) msg
-      if_len = LEN(msg)
-      ilen = lnblnk(msg)
-      return
-      end
+C      subroutine f_to_c_l(msg,if_len,ilen)
+C      character*(*) msg
+C      if_len = LEN(msg)
+C      ilen = lnblnk(msg)
+C      return
+C      end
 
 C      subroutine winlod(name,itime,lix,liy)
 C      character*(*) name
@@ -110,32 +110,23 @@ C      subroutine showlogo(itime,lix,liy)
 C      return
 C      end
 
-      subroutine wwcopen(name)
-      character*(*) name
-      return
-      end
+C      subroutine wwcopen(name)
+C      character*(*) name
+C      return
+C      end
 
-      subroutine wwcclose(name)
-      character*(*) name
-      return
-      end
+C      subroutine wwcclose(name)
+C      character*(*) name
+C      return
+C      end
 
-      subroutine wwcsetstart
-      write(6,*) '*start_set'
-      return
-      end
+C      subroutine wwcsetstart
+C      write(6,*) '*start_set'
+C      return
+C      end
 
-      subroutine wwcsetend
-      write(6,*) '*end_set'
-      return
-      end
-
-C      subroutine ckaccess(folder,laccess,lerr,fname)
-C      integer folder, laccess,lerr
-C      character*(*) fname
-C      folder = 1
-C      lerr = 0
-C      laccess = 0
+C      subroutine wwcsetend
+C      write(6,*) '*end_set'
 C      return
 C      end
 
@@ -542,11 +533,11 @@ C      ibottom=0
 C      return
 C      end
 
-      subroutine curproject(fcfgroot,fpath,fupath,fimgpth,fdocpth,
-     &  ftmppth,ibrowse)
-      character*(*) fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth
-      return
-      end
+C      subroutine curproject(fcfgroot,fpath,fupath,fimgpth,fdocpth,
+C     &  ftmppth,ibrowse)
+C      character*(*) fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth
+C      return
+C      end
 
       subroutine curmodule(fcmodule)
       character*(*) fcmodule

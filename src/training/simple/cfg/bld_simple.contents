@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model L-shaped reception, convective heating, ideal
-control defined in bld_simple.cfg generated on Wed Jun 20 10:14:06 2007. Notes
+control defined in bld_simple.cfg generated on Fri Jul 17 10:36:30 2009. Notes
 associated with the model are in bld_simple.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -9,8 +9,24 @@ from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.25.
  
-The climate used is: ESP test climate and is held in:
-/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
+ 
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
 Primary energy conversions (demand kWhr to primary kWhr) are:
  heating   : 1.250
  cooling   : 3.600
@@ -26,18 +42,19 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  fan_pump:  612.00   2.06   7.50
  small pr:  612.00   2.06   7.50
  hot water: 190.00   0.20   0.10
+An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ pressure distributions : pressc.db1
  materials              : /usr/esru/esp-r/databases/material.db3.a
  constructions          : /usr/esru/esp-r/databases/multicon.db2
- plant components       : /usr/esru/esp-r/databases/plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1
- optical properties     : /usr/esru/esp-r/databases/optics.db2
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
  
  ____________________________________________________________
  
-Ideal control is defined in: ../ctl/bld_simple.ctl as follows:
+The model includes ideal controls as follows:
 Control description:
 bld_simple.ctl
  
@@ -83,47 +100,61 @@ ID Zone         Volume|          Surface
  area of 192.m^2 & approx floor area of 48.0m^2
  reception describes a...
  There is 133.00m2 of exposed surface area, 85.000m2 of which is vertical.
- Outside walls are 156.25 % of floor area & avg U of 0.332 & UA of 24.869
+ Outside walls are 156.25 % of floor area & avg U of 0.685 & UA of 51.377
  Flat roof is 100.00 % of floor area & avg U of 1.799 & UA of 86.364
  Glazing is 20.833 % of floor & 11.765 % facade with avg U of 2.811 & UA of 28.107
  
  A summary of the surfaces in reception( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  16.5    180.   0. south        OPAQ VERT extern_wall  ||< external
-  2  8.00     90.   0. east         OPAQ VERT extern_wall  ||< external
-  3  11.0     90.   0. passage      OPAQ VERT gyp_blk_ptn  ||< identical environment
-  4  12.0      0.   0. north        OPAQ VERT extern_wall  ||< external
-  5  9.50    270.   0. part_a       OPAQ VERT extern_wall  ||< external
-  6  12.0      0.   0. part_b       OPAQ VERT extern_wall  ||< external
-  7  9.50    270.   0. west         OPAQ VERT extern_wall  ||< external
-  8  48.0      0.  90. ceiling      OPAQ CEIL roof_1       ||< external
-  9  48.0      0. -90. floor        OPAQ FLOR floor_1      ||< constant @ 10dC &   0W rad
- 10  7.50    180.   0. glz_s        TRAN VERT dbl_glz      ||< external
- 11  2.50     90.   0. door_p       OPAQ VERT door         ||< external
- 12  2.50    270.   0. door_a       OPAQ VERT door         ||< external
- 13  2.50    270.   0. door_w       OPAQ VERT door         ||< external
- 14  2.50     90.   0. east_glz     TRAN VERT dbl_glz      ||< external
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  16.5    180.   0. south        OPAQUE   VERT -     extern_wall  ||< external
+  2  8.00     90.   0. east         OPAQUE   VERT -     extern_wall  ||< external
+  3  11.0     90.   0. passage      OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
+  4  12.0      0.   0. north        OPAQUE   VERT -     extern_wall  ||< external
+  5  9.50    270.   0. part_a       OPAQUE   VERT -     extern_wall  ||< external
+  6  12.0      0.   0. part_b       OPAQUE   VERT -     extern_wall  ||< external
+  7  9.50    270.   0. west         OPAQUE   VERT -     extern_wall  ||< external
+  8  48.0      0.  90. ceiling      OPAQUE   CEIL -     roof_1       ||< external
+  9  48.0      0. -90. floor        OPAQUE   FLOR -     floor_1      ||< constant @ 10dC &   0W rad
+ 10  7.50    180.   0. glz_s        DCF7671_ VERT -     dbl_glz      ||< external
+ 11  2.50     90.   0. door_p       OPAQUE   VERT -     door         ||< external
+ 12  2.50    270.   0. door_a       OPAQUE   VERT -     door         ||< external
+ 13  2.50    270.   0. door_w       OPAQUE   VERT -     door         ||< external
+ 14  2.50     90.   0. east_glz     DCF7671_ VERT -     dbl_glz      ||< external
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
+ 
+ Air schedule notes:
+base case - 0.3 ach infiltration all days, occupants 540W sens 300W
+lat with 80% conv on weekdays 9-5, lights 600W 50% conv 9-5 weekdays.
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.30  0.0120    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.30  0.0120    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.30  0.0120    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekday      :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.30  0.0120    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.30  0.0120    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.30  0.0120    0.00  0.0000   0     0.00
  
 Notes:
 base case - 0.3 ach infiltration all days, occupants 540W sens 300W
 lat with 80% conv on weekdays 9-5, lights 600W 50% conv 9-5 weekdays.
- Number of Weekday Sat Sun casual gains=  9  1  1
+Number of weekday      casual gains=  9
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  9      0.0      0.0       0.50       0.50
@@ -135,8 +166,14 @@ Wkd  6 LightsW   17 - 24      0.0      0.0       0.50       0.50
 Wkd  7 EquiptW    0 -  9    800.0      0.0       0.20       0.80
 Wkd  8 EquiptW    9 - 17   1250.0      0.0       0.20       0.80
 Wkd  9 EquiptW   17 - 24    800.0      0.0       0.20       0.80
-Sat  1 EquiptW    0 - 24    800.0      0.0       0.20       0.80
-Sun  1 EquiptW    0 - 24    800.0      0.0       0.20       0.80
+Number of saturday     casual gains=  1
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 EquiptW    0 - 24    800.0      0.0       0.20       0.80
+Number of sunday       casual gains=  1
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 EquiptW    0 - 24    800.0      0.0       0.20       0.80
  
  ____________________________________________________________
  
@@ -144,12 +181,23 @@ Sun  1 EquiptW    0 - 24    800.0      0.0       0.20       0.80
  Sloped roof area is 0.00m2, flat roof area is 48.000m2, skylight area is 0.00m2.
  There is 133.00m2 of outside surface area, 85.000m2 of which is vertical.
  
- Outside walls are 156.25 % of floor area & avg U of 0.332 & UA of 24.869
+ Outside walls are 156.25 % of floor area & avg U of 0.685 & UA of 51.377
  Flat roof is 100.00 % of floor area & avg U of 1.799 & UA of 86.364
  Glazing is 20.833 % of floor & 11.765 % facade with avg U of 2.811 & UA of 28.107
  
  ____________________________________________________________
  Multi-layer constructions used:
+ 
+ Details of opaque construction: extern_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 lt brown brick : Light brown brick
+    2  211   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 glasswool : Glasswool (generic)
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 breeze block : Breeze block
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.393  0.397  0.387 (partition)  0.379
+ Total area of extern_wall is     67.50
  
  Details of opaque construction: door
  

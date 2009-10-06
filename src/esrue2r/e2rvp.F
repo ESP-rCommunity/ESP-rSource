@@ -431,13 +431,13 @@ C Reconstitute the viewing vector and eye angle.
 
 C Draw the problem in plan/elevation with viewcone.
         if(ITPPSW.eq.0)then
-          call PLELEV(IUF,'P',ier)
+          call PLELEV('P')
           call VCONE('P')
         elseif(ITPPSW.eq.1)then
-          call PLELEV(IUF,'S',ier)
+          call PLELEV('S')
           call VCONE('S')
         elseif(ITPPSW.eq.2)then
-          call PLELEV(IUF,'E',ier)
+          call PLELEV('E')
           call VCONE('E')
         elseif(ITPPSW.eq.3)then
           MODIFY=.TRUE.

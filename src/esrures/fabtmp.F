@@ -35,15 +35,12 @@ C the results database.
 
       SUBROUTINE MOTHKE(ICOMP,ISUR)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
@@ -57,7 +54,7 @@ C Read (silently) in the zone geometry data.
       IUNITF=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
       else
         call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
       endif
@@ -209,10 +206,10 @@ C Also check to see if the file has correct info.
             goto 139  !  a binary file found so carry on.
           endif
  1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
-            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
             if(ier.ne.0)then
               call usrmsg('No readable materials database was found',
      &                  'or file was corrupt','W')
@@ -369,6 +366,7 @@ C VAL1(1+NN+2) inside air temperature.
 
       SUBROUTINE MOFGET(ICOMP,ISUR,IDAY)
 #include "building.h"
+#include "site.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -377,8 +375,6 @@ C VAL1(1+NN+2) inside air temperature.
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-      common/ground/grdtmp(12,mgrdp)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)

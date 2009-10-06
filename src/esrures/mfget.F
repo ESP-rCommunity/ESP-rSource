@@ -973,14 +973,16 @@ C Toggle tabular listing label format.
       elseif(INO.EQ.27.and.(MENUTYPE.eq.3.or.MENUTYPE.eq.4))then
 
 C List out data to text feedback or to file or to graphics.
-C Debug...
+
+C Debug.
 C        do 999 I=1,NMFGET
-C          write (6,*) (IMFGETNO(I,K),K=1,7)
-C          write (6,*) SMFLABEL(I)
-C          write (6,*) GMFLABEL(I)
-C          write (6,*) GLMFLABEL(I)
-C          write (6,*) '  '
+C          write(6,*) (IMFGETNO(I,K),K=1,7)
+C          write(6,*) SMFLABEL(I)
+C          write(6,*) GMFLABEL(I)
+C          write(6,*) GLMFLABEL(I)
+C          write(6,*) '  '
 C 999    continue
+
         if (NMFGET.lt.1) then
           call usrmsg('No data to list/ plot!',
      &                'Please choose a metric.','W')
@@ -1213,9 +1215,11 @@ C Note: return INPKT and NNPKT for total entering.
             NMFGET=NMFGET-1
             goto 1
           endif
-C Debug...
+
+C Debug.
 C          write(6,*) 'after easkabcd itotal & nnpk ',itotal,nnpk,inpk
 C          write(6,*) 'after easkabcd itotal & nnpkt ',itotal,nnpkt,inpkt
+
         else
           INODE=0
           itotal=0
@@ -1240,9 +1244,11 @@ C ask for one.
 C Ask for connections if required otherwise use value of NNPK from
 C nodes questions above. I.E. total flow entering was requested.
         if(itotal.eq.0)call ASKMFCON(INODE,NNPK,ICPK)
-C DEbug...
+
+C Debug.
 C        write(6,*) 'after itotal & nnpk ',itotal,nnpk,inpk
 C        write(6,*) 'after itotal & nnpkt ',itotal,nnpkt,inpkt
+
         lsf=lnblnk(SUFFIX)
         if (NNPK.gt.0) then
           if (INODE.gt.0) then
@@ -1741,13 +1747,13 @@ C There has been a problem, so decrement NMFGET.
         endif
       endif
 
-C Debug...
+C Debug.
 C        do 9999 I=1,NMFGET
-C          write (6,*) (IMFGETNO(I,K),K=1,7)
-C          write (6,*) SMFLABEL(I)
-C          write (6,*) GMFLABEL(I)
-C          write (6,*) GLMFLABEL(I)
-C          write (6,*) ' ------------------- '
+C          write(6,*) (IMFGETNO(I,K),K=1,7)
+C          write(6,*) SMFLABEL(I)
+C          write(6,*) GMFLABEL(I)
+C          write(6,*) GLMFLABEL(I)
+C          write(6,*) ' ------------------- '
 C 9999   continue
 
       RETURN
@@ -1853,7 +1859,10 @@ C Recover required records for timestep.
         if (MFRECVR(I).eq.1) then
           IREC=IHREC+I-1
           READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=99)(FRDAT(I,K),K=1,NMRL)
-C          write (6,*) IDAY,IHR,ITS,IREC,I,(FRDAT(I,K),K=1,10)
+
+C Dwebug.
+C          write(6,*) IDAY,IHR,ITS,IREC,I,(FRDAT(I,K),K=1,10)
+
         endif
  10   continue
 
@@ -1992,9 +2001,11 @@ C return +ive, -ive or net flow.
           endif
           icompindex=ITPCON(IMFGETNO(I,2))
           icomptype=ITPCMP(icompindex)
-C Debug...
+
+C Debug.
 C          write(6,*) 'the component index is ',icompindex
 C          write(6,*) 'the component type is ',icomptype
+
           if(icomptype.eq.40)then
             area=SUPCMP(icompindex,2)
           elseif(icomptype.eq.50)then
@@ -2016,8 +2027,9 @@ C          write(6,*) 'the component type is ',icomptype
             area=1.0
           endif
 
-C Debug...
+C Debug.
 C          write(6,*) 'area of component type ',icomptype,' is ',area
+
           FLOWVALS(I)=FLOWVALS(I)/area
         elseif (IMFGETNO(I,1).eq.7) then
 
@@ -2158,7 +2170,10 @@ C Find common node.
         elseif (LNNE.and.(.not.LNPS)) then
           NODE=IDNE1
         else
-          write (6,*) 'No common node for connection list.'
+
+C Debug.
+C          write(6,*) 'No common node for connection list.'
+
           return
         endif
 
@@ -2204,7 +2219,10 @@ C or first node then a +ive flow is leaving the node and vice versa).
               FLOUT=FLOUT-FLOW2
             endif
           endif
-C          write (6,'(3i4,4f8.4)') NODE,IDPS,IDNE,FLOW1,FLOW2,FLIN,FLOUT
+
+C Debug.
+C          write(6,'(3i4,4f8.4)') NODE,IDPS,IDNE,FLOW1,FLOW2,FLIN,FLOUT
+
 10      continue
 
 C Negate FLOUT (the above sum results in positive values for both flows).
@@ -2350,7 +2368,9 @@ C or first node then a +ive flow is leaving the node and vice versa).
  351    continue
       endif
 
-C         write (6,'(2F8.4)') FLIN,FLOUT
+C Debug.
+C         write(6,'(2F8.4)') FLIN,FLOUT
+
       return
       end
 
@@ -2552,8 +2572,11 @@ C Mark connection identified by KEYIND.
         INCGET(ORDER(IFOC))=INCGET(ORDER(IFOC))+1
         if (INCGET(ORDER(IFOC)).gt.1) INCGET(ORDER(IFOC))=0
         if (INCGET(ORDER(IFOC)).eq.1) then
-          write(6,*) 'selected ifoc order(ifoc) incget(()) ',ifoc,
-     &      order(ifoc),INCGET(ORDER(IFOC)),SMFLABEL(ORDER(ifoc))
+
+C Debug.
+C          write(6,*) 'selected ifoc order(ifoc) incget(()) ',ifoc,
+C     &      order(ifoc),INCGET(ORDER(IFOC)),SMFLABEL(ORDER(ifoc))
+
         endif
       endif
       goto 3

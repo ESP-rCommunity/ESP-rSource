@@ -32,8 +32,9 @@ C ********** EDDB
 C Controls specification/ browsing of databases.
 C ITRU is channel for user output, IER=0 means no errors encountered.
 
-      SUBROUTINE EDDB(ITRC,ITRU,IER)
+      SUBROUTINE EDDB(IER)
 #include "building.h"
+#include "model.h"
 #include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "esprdbfile.h"
@@ -44,6 +45,7 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+C MCMPDBFL (miscellaneous components database)
 C default file names for databases
       
       integer lnblnk  ! function definition
@@ -55,10 +57,6 @@ C default file names for databases
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/rpath/path
       common/user/browse
 
@@ -66,15 +64,24 @@ C Default esp-r distribution path.
       common/deflt4/dinstpath
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/texted/tedlbl,teditor
+
+C Defaults for some of the obscure files.
+      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
       logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical moddb,browse,modcon,QUIET
+      logical moddb,browse,modcon,QUIET,concat
       logical haveconstr
+      logical unixok  ! to check for database path file separators
 
       character H*72,path*72
-      character*72 ITEMS(15)
+      character*72 ITEMS(16)
       character dinstpath*48
-
+      character longtfile*144,llitem*144,longtfiledos*144
+      character doit*248,tedlbl*20,teditor*20
+      character tmode*8
+      
 C Strings for dos version of source and destination of db file.
 C      character rootpdos*72,upathdos*72
 
@@ -114,14 +121,16 @@ C Begin with menu of default dbs.
         WRITE(ITEMS(10),'(2A)')'h std optical properties : ',
      &    LOPTDB(1:44)
       endif
-      WRITE(ITEMS(11),'(A)')'i mould & mycotoxins     : None'
-      ITEMS(12)='  _______________________________ '
-      ITEMS(13)='? help                            '
-      ITEMS(14)='- exit this menu                  '
+      WRITE(ITEMS(11),'(A)')   'i mould & mycotoxins     : None'
+      WRITE(ITEMS(12),'(2A)')  'j miscel components      : ',
+     &  MCMPDBFL(1:44)
+      ITEMS(13)='  _______________________________ '
+      ITEMS(14)='? help                            '
+      ITEMS(15)='- exit this menu                  '
 
 C Try to compact the width of the menu.
       IW=0
-      do 141 ij=1,14
+      do 141 ij=1,15
         if(lnblnk(ITEMS(ij)).gt.IW)IW=lnblnk(ITEMS(ij))
  141  continue
 
@@ -148,12 +157,12 @@ C Help text for this menu.
       H(19)='/usr/esru/esp-r/climate & /usr/esru/esp-r/databases.'
 
       if(MMOD.EQ.8)then
-        CALL VWMENU('Database Maintenance',ITEMS,14,0,0,IW,irpx,irpy,
+        CALL VWMENU('Database Maintenance',ITEMS,15,0,0,IW,irpx,irpy,
      &               INO)
       else
-        CALL EMENU('Database Maintenance',ITEMS,14,INO)
+        CALL EMENU('Database Maintenance',ITEMS,15,INO)
       endif
-      IF(INO.EQ.14)THEN
+      IF(INO.EQ.15)THEN
         if(browse)return
         if(cfgok.and.moddb)then
           dok=.true.
@@ -292,7 +301,52 @@ C Place holder for mould database
          call UsrMsg(
      &   'Project Manager does not yet invoke the mould',
      &   'db manager. Start `mld` manually.','W')
-      ELSEIF(INO.EQ.13)THEN
+      ELSEIF(INO.EQ.12)THEN
+
+C Special materials/miscel components database.
+C Use file browser if in GTK mode, in X11 user must type file name.
+C If vi then spawn a new window to do the editing in.
+        H(1)='The Special materials/miscel components database can'
+        H(2)='be edited using the current defined text editor'
+        H(3)='(as defined in the default file).'
+        H(4)='BE CAREFUL!'
+	llitem=' '    ! reset return string
+        CALL EASKXORGTKF(MCMPDBFL,
+     &    'Special materials/misc. comp file name?',' ',
+     &    DMCMPDBFL,llitem,'Special materials file',IER,4)
+     
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 3  ! redisplay menu.
+        endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(llitem,longtfile,concat)
+        else
+          call addpath(llitem,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        tmode='graph'
+        if(teditor(1:2).eq.'vi')tmode='text'
+        write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &    longtfile(1:lnblnk(longtfile))
+        call runit(doit,tmode)
+
+        h(1)='Exercise care when editing this text file as the'
+        h(2)='format may be sensitive to user edits! '
+        dok=.false.
+        CALL ASKOK('  ','Use this edited database?',OK,dok,2)
+        if(OK)then
+          write(MCMPDBFL,'(a)') llitem(1:lnblnk(llitem))
+          moddb=.true.   ! set so user is asked to update cfg file
+        endif
+
+      ELSEIF(INO.EQ.14)THEN
 
 C Menu help text.
         H(1)='Information on each databases is provided.'
@@ -438,10 +492,10 @@ C Check to see if the file has correct info.
           goto 139  !  a binary file found so carry on.
         endif
  1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
         if(ier.eq.-2)then
           ier=0
-          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
           if(ier.ne.0)then
             call usrmsg('No readable materials database was not found',
      &                  'or file was corrupt','W')
@@ -504,10 +558,10 @@ C to a binary file.
      &        'Options:','use it',
      &        'convert to a binary file','cancel',IW,5)
             if(iw.eq.1)then
-              call rascimat(iuout,IAF,LASCI,IER)  ! try current ascii format
+              call rascimat(IAF,LASCI,IER)  ! try current ascii format
               if(ier.eq.-2)then
                 ier=0
-                call rlegacymat(iuout,IAF,LASCI,ier)  ! try older ascii format
+                call rlegacymat(IAF,LASCI,ier)  ! try older ascii format
                 if(ier.ne.0)then
                   call usrmsg('No readable Materials database was',
      &                        'found or the file was corrupt.','W')
@@ -578,7 +632,7 @@ C try and re-scan the constructions database.
      &          'Attempting to convert an ASCII Materials db to a')
               call edisp(iuout,
      &          'binary version matching the Constructions db.')
-              CALL MKBPRC(IUOUT,IAF,LASCI,IER)
+              CALL MKBPRC(IAF,LASCI,IER)
               if(ier.eq.0)then
                 call usrmsg(
      &            'An ASCII Materials db was found and converted.',
@@ -803,10 +857,10 @@ C It might be an ascii version of the file.
 
 C Attempt to scan version 1.1 ASCII file, if ier returned as -2 then
 C re-read as a legacy materials file.
-            call rascimat(iuout,IFMAT,LTMP,IER)
+            call rascimat(IFMAT,LTMP,IER)
             if(ier.eq.-2)then
               ier=0
-              call rlegacymat(iuout,IFMAT,LTMP,ier)
+              call rlegacymat(IFMAT,LTMP,ier)
               if(ier.ne.0)then
                 call usrmsg('The Materials db was not found',
      &                      'or was corrupt!','W')
@@ -878,7 +932,7 @@ C If the materials db was edited write a backup ASCII version.
                 continue
               else
                 IAF=IFIL+1
-                CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+                CALL MKAPRC(LASCI,IAF,IER)
               endif
             endif
             modcon=chgdb
@@ -1061,7 +1115,7 @@ C << Extend logic to support newer ASCII Material db. >>
      &    '  0.500, 1050.000, 837.000, 0.900, 0.400, 1000.000 '
         CALL ERPFREE(IAF,ISTAT)
         call pausems(400)
-        CALL MKBPRC(IUOUT,IAF,LTMPFL,IER)
+        CALL MKBPRC(IAF,LTMPFL,IER)
       elseif(isw.eq.4)then
 
 C Copy the standard db to project folder. Suggest a local
@@ -1160,9 +1214,9 @@ C ascii version of this new Materials db.
             IAF=IFIL+1
             call eclose(matver,1.1,0.001,close)
             if(close)then
-              CALL mkascimat(IUOUT,IAF,LASCI,IER)
+              CALL mkascimat(IAF,LASCI,IER)
             else
-              CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+              CALL MKAPRC(LASCI,IAF,IER)
             endif
           endif
         else
@@ -1202,9 +1256,9 @@ C Confirm suggested name and then write out ascii file.
         else
           call eclose(matver,1.1,0.001,close)
           if(close)then
-            CALL mkascimat(IUOUT,IAF,LASCI,IER)
+            CALL mkascimat(IAF,LASCI,IER)
           else
-            CALL MKAPRC(IUOUT,LASCI,IAF,IER)
+            CALL MKAPRC(LASCI,IAF,IER)
           endif
         endif
       elseif(isw.eq.6)then
@@ -1237,7 +1291,7 @@ C the same name as the binary one and is in the same location.
         if(clkok)then
           return
         else
-          CALL MKBPRC(IUOUT,IAF,LASCI,IER)
+          CALL MKBPRC(IAF,LASCI,IER)
         endif
       elseif(isw.eq.7)then
 
@@ -1257,10 +1311,10 @@ C Legacy materials to common blocks.
 
 C Attempt to scan version 1.1 ASCII file, if ier returned as -2 then
 C re-read as a legacy materials file.
-        call rascimat(iuout,IAF,LASCI,IER)
+        call rascimat(IAF,LASCI,IER)
         if(ier.eq.-2)then
           ier=0
-          call rlegacymat(iuout,IAF,LASCI,ier)
+          call rlegacymat(IAF,LASCI,ier)
         endif
 
 C Offer display of materials common blocks.
@@ -1279,7 +1333,7 @@ C Offer display of materials common blocks.
         if(clkok)then
           return
         else
-          CALL mkascimat(IUOUT,IAF,ltmp,IER)
+          CALL mkascimat(IAF,ltmp,IER)
         endif
       endif
 
@@ -1702,6 +1756,7 @@ C Take into account the current value of whichdbpath.
         write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
      &    lpcdb(1:lnblnk(lpcdb))
       endif
+
 C Debug.
 C      write(6,*) 'previous plant ',lprev(1:lnblnk(lprev))
 
@@ -1941,33 +1996,12 @@ C code is general rather than specific (for later consolidation).
         else
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
-          write(outs248,'(2a)') 'The current source file is:',
-     &      LPCDB(1:lnblnk(LPCDB))
-          call edisp248(iuout,outs248,100)
-          lltmp=LPCDB
-          llt=lnblnk(lltmp)
-          iglib = igraphiclib()
-          if(iglib.eq.1.or.iglib.eq.3)then
-            if(llt.lt.96)then
-              CALL EASKF(lltmp,' ','Plant templates db?',
-     &          96,DPCDB,'plant templates database',IER,2)
-            elseif(llt.ge.96.and.llt.lt.124)then
-              CALL EASKF(lltmp,' ','Plant templates db?',
-     &          124,DPCDB,'plant templates database',IER,2)
-            elseif(llt.ge.124.and.llt.le.144)then
-              CALL EASKF(lltmp,' ','Plant templates db?',
-     &          144,DPCDB,'plant templates database',IER,2)
-            endif
-            sourcefile = lltmp
-          elseif(iglib.eq.2)then
-            CALL EASKF(lltmp,' ','Plant templates db?',
-     &        144,DPCDB,'plant templates database',IER,2)
-            sourcefile = lltmp
-          else
-            CALL EASKF(lltmp,' ','Plant templates db?',
-     &        96,DPCDB,'plant templates database',IER,2)
-            sourcefile = lltmp
-          endif
+          lltmp='  '
+          CALL EASKXORGTKF(LPCDB,
+     &      'Plant template file name (source)?',' ',
+     &      DPCDB,lltmp,'plant templates database',IER,2)
+
+          sourcefile = lltmp   ! remember this
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
@@ -2201,8 +2235,10 @@ C implied path.
       elseif(ipathpcdb.eq.2)then
         longtfile=lltmp
       endif
+
 C Debug.
 C      write(6,*) 'longtfile plant b ',longtfile(1:lnblnk(longtfile))
+
       call EFOPRAN(ipcdb,longtfile,IRECLN,1,IER)
       IF(ier.eq.0)THEN
         IREC = 1
@@ -2269,7 +2305,7 @@ C
      &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
 
       CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
-      character LLASCI*144,LASCI*72
+      character LLASCI*144
       character longtfile*144,LCOPY*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER OUTS*124,OUTS248*248
@@ -2552,33 +2588,12 @@ C code is general rather than specific (for later consolidation).
         else
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
-          write(outs248,'(2a)') 'The current source file is:',
-     &      LPRFDB(1:lnblnk(LPRFDB))
-          call edisp248(iuout,outs248,100)
-          lltmp=LPRFDB
-          llt=lnblnk(lltmp)
-          iglib = igraphiclib()
-          if(iglib.eq.1.or.iglib.eq.3)then
-            if(llt.lt.96)then
-              CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
-     &          96,DPRFDB,'binary events db',IER,2)
-            elseif(llt.ge.96.and.llt.lt.124)then
-              CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
-     &          124,DPRFDB,'binary events db',IER,2)
-            elseif(llt.ge.124.and.llt.le.144)then
-              CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
-     &          144,DPRFDB,'binary events db',IER,2)
-            endif
-            sourcefile = lltmp
-          elseif(iglib.eq.2)then
-            CALL EASKF(lltmp,' Event Profiles db (source)?',' ',
-     &        144,DPRFDB,'binary events db',IER,2)
-            sourcefile = lltmp
-          else
-            CALL EASKF(lltmp,'Event Profiles db (source)?',' ',
-     &        96,DPRFDB,'binary events db',IER,2)
-            sourcefile = lltmp
-          endif
+
+          lltmp='  '
+          CALL EASKXORGTKF(LPRFDB,
+     &      'Event Profiles db (source)?',' ',
+     &      DPRFDB,lltmp,'binary events db',IER,2)
+          sourcefile = lltmp
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
@@ -2675,31 +2690,10 @@ C Ask for the binary file name and then confirm the ASCII db name.
         H(2)='profiles created via a diary entry format. This'
         H(3)='otion converts from binary to asci version of the '
         H(4)='file. '
-        lltmp=LPRFDB
-        llt=lnblnk(lltmp)
-
-C The X11 version will be returning only the name of the
-C file, while the GTK version will be returning the
-C name with the full path.
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        96,DPRFDB,'binary events db',IER,4)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        124,DPRFDB,'binary events db',IER,4)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        144,DPRFDB,'binary events db',IER,4)
-          endif
-        elseif(iglib.eq.2)then
-          CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      144,DPRFDB,'binary events db',IER,4)
-        else
-          CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      96,DPRFDB,'binary events db',IER,4)
-        endif
+        lltmp='  '
+        CALL EASKXORGTKF(LPRFDB,
+     &    'Event Profiles db (source)?',' ',
+     &    DPRFDB,lltmp,'binary events db',IER,2)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -2747,20 +2741,19 @@ C Ask for the ASCII file name and then confirm the binary db name.
 C Check the last two characters of the file name.
         llt=lnblnk(LPRFDB)
 	if(LPRFDB(llt-1:llt).eq.'.a')then
-          if(llt.le.69)then 
-            write(LASCI,'(a)') LPRFDB(1:llt)
-          else
-            write(LASCI,'(a)') LPRFDB(1:72)
-          endif
+          LLASCI=LPRFDB
         else
-          if(llt.le.69)then 
-            write(LASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+          if(llt.le.141)then 
+            write(LLASCI,'(2a)') LPRFDB(1:llt),'.a'
           else
-            write(LASCI,'(2a)') LPRFDB(1:69),'.a'
+            write(LLASCI,'(2a)') LPRFDB(1:141),'.a'
           endif
         endif
-        CALL EASKS(LASCI,' ASCII event profile source? ',
-     &    ' ',72,'profiles.db1.a','ascii events db',IER,6)
+
+        CALL EASKXORGTKF(LLASCI,
+     &    'Event Profiles db (ASCII source)?',' ',
+     &    DPRFDB,lltmp,'ascii events db',IER,2)
+        LLASCI=lltmp  ! copy returned name to LLASCI
 
         H(1)='The existing binary events db will be overwritten'
         H(2)='with the data from the ASCII version.'
@@ -2772,26 +2765,9 @@ C for the binary that has the .a stripped off.
         else
           write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
         endif
-        llt=lnblnk(lltmp)
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        96,DPRFDB,'binary events db',IER,2)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        124,DPRFDB,'binary events db',IER,2)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' ','Event Profiles db?',
-     &        144,DPRFDB,'binary events db',IER,2)
-          endif
-        elseif(iglib.eq.2)then
-          CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      144,DPRFDB,'binary events db',IER,2)
-        else
-          CALL EASKF(lltmp,' ','Event Profiles db?',
-     &      96,DPRFDB,'binary events db',IER,2)
-        endif
+        CALL EASKXORGTKF(LPRFDB,
+     &    'Event Profiles db?',' ',
+     &    DPRFDB,lltmp,'binary events db',IER,2)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -2804,7 +2780,7 @@ C If user request jump back and re-display the menu.
 C Do conversion and then to prove that the file was correctly
 C converted proceed to browse/edit the details.
           LPRFDB=lltmp
-          CALL TRIPRO(IAF,LASCI,IER)
+          CALL TRIPRO(IAF,LLASCI,IER)
           moddb=.true.
           goto 44
         else
@@ -3007,6 +2983,7 @@ C Take into account the current value of whichdbpath.
         write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
      &    loptdb(1:lnblnk(loptdb))
       endif
+
 C Debug.
 C      write(6,*) 'previous optics ',lprev(1:lnblnk(lprev))
 
@@ -3252,33 +3229,12 @@ C and LCOPY for the system cp call.
         else
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
-          write(outs248,'(2a)') 'The current source file is:',
-     &      LOPTDB(1:lnblnk(LOPTDB))
-          call edisp248(iuout,outs248,100)
-          lltmp=LOPTDB
-          llt=lnblnk(lltmp)
-          iglib = igraphiclib()
-          if(iglib.eq.1.or.iglib.eq.3)then
-            if(llt.lt.96)then
-              CALL EASKF(lltmp,' ','Optical Properties db?',
-     &          96,DOPTDB,'optical properties database',IER,2)
-            elseif(llt.ge.96.and.llt.lt.124)then
-              CALL EASKF(lltmp,' ','Optical Properties db?',
-     &          124,DOPTDB,'optical properties database',IER,2)
-            elseif(llt.ge.124.and.llt.le.144)then
-              CALL EASKF(lltmp,' ','Optical Properties db?',
-     &          144,DOPTDB,'optical properties database',IER,2)
-            endif
-            sourcefile = lltmp
-          elseif(iglib.eq.2)then
-            CALL EASKF(lltmp,' ','Optical Properties db?',
-     &        144,DOPTDB,'optical properties database',IER,2)
-            sourcefile = lltmp
-          else
-            CALL EASKF(lltmp,' ','Optical Properties db?',
-     &        96,DOPTDB,'optical properties database',IER,2)
-            sourcefile = lltmp
-          endif
+
+          lltmp='  '
+          CALL EASKXORGTKF(LPRFDB,
+     &      'Optical Properties db (source)?',' ',
+     &      DOPTDB,lltmp,'optical properties database',IER,2)
+          sourcefile = lltmp
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
@@ -3590,6 +3546,7 @@ C Take into account the current value of whichdbpath.
         write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
      &    lapres(1:lnblnk(lapres))
       endif
+
 C Debug.
 C      write(6,*) 'previous pres coef ',lprev(1:lnblnk(lprev))
 
@@ -3825,33 +3782,12 @@ C and LCOPY for the system cp call.
         else
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
-          write(outs248,'(2a)') 'The current source file is:',
-     &      lapres(1:lnblnk(lapres))
-          call edisp248(iuout,outs248,100)
-          lltmp=lapres
-          llt=lnblnk(lltmp)
-          iglib = igraphiclib()
-          if(iglib.eq.1.or.iglib.eq.3)then
-            if(llt.lt.96)then
-              CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &          96,dapres,'pressure coef database',IER,2)
-            elseif(llt.ge.96.and.llt.lt.124)then
-              CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &          124,dapres,'pressure coef database',IER,2)
-            elseif(llt.ge.124.and.llt.le.144)then
-              CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &          144,dapres,'pressure coef database',IER,2)
-            endif
-            sourcefile = lltmp
-          elseif(iglib.eq.2)then
-            CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &        144,dapres,'pressure coef database',IER,2)
-            sourcefile = lltmp
-          else
-            CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &        96,dapres,'pressure coef database',IER,2)
-            sourcefile = lltmp
-          endif
+
+          lltmp='  '
+          CALL EASKXORGTKF(LPRFDB,
+     &      'Pressure coefficients db (source)?',' ',
+     &      dapres,lltmp,'pressure coef database',IER,2)
+          sourcefile = lltmp
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
@@ -4083,6 +4019,7 @@ C otherwise edit the database contents.
 
 C Debug.
 C        write(6,*) 'working pressure coef ',lworking
+
         CALL EFOPSEQ(IAPRES,lworking,1,IER)
       endif
       IF(IER.NE.0) GOTO 60
@@ -4123,6 +4060,8 @@ C     use the APP characters.
 C from version manager
       SUBROUTINE EDDBCLM(moddb,APP,ISHD)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -4140,19 +4079,12 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/appw/iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/rpath/path
       COMMON/CLMDT1/CLMLOC
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/deflt4/dinstpath
 
 C Calendar.
@@ -4310,10 +4242,7 @@ C << update to deal with dos paths >>
           write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &        longtfile(1:lnblnk(longtfile))
         endif
-        CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,3)
-        if(ok)then
-          call runit(doit,tmode)
-        endif
+        call runit(doit,tmode)
       elseif(isw.eq.2)then
 
 C Pull up the official list of climate files and if the user selects
@@ -4395,11 +4324,7 @@ C << it instead of longtfile >>
               write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &            longtfile(1:lnblnk(longtfile))
             endif
-            CALL ASKOK(' ','Browse/edit selected climate data?',
-     &                  OK,dok,3)
-            if(ok)then
-              call runit(doit,tmode)
-            endif
+            call runit(doit,tmode)
           else
             call usrmsg('Problem encountered with Climate db!',
      &                  'Please check db location and content.','W')
@@ -4793,17 +4718,17 @@ C otherwise create with 0 length.
       write(outs,'(A,F7.3,A,F7.3,a,i4,i5,a,2F7.3,a)')
      &   'The climate lat is ',clat,
      &   ' & long diff is ',clong,' & Year & DN flag ',ICYEAR,ICDNGH,
-     &   '. The model currently uses ',xlat,xlon,'.'
+     &   '. The model currently uses ',sitelat,sitelongdif,'.'
       dok=.false.
       h(1)='Typically the project location will not deviate'
       h(2)='by much from the location of Climate db.'
       CALL ASKOK(outs,
      &  'Update your model with climate data?',OK,DOK,3)
       IF(OK)THEN
-        XLAT=CLAT
-        XLON=CLONG
-        WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'A latitude of ',xlat,
-     &    ' and longitude diff of ',xlon,
+        sitelat=CLAT
+        sitelongdif=CLONG
+        WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'A latitude of ',sitelat,
+     &    ' and longitude diff of ',sitelongdif,
      &    ' is associated with the model.'
         CALL EDISP(IUOUT,OUTS)
         CALL EDISP(IUOUT,' ')

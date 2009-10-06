@@ -584,17 +584,22 @@ C attributes.
 
 C Loop through and find the relevant domain id to which to attribute the
 C connections data.
-C Debug.. 
+
+C Debug. 
 C          write(6,*) 'Added a connection ...'
 C          write(6,*) 'number of domains in db ',nbdomain
+
           do 42 id=1,nbdomain
 
-C Debug..
+C Debug.
 C            write(6,*) 'network domain type ',inwktyp
 C            write(6,*) 'domain ids ',idomain(id)
+
             if(idomain(id).eq.inwktyp)then
-C Debug..
+
+C Debug.
 C              write(6,*)'number of data attributes ',iatrdom(id)
+
               idatrdom(NICNN)=iatrdom(id)
               if(iatrdom(id).gt.0)then
                 do 43 ii=1,iatrdom(id)
@@ -614,7 +619,8 @@ C If dtagatr(id,ii,1) is location then datrib(id,ii,1) is delta
                   ddatrib(NICNN,ii,2)=datrib(id,ii,2)
                   ddatrib(NICNN,ii,3)=datrib(id,ii,3)
                   ddmenuatr(NICNN,ii)=dmenuatr(id,ii)
-C Debug...
+
+C Debug.
 C                  write(6,*) 'data tag ',dtagatr(id,ii,1)
 C                  write(6,*) 'data atr ',datrib(id,ii,1)
 C                  write(6,*) 'data tag ',dtagatr(id,ii,2)
@@ -624,6 +630,7 @@ C                  write(6,*) 'data tag ',dtagatr(id,ii,4)
 C                  write(6,*) 'data tag ',dtagatr(id,ii,5)
 C                  write(6,*) 'data atr ',datrib(id,ii,3)
 C                  write(6,*) 'menu atr ',dmenuatr(id,ii)
+
   43            continue
               endif
             endif
@@ -686,9 +693,10 @@ C Note a new connection has been created so interface can ask if
 C the user wishes to edit attributes.
         ihavenewcnn=nicnn
 
-C Debug..
+C Debug.
 C        write(6,*) 'info ',nicnn,ICNSP(NICNN),ICNEP(NICNN),
 C     &     NCONWP(NICNN),ihavenewcnn
+
       ELSE
 
 C Clear the temporary array of connection variables if a complete connection

@@ -61,7 +61,7 @@ C Read the fluid flow description file
       IV=1
       IER=0
       REWIND(IFPRB,ERR=998)
-      CALL EMFREAD(IFPRB,0,IER)
+      CALL EMFREAD(IFPRB,IER)
       IF(IER.NE.0)then
         call usrmsg(' Problem finding flow network description',
      &    'or there were problems found while scanning it.','W')

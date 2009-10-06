@@ -24,6 +24,8 @@ C file names. No range checking is done, ie assumed to have
 C been checked elsewhere.  
       SUBROUTINE ESCSYS(FILE,IUC,IUF,IER)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "net_flow.h"
 #include "tdf2.h"
@@ -57,19 +59,9 @@ C espriou.h provides currentfile.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -80,10 +72,6 @@ C Common blocks as in esystem.F (some omitted).
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/AFNZN/zmfn1,zmfn2
 
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFLG/ITEMSTD
@@ -107,7 +95,6 @@ C Images.
       common/defdb/dfdblbl,defdbfl
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
-      COMMON/MCMPDBNAM/MCMPDBFL
       COMMON/VTHP18/LNLTHP
       COMMON/VTHP31/INTHPS,INTHPZ(MCOM)
       COMMON/GR1D05/LGRD1D
@@ -231,16 +218,15 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER OUTSTR*124,OUTS*124,text*124,h*72
-      CHARACTER*72 FILE,LCFD,LCNN
+      CHARACTER*72 FILE,LCFD
       character*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,ZN*12
       character zmfn1*124,zmfn2*124,WORD2*20,msgl2*48
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64
       character lradcf*72
-      CHARACTER ctldoc*248,LCTLF*72,MCMPDBFL*72,LOCUTIL*72
+      CHARACTER ctldoc*248,LCTLF*72,LOCUTIL*72
       CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character dfdblbl*20,defdbfl*72,GTGEOM*72
       character ectime*24,wkd1*10,wkd2*10
@@ -441,28 +427,31 @@ C Now read all configuration data from file; start with site data.
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'latitude & long dif',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWR(OUTSTR,K,XLAT,-90.,90.,'W','Latitude',IER)
-      SLAT=XLAT
-      CALL EGETWR(OUTSTR,K,XLON,-15.,15.,'W','Longitude dif',IER)
-      SLON=XLON
+      CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
+      SLAT=sitelat
+      CALL EGETWR(OUTSTR,K,sitelongdif,-15.,15.,'W',
+     &  'Longitude dif from time meridian',IER)
+      SLON=sitelongdif
       IF(IER.NE.0) GOTO 1
 
 C Get site exposure and ground reflectance.
       CALL STRIPC(IUC,OUTSTR,99,ND,1,'ground reflectance',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWI(OUTSTR,K,IXPOS,1,8,'W','Site exposure',IER)
-      CALL EGETWR(OUTSTR,K,GREF,0.,1.,'W','Ground reflect',IER)
+      CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
+     &  'Site exposure index',IER)
+      CALL EGETWR(OUTSTR,K,groundrefl,0.,1.,'W','Ground reflect',IER)
       IF(IER.NE.0) GOTO 1
 
 C Index of exposure has user defined data associated with it.
-      IF(IXPOS.EQ.8) THEN
+      IF(siteexposureindex.EQ.8) THEN
         CALL STRIPC(IUC,OUTSTR,3,ND,1,'user defined site exposure',IER)
         IF(IER.NE.0)goto 1
         K=0
-        CALL EGETWR(OUTSTR,K,SKYR,0.,1.,'W','Sky expos',IER)
-        CALL EGETWR(OUTSTR,K,GRDR,0.,1.,'W','Ground expos',IER)
-        CALL EGETWR(OUTSTR,K,BLDR,0.,1.,'W','Building expos',IER)
+        CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky view',IER)
+        CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W','Ground view',IER)
+        CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W','Building view',
+     &    IER)
         IF(IER.NE.0) GOTO 1
       ENDIF
 
@@ -500,6 +489,8 @@ C Read databases until '* PROJ LOG' found.
      &    'W','Multi-year climate db',IER)
         cMY_climate_db_name = cTemp(1:lnblnk(cTemp))
         bMY_climates_defined = .true.
+      elseif(WORD(1:7).eq.'*mscldb')then
+        CALL EGETRM(LOUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(OUTSTR,K,LPCDB,'W','plant comp db',IER)
       elseif(WORD(1:4).eq.'*ctl')then
@@ -508,18 +499,20 @@ C Read databases until '* PROJ LOG' found.
       elseif(WORD(1:5).eq.'*gref')then
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
-        CALL EGETWI(OUTSTR,K,ITGREF,1,3,'F','ground refl. model',IER)
+        CALL EGETWI(OUTSTR,K,groundreflmodel,1,3,'F',
+     &    'ground reflection model',IER)
         DO 441 I=1,12
-          CALL EGETWR(OUTSTR,K,GREF12(I),0.,1.,'W',
+          CALL EGETWR(OUTSTR,K,groundreflmonth(I),0.,1.,'W',
      &      'monthly gr. refl.',IER)
   441   CONTINUE
-        CALL EGETWR(OUTSTR,K,SREF,0.,1.,'W','snow refl.',IER)  
+        CALL EGETWR(OUTSTR,K,snowgroundrefl,0.,1.,'W','snow refl.',IER)  
 
       elseif(WORD(1:5).eq.'*snow')then
 
 C Number of days with snow on the ground (if ground refl model 2)
         DO 442 I=1,12
-          CALL EGETWI(OUTSTR,K,NSNOW(I),0,31,'W','days with snow',IER)
+          CALL EGETWI(OUTSTR,K,dayswithsnow(I),0,31,'W',
+     &      'days with snow each month',IER)
   442   CONTINUE
 
       elseif(WORD(1:5).eq.'*sndf')then
@@ -983,9 +976,9 @@ C Read more ground related information.
      &       OUTSTR(1:10).eq.'* BUILDING')then
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'model name',IER)
         IF(IER.NE.0)goto 1
-        LSNAM=OUTSTR(1:72)
+        modeltitle=OUTSTR(1:72)
       else
-        LSNAM=OUTSTR(1:72)
+        modeltitle=OUTSTR(1:72)
       endif
 
 C If ground information was read in but still registration level then exit.
@@ -1028,7 +1021,9 @@ C Zone file names.
         elseif(WORD(1:4).eq.'*con')then
           LTHRM(icomp)=text(1:72)
         elseif(WORD(1:4).eq.'*utl')then
-          indutl(icomp)=1
+          msgl2='This is no longer supported. Skipping...'
+          call usrmsg('Detected a ANCIENT zone utility file.',
+     &      msgl2,'W')
         elseif(WORD(1:4).eq.'*obs')then
           iobs(icomp)=1
           ZOBS(icomp)=text(1:72)
@@ -1138,23 +1133,14 @@ C in then proceed to check zone names.
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'utility flag',IER)
           IF(IER.NE.0)goto 1
           K=0
-          CALL EGETWI(OUTSTR,K,INDUTL(ICOMP),0,1,'F','utility flg',IER)
+          CALL EGETWI(OUTSTR,K,INDU,0,1,'F','utility flg',IER)
           IF(IER.NE.0) GOTO 1
 
-C Read utility file name and scan files into common.
-          LUTIL(ICOMP)=' '
-          if(INDUTL(ICOMP).EQ.1)then
-            CALL STRIPC(IUC,OUTSTR,0,ND,1,'utility file',IER)
-            IF(IER.NE.0)goto 1
-            LOCUTIL=OUTSTR(1:72)
-            call FINDFIL(LOCUTIL,XST)
-            if(XST)then
-              CALL ERUTIL(IUF,LOCUTIL,ICOMP,IER)
-            else
-              msgl2='  '
-              CALL USRMSG(' utility file not found ',msgl2,'W')
-            endif
-            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+C Warn user about old utility file name.
+          if(INDU.EQ.1)then
+            msgl2='This is no longer supported. Skipping...'
+            call usrmsg('Detected a ANCIENT zone utility file.',
+     &        msgl2,'W')
           endif
    20   CONTINUE
       endif

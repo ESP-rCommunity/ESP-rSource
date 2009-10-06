@@ -1211,8 +1211,11 @@ C Write out the node details
       DO 10  INODE=1,NENOD
 
 C-------Plant or PV component that calculates nodal voltage.
-        write(6,*) 'Writing file: :',ENODTYP(INODE),
-     &             iplant_calcV_LOC(INODE)
+
+C Debug.
+C        write(6,*) 'Writing file: :',ENODTYP(INODE),
+C     &             iplant_calcV_LOC(INODE)
+
         IF( ENODTYP(INODE).eq.3 ) THEN
           iNUM = iPV_calcV_LOC(INODE)
         ELSEIF( ENODTYP(INODE).eq.4 ) THEN

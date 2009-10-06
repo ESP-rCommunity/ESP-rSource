@@ -35,7 +35,7 @@ C ************************* EMFREAD
 C EMFREAD reads a mass flow network description file.
 C Reads allow comments and most input data checks are performed.
 C It assumes that the file is already open.
-      SUBROUTINE EMFREAD(IFPRB,ITRC,IER)
+      SUBROUTINE EMFREAD(IFPRB,IER)
 
 #include "net_flow.h"
       

@@ -1084,7 +1084,7 @@ C flow connection.
         endif
   43  continue
 
-C Debug...
+C Debug.
 C      write(6,*) (deltah(j),j=1,20)
 
 C Now revisit each icon connection, identify component end and the
@@ -1103,9 +1103,11 @@ C This icon connection starts with a component and thus it cannot
 C be the start of a flow connection. Skip on to the next icheck
             itest=ICNS(icheck)
             iotest=ICNE(icheck)
-C debug...
-             write(6,*) 'Skipping ',icheck,' icon connection begins ',
-     &         'with an icon component ',itest
+
+C Debug.
+C             write(6,*) 'Skipping ',icheck,' icon connection begins ',
+C     &         'with an icon component ',itest
+
              goto 144
           endif
 
@@ -1471,7 +1473,7 @@ C Write out attributes with minimal white space.
         write(INUNIT,'(a)',iostat=ios,err=1) '*End_attribute'
         write(INUNIT,'(2a,F8.4,a,F8.4,a,F8.4,a)',iostat=ios,err=1) 
      &    '*Where',tab,XYZICON(I,1),tab,XYZICON(I,2),tab,XYZICON(I,3),
-     #    ' # Icon position XYZ:'
+     &    ' # Icon position XYZ:'
         DO 12 J=1,NIVC(I) 
           WRITE(INUNIT,'(2a,F8.4,a,F8.4,a,F8.4,a)',iostat=ios,err=1) 
      &      '*Vertex',tab,VCICON(I,J,1),tab,VCICON(I,J,2),tab,

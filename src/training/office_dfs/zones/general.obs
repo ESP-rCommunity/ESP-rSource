@@ -15,5 +15,5 @@
     12.700   0.100    3.100    6.000    0.020    0.200   90.000  eob4     NONE         # block  16
     12.900   0.100    3.100    6.000    0.020    0.200   90.000  eob5     NONE         # block  17
     13.100   0.100    3.100    6.000    0.020    0.200   90.000  eob6     NONE         # block  18
-# grid opq X  opq Z  win X  win Z
-    20    20    10    10
+# grid opq X  opq Z
+    20    20

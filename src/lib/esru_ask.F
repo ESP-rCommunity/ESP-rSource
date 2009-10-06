@@ -76,12 +76,18 @@ C module (char *4) identifies the ESP-r module.
 
 C First copy any existing help into dh array.
       if(initonly.eq.0)then
-C        write(6,*) 'the module is ',module,' request to display' 
+
+C Debug.
+C        write(6,*) 'the module is ',module,' request to display'
+
         do 50 i=1,60
           dh(i)=h(i)
    50   continue
       else
+
+C Debug.
 C        write(6,*) 'the module is ',module,' request to initialise only'
+
       endif
 
       if(module(1:3).eq.'aco')then

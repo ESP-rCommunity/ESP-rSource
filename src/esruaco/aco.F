@@ -949,5 +949,11 @@ C keep it (SC)
       return
       end
 
+C Dummy subroutine needed to compile (called from library code).
+      SUBROUTINE PLELEV(direc)
+      CHARACTER direc*1
+      return
+      end
+
 
 

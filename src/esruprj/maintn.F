@@ -141,7 +141,9 @@ C item then the position will be 5.
       else
         ihrec(ifoc)=5
       endif
-      write(6,*) 'lasthd is ',lasthd,' ihrec is ',ihrec
+
+C Debug.
+C      write(6,*) 'lasthd is ',lasthd,' ihrec is ',ihrec
 
 C The total number of fields is the static portion plus the
 C timestep portion.
@@ -309,7 +311,10 @@ C Update NITDF, decrement nuwpr, rewrite the scratch file, update
 C the ascii file.
       NITDF=NITDF-1
       if(nuwpr-ilessfields.ge.0)then
-        write(6,*) 'decrementing from ',nuwpr,' to ',nuwpr-ilessfields
+
+C Debug.
+C        write(6,*) 'decrementing from ',nuwpr,' to ',nuwpr-ilessfields
+
         nuwpr=nuwpr-ilessfields
       endif
       call usrmsg(' ','Updating the scratch file...','-')

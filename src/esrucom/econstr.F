@@ -318,14 +318,19 @@ C ************* EMKCON
 C Generic routine to write a construction file based on information cur-
 C rently held in common blocks T1 T2 T4.
 C CONFIL is the name of the file to be written to (any existing file
-C by this name is overwritten).  zname is the zone name (12 char), ICOMP
-C is the zone number.
-C ITRU unit number for user output, IER=0 OK, IER=1 problem.
-      SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
+C by this name is overwritten).
+      SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,QUIET,IER)
 #include "building.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      character CONFIL*72  ! zone constructions file
+      integer IFILT        ! file unit for zone constructions file
+      integer ICOMP        ! index of the zone
+      logical QUIET        ! true acts silently
+      integer IER          ! IER=0 OK, IER=1 problem
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -336,16 +341,14 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-      logical QUIET
 
-      CHARACTER*72 CONFIL
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character outs*124,louts*248
 
       IER=0
 
-C Place output into IFILT. Open any existing file by this name, 
+C Open any existing file by this name (CONFIL), 
 C (ask user for confirmation to over-write) or create a new file.
 C If in quiet mode then file should exist.
       IF(QUIET) THEN
@@ -823,13 +826,19 @@ C if the surface attribute should be updated.
       NTMC=0
       DO 10 I=1,NS
         icn1=izstocn(icomp,i)
-        ITMCFL(ICOMP,I)=IVA(I)
-        IF(ITMCFL(ICOMP,I).NE.0.AND.(SSOTF(icn1)(1:4).EQ.'OPAQ'))THEN
-          WRITE(OUTS,'(5a)')' The TMC file ',LUA(1:lnblnk(LUA)),
-     &      ' not sure if ',SSNAME(icn1),' is transparent.'
+	if(icn1.ne.0)then
+          ITMCFL(ICOMP,I)=IVA(I)
+          IF(ITMCFL(ICOMP,I).NE.0.AND.(SSOTF(icn1)(1:4).EQ.'OPAQ'))THEN
+            WRITE(OUTS,'(5a)')' The TMC file ',LUA(1:lnblnk(LUA)),
+     &        ' not sure if ',SSNAME(icn1),' is transparent.'
+            call edisp(itru,outs)
+            call edisp(itru,' Check your zone files.')
+	  ENDIF
+        else
+          WRITE(OUTS,'(a,i3,a,i3,a)')' The surface in zone ',icomp,
+     &      ' and surface ',i,' does not exist in master list.'
           call edisp(itru,outs)
-          call edisp(itru,' Check your zone files.')
-        ENDIF
+        endif
         IF(ITMCFL(ICOMP,I).GT.NTMC)NTMC=ITMCFL(ICOMP,I)
    10 CONTINUE
       IF(NTMC.EQ.0.OR.NTMC.GT.MTMC)THEN
@@ -1232,12 +1241,18 @@ C Open existing ASCII construction data file as unit IIN.
 C ******** ERBIWIN
 C  ERBIWIN: reads bi-directional optical data from measurements
 C           file.
-      subroutine erbiwin(itrc,itru,iua,lua,ier)
+      subroutine erbiwin(itru,iua,lua,ier)
 #include "building.h"
 #include "espriou.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer itru  ! channel for feedback
+      integer iua   ! file unit
+      character LUA*72  ! optical data file name
+      integer ier   ! error state to return zero is ok
 
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
@@ -1289,7 +1304,7 @@ C   sky and ground diffuse radiation
      &  DF_G_GND(MSTMC,MSGAL),DF_RF_GND(MSTMC,MSGAL),
      &  a_dfSKYinner(MSTMC,MSGAL),a_dfGNDinner(MSTMC,MSGAL),
      &  a_dfSKYouter(MSTMC,MSGAL),a_dfGNDouter(MSTMC,MSGAL) 
-      character OUTSTR*124,OUTS*124,LUA*72,WORD*20
+      character OUTSTR*124,OUTS*124,WORD*20
       character bidirfile*72,bidirname*12
       logical bCloseToZero
 
@@ -1485,7 +1500,10 @@ C        if(iv1.eq.37)idataloop=1369
  143        continue
             CALL EGETWR(OUTSTR,K,T2,0.,1.,'-','dirdif trn',IER)
             TMTSOB(ibitype,ibset,ihangindex,ivangindex)=T2
+
+C Debug.
 C          write(6,*) ibitype,ibset,T1,T2
+
             goto 44
           elseif(IBIDATATYPE.eq.2)then
             CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)

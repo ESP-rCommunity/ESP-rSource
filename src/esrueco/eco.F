@@ -422,7 +422,7 @@ C properties, display it and then present the main menu.
       if(XST)then
         call fdroot(LCMDFL,path,LCFGF)
         call usrmsg('Scanning supplied problem...',' ','-')
-        MODE='NONE'
+        MODE='ALL '
         call ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
         if(IER.eq.0)then
           NZONES=NCOMP
@@ -953,10 +953,10 @@ C Also check to see if the file has correct info.
               goto 139  !  a binary file found so carry on.
             endif
  1000       CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-            call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+            call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
             if(ier.eq.-2)then
               ier=0
-              call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+              call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
               if(ier.ne.0)then
                 call usrmsg('No readable materials database was',
      &                      'found or file was corrupt','W')
@@ -1136,6 +1136,13 @@ C Dummy routine (needed for call back from c).
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
      
+      return
+      end
+
+C Dummy subroutine needed to compile (called from library code).
+      SUBROUTINE PLELEV(direc)
+      CHARACTER direc*1
+
       return
       end
 

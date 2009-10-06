@@ -393,7 +393,8 @@ C Tdf common block to allow using vertical solar radiation data
 
       ZAREA=zonetotsurfacearea(ICOMP)
 
-C      write (6,*) 'solar ',btimef
+C Debug.
+C      write(6,*) 'solar ',btimef
 
 C ---------------- INITIALIZE ----------------
 C                  ----------
@@ -898,8 +899,11 @@ C Update thermophysical properties here - we know the control state
 C so call bcl99 to update thermophysical props of controlled windows.
       ICALL=0
       DO 66 I=1,NC
-C        write (6,'(a,2i4)') 'Blind state: ',IBOFOT(ICOMP,I),
+
+C Debug.
+C        write(6,'(a,2i4)') 'Blind state: ',IBOFOT(ICOMP,I),
 C     &                                       NBPONT(ICOMP,I)
+
         ITMC=ITMCFL(ICOMP,I)
         if(ITMC.GT.0)then
           if(ITPREP(ICOMP,ITMC).gt.0)then
@@ -1152,7 +1156,7 @@ C Trap also the zeros in case of corrupted data
      &            TRINTERNAL(IBIDIR,IBISET_timestep)))/Rs_glazing
                 endif
 
-C Debug
+C Debug.
 C              write(6,*) Rs_glazing,'  ',qi_bidirectional
 C              write(6,*) a_inner_layer,'  ', a_outer_layer
 C End Debug
@@ -1323,7 +1327,9 @@ C For internal layer assign the calculated absorptance on the inner layer
               IF(IBIDATATYPE.EQ.2.OR.IBIDATATYPE.EQ.3)THEN
                 FAB=(SKYDIF(I)*ABFSKY+GRDDIF(I)*ABFGND)*(1.-POFF)
               ENDIF
-C              write (6,'(a,i4,6f8.5)') 'Nodal data: ',IBOFOT(ICOMP,I),
+
+C Debug.
+C              write(6,'(a,i4,6f8.5)') 'Nodal data: ',IBOFOT(ICOMP,I),
 C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
 
               EXSHAD(I)=PO(ICOMP,I,IHRF)
@@ -2096,8 +2102,11 @@ C for possible averaging in MZLS3.
       q2rem(2)=rdifr*zarea
       q1tot=q1outs(2)+q1adjz(2)
       q2tot=q2tmc(2)+q2wall(2)+q2rem(2)+q2cfc(2)
+
+C Debug.
 C      write(6,*) 'solsum solar ',BTIMEF,ICOMP,q1adjz(2),q1outs(2),
 C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)
+
       q1adjf(icomp)=q1adjz(2)
       q1outf(icomp)=q1outs(2)
       q2adjf(icomp)=q2adjz(2)
@@ -2579,9 +2588,7 @@ C  and ground reflected components.
 
       SUBROUTINE MZSRAD0(SLOPE,QD,QF,CAI,SRADDO,SRADF,SKYDIF,GRDDIF)
 #include "building.h"
-
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER SNFNAM*72
+#include "site.h"
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
@@ -2635,7 +2642,7 @@ C and absorption.
 C  The ground reflected component: assume isotropic
 C  ground conditions.
       SRADT=QF+(QD*SIN(SALT*R))
-      GRDDIF=0.5*GREF*(1.0-COS(BETA*R))*SRADT
+      GRDDIF=0.5*groundrefl*(1.0-COS(BETA*R))*SRADT
 
 C  The sky diffuse component.
       SKYDIF=QF*0.5*(1.0+COS(BETA*R))
@@ -2671,7 +2678,7 @@ C and absorption.
 C  The ground reflected component: assume isotropic
 C  ground conditions.
       SRADT=ADJF+(ADJD*SIN(SALT*R))
-      GRDDIF=0.5*GREF*(1.0-COS(BETA*R))*SRADT
+      GRDDIF=0.5*groundrefl*(1.0-COS(BETA*R))*SRADT
 
 C  The sky diffuse component.
       SKYDIF=ADJF*0.5*(1.0+COS(BETA*R))
@@ -2719,7 +2726,7 @@ C if SRADDO is less than 5 W/m2 or if solar altitude <3deg.
 C  The ground reflected component : assume isotropic
 C  ground conditions.
       SRADT=QF+(QD*SIN(SALT*R))
-      GRDDIF=0.5*GREF*(1.0-COS(BETA*R))*SRADT
+      GRDDIF=0.5*groundrefl*(1.0-COS(BETA*R))*SRADT
 
       ENDIF
 C *** END Muneer.
@@ -2819,7 +2826,7 @@ C and absorption.
 C The ground reflected component: assume isotropic
 C ground conditions.
       SRADT=QF+(QD*SIN(SALT*R))
-      GRDDIF=0.5*GREF*(1.0-COS(BETA*R))*SRADT
+      GRDDIF=0.5*groundrefl*(1.0-COS(BETA*R))*SRADT
       ENDIF
 C *** END Perez 1987.
 
@@ -2892,7 +2899,7 @@ C and absorption.
 C The ground reflected component: assume isotropic
 C ground conditions.
       SRADT=QF+(QD*SIN(SALT*R))
-      GRDDIF=GREF*(1.0-COS(BETA*R))*SRADT/2.
+      GRDDIF=groundrefl*(1.0-COS(BETA*R))*SRADT/2.
       ENDIF
 C *** END Perez 1990 model.
 
@@ -3190,6 +3197,7 @@ c         receiving internal surfaces.
 
       SUBROUTINE MZSHDO(IYRD)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "CFC_common.h"
 
@@ -3199,18 +3207,12 @@ c         receiving internal surfaces.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/SHAD1/IML
 
 C Shading file record width found in mzshin.
@@ -3359,7 +3361,7 @@ C              for ESP-r" Prepared Levelton Consultants, Richmond B.C.,
 C              for Natural Resources Canada, June 30th 2005.
 
 C OUTPUTS:
-C       GREF   actual snow reflectivity for the hour         
+C       groundrefl   actual snow reflectivity for the hour         
 C *********************************************************************
       SUBROUTINE MZGREF
 
@@ -3371,14 +3373,8 @@ C-----------------------------------------------------------------------
       
 C ESP-r Commons      
 #include "building.h"
-      INTEGER IXPOS
-      REAL GREF         ! actual snow covered ground reflectivity for the hour
-      INTEGER ITGREF    ! flag for ground reflectivity model used
-      REAL GREF12       ! no snow ground reflectivity for each month
-      REAL SREF         ! uncorrected snow covered ground reflectivity
-      INTEGER NSNOW     ! monthly number of days with snow on the ground
-      CHARACTER*72 SNFNAM ! snow depth file name 
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+#include "site.h"
+C site.h has common C5
 
       REAL BTIMEP,BTIMEF ! Present and future building side time step
                          ! Number between 0. and 24.            
@@ -3428,12 +3424,12 @@ C Ground reflectivity is a weighted average of the no-snow and
 C snow reflectivities. The weighting factor is the fraction of
 C the month with snow on the ground.
 
-      IF (ITGREF.EQ.2) THEN
+      IF (groundreflmodel.EQ.2) THEN
         IDYAUX=IDYP                    ! day of year
         IF(IHRF.EQ.1) IDYAUX=IDYF      ! end of day: use next day
         CALL EDAYR(IDYAUX,ID,IM)       ! calculate day and month
-        AUX=MAX(MIN(FLOAT(NSNOW(IM))/FLOAT(MONTH(IM)),1.),0.)
-        GREF=GREF12(IM)*(1.-AUX)+SREF*AUX
+        AUX=MAX(MIN(FLOAT(dayswithsnow(IM))/FLOAT(MONTH(IM)),1.),0.0)
+        groundrefl=groundreflmonth(IM)*(1.-AUX)+snowgroundrefl*AUX
 
 C CASE 3: ADVANCED MODEL
 C If snow depth is 5 cm or more:
@@ -3447,7 +3443,7 @@ C If snow depth is less than 5 cm, use a weighted average of the
 C no-snow and snow reflectivities (snow depth being used as the 
 C weighting factor), and assume the snow is melting
 
-      ELSEIF (ITGREF.EQ.3) THEN
+      ELSEIF (groundreflmodel.EQ.3) THEN
  
 C Get current day and hour and see if snow properties need to be reevaluated.
         IDYAUX=IDYP                    ! day of year
@@ -3468,7 +3464,7 @@ C Determine whether there is snow melt.
           
 C Recalculate snow reflectivity as if snow depth is greater than 5 cm.
           IF (SNDEP.GT.SNDEPLS) THEN
-            SREFP=SREF
+            SREFP=snowgroundrefl
           ELSEIF (SNMLT) THEN
             SREFP=SREFLS*(.97**.04166666)
           ELSE
@@ -3477,9 +3473,9 @@ C Recalculate snow reflectivity as if snow depth is greater than 5 cm.
 
 C Calculate actual snow reflectivity, depending on snow depth.
           IF (SNDEP.GT.5.) THEN
-            GREF = SREFP
+            groundrefl = SREFP
           ELSE
-            GREF=GREF12(IM)*(1.-SNDEP/5.)+SREFP*SNDEP/5.
+            groundrefl=groundreflmonth(IM)*(1.-SNDEP/5.)+SREFP*SNDEP/5.
           ENDIF
           
 C Save snow reflectivity information.
@@ -3491,7 +3487,7 @@ C Save snow reflectivity information.
       ENDIF
 
 C Pass time step ground reflectivity for XML output.
-      call add_to_xml_reporting(GREF,
+      call add_to_xml_reporting(groundrefl,
      &  'Building/Ground_Reflectivity','units','dimensionless',
      &  'Reflectivity of the ground for solar radiation')
 
@@ -3513,10 +3509,10 @@ C Subroutine and simulation time info
       CALL DAYCLK(IDYP,BTIMEF,ITU)
 
 C Print ground reflectivity and, if advanced model, snow depth ground. 
-      IF (ITGREF.LE.2) THEN
-        WRITE(OUTS,910) GREF
+      IF (groundreflmodel.LE.2) THEN
+        WRITE(OUTS,910) groundrefl
       ELSE
-        WRITE(OUTS,920) GREF,SNDEP
+        WRITE(OUTS,920) groundrefl,SNDEP
       ENDIF
       CALL EDISP(ITU,OUTS)
       GOTO 9999
@@ -3557,15 +3553,9 @@ C     DECLARATIONS
 C-----------------------------------------------------------------------
       
 C ESP-r Commons
-      INTEGER IXPOS
-      REAL GREF         ! actual snow covered ground reflectivity 
-                        ! for the hour
-      INTEGER ITGREF    ! flag for ground reflectivity model used
-      REAL GREF12       ! no snow ground reflectivity for each month
-      REAL SREF         ! uncorrected snow covered ground reflectivity
-      INTEGER NSNOW     ! monthly number of days with snow on the ground
-      CHARACTER*72 SNFNAM ! snow depth file name       
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+#include "building.h"
+#include "site.h"
+C site.h has common C5
 
       INTEGER IFIL      ! Unit number used for processing input/output files      
       COMMON/FILEP/IFIL
@@ -3585,7 +3575,7 @@ C Local variables
 
 C Set default error code and return if not advanced albedo model
       IER=0
-      IF (ITGREF.NE.3) RETURN
+      IF (groundreflmodel.NE.3) RETURN
 
 C CHECK EXISTENCE OF FILE, ASK FOR NEW FILE IF NOT FOUND, EXIT WITH
 C ERROR IF CANNOT BE FOUND
@@ -3696,6 +3686,9 @@ C     DECLARATIONS
 C-----------------------------------------------------------------------
       
 C ESP-r Commons      
+#include "building.h"
+#include "site.h"
+C site.h has common C5
       REAL GTP,GTF,QGLP,QGLF,QGGP,QGGF,GC,
      &TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH,
      &TBSUTH,TBEAST,TBWEST
@@ -3705,15 +3698,6 @@ C ESP-r Commons
 
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-
-      INTEGER IXPOS
-      REAL GREF         ! actual snow covered ground reflectivity for the hour
-      INTEGER ITGREF    ! flag for ground reflectivity model used
-      REAL GREF12       ! no snow ground reflectivity for each month
-      REAL SREF         ! uncorrected snow covered ground reflectivity
-      INTEGER NSNOW     ! monthly number of days with snow on the ground
-      CHARACTER*72 SNFNAM ! snow depth file name        
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
 
       REAL SAZI,SALT    ! solar azimuth and altitude in degrees
       INTEGER ISUNUP    ! flag indicating whether sun is up or down
@@ -3756,7 +3740,7 @@ C (direct and diffuse), convection heat transfer between the
 C snow surface and the ambient air, longwave radiation exchange
 C with the sky, conduction through the snow layer, and conduction
 C to the ground surface.
-      TSNOW=((1.-GREF)*QT+4*ESNOW*SBC*(TSKY**4)
+      TSNOW=((1.-groundrefl)*QT+4*ESNOW*SBC*(TSKY**4)
      &       +GHTC*(TP+ZEROK)+(KSNOW/(SNDEP*CMTOM))*(GTF(1)+ZEROK))
      &      /(4*ESNOW*SBC*(TSKY**3)+GHTC+KSNOW/(SNDEP*CMTOM))
       TSNOW=TSNOW-ZEROK   
@@ -3932,9 +3916,12 @@ C Check number of periods in each day and the start and finish times
 C Call in the future here different subroutines for different controls
               ictl_constrdbindex_number=ioan(1,2)
 
-C<<<<<<< IMPORTANT: TAKE ONLY THE 1ST 12 CHARS FROM "DESC">>>>>>
+C **** IMPORTANT: TAKE ONLY THE 1ST 12 CHARS FROM "DESC" ****
+
+C Debug.
 C        write(6,*) 'desc', DESC(ictl_constrdbindex_number)
-C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))  
+C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))
+ 
               write(ctl_constrdb_name,'(a)') 
      &             DESC(ictl_constrdbindex_number)(1:12)      
               write(name_constr_ofStudy,'(a)') 
@@ -3949,6 +3936,8 @@ C<<< Consider changing ioan(1,1) in the future to ioan(iol,1)>>>>
 C Current zone temperature sensor
 C<<<Check if instead if iosn(1,1) we should use iosn(iol,1) as in bcfunc.F>>>
                   if(iosn(1,1).eq.0)then
+
+C Debug.
 C                    write(6,*) 'TFA: ', TFA(ICOMP),'     ','time: ',btimef
 C                    write(6,*) 'OMISCD: ', OMISCD(1,IDTYP,IPER,2)
  

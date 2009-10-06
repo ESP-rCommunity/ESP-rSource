@@ -78,10 +78,10 @@ C Also check to see if the file has correct info in
           goto 139  !  a binary file found so carry on.
         endif
  1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
         if(ier.eq.-2)then
           ier=0
-          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
           if(ier.ne.0)then
             call usrmsg('No readable materials database was not found',
      &                  'or file was corrupt','W')
@@ -240,6 +240,7 @@ C length : Length of zdescr
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       CHARACTER zdescr*80,outs*244,outsd*80
+      logical unixok
 
       length=0
       do 42 i=1,nzg
@@ -268,7 +269,11 @@ C length : Length of zdescr
         return
       endif
 
-      write(6,*) 'ZLIST: error writing zone names: ',outs
+C If we got to this point must have been an error
+      call isunix(unixok)
+      if(unixok)then
+        write(6,*) 'ZLIST: error writing zone names: ',outs
+      endif
       ierr=1
       return
       END
@@ -278,6 +283,7 @@ C ************* ZoneDisp
 C ZoneDisp - displays zone based information and allows....
       SUBROUTINE ZoneDisp(icomp)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
 #include "geometry.h"
@@ -290,10 +296,6 @@ C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
@@ -314,7 +316,7 @@ C Read geometry file for chosen zone.
       ITMP=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
       else
         call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
       endif
@@ -326,7 +328,7 @@ C Read geometry file for chosen zone.
       CALL ADJVIEW(IER)
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
       Vol(icomp)= ZVOL
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       FLA=0.
@@ -479,6 +481,7 @@ C          1 = textual feedback or 2 = File
       SUBROUTINE DispTRev(Mode,IOctave,ISE,Method,IAirAb, IChanel)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "acoustic.h"
 
@@ -489,10 +492,6 @@ C          1 = textual feedback or 2 = File
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -699,13 +698,13 @@ C for each surface in the zone according to the frequency band
               endif
               call eclose(gversion(nZnog(J)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
+                call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,iuout,
      &           IER)
               else
                 call egomin(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
      &           IER)
               endif
-              CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
             DO 400 I = 1,NSUR
               icon=IZSTOCN(nZnog(J),I)
               In = MLCIndex(SSMLCN(icon))
@@ -889,13 +888,12 @@ C Display equivalent surface for MATERIAL
               endif
               call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
-     &           IER)
+                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
               else
                 call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
      &           IER)
               endif
-              CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
             DO 200 I = 1,NSUR
               icon=IZSTOCN(nZnog(k),I)
@@ -1146,13 +1144,12 @@ C Should any way compute the equivalent area
             DO 691 k =1,NZG 
               call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
-     &           IER)
+                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
               else
                 call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
      &           IER)
               endif
-              CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
  691        CONTINUE
           ENDIF

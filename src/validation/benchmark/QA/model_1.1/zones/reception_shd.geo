@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,reception # tag version, format, zone name
-*date Tue Aug 14 10:19:53 2007  # latest file modification 
+*date Wed Jul 22 17:23:01 2009  # latest file modification 
 reception describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,1.00000,1.00000,0.00000  #   1
@@ -54,7 +54,7 @@ reception describes a...
 *edges,4,31,32,33,34  # 14
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -83,3 +83,18 @@ reception describes a...
  10 14
 # 
 *base_list,1,9,    48.00 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start,15 15 # geometric blocks
+*obs,1.010,0.000,2.800,7.800,0.900,0.150,0.000,s_obs,extern_wall  # block  1
+*obs,0.000,1.100,2.800,0.900,3.800,0.150,0.000,w_obs,extern_wall  # block  2
+*obs,1.990,0.670,0.990,6.020,0.325,0.010,0.000,glz_ss,extern_wall  # block  3
+*obs,1.990,0.670,2.250,6.020,0.325,0.010,0.000,glz_sh,extern_wall  # block  4
+*obs,1.990,0.670,0.990,0.010,0.325,1.270,0.000,glz_sl,extern_wall  # block  5
+*obs,8.000,0.670,0.990,0.010,0.325,1.270,0.000,glz_sr,extern_wall  # block  6
+*obs,9.330,1.990,0.990,2.020,0.325,0.010,90.000,east_s,extern_wall  # block  7
+*obs,9.330,1.990,2.250,2.020,0.325,0.010,90.000,east_h,extern_wall  # block  8
+*obs,9.330,1.990,0.990,0.010,0.325,1.270,90.000,east_l,extern_wall  # block  9
+*obs,9.330,4.000,0.990,0.010,0.325,1.270,90.000,east_r,extern_wall  # block 10
+*end_block

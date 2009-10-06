@@ -201,6 +201,7 @@ C the whole period of the database if the instance is TABULAR.
       iperiod=ixmax-ixmin
       XMAX=FLOAT(ixmax)
       XMIN=FLOAT(ixmin)
+
 C Debug.
 C      write(6,*) 'steps =', iperiod,ixmin,ixmax,itdbdoy,igbdoy,igedoy,
 C     &  XMIN,XMAX
@@ -215,9 +216,11 @@ C Scan TABUMX and TABUMN for current data columns to find out extents
 C of the vertical axis. 
         if(TABUMX(ITCOL(IFOC,J)).gt.YMAX) YMAX=TABUMX(ITCOL(IFOC,J))
         if(TABUMN(ITCOL(IFOC,J)).lt.YMIN) YMIN=TABUMN(ITCOL(IFOC,J))
-C Debug
+
+C Debug.
 C      write(6,*)'ifoc j isflds ieflds max min ',ifoc,j,isflds,ieflds,
 C     &  ymax,ymin
+
    6  CONTINUE
 
 
@@ -256,8 +259,11 @@ C Round YMIN to a sensible value.
         endif
       endif
       if (ABS(YMAX-YMIN).lt.0.00001) YMAX=YMAX+0.5
-      write(6,*)'ifoc isflds ieflds max min ',ifoc,isflds,ieflds,ymax,
-     &  ymin
+
+C Debug.
+C      write(6,*)'ifoc isflds ieflds max min ',ifoc,isflds,ieflds,ymax,
+C     &  ymin
+
       call usrmsg(' ',' ','-')
 
 C Set the viewing period.

@@ -13,5 +13,5 @@
     9.330    1.990    2.250   2.020   0.325   0.010   90.0  east_h   extern_wall  # block  8
     9.330    1.990    0.990   0.010   0.325   1.270   90.0  east_l   extern_wall  # block  9
     9.330    4.000    0.990   0.010   0.325   1.270   90.0  east_r   extern_wall  # block 10
-# grid opq X  opq Z  win X  win Z
-    15    15     5     5
+# grid opq X  opq Z
+    15    15

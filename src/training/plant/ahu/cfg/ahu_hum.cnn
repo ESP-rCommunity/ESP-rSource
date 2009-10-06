@@ -1,5 +1,5 @@
 *connections  for ahu_hum
-*Date Wed Nov 26 16:14:05 2008
+*Date Tue Jul 21 10:33:38 2009
      27   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External

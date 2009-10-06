@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,manager # tag version, format, zone name
-*date Thu Aug 23 18:21:04 2007  # latest file modification 
+*date Fri Jul 17 11:05:01 2009  # latest file modification 
 manager describes cellular office
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,0.00000,0.00000  #   1
@@ -41,7 +41,7 @@ manager describes cellular office
 *edges,4,21,22,23,24  # 11
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -67,3 +67,14 @@ manager describes cellular office
  10
 # 
 *base_list,1,6,    13.50 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start,20 20 # geometric blocks
+*obs,0.000,-0.100,3.100,3.000,0.020,0.300,0.000,ob1,NONE  # block  1
+*obs,0.000,-0.300,3.100,3.000,0.020,0.250,0.000,ob2,NONE  # block  2
+*obs,0.000,-0.500,3.100,3.000,0.020,0.220,0.000,ob3,NONE  # block  3
+*obs,0.000,-0.700,3.100,3.000,0.020,0.200,0.000,ob4,NONE  # block  4
+*obs,0.000,-0.900,3.100,3.000,0.020,0.200,0.000,ob5,NONE  # block  5
+*obs,0.000,-1.100,3.100,3.000,0.020,0.200,0.000,ob6,NONE  # block  6
+*end_block

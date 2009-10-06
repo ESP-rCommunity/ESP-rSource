@@ -21,16 +21,16 @@ C Boston, MA 02111-1307 USA.
 C Ezero loads the COMMONS used by libgtkesru.a, libxesru.a and libnoxesru.a.
 
       subroutine EZERO
+#include "building.h"
+#include "site.h"
+
 C Ezero loads the COMMONS used by libgtkesru.a, libxesru.a and libnoxesru.a.
 #include "epara.h"
-
-      PARAMETER (MGRDP=10)
 
 C Commons for paged menus, PMENUSV is to pop in a definition for
 C later recovery.
       COMMON/PMENUSV/MHEAD1(5),MCTL1(5),MIFUL1(5),MFUL1(5),IST1(5),
      &               ILEN1(5),IPM1(5),MPM1(5),IPFLG1(5),MILEV
-      common/ground/grdtmp(12,mgrdp)
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
       logical PBYFIL
 

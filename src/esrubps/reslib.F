@@ -99,6 +99,7 @@ C Active domain common.
       logical CFDOK,concat
 
 C Check and see if in a remote folder.
+
 C Debug.
 C      write(6,*) ' path is ',path
 C      write(6,*) ' users home is ',upath
@@ -139,6 +140,7 @@ C user can write to.
 
 C Debug.
 C      write(6,*) 'reslib.F spfileok remote ',spfileok,remote
+
       if(.not.spfileok) then
         iw=0
         call dealremote('zi',remote,LTMP,IW)
@@ -190,9 +192,9 @@ C Tell the user (and any log file) that their library will be used.
 
 C << the following code is for testing >>
 C Create SQL results database.
-C      write (doit,'(2a)') 'mysqladmin -u root CREATE ',RFILE
-C      write (doit,'(a)') 'mysqladmin -u iain -pxx CREATE fred'
-C      write (6,*) doit
+C      write(doit,'(2a)') 'mysqladmin -u root CREATE ',RFILE
+C      write(doit,'(a)') 'mysqladmin -u iain -pxx CREATE fred'
+C      write(6,*) doit
 C      call runit(doit,'-')
 
 c Does this library contain results ?
