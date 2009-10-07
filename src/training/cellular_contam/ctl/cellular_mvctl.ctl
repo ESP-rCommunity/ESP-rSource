@@ -12,4 +12,4 @@ no flow control description supplied
      1  # No. of periods in day
    41    0   0.000  # ctl type (contam conc > flow), law (on/off setpoint 2.00 direct action ON fraction 0.000.), starting @
       2.  # No. of data items
-  2.000 1.000
+  2.00000 1.00000

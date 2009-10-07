@@ -1,20 +1,33 @@
 Synopsis
  
 This is a synopsis of the model Two adjacent cellular offices with upper and
-lower bounding zones defined in cellular_bounded.cfg generated on Wed Aug 22
-15:40:25 2007. Notes associated with the model are in cellular_bounded.log
+lower bounding zones defined in cellular_bounded.cfg generated on Fri Jul 10
+09:57:50 2009. Notes associated with the model are in cellular_bounded.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-The climate used is: ESP test climate and is held in:
-/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
  
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
 An Integrated Performance View has been defined:
-The climatelist was incomplete or missing so the
-IPV details might be incorrect.
 Title : Model of two adjacent cellular bounded
 Version   : Version cellular_bounded
 synopsis:
@@ -38,9 +51,9 @@ display day Mon-20-Nov.
  
 Seasons (as found in climatelist file):
          winter  spring  summer  autumn  winter
-  start  00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
-  finish 00-Jan  00-Jan  00-Jan  00-Jan  00-Jan
-  days      1        1       1       1       1
+  start  02-Jan  13-Mar  15-May  04-Sep  30-Oct
+  finish 12-Mar  14-May  03-Sep  29-Oct  31-Dec
+  days     70       63     112      56      63
  
  Ratios for:  winter spring summer autumn winter
  heating       8.86   8.83  23.47   8.42   8.94
@@ -68,12 +81,12 @@ Zones: floor_below ceiling_abv
  
  
 Databases associated with the model:
- pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ pressure distributions : pressc.db1
  materials              : ../dbs/cellular.materials.a
  constructions          : ../dbs/cellular_flh.constrdb
- plant components       : /usr/esru/esp-r/databases/plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1
- optical properties     : /usr/esru/esp-r/databases/optics.db2
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
  
  ____________________________________________________________
  
@@ -214,14 +227,14 @@ ID Zone         Volume|          Surface
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_b
   2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:coridor
-  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:coridor
+  3  2.32    360.   0. door         OPAQUE   VERT -     door         ||< door:coridor
   4  6.00    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< floor_ma:ceiling_abv
   6  13.5      0. -90. floor        OPAQUE   FLOR -     structure    ||< floor_ma:floor_below
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
+ 10  4.48    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
  11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:coridor
  12  0.450   270.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05    270.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
@@ -233,20 +246,33 @@ ID Zone         Volume|          Surface
  
  
  
+ 
+ Air schedule notes:
+The office has one occupant during office hours, lighting at 10W/m2
+and one computer in the room. . and the client ask for use to check
+these numbers for compilance with standards
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekdays     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
  
 Notes:
 The office has one occupant during office hours, lighting at 10W/m2
 and one computer in the room. . and the client ask for use to check
 these numbers for compilance with standards
- Number of Weekday Sat Sun casual gains=  7  7  0
+Number of weekdays     casual gains=  7
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
@@ -256,13 +282,17 @@ Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
 Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
 Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
 Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Sat  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Sat  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Sat  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Sat  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Sat  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  0
  
  ____________________________________________________________
  
@@ -280,14 +310,14 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5    270.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_a
   2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:coridor
-  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
+  3  2.32    360.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
   4  6.00     90.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< floor_mb:ceiling_abv
   6  13.5      0. -90. floor        OPAQUE   FLOR -     structure    ||< floor_mb:floor_below
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
+ 10  4.48    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
  11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:coridor
  12  0.450    90.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05     90.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
@@ -299,18 +329,29 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  
  
  
+ 
+ Air schedule notes:
+manager b has the same profile as manager a . . .
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekdays     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
  
 Notes:
 manager b has the same profile as manager a . . .
- Number of Weekday Sat Sun casual gains=  7  7  0
+Number of weekdays     casual gains=  7
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
@@ -320,13 +361,17 @@ Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
 Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
 Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
 Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Sat  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Sat  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Sat  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Sat  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Sat  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  0
  
  ____________________________________________________________
  
@@ -346,7 +391,7 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
   5  6.10      0. -90. floor        OPAQUE   FLOR -     structure    ||< floor_cor:floor_below
   6  2.32    180.   0. door         OPAQUE   VERT -     door         ||< door:manager_a
   7  1.28    180.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:manager_a
-  8  0.920   180.  -0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:manager_a
+  8  0.920   180.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:manager_a
   9  4.48    180.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:manager_a
  10  0.920   180.   0. part_frameb  OPAQUE   VERT -     insul_frame  ||< part_frame:manager_b
  11  2.32    180.   0. door_b       OPAQUE   VERT -     door         ||< door:manager_b
@@ -361,13 +406,20 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  
  
  
+ 
+ Air schedule notes:
+half a person and 10W/m2 lighting
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  0  0  0
+Number of air change periods for daytype weekdays     :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 half a person and 10W/m2 lighting
- Number of Weekday Sat Sun casual gains=  6  6  6
+Number of weekdays     casual gains=  6
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
@@ -376,18 +428,24 @@ Wkd  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
 Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
 Wkd  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
 Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
-Sat  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
-Sat  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
-Sat  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
-Sat  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
-Sat  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
-Sun  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sun  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
-Sun  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
-Sun  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
-Sun  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
-Sun  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  6
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
+Wkd  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
+Wkd  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
+Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  6
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
+Wkd  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
+Wkd  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
+Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -396,7 +454,7 @@ Sun  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
  area of 79.4m^2 & approx floor area of 47.4m^2
  floor_below is a thin zone representing ceiling void below
  There is 3.0500m2 of exposed surface area, 3.0500m2 of which is vertical.
- Outside walls are 6.4414 % of floor area & avg U of 0.000 & UA of 0.00
+ Outside walls are 6.4414 % of floor area & avg U of 0.214 & UA of 0.65255
  
  A summary of the surfaces in floor_below( 4) follows:
  
@@ -417,13 +475,20 @@ Sun  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
  No shading analysis requested.
  No insolation analysis requested.
  
+ 
+ Air schedule notes:
+no operations notes (yet)
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  0  0  0
+Number of air change periods for daytype weekdays     :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 no operations notes (yet)
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekdays     casual gains=  0
  
  ____________________________________________________________
  
@@ -432,14 +497,14 @@ no operations notes (yet)
  area of 79.4m^2 & approx floor area of 67.7m^2
  ceiling_abv is a suspended ceiling above occupied space
  There is 3.0500m2 of exposed surface area, 3.0500m2 of which is vertical.
- Outside walls are 4.5045 % of floor area & avg U of 0.000 & UA of 0.00
+ Outside walls are 4.5045 % of floor area & avg U of 0.214 & UA of 0.65255
  
  A summary of the surfaces in ceiling_abv( 5) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  3.05    180.   0. edge_s       OPAQUE   VERT -     extern_wall  ||< external
-  2  2.77     90.   0. edge_e       OPAQUE   VERT -     structure    ||< identical environment
+  2  2.78     90.   0. edge_e       OPAQUE   VERT -     structure    ||< identical environment
   3  3.05      0.   0. edge_n       OPAQUE   VERT -     structure    ||< identical environment
   4  2.77    270.   0. edge_w       OPAQUE   VERT -     structure    ||< identical environment
   5  33.9      0.  90. upper        OPAQUE   CEIL -     structure    ||< base:boundary_up
@@ -453,18 +518,29 @@ no operations notes (yet)
  No shading analysis requested.
  No insolation analysis requested.
  
+ 
+ Air schedule notes:
+heat from ceiling mounted lights represented as 3W/m3. 0.5 ach assumed.
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekdays     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
  
 Notes:
 heat from ceiling mounted lights represented as 3W/m3. 0.5 ach assumed.
- Number of Weekday Sat Sun casual gains=  5  5  5
+Number of weekdays     casual gains=  5
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
@@ -472,16 +548,22 @@ Wkd  2 LightsWm2  0 -  7      0.0      0.0       0.50       0.50
 Wkd  3 LightsWm2  7 - 18      3.0      0.0       0.50       0.50
 Wkd  4 LightsWm2 18 - 24      0.0      0.0       0.50       0.50
 Wkd  5 EquiptW    0 - 24      0.0      0.0       0.50       0.50
-Sat  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
-Sat  2 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
-Sat  3 LightsWm2  8 - 12      3.0      0.0       0.50       0.50
-Sat  4 LightsWm2 12 - 24      0.0      0.0       0.50       0.50
-Sat  5 EquiptW    0 - 24      0.0      0.0       0.50       0.50
-Sun  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
-Sun  2 LightsWm2  0 -  9      0.0      0.0       0.50       0.50
-Sun  3 LightsWm2  9 - 12      3.0      0.0       0.50       0.50
-Sun  4 LightsWm2 12 - 24      0.0      0.0       0.50       0.50
-Sun  5 EquiptW    0 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
+Wkd  2 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
+Wkd  3 LightsWm2  8 - 12      3.0      0.0       0.50       0.50
+Wkd  4 LightsWm2 12 - 24      0.0      0.0       0.50       0.50
+Wkd  5 EquiptW    0 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
+Wkd  2 LightsWm2  0 -  9      0.0      0.0       0.50       0.50
+Wkd  3 LightsWm2  9 - 12      3.0      0.0       0.50       0.50
+Wkd  4 LightsWm2 12 - 24      0.0      0.0       0.50       0.50
+Wkd  5 EquiptW    0 - 24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -490,7 +572,7 @@ Sun  5 EquiptW    0 - 24      0.0      0.0       0.50       0.50
  area of 79.4m^2 & approx floor area of 33.9m^2
  boundary_up is a boundary zone above suspended ceiling
  There is 3.0500m2 of exposed surface area, 3.0500m2 of which is vertical.
- Outside walls are 9.0103 % of floor area & avg U of 0.000 & UA of 0.00
+ Outside walls are 9.0103 % of floor area & avg U of 0.214 & UA of 0.65255
  
  A summary of the surfaces in boundary_up( 6) follows:
  
@@ -500,7 +582,7 @@ Sun  5 EquiptW    0 - 24      0.0      0.0       0.50       0.50
   2  33.9      0.  90. t_upper      OPAQUE   CEIL -     ceiling      ||< constant @ 20dC &   0W rad
   3  2.77     90.   0. edg_2upper   OPAQUE   VERT -     insul_frame  ||< identical environment
   4  3.05      0.   0. edg_3upper   OPAQUE   VERT -     insul_frame  ||< identical environment
-  5  2.77    270.   0. edg_4upper   OPAQUE   VERT -     insul_frame  ||< identical environment
+  5  2.78    270.   0. edg_4upper   OPAQUE   VERT -     insul_frame  ||< identical environment
   6  3.05    180.   0. edg_5upper   OPAQUE   VERT -     extern_wall  ||< external
  
  
@@ -508,30 +590,48 @@ Sun  5 EquiptW    0 - 24      0.0      0.0       0.50       0.50
  No shading analysis requested.
  No insolation analysis requested.
  
+ 
+ Air schedule notes:
+Flow schedules imported. This bounding zone is to be controlled to
+match conditions in office space and so no details are required.
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekdays     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
  
 Notes:
 Flow schedules imported. This bounding zone is to be controlled to
 match conditions in office space and so no details are required.
- Number of Weekday Sat Sun casual gains=  3  3  3
+Number of weekdays     casual gains=  3
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
 Wkd  2 LightsW    0 - 24      0.0      0.0       0.50       0.50
 Wkd  3 EquiptW    0 - 24      0.0      0.0       0.40       0.60
-Sat  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
-Sat  2 LightsW    0 - 24      0.0      0.0       0.50       0.50
-Sat  3 EquiptW    0 - 24      0.0      0.0       0.40       0.60
-Sun  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
-Sun  2 LightsW    0 - 24      0.0      0.0       0.50       0.50
-Sun  3 EquiptW    0 - 24      0.0      0.0       0.40       0.60
+Number of saturday     casual gains=  3
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
+Wkd  2 LightsW    0 - 24      0.0      0.0       0.50       0.50
+Wkd  3 EquiptW    0 - 24      0.0      0.0       0.40       0.60
+Number of sunday       casual gains=  3
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 - 24      0.0      0.0       0.50       0.50
+Wkd  2 LightsW    0 - 24      0.0      0.0       0.50       0.50
+Wkd  3 EquiptW    0 - 24      0.0      0.0       0.40       0.60
  
  ____________________________________________________________
  
@@ -539,11 +639,23 @@ Sun  3 EquiptW    0 - 24      0.0      0.0       0.40       0.60
  Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
  There is 27.150m2 of outside surface area, 27.150m2 of which is vertical.
  
- Outside walls are 8.9568 % of floor area & avg U of 0.205 & UA of 3.3916
+ Outside walls are 8.9568 % of floor area & avg U of 0.324 & UA of 5.3493
  Glazing is 5.7723 % of floor & 39.190 % facade with avg U of 2.811 & UA of 29.905
  
  ____________________________________________________________
  Multi-layer constructions used:
+ 
+ Details of opaque construction: extern_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 lt brown brick : Light brown brick
+    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
+ Total area of extern_wall is      9.15
  
  Details of opaque construction: insul_frame
  
@@ -589,7 +701,7 @@ Sun  3 EquiptW    0 - 24      0.0      0.0       0.40       0.60
  Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
  Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (min
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
- Total area of ceiling is     66.95
+ Total area of ceiling is     66.96
  
  Details of opaque construction: ceiling_rev
  

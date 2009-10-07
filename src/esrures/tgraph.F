@@ -383,6 +383,7 @@ C      write(6,*) ' yaxset ',YAXSET
 C      write(6,*) ' igl igr igw igwh ',igl,igr,igw,igwh
 C      write(6,*) ' fonts ifs itfs  & imfs & iglib ',IFS,ITFS,IMFS,iglib
 C      write(6,*) ' onright ',oneonright,twoonrighta,twoonrightb
+
       if(IROC.eq.0)then
         ALABEL(1)='Temp: DegC'
 
@@ -715,6 +716,7 @@ C using similar logic tree to mowlin.
             endif
           endif
         endif
+
 C Debug.
 C        write(6,*) ' nb of right axis is currently ',onright
 
@@ -824,7 +826,8 @@ C ****************************************************
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL,OK,dok
       character h*72
       
-      write (6,*) ' Entering MOCOPT'
+C Debug.
+C      write(6,*) ' Entering MOCOPT'
 
       CALL EDISP(IUOUT,' ') 
       h(1)='One or more of the following control parameters'     
@@ -888,7 +891,8 @@ C ****************************************************
 
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL
       
-      write (6,*) ' Entering MOCDAT'
+C Debug.
+C      write(6,*) ' Entering MOCDAT'
 
 C If routine called by mogdrw, time may be greater than 24.0;
       TIME=TME
@@ -1069,7 +1073,9 @@ C Draws the control graph(s).
 
       XREM1(1)=0.0
       XREM1(2)=0.0
-      write (6,*) ' Entering MOCGDW'
+
+C Debug.
+C      write(6,*) ' Entering MOCGDW'
 
 C Initialise the set-point/throttling-range plot flag,
       NOPLOT=.FALSE.

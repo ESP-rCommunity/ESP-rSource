@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model house with sun space, winter operations
-defined in house_win.cfg generated on Thu Aug 23 18:12:15 2007. Notes
+defined in house_win.cfg generated on Fri Jul 17 12:26:31 2009. Notes
 associated with the model are in house_sun.log
  
 The model is located at latitude   58.20 with a longitude difference of  -6.21
@@ -9,16 +9,33 @@ from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.20.
  
-The climate used is: ESP test climate and is held in:
-/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
+ 
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
+An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ pressure distributions : pressc.db1
  materials              : /usr/esru/esp-r/databases/material.db3.a
  constructions          : ../dbs/ss.mdb
- plant components       : /usr/esru/esp-r/databases/plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1
- optical properties     : /usr/esru/esp-r/databases/optics.db2
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
  
  ____________________________________________________________
  
@@ -102,32 +119,32 @@ kitchen and bath extracts run 7-8am and 17-18h
  There have been  1 day types defined.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  5 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       on / off            30.0 1.0
-on/off setpoint 30.00 direct action ON fraction 0.000.
-   2  7.00 dry bulb > flow       on / off            0.0 1.0
-on/off setpoint 0.00 direct action ON fraction 0.000.
-   3  9.00 dry bulb > flow       on / off            30.0 1.0
-on/off setpoint 30.00 direct action ON fraction 0.000.
-   4 17.00 dry bulb > flow       on / off            10.0 1.0
-on/off setpoint 10.00 direct action ON fraction 0.000.
-   5 19.00 dry bulb > flow       on / off            30.0 1.0
-on/off setpoint 30.00 direct action ON fraction 0.000.
+   1  0.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
+   2  7.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   3  9.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
+   4 17.00 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
+   5 19.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
  
  The sensor for function  2 senses node (1) liv
  The actuator for function  2 is flow connection:  17 liv - north via kitex
  There have been  1 day types defined.
  Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  5 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       on / off            30.0 1.0
-on/off setpoint 30.00 direct action ON fraction 0.000.
-   2  7.00 dry bulb > flow       on / off            0.0 1.0
-on/off setpoint 0.00 direct action ON fraction 0.000.
-   3  8.00 dry bulb > flow       on / off            30.0 1.0
-on/off setpoint 30.00 direct action ON fraction 0.000.
-   4 17.00 dry bulb > flow       on / off            0.0 1.0
-on/off setpoint 0.00 direct action ON fraction 0.000.
-   5 18.00 dry bulb > flow       on / off            30.0 1.0
-on/off setpoint 30.00 direct action ON fraction 0.000.
+   1  0.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
+   2  7.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   3  8.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
+   4 17.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   5 18.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
  ____________________________________________________________
  
 The model includes an air flow network.
@@ -246,7 +263,7 @@ ID Zone         Volume|          Surface
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  7.68    120.  -0. s_buf        OPAQUE   VERT -     int_buf      ||< s_liv:buf_1
+  1  7.68    120.   0. s_buf        OPAQUE   VERT -     int_buf      ||< s_liv:buf_1
   2  9.60     30.   0. s_hall       OPAQUE   VERT -     int_buf      ||< s_liv:hall
   3  10.1    300.   0. s_adjhouse   OPAQUE   VERT -     ext_west     ||< identical environment
   4  12.3    210.   0. s_west       OPAQUE   VERT -     int_west     ||< s_liv:west_space
@@ -259,7 +276,6 @@ ID Zone         Volume|          Surface
  
  
  An hourly solar radiation distribution is used for this zone.
- Solar insolation focused on surface floor        (if shading not calculated).
  Surfaces (all applicable) for shading analysis:
 win1 win2
  Insolation sources (all applicable):
@@ -267,12 +283,13 @@ win1 win2
  
  
  Shading patterns have not yet been calculated.
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: liv
  
 Notes:
 kitliv
- Number of Weekday Sat Sun casual gains= 14 14 14
+Number of weekday      casual gains= 14
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
@@ -289,34 +306,40 @@ Wkd 11 EquiptW   13 - 18     60.0      0.0       0.40       0.60
 Wkd 12 EquiptW   18 - 19   1000.0      0.0       0.40       0.60
 Wkd 13 EquiptW   19 - 23     60.0      0.0       0.40       0.60
 Wkd 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
-Sat  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    8 - 22    285.0    135.0       0.20       0.80
-Sat  3 OccuptW   22 - 24      0.0      0.0       0.50       0.50
-Sat  4 LightsW    0 - 19      0.0      0.0       0.50       0.50
-Sat  5 LightsW   19 - 23    200.0      0.0       0.80       0.20
-Sat  6 LightsW   23 - 24      0.0      0.0       0.50       0.50
-Sat  7 EquiptW    0 -  8      0.0      0.0       0.50       0.50
-Sat  8 EquiptW    8 -  9   1000.0      0.0       0.40       0.60
-Sat  9 EquiptW    9 - 12     60.0      0.0       0.40       0.60
-Sat 10 EquiptW   12 - 13   1000.0      0.0       0.40       0.60
-Sat 11 EquiptW   13 - 18     60.0      0.0       0.40       0.60
-Sat 12 EquiptW   18 - 19   1000.0      0.0       0.40       0.60
-Sat 13 EquiptW   19 - 23     60.0      0.0       0.40       0.60
-Sat 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
-Sun  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Sun  2 OccuptW    8 - 22    285.0    135.0       0.20       0.80
-Sun  3 OccuptW   22 - 24      0.0      0.0       0.50       0.50
-Sun  4 LightsW    0 - 19      0.0      0.0       0.50       0.50
-Sun  5 LightsW   19 - 23    200.0      0.0       0.80       0.20
-Sun  6 LightsW   23 - 24      0.0      0.0       0.50       0.50
-Sun  7 EquiptW    0 -  8      0.0      0.0       0.50       0.50
-Sun  8 EquiptW    8 -  9   1000.0      0.0       0.40       0.60
-Sun  9 EquiptW    9 - 12     60.0      0.0       0.40       0.60
-Sun 10 EquiptW   12 - 13   1000.0      0.0       0.40       0.60
-Sun 11 EquiptW   13 - 18     60.0      0.0       0.40       0.60
-Sun 12 EquiptW   18 - 19   1000.0      0.0       0.40       0.60
-Sun 13 EquiptW   19 - 23     60.0      0.0       0.40       0.60
-Sun 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains= 14
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 22    285.0    135.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsW    0 - 19      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   19 - 23    200.0      0.0       0.80       0.20
+Wkd  6 LightsW   23 - 24      0.0      0.0       0.50       0.50
+Wkd  7 EquiptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  8 EquiptW    8 -  9   1000.0      0.0       0.40       0.60
+Wkd  9 EquiptW    9 - 12     60.0      0.0       0.40       0.60
+Wkd 10 EquiptW   12 - 13   1000.0      0.0       0.40       0.60
+Wkd 11 EquiptW   13 - 18     60.0      0.0       0.40       0.60
+Wkd 12 EquiptW   18 - 19   1000.0      0.0       0.40       0.60
+Wkd 13 EquiptW   19 - 23     60.0      0.0       0.40       0.60
+Wkd 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains= 14
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 22    285.0    135.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsW    0 - 19      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   19 - 23    200.0      0.0       0.80       0.20
+Wkd  6 LightsW   23 - 24      0.0      0.0       0.50       0.50
+Wkd  7 EquiptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  8 EquiptW    8 -  9   1000.0      0.0       0.40       0.60
+Wkd  9 EquiptW    9 - 12     60.0      0.0       0.40       0.60
+Wkd 10 EquiptW   12 - 13   1000.0      0.0       0.40       0.60
+Wkd 11 EquiptW   13 - 18     60.0      0.0       0.40       0.60
+Wkd 12 EquiptW   18 - 19   1000.0      0.0       0.40       0.60
+Wkd 13 EquiptW   19 - 23     60.0      0.0       0.40       0.60
+Wkd 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -325,8 +348,8 @@ Sun 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
  area of 35.3m^2 & user list floor area of 2.48m^2
  west_space is the construction void within west wall
  There is 16.112m2 of exposed surface area, 14.751m2 of which is vertical.
- Outside walls are 622.24 % of floor area & avg U of 0.000 & UA of 0.00
- Flat roof is 27.454 % of floor area & avg U of 0.000 & UA of 0.00
+ Outside walls are 622.24 % of floor area & avg U of 3.785 & UA of 58.406
+ Flat roof is 27.454 % of floor area & avg U of 3.785 & UA of 2.5769
  
  A summary of the surfaces in west_space( 2) follows:
  
@@ -335,7 +358,7 @@ Sun 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
   1  0.959   120.   0. s_buf        OPAQUE   VERT -     int_buf      ||< s_west:buf_1
   2  12.3     30.   0. s_liv        OPAQUE   VERT -     int_westrev  ||< s_west:kitliv
   3  0.959   300.   0. s_adjhouse   OPAQUE   VERT -     ext_west     ||< identical environment
-  4  12.3    210.  -0. ext_west     OPAQUE   VERT -     ext_west     ||< external
+  4  12.3    210.   0. ext_west     OPAQUE   VERT -     ext_west     ||< external
   5  2.48      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< west_sp:roof
   6  2.48      0. -90. floor        OPAQUE   FLOR -     house_floor  ||< ground profile  1
   7  0.605   127.   0. jambl        OPAQUE   VERT -     ext_west     ||< external
@@ -352,13 +375,20 @@ Sun 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
  No shading analysis requested.
  No insolation analysis requested.
  
+ 
+ Air schedule notes:
+west_space
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  0  0  0
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 west_space
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -371,8 +401,8 @@ west_space
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  2.40    120.  -0. s_buf        OPAQUE   VERT -     int_buf      ||< s_hall:buf_2
-  2  7.44     30.  -0. s_bed1       OPAQUE   VERT -     int_buf      ||< s_hall:bed1
+  1  2.40    120.   0. s_buf        OPAQUE   VERT -     int_buf      ||< s_hall:buf_2
+  2  7.44     30.   0. s_bed1       OPAQUE   VERT -     int_buf      ||< s_hall:bed1
   3  4.08    300.   0. s_bath       OPAQUE   VERT -     int_buf      ||< s_hall:bath
   4  9.60    210.   0. s_liv        OPAQUE   VERT -     int_buf      ||< s_hall:kitliv
   5  6.80      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< hall:roof
@@ -384,12 +414,13 @@ west_space
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: hall
  
 Notes:
 hall
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -413,12 +444,13 @@ hall
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: bath
  
 Notes:
 bath
- Number of Weekday Sat Sun casual gains=  5  5  5
+Number of weekday      casual gains=  5
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 LightsW    0 -  7      0.0      0.0       0.50       0.50
@@ -426,16 +458,22 @@ Wkd  2 LightsW    7 -  8    100.0      0.0       0.80       0.20
 Wkd  3 LightsW    8 - 17      0.0      0.0       0.50       0.50
 Wkd  4 LightsW   17 - 18    100.0      0.0       0.80       0.20
 Wkd  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
-Sat  1 LightsW    0 -  7      0.0      0.0       0.50       0.50
-Sat  2 LightsW    7 -  8    100.0      0.0       0.80       0.20
-Sat  3 LightsW    8 - 17      0.0      0.0       0.50       0.50
-Sat  4 LightsW   17 - 18    100.0      0.0       0.80       0.20
-Sat  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
-Sun  1 LightsW    0 -  7      0.0      0.0       0.50       0.50
-Sun  2 LightsW    7 -  8    100.0      0.0       0.80       0.20
-Sun  3 LightsW    8 - 17      0.0      0.0       0.50       0.50
-Sun  4 LightsW   17 - 18    100.0      0.0       0.80       0.20
-Sun  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 LightsW    7 -  8    100.0      0.0       0.80       0.20
+Wkd  3 LightsW    8 - 17      0.0      0.0       0.50       0.50
+Wkd  4 LightsW   17 - 18    100.0      0.0       0.80       0.20
+Wkd  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 LightsW    7 -  8    100.0      0.0       0.80       0.20
+Wkd  3 LightsW    8 - 17      0.0      0.0       0.50       0.50
+Wkd  4 LightsW   17 - 18    100.0      0.0       0.80       0.20
+Wkd  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -461,7 +499,6 @@ Sun  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
  
  
  An hourly solar radiation distribution is used for this zone.
- Solar insolation focused on surface floor        (if shading not calculated).
  Surfaces (all applicable) for shading analysis:
 ext_east win
  Insolation sources (all applicable):
@@ -469,12 +506,13 @@ win
  
  
  Shading patterns have not yet been calculated.
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: bed1
  
 Notes:
 two children sleeping
- Number of Weekday Sat Sun casual gains=  5  5  5
+Number of weekday      casual gains=  5
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  8    190.0     90.0       0.20       0.80
@@ -482,16 +520,22 @@ Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
 Wkd  3 OccuptW   22 - 24    190.0     90.0       0.20       0.80
 Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
 Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
-Sat  1 OccuptW    0 -  8    190.0     90.0       0.20       0.80
-Sat  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
-Sat  3 OccuptW   22 - 24    190.0     90.0       0.20       0.80
-Sat  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
-Sat  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
-Sun  1 OccuptW    0 -  8    190.0     90.0       0.20       0.80
-Sun  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
-Sun  3 OccuptW   22 - 24    190.0     90.0       0.20       0.80
-Sun  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
-Sun  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
+Number of saturday     casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8    190.0     90.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24    190.0     90.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
+Number of sunday       casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8    190.0     90.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24    190.0     90.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
  
  ____________________________________________________________
  
@@ -518,7 +562,6 @@ Sun  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
  
  
  An hourly solar radiation distribution is used for this zone.
- Solar insolation focused on surface floor        (if shading not calculated).
  Surfaces (all applicable) for shading analysis:
 ext_east win
  Insolation sources (all applicable):
@@ -526,12 +569,13 @@ win
  
  
  Shading patterns have not yet been calculated.
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: bed2
  
 Notes:
 bed2 with one person sleeping
- Number of Weekday Sat Sun casual gains=  5  5  5
+Number of weekday      casual gains=  5
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  8     95.0     45.0       0.20       0.80
@@ -539,16 +583,22 @@ Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
 Wkd  3 OccuptW   22 - 24     95.0     45.0       0.20       0.80
 Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
 Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
-Sat  1 OccuptW    0 -  8     95.0     45.0       0.20       0.80
-Sat  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
-Sat  3 OccuptW   22 - 24     95.0     45.0       0.20       0.80
-Sat  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
-Sat  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
-Sun  1 OccuptW    0 -  8     95.0     45.0       0.20       0.80
-Sun  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
-Sun  3 OccuptW   22 - 24     95.0     45.0       0.20       0.80
-Sun  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
-Sun  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
+Number of saturday     casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8     95.0     45.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24     95.0     45.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
+Number of sunday       casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8     95.0     45.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24     95.0     45.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
  
  ____________________________________________________________
  
@@ -557,7 +607,7 @@ Sun  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
  area of 62.7m^2 & approx floor area of 13.3m^2
  buf_1 describes a...
  There is 18.002m2 of exposed surface area, 18.002m2 of which is vertical.
- Outside walls are 102.57 % of floor area & avg U of 2.756 & UA of 37.709
+ Outside walls are 102.57 % of floor area & avg U of 3.487 & UA of 47.708
  Glazing is 32.378 % of floor & 23.994 % facade with avg U of 2.877 & UA of 12.425
  
  A summary of the surfaces in buf_1( 7) follows:
@@ -580,12 +630,13 @@ Sun  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
  No insolation analysis requested.
  
  
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: buf_1
  
 Notes:
 buf_1
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -594,7 +645,7 @@ buf_1
  area of 64.8m^2 & approx floor area of 13.9m^2
  buf_2 describes a...
  There is 18.480m2 of exposed surface area, 18.480m2 of which is vertical.
- Outside walls are 101.73 % of floor area & avg U of 2.778 & UA of 39.340
+ Outside walls are 101.73 % of floor area & avg U of 3.484 & UA of 49.343
  Glazing is 31.029 % of floor & 23.372 % facade with avg U of 2.877 & UA of 12.425
  
  A summary of the surfaces in buf_2( 8) follows:
@@ -607,7 +658,7 @@ buf_1
   4  13.9      0.  90. fict         SC_ficti CEIL -     fictitious   ||< buf_2:buf_roof
   5  13.9      0. -90. floor        OPAQUE   FLOR -     buf_floor    ||< ground profile  1
   6  4.32     30.   0. eastwin      DC_8074_ VERT -     doub_glaz    ||< external
-  7  2.40    300.  -0. s_hall       OPAQUE   VERT -     int_buf      ||< s_buf:hall
+  7  2.40    300.   0. s_hall       OPAQUE   VERT -     int_buf      ||< s_buf:hall
   8  1.68    300.   0. door         OPAQUE   VERT -     door         ||< door:hall
   9  6.96    210.   0. fictv        SC_ficti VERT -     fictitious   ||< fictv:buf_1
  
@@ -617,12 +668,13 @@ buf_1
  No insolation analysis requested.
  
  
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: buf_2
  
 Notes:
 nil_operations
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -633,7 +685,7 @@ nil_operations
  There is 44.899m2 of exposed surface area, 13.159m2 of which is vertical.
  Outside walls are 48.273 % of floor area & avg U of 3.415 & UA of 44.945
  Sloped roof is 104.55 % of floor area & avg U of 0.759 & UA of 21.631
- Skylights are 11.882 % of floor area & avg U of 2.877 & UA of 9.3179
+ Skylights are 11.882 % of floor area & avg U of 2.877 & UA of 9.3178
  
  A summary of the surfaces in buf_roof( 9) follows:
  
@@ -642,11 +694,11 @@ nil_operations
   1  13.3      0. -90. buf_1        SC_ficti FLOR -     fictitious   ||< fict:buf_1
   2  14.7    210.  60. roof_e       OPAQUE   SLOP -     roof         ||< external
   3  13.8     30.  58. roof_w       OPAQUE   SLOP -     roof         ||< external
-  4  13.2    120.  -0. roof_s       OPAQUE   VERT -     ext_buf      ||< external
+  4  13.2    120.   0. roof_s       OPAQUE   VERT -     ext_buf      ||< external
   5  1.64    210.  60. win2         DC_8074_ SLOP -     doub_glaz    ||< external
   6  1.60     30.  58. glz_w        DC_8074_ SLOP -     doub_glaz    ||< external
   7  13.9      0. -90. buf_2        SC_ficti FLOR -     fictitious   ||< fict:buf_2
-  8  13.2    300.  -0. roof_buf     OPAQUE   VERT -     int_buf      ||< roof_buf:roof
+  8  13.2    300.   0. roof_buf     OPAQUE   VERT -     int_buf      ||< roof_buf:roof
  
  
  Solar insolation focused on glz_w        & buf_1        (if shading not calculated).
@@ -654,12 +706,13 @@ nil_operations
  No insolation analysis requested.
  
  
+ 
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: buf_ro
  
 Notes:
 buf_roof
- Number of Weekday Sat Sun casual gains=  0  0  0
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -668,14 +721,14 @@ buf_roof
  area of 152.m^2 & approx floor area of 58.3m^2
  roof describes a...
  There is 81.018m2 of exposed surface area, 13.160m2 of which is vertical.
- Outside walls are 22.581 % of floor area & avg U of 0.000 & UA of 0.00
+ Outside walls are 22.581 % of floor area & avg U of 3.785 & UA of 49.810
  Sloped roof is 116.43 % of floor area & avg U of 1.762 & UA of 119.55
  
  A summary of the surfaces in roof(10) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  13.2    300.  -0. roof_n       OPAQUE   VERT -     ext_west     ||< external
+  1  13.2    300.   0. roof_n       OPAQUE   VERT -     ext_west     ||< external
   2  26.0      0. -90. liv          OPAQUE   FLOR -     int_roofrev  ||< ceil:kitliv
   3  6.80      0. -90. hall         OPAQUE   FLOR -     int_roofrev  ||< ceil:hall
   4  3.74      0. -90. bath         OPAQUE   FLOR -     int_roofrev  ||< ceil:bath
@@ -690,6 +743,7 @@ buf_roof
  Solar insolation focused on bed2         & roof_n       (if shading not calculated).
  No shading analysis requested.
  No insolation analysis requested.
+ 
  Uses same operations as zone buf_roof
  
  ____________________________________________________________
@@ -698,14 +752,23 @@ buf_roof
  Sloped roof area is 96.359m2, flat roof area is 0.68086m2, skylight area is 3.2391m2.
  There is 195.94m2 of outside surface area, 94.981m2 of which is vertical.
  
- Outside walls are 47.886 % of floor area & avg U of 1.521 & UA of 124.59
+ Outside walls are 47.886 % of floor area & avg U of 3.086 & UA of 252.81
  Sloped roof is 56.324 % of floor area & avg U of 1.465 & UA of 141.18
- Flat roof is 0.39798 % of floor area & avg U of 0.000 & UA of 0.00
+ Flat roof is 0.39798 % of floor area & avg U of 3.785 & UA of 2.5769
  Glazing is 8.0309 % of floor & 14.465 % facade with avg U of 2.877 & UA of 39.524
- Skylights are 1.8933 % of floor area & avg U of 2.877 & UA of 9.3179
+ Skylights are 1.8933 % of floor area & avg U of 2.877 & UA of 9.3178
  
  ____________________________________________________________
  Multi-layer constructions used:
+ 
+ Details of opaque construction: ext_west
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   127   18.0     0.790  1329.  1000. 0.91 0.50    19.  0.02 rendering not-dry : Rendering (8% mc)
+ Int    32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.785  4.270  3.287 (partition)  2.823
+ Total area of ext_west is     57.12
  
  Details of opaque construction: ext_east
  

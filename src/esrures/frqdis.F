@@ -142,7 +142,10 @@ C then 5C.
           XBIN1=ANINT(XMIN/DXBIN)*DXBIN
           XBINN=ANINT(XMAX/DXBIN)*DXBIN
           NB=INT((XBINN-XBIN1)/DXBIN)
-          write(6,*) 'zone db bin ',xbin1,xbinn,nb
+
+C Debug.
+C          write(6,*) 'zone db bin ',xbin1,xbinn,nb
+
           if(NB.eq.0)then
             call edisp(iuout,'Range of db to small to binn.')
             call edisp(itru,'Range of db to small to binn.')
@@ -296,8 +299,10 @@ C range to be checked by XDIFF (as computed above)
         NBINS=NB+1
         XBIN1=XBIN1-XDIFF
         XBINN=XBINN+XDIFF
-C Debug...
+
+C Debug.
 C        write(6,*) 'nbins xdiff xbin1 xbinn ',nbins,xdiff,xbin1,xbinn
+
         write(outs,'(2a)') 
      &   '*fields range distribution percent cumulative_distrib ',
      &   'cumulative_percent'

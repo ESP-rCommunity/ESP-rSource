@@ -226,7 +226,7 @@ C de-referencing the file.
 
 C Set defaults and ask user which control to focus on first.
         LINKED=.FALSE.
-        call ADDCNTL(icfoc,'A',IER)
+        call ADDCNTL(icfoc,'A')
       endif
 
 C Setup for multi-page menu.
@@ -702,9 +702,9 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,znctldoc,72)
             do 144 ii=1,NCF
-              call LSTCNTL(itru,0,ii,IER)
+              call LSTCNTL(itru,0,ii)
  144        continue
-            call LSTCNTL(itru,0,0,IER)
+            call LSTCNTL(itru,0,0)
           endif
           if(icfoc.eq.1.and.NCL.gt.0)then
             call edisp(itru,' ')
@@ -713,7 +713,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,plctldoc,72)
             do 145 ii=1,NCL
-              call LSTCNTL(itru,1,ii,IER)
+              call LSTCNTL(itru,1,ii)
  145        continue
           endif
           if(icfoc.eq.2.and.NCC.gt.0)then
@@ -723,7 +723,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,flctldoc,72)
             do 146 ii=1,NCC
-              call LSTCNTL(itru,2,ii,IER)
+              call LSTCNTL(itru,2,ii)
  146        continue
           endif
           if(icfoc.eq.3.and.NGF.gt.0)then
@@ -733,7 +733,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,flctldoc,72)
             do 147 ii=1,NGF
-              call LSTCNTL(itru,3,ii,IER)
+              call LSTCNTL(itru,3,ii)
  147        continue
           endif
           if(icfoc.eq.4.and.NECL.gt.0)then
@@ -743,7 +743,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,elctldoc,72)
             do 247 ii=1,NECL
-              call LSTCNTL(itru,4,ii,IER)
+              call LSTCNTL(itru,4,ii)
  247        continue
           endif
           if(icfoc.eq.5.and.nof.gt.0)then
@@ -753,7 +753,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,opticdoc,72)
             do 248 ii=1,nof
-              call LSTCNTL(itru,5,ii,IER)
+              call LSTCNTL(itru,5,ii)
  248        continue
           endif
         elseif(irc.eq.2)then
@@ -769,11 +769,11 @@ C Warn user to update any connections to plant loops.
      &     'add control loop','copy control loop',
      &     'cancel',' ',' ',' ',IW,2)
         if(IW.eq.1)then
-          call ADDCNTL(icfoc,'D',IER)
+          call ADDCNTL(icfoc,'D')
         elseif(IW.eq.2)then
-          call ADDCNTL(icfoc,'A',IER)
+          call ADDCNTL(icfoc,'A')
         elseif(IW.eq.3)then
-          call ADDCNTL(icfoc,'C',IER)
+          call ADDCNTL(icfoc,'C')
         elseif(IW.eq.4)then
           goto 92
         endif
@@ -817,27 +817,27 @@ C Pull up a multi-choice dialog to see what should be edited.
         h(4)=' c) for each day type, the period of validity and'
         h(5)='    details for distinct period during the day.'
         if(icfoc.eq.0)then
-          call LSTCNTLD(itru,0,ii,idi,IER)
+          call LSTCNTLD(itru,0,ii,idi)
           write(outs,'(a,i2,a)') 'Zone control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.1)then
-          call LSTCNTLD(itru,1,ii,idi,IER)
+          call LSTCNTLD(itru,1,ii,idi)
           write(outs,'(a,i2,a)') 'Plant control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.2)then
-          call LSTCNTLD(itru,2,ii,idi,IER)
+          call LSTCNTLD(itru,2,ii,idi)
           write(outs,'(a,i2,a)') 'Flow control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.3)then
-          call LSTCNTLD(itru,3,ii,idi,IER)
+          call LSTCNTLD(itru,3,ii,idi)
           write(outs,'(a,i2,a)') 'Global control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.4)then
-          call LSTCNTLD(itru,4,ii,idi,IER)
+          call LSTCNTLD(itru,4,ii,idi)
           write(outs,'(a,i2,a)') 'Power control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.5)then
-          call LSTCNTLD(itru,5,ii,idi,IER)
+          call LSTCNTLD(itru,5,ii,idi)
           write(outs,'(a,i2,a)') 'Optical control function (',II,
      &      ') editing.'
         endif
@@ -1090,22 +1090,22 @@ C Edit period data (day type index is idi), first list the
 C current day type data..
           CALL EPMENSV
           if(icfoc.eq.0)then
-            call LSTCNTLD(itru,0,II,idi,IER)
+            call LSTCNTLD(itru,0,II,idi)
             CALL EBCNTRL(ITRC,II,idi,IER)
           elseif(icfoc.eq.1)then
-            call LSTCNTLD(itru,1,II,idi,IER)
+            call LSTCNTLD(itru,1,II,idi)
             CALL EPCNTRL(ITRC,II,idi,IER)
           elseif(icfoc.eq.2)then
-            call LSTCNTLD(itru,2,II,idi,IER)
+            call LSTCNTLD(itru,2,II,idi)
             CALL EFCNTRL(II,idi,IER)
           elseif(icfoc.eq.3)then
-            call LSTCNTLD(itru,3,II,idi,IER)
+            call LSTCNTLD(itru,3,II,idi)
             CALL EGCNTRL(ITRC,II,idi,IER)
           elseif(icfoc.eq.4)then
-            call LSTCNTLD(itru,4,II,idi,IER)
+            call LSTCNTLD(itru,4,II,idi)
             CALL edisp(iuout,'Electrical editing not available')
           elseif(icfoc.eq.5)then
-            call LSTCNTLD(itru,5,II,idi,IER)
+            call LSTCNTLD(itru,5,II,idi)
             CALL EOCNTRL(II,idi,IER)
           endif
           CALL EPMENRC
@@ -1315,9 +1315,9 @@ C Add or delete a period.
         CALL EASKABC(' ','Options:',
      &    'add period','delete period','cancel',iad,1)
         if(iad.eq.1)then
-          call addctldp(0,II,JJ,'A',iier)
+          call addctldp(0,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(0,II,JJ,'D',iier)
+          call addctldp(0,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
@@ -1944,8 +1944,11 @@ C Weighted auxiliary sensors mode,
      &          0.,'F',100.,'F',50.,' Aux sensor weighting',IER,2)
 126         continue
           else
-            ndx=nint(cm(1))  ! set this so scaling next to last entry. 
-            write(6,*) 'lastndx and ndx ',lastndx,ndx,cm(1)   
+            ndx=nint(cm(1))  ! set this so scaling next to last entry.
+
+C Debug.
+C            write(6,*) 'lastndx and ndx ',lastndx,ndx,cm(1) 
+  
           endif
 
 C At end of data add in scaling factor and offset. Typically
@@ -2769,9 +2772,9 @@ C Add or delete a period.
         CALL EASKABC('Options:',' ',
      &    'add period','delete period','continue',iad,1)
         if(iad.eq.1)then
-          call addctldp(5,II,JJ,'A',iier)
+          call addctldp(5,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(5,II,JJ,'D',iier)
+          call addctldp(5,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
@@ -3030,7 +3033,10 @@ C the negatives at the end of the array
             do 144 ipassback=1,6 
               cmlocal(ipassback*2)=sortmerge(ipassback)
               cmlocal(ipassback*2+1)=sortset(ipassback)
+
+C Debug.
 C              write(6,*) sortmerge(ipassback),'  ',sortset(ipassback)
+
   144       continue             
             do 13 ij=1,misc
               cm(ij)=cmlocal(ij)
@@ -3154,9 +3160,9 @@ C Add or delete a period.
         CALL EASKABC('Options:',' ',
      &    'add period','delete period','continue',iad,1)
         if(iad.eq.1)then
-          call addctldp(1,II,JJ,'A',iier)
+          call addctldp(1,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(1,II,JJ,'D',iier)
+          call addctldp(1,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
@@ -4205,9 +4211,9 @@ C Add or delete a period.
         CALL EASKABC('Options:',' ',
      &    'add period','delete period','continue',iad,1)
         if(iad.eq.1)then
-          call addctldp(2,II,JJ,'A',iier)
+          call addctldp(2,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(2,II,JJ,'D',iier)
+          call addctldp(2,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
@@ -4703,7 +4709,8 @@ C PI controller
           if(ier.ne.0)goto 101
 
 C Miscellaneous data for additional flow controllers should follow here.
-  70    endif
+        endif
+  70    continue
 
 C Extract from working array to fmiscd() common structure
         call extrctl(2,II,JJ,KK)
@@ -4815,9 +4822,9 @@ C Add or delete a period.
         CALL EASKABC('Options:',' ',
      &    'add period','delete period','continue',iad,1)
         if(iad.eq.1)then
-          call addctldp(3,II,JJ,'A',iier)
+          call addctldp(3,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(3,II,JJ,'D',iier)
+          call addctldp(3,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
@@ -6332,7 +6339,7 @@ C setting up the menu.
       endif
 
 C Fill the control period menu and editing range arrays.
-      call stfmenu(icfoc,ier)
+      call stfmenu(icfoc)
 
 C Copy cm data to cmlocal.
       tcpst=tcps
@@ -6341,7 +6348,7 @@ C Copy cm data to cmlocal.
   11  continue
 
 C List current control data for this loop (unless changes are pending).
-      if(.NOT.modval) call LSTCNTLD(iuout,icfoc,icloop,iday,IER)
+      if(.NOT.modval) call LSTCNTLD(iuout,icfoc,icloop,iday)
 
 C Define the static portions of the menu.
    91 MHEAD=6
@@ -6474,7 +6481,7 @@ C List control details.
      &      'Listing only shows data saved in file. While some data',
      &      'has changed these have not been saved to file.','W')
         else
-          call LSTCNTLD(iuout,icfoc,icloop,iday,IER)
+          call LSTCNTLD(iuout,icfoc,icloop,iday)
         endif
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
@@ -7141,9 +7148,12 @@ C Not one of the legal menu choices.
 C ****** stfmenu
 C Stfmenu copies menu and prompts for period editing.  It expects the common
 C block sctl to have been filled for the current period.
-      subroutine stfmenu(icfoc,ier)
+      subroutine stfmenu(icfoc)
 #include "building.h"
 #include "net_flow.h"
+
+C Parameter
+      integer icfoc  ! index of control domain
 
       common/pophelp/h(60)
       common/sctl/tcps,ictyp,iclaw,cm(misc)

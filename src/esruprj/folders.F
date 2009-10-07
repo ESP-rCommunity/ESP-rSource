@@ -35,9 +35,11 @@ C but model is assumed to be created silently within the current folder.
 C root (24 char) root name (for 'sn' case)
 C mpath (72 char) path to model folder (for 'sn' case)
 C folder (12 char) is 'single' or 'distributed' folder structure
-C menu (32 char) brief title of model
+C menu (72 char) brief title of model
       subroutine pregist(act,root,mpath,folder,menu,ier)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "espriou.h"
 C espriou.h provides currentfile and MFFOLD.
       
@@ -49,14 +51,7 @@ C espriou.h provides currentfile and MFFOLD.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/C4/XLAT,XLON
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
@@ -93,7 +88,7 @@ C Calendar.
       dimension nwlistf(MFFOLD)
 
 C Passed in parameters.
-      character root*24,mpath*72,folder*12,menu*32
+      character root*24,mpath*72,folder*12,menu*72
 
       logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok,clkok
@@ -138,14 +133,20 @@ C Silent continue, there is nothing to do (currently).
       elseif(act(1:2).eq.'sn')then
 
 C Silent new within the pre-registration process.
-        write(6,*)  ' pregist ',root,' ',folder
-        write(6,*)  ' pregist ',mpath
+
+C Debug.
+C        write(6,*)  ' pregist ',root,' ',folder
+C        write(6,*)  ' pregist ',mpath
+
         write(LCFTMP,'(a)') root(1:lnblnk(root))
       elseif(act(1:2).eq.'sw')then
 
 C Silent within the pre-registration process.
-        write(6,*)  ' pregist ',root,' ',folder
-        write(6,*)  ' pregist ',mpath
+
+C Debug.
+C        write(6,*)  ' pregist ',root,' ',folder
+C        write(6,*)  ' pregist ',mpath
+
         write(LCFTMP,'(a)') root(1:lnblnk(root))
 
       elseif(act(1:1).eq.'i')then
@@ -164,19 +165,24 @@ C Silent within the pre-registration process.
 
 C Trap for blank root name.
         IF(LCFTMP(1:2).EQ.'  '.or.LCFTMP(1:4).eq.'UNKN')GOTO 289
+
+C If we got this far in the 'i' mode clear common blocks. Note this
+C clear is not done when called in the 'sn' or 'sw' mode because
+C the meta file facility will have instanciated some common blocks
+C which should not be cleared.
+        call clrprb
       endif
 
 C User did not cancel so instantiate data for new model.
 C At some point switch from default version 3 to v4.
-      call clrprb
-      icfgv=3   ! alter this to 4 when working correctly
+      icfgv=4   ! alter this to 4 when working correctly
       INDCFG=0
-      XLAT=55.9
+      sitelat=55.9
       SLAT=55.9
-      XLON=-4.1
+      sitelongdif=-4.1
       SLON=-4.1
-      IXPOS=1
-      GREF=0.2
+      siteexposureindex=1
+      groundrefl=0.2
       NCOMP=0
       noimg=0
       LPNF='UNKNOWN'
@@ -253,13 +259,13 @@ C dialogs.
           uname=' '
           call usrname(uname)
           call usrdir(pwd)
-          write(LSNAM,'(a)') menu(1:lnblnk(menu))
+          write(modeltitle,'(a)') menu(1:lnblnk(menu))
           write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
           write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
           IUNIT=IFIL+1
           CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
           write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
-          write(iunit,'(2a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
+          write(iunit,'(2a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
           write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
           write(iunit,'(2a)')'By: ',uname(1:lnblnk(uname))
           call dstamp(dstmp)
@@ -361,13 +367,13 @@ C Write out the model log file.
         uname=' '
         call usrname(uname)
         call usrdir(pwd)
-        write(LSNAM,'(a)') menu(1:lnblnk(menu))
+        write(modeltitle,'(a)') menu(1:lnblnk(menu))
         write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
         write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
         IUNIT=IFIL+1
         CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
         write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
-        write(iunit,'(2a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
+        write(iunit,'(2a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
         write(iunit,'(2a)')'By: ',uname(1:lnblnk(uname))
         call dstamp(dstmp)
@@ -515,12 +521,12 @@ C General description of the model.
   52  H(1)='A model has an associated descriptor (<72 characters,'
       H(2)='which is used later as an identifier, e.g. Low energy'
       H(3)='building with optimum start/stop plant control.'
-      LSNAM='  '
-      ltmp=LSNAM
+      modeltitle='  '
+      ltmp=modeltitle
       CALL EASKS(ltmp,' ','Model description?',
      &           72,'Base case model','model description',IER,3)
       if(ltmp(1:2).ne.'  '.or.lnblnk(ltmp).gt.3)then
-        LSNAM=ltmp
+        modeltitle=ltmp
       else
         call usrmsg('Sorry, a blank line is not acceptable.',
      &    'Enter a meaningful description (<7 characters)','W')
@@ -565,7 +571,7 @@ C information.
         write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
         CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
         write(iunit,'(a,a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
-        write(iunit,'(a,a)')'Description: ',LSNAM(1:lnblnk(LSNAM))
+        write(iunit,'(a,a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(a,a)')'In folder: ',pwd(1:lnblnk(pwd))
         write(iunit,'(a,a)')'By: ',uname(1:lnblnk(uname))
         call dstamp(dstmp)
@@ -679,14 +685,14 @@ C Ask for site position.
         H(2)='for Glasgow.'
         CALL EASKR(SLAT,' ','Site latitude?',
      &       -89.9,'W',89.9,'W',55.9,'site latitude',IER,2)
-        IF(IER.EQ.0)XLAT=SLAT
+        IF(IER.EQ.0)sitelat=SLAT
 
         H(1)='Site longitude difference is the difference in degrees'
         H(2)='from the local reference meridian, East is +ve, e.g.'
         H(3)='-4.1 for Glasgow (relative to the Greenwich Meridian).'
         CALL EASKR(SLON,' ','Longitude difference?',
      &       -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,3)
-        IF(IER.EQ.0)XLON=SLON
+        IF(IER.EQ.0)sitelongdif=SLON
 
 C Ask for year, initialise and then print out the calendar if the
 C user does not cancel the operation.
@@ -706,9 +712,9 @@ C user does not cancel the operation.
           call calenmanage('i',ier)
           loop=8
           loopst=1
-C          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+C          call calenprint(iuout,'t',iyear,loopst,loop)
 C          call edisp(iuout,' ')
-C          call calenprint(iuout,'g',iyear,loopst,loop,ier)
+C          call calenprint(iuout,'g',iyear,loopst,loop)
 C          call edisp(iuout,' ')
         endif
 
@@ -752,6 +758,7 @@ C ********** pfolders
 C Maintain model folders.
       subroutine pfolders(act,ier)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -765,11 +772,6 @@ C geometry.h provides commons G0 and G2.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/C3F/LCNN
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       common/CFGV/icfgv
@@ -790,7 +792,6 @@ C Remember width of file/folder names passed back from getfilelist.
 
       character*72 path,LFIL,odir
       character LCFGF*72,H*72,cfgroot*24
-      character*72 LCNN
       character doit*248,tfile*72,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
@@ -817,9 +818,11 @@ C first list any files with .cfg in name.
 
 C If subpath is less than 72 char with odir + path use that
 C otherwise just use path.
+
 C Debug...
 C      write(6,*) 'usrdir is ',odir
 C      write(6,*) 'path is ',path
+
       subpath=' '
       lnodir=lnblnk(odir)
       lnpath=lnblnk(path)
@@ -838,7 +841,10 @@ C works. If path begins with /usr/esru then no need to prepend odir.
       if(path(1:2).eq.'./')then
         continue
       elseif(path(1:9).eq.'/usr/esru')then
-        write(6,*) 'OSX path is ',path
+
+C Debug.
+C        write(6,*) 'OSX path is ',path
+
         subpath=' '
         write(subpath,'(a)') path(1:lnblnk(path))
         write(outs,'(2a)') 'configuration files in ',
@@ -943,10 +949,12 @@ C Help text for this menu.
             sfile=' '
             snpfile=' '
             call browsefilelist('b','zon','geo',sfile,snpfile,nli,iier)
-C Debug...
+
+C Debug.
 C            write(6,*) 'selected file is ',sfile
 C            write(6,*) 'selected file is ',snpfile
 C            write(6,*) 'iier is ',iier,nli
+
           endif
         else
           sfile=' '
@@ -1282,6 +1290,7 @@ C EDBUILD edits building information for system configuration file.
 C ITRU unit number for user output. IER=0 indicates no error. 
       subroutine edbuild(IZ,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "CFC_common.h"
       
@@ -1295,17 +1304,8 @@ C ITRU unit number for user output. IER=0 indicates no error.
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/CFGV/icfgv
       common/user/browse
-
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C CFD
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -1318,7 +1318,6 @@ C CFD
 
       logical browse,BLDG3D,ZONE3D,MSTROK,MSTRZN
       logical newgeo  ! to use for testing if new/old geometry file.
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       dimension ITEMS(25)
       character ITEMS*72,head*25,path*72,L*72,ZN*12
@@ -1567,7 +1566,7 @@ C Edit zone name - read and then write the geometry file.
         endif
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
+          call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
         else
           call egomin(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
         endif
@@ -1587,7 +1586,7 @@ C Edit zone name - read and then write the geometry file.
           if(newgeo)then
             call geowrite(IUF,LGEOM(IZ),IZ,iuout,3,IER)
           else
-            call emkgeo(IUF,LGEOM(IZ),IZ,iuout,3,IER)
+            call emkgeo(IUF,LGEOM(IZ),IZ,3,IER)
           endif
           ZN=zname(IZ)
         endif

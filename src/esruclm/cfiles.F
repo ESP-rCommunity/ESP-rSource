@@ -680,7 +680,7 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
       common/pophelp/h(60)
       common/rcmd/LCMDFL
 
-      logical XST,ok,silent
+      logical XST,ok,silent,unixok
       
 C Logical rescan = true if climatelist needs to be rescanned to
 C pick up typical periods (i.e. if climate file name typed in
@@ -718,8 +718,11 @@ C from a list so might as well exit the program.
       if(LCMDFL(1:7).eq.'UNKNOWN'.or.LCMDFL(1:2).eq.'  ')then
         if(silent)then
           write(outs248,'(3a)')'Climate exited because input file was',
-     &    tab,LCMDFL(1:lnblnk(LCMDFL))
-          write(6,*)outs248(1:lnblnk(outs248))
+     &      tab,LCMDFL(1:lnblnk(LCMDFL))
+          call isunix(unixok)
+          if(unixok)then  ! do not both if DOS
+            write(6,*)outs248(1:lnblnk(outs248))
+          endif
           CALL EPAGEND
           STOP
         endif
@@ -1252,6 +1255,7 @@ C Convert to IDS.
           read(WORD(3:4),*)idaystart 
         endif
         call eday(idaystart,imonstart,IDS)
+
 C Debug...
 C        write(6,*)idaystart,imonstart,IDS
 
@@ -1266,7 +1270,8 @@ C Convert to IDF.
           read(WORD(3:4),*)idayfn 
         endif
         call eday(idayfn,imonfn,IDF)
-C Debug...
+
+C Debug.
 C        write(6,*)idayfn,imonfn,IDF
       else
 

@@ -250,6 +250,7 @@ C  difference between the external ambient and surface temperatures.
 
       SUBROUTINE MZELWE(ICOMP)
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 #include "CFC_common.h"
       
@@ -279,9 +280,6 @@ C  difference between the external ambient and surface temperatures.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C5R/SKYR,GRDR,BLDR
 
       COMMON/COE33/QELWP(MS),QELWF(MS)
       COMMON/COE33Z/QELWS(MCOM,MS)
@@ -393,16 +391,16 @@ C Set initial cloud cover = 0.4
 
 C << place to use connection based viewfactors >>
 C << props/propg/propb would be replaced by vfgr vfsk vfbl vfob >>
-      IF(IXPOS.NE.8)goto 101
-      PROPS(8)=SKYR
-      PROPG(8)=GRDR
-      PROPB(8)=BLDR
+      IF(siteexposureindex.NE.8)goto 101
+      PROPS(8)=skyview
+      PROPG(8)=groundview
+      PROPB(8)=buildingview
 
 C Depending on the Index of Exposure the proportions of the
 C surroundings are assigned new variable names.
-  101 AV=PROPB(IXPOS)
-      BV=PROPS(IXPOS)
-      CV=PROPG(IXPOS)
+  101 AV=PROPB(siteexposureindex)
+      BV=PROPS(siteexposureindex)
+      CV=PROPG(siteexposureindex)
 
 C For each surface calculate the ratio of sky vault,
 C surrounding building(s) and ground associated with the
@@ -678,7 +676,7 @@ C End For NT
 C Ground solar gain. 
       QGGF=0.0
       IF(ISUNUP.EQ.0)goto 305
-      QGGF=QT*(1.0-GREF)
+      QGGF=QT*(1.0-groundrefl)
   305 CONTINUE
 
 C Completing ground model matrix.
@@ -900,7 +898,7 @@ C Sum all components.
         QELWF(I)=QELWFB(I)+QELWFK(I)+QELWFG(I)
 
 C Use equation of Berdahl and Martin, if INDEX OF EXPOSURE is 8
-C      IF(IXPOS.EQ.8)THEN
+C      IF(siteexposureindex.EQ.8)THEN
 C        QELWF(I)=QELWFB(I)+QELWFC(I)+QELWFG(I)
 C      ENDIF
 
@@ -1309,8 +1307,8 @@ C depending on the unit of flow (ifunit).
 
 C Debug.
         CALL DAYCLK(IDYP,BTIMEF,6)
-        write(6,*)'tdf infil data @',btimef,' is item',itdi,
-     &   ' values ',ifunit,aci,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
+C        write(6,*)'tdf infil data @',btimef,' is item',itdi,
+C     &   ' values ',ifunit,aci,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
 
         CVVF=0.
         SUM=0.

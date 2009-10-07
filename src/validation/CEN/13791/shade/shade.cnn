@@ -1,0 +1,37 @@
+*connections  for shade
+*Date Wed Jul 22 18:22:28 2009
+     34   # number of connections
+   1   1   0   0   0  #    1 Surf-1 in test-1 is External
+   1   2   0   0   0  #    2 Surf-2 in test-1 is External
+   1   3   0   0   0  #    3 Surf-3 in test-1 is External
+   1   4   0   0   0  #    4 Surf-4 in test-1 is External
+   1   5   0   0   0  #    5 Surf-5 in test-1 is External
+   1   6   0   0   0  #    6 Surf-6 in test-1 is External
+   1   7   0   0   0  #    7 window in test-1 is External
+   2   1   0   0   0  #    8 Surf-1 in test-2 is External
+   2   2   0   0   0  #    9 Surf-2 in test-2 is External
+   2   3   0   0   0  #   10 Surf-3 in test-2 is External
+   2   4   0   0   0  #   11 Surf-4 in test-2 is External
+   2   5   0   0   0  #   12 Surf-5 in test-2 is External
+   2   6   0   0   0  #   13 Surf-6 in test-2 is External
+   2   7   0   0   0  #   14 window in test-2 is External
+   3   1   0   0   0  #   15 Surf-1 in test-3.5 is External
+   3   2   0   0   0  #   16 Surf-2 in test-3.5 is External
+   3   3   0   0   0  #   17 Surf-3 in test-3.5 is External
+   3   4   0   0   0  #   18 Surf-4 in test-3.5 is External
+   3   5   0   0   0  #   19 Surf-5 in test-3.5 is External
+   3   6   0   0   0  #   20 Surf-6 in test-3.5 is External
+   3   7   0   0   0  #   21 window_S in test-3.5 is External
+   3   8   0   0   0  #   22 window_E in test-3.5 is External
+   4   1   0   0   0  #   23 Surf-1 in test-4 is External
+   4   2   0   0   0  #   24 Surf-2 in test-4 is External
+   4   3   0   0   0  #   25 Surf-3 in test-4 is External
+   4   4   0   0   0  #   26 Surf-4 in test-4 is External
+   4   5   0   0   0  #   27 Surf-5 in test-4 is External
+   4   6   0   0   0  #   28 Surf-6 in test-4 is External
+   5   1   0   0   0  #   29 Surf-1 in test-6 is External
+   5   2   0   0   0  #   30 Surf-2 in test-6 is External
+   5   3   0   0   0  #   31 Surf-3 in test-6 is External
+   5   4   0   0   0  #   32 Surf-4 in test-6 is External
+   5   5   0   0   0  #   33 Surf-5 in test-6 is External
+   5   6   0   0   0  #   34 Surf-6 in test-6 is External

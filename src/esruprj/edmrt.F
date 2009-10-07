@@ -28,6 +28,7 @@ C calculations will be commissioned. If silent the viewfactor file name
 C will have been defined prior to calling edmrt.
       SUBROUTINE EDMRT(ITRC,ITRU,IUF,ICOMP,silent,act,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
       
@@ -43,16 +44,8 @@ C will have been defined prior to calling edmrt.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -71,7 +64,6 @@ C will have been defined prior to calling edmrt.
       CHARACTER VERT*46,H*72,CUBN*6,LTMP*72,cfgroot*24
       CHARACTER LCFGF*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character doit*248,tmode*8,tfile*72,ZN*12
@@ -114,13 +106,13 @@ C matching geometry file.
 C Set VEWF array in preparation for editing or silent creation.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
       else
         call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
       endif
 
 C << update logic to use alternative source for ZOA rather than call zinfo >>
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
       NS=NZSUR(ICOMP)
       DO 111 I=1,NS
         II=I
@@ -388,7 +380,7 @@ C the zone, obstructions and sensors.
       if(MMOD.EQ.8)then
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-        WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
         iside=1
         isize=1
         ifont=1
@@ -534,7 +526,7 @@ C use in area weighted computation.
 
 C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
 
-          CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+          CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
           NS=NZSUR(icomp)
           DO 11 I=1,NS
             II=I
@@ -626,6 +618,7 @@ C ************* EDMRTS
 C EDMRTS: Edit details of a MRT sensor block.
       SUBROUTINE EDMRTS(ICOMP,ICUB,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -634,10 +627,6 @@ C EDMRTS: Edit details of a MRT sensor block.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
@@ -686,7 +675,7 @@ C draw the sensor cubes.  Set all surface lines to standard width.
       if(MMOD.EQ.8)then
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-        WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
         iside=1
         isize=1
         ifont=1

@@ -508,14 +508,14 @@ C TSTART and TFINISH - start and finish times in hours from 0000 on the
 C first day of output.
       TSTART=FLOAT(IOH1)
       TFINSH=FLOAT(((IODF)*24+IOH2)-(IODS)*24)
-      write (6,*) TSTART,TFINSH
+
+C Debug.
+C      write(6,*) TSTART,TFINSH
 
 C Copy current sub-set of sets into IGETNO array.
       NGET=0
-      write (6,*) 'NS ',NS
       do 20 ISET=1,NS
         NGET=NGET+1
-C        write (6,*) 'nget ',nget
         if (NGET.gt.1) then
           IGETNO(NGET,1)=IGETNO((NGET-1),1)
           IGETNO(NGET,2)=IGETNO((NGET-1),2)
@@ -544,7 +544,6 @@ C NDTS - the number of timesteps in a day.
 
       call GOGET(IDAY)
  999  ISCAN=ISCAN+1
-C      write (6,*) 'IDAY:',IDAY,'  ISCAN:',ISCAN
 
 C Get time series of max, min, mean and delta for each timestep.
 C store in      VAL(1,*)   (2,*)   (3,*)   (4,*).
@@ -906,12 +905,10 @@ C Ask for set selection if DSA or MCA.
  3      continue
         ISETON(1)=0
         NFA=nint(log10(real(NSIM-1))/log10(real(2)))
-        write (6,*) NFA
         call EASKABCD('Effect:',' ','average','main',
      &         '2-way interactions','3-way interactions',IEFF,0)
         IEFF=IEFF-1
         NLOOP=FACTORIAL(NFA)/(FACTORIAL(IEFF)*FACTORIAL(NFA-IEFF))
-        write (6,*) NLOOP
         if (IEFF.gt.1) call INTERACT(NFA,IEFF,NLOOP,IPT)
       endif
       
@@ -961,8 +958,10 @@ C Loop through a day at a time.
 C Add values in VAL2 to there correct bins. Loop through selected sets.
         do 400 IX=2,NGET
           ISET=IGETNO(IX,5)
-C debug          write (6,*) 'IX, ',IX
-C debug          write (6,*) 'IV, ',IV
+
+C debug          write(6,*) 'IX, ',IX
+C debug          write(6,*) 'IV, ',IV
+
           DO 421 J = 1,NDTS,NOUT
 
 C Compute current time.
@@ -1022,7 +1021,8 @@ C Calculate averages.
  205    continue
       endif
  
-C debug      write (6,*) 'NY, ',NY
+C debug      write(6,*) 'NY, ',NY
+
       call usrmsg('Scanning data for range of values...done.',' ','-')
 
 C Now display the calculated data.
@@ -1332,7 +1332,6 @@ C copy new set selection into NSNO().
               NSNO(NS)=I
             endif
  100      continue
-          write (6,*) 'Active sets ',(NSNO(Ix),Ix=1,NS)
           RETURN
         endif
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
@@ -1409,7 +1408,6 @@ C IPT(x,y) - pointer to parameters 'y' for interaction 'x'
       dimension IPT(MNRS,MNFA)
 
       if (NINTER.lt.2) then
-        write (6,*) 'warning: INTERACT function usage error.'
         return
       endif
       

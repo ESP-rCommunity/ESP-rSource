@@ -64,21 +64,21 @@ kitchen and bath extracts run 7-8am and 17-18h
     1 # No. day types
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      5  # No. of periods in day
-    1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  30.000 1.000
-    1    0   7.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  0.000 1.000
-    1    0   9.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  30.000 1.000
-    1    0  17.000  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  10.000 1.000
-    1    0  19.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  30.000 1.000
+    1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  30.00000 1.00000 1.00000
+    1    0   7.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 1.00000
+    1    0   9.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  30.00000 1.00000 1.00000
+    1    0  17.000  # ctl type (dry bulb > flow), law (on/off setpoint 10.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  10.00000 1.00000 1.00000
+    1    0  19.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  30.00000 1.00000 1.00000
 * Control mass
 # senses node (1) liv
    -4    1    0    0  # sensor data
@@ -87,18 +87,18 @@ kitchen and bath extracts run 7-8am and 17-18h
     1 # No. day types
     1  365  # valid Sun-01-Jan - Sun-31-Dec
      5  # No. of periods in day
-    1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  30.000 1.000
-    1    0   7.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  0.000 1.000
-    1    0   8.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  30.000 1.000
-    1    0  17.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  0.000 1.000
-    1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 0.000.), starting @
-      2.  # No. of data items
-  30.000 1.000
+    1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  30.00000 1.00000 1.00000
+    1    0   7.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 1.00000
+    1    0   8.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  30.00000 1.00000 1.00000
+    1    0  17.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 1.00000
+    1    0  18.000  # ctl type (dry bulb > flow), law (on/off setpoint 30.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  30.00000 1.00000 1.00000

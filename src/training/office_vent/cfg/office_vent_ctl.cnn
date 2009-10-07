@@ -1,0 +1,109 @@
+*connections  for office_vent_ctl
+*Date Fri Jul 17 11:08:37 2009
+    106   # number of connections
+   1   1   3   2   2  #    1 pt_general in manager >|< pt_mgrs in general
+   1   2   3   2  13  #    2 part_frame in manager >|< part_frame in general
+   1   3   3   2   1  #    3 door in manager >|< door in general
+   1   4   1   0   0  #    4 pt_other in manager >|< Identical environment
+   1   5   3   5   1  #    5 ceiling in manager >|< Surf-6 in ceil_void
+   1   6   1   0   0  #    6 floor in manager >|< Identical environment
+   1   7   0   0   0  #    7 spandral in manager is External
+   1   8   0   0   0  #    8 vent in manager is External
+   1   9   0   0   0  #    9 frame in manager is External
+   1  10   0   0   0  #   10 glazing in manager is External
+   1  11   3   2  14  #   11 part_glaz in manager >|< part_glaz in general
+   2   1   3   1   3  #   12 door in general >|< door in manager
+   2   2   3   1   1  #   13 pt_mgrs in general >|< pt_general in manager
+   2   3   3   4   3  #   14 pt_rec_a in general >|< pt_rec_a in reception
+   2   4   3   4   2  #   15 fict_rec in general >|< fict_rec in reception
+   2   5   1   0   0  #   16 pt_core_a in general >|< Identical environment
+   2   6   1   0   0  #   17 fire_door in general >|< Identical environment
+   2   7   3   5   2  #   18 ceiling in general >|< ceiling in ceil_void
+   2   8   1   0   0  #   19 floor in general >|< Identical environment
+   2   9   0   0   0  #   20 spandral in general is External
+   2  10   0   0   0  #   21 vent in general is External
+   2  11   0   0   0  #   22 frame in general is External
+   2  12   0   0   0  #   23 glazing in general is External
+   2  13   3   1   2  #   24 part_frame in general >|< part_frame in manager
+   2  14   3   1  11  #   25 part_glaz in general >|< part_glaz in manager
+   2  15   0   0   0  #   26 spandral_a in general is External
+   2  16   0   0   0  #   27 vent_a in general is External
+   2  17   0   0   0  #   28 frame_a in general is External
+   2  18   0   0   0  #   29 glazing_a in general is External
+   2  19   0   0   0  #   30 spandral_b in general is External
+   2  20   0   0   0  #   31 vent_b in general is External
+   2  21   0   0   0  #   32 frame_b in general is External
+   2  22   0   0   0  #   33 glazing_b in general is External
+   2  23   0   0   0  #   34 spandral_c in general is External
+   2  24   0   0   0  #   35 vent_c in general is External
+   2  25   0   0   0  #   36 frame_c in general is External
+   2  26   0   0   0  #   37 glazing_c in general is External
+   2  27   0   0   0  #   38 spandral_d in general is External
+   2  28   0   0   0  #   39 vent_d in general is External
+   2  29   0   0   0  #   40 frame_d in general is External
+   2  30   0   0   0  #   41 glazing_d in general is External
+   2  31   5   0   0  #   42 desk_top in general is adiabatic
+   2  32   5   0   0  #   43 desk_base in general is adiabatic
+   3   1   1   0   0  #   44 pt_next_off in conference >|< Identical environment
+   3   2   3   4   6  #   45 pt_recp_b in conference >|< pt_recp_b in reception
+   3   3   3   4   5  #   46 fict_open in conference >|< fict_open in reception
+   3   4   3   4   4  #   47 pt_recp_a in conference >|< pt_recp_a in reception
+   3   5   3   5   3  #   48 ceiling in conference >|< ceil_conff in ceil_void
+   3   6   1   0   0  #   49 floor in conference >|< Identical environment
+   3   7   0   0   0  #   50 spandral in conference is External
+   3   8   0   0   0  #   51 vent in conference is External
+   3   9   0   0   0  #   52 frame in conference is External
+   3  10   0   0   0  #   53 glazing in conference is External
+   3  11   0   0   0  #   54 spandral_a in conference is External
+   3  12   0   0   0  #   55 vent_a in conference is External
+   3  13   0   0   0  #   56 frame_a in conference is External
+   3  14   0   0   0  #   57 glazing_a in conference is External
+   3  15   0   0   0  #   58 spandral_b in conference is External
+   3  16   0   0   0  #   59 vent_b in conference is External
+   3  17   0   0   0  #   60 frame_b in conference is External
+   3  18   0   0   0  #   61 glazing_b in conference is External
+   3  19   0   0   0  #   62 spandral_c in conference is External
+   3  20   0   0   0  #   63 vent_c in conference is External
+   3  21   0   0   0  #   64 frame_c in conference is External
+   3  22   0   0   0  #   65 glazing_c in conference is External
+   3  23   0   0   0  #   66 spandral_d in conference is External
+   3  24   0   0   0  #   67 vent_d in conference is External
+   3  25   0   0   0  #   68 frame_d in conference is External
+   3  26   0   0   0  #   69 glazing_d in conference is External
+   3  27   5   0   0  #   70 desk_top in conference is adiabatic
+   3  28   5   0   0  #   71 conf_bottom in conference is adiabatic
+   4   1   1   0   0  #   72 pt_core_a in reception >|< Identical environment
+   4   2   3   2   4  #   73 fict_rec in reception >|< fict_rec in general
+   4   3   3   2   3  #   74 pt_rec_a in reception >|< pt_rec_a in general
+   4   4   3   3   4  #   75 pt_recp_a in reception >|< pt_recp_a in conference
+   4   5   3   3   3  #   76 fict_open in reception >|< fict_open in conference
+   4   6   3   3   2  #   77 pt_recp_b in reception >|< pt_recp_b in conference
+   4   7   0   0   0  #   78 spandral in reception is External
+   4   8   0   0   0  #   79 vent in reception is External
+   4   9   0   0   0  #   80 frame in reception is External
+   4  10   0   0   0  #   81 glazing in reception is External
+   4  11   0   0   0  #   82 spandral_a in reception is External
+   4  12   0   0   0  #   83 vent_a in reception is External
+   4  13   0   0   0  #   84 frame_a in reception is External
+   4  14   0   0   0  #   85 glazing_a in reception is External
+   4  15   5   0   0  #   86 desk_top in reception is adiabatic
+   4  16   5   0   0  #   87 desk_base in reception is adiabatic
+   4  17   3   5   4  #   88 ceiling in reception >|< ceil_rec in ceil_void
+   4  18   1   0   0  #   89 floor in reception >|< Identical environment
+   5   1   3   1   5  #   90 Surf-6 in ceil_void >|< ceiling in manager
+   5   2   3   2   7  #   91 ceiling in ceil_void >|< ceiling in general
+   5   3   3   3   5  #   92 ceil_conff in ceil_void >|< ceiling in conference
+   5   4   3   4  17  #   93 ceil_rec in ceil_void >|< ceiling in reception
+   5   5   1   0   0  #   94 structure in ceil_void >|< Identical environment
+   5   6   0   0   0  #   95 south_edge in ceil_void is External
+   5   7   0   0   0  #   96 east_edge in ceil_void is External
+   5   8   0   0   0  #   97 north_edge in ceil_void is External
+   5   9   1   0   0  #   98 core_b in ceil_void >|< Identical environment
+   5  10   3   6   1  #   99 core_a in ceil_void >|< Surf-1 in mixing_box
+   5  11   1   0   0  #  100 core_c in ceil_void >|< Identical environment
+   6   1   3   5  10  #  101 Surf-1 in mixing_box >|< core_a in ceil_void
+   6   2   5   0   0  #  102 Surf-2 in mixing_box is adiabatic
+   6   3   5   0   0  #  103 Surf-3 in mixing_box is adiabatic
+   6   4   5   0   0  #  104 Surf-4 in mixing_box is adiabatic
+   6   5   5   0   0  #  105 Surf-5 in mixing_box is adiabatic
+   6   6   5   0   0  #  106 Surf-6 in mixing_box is adiabatic

@@ -1,71 +1,71 @@
 # Plant component data base:
-/usr/esru/esp-r/databases/plantc.db1                              
+plantc.db1                                                                                                                                      
 # Project title:
 test for chp summer configuration                                     
 # Total no. of specified components and simulation type
     8    2
-#-> CHP engine unit supplying WCH system; 1 node model                      
+#->   1, CHP engine unit supplying WCH system; 1 node model                      
   CHP-unit          51
     1        # Component has   1 control variable(s).
-    20.0000
+   20.00000    
     9
-  200.00      500.00      3.5000      42900.     0.51670E-03 0.13740E-04
- 0.82000     0.95000      3000.0    
-#-> WCH calorifier; 2 node model                                            
+  200.00       500.00       3.5000       42900.      0.51670E-03  0.13740E-04
+ 0.82000      0.95000       3000.0    
+#->   2, WCH calorifier; 2 node model                                            
   calorifier        50
     0        # Component has   0 control variable(s).
     8
-  400.00      4180.0     0.10000      15.000     0.50000      10000.    
- 0.70000      1200.0    
-#-> variable speed domestic WCH pump; 1 node model                          
+  400.00       4180.0      0.10000       15.000      0.50000       10000.    
+ 0.70000       1200.0    
+#->   3, variable speed domestic WCH pump; 1 node model                          
   CHP-pump          15
     1        # Component has   1 control variable(s).
-    1.600000E-4
+  1.6000000E-04
     6
-  5.0000      2250.0     0.20000      150.00     0.30000E-01 0.85000    
-#-> variable speed domestic WCH pump; 1 node model                          
+  5.0000       2250.0      0.20000       150.00      0.30000E-01  0.85000    
+#->   4, variable speed domestic WCH pump; 1 node model                          
   DHW-pump          15
     1        # Component has   1 control variable(s).
-    8.0000E-5
+  7.9999998E-05
     6
-  5.0000      2250.0     0.20000      150.00     0.30000E-03 0.85000    
-#-> WCH flow control valve; 1 node model; flow ratio control                
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.85000    
+#->   5, WCH flow control valve; 1 node model; flow ratio control                
   diverting_valve   38
     1        # Component has   1 control variable(s).
-    1.00000
+   1.000000    
     3
-  1.0000      500.00      3.5000    
-#-> variable speed domestic WCH pump; 1 node model                          
+  1.0000       500.00       3.5000    
+#->   6, variable speed domestic WCH pump; 1 node model                          
   DHS-pump          15
     1        # Component has   1 control variable(s).
-    0.800000E-4 
+  7.9999998E-05
     6
-  5.0000      2250.0     0.20000      150.00     0.30000     0.85000    
-#-> WCH pipe converging 2-leg junction; 1 node model                        
+  5.0000       2250.0      0.20000       150.00      0.30000      0.85000    
+#->   7, WCH pipe converging 2-leg junction; 1 node model                        
   DHW-converge      14
     0        # Component has   0 control variable(s).
     3
- 0.10000      2250.0     0.20000E-01
-#-> WCH pipe converging 2-leg junction; 1 node model                        
+ 0.10000       2250.0      0.20000E-01
+#->   8, WCH pipe converging 2-leg junction; 1 node model                        
   bpass-converge    14
     0        # Component has   0 control variable(s).
     3
- 0.10000      2250.0     0.20000E-01
+ 0.10000       2250.0      0.20000E-01
 # The following is a list of component connections.
  11          # Total number of connections
 # receiving       node  conncn sending          node  diversion  suppl1   suppl2
 # component              type  component                ratio
-  CHP-pump          1     3     CHP-unit          1    1.000
-  DHW-pump          1     3     CHP-pump          1    0.500
-  diverting_valve   1     3     CHP-pump          1    0.2500
-  calorifier        1     2     DHS-pump          1    1.000    12.0000   0.0010
-  bpass-converge    1     3     calorifier        2    1.000
-  bpass-converge    1     3     diverting_valve   1    1.000
-  DHW-converge      1     3     bpass-converge    1    1.000
-  DHW-converge      1     2     DHW-pump          1    1.000    61.0000   0.0010
-  CHP-unit          1     3     DHW-converge      1    1.000
-  DHS-pump          1     3     calorifier        1    1.000
-  calorifier        2     3     CHP-pump          1    0.2500
+  CHP-pump          1     3     CHP-unit          1    1.000                 #  1
+  DHW-pump          1     3     CHP-pump          1    0.500                 #  2
+  diverting_valve   1     3     CHP-pump          1    0.250                 #  3
+  calorifier        1     2     DHS-pump          1    1.000    12.00   0.00 #  4
+  bpass-converge    1     3     calorifier        2    1.000                 #  5
+  bpass-converge    1     3     diverting_valve   1    1.000                 #  6
+  DHW-converge      1     3     bpass-converge    1    1.000                 #  7
+  DHW-converge      1     2     DHW-pump          1    1.000    61.00   0.00 #  8
+  CHP-unit          1     3     DHW-converge      1    1.000                 #  9
+  DHS-pump          1     3     calorifier        1    1.000                 # 10
+  calorifier        2     3     CHP-pump          1    0.250                 # 11
 # No containment temperatures defined
   0
 # No mass flow network defined.

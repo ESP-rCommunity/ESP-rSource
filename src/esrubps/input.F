@@ -36,10 +36,10 @@ C Common block variables are:
 C indcfg  - is the configuration file index where: 1= building only,
 C           2= plant only, 3= building and plant
 
-C xlat,   - Site latitude and the longitudinal difference between the 
-C xlon      site and the reference time zone (east +ve).
+C sitelat,   - Site latitude and the longitudinal difference between the 
+C sitelongdif  site and the reference time zone (east +ve).
  
-C ixpos   - Site exposure index :
+C siteexposureindex - Site exposure index (from site.h):
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
 C           4= city centre, equal sky, ground & building view factors
@@ -50,7 +50,7 @@ C           8= user defined
  
 C gref    - external ground reflectivity
  
-C lsnam   - the name of the entire system
+C modeltitle - the name of the entire system
  
 C ncomp   - number of zones comprising the system to be simulated
 C nccode  - zone code (for eventual database reference)
@@ -58,8 +58,6 @@ C nccode  - zone code (for eventual database reference)
 C lproj   - zone scheduling (operation file)
 C lgeom   - zone geometry file      
 C lthrm   - zone construction file
-C indutl  - Zone utilities file index: 0= none 1= zone utility file supplied
-C lutil   - Zone utilities file name.
  
 C ncon    - total number of intra-zone connections
  
@@ -169,6 +167,7 @@ C                         use the inside surface node temperature
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
+#include "site.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
@@ -202,8 +201,6 @@ C Path to model and command line file name.
       common/rpath/path
       common/rcmd/LCMDFL
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/c6/indcfg
       common/CFGV/icfgv
 
@@ -506,7 +503,7 @@ C If the power flow simulation flag is set then set up the electrical network.
 
 C Advanced albedo model: pre-process snow depth file. The ascii file is
 C read and converted to a binary file
-      IF (ITGREF.EQ.3) THEN
+      IF (groundreflmodel.EQ.3) THEN
         CALL PPGREF(IER)
         IF (IER.NE.0) RETURN
       ENDIF
@@ -598,10 +595,10 @@ C code from esruprj/eddb.F subroutine opendb.
           endif
  1006     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
           write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
-          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
-            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
             if(ier.ne.0)then
               if(dll)then
                 dllsubr='mzinpt'
@@ -780,7 +777,7 @@ C Open and scan the bidirectional data file if it exists.
         continue
       else
         iua=IAPROB
-        call erbiwin(0,iuout,iua,bidirfile,ier)
+        call erbiwin(iuout,iua,bidirfile,ier)
         if(ier.eq.0)then
           call edisp(itru,'The bi-directional data was sucessfully')
           call edisp(itru,'scanned.')
@@ -842,6 +839,8 @@ C IREP=1 implies no reporting or data checking.
 
       SUBROUTINE MZPREC(IREP,IER)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
@@ -854,24 +853,17 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C During setup scan for inbuilt and user defined ground temperatures.
@@ -879,7 +871,6 @@ C igttype: if > 1 then index points to most often used standard profile
 C         if < 1 then index points to most often used user profile
 C         if = 0 then use compiled pattern.
       common/C25/igttype,GTMP(12)
-      common/ground/grdtmp(12,mgrdp)
 
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -985,6 +976,7 @@ C translate the casual gains.
 
 C Debug.
 C        write(6,*) IZ,IP3VER(IZ)
+
         if(ip3ver(iz).eq.0)then
           write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',IZ,' periods being sorted!'
@@ -997,7 +989,7 @@ C Zero the thermal bridge heat loss before (perhaps) reading in from geometry fi
 
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,1,ITU,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
         endif
@@ -1103,7 +1095,7 @@ C no mismatch.
       IW=IWARN
       IWARN=0
       call usrmsg(' Checking model topology...',' ','-')
-      call ckcurmatch(prob,iprob,ier)
+      call ckcurmatch(prob,iprob)
       if(prob.and.iprob.gt.1)then
         outs='More than one complaint about model contiguity'
         if(dll)then
@@ -1342,8 +1334,11 @@ C Find out which was most often used in terms of ground temperatures.
           igumaxindex=ij
         endif
   8   continue
+
+C Debug.
 C      write(6,*) igmax,igmaxindex,igarray
 C      write(6,*) igumax,igumaxindex,iguarray
+
       if(igmaxindex.eq.0.and.igumaxindex.eq.0)then
 
 C Nothing specified as a connection so use UK monthly mean
@@ -1396,6 +1391,7 @@ C Timestep zone airflow is handled by tdf.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
 #include "building.h"
+#include "model.h"
 #include "cfd.h"
 #include "espriou.h"
 #include "CFC_common.h"
@@ -1406,17 +1402,6 @@ C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -1442,7 +1427,7 @@ C Residential hydrogen cogen: control file
 
       CHARACTER NAME*5,OUTSTR*124
       CHARACTER*72 LCFD,Lflpar
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,lfil
+      CHARACTER*72 lfil
       CHARACTER*72 LBSIMP
       character dllsubr*12,dllmesg*124,outs*124
 
@@ -1664,7 +1649,8 @@ C whether to save every timestep to the file.
         tstepok=.true.
 
 C Debug.
-C       write(6,*) 'in input irdact & isavgh are ',irdact,isavgh 
+C       write(6,*) 'in input irdact & isavgh are ',irdact,isavgh
+ 
       endif
 
 C Plant timesteps and plant time increment and
@@ -1791,11 +1777,12 @@ C or from another location.
             ERESLIB=selres(i)
           endif
 
-C Debug...
+C Debug.
 C          write(6,*) ' input.F usesps rfile ',i,rfile
 C          write(6,*) ' input.F usesps lafres ',i,LAFRES
 C          write(6,*) ' input.F usesps pfile ',i,pfile
 C          write(6,*) ' input.F usesps splres ',i,splres
+
           if(match)goto 43
         endif
    42 continue
@@ -1824,16 +1811,22 @@ C Check that we have enough info to proceede if autook
         spfileok=.true.
       endif
 
-C Debug...
+C Debug.
 C      write(6,*)'spfileok,perok,tstepok,saveok,autook,exitok,startupok'
 C      write(6,*)spfileok,perok,tstepok,saveok,autook,exitok,startupok
+
       return
       end
 
 C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
-      subroutine ckcurmatch(prob,iprob,ier)
+      subroutine ckcurmatch(prob,iprob)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
+
+C Parameters
+      logical prob  ! true if there is a problem
+      integer iprob ! number of mis-matches detected
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1844,12 +1837,8 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
-      logical prob,dup,first
+      logical dup,first
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78
@@ -1862,7 +1851,7 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       do 287 IZ=1,NCOMP
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
         endif

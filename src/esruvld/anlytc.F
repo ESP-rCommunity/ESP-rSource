@@ -838,6 +838,7 @@ C VCpyDr
 C *********************************************************************
       SUBROUTINE VCpyDr(NPER,ier)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -845,17 +846,9 @@ C geometry.h provides commons G0 and G2.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/uhome/upath
@@ -865,7 +858,6 @@ C geometry.h provides commons G0 and G2.
       character h*72,doit*124,cfgroot*24,MODE*4
       CHARACTER*72 upath,path,VlDirR,VlDirL,LCFGF
       character LCMDFL*144
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
       logical xst
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -910,7 +902,7 @@ C Copy the default validation model.
       CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
       call eclose(gversion(IComp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUnit,LGEOM(IComp),IComp,1,ITRC,IUOUT,IER)
+        call georead(IUnit,LGEOM(IComp),IComp,1,IUOUT,IER)
       else
         call egomin(IUnit,LGEOM(IComp),IComp,1,ITRC,IUOUT,IER)
       endif
@@ -1004,24 +996,16 @@ C         files.
 C *********************************************************************
       SUBROUTINE VSaveP(NPER,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GR1D05/LGRD1D
       COMMON/GR1D06/IGR1D
       common/cctlnm/ctldoc,lctlf
 
       CHARACTER*72 LGRD1D
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER ctldoc*248,LCTLF*72
 
       logical QUIET,IGR1D,XST
@@ -1052,14 +1036,14 @@ C Save geometry file.
       if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
       else
-        call emkgeo(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
+        call emkgeo(IUF,LGEOM(ICOMP),IComp,3,IER)
       endif
 
 C Save construction file.
-      CALL EMKCON(LTHRM(ICOMP),IUF,IComp,IUOUT,QUIET,IER)
+      CALL EMKCON(LTHRM(ICOMP),IUF,IComp,QUIET,IER)
 
 C Save operation file.
-      CALL EMKOPER(IUF,LPROJ(ICOMP),IComp,IUOUT,IER)
+      CALL EMKOPER(IUF,LPROJ(ICOMP),IComp,IER)
 
 C Save additional files if existing.
       if(IGR1D)CALL SAVE1D(LGRD1D,IUF,IUOUT,ITRC,IER)

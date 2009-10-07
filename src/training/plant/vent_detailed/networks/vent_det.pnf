@@ -1,5 +1,5 @@
 # Plant component data base:
-/usr/esru/esp-r/databases/plantc.db1                                  
+plantc.db1                                                                                                                                      
 # Project title:
 Air heating + exhaust ventilation system.                             
 # Total no. of specified components and simulation type
@@ -27,7 +27,7 @@ Air heating + exhaust ventilation system.
 #->   5, centrifugal fan, 1 node model ; flow control                            
   exh_fan            3
     1        # Component has   1 control variable(s).
- 0.06
+  5.9999999E-02
     6
   10.000       500.00       7.0000       50.000      0.10000      0.70000    
 #->   6, air duct; 1 node model                                                  
@@ -43,13 +43,13 @@ Air heating + exhaust ventilation system.
 #->   8, centrifugal fan, 1 node model ; flow control                            
   supply_fan         3
     1        # Component has   1 control variable(s).
- 0.06
+  5.9999999E-02
     6
   10.000       500.00       7.0000       50.000      0.10000      0.70000    
 #->   9, air heating coil; 1 node model ; flux control                           
   heater             5
     1        # Component has   1 control variable(s).
- 3000.0
+   3000.000    
     3
   0.0000       0.0000       0.0000    
 #->  10, air duct; 1 node model                                                  
@@ -60,14 +60,14 @@ Air heating + exhaust ventilation system.
 #->  11, imaginary building-like plant load                                      
   zone_b            25
     1        # Component has   1 control variable(s).
- -500.0
+  -500.0000    
     8
   7560.0       1000.0       4.0000       54.000       27.000       5.0000    
   18.000       0.0000    
 #->  12, imaginary building-like plant load                                      
   zone_a            25
     1        # Component has   1 control variable(s).
- -1000.0
+  -1000.000    
     8
   10920.       1000.0       4.0000       78.000       45.000       5.0000    
   18.000       0.0000    

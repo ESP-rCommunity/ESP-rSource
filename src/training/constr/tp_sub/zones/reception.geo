@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,reception # tag version, format, zone name
-*date Thu Aug 23 19:51:18 2007  # latest file modification 
+*date Tue Jul 21 13:09:26 2009  # latest file modification 
 reception describes a
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,1.00000,1.00000,0.00000  #   1
@@ -54,7 +54,7 @@ reception describes a
 *edges,4,31,32,33,34  # 14
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items

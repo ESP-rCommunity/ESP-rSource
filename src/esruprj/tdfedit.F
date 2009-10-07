@@ -186,7 +186,8 @@ C If tdf file has been specified then load it.
         IER=0
         call supplyandcheck(LTDFA,'T',ier)
         if(ier.ne.0)then
-          write(6,*) 'non-zero error after call to supplyandcheck'
+          write(outs,*) 'non-zero error after call to supplyandcheck'
+          call edisp(iuout,outs)
         endif
       else
 
@@ -595,7 +596,10 @@ C column of zeros after the time column).
           if(itnwprc.gt.itnwpr) itnwpr=itnwprc
           if(itnwpr.lt.nuwpr)then
             idif=itnwpr-nuwpr
-            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
+
+C Debug.
+C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
+
             call ewtdfa(itrc,ltdfa,iutdfa,idif,ier)
           else
             call ewtdfa(itrc,ltdfa,iutdfa,0,ier)
@@ -1012,7 +1016,10 @@ C one minute of the given time and then get the data and write.
           CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
           ITIME=IP-(INT(CDAY)*NTSPH*24)
           RDOTY=REAL(itdbdoy)+CDAY+(REAL(ITIME)/(REAL(NTSPH)*24.))
-          if(ITRC.gt.1)write(6,*)'cday itime rdoty',cday,itime,rdoty
+          if(ITRC.gt.1)then
+            write(outs,*)'cday itime rdoty',cday,itime,rdoty
+            call edisp(iuout,outs)
+          endif
           if(.NOT.found)then
             call eclose(RDOTY,TIMEJD,0.0006,CLOSE)
             if(CLOSE)then

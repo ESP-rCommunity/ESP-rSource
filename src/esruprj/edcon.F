@@ -38,6 +38,7 @@ C information to be saved into a new file. ITRU unit number for user
 C output, IER=0 OK. 
       SUBROUTINE EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
@@ -54,19 +55,11 @@ C geometry.h provides commons G0/G2/c20/precz.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       common/PRECT4/TOPTIC(MCOM,MTMC)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -82,7 +75,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       DIMENSION VERT(35),libcmt(MTMC)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,CFILE
+      CHARACTER*72 CFILE
       CHARACTER*72 DFILE
       CHARACTER SFILE*72,H*72,LTMP*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -138,7 +131,7 @@ C Set existance of a zone construction file to false.
 C Read in the related geometry file into common.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
       else
         call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
       endif
@@ -216,7 +209,7 @@ C Construction file name not yet specified.
       call FINDFIL(LTHRM(ICOMP),XST)
       if(XST)then
         IF(QUIET) THEN 
-          CALL EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER) 
+          CALL EDZCON(ICOMP,MODGEO,MODCON,IER) 
         ELSE
           write(outs,'(3a)') 'Found an existing constructions file: ',
      &            LTHRM(ICOMP)(1:lnblnk(LTHRM(ICOMP))),'.'
@@ -234,7 +227,7 @@ C Construction file name not yet specified.
             endif
           elseif(IWA.EQ.2)then
             call tstamp('>','PRJ: scan db & rebuild zone construction')
-            CALL EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER) 
+            CALL EDZCON(ICOMP,MODGEO,MODCON,IER) 
           elseif(IWA.eq.3)then
             call tstamp('>','PRJ: abandoned rebuild zone construction')
             return
@@ -258,7 +251,7 @@ C If in quiet mode: the file should exist => error if we are here.
             goto 42
           endif
         ENDIF
-        CALL EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
+        CALL EDZCON(ICOMP,MODGEO,MODCON,IER)
       endif
       if(IER.NE.0)then
         again=.true.
@@ -473,7 +466,7 @@ C has resized the display, redraw.
       if(MMOD.EQ.8)then
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &               iicfgz,iicfgn,iicfgc,iicfgdfn)
-        WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
         iside=1
         isize=1
         ifont=2
@@ -626,7 +619,7 @@ C Produce a menu of data related to this surface.
         IS=IFOC
         CALL EPMENSV
         call tstamp('>','PRJ: enter surface construction')
-        CALL EDSCON(ITRC,ITRU,ICOMP,IS,MODGEO,MODCON,IER)
+        CALL EDSCON(ITRU,ICOMP,IS,MODGEO,MODCON,IER)
         CALL EPMENRC
       ELSE
 
@@ -660,7 +653,7 @@ C and save the system configuration file if not browsing.
       if(cfgok.and.(.NOT.browse))then
         IUF=IFIL+2
         call tstamp('>','PRJ: save zone construction')
-        CALL EMKCON(LTHRM(ICOMP),IUF,ICOMP,IUOUT,QUIET,IER)
+        CALL EMKCON(LTHRM(ICOMP),IUF,ICOMP,QUIET,IER)
         IF(IER.EQ.1)THEN
           dok=.true.
           h(1)='Check that you have permission to update the zone'
@@ -692,7 +685,7 @@ C If any of the surfaces are transparent save this info.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   61  CONTINUE
       IF(TFOUND)THEN
-        CALL MKTWIN(ITRU,IUF,ICOMP,QUIET,IER)
+        CALL MKTWIN(IUF,ICOMP,QUIET,IER)
         IF(IER.EQ.1)RETURN
         ITW(ICOMP)=1 
 
@@ -769,7 +762,7 @@ C If geometry info has changed then save it as well.
           if(newgeo)then
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           else
-            CALL EMKGEO(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            CALL EMKGEO(IUF,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           MODGEO=.FALSE.
         endif
@@ -788,13 +781,21 @@ C ************* EDSCON
 C Edit zone surface construction attributes in common block G6 and 
 C allow this to be saved. ITRU unit number for user output, IER=0 OK, 
 C IER=1 problem. Make use of construction information in common MLC.
-      SUBROUTINE EDSCON(ITRC,ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
+      SUBROUTINE EDSCON(ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer itru   ! unit for reporting
+      integer icomp  ! zone number
+      integer isur   ! associated surface
+      logical MODGEO ! return true if altered geometry
+      logical MODCON ! return true if altered construction
+      integer ier    ! zero is ok
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -840,7 +841,7 @@ C Arrays of material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL MODGEO,MODCON,told,closemat
+      LOGICAL told,closemat
 
       DIMENSION ISD(19)
       CHARACTER TITL*72,NAM*72,ISD*46
@@ -1190,10 +1191,17 @@ C EDZCON takes the information in the composite construction db and the
 C zone geometry file (surface attributes) and attempts to construct a
 C zone construction file with minimum intervention by the user.
 
-      SUBROUTINE EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
+      SUBROUTINE EDZCON(ICOMP,MODGEO,MODCON,IER)
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+
+C Parameters
+      integer icomp  ! zone number
+      logical MODGEO ! return true if altered geometry
+      logical MODCON ! return true if altered construction
+      integer ier    ! zero is ok
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -1236,7 +1244,7 @@ C Arrays of material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODGEO,MODCON
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat
 
       CHARACTER outs*124,SSPARENT*12
@@ -1388,7 +1396,7 @@ C currently held in common blocks.
 C LTWIN is the name of the file to be written to (any existing file
 C by this name is overwritten).  ZNAME is the zone name (12 char), ICOMP
 C is the zone number.  ITRC= trace verbose level.
-C ITRU unit number for user output, IER=0 OK, IER=1 problem.
+C IER=0 OK, IER=1 problem.
 
 C Work out where the various definitive information sources should be
 C combined to create this file.  In essence we need to read through
@@ -1396,17 +1404,21 @@ C each of the existing surfaces and find the unique optical types which
 C exist in this zone.  Then for each of these we need to write out their
 C optical properties as gathered from the optical database.  Make use of
 C the number of composite layers to build this up.
-      SUBROUTINE MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
+      SUBROUTINE MKTWIN(IFU,ICOMP,QUIET,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
 
+C Parameter
+      integer IFU   ! file unit
+      integer ICOMP ! zone number
+      logical QUIET ! if true then no dialog
+      integer IER   ! if zero then ok
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1420,10 +1432,9 @@ C the number of composite layers to build this up.
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
-      logical QUIET,XST
+      logical XST
 
       dimension ival(MS)
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER H*72,TOPTIC*12,louts*248
 
 C If in quiet mode then the file should exist, but if it is not a 

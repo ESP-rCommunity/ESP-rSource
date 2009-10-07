@@ -267,7 +267,9 @@ C The loop should not be necessary - keep debug statement as check for
 C multiple CFD domains
 C          do 30 icfd=1,NCONF
             if( icfdnd(icfd).eq.ICOMP )then
-c              write (6,*) 'SURFCONF (ICP,ICOMP,icfd)',ICP,ICOMP,icfd
+
+C Debug.
+C              write(6,*) 'SURFCONF (ICP,ICOMP,icfd)',ICP,ICOMP,icfd
 
 C Initialize the thermophysical variables and some gridding data.
               CALL INICNT     
@@ -364,28 +366,40 @@ C Indicate which equations are active=>results to save.
       IREC=1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) MCEL1D,ICFDSV,
      &                                             (IEQSV(J),J=1,5+NCTM)
+
+C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',MCEL1D,ICFDSV,(IEQSV(J),J=1,5+NCTM)
 
 C Which zone(s) is CFD active in.
       IREC=IREC+1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                (abs(ICFAUX(I)),I=1,NCOMP)
+
+C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',(abs(ICFAUX(I)),I=1,NCOMP)
 
 C Write start and finish time: start day; finish day; start hour; finish hour.
       IREC=IREC+1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) ICFDYS,ICFDYF,
      &           CFTIMS,CFTIMF
+
+C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',ICFDYS,ICFDYF,CFTIMS,CFTIMF
 
 C Write number of contaminants and names
       IREC=IREC+1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) NCTM
+
+C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',NCTM
+
       DO 333 ICTM=1,NCTM
         IREC=IREC+1
         WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)POLNAM(ICTM,ICFD)
+
+C Debug.
 C        WRITE(6,*)POLNAM(ICTM,ICFD)
+
  333  CONTINUE
   
 C Remember current CFD res lib record number.
@@ -424,7 +438,9 @@ C This routine will work for multiple CFD domains in a problem.
 
 C Calculate record number to write to.
       IREC=5+NCTM+(4*(ICOMP-1))
-C      write (6,*) 'saving to IREC ',IREC,' for zone ',ICOMP
+
+C Debug.
+C      write(6,*) 'saving to IREC ',IREC,' for zone ',ICOMP
 
 C Calculate number of records for each domain time step (strictly this 
 C could always be recalculated from the domain size but there is room 
@@ -442,17 +458,27 @@ C IMULT is the number of metrics being saved (1 per record).
 
 C Write domain size and start and finish time step increment.
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) IDRSZE,NIM2,NJM2,NKM2
+
+C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',IDRSZE,NIM2,NJM2,NKM2
 
 C Write grid sizing information.
       IREC=IREC+1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) (XU(I),I=1,NI)
+
+C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',(XU(I),I=1,NI)
+
       IREC=IREC+1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) (YV(I),I=1,NJ)
+
+C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',(YV(I),I=1,NJ)
+
       IREC=IREC+1
       WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZW(I),I=1,NK)
+
+C Debug.
 C      WRITE(6,*) ICFLIB,IREC,':',(ZW(I),I=1,NK)
 
       return
@@ -497,7 +523,9 @@ C use the saves record.
       IST=5+NCTM+(4*(MCOM-1))
       if (IRECPC.lt.IST) IRECPC=IST
       IREC=IRECPC
-C      write (6,*) 'IRECPCstart ',IRECPC
+
+C Debug.
+C      write(6,*) 'IRECPCstart ',IRECPC
 
 C Loop through all control volumes.
       do 10 K=2,NK
@@ -508,35 +536,50 @@ C Write data to library. Adjust trace to file unit 6 if ntcelz>48
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Uf(I,J,K),I=2,NI)
-C            write (6,'(i3,48f9.5)') IREC,(Uf(I,J,K),I=2,NI)
+
+C Debug.
+C            write(6,'(i3,48f9.5)') IREC,(Uf(I,J,K),I=2,NI)
+
           endif
 
           if (IEQSV(2).eq.1) then
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Vf(I,J,K),I=2,NI)
-C          write (6,'(i3,48f9.5)') IREC,(Vf(I,J,K),I=2,NI)
+
+C Debug.
+C          write(6,'(i3,48f9.5)') IREC,(Vf(I,J,K),I=2,NI)
+
           endif
 
           if (IEQSV(3).eq.1) then
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Wf(I,J,K),I=2,NI)
-C          write (6,'(i3,48f9.5)') IREC,(Wf(I,J,K),I=2,NI)
+
+C Debug.
+C          write(6,'(i3,48f9.5)') IREC,(Wf(I,J,K),I=2,NI)
+
           endif
 
           if (IEQSV(4).eq.1) then
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (Tf(I,J,K),I=2,NI)
-C          write (6,'(i3,48f9.5)') IREC,(Tf(I,J,K),I=2,NI)
+
+C Debug.
+C          write(6,'(i3,48f9.5)') IREC,(Tf(I,J,K),I=2,NI)
+
           endif
                 
           if (IEQSV(5).eq.1) then
             IREC=IREC+1
             WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                             (AGEf(I,J,K),I=2,NI)
-C          write (6,'(i3,48f9.5)') IREC,(AGEf(I,J,K),I=2,NI)
+
+C Debug
+C          write(6,'(i3,48f9.5)') IREC,(AGEf(I,J,K),I=2,NI)
+
           endif
                 
           DO 121 ICTM=1,NCTM
@@ -544,7 +587,10 @@ C          write (6,'(i3,48f9.5)') IREC,(AGEf(I,J,K),I=2,NI)
               IREC=IREC+1
               WRITE(ICFLIB,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &                                     (POLCONCf(ICTM,I,J,K),I=2,NI)
+
+C Debug
 C              write(6,'(i3,48f9.5)') IREC,(POLCONCf(ICTM,I,J,K),I=2,NI)
+
             endif
  121      CONTINUE      
  101    continue
@@ -552,7 +598,10 @@ C              write(6,'(i3,48f9.5)') IREC,(POLCONCf(ICTM,I,J,K),I=2,NI)
 
 C Remember current CFD res lib record number.
       IRECPC=IREC
-C      write (6,*) 'IRECPCend ',IRECPC
+
+C Debug.
+C      write(6,*) 'IRECPCend ',IRECPC
+
       return
 
 C Error writing data.

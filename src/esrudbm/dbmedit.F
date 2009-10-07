@@ -776,7 +776,9 @@ C IWA is the minimum menu width to hold repeating items.
           endif
         endif
   32  continue
-      write(6,*) la,lb,lc,ld,le
+
+C Debug.
+C      write(6,*) la,lb,lc,ld,le
 
       WRITE(PDBM(2),'(2A)')'  date: ',catdate(ic)
       lm=MIN0(la,31)
@@ -1045,7 +1047,10 @@ C database for it.
             call CPITEM(IFB,idbh,icorig,iitorig,iccopy,iitcopy,'n',ier)
 
             write(item,'(a)')ittag(iitcopy)
-            write(6,*)nbitem(idbh),iccopy,iitcopy,item
+
+C Debug.
+C            write(6,*)nbitem(idbh),iccopy,iitcopy,item
+
             LGENDB=gendbfn(idbh)
             call recongdb(IAFIL,IFB,LGENDB,idbh,IER)
             if(ier.ne.0)then
@@ -1060,11 +1065,17 @@ C database for it.
                   goto 40
                 else
                   iit=it
-                  write(6,*)nbitem(idbh),ic,iit,' c ',ittag(iit)
+
+C Debug.
+C                  write(6,*)nbitem(idbh),ic,iit,' c ',ittag(iit)
+
                 endif
               endif
   37        continue
-            write(6,*)nbitem(idbh),ic,iit,' g ',ittag(iit)
+
+C Debug.
+C            write(6,*)nbitem(idbh),ic,iit,' g ',ittag(iit)
+
             call rgenitem(IFB,idbh,iit,ier)
             call usrmsg('Copy item within database...done.',bl2,'P')
             goto 39
@@ -1096,7 +1107,10 @@ C of the database to decrement the number of items.
             bkdoctyp='DE'
             indexbk=0
             write(item,'(a)')ittag(iitmove)
-            write(6,*)nbitem(idbh),icorig,icmove,iitmove,' ',item
+
+C Debug.
+C            write(6,*)nbitem(idbh),icorig,icmove,iitmove,' ',item
+
             LGENDB=gendbfn(idbh)
             call recongdb(IAFIL,IFB,LGENDB,idbh,IER)
             if(ier.ne.0)then
@@ -1514,8 +1528,10 @@ C Mark for update of cat documentation.
         do 53 ij=1,nbcatdoc(ic)
           IREC=IREC+1
           read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,catdoc(ij)
-C Debug...
-          write(6,*) catdoc(ij)
+
+C Debug.
+C          write(6,*) catdoc(ij)
+
   53    continue
         H(1)='Documentation of categories is encouraged. You can'
         H(2)='enter one or several lines of text.'

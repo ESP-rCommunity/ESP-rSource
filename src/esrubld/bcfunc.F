@@ -531,8 +531,9 @@ C Setpoint to be read from temporal file.
            CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
            TCTL=VAL(ISD)
 C Debug.
-           write(6,*)'tdf ctl data @',btimef,' is item',itdi,
-     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+C           write(6,*)'tdf ctl data @',btimef,' is item',itdi,
+C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+
          else
            write(outs,'(a)')
      &     'CFVAR: ISETPTT does not point to a valid temporal item'
@@ -696,6 +697,7 @@ C database.
 C Debug.
 C           write(6,*)'CFMVAR:tdf ctl data @',btimef,' is item',itdi,
 C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+
           else
             write(outs,'(a)')
      &      'CFMVAR: ISETPTT does not point to a valid temporal item'
@@ -2153,7 +2155,7 @@ C Get the connections this node sends mass to
         ICON=0
         DO 1 IPCON=1,NPCON
           IF(IPC2(IPCON).EQ.IN)THEN
-            IF(PCONSD(IPCON,1).EQ.IBLDGZ)THEN
+            IF(NINT(PCONSD(IPCON,1)).EQ.IBLDGZ)THEN
               ICON=IPCON
               XMDR=PCONDR(ICON)
             ENDIF
@@ -3258,7 +3260,8 @@ C pro rata temperature control.
       TEMPLO=(SCALEF*TEMPLO)+OFFSET
       TEMPAV=(SCALEF*TEMPAV)+OFFSET
       TEMPWT=(SCALEF*TEMPWT)+OFFSET
-C Debug...
+
+C Debug.
 C      write(6,*) '*OFFSET,SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT',OFFSET,
 C     & SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT
 
@@ -5085,6 +5088,7 @@ C if 0 for a wetted surface 1 for a swiming pool.
 
       SUBROUTINE BCL20
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -5103,12 +5107,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-
-
 C In support of ZRH calculations.
       common/concoe/hcip(mcom,ms),hcif(mcom,ms),hcop(mcom,ms),
      &              hcof(mcom,ms)
@@ -5119,6 +5117,7 @@ C Evaporation common block for use in MZVAPC.
 
       CHARACTER OUTS*124
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical unixok
 
 C Fatal error test.
 c      IF((BMISCD(ICF,IDTYP,IPER,1).NE.1.0).OR.
@@ -5189,7 +5188,7 @@ C Use zone moisture content (xi), x at saturation to evaluate Ev.
 C Read in surface details and calculate the area weighted radiant temperature. 
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
+          call georead(ifil+1,lgeom(icomp),icomp,0,itu,ier)
         else
           call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
         endif
@@ -5202,7 +5201,7 @@ C Read in surface details and calculate the area weighted radiant temperature.
   20    continue
         tsurf=tsurf/atot
 
-C     Pool basin energy balance:
+C Pool basin energy balance:
         Qconv=alpha*Abas*(Tbas-TD)
         Qrad=alphar*Abas*(Tbas-Tsurf)
         Fevap=Ev
@@ -5219,7 +5218,8 @@ C rest of the building model.
       endif
 
 C Dump output
-      if(mode.eq.1)then
+      call isunix(unixok)
+      if(mode.eq.1.and.unixok)then
         write(6,*) ' Pool balance '
         write(6,*) ' t       ',IHRF,' (h)'
         write(6,*) ' Tair    ',TD,' (C)'
@@ -5666,8 +5666,8 @@ C seems that is always set to 2 (and it is also used in few other places as 2).
       CSP=VAL(COLUMNSETP)
         
 C Debug.
-c       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
-c     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+C       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
+C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
       
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
 
@@ -5973,6 +5973,7 @@ C ICALL = 2 signals call from solar with request for alternative props.
 
       subroutine bcl99(ICALL)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -6009,11 +6010,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       common/prec12/ei(mcom,ms),ee(mcom,ms),ai(mcom,ms),ae(mcom,ms)
       COMMON/PREC14/emarea(MCOM)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -6063,7 +6059,7 @@ C << of 3 surface to change will have to be increased!        >>
       newgeo=.false.  ! assume older format geometry.
       
 C Debug...
-C      write (6,*) 'BCL 99 ',btimef
+C      write(6,*) 'BCL 99 ',btimef
       
 C If called from solar.F then use the data in common/BSCTL/ otherwise
 C use data in normal ctl common blocks.
@@ -6145,11 +6141,13 @@ C Find version of materials database. If 1.1 then use material arrays.
         call eclose(matver,1.1,0.01,closemat)
       
 C Reset properties by reading in zone descriptor files.
-        write (6,*)'Resetting tp properties at btimef ',btimef
+
+C Debug.
+C        write(6,*)'Resetting tp properties at btimef ',btimef
 
         call eclose(gversion(ICMP),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         else
           call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
         endif
@@ -6163,7 +6161,7 @@ C Read in the thermophysical properties for this zone
 C (needed in subroutine mzcoe1).
         call eclose(gversion(ICMP),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         else
           call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
         endif
@@ -6187,8 +6185,10 @@ C ii represents the surface to update.
 C ic represents the mlc entry number of the new construction.
 C ic is tested for zero in solar.F
           ic = mldbp(icnsub)
-C        write (6,*) 'Updating thermophysical properties of surface ',ii
-C        write (6,*) 'with construction ',DESC(ic)' at btimef ',btimef
+
+C Debug.
+C        write(6,*) 'Updating thermophysical properties of surface ',ii
+C        write(6,*) 'with construction ',DESC(ic)' at btimef ',btimef
 
 C Put the composite db info into current surface attributes
 C common.  Gather information about each layer. Read in the

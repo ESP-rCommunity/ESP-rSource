@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -30,6 +30,8 @@ C This version uses generic databases.
       SUBROUTINE EMKCFGG(act,IER)
 
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "uncertainty.h"
@@ -53,24 +55,10 @@ C ICLIM,LCLIM (for climate file)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
-      COMMON/C4/XLAT,XLON
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -229,12 +217,11 @@ C Generic databases from esprdbfile.h.
 
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
-      CHARACTER*72 LCFGF,LCNN
+      CHARACTER LCFGF*72
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72,LTDF*72,LTDFA*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
@@ -412,14 +399,16 @@ C Begin writing the file.
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)
 
-      WRITE(IFCFG,800,IOSTAT=IOS,ERR=2) XLAT,XLON
+      WRITE(IFCFG,800,IOSTAT=IOS,ERR=2) sitelat,sitelongdif
  800  FORMAT(F7.3,2X,F7.3,
      &  '   # Latitude & Longitude (diff from meridian)')
 
-      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) IXPOS,GREF
+      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) siteexposureindex,groundrefl
 8001  FORMAT(I7,2X,F6.3,'   # Site exposure & ground reflectivity')
-      IF(IXPOS.EQ.8)WRITE(IFCFG,'(3F8.3,A)',IOSTAT=IOS,ERR=2)
-     &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
+      IF(siteexposureindex.EQ.8)
+     &  WRITE(IFCFG,'(3F8.3,A)',IOSTAT=IOS,ERR=2)
+     &    skyview,groundview,buildingview,
+     &    '   # views to sky ground buildings'
 
 C Write databases related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* DATABASES'
@@ -771,7 +760,8 @@ C 3D ground files.
 
 C If registration.
       if(INDCFG.EQ.0)then
-        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) LSNAM(1:lnblnk(LSNAM))
+        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
+     &    modeltitle(1:lnblnk(modeltitle))
         goto 9028
       endif
 
@@ -779,7 +769,8 @@ C If plant only jump.
       IF(INDCFG.EQ.2)GOTO 9021
 
 C Fabric portion of description.
-      WRITE(IFCFG,5006,IOSTAT=IOS,ERR=2) LSNAM(1:lnblnk(LSNAM))
+      WRITE(IFCFG,5006,IOSTAT=IOS,ERR=2) 
+     &  modeltitle(1:lnblnk(modeltitle))
  5006 FORMAT('* Building',/,A)
 
       WRITE(IFCFG,'(I7,A)',IOSTAT=IOS,ERR=2) NCOMP,'  # no of zones'
@@ -1081,11 +1072,16 @@ C CEN 13791 boundary condition.
       END
 
 C ****** Scan and report current mis-matches.
-      subroutine ckcurmatch(prob,iprob,ier)
+      subroutine ckcurmatch(prob,iprob)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/c20.
 #include "geometry.h"
+
+C Parameters
+      logical prob  ! true if there is a problem
+      integer iprob ! number of mis-matches detected
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1097,12 +1093,7 @@ C geometry.h provides commons G0/G2/c20.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      logical prob,dup,first
+      logical dup,first
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78
@@ -1115,7 +1106,7 @@ C geometry.h provides commons G0/G2/c20.
       do 287 IZ=1,NCOMP
         call eclose(gversion(iz),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
         else
           CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
         endif

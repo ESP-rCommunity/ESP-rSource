@@ -49,7 +49,7 @@ no flow control description supplied
      1  # No. of periods in day
     1    2   0.000  # ctl type (dry bulb > flow), law (range setpoints: low 19.10 mid 21.00 high 26.00 actuation ranges: low (< low sp) 0.10 mid (>mid sp) 1.50 high (>high sp) 0.10.), starting @
       6.  # No. of data items
-  19.100 21.000 26.000 0.100 1.500 0.100
+  19.10000 21.00000 26.00000 0.10000 1.50000 0.10000
 * Control mass
 # senses node (1) manager_a
    -4    1    0    0  # sensor data
@@ -60,7 +60,7 @@ no flow control description supplied
      1  # No. of periods in day
     1    2   0.000  # ctl type (dry bulb > flow), law (range setpoints: low 19.10 mid 21.00 high 26.00 actuation ranges: low (< low sp) 0.10 mid (>mid sp) 1.50 high (>high sp) 0.10.), starting @
       6.  # No. of data items
-  19.100 21.000 26.000 0.100 1.500 0.100
+  19.10000 21.00000 26.00000 0.10000 1.50000 0.10000
 * Control mass
 # senses node (2) manager_b
    -4    2    0    0  # sensor data
@@ -71,7 +71,7 @@ no flow control description supplied
      1  # No. of periods in day
     1    2   0.000  # ctl type (dry bulb > flow), law (range setpoints: low 19.10 mid 21.00 high 26.00 actuation ranges: low (< low sp) 0.10 mid (>mid sp) 1.50 high (>high sp) 0.10.), starting @
       6.  # No. of data items
-  19.100 21.000 26.000 0.100 1.500 0.100
+  19.10000 21.00000 26.00000 0.10000 1.50000 0.10000
 * Control mass
 # senses node (2) manager_b
    -4    2    0    0  # sensor data
@@ -82,4 +82,4 @@ no flow control description supplied
      1  # No. of periods in day
     1    2   0.000  # ctl type (dry bulb > flow), law (range setpoints: low 19.10 mid 21.00 high 26.00 actuation ranges: low (< low sp) 0.10 mid (>mid sp) 1.50 high (>high sp) 0.10.), starting @
       6.  # No. of data items
-  19.100 21.000 26.000 0.100 1.500 0.100
+  19.10000 21.00000 26.00000 0.10000 1.50000 0.10000

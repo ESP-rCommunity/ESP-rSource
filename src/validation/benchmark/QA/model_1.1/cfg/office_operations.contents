@@ -1,36 +1,87 @@
 Synopsis
  
 This is a synopsis of the model Model to compare operational infil & vent and
-with controls defined in office_operations.cfg generated on Tue Jun 26
-17:59:22 2007. Notes associated with the model are in office_operations.log
+with controls defined in office_operations.cfg generated on Wed Jul 22
+17:25:01 2009. Notes associated with the model are in office_operations.log
  
 The model is located at latitude   38.10 with a longitude difference of  -1.90
 from the local time meridian. The year used in simulations is 2000 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-The climate used is: Palermo Italy IWEC 164050 and is held in:
-/usr/esru/esp-r/climate/ita_palermo_iwec and uses hour centred solar data.
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
  
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+The climate is: Palermo Italy IWEC 164050 and is held in:
+/usr/esru/esp-r/climate/ita_palermo_iwec with hour centred solar data.
 An Integrated Performance View has been defined:
-And the IPV file was incomplete or missing.
+Title : Model to compare operational infil & ven
+Version   : Version office_operations
+synopsis:
+:The office_operations  - run for initial portion of May
+Images    :   0
+ 
+Simulations to be undertaken:
+____simulations ( 1)____________days descrip___
+annual Wed-03-May to Tue-09-May   7 office_operations annual run
+ 
+display day Tue-02-May.
+display day Wed-03-May.
+display day Thu-04-May.
+ 
+Seasons (as found in climatelist file):
+         winter  spring  summer  autumn  winter
+  start  01-Jan  26-Feb  14-May  08-Oct  26-Nov
+  finish 25-Feb  13-May  07-Oct  25-Nov  31-Dec
+  days     56       77     147      49      36
+ 
+Ratios between assessments and all seasons:
+ heating       1.00
+ cooling       1.00
+ lighting      1.00
+ small power   1.00
+ fans&pumps    1.00
+ DHW           1.00
+ 
+Metric                zones area scaling weight  type name
+ 1 Resultant T (degC)    4   54.00 1.000 1.000 comfort ocup_zones
+Zones: manager man_opr_inf man_opr_wind man_tmpr_inf
+ 2 Total casual gn (W)    4   54.00 1.000 1.000 TotCasG cas_zones
+Zones: manager man_opr_inf man_opr_wind man_tmpr_inf
+ 
+Demand set,  nb zones, floor area, scaling factor
+ 1 zones          4   54.00 1.000
+Zones: manager man_opr_inf man_opr_wind man_tmpr_inf
+ 
  
 Temporal data is available for this model.
  
  Temporal entities currently used...
   ________________________________
   |temporal    |generic |associated
-  |entity name |type    |with
- 1 infiltration ZIVENTT   man_tmpr_inf
+ 1 infiltration ZIVENTT       man_tmpr_inf
  
  
 Databases associated with the model:
- pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ pressure distributions : pressc.db1
  materials              : /usr/esru/esp-r/databases/material.db3.a
  constructions          : ../dbs/office_operations_constr.db2
- plant components       : /usr/esru/esp-r/databases/plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1
- optical properties     : /usr/esru/esp-r/databases/optics.db2
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
  
  ____________________________________________________________
  
@@ -75,43 +126,57 @@ ID Zone         Volume|          Surface
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager describes cellular office
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.173 & UA of 0.63593
+ Outside walls are 27.259 % of floor area & avg U of 0.307 & UA of 1.1280
  Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
  
  A summary of the surfaces in manager( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  13.5     90.   0. pt_general   OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  2  0.960   360.   0. part_frame   OPAQ VERT insul_frame  ||< identical environment
-  3  3.00      0.   0. door         OPAQ VERT door         ||< identical environment
-  4  13.5    270.   0. pt_other     OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  5  13.5      0.  90. ceiling      OPAQ CEIL ceiling      ||< identical environment
-  6  13.5      0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  7  2.30    180.   0. spandral     OPAQ VERT extern_wall  ||< external
-  8  0.400   180.   0. vent         OPAQ VERT insul_frame  ||< external
-  9  0.980   180.   0. frame        OPAQ VERT insul_frame  ||< external
- 10  5.32    180.   0. glazing      TRAN VERT dbl_glz      ||< external
- 11  5.04      0.   0. part_glaz    TRAN VERT dbl_glz      ||< identical environment
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.30    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.400   180.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
+  9  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+ 10  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 11  5.04    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
+ 
+ Air schedule notes:
+one person typical office pattern ramping up from 7-9am weekdays and
+saturdays. No lights or small power included.
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekdays     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
  
 Notes:
 one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included.
- Number of Weekday Sat Sun casual gains=  7  7  0
+Number of weekdays     casual gains=  7
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
@@ -121,13 +186,17 @@ Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
 Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
 Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
 Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Sat  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Sat  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Sat  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Sat  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Sat  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  0
  
  ____________________________________________________________
  
@@ -136,30 +205,37 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  area of 72.0m^2 & approx floor area of 13.5m^2
  man_opr_inf is an office with temp controlled infiltration
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.173 & UA of 0.63593
+ Outside walls are 27.259 % of floor area & avg U of 0.307 & UA of 1.1280
  Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
  
  A summary of the surfaces in man_opr_inf( 2) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  13.5     90.   0. pt_general   OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  2  0.960   360.   0. part_frame   OPAQ VERT insul_frame  ||< identical environment
-  3  3.00      0.   0. door         OPAQ VERT door         ||< identical environment
-  4  13.5    270.   0. pt_other     OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  5  13.5      0.  90. ceiling      OPAQ CEIL ceiling      ||< identical environment
-  6  13.5      0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  7  2.30    180.   0. spandral     OPAQ VERT extern_wall  ||< external
-  8  0.400   180.   0. vent         OPAQ VERT insul_frame  ||< external
-  9  0.980   180.   0. frame        OPAQ VERT insul_frame  ||< external
- 10  5.32    180.   0. glazing      TRAN VERT dbl_glz      ||< external
- 11  5.04      0.   0. part_glaz    TRAN VERT dbl_glz      ||< identical environment
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.30    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.400   180.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
+  9  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+ 10  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 11  5.04    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
+ 
+ Air schedule notes:
+one person typical office pattern ramping up from 7-9am weekdays and
+saturdays. No lights or small power included. Use temperature ctl of
+infiltration - 1ach at 21C
  Control: infil only: zone temp
  Lower/Middle/High temp setpoints:   19.00  21.00  23.00
                     Infil. ac/h m^3/s  Vent. ac/h m^3/s  from  data
@@ -167,18 +243,26 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  Middle range data    1.000  0.0113     0.000  0.0000    0     0.000
  High range data      2.000  0.0225     0.000  0.0000    0     0.000
  
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekdays     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
  
 Notes:
 one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included. Use temperature ctl of
 infiltration - 1ach at 21C
- Number of Weekday Sat Sun casual gains=  7  7  0
+Number of weekdays     casual gains=  7
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
@@ -188,13 +272,17 @@ Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
 Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
 Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
 Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Sat  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Sat  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Sat  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Sat  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Sat  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  0
  
  ____________________________________________________________
  
@@ -203,30 +291,37 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  area of 72.0m^2 & approx floor area of 13.5m^2
  man_opr_wind is an office with opertions wind pressure infilr
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.173 & UA of 0.63593
+ Outside walls are 27.259 % of floor area & avg U of 0.307 & UA of 1.1280
  Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
  
  A summary of the surfaces in man_opr_wind( 3) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  13.5     90.   0. pt_general   OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  2  0.960   360.   0. part_frame   OPAQ VERT insul_frame  ||< identical environment
-  3  3.00      0.   0. door         OPAQ VERT door         ||< identical environment
-  4  13.5    270.   0. pt_other     OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  5  13.5      0.  90. ceiling      OPAQ CEIL ceiling      ||< identical environment
-  6  13.5      0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  7  2.30    180.   0. spandral     OPAQ VERT extern_wall  ||< external
-  8  0.400   180.   0. vent         OPAQ VERT insul_frame  ||< external
-  9  0.980   180.   0. frame        OPAQ VERT insul_frame  ||< external
- 10  5.32    180.   0. glazing      TRAN VERT dbl_glz      ||< external
- 11  5.04      0.   0. part_glaz    TRAN VERT dbl_glz      ||< identical environment
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.30    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.400   180.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
+  9  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+ 10  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 11  5.04    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
+ 
+ Air schedule notes:
+one person typical office pattern ramping up from 7-9am weekdays and
+saturdays. No lights or small power included. Infil is sensitive to
+wind speed - 0.1ach <1ms, 1ach >3ms, 2ach >4ms.
  Control: vent only: wind speed
  Lower/Middle/High temp setpoints:    1.00   3.00   4.00
                     Infil. ac/h m^3/s  Vent. ac/h m^3/s  from  data
@@ -234,18 +329,26 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  Middle range data    1.000  0.0113     0.000  0.0000    0     0.000
  High range data      2.000  0.0225     0.000  0.0000    0     0.000
  
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekdays     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
  
 Notes:
 one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included. Infil is sensitive to
 wind speed - 0.1ach <1ms, 1ach >3ms, 2ach >4ms.
- Number of Weekday Sat Sun casual gains=  7  7  0
+Number of weekdays     casual gains=  7
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
@@ -255,13 +358,17 @@ Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
 Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
 Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
 Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Sat  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Sat  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Sat  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Sat  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Sat  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  0
  
  ____________________________________________________________
  
@@ -270,43 +377,57 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  area of 72.0m^2 & approx floor area of 13.5m^2
  man_tmpr_inf is an office with infiltration via temporal file
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.173 & UA of 0.63593
+ Outside walls are 27.259 % of floor area & avg U of 0.307 & UA of 1.1280
  Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
  
  A summary of the surfaces in man_tmpr_inf( 4) follows:
  
- Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
-    | m^2   |deg |deg | name       |type|loc| name         |other side
-  1  13.5     90.   0. pt_general   OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  2  0.960   360.   0. part_frame   OPAQ VERT insul_frame  ||< identical environment
-  3  3.00      0.   0. door         OPAQ VERT door         ||< identical environment
-  4  13.5    270.   0. pt_other     OPAQ VERT gyp_gyp_ptn  ||< identical environment
-  5  13.5      0.  90. ceiling      OPAQ CEIL ceiling      ||< identical environment
-  6  13.5      0. -90. floor        OPAQ FLOR susp_flr_re  ||< identical environment
-  7  2.30    180.   0. spandral     OPAQ VERT extern_wall  ||< external
-  8  0.400   180.   0. vent         OPAQ VERT insul_frame  ||< external
-  9  0.980   180.   0. frame        OPAQ VERT insul_frame  ||< external
- 10  5.32    180.   0. glazing      TRAN VERT dbl_glz      ||< external
- 11  5.04      0.   0. part_glaz    TRAN VERT dbl_glz      ||< identical environment
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  2  0.960   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< identical environment
+  3  3.00      0.   0. door         OPAQUE   VERT -     door         ||< identical environment
+  4  13.5    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.30    180.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  8  0.400   180.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
+  9  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+ 10  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 11  5.04    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< identical environment
  
  
- All surfaces will receive diffuse insolation.
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
  
+ 
+ Air schedule notes:
+one person typical office pattern ramping up from 7-9am weekdays and
+saturdays. No lights or small power included.
  Control: no control of air flow
  
- Number of Weekday Sat Sun air change periods =  1  1  1
-     Period   Infiltration   Ventilation     From Source
-     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-Wkd  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sat  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
-Sun  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+Number of air change periods for daytype weekdays     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     0.33  0.0037    0.00  0.0000   0     0.00
  
 Notes:
 one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included.
- Number of Weekday Sat Sun casual gains=  7  7  0
+Number of weekdays     casual gains=  7
 Day Gain Type     Period Sensible  Latent     Radiant    Convec
     No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
@@ -316,13 +437,17 @@ Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
 Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
 Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
 Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Sat  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Sat  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Sat  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Sat  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Sat  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Sat  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
+Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
+Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
+Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
+Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
+Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  0
  
  ____________________________________________________________
  
@@ -330,11 +455,23 @@ Sat  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
  Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
  There is 36.000m2 of outside surface area, 36.000m2 of which is vertical.
  
- Outside walls are 27.259 % of floor area & avg U of 0.173 & UA of 2.5437
+ Outside walls are 27.259 % of floor area & avg U of 0.307 & UA of 4.5121
  Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 59.811
  
  ____________________________________________________________
  Multi-layer constructions used:
+ 
+ Details of opaque construction: extern_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 lt brown brick : Light brown brick
+    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
+ Total area of extern_wall is      9.20
  
  Details of opaque construction: insul_frame
  

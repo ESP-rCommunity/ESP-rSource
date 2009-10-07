@@ -36,6 +36,8 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDACONN(IER)
 #include "epara.h"
 #include "building.h"
+#include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -48,14 +50,8 @@ C geometry.h provides commons G0 and G2.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/ground/grdtmp(12,mgrdp)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -202,7 +198,7 @@ C Remember the topology attributes for reference zone.
         IUO=IFIL+1
         call eclose(gversion(IC1(IFOC)),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
+          call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
         else
           call egomin(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
         endif
@@ -592,7 +588,7 @@ C Update zone geometry if attributes have changed.
           call usrmsg(' Updating problem...',' ','-')
           call eclose(gversion(IC1(IFOC)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
+            call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
           else
             call egomin(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
           endif
@@ -613,7 +609,7 @@ C Update zone geometry if attributes have changed.
           if(newgeo)then
             call geowrite(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),iuout,3,IER)
           else
-            call emkgeo(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),iuout,3,IER)
+            call emkgeo(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),3,IER)
           endif
           IF(IER.NE.0)CALL USRMSG(' ',
      &           ' Problem updating surface attribute...','W')
@@ -626,7 +622,7 @@ C other zone) and write out that zones geometry.
           call usrmsg(' Updating other side...',' ','-')
           call eclose(gversion(IC2(IFOC)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,0,iuout,IER)
+            call georead(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,iuout,IER)
           else
             call egomin(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,0,iuout,IER)
           endif
@@ -644,7 +640,7 @@ C other zone) and write out that zones geometry.
           if(newgeo)then
             call geowrite(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),iuout,3,IER)
           else
-            call emkgeo(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),iuout,3,IER)
+            call emkgeo(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),3,IER)
           endif
           IF(IER.NE.0)CALL USRMSG(' ',
      &           ' Problem updating other surface attribute...','W')
@@ -783,8 +779,8 @@ C         ALPHA is measured from the X axis on the XY plane.
 C         THETA is measured from the XY plane.
       SUBROUTINE SFCRNR(DACC,IZN, JSURF, NAPICS, COORD)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION COORD(MV,3)
 

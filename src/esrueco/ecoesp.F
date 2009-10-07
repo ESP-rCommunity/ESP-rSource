@@ -528,7 +528,7 @@ C Add an element, initiate it to the values of last element in class.
               EE(ILNE)=EE(NE)
               EA(ILNE)=EA(NE)
               EDRV(ILNE)=EDRV(NE)
-              CALL EDPELEM(iuout,EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
+              CALL EDPELEM(EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
      &           EE(ILNE),EA(ILNE),EDRV(ILNE),ENAM(ILNE),IER) 
               NE=NE+1
               MODDB=.TRUE.
@@ -546,7 +546,7 @@ C Add an element, initiate it to the values of last element in class.
 
 C Identified one of the elements to edit or select.
           IFOC=INO-7
-          CALL EDPELEM(iuout,EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
+          CALL EDPELEM(EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
      &               EE(IFOC),EA(IFOC),EDRV(IFOC),ENAM(IFOC),IER) 
           if(ACTION.eq.'M')then
             MODDB=.TRUE.
@@ -635,10 +635,10 @@ C Also check to see if the file has correct info.
           goto 139  !  a binary file found so carry on.
         endif
  1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
         if(ier.eq.-2)then
           ier=0
-          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
           if(ier.ne.0)then
             call usrmsg('No readable materials database was found',
      &                  'or file was corrupt','W')
@@ -801,6 +801,7 @@ C length : Length of zdescr
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       CHARACTER zdescr*80,outs*244,outsd*80
+      logical unixok
 
       length=0
       do 42 i=1,nzg
@@ -829,8 +830,12 @@ C length : Length of zdescr
         return
       endif
 
-   1  write(6,*) 'ZLIST: error writing zone names: ',outs
+C Trap for I/O error.
+ 1    call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      write(6,*) 'ZLIST: error writing zone names: ',outs
       ierr=1
+      
       return
       END
 
@@ -841,6 +846,7 @@ C Icomp : Zone number
 C Iskip : If = 0, then skip the list of surfaces menu
       SUBROUTINE ZoneDisp(icomp, iskip)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 
@@ -852,15 +858,12 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/Displ/SelSurf(MCON)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
 
       DIMENSION VERT(35)
@@ -882,7 +885,7 @@ C Read geometry file for chosen zone.
       itru=6
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
       else
         call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
       endif
@@ -900,7 +903,7 @@ C Multi-page list
       call edisp(iuout,'Please select surfaces to include in analysis.')
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
       vol(icomp)=zvol
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       OPQ=0.
@@ -1438,6 +1441,7 @@ C
 
       SUBROUTINE LCAcalc(itrc,Ichanel)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
@@ -1463,14 +1467,13 @@ C
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+
+C << Why is SDATA used? >>
+      real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
@@ -1965,11 +1968,11 @@ C If approach is model based, read the current zone information
           ICurZone=nznog(IZ)
           call eclose(gversion(ICurZone),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
           endif
-          call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
+          call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
           vol(ICurZone)=zvol
           context=.false.
         ENDIF
@@ -2483,6 +2486,7 @@ C phylosophy as LCACalc
 
       SUBROUTINE LCADet(itrc,Ichanel)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "LCA.h"
 #include "esprdbfile.h"
@@ -2508,14 +2512,11 @@ C phylosophy as LCACalc
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      real sna,pazi,pelv
       COMMON/SDATA/SNA(MS),PAZI(MS),PELV(MS)
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
 
@@ -3139,13 +3140,13 @@ C If approach is model based, read the current zone information
             ICurZone=nznog(IZ)
             call eclose(gversion(ICurZone),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,
+              call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,
      &          IER)
             else
               call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,
      &          IER)
             endif
-            call ZINFO(Ichanel,SNA,ZOA,PAZI,PELV,ZVOL)
+            call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
             vol(ICurZone)=zvol
             context=.false.
           ENDIF

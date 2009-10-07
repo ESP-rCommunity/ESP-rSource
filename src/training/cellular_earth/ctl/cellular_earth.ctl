@@ -49,7 +49,7 @@ Range based flow control for extract fans. Low flow if heating or n cooling is o
      1  # No. of periods in day
     1    2   0.000  # ctl type (dry bulb > flow), law (range setpoints: low 19.50 mid 22.00 high 23.90 actuation ranges: low (< low sp) 0.10 mid (>mid sp) 1.50 high (>high sp) 0.10.), starting @
       6.  # No. of data items
-  19.500 22.000 23.900 0.100 1.500 0.100
+  19.50000 22.00000 23.90000 0.10000 1.50000 0.10000
 * Control mass
 # senses node (2) manager_b
    -4    2    0    0  # sensor data
@@ -60,4 +60,4 @@ Range based flow control for extract fans. Low flow if heating or n cooling is o
      1  # No. of periods in day
     1    2   0.000  # ctl type (dry bulb > flow), law (range setpoints: low 19.50 mid 22.00 high 23.90 actuation ranges: low (< low sp) 0.10 mid (>mid sp) 1.50 high (>high sp) 0.10.), starting @
       6.  # No. of data items
-  19.500 22.000 23.900 0.100 1.500 0.100
+  19.50000 22.00000 23.90000 0.10000 1.50000 0.10000

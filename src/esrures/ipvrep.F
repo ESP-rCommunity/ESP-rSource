@@ -33,6 +33,7 @@ C *********** ipvrep
 C Write IPV report based on description held in common.
       subroutine ipvrep(iier)
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "ipvdata.h"
@@ -47,7 +48,6 @@ C Write IPV report based on description held in common.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C4/XLAT,XLON
       COMMON/CLMDT1/CLMLOC
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/BL1/dmdsdesc,bdmds
@@ -505,9 +505,9 @@ C Open the climate file and get its location name.
         CALL  ERPFREE(IUNITC,ISTAT)
         write(outs,'(a,a1,a)') '*climate',tab,CLMLOC
         call edisp(itru,outs)
-        write(outs,'(a,a1,f6.2)') '*latitude',tab,XLAT
+        write(outs,'(a,a1,f6.2)') '*latitude',tab,sitelat
         call edisp(itru,outs)
-        write(outs,'(a,a1,f6.2)') '*longitude',tab,XLON
+        write(outs,'(a,a1,f6.2)') '*longitude',tab,sitelongdif
         call edisp(itru,outs)
 
 C Write synopsis out as one long string.
@@ -1517,7 +1517,10 @@ C If PV included take the largest floor area in the dmdfla.
           if(pvok)then
             pvfla=AMAX1(pvfla,dmdfla(1),dmdfla(2),dmdfla(3),dmdfla(4),
      &            dmdfla(5),dmdfla(6),dmdfla(7))
+
+C Debug.
 C            write(6,*) 'pvfloor area is ',pvfla
+
           endif
 
 C Clear edput array.
@@ -2360,7 +2363,7 @@ C Write emissions performance data from the intermediate file.
       tsmlpw = tsmlpw *pcnvsp
       tdhw = tdhw *pcnvhw
 
-C Debug...
+C Debug.
 C      write(6,*) 'the hce tlight tpumps tsmlpw tdhw ',the,tce,tlight,
 C     &  tpumps,tsmlpw,tdhw
 
@@ -3166,7 +3169,10 @@ C Set separator as in rest of seasonal report.
       if(pvok)then
         pvfla=AMAX1(pvfla,dmdfla(1),dmdfla(2),dmdfla(3),dmdfla(4),
      &              dmdfla(5),dmdfla(6),dmdfla(7))
+
+C Debug.
 C       write(6,*) 'pvfloor area is ',pvfla
+
       endif
 
 C Set the recovery period to match seasonal report.
@@ -3700,14 +3706,18 @@ C Position pointer at the start of the relevant assessment.
         K=11
         CALL EGETWI(OUTSTR,K,id1,1,5,'W','assessment nb',IIER)
         if(id1.eq.index)then
-C Debug...
+
+C Debug.
 C          write(6,*) 'at line number ',line
+
           atassment=.true.
           return
         else
           line=line+1
-C Debug...
+
+C Debug.
 C          write(6,*) 'skipping assessment at line number ',line
+
           goto 143
         endif
       else
