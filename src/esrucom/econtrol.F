@@ -1961,6 +1961,8 @@ C control file sensors, actuator, control types, control laws.
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -1973,12 +1975,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       CHARACTER SSTR*96,SSTRB*48
       CHARACTER WHICH*1,ZN*12

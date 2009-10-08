@@ -1,5 +1,5 @@
 *connections  for elsa
-*Date Tue Dec 23 10:16:09 2008
+*Date Fri Oct  2 08:36:09 2009
      74   # number of connections
    1   1   0   0   0  #    1 Surf-1 in factory_area is External
    1   2   0   0   0  #    2 Surf-2 in factory_area is External

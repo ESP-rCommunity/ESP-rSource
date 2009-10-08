@@ -41,6 +41,7 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -55,12 +56,6 @@ C ICLIM,LCLIM (for climate file)
 
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -103,29 +98,9 @@ C Simulation parameter presets.
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
 
       character GDESCR*36
       CHARACTER NAM*72,TITL*72,outs*124,h*72
@@ -575,6 +550,9 @@ C the overall construction and for single glazing this will the
 C the same for EnergyPlus. For multiple layers the data is not
 C quite correct. Assume that visible reflection is based on
 C visible trans and solar absorb.
+
+C << to be done - use if IPRMAT >>
+
         WRITE(OPT,'(A)') DESC(INO)(21:32)
         if(opt(1:6).eq.'OPAQUE')then
           continue
@@ -676,7 +654,8 @@ C Now, for each unique material write description.
       WRITE(ioout,'(a)') ' '
       WRITE(ioout,'(a)') '!- ======= MATERIAL ======'
 
-      call eclose(matver,1.1,0.01,closemat)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
       do 25 iy = 1,nmat
         if(iprndx(iy).gt.0)then
           WRITE(ioout,'(a)',iostat=ios,err=3) ' '
@@ -686,18 +665,26 @@ C Now, for each unique material write description.
             WRITE(ioout,'(2a)',iostat=ios,err=3) 
      &        'MATERIAL:WINDOWGLASS',com
           endif
-          if(closemat)then
+          if(closemat1.or.closemat2)then
             legmat=iprndx(iy)   ! which legacy index
             if(legmat.ge.0)then
               matarrayindex=mathash(legmat)  ! find matching array index
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+              if(matarrayindex.eq.0)then
+                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                E=0.99; A=0.99; DRV=1.0
+                TITL='GAPS'; NAM='AIR'
+              else
+                DBCON=matdbcon(matarrayindex)
+                DBDEN=matdbden(matarrayindex)
+                DBSHT=matdbsht(matarrayindex)
+                E=matdbine(matarrayindex)
+                A=matdbina(matarrayindex)
+                DRV=matdbdrv(matarrayindex)
+                write(TITL,'(a)') 'placeholder'
+                write(NAM,'(a)') matname(matarrayindex)(1:32)
+              endif
             endif
           else
             CALL ERPCDB(IFMAT,iprndx(iy),ITRU,IER,DBCON,DBDEN,
