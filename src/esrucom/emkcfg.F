@@ -29,6 +29,8 @@ C common blocks into the file and unit specified in COMMON/C21.
       SUBROUTINE EMKCFG(act_1,IER)
 
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "uncertainty.h"
@@ -61,23 +63,9 @@ C provides LRADCF
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -263,12 +251,11 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
 
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
-      CHARACTER*72 LCFGF,LCNN
+      CHARACTER LCFGF*72
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72,LTDF*72,LTDFA*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER ctldoc*248,LCTLF*72,H*72
       CHARACTER spflnam*72,entflnam*72
@@ -467,14 +454,16 @@ C Begin writing the file with version number in the header.
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)
 
-      WRITE(IFCFG,800,IOSTAT=IOS,ERR=2) XLAT,XLON
+      WRITE(IFCFG,800,IOSTAT=IOS,ERR=2) sitelat,sitelongdif
  800  FORMAT(F7.3,2X,F7.3,
-     &  '   # Latitude & Longitude (diff from meridian)')
+     &  '   # Latitude & Longitude (diff from time meridian)')
 
-      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) IXPOS,GREF
+      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) siteexposureindex,groundrefl
 8001  FORMAT(I7,2X,F6.3,'   # Site exposure & ground reflectivity')
-      IF(IXPOS.EQ.8)WRITE(IFCFG,'(3F8.3,A)',IOSTAT=IOS,ERR=2)
-     &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
+      IF(siteexposureindex.EQ.8)
+     &  WRITE(IFCFG,'(3F8.3,A)',IOSTAT=IOS,ERR=2)
+     &    skyview,groundview,buildingview,
+     &    '   # views to sky ground buildings'
 
 C Write databases related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* DATABASES'
@@ -502,29 +491,30 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdprs  ',
      &      LAPRES(1:lnblnk(LAPRES))
       endif
-C      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
-C     &      LAPRES(1:lnblnk(LAPRES))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
+      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
 
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
-      IF(ITGREF.NE.1) WRITE(IFCFG,803) '*gref ',ITGREF,
-     &      (GREF12(I),I=1,12),SREF
+      IF(groundreflmodel.NE.1) WRITE(IFCFG,803) '*gref ',
+     &   groundreflmodel,(groundreflmonth(I),I=1,12),snowgroundrefl
   803 FORMAT(A,I1,13(1X,F5.3))
 
 C Number of days with snow on the ground 
 C (if ground reflectivity model 2)
-      IF(ITGREF.EQ.2) WRITE(IFCFG,805) '*snow',(NSNOW(I),I=1,12)
+      IF(groundreflmodel.EQ.2)  
+     &  WRITE(IFCFG,805) '*snow',(dayswithsnow(I),I=1,12)
   805 FORMAT(A,12(1X,I2))
 
 C Snow depth file
 C (if ground reflectivity model 3)
-      IF(ITGREF.EQ.3) WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*sndf ',
-     &      SNFNAM(1:lnblnk(SNFNAM))
+      IF(groundreflmodel.EQ.3) WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) 
+     &  '*sndf ',SNFNAM(1:lnblnk(SNFNAM))
 
 C Multiyear climate database
       if ( bMY_climates_defined ) then 
@@ -849,6 +839,7 @@ C it in the configuration file.
 C Use call mkipvdat to write into the cfg file and then clear name of
 C the external IPV file (also notify the user they can remove it).
           ipvaction='cfg'
+	  if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
           call mkipvdat(ifcfg,LCFGF,ipvaction)
           if(lnipv.eq.0)then
             continue
@@ -1123,7 +1114,8 @@ C 3D ground files.
 
 C If registration.
       if(INDCFG.EQ.0)then
-        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) LSNAM(1:lnblnk(LSNAM))
+        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
+     &    modeltitle(1:lnblnk(modeltitle))
         goto 9028
       endif
 
@@ -1131,7 +1123,8 @@ C If plant only jump.
       IF(INDCFG.EQ.2)GOTO 9021
 
 C Fabric portion of description.
-      WRITE(IFCFG,5006,IOSTAT=IOS,ERR=2) LSNAM(1:lnblnk(LSNAM))
+      WRITE(IFCFG,5006,IOSTAT=IOS,ERR=2) 
+     &  modeltitle(1:lnblnk(modeltitle))
  5006 FORMAT('* Building',/,A)
 
       WRITE(IFCFG,'(I7,A)',IOSTAT=IOS,ERR=2) NCOMP,'  # no of zones'
@@ -1305,7 +1298,8 @@ C Plant network information - plant file and model name (if plant only).
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2)LPNF(1:lnblnk(LPNF)),
      &    '  # plant network description'
         if(INDCFG.EQ.2)then
-          WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2) lsnam(1:lnblnk(lsnam))
+          WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2) 
+     &      modeltitle(1:lnblnk(modeltitle))
         endif
       endif
 
@@ -1450,9 +1444,13 @@ C CEN 13791 boundary condition.
       END
 
 C ****** Scan and report current mis-matches.
-      subroutine ckcurmatch(prob,iprob,ier)
+      subroutine ckcurmatch(prob,iprob)
 #include "building.h"
 #include "geometry.h"
+
+C Parameters
+      logical prob  ! true if there is a problem
+      integer iprob ! number of mis-matches detected
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1461,7 +1459,7 @@ C ****** Scan and report current mis-matches.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      logical prob,dup,first
+      logical dup,first
 
       CHARACTER CXSTR*78
 

@@ -392,6 +392,10 @@
 *cfg    /usr/esru/esp-r/training/cfd/displ_vent/cfg/displ_vent.cfg
 *root	/usr/esru/esp-r/training/cfd/displ_vent
 *item
+*name	... conflated within cellular office
+*cfg	/usr/esru/esp-r/training/office_dfs/cfg/office_vent_dfs_conf.cfg
+*root	/usr/esru/esp-r/training/office_dfs
+*item
 *name   IEA Annex 20, isothermal test case
 *cfg    /usr/esru/esp-r/training/cfd/IEA_A20/isotherm/cfg/dfs_iso.cfg
 *root	/usr/esru/esp-r/training/cfd/IEA_A20/isotherm

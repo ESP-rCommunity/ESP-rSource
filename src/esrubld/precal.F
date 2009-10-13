@@ -793,13 +793,12 @@ c           surface respectively
 
       SUBROUTINE MZMISC(ICOMP)
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 #include "roam.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-      COMMON/C4/XLAT,XLON
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -814,8 +813,8 @@ c           surface respectively
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
       character outs*124
 
-      SLAT=XLAT
-      SLON=XLON
+      SLAT=sitelat
+      SLON=sitelongdif
       NCONST(ICOMP)=NSUR
       DO 20 I=1,NSUR
         NELTS(ICOMP,I)=NE(I)

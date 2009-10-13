@@ -57,7 +57,10 @@ C vldfl is set in startup.F
       if(vldfl(1:2).ne.'  '.and.vldfl(1:4).ne.'UNKN')then
         INQUIRE (FILE=vldfl,EXIST=XST)
         if (.not.XST) then
-          write (6,*) vldfl
+
+C Debug.
+C          write(6,*) vldfl
+
           call edisp(iuout,'No standards list available (file missing)')
           call edisp(iuout,'returning to main menu.')
           return
@@ -257,7 +260,8 @@ C irecdata - zone and surface number for results recovery (=0 if all)
       
       logical XST,ok,dok,CLOSE,unixok
       
-C      write (6,*) 'Debug: call pars:',LVFILE,LGROUP,iflg,irpt
+C Debug.
+C      write(6,*) 'Debug: call pars:',LVFILE,LGROUP,iflg,irpt
 
       call isunix(unixok)
 
@@ -396,7 +400,10 @@ C First close file.
 C Allow model selection if IFLG=0 otherwise all models in group will be 
 C processed.
       INPIC=INM 
-      write (6,*) 'Debug: iflg: ',IFLG
+
+C Debug.
+C      write(6,*) 'Debug: iflg: ',IFLG
+
       if (IFLG.eq.0) then
         H(1)='Select one or more tests from this group.  The selection'
         H(2)='will be simulated and the results compared to the stored '
@@ -407,7 +414,9 @@ C processed.
 
 C Check models have been selected.
       if (INPIC.eq.0) then
-C        write (6,*) 'Debug: no tests were selected. '
+
+C Debug.
+C        write(6,*) 'Debug: no tests were selected. '
         return
       endif
 
@@ -539,7 +548,10 @@ C lengths.
           elseif (ncfgitem(imod).eq.2) then
             xd=simdata(imod,2,ichk)-simdata(imod,1,ichk)
           elseif (ncfgitem(imod).eq.3) then
-            write (6,*) 'Results:',(simdata(imod,ii,ichk),ii=1,3)
+
+C Debug.
+C            write(6,*) 'Results:',(simdata(imod,ii,ichk),ii=1,3)
+
             xda=simdata(imod,2,ichk)-simdata(imod,1,ichk)
             xdb=simdata(imod,3,ichk)-simdata(imod,1,ichk)
             if (abs(xda-xdb).lt.0.000001) then
@@ -667,7 +679,9 @@ C Do nothing until *output tag reached.
 C The next word on this line should match one of the required metrics 
 C in the recdesc variable.
       CALL EGETW(outstr,K,word,'-','output description',IER)
-      write (6,*) 'Reading table: ',word
+
+C Debug.
+C      write(6,*) 'Reading table: ',word
 
 C Loop through the recdesc strings and find the id of the metric in 
 C the current output table (imet).  Note there may be one or more 
@@ -680,7 +694,10 @@ C as an array of nmet natches.
         if(lr.eq.lw.and.recdesc(imod,i,1)(1:lr).eq.word(1:lr))then
           nmet=nmet+1
           imet(nmet)=i
-C          write (6,*) 'Match: ',nmet,i,recdesc(imod,i,1)
+
+C Debug.
+C          write(6,*) 'Match: ',nmet,i,recdesc(imod,i,1)
+
         endif
  10   continue
 
@@ -692,7 +709,9 @@ C Now read data for this entry.
       if (IER.ne.0) return
       K=0
       CALL EGETW(outstr,K,word,'-','report type tag',IER)
-      write (6,*) 'Reading report type: ',word
+
+C Debug.
+C      write(6,*) 'Reading report type: ',word
       
 C For a stats report read data.
       if(word(1:6).eq.'*stats')then
@@ -714,28 +733,40 @@ C result metric required, i.e. all nmet of them.  Read the line first.
  101      CALL EGETW(outstr,K,word,'-','title',IER)
           ln=lnblnk(word)
           id=id+1
-          write (6,*) 'Reading column ',id,': ',word(1:ln)
+
+C Debug.
+C          write(6,*) 'Reading column ',id,': ',word(1:ln)
           
 C Loop through all nemt here.
           do 120 im=1,nmet
-            write (6,*) 'Match? ',im,imet(im),recdesc(imod,imet(im),2)
+
+C Debug.
+C            write(6,*) 'Match? ',im,imet(im),recdesc(imod,imet(im),2)
+
             if (word(1:ln).eq.recdesc(imod,imet(im),2)(1:ln))then
               icol(im)=id
-              write (6,*) 'Column match',id
+
+C Debug.
+C              write(6,*) 'Column match',id
+
             endif
  120      continue
           if (id.lt.ND) goto 101
 
-C Debug...
-          do 122 im=1,nmet
-            write (6,*) 'Identified col ',ICOL(im),' for ',
-     &        recdesc(imod,imet(im),2),' recovery.'
- 122      continue
+C Debug.
+C          do 122 im=1,nmet
+C            write(6,*) 'Identified col ',ICOL(im),' for ',
+C     &        recdesc(imod,imet(im),2),' recovery.'
+C 122      continue
+
         elseif (word(1:5).eq.'*data') then
 
 C Scan following lines for one relating to zone irecdata(imod,imet,1), then
 C read the data in the column identified above (ICOL).
-C          write (6,*) 'data line: ',outstr(1:lnblnk(outstr))
+
+C Debug.
+C          write(6,*) 'data line: ',outstr(1:lnblnk(outstr))
+
           iv=0
           call EGETWI(outstr,K,iv,0,0,'-','iget number',IER)
           call EGETWI(outstr,K,izone,0,0,'-','zone number',IER)
@@ -743,8 +774,10 @@ C          write (6,*) 'data line: ',outstr(1:lnblnk(outstr))
           
 C Loop through all nmet possibilities.
           do 130 im=1,nmet
-C            write (6,*) 'data zone: ',izone,irecdata(imod,imet(im),1)
-C            write (6,*) 'data surf: ',isurf,irecdata(imod,imet(im),2)
+
+C Debug.
+C            write(6,*) 'data zone: ',izone,irecdata(imod,imet(im),1)
+C            write(6,*) 'data surf: ',isurf,irecdata(imod,imet(im),2)
           
 C If zone and surface (=0 surface not important) match the requested 
 C ones (in irecdata) then read the correct columns data.
@@ -753,7 +786,10 @@ C ones (in irecdata) then read the correct columns data.
               CALL STRIPC(idispfl,outstr,0,ND,0,'stats:data',IER)
               if (IER.ne.0) return
               K=0
-C              write (6,*) 'result line: ',outstr(1:lnblnk(outstr))
+
+C Debug.
+C              write(6,*) 'result line: ',outstr(1:lnblnk(outstr))
+
               do 133 ic=1,icol(im)
                 CALL EGETW(outstr,K,word,'-','data',IER)
                 
@@ -764,12 +800,17 @@ C Save results description string for use in reporting.
  133          continue
               K=0
               call EGETWR(word,K,xv,0.,0.,'-','result',IER)
-C              write (6,*) 'value: ',xv,' from column ',icol(im)
+
+C Debug.
+C              write(6,*) 'value: ',xv,' from column ',icol(im)
+
               simdata(imod,iopt,imet(im))=xv
             endif
  130      continue
         elseif (word(1:10).eq.'*end_stats') then
-C          write (6,*) 'END of stats table '
+
+C Debug.
+C          write(6,*) 'END of stats table '
 
 C End of stats report move onto next output table.
           goto 63
@@ -790,7 +831,10 @@ C Check which column holds data.
 
 C Scan following lines for one relating to zone irecdata(imod,imet,1), then
 C read the data in the column identified above (ICOL).
-C          write (6,*) 'col line: ',outstr(1:lnblnk(outstr))
+
+C Debug.
+C          write(6,*) 'col line: ',outstr(1:lnblnk(outstr))
+
           iv=0
           call EGETWI(outstr,K,ic,0,0,'-','col number',IER)
           if (ND.gt.3) then
@@ -800,14 +844,19 @@ C          write (6,*) 'col line: ',outstr(1:lnblnk(outstr))
 
 C Loop through all nmet possibilities.
             do 230 ichk=1,nrecdata(imod)
-C            write (6,*) 'data zone: ',izone,irecdata(imod,ichk,1)
-C            write (6,*) 'data surf: ',isurf,irecdata(imod,ichk,2)
+
+C Debug.
+C            write(6,*) 'data zone: ',izone,irecdata(imod,ichk,1)
+C            write(6,*) 'data surf: ',isurf,irecdata(imod,ichk,2)
 
 C If zone and surface (=0 surface not important) match the requested 
 C ones (in irecdata) then save column number.
               if (izone.eq.irecdata(imod,ichk,1).and.
      &            isurf.eq.irecdata(imod,ichk,2)) then
-C                write (6,*) 'col: ',ic,' for ',izone,isurf,' ichk ',ir
+
+C Debug.
+C                write(6,*) 'col: ',ic,' for ',izone,isurf,' ichk ',ir
+
                 icol(ichk)=ic
               endif
  230        continue
@@ -818,14 +867,17 @@ C Read data line for each time.
  250      CALL STRIPC(idispfl,outstr,99,ND,0,'table data',IER)
           if (IER.ne.0) return
           if (outstr(1:10).eq.'*end_table') then
-C            write (6,*) 'END of table '
+
+C Debug.
+C            write(6,*) 'END of table '
 
 C End of stats report move onto next output table.
             goto 63
           endif
 
 C Check each recovery option to see if it matches.
-          write (6,*) 'result line: ',outstr(1:lnblnk(outstr))
+C          write(6,*) 'result line: ',outstr(1:lnblnk(outstr))
+
           do 235 ichk=1,nrecdata(imod)
 
 C Convert key word into a real number.
@@ -838,9 +890,14 @@ C Convert key word into a real number.
               CALL EGETWR(outstr,K,xv,0.,0.,'-','result value',IER)
                 
 C If within 5 minutes and column matches then accept match.
-C              write (6,*) 'col:',ic,' xv:',xv
+
+C Debug.
+C              write(6,*) 'col:',ic,' xv:',xv
               if (abs(cv-time).lt.0.005.and.ic.eq.icol(ichk)) then
-C                write (6,*) 'value: ',xv,' from column ',icol(ichk),cv
+
+C Debug.
+C                write(6,*) 'value: ',xv,' from column ',icol(ichk),cv
+
                 simdata(imod,iopt,ichk)=xv
                 write (recdesc(imod,ichk,3),'(f9.4)') cv
               endif
@@ -850,7 +907,9 @@ C                write (6,*) 'value: ',xv,' from column ',icol(ichk),cv
 C Read next line from table.
           goto 250
         elseif (word(1:10).eq.'*end_table') then
-C          write (6,*) 'end of table '
+
+C Debug.
+C          write(6,*) 'end of table '
 
 C End of stats report move onto next output table.
           goto 63

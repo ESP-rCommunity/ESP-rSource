@@ -521,14 +521,20 @@ C copied into the ../rad folder.
       write(tfile,'(a,a)')path(1:lnblnk(path)),LRADCF(1:lnblnk(LRADCF))
       INQUIRE (FILE=tfile,EXIST=XST)
       if(XST)then
-C debug   write(6,*) tfile
+
+C Debug.
+C        write(6,*) tfile
+
         continue
       else
         lnrp=lnblnk(runpath)
         write(tfile,'(a,a)')runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
         INQUIRE (FILE=tfile,EXIST=XST)
         if(XST)then
-C debug    write(6,*) tfile
+
+C Debug.
+C          write(6,*) tfile
+
           continue
         else
 
@@ -995,7 +1001,10 @@ C shifted to a *.df- file so check that as well.
           call ERPFREE(ITA1,ISTAT)
           call FPOPEN(ITA1,ISTAT,1,1,ltmp)
           if(ISTAT.eq.0)then
-C debug	    write(6,*) 'found  ',ltmp
+
+C Debug.
+C            write(6,*) 'found  ',ltmp
+
             continue
           else
            write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
@@ -1004,7 +1013,10 @@ C debug	    write(6,*) 'found  ',ltmp
             call ERPFREE(ITA1,ISTAT)
             call FPOPEN(ITA1,ISTAT,1,1,ltmp)
             if(ISTAT.eq.0)then
-C debug	      write(6,*) 'found  ',ltmp
+
+C Debug.
+C              write(6,*) 'found  ',ltmp
+
               continue
             else
               call edisp(iuout,
@@ -1061,7 +1073,7 @@ C Check for existing file names based on available view and picture info.
             write(valt(npics),'(a)') rvewsh(iv)
             IPVALV(npics)=iv
           else
-            write(6,*) 'file ',pf(1:lnblnk(pf)),' not found...'
+            call usrmsg('Cannot find... ',pf(1:lnblnk(pf)),'W')
           endif
  3331   continue
         npics=npics+1
@@ -1140,6 +1152,7 @@ C *************** MODLSU ***************
 C MODLSU read in supplied configuration file and set up paths.
       subroutine MODLSU
 #include "building.h"
+#include "site.h"
 #include "prj3dv.h"
 #include "e2r_common.h"
       
@@ -1160,8 +1173,6 @@ C Path to model.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/GTFIL/GTGEOM
 
@@ -1200,12 +1211,12 @@ C Set folder separator (fs) to \ or / as required.
 C Configuration file and path are held in common/rcmd/LCMDFL
       call fdroot(LCMDFL,path,LCFGF)
       IAIRP = IFIL+9
-      MODE='NONE'
+      MODE='ALL '
       call ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
       if(IER.eq.0)then
         call inqu_tmc
         CFGOK=.TRUE.
-        rgrfl=GREF
+        rgrfl=groundrefl
         NZONES=NCOMP
         ITRC=0
         ISFSUM=0
@@ -1398,10 +1409,10 @@ C Also check to see if the file has correct info.
           goto 139  !  a binary file found so carry on.
         endif
  1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
         if(ier.eq.-2)then
           ier=0
-          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
           if(ier.ne.0)then
             call usrmsg('No readable materials database was found',
      &                  'or file was corrupt','W')
@@ -1467,6 +1478,7 @@ C ************* inqu_tmc *************
 C inqu_tmc: Check if tmc control active.
       subroutine inqu_tmc
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -1478,20 +1490,11 @@ C geometry.h provides commons G0 and G2.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 c      COMMON/TMCB1/IBCMT(MCOM,MTMC)
 
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
-     &IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
-
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+     & IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
+     
       character outs*124
 
       logical XST
@@ -1519,7 +1522,7 @@ C (need to test blind/ shuter control flags).
           if(XST)then
             call eclose(gversion(icomp),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+              call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
             else
               call egomin(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
             endif

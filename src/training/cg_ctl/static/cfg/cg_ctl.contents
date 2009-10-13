@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Daylight factors used to switch artificial
-lights. defined in cg_ctl.cfg generated on Wed Nov 26 16:12:17 2008. Notes
+lights. defined in cg_ctl.cfg generated on Mon Jul 20 15:13:42 2009. Notes
 associated with the model are in cg_ctl.log
  
 The model is located at latitude   52.00 with a longitude difference of   0.00
@@ -25,17 +25,17 @@ Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate used is: ESP test climate and is held in:
-/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ pressure distributions : pressc.db1
  materials              : /usr/esru/esp-r/databases/constr.db1
  constructions          : ./multicon.db1
- plant components       : /usr/esru/esp-r/databases/plantc.db1
+ plant components       : plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
- optical properties     : /usr/esru/esp-r/databases/optics.db1
+ optical properties     : optics.db1
  
  ____________________________________________________________
  

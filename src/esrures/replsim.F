@@ -30,6 +30,7 @@ C MZINPT code in espbps/input.f.
 
       SUBROUTINE MOGCFG
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
@@ -41,10 +42,6 @@ C MZINPT code in espbps/input.f.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
@@ -59,11 +56,8 @@ C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
 
-C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-
-      CHARACTER*72 LCFGF,path,LTDF,LTDFA,ltmp
+      CHARACTER*72 LCFGF,path,LTDF,LTDFA
+      character longtmp*144
       CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248
       character cfgroot*24,outs*124
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
@@ -94,22 +88,36 @@ C Open the cfg file.
       ELSE
 
 C Not found, might be in a remote folder.  Warn user first.
-        WRITE(OUTSTR,'(A,A)')' Could not find ',LCFGF
+ 45     WRITE(OUTSTR,'(A,A)')' Could not find ',LCFGF
         call edisp(iuout,outstr)
-        H(1)='The model configuration file holds the definition of'
-        H(2)='the building/plant which was simulated.'
-        H(3)='This file was not found.  Please supply the model '
-        H(4)='which MATCHES that within the results library.'
-        H(5)='IF IT DOES NOT MATCH THEN RESULTS RECOVERY '
-        H(6)='WILL BE COMPROMISED! '
-        CALL PHELPD('no system file',6,'-',0,0,IER)
 
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
         H(1)='The model configuration file holds the definition '
         H(2)='of the building/ plant to be simulated.  It should'
         H(3)='match the contents held within the results library.'
-        CALL EASKS(LTMP,' Model configuration file ? ',' ',72,DFCFG,
-     &    'config file name',IER,3)
-        if(ltmp(1:2).ne.'  ')GOTO 289
+        CALL PHELPD('no system file',3,'-',0,0,IER)
+        write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
+
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      96,' ','configuration file',IER,4)
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      144,' ','configuration file',IER,4)
+        else
+          CALL EASKF(longtmp,' ',
+     &      ' Corresponding system configuration file name ? ',
+     &      96,' ','configuration file',IER,4)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+        if (longtmp.eq.' ') goto 45
+	call fdroot(longtmp,path,LCFGF)
+        if(longtmp(1:2).ne.'  ')GOTO 289
         RETURN
       ENDIF
 
@@ -120,7 +128,7 @@ C if izver >=4 the zone operation file is not needed.
         IUNIT=IFIL+1
         call eclose(gversion(J),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
+          call georead(IUNIT,LGEOM(J),J,1,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
         endif
@@ -179,6 +187,7 @@ C SYNOPF displays the names of the files used in a simulation
 
       SUBROUTINE SYNOPF
 #include "building.h"
+#include "model.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
@@ -187,20 +196,7 @@ C SYNOPF displays the names of the files used in a simulation
       COMMON/C1/NCOMP,NCON
       COMMON/CCTLNM/CTLDOC,LCTLF
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
-
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCTLF
-
       CHARACTER*248 CTLDOC
       CHARACTER*21 LABELS(8)
 
@@ -216,8 +212,8 @@ C SYNOPF displays the names of the files used in a simulation
      &            ' Zone cfc constr.  : '/
 
 C Echo names of files for visual check.
-      write(outs,59)LSNAM
-   59 format('These files were used in simulation: ',A42)
+      write(outs,59)modeltitle
+   59 format('These files were used in model: ',A42)
       call edisp(iuout,outs)
       write(outs,'(A)') ' with control scheme '
       call edisp(iuout,outs)

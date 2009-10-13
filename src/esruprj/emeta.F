@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C The file emeta.f is a collection of support facilities for 
 C reading and creating esp-r model meta files:
-C  silentmodel creates an/or updates a model from passed parameters.
+C  silentmodel creates a model from passed parameters.
 C  silentzone: creates a zone (or limited complexity) based on parameters
 C              passed to it.
 C  silentread: Reads esp-r meta file zones geometry data.
@@ -28,12 +28,12 @@ C  metawrite:  Creates an esp-r meta file. Data input is from
 C              the current zones common blocks.
 
 C ************* silentmodel
-C silentmodel creates an/or updates a model from passed parameters.
+C silentmodel creates a model from passed parameters.
 C The parameters are:
-C action (8 char) as follows: 'new' creates model folders based on information
-C    in root, mpath folder parameters. 'cont' continues with current model,
-C    'update' updates the current model weather data, 'within' assumes that
-C    the current folder will be used.
+C action (8 char) as follows: 
+C    'new' creates model folders based on information
+C       in root, mpath folder parameters. 
+C    'within' assumes that the current folder will be used.
 C root   (24 char) the root name of the model
 C mpath  (72 char) the path to the folder with cfg file.
 C folder (12 char) model folder layout: 'single' or 'distributed'
@@ -41,8 +41,10 @@ C weather (32 char) the weather file name (no path included)
 
 C Current functionality is to update the climate & site data.
 
-      subroutine silentmodel(action,root,mpath,folder,menu,weather,ier)
+      subroutine silentmodel(action,root,mpath,folder,weather,ier)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "espriou.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies lclim.
@@ -59,8 +61,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
 C Climate data.
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
-      COMMON/C4/XLAT,XLON
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
@@ -71,8 +71,13 @@ C Climate data.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
 
+C Calendar commons.
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      character calename*32,calentag*12,calendayname*32 
+
 C Passed in parameters.
-      character action*8,root*24,mpath*72,folder*12,menu*32
+      character action*8,root*24,mpath*72,folder*12,menu*72
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
       character weathergr*36   ! file name for weather related ground temps (no path)
@@ -102,29 +107,22 @@ C Determine operating system
 
 C If the action is `new` then setup model folder(s) and the registration
 C level configuration file via call to pregist in `sn` mode.
-C If action is `cont` then there is no pre-registration task. If action
-C is `update` then there is no pre-registration task.
+C If the action is `within` do not create new folders for the model.
+
 C Debug
-C      write(6,*)  'action ',action,' ',root,' ',folder
-C      write(6,*)  'menu ',menu
-C      write(6,*)  'mpath ',mpath
-C      write(6,*)  'weather ',weather
+      write(6,*)  'action ',action,' ',root,' ',folder
+      write(6,*)  'menu ',modeltitle
+      write(6,*)  'mpath ',mpath
+      write(6,*)  'weather ',weather
+
       if(action(1:3).eq.'new')then
+        write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
         call pregist('sn',root,mpath,folder,menu,ier)
       elseif(action(1:6).eq.'within')then
 
 C Assume the model folders exist when calling pregist.
+        write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
         call pregist('sw',root,mpath,folder,menu,ier)
-      elseif(action(1:4).eq.'cont')then
-
-C Assume the folder exists
-        root=' '
-        mpath=' '
-        folder=' '
-      elseif(action(1:6).eq.'update')then
-        root=' '
-        mpath=' '
-        folder=' '
       endif
 
 C If there is a line with the root name of a climate file look
@@ -237,18 +235,56 @@ C Impose climate site data on the model.
         IREC=368
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
         CALL ERPFREE(ICLIM,ISTAT)
-        XLAT=CLAT
-        XLON=CLONG
+        sitelat=CLAT
+        sitelongdif=CLONG
         IYEAR=ICYEAR
         write(outs,'(A,F7.3,A,F7.3,a,i4,i5,a,2F7.3,a)')
      &    'The climate lat is ',clat,' & long diff is ',
      &    clong,' & Year DN flag ',IYEAR,ICDNGH,
-     &    '. Previously used ',xlat,xlon,'.'
+     &    '. Previously used ',sitelat,sitelongdif,'.'
         call edisp(iuout,outs)
 
-C << place to define a calendar if this has not already been
-C << done.
-	
+C Write calendar information (just the default one for the moment)       
+        calename='standard weekday Sat & Sun'
+        nbdaytype=3
+        nbcaldays(1)=0
+        calentag(1)='weekdays'
+        calendayname(1)='weekdays (all year)'
+        nbcaldays(2)=0
+        calentag(2)='saturday'
+        calendayname(2)='Saturdays (all year)'
+        nbcaldays(3)=0
+        calentag(3)='sunday'
+        calendayname(3)='Sundays (all year)'
+        calentag(4)='-'
+        calentag(5)='-'
+        calentag(6)='-'
+        calentag(7)='-'
+        calentag(8)='-'
+        calentag(9)='-'
+        calendayname(4)='-'
+        calendayname(5)='-'
+        calendayname(6)='-'
+        calendayname(7)='-'
+        calendayname(8)='-'
+        calendayname(9)='-'
+        do 542 ijd=1,365
+
+C for julian day ijd find month and day of month and day of week.
+          call edayr(ijd,idayn,imthn)
+          call eweekd(idayn,imthn,iyear,idwk)
+          if(idwk.ge.1.and.idwk.le.5)then
+            icalender(ijd)=1
+            nbcaldays(1)=nbcaldays(1)+1
+          elseif(idwk.eq.6)then
+            icalender(ijd)=2
+            nbcaldays(2)=nbcaldays(2)+1
+          elseif(idwk.eq.7)then
+            icalender(ijd)=3
+            nbcaldays(3)=nbcaldays(3)+1
+          endif
+  542   continue                    	
+  
 C If there is ground temperature information scan that file and
 C put the data in UGRDTP.
         if(haveground)then
@@ -375,6 +411,8 @@ C IER=0 OK.
      &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstr,
      &  boundarytype,datamass,textmass,use,usefile,IER)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "geometry.h"
 C#include "esprdbfile.h"
       
@@ -399,22 +437,13 @@ C#include "esprdbfile.h"
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -470,7 +499,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       dimension textmass(4,3)
      
       DIMENSION XX(MS),YY(MS)
-      CHARACTER LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -483,7 +511,7 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character act*2
       character subpath*72,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
-      character sn*12,constr*12,opt*12
+      character sn*12,constr*12,opt*12,outs*124
       LOGICAL browse,OKC,XST,unixok
       logical willneedtmc  !  if a tmc file will be required.
       logical closev       !  mass is close to vertical
@@ -636,7 +664,7 @@ C Rotate if required.
       ENDIF
 
 C Begin with default assumptions for each surface then overwrite.
-      CALL FILSUR(iuout,ICOMP,0)
+      CALL FILSUR(ICOMP,0)
 
 C Update the connection list.
       ICCC=NCON
@@ -791,7 +819,7 @@ C parent surface.  Later add logic to better place the door..
       if(nbdoor.gt.0)then
         do 78 ids=1,NZSUR(ICOMP)
           if(hasdoor(ids).gt.0.0)then
-            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             newsurf=nsur+1
             isurf=ids
             CALL SURLEHI(isurf,XYMAX,ZMAX)  ! get width of parent
@@ -876,7 +904,7 @@ C the parent surface as a percentage of area.
       if(nbglz.gt.0)then
         do 77 ids=1,NZSUR(ICOMP)
           if(hasglaze(ids).gt.0.0)then
-            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             newsurf=nsur+1
             isurf=ids
             act='sp'
@@ -1014,8 +1042,10 @@ C the initial description (usefile) and use(3) parameters.
      &    dinstpath(1:lnblnk(dinstpath)),fs,'training',fs,'pattern',fs
         write(sfile,'(2a)')subpath(1:lnblnk(subpath)),
      &    usefile(1:lnblnk(usefile))
+
 C Debug.
-C        write(6,*) 'pattern file is ',sfile(1:lnblnk(sfile))
+C        write(outs,*) 'pattern file is ',sfile(1:lnblnk(sfile))
+C        call edisp(iuout,outs)
 
 C Clear commons.
         DO 401 IDTY=1,NBDAYTYPE
@@ -1059,7 +1089,7 @@ C Set to current format
 C Just in case sort the data.
         call PROCESSOLDCAS(ICOMP,0,iuout,IER)
         IUO=IFIL+2
-        CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+        CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
       endif
 
 C Update configuration file to know about the construction files.
@@ -1075,7 +1105,8 @@ C Update configuration file to know about the construction files.
       return
 
 C Errors when creating string buffers.
-   1  write(6,*) 'error creating subpath: ',subpath
+   1  write(outs,*) 'error creating subpath: ',subpath
+      call edisp(iuout,outs)
       ier=2
       return
 
@@ -1087,11 +1118,13 @@ C based on 3rd party generators. If act is '?' then return a
 C menu and descriptive text block for the file. Otherwise scan
 C and act on the information within the file.
  
-       SUBROUTINE SILENTREAD(IUNIT,LFILE,act,silentmenu,silentdoc,
-     &   silentreturndirec,IER)
+       SUBROUTINE SILENTREAD(IUNIT,LFILE,act,silentreturndirec,IER)
        integer MSZ   ! number of silent zones array sizes
        PARAMETER (MSZ=10) 
 #include "building.h"
+#include "model.h"
+#include "site.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -1106,38 +1139,21 @@ C seasons.h provides typper and typsea
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C4/XLAT,XLON
       COMMON/FILEP/IFIL
 
-C GREF    - External ground reflectivity.
-C GREF12  - (12) Monthly values of ground reflectivity
-C ITGREF  - Type of ground reflectivity model
+C Data from site.h:
+C groundrefl - External ground reflectivity.
+C groundreflmonth  - (12) Monthly values of ground reflectivity
+C groundreflmodel  - Type of ground reflectivity model
 C           1= constant albedo
 C           2= simple model (monthly albedo, number of days with snow on ground
 C           3= advanced model (monthly albedo, snow depth read from file)
-C SREF    - Snow reflectivity
-C NSNOW   - (12) Monthly values of number of days with snow on ground
-C SNFNAM  - *72 Name of the file containing hourly snow depth information
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C5R/SKYR,GRDR,BLDR
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
+C snowgroundrefl - Snow reflectivity
+C dayswithsnow - (12) Monthly values of number of days with snow on ground
+C SNFNAM - *72 Name of the file containing hourly snow depth information
       COMMON/PREC8/SLAT,SLON
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
-C NB number of obstruction blocks.
-C X0 Y0 Z0 coordinates of each block origin.
-C DX DY DZ width depth and height of each block
-C BANG block rotation angle.
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-
-C NOX NOZ gridding resolution of surfaces for shading
-C NGX NGZ not used.
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      character BLKNAME*8,BLKMAT*12
+C Obstruction blocks via geometry.h.
 
       common/rpath/path
       character*72 path,odir    ! where are folders
@@ -1174,6 +1190,15 @@ C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false
       common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
       character XMLMETRICS*248
+
+C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
+C   toggle for assessment where:
+C   1 is 'all_applicable', 0 is manual selection of surfaces.
+C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
+C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
+      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
+     &       nsurfinso(MCOM),isurfinso(MCOM,MS)
+     
       integer inumXMLmetrics !counts for the number of xml metrics defined
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
@@ -1188,10 +1213,9 @@ C in case the flag: <dump_all_data> is false
       character simact*6 ! action for creating assessments.
       character subpath*72
 
-C At the head of the file is a menu string and a description
-C silentmenu (char 32) and silentdoc (char 248) which can be
+C At the head of the file is a title and a description
+C modeltitle (char 72) and modeldocblock (char 248) from model.h which can be
 C used by scanning code to identify the contents of a silent file.
-      character silentmenu*32,silentdoc*248
       character weather*32     ! file name for the location (no path)
       character*(*) lfile      ! name of the file
       character fs*1           ! file separator
@@ -1218,8 +1242,8 @@ C Paremeters passed to:silentzone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
       integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
-      integer nbglz(MSZ)       ! nb of windows
-      integer nbdoor(MSZ)      ! nb of doors
+      integer nbglz(MSZ)       ! nb of windows (META directive)
+      integer nbdoor(MSZ)      ! nb of doors (META directive)
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real rotateit(MSZ)        ! angle of rotation
       real origin(3),szorigin(MSZ,3)      ! values dependant on shape
@@ -1228,17 +1252,6 @@ C Paremeters passed to:silentzone
       real coords(MTV,3),szcoords(MSZ,MTV,3) 
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
-
-      integer nbob  ! nbob number of obstruction blocks.
-      real XOB,YOB,ZOB  ! coordinates of each block origin.
-      real DXOB,DYOB,DZOB  ! width depth and height of each block
-      dimension nbob(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
-      dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
-
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      character BLOCKNAME*8,BLOCKMAT*12
-      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
 
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character textmass*32,stextmass*32
@@ -1251,20 +1264,11 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
 
 C Site related local variables.
-      real sitelat,sitelong  ! latitude and longitude difference
       logical havesite       ! true if tokens included
-      real groundreflanual   ! ground reflectance (single value)
-      logical havegroundreflanual ! true if ground reflectance included
-      real groundreflmonth(12) ! ground reflectance (monthly vlues)
-      integer groundreflmodel  ! index to ground reflectance model
-      real snowrefl            ! snow reflectivity
-      integer dayswithsnow(12) ! days with snow in each month
       logical havesnowdays     ! true if days with snow defined
-      integer siteexposureindex  ! same as ixpos
       character hourlysnowfile*72  ! same as SNFNAM
       logical havehourlysnowfile   ! true if set
       real hoursGTM   ! hours before or after GTM 
-      real skyview,groundview,buildingview ! user defined viewfactors
       real groundtemps(12,MGRDP)
       real GVA(12)  ! temporary array to hold a dozen values.
       integer groundtempsets
@@ -1278,6 +1282,8 @@ C Site related local variables.
       real ht_Setpoint,cl_Setpoint !heating and cooling set-points
       dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
       integer isilentncf !silent decide how many control functions needed
+      integer iva
+      dimension iva(MS)  ! for use with writing arrays of numbers
         
       IER=0
 
@@ -1320,8 +1326,8 @@ C in the file.
         root=' '
         folder=' '
         mpath=' '
-        silentmenu=' '
-        silentdoc=' '
+        modeltitle=' '
+        modeldocblock=' '
         weather=' '
         hourlysnowfile=' '
         groundreflmodel=0
@@ -1329,7 +1335,6 @@ C in the file.
         groundview=0.0
         buildingview=0.0
         havesite=.false.
-        havegroundreflanual=.false.
         havesnowdays=.false.
         havehourlysnowfile=.false.
         havegroundtempsets=.false.
@@ -1359,7 +1364,7 @@ C in the file.
           szsize(iz,1) = 0.0
           szsize(iz,2) = 0.0
           szsize(iz,3) = 0.0
-          nbob(iz) = 0
+          nbobs(iz) = 0
           ht_Setpoint(iz)= 0.0
           cl_Setpoint(iz)= 0.0
           i_ctl_link(iz)=0
@@ -1370,9 +1375,19 @@ C in the file.
             DXOB(iz,ibu) = 0.0
             DYOB(iz,ibu) = 0.0
             DZOB(iz,ibu) = 0.0
-            BANGOB(iz,ibu) = 0.0
+            BANGOB(iz,ibu,1) = 0.0
+            BANGOB(iz,ibu,2) = 0.0
+            BANGOB(iz,ibu,3) = 0.0
             BLOCKNAME(iz,ibu) = ' '
+            LNBLOCKNAME(iz,ibu) = 0
             BLOCKMAT(iz,ibu) = ' '
+            LNBLOCKMAT(iz,ibu) = 0
+            BLOCKTYP(iz,ibu) = 'obs '
+            do 56 ibe=1,8
+              XBP(iz,ibu,ibe)=0.0
+              YBP(iz,ibu,ibe)=0.0
+              ZBP(iz,ibu,ibe)=0.0
+  56        continue
   55      continue
           do 53 isu=1,MTV   ! clear the coordinates
             szcoords(iz,isu,1)=0.0
@@ -1457,11 +1472,15 @@ C to 1000 to see if there are zones to process.
       if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
         CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
         goto 43
-      elseif(WORD(1:5).eq.'*menu')then
-        CALL EGETRM(OUTSTR,K,silentmenu,'W','silent menu',IER)
+      elseif(WORD(1:5).eq.'*menu')then  ! depreciated
+        CALL EGETRM(OUTSTR,K,modeltitle,'W','meta title',IER)
+        goto 43
+      elseif(WORD(1:6).eq.'*title')then
+        CALL EGETRM(OUTSTR,K,modeltitle,'W','meta title',IER)
         goto 43
       elseif(WORD(1:4).eq.'*doc')then
-        CALL EGETRM(OUTSTR,K,silentdoc,'W','silent documentation',IER)
+        CALL EGETRM(OUTSTR,K,modeldocblock,'W','meta documentation',
+     &    IER)
         if(act(1:1).eq.'?')then
           return
         else
@@ -1473,7 +1492,7 @@ C An action line is like this:
 C *action,new,boxer,single,/tmp/boxer
         CALL EGETW(OUTSTR,K,actions,'W','action string',IER)
         silentreturndirec=actions
-        if(actions(1:3).eq.'new')then
+        if(actions(1:3).eq.'new'.or.actions(1:6).eq.'within')then
           CALL EGETW(OUTSTR,K,root,'W','root name',IER)
           CALL EGETW(OUTSTR,K,folder,'W','folder directive',IER)
           CALL EGETRM(OUTSTR,K,mpath,'W','model folder',IER)
@@ -1482,8 +1501,6 @@ C Debug.
           write(6,*)  's action ',actions,' root ',root
           write(6,*)  's folder ',folder
           write(6,*)  's mpath ',mpath
-        elseif(actions(1:4).eq.'cont')then
-          continue
         endif
         goto 43
       elseif(WORD(1:12).eq.'*assessments')then
@@ -1613,7 +1630,11 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
           nipvassmt=0
           simact='i1d   '
         endif
-        write(6,*) 'the value of simact is ',simact
+
+C Feedback. << but simact is not passed to anything >>
+        write(outs,*) 'the value of simact is ',simact
+	call edisp(iuout,outs)
+
         goto 43
       elseif(WORD(1:8).eq.'*cooling')then
         CALL EGETWR(OUTSTR,K,cl_Setpoint(nsz),-102.,102.,'W',
@@ -1667,9 +1688,8 @@ C surface area to have as glazing.
         endif
         goto 43
       elseif(WORD(1:19).eq.'*ground_refl_annual')then
-        CALL EGETWR(OUTSTR,K,groundreflanual,0.,1.,'W',
+        CALL EGETWR(OUTSTR,K,groundrefl,0.,1.,'W',
      &    'Ground reflectance annual value',IER)
-        havegroundreflanual=.true.
         goto 43
       elseif(WORD(1:20).eq.'*ground_refl_monthly')then
 
@@ -1680,7 +1700,7 @@ C Ground reflectivity model, no-snow monthly albedos, snow albedo
           CALL EGETWR(OUTSTR,K,groundreflmonth(I),0.,1.,'W',
      &      'monthly gr. refl.',IER)
   441   CONTINUE
-        CALL EGETWR(OUTSTR,K,snowrefl,0.,1.,'W','snow refl.',IER)  
+        CALL EGETWR(OUTSTR,K,snowgroundrefl,0.,1.,'W','snow refl.',IER)  
         goto 43
       elseif(WORD(1:8).eq.'*heating')then
         CALL EGETWR(OUTSTR,K,ht_Setpoint(nsz),-102.,102.,'W',
@@ -1766,7 +1786,7 @@ C And this is followed by one line each for each profile.
 C Number of days with snow on the ground (if ground refl model 2)
         DO 442 I=1,12
           CALL EGETWI(OUTSTR,K,dayswithsnow(I),0,31,'W',
-     &      'days with snow',IER)
+     &      'days with snow in each month',IER)
   442   CONTINUE
         havesnowdays=.true.
         goto 43
@@ -1784,11 +1804,66 @@ C box shapes.
           nbwalls(nsz)=4
         endif
         goto 43
-      elseif(WORD(1:4).eq.'*obs')then
+      elseif(WORD(1:10).eq.'*shad_calc')then
 
-C An obstruction block to be associated with the current zone.
-        nbob(nsz)=nbob(nsz)+1
-        nob=nbob(nsz)
+C Shading calculation instructions.
+        CALL EGETW(OUTSTR,K,WORD,'W','shad directive',IFLAG)
+        if(WORD(1:4).eq.'none')then
+          iaplic(nsz,1)=0
+          nsurfcalc(nsz)=0
+        else
+          if(WORD(1:14).eq.'all_applicable')then
+            iaplic(nsz,1)=1
+          elseif(WORD(1:4).eq.'list')then
+            iaplic(nsz,1)=0
+          endif
+
+C Read number of surfaces and then the list
+          CALL EGETWI(OUTSTR,K,iv,0,MS,'-','nsurfcalc',IER)
+          nsurfcalc(nsz)=iv
+          IRVA=nsurfcalc(nsz)
+          CALL EGETWIA(IUNIT,IVA,IRVA,0,MS,'F','lstsfcalc',IER)
+          DO 342 ks=1,nsurfcalc(nsz)
+            lstsfcalc(nsz,ks)=IVA(ks)
+ 342      CONTINUE
+        endif
+        goto 43
+      elseif(WORD(1:11).eq.'*insol_calc')then
+
+C Insolation calculation instructions.
+        CALL EGETW(OUTSTR,K,WORD,'W','insolation directive',IFLAG)
+        if(WORD(1:4).eq.'none')then
+          iaplic(nsz,2)=0
+          nsurfinso(nsz)=0
+        else
+          if(WORD(1:14).eq.'all_applicable')then
+            iaplic(nsz,2)=1
+          elseif(WORD(1:4).eq.'list')then
+            iaplic(nsz,2)=0
+          endif
+
+C Applicable surfaces are the current exterior facing surfaces.
+          CALL EGETWI(OUTSTR,K,iv,0,MS,'-','nsurfinso',IER)
+          nsurfinso(nsz)=iv
+          IRVA=nsurfinso(nsz)
+          CALL EGETWIA(IUNIT,IVA,IRVA,0,MS,'F','isurfinso',IER)
+          DO 344 ks=1,nsurfinso(nsz)
+            isurfinso(nsz,ks)=IVA(ks)
+ 344      CONTINUE
+        endif
+        goto 43
+      elseif(WORD(1:11).eq.'*solar_grid')then
+
+C If there will be shading or insulation then the density of the
+C grid is found after the token *solar_grid.
+        CALL EGETWI(OUTSTR,K,NOX(nsz),4,20,'F','opq grid X',IER)
+        CALL EGETWI(OUTSTR,K,NOZ(nsz),4,20,'F','opq grid Z',IER)
+        goto 43
+      elseif(WORD(1:5).eq.'*obs3')then
+
+C A 3 rotation obstruction block to be associated with the current zone.
+        nbobs(nsz)=nbobs(nsz)+1
+        nob=nbobs(nsz)
         CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
         XOB(nsz,nob)=val1
         CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
@@ -1802,11 +1877,125 @@ C An obstruction block to be associated with the current zone.
         CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
         DZOB(nsz,nob)=val1
         CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
-        BANGOB(nsz,nob)=val1
+        BANGOB(nsz,nob,1)=val1
+        CALL EGETWR(OUTSTR,K,val1,-180.,180.,'W','rot b',IER)
+        BANGOB(nsz,nob,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-180.,180.,'W','rot c',IER)
+        BANGOB(nsz,nob,3)=val1
         CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
         write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKNAME(nsz,nob)=lnblnk(BLOCKNAME(nsz,nob))
         CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
         write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKMAT(nsz,nob)=lnblnk(BLOCKMAT(nsz,nob))
+        BLOCKTYP(nsz,nob)='obs3'
+        if(iobs(nsz).eq.0) iobs(nsz)=2  ! mark where obstructions held
+        goto 43
+      elseif(WORD(1:5).eq.'*obsp')then
+
+C A general polygon obstruction to be associated with the current zone.
+C The first line includes (current fixed) integer number of vertices
+C followed by number of faces and the name and material.
+C The 2nd line has the first 4 coordinates and the 3rd line has the 
+C next 4 coordinates. The surface and edge ordering is as in a 
+C standard obstruction block when converted into a GB1 common block.
+        nbobs(nsz)=nbobs(nsz)+1
+        nob=nbobs(nsz)
+        CALL EGETWI(OUTSTR,K,ival,8,8,'F','obs nb vertices',IER)
+        CALL EGETWI(OUTSTR,K,ival,6,6,'F','pbs nb faces',IER)
+        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKNAME(nsz,nob)=lnblnk(BLOCKNAME(nsz,nob))
+        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKMAT(nsz,nob)=lnblnk(BLOCKMAT(nsz,nob))
+        BLOCKTYP(nsz,nob)='obsp'
+        if(iobs(nsz).eq.0) iobs(nsz)=2  ! mark where obstructions held
+
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'first 4 coordinates',IER)
+        IF(IER.NE.0)goto 1000
+        K=0
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 1',IER)
+        XBP(nsz,nob,1)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 1',IER)
+        YBP(nsz,nob,1)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 1',IER)
+        ZBP(nsz,nob,1)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 2',IER)
+        XBP(nsz,nob,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 2',IER)
+        YBP(nsz,nob,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 2',IER)
+        ZBP(nsz,nob,2)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 3',IER)
+        XBP(nsz,nob,3)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 3',IER)
+        YBP(nsz,nob,3)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 3',IER)
+        ZBP(nsz,nob,3)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 4',IER)
+        XBP(nsz,nob,4)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 4',IER)
+        YBP(nsz,nob,4)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 4',IER)
+        ZBP(nsz,nob,4)=val1
+
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'2nd 4 coordinates',IER)
+        IF(IER.NE.0)goto 1000
+        K=0
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 5',IER)
+        XBP(nsz,nob,5)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 5',IER)
+        YBP(nsz,nob,5)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 5',IER)
+        ZBP(nsz,nob,5)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 6',IER)
+        XBP(nsz,nob,6)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 6',IER)
+        YBP(nsz,nob,6)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 6',IER)
+        ZBP(nsz,nob,6)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 7',IER)
+        XBP(nsz,nob,7)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 7',IER)
+        YBP(nsz,nob,7)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 7',IER)
+        ZBP(nsz,nob,7)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 8',IER)
+        XBP(nsz,nob,8)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 8',IER)
+        YBP(nsz,nob,8)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 8',IER)
+        ZBP(nsz,nob,8)=val1
+        goto 43
+
+      elseif(WORD(1:5).eq.'*obs ')then
+
+C An obstruction block to be associated with the current zone.
+        nbobs(nsz)=nbobs(nsz)+1
+        nob=nbobs(nsz)
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
+        XOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
+        YOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','Z org',IER)
+        ZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','X dis',IER)
+        DXOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Y dis',IER)
+        DYOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
+        DZOB(nsz,nob)=val1
+        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
+        BANGOB(nsz,nob,1)=val1
+        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKNAME(nsz,nob)=lnblnk(BLOCKNAME(nsz,nob))
+        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
+        LNBLOCKMAT(nsz,nob)=lnblnk(BLOCKMAT(nsz,nob))
+        BLOCKTYP(nsz,nob)='obs '
+        if(iobs(nsz).eq.0) iobs(nsz)=2  ! mark where obstructions held
         goto 43
       elseif(WORD(1:7).eq.'*origin')then
         if(shape(nsz)(1:3).eq.'box')then
@@ -1842,23 +2031,51 @@ C Get the assessment independant simulation parameters.
         CALL EGETWI(OUTSTR,K,simsavelevel,0,6,'W','save_lv',IER)
         havesimparameters=.true.
         goto 43
+      elseif(WORD(1:9).eq.'*site_loc')then
+
+C The *site_loc line includes latitute, longitude difference from time
+C meridian, time zone (hours before or after GMT). 
+        CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
+        CALL EGETWR(OUTSTR,K,sitelongdif,-15.,15.,'W',
+     &    'Longitude dif from time meridian',IER)
+        CALL EGETWR(OUTSTR,K,hoursGTM,-12.,12.,'W','Hours +-GMT',IER)
+        havesite=.true.
+        goto 43
+      elseif(WORD(1:9).eq.'*site_exp')then
+
+C The *site_exp line includes site exposure and if
+C siteexposureindex is 8 then read three more numbers
+C for the general exposure to sky, ground and other buildings. 
+        CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
+     &    'Site exposure',IER)
+        if(siteexposureindex.eq.8)then
+          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky viewfactor',IER)
+          CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W',
+     &      'Ground viewfactor',IER)
+          CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W',
+     &      'Building viewfactor',IER)
+        endif
+        havesite=.true.
+        goto 43
       elseif(WORD(1:5).eq.'*site')then
 
-C The site line includes latitute, longitude difference from time
+C The *site line includes latitute, longitude difference from time
 C meridian, time zone (hours before or after GMT), site exposure
 C and if siteexposureindex is 8 then read three more numbers
-C for the general exposure to sky, ground and other buildings. 
+C for the general exposure to sky, ground and other buildings.
+C This format is included for older META files. 
         CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
-        CALL EGETWR(OUTSTR,K,sitelong,-15.,15.,'W','Longitude dif',IER)
+        CALL EGETWR(OUTSTR,K,sitelongdif,-15.,15.,'W',
+     &    'Longitude dif from time meridian',IER)
         CALL EGETWR(OUTSTR,K,hoursGTM,-12.,12.,'W','Hours +-GMT',IER)
         CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
      &    'Site exposure',IER)
         if(siteexposureindex.eq.8)then
-          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky exposure',IER)
+          CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky viewfactor',IER)
           CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W',
-     &      'Ground exposure',IER)
+     &      'Ground viewfactor',IER)
           CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W',
-     &      'Building exposure',IER)
+     &      'Building viewfactor',IER)
         endif
         havesite=.true.
         goto 43
@@ -2002,34 +2219,12 @@ C Create new model. Note for a single folder option the
 C configuration will be in /tmp/box if mpath is /tmp/box. For the
 C distributed folder option the onfiguration file will be in the
 C folder /tmp/box/cfg if mpath is /tmp/box.
-      call silentmodel(actions,root,mpath,folder,silentmenu,weather,
-     &  ier)
+      call silentmodel(actions,root,mpath,folder,weather,ier)
 
 C Add in site information if tokens were included.
       if(havesite)then
-        XLAT=sitelat
-        SLAT=XLAT
-        XLON=sitelong
-        SLON=XLON
-        IXPOS=siteexposureindex
-        if(IXPOS.EQ.8)then
-          SKYR=skyview
-          GRDR=groundview
-          BLDR=buildingview
-        endif
-      endif
-      if(havegroundreflanual)GREF=groundreflanual
-      if(groundreflmodel.gt.0)then
-        ITGREF=groundreflmodel
-        do 443 i=1,12
-          GREF12(I)=groundreflmonth(I)
-  443   continue
-        SREF=snowrefl
-      endif
-      if(havesnowdays)then
-        do 444 i=1,12
-          NSNOW(I)=dayswithsnow(I)
-  444   continue
+        SLAT=sitelat
+        SLON=sitelongdif
       endif
       if(havehourlysnowfile)then
         SNFNAM=hourlysnowfile
@@ -2103,25 +2298,11 @@ C        usefile(iz) = ' '
 C If there are obstructions fill in relevant common blocks. Set iobs()=2
 C to signal that the common blocks have been instanciated and data should
 C be included in the version 1.1 geometry file.
-          if(nbob(isz).gt.0)then
-            NB=nbob(isz)
-            NOX=20
-            NOZ=20
-            do 58 ib=1,nbob(isz)
-              XO(ib)=XOB(isz,ib)
-              YO(ib)=YOB(isz,ib)
-              ZO(ib)=ZOB(isz,ib)
-              DX(ib)=DXOB(isz,ib)
-              DY(ib)=DYOB(isz,ib)
-              DZ(ib)=DZOB(isz,ib)
-              BANG(ib)=BANGOB(isz,ib)
-              BLKNAME(ib)=BLOCKNAME(isz,ib)
-              BLKMAT(ib)=BLOCKMAT(isz,ib)
-  58        continue
+          if(nbobs(icomp).gt.0)then
             iobs(icomp)=2
           else
             iobs(icomp)=0
-            NB=0
+            nbobs(icomp)=0
           endif
           if(i_ctl_link(isz).gt.0)then
             isilentncf=1+isilentncf
@@ -2163,6 +2344,7 @@ C          write(6,*) 'nbmass',nbmass
 C          write(6,*) 'nbedges',nbedges
 C          write(6,*) 'nbcord',nbcord
 C          write(6,*) 'list',list
+
           call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
      &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,rotateit(isz),nbglz(isz),hasglaze,
@@ -2216,6 +2398,8 @@ C the file with minimum interaction.
        integer MSZ   ! number of meta zones array sizes
        PARAMETER (MSZ=10) 
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
@@ -2228,52 +2412,17 @@ C espriou.h provides currentfile.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C4/XLAT,XLON
-      COMMON/FILEP/IFIL
 
-C GREF    - External ground reflectivity.
-C GREF12  - (12) Monthly values of ground reflectivity
-C ITGREF  - Type of ground reflectivity model
-C           1= constant albedo
-C           2= simple model (monthly albedo, number of days with snow on ground
-C           3= advanced model (monthly albedo, snow depth read from file)
-C SREF    - Snow reflectivity
-C NSNOW   - (12) Monthly values of number of days with snow on ground
-C SNFNAM  - *72 Name of the file containing hourly snow depth information
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C5R/SKYR,GRDR,BLDR
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/PREC8/SLAT,SLON
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-C NB number of obstruction blocks.
-C X0 Y0 Z0 coordinates of each block origin.
-C DX DY DZ width depth and height of each block
-C BANG block rotation angle.
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-
-C NOX NOZ gridding resolution of surfaces for shading
-C NGX NGZ not used.
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
-      character BLKNAME*8,BLKMAT*12
-
-C VCOORD : X,Y & Z coordinates of each vertice in zone.
-C NZNVER : number of vertices associated with each connection.
-C NZJVN : topology of vertices associated with each connection.
-      COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
+C Obstruction blocks via geometry.h.
+C common zndata (VCOORD,NZNVER,NZJVN) via geometry.h  
 
       common/rpath/path
       character*72 path,odir    ! where path and odir are folders
@@ -2311,6 +2460,15 @@ C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false
       common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
       character XMLMETRICS*248
+
+C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
+C   toggle for assessment where:
+C   1 is 'all_applicable', 0 is manual selection of surfaces.
+C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
+C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
+      common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
+     &       nsurfinso(MCOM),isurfinso(MCOM,MS)
+     
       integer inumXMLmetrics !counts for the number of xml metrics defined
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
@@ -2319,16 +2477,14 @@ C in case the flag: <dump_all_data> is false
       CHARACTER OUTSTR*248,outs*124,outsd*124
       character dstmp*24
 
-      character act*1  ! action requested.
-      character ipvact*1 ! action for clearipvdat
-C      character simact*6 ! action for creating assessments.
-      character subpath*72
+      character act*1      ! action requested.
+      character ipvact*1   ! action for clearipvdat
+C      character simact*6  ! action for creating assessments.
+      character subpath*72 ! not yet used
 
 C At the head of the file is a menu string and a description
-C silentmenu (char 32) and silentdoc (char 248) which identifies
-C the contents of the file.
-C << user must supply this >>
-      character silentmenu*32,silentdoc*248
+C modeltitle (char 72) and modeldocblock (char 248) which identifies
+C the contents of the file via model.h.
       character weather*32     ! file name for the location (no path)
       character*(*) lfile      ! name of the file
       character fs*1           ! file separator
@@ -2346,36 +2502,15 @@ C Paremeters passed to:silentzone
       integer nbwalls(MSZ)     ! nb of vertical walls
       real rotateit(MSZ)        ! angle of rotation
 
-      integer nbob  ! nbob number of obstruction blocks.
-C      real XOB,YOB,ZOB  ! coordinates of each block origin.
-C      real DXOB,DYOB,DZOB  ! width depth and height of each block
-C      dimension nbob(MSZ),XOB(MSZ,MB),YOB(MSZ,MB),ZOB(MSZ,MB)
-C      dimension DXOB(MSZ,MB),DYOB(MSZ,MB),DZOB(MSZ,MB),BANGOB(MSZ,MB)
-      dimension nbob(MSZ)
-      
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-C      character BLOCKNAME*8,BLOCKMAT*12
-C      dimension BLOCKNAME(MSZ,MB),BLOCKMAT(MSZ,MB)
-
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character stextmass*32
       dimension stextmass(MSZ,4,3)
 
 C Site related local variables.
-      real sitelat,sitelong  ! latitude and longitude difference
-      real groundreflanual   ! ground reflectance (single value)
-      logical havegroundreflanual ! true if ground reflectance included
-      real groundreflmonth(12) ! ground reflectance (monthly vlues)
-      integer groundreflmodel  ! index to ground reflectance model
-      real snowrefl            ! snow reflectivity
-      integer dayswithsnow(12) ! days with snow in each month
       logical havesnowdays     ! true if days with snow defined
-      integer siteexposureindex  ! same as ixpos
       character hourlysnowfile*72  ! same as SNFNAM
       logical havehourlysnowfile   ! true if set
       real hoursGTM   ! hours before or after GTM 
-      real skyview,groundview,buildingview ! user defined viewfactors
       real groundtemps(12,MGRDP)
       integer groundtempsets
       logical havegroundtempsets
@@ -2389,6 +2524,16 @@ C Site related local variables.
       dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
       integer isilentncf !silent decide how many control functions needed
       character tab*1
+      integer lnzp,lnnp,lncp,lndcp,lndbp ! lengths of paths to model folders
+
+C  The following data statements carry the proportions of
+C  surrounding buildings, sky vault and ground assumed
+C  to be seen by a vertical surface for a particular site
+C  defined by the Index of Exposure.
+      DIMENSION PROPB(8),PROPS(8),PROPG(8)
+      DATA PROPB/0.28,0.18,0.1,0.34,0.52,0.0,1.0,0.0/
+      DATA PROPS/0.36,0.41,0.45,0.33,0.15,0.5,0.0,0.0/
+      DATA PROPG/0.36,0.41,0.45,0.33,0.33,0.5,0.0,0.0/
         
       IER=0
 
@@ -2408,9 +2553,11 @@ C first list any files with .cfg in name.
 
 C If subpath is less than 72 char with odir + path use that
 C otherwise just use path.
+
 C Debug...
-      write(6,*) 'usrdir is ',odir
-      write(6,*) 'path is ',path
+C      write(6,*) 'usrdir is ',odir
+C      write(6,*) 'path is ',path
+
       subpath=' '
       lnodir=lnblnk(odir)
       lnpath=lnblnk(path)
@@ -2420,18 +2567,33 @@ C Debug...
       else
         write(subpath,'(a)') path(1:lnpath)
       endif
-      write(outs,'(2a)') 'configuration files in ',
-     &  subpath(1:lnblnk(subpath))
-C      write(6,*) outs(1:lnblnk(outs))
+
+C Debug.
+C      write(outs,'(2a)') 'configuration files in ',
+C     &  subpath(1:lnblnk(subpath))
+C      call edisp(iuout,outs)
 
 C Instanciate the sz array structures. The logic is to scan all of the
 C zone details and then write into the file.
       write(actions,'(a)') 'new'
       write(root,'(a)') cfgroot
-      write(folder,'(a)') 'distributed'  ! multiple folders
+
+C If all of the associated folder paths are ./ then we have a
+C single folder model, otherwise use distributed folders.
+      lnzp=lnblnk(zonepth)
+      lnnp=lnblnk(netpth)
+      lncp=lnblnk(ctlpth)
+      lndcp=lnblnk(docpth)
+      lndbp=lnblnk(dbspth)
+      if((lnzp+lnnp+lncp+lndcp+lndbp).lt.12)then
+        write(folder,'(a)') 'single'  ! multiple folders
+      else
+        write(folder,'(a)') 'distributed'  ! multiple folders
+      endif
       write(mpath,'(a)') cfgroot  ! model folder will take root name
-      write(silentmenu,'(a)') LSNAM(1:31)
-      write(silentdoc,'(a)')  LSNAM(1:lnblnk(LSNAM))
+
+C Currently set the block of text to the model title.
+      write(modeldocblock,'(a)')  modeltitle(1:lnblnk(modeltitle))
 
 C Site data.
 C << for weather we need to use logic sort of like finddbpath >>
@@ -2440,39 +2602,24 @@ C << for weather we need to use logic sort of like finddbpath >>
 
 C The hourlysnowfile is SNFNAM.
       write(hourlysnowfile,'(a)') SNFNAM
-      sitelat=XLAT
-      sitelong=XLON
-      siteexposureindex=IXPOS
-      skyview=SKYR
-      groundview=GRDR
-      buildingview=BLDR
 
-C Ground related information.
-      groundreflmodel=ITGREF
-      groundreflanual=GREF
-      havegroundreflanual=.true.
-
-C Ground reflectivity model, no-snow monthly albedos, snow albedo
-C (if ground reflectivity model 2 or 3)
-      if(groundreflmodel.NE.1)then
-        DO 443 I=1,12
-          groundreflmonth(I)=GREF12(I)
-  443   CONTINUE
-        snowrefl=SREF
+C Depending on the Index of Exposure the proportions of the
+C surroundings are assigned new variable names.
+      if(siteexposureindex.eq.8)then
+        continue
+      else
+        buildingview=PROPB(siteexposureindex)
+        skyview=PROPS(siteexposureindex)
+        groundview=PROPG(siteexposureindex)
       endif
 
-C Number of days with snow on the ground 
-C (if ground reflectivity model 2)
-      if(ITGREF.EQ.2)then
 C Number of days with snow on the ground (if ground refl model 2)
-        DO 444 I=1,12
-          dayswithsnow(I)=NSNOW(I)
-  444   CONTINUE
+      if(groundreflmodel.EQ.2)then
         havesnowdays=.true.
       endif
 
 C Snow depth file (if ground reflectivity model 3)
-      if(ITGREF.EQ.3)then
+      if(groundreflmodel.EQ.3)then
         write(hourlysnowfile,'(a)') SNFNAM(1:lnblnk(SNFNAM))
         havehourlysnowfile=.true.
       endif
@@ -2507,29 +2654,14 @@ C << add in zone description >>
         usefile(iz) = ' '       ! usefile (skip for now)
         nbwalls(iz) = NZSUR(IZ) ! surfaces in the zone
         rotateit(iz) = 0.0      ! rotation is always zero
-	if(iobs(iz).eq.0)then
-          nbob(iz) = 0
-        else
-	  ! we need a variable for this
-        endif
 
 C Control data - ignore for now.
         ht_Setpoint(iz)= 0.0
         cl_Setpoint(iz)= 0.0
         i_ctl_link(iz)=0
 
-C Obstructions - this is only known after scanning zone file.
-C        do 55 ibu=1,nbob(iz)
-C          XOB(iz,ibu) = 0.0
-C          YOB(iz,ibu) = 0.0
-C          ZOB(iz,ibu) = 0.0
-C          DXOB(iz,ibu) = 0.0
-C          DYOB(iz,ibu) = 0.0
-C          DZOB(iz,ibu) = 0.0
-C          BANGOB(iz,ibu) = 0.0
-C          BLOCKNAME(iz,ibu) = ' '
-C          BLOCKMAT(iz,ibu) = ' '
-C  55    continue
+C Obstructions - if the original model has obstructions then
+C we will use them.
 
   42  continue
 
@@ -2558,10 +2690,10 @@ C Write header lines from file, the 1.1 version looks like:
 C *silent_input
       tab=','    ! make the separator a comma.
       write(ifilg,'(a)',IOSTAT=ios,ERR=13) '*silent_input'
-      write(ifilg,'(3a)',IOSTAT=ios,ERR=13)'*menu',tab,
-     &  silentmenu(1:lnblnk(silentmenu))
+      write(ifilg,'(3a)',IOSTAT=ios,ERR=13)'*title',tab,
+     &  modeltitle(1:lnblnk(modeltitle))
       write(ifilg,'(3a)',IOSTAT=ios,ERR=13)'*doc',tab,
-     &  silentdoc(1:lnblnk(silentdoc))
+     &  modeldocblock(1:lnblnk(modeldocblock))
       write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)'*date',tab,dstmp,
      &  '  # latest file modification '
       write(ifilg,'(9a)',IOSTAT=IOS,ERR=13)'*action',tab,
@@ -2570,31 +2702,37 @@ C *silent_input
      &  folder(1:lnblnk(folder)),tab,mpath(1:lnblnk(mpath))
       write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)'*weather_station',tab,
      &  weather(1:lnblnk(weather)),'  # climate file'
+
+C Depending on site exposure write two lines.
       if(siteexposureindex.eq.8)then
-        write(ifilg,'(2a,F6.3,a,F6.3,a,F5.2,a,i2,a,F5.2,a,
-     &    F5.2,a,F5.2,a)',IOSTAT=IOS,ERR=13)
-     &    '*site',tab,sitelat,tab,sitelong,tab,
-     &    hoursGTM,tab,siteexposureindex,tab,skyview,tab,
+        write(ifilg,'(2a,F6.3,a,F6.3,a,F5.2,a)',IOSTAT=IOS,ERR=13)
+     &    '*site_loc',tab,sitelat,tab,sitelongdif,tab,
+     &    hoursGTM,' # latitude deg long-diff deg time-zone GMT'
+        write(ifilg,'(2a,i2,a,F5.2,a,F5.2,a,F5.2,a)',IOSTAT=IOS,ERR=13)
+     &    '*site_exp',tab,siteexposureindex,tab,skyview,tab,
      &    groundview,tab,buildingview,
-     &    ' # latitude long-diff time-zone exposure-index'
+     &    ' # exposure-index (user) sky ground building views'
       else
-        write(ifilg,'(2a,F6.3,a,F6.3,a,F5.2,a,i2,a)',IOSTAT=IOS,ERR=13)
-     &    '*site',tab,sitelat,tab,sitelong,tab,
-     &    hoursGTM,tab,siteexposureindex,
-     &    ' # latitude long-diff time-zone exposure-index'
+        write(ifilg,'(2a,F6.3,a,F6.3,a,F5.2,a)',IOSTAT=IOS,ERR=13)
+     &    '*site_loc',tab,sitelat,tab,sitelongdif,tab,hoursGTM,
+     &    ' # latitude deg long-diff deg time-zone GMT'
+        write(ifilg,'(2a,i2,a,F5.2,a,F5.2,a,F5.2,a)',IOSTAT=IOS,ERR=13)
+     &    '*site_exp',tab,siteexposureindex,tab,skyview,tab,
+     &    groundview,tab,buildingview,
+     &    ' # exposure-index (std) sky ground building views'
       endif
-      if(havegroundreflanual)then
-        write(ifilg,'(2a,F6.3,a)',IOSTAT=IOS,ERR=13)
-     &    '*ground_refl_annual',tab,groundreflanual,
-     &    ' # ground reflection (avg for year)'
-      endif
+
+C Write the static ground reflction value from the model.
+      write(ifilg,'(2a,F6.3,a)',IOSTAT=IOS,ERR=13)
+     &  '*ground_refl_annual',tab,groundrefl,
+     &  ' # ground reflection (avg for year)'
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
       if(groundreflmodel.gt.1)then
         WRITE(ifilg,803,IOSTAT=IOS,ERR=14)
      &    '*ground_refl_monthly',tab,groundreflmodel,
-     &    tab,(groundreflmonth(I),I=1,12),snowrefl
+     &    tab,(groundreflmonth(I),I=1,12),snowgroundrefl
   803   FORMAT(2A,I1,A,13(1X,F5.3))
       endif
 
@@ -2610,11 +2748,12 @@ C Do something about monthly snow data etc.
      &    hourlysnowfile(1:lnblnk(hourlysnowfile)),' # snow depth file'
       endif
 
-C Ground temperatures.
+C Ground temperatures (monthly profiles). Header followed by one
+C line of 12 values for each included profile.
       if(havegroundtempsets)then
         write(ifilg,'(2a,I3,a)',IOSTAT=IOS,ERR=13)
      &    '*monthly_profile',tab,groundtempsets,
-     &    '  # ground temperature profiles'
+     &    '  # nb of ground temperature profiles'
         DO 28 IGRDP=1,groundtempsets
           WRITE(ifilg,933,IOSTAT=IOS,ERR=14)
      &      (groundtemps(J,IGRDP),J=1,12)
@@ -2685,8 +2824,108 @@ C << on a separate line with a tag.
      &        outsd(1:lnblnk(outsd)),'  # ',isu
  144      continue
 
-C << obstruction information goes here >>
+C Shading calculation directives in the form of:
+C *shad_calc,all_applic,20 # list of surfs
+          if(nsurfcalc(nsz).eq.0)then
+            write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# shading directives'
+            write(ifilg,'(a)',IOSTAT=ios,ERR=13)
+     &        '*shad_calc,none  # no temporal shading requested'
+          elseif(nsurfcalc(nsz).gt.0)then
+            write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# shading directives'
+            if(iaplic(nsz,1).eq.1)then
+              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+     &        '*shad_calc,all_applicable ',nsurfcalc(nsz),
+     &        ' # list of surfs'
+              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+     &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
+            elseif(iaplic(nsz,1).eq.0)then
+              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+     &        '*shad_directive,list',nsurfcalc(nsz),
+     &        ' # list of surfs'
+              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+     &        (lstsfcalc(nsz,J),J=1,nsurfcalc(nsz))
+            endif
+          endif
 
+C Insolation calculation directives.
+C *insol_calc,all_applic,2 # insolation sources
+          write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
+     &      '# insolation directives'
+          if(nsurfinso(nsz).eq.0)then
+            write(ifilg,'(a)',IOSTAT=ios,ERR=13)
+     &        '*insol_calc,none  # no insolation requested'
+          elseif(nsurfinso(nsz).gt.0)then
+            if(iaplic(nsz,2).eq.1)then
+              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+     &        '*insol_calc,all_applicable ',nsurfinso(nsz),
+     &        ' # insolation sources'
+              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+     &        (isurfinso(nsz,J),J=1,nsurfinso(nsz))
+            elseif(iaplic(nsz,2).eq.0)then
+              write(ifilg,'(a,i3,a)',IOSTAT=ios,ERR=13)
+     &        '*insol_calc,list',nsurfinso(nsz),
+     &        ' # insolation sources'
+              write(ifilg,'(42i3)',IOSTAT=ios,ERR=14)
+     &        (isurfinso(nsz,J),J=1,nsurfinso(nsz))
+            endif
+          endif
+
+C Obstruction information lines.  Write out slightly different
+C format if type 'obs' and 'obs3'
+          if(nbobs(nsz).gt.0)then
+            write(ifilg,'(a)',IOSTAT=IOS,ERR=13)
+     &        '#  *obs = solar obstructions'
+            write(ifilg,'(2a,i2,i3,a)',IOSTAT=IOS,ERR=13) 
+     &        '*solar_grid',tab,NOX(nsz),NOZ(nsz),
+     &        ' # solar gridding density'
+            do 55 ib=1,nbobs(nsz)
+              if(BLOCKTYP(nsz,ib)(1:4).eq.'obs ')then
+                write(outs,'(2a,7F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &            '*obs',tab,XOB(nsz,ib),YOB(nsz,ib),ZOB(nsz,ib),
+     &            DXOB(nsz,ib),DYOB(nsz,ib),DZOB(nsz,ib),
+     &            BANGOB(nsz,ib,1),BLOCKNAME(nsz,ib),
+     &            BLOCKMAT(nsz,ib)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd)),'  # block ',ib
+              elseif(BLOCKTYP(nsz,ib)(1:4).eq.'obs3')then
+                write(outs,'(2a,9F9.3,1X,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &            '*obs3',tab,XOB(nsz,ib),YOB(nsz,ib),ZOB(nsz,ib),
+     &            DXOB(nsz,ib),DYOB(nsz,ib),DZOB(nsz,ib),
+     &            BANGOB(nsz,ib,1),BANGOB(nsz,ib,2),BANGOB(nsz,ib,3),
+     &            BLOCKNAME(nsz,ib),BLOCKMAT(nsz,ib)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd)),'  # block ',ib
+              elseif(BLOCKTYP(nsz,ib)(1:4).eq.'obsp')then
+                WRITE(outs,'(2a,A,1X,A)',IOSTAT=ios,ERR=13) 
+     &          '*obsp',' 8 6 ',BLOCKNAME(nsz,ib),BLOCKMAT(nsz,ib)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(2a,i2,a)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd)),'  # block ',ib,
+     &            ' coords follow:'
+
+                WRITE(outs,'(12F9.3)',IOSTAT=ios,ERR=13) 
+     &            XBP(nsz,ib,1),YBP(nsz,ib,1),ZBP(nsz,ib,1),
+     &            XBP(nsz,ib,2),YBP(nsz,ib,2),ZBP(nsz,ib,2),
+     &            XBP(nsz,ib,3),YBP(nsz,ib,3),ZBP(nsz,ib,3),
+     &            XBP(nsz,ib,4),YBP(nsz,ib,4),ZBP(nsz,ib,4)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(A)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd))
+
+                WRITE(outs,'(12F9.3)',IOSTAT=ios,ERR=13) 
+     &            XBP(nsz,ib,5),YBP(nsz,ib,5),ZBP(nsz,ib,5),
+     &            XBP(nsz,ib,6),YBP(nsz,ib,6),ZBP(nsz,ib,6),
+     &            XBP(nsz,ib,7),YBP(nsz,ib,7),ZBP(nsz,ib,7),
+     &            XBP(nsz,ib,8),YBP(nsz,ib,8),ZBP(nsz,ib,8)
+                call SDELIM(outs,outsd,'C',IW)
+                write(ifilg,'(A)',IOSTAT=IOS,ERR=13) 
+     &            outsd(1:lnblnk(outsd))
+              endif
+  55        continue
+          endif
+	  
 C << usage information goes here >>
 
 C Idea control information is work in progress.
@@ -2714,29 +2953,6 @@ C Now close meta file.
 
 
 C Data structures which have not yet been sorted.
-C      if(WORD(1:4).eq.'*obs')then
-
-C An obstruction block to be associated with the current zone.
-C        nbob(nsz)=nbob(nsz)+1
-C        nob=nbob(nsz)
-C        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','X org',IER)
-C        XOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','Y org',IER)
-C        YOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','Z org',IER)
-C        ZOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','X dis',IER)
-C        DXOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Y dis',IER)
-C        DYOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','Z dis',IER)
-C        DZOB(nsz,nob)=val1
-C        CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','rot a',IER)
-C        BANGOB(nsz,nob)=val1
-C        CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-C        write(BLOCKNAME(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
-C        CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
-C        write(BLOCKMAT(nsz,nob),'(a)') WORD(1:lnblnk(WORD))
 C      elseif(WORD(1:6).eq.'*usage')then
 
 C After *usage the next token is 'pattern' (tag indicating that

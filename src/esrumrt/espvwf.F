@@ -23,12 +23,21 @@ C ESRU: espvwf
 C Revised to take in configuration file and zone focus.
       program espvwf
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 #include "prj3dv.h"
+
+C IEEE callback (Solaris)
+#ifdef SUN
+#ifdef F90
+      external SIGFPE_bps      
+      integer SIGFPE_bps      
+#endif
+#endif
       
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -77,14 +86,6 @@ C Indicator of possible focus zone.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
 C Project journal on/off, unit number, cmd, file name.
@@ -122,7 +123,6 @@ C Name of current application
       character outs*124,outs248*248,MODE*4
       CHARACTER H*72,OUTSTR*124,CUBN*6,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,upath*72,cfgroot*24
@@ -242,9 +242,13 @@ C See also: f77_ieee_environment(3F) f77_floatingpoint(3F)
 C           Note that in case of Sun FORTRAN, IEEEE exceptions arise
 C           only if: Sun-3 f77 with -f68881 or -ffpa option
 C                or: Sun-4 f77.
-C      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
-C      ieeer=ieee_handler('set','common',SIGFPE_bps)
-C      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
+#ifdef SUN
+#ifdef F90
+      ieeer=ieee_handler('set','common',SIGFPE_ABORT)
+      ieeer=ieee_handler('set','common',SIGFPE_bps)
+      if(ieeer.ne.0) write(iuout,*) ' IEEE_handler not set !'
+#endif
+#endif
 
 c Initialise output device, assume minimal trace.
       MMOD=MODL
@@ -314,9 +318,11 @@ C graphic display to compensate.
         nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
-C Debug
-        write(6,*) 'mdispl,ifgrey,ncset,ngset,nzonec ',
-     &    mdispl,nifgrey,ncset,ngset,nzonec
+
+C Debug.
+C        write(6,*) 'mdispl,ifgrey,ncset,ngset,nzonec ',
+C     &    mdispl,nifgrey,ncset,ngset,nzonec
+
       ENDIF
       CALL ESPrVersion("summary",cAppName,IUOUT)
       call edisp(iuout,' ')
@@ -414,7 +420,7 @@ C successful then scan all the zones via ZDATA.
           call fdroot(LCMDFL,path,LCFGF)
           call edisp(iuout,' ')
           call edisp(iuout,' Scanning the model description')
-          MODE='NONE'
+          MODE='ALL '
           CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
           if(IER.eq.0)then
             CFGOK=.TRUE.
@@ -550,7 +556,7 @@ C Find the path and local file name.
         call fdroot(LCMDFL,path,LCFGF)
         call edisp(iuout,' ')
         call edisp(iuout,' Scanning the model description')
-        MODE='NONE'
+        MODE='ALL '
         CALL ERSYS(LCFGF,IFCFG,IAIRP,MODE,0,IER)
         if(IER.eq.0)then
           CFGOK=.TRUE.
@@ -759,7 +765,7 @@ C drawn and remember number of surfaces to pass to sensor file.
       ICOMP=IC
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
       else
         call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
       endif
@@ -855,18 +861,13 @@ C Calculate viewfactors for a zone.
       SUBROUTINE CALVF(ICOMP)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/MRT2/GEOLOAD,MRTLOAD
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
@@ -883,7 +884,6 @@ C outfile is the geometry file name for the zone with cube added.
       real drow,rowsum(MS+1)
       integer wrongrow
       character outs*124,h*72
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       logical OK,DOK,GEOLOAD,MRTLOAD
       dimension iivis(MSM)
 
@@ -1055,16 +1055,20 @@ C ***** Dummy display of images.
       end
 
 C In support of floating point exceptions.
-C      integer function SIGFPE_bps(sig,code,context)
-C      integer sig,code,context(5)
-C      character label*16
-C      if(loc(code).eq.208) label = 'invalid'
-C      if(loc(code).eq.200) label = 'division by zero'
-C      if(loc(code).eq.212) label = 'overflow'
-C      if(loc(code).eq.204) label = 'underflow'
-C      if(loc(code).eq.196) label = 'inexact'
-C      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
-C      SIGFPE_bps = loc(code)
-C      end
+#ifdef SUN
+#ifdef F90
+      integer function SIGFPE_bps(sig,code,context)
+      integer sig,code,context(5)
+      character label*16
+      if(loc(code).eq.208) label = 'invalid'
+      if(loc(code).eq.200) label = 'division by zero'
+      if(loc(code).eq.212) label = 'overflow'
+      if(loc(code).eq.204) label = 'underflow'
+      if(loc(code).eq.196) label = 'inexact'
+      write(6,*) 'Exception code ',loc(code),label,'at ',context(4)
+      SIGFPE_bps = loc(code)
+      end
+#endif
+#endif
 
 

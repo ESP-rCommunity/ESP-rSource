@@ -337,6 +337,7 @@ C Data items.
       subroutine EDSPM(ISPM,MODE,ITRU)
 #include "net_flow.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "power.h"
 #include "epara.h"
@@ -366,10 +367,6 @@ C << rewrite logic using G6 common block >>
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -650,14 +647,14 @@ c      ISO=ispmloc(IVAL,2)
       if(IZ.eq.0) return
       call eclose(gversion(IZ),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
       endif
 
 C << rewrite logic to use G7 common rather than call zinfo >>
 
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 
 C General image option flags.
       ITDSP=1
@@ -704,7 +701,7 @@ c      IVAL=IFOC
 
       call eclose(gversion(IZ),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
       endif
@@ -890,11 +887,11 @@ C For ducted wind turbine - select the position of the DWT outlet
         if(IZ.eq.0) return
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
         endif
-        CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+        CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 C General image option flags.
         ITDSP=1
         ITBND=1
@@ -929,7 +926,7 @@ C General image option flags.
 C Recover the related zone.
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
         endif

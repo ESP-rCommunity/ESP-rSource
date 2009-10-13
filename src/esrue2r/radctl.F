@@ -172,7 +172,9 @@ C Check for defined items - if found then decode.
           call EGETWR(crenrp,K,xlw,0.0,1.0,'W','limit weight',IER)
           IW=IW-2
         else
-          write (6,*) 'Unknown radiance parameter (1): ',flag
+
+C Debug.
+C          write(6,*) 'Unknown radiance parameter (1): ',flag
         endif
 
 C Check other parameters.
@@ -215,7 +217,10 @@ C Return current value of parameter.
         elseif (PAR.eq.'lw') then
           VAL=xlw
         else
-          write (6,*) 'Unknown radiance parameter (2): ',PAR
+
+C Debug.
+C          write(6,*) 'Unknown radiance parameter (2): ',PAR
+
         endif
 
 C If no value has been found for the parameter then scan options file.
@@ -275,7 +280,10 @@ C Set new/ Update parameter.
         elseif (PAR.eq.'lw') then
           xlw=VAL
         else
-          write (6,*) 'Unknown radiance parameter (3): ',PAR
+
+C Debug.
+C          write(6,*) 'Unknown radiance parameter (3): ',PAR
+
         endif
 
 C Write out new string.

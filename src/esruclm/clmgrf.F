@@ -150,7 +150,9 @@ C complicated logic) the right.
               endif
             endif
           endif
-          write(6,*) ' a number of right axis is ',onright
+
+C Debug.
+C          write(6,*) ' a number of right axis is ',onright
 
 C Take into account which axis needs to be drawn as in esrures/tgraph.F.
           if(IFS.ne.IMFS)call winfnt(IMFS)
@@ -199,8 +201,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
           call startbuffer()
 
 C Debug.
-          write(6,*)'clmgrf igl igr igt igb igw igwh',igl,igr,igt,
-     &      igb,igw,igwh
+C          write(6,*)'clmgrf igl igr igt igb igw igwh',igl,igr,igt,
+C     &      igb,igw,igwh
 
           mxmn=.TRUE.
           CALL CLMDRW(IPICK,mxmn,onleft,onright,'-')
@@ -291,7 +293,8 @@ C bounds and redraw the image before presenting the command menu.
             endif
           endif
         endif
-        write(6,*) ' b number of right axis is ',onright
+C Debug.
+C        write(6,*) ' b number of right axis is ',onright
 
 C Take into account which axis needed to be drawn as in esrures/tgraph.F
         if(IFS.ne.IMFS)call winfnt(IMFS)
@@ -786,8 +789,11 @@ C Check if can draw in colour.
 
 C DRAW TIME AXIS
 C Pick up the data increment for the horizontal axis.
-      write(6,*)'dcaxes igl igr igt igb igw igwh onleft onright ',
-     &  igl,igr,igt,igb,igw,igwh,onleft,onright,' ',acthor
+
+C Debug.
+C      write(6,*)'dcaxes igl igr igt igb igw igwh onleft onright ',
+C     &  igl,igr,igt,igb,igw,igwh,onleft,onright,' ',acthor
+
       call dinterval(TMIN,TMAX,DT,NDEC,1)
       if(acthor.eq.'-')then
         call horaxis(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,'Time (hours)')

@@ -902,6 +902,7 @@ C setdfgrid allows the creation of the daylight factor grid points.
 C if MODE is not - then sensor points file name confirmation required.
       subroutine setdfgrid(MODE,izone,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "e2r_common.h"
 
@@ -926,10 +927,6 @@ C if MODE is not - then sensor points file name confirmation required.
 
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
@@ -1012,7 +1009,7 @@ C Now read zone geometry file to enable edge selection.
       ITRC=0
       call eclose(gversion(ifocz),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
+        call georead(ITA1,LGEOM(ifocz),ifocz,0,IUOUT,IER)
       else
         call EGOMIN(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
       endif
@@ -1273,6 +1270,8 @@ C for use with a 'Coupling' scene purpose.
 
       SUBROUTINE SENLOC
 #include "building.h"
+#include "model.h"
+      
 #include "e2r_common.h"
 
       integer lnblnk  ! function definition
@@ -1290,10 +1289,6 @@ C for use with a 'Coupling' scene purpose.
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCGCINT
       character outs*124,runpath*72,pathtype*24
 
@@ -1459,6 +1454,7 @@ C gain control file.
 
       SUBROUTINE RDCFTMP(LFTMP,ISET)
 #include "building.h"
+#include "model.h"
 #include "e2r_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1483,10 +1479,6 @@ C MDCFV - max no of sky patches.
       COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
      & IDCFID(MCOM,MLCOM,MDF)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCGCINT,LFTMP
       character outs*124
 

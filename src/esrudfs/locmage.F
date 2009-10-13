@@ -385,7 +385,10 @@ C Not in graphics mode => list data.
         endif
       endif
 C Check for convergence, making sure that we have done at least 5 iterations.
-C        write (6,*) 'Residual and max resid ',RESORL,SRMAX(ICFD)
+
+C Debug.
+C        write(6,*) 'Residual and max resid ',RESORL,SRMAX(ICFD)
+
 C      if (RESORL.lt.SRMAX(ICFD).and.NITER.gt.5) goto 99
       if (RESORL.lt.SRMAX(ICFD) .and. NOSTOP .ne.0 
      &     .and. NITER.gt.5) goto 99
@@ -656,10 +659,15 @@ C High wall.
  415  CONTINUE
 
 C Here te average value of LMA in the outlets is calculated 
+
+C Debug.
 C      write(6,*)'AVELMA,sumflu=',AVELMA,SUMFLU
 
       AVELMA=AVELMA/(anotzero(SUMFLU))
+
+C Debug.
 C      write(6,*)'average LMA in outlets=',AVELMA
+
 C <<Here we need to make an output of the average outlet-LMA on 
 C screen - probably the best is to do it with the monitoring values>>
 

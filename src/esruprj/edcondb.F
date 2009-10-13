@@ -419,7 +419,7 @@ C Add a material, initiate it to the values of last material in class.
               EE(ILNE)=EE(NE)
               EA(ILNE)=EA(NE)
               EDRV(ILNE)=EDRV(NE)
-              CALL EDPELEM(iuout,EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
+              CALL EDPELEM(EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
      &           EE(ILNE),EA(ILNE),EDRV(ILNE),ENAM(ILNE),IER) 
               NE=NE+1
               MODDB=.TRUE.
@@ -438,7 +438,7 @@ C Add a material, initiate it to the values of last material in class.
 C Identified one of the materials to edit or select.
           IFOC=INO-7
           if(ACTION.eq.'M')then
-            CALL EDPELEM(iuout,EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
+            CALL EDPELEM(EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
      &        EE(IFOC),EA(IFOC),EDRV(IFOC),ENAM(IFOC),IER) 
             MODDB=.TRUE.
             chgdb=.true.
@@ -840,7 +840,7 @@ C Help text for this menu.
             chgdb=.true.
             ltmp=' '
             write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
-            CALL mkascimat(IUOUT,IAF,ltmp,IER)
+            CALL mkascimat(IAF,ltmp,IER)
             MODDB=.FALSE.
           ENDIF
           GOTO 4
@@ -884,7 +884,7 @@ C reset flag to show db is current with local arrays.
             chgdb=.true.
             ltmp=' '
             write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
-            CALL mkascimat(IUOUT,IAF,ltmp,IER)
+            CALL mkascimat(IAF,ltmp,IER)
             MODDB=.FALSE.
           ENDIF
         ELSEIF(INO.EQ.NITMS-3)THEN
@@ -1102,7 +1102,7 @@ C If there is room add a note about its origin.
 C Browse/Edit the details of this new item. Mark as unmodified first
 C and then resetn MODDB and chgdb if mod is true.
                 mod=.false.
-                call edonemat(iuout,ILNE,mod,ier)
+                call edonemat(ILNE,mod,ier)
                 if(mod)then 
                   MODDB=.TRUE.
                   chgdb=.true.
@@ -1126,7 +1126,7 @@ C Identified one of the materials to edit or select.
 C Browse/Edit the details of this item. Mark as unmodified first
 C and then resetn MODDB and chgdb if mod is true.
             mod=.false.
-            call edonemat(iuout,ifoc,mod,ier)
+            call edonemat(ifoc,mod,ier)
             if(mod)then 
               MODDB=.TRUE.
               chgdb=.true.
@@ -1170,10 +1170,14 @@ C and then resetn MODDB and chgdb if mod is true.
 
 C ************* EDPELEM 
 C EDPELEM: Edits a material within material database.
-      SUBROUTINE EDPELEM(ITRU,DBCON,DBDEN,DBSHT,E,A,DRV,NAM,IER)
+      SUBROUTINE EDPELEM(DBCON,DBDEN,DBSHT,E,A,DRV,NAM,IER)
       common/pophelp/h(60)
       DIMENSION PELM(11)
-      CHARACTER H*72,NAM*72,PELM*34,tnam*72
+      CHARACTER H*72,PELM*34,tnam*72
+
+C Parameters
+      real DBCON,DBDEN,DBSHT,E,A,DRV
+      character NAM*72
 
 C Work with local name.
       tnam = NAM
@@ -1247,7 +1251,7 @@ C Help text for this menu.
 C ************* EDONEMAT 
 C EDONEMAT: Edits a material in the common block at array index index.
 C mod is returned as true if data has changed.
-      SUBROUTINE EDONEMAT(ITRU,index,mod,IER)
+      SUBROUTINE EDONEMAT(index,mod,IER)
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -2378,6 +2382,7 @@ C << if needed.
 
       SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/G7/precz.
 #include "geometry.h"
@@ -2392,10 +2397,6 @@ C geometry.h provides commons G0/G2/G7/precz.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -3035,7 +3036,7 @@ C << geometry file before writing it out.
             CALL USRMSG(' ',outs,'-')
             LTMP=LGEOM(IZ)
             if(newgeo)then
-              call georead(IUF,LTMP,IZ,1,0,iuout,IER)
+              call georead(IUF,LTMP,IZ,1,iuout,IER)
             else
               call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
             endif
@@ -3074,7 +3075,7 @@ C out of date zone construction files.
               if(newgeo)then
                 call geowrite(IUF,LTMP,IZ,ITRU,3,IER)
               else
-                call emkgeo(IUF,LTMP,IZ,ITRU,3,IER)
+                call emkgeo(IUF,LTMP,IZ,3,IER)
               endif
               write(outs,'(3a)') ' Updating: ',zn(1:lnblnk(zn)),
      &          ' attributes... done.'
@@ -3281,10 +3282,16 @@ C MKBPRC: Creates a binary materials db based on the
 C current contents of an ASCII file LASCI opened on unit IFA.
 C Note: this subroutine is being depreciated because models
 C can use ascii version of materials database. 
-      SUBROUTINE MKBPRC(ITRU,IFA,LASCI,IER)
+      SUBROUTINE MKBPRC(IFA,LASCI,IER)
 #include "esprdbfile.h"
+      integer icln
+      real val
       DIMENSION ICLN(30),VAL(6)
-      CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72
+      CHARACTER IDESC*72,NDESC*72,OUTSTR*124
+
+C Parameters
+      integer ifa  ! file unit
+      character LASCI*72 ! ascii file to scan
 
 C The binary file will be overwritten.
       call EFOPRAN(IFMAT,LFMAT,40,4,IER)
@@ -3358,13 +3365,19 @@ C File errors.
 C ************* MKAPRC 
 C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
-      SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
+      SUBROUTINE MKAPRC(LASCI,IFA,IER)
 #include "esprdbfile.h"
       integer lnblnk  ! function definition
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      integer icln
+      real val
       DIMENSION ICLN(30),VAL(6)
-      CHARACTER IDESC*72,NDESC*72,LASCI*72
+      CHARACTER IDESC*72,NDESC*72
+
+C Parameters
+      integer IFA  ! file unit
+      character LASCI*72  ! file name
 
 C Open the binary materials database (in clase it was closed elsewhere).
       CALL ERPFREE(IFMAT,ISTAT)

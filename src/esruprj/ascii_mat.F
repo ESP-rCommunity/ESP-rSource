@@ -189,12 +189,17 @@ C             current ASCII material database.
 C ************* rlegacymat 
 C rlegacymat: Fills common matdatarray and matnamearray from
 C legacy ASCII material database LASCI opened on unit IFA. 
-      subroutine rlegacymat(ITRU,IFA,LASCI,IER)
+      subroutine rlegacymat(IFA,LASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer IFA         ! ascii file unit number
+      character LASCI*72  ! ascii file name
+      integer IER         ! error return where zero is ok
 
       real matver
       integer matcats,matcatitems,matdbitems
@@ -226,7 +231,7 @@ C espriou.h provides currentfile.
       common/mathasharray/mathash(0:600)
 
       DIMENSION VAL(6)
-      CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72
+      CHARACTER IDESC*72,NDESC*72,OUTSTR*124
 
 C Open the ASCII file for reading. Reset ier state prior to efopseq.
       ier=0
@@ -419,10 +424,15 @@ C ************* mkascimat
 C mkascimat: creates ascii material file (version 1.1) based on
 C current information in common matdatarray and matnamearray.
 C ASCII file LASCI opened on unit IFA. 
-      subroutine mkascimat(ITRU,IFA,LASCI,IER)
+      subroutine mkascimat(IFA,LASCI,IER)
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer IFA         ! ascii file unit number
+      character LASCI*72  ! ascii file name
+      integer IER         ! error return where zero is ok
 
 C Notes on variables at top of file.
       real matver
@@ -454,7 +464,7 @@ C Notes on variables at top of file.
       integer mathash
       common/mathasharray/mathash(0:600)
       character tab*1,outs*248,outsd*248
-      character LASCI*72
+
       integer matcount,matcatcount  ! used to increment arrays
       integer lncat     ! for length of string
 
@@ -573,11 +583,16 @@ C common block arrays so that future reads are more efficient.
 C ************* rascimat 
 C rascimat: Fills common matdatarray and matnamearray from
 C current ASCII material database LASCI opened on unit IFA. 
-      subroutine rascimat(ITRU,IFA,LASCI,IER)
+      subroutine rascimat(IFA,LASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer IFA         ! ascii file unit number
+      character LASCI*72  ! ascii file name
+      integer IER         ! error return where zero is ok
 
       real matver
       integer matcats,matcatitems,matdbitems
@@ -609,7 +624,7 @@ C current ASCII material database LASCI opened on unit IFA.
       common/mathasharray/mathash(0:600)
 
       DIMENSION VAL(16)
-      CHARACTER IDESC*72,NDESC*72,OUTSTR*124,LASCI*72,WORD*24
+      CHARACTER IDESC*72,NDESC*72,OUTSTR*124,WORD*24
       character WORD32*32,WORD248*248,LOUTSTR*248
 
 C Open the ASCII file for reading.

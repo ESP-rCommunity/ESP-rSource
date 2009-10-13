@@ -1,68 +1,68 @@
 *connections  for sport_cen
-*Date Wed Jul 28 17:33:01 2004
+*Date Wed Jul 22 08:17:07 2009
      65   # number of connections
-   1   1   0   0   0  #   1  Surf-1 in changing is External
-   1   2   3   3  13  #   2  Surf-2 in changing >|< change-r in main-hall
-   1   3   3   2   1  #   3  Surf-3 in changing >|< Surf-1 in gym
-   1   4   0   0   0  #   4  Surf-4 in changing is External
-   1   5   0   0   0  #   5  Surf-5 in changing is External
-   1   6   4   1   0  #   6  Surf-6 in changing >|< ground profile 1
-   1   7   3   4   5  #   7  recep-r in changing >|< Surf-5 in entrance
-   1   8   5   0   0  #   8  xSurf-6 in changing is adiabatic
-   1   9   5   0   0  #   9  Surf-9 in changing is adiabatic
-   1  10   0   0   0  #  10  glaz-1 in changing is External
-   1  11   0   0   0  #  11  glaz-2 in changing is External
-   1  12   0   0   0  #  12  glaz-3 in changing is External
-   1  13   3   3  19  #  13  glaz_hall2 in changing >|< xglaz_hall2 in main-hall
-   2   1   3   1   3  #  14  Surf-1 in gym >|< Surf-3 in changing
-   2   2   3   3  14  #  15  Surf-2 in gym >|< gym-r in main-hall
-   2   3   0   0   0  #  16  Surf-3 in gym is External
-   2   4   0   0   0  #  17  Surf-4 in gym is External
-   2   5   0   0   0  #  18  Surf-5 in gym is External
-   2   6   4   1   0  #  19  Surf-6 in gym >|< ground profile 1
-   2   7   5   0   0  #  20  xSurf-6 in gym is adiabatic
-   2   8   5   0   0  #  21  Surf-8 in gym is adiabatic
-   2   9   0   0   0  #  22  glaz-1 in gym is External
-   2  10   0   0   0  #  23  glaz-2 in gym is External
-   2  11   0   0   0  #  24  glaz-3 in gym is External
-   2  12   3   3  20  #  25  glaz_hall in gym >|< xglaz_hall in main-hall
-   3   1   0   0   0  #  26  Surf-1 in main-hall is External
-   3   2   0   0   0  #  27  Surf-2 in main-hall is External
-   3   3   0   0   0  #  28  Surf-3 in main-hall is External
-   3   4   0   0   0  #  29  Surf-4 in main-hall is External
-   3   5   0   0   0  #  30  Surf-5 in main-hall is External
-   3   6   0   0   0  #  31  Surf-6 in main-hall is External
-   3   7   4   1   0  #  32  Surf-7 in main-hall >|< ground profile 1
-   3   8   0   0   0  #  33  Surf-8 in main-hall is External
-   3   9   0   0   0  #  34  Surf-9 in main-hall is External
-   3  10   0   0   0  #  35  Surf-10 in main-hall is External
-   3  11   3   4   4  #  36  xSurf-4 in main-hall >|< Surf-4 in entrance
-   3  12   3   4   3  #  37  xSurf-3 in main-hall >|< Surf-3 in entrance
-   3  13   3   1   2  #  38  change-r in main-hall >|< Surf-2 in changing
-   3  14   3   2   2  #  39  gym-r in main-hall >|< Surf-2 in gym
-   3  15   3   5   1  #  40  plant-r in main-hall >|< Surf-1 in plant
-   3  16   0   0   0  #  41  glaz-1 in main-hall is External
-   3  17   0   0   0  #  42  glaz-2 in main-hall is External
-   3  18   0   0   0  #  43  glaz-3 in main-hall is External
-   3  19   3   1  13  #  44  xglaz_hall2 in main-hall >|< glaz_hall2 in changing
-   3  20   3   2  12  #  45  xglaz_hall in main-hall >|< glaz_hall in gym
-   4   1   0   0   0  #  46  Surf-1 in entrance is External
-   4   2   0   0   0  #  47  Surf-2 in entrance is External
-   4   3   3   3  12  #  48  Surf-3 in entrance >|< xSurf-3 in main-hall
-   4   4   3   3  11  #  49  Surf-4 in entrance >|< xSurf-4 in main-hall
-   4   5   3   1   7  #  50  Surf-5 in entrance >|< recep-r in changing
-   4   6   0   0   0  #  51  Surf-6 in entrance is External
-   4   7   0   0   0  #  52  Surf-7 in entrance is External
-   4   8   4   1   0  #  53  Surf-8 in entrance >|< ground profile 1
-   4   9   0   0   0  #  54  Surf-9 in entrance is External
-   4  10   0   0   0  #  55  glaz-1 in entrance is External
-   4  11   0   0   0  #  56  glaz-2 in entrance is External
-   4  12   0   0   0  #  57  glaz-3 in entrance is External
-   4  13   0   0   0  #  58  glaz-4 in entrance is External
-   4  14   0   0   0  #  59  glaz-5 in entrance is External
-   5   1   3   3  15  #  60  Surf-1 in plant >|< plant-r in main-hall
-   5   2   0   0   0  #  61  Surf-2 in plant is External
-   5   3   0   0   0  #  62  Surf-3 in plant is External
-   5   4   0   0   0  #  63  Surf-4 in plant is External
-   5   5   0   0   0  #  64  Surf-5 in plant is External
-   5   6   4   1   0  #  65  Surf-6 in plant >|< ground profile 1
+   1   1   0   0   0  #    1 Surf-1 in changing is External
+   1   2   3   3  13  #    2 Surf-2 in changing >|< change-r in main-hall
+   1   3   3   2   1  #    3 Surf-3 in changing >|< Surf-1 in gym
+   1   4   0   0   0  #    4 Surf-4 in changing is External
+   1   5   0   0   0  #    5 Surf-5 in changing is External
+   1   6   4   1   0  #    6 Surf-6 in changing >|< ground profile 1
+   1   7   3   4   5  #    7 recep-r in changing >|< Surf-5 in entrance
+   1   8   5   0   0  #    8 xSurf-6 in changing is adiabatic
+   1   9   5   0   0  #    9 Surf-9 in changing is adiabatic
+   1  10   0   0   0  #   10 glaz-1 in changing is External
+   1  11   0   0   0  #   11 glaz-2 in changing is External
+   1  12   0   0   0  #   12 glaz-3 in changing is External
+   1  13   3   3  19  #   13 glaz_hall2 in changing >|< xglaz_hall2 in main-hall
+   2   1   3   1   3  #   14 Surf-1 in gym >|< Surf-3 in changing
+   2   2   3   3  14  #   15 Surf-2 in gym >|< gym-r in main-hall
+   2   3   0   0   0  #   16 Surf-3 in gym is External
+   2   4   0   0   0  #   17 Surf-4 in gym is External
+   2   5   0   0   0  #   18 Surf-5 in gym is External
+   2   6   4   1   0  #   19 Surf-6 in gym >|< ground profile 1
+   2   7   5   0   0  #   20 xSurf-6 in gym is adiabatic
+   2   8   5   0   0  #   21 Surf-8 in gym is adiabatic
+   2   9   0   0   0  #   22 glaz-1 in gym is External
+   2  10   0   0   0  #   23 glaz-2 in gym is External
+   2  11   0   0   0  #   24 glaz-3 in gym is External
+   2  12   3   3  20  #   25 glaz_hall in gym >|< xglaz_hall in main-hall
+   3   1   0   0   0  #   26 Surf-1 in main-hall is External
+   3   2   0   0   0  #   27 Surf-2 in main-hall is External
+   3   3   0   0   0  #   28 Surf-3 in main-hall is External
+   3   4   0   0   0  #   29 Surf-4 in main-hall is External
+   3   5   0   0   0  #   30 Surf-5 in main-hall is External
+   3   6   0   0   0  #   31 Surf-6 in main-hall is External
+   3   7   0   0   0  #   32 Surf-7 in main-hall is External
+   3   8   0   0   0  #   33 Surf-8 in main-hall is External
+   3   9   0   0   0  #   34 Surf-9 in main-hall is External
+   3  10   0   0   0  #   35 Surf-10 in main-hall is External
+   3  11   3   4   4  #   36 xSurf-4 in main-hall >|< Surf-4 in entrance
+   3  12   3   4   3  #   37 xSurf-3 in main-hall >|< Surf-3 in entrance
+   3  13   3   1   2  #   38 change-r in main-hall >|< Surf-2 in changing
+   3  14   3   2   2  #   39 gym-r in main-hall >|< Surf-2 in gym
+   3  15   3   5   1  #   40 plant-r in main-hall >|< Surf-1 in plant
+   3  16   0   0   0  #   41 glaz-1 in main-hall is External
+   3  17   0   0   0  #   42 glaz-2 in main-hall is External
+   3  18   0   0   0  #   43 glaz-3 in main-hall is External
+   3  19   3   1  13  #   44 xglaz_hall2 in main-hall >|< glaz_hall2 in changing
+   3  20   3   2  12  #   45 xglaz_hall in main-hall >|< glaz_hall in gym
+   4   1   0   0   0  #   46 Surf-1 in entrance is External
+   4   2   0   0   0  #   47 Surf-2 in entrance is External
+   4   3   3   3  12  #   48 Surf-3 in entrance >|< xSurf-3 in main-hall
+   4   4   3   3  11  #   49 Surf-4 in entrance >|< xSurf-4 in main-hall
+   4   5   3   1   7  #   50 Surf-5 in entrance >|< recep-r in changing
+   4   6   0   0   0  #   51 Surf-6 in entrance is External
+   4   7   0   0   0  #   52 Surf-7 in entrance is External
+   4   8   4   1   0  #   53 Surf-8 in entrance >|< ground profile 1
+   4   9   0   0   0  #   54 Surf-9 in entrance is External
+   4  10   0   0   0  #   55 glaz-1 in entrance is External
+   4  11   0   0   0  #   56 glaz-2 in entrance is External
+   4  12   0   0   0  #   57 glaz-3 in entrance is External
+   4  13   0   0   0  #   58 glaz-4 in entrance is External
+   4  14   0   0   0  #   59 glaz-5 in entrance is External
+   5   1   3   3  15  #   60 Surf-1 in plant >|< plant-r in main-hall
+   5   2   0   0   0  #   61 Surf-2 in plant is External
+   5   3   0   0   0  #   62 Surf-3 in plant is External
+   5   4   0   0   0  #   63 Surf-4 in plant is External
+   5   5   0   0   0  #   64 Surf-5 in plant is External
+   5   6   4   1   0  #   65 Surf-6 in plant >|< ground profile 1

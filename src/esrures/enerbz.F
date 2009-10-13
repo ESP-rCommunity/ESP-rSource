@@ -31,6 +31,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
 
       SUBROUTINE MOZCAS(IZONE,IANZSE,NIT)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "control.h"
       
@@ -40,19 +41,12 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
       COMMON/AVRAGE/IDAVER
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/loadlabel/lodlabel(mcom,7)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/exporttg/xfile,tg,delim
@@ -73,7 +67,7 @@ C Read in the geometry file to refresh surface attributes.
       iunit=ifil+1
       call eclose(gversion(izone),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
+        call georead(iunit,LGEOM(IZONE),IZONE,0,iuout,ier)
       else
         call egomin(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
       endif
@@ -287,6 +281,7 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
 
       SUBROUTINE MOZSUM(IZONE,IANZSE)
 #include "building.h"
+#include "model.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -295,20 +290,10 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124
 
       DIMENSION XVAL1(MZS)

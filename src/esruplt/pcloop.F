@@ -3854,7 +3854,9 @@ C Outside Temperature Compensation for type 4 control
       ELSE
         BDATA(IPCMP,ITMNO)=STATICV
       ENDIF
-c      write(6,*)'ubtl,ubtlj',ubtl,ubtlj,BDATA(IPCMP,ITMNO)
+
+C Debug.
+C      write(6,*)'ubtl,ubtlj',ubtl,ubtlj,BDATA(IPCMP,ITMNO)
 
 C Trace output.
  235  IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.

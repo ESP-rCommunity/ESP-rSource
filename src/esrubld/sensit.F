@@ -218,15 +218,24 @@ C Depending on change type call editing routine.
         call UAT01(IACT,DIR)
       elseif (IDTYP(IACTD(IACT,1)).eq.1002) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C        call UAT02(IACT,DIR)
       elseif (IDTYP(IACTD(IACT,1)).eq.1004) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C        call UAT04(IACT,DIR)
       elseif (IDTYP(IACTD(IACT,1)).eq.1005) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C        call UAT05(IACT,DIR)
       endif
 
@@ -304,15 +313,24 @@ C Depending on change type call editing routine.
           call UAT01(IACT,DIR)
         elseif (IDTYP(IACTD(IACT,1)).eq.1002) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+c         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C          call UAT02(IACT,DIR)
         elseif (IDTYP(IACTD(IACT,1)).eq.1004) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C          call UAT04(IACT,DIR)
         elseif (IDTYP(IACTD(IACT,1)).eq.1005) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C          call UAT05(IACT,DIR)
         endif
  10   continue

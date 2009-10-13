@@ -61,6 +61,7 @@ C*******************************************************************************
       SUBROUTINE H3K_transport_build_data(iZone)
       IMPLICIT NONE
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "aim2_common.h"
 #include "control.h"
@@ -300,10 +301,6 @@ C.....Surface area data
 
       COMMON/CORIND/ICORI(MCOM,MS),ICORE(MCOM,MS)
       integer ICORI,ICORE ! Transfer coefficient index for internal and external face of MLC
-
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      integer IVF,ISI,IHC,ITW,ICGC,IOBS ! indices for "is there"
 
 C......Surface properties (emissivity and ??  area or absorption??)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),

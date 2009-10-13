@@ -400,16 +400,22 @@ C Set convergence criteria for a coarse convergence. This is adequate to get
 C an indication of the flow field. If the convergence criteria in the DFS
 C file for this domain is greater than 0.02 then use it and if iterations
 C less than 1000 set to 1000.
-      write(6,*) 'In GOPHER SRMAX and MAXITR were ',SRMAX(ICFD),
-     &  MAXITR(ICFD)
+
+C Debug.
+C      write(6,*) 'In GOPHER SRMAX and MAXITR were ',SRMAX(ICFD),
+C     &  MAXITR(ICFD)
+
       if(MAXITR(ICFD).lt.1000)then
         MAXITR(ICFD) = 1000
       endif
       if(SRMAX(ICFD).lt.0.02)then
         SRMAX(ICFD) = 0.02
       endif
-      write(6,*) 'In GOPHER SRMAX and MAXITR are now ',SRMAX(ICFD),
-     &  MAXITR(ICFD)
+
+C Debug.
+C      write(6,*) 'In GOPHER SRMAX and MAXITR are now ',SRMAX(ICFD),
+C     &  MAXITR(ICFD)
+
       LRENORM = .FALSE.
 
 C Set the relaxation factors at safe levels to ensure a converged solution.
@@ -920,7 +926,10 @@ c      SRMAX(ICFD) = 0.001
       else
         SRMAX(ICFD) = 0.02
       endif
-      write(6,*) 'In setConv SRMAX is now ',SRMAX(ICFD)
+
+C Debug.
+C      write(6,*) 'In setConv SRMAX is now ',SRMAX(ICFD)
+
       LRENORM = .FALSE.
 
       RETURN

@@ -31,6 +31,7 @@ C ********************* sbmedit
 C sbmedit define high level data associated with UK NCM methodology.
       subroutine sbmedit
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "sbem.h"
 #include "tdf2.h"
@@ -44,10 +45,6 @@ C sbmedit define high level data associated with UK NCM methodology.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -1074,7 +1071,7 @@ C Update all geometry files to version 1.1 from previous
           IUF=IFIL+2
           CALL ECLOSE(GVERSION(ICOMP),1.1,0.01,NEWGEO)
           IF(NEWGEO)THEN
-            CALL GEOREAD(IUF,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+            CALL GEOREAD(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
           ELSE
             CALL EGOMIN(IUF,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
           ENDIF
@@ -1082,7 +1079,7 @@ C Update all geometry files to version 1.1 from previous
 
 C Code to loop through each surface to build a hash table so that each
 C surface also knowns its children
-          CALL SURREL(ACT,ICOMP,IER)
+          CALL SURREL(ACT,ICOMP)
 
 C For each surface in this zone
           DO 552 ISUR=1,NZSUR(ICOMP)
@@ -1136,7 +1133,7 @@ C yet made that it is hourly and full year.
         IER=0
         call supplyandcheck(LTDFA,'T',ier)
         if(ier.ne.0)then
-          write(6,*) 'non-zero error after call to supplyandcheck'
+          call edisp(iuout,'non-zero error supplyandcheck call.')
         endif
       endif
       if(ISBEM.EQ.1)THEN
@@ -1155,8 +1152,11 @@ C Set entries in ascending order.
         DO 622 IZ=1,NCOMP
           ctl_Zonelink_match=.false.
           if(iactiv_tdf_item(IZ).ne.iactiv_tdf_item(IZ-1))then
-            write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
-     &                 iactiv_tdf_item(IZ-1)
+
+C Debug.
+C            write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
+C     &                 iactiv_tdf_item(IZ-1)
+
 C Reset the counter iskipandmatch to use for the opposite case (i.e.
 C where iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1)
 C See comments at the place where iskipandmatch is used for more details
@@ -1164,7 +1164,9 @@ C about this counter
             iskipandmatch=1     
             icountnotequal=icountnotequal+1
             iforuseintdfentry(icountnotequal)=iactiv_tdf_item(IZ)
-            write(6,*)'a:', icountnotequal
+
+C Debug.
+C            write(6,*)'a:', icountnotequal
 
 C Control items
 C Need a counter here to skip common non-sorted activities and match the right one
@@ -1210,9 +1212,12 @@ C Update the control file and link the control loop to the correct zone.
             icascf(iCTLlink)=icountnotequal
           elseif(iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1))then
             iskipandmatch=iskipandmatch+1
-            write(6,*)'iz_b: ',iactiv_tdf_item(IZ),'iz_b-1: ',
-     &                 iactiv_tdf_item(IZ-1)
-            write(6,*)'b:', icountnotequal
+
+C Debug.
+C            write(6,*)'iz_b: ',iactiv_tdf_item(IZ),'iz_b-1: ',
+C     &                 iactiv_tdf_item(IZ-1)
+C            write(6,*)'b:', icountnotequal
+
             i2skipandmatch=0
             iCTLlink=1
             do while(.not.ctl_Zonelink_match.and.iCTLlink.le.ncomp)
@@ -1524,7 +1529,11 @@ C End of file encountered, close the file and return to menu.
 
 C<<<<<<Change this in the future >>>>>>>>>>>>>
 C<<<Need to add "errors when creating string buffers." ??>>>>>>>>>>>>>
-  212     write(6,*) 'subpath: ',subpath    
+  212   continue
+
+C Debug.
+C        write(6,*) 'subpath: ',subpath
+   
   2     continue 
         NTSPH=1
         itdbdoy=1
@@ -1594,6 +1603,7 @@ C All networks (plant, airflow, contaminants etc) are removed from the
 C model.
       SUBROUTINE EMKSBM
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "sbem.h"
 #include "esprdbfile.h"
@@ -1609,12 +1619,7 @@ C model.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -1622,10 +1627,6 @@ C << G1 is probably not the common block to use for this >>
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -1650,8 +1651,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER SSPARENT*12,SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,LCNN*72,NNAME*72,H*72
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      CHARACTER LCFGF*72,NNAME*72,H*72
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       CHARACTER OUTS*124,GUESS*24,ADF*124,SNM*12,SNM2*12,USE*8,USE2*8
       character doit*248,guesstype*24,dinstpath*48
@@ -1784,7 +1784,7 @@ C Loop through each zone in the model...
         EXT='.geo'
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+          call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
         else
           call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
         endif
@@ -1793,7 +1793,7 @@ C Loop through each zone in the model...
         if(newgeo)then
           call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
         else
-          call emkgeo(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          call emkgeo(IUF,LGEOM(ICOMP),ICOMP,3,IER)
         endif
 
 C Make a copy of constructions file and tmc file if applicable
@@ -1806,7 +1806,7 @@ C Make a copy of constructions file and tmc file if applicable
         EXT='.con'
         CALL FNCNGR(LTHRM(ICOMP),APE,EXT,NNAME)
         LTHRM(ICOMP)=NNAME
-        CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,ITRU,QUIET,IER)
+        CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
         call FINDFIL(LTWIN(ICOMP),XST)
         IF(.NOT.XST)GOTO 500
         IFU=13
@@ -1818,7 +1818,7 @@ C Make a copy of constructions file and tmc file if applicable
 
 C Establish parents of surfaces in this zone (fill common blocks G6 G7)
  500    ACT='s'
-        CALL SURREL(ACT,ICOMP,IER)
+        CALL SURREL(ACT,ICOMP)
 
 C Remember this geometry file has been done so that a later selection
 C of constructions does not re-do it.
@@ -2005,7 +2005,7 @@ C parent child relationships
           IUF=IFIL+2
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
           else
             call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
           endif
@@ -2013,10 +2013,10 @@ C parent child relationships
 
 C Code to loop through each surface to build a hash table so that each
 C surface also knowns its children
-          CALL SURREL(ACT,ICOMP,IER)
+          CALL SURREL(ACT,ICOMP)
 
 C Get surface areas via call to zinfo.
-          call zinfo(iuout,sna,zoa,pazi,pelv,zvol)
+          call zinfo(sna,zoa,pazi,pelv,zvol)
 
 C For each surface in this zone
           do 552 isur=1,nzsur(icomp)
@@ -2339,7 +2339,7 @@ C Now add window frames (frames previously defined in the original are
 C retained in the code above but only the areas are changed). Following
 C code only adds frames to windows that do not have any framing.
       DO 700 ICOMP=1,NCOMP
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
         DO 557 isur=1,nzsur(icomp)
           icn=IZSTOCN(icomp,isur)
           ADF=SSPARENT(ICN)
@@ -2435,7 +2435,7 @@ C Update connections file before going on to the next zone
 
 C Change constructions for different surfaces now based on use
       DO 600 ICOMP=1,NCOMP
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
         DO 601 I=1,NZSUR(icomp)
           icc=izstocn(icomp,i)
           USE=SSUSE(ICC,1)

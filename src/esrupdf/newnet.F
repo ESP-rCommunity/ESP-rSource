@@ -358,7 +358,7 @@ C Read the existing flow network
 
 C << Note: should check to see if LAPROB is a network flow file or
 C << a graphic network file (as is done in esystem.F) 
-          CALL EMFREAD(IUF,0,IER)
+          CALL EMFREAD(IUF,IER)
           IF(IER.NE.0)THEN
             CALL EDISP(IUOUT,' ')
             CALL EDISP(IUOUT,'ERROR: Problem reading fluid flow file!')
@@ -1036,6 +1036,7 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
 
 #include "plant.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       common/outin/iuout,iuin
@@ -1050,11 +1051,6 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       dimension ival(mpcom), cnttyp(4)
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
@@ -1177,7 +1173,7 @@ C and construction node cntdt3 counted from outside.
             ELSEIF(ICLOC.EQ.2.OR.ICLOC.EQ.3)THEN
               call eclose(gversion(IZ),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+                call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
               else
                 call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
               endif
@@ -2532,6 +2528,7 @@ C D - delete
       SUBROUTINE EDBPLINK(MODE,IS)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "plant.h"
 #include "control.h"
@@ -2554,10 +2551,6 @@ C Common for the building plant lin
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR
@@ -2728,7 +2721,7 @@ C Determine the linkage type.
 
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
           endif

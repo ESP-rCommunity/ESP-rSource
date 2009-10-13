@@ -873,17 +873,26 @@ C record 32 and set this value.
       irec=32
       read(iunitp,rec=irec,iostat=istat,err=1000)iftype
       if(iftype.eq.-1) then
-        write(6,*) 'opnplt: older plant ',iftype
+
+C Debug.
+C        write(6,*) 'opnplt: older plant ',iftype
+
         IPLIB=1
       elseif(iftype.eq.-2) then
       
 C If newer plant results file we could recover the cfg file name and
 C scan it in at this point. Read the 2nd item on record 32 to get location.
-        write(6,*) 'opnplt: newer plant ',iftype
+
+C Debug.
+C        write(6,*) 'opnplt: newer plant ',iftype
+
 	IPLIB=2
         IREC=32
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000)iftype,ireccfg
-        write(6,*) 'opnplt: the jump for cfg ',ireccfg
+
+C Debug.
+C        write(6,*) 'opnplt: the jump for cfg ',ireccfg
+
         IREC=ireccfg
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         IREC=IREC+1
@@ -891,7 +900,9 @@ C scan it in at this point. Read the 2nd item on record 32 to get location.
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
 	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
-        write(6,*) longtmp
+
+C Debug.
+C        write(6,*) longtmp
       
 C Extract path from cfg file name and check that we can find it.
  289    call fdroot(longtmp,path,LCFGF)
@@ -1006,7 +1017,10 @@ C Read climate file name.
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
 	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
-        write(6,*) LCLIM
+
+C Debug.
+C        write(6,*) LCLIM
+
       endif
 
 C Check that this CLIMATE file can still be assigned. << convert >>
@@ -1059,7 +1073,10 @@ C Read plant component file name (long or short)
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         lnfb=lnblnk(firstbit)
 	write(Lpcdb,'(a)') firstbit(1:lnfb)
-        write(6,*) Lpcdb
+
+C Debug.
+C        write(6,*) Lpcdb
+
       elseif(IPLIB.eq.2)then
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
@@ -1068,21 +1085,30 @@ C Read plant component file name (long or short)
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
 	write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
-        write(6,*) Lpcdb
+
+C Debug.
+C        write(6,*) Lpcdb
+
       endif
       
 C If IPLIB is 2 then the model configuration file name will have alread
 C been scanned. Eventually this code can be commented out.
       if(IPLIB.eq.2)then
         IREC=IREC+1
-        write(6,*) ' irec at  cfg file name ',irec
+
+C Debug.
+C        write(6,*) ' irec at  cfg file name ',irec
+
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
 	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
-        write(6,*) longtmp
+
+C Debug.
+C        write(6,*) longtmp
+
         call fdroot(longtmp,path,LCFGF)
       endif
 
@@ -1272,6 +1298,7 @@ C data are stored in CSV?M and APCOUT arrays respectively.
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
       common/pcresres/ napout(mpcom),apcout(20)
+      logical unixok
 
 C Find data location in result file.
       ier=0
@@ -1317,7 +1344,9 @@ C Read additional output if any.
      &        ERR=1000)(apcout(jj),JJ=1,napout(ipc))
       return
 
- 1000 WRITE(6,'(A,I5)') ' error when reading results for comp ',ipc
+ 1000 call isunix(unixok)
+      if(unixok)WRITE(6,'(A,I5)') 
+     &  ' error when reading results for comp ',ipc
       ier=1
       END
 
@@ -1455,7 +1484,7 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
 #endif
 
-      logical colok,ok,dok
+      logical colok,ok,dok,unixok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
 C Begin with the menu type=4 (performance metrics).
@@ -1658,8 +1687,9 @@ C start of the hour.
               val(jstat)=VALC
             else
               call fnddat(ii,ipc,ier)
+              call isunix(unixok)
               if(ier.ne.0)then
-                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                if(unixok)write(6,*) 'An error in fnddat ',ii,ipc,ier
                 goto 40
               endif
             endif
@@ -1739,6 +1769,7 @@ C by occupancy.
    40     continue
 
 C We have all the data for this timestep into val array.
+
 C Debug.
 C          write(6,'(F10.5,12(2x,G10.3))')
 C     &      ctime,(val(jjj),jjj=1,npget)
@@ -1790,8 +1821,9 @@ C start of the hour.
               val(jstat)=VALC
             else
               call fnddat(ii,ipc,ier)
+              call isunix(unixok)
               if(ier.ne.0)then
-                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                if(unixok)write(6,*) 'An error in fnddat ',ii,ipc,ier
                 goto 60
               endif
             endif
@@ -1855,7 +1887,8 @@ C and process the information.
   112       continue
 
 C Have averaged val array for the current hour.
-C Debug
+
+C Debug.
 C            write(6,'(f10.5,12(2x,G10.3))')
 C     &            ctime,(val(jjj),jjj=1,npget)
 
@@ -2179,8 +2212,9 @@ C start of the hour.
               val(jstat)=VALC
             else
               call fnddat(ii,ipc,ier)
+              call isunix(unixok)
               if(ier.ne.0)then
-                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                if(unixok)write(6,*) 'An error in fnddat ',ii,ipc,ier
                 goto 240
               endif
             endif
@@ -2231,6 +2265,7 @@ C it is the additional output number for the component considered.
   240     continue
 
 C We have the data for this timestep into val array.
+
 C Debug.
 C          write(6,'(F10.5,12(2x,G10.3))')
 C     &            ctime,(val(jjj),jjj=1,npget)
@@ -2364,7 +2399,10 @@ C Hours below.
 C Tidy up in preparation for the next loop.
           ctime=ctime+enterval*float(nout)
           gtime=gtime+float(nout)
+
+C Debug.
 C          write(6,*) 'incr ii ctime gtime ',ii,ctime,gtime
+
   200   continue
       else
 
@@ -2412,8 +2450,9 @@ C start of the hour.
               val(jstat)=VALC
             else
               call fnddat(ii,ipc,ier)
+              call isunix(unixok)
               if(ier.ne.0)then
-                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                if(unixok)write(6,*) 'An error in fnddat ',ii,ipc,ier
                 goto 260
               endif
             endif
@@ -2473,7 +2512,8 @@ C and process the information.
   212       continue
 
 C Have averaged val array for the current hour.
-C Debug
+
+C Debug.
 C            write(6,'(f10.5,12(2x,G10.3))')
 C     &            ctime,(val(jjj),jjj=1,npget)
 
@@ -2846,7 +2886,10 @@ C Create string description for time of minimum occurrance.
           write (outs,'(a,1x,2(f8.2,2x,a12,1x),2f9.2)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
-C          write (6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
+C Debug.
+C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
  221    continue
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')
@@ -2885,7 +2928,10 @@ C Create string description for time of minimum occurrance.
           write (outs,'(a,1x,2(f8.2,2x,a12,1x),2f9.2)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
-C          write (6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
+C Debug.
+C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
  230    continue
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')

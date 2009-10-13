@@ -169,7 +169,6 @@ C      call edisp248(iuout,outs248,100)
 
       CALL ERPFREE(iunit,ISTAT)
       call FINDFIL(ltmp,xst)
-C      write(6,*) 'MORFIL: exist is ',xst
       IF(XST)THEN
 
 C See if this is a plant result file.
@@ -180,11 +179,17 @@ C That is if record 32=-1 or -2.
            irec=32
            read(iunit,rec=irec,iostat=ios,err=13)iftype
            if(iftype.eq.-1) then
+
+C Debug.
 C             write(6,*) 'MORFIL: older plant ',iftype
+
              IPLIB=1
              return
            elseif(iftype.eq.-2) then
+
+C Debug.
 C             write(6,*) 'MORFIL: newer plant ',iftype
+
 	     IPLIB=2
              iftype=-1
              return
@@ -409,6 +414,8 @@ C that izver = 3 or earlier does not include explicit separate
 C casual gains data items.
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NSIM,nzrl,izver,IMET
+
+C Debug.
 C      write(6,*) 'uncertainty analysis method ',IMET
 
 C If there is more than one result-set then check to see if ISAVE=const for 
@@ -450,8 +457,10 @@ C In the case of factorial uncertainty analysis decode result set name.
               call EGETWI(TNAME,K,IC,0,0,'-','factorial state',IER)
               IFAFLG(I,IFS)=IC
  722        continue
-          endif   
-          write (6,*) (IFAFLG(I,IXXX),IXXX=1,NFA)   
+          endif
+
+C Debug.
+C          write(6,*) (IFAFLG(I,IXXX),IXXX=1,NFA)   
   
 C Read simulation start and finish days and control name.
           IREC=NST1
@@ -848,8 +857,6 @@ C NCON    - total number of intra-zone connections.
 C NFP     - defines the internal plane at
 C           which solar energy is injected in the absence
 C           of internal insolation information.
-C LSNAM   - is the name of the entire system.
-C NCCODE  - zone code.
 C ZNAME   - zone name (from geometry.h).
 C NCONST  - number of multilayered constructions in
 C           each zone.
@@ -866,6 +873,7 @@ C ISTREC is the start record.
 C ier is zero if no problems and -3 if user issued a cancel.
       SUBROUTINE MOINIT(ISTREC,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 
@@ -881,10 +889,6 @@ C ier is zero if no problems and -3 if user issued a cancel.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/DNORGH/IRTYPE
@@ -933,9 +937,11 @@ C read again.
         IREC=30+2
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
         if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
-          write(6,*) 'WARNING: ncomp at record was dubious',NCOMP,IREC
-          write(6,*) 'this results file needs to be scanned with'
-          write(6,*) 'an older version of res.'
+          write(outs,*) 'WARNING: ncomp at record was dubious',NCOMP,
+     &       IREC
+	  call edisp(iuout,outs)
+	  call edisp(iuout,'this results file needs to be scanned')
+	  call edisp(iuout,'with an older version of res.')
         endif
       endif
       IREC=IREC+1
@@ -952,7 +958,7 @@ C read again.
   301   CONTINUE
   300 CONTINUE
       goto 4
-    3 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LSNAM
+    3 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)modeltitle
       IREC=IREC+1
       NCP=NCOMP
       IF(NCP.GT.20)NCP=20
@@ -1059,6 +1065,7 @@ C Also assing NZSUR common.
 C Debug...
 C      write(6,*) 'nconst=',nconst
 C      write(6,*) 'nzsur=',nzsur
+
       IREC=IREC+1
   202 DO 30 I=1,NCOMP
         NN=NCONST(I)
@@ -1112,13 +1119,18 @@ C to scan geometry files this line would be needed.
 C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZBASEA(I),I=1,NCOMP)
         IREC=IREC+1
-C        write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
+
+C Debug.
+C        write(6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
       
 C Read area of transparent surfaces connected to external boundary.
 C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZTRANA(I),I=1,NCOMP)
         IREC=IREC+1
-C        write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
+
+C Debug.
+C        write(6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
+
       endif
 
 C Read surface areas in each zone.
@@ -1177,7 +1189,10 @@ C this model.
       IF(NAME.EQ.'CONFIG')THEN
         IREC=IREC+1
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1006)longtmp
+
+C Debug.
 C        write(6,*) longtmp
+
         IREC=IREC+1
       ELSE
  45     H(1)='The system configuration file name is being requested'

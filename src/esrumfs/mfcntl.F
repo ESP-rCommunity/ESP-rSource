@@ -485,6 +485,7 @@ C Controlling a connection. (ICNN not relevant, therefor 0)
 
 C Debug.
 C          if(ONFRAC.lt.1.0) write(6,*) 'setting ON as ',ONFRAC
+
         ELSE
           CTLPOS(ifan(icfp,2))=0.0
         ENDIF
@@ -604,7 +605,10 @@ C Establish sensed variable magnitude and actuated node location.
             elseif(signal.ge.SETHI)then
               CTLPOS(icnn)= VALHI
             endif
-            write(6,*) icnn,signal,ctlpos(icnn)
+
+C Debug.
+C            write(6,*) icnn,signal,ctlpos(icnn)
+
           endif
   1     continue
       endif
@@ -1232,8 +1236,8 @@ C Calculate value
         VALUE=QMIN
       ENDIF
 
-C Debug...
-*      write(6,*)trs,trspt,value
+C Debug.
+C      write(6,*)trs,trspt,value
 
 C Controlling a connection.
       if(ifan(ICFP,1).eq.-3)then

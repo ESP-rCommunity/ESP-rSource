@@ -116,10 +116,10 @@ C is similar to that used in eddb.F
           goto 40
         endif
  1001   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
         if(ier.eq.-2)then
           ier=0
-          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
           if(ier.ne.0)then
             call usrmsg('No readable materials database was not found',
      &                  'or file was corrupt','W')

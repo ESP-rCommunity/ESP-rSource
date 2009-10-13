@@ -664,7 +664,7 @@ C Set building-side function generator flag.
    30     CONTINUE
 
 C Reporting of all periods in this day type (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,0,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,0,II,JJ)
    20   CONTINUE
    10 CONTINUE
 
@@ -977,7 +977,7 @@ C Set plant-side function generator flag.
    60     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,1,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,1,II,JJ)
    50   continue
    40 continue
       goto 15
@@ -1179,7 +1179,7 @@ C Get date strings. For this test assume some values.
    72     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,2,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,2,II,JJ)
    71   continue
 
 C If control component active read connections.
@@ -1218,12 +1218,17 @@ C Remember connection index for this -4 associated control.
             iasocc(ii,ICCN)=ICNN
             nfsup(ii)=nsup
             if(nsup.eq.0)then
+
+C Debug.
 C              write(6,*) ' supplementary node data zeroed...'
+
               NDSCNN(ICNN,1)=0
             else
 C If supplementary node names for this component read them.
-C Debug...
+
+C Debug.
 C              write(6,*) ' supplementary node names to be read in...'
+
               do 91 isup=1,nsup
                 CALL EGETW(OUTSTR,KG,WORD,'W','suppl node',IER)
                 NODID=WORD(1:12)
@@ -1413,7 +1418,7 @@ C Write out string describing the controller type.
    67     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,4,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,4,II,JJ)
    57   continue
    47 continue
 
@@ -1744,7 +1749,7 @@ C<<<<<<<Confirm the 0 to 1 range check >>>>>>>>>
   300     CONTINUE
 
 C Reporting of all periods in this day type (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ)
   200   CONTINUE
   100 CONTINUE
 
@@ -2427,10 +2432,17 @@ C Flow actuator.
         SSTR='undefined actuation'
         IF(IFAN(II,1).EQ.-3)THEN
           L=IFAN(II,2)
-          WRITE(SSTR,'(A,i3,1x,5A)')'flow connection: ',
-     &      L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
-     &      NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),' via ',
-     &      CMNAM(ITPCON(L))(1:lnblnk(CMNAM(ITPCON(L))))
+          if(ITPCON(L).ne.0)then
+            WRITE(SSTR,'(A,i3,1x,5A)')'flow connection: ',
+     &        L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
+     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),' via ',
+     &        CMNAM(ITPCON(L))(1:lnblnk(CMNAM(ITPCON(L))))
+          else
+            WRITE(SSTR,'(A,i3,1x,4A)')'flow connection: ',
+     &        L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
+     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),
+     &        ' via unknown component.'
+          endif
         ELSEIF(IFAN(II,1).EQ.-4)THEN
           L=IFAN(II,2)
           if(L.ne.0)then
@@ -3598,7 +3610,7 @@ C Actuator is slat angle.
 C ******** LSTCNTLD
 C List one day type of a building/plant/flow/global/optical/
 C complex fenestration control. 
-      SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ,IER)
+      SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
@@ -3645,7 +3657,7 @@ C List data for function II and day type JJ.
       endif
       NTSPH=1
       CALL EPERSTR(IYEAR,IBD,1,IED,24,
-     &       NTSPH,2,0,PERST1,PERST2,PERST3,IER)
+     &       NTSPH,2,0,PERST1,PERST2,PERST3,IIER)
 
       if(icfoc.eq.0)then
         nnd=nbcdt(ii)

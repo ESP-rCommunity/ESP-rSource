@@ -1,7 +1,7 @@
-# transparent properties of fac_zone_c1 defined in fac_zone_c1.tmc
+# transparent properties of fac_zone_c1 defined in ../zones/fac_zone_c1.tmc
   11   # surfaces
 # tmc index for each surface
-  0  0  0  0  0  0  0  0  0  1  2
+0,0,0,0,0,0,0,0,0,1,2
    3  DBL_glz_6nb2 # layers in tmc type 1
 # Transmission @ 5 angles & visible tr.
    0.370   0.353   0.315   0.220   0.098   0.630
@@ -9,11 +9,11 @@
    0.300   0.318   0.326   0.319   0.271
    0.000   0.000   0.000   0.000   0.000
    0.030   0.031   0.032   0.031   0.027
-   1  # blind/shutter control flag
+   1  # optical control flag
    1   0  # no control periods & sensor loc
 # Replacement properties for each control period
    8  18   # period start and end 
-   0 300.0   # sensor type and actuation point
+   0 300.0  # sensing total radiation @ actuation point
 # Alt solar & vis trans followed by absorp for each layer
    0.040   0.038   0.034   0.023   0.010   0.170
    0.300   0.318   0.326   0.319   0.271
@@ -27,4 +27,4 @@
    0.300   0.318   0.326   0.319   0.271
    0.000   0.000   0.000   0.000   0.000
    0.030   0.031   0.032   0.031   0.027
-   0  # blind/shutter control flag
+   0  # optical control flag

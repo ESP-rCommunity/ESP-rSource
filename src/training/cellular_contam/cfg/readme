@@ -28,3 +28,11 @@ control is imposed such that the fan comes on when CO_2 concentration
 exceeds 2g/kg a simple on/off control is imposed. This results in lower
 CO_2 concentration in manager_a which is comparable to manager_b (libf5
 and occup6.gif)
+
+Configuration files:
+cellular_contam_bc.cfg - base case model with standard occupancy
+cellular_contam_ho.cfg - with high occupancy in one zone
+cellular_contam_mv.cfg - with fixed ventilation used to limit CO2
+cellular_contam_mvctl.cfg - with control applied to mechanical vents
+cellular_offices_src.cfg - with 8l/s/person ventilation (to see if std
+  assumptions can work.

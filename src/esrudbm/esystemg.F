@@ -42,10 +42,11 @@ C           1= building only, 2= plant only, 3= building and plant.
 
 C ICFGV   - version of the model configuration file.
 
-C XLAT,   - Site latitude and the longitudinal difference between the 
-C XLON      site and the reference time zone (east +ve).
+C sitelat,   - Site latitude and the longitudinal difference between the 
+C sitelongdif      site and the reference time zone (east +ve) (from site.h).
 
-C IXPOS   - Site exposure index :
+C Data from site.h:
+C siteexposureindex   - Site exposure index :
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
 C           4= city centre, equal sky, ground & building view factors
@@ -54,17 +55,17 @@ C              buildings
 C           6= rural site, isolated; 7= totally enclosed building
 C           8= user defined
 
-C GREF    - External ground reflectivity.
-C GREF12  - (12) Monthly values of ground reflectivity
-C ITGREF  - Type of ground reflectivity model
+C groundrefl    - External ground reflectivity.
+C groundreflmonth  - (12) Monthly values of ground reflectivity
+C groundreflmodel  - Type of ground reflectivity model
 C           1= constant albedo
 C           2= simple model (monthly albedo, number of days with snow on ground
 C           3= advanced model (monthly albedo, snow depth read from file)
-C SREF    - Snow reflectivity
-C NSNOW   - (12) Monthly values of number of days with snow on ground
-C SNFNAM  - *72 Name of the file containing hourly snow depth information
+C snowgroundrefl - Snow reflectivity
+C dayswithsnow - (12) Monthly values of number of days with snow on ground
+C SNFNAM - *72 Name of the file containing hourly snow depth information
 
-C LSNAM   - is the name of the entire system.
+C modeltitle - is the name of the entire model from model.h.
 
 C NCOMP   - number of zones comprising the model to be simulated.
 C NCCODE  - zone code (for eventual database reference).
@@ -72,8 +73,6 @@ C NCCODE  - zone code (for eventual database reference).
 C LPROJ   - zone scheduling (operation file).
 C LGEOM   - zone geometry file.
 C LTHRM   - zone construction file.
-C INDUTL  - Zone utilities file index: 0= none 1= zone utility file supplied
-C LUTIL   - Zone utilities file name (legacy file).
 
 C NCON    - total number of intra-zone connections.
 C IC1 &   - zone and surface numbers defining the start
@@ -117,6 +116,8 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYSG(FILE,IUC,IUF,MODE,ITRC,IER)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/prec2/precz/c20.
 #include "geometry.h"
@@ -166,29 +167,15 @@ C IFIL base file unit number (set in MAIN of each application).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
-C LCNN (72 char) model connections file name.
-      common/C3F/LCNN
-
-C xlat,   - Site latitude and the longitudinal difference between the 
-C xlon      site and the reference time zone (east +ve).
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
 
-C SKYR viewfactor from external surfaces to the sky
-C GRDR viewfactor from external surfaces to the ground
-C BLDR viewfactor from external surfaces to other buildings & obstructions
-      COMMON/C5R/SKYR,GRDR,BLDR
+C skyview viewfactor from external surfaces to the sky (site.h)
+C groundview viewfactor from external surfaces to the ground
+C buildingview viewfactor from external surfaces to other buildings & obstructions
       COMMON/C6/INDCFG
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
@@ -213,10 +200,6 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Temporal definition commons.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
@@ -282,9 +265,6 @@ C Initial view.
 C Special materials & electrical network files.
       common/spmfxst/ispmxist,spflnam
       common/entfile/entflnam, ientxist
-
-C Misc. components database
-      COMMON/MCMPDBNAM/MCMPDBFL
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -465,17 +445,16 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
-      CHARACTER*72 FILE,LCFD,LCNN
+      CHARACTER*72 FILE,LCFD
       CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
       character lworking*144
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
       CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
       character WORD2*20,msgl2*48
       CHARACTER CTLDOC*248,LCTLF*72,LOCUTIL*72
-      CHARACTER spflnam*72,entflnam*72,MCMPDBFL*72,lipvdatf*72
+      CHARACTER spflnam*72,entflnam*72,lipvdatf*72
       character GTGEOM*72,GTNAME*15
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
@@ -773,32 +752,36 @@ C Latitude & Longitude.
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'latitude & long dif',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWR(OUTSTR,K,XLAT,-90.,90.,'W','Latitude',IER)
-      SLAT=XLAT
-      CALL EGETWR(OUTSTR,K,XLON,-15.,15.,'W','Longitude dif',IER)
-      SLON=XLON
+      CALL EGETWR(OUTSTR,K,sitelat,-90.,90.,'W','Latitude',IER)
+      SLAT=sitelat
+      CALL EGETWR(OUTSTR,K,sitelongdif,-15.,15.,'W',
+     &  'Longitude dif from time meridian',IER)
+      SLON=sitelongdif
       IF(IER.NE.0) GOTO 1
 
 C Get site exposure and ground reflectance.
       CALL STRIPC(IUC,OUTSTR,99,ND,1,'ground reflectance',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWI(OUTSTR,K,IXPOS,1,8,'W','Site exposure',IER)
-      CALL EGETWR(OUTSTR,K,GREF,0.,1.,'W','Ground reflect',IER)
+      CALL EGETWI(OUTSTR,K,siteexposureindex,1,8,'W',
+     &  'Site exposure index',IER)
+      CALL EGETWR(OUTSTR,K,groundrefl,0.,1.,'W','Ground reflect',IER)
       IF(IER.NE.0) GOTO 1
 
 C Index of exposure has user defined data associated with it.
-      IF(IXPOS.EQ.8) THEN
+      IF(siteexposureindex.EQ.8) THEN
         CALL STRIPC(IUC,OUTSTR,3,ND,1,'user defined site exposure',IER)
         IF(IER.NE.0)goto 1
         K=0
-        CALL EGETWR(OUTSTR,K,SKYR,0.,1.,'W','Sky expos',IER)
-        CALL EGETWR(OUTSTR,K,GRDR,0.,1.,'W','Ground expos',IER)
-        CALL EGETWR(OUTSTR,K,BLDR,0.,1.,'W','Building expos',IER)
+        CALL EGETWR(OUTSTR,K,skyview,0.,1.,'W','Sky view',IER)
+        CALL EGETWR(OUTSTR,K,groundview,0.,1.,'W','Ground view',IER)
+        CALL EGETWR(OUTSTR,K,buildingview,0.,1.,'W','Building view',
+     &    IER)
         IF(IER.NE.0) GOTO 1
 
 C Range checking.
-        IF(ABS(SKYR+GRDR+BLDR-1.).GT..001) CALL USRMSG(
+        IF(ABS(skyview+groundview+buildingview-1.).GT..001) 
+     &    CALL USRMSG(
      &    ' Total exposure out of range in',OUTSTR,'W')
       ENDIF
 
@@ -855,6 +838,8 @@ C so LSTRIPC and LOUTSTR are used.
         CALL EGETRM(OUTSTR,K,gendbfn(10),'W','pressure db',IER)
       elseif(WORD(1:4).eq.'*pro'.or.WORD(1:4).eq.'*evn')then
         CALL EGETRM(OUTSTR,K,gendbfn(11),'W','profiles db',IER)
+      elseif(WORD(1:7).eq.'*mscldb')then
+        CALL EGETRM(LOUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(OUTSTR,K,gendbfn(12),'W','plant comp db',IER)
       elseif(WORD(1:4).eq.'*cmp')then
@@ -1507,9 +1492,9 @@ C Read more ground related information.
      &       OUTSTR(1:10).eq.'* BUILDING')then
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'building name',IER)
         IF(IER.NE.0)goto 1
-        LSNAM=OUTSTR(1:72)
+        modeltitle=OUTSTR(1:72)
       else
-        LSNAM=OUTSTR(1:72)
+        modeltitle=OUTSTR(1:72)
       endif
 
 C If ground information was read in but still registration level then exit.
@@ -1526,7 +1511,8 @@ C Number of building zones.
       IF(IER.NE.0) GOTO 1
 
 C Reporting.
-      WRITE(OUTS,'(2a)')' The system name is ',LSNAM(1:LNBLNK(LSNAM))
+      WRITE(OUTS,'(2a)')' The model title is ',
+     &  modeltitle(1:LNBLNK(modeltitle))
       if(MMOD.ne.8)CALL EDISP(iuout,OUTS)
       IF(ITRC.GE.1)THEN
         CALL EDISP(iuout,' ')
@@ -1567,7 +1553,9 @@ C Zone file names.
         elseif(WORD(1:4).eq.'*con')then
           LTHRM(icomp)=text(1:72)
         elseif(WORD(1:4).eq.'*utl')then
-          indutl(icomp)=1
+          msgl2='This is no longer supported. Skipping...'
+          call usrmsg('Detected a ANCIENT zone utility file.',
+     &      msgl2,'W')
         elseif(WORD(1:4).eq.'*obs')then
           iobs(icomp)=1
           ZOBS(icomp)=text(1:72)
@@ -1727,23 +1715,14 @@ C in then proceed to check zone names.
           CALL STRIPC(IUC,OUTSTR,0,ND,1,'utility flag',IER)
           IF(IER.NE.0)goto 1
           K=0
-          CALL EGETWI(OUTSTR,K,INDUTL(ICOMP),0,1,'F','utility flg',IER)
+          CALL EGETWI(OUTSTR,K,INDU,0,1,'F','utility flg',IER)
           IF(IER.NE.0) GOTO 1
 
-C Read utility file name and scan files into common.
-          LUTIL(ICOMP)=' '
-          if(INDUTL(ICOMP).EQ.1)then
-            CALL STRIPC(IUC,OUTSTR,0,ND,1,'utility file',IER)
-            IF(IER.NE.0)goto 1
-            LOCUTIL=OUTSTR(1:72)
-            call FINDFIL(LOCUTIL,XST)
-            if(XST)then
-              CALL ERUTIL(IUF,LOCUTIL,ICOMP,IER)
-            else
-              msgl2='  '
-              CALL USRMSG(' utility file not found ',msgl2,'W')
-            endif
-            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
+C Warn user about old utility file name.
+          if(INDU.EQ.1)then
+            msgl2='This is no longer supported. Skipping...'
+            call usrmsg('Detected a ANCIENT zone utility file.',
+     &        msgl2,'W')
           endif
    20   CONTINUE
       endif
@@ -2228,7 +2207,7 @@ C then an older file so rewind the file and then call emfread.
         endif
         IF(ND.GE.4)THEN
           REWIND(IUF,ERR=999)
-          CALL EMFREAD(IUF,ITRC,IER)
+          CALL EMFREAD(IUF,IER)
           CALL ERPFREE(IUF,ISTAT)
           IAIRN = 1
         elseif((ND.eq.1.or.ND.eq.2).and.
@@ -2400,12 +2379,12 @@ C be set to 2.
           IF(INDCFG.EQ.2)then
             CALL STRIPC(IUC,OUTSTR,0,ND,1,'model name',IIER)
             IF(IIER.eq.0)then
-              LSNAM=OUTSTR(1:72)
+              modeltitle=OUTSTR(1:72)
             elseif(IIER.eq.2)then
-              LSNAM=OUTSTR(1:72)
+              modeltitle=OUTSTR(1:72)
               iier=0
             else
-              write(lsnam,'(2a)') 'Systems model ',cfgroot
+              write(modeltitle,'(2a)') 'Systems model ',cfgroot
             endif
           endif
         ENDIF
@@ -2508,52 +2487,50 @@ C SITEINFO provides an English description of the site information in
 C common blocks C4, C5, C5R, PREC8 which are filled by reading the
 C system configuration file.
       SUBROUTINE SITEINFO(ITRU)
+#include "building.h"
+#include "site.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/C4/XLAT,XLON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C5R/SKYR,GRDR,BLDR
       CHARACTER POS*124,OUTSTR*124,sdesc*16
 
-      IF(IXPOS.EQ.1)THEN
+      IF(siteexposureindex.EQ.1)THEN
         POS='typical city centre.'
-      ELSEIF(IXPOS.EQ.2)THEN
+      ELSEIF(siteexposureindex.EQ.2)THEN
         POS='typical urban.'
-      ELSEIF(IXPOS.EQ.3)THEN
+      ELSEIF(siteexposureindex.EQ.3)THEN
         POS='typical rural.'
-      ELSEIF(IXPOS.EQ.4)THEN
+      ELSEIF(siteexposureindex.EQ.4)THEN
         POS='city center, equal views to sky, ground and buildings.'
-      ELSEIF(IXPOS.EQ.5)THEN
+      ELSEIF(siteexposureindex.EQ.5)THEN
         POS='city center below mean height of surrounding buildings.'
-      ELSEIF(IXPOS.EQ.6)THEN
+      ELSEIF(siteexposureindex.EQ.6)THEN
         POS='isolated rural.'
-      ELSEIF(IXPOS.EQ.7)THEN
+      ELSEIF(siteexposureindex.EQ.7)THEN
         POS='within a totally enclosed building.'
-      ELSEIF(IXPOS.EQ.8)THEN
+      ELSEIF(siteexposureindex.EQ.8)THEN
         POS='user defined exposure as follows: '
       ENDIF
 
 C Get lat:long description.
-      call sitell2s(XLAT,XLON,sdesc)
+      call sitell2s(sitelat,sitelongdif,sdesc)
       WRITE(OUTSTR,'(3a)')' Site location: ',sdesc,
      &  ' of local meridian.'
       CALL EDISP(ITRU,OUTSTR)
 
-      WRITE(OUTSTR,'(a,F4.2,a)')' Ground reflectivity ',GREF,'.'
+      WRITE(OUTSTR,'(a,F4.2,a)')' Ground reflectivity ',groundrefl,'.'
       CALL EDISP(ITRU,OUTSTR)
       WRITE(OUTSTR,'(2a)')' Site exposure ',POS(1:LNBLNK(POS))
       CALL EDISP(ITRU,OUTSTR)
 
-      IF(IXPOS.EQ.8)THEN
-        WRITE(OUTSTR,98911)SKYR
+      IF(siteexposureindex.EQ.8)THEN
+        WRITE(OUTSTR,98911)skyview
 98911   FORMAT(' User defined sky ratio =',F6.4)
         CALL EDISP(ITRU,OUTSTR)
-        WRITE(OUTSTR,98912)GRDR
+        WRITE(OUTSTR,98912)groundview
 98912   FORMAT('           ground ratio =',F6.4)
         CALL EDISP(ITRU,OUTSTR)
-        WRITE(OUTSTR,98913)BLDR
+        WRITE(OUTSTR,98913)buildingview
 98913   FORMAT('         building ratio =',F6.4)
         CALL EDISP(ITRU,OUTSTR)
       ENDIF
@@ -2855,20 +2832,20 @@ C The initial part of the path matches so only save the file name w/o path.
       endif
 
 C Debug.
-      write(6,*) file
-      if(topic(1:3).eq.'opt')then
-        write(6,*) loptdb
-        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
-      elseif(topic(1:3).eq.'pdb')then
-        write(6,*) LPCDB
-        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
-      elseif(topic(1:3).eq.'prs')then
-        write(6,*) lapres
-        write(6,*) 'findwhichdbpath ipath is ',ipathapres
-      elseif(topic(1:3).eq.'sbm')then
-        write(6,*) lsbem
-        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
-      endif
+C      write(6,*) file
+C      if(topic(1:3).eq.'opt')then
+C        write(6,*) loptdb
+C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
+C      elseif(topic(1:3).eq.'pdb')then
+C        write(6,*) LPCDB
+C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
+C      elseif(topic(1:3).eq.'prs')then
+C        write(6,*) lapres
+C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
+C      elseif(topic(1:3).eq.'sbm')then
+C        write(6,*) lsbem
+C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+C      endif
 
       return
       end

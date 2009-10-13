@@ -116,16 +116,16 @@ C Also check to see if the file has correct info in
             goto 139  !  a binary file found so carry on.
           endif
  1000     if(IOS.eq.2)then
-            write(6,*) 
-     &      'ERMLDB: permission issue during read of material classes.'
+            call edisp(iuout, 
+     &        'ERMLDB: permission issue reading material classes.')
             CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
           else
             CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
           endif
-          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
-            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
             if(ier.ne.0)then
               call usrmsg('No readable materials database was found so',
      &                    'constructions database not reported.','W')
@@ -364,8 +364,6 @@ C tag for symmetry. Where values are missing or unknown setup defaults.
       character DES*48,MLCN*12,OTF*4,OPT*12,MLCSYM*12
 
 C Clear parameters to be returned and then copy from DES.
-      MLCN=' '
-      OTF=' '
       OPT=' '
       MLCSYM=' '
       WRITE(MLCN,'(A)')DES(1:12)
@@ -512,6 +510,9 @@ C Arrays of material properties.
       CHARACTER OUTSTR*124,NAM*72,PNAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
       character MLCSYM*12
+
+      real RSI  ! used in reporting of R value in SI units
+      
 C Pick up general description of the composite.
       ier=0
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
@@ -890,12 +891,10 @@ C rather than the matdatarray common blocks.
      &                  DRV,TITL,PNAM)
 
       CHARACTER PNAM*72,TITL*72,outs*124
-      logical close1,close2,close3
+      logical close4
 
       IER=0
-      close1=.false.
-      close2=.false.
-      close3=.false.
+      close4=.false.
 
 C The record in the material db is IEL + 1 UNLESS the
 C reference is to material db 0 (air).
@@ -912,10 +911,8 @@ C reference is to material db 0 (air).
      &       DRV,PNAM
 
 C If all values are still 0.0 then not an actual element.
-        CALL ECLOSE(DBCON,0.0,0.001,CLOSE1)
-        CALL ECLOSE(DBDEN,0.0,0.001,CLOSE2)
-        CALL ECLOSE(DBSHT,0.0,0.001,CLOSE3)
-        if(CLOSE1.and.CLOSE2.and.CLOSE3)then
+        call eclose3(DBCON,DBDEN,DBSHT,0.0,0.0,0.0,0.001,CLOSE4)
+        if(CLOSE4)then
           write(outs,'(A,I3,A,2i4)') ' Material db reference ',IEL,
      &                           ' has no data, or all zero...',IR,IFMAT
           call usrmsg(outs,' Please check your selection! ','W')
@@ -1111,7 +1108,6 @@ C GS (52 char) list of optical database items to select from.
       CHARACTER SOPT*12,OUTSTR*124,GTYPE*12,GDESCR*36
       character lworking*144,fs*1
       integer lndbp   ! for length of standard database path
-      integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
 
 C Set folder separator (fs) to \ or / as required.
@@ -1152,6 +1148,7 @@ C prepended.
 
 C Debug.
 C        write(6,*) 'working optics ',lworking
+
         CALL EFOPSEQ(IOPTDB,lworking,1,IER)
       endif
       IF(IER.NE.0)THEN

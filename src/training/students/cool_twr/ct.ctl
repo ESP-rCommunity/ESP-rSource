@@ -1,12 +1,14 @@
-proj cntrl  
+proj cntrl
 * Plant
-no descrip  
-   1
+no descrip
+   1  # No. of loops
 * Control loops
-   -6    7    1
-   -1    3    2
-     1
-    1  365
-     1
-   40    6   0.000
-     0.0
+# sensed value from function generator.
+   -6    7    1    0    0  # sensor 
+# plant component   3:temp_source @ node no.  2
+   -1    3    2    0  # actuator 
+    1 # No. day types
+    1  365  # valid Sat-01-Jan - Sun-31-Dec
+     1  # No. of periods in day
+   40    6   0.000  # ctl type, law (Null controller.), start @
+      0.  # No. of data items

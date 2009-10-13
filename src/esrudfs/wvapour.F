@@ -360,6 +360,7 @@ C always of the zero-gradient type.
       SUBROUTINE BNDARHUM                                                      
 #include "cfd.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/NDMAP/NOPEN(MNZ),MFNODE(MCFND,MNZ),IOPENi(MCFND,MNZ),
      &             IOPENf(MCFND,MNZ),JOPENi(MCFND,MNZ),
      &             JOPENf(MCFND,MNZ),KOPENi(MCFND,MNZ),
@@ -414,6 +415,7 @@ C always of the zero-gradient type.
       COMMON/THETA/THETA1(MCFND,MNZ),THETA2(MCFND,MNZ)
 
       CHARACTER*72 HSID
+      character outs*124
 
       LOGICAL INCALU,INCALV,INCALW,INCALT,INCALK,INCALD
       LOGICAL IZEROT,IZanKE,IMITZ
@@ -714,8 +716,9 @@ C Here te average value of concentration in the outlets is calculated
 C <<Here we need to make an output of the average outlet-concentration >>
 C <<on screen and make it available during testing (ltest-variable)>>
       if (ITRC.eq.1) then
-        write(6,*)'Average humidity=',AVEHUM/(anotzero(SUMFLU)),
-     &            ' Humidity flux out=',AVEHUM 
+        write(outs,*)'Average humidity=',AVEHUM/(anotzero(SUMFLU)),
+     &            ' Humidity flux out=',AVEHUM
+        call edisp(iuout,outs)
       endif
 
 C Apply zero-gradient-type BC's on each solid boundary in turn.

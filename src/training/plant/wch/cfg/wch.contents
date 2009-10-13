@@ -1,0 +1,368 @@
+Synopsis
+ 
+This is a synopsis of the model Living room with radiator and wch. defined in
+wch.cfg generated on Wed Jul 22 14:19:29 2009. Notes associated with the model
+are in wch.log
+ 
+The model is located at latitude   52.00 with a longitude difference of -10.00
+from the local time meridian. The year used in simulations is 2000 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical urban site and the ground reflectance is 0.20.
+ 
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
+ 
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
+ 
+There are currently  1 user defined ground temperature profiles.
+Ground temperatures Jan-Dec:
+   5.4   5.7   7.0   8.7  10.7  12.2  12.9  12.8  11.6   9.5   7.3   5.9
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ pressure distributions : pressc.db1
+ materials              : ../dbs/db_prc.a
+ constructions          : ../dbs/db_mlc
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+living room control of wch radiator - one day type applicable all year
+ 
+Zones control includes  1 functions.
+Example of building control via wet central heating.  For more informati see
+the wch.log file in the cfg folder.
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      flux zone/plant     3.0 1.0 2.0 10000.0 10000.0
+plant/zone coupling: plant component 1 plant component node 2 coupling type hrA(0s-0a)
+sequential. Max heating 10000.00W max cooling 10000.00W.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) living       << control  1
+ 
+ Plant control includes  2 loops.
+plt ctrl reg
+ 
+ The sensor for function  1 senses var in compt.  6:thermostat @ node no.  1
+ The actuator for function  1 is plant component   1:boiler @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb   > varb     Prop numerical ctrl 0.0 1.0 22.3 22.3 0.5
+ 
+ The sensor for function  2 senses var in compt.  1:boiler @ node no.  1
+ The actuator for function  2 is plant component   6:thermostat @ node no.  1
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 plant      > varb     Prop numerical ctrl 0.2 0.0 1.0 0.0 0.0
+ 
+The model includes a plant network.
+ 
+ The plant network contains  6 components from plantc.db1
+ 
+ Component: boiler ( 1) code  1, db reference 16
+ Control data:    1.000
+ Modified parameters for boiler
+ Component total mass (kg)                          :   50.000
+ Mass weighted average specific heat (J/kgK)        :   1000.0
+ Full load gas firing rate if boiler on (m^3/s)     :  0.83000E-04
+ Stand-by gas consumption relative to 1 (-)         :  0.10000E-01
+ Gas heating value at STP (J/m^3)                   :  0.35000E+08
+ Full load water sided efficiency at Tc (-)         :  0.86000
+ Tangent of efficiency curve for Tj < Tc (1/K)      : -0.25000E-02
+ Tangent of efficiency curve for Tj > Tc (1/K)      : -0.25000E-03
+ Stand-by loss at Tj = Te relative to 1 (-)         :  0.80000E-02
+ Tangent of stand-by loss curve (1/K)               :  0.41000E-03
+ Normalized start-stop loss (s)                     :   1.0000
+ Upper boiler temperature limit (C)                 :   95.000
+ 
+ Component: pipe1 ( 2) code  2, db reference 13
+ No Control data
+ Modified parameters for pipe1
+ Component total mass (kg)                          :   4.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :   3.5000
+ Hydraulic diameter of pipe (m)                     :  0.15000E-01
+ Length of pipe section (m)                         :   10.000
+ Cross sectional face area (m^2)                    :  0.17670E-03
+ 
+ Component: radiator ( 3) code  3, db reference 12
+ No Control data
+ Modified parameters for radiator
+ Component total mass (kg)                          :   25.000
+ Mass weighted average specific heat (J/kgK)        :   600.00
+ Radiator exponent (-)                              :   1.3000
+ Nominal heat emission of radiator (W)              :   2000.0
+ Nominal supply temperature (C)                     :   90.000
+ Nominal exit temperature (C)                       :   70.000
+ Nominal environment temperature (C)                :   20.000
+ Index of coupled building zone (-)                 :   1.0000
+ Number of walls used for defining Te (-)           :   2.0000
+ Index of 1st wall for defining Te (-)              :   4.0000
+ Weighting factor 1st wall when defining Te (-)     :  0.50000
+ Index of 2nd wall for defining Te (-)              :   7.0000
+ Weighting factor 2nd wall when defining Te (-)     :  0.50000
+ 
+ Component: pipe2 ( 4) code  4, db reference 13
+ No Control data
+ Modified parameters for pipe2
+ Component total mass (kg)                          :   4.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :   3.5000
+ Hydraulic diameter of pipe (m)                     :  0.15000E-01
+ Length of pipe section (m)                         :   10.000
+ Cross sectional face area (m^2)                    :  0.17670E-03
+ 
+ Component: pump ( 5) code  5, db reference 15
+ Control data:    0.000
+ Modified parameters for pump
+ Component total mass (kg)                          :   5.0000
+ Mass weighted average specific heat (J/kgK)        :   2250.0
+ UA modulus from wall to environment (W/K)          :  0.20000
+ Rated total absorbed power (W)                     :   150.00
+ Rated volume flow rate (m^3/s)                     :  0.30000E-03
+ Overall efficiency (-)                             :  0.70000
+ 
+ Component: thermostat ( 6) code  6, db reference 23
+ Control data:    0.020
+ Modified parameters for thermostat
+ Component total mass (kg)                          :  0.50000E-01
+ Mass weighted average specific heat (J/kgK)        :   1000.0
+ Index of coupled building zone (-)                 :   1.0000
+ Index of "viewed" wall in that zone (-)            :   3.0000
+ Index of wall on which device is mounted (-)       :   1.0000
+ Equiv. convective conductance to air (W/K)         :  0.40000E-01
+ Equiv. radiative conductance to wall 2 (W/K)       :  0.10000E-01
+ Equiv. radiative conductance to wall 3 (W/K)       :  0.10000E-01
+ 
+ Nb of plant component connections:  5
+ Con receiving component node type sending component node
+ 
+  1 boiler node 1 (from another component.) pump node 1 details:     1.00    0.00    0.00
+  1 boiler node 1 (from another component.) pump node 1 details:     1.00    0.00    0.00
+ 
+  2 pipe1 node 1 (from another component.) boiler node 2 details:     1.00    0.00    0.00
+  2 pipe1 node 1 (from another component.) boiler node 2 details:     1.00    0.00    0.00
+ 
+  3 radiator node 1 (from another component.) pipe1 node 1 details:     1.00    0.00    0.00
+  3 radiator node 1 (from another component.) pipe1 node 1 details:     1.00    0.00    0.00
+ 
+  4 pipe2 node 1 (from another component.) radiator node 2 details:     1.00    0.00    0.00
+  4 pipe2 node 1 (from another component.) radiator node 2 details:     1.00    0.00    0.00
+ 
+  5 pump node 1 (from another component.) pipe2 node 1 details:     1.00    0.00    0.00
+  5 pump node 1 (from another component.) pipe2 node 1 details:     1.00    0.00    0.00
+ 
+ No of component containments =  4
+  Component      | Containment descr. | Type
+ 
+ 1  boiler          fix temp:  18.000      2 details:    18.00    0.00    0.00
+ 
+ 2  pipe1           fix temp:  18.000      2 details:    18.00    0.00    0.00
+ 
+ 3  pipe2           fix temp:  18.000      2 details:    18.00    0.00    0.00
+ 
+ 4  pump            fix temp:  18.000      2 details:    18.00    0.00    0.00
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 living         86.9   9   121.7     4.0    32.2  living describes a...
+   all            87.    9    122.      4.     32.
+ 
+ 
+ Zone living ( 1) is composed of 9 surfaces and 18 vertices.
+ It encloses a volume of 86.9m^3 of space, with a total surface
+ area of 126.m^2 & approx floor area of 32.2m^2
+ living describes a...
+ There is 14.580m2 of exposed surface area, 14.580m2 of which is vertical.
+ Outside walls are 32.952 % of floor area & avg U of 0.651 & UA of 6.9064
+ Glazing is 12.356 % of floor & 27.271 % facade with avg U of 2.861 & UA of 11.376
+ 
+ A summary of the surfaces in living( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  6.91    180.   0. ptn_hall     OPAQUE   VERT -     Inner_wall   ||< constant @ 15dC &   0W rad
+  2  7.67    180.   0. ptn_kitch    OPAQUE   VERT -     Inner_wall   ||< constant @ 18dC &   0W rad
+  3  16.1     90.   0. east_neigh   OPAQUE   VERT -     Partition    ||< identical environment
+  4  10.6      0.   0. north        OPAQUE   VERT -     Facade       ||< external
+  5  16.1    270.   0. west_neigh   OPAQUE   VERT -     Partition    ||< identical environment
+  6  32.2      0.  90. ceiling      OPAQUE   CEIL -     Inner_floor  ||< constant @ 18dC &   0W rad
+  7  32.2      0. -90. floor        OPAQUE   FLOR -     Ground_floor ||< user def grnd profile  1
+  8  0.859     0.   0. north_gla    DC_8074_ VERT -     double_glz   ||< external
+  9  3.12    360.   0. north_glb    DC_8074_ VERT -     double_glz   ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ 
+ Air schedule notes:
+living rooom with radiator. adjacent kitchen and hall at fixed temp.
+occupancy varies during the day from 80W to 450W.
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     1.00  0.0241    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype saturday     :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     1.00  0.0241    0.00  0.0000   0     0.00
+ 
+Number of air change periods for daytype sunday       :    1
+  Period   Infiltration   Ventilation     From Source
+  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+  1  0 - 24     1.00  0.0241    0.00  0.0000   0     0.00
+ 
+Notes:
+living rooom with radiator. adjacent kitchen and hall at fixed temp.
+occupancy varies during the day from 80W to 450W.
+Number of weekday      casual gains=  8
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 10    125.0      0.0       0.50       0.50
+Wkd  3 OccuptW   10 - 14    100.0      0.0       0.50       0.50
+Wkd  4 OccuptW   14 - 16     75.0      0.0       0.50       0.50
+Wkd  5 OccuptW   16 - 18    150.0      0.0       0.50       0.50
+Wkd  6 OccuptW   18 - 20    305.0      0.0       0.50       0.50
+Wkd  7 OccuptW   20 - 22    450.0      0.0       0.50       0.50
+Wkd  8 OccuptW   22 - 24    385.0      0.0       0.50       0.50
+Number of saturday     casual gains=  8
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 10    125.0      0.0       0.50       0.50
+Wkd  3 OccuptW   10 - 14    100.0      0.0       0.50       0.50
+Wkd  4 OccuptW   14 - 16     75.0      0.0       0.50       0.50
+Wkd  5 OccuptW   16 - 18    150.0      0.0       0.50       0.50
+Wkd  6 OccuptW   18 - 20    305.0      0.0       0.50       0.50
+Wkd  7 OccuptW   20 - 22    450.0      0.0       0.50       0.50
+Wkd  8 OccuptW   22 - 24    385.0      0.0       0.50       0.50
+Number of sunday       casual gains=  8
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 10    125.0      0.0       0.50       0.50
+Wkd  3 OccuptW   10 - 14    100.0      0.0       0.50       0.50
+Wkd  4 OccuptW   14 - 16     75.0      0.0       0.50       0.50
+Wkd  5 OccuptW   16 - 18    150.0      0.0       0.50       0.50
+Wkd  6 OccuptW   18 - 20    305.0      0.0       0.50       0.50
+Wkd  7 OccuptW   20 - 22    450.0      0.0       0.50       0.50
+Wkd  8 OccuptW   22 - 24    385.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 32.180m2, wall area is 10.604m2, window area is 3.9761m2.
+ Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ There is 14.580m2 of outside surface area, 14.580m2 of which is vertical.
+ 
+ Outside walls are 32.952 % of floor area & avg U of 0.651 & UA of 6.9064
+ Glazing is 12.356 % of floor & 27.271 % facade with avg U of 2.861 & UA of 11.376
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: Facade
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     6  100.0     1.300  2100.   840. 0.90 0.65    31.  0.08 mat_006 : Gevelklinkers
+    2    0   20.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  281   35.0     0.035    30.  1470. 0.90 0.50   100.  1.00 mat_281 : PS-schuim geexpandeerd
+    4    1  100.0     0.960  2000.   840. 0.93 0.70    12.  0.10 mat_001 : Paviour
+ Int   110   10.0     0.700  1600.   840. 0.90 0.25    30.  0.01 mat_110 : Kalkpleister
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.651  0.664  0.635 (partition)  0.615
+ Total area of Facade is     10.60
+ 
+ Details of opaque construction: Ground_floor
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    39   30.0     1.400  2000.   880. 0.90 0.50    50.  0.02 mat_039 : Estrich
+    2   35  100.0     1.900  2500.   840. 0.90 0.65    40.  0.05 mat_035 : Verdicht gewapend
+ Int   281   35.0     0.035    30.  1470. 0.90 0.50   100.  1.00 mat_281 : PS-schuim geexpandeerd
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.804  0.824  0.779 (partition)  0.750
+ Total area of Ground_floor is     32.18
+ 
+ Details of opaque construction: Inner_floor
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    39   30.0     1.400  2000.   880. 0.90 0.50    50.  0.02 mat_039 : Estrich
+    2   35  170.0     1.900  2500.   840. 0.90 0.65    40.  0.09 mat_035 : Verdicht gewapend
+ Int   151   10.0     0.380  1120.   840. 0.90 0.60    12.  0.03 mat_151 : Ceiling (plaster)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.255  3.607  2.880 (partition)  2.518
+ Total area of Inner_floor is     32.18
+ 
+ Details of opaque construction: Partition
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   109   10.0     0.930  1900.   840. 0.90 0.25    30.  0.01 mat_109 : Cementpleister
+    2   35  210.0     1.900  2500.   840. 0.90 0.65    40.  0.11 mat_035 : Verdicht gewapend
+ Int   109   10.0     0.930  1900.   840. 0.90 0.25    30.  0.01 mat_109 : Cementpleister
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.311  3.676  2.924 (partition)  2.551
+ Total area of Partition is     32.18
+ 
+ Details of opaque construction: Inner_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   125   10.0     0.500  1300.  1000. 0.91 0.50    19.  0.02 mat_125 : White dry render
+    2   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 mat_022 : Aerated block
+ Int   125   10.0     0.500  1300.  1000. 0.91 0.50    19.  0.02 mat_125 : White dry render
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.596  1.676  1.500 (partition)  1.395
+ Total area of Inner_wall is     14.58
+ 
+ Details of transparent construction: double_glz   with DC_8074_04nb optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   243    5.0     1.050  2500.   750. 0.90 0.05 19200.  0.00 mat_243 : 4mm clear float with placeholder s
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   243    5.0     1.050  2500.   750. 0.90 0.05 19200.  0.00 mat_243 : 4mm clear float with placeholder s
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.861  3.130  2.567 (partition)  2.275
+ 
+ Clear glass 80/75,     4mm, no blind: with id of: DC_8074_04nb
+ with 3 layers [including air gaps] and visible trn: 0.80
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.676 0.651 0.604 0.441 0.201
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.113 0.124 0.134 0.148 0.154
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.087 0.094 0.097 0.087 0.062
+ Total area of double_glz is      3.98

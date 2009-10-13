@@ -44,6 +44,8 @@ C  else simulate the scene by calling simscene
 
       SUBROUTINE autorad
 #include "building.h"
+#include "site.h"
+      
 #include "e2r_common.h"
 
       integer lnblnk  ! function definition
@@ -51,8 +53,6 @@ C  else simulate the scene by calling simscene
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
       common/expath/runpath,pathtype
-
-      COMMON/C4/XLAT,XLON
 
       character outs*124,runpath*72,pathtype*24,tfile*72,h*72
 
@@ -109,10 +109,11 @@ C Generate sky command use a sun for all skys except for daylight factors.
      &          SCENEPURP(ISCENE)(1:5).eq.'Glare') then
           call settime(IRM,IRD,XRT)
           write(outs,'(a,2i3,f6.2,a,f5.2,2(a,f7.1),a)')'gensky',IRM,IRD,
-     &          XRT,' +s -g ',rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
+     &      XRT,' +s -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
+     &      ' -m 0.0'
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
           write(outs,'(a,f5.2,2(a,f7.1),a)') 'gensky 6 20 12.0 -c -g ',
-     &                        rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
+     &      rgrfl,' -a ',sitelat,' -o ',-sitelongdif,' -m 0.0'
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 
 C gendaylit -ang 60 0 -L QDIRILL QDIFILL
@@ -636,6 +637,7 @@ C genimage generates an image to screen or file.
 C ITP =1 - image only; =2 - glare info to display on image.
       SUBROUTINE genimage(ITP)
 #include "building.h"
+#include "site.h"
 #include "e2r_common.h"
       
       integer lnblnk  ! function definition
@@ -645,7 +647,6 @@ C ITP =1 - image only; =2 - glare info to display on image.
       common/pophelp/h(60)
 
       common/expath/runpath,pathtype
-      COMMON/C4/XLAT,XLON
 
       character tpic*72,tpicd*72,tgif*72,tgifd*72
       character pf*72,h*72,outs*124,ltmp*72
@@ -733,7 +734,10 @@ C not try and display.
      &          rifname(ifocz,iscene,1)(1:irifnamelen),' &'
           endif
         endif
-        write(6,*) doit
+
+C Debug.
+C        write(6,*) doit
+
         call runit(doit,'-')
 
 C Display helpful messages while the image is rendering.
@@ -822,8 +826,8 @@ C Loop from start and increment until at or past the finish time.
           CURT=ATIMEST
           do while (idone.ne.0)
             write(outs,'(a,2i3,f7.3,a,f5.2,2(a,f7.1),a)')'gensky',IAMO,
-     &        IADO,CURT,' +s -g ',rgrfl,' -a ',XLAT,' -o ',-XLON,
-     &        ' -m 0.0'
+     &        IADO,CURT,' +s -g ',rgrfl,' -a ',sitelat,' -o ',
+     &        -sitelongdif,' -m 0.0'
             CALL wrtsky(outs)
 
 C We will need pic & gif file for this time. Write out and then use
@@ -880,7 +884,10 @@ C *** what to do here if more than one rif in scene ???? *** ... leave hard-wire
      &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),' ',
      &        rifname(ifocz,iscene,1)(1:irifnamelen)
             endif
-            write(6,*) doit
+
+C Debug.
+C            write(6,*) doit
+
             write(outs,'(2a,i3,F6.2)') 'Currently working on...',
      &        NMTHNM(IAMO),IADO,CURT
             call edisp(iuout,outs)
@@ -890,13 +897,19 @@ C Generate a label and put into tpic.
             write(doit,'(2a,i3,F6.2,4a)') 'psign -h 18 ',NMTHNM(IAMO),
      &        IADO,CURT,' | pcompos ',pf(1:lnblnk(pf)),' 0 0 - 2 2 > ',
      &        tpicd(1:lnblnk(tpicd))
-            write(6,*) doit
+
+C Debug.
+C            write(6,*) doit
+
             call runit(doit,'-')
 
 C Generate command to convert to a gif.
             write(doit,'(4a)') 'ra_gif ',tpicd(1:lnblnk(tpicd)),' ',
      &        tgifd(1:lnblnk(tgifd))
-            write(6,*) doit
+
+C Debug.
+C            write(6,*) doit
+
             call runit(doit,'-')
 
 C Increment the current time.
@@ -966,7 +979,10 @@ C Set file name including path and open.
      &      '; rad -e -v ',rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),
      &      ' ',rifname(ifocz,iscene,1)(1:irifnamelen)
         endif
-        write(6,*) doit
+
+C Debug.
+C        write(6,*) doit
+
         call edisp(iuout,'Look in the text window for progress.')
         call runit(doit,'-')
         if (ITP.eq.1)call dispimage(1)
@@ -1195,7 +1211,10 @@ C Read opt file so as rendering parameters can be set for rtrace.
       xval=-1.
       call RADPAR('dj',xval)
       if (xval.gt.0.) then
-        write (6,*) ' -dj',xval
+
+C Debug.
+C        write(6,*) ' -dj',xval
+
         write (ltmp,'(2a,f4.2,1x)') 
      &       rendopt(1:lnblnk(rendopt)),' -dj ',xval
         write (rendopt,'(a)') ltmp
@@ -1280,7 +1299,10 @@ C Run findglare to identify glare sources.
      &            '; findglare -ga 5-',glst(1:lnblnk(glst)),':5 -p ',
      &             pf(1:lnblnk(pf)),' ',rendopt(1:lnblnk(rendopt)),' ',
      &             octfil(1:lnblnk(octfil)),' > ',gf(1:lnblnk(gf))
-      write(6,*) doit
+
+C Debug.
+C      write(6,*) doit
+
       call runit(doit,'-')
 
       return
@@ -1460,8 +1482,8 @@ C Found the DF for the current sensor.
  20     continue
  10   continue
 
-C Debug...
-C      write (6,*) DFmaxdiff
+C Debug.
+C      write(6,*) DFmaxdiff
 
 C Display current results and ambient rendering parameters.
       call DFGRIDLBL('d')

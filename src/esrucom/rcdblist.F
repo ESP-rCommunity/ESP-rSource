@@ -417,12 +417,18 @@ C the climate file was not selected via scan of climatelist.
       character tlook*72
       character actreturn*1
       logical ok
+      logical unixok
 
 C Open the list of climate databases.
       ok=.false.
       CALL EFOPSEQ(idblfil,cdblfil,1,IER)
+
+C If fail during file opening.
       if(ier.ne.0)then
-        write(6,*) 'problem opening ',cdblfil(1:lnblnk(cdblfil))
+        call isunix(unixok)
+        if(unixok)then
+          write(6,*) 'problem opening ',cdblfil(1:lnblnk(cdblfil))
+        endif
         ok=.false.
         return
       endif
@@ -525,7 +531,10 @@ C Numbers associated with one climatelist item.
       character clmdb*144,h*72,pstring*40,act*1,actreturn*1
 
   4   CALL STRIPC(idblfil,OUTSTR,0,ND,0,'item line',IER)
+
+C Debug.
 C      write(6,*) outstr(1:lnblnk(outstr))
+
       if(ier.ne.0)then
         actreturn='e'
         return
@@ -734,7 +743,7 @@ C Read and store the comments into the HELP array for later display.
         goto 4
       elseif(WORD(1:5).eq.'*item')then
 
-C debug...
+C Debug.
 C      write(6,*)iawins,iawinf,iasprs,iasprf,iasums,iasumf
 C      write(6,*)is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
 C     &              is2sprs,is2sprf,is1sums,is1sumf

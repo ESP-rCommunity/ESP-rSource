@@ -460,7 +460,7 @@ C Setting izgfoc=0 denotes that not in single zone edit mode.
 C (Re)Set all surfaces to std line width.
         CALL INLNST(1)
         izgfoc=0
-        CALL EVSET(ITRC,'-',IER)
+        CALL EVSET('-',IER)
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display
@@ -483,6 +483,7 @@ C coefficients.
 C *********************************************************************
       SUBROUTINE INTGRD(GRDOK,ITRC)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -495,10 +496,6 @@ C geometry.h provides commons G0 and G2.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
@@ -534,7 +531,7 @@ C Material data arrays.
       DO 10 ICOMP=1,NCOMP
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
         endif
@@ -575,10 +572,10 @@ C Also check to see if the file has correct info.
             goto 139  !  a binary file found so carry on.
           endif
  1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
-            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
             if(ier.ne.0)then
               call usrmsg('No readable materials database was found',
      &                  'or file was corrupt','W')
@@ -649,6 +646,13 @@ C Initialise ground coefficients.
 C ***** Dummy display of images.
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
+
+      return
+      end
+
+C Dummy subroutine needed to compile (called from library code).
+      SUBROUTINE PLELEV(direc)
+      CHARACTER direc*1
 
       return
       end

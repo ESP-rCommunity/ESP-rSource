@@ -23,19 +23,23 @@ C Common source in building/plant/ flow/ global/ optical control.
 C ******** ADDCNTL
 C Add or delete a building/plant/flow/optical/complex fenestration
 C control.
-      SUBROUTINE ADDCNTL(icfoc,ACT,IER)
+      SUBROUTINE ADDCNTL(icfoc,ACT)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
 
-      common/pophelp/h(60)
+C Parameters
+      integer icfoc   ! control domain to work with 
+      character ACT*1 ! action to take - D or A or C
+      
+            common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER nbdaytype,nbcaldays,icalender,IDOV,IBDY,IEDY,IFDY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       character calename*32,calentag*12,calendayname*32
-      character ACT*1,outs*124,H*72
+      character outs*124,H*72
       dimension rper(30),rperf(30)
 
       if(ACT.eq.'D')then
@@ -414,6 +418,7 @@ C if that is selected decrement ncf and return.
 
 C Initialise and edit array of start times.
             if(ip.ne.1)call initperr(IP,rper,rperf,'i')
+
             do 784 IDP=1,IP
               if(IDP.eq.1)then
                 tbcps(ncf,ik,IDP)=0.
@@ -502,6 +507,7 @@ C Initial setup of day types.
 
 C Initialise and edit array of start times.
             if(ip.ne.1)call initperr(IP,rper,rperf,'i')
+
             do 287 IDP=1,IP
               if(IDP.eq.1)then
                 tpcps(ncl,ik,IDP)=0.
@@ -589,6 +595,7 @@ C Initial setup of day types.
 
 C Initialise and edit array of start times.
             if(ip.ne.1)call initperr(IP,rper,rperf,'i')
+
             do 586 IDP=1,IP
               if(IDP.eq.1)then
                 tfcps(ncc,ik,IDP)=0.
@@ -713,6 +720,7 @@ C if that is selected decrement ncf and return.
 
 C Initialise and edit array of start times.
             if(ip.ne.1)call initperr(IP,rper,rperf,'i')
+
             do 6 IDP=1,IP
               if(IDP.eq.1)then
                 tocps(ncf,ik,IDP)=0.
@@ -1029,11 +1037,15 @@ C Copy an existing control loop.
 
 C ******** ADDCTLD
 C Add or delete a building/plant/flow/global/optical control day type.
-      SUBROUTINE ADDCTLD(icfoc,II,IER)
+      SUBROUTINE ADDCTLD(icfoc,II)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
 
+C Parameters
+      integer icfoc   ! control domain to work with 
+      integer II      ! index of the control
+      
       common/pophelp/h(60)
       character h*72
 
@@ -1433,15 +1445,20 @@ C Copy and existing control loop day type.
 C ******** ADDCTLDP
 C Add or delete a building/plant/flow/global/optical/complex fen
 C control period.
-C II is the loop, ID is the day type, act is "D" delete, "A"
-C for add.
-      SUBROUTINE ADDCTLDP(icfoc,II,ID,act,IER)
+      SUBROUTINE ADDCTLDP(icfoc,II,ID,act)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
 
+C Parameters
+      integer icfoc   ! control domain to work with 
+      integer II      ! control loop to work with
+      integer ID      ! day type to act on
+      character ACT*1 ! action to take - D (delete) or A (add)
+
+
       common/pophelp/h(60)
-      character h*72,act*1
+      character h*72
 
       if(icfoc.eq.0)limit=nbcdp(II,ID)
       if(icfoc.eq.1)limit=npcdp(II,ID)
@@ -1594,7 +1611,7 @@ C Add a control period (make period start 1 hour after the previous one.
 C ******** LSTCNTL
 C List a building/plant/flow/global/optical control.  If II = 0 then
 C list out the zone/loop associations. 
-      SUBROUTINE LSTCNTL(itru,icfoc,II,IER)
+      SUBROUTINE LSTCNTL(itru,icfoc,II)
 #include "building.h"
 #include "geometry.h"
 #include "net_flow.h"
@@ -1670,7 +1687,7 @@ C List function details.
       if(nn.eq.0)nn=3
       do 20 j=1,nn
         JJ=J
-        call lstcntld(itru,icfoc,II,JJ,iier)
+        call lstcntld(itru,icfoc,II,JJ)
    20 CONTINUE
       return
       end
