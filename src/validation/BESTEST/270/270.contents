@@ -1,7 +1,7 @@
 Synopsis
  
-This is a synopsis of the model test case 290 defined in 290.cfg generated on
-Wed Oct 14 10:20:53 2009. Notes associated with the model are in README290.txt
+This is a synopsis of the model test case 270 defined in 270.cfg generated on
+Wed Oct 14 10:12:10 2009. Notes associated with the model are in README270.txt
  
 The model is located at latitude   39.80 with a longitude difference of   0.10
 from the local time meridian. The year used in simulations is 1991 and
@@ -58,51 +58,44 @@ capacity 100000.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling se
 20.00C.
  
  Zone to contol loop linkages:
- zone ( 1) 290          << control  1
+ zone ( 1) 270          << control  1
  
  ____________________________________________________________
  
 ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
- 1 290           129.6   9   159.6    12.0    48.0  290 describes a...
+ 1 270           129.6   9   159.6    12.0    48.0  270 describes a...
    all           130.    9    160.     12.     48.
  
  
- Zone 290 ( 1) is composed of 9 surfaces and 18 vertices.
+ Zone 270 ( 1) is composed of 9 surfaces and 18 vertices.
  It encloses a volume of 130.m^3 of space, with a total surface
  area of 172.m^2 & approx floor area of 48.0m^2
- 290 describes a...
+ 270 describes a...
  There is 123.60m2 of exposed surface area, 75.600m2 of which is vertical.
  Outside walls are 132.50 % of floor area & avg U of 0.510 & UA of 32.461
  Flat roof is 100.00 % of floor area & avg U of 0.316 & UA of 15.174
  Glazing is 25.000 % of floor & 15.873 % facade with avg U of 2.986 & UA of 35.837
  
- A summary of the surfaces in 290( 1) follows:
+ A summary of the surfaces in 270( 1) follows:
  
- Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
-    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  4.80    180.   0. South_Wall   OPAQUE   VERT -     LWextwall6   ||< external
-  2  4.80    180.   0. South_Wall2  OPAQUE   VERT -     LWextwall6   ||< external
-  3  16.2     90.   0. East_Wall    OPAQUE   VERT -     LWextwall6   ||< external
-  4  21.6      0.   0. North_Wall   OPAQUE   VERT -     LWextwall6   ||< external
-  5  16.2    270.   0. West_Wall    OPAQUE   VERT -     LWextwall6   ||< external
-  6  6.00    180.   0. Window       DG_Beste VERT -     dg_glazing   ||< external
-  7  6.00    180.   0. Window2      DG_Beste VERT -     dg_glazing   ||< external
-  8  48.0      0.  90. Roof         OPAQUE   CEIL -     LWroof6      ||< external
-  9  48.0      0. -90. Floor        OPAQUE   FLOR -     LWfloor6     ||< user def grnd profile  1
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  4.80    180.   0. South_Wall   OPAQUE VERT LWextwall6   ||< external
+  2  4.80    180.   0. South_Wall2  OPAQUE VERT LWextwall6   ||< external
+  3  16.2     90.   0. East_Wall    OPAQUE VERT LWextwall6   ||< external
+  4  21.6      0.   0. North_Wall   OPAQUE VERT LWextwall6   ||< external
+  5  16.2    270.   0. West_Wall    OPAQUE VERT LWextwall6   ||< external
+  6  6.00    180.   0. Window       DG_Bes VERT dg_glazing   ||< external
+  7  6.00    180.   0. Window2      DG_Bes VERT dg_glazing   ||< external
+  8  48.0      0.  90. Roof         OPAQUE CEIL LWroof6      ||< external
+  9  48.0      0. -90. Floor        OPAQUE FLOR LWfloor6     ||< user def grnd profile  1
  
  
  An hourly solar radiation distribution is used for this zone.
- Surfaces (all applicable) for shading analysis:
-South_Wall South_Wall2 East_Wall North_Wall West_Wall Window Window2 Roof
- Insolation sources (all applicable):
-Window Window2
  
  
  Explicit viewfactors have been derived for this zone.
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1     8.0    -0.0     2.7     8.0     1.0     0.0   180.0     0.0 B1 NONE
- 
  Shading patterns have not yet been calculated.
  
  
