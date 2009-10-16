@@ -142,7 +142,7 @@ C text to form its name.
       do 25 iy = 1,iij
         if(closemat)then
           legmat=iprndx(iy)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)
@@ -236,7 +236,7 @@ C Write layers in reverse order.
           IL=IL-1
           if(closemat)then
             legmat=IPR(ino,IL)   ! which legacy index
-            if(legmat.ge.0)then
+            if(legmat.gt.0)then
               matarrayindex=mathash(legmat)  ! find matching array index
               DBCON=matdbcon(matarrayindex)
               DBDEN=matdbden(matarrayindex)
@@ -462,7 +462,7 @@ C Calculate the window U-value
             DO 201, IL=1,LAYERS(ino)
               if(closemat)then
                 legmat=IPR(ino,IL)   ! which legacy index
-                if(legmat.ge.0)then
+                if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
                   DBCON=matdbcon(matarrayindex)
                   DBDEN=matdbden(matarrayindex)
@@ -522,7 +522,7 @@ C External obstracles - NONE
           ELSE
             if(closemat)then
               legmat=IPR(ICF,1)   ! which legacy index
-              if(legmat.ge.0)then
+              if(legmat.gt.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
                 DBCON=matdbcon(matarrayindex)
                 DBDEN=matdbden(matarrayindex)
@@ -835,7 +835,7 @@ C Pick up general description of the composite.
 C For the inside and outside layer get surface properties (AE & AI).
         if(closemat)then
           legmat=IPR(IM,1)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             E=matdbine(matarrayindex)
             AE=matdbina(matarrayindex)
@@ -846,7 +846,7 @@ C For the inside and outside layer get surface properties (AE & AI).
         endif
         if(closemat)then
           legmat=IPR(IM,LAYERS(IM))   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             E=matdbine(matarrayindex)
             AI=matdbina(matarrayindex)
@@ -945,7 +945,7 @@ C Pick up general description of the composite.
 C For the inside and outside layer get surface properties.
               if(closemat)then
                 legmat=IPR(IM,1)   ! which legacy index
-                if(legmat.ge.0)then
+                if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
                   E=matdbine(matarrayindex)
                   AE=matdbina(matarrayindex)
@@ -956,7 +956,7 @@ C For the inside and outside layer get surface properties.
               endif
               if(closemat)then
                 legmat=IPR(IM,LAYERS(IM))   ! which legacy index
-                if(legmat.ge.0)then
+                if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
                   E=matdbine(matarrayindex)
                   AI=matdbina(matarrayindex)
@@ -1143,7 +1143,7 @@ C Pick up general description of the composite.
 C For the inside and outside layer get surface properties.
               if(closemat)then
                 legmat=IPR(IM,1)   ! which legacy index
-                if(legmat.ge.0)then
+                if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
                   E=matdbine(matarrayindex)
                   AE=matdbina(matarrayindex)
@@ -1269,7 +1269,7 @@ C Find the matching mlc index.
                 ifound=im
                 if(closemat)then
                   legmat=IPR(IM,1)   ! which legacy index
-                  if(legmat.ge.0)then
+                  if(legmat.gt.0)then
                     matarrayindex=mathash(legmat)  ! find matching array index
                     E=matdbine(matarrayindex)
                     AE=matdbina(matarrayindex)

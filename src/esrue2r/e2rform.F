@@ -843,7 +843,7 @@ C Pick up general description of the composite.
 C For the inside and outside layer get surface properties.
         if(closemat)then
           legmat=IPR(IM,1)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             E=matdbine(matarrayindex)
             AE=matdbina(matarrayindex)
@@ -854,7 +854,7 @@ C For the inside and outside layer get surface properties.
         endif
         if(closemat)then
           legmat=IPR(IM,LAYERS(IM))   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             E=matdbine(matarrayindex)
             AI=matdbina(matarrayindex)

@@ -2255,7 +2255,7 @@ C << to supply much of the information needed for the g-value calculation.
           DO 501 ILAY=1,LAYERS(IWH)
             if(closemat)then
               legmat=IPR(IWH,ILAY)   ! which legacy index
-              if(legmat.ge.0)then
+              if(legmat.gt.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
                 DBCON=matdbcon(matarrayindex)
                 DBDEN=matdbden(matarrayindex)
@@ -2524,7 +2524,7 @@ C Detail menu.
       DO 23, IL=1,LAYERS(IFOC)
         if(closemat)then
           legmat=IPR(IFOC,IL)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)

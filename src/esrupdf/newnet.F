@@ -2162,7 +2162,7 @@ C Write menu displaying a list of layer names
 C If an air layer include the R values in the display.
         if(closemat)then
           legmat=IPR(imatch,j)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)

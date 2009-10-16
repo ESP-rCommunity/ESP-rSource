@@ -272,7 +272,7 @@ C values, otherwise get element name from materials db.
 C If an air layer include the R values in the display.
               if(closemat)then
                 legmat=IPR(I,IL)   ! which legacy index
-                if(legmat.ge.0)then
+                if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
                   DBCON=matdbcon(matarrayindex)
                   DBDEN=matdbden(matarrayindex)
@@ -556,7 +556,7 @@ C Reporting based on report level.
 C If an air layer include the R values in the display.
         if(closemat)then
           legmat=IPR(IFOC,IL)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             if(matarrayindex.ge.0)then
               DBCON=matdbcon(matarrayindex)
@@ -742,7 +742,7 @@ C Reset U value reporting local variables.
 C If an air layer include the R values in the display.
         if(closemat)then
           legmat=IPR(IFOC,IL)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)
@@ -1031,7 +1031,7 @@ C of DRAIR.
           ELSE
             if(closemat)then
               legmat=IPR(I,IL)   ! which legacy index
-              if(legmat.ge.0)then
+              if(legmat.gt.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
                 DBCON=matdbcon(matarrayindex)
                 DBDEN=matdbden(matarrayindex)

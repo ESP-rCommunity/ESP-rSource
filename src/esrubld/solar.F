@@ -328,10 +328,11 @@ C Required for WATSUN-PV model
 C COMMONS FOR CFC type CONSTRUCTIONS 
       common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
      &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
-     &      issur_self_shd(mcom,ms), proang_s(mcom,mcfc,ms),
+     &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
      &      qtmca_ext(mcom,ms,mn)
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
-      real issur_self_shd,proang_s,qtmca_ext
+      real proang_s,qtmca_ext
+      integer issur_self_shd
 
       REAL fInc_angle          ! Angle of incidence for surface
 

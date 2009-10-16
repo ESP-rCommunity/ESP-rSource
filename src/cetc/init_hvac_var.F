@@ -96,6 +96,7 @@ c Initialize output variables for air-conditioning system
         coil_sensible_load(i) = 0. 
         coil_latent_load(i) = 0.
         coil_total_load(i) = 0.
+        sys_on_time(i) = 0.
  50   continue
 
 c Initialize output flag

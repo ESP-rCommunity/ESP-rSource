@@ -85,7 +85,7 @@ C Now find the names of the materials.
         IER=0
         if(closemat)then
           legmat=IELM(II)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)
@@ -293,7 +293,7 @@ C Pick a material in that MLC.
         do 10 IL=1,LAYERS(ISEL)
           if(closemat)then
             legmat=IPR(ISEL,IL)   ! which legacy index
-            if(legmat.ge.0)then
+            if(legmat.gt.0)then
               matarrayindex=mathash(legmat)  ! find matching array index
               DBCON=matdbcon(matarrayindex)
               DBDEN=matdbden(matarrayindex)

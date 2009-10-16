@@ -1166,12 +1166,6 @@ C Simulation parameter sets.
 
 C IPV description via ipvdata.h.
 
-C Control documentation common
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248     
-  
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248  
       
@@ -2399,6 +2393,7 @@ C the file with minimum interaction.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+C#include "control.h"
 C espriou.h provides currentfile.
 #include "seasons.h"
 C seasons.h provides typper and typsea
@@ -2433,12 +2428,6 @@ C Simulation parameter sets.
 
 C IPV description via ipvdata.h.
 
-C Control documentation common
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248     
-  
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248  
       

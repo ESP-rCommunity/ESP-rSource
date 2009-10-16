@@ -273,7 +273,7 @@ C we reading the raw data?
             DO 23 IL=1,LAYERS(IC)
               if(closemat)then
                 legmat=IPR(IC,IL)   ! which legacy index
-                if(legmat.ge.0)then
+                if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
                   DBCON=matdbcon(matarrayindex)
                   DBDEN=matdbden(matarrayindex)

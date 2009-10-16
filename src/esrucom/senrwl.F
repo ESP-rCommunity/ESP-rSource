@@ -564,7 +564,7 @@ C List distributions.
               IDB=IDMAT(I,1)
               if(closemat)then
                 legmat=IDB   ! which legacy index
-                if(legmat.ge.0)then
+                if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
                   DBCON=matdbcon(matarrayindex)
                   DBDEN=matdbden(matarrayindex)
@@ -603,7 +603,7 @@ C List distributions.
                 IDB=IDMAT(I,1)
                 if(closemat)then
                   legmat=IDB   ! which legacy index
-                  if(legmat.ge.0)then
+                  if(legmat.gt.0)then
                     matarrayindex=mathash(legmat)  ! find matching array index
                     DBCON=matdbcon(matarrayindex)
                     DBDEN=matdbden(matarrayindex)
