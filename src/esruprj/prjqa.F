@@ -1789,7 +1789,7 @@ C Note optional zone extensions.
             elseif(zoneextrainfo.eq.2)then
               call FINDFIL(LHCCO(ivz),XST)
               IF(XST)THEN
-                call ehtcff(LHCCO(ivz),IUF,itrc,IER)
+                call ehtcff(LHCCO(ivz),IUF,itu,IER)
                 call listhtc(itu,ivz,IER)
               endif
             endif

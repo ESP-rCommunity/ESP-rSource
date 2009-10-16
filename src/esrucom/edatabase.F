@@ -214,6 +214,14 @@ C with the found item matches the IPR scanned above.
      &              matlegindex(matarrayindex),' index does not match ',
      &              IPR(I,IL),' name: ',NAM(1:lnblnk(NAM))
                   call edisp(iuout,outs)
+                  write(outs,'(2a)') 
+     &              'Marking the confused layer with a -99. Check the',
+     &              'materials database for two identically named'
+                  call edisp(iuout,outs)
+                  write(outs,'(2a)') 
+     &              'materials, edit to make names unique, save and'
+     &              'then rescan databases and re-make zone files.'
+                  call edisp(iuout,outs)
                   IPRMAT(I,IL)=-99  ! could not find it
                 else
                   IPRMAT(I,IL)=matarrayindex
@@ -556,15 +564,19 @@ C ileghope is checked against matlegindex.
 #include "material.h"
       
       integer lnblnk        ! function definition
+      
       integer ileghope      ! the legacy index to match against
       character NAM*72      ! passed string from MLC
       integer matarrayindex ! returned index in materials array
+      integer iuout,iuin
+      COMMON/OUTIN/IUOUT,IUIN
 
       integer lnam,ltnam    ! length of material name
       integer ipos,i2pos,iepos ! position start, 2 char along, end
       character testname*32 ! local name for comparison
       character PNAM*72     ! local string variable for scanning
       logical foundcolon    ! true if ' : ' found
+      character outs*124
 
 C Initial assumptions.
       foundcolon=.false.
@@ -625,8 +637,10 @@ C the matname and if that fails against matdoc
 C Find a matching matname.
         do 44 imt=1,matdbitems
           if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
-            write(6,*) imt,' name x: match ',PNAM(1:lnam),' ',
-     &        matname(imt)(1:lnblnk(matname(imt)))
+
+C Debug.
+C            write(6,*) imt,' name x: match ',PNAM(1:lnam),' ',
+C     &        matname(imt)(1:lnblnk(matname(imt)))
             matarrayindex=imt
             return
           endif
@@ -635,8 +649,10 @@ C Find a matching matname.
 C If we got to this point also check for a matching matdoc string.
         do 45 imt=1,matdbitems
           if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
-            write(6,*) imt,' doc x: match ',PNAM(1:lnam),' ',
-     &        matdoc(imt)(1:lnam)
+
+C Debug.
+C            write(6,*) imt,' doc x: match ',PNAM(1:lnam),' ',
+C     &        matdoc(imt)(1:lnam)
             matarrayindex=imt
             return
           endif
@@ -646,8 +662,10 @@ C If we got to this point also check for a matching matdoc string.
 C There might have been a ' : ' but a text mismatch for matname so check matdoc.
       do 46 imt=1,matdbitems
         if(PNAM(1:lnam).eq.matdoc(imt)(1:lnam))then
-          write(6,*) imt,' doc match ',PNAM(1:lnam),' ',
-     &      matdoc(imt)(1:lnam)
+
+C Debug.
+C          write(6,*) imt,' doc match ',PNAM(1:lnam),' ',
+C     &      matdoc(imt)(1:lnam)
           matarrayindex=imt
           return
         endif
@@ -659,12 +677,19 @@ C materials database has a material name edited and the MLC database does not
 C have a matching string (but the legacy index is correct non-the less).
       do 47 imt=1,matdbitems
         if(matlegindex(imt).eq.ileghope)then
-          write(6,*) imt,ileghope,matlegindex(imt),' index match ',
-     &      PNAM(1:lnam),' ',matname(imt)(1:lnblnk(matname(imt)))
+
+C Debug.
+C          write(6,*) imt,ileghope,matlegindex(imt),' index match ',
+C     &      PNAM(1:lnam),' ',matname(imt)(1:lnblnk(matname(imt)))
           matarrayindex=imt
           return
         endif
   47  continue
+
+C If we got here there was no match.
+      write(outs,*) 'When scanning materials db looking for legacy',
+     &  imt,' no match found for ',PNAM(1:lnam)
+      call edisp(iuout,outs)
   
       return
       end
@@ -894,7 +919,7 @@ C on contents of common MLC. Logic is a variant of ETMLDB.
 
 C Material properties.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat1,closemat2,bCloseToZero
 
       CHARACTER OUTSTR*124,NAM*72
       CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
@@ -902,8 +927,6 @@ C Material properties.
 
 C Pick up general description of the composite.
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
-      IF(ITRC.GE.1)THEN
-      ENDIF
 
 C Check version of material database.
       call eclose(matver,1.1,0.01,closemat1)
@@ -921,7 +944,7 @@ C Reset U value reporting local variables.
       UVI=0.
       DO 15, IL=1,LAYERS(IFOC)
 
-C If an air layer include the R values in the display.
+C If an air layer include the R values.
         if(closemat1.or.closemat2)then
           matarrayindex=IPRMAT(IFOC,IL)   ! which array index
           if(matarrayindex.ge.0)then
@@ -951,7 +974,7 @@ C Also check if it is a gap.
             if(matarrayindex.eq.0)then
               continue
 	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h')then
+     &             matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
                 DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
@@ -965,6 +988,7 @@ C Also check if it is a gap.
           CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
      &      DBSHT,E,A,DRV,TITL,NAM)
         endif
+
         IF(IER.EQ.1)RETURN
         IF(IPR(IFOC,IL).EQ.0)THEN
           RT=RT+DRAIR(IFOC,IL,1)
@@ -975,9 +999,19 @@ C RT and RSI in above code.
           continue
         ELSE
 
-C Also report on thermal resistance (m^2K/W) of the layer.
-          RSI=DTHK(IFOC,IL)/DBCON
-          RT=RT+DTHK(IFOC,IL)/DBCON
+C Also report on thermal resistance (m^2K/W) of the layer. If dbcon
+C is zero then avoid divide by zero.
+          call eclose ( dbcon, 0.0, 1E-06, bCloseToZero)
+          if(.not. bCloseToZero)then
+            RSI=DTHK(IFOC,IL)/DBCON
+          else
+            RSI=1.0
+          endif
+          if(.not. bCloseToZero)then
+            RT=RT+DTHK(IFOC,IL)/DBCON
+          else
+            RT=1.0
+          endif
         ENDIF
 
 C Calculate and (optionally) report.

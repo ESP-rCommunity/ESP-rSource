@@ -1100,7 +1100,10 @@ C and then resetn MODDB and chgdb if mod is true.
 
 C Identified one of the materials to edit or select.
           IFOC=iwhicharray(INO)
-          write(6,*) 'selected menu ',ino,'got array',ifoc
+
+C Debug.
+C          write(6,*) 'selected menu ',ino,'got array',ifoc
+
           if(ACTION.eq.'M')then
 
 C Browse/Edit the details of this item. Mark as unmodified first
