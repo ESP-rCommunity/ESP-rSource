@@ -1302,7 +1302,7 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               endif
               call FPOPEN(IUNIT,ISTAT,1,2,LTMPFLA)
               write (OUTCMD,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
-        write (77,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
+c          write (77,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
               write(doit,'(3a,i3,3a)')'e2r -file ',
@@ -1443,10 +1443,10 @@ C information.
               ZPL(K)=Z(JVN(J,K))
   201       CONTINUE
 
-C Continue only if this surface is vertical, is TMC, has 4 vertices
+C Continue only if this surface is vertical, is TMC or CFC, has 4 vertices
 C and is connected to either the exterior or another real zone.  
 C Keep track of total windows in zone with nt. Exclude skylights.
-            IF(ITMCFL(ICOMP,J).GT.0)THEN   !  .or. CFC ??
+            IF(ITMCFL(ICOMP,J).GT.0 .or. ICFCFL(ICOMP,J).gt.0) THEN
               call eclose(PELV(ICOMP,J),0.00,0.70,close)
               IF(close)THEN
                 IF((NVER(J).NE.4).and.(IDFST(ICOMP,N).ne.2))then
@@ -1509,13 +1509,13 @@ C includes the maintinence factor.
 C If user specified DF for internal window then calculate the
 C same way as for external, but do not check for sun dir illuminance:
                   ELSEIF((IES.EQ.3).AND.(IDFST(ICOMP,N).EQ.2 ))THEN
+                    CALL DWINVT(ICOMP,J,VTDIR,VTDIF,RATIO)
                     suncon=0.
-                    CALL DWINVT(ICOMP,J,V,RATIO)
-                    skycon=esky*DFDAT(ICOMP,N,J,I)*V
+                    skycon=esky*DFDAT(ICOMP,N,J,I)*VTDIF
                     subT=skycon
                     if(IFT.EQ.1)then
                       write(outs,107)N,I,J,
-     &                 DFDAT(ICOMP,N,J,I)*V*100.,V,
+     &                 DFDAT(ICOMP,N,J,I)*VTDIF*100.,VTDIF,
      &                 suncon,skycon,subT,SETPT(ICOMP,N),Ev
   107                 format(I6,I5,'  no ',I7,F9.2,F6.2,F8.1,F8.1,
      &                       F7.1,F6.0,F9.0)
@@ -1573,26 +1573,26 @@ C glazing and get current visible transmission of glazing.
                     Ev=SRADDO*suneff+SKYDIF*skyeff
                     IF((PP1.LT.SAZI).AND.(PP2.GT.SAZI).AND.
      &                (TT1.LT.SALT).AND.(TT2.GT.SALT))THEN
-                      CALL DWINVT(ICOMP,J,V,RATIO)
-                      suncon=esun*V
-                      skycon=esky*DFDAT(ICOMP,N,J,I)*V
+                      CALL DWINVT(ICOMP,J,VTDIR,VTDIF,RATIO)
+                      suncon=esun*VTDIR
+                      skycon=esky*DFDAT(ICOMP,N,J,I)*VTDIF
                       subT=suncon+skycon
                       if(IFT.EQ.1)then
                         write(outs,101)N,I,J,
-     &                   DFDAT(ICOMP,N,J,I)*V*100.,V,
-     &                    suncon,skycon,subT,SETPT(ICOMP,N),Ev
+     &                   DFDAT(ICOMP,N,J,I)*VTDIR*100.,VTDIR,
+     &                   suncon,skycon,subT,SETPT(ICOMP,N),Ev
   101                   format(I6,I5,' yes ',I7,F9.2,F6.2,F8.1,F8.1,
      &                       F7.1,F6.0,F9.0)
                         call edisp(itu,outs)
                       endif
                     ELSE
-                      CALL DWINVT(ICOMP,J,V,RATIO)
+                      CALL DWINVT(ICOMP,J,VTDIR,VTDIF,RATIO)
                       suncon=0.
-                      skycon=esky*DFDAT(ICOMP,N,J,I)*V
+                      skycon=esky*DFDAT(ICOMP,N,J,I)*VTDIF
                       subT=skycon
                       if(IFT.EQ.1)then
                         write(outs,102)N,I,J,
-     &                   DFDAT(ICOMP,N,J,I)*V*100.,V,
+     &                   DFDAT(ICOMP,N,J,I)*VTDIF*100.,VTDIF,
      &                   suncon,skycon,subT,SETPT(ICOMP,N),Ev
   102                   format(I6,I5,'  no ',I7,F9.2,F6.2,F8.1,F8.1,
      &                       F7.1,F6.0,F9.0)
@@ -1608,13 +1608,13 @@ C glazing and get current visible transmission of glazing.
                   WRITE(ITU,844) zname(icomp),J
   844         format('Zone ',A,'TMC',I2,'is not vertical-no dir illum!')
                 endif
+                CALL DWINVT(ICOMP,J,VTDIR,VTDIF,RATIO)
                 suncon=0.
-                CALL DWINVT(ICOMP,J,V,RATIO)
-                skycon=esky*DFDAT(ICOMP,N,J,I)*V
+                skycon=esky*DFDAT(ICOMP,N,J,I)*VTDIF
                 subT=skycon
                 if(IFT.EQ.1)then
                   write(outs,104)N,I,J,
-     &              DFDAT(ICOMP,N,J,I)*V*100.,V,
+     &              DFDAT(ICOMP,N,J,I)*VTDIF*100.,VTDIF,
      &              suncon,skycon,subT,SETPT(ICOMP,N),Ev
   104             format(I6,I5,'  no ',I7,F9.2,F6.2,F8.1,F8.1,
      &                  F7.1,F6.0,F9.0)
@@ -2171,14 +2171,14 @@ C Description for irradiation/illumination data:
 
 C ******************** DWINVT ****************************
 
-C Returns the visible transmittance of glazing at the
+C Returns the direct and diffuse visible transmittance of glazing at the
 C future timestep. IZONE is the zone, ISURF the surface,
 C VT is the returned visible transmittance.
 C Check to see if blind/shutter control is enabled for this zone,
 C if so see if it is active for the current glazing and substitute
 C the visible transmittance.
 
-      SUBROUTINE DWINVT(IZONE,ISURF,VT,BLIND)
+      SUBROUTINE DWINVT(IZONE,ISURF,VTDIR,VTDIF,BLIND)
 #include "building.h"
 #include "CFC_common.h"
 
@@ -2210,23 +2210,26 @@ C NP is no. of control periods for this TMC type.
             IF(IHRF.GT.IT1.AND.IHRF.LE.IT2.AND.
      &                  IBOFOT(IZONE,ISURF).EQ.1)THEN
               BLIND = 1.0
-              VT=TVTR2(IZONE,ITVTR,KK)
+              VTDIR=TVTR2(IZONE,ITVTR,KK)
+              VTDIF=VTDIR ! for now, "old" functionality for TMC
             ELSE
               BLIND = 0.0
-              VT=TVTR(IZONE,ITVTR)
+              VTDIR=TVTR(IZONE,ITVTR)
+              VTDIF=VTDIR ! for now
             ENDIF
   43      CONTINUE
         ELSE
           BLIND = 0.0
-          VT=TVTR(IZONE,ITVTR)
+          VTDIR=TVTR(IZONE,ITVTR)
+          VTDIF=VTDIR ! for now
         ENDIF
 C Now check for CFC
       elseif (icfcfl(IZONE,ISURF).gt.0) then
       ! For CFC, it is of no concern if blind control is active or not, as
       ! visual transmittance values for the system include time step blind setting!
       ! Which value???
-!        VT=transD_V(IZONE,ISURF)
-        VT=transBB_V(IZONE,ISURF)
+        VTDIR=transBB_V(IZONE,ISURF) ! value corresponding to current incidence angle on surface
+        VTDIF=transD_V(IZONE,ISURF)
         BLIND=0.0
       endif ! either TMC or CFC
 
