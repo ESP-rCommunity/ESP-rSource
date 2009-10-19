@@ -1260,6 +1260,74 @@ C Shift sensor/actuator zone references > IW2 down one.
                 endif
   80          continue
             endif
+            
+            if(nCFCctlloops.gt.0)then
+
+C If one of the control loops references the zone to be deleted warn
+C the user and ask if it should be deleted.
+              ik = 1
+              do while(ik.le.nCFCctlloops)
+                if(iCFCsensor(ik,1).eq.IW2.or.                          ! senses zone temp. 
+     &          (iCFCsensor(ik,1).eq.-2.and.iCFCsensor(ik,2).eq.IW2)    ! senses mix dbT and MRT
+     &          .or.
+     &          (iCFCsensor(ik,1).eq.-4.and.iCFCsensor(ik,2).eq.IW2)    ! senses incidient solar rad. on surface
+     &          .or.iCFCactuator(ik,2).eq.IW2)then
+                  call LSTCNTL(iuout,6,ik)
+                  write(outs,'(a,i2,a,a)') 'Control loop ',ik,
+     &              ' is specific to ',zname(IW2)
+                  DOK=.true.
+                  h(1)='The control sensor or actuator references this'
+                  h(2)='specific zone. '
+                  CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
+                  if(ok)then
+
+C User requests deletion of control loop. Do this and then decrement all
+C icascf links to subsequent controls.
+                    icfoc=6
+                    call ADDCNTL(icfoc,'D')
+                    do 247 IXI=IW2,NCOMP
+                      if(icascf(IXI).gt.ik)then
+                        write(outs,'(3A)') ' shifting zone-ctl link ',
+     &                    zname(IXI),'...'
+                        icascf(IXI)=icascf(IXI)-1
+                      endif
+  247               continue
+                    ik=ik-1 !decrement the control loop counter because control loops have shifted up by 1
+                  endif
+                endif
+                ik = ik +1
+              end do
+
+C Shift sensor/actuator zone references > IW2 down one.
+              do 82 ik=1,nCFCctlloops
+                if(iCFCsensor(ik,1).gt.IW2)then       !senses zone temp.
+                  iCFCsensor(ik,1)=iCFCsensor(ik,1)-1
+                  write(outs,'(a,i2)') 
+     &              'Shifting sensor position in control loop',ik
+                  call edisp(iuout,outs)
+                elseif(iCFCsensor(ik,1).eq.-2.and.    !senses mix dbT and MRT
+     &                 iCFCsensor(ik,2).gt.IW2)then
+                  iCFCsensor(ik,2)=iCFCsensor(ik,2)-1
+                  write(outs,'(a,i2)') 
+     &              'Shifting sensor position in control loop',ik
+                  call edisp(iuout,outs)
+                elseif(iCFCsensor(ik,1).eq.-4.and.    !senses solar incident rad. on surface
+     &                 iCFCsensor(ik,2).gt.IW2)then
+                  iCFCsensor(ik,2)=iCFCsensor(ik,2)-1
+                  write(outs,'(a,i2)') 
+     &              'Shifting sensor position in control loop',ik
+                  call edisp(iuout,outs)
+                endif
+                if(iCFCactuator(ik,2).gt.IW2)then
+                  iCFCactuator(ik,2)=iCFCactuator(ik,2)-1
+                  write(outs,'(a,i2)') 
+     &              'Shifting actuator position in control loop',ik
+                  call edisp(iuout,outs)
+                endif
+  82          continue
+            endif            
+            
+            
           endif
         endif
       endif
@@ -1510,6 +1578,7 @@ C and zone based data.
         LVIEW(IX)=LVIEW(IX+1)
         LHCCO(IX)=LHCCO(IX+1)
         LTWIN(IX)=LTWIN(IX+1)
+        lcfcin(IX)=lcfcin(IX+1)
         LCGCIN(IX)=LCGCIN(IX+1)
         ZOBS(IX)=ZOBS(IX+1)
         IVF(IX)=IVF(IX+1)
@@ -1552,7 +1621,7 @@ C Shift zone default solar distributions and volumes.
    45 continue
    46 NCOMP=NCOMP-1
 
-C Update common blocks for Geometry & operation
+C Update common blocks for Geometry, operation and CFC
 C commons via reading in related files.
       write(outs,'(A)') ' rebuilding model... '
       call usrmsg('  ',outs,'-')
@@ -1580,6 +1649,12 @@ C commons via reading in related files.
         IF(XST)THEN
           CALL ERPFREE(IFIL+1,ISTAT)
           CALL ERTWIN(0,IUOUT,IFIL+1,LTWIN(ir),ir,IER)
+        ENDIF
+        XST=.false.
+        call FINDFIL(lcfcin(ir),XST)
+        IF(XST)THEN
+          CALL ERPFREE(IFIL+1,ISTAT)
+          CALL read_in_cfc_file(0,IUOUT,IFIL+1,lcfcin(ir),ir,IER)
         ENDIF
   48  continue
       call usrmsg('  ','  ','-')

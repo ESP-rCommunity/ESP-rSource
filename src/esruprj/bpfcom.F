@@ -264,8 +264,8 @@ C Optical.
           nCFCctlloops=nCFCctlloops-1
         elseif(icfoc.eq.6.and.nCFCctlloops.ge.2)then
 
-Complex fenestration. 
-          DO 1001 IDV=ID,ncf-1
+C Complex fenestration. 
+          DO 1001 IDV=ID,nCFCctlloops-1
             iCFCsensor(IDV,1)=iCFCsensor(IDV+1,1)
             iCFCsensor(IDV,2)=iCFCsensor(IDV+1,2)
             iCFCsensor(IDV,3)=iCFCsensor(IDV+1,3)
