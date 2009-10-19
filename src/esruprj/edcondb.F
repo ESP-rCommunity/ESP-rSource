@@ -3195,8 +3195,9 @@ C Extract strings from focus DESC prior to updating its SYM tag.
               moddb = .true.
               showother = .true.
             else
-              write(outs,'(5a)') 'Constructions ',DESC(IFOC),' and ',
-     &          DESC(iwhich),' have different numbers of layers.'
+              write(outs,'(5a)') 'Constructions ',DESC(IFOC)(1:36),
+     &          ' and ',DESC(iwhich)(1:36),
+     &          ' have different numbers of layers.'
               call edisp(iuout,outs)
             endif
           else
