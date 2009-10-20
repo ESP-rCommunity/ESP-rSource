@@ -163,6 +163,11 @@ C ICGCTL - pointer to controlled gain type.
      &     Cas_Lat_dat(MCOM)    !  - Latent (W)
       real Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
 
+C Average illuminance in lighting zone
+      real AveLtzIllum
+      integer Nlitz2
+      common/CFCLighting/AveLtzIllum(mcom,mlcom),Nlitz2(MCOM)
+ 
 C.....Window properties
       common/prectc/itmcfl(mcom,ms),tmct(mcom,mtmc,5),
      &       tmca(mcom,mtmc,me,5),tmcref(mcom,mtmc),tvtr(mcom,mtmc)
@@ -334,7 +339,7 @@ C      REAL TMA                  ! Mean air point temperature (oC)
       INTEGER i_ZnCtl           ! Zone control flag
 
 
-      INTEGER iSurface,iNode,iViewSurface  ! Counters
+      INTEGER iSurface,iNode,iViewSurface,iLtz  ! Counters
       integer iH3K_NameLen ! length of name root
 
       real SBC                              ! Stephan-Boltzmann constant
@@ -353,6 +358,7 @@ C .... used wherever h3k output is defined.
       character*1 cSurfaceRootName ! root name for "surface"
       character*1 cNodeRootName ! root name for "node"
       character*1 cSep ! The separator
+      character*1 cOne ! generic 1-character string
 
 C lnblnk is a function returning the index of last non-blank character in a string.
       INTEGER LNBLNK
@@ -1192,6 +1198,18 @@ C.......Create base name for zone data output
      &              // cSep // zname(iZone)(1:lnzname(iZone))
 
         iH3K_NameLen = 3+1+lnzname(iZone)
+
+C.....Lighting zone illuminance
+      if (nlitz2(iZone).gt.0) then
+        lightingzone_loop: do iLtz = 1, nlitz2(iZone)
+          write(cOne,'(I1)')iLtz
+          call add_to_xml_reporting (
+     &         AveLtzIllum(iZone,iLtz),
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/ill_ltz' // cOne,
+     &         'units', '(lux)',
+     &         'Lighting zone average illuminance' )
+        enddo lightingzone_loop
+      endif
 
 C.....AIR POINT TEMPERATURE
 

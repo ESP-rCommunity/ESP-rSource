@@ -802,6 +802,11 @@ C Illuminance database.
       common/ILDB/NDBENT(MCOM),DBILLA(MCOM,MILDB,5),
      &                   DBILLS(MCOM,MILDB,MLCOM,MDF)
 
+
+C Average illuminance in lighting zone (for h3k output)
+      real AveLtzIllum
+      common/CFCLighting/AveLtzIllum(mcom,mlcom),NLITZ2(MCOM)
+
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
       DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)
       DIMENSION Aa(MLCOM,MDF),Ab(MLCOM,MDF),Ac(MLCOM,MDF),Ya(MLCOM,MDF)
@@ -824,6 +829,9 @@ C Definition of sun altitude for daylight coefficient method:
       iunit=ifil+1
       newgeo=.false.  ! assume older format geometry.
 
+C Copy number of lighting zones for this zone (for h3k output ... avoid huge common-copy ...)
+      Nlitz2(ICOMP)=NLITZ(ICOMP)
+      
 C Trace output ?
       IFT=1
       IF(ITC.LE.0.OR.NSINC.LT.ITC)IFT=0
@@ -1397,7 +1405,10 @@ c                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
    19           CONTINUE ! loop through sensors of lighting zone NN
 C                                        Average illumination for this light zone:
                 zelum(NN)=suma/float(NDF(ICOMP,NN))
-  199         CONTINUE ! loop through all lighting zones
+C Transport lighting zone average illumination to h3k output via common ...
+                AveLtzIllum(ICOMP,NN)=zelum(NN)
+
+  199         CONTINUE ! loop 'NN' through all lighting zones
 
 C Close transfer file.
               call ERPFREE(IUNIT,ISTAT)
@@ -1631,7 +1642,9 @@ C Sensed illumination at given sensor:
    10   CONTINUE
 
 C Average illumination at lighting zone:
-        zelum(N)=suma/float(NDF(ICOMP,N)) 
+        zelum(N)=suma/float(NDF(ICOMP,N))
+
+
       ENDIF
 
 C Find lighting output fraction (FRAC) under current control.
