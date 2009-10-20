@@ -100,6 +100,10 @@ c                         capacity and sensible heat ratio of coil
 c       SET_COP           Calls appropriate routines to determine equipment COP
 c       HUMRATIO_MOISTBAL Determines equivalent humidity ratio with coil inlet
 c                         conditions set to return air conditions
+c       ASHP_COOLING_ZONE_CONTROL
+c                         Set the timestep variable flow rate and zone capacity
+c                         fractions based on the number of zones that are calling
+c                         for cooling IF zone control is ON.   
 c       ACSYSTEM_OUTPUT   Evaluate output variables associated with AC system
 c *********************************************************************
 c *********************************************************************
@@ -201,6 +205,8 @@ c Common for the weather data
 
 c Local variables
       INTEGER ihour_year,i,GSHP_HP_mode
+      
+      LOGICAL close
 
       REAL tout,rhout,wout,hout,cpout,den_out,tdb1,w1,h1,cp1,den1,
      &tdb1_oa_mix,RET_AIR_TEMP_OA_MIX,w1_oa_mix,
@@ -210,7 +216,7 @@ c Local variables
      &rlatent_load,total_cooling_load,plf_heat_pump_corr,
      &ASHP_PLF_OFFCYC_CORR,cop,time_step,TIME_INTERVAL,
      &humratio_for_moistbal,economizer_cooling_max,w2,w4,
-     &ASHP_ENERGY,zone_mass_flow(mcom) 
+     &ASHP_ENERGY,zone_mass_flow(mcom),small, cap_correction_factor
 
 c Following moist air states are defined:
 c	state 1		condition of return air from conditioned zones
@@ -220,13 +226,65 @@ c	state 4		condition at exit of heat exchanger
 c	state 5		used to define sensible process through cooling
 c			coil
 
+c Small real number to check for values close to 0.
+      small = 1.0e-6
+      
 c Define hour of the year (from 8760 hours) for the simulation during
 c the current time step
       ihour_year = ihrp + 24 * (idyp - 1)
 
+c Time step for the simulation (sec.)
+      time_step = TIME_INTERVAL(ntstep)
+
+c When the controller associated with cooling system is ideal controller, the
+c system energy consumption is based on using appropriate values of part-load
+c ratio and part-load factor of heat pump. 
+
+c When the controller is on/off controller with deadband, the predicted part-load 
+c ratio and factor are 1. In this case the predicted capacity of the unit at the
+c end of the current time step is predicted using the time constant of the unit.
+c In this case it is assumed that the total cooling capacity of the unit at time t
+c after the unit has been on is given by: Qc(t) = Qss x (1 - exp(-t / time_constant))
+
+c Update the system on-time since last time unit is turned on for the case when the 
+c controller is on/off
+        if(icontrol_function(isys).eq.2) then  
+          call eclose(sensible_cooling_load,0.0,small,close)      
+c If the unit is off during this time step, then reset the system on-time to 0.
+          if(close) then
+            sys_on_time(isys) = 0.
+            cap_correction_factor = 1.0
+          else
+c In this case the unit is on. Update total on-time.
+            sys_on_time(isys) = sys_on_time(isys) + time_step
+c Find unit capacity correction factor to account for transient behaviour. This 
+c correction factor gives an average transient cooling capacity for the time step
+c when multiplied by the steady-state cooling capacity of the unit.
+            cap_correction_factor = (time_step + time_constant(isys) *
+     &      (exp(-sys_on_time(isys) / (time_constant(isys) + small)) -
+     &      exp(-(sys_on_time(isys) - time_step) / 
+     &      (time_constant(isys) + small)))) / (time_step + small)                       
+          endif
+c For an ideal controller, the capacity correction factor is 1.
+        elseif(icontrol_function(isys).eq.1) then
+          cap_correction_factor = 1.0
+        endif      
+      
 c If cooling load > 0 or ventilation load > 0 for hvac system
       if(cooling_vent_yes) then
 
+C If zone control is ON:
+C Call subroutine to set the fraction of the total capacity for each zone
+C that requires cooling.
+C If all zones are calling for cooling then use the default fractions as 
+C read in from the *.hvac file. If one or more zones do not require cooling
+C adjust the capacity fractions to the remaining zones that are calling for 
+C cooling. Also select the predefined flow rate (from *.hvac file)
+C corresponding to the number of calling zones. 
+        if(izonecontrol(isys).eq.1)then
+          call ASHP_COOLING_ZONE_CONTROL(isys)
+        endif
+      
 c Call subroutine to determine outdour air properties (temperature,
 c relative humidity, humidity ratio, enthalpy, specific heat, and density)
         call OUTDOOR_AIR_PROPERTIES(tout,rhout,wout,hout,cpout,den_out)
@@ -314,6 +372,7 @@ c leads to dry coil conditions given the inlet dry bulb
 c temperature to the coil. This temperature will be used to 
 c determine whether the coil is dry or wet.
         wet_bulb_unity_shr = WET_BULB_DRY_COIL(ss_capacity(isys),
+     &                     cap_correction_factor,   
      &                     tout,tdb2,flow_rate(isys),
      &                     flow_rate_r(isys),
      &                     ifan_operation(isys),bf,patm2,
@@ -322,7 +381,8 @@ c determine whether the coil is dry or wet.
 c Set the cooling capacity of system accounting for actual operating
 c conditions.
         call SET_TOTALCOOLINGCAP_SHR(ihvac_type(isys),GSHP_HP_mode,
-     &     ss_cooling_cap,ss_capacity(isys),EWT,shr,flow_rate(isys),
+     &     ss_cooling_cap,ss_capacity(isys),cap_correction_factor,
+     &     EWT,shr,flow_rate(isys),
      &     tdb2,w2,den1,bf,patm2,w4,GCEP_EWT,ifan_operation(isys),
      &     twb2,wet_bulb_unity_shr,flow_rate_r(isys),tout,GCEP_HP_mode)
 
@@ -363,9 +423,6 @@ c Account for the COP variation with environmental conditions
      &     cop,total_cooling_load,GCEP_EWT,GCEP_HP_mode,
      &     GCEP_COOL_COP,twb2,wet_bulb_unity_shr,tout,flow_rate(isys),
      &     flow_rate_r(isys),ifan_operation(isys))
-
-c Time step for the simulation
-        time_step = TIME_INTERVAL(ntstep)
 
 c Set energy consumption of heat pump in the cooling mode
         sys_energy = ASHP_ENERGY(ss_cooling_cap,cop,plr_heat_pump,
@@ -449,7 +506,7 @@ c AC system
       if((idyp.eq.isd1).or.(output_flag)) then
          output_flag = .true.
       endif
-
+      
 c Following are activated only when the time step output for the
 c cooling model is desired
 c      rh1 = PCRH2(tdb1,w1,patm2)
@@ -709,10 +766,18 @@ c and sensible loads
 
       RET_AIR_TEMP = 0.
       do 10 i = 1,num_sys_zones(isys)
-        RET_AIR_TEMP = RET_AIR_TEMP + 
-     &  sys_zone_cap_frac(isys,i) * 
-     &  0.5 * (tfa(isys_zone_num(isys,i)) +
-     &  tpa(isys_zone_num(isys,i)))
+        if(izonecontrol(isys).eq.1)then
+c---------use return air capacity fractions specified in *.hvac file        
+          RET_AIR_TEMP = RET_AIR_TEMP + 
+     &    sys_zone_cap_frac_ret_air(isys,i) *
+     &    0.5 * (tfa(isys_zone_num(isys,i)) +
+     &    tpa(isys_zone_num(isys,i)))
+        else
+          RET_AIR_TEMP = RET_AIR_TEMP + 
+     &    sys_zone_cap_frac(isys,i) *        
+     &    0.5 * (tfa(isys_zone_num(isys,i)) +
+     &    tpa(isys_zone_num(isys,i)))
+        endif
    10 continue
 
       return
@@ -808,10 +873,18 @@ c Local variable
 
       RET_AIR_HUM_RATIO = 0.
       do 10 i = 1,num_sys_zones(isys)
-        RET_AIR_HUM_RATIO = RET_AIR_HUM_RATIO + 
-     &  sys_zone_cap_frac(isys,i) *  
-     &  0.5 * (gfa(isys_zone_num(isys,i)) +
-     &  gpa(isys_zone_num(isys,i)))
+        if(izonecontrol(isys).eq.1)then
+c---------use return air capacity fractions specified in *.hvac file        
+          RET_AIR_HUM_RATIO = RET_AIR_HUM_RATIO + 
+     &    sys_zone_cap_frac_ret_air(isys,i) * 
+     &    0.5 * (gfa(isys_zone_num(isys,i)) +
+     &    gpa(isys_zone_num(isys,i)))
+        else
+          RET_AIR_HUM_RATIO = RET_AIR_HUM_RATIO + 
+     &    sys_zone_cap_frac(isys,i) *
+     &    0.5 * (gfa(isys_zone_num(isys,i)) +
+     &    gpa(isys_zone_num(isys,i)))
+        endif
    10 continue
       
       return
@@ -882,8 +955,8 @@ c **********************************************************************
 c Variables passed in call
       REAL temp,hum_ratio
  
-      ENTH_MOIST_AIR = 1006 * temp + 
-     &                         hum_ratio * (2501000 + 1860 * temp)
+      ENTH_MOIST_AIR = 1006. * temp + 
+     &                         hum_ratio * (2501000. + 1860. * temp)
 
       return
       end
@@ -911,7 +984,7 @@ c **********************************************************************
 c Variable passed in call
       REAL hum_ratio
 
-      SPEC_HEAT_AIR = 1006 + hum_ratio * 1860
+      SPEC_HEAT_AIR = 1006. + hum_ratio * 1860.
 
       return
       end
@@ -940,8 +1013,8 @@ c **********************************************************************
 c Variables passed in call
       REAL altitude
 
-      ATM_PRESSURE = 101325 * 
-     &                   (1 - 2.25577e-5 * altitude)**5.2559
+      ATM_PRESSURE = 101325. * 
+     &                   (1. - 2.25577e-5 * altitude)**5.2559
 
       return
       end
@@ -1049,7 +1122,7 @@ c Atmospheric Pressure
 
 c Saturation pressure of water vapor at outside air temperature. 
 c 100 to account for conversion from mbar to Pa
-      pvsat = 100 * SATVP(temp)
+      pvsat = 100. * SATVP(temp)
 
 c Partial pressure of water vapor in outdoor air
       pv = rel_hum * pvsat / 100.
@@ -1076,7 +1149,7 @@ c	isys		number of hvac system
 c	HVAC_INPUT_DATA	HVAC input data common
 	
 c OUTPUTS:
-c	SYS_FLOW_RATE	system flow rate
+c	SYS_FLOW_RATE	system flow rate  [m3/s]
 c *********************************************************************
       REAL FUNCTION SYS_FLOW_RATE(isys)
 
@@ -1152,7 +1225,7 @@ c Density of air at rating conditions
       den1r = 1.1565
 
 c Specific heat of air at rating conditions
-      cp1r = 1015
+      cp1r = 1015.
 
 c Humidity ratio of inlet air at rating conditions
       w1r = 0.0112
@@ -1171,7 +1244,7 @@ c If the circulation fan during rating test is draw through
       endif
 
 c Enthalpy of air at inlet of coil
-      h2r = 1006 * tdb2r + w1r * (2501000 + 1860 * tdb2r)
+      h2r = 1006. * tdb2r + w1r * (2501000. + 1860. * tdb2r)
 
 c Enthalpy at exit of cooling coil
       h4r = h2r - ss_capacity(isys) / 
@@ -1182,7 +1255,7 @@ c Temperature at exit of coil
      &                 (den1r * flow_rate_r(isys) * cp1r)
 
 c Humidity ratio at exit of coil
-      w4r = (h4r - 1006 * tdb4r) / (2501000 + 1860 * tdb4r)
+      w4r = (h4r - 1006. * tdb4r) / (2501000. + 1860. * tdb4r)
 
 c Line between inlet state and apparatus dew point can be determined by
 c two coefficients const1 and const2
@@ -1195,15 +1268,15 @@ c Define constants A, B, C
       C = 4.2065e-3 - const2
 
 c Compute determinant of quadratic equation to be solved
-      delta = B**2 - 4 * A * C
+      delta = B**2 - 4. * A * C
 
 c If there is to be a solution, delta has to be greater or equal to zero
 c This is temporary, it will have to be written to a report in the future.
-      if(delta.lt.0) then
+      if(delta.lt.0.) then
         write(iuout,*) 'Sensible Heat Factor too high or too low'
-      elseif(delta.ge.0) then
+      elseif(delta.ge.0.) then
 c Apparatus dew point
-        tdb3r = (-B + (B**2 - 4 * A * C)**0.5) / (2 * A)
+        tdb3r = (-B + (B**2 - 4.* A * C)**0.5) / (2. * A)
       endif
 
 c Bypass Factor at rating conditions
@@ -1259,7 +1332,7 @@ c the RESYS system SDL-C1
 
 c Set total cooling capacity of heat pump. DOE2.1E correlation based on
 c using Deg F
-      cooling_cap = ss_cap * (a_cap + b_cap * (9 * twb / 5 + 32) + 
+      cooling_cap = ss_cap * (a_cap + b_cap * (9. * twb / 5. + 32.) + 
      &c_cap * (9. * twb / 5. + 32.)**2 + 
      &d_cap * (9. * tout / 5. + 32.) +
      &e_cap * (9. * tout / 5. + 32.)**2 +
@@ -1405,7 +1478,7 @@ c Set enthalpy at exit of coil h4
       h4 = h2 - ss_cap / (den1 * flow_rate)
       
 c Set enthalpy at apparatus dew point
-      h3 = h2 - (h2 - h4) / (1 - bf)
+      h3 = h2 - (h2 - h4) / (1. - bf)
 
 c Convert enthalpy from J to kJ
       h3kJ = h3 /1000.
@@ -1414,16 +1487,16 @@ c Temperature at apparatus dew point from enthalpy
       tdb3 = TSATH0(h3kJ,patm2)
 
 c Set humidity ratio at apparatus dew point
-      w3 = (h3 - 1006 * tdb3) / (2501000 + 1860 * tdb3)
+      w3 = (h3 - 1006. * tdb3) / (2501000. + 1860. * tdb3)
 
 c Set temperature at exit of coil
-      tdb4 = tdb3 + (tdb2 -tdb3) * bf
+      !tdb4 = tdb3 + (tdb2 -tdb3) * bf
 
 c Set humidity ratio at exit of coil
       w4 = w3 + (w2 - w3) * bf
 
 c Set enthalpy to define sensible heat factor
-      h5 = 1006 * tdb2 + w4 * (2501000 + 1860 * tdb2)
+      h5 = 1006. * tdb2 + w4 * (2501000. + 1860. * tdb2)
 
 c Deduce sensible heat ratio of coil
       SENS_HEAT_RATIO = (h5 - h4) / (h2 - h4)
@@ -1474,11 +1547,12 @@ c DOE-2.1E SDL-C11
       e_cop = 0.0001488
       f_cop = -0.0002952
 
-      cop = ss_cop / (a_cop + b_cop * (9 * twb / 5 + 32.0) + 
-     &            c_cop * (9 * twb / 5 + 32.0)**2 + 
-     &            d_cop * (9 * tout / 5 + 32.0) + 
-     &            e_cop * (9 * tout / 5 +32.0)**2 + 
-     &            f_cop * (9 * twb / 5 +32.0) * (9 * tout / 5 +32.0))
+      cop = ss_cop / (a_cop + b_cop * (9. * twb / 5. + 32.0) + 
+     &            c_cop * (9. * twb / 5. + 32.0)**2 + 
+     &            d_cop * (9. * tout / 5. + 32.0) + 
+     &            e_cop * (9. * tout / 5. +32.0)**2 + 
+     &            f_cop * (9. * twb / 5. +32.0) *
+     &            (9. * tout / 5. +32.0))
 
 c Correct COP for the effect of flow rate if there is a circulation
 c fan
@@ -1758,13 +1832,13 @@ c contributions of the coil toward the moisture balance inside the space
       do 10 i = 1,num_sys_zones(isys)
         coil_moist_in(isys_zone_num(isys,i)) = 
      &      zone_mass_flow(isys_zone_num(isys,i)) * plr * 
-     &      out_hum_ratio * 3600 / float(ntstep)
+     &      out_hum_ratio * 3600. / float(ntstep)
         coil_moist_out1(isys_zone_num(isys,i)) = 
      &      zone_mass_flow(isys_zone_num(isys,i)) * plr * 
-     &      gfa(isys_zone_num(isys,i)) * 3600 / (2. * float(ntstep))  
+     &      gfa(isys_zone_num(isys,i)) * 3600. / (2. * float(ntstep))  
         coil_moist_out2(isys_zone_num(isys,i)) =
      &      zone_mass_flow(isys_zone_num(isys,i)) * plr *
-     &      3600 / (2.* float(ntstep))
+     &      3600. / (2.* float(ntstep))
    10 continue
 
       return
@@ -1895,6 +1969,10 @@ c coil conditions for a certain inlet dry-bulb temperature to the coil
 c INPUTS:
 c	ss_capacity	Steady-state cooling capacity of coil at ARI rating 
 c			conditions (W)
+c     cap_correction_factor
+c                       Capacity correction factor of unit. 
+c                       1. controller is ideal
+c                       < 1 controller is on/off type.                  
 c	tout		Outdoor dry-bulb temperature (Deg C)
 c	temp_inlet	Inlet dry-bulb temperature to the coil (Deg C)
 c	actual_flow_rate
@@ -1910,7 +1988,8 @@ c	WET_BULB_DRY_COIL
 c			Maximum wet-bulb temperature leading to dry coil
 c			conditions for inlet dry-bulb temperature (Deg C)
 c **********************************************************************
-      REAL FUNCTION WET_BULB_DRY_COIL(ss_capacity,tout,temp_inlet,
+      REAL FUNCTION WET_BULB_DRY_COIL(ss_capacity,cap_correction_factor,
+     &               tout,temp_inlet,
      &               actual_flow_rate,flow_rate_ref,
      &               ifan_operation,bypass_factor,pressure,
      &               site_altitude)
@@ -1919,7 +1998,7 @@ c **********************************************************************
 
 c Variables passed in call
       REAL ss_capacity,tout,temp_inlet,actual_flow_rate,flow_rate_ref,
-     &     bypass_factor,pressure,site_altitude
+     &     bypass_factor,pressure,site_altitude,cap_correction_factor
 
       INTEGER ifan_operation
 
@@ -1927,7 +2006,7 @@ c Local variables
       REAL hum_ratio_dry_coil_upper,hum_ratio_dry_coil_lower,
      &     shr_difference,hum_ratio_dry_coil,ss_cooling_cap,
      &     ASHPC_CAP,density_inlet,DENSITY_AIR,shr,SENS_HEAT_RATIO,    
-     &     TWB_ACMODEL,exit_hum_ratio
+     &     TWB_ACMODEL,exit_hum_ratio,actual_ss_capacity
  
       common/outin/iuout,iuin
 
@@ -1959,8 +2038,9 @@ c Find wet_bulb temperature at inlet of coil given the inlet dry-bulb
 c temperature and humidity ratio
          wet_bulb_dry_coil = TWB_ACMODEL(temp_inlet,hum_ratio_dry_coil,
      &                           pressure,1)
-c Get steady-state capacity
-         ss_cooling_cap = ASHPC_CAP(ss_capacity,
+c Get accouting for transient effects when there is an on/off controller.
+         actual_ss_capacity = ss_capacity * cap_correction_factor
+         ss_cooling_cap = ASHPC_CAP(actual_ss_capacity,
      &                    wet_bulb_dry_coil,tout,actual_flow_rate,
      &                    flow_rate_ref,ifan_operation)
 c Find density of air at the inlet of coil given the dry-bulb 
@@ -2116,9 +2196,9 @@ c Outdoor air fraction on a mass basis
      &                      outdoor_air_mass_flow /  total_air_mass_flow
 c Set density and specific heat of mixed air
             den_mixed_air = outdoor_air_fraction_mass * den_out + 
-     &        (1 - outdoor_air_fraction_mass) * den1
+     &        (1. - outdoor_air_fraction_mass) * den1
             cp_mix_air = outdoor_air_fraction_mass * cpout + 
-     &        (1 - outdoor_air_fraction_mass) * cp1
+     &        (1. - outdoor_air_fraction_mass) * cp1
  
 c Find supply temperature of mixed air needed to meet the sensible
 c cooling load
@@ -2307,7 +2387,7 @@ c Maximum amount of possible economizer cooling
 
 c If sensible cooling load > 0 and economizer outdoor enthalpy limit
 c >= than outdoor enthalpy and economizer maximum cooling load >= 0
-      if((sensible_cooling_load.gt.0).and.
+      if((sensible_cooling_load.gt.0.).and.
      &   (economizer_out_enth_limitcon.ge.hout).and.
      &   (economizer_cooling_max.gt.0.)) then
 c If outdoor enthalpy <= return air enthalpy and return air temperature
@@ -2346,9 +2426,9 @@ c Outdoor air fraction on a mass basis
      &                      outdoor_air_mass_flow /  total_air_mass_flow
 c Set density and specific heat of mixed air
             den_mixed_air = outdoor_air_fraction_mass * den_out + 
-     &      (1 - outdoor_air_fraction_mass) * den1
+     &      (1. - outdoor_air_fraction_mass) * den1
             cp_mix_air = outdoor_air_fraction_mass * cpout + 
-     &      (1 - outdoor_air_fraction_mass) * cp1
+     &      (1. - outdoor_air_fraction_mass) * cp1
  
 c Find supply temperature of mixed air needed to meet the sensible
 c cooling load
@@ -2560,7 +2640,7 @@ c the circulation fan
 
 c If part-load ratio > 1, heat pump does not have enough cooling capacity
 c to meet the load. Set part-load ratio to 1. in this case
-          if(plr_heat_pump.gt.1) then
+          if(plr_heat_pump.gt.1.) then
             store_plr = plr_heat_pump
             plr_heat_pump = 1.
 
@@ -2603,6 +2683,10 @@ c                       condenser system,8 and 9 for ground-source heat
 c                       pump system) 
 c       ss_capacity     Steady state total cooling capacity of system at
 c                       ARI rating conditions
+c       cap_correction_factor
+c                       Capacity correction factor:
+c                       1 for ideal controller 
+c                       < 1 for on/off controller
 c       EWT and GCEP_EWT             
 c                       Water temperature on condenser side for ground-source
 c                       heat pump systems
@@ -2632,16 +2716,19 @@ c       w4              Exit humidity ratio from evaporator coil
 c       shr             Sensbile heat ratio
 c **********************************************************************
       SUBROUTINE SET_TOTALCOOLINGCAP_SHR(ihvac_type,GSHP_HP_mode,
-     &           ss_cooling_cap,ss_capacity,EWT,shr,flow_rate,tdb2,w2,
+     &           ss_cooling_cap,ss_capacity,cap_correction_factor,
+     &           EWT,shr,flow_rate,tdb2,w2,
      &           den1,bf,patm2,w4,GCEP_EWT,ifan_operation,twb2,
      &           wet_bulb_unity_shr,flow_rate_r,tout,GCEP_HP_mode)
 
       IMPLICIT NONE
-
+C Common for the current and future hours of the simulation
+c      common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+c      INTEGER ihrp, ihrf, idyp, idyf, idwp, idwf, nsinc, its
 c Variables passed in call
       REAL ss_cooling_cap,ss_capacity,EWT,shr,flow_rate,
      &     tdb2,w2,den1,bf,patm2,w4,GCEP_EWT,twb2,wet_bulb_unity_shr,
-     &     flow_rate_r,tout
+     &     flow_rate_r,tout,cap_correction_factor
       INTEGER  GCEP_HP_mode,  GSHP_HP_mode    
       INTEGER ifan_operation,ihvac_type
 
@@ -2658,7 +2745,8 @@ c but instead by the calculated fluid entering water temperature.
       if (ihvac_type.eq.8) then
 c set a variable to indicate that the HP is in cooling mode
         GSHP_HP_mode = -1        
-        ss_cooling_cap = GSHP_CAP(ss_capacity,EWT,GSHP_HP_mode)
+        ss_cooling_cap = cap_correction_factor * 
+     &                   GSHP_CAP(ss_capacity,EWT,GSHP_HP_mode)
         shr = SENS_HEAT_RATIO(ss_cooling_cap,flow_rate,tdb2,w2,den1,bf,
      &                        patm2,w4) 
 c If the system being modelled is a GCEP, then the total
@@ -2666,7 +2754,8 @@ c cooling capacity is not affected by the outdoor temperature,
 c but instead by the calculated fluid entering water temperature.
       elseif (ihvac_type.eq.9) then
         GCEP_HP_mode = -1
-        ss_cooling_cap = GSHP_CAP(ss_capacity,GCEP_EWT,GCEP_HP_mode)
+        ss_cooling_cap = cap_correction_factor * 
+     &                   GSHP_CAP(ss_capacity,GCEP_EWT,GCEP_HP_mode)
         shr = SENS_HEAT_RATIO(ss_cooling_cap,flow_rate,tdb2,w2,den1,bf,
      &                        patm2,w4)
 c If the system being modeled is an air-conditioner or an air-source
@@ -2676,7 +2765,8 @@ c For the case when the entering wet-bulb temperature to the coil is
 c greater than the maximum wet-bulb temperature for dry-coil conditions,
 c Set capacity based on actual wet-bulb temperature
         if(twb2.gt.wet_bulb_unity_shr) then
-          ss_cooling_cap = ASHPC_CAP(ss_capacity,twb2,tout,flow_rate,
+          ss_cooling_cap = cap_correction_factor * 
+     &                     ASHPC_CAP(ss_capacity,twb2,tout,flow_rate,
      &                     flow_rate_r,ifan_operation)
 c Set the sensible heat ratio of coil
           shr = SENS_HEAT_RATIO(ss_cooling_cap,flow_rate,tdb2,w2,den1,
@@ -2687,7 +2777,8 @@ c sensible as the coil is dry
         elseif(twb2.le.wet_bulb_unity_shr) then
           shr = 1.
           w4 = w2
-          ss_cooling_cap = ASHPC_CAP(ss_capacity,wet_bulb_unity_shr,
+          ss_cooling_cap = cap_correction_factor * 
+     &                     ASHPC_CAP(ss_capacity,wet_bulb_unity_shr,
      &                     tout,flow_rate,flow_rate_r,ifan_operation)
         endif
       endif
@@ -2850,13 +2941,144 @@ c capacity
      &                                  (den1 * flow_rate * cp1)
 c Find equivalent humidity ratio
       humratio_for_moistbal = (hcoilexit_moistbal - 
-     &                      1006 * tempcoilexit_moistbal) / 
-     &                     (2501000 + 1860 *  tempcoilexit_moistbal)
+     &                      1006. * tempcoilexit_moistbal) / 
+     &                     (2501000. + 1860. *  tempcoilexit_moistbal)
     
       return
       end
 
 c *********************************************************************
+c *********************************************************************
+c ASHP_COOLING_ZONE_CONTROL
+
+c Created by: Bart Lomanowski
+c Initial Creation Date: August 20 2009
+c Copyright 2009: NRCan Simulation Tools Group
+
+c Subroutine to set the timestep variable flow rate through the cooling
+c coil and the zone capacity fractions that result from zone control 
+c cooling. The flow rate and zone capacity fractions are a function of
+c the number of zones which are calling for cooling. If a zone does not
+c require cooling, the capacity fraction for that zone is set to 0 which
+c effectively cuts off flow to that zone. 
+
+c References:	
+c		1) "Implementation of Zone Control Heating/Cooling into 
+c               ESP-r's idealized HVAC model", Bart Lomanowski,
+c               NRCan Internal Report, TBD (work in progress)
+
+
+c INPUTS:
+c	isys		number of hvac system
+c	HVAC_INPUT_DATA	common for HVAC input data
+c     simtim          common for simulation days, hours, etc ...
+c     hvac_timestep_parameters
+c                       common for several time step HVAC parameters
+
+c OUTPUTS:
+c	sys_zone_cap_frac	
+c                       zone capacity fraction 
+c
+c	flow_rate   	flow rate [m3/s]
+c
+c     fan_power         circulation fan power [W]
+c
+c **********************************************************************
+      SUBROUTINE ASHP_COOLING_ZONE_CONTROL(isys)
+
+      IMPLICIT NONE
+
+C Variables passed in call      
+      INTEGER isys
+
+#include "building.h"
+
+#include "hvac_parameters.h"
+
+#include "hvac_common.h"
+      
+C Local variables
+      CHARACTER*2, cHVACIndex, cHVACZone
+      INTEGER icount_zone_calls, i
+      REAL sum_zone_cap_ON       ! sum of zone capacities for zones calling for cooling 
+
+      sum_zone_cap_ON  = 0.0
+      icount_zone_calls = 0
+
+C Sum the capacities of calling zones      
+      establish_zone_calls: do i = 1, num_sys_zones(isys)
+        
+          if(zone_call_cool(isys,i))then
+              sum_zone_cap_ON = sum_zone_cap_ON +
+     &                           sys_zone_cap_frac_initial(isys,i)          
+          endif
+      
+      enddo establish_zone_calls
+
+C Set new capacity fractions based on zone calls and count total number of zonez calling
+C for cooling      
+      set_new_capacity_fractions: do i = 1, num_sys_zones(isys)
+
+          if(zone_call_cool(isys,i))then
+              
+              icount_zone_calls = icount_zone_calls +1
+              
+              sys_zone_cap_frac(isys,i) = 
+     &                  sys_zone_cap_frac_initial(isys,i) /
+     &                  ( sum_zone_cap_ON )
+     
+          elseif(.not.zone_call_cool(isys,i))then
+
+              sys_zone_cap_frac(isys,i) = 0.0001
+  
+          endif        
+
+      enddo set_new_capacity_fractions
+
+C Set flow rate and fan power based on *.hvac file inputs as a function of # of calling
+C zones
+      if(icount_zone_calls.ne.0)then
+          flow_rate(isys) = var_flow_rate(isys,icount_zone_calls)
+          fan_power(isys) = var_fan_power(isys,icount_zone_calls)
+      endif
+
+C Output relevant variables to xml reports      
+      xml_output: do i = 1, num_sys_zones(isys)
+C-----Prepare component name
+        if ( isys .ge. 10 ) write (cHVACIndex, '(I2)') isys
+        if ( isys .lt. 10 ) write (cHVACIndex, '(A,I1)') '0', isys
+C-----Prepare hvac zone index
+        if ( i .ge. 10 ) write (cHVACZone, '(I2)') i
+        if ( i .lt. 10 ) write (cHVACZone, '(A,I1)') '0', i
+      
+        call add_to_xml_reporting(
+     &       sys_zone_cap_frac(isys,i),
+     &       'plant/ideal_hvac_models/component_'
+     &       //cHVACIndex
+     &       //'/zone_cap_frac/zone_'     ! sys zone does not correspond to esp-r's zone indexing, it follows the indexing in the *.hvac file
+     &       //cHVACZone,
+     &       'units ','(-)',
+     &       'Idealized HVAC models: cooling capacity fraction')
+        call add_to_xml_reporting(
+     &       sys_zone_cap_frac_ret_air(isys,i),
+     &       'plant/ideal_hvac_models/component_'
+     &       //cHVACIndex
+     &       //'/zone_ret_cap_frac/zone_'
+     &       //cHVACZone,
+     &       'units ','(-)',
+     &       'Idealized HVAC models: return capacity fraction')
+        call add_to_xml_reporting(
+     &       flow_rate(isys),
+     &       'plant/ideal_hvac_models/component_'
+     &       //cHVACIndex
+     &       //'/circ_flow_rate',
+     &       'units ','(m3/s)',
+     &       'Idealized HVAC models: circulation flow rate')
+      enddo xml_output
+     
+      return
+
+      end     
 c *********************************************************************
 c ACSYSTEM_OUTPUT
 
@@ -2906,6 +3128,7 @@ c Variables passed in call
      &     ss_cooling_cap,shr,time_step
 
       INTEGER isys
+      CHARACTER*2 cHVACIndex
 
 #include "building.h"
 
@@ -2940,10 +3163,10 @@ c outdoor fan) in kWh
      &                     (time_step * 1000.) + (time_step / 3600.) *
      &                     fan_energy
 
-c Find time step electricity consumption of outdoor system fan in kWatts
+c Find time step electricity consumption of outdoor system fan in Watts
       outdoor_fan_energy = outdoor_fan_power(isys) * plr_heat_pump /
-     &                     ((plf_heat_pump + 0.00001) * 1000.) 
-
+     &                     ((plf_heat_pump + 0.00001)) 
+ 
 c Update sum for total electricity consumption of outdoor fan in kWh
       elec_outdoor_fan(isys) = elec_outdoor_fan(isys) + 
      &                         (time_step / 3600.) * outdoor_fan_energy
@@ -2963,7 +3186,7 @@ c Update sum of sensible coil load in kWh
 
 c Updte sum of latent coil load in kWh
       coil_latent_load(isys) = coil_latent_load(isys) + 
-     &    (time_step / 3600.) * (1 - shr) * ss_cooling_cap * 
+     &    (time_step / 3600.) * (1. - shr) * ss_cooling_cap * 
      &     plr_heat_pump / 1000.
 
 c Update sum of total coil load
@@ -3001,6 +3224,19 @@ c      write(iuout,*) sys_elec_consumption,elec_indoor_fan(isys),
 c     &           elec_outdoor_fan(isys),elec_compressor(isys),
 c     &           total_elec_consumption(isys),coil_sensible_load(isys),
 c     & coil_latent_load(isys),coil_total_load(isys),average_cop(isys)
+
+C Add outdoor condenser fan power to xml output
+c-----prepare component name
+      if ( isys .ge. 10 ) write (cHVACIndex, '(I2)') isys
+      if ( isys .lt. 10 ) write (cHVACIndex, '(A,I1)') '0', isys 
+      
+      call add_to_xml_reporting(
+     &       outdoor_fan_energy,
+     &       'plant/ideal_hvac_models/component_'
+     &       //cHVACIndex
+     &       //'/outdoor_fan_power',
+     &       'units ','(W)',
+     &       'Idealized HVAC models: outdoor fan power')
 
       return
 

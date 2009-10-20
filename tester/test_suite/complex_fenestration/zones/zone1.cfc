@@ -92,4 +92,4 @@
  0.100E+04  0.147E-01        # a and b coeffs.- specific heat (J/kg.K)
 # slat-type blind attributes for cfc type:  3
 # slat: width(mm); spacing(mm); angle(deg); orientation(HORZ/VERT); crown (mm); w/r ratio; slat thickness (mm)
-  25.400  21.170   0.000  HORZ    0.000   0.000   0.330
+  25.400  21.170   89.000  HORZ    0.000   0.000   0.330

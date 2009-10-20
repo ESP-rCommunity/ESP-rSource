@@ -595,7 +595,7 @@ C add resistance for layer (using data from constructions file)
           DO 15, IL=1,NELT
             if(closemat)then
               legmat=IPR(imatch(i),IL)   ! which legacy index
-              if(legmat.ge.0)then
+              if(legmat.gt.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
                 DBCON=matdbcon(matarrayindex)
                 DBDEN=matdbden(matarrayindex)

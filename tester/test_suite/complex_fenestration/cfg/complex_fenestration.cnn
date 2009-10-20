@@ -1,6 +1,6 @@
 *connections  for complex_fenestration
-*Date Mon Jun 29 13:28:27 2009
-     26   # number of connections
+*Date Tue Oct 13 12:47:09 2009
+     25   # number of connections
    1   1   0   0   0  #    1 Wall-1 in zone1 is External
    1   2   3   2   4  #    2 Wall-2 in zone1 >|< Wall-4 in zone2
    1   3   0   0   0  #    3 Wall-3 in zone1 is External
@@ -26,4 +26,3 @@
    3   6   0   0   0  #   23 Base-6 in zone3 is External
    3   7   0   0   0  #   24 window6 in zone3 is External
    3   8   0   0   0  #   25 window7 in zone3 is External
-   3   9   0   0   0  #   26 window8 in zone3 is External

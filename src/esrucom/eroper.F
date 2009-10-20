@@ -191,7 +191,7 @@ C Error subroutine and error details for dll mode.
       integer idaytype  ! incremented for each new *day entry.
       integer ijk,ireader
       real reader
-
+      
       ijk=0
       ireader=0
       reader=0.0
@@ -1354,7 +1354,7 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6,dstmp*24
       logical Vldtng
-
+      
       IER=0
 
 C Open any existing file by this name (ask user for confirmation to

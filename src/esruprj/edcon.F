@@ -1055,7 +1055,7 @@ C Gather information about each layer. Read in the materials db info.
         DO 223, IL=1,LAYERS(IC)
           if(closemat)then
             legmat=IPR(IC,IL)   ! which legacy index
-            if(legmat.ge.0)then
+            if(legmat.gt.0)then
               matarrayindex=mathash(legmat)  ! find matching array index
               DBCON=matdbcon(matarrayindex)
               DBDEN=matdbden(matarrayindex)
@@ -1329,7 +1329,7 @@ C Gather information about each layer. Read in the materials db info.
             DO 23, IL=1,LAYERS(IC)
               if(closemat)then
                 legmat=IPR(IC,IL)   ! which legacy index
-                if(legmat.ge.0)then
+                if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
                   DBCON=matdbcon(matarrayindex)
                   DBDEN=matdbden(matarrayindex)
@@ -2271,7 +2271,7 @@ c homogeneous layer.
           DO 45 il=1,LAYERS(ic)
             if(closemat)then
               legmat=IPR(IC,IL)   ! which legacy index
-              if(legmat.ge.0)then
+              if(legmat.gt.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
                 DBCON=matdbcon(matarrayindex)
                 DBDEN=matdbden(matarrayindex)

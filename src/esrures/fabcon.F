@@ -468,7 +468,7 @@ C Determine diffusion resistance factor for each element.
       DO 20 I=1,NE(ISUR)
         if(closemat)then
           legmat=IPRZ(ISUR,I)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)
@@ -977,7 +977,7 @@ C from ascii or binary materials db and compute layer thickness.
           ETHK(I)=THK(ISUR,I)*1000.0
           if(closemat)then
             legmat=IPRZ(ISUR,I)   ! which legacy index
-            if(legmat.ge.0)then
+            if(legmat.gt.0)then
               matarrayindex=mathash(legmat)  ! find matching array index
               DBCON=matdbcon(matarrayindex)
               DBDEN=matdbden(matarrayindex)

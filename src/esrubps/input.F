@@ -1052,7 +1052,7 @@ C Now initiate computation of all time-independent zone properties.
         IF(IVF(IZ).EQ.0)CALL MZVFCL(IZ)
         CALL MZVENC(IZ)
         CALL MZCASG(IZ)
-
+        
 C If the start-up period has been specified in a simulator parameter 
 C file then do not recalculate it.
         if(.not.startupok) CALL MZTCON(IZ)

@@ -2591,7 +2591,7 @@ C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
       do 5 IL=1,LAYERS(IFOC)
         if(closemat)then
           legmat=IPR(IFOC,IL)   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)

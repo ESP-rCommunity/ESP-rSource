@@ -53,7 +53,7 @@ C facility just after the common blocks have been filled
 C and should just write out this data.
       SUBROUTINE PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,IVER)
 
-#include "building.h"
+#include "building.h"  
 #include "model.h"
 #include "CFC_common.h"      
 #include "geometry.h"
@@ -113,7 +113,7 @@ C updated when the user exits).
 
       LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
- 
+       
       integer IUA,NS,K,j
       dimension IVA(MS)
       
@@ -717,6 +717,7 @@ C Remind users to check their data.
       h(7)='to confirm that performance is as expected.'
           CALL PHELPD('operation import confirm',7,'-',0,0,IER)
         endif
+      
       ENDIF
 
 C Display different options depending on the version of the file.
@@ -729,10 +730,10 @@ C Display different options depending on the version of the file.
         ITEM(6)=              '  ----------------------------- '
         ITEM(7)=              'c edit scheduled air flows      '
         ITEM(8)=              'd edit casual gains             '
-        ITEM(9)=              '  ----------------------------- '    
+        ITEM(9)=             '  ----------------------------- '    
         ITEM(10)=             '! list air flow & casual gains  '
         ITEM(11)=             '  ----------------------------- '
-        ITEM(12)=             '> save air flow & casual gains  '
+        ITEM(12)=             '> save operations file          '
         ITEM(13)=             '? help                          '
         ITEM(14)=             '- exit this menu                '
         NITEMS=14
@@ -746,10 +747,10 @@ C Display different options depending on the version of the file.
         ITEM(6)=              '  ----------------------------- '
         ITEM(7)=              'c edit scheduled air flows      '
         ITEM(8)=              'd edit casual gains             '
-        ITEM(9)=              '  ----------------------------- '    
+        ITEM(9)=             '  ----------------------------- '    
         ITEM(10)=             '! list air flow & casual gains  '
         ITEM(11)=             '  ----------------------------- '
-        ITEM(12)=             '> save air flow & casual gains  '
+        ITEM(12)=             '> save operations file          '
         ITEM(13)=             '? help                          '
         ITEM(14)=             '- exit this menu                '
         NITEMS=14

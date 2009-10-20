@@ -2464,7 +2464,7 @@ C STANDARD ESP-R CALCULATION APPLIES
      &                           +q_glass_airndS(icomp,isfn)    !conv. flux from interior glass to air node
      &        +(hcif(icomp,isfn)*(tfa(icomp)-tfs(icomp,isfn)))) !conv. flux from front blind surface to air node
      &                            *sna(icomp,isfn)
-
+           
           endif
 
         ENDIF

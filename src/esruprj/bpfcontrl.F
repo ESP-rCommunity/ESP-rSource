@@ -47,6 +47,7 @@ C                             data for validity.
 #include "net_flow.h"
 #include "control.h"
 #include "CFC_common.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -70,10 +71,10 @@ C                             data for validity.
       character calename*32,calentag*12,calendayname*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER nbdaytype,nbcaldays,icalender
-
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+     
+c      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+c      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+c     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
      
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -118,7 +119,7 @@ C complex fenestration controls.
         if (icfc(icomp).eq.1)then
           iunit=IFIL+1
 C Read construction file - common block T1 is needed for 
-C subroutine read_in_cfc_file         
+C subroutine read_in_cfc_file
           CALL ECONST(LTHRM(ICOMP),iunit,icomp,0,itru,IER)
           call read_in_cfc_file(0,itru,iunit,lcfcin(icomp),icomp,ier)
           CFCfilexists=.true.
@@ -501,7 +502,7 @@ C Optical controls.
 C Complex fenestration controls.
         do 489 II=1,nCFCctlloops
           NN=nCFCctldaytypes(ii)
-          if(nCFCctldaytypes(ii).eq.0)NN=3
+          if(nCFCctldaytypes(ii).eq.0)NN=nbdaytype
           do 490 IJ=1,NN
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then
@@ -510,33 +511,30 @@ C Complex fenestration controls.
               CALL EMKEY(M-MHEAD+4,KEY,IER)
               if(nCFCctldaytypes(ii).eq.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,a,3I4)') KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)') KEY,II,
      &          iCFCsensor(II,1),iCFCsensor(II,2),iCFCsensor(II,3),
      &          iCFCactuator(II,1),iCFCactuator(II,2),
-     &          iCFCactuator(II,3),' wkd',iCFCctldatevalid(II,IJ,1),
+     &          iCFCactuator(II,3),calentag(ij),
+     &          iCFCctldatevalid(II,IJ,1),
      &          iCFCctldatevalid(II,IJ,2),nCFCdayctlperiods(II,1)
-              elseif(nCFCctldaytypes(ii).eq.0.and.IJ.eq.2)then
-                iperptbk(m)=2
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sat',iCFCctldatevalid(II,2,1),
+              elseif(nCFCctldaytypes(ii).eq.0)then
+                iperptbk(m)=ij
+                WRITE(VERT(M),'(A1,23X,a12,3I4)') KEY,
+     &            calentag(ij),iCFCctldatevalid(II,2,1),
      &            iCFCctldatevalid(II,2,2),nCFCdayctlperiods(II,2)
-              elseif(nCFCctldaytypes(ii).eq.0.and.IJ.eq.3)then
-                iperptbk(m)=3
-                WRITE(VERT(M),'(A1,22X,a,3I4)') KEY,
-     &            ' Sun',iCFCctldatevalid(II,3,1),
-     &            iCFCctldatevalid(II,3,2),nCFCdayctlperiods(II,3)
               endif
               if(nCFCctldaytypes(ii).ne.0.and.IJ.eq.1)then
                 iperptbk(m)=1
-                WRITE(VERT(M),'(A1,I4,3I3,3I3,I4,3I4)')KEY,II,
+                WRITE(VERT(M),'(A1,I4,3I3,3I3,1x,a12,3I4)')KEY,II,
      &          iCFCsensor(II,1),iCFCsensor(II,2),iCFCsensor(II,3),
      &          iCFCactuator(II,1),iCFCactuator(II,2),
-     &          iCFCactuator(II,3),IJ,iCFCctldatevalid(II,IJ,1),
+     &          iCFCactuator(II,3),'all daytypes',
+     &          iCFCctldatevalid(II,IJ,1),
      &          iCFCctldatevalid(II,IJ,2),nCFCdayctlperiods(II,1)
               elseif(nCFCctldaytypes(ii).ne.0.and.IJ.gt.1)then
                 iperptbk(m)=IJ
-                WRITE(VERT(M),'(A1,22X,I4,3I4)')KEY,
-     &            IJ,iCFCctldatevalid(II,IJ,1),
+                WRITE(VERT(M),'(A1,23X,a12,3I4)')KEY,
+     &            'all daytypes',iCFCctldatevalid(II,IJ,1),
      &            iCFCctldatevalid(II,IJ,2),nCFCdayctlperiods(II,IJ)
               endif
             endif
@@ -857,7 +855,7 @@ C List control data.
             call edisp(itru,outs)
             call edisp248(itru,CFCctldoc,72)
             do 249 ii=1,nCFCctlloops
-              call LSTCNTL(itru,6,ii,IER)
+              call LSTCNTL(itru,6,ii)
  249        continue
           endif
         elseif(irc.eq.2)then
@@ -990,7 +988,7 @@ C Pull up a multi-choice dialog to see what should be edited.
           write(outs,'(a,i2,a)') 'Optical control function (',II,
      &      ') editing.'
         elseif(icfoc.eq.6)then
-          call LSTCNTLD(itru,6,ii,idi,IER)
+          call LSTCNTLD(itru,6,ii,idi)
           write(outs,'(a,i2,a)') 'Complex fen. control function (',II,
      &      ') editing.'
         endif
@@ -1008,6 +1006,8 @@ C Pull up a multi-choice dialog to see what should be edited.
           NN=NECDT(II)
         elseif(icfoc.eq.5)then
           NN=NOCDT(II)
+        elseif(icfoc.eq.6)then
+          NN=nCFCctldaytypes(II)
         endif
         IF(NN.EQ.0.OR.NN.EQ.1)THEN
           call MENUATOL(outs,'Editing Options',
@@ -1291,7 +1291,7 @@ C current day type data..
             call LSTCNTLD(itru,5,II,idi)
             CALL EOCNTRL(II,idi,IER)
           elseif(icfoc.eq.6)then
-            call LSTCNTLD(itru,6,II,idi,IER)
+            call LSTCNTLD(itru,6,II,idi)
             CALL edit_CFC_control(ITRC,II,idi,IER)
           endif
           CALL EPMENRC
@@ -3263,27 +3263,19 @@ C ********************************************************************
 #include "building.h"
 #include "plant.h"
 #include "control.h"
-#include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
-      
-C Plant common required for building/plant flux linkage      
-      common/pcdat/nnodes(mpcom),isv(mpcom,mnodec), 
-     &               ndcon(mpcom,mnodec)
 
       DIMENSION SALT(9),PSALT (2), IVALS(9), IPVALS(1)
       CHARACTER*82 VERT(20)
 
-      CHARACTER outs*124,H*72,SSTR*96,TMP*96,SALT*40,hold*40,KEY*1
+      CHARACTER outs*124,H*72,SSTR*96,TMP*96,SALT*40,KEY*1
       character PSALT*40
-      character outsa*84,outsb*84,outsc*84,ltmp*248,SSTRB*48
-      logical close1,close2,close3,close4,useold
+      character outsa*84,outsb*84,outsc*84,ltmp*248
+      logical close1,useold
 
       integer iclawt   ! control law index passed back from editctlperiod
-      dimension icsn(5)! for passing sensor location to
-      integer icsn
-      integer lastndx  ! to keep track of last data position used.
       integer icfoc
       integer icurrentctltype
       
@@ -3378,9 +3370,9 @@ C Add or delete a period.
         CALL EASKABC(' ','Options:',
      &    'add period','delete period','cancel',iad,1)
         if(iad.eq.1)then
-          call addctldp(icfoc,II,JJ,'A',iier)
+          call addctldp(icfoc,II,JJ,'A')
         elseif(iad.eq.2)then
-          call addctldp(icfoc,II,JJ,'D',iier)
+          call addctldp(icfoc,II,JJ,'D')
         endif
         goto 92
       ELSEIF(IVERT.GT.5.AND.IVERT.LT.(mvert-3))THEN
@@ -6702,7 +6694,7 @@ C and the third can be 0
         ian2=iwhich
         ian3=0
       elseif(ivert.eq.1.and.(icfoc.eq.6))then
-      
+C Complex Fenestration      
 C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle, 2- both (for schedule)
 C       ian2 = zone index
 C       ian3 = CFC type index for selected zone
@@ -6718,7 +6710,6 @@ C Ask for the specific zone.
      &    'Specific zone',ier)
 
 C Ask for CFC type in selected zone.   
-        icfctype=0
         call askCFCtype(ian2,ian3,IER)
 
 C Check that selected CFC type contains a shading layer.
@@ -6822,7 +6813,7 @@ C if isn1.eq.-3 then no supplemental.
  842    continue
 
       elseif(ivert.eq.2.and.(icfoc.eq.6))then
-      
+C Complex Fenestration      
 C       ian1 = actuator type (0 - shade ON/OFF, 1 - slat angle 2- both (for schedule) )
 C       ian2 = zone index
 C       ian3 = CFC type index for selected zone
@@ -6838,7 +6829,6 @@ C Ask for the specific zone.
      &    'Specific zone',ier)
 
 C Ask for CFC type in selected zone.   
-        icfctype=0
         call askCFCtype(ian2,ian3,IER)
 
 C Check that slat-type shade exists for selected CFC type.
@@ -6873,9 +6863,8 @@ C Ask for the specific zone.
      &    'Specific zone',ier)
 
 C Ask for CFC type in selected zone.   
-        icfctype=0
         call askCFCtype(ian2,ian3,IER)
-
+      
 C Check that slat-type shade exists for selected CFC type.
         vb_xst=.false.
         do 1003 ilayer=1,ncfc_el(ian2, ian3)
@@ -9187,10 +9176,6 @@ C ********************************************************************
       IMPLICIT NONE
 #include "building.h"
 #include "control.h"
-#include "CFC_common.h"
-
-      integer IUOUT,IUIN
-      COMMON/OUTIN/IUOUT,IUIN
 
 C-----Working variables
       integer ndaytypes
@@ -9268,7 +9253,7 @@ C -------------------------------------------------------------------
                 elseif(ictype.eq.4)then    ! senses solar radiation, actuates slat angle
                   if((isen1.eq.-3.and.(isen2.eq.4.or.isen2.eq.5))
      &                            .or.isen1.eq.-4)then               
-                    if((iact1.eq.1 .or.iact1.eq. 3) .and.ilaw.eq.1)then
+                    if(iact1.eq.1.and.ilaw.eq.1)then
                       checkOK=.true.
                     else
                       checkOK=.false.

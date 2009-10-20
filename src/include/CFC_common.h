@@ -523,11 +523,11 @@ C CFC SLAT CONTROL COMMONS
 C
 C These commons contain variables for the dynamic control of slat-type blinds:
 C
-C THIS SECTION IS WORK IN PROGRESS.
 C---------------------------------------------------------------------------------
 
       COMMON/CFCslatcontrl/vb_phiOld(mcom,mcfc),vb_phiNew(mcom,mcfc),
-     &                     i_shd(mcom,mcfc)
+     &                     i_shd(mcom,mcfc),vb_phi_SV(mcom,mcfc),
+     &                     i_shd_SV(mcom,mcfc)
 
 C Slat angle for previous time-step (deg.)
       REAL vb_phiOld
@@ -537,7 +537,13 @@ C Slat angle for future time-step (deg.)
 
 C Time-step shading ON/OFF flag
       INTEGER i_shd
-
+      
+C Slat angle for storing previous time step value (deg.)
+      REAL vb_phi_SV
+      
+C For storing value of previous time step shade state
+      INTEGER i_shd_SV
+     
 C---------------------------------------------------------------------------------
 C CFC shading/control schedule data
       COMMON/CFC_shd_schedule/n_ctl_periods(mcom,mcfc,mdty),

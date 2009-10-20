@@ -9,31 +9,60 @@ c modeled ideally
      &fan_power_auto(max_sys), ifan_position_r(max_sys),
      &fan_power_r(max_sys), draft_fan_power(max_sys),
      &isys_zone_num(max_sys,mcom), iduct_sys_flag(max_sys),
-     &sys_zone_cap_frac(max_sys,mcom), icontrol_function(max_sys)
+     &sys_zone_cap_frac(max_sys,mcom), icontrol_function(max_sys),
+     &izonecontrol(max_sys),      
+     &var_flow_rate(max_sys,mcom),
+     &var_fan_power(max_sys,mcom),
+     &sys_zone_cap_frac_initial(max_sys,mcom),
+     &sys_zone_cap_frac_ret_air(max_sys,mcom)
 
       common/HVAC_fuel_type/iFuel_type(max_sys)
 
 c Declare integer values in HVAC_INPUT_DATA common
       INTEGER num_hvac_sys, ihvac_type, ipriority, isys_type,
      &num_sys_zones, ifan_operation, ifan_position, ifan_position_r,
-     &isys_zone_num, iduct_sys_flag, icontrol_function, iFuel_type
+     &isys_zone_num, iduct_sys_flag, icontrol_function, iFuel_type,
+
+C....flag for zone control (0 = no zone control, 1 = zone control )
+     &izonecontrol
 
 c Declare real parameters in HVAC_INPUT_DATA common
       REAL site_altitude, ss_capacity, flow_rate, flow_rate_r,
      &fan_power, fan_power_auto, fan_power_r, draft_fan_power,
-     &sys_zone_cap_frac
+     &sys_zone_cap_frac, 
+
+C....Variable flow rate [m3/s] as a function of the number of calling zones
+     &var_flow_rate,
+
+C....Variable fan power [W] corresponding to the variable flow rate
+C....as a function of the number of calling zones
+     &var_fan_power,
+     
+C....Initial fractions as defined in *.hvac file. Zone capacity fractions
+C....become variable when zoning control is enabled so need to save these
+C....initial values for calculations of future timestep capacity fractions.
+     &sys_zone_cap_frac_initial,
+     
+C....Return air zone capacity fractions. These are fixed fractions that are
+C....indpendent of zoning calls. 
+     &sys_zone_cap_frac_ret_air
 
 c Common for time step computed parameters of HVAC system
 
       COMMON/hvac_timestep_parameters/outdoor_air_inf_cond(mcom),
      &coil_moist_in(mcom),coil_moist_out1(mcom),
      &coil_moist_out2(mcom),cont_fun_cool_cap(mcom),output_flag,
-     &cont_fun_heat_cap(mcom)
+     &cont_fun_heat_cap(mcom), zone_call_heat(max_sys,mcom),
+     &zone_call_cool(max_sys,mcom),sys_on_time(max_sys)
 
       REAL outdoor_air_inf_cond,coil_moist_in,coil_moist_out1,
-     &coil_moist_out2,cont_fun_cool_cap,cont_fun_heat_cap
+     &coil_moist_out2,cont_fun_cool_cap,cont_fun_heat_cap,sys_on_time
 
       LOGICAL output_flag
+      
+C.....flags to keep track of zone heating/cooling calls
+      LOGICAL zone_call_heat
+      LOGICAL zone_call_cool
 
 c Common for underheated cooling
 

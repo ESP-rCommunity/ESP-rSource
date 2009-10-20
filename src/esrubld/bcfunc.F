@@ -2969,6 +2969,8 @@ C ON condition is reached.
 
       SUBROUTINE BCL10
 #include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
 #include "control.h"
 
       COMMON/TC/ITC,ICNT
@@ -3009,8 +3011,22 @@ c HSPON = heating ON set point temp. (deg.C)
 c HSPOFF = heating OFF set point temp. (deg.C)
 c CSPON = cooling ON set point temp. (deg.C)
 c CSPOFF = cooling OFF set point temp. (deg.C)
-      QHM=BMISCD(ICF,IDTYP,IPER,2)
-      QCM=-BMISCD(ICF,IDTYP,IPER,3)
+
+C If the zone associated with this control function is served by an HVAC system
+C simulated ideally, then use HVAC system capacity to update controller
+C heating/cooling capacity for time step. 
+      if(cont_fun_heat_cap(IICOMP).gt.0 ) then
+        QHM=cont_fun_heat_cap(IICOMP)
+      else
+        QHM=BMISCD(ICF,IDTYP,IPER,2)       
+      endif
+
+      if(cont_fun_cool_cap(IICOMP).gt.0.) then
+        QCM=-cont_fun_cool_cap(IICOMP)
+      else        
+        QCM=-BMISCD(ICF,IDTYP,IPER,3)
+      endif
+
       HSPON=BMISCD(ICF,IDTYP,IPER,4)
       HSPOFF=BMISCD(ICF,IDTYP,IPER,5)
       CSPON=BMISCD(ICF,IDTYP,IPER,6)
@@ -6197,7 +6213,7 @@ C primitive db info.
           do 223 i=1,layers(ic)
             if(closemat)then
               legmat=ipr(ic,i)   ! which legacy index
-              if(legmat.ge.0)then
+              if(legmat.gt.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
                 dbcon=matdbcon(matarrayindex)
                 dbden=matdbden(matarrayindex)

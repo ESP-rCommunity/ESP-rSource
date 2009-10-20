@@ -169,7 +169,7 @@ C List one or more classifications.
               IDB=IDB+1
               if(closemat)then
                 legmat=IDB   ! which legacy index
-                if(legmat.ge.0)then
+                if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
                   DBCON=matdbcon(matarrayindex)
                   DBDEN=matdbden(matarrayindex)
@@ -245,7 +245,7 @@ C arrays for manipulation.
             IDB=IDB+1
             if(closemat)then
               legmat=IDB   ! which legacy index
-              if(legmat.ge.0)then
+              if(legmat.gt.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
                 DBCON=matdbcon(matarrayindex)
                 DBDEN=matdbden(matarrayindex)
@@ -3646,7 +3646,7 @@ C -------------
                   ICurMat = IMatID(ICurComp,J)
                   if(closemat)then
                     legmat=IPR(ICurComp,J)   ! which legacy index
-                    if(legmat.ge.0)then
+                    if(legmat.gt.0)then
                       matarrayindex=mathash(legmat)  ! find matching array index
                       DBCON=matdbcon(matarrayindex)
                       DBDEN=matdbden(matarrayindex)

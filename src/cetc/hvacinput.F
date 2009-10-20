@@ -179,7 +179,7 @@ c (ifan_operation > 0), and the capacity of the fan is not specified by
 c the user (fan_power < 0), then function FAN_SIZE is used to set an 
 c appropriate fan size. For systems with backup heat, the backup heat
 c data has to be read in before that of the primary system. 
-        if((fan_power(i) .lt. 0).and.((ifan_operation(i) .eq. 1).or.
+        if((fan_power(i) .lt. 0.).and.((ifan_operation(i) .eq. 1).or.
      &    (ifan_operation(i) .eq. 2)).and.(ipriority(i) .eq. 1)) then
           fan_power(i) = FAN_SIZE(i)
         endif
@@ -467,7 +467,6 @@ c *********************************************************************
 c Variable passed in call
       INTEGER i
 #include "building.h"
-#include "control.h"
 #include "hvac_parameters.h"
 #include "hvac_common.h"
 
@@ -498,22 +497,42 @@ c Other local variables
      &        num_heatpump_var,icounter,iperiod_counter,
      &        jcounter,idaytype_start_hour,ihour_year,
      &        ihour_day,iperiod_day_counter,
-     &        iperiod_year_counter
+     &        iperiod_year_counter,num_heatpump_var_zonecontrol,
+     &        num_zone_calls
 
       REAL day_period_out_air_flow(max_sys,100),
      &     SYS_FLOW_RATE,FAN_SIZE
 
       IUNIT=IFIL+20
 
+C Controlled zoning is OFF by default
+      izonecontrol(i) = 0
+      
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
       k = 0
+      
+c If number of variables on line 2 of the data is 1 then read in
+c controlled zoning flag
+      if(ND.eq.1)then
+        CALL EGETWI(OUTSTR,K,ival,0,1,'F',
+     &  'hvac input: controlled zoning flag',IER)
+     
+        izonecontrol(i) = ival
+        
+c-------read next line
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+        k = 0
+        
+      endif   
 
-c Number of variables on line 2 of the data associated with heat pump
-c systems for version 1.3 of file hvacinput.F
+c Number of variables on line 2 (or line 3 if controlled zoning flag is present)
+c of the data associated with heat pump systems for version 1.3 of file hvacinput.F
       num_heatpump_var = 2 + 2 * num_sys_zones(i)
-      if(num_heatpump_var.eq.ND) then
+      num_heatpump_var_zonecontrol = 2 + 3 * num_sys_zones(i)
+      if(num_heatpump_var.eq.ND
+     &  .or.num_heatpump_var_zonecontrol.eq.ND) then
         version1_3_flag = .true.
-      elseif(num_heatpump_var.ne.ND) then
+      else
         version1_3_flag = .false.
       endif
 
@@ -573,12 +592,20 @@ c there are zones served by the HVAC system
         do 30 j = 1,num_sys_zones(i)
 c Read numbers j for zones served by hvac system i
           CALL EGETWI(OUTSTR,K,ival,1,100,'F',
-     &'hvac input: isys_zone_num',IER)
+     &    'hvac input: isys_zone_num',IER)
           isys_zone_num(i,j) = ival
 c Read capacity fraction delivered to each of the zones served by system
           CALL EGETWR(OUTSTR,K,val,0.,1.,'F',
-     &'hvac input: sys_zone_cap_frac',IER)
+     &   'hvac input: sys_zone_cap_frac',IER)
           sys_zone_cap_frac(i,j) = val
+          sys_zone_cap_frac_initial(i,j) = sys_zone_cap_frac(i,j)
+c If controlled zoning ON, read return air fractions for each of the zones
+c served by the system
+          if(izonecontrol(i).eq.1)then
+            CALL EGETWR(OUTSTR,K,val,0.,1.,'F',
+     &     'hvac input: sys_zone_cap_frac_ret_air',IER)
+            sys_zone_cap_frac_ret_air(i,j) = val
+          endif
   30    continue
 
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
@@ -607,7 +634,7 @@ c operation of the heat pump system.
      &  'hvac input: flow_rate',IER)
         flow_rate(i) = val
 c If the flow rate is less than zero, need to estimate one
-        if(flow_rate(i).lt.0) then
+        if(flow_rate(i).lt.0.) then
           flow_rate(i) = SYS_FLOW_RATE(i)
         endif
 c Read the flow rate through the indoor circulating fan of 
@@ -616,7 +643,7 @@ c the system at rating conditions.
      &  'hvac input: flow_rate_r',IER)
         flow_rate_r(i) = val
 c If the flow rate is less than zero, then estimate one
-        if(flow_rate_r(i).lt.0) then
+        if(flow_rate_r(i).lt.0.) then
           flow_rate_r(i) = SYS_FLOW_RATE(i)
         endif      
 c Read the circulation fan operation status ifan_operation. The
@@ -675,6 +702,29 @@ c estimated internally in FAN_SIZE
           fan_power_r(i) = FAN_SIZE(i)
         endif
 
+c If controlled zoning is ON, read data to establish the variable circulation
+c flow rates and fan power depending on the number of zones calling for 
+c cooling.         
+        if(izonecontrol(i).eq.1)then
+          CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input - zoning',IER)
+          k = 0
+        
+          do 31 j = 1,num_sys_zones(i)
+c Read the number of zones calling
+            CALL EGETWI(OUTSTR,K,ival,1,100,'F',
+     &      'hvac input: num. calling zones',IER)
+            num_zone_calls = ival
+c Read the flow rate (m3/s) corresponding to the number of calling zones
+            CALL EGETWR(OUTSTR,K,val,0.,1.e4,'F',
+     &     'hvac input: var. flow rate',IER)
+            var_flow_rate(i,num_zone_calls) = val
+c Read the fan power (W) corresponding to the number of calling zones
+            CALL EGETWR(OUTSTR,K,val,0.,1.e4,'F',
+     &      'hvac input: var fan power',IER)
+             var_fan_power(i,num_zone_calls) = val
+  31      continue
+        endif
+        
 c Read different variables depending on the function of the 
 c unit
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
@@ -715,6 +765,14 @@ c Read Sensible Heat Factor in the cooling mode at ARI rating conditions.
           CALL EGETWR(OUTSTR,K,val,0.,1.,'F',
      &    'hvac input: shrr',IER)
           shrr(i) = val   
+c Read system time-constant (sec.)  which is needed when the controller type used 
+c with cooling system is on/off controller with deadband.
+c Preserve legacy file format.
+          if(ND.eq.3)then
+            CALL EGETWR(OUTSTR,K,val,0.,1000.,'F',
+     &      'hvac input: time_constant',IER)
+            time_constant(i) = val
+          endif
 c Read the cooling type (conventional, economizer, ventilation)
 c	=1 conventional
 c	=2 economizer
@@ -892,14 +950,12 @@ c Read number associated with heat pump in heating mode
               bTwoModes (iVal)       = .true.
           endif
 
-c Previous versions of the hvac file included an input for the control
-c function number associated with the hvac system. This is no 
-c longer used but is read here just in case this is an older version file
-          if(ND.gt.1) then
-            CALL EGETWI(OUTSTR,K,ival,1,MCF,'F',
+c Read control function type associated with cooling system: 
+c 1 ideal controller
+c 2 on/off controller with deadband
+          CALL EGETWI(OUTSTR,K,ival,1,100,'F',
      &      'hvac input: icontrol_function',IER)
             icontrol_function(i) = ival
-          endif
 
 c For a heat pump in the cooling mode, it is possible using the 
 c information at rating conditions to determine the bypass factor
@@ -978,6 +1034,7 @@ c Declare local variables
 
 c Other local variables
       REAL SYS_FLOW_RATE,FAN_SIZE,dummy
+      INTEGER idummy
       IUNIT=IFIL+20
 
       k = 0
@@ -1060,7 +1117,7 @@ c operation of the heat pump system.
      &'hvac input: flow_rate',IER)
       flow_rate(i) = val
 c If the flow rate is less than zero, need to estimate one
-      if(flow_rate(i).lt.0) then
+      if(flow_rate(i).lt.0.) then
         flow_rate(i) = SYS_FLOW_RATE(i)
       endif
 c Read the flow rate through the indoor circulating fan of 
@@ -1069,7 +1126,7 @@ c the system at rating conditions.
      &'hvac input: flow_rate_r',IER)
       flow_rate_r(i) = val
 c If the flow rate is less than zero, then estimate one
-      if(flow_rate_r(i).lt.0) then
+      if(flow_rate_r(i).lt.0.) then
         flow_rate_r(i) = SYS_FLOW_RATE(i)
       endif      
 c Read the circulation fan operation status ifan_operation. The
@@ -1144,7 +1201,7 @@ c	=1 temperature control
 c	=2 enthalpy control
         CALL EGETWI(OUTSTR,K,ival,1,2,'F',
      &  'hvac input: ieconomizer_type',IER)
-        dummy = ival
+        idummy = ival
 c Read openable window area for when heat pump is in cooling mode
         CALL EGETWR(OUTSTR,K,val,0.,1.,'F',
      &  'hvac input: open_win_area',IER)

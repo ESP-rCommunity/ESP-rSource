@@ -52,11 +52,9 @@ C      VB_SOL6
 C      SETCoef
 C      TDMAsol
 C      profile_angle
-C      CFC_shading_control
 C      set_HR_to_zero
 C      set_QELW_to_zero
 C      CFCoutput
-C      CFC_shade_schedule
 C      CFC_control
 C      get_incident_solrad
 
@@ -1716,6 +1714,7 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       real w,phi_rad,pi,L,lthk
       real nstar,TA,TB,hc
       real diff
+      real Rgap_shd_retracted
 	  
       CHARACTER outs*124
 
@@ -1842,7 +1841,12 @@ C If shade is retracted determine gap thickness between glass layers
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
      &          spht_A(icomp,icfctp,i+1),spht_B(icomp,icfctp,i+1),hc)
 
-                cfcRgap(icomp,isur,i+1,2)=1./hc
+                if(i_shd(icomp,icfctp).eq.0)then
+                  Rgap_shd_retracted=1./(hc*2.)
+                  cfcRgap(icomp,isur,i+1,2)=Rgap_shd_retracted
+                else
+                  cfcRgap(icomp,isur,i+1,2)=1./hc
+                endif
 
               elseif(itypenext.eq.1)then    !next layer is glass, use cavity correlation
                 L=lthk
@@ -1878,7 +1882,13 @@ C If shade is retracted determine gap thickness between glass layers
      &          cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
      &          spht_A(icomp,icfctp,i+1),spht_B(icomp,icfctp,i+1),hc)
-                cfcRgap(icomp,isur,i+1,2)=1./hc
+C If shade is retracted assign appropriate resistance calculated above
+                if(i_shd(icomp,icfctp).eq.0)then
+                  cfcRgap(icomp,isur,i+1,2)=Rgap_shd_retracted
+                else
+                  cfcRgap(icomp,isur,i+1,2)=1./hc
+                endif
+
               else
                !do nothing
               end if
@@ -1963,6 +1973,10 @@ C If shade is retracted determine gap thickness between glass layers
               CALL HTBUOY(HC,ICOR,ICOMP,ISUR,DT,HGT,ARHY)
               h_glass_room=HC*(1.0-exp(-4.6*b/0.1))
 
+C If shade is retracted use the adjusted heat transfer coefficient for interior
+C glass surface
+              if(i_shd(icomp,icfctp).eq.0)h_glass_room=HC
+              
 C Determine source term for interior glass surface node
               q_glass_airnd=h_glass_room
      &        *SNA(icomp,isur)*(tfa(icomp)-tfc(icomp,isur,(ne-2)*2))
@@ -3582,88 +3596,6 @@ C values at next time-step.
 
 
 C ********************************************************************
-C                         --CFC_shading_control--
-C
-C **UNDER CONSTRUCTION**
-C
-C Facility for implementing shading control at the single time-step 
-C level. 
-C
-C Currently control of a slat-type blind slat angle is possible by 
-C calculating a NEW slat angle at each time-step for a prescribed
-C condition. 
-C
-C Currently, the default control sets the slat angle to a constant 
-C by setting 
-C
-C           vb_phiNew()=vb_phiOld()
-C
-C where
-C vb_phiNew = current time-step slat angle
-C vb_phiOld = previous time-step slat angle
-C
-C ********************************************************************
-      subroutine CFC_shading_control(icomp,icfctp)
-      IMPLICIT NONE
-#include "building.h"
-#include "control.h"
-#include "CFC_common.h"
-      COMMON/OUTIN/IUOUT,IUIN
-      integer iuout,iuin
-C      COMMON/SUNPOS/SAZI,SALT,ISUNUP
-C      real sazi,salt
-C      integer isunup
-C      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
-C      real tfa,qfa
-C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-C      real qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
-C      COMMON/BTIME/BTIMEP,BTIMEF
-C      real btimep,btimef
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-
-      integer icomp,icfctp!,isur,is_shd
-C      real proang,tfa_old
-      CHARACTER outs*124
-
-C if first timestep, set New angle to value read from *.cfc file
-      if(NSINC.eq.1)then
-            vb_phiOld(icomp,icfctp)=vb_phi(icomp,icfctp)
-            vb_phiNew(icomp,icfctp)=vb_phi(icomp,icfctp)
-      else
-C set Old slat angle equal to New slat angle (from
-C previous timestep)
-            vb_phiOld(icomp,icfctp)=vb_phiNew(icomp,icfctp)
-      end if
-
-
-      
-C -------------------------------------------------------------------
-C DEFAULT CONTROL SETTING: NEW=OLD
-
-      vb_phiNew(icomp,icfctp)=vb_phiOld(icomp,icfctp)
-
-
-c -------------------------------------------------------------------
-C Check that new slat angle is within correct range:
-C     -90 (deg.) < vb_phiNew < 90 (deg.)
-      if(vb_phiNew(icomp,icfctp).lt.-89.9.or.vb_phiNew(icomp,icfctp)
-     &      .gt.89.9)then
-C send warning error message and overwrite angle to 89.9 deg
-          write(outs,'(a,a,i2,a,a)')
-     &      'WARNING: Calculated slat angle for CFC',
-     &      ' type ',icfctp, ' is out of range.'
-          CALL EDISP(IUOUT,outs)
-          write(outs,'(a)')'        Setting slat angle to 89.9 deg. '
-          CALL EDISP(IUOUT,outs)
-          vb_phiNew(icomp,icfctp)=89.9
-      end if
-
-      return
-      end
-
-
-C ********************************************************************
 C                         --CFC_output--
 C
 C Optional CFC output generation invoked in MZNUMA.
@@ -3994,6 +3926,23 @@ C      real slat_angleX
       real tmrt                     ! mrt temperature [C]
       real solrad_dir               ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
       real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
+      character msgout*124
+      
+C Prior to initiating control logic, set the default slat angle and 
+C shading state for the next time step in all zones and all CFC types
+C containing a shade layer.    
+      do 30 i = 1, ncomp
+        if(icfc(i).eq.1)then
+          do 31 j = 1, ncfc(i)
+            do 32 k = 1, ncfc_el(i,j)
+              if(icfcltp(i,j,k).eq.2)then
+                vb_phiNew(i,j) = vb_phi_SV(i,j)
+                i_shd(i,j)     = i_shd_SV(i,j)
+              endif
+  32        continue
+  31      continue   
+        endif
+  30  continue
 
 C -------------------------------------------------------------------
 C Control the zone complex fenestration shading process according
@@ -4036,11 +3985,12 @@ C control loop are valid for current calendar day
   20        continue
           ENDIF
 
-C If we are here then no control for this time step. Go to Return.    
+C If we are here then no control for this time step. Jump out of loop
+C and go to Return.    
         goto 9999
-      
+
 C Commence control solution      
-  11  if(btimef.gt.24.)btimef = btimef - 24.  
+  11  if(btimef.gt.24.) btimef = btimef - 24.  
       nperiods = nCFCdayctlperiods(ictlfun,idaytype)
       
       do 40 k = 1, nperiods
@@ -4162,6 +4112,13 @@ C Check that ext. rad sensor is on external surface
             solrad = solrad_dir + solrad_diff   ! total radiation incident on surface
           else
           
+            write(msgout,'(A,i3)')
+     &               'In CFC control function: ', ictlfun
+            call USRMSG(msgout,
+     &      'Surface incident radiation sensor must be external.'
+     &      ,'W')
+C-----------Kill simulation     
+            stop    
           endif
           
         endif
@@ -4245,7 +4202,11 @@ C Perform actual control of shade ON/OFF and slat angle here
       ELSEIF(ictype.eq.7)then                   ! no sensor, schedule only
         i_shd(iact2,iact3) = ischedule_shdstateONorOFF
         vb_phiNew(iact2,iact3) = schedule_slat_angle
-      ENDIF    
+c      ENDIF    
+
+      ELSE ! ictype not valid!
+        goto 9999
+      ENDIF
 
       icomp=iact2     ! need zone index for range check of slat angle
       icfctp=iact3    ! need CFC type for range check of slat angle
@@ -4263,29 +4224,25 @@ C send warning error message and overwrite angle to 89.9 deg
           vb_phiNew(icomp,icfctp)=89.9
       end if
 
-  10    continue  
-  
-      ELSE ! nCFCctlloops .eq. 0 , i.e. no control loops defined ...
-      
-C assign default slat angle and shading state in all zones and all CFC types
-C containing a slat-type shade layer
-        do 30 i = 1, ncomp
+  10  continue  
+      endif ! nCFCctlloops .gt. 0
+
+C Save slat angle and shade state for use in future time-step.    
+ 9999 do 33 i = 1, ncomp
          if(icfc(i).eq.1)then
-          do 31 j = 1, ncfc(i)
-            do 32 k = 1, ncfc_el(i,j)
+          do 34 j = 1, ncfc(i)
+            do 35 k = 1, ncfc_el(i,j)
               if(icfcltp(i,j,k).eq.2)then
-                vb_phiNew(i,j) = vb_phi(i,j)
-                i_shd(i,j)     = 1
+                vb_phi_SV(i,j) = vb_phiNew(i,j)
+
+                i_shd_SV(i,j)     = i_shd(i,j)
               endif
-  32        continue
-  31      continue   
+  35        continue
+  34      continue   
          endif
-  30    continue  
-c        goto 9999
+  33  continue
 
-      ENDIF
-
- 9999 return
+      return
       end
 
 C ********************************************************************

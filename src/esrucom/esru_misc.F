@@ -3325,7 +3325,7 @@ C materials db or from the.
         iel=IPR(imatch,j)
         if(close)then
           legmat=iel   ! which legacy index
-          if(legmat.ge.0)then
+          if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
             write(NAM,'(a)') matname(matarrayindex)(1:32)
             PNAM(j)=NAM(1:20)

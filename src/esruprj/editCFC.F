@@ -61,7 +61,6 @@ C of Waterloo.
 C
 C ********************************************************************
       subroutine makeCFCfile(icomp,ier)
-      IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
 #include "CFC_common.h"
@@ -607,6 +606,8 @@ c User cancelled if we are here
       write(outs,'(a,a)')' Removing incomplete cfc file: ',
      &                   lcfcin(ICOMP)
       call EDISP(IUOUT,outs)
+      CALL ERPFREE(IFU,ISTAT)
+      CALL EFOPSEQ(IFU,lcfcin(icomp),1,IER)
       CALL EFDELET(IFU,ISTAT)
       GOTO 1111
 
@@ -639,7 +640,6 @@ C TO DO: add solar optical and longwave property summation checks.
 C
 C ********************************************************************
       subroutine importGSLedit(IUF,GSLfile,icomp,icfctp,isur,IER)
-      IMPLICIT NONE
 #include "building.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
@@ -756,21 +756,19 @@ C angle.
           if(IWA.eq.2)cim_VorH(icomp,icfctp)='HORZ'
 
           h(1)=' Initial Slat angle:'
-          h(2)=' Currently, this slat angle is constant.'
-          h(3)=' You can add slat angle control in source'
-          h(4)=' code in subroutine CFC_shading_control.'
-          h(5)=''
-          h(6)=' For slat angle sign convention, see Figure F.12 in:'
-          h(7)=' "Appendix F: CFC User Reference" from'
-          h(8)=' http://uwspace.uwaterloo.ca'
-          h(9)=' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
+          h(2)=' This is a constant if there is not slat control'
+          h(3)=''
+          h(4)=' For slat angle sign convention, see Figure F.12 in:'
+          h(5)=' "Appendix F: CFC User Reference" from'
+          h(6)=' http://uwspace.uwaterloo.ca'
+          h(7)=' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
           
           write(outs,'(a,i2)')
      &      'Specify intial blind slat angle for cfc type: ',icfctp
           rphi=0.0
           ln_outs=lnblnk(outs)
           CALL EASKR(rphi,' ',outs(1:ln_outs),-89.999,'F',
-     &               89.999,'F',0.0,'slat angle',IER,9)
+     &               89.999,'F',0.0,'slat angle',IER,7)
           rim_vb_phi(icomp,icfctp)=rphi
       endif
 
@@ -978,7 +976,6 @@ C TO DO: add solar optical and longwave property summation checks.
 C
 C ********************************************************************
       subroutine read_in_cfc_file(itrc,itru,iua,lua,icomp,ier)
-      IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
 #include "espriou.h"
