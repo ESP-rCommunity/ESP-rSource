@@ -882,10 +882,10 @@ C illuminance:
         esun=dir*suneff
         esky=QDIF*skyeff
 
-C Loop through all lighting zones
+C Loop through all lighting zones (loop closes approx. at line 2134!)
       FRAC=0.
       DO 9 N=1,NLITZ(ICOMP)
-      ZFRAC(N)=0.
+        ZFRAC(N)=0.
 
 C If external sensor & surface (overload CGX) is exterior
 C calculate lux.  If CGY (overloaded)=1. then calculate
@@ -1099,6 +1099,7 @@ C     &    .OR.(ISSNY.EQ.0.AND.(IDYP.GE.ISDS.OR.
 C     &        (IDYP.EQ.ISDS-1.AND.IHRP.EQ.24))))instart=.false.
         if(closea.OR.(SALT.LT.0.).OR.(IDYP.LT.ISDS).OR.instart)then
           suma=0.
+          AveLtzIllum(ICOMP,N)=0.0
           DO 21 I=1,NDF(ICOMP,N)
             selum(N,I)=0.
 
@@ -1367,8 +1368,9 @@ C Loop through till 'OUTCMD' string found.
 
 C Now read sensor data for all lighting zones
               DO 199 NN=1,NLITZ(ICOMP)
+			    suma=0.
                 DO 19 I=1,NDF(ICOMP,NN)
-                  sumJ=0.
+c                  sumJ=0.
                   CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'t var illum',IER)
                   if (IER.ne.0) then
                     write(outs,'(2a)')
@@ -1387,7 +1389,7 @@ C Now read sensor data for all lighting zones
                   selum(NN,I)=subT
 
 C Copy new information to illuminance DB. Transform to integer ... (why?)
-                  DBILLS(ICOMP,NDBENT(ICOMP),NN,I)=int(subT)
+                  DBILLS(ICOMP,NDBENT(ICOMP),NN,I)=subT !int(subT)
 
                   ift_old=ift
                   ift=1
@@ -1403,7 +1405,7 @@ c                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
                   endif
                   ift=ift_old
    19           CONTINUE ! loop through sensors of lighting zone NN
-C                                        Average illumination for this light zone:
+C Average illumination for this light zone:
                 zelum(NN)=suma/float(NDF(ICOMP,NN))
 C Transport lighting zone average illumination to h3k output via common ...
                 AveLtzIllum(ICOMP,NN)=zelum(NN)
@@ -1420,9 +1422,20 @@ C Close transfer file.
      &               (selum(ILZ,IDFT),IDFT=1,NDF(ICOMP,ILZ))
  434          continue
             else
+C Take values from database:
               call edisp(iuout,'Using information from illum database.')
-            endif
-          ENDIF !  (N.EQ.1) then
+			  ! calculate zelum(N) from database info ??
+              do 435 ILZ=1,NLITZ(ICOMP)
+			    suma=0.
+			    do 436 IDT=1,NDF(ICOMP,ILZ)
+                  suma=suma+selum(ILZ,IDT)
+ 436            continue
+                zelum(ILZ)=suma/float(NDF(ICOMP,ILZ))
+                AveLtzIllum(ICOMP,NN)=zelum(NN)
+ 435          continue
+			  
+            endif ! ILLDBM .eq. 0
+          ENDIF ! (N.EQ.1) then
         endif ! sun is up, not startup, not "no radiation" ...
 C === END of Radiance coupling
 
