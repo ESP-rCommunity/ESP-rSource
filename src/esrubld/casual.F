@@ -1233,8 +1233,8 @@ C                ALTDIF=abs(DBILLA(ICOMP,IDB,2)-RSAZI)
      &              (IBLIND.eq.nint(DBILLA(ICOMP,IDB,5)))) then
                   NMATCH=NMATCH+1
                   IDB_MATCH=IDB
-                  do 421 ILZ=1,MLCOM ! use number of lighting zones of this zone?
-                    do 4211 IDF=1,MDF ! use number of sensors of this zone?
+                  do 421 ILZ=1,NLITZ(ICOMP)!MLCOM ! use number of lighting zones of this zone?
+                    do 4211 IDF=1,NDF(ICOMP,ILZ)!MDF ! use number of sensors of this zone?
 
 C Generate coefficients of least squares arrays and ad up for each match
                       if (ILZ.eq.1 .and.IDF.eq.1) then
@@ -1262,8 +1262,8 @@ C Generate coefficients of least squares arrays and ad up for each match
  320          continue
               if (NMATCH.gt.2) then
                 ILLDBM=1
-                do 422 ILZ=1,MLCOM
-                  do 4221 IDF=1,MDF
+                do 422 ILZ=1,NLITZ(ICOMP) !MLCOM
+                  do 4221 IDF=1,NDF(ICOMP,ILZ) !MDF
 
 C Calculate regression coefficients GRADQR and GRADQF and then selum()
                     if (Aa(ILZ,IDF).gt.0.0) then
@@ -1427,11 +1427,11 @@ C Take values from database:
 			  ! calculate zelum(N) from database info ??
               do 435 ILZ=1,NLITZ(ICOMP)
 			    suma=0.
-			    do 436 IDT=1,NDF(ICOMP,ILZ)
-                  suma=suma+selum(ILZ,IDT)
+			    do 436 IDF=1,NDF(ICOMP,ILZ)
+                  suma=suma+selum(ILZ,IDF)
  436            continue
                 zelum(ILZ)=suma/float(NDF(ICOMP,ILZ))
-                AveLtzIllum(ICOMP,NN)=zelum(NN)
+                AveLtzIllum(ICOMP,ILZ)=zelum(ILZ)
  435          continue
 			  
             endif ! ILLDBM .eq. 0
