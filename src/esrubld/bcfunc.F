@@ -6186,6 +6186,8 @@ C material db info.
                 write(nam,'(a)') matname(matarrayindex)(1:32)
               endif
             else
+
+C << if material arrays were filled there is no need for this call >>
               call erpcdb(ifmat,ipr(ic,i),iuout,ier,dbcon,dbden,
      &            dbsht,e,a,drv,titl,nam)
             endif

@@ -214,12 +214,14 @@ C with the found item matches the IPR scanned above.
      &              matlegindex(matarrayindex),' index does not match ',
      &              IPR(I,IL),' name: ',NAM(1:lnblnk(NAM))
                   call edisp(iuout,outs)
+                  write(outs,*) 'as referenced in ',MLCN(1:lnblnk(MLCN))
+                  call edisp(iuout,outs)
                   write(outs,'(2a)') 
      &              'Marking the confused layer with a -99. Check the',
      &              'materials database for two identically named'
                   call edisp(iuout,outs)
                   write(outs,'(2a)') 
-     &              'materials, edit to make names unique, save and'
+     &              'materials, edit to make names unique, save and',
      &              'then rescan databases and re-make zone files.'
                   call edisp(iuout,outs)
                   IPRMAT(I,IL)=-99  ! could not find it
@@ -229,11 +231,14 @@ C with the found item matches the IPR scanned above.
               else
 
 C Did not find it, check if IPR(I,IL) is zero, if so set
-C IPRMAT to zero.
+C IPRMAT to zero to signal an air gap.  If not mark as -99
+C so that other facilities know about the confusion.
                 if(IPR(I,IL).eq.0)then
                   IPRMAT(I,IL)=0  ! to signal std air gap
                 else
                   IPRMAT(I,IL)=-99  ! could not find it
+                  write(outs,*)'as referenced in ',MLCN(1:lnblnk(MLCN))
+                  call edisp(iuout,outs)
                 endif
               endif
             endif
@@ -546,8 +551,8 @@ C If opposite matches continue otherwise set layermatch to false and exit.
 
 C ******* parsematdesc
 C Parse the NAM string from the MLC common block returning the index
-C of the version 1.1 or 1.2 materials array.  Newer MLC databases
-C will include lines in the form:
+C (matarrayindex) of the version 1.1 or 1.2 materials array.
+C Newer MLC databases will include lines in the form:
 C   104    0.0130  gypsum plaster : Gypsum based plaster
 C and older MLC databases wil include lines in the form:
 C   104    0.0130  Gypsum plaster
@@ -557,7 +562,9 @@ C files there will not be such a string.
 C The logic initially looks for ' : ' and trys to match the matname 
 C variable and if that fails it trys without ' : ' and if that
 C fails it trys against matdoc. Lastly the value of
-C ileghope is checked against matlegindex.
+C ileghope is checked against matlegindex. If no match is found a
+C warning is given and matarrayindex is returned as zero.
+
       subroutine parsematdesc(ileghope,NAM,matarrayindex)
 #include "building.h"
 #include "esprdbfile.h"
@@ -674,7 +681,7 @@ C     &      matdoc(imt)(1:lnam)
 C Could not find it via a string match so see if there is a legacy index that
 C matches the required index.  This sometimes happens if the current version
 C materials database has a material name edited and the MLC database does not
-C have a matching string (but the legacy index is correct non-the less).
+C have a matching string (but the legacy index is correct non-the-less).
       do 47 imt=1,matdbitems
         if(matlegindex(imt).eq.ileghope)then
 
@@ -686,9 +693,12 @@ C     &      PNAM(1:lnam),' ',matname(imt)(1:lnblnk(matname(imt)))
         endif
   47  continue
 
-C If we got here there was no match.
-      write(outs,*) 'When scanning materials db looking for legacy',
-     &  imt,' no match found for ',PNAM(1:lnam)
+C If we got here there was no match. The value of matarrayindex remains at zero.
+      lnam=lnblnk(PNAM)
+      write(outs,*) 
+     &  'When scanning materials db looking for legacy index',imt
+      call edisp(iuout,outs)
+      write(outs,*) 'no match found for material named ',PNAM(1:lnam)
       call edisp(iuout,outs)
   
       return
@@ -814,6 +824,8 @@ C Referenced item was not in the materials hash list. Write zeros.
             write(NAM,'(a)') 'unknown : unknown '
           endif
         else
+
+C << if material arrays were filled there is no need for this call >>
           CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
      &      DBSHT,E,A,DRV,TITL,NAM)
         endif

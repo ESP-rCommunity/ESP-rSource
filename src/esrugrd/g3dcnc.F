@@ -453,6 +453,11 @@ C *********************************************************************
       CHARACTER PNM*72,TL*72
 
 C Determine the lumped edge thermophysical properties.
+
+C << note this subroutine assumes that the model is associated
+C << with a binary version of the materials database. It must
+C << be updated to use the material array structures.
+
       VOLML=0.
       DNHCL=0.
       CNDCL=0.
@@ -579,6 +584,10 @@ C *********************************************************************
       SUBROUTINE DISEDG(IZ,IEG)
 #include "building.h"
 #include "esprdbfile.h"
+
+C << note this subroutine assumes that the model is associated
+C << with a binary version of the materials database. It must
+C << be updated to use the material array structures.
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -772,6 +781,10 @@ C *********************************************************************
 #include "building.h"
 #include "esprdbfile.h"
 
+C << note this subroutine assumes that the model is associated
+C << with a binary version of the materials database. It must
+C << be updated to use the material array structures.
+
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -908,6 +921,10 @@ C *********************************************************************
       SUBROUTINE DISCRN(IZ,ICR)
 #include "building.h"
 #include "esprdbfile.h"
+
+C << note this subroutine assumes that the model is associated
+C << with a binary version of the materials database. It must
+C << be updated to use the material array structures.
 
       COMMON/OUTIN/IUOUT,IUIN
 

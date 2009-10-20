@@ -269,6 +269,8 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
                   endif
                 endif
               else
+
+C << if material arrays were filled there is no need for this call >>
                 CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
      &             DBSHT,E,A,DRV,TITL,NAM)
               endif

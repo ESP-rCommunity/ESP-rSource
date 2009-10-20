@@ -408,7 +408,7 @@ C Parameters
       matcatcount=0 ! setup initial category counter
 
 C The ASCII file will be overwritten if it exists.
-      CALL EFOPSEQ(IFA,LASCI,4,IER)
+      CALL EFOPSEQ(IFA,LASCI,3,IER)
       IF(IER.NE.0)RETURN
 
 C Set closemat for the version.

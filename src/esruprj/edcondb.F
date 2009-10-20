@@ -957,7 +957,7 @@ C copy the contents of material > IWHICH into the next lower one.
             CALL EMENU('delete material',PDBM,NITMS,IW)
             IWHICH=iwhicharray(IW)
             ip=matlegindex(IWHICH)  ! remove legacy index from the hash table.
-            mathash(ip)=-1
+            if(ip.gt.0) mathash(ip)=-1
             DO 791 IVV=IWHICH,matdbitems-1
               matlegindex(IVV)=matlegindex(IVV+1)
               matdbcon(IVV)=matdbcon(IVV+1)
@@ -2248,6 +2248,8 @@ C Use the text within the MLC database to find the data.
                 endif
               endif
             else
+
+C << if material arrays were filled there is no need for this call >>
               CALL ERPCDB(IFMAT,IPR(IWH,ILAY),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
             endif
@@ -2525,6 +2527,8 @@ C If g or h air gap and version 1.2 then assign DRAIR
             endif
           endif
         else
+
+C << if material arrays were filled there is no need for this call >>
           CALL ERPCDB(IFMAT,IPR(IFOC,IL),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,A,DRV,TITL,NAM)
         endif
@@ -2801,7 +2805,7 @@ C << to cancel part way through the process.
             endif
 
 C Ask if user wishes to browse through materials to find suitable
-C reference.
+C reference. Use elistmat to select via materials array.
             dok=.true.
             h(1)='Unless you know the material reference you can'
             h(2)='find it by browsing the current database. '
@@ -2812,6 +2816,8 @@ C reference.
               if(closemat1.or.closemat2)then
                 CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
               else
+
+C << if the materials arrays were filled elistc should not be called >>
                 CALL ELISTC(iwhich,chdb,'-',IER)
               endif
               if(iwhich.eq.0)then
@@ -2823,6 +2829,8 @@ C reference.
                    if(closemat1.or.closemat2)then
                      CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
                    else
+
+C << if materials arrays filled there is no need for elistc call >>
                      CALL ELISTC(iwhich,chdb,'-',IER)
                    endif
                  elseif(iwair.eq.3)then
@@ -3232,6 +3240,8 @@ C reference.
           if(closemat1.or.closemat2)then
             CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
           else
+
+C << if materials arrays filled there is no need for elistc call >>
             CALL ELISTC(iwhich,chdb,'-',IER)
           endif
           if(iwhich.eq.0)then
@@ -3243,6 +3253,8 @@ C reference.
               if(closemat1.or.closemat2)then
                 CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
               else
+
+C << if materials arrays filled there is no need for elistc call >>
                 CALL ELISTC(iwhich,chdb,'-',IER)
               endif
             elseif(iwair.eq.3)then

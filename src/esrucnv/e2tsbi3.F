@@ -139,6 +139,8 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
             endif
           endif
         else
+
+C << if material arrays were filled there is no need for this call >>
           CALL ERPCDB(IFMAT,iprndx(iy),ITRU,IER,DBCON,DBDEN,
      &      DBSHT,E,A,DRV,TITL,NAM)
         endif
@@ -240,6 +242,8 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
               endif
             endif
           else
+
+C << if material arrays were filled there is no need for this call >>
             CALL ERPCDB(IFMAT,IPR(ino,IL),ITRU,IER,DBCON,DBDEN,
      &        DBSHT,E,A,DRV,TITL,NAM)
           endif
@@ -473,6 +477,8 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
                   endif
                 endif
               else
+
+C << if material arrays were filled there is no need for this call >>
                 CALL ERPCDB(IFMAT,IPR(INO,IL),ITRU,IER,DBCON,
      &            DBDEN,DBSHT,E,A,DRV,TITL,NAM)
               endif
@@ -540,6 +546,8 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
                 endif
               endif
             else
+
+C << if material arrays were filled there is no need for this call >>
               CALL ERPCDB(IFMAT,IPR(ICF,1),iuout,IER,DBCON,DBDEN,
      &           DBSHT,E,AE,DRV,TITL,NAM)
             endif
@@ -819,6 +827,8 @@ C For the inside and outside layer get surface properties (AE & AI).
             AE=matdbina(matarrayindex)
           endif
         else
+
+C << if material arrays were filled there is no need for this call >>
           CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &      DBSHT,E,AE,DRV,TITL,NAM)
         endif
@@ -829,6 +839,8 @@ C For the inside and outside layer get surface properties (AE & AI).
             AI=matdbina(matarrayindex)
           endif
         else
+
+C << if material arrays were filled there is no need for this call >>
           CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
      &      DBDEN,DBSHT,E,AI,DRV,TITL,NAM)
         endif
@@ -927,6 +939,8 @@ C For the inside and outside layer get surface properties.
                   AE=matdbina(matarrayindex)
                 endif
               else
+
+C << if material arrays were filled there is no need for this call >>
                 CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &            DBSHT,E,AE,DRV,TITL,NAM)
               endif
@@ -937,6 +951,8 @@ C For the inside and outside layer get surface properties.
                   AI=matdbina(matarrayindex)
                 endif
               else
+
+C << if material arrays were filled there is no need for this call >>
                 CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
      &            DBDEN,DBSHT,E,AI,DRV,TITL,NAM)
               endif
@@ -1123,6 +1139,8 @@ C For the inside and outside layer get surface properties.
                   AE=matdbina(matarrayindex)
                 endif
               else
+
+C << if material arrays were filled there is no need for this call >>
                 CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &            DBSHT,E,AE,DRV,TITL,NAM)
               endif
@@ -1248,6 +1266,8 @@ C Find the matching mlc index.
                     AE=matdbina(matarrayindex)
                   endif
                 else
+
+C << if material arrays were filled there is no need for this call >>
                   CALL ERPCDB(IFMAT,IPR(IMM,1),iuout,IER,DBCON,DBDEN,
      &              DBSHT,E,AE,DRV,TITL,NAM)
                 endif

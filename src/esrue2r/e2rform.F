@@ -824,6 +824,8 @@ C For the inside and outside layer get surface properties.
             AE=matdbina(matarrayindex)
           endif
         else
+
+C << if material arrays were filled there is no need for this call >>
           CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &      DBSHT,E,AE,DRV,TITL,NAM)
         endif
@@ -834,6 +836,8 @@ C For the inside and outside layer get surface properties.
             AI=matdbina(matarrayindex)
           endif
         else
+
+C << if material arrays were filled there is no need for this call >>
           CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,DBDEN,
      &      DBSHT,E,AI,DRV,TITL,NAM)
         endif
