@@ -610,31 +610,31 @@ C Did not find the correct header so this is probably a legacy file.
         return
       endif
 
-  41  CALL STRIPC(IFA,OUTSTR,0,ND,1,'header lines',IER)
+  41  CALL LSTRIPC(IFA,LOUTSTR,0,ND,1,'header lines',IER)
       IF(IER.NE.0)RETURN
       K=0
-      CALL EGETW(OUTSTR,K,WORD,'-','*date',IER)
+      CALL EGETW(LOUTSTR,K,WORD,'-','*date',IER)
       if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
-        CALL EGETRM(OUTSTR,K,matdbdate,'W','date stamp',IER)
+        CALL EGETRM(LOUTSTR,K,matdbdate,'W','date stamp',IER)
         goto 41
       elseif(WORD(1:4).eq.'*Doc'.or.WORD(1:4).eq.'*doc')then
-        CALL EGETRM(OUTSTR,K,matdbdoc,'W','database doc',IER)
+        CALL EGETRM(LOUTSTR,K,matdbdoc,'W','database doc',IER)
 
 C and the next line is number of classes...
-        CALL STRIPC(IFA,OUTSTR,0,ND,1,'nb of classes',IER)
+        CALL LSTRIPC(IFA,LOUTSTR,0,ND,1,'nb of classes',IER)
         IF(IER.NE.0)RETURN
         K=0
-        CALL EGETWI(OUTSTR,K,matcats,1,MGCL,'W','nb of classes',IER)
+        CALL EGETWI(LOUTSTR,K,matcats,1,MGCL,'W','nb of classes',IER)
         goto 41
       elseif(WORD(1:6).eq.'*Class'.or.WORD(1:6).eq.'*class')then
 
 C Get class index, nb of items and class name. Then read the next line
 C as documentation for the class. Untill the next *class line the
 C class index IC is used for subsequent items.
-        CALL EGETWI(OUTSTR,K,IC,0,MGCL,'F','class',IER)
-        CALL EGETWI(OUTSTR,K,NE,0,19,'-','no items',IER)
+        CALL EGETWI(LOUTSTR,K,IC,0,MGCL,'F','class',IER)
+        CALL EGETWI(LOUTSTR,K,NE,0,19,'-','no items',IER)
         matcatitems(IC)=NE
-        CALL EGETRM(OUTSTR,K,NDESC,'-','description',IER)
+        CALL EGETRM(LOUTSTR,K,NDESC,'-','description',IER)
         write(matcatname(IC),'(a)') NDESC(1:lnblnk(NDESC))
 
         CALL LSTRIPC(IFA,LOUTSTR,0,ND,1,'class documentation',IER)
@@ -645,16 +645,16 @@ C class index IC is used for subsequent items.
         goto 41
       elseif(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
         matdbitems=matdbitems+1   ! increment counter
-        CALL EGETP(OUTSTR,K,WORD32,'-','item name',IER) ! name might contain a space
+        CALL EGETP(LOUTSTR,K,WORD32,'-','item name',IER) ! name might contain a space
         write(matname(matdbitems),'(a)') WORD32(1:lnblnk(WORD32))
-        CALL EGETWI(OUTSTR,K,NCODE,-99,600,'F','legacy index',IER)
+        CALL EGETWI(LOUTSTR,K,NCODE,-99,600,'F','legacy index',IER)
         matlegindex(matdbitems)=NCODE
         if(NCODE.ge.0.and.NCODE.le.600)then
           mathash(NCODE)=matdbitems  ! set up pointer from legacy index to array
         endif
-        CALL EGETWI(OUTSTR,K,matcatindex(matdbitems),1,MGCL,'F',
+        CALL EGETWI(LOUTSTR,K,matcatindex(matdbitems),1,MGCL,'F',
      &    'category index',IER)
-        CALL EGETRM(OUTSTR,K,WORD248,'-','item doc',IER)
+        CALL EGETRM(LOUTSTR,K,WORD248,'-','item doc',IER)
         write(matdoc(matdbitems),'(a)') WORD248(1:lnblnk(WORD248))
 
         CALL LSTRIPC(IFA,LOUTSTR,99,ND,1,'the raw data line',IER)
