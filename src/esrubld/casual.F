@@ -882,7 +882,7 @@ C illuminance:
         esun=dir*suneff
         esky=QDIF*skyeff
 
-C Loop through all lighting zones (loop closes approx. at line 2134!)
+C Loop through all lighting zones (loop closes approx. at line 2144!)
       FRAC=0.
       DO 9 N=1,NLITZ(ICOMP)
         ZFRAC(N)=0.
@@ -1082,6 +1082,8 @@ C Trace output:
 C Average illumination for this light zone (in case of more than one
 C sensor in lighting zone):
         zelum(N)=suma/float(NDF(ICOMP,N))
+C Transport lighting zone average illumination to h3k output via common ...
+        AveLtzIllum(ICOMP,N)=zelum(N)
 
 C Time varying illuminances calculated by Radiance. Test if there
 C is any diffuse irradiation and if solar altitude is positive
@@ -1169,8 +1171,8 @@ C Check for no direct solar (effectively use dayfactor).
                   IDB_MATCH=IDB
                   NMATCH=NMATCH+1
                   ! for every match found, add up database entries ...
-                  do 321 ILZ=1,MLCOM
-                    do 3211 IDF=1,MDF
+                  do 321 ILZ=1,NLITZ(ICOMP) !MLCOM
+                    do 3211 IDF=1,NDF(ICOMP,ILZ) !MDF
                       SENTMP(ILZ,IDF)=SENTMP(ILZ,IDF)+
      &                                DBILLS(ICOMP,IDB,ILZ,IDF)
                       QDFTMP(ILZ,IDF)=QDFTMP(ILZ,IDF)+
@@ -1181,8 +1183,8 @@ C Check for no direct solar (effectively use dayfactor).
  310          continue
               if (NMATCH.gt.1) then
                 ILLDBM=1
-                do 322 ILZ=1,MLCOM
-                  do 3221 IDF=1,MDF
+                do 322 ILZ=1,NLITZ(ICOMP) !MLCOM
+                  do 3221 IDF=1,NDF(ICOMP,ILZ) !MDF
                     if (QDFTMP(ILZ,IDF).gt.0.0) then
 
 C Assume that the diffuse regresses to a straight line: y=mx
@@ -1274,6 +1276,7 @@ C Calculate regression coefficients GRADQR and GRADQF and then selum()
                       GRADQR= Ya(ILZ,IDF) - (Ab(ILZ,IDF) * GRADQF)
                       GRADQR= GRADQR / Aa(ILZ,IDF)
                       selum(ILZ,IDF)=(GRADQR*QDIR) + (GRADQF*QDIF)
+                      selum(ILZ,IDF)=max(0.0,selum(ILZ,IDF)) ! values < 0 not allowed ...
                     else
                       selum(ILZ,IDF)=0.0
                     endif
@@ -1368,9 +1371,8 @@ C Loop through till 'OUTCMD' string found.
 
 C Now read sensor data for all lighting zones
               DO 199 NN=1,NLITZ(ICOMP)
-			    suma=0.
+			          suma=0.
                 DO 19 I=1,NDF(ICOMP,NN)
-c                  sumJ=0.
                   CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'t var illum',IER)
                   if (IER.ne.0) then
                     write(outs,'(2a)')
@@ -1424,17 +1426,17 @@ C Close transfer file.
             else
 C Take values from database:
               call edisp(iuout,'Using information from illum database.')
-			  ! calculate zelum(N) from database info ??
+			        ! calculate zelum(N) from database info ??
               do 435 ILZ=1,NLITZ(ICOMP)
-			    suma=0.
-			    do 436 IDF=1,NDF(ICOMP,ILZ)
+			        suma=0.
+			          do 436 IDF=1,NDF(ICOMP,ILZ)
                   suma=suma+selum(ILZ,IDF)
  436            continue
                 zelum(ILZ)=suma/float(NDF(ICOMP,ILZ))
                 AveLtzIllum(ICOMP,ILZ)=zelum(ILZ)
  435          continue
 			  
-            endif ! ILLDBM .eq. 0
+            endif ! ILLDBM .eq. 0 ?
           ENDIF ! (N.EQ.1) then
         endif ! sun is up, not startup, not "no radiation" ...
 C === END of Radiance coupling
@@ -1656,7 +1658,8 @@ C Sensed illumination at given sensor:
 
 C Average illumination at lighting zone:
         zelum(N)=suma/float(NDF(ICOMP,N))
-
+C Transport lighting zone average illumination to h3k output via common ...
+        AveLtzIllum(ICOMP,N)=zelum(N)
 
       ENDIF
 
