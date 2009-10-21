@@ -408,7 +408,7 @@ C Parameters
       matcatcount=0 ! setup initial category counter
 
 C The ASCII file will be overwritten if it exists.
-      CALL EFOPSEQ(IFA,LASCI,3,IER)
+      CALL EFOPSEQ(IFA,LASCI,4,IER)
       IF(IER.NE.0)RETURN
 
 C Set closemat for the version.
@@ -965,7 +965,8 @@ C the file is not binary there is no need to inform the user.
       IREC=601
       READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=999)NCLASS,(ICLN(K),K=1,30)
       IF(NCLASS.LE.0)THEN
-        CALL USRMSG('binary materials database empty!',' ','W')
+        CALL USRMSG('binary materials database empty!',
+     &    'checking further...','-')
         IER=-2
         RETURN
       ENDIF

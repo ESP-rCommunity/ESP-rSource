@@ -1295,7 +1295,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       LOGICAL XST,OK,concat,DOK
       CHARACTER*(*) SFILE
-C      character outs*144
+      character outs*144
       CHARACTER LFIL*72,h*72
       character longtfile*144
 
@@ -1329,8 +1329,6 @@ C Depending on whether the file exists or not process according
 C to the value of IEXIST:
       IF(IEXIST.EQ.0.OR.IEXIST.EQ.1)THEN
         IF(XST)THEN
-C          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
-C     &            STATUS='OLD',IOSTAT=ISTAT)
           OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
      &            STATUS='OLD',IOSTAT=ISTAT)
         ELSE
@@ -1354,8 +1352,6 @@ C File should not exist, error=-300 if found.
           IER=-300
           RETURN
         ELSE
-C          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
-C     &            STATUS='NEW',IOSTAT=ISTAT)
           OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
      &            STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
@@ -1363,13 +1359,9 @@ C     &            STATUS='NEW',IOSTAT=ISTAT)
 
 C Use existing file or create a new one.
         IF(XST)THEN
-C          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
-C     &            STATUS='OLD',IOSTAT=ISTAT)
           OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
      &            STATUS='OLD',IOSTAT=ISTAT)
         ELSE
-C          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
-C     &            STATUS='NEW',IOSTAT=ISTAT)
           OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
      &            STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
@@ -1378,8 +1370,6 @@ C     &            STATUS='NEW',IOSTAT=ISTAT)
 C IEXIST=4 if file exists, ask user if it should be deleted and
 C overwritten with a file by the same name.
         IF(XST)THEN
-C          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
-C     &            STATUS='OLD',IOSTAT=ISTAT)
           OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
      &            STATUS='OLD',IOSTAT=ISTAT)
           DOK=.true.
@@ -1392,8 +1382,6 @@ C     &            STATUS='OLD',IOSTAT=ISTAT)
           CALL ASKOK(longtfile,'Overwrite this file?',OK,DOK,NHELP)
           IF(OK)THEN
             CALL EFDELET(IUN,ISTAT)
-C            OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
-C     &           STATUS='NEW',IOSTAT=ISTAT)
             OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
      &           STATUS='NEW',IOSTAT=ISTAT)
           ELSE
@@ -1419,8 +1407,6 @@ C Close the initial file before asking the user for new file.
             goto 10
           ENDIF
         ELSE
-C          OPEN(IUN,FILE=longtfile(1:ltf),ACCESS='SEQUENTIAL',
-C     &            STATUS='NEW',IOSTAT=ISTAT)
           OPEN(IUN,FILE=longtfile,ACCESS='SEQUENTIAL',
      &            STATUS='NEW',IOSTAT=ISTAT)
         ENDIF
@@ -1429,9 +1415,12 @@ C     &            STATUS='NEW',IOSTAT=ISTAT)
         RETURN
       ENDIF
 
-C If problem in opening then report difficulty.
-      IF(ISTAT.LT.0)THEN
-        CALL LUSRMSG('Error opening ',longtfile,'W')
+C If problem in opening then report difficulty. F90 ISTAT
+C values can be positive numbers, but F77 ISTAT tend to be
+C negative values.
+      IF(ISTAT.ne.0)THEN
+        write(outs,'(a,i3,a)') 'Error (',ISTAT,') opening the file'
+        CALL LUSRMSG(outs,longtfile,'W')
         IER=ISTAT
       ENDIF
 

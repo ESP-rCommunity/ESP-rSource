@@ -708,6 +708,8 @@ C Default ESP-r distribution path.
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,modcon,unixok,copydef,clkok,chgdb
       logical closemat1,closemat2
+      logical dbaltered   ! to signal that materials db should be saved
+      LOGICAL OPND
 
       character H*72,LTMP*72,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -859,8 +861,23 @@ C then proceed with matver still set to zero.
           call eclose(matver,1.2,0.001,closemat2)
           if(closemat1.or.closemat2)then
 
-C Offer display of material common blocks.
+C Offer display and editing of material common blocks. If chgdb is
+C returned as true then write out the ASCII file.
             CALL ELISTMAT(iw,chgdb,'M',imatarryindex,IER)
+            if(chgdb)then
+C              IAF=IFIL+1
+C              CALL ERPFREE(IAF,ISTAT)
+C              call FINDFIL(LFMAT,XST)
+C              if(XST)then
+C                CALL EFOPSEQ(IAF,LFMAT,1,IER)
+C                call efdelet(IAF,istat)
+C              endif
+C              LTMPFL=' '
+C              write(LTMPFL,'(a)') LFMAT(1:lnblnk(LFMAT))
+C              CALL mkascimat(IAF,LTMPFL,IER)
+C              chgdb=.false.   ! reset
+C              MATDBOK=.TRUE.
+            endif
           else
 
 C << if the materials arrays were filled elistc should not be called >>
@@ -1225,10 +1242,26 @@ C Check for ascii versions of the materials database.
  1399     call tstamp('>','PRJ: enter materials db')
 
 C Find out which version of the materials database is now in use.
+C Offer display and editing of material common blocks. If chgdb is
+C returned as true then write out the ASCII file.
           call eclose(matver,1.1,0.01,closemat1)
           call eclose(matver,1.2,0.01,closemat2)
           if(closemat1.or.closemat2)then
             CALL ELISTMAT(iw,chgdb,'M',matarrayindex,IER)
+            if(chgdb)then
+C              IAF=IFIL+1
+C              CALL ERPFREE(IAF,ISTAT)
+C              call FINDFIL(LFMAT,XST)
+C              if(XST)then
+C                CALL EFOPSEQ(IAF,LFMAT,1,IER)
+C                call efdelet(IAF,istat)
+C              endif
+C              LTMPFL=' '
+C              write(LTMPFL,'(a)') LFMAT(1:lnblnk(LFMAT))
+C              CALL mkascimat(IAF,LTMPFL,IER)
+C              chgdb=.false.   ! reset
+C              MATDBOK=.TRUE.
+            endif
 
           else
 C << if the materials arrays were filled elistc should not be called >>

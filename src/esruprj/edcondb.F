@@ -520,7 +520,7 @@ C Parameters
       common/pophelp/h(60)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-      LOGICAL OK,DOK,MODDB
+      LOGICAL OK,DOK,MODDB,XST,OPND
 
 C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
@@ -810,13 +810,16 @@ C Help text for this menu.
 
         IF(INO.EQ.NITMS.OR.INO.EQ.0)THEN
           IF(MODDB.and.ACTION.eq.'M')THEN
+
+C Changes were made so remove the existing file and write a
+C new file based on current common blocks.
             dok=.true.
             h(1)='Recent changes to the materials database are held'
             h(2)='in memory and might be lost if not saved to file.'
             CALL ASKOK('Changes have been made in database. ',
-     &        'Save the materials database now?',OK,dok,2)
+     &        'Save the materials database changes?',OK,dok,2)
             IF(.NOT.OK)GOTO 4
-            chgdb=.true.
+            chgdb=.true.   ! pass back signal to update
             ltmp=' '
             write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
             CALL mkascimat(IAF,ltmp,IER)
@@ -836,6 +839,7 @@ C Edit classification name.
           if(t32(1:2).ne.'  ')then
             write(matcatname(IC),'(a)') t32(1:lnblnk(t32))
             chgdb=.true.
+            MODDB=.TRUE.
           endif
 
 C Also edit classification documentation.
@@ -848,6 +852,7 @@ C Also edit classification documentation.
           if(t248(1:2).ne.'  ')then
             write(matdoc(IC),'(a)') t248(1:lnblnk(t248))
             chgdb=.true.
+            MODDB=.TRUE.
           endif
         ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
           GOTO 2
@@ -855,16 +860,26 @@ C Also edit classification documentation.
           CALL PHELPD('materials database',13,'-',0,0,IER)
         ELSEIF(INO.EQ.NITMS-2)THEN
 
-C Save materials db with all materials and
-C reset flag to show db is current with local arrays.
+C Save materials db with all materials. First delete the
+C existing file (sensitivity in GCC 4.1+) and then write
+C a new file via mkascimat.
           IF(.NOT.MODDB)THEN
             CALL USRMSG(' ',' No changes in db...','-')
           ELSE
             chgdb=.true.
+C            CALL ERPFREE(IAF,ISTAT)
+C            call FINDFIL(LFMAT,XST)
+C            if(XST)then
+C              CALL EFOPSEQ(IAF,LFMAT,1,IER)
+C              call efdelet(IAF,istat)
+C            endif
             ltmp=' '
             write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
             CALL mkascimat(IAF,ltmp,IER)
+
+C Reset flag to show db is current with local arrays.
             MODDB=.FALSE.
+            CALL USRMSG(' ','Changes saved...','-')
           ENDIF
         ELSEIF(INO.EQ.NITMS-3)THEN
 
