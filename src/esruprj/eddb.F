@@ -1104,7 +1104,9 @@ C Now scan the scratch file into material arrays.
 
 C And now write out the database from the materials arrays.
         CALL ERPFREE(IAF,ISTAT)
-        CALL mkascimat(IAF,LFMAT,IER)
+        LTMPFL=' '
+        write(LTMPFL,'(a)') LFMAT(1:lnblnk(LFMAT))
+        CALL mkascimat(IAF,LTMPFL,IER)
 
       elseif(isw.eq.4)then
 
@@ -1251,8 +1253,8 @@ C Materials db did not scan. Could be wrong machine type.
 C Information is already in the arrays so confirm the file name
 C and save it.
             H(1)='As you have requested a project copy of a standard'
-            H(2)='database you can make a backup copy. Choose a'
-            H(3)='different name for the backup if you want.'
+            H(2)='database a local backup copy will be made. Revise'
+            H(3)='the file name for the backup if you want.'
             DFILE='./newmat.db1.a'
             clkok=.false.
             LASCI=' '
@@ -1300,6 +1302,11 @@ C ascii version if the original was a binary format.
       elseif(isw.eq.5)then
 
 C Materials db: BINARY > ASCII. Open the ascii file on IAF=IFIL+1.
+
+C << do not assume that LFMAT is necessarily the binary file
+C << the user may have been working earlier with an ascii version
+C << revise to request the name of the binary file before opening it
+
         IAF=IFIL+1
         IF(.NOT.MATDBOK)THEN
 
@@ -1337,10 +1344,15 @@ C Confirm suggested name and then write out ascii file.
 
 C Materials db: ASCII > BINARY. Guess that the ascii version has
 C the same name as the binary one and is in the same location.
+
+C << the code below assumes that the binary uses LFMAT  >>
+C << it should be revised to save off the current LFMAT >>
+C << and restore it after the conversion >>
+
         H(1)='An ascii (human readable) version of the Materials db'
-        H(2)='may be manually edited (and then imported) or used to'
-        H(3)='transfer the db to an operating system that employs a'
-        H(4)='different binary representation.'
+        H(2)='may be manually edited and is also convenient for'
+        H(3)='use in operating systems or computers that employ'
+        H(4)='different binary representations.'
         IAF=IFIL+1
         clkok=.false.
         DFILE=' '
