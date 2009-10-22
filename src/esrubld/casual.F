@@ -22,7 +22,8 @@ C This file contains the following routines:
 
 C   MZCASI: Returns total convective and radiant casual gains.
 C   INTLUM: Timestep determination of controled casual gains.
-C   DWINVT: Returns the visible transmission of a TMC window.
+C   DWINVT: Returns the visible transmission of a TMC window and
+C        visible diffuse and beam-beam transmissions of a CFC window.
 C   HUNTA:  See if current hour has scheduled casual gains to control.
 C   VRTILM: Calculate the illum (Ev) on a unobstructed vert surface.
 
@@ -140,6 +141,10 @@ C ICGCTL - pointer to controlled gain type.
       COMMON/LIGHTS/ICGCTL(MCOM)
       common/CASGNSE/ELQ(MCOM,MDTY,MGTY,MGPER,MPHAS),
      &               ELR(MCOM,MDTY,MGTY,MGPER,MPHAS)
+
+C Average illuminance in lighting zone (for h3k output)
+      real AveLtzIllum
+      common/CFCLighting/AveLtzIllum(mcom,mlcom),NLITZ2(MCOM)
 
 C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
@@ -291,9 +296,9 @@ C use IDAY in place of IDTY to keep to nomenclature in this subroutine
  
 C Set controlled gain type.
       icgctl(icomp)=ncgtc(icomp,IDAY)
- 
-C Determine future timerow casual gain multiplier CGCTL(2,ICGCTL(ICOMP)).
-      if (ICGC(ICOMP).EQ.1) then
+
+C Determine future timerow casual gain multiplier CGCTL(ICOMP,2,ICGCTL(ICOMP)).
+      if (ICGC(ICOMP).EQ.1) then ! .cgc file exists for current zone
         if (NCGTC(ICOMP,IDAY).NE.0) then
 
 C Set switch-off delay time memory to "zero" before start of the
@@ -309,6 +314,10 @@ C new day control period:
           if (IPOINT.NE.0) then
             call INTLUM(ICOMP,FRAC)
             CGCTL(ICOMP,2,ICGCTL(ICOMP))=FRAC
+          else ! we are not in a controlled period, set AveLtzIllum zero ... better: if no radiation set zero ... but where?
+            do 21 N=1,NLITZ(ICOMP)
+              AveLtzIllum(ICOMP,N)=0.0
+21          continue
           endif
         endif
       endif
@@ -878,9 +887,9 @@ C sensor aloved in methods 1 and 2:
 
 C Calculate external horizontal unobstructed diffuse and direct
 C illuminance:
-        call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
-        esun=dir*suneff
-        esky=QDIF*skyeff
+      call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
+      esun=dir*suneff
+      esky=QDIF*skyeff
 
 C Loop through all lighting zones (loop closes approx. at line 2144!)
       FRAC=0.
@@ -930,6 +939,7 @@ C number. If not set photo-cell values to zero:
         if(SALT.LT.0.) closea=.true.
         if(closea) then
           suma=0.
+          AveLtzIllum(ICOMP,N)=0.0
           DO 41 I=1,NDF(ICOMP,N)
             selum(N,I)=0.
 
