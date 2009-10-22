@@ -21,7 +21,7 @@ $(PROG): $(OBJECTS)
 
 ascii_mat.F:
 	rm -f ascii_mat.F
-	ln -s $(PRJdir)/ascii_mat.F .
+	ln -s $(COMdir)/ascii_mat.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
