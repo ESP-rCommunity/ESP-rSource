@@ -31,7 +31,6 @@ C if these are 0 then use default values.
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
       
@@ -95,6 +94,13 @@ C Significant figure reporting limit (NSIGFIG).
 C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       CHARACTER*24 ITEM(10)
       CHARACTER H*72,inf*144,LCFD*72,DFCFD*72,Lflpar*72

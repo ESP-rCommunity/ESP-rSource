@@ -536,7 +536,6 @@ C *********************************************************************
       SUBROUTINE CZCNVS(IZ,IER)
 #include "building.h"
 #include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -557,8 +556,14 @@ C *********************************************************************
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical closemat1,closemat2
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
       DIMENSION ICLN(30)
 
       CHARACTER MSG*72,FLTYP*25,outs*124
@@ -643,9 +648,8 @@ C Also check to see if the file has correct info.
               MATDBOK=.FALSE.
               return
             else
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
-              if(closemat1.or.closemat2)then
+              call eclose(matver,1.1,0.001,close)
+              if(close)then
                 call edisp(iuout,' Filled material data arrays...')
                 MATDBOK=.TRUE.
               else
@@ -657,9 +661,8 @@ C Also check to see if the file has correct info.
               endif
             endif
           elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2)then
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
               call edisp(iuout,' Filled material data arrays...')
               MATDBOK=.TRUE.
             endif

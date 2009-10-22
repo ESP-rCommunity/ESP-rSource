@@ -19,7 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C  Opendb: Open materials constructions, multi-layer constructions and
-C          optical db (based on code from esruprj/eddb.F.
+C          optical db.
 C  Zoneslist : Display Zones list and wait for INIPIC item selected
 C  ZNLIST :    Takes the current selected zones and builds a descriptive
 C              string to be used in headers.
@@ -29,136 +29,118 @@ C  DispTRev :  Display the reverberation time
 C  PLOTTrev : Plot the reverberation time curve
 
 
-C ********** opendb (based on code from eddb.F)
-
-C Open materials constructions, multi-layer constructions and
-C optical properties databases. In the case of materials, first
-C assume it is a binary file, check its contents and if a problem
-C then scan new ascii format and if that does not work try the
-C older ascii materials file to fill the materials data arrays.
-C If sucessful the material common blocks will be filled and
-C closemat1 or closemat2 will be set.
-
+C ********** opendb (copy of code from eddb.F)
+C Open materials, constructions, multi-layer constructions and
+C optical properties databases.
       subroutine opendb(ier)
-#include "building.h"
 #include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical closemat1,closemat2
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
+      DIMENSION ICLN(30)
+
       character SOPT*12,outs*124,GDESCR*36
 
       IER=0
 
-C Scan the binary file data into materials commons and if this was
-C sucessful and matver was set to 1.1 in matformbin then we can
-C carry on using the materials common blocks for subsequent access.
-      call MATFROMBIN(IER)  ! fill materials common blocks
-      if(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-          goto 139  !  commons filled carry on.
+C Open currently named materials database.  Note that
+C by a minor rewrite of ICLN in rec 601 we can get by with changing
+C this to 24 words wide.
+      CALL ERPFREE(IFMAT,ISTAT)
+      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
+      IF(ier.ne.0)THEN
+        write(outs,'(a,a,a)') ' No materials database ',
+     &     LFMAT(1:lnblnk(LFMAT)),' found!'
+        call edisp(iuout,outs)
+        MATDBOK=.FALSE.
+      else
+
+C Also check to see if the file has correct info in 
+        IREC=601
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
+     &    (ICLN(I),I=1,30)
+        if(NCLASS.LE.0)then
+          goto 1000   ! no classifications so try alternatives
         else
           MATDBOK=.TRUE.
           matver = 0.0
           goto 139  !  a binary file found so carry on.
         endif
-      elseif(ier.eq.-2.or.ier.eq.-3)then
-        ier=0  ! clear error state prior to rascimat call
-        goto 1000
-      elseif(ier.eq.-1)then
-        write(outs,'(3a)') ' Materials db ',
-     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MATDBOK=.FALSE.
-        ier=0  ! clear error state before continuing
-        goto 139  !  try the other databases.
-      endif
-
-C Check for ascii versions of the materials database.
- 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
-      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
-        ier=0
-        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-        if(ier.ne.0)then
-          call usrmsg('No readable materials database was not found',
-     &                'or file was corrupt','W')
-          MATDBOK=.FALSE.
-        else
-          call eclose(matver,1.1,0.001,closemat1)
-          call eclose(matver,1.2,0.001,closemat2)
-          if(closemat1.or.closemat2)then
-            MATDBOK=.TRUE.
-          else
-            call usrmsg(
-     &        'No readable Materials database was found!',
-     &        ' ','W')
+ 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+        if(ier.eq.-2)then
+          ier=0
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+          if(ier.ne.0)then
+            call usrmsg('No readable materials database was not found',
+     &                  'or file was corrupt','W')
             MATDBOK=.FALSE.
+          else
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
+              call edisp(iuout,' Filled material data arrays...')
+              MATDBOK=.TRUE.
+            else
+              call usrmsg(
+     &          'No readable material database was found. ',
+     &          'check other warnings for advise.','W')
+              MATDBOK=.FALSE.
+            endif
+          endif
+        elseif(ier.eq.0)then
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
+            call edisp(iuout,' Filled material data arrays...')
+            MATDBOK=.TRUE.
           endif
         endif
-      elseif(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-        endif
       endif
-
         
 C Read multilayer db information into common.
  139  CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
-        IF(IER.eq.1)then
-          write(outs,'(3a)') 
-     &    ' Problems with materials used by Constructions db',
-     &     LFMAT(1:lnblnk(LFMAT)),'!'
+        IF(IER.NE.0)then
+          write(outs,'(a,a,a)') ' Problem with constr. composites db ',
+     &     LFMAT(1:lnblnk(LFMAT)),' !'
           call edisp(iuout,outs)
-          call edisp(iuout,' ')
           MLDBOK=.FALSE.
-        ELSEIF(IER.eq.2)then
-
-          call edisp(iuout,
-     &      'There were many undefined materials in the constructions')
-          call edisp(iuout,'please check your model.')
         else
-
-C Scan was ok so set mldbok to true.
+          call usrmsg(' Opened constr. composites db.',' ','p')
           MLDBOK=.TRUE.
         endif
       else
-
-C Could not find Constructions db at this time, report to user.
-        write(outs,'(3a)') 'Constructions db ',
-     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
+        write(outs,'(a,a,a)') ' No constr. composites db ',
+     &     LFMAT(1:lnblnk(LFMAT)),' found!'
         call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MLDBOK=.FALSE.
       endif
-
-C Open Ooptical Properties db and read into common.
+C Open optical database and read into common.
       SOPT='ALL'
       CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
       if(ier.ne.0)then
-        call usrmsg('Optical Properties db not found or',
-     &              'there was a problem reading it!','W')
+        call usrmsg(
+     &  ' Optical properties db not found or there was a problem',
+     &  ' reading it!','W')
         OPTKOK=.FALSE.
       else
+        call usrmsg(' Opened optical properties db!',' ','p')
         OPTKOK=.TRUE.
       endif
-
       return
       end
+
 
 C********************* Zoneslist (copy of MOZDFN from resdef.F) ****
 C Display Zones list and wait for INIPIC item selected
@@ -394,11 +376,15 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       SUBROUTINE CompoList
 #include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)

@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model L-shaped reception, convective heating, fuzzy
-control defined in bld_simple_fzy.cfg generated on Tue Sep 29 17:15:08 2009.
+control defined in bld_simple_fzy.cfg generated on Fri Jul 17 10:38:04 2009.
 Notes associated with the model are in bld_simple_fzy.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -9,22 +9,22 @@ from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.25.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
  
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
  
-Simulationist name: not yet defined
-Simulationist telephone: not yet defined
-Simulationist address: not yet defined
-Simulationist city: not yet defined
-Simulationist postcode: not yet defined
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
 Primary energy conversions (demand kWhr to primary kWhr) are:
@@ -47,7 +47,7 @@ An Integrated Performance View is incomplete or missing.
 Databases associated with the model:
  pressure distributions : pressc.db1
  materials              : /usr/esru/esp-r/databases/material.db3.a
- constructions          : /usr/esru/esp-r/databases/multicon.db3
+ constructions          : /usr/esru/esp-r/databases/multicon.db2
  plant components       : plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
  optical properties     : optics.db2
@@ -177,7 +177,7 @@ Wkd  1 EquiptW    0 - 24    800.0      0.0       0.20       0.80
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 lt brown brick : Light brown brick
     2  211   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 glasswool : Glasswool (generic)
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int     2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 breeze block : Breeze block

@@ -1,0 +1,18 @@
+# Optional zone files for East_part       instanced in file 
+# East_part.utl
+   0    # time-step air flow
+   0    # time-step casual gains
+   0    # view factors
+   0    # shading/ insolation
+   0    # convective heat transfer coefficients
+   0    # blind/ shutter control
+   0    # transparent construction data
+   0    # casual gain control
+   1    # obstructions
+East.obs
+   0    # control volumes
+   0    # connections
+   0    # nodes coordinates
+   0    # nodes temperature
+   0    # domain flow data
+   0    # moisture data

@@ -5311,14 +5311,17 @@ C EVTOGSET provides setup environment for wire frame toggles w/in prj.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EVTOGSET(ITRC,act,IER)
 #include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
 
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/rpath/path
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
 C       similar = 4, surfs + obs+ ground = 5, ground only = 6

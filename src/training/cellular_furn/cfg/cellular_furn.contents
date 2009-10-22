@@ -1,30 +1,30 @@
 Synopsis
  
 This is a synopsis of the model Two adjacent cellular offices with additional
-geometric resolution defined in cellular_furn.cfg generated on Wed Sep 30
-08:59:22 2009. Notes associated with the model are in cellular_offices_furn.log
+geometric resolution defined in cellular_furn.cfg generated on Fri Jul 10
+10:18:08 2009. Notes associated with the model are in cellular_offices_furn.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 2000 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
  
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
  
-Simulationist name: not yet defined
-Simulationist telephone: not yet defined
-Simulationist address: not yet defined
-Simulationist city: not yet defined
-Simulationist postcode: not yet defined
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
 An Integrated Performance View has been defined:
@@ -362,10 +362,6 @@ glazing
  
  
  Explicit viewfactors have been derived for this zone.
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1     6.1     2.7     0.0     0.9     0.7     2.0     0.0     0.0 cab_a insul_frame
-  2     6.1     3.7     0.0     0.9     0.7     2.0     0.0     0.0 cab_b insul_frame
- 
  Shading patterns have not yet been calculated.
  
  

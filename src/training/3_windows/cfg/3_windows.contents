@@ -1,8 +1,8 @@
 Synopsis
  
 This is a synopsis of the model Three offices with different window
-representations (no network). defined in 3_windows.cfg generated on Fri Oct  2
-08:53:58 2009. Notes associated with the model are in 3_windows.log
+representations (no network). defined in 3_windows.cfg generated on Fri Jul 17
+08:12:16 2009. Notes associated with the model are in 3_windows.log
  
 The model is located at latitude   55.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1967 and
@@ -321,7 +321,7 @@ Number of sunday       casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 lt brown brick : Light brown brick
     2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block

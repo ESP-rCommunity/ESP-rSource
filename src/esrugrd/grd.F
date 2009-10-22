@@ -36,7 +36,6 @@ C << file names can be in place.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-#include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
 
@@ -83,6 +82,13 @@ C Name of current application
       character cAppName*12      
       
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       LOGICAL MODIFY,MODBND,MODLEN,XST,GRDOK
 
@@ -482,7 +488,6 @@ C *********************************************************************
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -499,8 +504,14 @@ C geometry.h provides commons G0 and G2.
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
       COMMON/GRND07/VERTX(6,4)
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical closemat1,closemat2
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
       LOGICAL GRDOK
       logical newgeo  ! to use for testing if new/old geometry file.
       DIMENSION ICLN(30)
@@ -571,9 +582,8 @@ C Also check to see if the file has correct info.
               MATDBOK=.FALSE.
               return
             else
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
-              if(closemat1.or.closemat2)then
+              call eclose(matver,1.1,0.001,close)
+              if(close)then
                 call edisp(iuout,' Filled material data arrays...')
                 MATDBOK=.TRUE.
               else
@@ -585,9 +595,8 @@ C Also check to see if the file has correct info.
               endif
             endif
           elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2)then
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
               call edisp(iuout,' Filled material data arrays...')
               MATDBOK=.TRUE.
             endif

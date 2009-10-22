@@ -1,5 +1,5 @@
 *connections  for pid.ss
-*Date Tue Sep 29 17:12:25 2009
+*Date Mon Jul 20 17:07:57 2009
      29   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External

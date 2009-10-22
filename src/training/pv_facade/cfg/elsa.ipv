@@ -1,0 +1,31 @@
+* IPV
+*title	Elsa building IPV                       
+*version	demo                                    
+*contact	the group                               
+*date	9th November 1998                       
+*syn1	PV facade                               
+*syn2	xxxxxx                                  
+*syn3	xxxxx                                   
+*syn4	xxxxx                                   
+*syn5	xxxxxx                                  
+*images   0
+*periods   9  15  65  71 192 198
+*typical_days  11  67 194
+season multipliers: heating|cooling|lights|fans|smallp|DWH
+*win  13.000  13.000  13.000  13.000  13.000  13.000
+*trn  26.000  26.000  26.000  26.000  26.000  26.000
+*sum  13.000  13.000  13.000  13.000  13.000  13.000
+# thermal comfort data: no. zones, linked gain, floor area
+*therm_comfort   3   1  1241.4
+  2 3 4
+# visual comfort: no. zones, method, floor area
+*visual_comfort   3   0  1241.4
+  2 3 4
+# 1st energy set: no. zones, floor area, multiplier
+*energy_1   3  1241.4  1.000
+  2 3 4
+# 2nd energy set: no. zones, floor area, multiplier
+*energy_2   0     1.0  1.000
+# non-specific demands: occup/light/sm pwr/fans/pumps/lifts/dhw
+*dmds   0   0   0   0   0   0   0
+*end

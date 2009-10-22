@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model multizone VAV with explicit plant defined in
-office1VAV.cfg generated on Wed Sep 30 16:53:03 2009. Notes associated with
+office1VAV.cfg generated on Tue Jul 21 17:20:23 2009. Notes associated with
 the model are in office1.notes
  
 The model is located at latitude   45.00 with a longitude difference of   0.00
@@ -366,7 +366,7 @@ The model includes a plant network.
  
  1  duct_in         fix temp:  22.000      2 details:    22.00    0.00    0.00
   network file : ../nets/office1_VAV.mfn
-  press. coeff.: pressc.db1
+  press. coeff.: /usr/esru/esp-r/databases/pressc.db1
   results file : office1summer.mfr
  
   plant inter-connection/fluid flow  connection mapping :
@@ -536,9 +536,9 @@ Wkd  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.13 air  0.13 0.13 0.13
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.167  3.499  2.811 (partition)  2.464
  
  6_12_6 CF low_e(3) + Krypton: with id of: DCF7447_06nb
@@ -555,9 +555,9 @@ Wkd  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
-    2  205   45.0     0.030    30.   837. 0.90 0.50    90.  1.50 Polyurethane foam board : Polyurethane foam
- Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+ Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 mat_004 : Outer leaf brick
+    2  205   45.0     0.030    30.   837. 0.90 0.50    90.  1.50 mat_205 : Polyurethane foam board
+ Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 mat_107 : Gypsum plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.543  0.552  0.531 (partition)  0.517
  Total area of wall_NECB is    160.00
  
@@ -565,7 +565,7 @@ Wkd  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   26  200.0     0.960  1800.   840. 0.90 0.65    18.  0.21 No fines concrete : No fines concrete
+    1   26  200.0     0.960  1800.   840. 0.90 0.65    18.  0.21 mat_026 : No fines concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.643  2.871  2.390 (partition)  2.135
  Total area of conc_deck is    300.00
  
@@ -573,7 +573,7 @@ Wkd  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+    1  107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 mat_107 : Gypsum plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.194  4.798  3.592 (partition)  3.045
  Total area of partition is    162.00
  
@@ -581,9 +581,9 @@ Wkd  2 EquiptWm2  0 - 24      1.5      0.0       0.25       0.75
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   162   10.0     0.190   960.   837. 0.90 0.90    15.  0.05 Roofing felt : Roofing felt
-    2   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
-    3  205   55.0     0.030    30.   837. 0.90 0.50    90.  1.83 Polyurethane foam board : Polyurethane foam
- Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard : Gypsum plasterboard
+ Ext   162   10.0     0.190   960.   837. 0.90 0.90    15.  0.05 mat_162 : Roofing felt
+    2   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 mat_032 : Heavy mix concrete
+    3  205   55.0     0.030    30.   837. 0.90 0.50    90.  1.83 mat_205 : Polyurethane foam board
+ Int   107   13.0     0.190   950.   840. 0.91 0.50    11.  0.07 mat_107 : Gypsum plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.455  0.462  0.447 (partition)  0.437
  Total area of roof_NECB is    300.00

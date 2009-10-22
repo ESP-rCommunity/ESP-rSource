@@ -28,7 +28,6 @@ C Revised to take in configuration file and zone focus.
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
 
@@ -97,6 +96,13 @@ C Defaults.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
+
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       

@@ -41,9 +41,6 @@ $(PROG): $(OBJECTS)
 anlytc.F:
 	rm -f anlytc.F
 	ln -s $(VLDdir)/anlytc.F .
-ascii_mat.F:
-	rm -f ascii_mat.F
-	ln -s $(COMdir)/ascii_mat.F .
 bsimsel.F:
 	rm -f bsimsel.F
 	ln -s $(COMdir)/bsimsel.F .
@@ -240,7 +237,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	anlytc.F aim2_pretimestep.F ascii_mat.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
+	anlytc.F aim2_pretimestep.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
 	DHW_module.F exlgrad.F dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F \
 	edatabase.F egeometry.F egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F \

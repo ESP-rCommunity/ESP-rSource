@@ -765,11 +765,6 @@ C numbers of the control volumes represented by each node).
       IF(IER.NE.0)RETURN
 
 C Estimate the start up period for the ground.
-
-C << note this subroutine assumes that the model is associated
-C << with a binary version of the materials database. It must
-C << be updated to use the material array structures.
-
       DNHCVL=0.
       RESISTM=1.E18
       DO 10 IX=1,NDXG
@@ -957,9 +952,6 @@ C *********************************************************************
       SUBROUTINE MKCVGX(IZZ,VZZ,IYY,VYY,IXX,VXX)
 #include "building.h"
 #include "esprdbfile.h"
-
-C << note this subroutine assumes that the model is using a binary
-C << materials database. It should be updated to use the materials arrays.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)

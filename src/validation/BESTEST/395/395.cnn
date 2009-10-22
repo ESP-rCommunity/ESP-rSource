@@ -1,12 +1,12 @@
 *connections  for 395
-*Date Wed Oct 14 10:29:08 2009
+*Date Mon May  2 14:05:12 2005
       9   # number of connections
-   1   1   0   0   0  #    1 South_Wall in 395 is External
-   1   2   0   0   0  #    2 South_Wall2 in 395 is External
-   1   3   0   0   0  #    3 East_Wall in 395 is External
-   1   4   0   0   0  #    4 North_Wall in 395 is External
-   1   5   0   0   0  #    5 West_Wall in 395 is External
-   1   6   0   0   0  #    6 Window in 395 is External
-   1   7   0   0   0  #    7 Window2 in 395 is External
-   1   8   0   0   0  #    8 Roof in 395 is External
-   1   9   4   0   1  #    9 Floor in 395 >|< user def ground profile 1
+   1   1   0   0   0  #   1  South Wall in 395 is External
+   1   2   0   0   0  #   2  South Wall in 395 is External
+   1   3   0   0   0  #   3  East Wall in 395 is External
+   1   4   0   0   0  #   4  North Wall in 395 is External
+   1   5   0   0   0  #   5  West Wall in 395 is External
+   1   6   0   0   0  #   6  Window in 395 is External
+   1   7   0   0   0  #   7  Window in 395 is External
+   1   8   0   0   0  #   8  Roof in 395 is External
+   1   9   4   0   1  #   9  Floor in 395 >|< user def ground profile 1

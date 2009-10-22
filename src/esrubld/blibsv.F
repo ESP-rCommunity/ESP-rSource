@@ -2413,7 +2413,7 @@ C Energy balance.
 
       LOGICAL IVTHPS,IVTHPZ
       real zoar  ! local for zonetotsurfacearea(MCOM)
-
+      
 C Do for all surfaces.
       do 10 ISFN=1,NCONST(ICOMP)
       
@@ -2459,12 +2459,12 @@ C STANDARD ESP-R CALCULATION APPLIES
           icfcLayerType = icfcltp(icomp,icfcType,ne) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
 
           if(icfcLayerType.ge.2)then    !INDOOR BLIND PRESENT
-
+           
             qconvi(icomp,isfn,2)=(q_blind_airndS(icomp,isfn)    !conv. flux from back blind surface to air node
      &                           +q_glass_airndS(icomp,isfn)    !conv. flux from interior glass to air node
      &        +(hcif(icomp,isfn)*(tfa(icomp)-tfs(icomp,isfn)))) !conv. flux from front blind surface to air node
      &                            *sna(icomp,isfn)
-
+           
           endif
 
         ENDIF

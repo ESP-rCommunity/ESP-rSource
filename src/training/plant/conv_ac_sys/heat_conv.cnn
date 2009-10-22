@@ -1,5 +1,5 @@
 *connections  for heat_conv
-*Date Wed Sep 30 17:15:43 2009
+*Date Tue Jul 21 13:21:21 2009
      29   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External

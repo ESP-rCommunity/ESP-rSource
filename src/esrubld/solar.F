@@ -328,10 +328,11 @@ C Required for WATSUN-PV model
 C COMMONS FOR CFC type CONSTRUCTIONS 
       common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
      &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
-     &      issur_self_shd(mcom,ms), proang_s(mcom,mcfc,ms),
+     &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
      &      qtmca_ext(mcom,ms,mn)
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
-      real issur_self_shd,proang_s,qtmca_ext
+      real proang_s,qtmca_ext
+      integer issur_self_shd
 
       REAL fInc_angle          ! Angle of incidence for surface
 
@@ -3762,10 +3763,14 @@ C existing and new controls should be added here.
 #include "building.h"
 #include "tdf2.h"
 #include "control.h"
-#include "esprdbfile.h"
-#include "material.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       COMMON/OUTIN/IUOUT,IUIN
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)

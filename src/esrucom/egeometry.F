@@ -95,8 +95,6 @@ C conversion to the 'G1' format takes place.
 
 C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20.
 #include "geometry.h"
-#include "esprdbfile.h"
-#include "material.h"
 
 C espriou.h provides current file.
 #include "espriou.h"
@@ -238,6 +236,13 @@ C Save total transparent surface area for surfaces connected to external BC.
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
+
+C MLC commons to recover optical property name.
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       DIMENSION XX(MS),YY(MS),IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
@@ -1215,8 +1220,6 @@ C       +ve).
 
 C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
-#include "esprdbfile.h"
-#include "material.h"
 
 C espriou.h provides currentfile.
 #include "espriou.h"
@@ -1289,6 +1292,13 @@ C << do we need transparent surface area facing different orientations? >>
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
+C MLC commons to recover optical property name.
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
+               
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
@@ -4849,7 +4859,7 @@ C If 'is' is passed as 0 then check all, otherwise exclude surface is.
       
       lstr=lnblnk(string)
       ok=.true.
-      do 42 i=1,NZSUR(icomp)
+      do 42 i=1,NZSUR(icomp)-1      ! last surface corresponds to new surface for which a connection does not yet exist so don't count it
         icn=izstocn(icomp,i)
         SN=SSNAME(icn)
         if(string(1:lstr).eq.SN(1:lnblnk(SN)))then

@@ -547,7 +547,6 @@ C If ACT='i' then interactive, ACT='s' for silent.
 #include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -573,6 +572,11 @@ C TMC data
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/grdisk/grdd,grcx,grcy
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/rad1a/aglzfil
@@ -595,8 +599,29 @@ C TMC data
       common/radabs/NABS
       common/expath/runpath,pathtype
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
+      real matdbcon,matdbden,matdbsht,matdboute,matdbine
+      real matdbouta,matdbina,matdbdrv,matdbthick
+      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
+     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
+     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
+     &  matdbthick(MGIT)
+
+      integer mathash
+      common/mathasharray/mathash(0:600)
+
+      character matname*32,matdoc*248,matopaq*1
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
+
+      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
+      logical closemat
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ZSN(MS),iskip(MMLC),VP(3),EQN(4)
@@ -631,8 +656,7 @@ C TMC data
       lnrp=lnblnk(runpath)
 
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
+      call eclose(matver,1.1,0.01,closemat)
 
 C Create a glazing file, default type is 'glass' with user choice 
 C to treat as 'mkillum'.
@@ -817,27 +841,25 @@ C Pick up general description of the composite.
         ENDIF
 
 C For the inside and outside layer get surface properties.
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IM,1)   ! which array index
-          if(matarrayindex.ge.0)then
+        if(closemat)then
+          legmat=IPR(IM,1)   ! which legacy index
+          if(legmat.gt.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
             E=matdbine(matarrayindex)
             AE=matdbina(matarrayindex)
           endif
         else
-
-C << if material arrays were filled there is no need for this call >>
           CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
      &      DBSHT,E,AE,DRV,TITL,NAM)
         endif
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which legacy index
-          if(matarrayindex.ge.0)then
+        if(closemat)then
+          legmat=IPR(IM,LAYERS(IM))   ! which legacy index
+          if(legmat.gt.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
             E=matdbine(matarrayindex)
             AI=matdbina(matarrayindex)
           endif
         else
-
-C << if material arrays were filled there is no need for this call >>
           CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,DBDEN,
      &      DBSHT,E,AI,DRV,TITL,NAM)
         endif

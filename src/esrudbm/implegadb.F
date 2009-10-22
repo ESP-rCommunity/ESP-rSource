@@ -223,10 +223,6 @@ C Match the following 4 lines to instanitm in dbmedit.F
           IF(IER.NE.0)RETURN
           K=0
 
-C << note this subroutine assumes that the model is associated
-C << with a binary version of the materials database. It must
-C << be updated to use the material array structures.
-
 C Crate tag for material and reference tag for material db entry.
 C If legacy material db was opened then scan for ir and sol values.
           CALL EGETWI(OUTSTR,K,IP(il),0,600,'F','legacy index',IER)

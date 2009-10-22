@@ -29,7 +29,6 @@ C SDDFLT001 set defaults based on material type.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -40,13 +39,20 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/UADFLT/MATTYPE(30),DFLTMAT(5,6)
 
+C Arrays of material properties.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       DIMENSION ICLN(30),CLSDES(40),CLSSEL(30),ICLSSEL(30)
 
       character CLSSEL*36
       character CLSDES*48,IDESC*72,H*72,KEY*1,outs*124
       character xfile*144,tg*1,delim*1
       character TYPEDES(5)*20,t32*32,d32*32
-      logical closemat1,closemat2
+      logical close
       
 C Define material types.
       TYPEDES(1)='unknown'
@@ -120,9 +126,8 @@ C is similar to that used in eddb.F
             IER=1
             return
           else
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2)then
+            call eclose(matver,1.1,0.001,close)
+            if(close)then
               goto 40
             else
               call usrmsg(
@@ -133,9 +138,8 @@ C is similar to that used in eddb.F
             endif
           endif
         elseif(ier.eq.0)then
-          call eclose(matver,1.1,0.001,closemat1)
-          call eclose(matver,1.2,0.001,closemat2)
-          if(closemat1.or.closemat2)then
+          call eclose(matver,1.1,0.001,close)
+          if(close)then
             goto 40
           endif
         endif

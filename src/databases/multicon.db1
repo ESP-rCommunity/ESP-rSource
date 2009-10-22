@@ -24,7 +24,7 @@
 # layers  description   optics name   symmetry tag
     4    floor_1       OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-  263    0.1000  Common earth
+  263    0.1000  Common earch
    82    0.1000  Red granite
    32    0.0500  Heavy mix concrete
   124    0.0500  Cement screed
@@ -40,7 +40,7 @@
 # layers  description   optics name   symmetry tag
     6    grnd_floor    OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-  263    0.2500  Common earth
+  263    0.2500  Common earch
   262    0.1500  Gravel based
    32    0.1500  Heavy mix concrete
     0    0.0500  air  0.170 0.170 0.170
@@ -66,7 +66,7 @@
 # layers  description   optics name   symmetry tag
     4    entry_floor   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-  263    0.2500  Common earth
+  263    0.2500  Common earch
   262    0.1500  Gravel based
    32    0.1500  Heavy mix concrete
    83    0.0240  White marble

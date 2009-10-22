@@ -414,8 +414,7 @@ C IER=0 OK.
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
-#include "esprdbfile.h"
-#include "material.h"
+C#include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
@@ -429,6 +428,12 @@ C IER=0 OK.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      character DESC*48
+      integer NMLC,IPR,LAYERS
+      real DTHK,DRAIR
+      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
+     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1161,12 +1166,6 @@ C Simulation parameter sets.
 
 C IPV description via ipvdata.h.
 
-C Control documentation common
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248     
-  
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248  
       
@@ -2394,6 +2393,7 @@ C the file with minimum interaction.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "espriou.h"
+C#include "control.h"
 C espriou.h provides currentfile.
 #include "seasons.h"
 C seasons.h provides typper and typsea
@@ -2428,12 +2428,6 @@ C Simulation parameter sets.
 
 C IPV description via ipvdata.h.
 
-C Control documentation common
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248     
-  
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248  
       

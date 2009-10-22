@@ -1,4 +1,4 @@
-# thermophysical properties of 990 defined in 990.con
+# thermophysical properties of 990 defined in ../990/990.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
      4,     0  #  1 S-Ground     GroundWall  
@@ -14,7 +14,7 @@
 # air gap position & resistance for surface  5
   2,   0.159,
 # conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
-# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
+# tivity   |          | heat     | ness(m)|type|  temp | factor | factor |     |  
      1.3000,    1500.0,     800.0,  0.3000,   0,   0.00, 0.00000, 0.00000  #  1  1
      1.3000,    1500.0,     800.0,  0.3000,   0,   0.00, 0.00000, 0.00000  #     2
      1.3000,    1500.0,     800.0,  0.2700,   0,   0.00, 0.00000, 0.00000  #     3
@@ -52,10 +52,10 @@
      0.0400,      10.0,    1400.0,  0.2570,   0,   0.00, 0.00000, 0.00000  #     4
      1.1300,    1400.0,    1000.0,  0.0800,   0,   0.00, 0.00000, 0.00000  #     5
 # for each surface: inside face emissivity
- 0.90000,0.90000,0.90000,0.90000,0.90000,0.90000,0.90000,0.90000,0.90000,0.90000
+ 0.9000,0.9000,0.9000,0.9000,0.9000,0.9000,0.9000,0.9000,0.9000,0.9000
 # for each surface: outside face emissivity
- 0.90000,0.90000,0.90000,0.90000,0.90000,0.90000,0.90000,0.90000,0.90000,0.90000
+ 0.9000,0.9000,0.9000,0.9000,0.9000,0.9000,0.9000,0.9000,0.9000,0.9000
 # for each surface: inside face solar absorptivity
- 0.60000,0.60000,0.60000,0.60000,0.90000,0.60000,0.60000,0.60000,0.60000,0.60000
+ 0.6000,0.6000,0.6000,0.6000,0.9000,0.6000,0.6000,0.6000,0.6000,0.6000
 # for each surface: outside face solar absorptivity
- 0.60000,0.60000,0.60000,0.60000,0.90000,0.60000,0.60000,0.60000,0.60000,0.90000
+ 0.6000,0.6000,0.6000,0.6000,0.9000,0.6000,0.6000,0.6000,0.6000,0.9000

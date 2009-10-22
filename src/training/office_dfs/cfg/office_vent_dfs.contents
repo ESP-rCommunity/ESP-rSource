@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Office model for network flow studies defined
-in office_vent_dfs.cfg generated on Wed Sep 30 10:18:33 2009. Notes associated
+in office_vent_dfs.cfg generated on Fri Jul 10 10:58:37 2009. Notes associated
 with the model are in office_vent.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
@@ -9,22 +9,22 @@ from the local time meridian. The year used in simulations is 1997 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
  
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
  
-Simulationist name: not yet defined
-Simulationist telephone: not yet defined
-Simulationist address: not yet defined
-Simulationist city: not yet defined
-Simulationist postcode: not yet defined
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
 The climate is: Ottawa Intl ON CAN and is held in:
 /usr/esru/esp-r/climate/can_ottawa with hour centred solar data.
 An Integrated Performance View is incomplete or missing.
@@ -137,16 +137,10 @@ spandral vent frame glazing
 glazing
  
  
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1     0.0    -0.1     3.1     3.0     0.0     0.3     0.0     0.0 ob1 NONE
-  2     0.0    -0.3     3.1     3.0     0.0     0.3     0.0     0.0 ob2 NONE
-  3     0.0    -0.5     3.1     3.0     0.0     0.2     0.0     0.0 ob3 NONE
-  4     0.0    -0.7     3.1     3.0     0.0     0.2     0.0     0.0 ob4 NONE
-  5     0.0    -0.9     3.1     3.0     0.0     0.2     0.0     0.0 ob5 NONE
-  6     0.0    -1.1     3.1     3.0     0.0     0.2     0.0     0.0 ob6 NONE
- 
  Shading patterns have not yet been calculated.
  
+Surface ceiling has a nonsymmetric construction ceiling.
+It faces Surf-6       which is composed of ceiling_rev  (which may not match).
  
  Air schedule notes:
 one person typical office pattern
@@ -246,22 +240,10 @@ Number of sunday       casual gains=  0
 glazing glazing_a glazing_b glazing_c glazing_d
  
  
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1     3.0    -0.1     3.1     9.0     0.0     0.3     0.0     0.0 ob1 NONE
-  2     3.0    -0.3     3.1     9.0     0.0     0.3     0.0     0.0 ob2 NONE
-  3     3.0    -0.5     3.1     9.0     0.0     0.2     0.0     0.0 ob3 NONE
-  4     3.0    -0.7     3.1     9.0     0.0     0.2     0.0     0.0 ob4 NONE
-  5     3.0    -0.9     3.1     9.0     0.0     0.2     0.0     0.0 ob5 NONE
-  6     3.0    -1.1     3.1     9.0     0.0     0.2     0.0     0.0 ob6 NONE
-  7    12.1     0.1     3.1     6.0     0.0     0.3    90.0     0.0 eob1 NONE
-  8    12.3     0.1     3.1     6.0     0.0     0.3    90.0     0.0 eob2 NONE
-  9    12.5     0.1     3.1     6.0     0.0     0.2    90.0     0.0 eob3 NONE
- 10    12.7     0.1     3.1     6.0     0.0     0.2    90.0     0.0 eob4 NONE
- 11    12.9     0.1     3.1     6.0     0.0     0.2    90.0     0.0 eob5 NONE
- 12    13.1     0.1     3.1     6.0     0.0     0.2    90.0     0.0 eob6 NONE
- 
  Shading patterns have not yet been calculated.
  
+Surface ceiling has a nonsymmetric construction ceiling.
+It faces ceiling      which is composed of ceiling_rev  (which may not match).
  
  Air schedule notes:
 5 people std occup, 8Wm2 lights 10Wm2 small power
@@ -369,16 +351,10 @@ Number of sunday       casual gains=  0
 glazing glazing_a glazing_b glazing_c glazing_d
  
  
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1    12.1    12.0     3.1     6.0     0.0     0.3    90.0     0.0 eob1 NONE
-  2    12.3    12.0     3.1     6.0     0.0     0.3    90.0     0.0 eob2 NONE
-  3    12.5    12.0     3.1     6.0     0.0     0.2    90.0     0.0 eob3 NONE
-  4    12.7    12.0     3.1     6.0     0.0     0.2    90.0     0.0 eob4 NONE
-  5    12.9    12.0     3.1     6.0     0.0     0.2    90.0     0.0 eob5 NONE
-  6    13.1    12.0     3.1     6.0     0.0     0.2    90.0     0.0 eob6 NONE
- 
  Shading patterns have not yet been calculated.
  
+Surface ceiling has a nonsymmetric construction ceiling.
+It faces ceil_conff   which is composed of ceiling_rev  (which may not match).
  
  Air schedule notes:
 morning and afternoon meetings 8 people
@@ -456,16 +432,10 @@ spandral vent frame glazing spandral_a vent_a frame_a glazing_a
 glazing glazing_a
  
  
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1    12.1     6.0     3.1     6.0     0.0     0.3    90.0     0.0 eob1 NONE
-  2    12.3     6.0     3.1     6.0     0.0     0.3    90.0     0.0 eob2 NONE
-  3    12.5     6.0     3.1     6.0     0.0     0.2    90.0     0.0 eob3 NONE
-  4    12.7     6.0     3.1     6.0     0.0     0.2    90.0     0.0 eob4 NONE
-  5    12.9     6.0     3.1     6.0     0.0     0.2    90.0     0.0 eob5 NONE
-  6    13.1     6.0     3.1     6.0     0.0     0.2    90.0     0.0 eob6 NONE
- 
  Shading patterns have not yet been calculated.
  
+Surface ceiling has a nonsymmetric construction ceiling.
+It faces ceil_rec     which is composed of ceiling_rev  (which may not match).
  
  Air schedule notes:
 2 people most hours, 8Wm2 lights  5Wm2 small power
@@ -532,6 +502,14 @@ Number of saturday     casual gains=  0
  No shading analysis requested.
  No insolation analysis requested.
  
+Surface Surf-6 has a nonsymmetric construction ceiling_rev.
+It faces ceiling      which is composed of ceiling      (which may not match).
+Surface ceiling has a nonsymmetric construction ceiling_rev.
+It faces ceiling      which is composed of ceiling      (which may not match).
+Surface ceil_conff has a nonsymmetric construction ceiling_rev.
+It faces ceiling      which is composed of ceiling      (which may not match).
+Surface ceil_rec has a nonsymmetric construction ceiling_rev.
+It faces ceiling      which is composed of ceiling      (which may not match).
  
  Air schedule notes:
 nil_operations
@@ -610,7 +588,7 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 lt brown brick : Light brown brick
     2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block

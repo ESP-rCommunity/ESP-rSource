@@ -8,7 +8,7 @@
      7,     0  #  5 Surf-5       Surf_type_4 
      7,     0  #  6 Surf-6       Surf_type_4 
 # conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
-# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
+# tivity   |          | heat     | ness(m)|type|  temp | factor | factor |     |  
      1.2000,    2000.0,    1000.0,  0.0500,   0,   0.00, 0.00000, 0.00000  #  1  1
      1.2000,    2000.0,    1000.0,  0.0500,   0,   0.00, 0.00000, 0.00000  #     2
      1.2000,    2000.0,    1000.0,  0.0500,   0,   0.00, 0.00000, 0.00000  #     3
@@ -52,10 +52,12 @@
      0.0400,      50.0,    1000.0,  0.0500,   0,   0.00, 0.00000, 0.00000  #     6
      0.1400,     800.0,    1500.0,  0.0050,   0,   0.00, 0.00000, 0.00000  #     7
 # for each surface: inside face emissivity
- 0.0100000,0.0100000,0.0100000,0.0100000,0.0100000,0.0100000
+  0.001 0.001 0.001 0.001 0.001 0.001
 # for each surface: outside face emissivity
- 0.0100000,0.0100000,0.0100000,0.0100000,0.0100000,0.0100000
+  0.001 0.001 0.001 0.001 0.001 0.001
 # for each surface: inside face solar absorptivity
- 0.0100000,0.0100000,0.0100000,0.0100000,0.0100000,0.0100000
+  0.001 0.001 0.001 0.001 0.001 0.001
 # for each surface: outside face solar absorptivity
- 0.0100000,0.0100000,0.0100000,0.0100000,0.0100000,0.0100000
+  0.001 0.001 0.001 0.001 0.001 0.001
+# inside and exterior glazing maintenance factors
+   0.00   0.00

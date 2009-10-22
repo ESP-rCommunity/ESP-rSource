@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Cellular offices with tempered mech vent (via
-flow network) defined in cellular_mctl.cfg generated on Wed Sep 30 08:50:29
+flow network) defined in cellular_mctl.cfg generated on Fri Jul 17 13:05:20
 2009. Notes associated with the model are in cellular_mctl.log
  
 The model is located at latitude   39.18 with a longitude difference of  -1.67
@@ -534,11 +534,11 @@ Number of weekdays     casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Lt brown brick
-    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 Glasswool : Glasswool
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 mat_006 : Lt brown brick
+    2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 mat_211 : Glasswool
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 Aerated conc block : Aerated conc block
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
+    4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 mat_022 : Aerated conc block
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 mat_108 : White ptd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
  Total area of extern_wall is      6.40
  
@@ -546,9 +546,9 @@ Number of weekdays     casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
-    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
- Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
+ Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 mat_046 : Grey cotd aluminium
+    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 mat_281 : Glass Fibre Quilt
+ Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 mat_046 : Grey cotd aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
  Total area of insul_frame is     11.04
  
@@ -556,7 +556,7 @@ Number of weekdays     casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial) : Oak (radial)
+    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 mat_069 : Oak (radial)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  Total area of door is     15.28
  
@@ -564,9 +564,9 @@ Number of weekdays     casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
  Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
@@ -583,11 +583,11 @@ Number of weekdays     casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
-    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 Heavy mix concrete : Heavy mix concrete
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 mat_042 : Steel
+    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 mat_032 : Heavy mix concrete
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
- Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton
+    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 mat_067 : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 mat_221 : Wilton
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  Total area of susp_flr_re is     33.10
  
@@ -595,8 +595,8 @@ Number of weekdays     casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 Glasswool : Glasswool
- Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 mat_211 : Glasswool
+ Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 mat_150 : Ceiling (mineral)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  Total area of ceiling is     33.10
  
@@ -604,11 +604,11 @@ Number of weekdays     casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard : White ptd Gypboard
+ Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 mat_108 : White ptd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 Block inner (3% mc) : Block inner (3% mc)
+    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 mat_028 : Block inner (3% mc)
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard : White ptd Gypboard
+ Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 mat_108 : White ptd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  Total area of gyp_blk_ptn is     18.30
  
@@ -616,8 +616,8 @@ Number of weekdays     casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
+ Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 mat_108 : White ptd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 mat_108 : White ptd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
  Total area of gyp_gyp_ptn is     59.42

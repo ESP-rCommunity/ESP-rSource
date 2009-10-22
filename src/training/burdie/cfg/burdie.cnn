@@ -1,5 +1,5 @@
 *connections  for burdie
-*Date Fri Oct  2 08:17:16 2009
+*Date Wed Nov 26 17:04:53 2008
     134   # number of connections
    1   1   0   0   0  #    1 liv_ex_s in living_room is External
    1   2   1   0   0  #    2 liv_sim_e in living_room >|< Identical environment

@@ -179,7 +179,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C default file names for databases
 
-#include "material.h"
 #include "plant.h"
 #include "tdf2.h"
 #include "dhw_common.h"
@@ -256,6 +255,13 @@ C Mechanical Ventilation systems.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
+C Material data arrays.
+      real matver
+      integer matcats,matcatitems,matdbitems
+      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
+
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
@@ -272,7 +278,7 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
-      logical dll,closemat1,closemat2,unixok
+      logical dll,close,unixok
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -604,14 +610,12 @@ C code from esruprj/eddb.F subroutine opendb.
      &            'found or file was corrupt','W')
               endif
             else
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
-              if(closemat1.or.closemat2) MATDBOK=.TRUE.
+              call eclose(matver,1.1,0.001,close)
+              if(close) MATDBOK=.TRUE.
             endif
           elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2) MATDBOK=.TRUE.
+            call eclose(matver,1.1,0.001,close)
+            if(close) MATDBOK=.TRUE.
           endif
         endif
       ENDIF
@@ -1048,7 +1052,7 @@ C Now initiate computation of all time-independent zone properties.
         IF(IVF(IZ).EQ.0)CALL MZVFCL(IZ)
         CALL MZVENC(IZ)
         CALL MZCASG(IZ)
-
+        
 C If the start-up period has been specified in a simulator parameter 
 C file then do not recalculate it.
         if(.not.startupok) CALL MZTCON(IZ)

@@ -1,5 +1,5 @@
 *connections  for bld_simple_fzy
-*Date Tue Sep 29 17:14:46 2009
+*Date Fri Jul 17 10:37:46 2009
      14   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External
