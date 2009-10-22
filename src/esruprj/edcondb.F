@@ -811,8 +811,8 @@ C Help text for this menu.
         IF(INO.EQ.NITMS.OR.INO.EQ.0)THEN
           IF(MODDB.and.ACTION.eq.'M')THEN
 
-C Changes were made so remove the existing file and write a
-C new file based on current common blocks.
+C Changes were made so remove the existing file via delfiledosorunix
+C and write a new file based on current common blocks.
             dok=.true.
             h(1)='Recent changes to the materials database are held'
             h(2)='in memory and might be lost if not saved to file.'
@@ -820,8 +820,11 @@ C new file based on current common blocks.
      &        'Save the materials database changes?',OK,dok,2)
             IF(.NOT.OK)GOTO 4
             chgdb=.true.   ! pass back signal to update
+            CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+            CALL ERPFREE(IAF,ISTAT)    ! in case unit is still open
             ltmp=' '
             write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+C            call delfiledosorunix(ltmp,ider)
             CALL mkascimat(IAF,ltmp,IER)
             MODDB=.FALSE.
           ENDIF
@@ -861,20 +864,17 @@ C Also edit classification documentation.
         ELSEIF(INO.EQ.NITMS-2)THEN
 
 C Save materials db with all materials. First delete the
-C existing file (sensitivity in GCC 4.1+) and then write
+C existing file via delfiledosorunix and then write
 C a new file via mkascimat.
           IF(.NOT.MODDB)THEN
             CALL USRMSG(' ',' No changes in db...','-')
           ELSE
             chgdb=.true.
-C            CALL ERPFREE(IAF,ISTAT)
-C            call FINDFIL(LFMAT,XST)
-C            if(XST)then
-C              CALL EFOPSEQ(IAF,LFMAT,1,IER)
-C              call efdelet(IAF,istat)
-C            endif
+            call erpfree(ifmat,istat)  ! in case it is still open
+            call erpfree(iaf,istat)  ! in case it is still open
             ltmp=' '
             write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+C            call delfiledosorunix(ltmp,ider)
             CALL mkascimat(IAF,ltmp,IER)
 
 C Reset flag to show db is current with local arrays.

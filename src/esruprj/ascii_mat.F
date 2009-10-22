@@ -936,6 +936,7 @@ C Open the binary materials database (in clase it was closed elsewhere).
       CALL ERPFREE(IFMAT,ISTAT)
       call EFOPRAN(IFMAT,LFMAT,40,1,IER)
       if(ier.ne.0)then
+        CALL ERPFREE(IFMAT,ISTAT)  ! free unit if we failed
         ier=-1
         return
       endif
@@ -967,6 +968,7 @@ C the file is not binary there is no need to inform the user.
       IF(NCLASS.LE.0)THEN
         CALL USRMSG('binary materials database empty!',
      &    'checking further...','-')
+        CALL ERPFREE(IFMAT,ISTAT)  ! free unit if we failed
         IER=-2
         RETURN
       ENDIF
@@ -1121,6 +1123,7 @@ C      write(6,*) ' '
 C      write(6,*) 'b matlegindex ',matlegindex
 C      write(6,*) ' '
 
+      CALL ERPFREE(IFMAT,ISTAT)  ! free unit before return
       RETURN
 
 C File errors.

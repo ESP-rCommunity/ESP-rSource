@@ -708,8 +708,6 @@ C Default ESP-r distribution path.
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,modcon,unixok,copydef,clkok,chgdb
       logical closemat1,closemat2
-      logical dbaltered   ! to signal that materials db should be saved
-      LOGICAL OPND
 
       character H*72,LTMP*72,path*72,outs*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -864,20 +862,6 @@ C then proceed with matver still set to zero.
 C Offer display and editing of material common blocks. If chgdb is
 C returned as true then write out the ASCII file.
             CALL ELISTMAT(iw,chgdb,'M',imatarryindex,IER)
-            if(chgdb)then
-C              IAF=IFIL+1
-C              CALL ERPFREE(IAF,ISTAT)
-C              call FINDFIL(LFMAT,XST)
-C              if(XST)then
-C                CALL EFOPSEQ(IAF,LFMAT,1,IER)
-C                call efdelet(IAF,istat)
-C              endif
-C              LTMPFL=' '
-C              write(LTMPFL,'(a)') LFMAT(1:lnblnk(LFMAT))
-C              CALL mkascimat(IAF,LTMPFL,IER)
-C              chgdb=.false.   ! reset
-C              MATDBOK=.TRUE.
-            endif
           else
 
 C << if the materials arrays were filled elistc should not be called >>
@@ -1121,6 +1105,7 @@ C Now scan the scratch file into material arrays.
 
 C And now write out the database from the materials arrays.
         CALL ERPFREE(IAF,ISTAT)
+        CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
         LTMPFL=' '
         write(LTMPFL,'(a)') LFMAT(1:lnblnk(LFMAT))
         CALL mkascimat(IAF,LTMPFL,IER)
@@ -1248,22 +1233,9 @@ C returned as true then write out the ASCII file.
           call eclose(matver,1.2,0.01,closemat2)
           if(closemat1.or.closemat2)then
             CALL ELISTMAT(iw,chgdb,'M',matarrayindex,IER)
-            if(chgdb)then
-C              IAF=IFIL+1
-C              CALL ERPFREE(IAF,ISTAT)
-C              call FINDFIL(LFMAT,XST)
-C              if(XST)then
-C                CALL EFOPSEQ(IAF,LFMAT,1,IER)
-C                call efdelet(IAF,istat)
-C              endif
-C              LTMPFL=' '
-C              write(LTMPFL,'(a)') LFMAT(1:lnblnk(LFMAT))
-C              CALL mkascimat(IAF,LTMPFL,IER)
-C              chgdb=.false.   ! reset
-C              MATDBOK=.TRUE.
-            endif
 
           else
+
 C << if the materials arrays were filled elistc should not be called >>
             CALL ELISTC(iw,chgdb,'M',IER)
           endif
@@ -1298,6 +1270,7 @@ C and save it.
               return
             else
               IAF=IFIL+1
+              CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
               CALL mkascimat(IAF,LASCI,IER)
             endif
           else
@@ -1322,6 +1295,7 @@ C ascii version if the original was a binary format.
               call eclose(matver,1.1,0.001,closemat1)
               call eclose(matver,1.2,0.001,closemat2)
               if(closemat1.or.closemat2)then
+                CALL ERPFREE(IFMUL,ISTAT)  ! in case old unit is still in use
                 CALL mkascimat(IAF,LASCI,IER)
               else
                 CALL MKAPRC(LASCI,IAF,IER)
@@ -1368,6 +1342,7 @@ C Confirm suggested name and then write out ascii file.
           call eclose(matver,1.1,0.001,closemat1)
           call eclose(matver,1.2,0.001,closemat2)
           if(closemat1.or.closemat2)then
+            CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
             CALL mkascimat(IAF,LASCI,IER)
           else
             CALL MKAPRC(LASCI,IAF,IER)

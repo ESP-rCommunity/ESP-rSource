@@ -400,15 +400,16 @@ C The file might have spaces in the path as well as forward slashes
 C and it modifies the file name to use backslashes and to bracket 
 C it in double quotes if there are spaces.
 C source (up to 144 char) source file (with path).
-C ier is zero if ok, ier is one if there was no file to delete
+C ier is zero if ok or if there was no file to delete
 C and ier is -1 if the file still exists afterwards.
       subroutine delfiledosorunix(source,ier)
       
       integer lnblnk  ! function definition
 
-C Strings for dos version of source and destination of db file.
-      character dq*1,outs*248
-      character*(*) source
+C Parameters
+      character*(*) source  ! source file
+      integer ier
+
       character longtfile*144,longtfiledos*144 
       character doit*248
       logical unixok
@@ -426,7 +427,7 @@ C and a double quote character available in case of spaces in name.
           call lusrmsg('deleting file via',doit,'-')
           call runit(doit,'-')
         else
-          ier=1
+          ier=0
           return
         endif
       else
@@ -440,7 +441,7 @@ C and a double quote character available in case of spaces in name.
           call lusrmsg('deleting file via',doit,'-')
           call runit(doit,'-')
         else
-          ier=1
+          ier=0
           return
         endif
       endif
