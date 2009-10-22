@@ -21,7 +21,7 @@ arrow.F:
 	ln -s $(PRJdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
-	ln -s $(PRJdir)/ascii_mat.F .
+	ln -s $(COMdir)/ascii_mat.F .
 common3dv.F:
 	rm -f common3dv.F
 	ln -s $(COMdir)/common3dv.F .

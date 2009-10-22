@@ -1754,7 +1754,7 @@ if [ "${LinkDB}" = "yes" ]; then
   echo "*clm ${DBInstDir}/climate/clm67" >> ${ESPdir}/default
   echo "*prs ${DBInstDir}/databases/pressc.db1" >> ${ESPdir}/default
   echo "*prm ${DBInstDir}/databases/material.db3.a" >> ${ESPdir}/default
-  echo "*mlc ${DBInstDir}/databases/multicon.db2" >> ${ESPdir}/default
+  echo "*mlc ${DBInstDir}/databases/multicon.db3" >> ${ESPdir}/default
   echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
   echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
   echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default

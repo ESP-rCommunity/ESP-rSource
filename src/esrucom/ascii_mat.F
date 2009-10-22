@@ -165,6 +165,9 @@ C mkascimat:  creates ascii material file (version 1.1/2) based on
 C             information in common matdatarray and matnamearray.
 C rascimat:   fills common matdatarray and matnamearray from
 C             current ASCII material database. 
+C MATFROMBIN: Fills materials common blocks via scan of binary materials
+C             database.
+C scananymat: scans any materials database and fills common blocks.
 
 C ************* rlegacymat 
 C rlegacymat: Fills common matdatarray and matnamearray from
@@ -572,7 +575,7 @@ C Parameters
                           ! that the expected header was not found
 
       DIMENSION VAL(19)
-      CHARACTER IDESC*72,NDESC*72,OUTSTR*124,WORD*24
+      CHARACTER NDESC*72,OUTSTR*124,WORD*24
       character WORD32*32,WORD248*248,LOUTSTR*248
       logical closemat1,closemat2
 
@@ -873,7 +876,7 @@ C << did not find the correct header.... >>
         return
       endif
       
-  99  CALL ERPFREE(IFA,ISTAT)
+      CALL ERPFREE(IFA,ISTAT)
       RETURN
     
       END
@@ -1131,14 +1134,110 @@ C File errors.
       matver = 0.0   ! signal that we have not filled commons.
       return
 
- 1000 CALL USRMSG(' NE,NDESC read error in ',LFMAT,'W')
+ 1000 CALL USRMSG('MATFROMBIN: NE,NDESC read error in ',LFMAT,'W')
       matver = 0.0   ! signal that we have not filled commons.
       IER= -3
       return
 
- 1001 CALL USRMSG(' Layer data read error in ',LFMAT,'W')
+ 1001 CALL USRMSG('MATFROMBIN: Layer data read error in ',LFMAT,'W')
       matver = 0.0   ! signal that we have not filled commons.
       IER= -3
       return
 
       END
+
+C ********** scananymat
+C scananymat scans any materials database and fills common blocks. First
+C assume the current string in LFMAT it is a binary file, check
+C its contents and if a problem then scan new ascii format and 
+C if that does not work try the older ascii materials file to
+C fill the materials data arrays.
+C If sucessful the material common blocks will be filled and ier
+C will be returned as zero.
+
+      subroutine scananymat(ier)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+      
+      integer lnblnk  ! function definition
+
+C Parameters
+      integer ier
+
+      common/OUTIN/IUOUT,IUIN
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
+      character outs*124
+
+      IER=0
+
+C Scan the binary file data into materials commons and if this was
+C sucessful and matver was set to 1.1 in matformbin then we can
+C carry on using the materials common blocks for subsequent access.
+      call MATFROMBIN(IER)  ! fill materials common blocks
+      if(ier.eq.0)then
+        origmatwasbin=.true.   ! remember this for subsequent update
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
+          goto 139  !  commons filled carry on.
+        else
+          MATDBOK=.TRUE.
+          matver = 0.0
+          goto 139  !  a binary file found so carry on.
+        endif
+      elseif(ier.eq.-2.or.ier.eq.-3)then
+        origmatwasbin=.false.  ! the material file was not binary
+        ier=0  ! clear error state prior to rascimat call
+        goto 1000
+      elseif(ier.eq.-1)then
+        origmatwasbin=.false.  ! the material file was not binary
+        write(outs,'(3a)') ' Materials db ',
+     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MATDBOK=.FALSE.
+        ier=0  ! clear error state before continuing
+        goto 139  !  try the other databases.
+      endif
+
+C Check for ascii versions of the materials database.
+ 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
+      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
+        ier=0
+        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+        if(ier.ne.0)then
+          call usrmsg('No readable materials database was not found',
+     &                'or file was corrupt','W')
+          MATDBOK=.FALSE.
+        else
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
+            MATDBOK=.TRUE.
+          else
+            call usrmsg(
+     &        'No readable Materials database was found!',
+     &        ' ','W')
+            MATDBOK=.FALSE.
+          endif
+        endif
+      elseif(ier.eq.0)then
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
+        endif
+      endif
+
+C Scan complete so return.
+ 139  CALL ERPFREE(IFMUL,ISTAT)
+      return
+
+      end
+

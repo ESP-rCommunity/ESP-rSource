@@ -520,7 +520,7 @@ C Parameters
       common/pophelp/h(60)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
-      LOGICAL OK,DOK,MODDB,XST,OPND
+      LOGICAL OK,DOK,MODDB
 
 C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
@@ -812,7 +812,9 @@ C Help text for this menu.
           IF(MODDB.and.ACTION.eq.'M')THEN
 
 C Changes were made so remove the existing file via delfiledosorunix
-C and write a new file based on current common blocks.
+C and write a new file based on current common blocks. If the original
+C file was binary then alter the name of the saved file to add a '.a'
+C at the end.
             dok=.true.
             h(1)='Recent changes to the materials database are held'
             h(2)='in memory and might be lost if not saved to file.'
@@ -823,9 +825,20 @@ C and write a new file based on current common blocks.
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
             CALL ERPFREE(IAF,ISTAT)    ! in case unit is still open
             ltmp=' '
-            write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+            if(origmatwasbin)then
+              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+            else
+              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+            endif
 C            call delfiledosorunix(ltmp,ider)
             CALL mkascimat(IAF,ltmp,IER)
+
+C Having read in binary and saved to ASCII the latter is now the model
+C material database.
+            if(origmatwasbin)then
+              LFMAT=ltmp
+              origmatwasbin=.false.
+            endif
             MODDB=.FALSE.
           ENDIF
           GOTO 4
@@ -873,9 +886,20 @@ C a new file via mkascimat.
             call erpfree(ifmat,istat)  ! in case it is still open
             call erpfree(iaf,istat)  ! in case it is still open
             ltmp=' '
-            write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+            if(origmatwasbin)then
+              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+            else
+              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+            endif
 C            call delfiledosorunix(ltmp,ider)
             CALL mkascimat(IAF,ltmp,IER)
+
+C Having read in binary and saved to ASCII the latter is now the model
+C material database.
+            if(origmatwasbin)then
+              LFMAT=ltmp
+              origmatwasbin=.false.
+            endif
 
 C Reset flag to show db is current with local arrays.
             MODDB=.FALSE.
@@ -3430,7 +3454,8 @@ C ************* MKBPRC
 C MKBPRC: Creates a binary materials db based on the
 C current contents of an ASCII file LASCI opened on unit IFA.
 C Note: this subroutine is being depreciated because models
-C can use ascii version of materials database. 
+C can use ascii version of materials database.  If we could not
+C convert pass back ier as -2.
       SUBROUTINE MKBPRC(IFA,LASCI,IER)
 #include "esprdbfile.h"
       integer icln
@@ -3441,6 +3466,7 @@ C can use ascii version of materials database.
 C Parameters
       integer ifa  ! file unit
       character LASCI*72 ! ascii file to scan
+       integer ier ! error state
 
 C The binary file will be overwritten.
       call EFOPRAN(IFMAT,LFMAT,40,4,IER)
@@ -3449,9 +3475,17 @@ C The binary file will be overwritten.
 C Open the ASCII file for reading.
       CALL EFOPSEQ(IFA,LASCI,1,IER)
 
-C Proceed.
+C Proceed assuming that we are reading a legacy ascii materials
+C database file. If the materials arrays are filled then we could
+C write directly from memory.
       CALL STRIPC(IFA,OUTSTR,0,ND,1,'no classes',IER)
-      IF(IER.NE.0)RETURN
+      IF(OUTSTR(1:5).eq.'*Mate')then
+        call usrmsg(
+     &    'The ascii file is a newer rather than a legacy',
+     &    'materials file format. Abandoning conversion.','W')
+        ier=-2
+        RETURN
+      endif
       K=0
       CALL EGETWI(OUTSTR,K,NCLASS,1,1,'-','no classes',IER)
 

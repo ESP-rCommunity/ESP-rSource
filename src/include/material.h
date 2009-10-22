@@ -7,7 +7,10 @@ C Materials common blocks:
       integer matcats     ! number of categories
       integer matdbitems  ! number of items (overall) in database
       integer matcatitems ! number of items in each category
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL)
+      logical origmatwasbin ! if true then initial materials file was binary
+      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
+     &  origmatwasbin
+
 
       character matdbdate*24 ! date stamp for the database
       character matdbdoc*248 ! documentation for the materials database
