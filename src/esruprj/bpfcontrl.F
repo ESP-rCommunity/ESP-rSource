@@ -3218,7 +3218,7 @@ C ********************************************************************
       common/pophelp/h(60)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
-      DIMENSION SALT(9),PSALT (2), IVALS(9), IPVALS(1)
+      DIMENSION SALT(7),PSALT (2), IVALS(7), IPVALS(1)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*96,TMP*96,SALT*40,KEY*1
@@ -3368,13 +3368,13 @@ C Remember current control type
         endif
         call edisp(iuout,' ')
 
-        SALT(1)= 'senses temp.        actuates shade ON/OFF'
-        SALT(2)= 'senses temp.        actuates slat angle  '
-        SALT(3)= 'senses sol-rad      actuates shade ON/OFF'
-        SALT(4)= 'senses sol-rad      actuates slat angle  '
-        SALT(5)= 'senses wind speed   actuates shade ON/OFF'
-        SALT(6)= 'senses wind dir.    actuates shade ON/OFF'
-        SALT(7)= 'no sensor (schedule only)                '
+        SALT(1)= 'senses temp.      actuates shade ON/OFF'
+        SALT(2)= 'senses temp.      actuates slat angle  '
+        SALT(3)= 'senses sol-rad    actuates shade ON/OFF'
+        SALT(4)= 'senses sol-rad    actuates slat angle  '
+        SALT(5)= 'senses wind speed actuates shade ON/OFF'
+        SALT(6)= 'senses wind dir.  actuates shade ON/OFF'
+        SALT(7)= 'no sensor (schedule only)              '
         
         call edisp(iuout,' Current controller type: ')
         call edisp(iuout,SALT(iCFCctltype(II,JJ,KK)))
