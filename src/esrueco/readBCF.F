@@ -361,17 +361,13 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
 #include "building.h"
 #include "LCA.h"
 #include "acoustic.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C21/IFCFG,cfgroot,LCFGF
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/EVGENS/BCFName,System,BCFVer
       COMMON/EVGENL/BCFOK

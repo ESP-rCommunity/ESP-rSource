@@ -1,30 +1,30 @@
 Synopsis
  
 This is a synopsis of the model Model of two adjacent cellular offices with
-VAV/CAV supply 700W reheat defined in cellular_vav.cfg generated on Fri Jul 17
-10:03:00 2009. Notes associated with the model are in cellular_vav.log
+VAV/CAV supply 700W reheat defined in cellular_vav.cfg generated on Wed Sep 30
+09:16:35 2009. Notes associated with the model are in cellular_vav.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-Project name:  not yet defined
-Building address:  not yet defined
-Building city:  not yet defined
-Building Postcode:  not yet defined
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
  
-Building owner name:  not yet defined
-Building owner telephone:  not yet defined
-Building owner address:  not yet defined
-Building owner city:  not yet defined
-Building owner Postcode:  not yet defined
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
  
-Simulationist name:  not yet defined
-Simulationist telephone:  not yet defined
-Simulationist address:  not yet defined
-Simulationist city:  not yet defined
-Simulationist postcode:  not yet defined
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
 An Integrated Performance View is incomplete or missing.

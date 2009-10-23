@@ -393,3 +393,65 @@ C      ier=1
 C      return
       end
 
+
+C ********** delfiledosorunix *********
+C delfiledosorunix uses system del or rm command to delete a file.
+C The file might have spaces in the path as well as forward slashes 
+C and it modifies the file name to use backslashes and to bracket 
+C it in double quotes if there are spaces.
+C source (up to 144 char) source file (with path).
+C ier is zero if ok or if there was no file to delete
+C and ier is -1 if the file still exists afterwards.
+      subroutine delfiledosorunix(source,ier)
+      
+      integer lnblnk  ! function definition
+
+C Parameters
+      character*(*) source  ! source file
+      integer ier
+
+      character longtfile*144,longtfiledos*144 
+      character doit*248
+      logical unixok
+      logical concat
+      logical XST
+
+C Set folder separator (fs) to \ or / as required.
+C and a double quote character available in case of spaces in name.
+      call isunix(unixok)
+      if(unixok)then
+        call addpath(source,longtfile,concat)
+        INQUIRE (FILE=longtfile,EXIST=XST)
+        if(XST)then
+          write(doit,'(2a)') 'rm -f ',longtfile(1:lnblnk(longtfile))
+          call lusrmsg('deleting file via',doit,'-')
+          call runit(doit,'-')
+        else
+          ier=0
+          return
+        endif
+      else
+        call addpath(source,longtfile,concat)
+        call cmdfiledos(longtfile,longtfiledos,ier)
+        longtfile=' '
+        longtfile=longtfiledos
+        INQUIRE (FILE=longtfile,EXIST=XST)
+        if(XST)then
+          write(doit,'(2a)') 'del ',longtfile(1:lnblnk(longtfile))
+          call lusrmsg('deleting file via',doit,'-')
+          call runit(doit,'-')
+        else
+          ier=0
+          return
+        endif
+      endif
+
+C Check and see if it is gone.
+      INQUIRE (FILE=longtfile,EXIST=XST)
+      if(XST)then
+        call lusrmsg('file still exists! ',longtfile,'-')
+        ier=-1
+      endif
+
+      return
+      end

@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Two adjacent cellular offices with earth tube
-defined in cellular_earth.cfg generated on Fri Jul 10 17:04:23 2009. Notes
+defined in cellular_earth.cfg generated on Wed Sep 30 09:01:55 2009. Notes
 associated with the model are in cellular_offices_earth.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
@@ -9,22 +9,22 @@ from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-Project name:  not yet defined
-Building address:  not yet defined
-Building city:  not yet defined
-Building Postcode:  not yet defined
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
  
-Building owner name:  not yet defined
-Building owner telephone:  not yet defined
-Building owner address:  not yet defined
-Building owner city:  not yet defined
-Building owner Postcode:  not yet defined
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
  
-Simulationist name:  not yet defined
-Simulationist telephone:  not yet defined
-Simulationist address:  not yet defined
-Simulationist city:  not yet defined
-Simulationist postcode:  not yet defined
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
  
@@ -741,7 +741,7 @@ Wkd  3 EquiptW    0 - 24      0.0      0.0       0.50       0.50
     2  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
     3  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
     4  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
-    5  262  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 gravel : Gravel based
+    5  262  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 gravel based : Gravel based
  Int    32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.823  0.844  0.797 (partition)  0.766
  Total area of below is     20.94
@@ -754,7 +754,7 @@ Wkd  3 EquiptW    0 - 24      0.0      0.0       0.50       0.50
     2  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
     3  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
     4  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
-    5  262  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 gravel : Gravel based
+    5  262  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 gravel based : Gravel based
  Int    32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.823  0.844  0.797 (partition)  0.766
  Total area of earth_side is     16.99
@@ -767,7 +767,7 @@ Wkd  3 EquiptW    0 - 24      0.0      0.0       0.50       0.50
     2  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
     3  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
     4  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
-    5  262  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 gravel : Gravel based
+    5  262  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 gravel based : Gravel based
  Int    32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.823  0.844  0.797 (partition)  0.766
  Total area of earth_top is     20.94

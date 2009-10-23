@@ -55,6 +55,7 @@ C For operational details refer to the ESP-r program user's manual.
       program res
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
@@ -140,12 +141,6 @@ C IEEE callback (Solaris)
       character cAppName*12      
       
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical     unixok,there

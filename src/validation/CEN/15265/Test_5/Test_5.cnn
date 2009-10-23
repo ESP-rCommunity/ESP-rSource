@@ -1,5 +1,5 @@
 *connections  for Test_5
-*Date Mon Dec  8 00:30:30 2008
+*Date Mon Oct 19 12:21:41 2009
       7   # number of connections
    1   1   5   0   0  #    1 South in Test_5 is adiabatic
    1   2   5   0   0  #    2 East in Test_5 is adiabatic

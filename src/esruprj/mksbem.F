@@ -2572,6 +2572,8 @@ C It finally generate BRUKL input document and other SBEM reports.
 #include "sbem.h"
 #include "building.h"
 #include "geometry.h"
+#include "esprdbfile.h"
+#include "material.h"
       common/FILEP/IFIL
       
       integer ncomp,ncon
@@ -2582,12 +2584,6 @@ C It finally generate BRUKL input document and other SBEM reports.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-     
 C Build variable (These should eventually be placed in build_info.h)
       character cBuilder*32          ! User who compiled system
       character cArchitecture*32     ! Machine archictecture

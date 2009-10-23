@@ -29,6 +29,8 @@ C ****** GTOPOL
       SUBROUTINE GTOPOL(itrc,ier)
 #include "building.h"
 #include "model.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -49,12 +51,6 @@ C ****** GTOPOL
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C6/INDCFG
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       
       CHARACTER*33 ITEMS(12)
       character*32 VERTS(MGRT)
@@ -2449,6 +2445,8 @@ C IER=1 problem.
 #include "building.h"
 #include "epara.h"
 #include "prj3dv.h"
+#include "esprdbfile.h"
+#include "material.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -2460,11 +2458,6 @@ C IER=1 problem.
       COMMON/GT/GTNAME
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW

@@ -1,4 +1,4 @@
-# composite construction db defined in ./multicon.db1
+# composite construction db defined in ./cool_coil.mlc
 # based on materials db /usr/esru/esp-r/databases/material.db3.a
    23     # no of composites 
 # layers  description   optics name   symmetry tag
@@ -41,7 +41,7 @@
     6    grnd_floor    OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
   263    0.2500  earth std : Common_earth
-  262    0.1500  gravel : Gravel based
+  262    0.1500  gravel based : Gravel based
    32    0.1500  heavy mix concrete : Heavy mix concrete
     0    0.0500  air  0.170 0.170 0.170
    67    0.0190  chipboard : Chipboard
@@ -67,7 +67,7 @@
     4    entry_floor   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
   263    0.2500  earth std : Common_earth
-  262    0.1500  gravel : Gravel based
+  262    0.1500  gravel based : Gravel based
    32    0.1500  heavy mix concrete : Heavy mix concrete
    83    0.0240  white marble : White marble
 # layers  description   optics name   symmetry tag

@@ -5997,6 +5997,7 @@ C geometry.h provides commons G0 and G2.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "material.h"
 #include "control.h"
 
       common/outin/iuout,iuin
@@ -6007,12 +6008,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
-     &           layers(mmlc),drair(mmlc,me,3)
 
       common/fvala/tfa(mcom),qfa(mcom)
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
@@ -6036,29 +6031,10 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       common/BSCTL/ITPREP(MCOM,MTMC),ICZN,IMDB(3),IGLZ(3)
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
+C Material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
       character titl*72,nam*72
@@ -6154,7 +6130,8 @@ C Update or reset properties based on above logic.
         CHANGED=.true.
 
 C Find version of materials database. If 1.1 then use material arrays.
-        call eclose(matver,1.1,0.01,closemat)
+        call eclose(matver,1.1,0.01,closemat1)
+        call eclose(matver,1.2,0.01,closemat2)
       
 C Reset properties by reading in zone descriptor files.
 
@@ -6208,10 +6185,10 @@ C        write(6,*) 'with construction ',DESC(ic)' at btimef ',btimef
 
 C Put the composite db info into current surface attributes
 C common.  Gather information about each layer. Read in the
-C primitive db info. 
+C material db info. 
           ne(ii)=layers(ic)
           do 223 i=1,layers(ic)
-            if(closemat)then
+            if(closemat1.or.closemat2)then
               legmat=ipr(ic,i)   ! which legacy index
               if(legmat.gt.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
@@ -6225,6 +6202,8 @@ C primitive db info.
                 write(nam,'(a)') matname(matarrayindex)(1:32)
               endif
             else
+
+C << if material arrays were filled there is no need for this call >>
               call erpcdb(ifmat,ipr(ic,i),iuout,ier,dbcon,dbden,
      &            dbsht,e,a,drv,titl,nam)
             endif

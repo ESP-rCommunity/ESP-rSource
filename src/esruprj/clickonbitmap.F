@@ -37,6 +37,8 @@ C via clicking on a bitmap.
 
 C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -59,11 +61,6 @@ C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 

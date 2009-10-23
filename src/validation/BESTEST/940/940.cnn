@@ -1,12 +1,12 @@
 *connections  for 940
-*Date Mon May  2 15:02:42 2005
+*Date Thu Oct 15 08:40:32 2009
       9   # number of connections
-   1   1   0   0   0  #   1  South Wall in 940 is External
-   1   2   0   0   0  #   2  South Wall in 940 is External
-   1   3   0   0   0  #   3  East Wall in 940 is External
-   1   4   0   0   0  #   4  North Wall in 940 is External
-   1   5   0   0   0  #   5  West Wall in 940 is External
-   1   6   0   0   0  #   6  Window in 940 is External
-   1   7   0   0   0  #   7  Window in 940 is External
-   1   8   0   0   0  #   8  Roof in 940 is External
-   1   9   4   0   1  #   9  Floor in 940 >|< user def ground profile 1
+   1   1   0   0   0  #    1 South_Wall in 940 is External
+   1   2   0   0   0  #    2 South_Wall2 in 940 is External
+   1   3   0   0   0  #    3 East_Wall in 940 is External
+   1   4   0   0   0  #    4 North_Wall in 940 is External
+   1   5   0   0   0  #    5 West_Wall in 940 is External
+   1   6   0   0   0  #    6 Window in 940 is External
+   1   7   0   0   0  #    7 Window2 in 940 is External
+   1   8   0   0   0  #    8 Roof in 940 is External
+   1   9   4   0   1  #    9 Floor in 940 >|< user def ground profile 1

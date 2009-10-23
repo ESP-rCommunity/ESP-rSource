@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Translation from XZIP defined in sport_cen.cfg
-generated on Wed Jul 22 08:24:51 2009. Notes associated with the model are in
+generated on Wed Sep 30 13:26:54 2009. Notes associated with the model are in
 sport_cen.log
  
 The model is located at latitude   50.00 with a longitude difference of   0.00
@@ -1170,9 +1170,9 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 mat_242 : Plate glass with placeholder singl
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
  Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
@@ -1189,10 +1189,10 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 mat_004 : Outer leaf brick
-    2  211   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 mat_211 : Glasswool
+ Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
+    2  211   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 Glasswool : Glasswool
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int     2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 mat_002 : Breeze block
+ Int     2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 Breeze block : Breeze block
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.393  0.397  0.387 (partition)  0.379
  Total area of extern_wall is   1455.00
  
@@ -1200,9 +1200,9 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 mat_103 : Perlite plasterboard
-    2    2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 mat_002 : Breeze block
- Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 mat_103 : Perlite plasterboard
+ Ext   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
+    2    2  150.0     0.440  1500.   650. 0.90 0.65    15.  0.34 Breeze block : Breeze block
+ Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.552  1.628  1.461 (partition)  1.362
  Total area of intern_wall is   1300.40
  
@@ -1210,13 +1210,13 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263   50.0     1.280  1460.   879. 0.90 0.85     5.  0.04 mat_263 : Common_earth
-    2  262   50.0     0.520  2050.   184. 0.90 0.85     2.  0.10 mat_262 : Gravel based
-    3   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
-    4   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
-    5  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mat_216 : Mineral fibre
-    6   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 mat_067 : Chipboard
- Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 mat_221 : Wilton
+ Ext   263   50.0     1.280  1460.   879. 0.90 0.85     5.  0.04 Common_earth : Common_earth
+    2  262   50.0     0.520  2050.   184. 0.90 0.85     2.  0.10 Gravel based : Gravel based
+    3   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+    4   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+    5  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 Mineral fibre : Mineral fibre
+    6   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.319  0.322  0.315 (partition)  0.310
  Total area of g_flr_entry is    300.00
  
@@ -1224,10 +1224,10 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 mat_043 : Aluminium
+ Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
     2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 mat_281 : Glass Fibre Quilt
- Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 mat_043 : Aluminium
+    3  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
+ Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 Aluminium : Aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.427  0.433  0.420 (partition)  0.412
  Total area of roof is   2473.26
  
@@ -1235,11 +1235,11 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   148    3.0     0.850  2000.   837. 0.90 0.60  1000.  0.00 mat_148 : P.V.C./asbestos
-    2  124   19.0     1.400  2100.   650. 0.91 0.65    19.  0.01 mat_124 : Cement screed
-    3   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
-    4   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
- Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 mat_042 : Steel
+ Ext   148    3.0     0.850  2000.   837. 0.90 0.60  1000.  0.00 P.V.C./asbestos : P.V.C./asbestos
+    2  124   19.0     1.400  2100.   650. 0.91 0.65    19.  0.01 Cement screed : Cement screed
+    3   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+    4   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+ Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.482  3.888  3.056 (partition)  2.651
  Total area of susp_floor is    320.00
  
@@ -1247,11 +1247,11 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 mat_042 : Steel
-    2   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
-    3   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
-    4  124   19.0     1.400  2100.   650. 0.91 0.65    19.  0.01 mat_124 : Cement screed
- Int   148    3.0     0.850  2000.   837. 0.90 0.60  1000.  0.00 mat_148 : P.V.C./asbestos
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+    2   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+    3   32   70.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+    4  124   19.0     1.400  2100.   650. 0.91 0.65    19.  0.01 Cement screed : Cement screed
+ Int   148    3.0     0.850  2000.   837. 0.90 0.60  1000.  0.00 P.V.C./asbestos : P.V.C./asbestos
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.482  3.888  3.056 (partition)  2.651
  Total area of susp_flr_re is    320.00
  
@@ -1259,13 +1259,13 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263   50.0     1.280  1460.   879. 0.90 0.85     5.  0.04 mat_263 : Common_earth
-    2  262   50.0     0.520  2050.   184. 0.90 0.85     2.  0.10 mat_262 : Gravel based
-    3   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
-    4   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
-    5  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mat_216 : Mineral fibre
-    6   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 mat_067 : Chipboard
- Int    61   30.0     0.160   800.  2093. 0.90 0.65    11.  0.19 mat_061 : Block (wood)
+ Ext   263   50.0     1.280  1460.   879. 0.90 0.85     5.  0.04 Common_earth : Common_earth
+    2  262   50.0     0.520  2050.   184. 0.90 0.85     2.  0.10 Gravel based : Gravel based
+    3   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+    4   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+    5  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 Mineral fibre : Mineral fibre
+    6   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
+ Int    61   30.0     0.160   800.  2093. 0.90 0.65    11.  0.19 Block (wood) : Block (wood)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.310  0.313  0.306 (partition)  0.302
  Total area of hall_floor is   1500.00
  
@@ -1273,12 +1273,12 @@ Number of weekday      casual gains=  0
  
  Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263   50.0     1.280  1460.   879. 0.90 0.85     5.  0.04 mat_263 : Common_earth
-    2  262   50.0     0.520  2050.   184. 0.90 0.85     2.  0.10 mat_262 : Gravel based
-    3   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
-    4   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 mat_032 : Heavy mix concrete
-    5  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mat_216 : Mineral fibre
-    6   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 mat_067 : Chipboard
- Int   148    3.0     0.850  2000.   837. 0.90 0.60  1000.  0.00 mat_148 : P.V.C./asbestos
+ Ext   263   50.0     1.280  1460.   879. 0.90 0.85     5.  0.04 Common_earth : Common_earth
+    2  262   50.0     0.520  2050.   184. 0.90 0.85     2.  0.10 Gravel based : Gravel based
+    3   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+    4   32   75.0     1.400  2100.   653. 0.90 0.65    19.  0.05 Heavy mix concrete : Heavy mix concrete
+    5  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 Mineral fibre : Mineral fibre
+    6   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
+ Int   148    3.0     0.850  2000.   837. 0.90 0.60  1000.  0.00 P.V.C./asbestos : P.V.C./asbestos
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.329  0.332  0.324 (partition)  0.319
  Total area of oth_ground is    490.00
