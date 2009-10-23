@@ -3417,13 +3417,13 @@ C Remember current control type
         endif
         call edisp(iuout,' ')
 
-        SALT(1)= 'senses temp.        actuates shade ON/OFF'
-        SALT(2)= 'senses temp.        actuates slat angle  '
-        SALT(3)= 'senses sol-rad      actuates shade ON/OFF'
-        SALT(4)= 'senses sol-rad      actuates slat angle  '
-        SALT(5)= 'senses wind speed   actuates shade ON/OFF'
-        SALT(6)= 'senses wind dir.    actuates shade ON/OFF'
-        SALT(7)= 'no sensor (schedule only)                '
+        SALT(1)= 'senses temp.      actuates shade ON/OFF'
+        SALT(2)= 'senses temp.      actuates slat angle  '
+        SALT(3)= 'senses sol-rad    actuates shade ON/OFF'
+        SALT(4)= 'senses sol-rad    actuates slat angle  '
+        SALT(5)= 'senses wind speed actuates shade ON/OFF'
+        SALT(6)= 'senses wind dir.  actuates shade ON/OFF'
+        SALT(7)= 'no sensor (schedule only)              '
         
         call edisp(iuout,' Current controller type: ')
         call edisp(iuout,SALT(iCFCctltype(II,JJ,KK)))

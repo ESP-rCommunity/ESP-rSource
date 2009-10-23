@@ -333,13 +333,17 @@ C.....Sky temperature and cloud cover; ground temperature,
 C.....Local variables
 C      REAL TMA                  ! Mean air point temperature (oC)
       REAL ZRH                  ! Zone Relative Humidity (-)
+      real TRESL  ! Zone resultant temperature
+      real YDUM   ! Dummy variable
       real trsum
       REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
       REAL Qm2_zone,Qm2_heat,Qm2_cool ! Total heat injection / extraction per m2 of floor area  
       INTEGER i_ZnCtl           ! Zone control flag
 
-
-      INTEGER iSurface,iNode,iViewSurface,iLtz  ! Counters
+      real TS
+      DIMENSION TS(MS)  ! surface temperatures for current zone (for resultant temp calc)
+      
+      INTEGER iSurface,iNode,iViewSurface,iLtz,iSur  ! Counters
       integer iH3K_NameLen ! length of name root
 
       real SBC                              ! Stephan-Boltzmann constant
@@ -366,7 +370,7 @@ C lnblnk is a function returning the index of last non-blank character in a stri
 C .... Humidity functions
       REAL DEWPT
       REAL HUMR
-      
+
 C.....Timerows (named constants)
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2)
@@ -756,7 +760,7 @@ C-----------------------------------------------------------------------
      &          qswrde(iZone,iSurface,2)/sna(iZone,iSurface),
      &          H3K_rep_NAME(1:iH3K_NameLen) 
      &            // '/heat_flux/radiation/'
-     &            //  'shortwave/unit_area' ,
+     &            //  'shortwave_m2' ,
      &          'units', '(W/m2)',
      &          'Short-wave solar radiation per unit area'
      &          )     
@@ -1211,6 +1215,19 @@ C.....Lighting zone illuminance
         enddo lightingzone_loop
       endif
 
+C.....Zone Resultant TEMPERATURE
+      do 22 iSur=1,NZSUR(iZone)
+         TS(iSur)=TFS(iZone,iSur)
+ 22   continue
+
+      call MORESL(iZone,TFA(iZone),TS,YDUM,NZSUR(iZone),TRESL)
+
+      call add_to_xml_reporting (
+     &      TRESL,
+     &      H3K_rep_Name(1:iH3K_NameLen)// '/resultant_temp',
+     &      'units', '(oC)',
+     &      'Zone resultant temperature' )
+      
 C.....AIR POINT TEMPERATURE
 
       call add_to_xml_reporting (

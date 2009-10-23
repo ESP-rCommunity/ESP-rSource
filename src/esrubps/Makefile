@@ -7,6 +7,7 @@ MFSdir = $(SRCdir)/esrumfs
 PFSdir = $(SRCdir)/esrupfs
 PLTdir = $(SRCdir)/esruplt
 PRJdir = $(SRCdir)/esruprj
+RESdir = $(SRCdir)/esrures
 TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 SHCdir = $(SRCdir)/shocc
@@ -38,7 +39,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  pcloop.o pcomp1.o pcomp2.o pcomp3.o pcomp4.o pcomps.o pcomps1.o \
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
 	  reslib.o rnor.o rwipv.o rwroam.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
-	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o trstyp.o \
+	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o temps.o trstyp.o \
 	  tscon.o utilf.o aim2_pretimestep.o aim2_timestep.o\
 	  MechVentIN.o CentralVentSys.o \
 	  hvacinput.o hvacsim.o furnace.o init_hvac_var.o fan.o ashp.o \
@@ -403,6 +404,9 @@ subsys.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
+temps.F:
+	rm -f temps.F
+	ln -s $(RESdir)/temps.F .
 trstyp.F:
 	rm -f trstyp.F
 	ln -s $(PLTdir)/trstyp.F .
@@ -678,7 +682,7 @@ clean:
 	pmatrx.F pplib.F ppsub.F precal.F \
 	psychro.F rnor.F rwipv.F rwroam.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F \
-	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F trstyp.F tscon.F \
+	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F temps.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \
 	init_hvac_var.F \
 	GCEPinput.F GCEP_load.F GCEP_SIM.F GCEP_MLAiterate.F GCEPtground.F GCEPInit.F \

@@ -160,7 +160,8 @@ CC#include "geometry.h"
 
       DIMENSION TS(MS),QM(MS)
 
-      COMMON/RECV5/SNA(MCOM,MS)
+c      COMMON/RECV5/SNA(MCOM,MS)
+      COMMON/PREC1/SNA(MCOM,MS)
 
 C Sum product of opaque surface temperatures and areas.
       ZPROD=0.
