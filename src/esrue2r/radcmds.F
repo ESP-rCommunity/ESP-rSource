@@ -244,14 +244,14 @@ C Simulate scene as defined by aim argument.
 
 C Read from transfer file defined as the argument for -act from
 C the users home folder.
-        if(unixok)then
-          write(doit,'(6a)') 'cp ',upath(1:lnblnk(upath)),'/',
-     &               act(1:lnblnk(act)),'  ',runpath(1:lnrp)
-        else
-          write(doit,'(6a)') 'copy /y ',upath(1:lnblnk(upath)),'/',
-     &               act(1:lnblnk(act)),'  ',runpath(1:lnrp)
-        endif
-        call runit(doit,'-')
+c        if(unixok)then
+c          write(doit,'(6a)') 'cp ',upath(1:lnblnk(upath)),'/',
+c     &               act(1:lnblnk(act)),'  ',runpath(1:lnrp)
+c        else
+c          write(doit,'(6a)') 'copy /y ',upath(1:lnblnk(upath)),'/',
+c     &               act(1:lnblnk(act)),'  ',runpath(1:lnrp)
+c        endif
+c        call runit(doit,'-')
         ier=0
         write (LTMPFL,'(a,a)') runpath(1:lnrp),act(1:lnblnk(act))
         call FPOPEN(ITA1,ISTAT,1,1,LTMPFL)
@@ -320,15 +320,15 @@ C Run rtrace. << ?? what about pathtype?? >>
         call runit(doitl,'-')
 
 C Copy transfer file back to users homedir (bps is expecting it to be there).
-        call isunix(unixok)
-        if(unixok)then
-          write(doit,'(5a)') 'cp ',runpath(1:lnrp),
-     &                act(1:lnblnk(act)),'  ',upath(1:lnblnk(upath))
-        else
-          write(doit,'(5a)') 'copy /y ',runpath(1:lnrp),
-     &                act(1:lnblnk(act)),'  ',upath(1:lnblnk(upath))
-        endif
-        call runit(doit,'-')
+c        call isunix(unixok)
+c        if(unixok)then
+c          write(doit,'(5a)') 'cp ',runpath(1:lnrp),
+c     &                act(1:lnblnk(act)),'  ',upath(1:lnblnk(upath))
+c        else
+c          write(doit,'(5a)') 'copy /y ',runpath(1:lnrp),
+c     &                act(1:lnblnk(act)),'  ',upath(1:lnblnk(upath))
+c        endif
+c        call runit(doit,'-')
 
 C Daylight coefficients.
       elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then

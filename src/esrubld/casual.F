@@ -754,6 +754,7 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/BTIME/BTIMEP,BTIMEF
 
       common/uhome/upath
+      common/expath/runpath,pathtype
       common/filep/ifil
       COMMON/TC/ITC,ICNT
       common/trc/itrc
@@ -826,6 +827,8 @@ C Average illuminance in lighting zone (for h3k output)
       character outs*124,doit*124,outstr*124,cfgroot*24
 
       character*72 LCFGF,LTMPFL,LTMPFLA,upath,OUTCMD
+	  character*72 runpath
+	  character*24 pathtype
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
@@ -1314,7 +1317,8 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               call esppid(ipid)
               write(LTMPFLA,'(a,i7,a)') '.',ipid,'.dat'
               call st2file(LTMPFLA,LTMPFL)
-              write (LTMPFLA,'(a,a,a)')upath(1:lnblnk(upath)),'/',
+c              write (LTMPFLA,'(a,a,a)')upath(1:lnblnk(upath)),'/',
+              write (LTMPFLA,'(a,a,a)')runpath(1:lnblnk(runpath)),'/',
      &          LTMPFL(1:lnblnk(LTMPFL))
               INQUIRE (FILE=LTMPFLA(1:lnblnk(LTMPFLA)),EXIST=XST)
               if(XST)then
@@ -1763,7 +1767,8 @@ C Case of Step Up/Down with chosen sensors/lighting systems:
         IF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).GE.IOFFDT(ICOMP,N)) THEN
           ZFRAC(N)=0.0
           IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N)) THEN
+        ELSEIF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).LT.
+     &                                  IOFFDT(ICOMP,N)) THEN
           ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
           IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
         ELSEIF(zell.LT.SOFFRL.AND.zell.GE.SETPT(ICOMP,N))THEN
@@ -1800,7 +1805,8 @@ C systems:
           ZFRAC(N)=0.0
           DFRAC = 0.0
           IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
-        ELSEIF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).LT.IOFFDT(ICOMP,N))THEN
+        ELSEIF(zell.GE.SOFFRL.AND.IDTM(ICOMP,N).LT.
+     &                                IOFFDT(ICOMP,N))THEN
           ZFRAC(N)=SMEOUT(ICOMP,N)*SYSPER(ICOMP,N)
           DFRAC = SMLOUT(ICOMP,N)
           IDTM(ICOMP,N)=IDTM(ICOMP,N)+1
@@ -1814,10 +1820,12 @@ C systems:
           DFRAC = SMLOUT(ICOMP,N)
           IDTM(ICOMP,N)=0
         ELSE
-         XXX=((1.-SMEOUT(ICOMP,N))*SMLOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N))
+         XXX=((1.-SMEOUT(ICOMP,N))*SMLOUT(ICOMP,N))/
+     &   (1.-SMLOUT(ICOMP,N))
          YYY=SMEOUT(ICOMP,N)-XXX
          ZFRAC(N)=(((1.-SMEOUT(ICOMP,N))/(1.-SMLOUT(ICOMP,N)))*
-     &   ((SETPT(ICOMP,N)-zelum(N))/SETPT(ICOMP,N))+YYY)*SYSPER(ICOMP,N)
+     &   ((SETPT(ICOMP,N)-zelum(N))/SETPT(ICOMP,N))+YYY)*
+     &   SYSPER(ICOMP,N)
          DFRAC = (SETPT(ICOMP,N)-zelum(N))/SETPT(ICOMP,N)
          IDTM(ICOMP,N)=0
         ENDIF

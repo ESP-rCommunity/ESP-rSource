@@ -288,6 +288,10 @@ C dbspth (24 char) relative path to model specific databases folder
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
 
+      common/expath/runpath,pathtype
+      character*72 runpath
+	  character*24 pathtype
+
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
 C         the model, it must match one of the known fmttag.
@@ -528,7 +532,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER CONTMNAM*12,CNTMDESC*124,cntmfil*72
       character calename*32,calentag*12,calendayname*32
       character LWndSupp*72
-      character HDR*12
+      character HDR*12,fs*1
       character ipvact*3   ! to singnal internal or external IPV file
       character pstring*40 ! for season days and months
       integer INDU    ! to detect old zone utility files
@@ -546,6 +550,14 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
 
 C Check if running in dll mode.
       call isadll(dll)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Initalizing starting point for parsing simulation presets (*sps)
       iSet_start = 1
@@ -751,6 +763,7 @@ C embedded in the configuration file.
         elseif(WORD(1:7).eq.'*radpth')then
           CALL EGETRM(OUTSTR,K,radpth,'W','path to radnce',IER)
           IF(IER.NE.0)goto 1
+		  write(runpath,'(2a)')radpth(1:lnblnk(radpth)),fs
           goto 34
         elseif(WORD(1:7).eq.'*dbspth')then
           CALL EGETRM(OUTSTR,K,dbspth,'W','path to loc databases',IER)
