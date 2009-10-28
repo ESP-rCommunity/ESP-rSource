@@ -1,5 +1,5 @@
 *connections  for ahu_pp
-*Date Wed Jul 22 14:13:22 2009
+*Date Wed Sep 30 16:57:48 2009
      29   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External

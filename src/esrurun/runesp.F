@@ -51,6 +51,7 @@ C ************************************************************
 #include "uncertainty.h"
 #include "espriou.h"
 #include "esprdbfile.h"
+#include "material.h"
 #include "e2r_common.h"
       PARAMETER (MSTMC=20)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -105,12 +106,6 @@ C Uncertainty.
       common/imagfi/noimg,iton
       COMMON/BL1/dmdsdesc,bdmds
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
-
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
       
       CHARACTER INTER*144,INF*144
       character path*72,upath*72,cfgroot*24

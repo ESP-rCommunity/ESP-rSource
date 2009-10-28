@@ -3267,7 +3267,7 @@ C ********************************************************************
       common/pophelp/h(60)
       common/sctl/tcps,ictyp,iclaw,cm(misc)
 
-      DIMENSION SALT(9),PSALT (2), IVALS(9), IPVALS(1)
+      DIMENSION SALT(7),PSALT (2), IVALS(7), IPVALS(1)
       CHARACTER*82 VERT(20)
 
       CHARACTER outs*124,H*72,SSTR*96,TMP*96,SALT*40,KEY*1

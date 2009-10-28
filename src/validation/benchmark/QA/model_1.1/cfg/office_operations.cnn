@@ -1,5 +1,5 @@
 *connections  for office_operations
-*Date Wed Jul 22 17:24:43 2009
+*Date Fri Oct  2 13:07:57 2009
      44   # number of connections
    1   1   1   0   0  #    1 pt_general in manager >|< Identical environment
    1   2   1   0   0  #    2 part_frame in manager >|< Identical environment

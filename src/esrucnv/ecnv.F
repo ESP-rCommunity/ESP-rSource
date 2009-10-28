@@ -37,6 +37,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "material.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -93,13 +94,6 @@ C      character SHOCCshlFile*72,SHOCCshzFile*72
 C Name of current application
       common/APPNAME/cAppName
       character cAppName*12     
-
-C Material data array.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 

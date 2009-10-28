@@ -30,6 +30,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
 #include "e2r_common.h"
@@ -86,13 +87,6 @@ C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12      
-
-C Materials data array.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       CHARACTER H*72,outs*124,ITEM*30
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
@@ -1360,113 +1354,131 @@ C lfile contains path as well as file name.
       return
       end
 
-C **** copy of opendb from esruprj/eddb.F ******
-C *************** opendb ***************
-C Open the common databases - materials, multilayer constructions,
-C and optical db.
+C **** based on opendb from esruprj/eddb.F ******
+
+C Open materials constructions, multi-layer constructions and
+C optical properties databases. In the case of materials, first
+C assume it is a binary file, check its contents and if a problem
+C then scan new ascii format and if that does not work try the
+C older ascii materials file to fill the materials data arrays.
+C If sucessful the material common blocks will be filled and
+C closemat1 or closemat2 will be set.
+
       subroutine opendb(ier)
+#include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      common/OUTIN/IUOUT,IUIN
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      LOGICAL    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
-      DIMENSION ICLN(30)
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
       character SOPT*12,outs*124,GDESCR*36
 
       IER=0
 
-C Open currently named materials database.  Note that
-C by a minor rewrite of ICLN in rec 601 we can get by with changing
-C this to 24 words wide.
-      CALL ERPFREE(IFMAT,ISTAT)
-      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
-      IF(ier.ne.0)THEN
-        write(outs,'(a,a,a)') ' No materials database ',
-     &     LFMAT(1:lnblnk(LFMAT)),' found.'
-        call edisp(iuout,outs)
-        MATDBOK=.FALSE.
-      else
-
-C Also check to see if the file has correct info. 
-        IREC=601
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
-     &    (ICLN(I),I=1,30)
-        if(NCLASS.LE.0)then
-          goto 1000   ! no classifications so try alternatives
+C Scan the binary file data into materials commons and if this was
+C sucessful and matver was set to 1.1 in matformbin then we can
+C carry on using the materials common blocks for subsequent access.
+      call MATFROMBIN(IER)  ! fill materials common blocks
+      if(ier.eq.0)then
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
+          goto 139  !  commons filled carry on.
         else
           MATDBOK=.TRUE.
           matver = 0.0
           goto 139  !  a binary file found so carry on.
         endif
- 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-        if(ier.eq.-2)then
-          ier=0
-          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-          if(ier.ne.0)then
-            call usrmsg('No readable materials database was found',
-     &                  'or file was corrupt','W')
-            MATDBOK=.FALSE.
-          else
-            call eclose(matver,1.1,0.001,close)
-            if(close)then
-              call edisp(iuout,' Filled material data arrays...')
-              MATDBOK=.TRUE.
-            else
-              call usrmsg(
-     &          'No readable material database was found. ',
-     &          'check other warnings for advise.','W')
-              MATDBOK=.FALSE.
-            endif
-          endif
-        elseif(ier.eq.0)then
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
-            call edisp(iuout,' Filled material data arrays...')
+      elseif(ier.eq.-2.or.ier.eq.-3)then
+        ier=0  ! clear error state prior to rascimat call
+        goto 1000
+      elseif(ier.eq.-1)then
+        write(outs,'(3a)') ' Materials db ',
+     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MATDBOK=.FALSE.
+        ier=0  ! clear error state before continuing
+        goto 139  !  try the other databases.
+      endif
+
+C Check for ascii versions of the materials database.
+ 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
+      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
+        ier=0
+        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+        if(ier.ne.0)then
+          call usrmsg('No readable materials database was not found',
+     &                'or file was corrupt','W')
+          MATDBOK=.FALSE.
+        else
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
             MATDBOK=.TRUE.
+          else
+            call usrmsg(
+     &        'No readable Materials database was found!',
+     &        ' ','W')
+            MATDBOK=.FALSE.
           endif
         endif
+      elseif(ier.eq.0)then
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
+        endif
       endif
+
         
 C Read multilayer db information into common.
  139  CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
-        CALL ERMLDB(0,ITRU,IER)
-        IF(IER.NE.0)then
-          write(outs,'(a,a,a)') ' Problem with multilayer constr db ',
-     &     LFMAT(1:lnblnk(LFMAT)),'... '
+        CALL ERMLDB(0,IUOUT,IER)
+        IF(IER.eq.1)then
+          write(outs,'(3a)') 
+     &    ' Problems with materials used by Constructions db',
+     &     LFMAT(1:lnblnk(LFMAT)),'!'
           call edisp(iuout,outs)
+          call edisp(iuout,' ')
           MLDBOK=.FALSE.
+        ELSEIF(IER.eq.2)then
+
+          call edisp(iuout,
+     &      'There were many undefined materials in the constructions')
+          call edisp(iuout,'please check your model.')
         else
-C          call edisp(iuout,' opened multilayer constructions db.')
+
+C Scan was ok so set mldbok to true.
           MLDBOK=.TRUE.
         endif
       else
-        write(outs,'(a,a,a)') ' No multilayer constructions db ',
-     &     LFMAT(1:lnblnk(LFMAT)),' found.'
+
+C Could not find Constructions db at this time, report to user.
+        write(outs,'(3a)') 'Constructions db ',
+     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
         call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MLDBOK=.FALSE.
       endif
 
-C Open optical database and read into common.
+C Open Ooptical Properties db and read into common.
       SOPT='ALL'
       CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
       if(ier.ne.0)then
-        call usrmsg(' Optical db not found or there was a problem',
-     &  ' reading it. Please check database management ASAP .','W')
+        call usrmsg('Optical Properties db not found or',
+     &              'there was a problem reading it!','W')
         OPTKOK=.FALSE.
       else
-C        call edisp(iuout,' opened optical properties db.')
         OPTKOK=.TRUE.
       endif
 

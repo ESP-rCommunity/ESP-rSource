@@ -1,0 +1,166 @@
+Synopsis
+ 
+This is a synopsis of the model test case 215 defined in 215.cfg generated on
+Mon Oct 12 20:45:54 2009. Notes associated with the model are in README215.txt
+ 
+The model is located at latitude   39.80 with a longitude difference of   0.10
+from the local time meridian. The year used in simulations is 1991 and
+weekends occur on Saturday and Sunday.
+The site exposure is isolated rural site site and the ground reflectance is
+0.20.
+ 
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
+ 
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+Ground temperatures Jan-Dec:
+  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0  10.0
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ pressure distributions : pressc.db1
+ materials              : ../dbs/materialdb.a
+ constructions          : ../dbs/constrdb
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : ../dbs/opticdb
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+proj cntrl
+ 
+Zones control includes  1 functions.
+no descrip
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+ There have been  1 day types defined.
+ Day type  1 is valid Tue-01-Jan to Tue-31-Dec, 1991 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       100000.0 0.0 100000.0 0.0 20.0 20.0 0.0
+basic control: max heating capacity 100000.0W min heating capacity 0.0W max cooling
+capacity 100000.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
+20.00C.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) 215          << control  1
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 215           129.6   9   171.6     0.0    48.0  215 describes a...
+   all           130.    9    172.      0.     48.
+ 
+ 
+ Zone 215 ( 1) is composed of 9 surfaces and 18 vertices.
+ It encloses a volume of 130.m^3 of space, with a total surface
+ area of 172.m^2 & approx floor area of 48.0m^2
+ 215 describes a...
+ There is 123.60m2 of exposed surface area, 75.600m2 of which is vertical.
+ Outside walls are 157.50 % of floor area & avg U of 0.903 & UA of 68.298
+ Flat roof is 100.00 % of floor area & avg U of 0.316 & UA of 15.174
+ 
+ A summary of the surfaces in 215( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  4.80    180.   0. South_Wall   OPAQUE VERT LWextwall3   ||< external
+  2  4.80    180.   0. South_Wall2  OPAQUE VERT LWextwall3   ||< external
+  3  16.2     90.   0. East_Wall    OPAQUE VERT LWextwall3   ||< external
+  4  21.6      0.   0. North_Wall   OPAQUE VERT LWextwall3   ||< external
+  5  16.2    270.   0. West_Wall    OPAQUE VERT LWextwall3   ||< external
+  6  6.00    180.   0. Window       OPAQUE VERT op_glass3    ||< external
+  7  6.00    180.   0. Window2      OPAQUE VERT op_glass3    ||< external
+  8  48.0      0.  90. Roof         OPAQUE CEIL LWroof3      ||< external
+  9  48.0      0. -90. Floor        OPAQUE FLOR LWfloor3     ||< user def grnd profile  1
+ 
+ 
+ Solar insolation focused on surface Floor        (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ Explicit viewfactors have been derived for this zone.
+ 
+ 
+ Air schedule notes:
+Nothing written yet.
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
+ 
+Notes:
+Nothing written yet.
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 48.000m2, wall area is 75.600m2, window area is 0.00m2.
+ Sloped roof area is 0.00m2, flat roof area is 48.000m2, skylight area is 0.00m2.
+ There is 123.60m2 of outside surface area, 75.600m2 of which is vertical.
+ 
+ Outside walls are 157.50 % of floor area & avg U of 0.903 & UA of 68.298
+ Flat roof is 100.00 % of floor area & avg U of 0.316 & UA of 15.174
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: LWextwall3
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     6    9.0     0.140   530.   900. 0.10 0.10    12.  0.06 wood_sid_0.1_0.1 : wood_sid_0.1_0.1
+    2    5   66.0     0.040    12.   840. 0.90 0.90    12.  1.65 fibreglass : fibreglass
+ Int     3   12.0     0.160   950.   840. 0.90 0.10    12.  0.08 P_board_0.9_0.1 : P_board_0.9_0.1
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.510  0.518  0.500 (partition)  0.488
+ Total area of LWextwall3 is     63.60
+ 
+ Details of opaque construction: LWfloor3
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    14  250.0     0.040    10.   100. 0.90 0.90    12.  6.25 floor_insul : floor_insul
+    2   14  250.0     0.040    10.   100. 0.90 0.90    12.  6.25 floor_insul : floor_insul
+    3   14  250.0     0.040    10.   100. 0.90 0.90    12.  6.25 floor_insul : floor_insul
+    4   14  253.0     0.040    10.   100. 0.90 0.90    12.  6.32 floor_insul : floor_insul
+ Int    12   25.0     0.140   650.  1200. 0.90 0.10    12.  0.18 timb_floor_0.9_0.1 : timb_floor_0.9_0.1
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.039  0.039  0.039 (partition)  0.039
+ Total area of LWfloor3 is     48.00
+ 
+ Details of opaque construction: LWroof3
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     6   19.0     0.140   530.   900. 0.10 0.10    12.  0.14 wood_sid_0.1_0.1 : wood_sid_0.1_0.1
+    2    5  111.8     0.040    12.   840. 0.90 0.90    12.  2.80 fibreglass : fibreglass
+ Int     3   10.0     0.160   950.   840. 0.90 0.10    12.  0.06 P_board_0.9_0.1 : P_board_0.9_0.1
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.316  0.319  0.312 (partition)  0.307
+ Total area of LWroof3 is     48.00
+ 
+ Details of opaque construction: op_glass3
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    15    3.2     1.060  2500.   750. 0.10 0.10    12.  0.00 glass_0.1_0.1 : glass_0.1_0.1
+    2    0   13.0     0.000     0.     0. 0.99 0.99     1.  0.16 air  0.16 0.16 0.16
+ Int    17    3.0     1.060  2500.   750. 0.90 0.10    12.  0.00 glass_0.9_0.1 : glass_0.9_0.1
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.986  3.280  2.668 (partition)  2.354
+ Total area of op_glass3 is     12.00

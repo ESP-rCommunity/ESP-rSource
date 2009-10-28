@@ -47,6 +47,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (SBEM database)
 C default file names for databases
+#include "material.h"
 #include "espriou.h"
 C espriou.h provides currentfile, defdbfl exemfl.
 #include "control.h"
@@ -163,12 +164,6 @@ C Dispersed demands notes and file name.
 C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
-
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
 
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath

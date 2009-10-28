@@ -1,0 +1,314 @@
+Synopsis
+ 
+This is a synopsis of the model ISO 13791 - thermal conduction through opaque
+surfaces test defined in cond.cfg generated on Thu Oct 15 21:51:02 2009. Notes
+associated with the model are in ../README
+ 
+The model is located at latitude   50.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 2000 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Project name:  not yet defined
+Building address:  not yet defined
+Building city:  not yet defined
+Building Postcode:  not yet defined
+ 
+Building owner name:  not yet defined
+Building owner telephone:  not yet defined
+Building owner address:  not yet defined
+Building owner city:  not yet defined
+Building owner Postcode:  not yet defined
+ 
+Simulationist name:  not yet defined
+Simulationist telephone:  not yet defined
+Simulationist address:  not yet defined
+Simulationist city:  not yet defined
+Simulationist postcode:  not yet defined
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ pressure distributions : pressc.db1
+ materials              : ../databases/prim.db.a
+ constructions          : ../databases/Cond.mlc
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+no overall control description supplied
+ 
+Zones control includes  1 functions.
+no zone control description supplied
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+ There have been  2 day types defined.
+ Day type  1 is valid Sat-01-Jan to Tue-18-Jan, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       1000.0 0.0 1000.0 0.0 20.0 20.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
+20.00C.
+ Day type  2 is valid Wed-19-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+ 
+ Zone to contol loop linkages:
+ zone ( 1) Test_1       << control  1
+ zone ( 2) Test_2       << control  1
+ zone ( 3) Test_4       << control  1
+ zone ( 4) Test_5       << control  1
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 Test_1          1.0   6     6.0     0.0     1.0  Test_1 describes a...
+ 2 Test_2          1.0   6     6.0     0.0     1.0  Test_2 describes a...
+ 3 Test_4          1.0   6     6.0     0.0     1.0  Test_4 describes a...
+ 4 Test_5          1.0   6     6.0     0.0     1.0  Test_5 describes a...
+   all             4.   24     24.      0.      4.
+ 
+ 
+ Zone Test_1 ( 1) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 1.00m^3 of space, with a total surface
+ area of 6.00m^2 & approx floor area of 1.000m^2
+ Test_1 describes a...
+ There is 6.0000m2 of exposed surface area, 4.0000m2 of which is vertical.
+ Outside walls are 500.00 % of floor area & avg U of 2.970 & UA of 14.851
+ Flat roof is 100.00 % of floor area & avg U of 2.970 & UA of 2.9703
+ 
+ A summary of the surfaces in Test_1( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  1.000   180.   0. Surf-1       OPAQUE VERT Surf_type_1  ||< external
+  2  1.000    90.   0. Surf-2       OPAQUE VERT Surf_type_1  ||< external
+  3  1.000     0.   0. Surf-3       OPAQUE VERT Surf_type_1  ||< external
+  4  1.000   270.   0. Surf-4       OPAQUE VERT Surf_type_1  ||< external
+  5  1.000     0.  90. Surf-5       OPAQUE CEIL Surf_type_1  ||< external
+  6  1.000     0. -90. Surf-6       OPAQUE FLOR Surf_type_1  ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Number of control periods:  1
+ Number of surfaces = 6
+ 
+ Period  1 start   0.00 finish  24.00
+ User specified convection coefficients
+ User supplied hc values
+ Surface            Inside   Outside
+ 1 Surf-1       (VERT)      2.500     8.000
+ 2 Surf-2       (VERT)      2.500     8.000
+ 3 Surf-3       (VERT)      2.500     8.000
+ 4 Surf-4       (VERT)      2.500     8.000
+ 5 Surf-5       (CEIL)      2.500     8.000
+ 6 Surf-6       (FLOR)      2.500     8.000
+ 
+ 
+ Air schedule notes:
+no operations notes (yet)
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
+ 
+Notes:
+no operations notes (yet)
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone Test_2 ( 2) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 1.00m^3 of space, with a total surface
+ area of 6.00m^2 & approx floor area of 1.000m^2
+ Test_2 describes a...
+ There is 6.0000m2 of exposed surface area, 4.0000m2 of which is vertical.
+ Outside walls are 500.00 % of floor area & avg U of 0.375 & UA of 1.8727
+ Flat roof is 99.999 % of floor area & avg U of 0.375 & UA of 0.37453
+ 
+ A summary of the surfaces in Test_2( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  1.000   170.   0. Surf-1       OPAQUE VERT Surf_type_2  ||< external
+  2  1.00     80.   0. Surf-2       OPAQUE VERT Surf_type_2  ||< external
+  3  1.00    350.   0. Surf-3       OPAQUE VERT Surf_type_2  ||< external
+  4  1.000   260.   0. Surf-4       OPAQUE VERT Surf_type_2  ||< external
+  5  1.000     0.  90. Surf-5       OPAQUE CEIL Surf_type_2  ||< external
+  6  1.000     0. -90. Surf-6       OPAQUE FLOR Surf_type_2  ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Number of control periods:  1
+ Number of surfaces = 6
+ 
+ Period  1 start   0.00 finish  24.00
+ User specified convection coefficients
+ User supplied hc values
+ Surface            Inside   Outside
+ 1 Surf-1       (VERT)      2.500     8.000
+ 2 Surf-2       (VERT)      2.500     8.000
+ 3 Surf-3       (VERT)      2.500     8.000
+ 4 Surf-4       (VERT)      2.500     8.000
+ 5 Surf-5       (CEIL)      2.500     8.000
+ 6 Surf-6       (FLOR)      2.500     8.000
+ 
+ Uses same operations as zone Test_1
+ 
+ ____________________________________________________________
+ 
+ Zone Test_4 ( 3) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 1.00m^3 of space, with a total surface
+ area of 6.00m^2 & approx floor area of 1.000m^2
+ Test_4 describes a...
+ There is 6.0000m2 of exposed surface area, 4.0000m2 of which is vertical.
+ Outside walls are 500.00 % of floor area & avg U of 0.348 & UA of 1.7407
+ Flat roof is 100.00 % of floor area & avg U of 0.348 & UA of 0.34814
+ 
+ A summary of the surfaces in Test_4( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  1.000   180.   0. Surf-1       OPAQUE VERT Surf_type_4  ||< external
+  2  1.000    90.   0. Surf-2       OPAQUE VERT Surf_type_4  ||< external
+  3  1.000     0.   0. Surf-3       OPAQUE VERT Surf_type_4  ||< external
+  4  1.000   270.   0. Surf-4       OPAQUE VERT Surf_type_4  ||< external
+  5  1.000     0.  90. Surf-5       OPAQUE CEIL Surf_type_4  ||< external
+  6  1.000     0. -90. Surf-6       OPAQUE FLOR Surf_type_4  ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Number of control periods:  1
+ Number of surfaces = 6
+ 
+ Period  1 start   0.00 finish  24.00
+ User specified convection coefficients
+ User supplied hc values
+ Surface            Inside   Outside
+ 1 Surf-1       (VERT)      2.500     8.000
+ 2 Surf-2       (VERT)      2.500     8.000
+ 3 Surf-3       (VERT)      2.500     8.000
+ 4 Surf-4       (VERT)      2.500     8.000
+ 5 Surf-5       (CEIL)      2.500     8.000
+ 6 Surf-6       (FLOR)      2.500     8.000
+ 
+ Uses same operations as zone Test_1
+ 
+ ____________________________________________________________
+ 
+ Zone Test_5 ( 4) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 1.00m^3 of space, with a total surface
+ area of 6.00m^2 & approx floor area of 1.000m^2
+ Test_5 describes a...
+ There is 6.0000m2 of exposed surface area, 4.0000m2 of which is vertical.
+ Outside walls are 500.00 % of floor area & avg U of 0.348 & UA of 1.7407
+ Flat roof is 100.00 % of floor area & avg U of 0.348 & UA of 0.34814
+ 
+ A summary of the surfaces in Test_5( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  1.000   180.   0. Surf-1       OPAQUE VERT Surf_type_5  ||< external
+  2  1.000    90.   0. Surf-2       OPAQUE VERT Surf_type_5  ||< external
+  3  1.000     0.   0. Surf-3       OPAQUE VERT Surf_type_5  ||< external
+  4  1.000   270.   0. Surf-4       OPAQUE VERT Surf_type_5  ||< external
+  5  1.000     0.  90. Surf-5       OPAQUE CEIL Surf_type_5  ||< external
+  6  1.000     0. -90. Surf-6       OPAQUE FLOR Surf_type_5  ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Number of control periods:  1
+ Number of surfaces = 6
+ 
+ Period  1 start   0.00 finish  24.00
+ User specified convection coefficients
+ User supplied hc values
+ Surface            Inside   Outside
+ 1 Surf-1       (VERT)      2.500     8.000
+ 2 Surf-2       (VERT)      2.500     8.000
+ 3 Surf-3       (VERT)      2.500     8.000
+ 4 Surf-4       (VERT)      2.500     8.000
+ 5 Surf-5       (CEIL)      2.500     8.000
+ 6 Surf-6       (FLOR)      2.500     8.000
+ 
+ Uses same operations as zone Test_1
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 4.0000m2, wall area is 20.000m2, window area is 0.00m2.
+ Sloped roof area is 0.00m2, flat roof area is 4.0000m2, skylight area is 0.00m2.
+ There is 24.000m2 of outside surface area, 16.000m2 of which is vertical.
+ 
+ Outside walls are 500.00 % of floor area & avg U of 1.010 & UA of 20.206
+ Flat roof is 100.00 % of floor area & avg U of 1.010 & UA of 4.0411
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: Surf_type_1
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+    2    1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+    3    1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+ Int     1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.970  3.261  2.655 (partition)  2.344
+ Total area of Surf_type_1 is      6.00
+ 
+ Details of opaque construction: Surf_type_2
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     2   50.0     0.040    50.  1000. 0.01 0.01    10.  1.25 material B : material B
+ Int     2   50.0     0.040    50.  1000. 0.01 0.01    10.  1.25 material B : material B
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.375  0.379  0.369 (partition)  0.362
+ Total area of Surf_type_2 is      6.00
+ 
+ Details of opaque construction: Surf_type_4
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+    2    1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+    3    1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+    4    1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+    5    2   50.0     0.040    50.  1000. 0.01 0.01    10.  1.25 material B : material B
+    6    2   50.0     0.040    50.  1000. 0.01 0.01    10.  1.25 material B : material B
+ Int     3    5.0     0.140   800.  1500. 0.01 0.01    10.  0.04 material C : material C
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.348  0.352  0.343 (partition)  0.338
+ Total area of Surf_type_4 is      6.00
+ 
+ Details of opaque construction: Surf_type_5
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     3    5.0     0.140   800.  1500. 0.01 0.01    10.  0.04 material C : material C
+    2    2   50.0     0.040    50.  1000. 0.01 0.01    10.  1.25 material B : material B
+    3    2   50.0     0.040    50.  1000. 0.01 0.01    10.  1.25 material B : material B
+    4    1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+    5    1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+    6    1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+ Int     1   50.0     1.200  2000.  1000. 0.01 0.01    10.  0.04 material A : material A
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.348  0.352  0.343 (partition)  0.338
+ Total area of Surf_type_5 is      6.00

@@ -4263,6 +4263,8 @@ C then it represents the zone which is currently being edited.
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
+#include "esprdbfile.h"
+#include "material.h"
 #include "espriou.h"
 
       COMMON/FILEP/IFIL
@@ -4278,12 +4280,6 @@ C then it represents the zone which is currently being edited.
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/PREC8/SLAT,SLON
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, ext = 2,
 C       partn = 3, similar = 4, surfs + obs+ ground = 5, ground only = 6

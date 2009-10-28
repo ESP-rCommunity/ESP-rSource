@@ -1,13 +1,13 @@
 # thermophysical properties of pv_layer4 defined in ../zones/pv_layer4.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
-     3,     1  #  1 Surf-1       frame       
+     3,     1  #  1 frame        frame       
      3,     1  #  2 Surf-2       frame       
      3,     0  #  3 Surf-3       pv_back_wall
      3,     1  #  4 Surf-4       frame       
      3,     1  #  5 Surf-5       frame       
      3,     1  #  6 Surf-6       frame       
-     4,     0  #  7 pv_base_fm   a-Si_PV     
+     4,     0  #  7 pv           a-Si_PV     
      1,     0  #  8 pv1-glaz     clear_glaz  
      1,     0  #  9 pv_glaz4     clear_glaz  
 # air gap position & resistance for surface  1
@@ -21,7 +21,7 @@
 # air gap position & resistance for surface  6
   2,   0.170,
 # conduc-  |  density | specific | thick- |dpnd|  ref. |  temp. |moisture| surf|lyr
-# tivity   |          | heat     | ness(m)|type|  temp | factor | factor |     |  
+# tivity   |          | heat     |ness(m) |type|  temp | factor | factor |     |  
    210.0000,    2700.0,     880.0,  0.0020,   0,   0.00, 0.00000, 0.00000  #  1  1
      0.0000,       0.0,       0.0,  0.0200,   0,   0.00, 0.00000, 0.00000  #     2
    210.0000,    2700.0,     880.0,  0.0020,   0,   0.00, 0.00000, 0.00000  #     3
@@ -47,12 +47,10 @@
      1.0500,    2500.0,     750.0,  0.0040,   0,   0.00, 0.00000, 0.00000  #  8  1
      1.0500,    2500.0,     750.0,  0.0040,   0,   0.00, 0.00000, 0.00000  #  9  1
 # for each surface: inside face emissivity
-  0.22 0.22 0.20 0.22 0.22 0.22 0.83 0.83 0.83
+ 0.22000,0.22000,0.20000,0.22000,0.22000,0.22000,0.83000,0.83000,0.83000
 # for each surface: outside face emissivity
-  0.22 0.22 0.20 0.22 0.22 0.22 0.83 0.83 0.83
+ 0.22000,0.22000,0.20000,0.22000,0.22000,0.22000,0.83000,0.83000,0.83000
 # for each surface: inside face solar absorptivity
-  0.20 0.20 0.40 0.20 0.20 0.20 0.05 0.05 0.05
+ 0.20000,0.20000,0.40000,0.20000,0.20000,0.20000,0.0500000,0.0500000,0.0500000
 # for each surface: outside face solar absorptivity
-  0.20 0.20 0.40 0.20 0.20 0.20 0.05 0.05 0.05
-# inside and exterior glazing maintenance factors
-   1.00   1.00
+ 0.20000,0.20000,0.40000,0.20000,0.20000,0.20000,0.0500000,0.0500000,0.0500000

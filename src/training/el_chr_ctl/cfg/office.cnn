@@ -1,71 +1,71 @@
 *connections  for office
-*Date Wed Mar 23 10:20:00 2005
+*Date Fri Oct  2 09:04:50 2009
      68   # number of connections
-   1   1   1   0   0  #   1  Right_wall in office-s >|< Identical environment
-   1   2   1   0   0  #   2  Rear_wall in office-s >|< Identical environment
-   1   3   1   0   0  #   3  Left_wall in office-s >|< Identical environment
-   1   4   1   0   0  #   4  Floor in office-s >|< Identical environment
-   1   5   1   0   0  #   5  Ceiling in office-s >|< Identical environment
-   1   6   0   0   0  #   6  Parapet in office-s is External
-   1   7   0   0   0  #   7  Frame-bot in office-s is External
-   1   8   0   0   0  #   8  Frame-top in office-s is External
-   1   9   0   0   0  #   9  Frame-1 in office-s is External
-   1  10   0   0   0  #  10  Frame-2 in office-s is External
-   1  11   0   0   0  #  11  Frame-3 in office-s is External
-   1  12   0   0   0  #  12  Frame-4 in office-s is External
-   1  13   0   0   0  #  13  Frame-5 in office-s is External
-   1  14   0   0   0  #  14  Window-1 in office-s is External
-   1  15   0   0   0  #  15  Window-2 in office-s is External
-   1  16   0   0   0  #  16  Window-3 in office-s is External
-   1  17   0   0   0  #  17  Window-4 in office-s is External
-   2   1   1   0   0  #  18  Right_wall in office-w >|< Identical environment
-   2   2   1   0   0  #  19  Rear_wall in office-w >|< Identical environment
-   2   3   1   0   0  #  20  Left_wall in office-w >|< Identical environment
-   2   4   1   0   0  #  21  Floor in office-w >|< Identical environment
-   2   5   1   0   0  #  22  Ceiling in office-w >|< Identical environment
-   2   6   0   0   0  #  23  Parapet in office-w is External
-   2   7   0   0   0  #  24  Frame-bot in office-w is External
-   2   8   0   0   0  #  25  Frame-top in office-w is External
-   2   9   0   0   0  #  26  Frame-1 in office-w is External
-   2  10   0   0   0  #  27  Frame-2 in office-w is External
-   2  11   0   0   0  #  28  Frame-3 in office-w is External
-   2  12   0   0   0  #  29  Frame-4 in office-w is External
-   2  13   0   0   0  #  30  Frame-5 in office-w is External
-   2  14   0   0   0  #  31  Window-1 in office-w is External
-   2  15   0   0   0  #  32  Window-2 in office-w is External
-   2  16   0   0   0  #  33  Window-3 in office-w is External
-   2  17   0   0   0  #  34  Window-4 in office-w is External
-   3   1   1   0   0  #  35  Right_wall in office-n >|< Identical environment
-   3   2   1   0   0  #  36  Rear_wall in office-n >|< Identical environment
-   3   3   1   0   0  #  37  Left_wall in office-n >|< Identical environment
-   3   4   1   0   0  #  38  Floor in office-n >|< Identical environment
-   3   5   1   0   0  #  39  Ceiling in office-n >|< Identical environment
-   3   6   0   0   0  #  40  Parapet in office-n is External
-   3   7   0   0   0  #  41  Frame-bot in office-n is External
-   3   8   0   0   0  #  42  Frame-top in office-n is External
-   3   9   0   0   0  #  43  Frame-1 in office-n is External
-   3  10   0   0   0  #  44  Frame-2 in office-n is External
-   3  11   0   0   0  #  45  Frame-3 in office-n is External
-   3  12   0   0   0  #  46  Frame-4 in office-n is External
-   3  13   0   0   0  #  47  Frame-5 in office-n is External
-   3  14   0   0   0  #  48  Window-1 in office-n is External
-   3  15   0   0   0  #  49  Window-2 in office-n is External
-   3  16   0   0   0  #  50  Window-3 in office-n is External
-   3  17   0   0   0  #  51  Window-4 in office-n is External
-   4   1   1   0   0  #  52  Right_wall in office-e >|< Identical environment
-   4   2   1   0   0  #  53  Rear_wall in office-e >|< Identical environment
-   4   3   1   0   0  #  54  Left_wall in office-e >|< Identical environment
-   4   4   1   0   0  #  55  Floor in office-e >|< Identical environment
-   4   5   1   0   0  #  56  Ceiling in office-e >|< Identical environment
-   4   6   0   0   0  #  57  Parapet in office-e is External
-   4   7   0   0   0  #  58  Frame-bot in office-e is External
-   4   8   0   0   0  #  59  Frame-top in office-e is External
-   4   9   0   0   0  #  60  Frame-1 in office-e is External
-   4  10   0   0   0  #  61  Frame-2 in office-e is External
-   4  11   0   0   0  #  62  Frame-3 in office-e is External
-   4  12   0   0   0  #  63  Frame-4 in office-e is External
-   4  13   0   0   0  #  64  Frame-5 in office-e is External
-   4  14   0   0   0  #  65  Window-1 in office-e is External
-   4  15   0   0   0  #  66  Window-2 in office-e is External
-   4  16   0   0   0  #  67  Window-3 in office-e is External
-   4  17   0   0   0  #  68  Window-4 in office-e is External
+   1   1   1   0   0  #    1 Right_wall in office-s >|< Identical environment
+   1   2   1   0   0  #    2 Rear_wall in office-s >|< Identical environment
+   1   3   1   0   0  #    3 Left_wall in office-s >|< Identical environment
+   1   4   1   0   0  #    4 Floor in office-s >|< Identical environment
+   1   5   1   0   0  #    5 Ceiling in office-s >|< Identical environment
+   1   6   0   0   0  #    6 Parapet in office-s is External
+   1   7   0   0   0  #    7 Frame-bot in office-s is External
+   1   8   0   0   0  #    8 Frame-top in office-s is External
+   1   9   0   0   0  #    9 Frame-1 in office-s is External
+   1  10   0   0   0  #   10 Frame-2 in office-s is External
+   1  11   0   0   0  #   11 Frame-3 in office-s is External
+   1  12   0   0   0  #   12 Frame-4 in office-s is External
+   1  13   0   0   0  #   13 Frame-5 in office-s is External
+   1  14   0   0   0  #   14 Window-1 in office-s is External
+   1  15   0   0   0  #   15 Window-2 in office-s is External
+   1  16   0   0   0  #   16 Window-3 in office-s is External
+   1  17   0   0   0  #   17 Window-4 in office-s is External
+   2   1   1   0   0  #   18 Right_wall in office-w >|< Identical environment
+   2   2   1   0   0  #   19 Rear_wall in office-w >|< Identical environment
+   2   3   1   0   0  #   20 Left_wall in office-w >|< Identical environment
+   2   4   1   0   0  #   21 Floor in office-w >|< Identical environment
+   2   5   1   0   0  #   22 Ceiling in office-w >|< Identical environment
+   2   6   0   0   0  #   23 Parapet in office-w is External
+   2   7   0   0   0  #   24 Frame-bot in office-w is External
+   2   8   0   0   0  #   25 Frame-top in office-w is External
+   2   9   0   0   0  #   26 Frame-1 in office-w is External
+   2  10   0   0   0  #   27 Frame-2 in office-w is External
+   2  11   0   0   0  #   28 Frame-3 in office-w is External
+   2  12   0   0   0  #   29 Frame-4 in office-w is External
+   2  13   0   0   0  #   30 Frame-5 in office-w is External
+   2  14   0   0   0  #   31 Window-1 in office-w is External
+   2  15   0   0   0  #   32 Window-2 in office-w is External
+   2  16   0   0   0  #   33 Window-3 in office-w is External
+   2  17   0   0   0  #   34 Window-4 in office-w is External
+   3   1   1   0   0  #   35 Right_wall in office-n >|< Identical environment
+   3   2   1   0   0  #   36 Rear_wall in office-n >|< Identical environment
+   3   3   1   0   0  #   37 Left_wall in office-n >|< Identical environment
+   3   4   1   0   0  #   38 Floor in office-n >|< Identical environment
+   3   5   1   0   0  #   39 Ceiling in office-n >|< Identical environment
+   3   6   0   0   0  #   40 Parapet in office-n is External
+   3   7   0   0   0  #   41 Frame-bot in office-n is External
+   3   8   0   0   0  #   42 Frame-top in office-n is External
+   3   9   0   0   0  #   43 Frame-1 in office-n is External
+   3  10   0   0   0  #   44 Frame-2 in office-n is External
+   3  11   0   0   0  #   45 Frame-3 in office-n is External
+   3  12   0   0   0  #   46 Frame-4 in office-n is External
+   3  13   0   0   0  #   47 Frame-5 in office-n is External
+   3  14   0   0   0  #   48 Window-1 in office-n is External
+   3  15   0   0   0  #   49 Window-2 in office-n is External
+   3  16   0   0   0  #   50 Window-3 in office-n is External
+   3  17   0   0   0  #   51 Window-4 in office-n is External
+   4   1   1   0   0  #   52 Right_wall in office-e >|< Identical environment
+   4   2   1   0   0  #   53 Rear_wall in office-e >|< Identical environment
+   4   3   1   0   0  #   54 Left_wall in office-e >|< Identical environment
+   4   4   1   0   0  #   55 Floor in office-e >|< Identical environment
+   4   5   1   0   0  #   56 Ceiling in office-e >|< Identical environment
+   4   6   0   0   0  #   57 Parapet in office-e is External
+   4   7   0   0   0  #   58 Frame-bot in office-e is External
+   4   8   0   0   0  #   59 Frame-top in office-e is External
+   4   9   0   0   0  #   60 Frame-1 in office-e is External
+   4  10   0   0   0  #   61 Frame-2 in office-e is External
+   4  11   0   0   0  #   62 Frame-3 in office-e is External
+   4  12   0   0   0  #   63 Frame-4 in office-e is External
+   4  13   0   0   0  #   64 Frame-5 in office-e is External
+   4  14   0   0   0  #   65 Window-1 in office-e is External
+   4  15   0   0   0  #   66 Window-2 in office-e is External
+   4  16   0   0   0  #   67 Window-3 in office-e is External
+   4  17   0   0   0  #   68 Window-4 in office-e is External

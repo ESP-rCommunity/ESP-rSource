@@ -3768,14 +3768,10 @@ C existing and new controls should be added here.
 #include "building.h"
 #include "tdf2.h"
 #include "control.h"
+#include "esprdbfile.h"
+#include "material.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       COMMON/OUTIN/IUOUT,IUIN
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)

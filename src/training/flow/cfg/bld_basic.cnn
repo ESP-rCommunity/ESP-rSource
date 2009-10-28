@@ -1,5 +1,5 @@
-*connections  for bld_flw_simp
-*Date Mon Jul 13 17:44:11 2009
+*connections  for bld_flw_ctl
+*Date Tue Sep 29 17:27:43 2009
      29   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External

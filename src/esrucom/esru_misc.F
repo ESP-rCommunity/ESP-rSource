@@ -3263,31 +3263,14 @@ C databases have been opened.
       subroutine asksnode(icomp,is,ilay,inode,ier)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
 
 C Special materials file flag
       DIMENSION PNAM(ME),item(ME+10)
@@ -3295,7 +3278,7 @@ C Special materials file flag
       character item*32,NAM*72,PNAM*20,H*72,outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      logical close  ! to check version of materials db.
+      logical closemat1,closemat2  ! to check version of materials db.
 
 C Check name of surface with construction name in MLC common.
       imatch=0
@@ -3310,7 +3293,8 @@ C Check name of surface with construction name in MLC common.
          ier=1
          return
       endif
-      call eclose(matver,1.1,0.001,close)  ! check materials version.
+      call eclose(matver,1.1,0.001,closemat1)  ! check materials version 1.1.
+      call eclose(matver,1.2,0.001,closemat2)  ! check materials version 1.2.
         
 C Write menu displaying a list of layer names
       header=3
@@ -3323,10 +3307,9 @@ C Write menu displaying a list of layer names
 C Pick up the material name of each layer by reading data from
 C materials db or from the.
         iel=IPR(imatch,j)
-        if(close)then
-          legmat=iel   ! which legacy index
-          if(legmat.gt.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
+        if(closemat1.or.closemat2)then
+          matarrayindex=IPRMAT(imatch,j)
+          if(matarrayindex.ge.0)then
             write(NAM,'(a)') matname(matarrayindex)(1:32)
             PNAM(j)=NAM(1:20)
           endif
