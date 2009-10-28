@@ -7131,7 +7131,7 @@ int		len_title;
              XSetForeground(theDisp,theGC, fg); XSetBackground(theDisp,theGC, bg);
              Timer(300);
              xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */
-             *ino = (long int) i +1;  /* compensate for c starting at zero */
+             *ino = (long int) i + (long int) 1;  /* compensate for c starting at zero */
              *uresp = (long int) 0;
    	     break;
            }
