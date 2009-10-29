@@ -1768,15 +1768,15 @@ C Descriptive label for a zone load or casual gain types.
           write(outs,'(a,a)')'Day Gain Type   Period Sensible  ',
      &    'Latent  Radiant  Convec p.f +/-  Power Voltage Phase'
           call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  labl   Hours  Magn.(W)  ',
-     &    'Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)'
+          write(outs,'(a,a)')'    No.  labl   Hours  Magn.     ',
+     &    'Magn.    Frac     Frac    (-) (-)    (W)    (V) (rgb)'
           call edisp(itru,outs)
         else  
           write(outs,'(a,a)')'Day Gain Type     Period Sensible  ',
      &    'Latent     Radiant    Convec'
           call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  labl     Hours  Magn.(W)  ',
-     &    'Magn. (W)  Frac       Frac'
+          write(outs,'(a,a)')'    No.  labl     Hours  Magn.     ',
+     &    'Magn.      Frac       Frac'
           call edisp(itru,outs)
         endif
       IF(NCAS(IDTY).GT.0)THEN

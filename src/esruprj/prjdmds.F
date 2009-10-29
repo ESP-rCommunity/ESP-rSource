@@ -1357,7 +1357,7 @@ C Calendar commons.
           call edisp(itru,
      &  ' Gain Type Start Finish Sensible  Latent    Radiant   Convec')
           call edisp(itru,
-     &  '           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac')
+     &  '           Hour  Hour   Magn.     Magn.     Frac      Frac')
           DO 1270 I=1,NBCAS(idt)
             if(IBCGT(idt,i).gt.0)then
               WRITE(outs,5360)I,blodlabel(IABS(IBCGT(idt,I))),'W  ',
