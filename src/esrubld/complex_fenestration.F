@@ -3926,8 +3926,9 @@ C      real slat_angleX
       real tmrt                     ! mrt temperature [C]
       real solrad_dir               ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
       real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
+      real ang                      ! incident angle of radiation on surface
       character msgout*124
-      
+
 C Prior to initiating control logic, set the default slat angle and 
 C shading state for the next time step in all zones and all CFC types
 C containing a shade layer.    
@@ -4108,7 +4109,8 @@ C Determine appropriate solar radiation parameter to use
             
 C Check that ext. rad sensor is on external surface
           if(IE(isen2,isen3).eq.0)then
-            call get_incident_solrad(isen2,isen3,solrad_dir,solrad_diff)
+            call get_incident_solrad(isen2,isen3,solrad_dir,
+     &                                           solrad_diff,ang)
             solrad = solrad_dir + solrad_diff   ! total radiation incident on surface
           else
           
@@ -4255,9 +4257,10 @@ C Calculates direct and diffuse components of solar radiation incident
 C on an external surface (including shading from obstructions).
 C
 C ********************************************************************
-      subroutine get_incident_solrad(icomp,isur,solrad_dir, solrad_diff)
+      subroutine get_incident_solrad(icomp,isur,solrad_dir, 
+     &                                          solrad_diff, inc_ang)
 #include "building.h"    
-      
+
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
       real SAZI, SALT
       integer ISUNUP
@@ -4285,6 +4288,7 @@ C ********************************************************************
       
       real solrad_dir   ! RETURN: direct solar radiation incident on isur and corrected for shading
       real solrad_diff  ! RETURN: diffuse solar radiation incident on isur and corrected for shading
+      real inc_ang      ! RETURN: angle of incidence on surface
 
       character outs*124
             
@@ -4318,6 +4322,7 @@ C -------------------------------------------------------------------
       if (ISUNUP.EQ.0) then
         solrad_dir = 0.0
         solrad_diff = 0.0
+        inc_ang=90.0
         goto 1000
       endif
 
@@ -4383,6 +4388,7 @@ C Calculate RETURN values
 C -------------------------------------------------------------------
       solrad_dir = SRADDO*(1.-POO)
       solrad_diff = SRADF*(1.-POFF)
+      inc_ang=ANGI
 
  1000 return
       end
@@ -4428,8 +4434,9 @@ C ********************************************************************
 
       real RGap1, RGap2, Rsi, Rse, SBOLTZ, T0
       
-      real solrad_dir               ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
-      real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
+      real solrad_dir       ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
+      real solrad_diff      ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
+      real ang              ! angle of incidence on surface "90" is eq. to "does not see sun"
 
       integer i,j,k,l,nn,nc,ne,icfctp,icomp,ivblayr
       integer iH3K_NameLen(2)
@@ -4491,7 +4498,7 @@ C CFC venetian blind slat angle
 C CFC Direct and diffuse radiation incidence
 C       RadIncDirS(icomp,i)
 C       RadIncDifS(icomp,i),
-            call get_incident_solrad(icomp,i,solrad_dir, solrad_diff)
+            call get_incident_solrad(icomp,i,solrad_dir,solrad_diff,ang)
 
             call add_to_xml_reporting (
 C     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
@@ -4499,6 +4506,12 @@ C     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
      &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/totRad',
      &           'units', '(W/m2)',
      &           'CFC total radiation incidence (dir+diff)' )
+
+            call add_to_xml_reporting (
+     &           ang,
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/inc_ang',
+     &           'units', '(°)',
+     &           'CFC radiation incidence angle' )
 
 C CFC beam and diffuse transmission
             call add_to_xml_reporting (
