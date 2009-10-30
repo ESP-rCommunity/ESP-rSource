@@ -1347,28 +1347,22 @@ C the values of ICT, IE2 and IC2.
           endif
           do 28 ISX=1,NSUR
             ioc=IZSTOCN(ix,isx)
-            if(SOTHER(ISX,1)(1:12).eq.zname(IW2)(1:12))then
-              SOTHER(ISX,1)='UNKNOWN'
-              SOTHER(ISX,2)='0'
-              SOTHER(ISX,3)='0'
-              SSOTHER(ioc,1)='UNKNOWN'
-              SSOTHER(ioc,2)='0'
-              SSOTHER(ioc,3)='0'
-              ICT(ioc)=-1
-              IE2(ioc)=0
-              IC2(ioc)=0
-              changed = .true.
-            elseif(SOTHER(ISX,1)(1:4).eq.'WITH')then
-              SOTHER(ISX,1)='UNKNOWN'
-              SOTHER(ISX,2)='0'
-              SOTHER(ISX,3)='0'
-              SSOTHER(ioc,1)='UNKNOWN'
-              SSOTHER(ioc,2)='0'
-              SSOTHER(ioc,3)='0'
-              ICT(ioc)=-1
-              IE2(ioc)=0
-              IC2(ioc)=0
-              changed = .true.
+
+C If the surface connection type is 3 and it (ic2) points back to IW2
+C then reset sother and ict and ie2 and ic2.
+            if(ICT(ioc).EQ.3)then
+              if(IC2(ioc).eq.IW2)then
+                SOTHER(ISX,1)='UNKNOWN'
+                SOTHER(ISX,2)='0'
+                SOTHER(ISX,3)='0'
+                SSOTHER(ioc,1)='UNKNOWN'
+                SSOTHER(ioc,2)='0'
+                SSOTHER(ioc,3)='0'
+                ICT(ioc)=-1
+                IE2(ioc)=0
+                IC2(ioc)=0
+                changed = .true.
+              endif
             endif
    28     continue
           if(changed)then
@@ -1495,6 +1489,11 @@ C Also update the other side IC2.
         if(ICT(IX).eq.3.and.IC2(IX).gt.IW2)IC2(IX)=IC2(IX)-1
    38 continue
 
+C Re-establish link between zone/surfaces and connections.
+      do 335 iccc = 1, NCON
+        IZSTOCN(IC1(iccc),IE1(iccc))=iccc
+ 335  continue
+
 C Ask if user wishes to remove all files related to the zone.
       dok=.false.
       h(1)='You can de-reference a zone in the current model, and'
@@ -1618,6 +1617,10 @@ C Shift zone default solar distributions and volumes.
         IDPN(IX,2)=IDPN(IX+1,2)
         IDPN(IX,3)=IDPN(IX+1,3)
         VOL(IX)=VOL(IX+1)
+
+C Shift the TMC information in subsequent zones??
+C << should code just deal with common block >>
+
    45 continue
    46 NCOMP=NCOMP-1
 
