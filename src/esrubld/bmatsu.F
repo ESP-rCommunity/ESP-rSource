@@ -524,7 +524,9 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       real psi,lngth,losspercent,totheatloss,thbrpercent
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
+      real uavtotal   
+      
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 

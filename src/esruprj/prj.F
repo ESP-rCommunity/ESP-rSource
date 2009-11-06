@@ -1507,6 +1507,11 @@ C dd is character array for selecting simulation parameter sets.
       logical tmcok,shdok
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Set initial values of local variables.
       modparms=.false.
@@ -1633,11 +1638,7 @@ C Display the simulation period.
       ITEMS(M+2)   ='r fluid flow only                '
       ITEMS(M+3)   ='s visual impact                  '
       ITEMS(M+4)   ='t integrated performance view    '
-      IF(ISBEM.EQ.1)THEN
-        ITEMS(M+5) ='u NCM compliance checking        '
-      ELSE
-        ITEMS(M+5) ='  NCM compliance checking N/A    '
-      ENDIF
+      ITEMS(M+5)   ='u NCM compliance checking        '
       ITEMS(M+6)   ='  ______________________________ '
       IF(ITRC.EQ.0)THEN
         ITEMS(m+7) = 'v feedback >> silent              '
@@ -1941,17 +1942,11 @@ C IPV for the actual number of simulations required.
 
       elseif(INO.EQ.MITEM-4)then
 
-C UK NCM Compliance checking
-        IF(ISBEM.EQ.1)THEN
+C Generate UK NCM specific models, run simulations and generate results.
+C On return reset the value of isset.
+          call MMGFUN
+          if(nsset.gt.0)isset=1
 
-C Assume that NCM details have been completed and commence simulations
-          call NCMCAL(IER)
-        ELSE
-
-C NCM details have not been completed do nothing
-          CALL EDISP(IUOUT,
-     &    'Complete NCM details from model context menu')
-        ENDIF
       elseif(MITEM.eq.11.and.INO.EQ.1)then
 
 C Case of no initial sets, offer default or user defined sets. If the
@@ -2498,6 +2493,11 @@ C the first array index is base and 2nd is variant, 3rd diff
       dimension anu_tot_m2(3),anu_tot_bld(3)
       dimension anu_ht_cap_m2(3),anu_ht_cap_bld(3)
       dimension anu_cl_cap_m2(3),anu_cl_cap_bld(3)
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 
       ibasefile=11
@@ -3003,26 +3003,26 @@ C We have done both passes, report differences and exit.
      &        'Capacity m2 Capacity building'
           endif
           call edisp(iuout,outs)
-          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
+          write(outs,'(a,F8.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(1),
      &      anu_ht_bld(1),anu_ht_cap_m2(1),anu_ht_cap_bld(1)
           call eddisp(iuout,outs)
-          write(outs,'(a,F7.3,F10.2)') 'Therm ',anu_ht_thrm_m2(1),
+          write(outs,'(a,F8.3,F10.2)') 'Therm ',anu_ht_thrm_m2(1),
      &      anu_ht_thrm_bld(1)
           call eddisp(iuout,outs)
-          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Cool  ',
+          write(outs,'(a,F8.3,F10.2,F9.3,F10.2)') 'Cool  ',
      &      anu_cl_m2(1),
      &      anu_cl_bld(1),anu_cl_cap_m2(1),anu_cl_cap_bld(1)
           call eddisp(iuout,outs)
           call edisp(iuout,'* For the variant model:')
-          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
+          write(outs,'(a,F8.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(2),
      &      anu_ht_bld(2),anu_ht_cap_m2(2),anu_ht_cap_bld(2)
           call eddisp(iuout,outs)
-          write(outs,'(a,F7.3,F10.2)') 'Therm ',anu_ht_thrm_m2(2),
+          write(outs,'(a,F8.3,F10.2)') 'Therm ',anu_ht_thrm_m2(2),
      &      anu_ht_thrm_bld(2)
           call eddisp(iuout,outs)
-          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Cool  ',
+          write(outs,'(a,F8.3,F10.2,F9.3,F10.2)') 'Cool  ',
      &      anu_cl_m2(2),
      &      anu_cl_bld(2),anu_cl_cap_m2(2),anu_cl_cap_bld(2)
           call eddisp(iuout,outs)
@@ -3057,14 +3057,14 @@ C We have done both passes, report differences and exit.
           anu_ht_cap_bld(3)=anu_ht_cap_bld(1)-anu_ht_cap_bld(2)
           anu_cl_cap_m2(3)=anu_cl_cap_m2(1)-anu_cl_cap_m2(2)
           anu_cl_cap_bld(3)=anu_cl_cap_bld(1)-anu_cl_cap_bld(2)
-          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Heat  ',
+          write(outs,'(a,F8.3,F10.2,F9.3,F10.2)') 'Heat  ',
      &      anu_ht_m2(3),
      &      anu_ht_bld(3),anu_ht_cap_m2(3),anu_ht_cap_bld(3)
           call eddisp(iuout,outs)
           write(outs,'(a,F8.2,F10.2)') 'Therm ',anu_ht_thrm_m2(3),
      &      anu_ht_thrm_bld(3)
           call eddisp(iuout,outs)
-          write(outs,'(a,F7.3,F10.2,F9.3,F10.2)') 'Cool  ',
+          write(outs,'(a,F8.3,F10.2,F9.3,F10.2)') 'Cool  ',
      &      anu_cl_m2(3),
      &      anu_cl_bld(3),anu_cl_cap_m2(3),anu_cl_cap_bld(3)
           call eddisp(iuout,outs)
@@ -4095,7 +4095,7 @@ C Help message for version manager menu
 C Ask for changes to be made
  200  INO=-3
       ITEMS(1) = 'a make a project variant'
-      ITEMS(2) = 'b make UK NCM notional model '
+      ITEMS(2) = 'b other 0 (under developmnet)'
       ITEMS(3) = 'c other 1 (under development)'
       ITEMS(4) = 'd other 2 (under development)'
       ITEMS(5) = ' --------------------------'
@@ -4335,22 +4335,6 @@ C mould and mycotoxins
         ENDIF
         IF(LRCR.EQ.2)RETURN
         GOTO 201
-      ELSEIF(INO.EQ.2)THEN
-
-C Create SBEM notional building based on currently loaded model
-        H(1)=' This option should be used with care since it is'
-        H(2)=' still under development and could mess up your model.'
-        H(3)=' Consequently it is password protected. '
-        H(4)=' '
-        H(5)=' The password is available from ESRU  '
-        H(6)='    Email: esru@strath.ac.uk  '
-        H(7)='    Tele: +44 141 548 3986  '
-        H(8)='    Fax:  +44 141 552 8513  '
-C        call easki(IPASS,' ',' Password (see help)? ',
-C     &    0,'-',0,'-',0,'password',IER,8)
-C        if (IPASS.eq.101) then
-          CALL EMKSBM
-C        endif
       ELSEIF(INO.EQ.6)THEN
         CALL PHELPD('version intro',36,'-',0,0,IER)
         GOTO 200
@@ -4461,6 +4445,11 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical updatetitle ! if true the edit IPV titles.
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
       M=ILM
       call isunix(unixok)

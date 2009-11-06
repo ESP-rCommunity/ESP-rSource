@@ -40,6 +40,11 @@ C facilities are 'hidden' in the current version.
       CHARACTER*23 ITEM(12)
       character doit*124,tmode*8
       character H*72,xfile*144,tg*1,delim*1
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Default value for xvgr file = 0 (off).
       IHFLAG=0

@@ -1817,6 +1817,9 @@ C defined.
       common/cctl/icascf(mcom)
 
       common/pstflg/icflg1(mcf),icflg2(mcf)
+
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
       common/tpmodx/iperx,idtypx
 
@@ -2089,6 +2092,8 @@ C input.
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/btime/btimep,btimef
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)

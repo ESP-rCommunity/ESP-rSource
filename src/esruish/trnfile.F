@@ -132,6 +132,12 @@ C and computes the overall direct and diffuse shading factors.
       character outs*248,mode*3
       logical tok
 
+C User may request to exlude diffuse shading from calculation. This
+C will happen when iexcludediff_flag is 1. If 0 then the calculation
+C will include diffuse shading.      
+      integer iexcludediff_flag
+      common/excludediff/iexcludediff_flag
+
 C If trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
@@ -165,7 +171,11 @@ C mode = dir or abn (i.e. sun not up in latter case).
 C Sun not up.
       xval=1.0
     7 pso(is,ihour)=xval
-      psof(is,ihour)=xval
+      if(iexcludediff_flag.eq.0)then
+         psof(is,ihour)=xval
+      elseif(iexcludediff_flag.eq.1)then
+         psof(is,ihour)=0.0      
+      endif
       goto 3
 
     2 is1=-1
@@ -232,7 +242,11 @@ C visible to the target surface. This is required because the calculation
 C of the diffuse irradiance in bps does not include the obscured
 C sky portion.
          adj=145.0/(145.0-float(ipexcl))
-         psof(is,ihour)=gssa*adj/gsa
+         if(iexcludediff_flag.eq.0)then
+            psof(is,ihour)=gssa*adj/gsa
+         elseif(iexcludediff_flag.eq.1)then
+            psof(is,ihour)=0.0      
+         endif            
       endif
       icn=izstocn(icomp,is)
 

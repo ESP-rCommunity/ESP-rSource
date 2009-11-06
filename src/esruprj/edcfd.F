@@ -3858,6 +3858,8 @@ C << Should Check that points are in the same plane and that X is increasing. >>
             call edisp(iuout,'Not enough points.')
             goto 41
           endif
+
+C This write assumes not-very-complex zones and surfaces.
           HOLD=' '
           WRITE(HOLD,'(24I3)')(JJVN(J),J=1,ijvn)
           CALL EASKS(HOLD,' Associated high vertices (confirm):',
@@ -3919,6 +3921,8 @@ C Ask for and display the bottom defining vertices (west to east).
             call edisp(iuout,'Not enough points.')
             goto 51
           endif
+
+C This write statement assumes not-very-complex zones and polygons. 
           HOLD=' '
           WRITE(HOLD,'(24I3)')(JJVN(J),J=1,ijvn)
           CALL EASKS(HOLD,' Associated low vertices (confirm):',

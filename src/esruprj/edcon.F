@@ -43,6 +43,7 @@ C output, IER=0 OK.
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "epara.h"
+#include "sbem.h"      
 #include "CFC_common.h"
       
       integer lnblnk  ! function definition
@@ -108,6 +109,10 @@ C CFCFILE is default for CFC file
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(DFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
         WRITE(CFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+        IF(INOTI.EQ.1)WRITE(DFILE,'(2A)')
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_not.tmc'
+        IF(INOTI.EQ.3)WRITE(DFILE,'(2A)')
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_typ.tmc'
         WRITE(CFCFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &    '.cfc'
       else
@@ -115,6 +120,10 @@ C CFCFILE is default for CFC file
      &    zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
         WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+        IF(INOTI.EQ.1)WRITE(DFILE,'(4a)')zonepth(1:lnblnk(zonepth)),'/',
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_not.tmc'
+        IF(INOTI.EQ.3)WRITE(DFILE,'(4a)')zonepth(1:lnblnk(zonepth)),'/',
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_typ.tmc'
         WRITE(CFCFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.cfc'
       endif
@@ -260,10 +269,12 @@ C If in quiet mode: the file should exist => error if we are here.
 
 C Having done so check to see if there are any transparent surfaces.
 C If surface attribute other than OPAQUE reset ITMCFL otherwise reconcile mismatches!
+C Do not check for UK NCM notional model
       TFOUND=.FALSE.
       DO 60 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0)then
+        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0.
+     &    and.inoti.ne.1)then
           write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
           dok=.true.
           h(1)='The opaque/transparent attribute of the surface is not'

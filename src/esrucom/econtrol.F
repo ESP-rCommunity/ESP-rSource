@@ -4360,7 +4360,7 @@ C Senses data from a temporal file, 2nd item will temporal item.
       goto 9
 
 C Mixed temperature sensor.
-    5 if(isn2.lt.1.or.isn2.gt.ncomp)goto 1002
+    5 if(isn2.lt.0.or.isn2.gt.ncomp)goto 1002 ! if isn=0 sense current zone
       if(isn3.lt.0.or.isn3.gt.100)goto 1003
       goto 9
 

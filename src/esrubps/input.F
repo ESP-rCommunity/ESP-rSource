@@ -216,6 +216,12 @@ C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFT/LTDF,LTDFA
 
+C For each timestep (assuming 10tsph frequency over a year) iknowrec
+C will be zero if not yet set and a positive number representing the record
+C to read from the temporal file if already known.
+      integer iknowrec,itdflastrec,itdfprevrec
+      common/tdfhash/iknowrec(87600,4),itdflastrec,itdfprevrec
+
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
@@ -673,6 +679,17 @@ C simulation and filling the TDFFLG2 commons.
             return
           endif
         endif
+
+C Set iknowrec array to signal temporal has not been scanned.
+C Documentation of values found in subroutine RCTDFB.
+        do 2 I=1,87600
+          iknowrec(I,1)=0
+          iknowrec(I,2)=0
+          iknowrec(I,3)=0
+          iknowrec(I,4)=0
+          itdflastrec=0
+          itdfprevrec=0
+ 2      continue
       ENDIF
   
 
@@ -899,7 +916,8 @@ C Thermal bridge common block is described in esruprj/edgeo.F.
       real psi,lngth,losspercent,totheatloss,thbrpercent
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
+      real uavtotal   
 
 C Dll mode error subroutine and error details.
       common/dllerr/dllsubr,dllmesg

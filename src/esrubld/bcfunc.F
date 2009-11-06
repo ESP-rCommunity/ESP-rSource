@@ -265,6 +265,9 @@ C prevailing at the 'future' time-row of
 C the current time step.
 
 C Tmix = CONV*Tair + RAD*Tmrt
+C This subroutine can be called from outwith a controls scenario by
+C setting ICMP to negative unity times zone number. In such a case CONV
+C is set to 0.5
 
 C  IMRTT   - Defines the position of the MRT sensor within the zone
 C            IMRTT=1 : selected surfaces associated with sensor
@@ -303,6 +306,10 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
 
       IC=ICF
       CONV=FLOAT(IBSN(IC,3))/100.0
+      if(icmp.lt.0)then
+        icmp=-1*icmp
+        conv=0.5
+      endif
       RAD=1.0-CONV
 
 C Fix sensor type for now.
@@ -433,6 +440,9 @@ C Which is obviously not allowed in case of bld.
         endif
       ELSEIF(IBSN(ICF,1).EQ.-2)THEN
          IZ=IBSN(ICF,2)
+
+C If zone is not specified then take the current zone
+         IF(IZ.EQ.0)IZ=IICOMP
          CALL MZMIXT(IZ,TMRT,TCTL)
 
       ELSEIF(IBSN(ICF,1).EQ.-3)THEN
@@ -5619,11 +5629,13 @@ C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
 #include "building.h"
 #include "tdf2.h"
 #include "control.h"
+#include "sbem.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/btime/btimep,btimef
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       common/dllerr/dllsubr,dllmesg
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
 
 C TDF commons.
 C Index for each potential temporal db entry type 0=not used, 2=tabular data.
@@ -5633,12 +5645,14 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+chsp+1      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
+chsp+1      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
       character dllsubr*12,dllmesg*124,outs*124
-      logical dll
+      logical dll,near
       DIMENSION VAL(MBITS+2)
-      integer COLUMNSETP
-     
+      integer COLUMNSETP ! column from control 23
+
 C Check to see if running in dll mode.
       call isadll(dll)
 
@@ -5664,10 +5678,16 @@ C CSP = cooling set point temp. (deg.C)
       QFUT=0.0
       TFUT=TNP
 
+C Turn cooling off if no UK NCM cooling generator is linked to this zone
+      IHLZP=IHLZ(IiCOMP)  ! set up pointer
+      NEAR=.FALSE.
+      CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
+      IF(NEAR)QCM=0.0
+
 C Read setpoints from tdf here (CSP and HSP)
-C "COLUMNSETP" is an integer specifying the column where the setpoints
-C should be read from. This could be the ISD but when calling the RCTDFB it
-C seems that is always set to 2 (and it is also used in few other places as 2).
+C "COLUMNSETP" is an integer specifying the column within the
+C returned temporal item data array VAL. The RCTDFB always
+C returns only the data for one single temporal item.
       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
       if(IACTIV(ICF).ne.0)then
         itdi=IACTIV(ICF)
@@ -5681,10 +5701,30 @@ C seems that is always set to 2 (and it is also used in few other places as 2).
       CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
       CSP=VAL(COLUMNSETP)
         
-C Debug.
-C       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
-C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+C If UK NCM reference building (or stripped with DSM testing flag equal to 2)
+C then cooling set point is always 27degC
+      if(INOTI.EQ.2.OR.(INOTI.eq.4.AND.iDsmTestingFlag.eq.2))then
+        CSP=27.0
+      endif
+
+C If notional model or DSM testing then set cooling set point to 1degC
+C more than heating to compensate for overheating (5ach not implemented)
+C When uncommenting the lines below also uncomment two common blocks at
+C the begining of this subroutine.
+chsp+1      if(INOTI.eq.1.or.iDsmTestingFlag.eq.1)then
+chsp+1  iitdi=IACTIV(IICOMP)
+chsp+1  if(iNatVentilatedFlag.eq.1)then
+chsp+1          CSP=TMAR(iitdi,IATDF(iitdi,15))+1.!HSP+1.
+chsp+1          QCM=-999999.0
+chsp+1        endif
+chsp+1      endif
       
+C Debug. << there should be a trace code added! >>
+C       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
+C     &   ' value ',tctl,' for ctl loop ',icf,
+C     &   ' hsp ',hsp,' csp ',csp,' col csp ',COLUMNSETP
+C      IF(INOTI.EQ.2)write(6,*)'simulating UK NCM reference building'
+
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
 
 C Since sensed temperature is not within range, attempt to control

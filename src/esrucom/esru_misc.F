@@ -231,11 +231,17 @@ C thbrpercent is the user defined fraction for thermal bridges used by
 C   losspercent and is assumed to apply to all zones in the model.
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal      
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
 
 C IPV data comes via ipvdata.h
+
+C Assumption about inserted window surface percentage and assumed
+C door width and height.
+      real defwininsert,defdoorwidth,defdoorheight
+      common/ginsert/defwininsert,defdoorwidth,defdoorheight
       
       CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPRJLG,LPNF
@@ -436,6 +442,11 @@ C Clear image related data.
       sitelongdif=0.0
       SLON=0.
 
+C Assumptions about doors and windows.
+      defwininsert=15.0
+      defdoorwidth=0.8
+      defdoorheight=2.1
+      
 C Season data.
       ihaveseason=0
       ia1wins=0; ia1winf=0; ia1sprs=0; ia1sprf=0
@@ -546,7 +557,7 @@ C Clear the connection list.
         SSUSE(icc,1)='-'
         SSUSE(icc,2)='-'
    32 CONTINUE
-      icfgv=3
+      icfgv=4  ! set cfg file version to latest type
       NCON=0
       ncomp=0
       siteexposureindex=1
@@ -567,6 +578,7 @@ C Clear the linear thermal bridges variables
           losspercent(IX) = 0.0
           thbrpercent = 0.0
           totheatloss(ix) = 0.0
+          uavtotal(ix) = 0.0
     2   CONTINUE
     3 CONTINUE
 
@@ -585,7 +597,35 @@ C Clear sbem string arrays (from sbem.h).
       certaddress=' not yet defined'
       certcity=' not yet defined'
       certPC=' not yet defined'
-
+      UPRN='000000000000'
+      Accr_Scheme=' not yet defined'
+      assessRegNumber=' not yet defined'
+      empl_Trading_name=' not yet defined'
+      addr_empl_Trading=' not yet defined'
+      party_disclosure=' not yet defined'
+      qualifications_assessor=' NOS3'
+      insurer_Company=' not yet defined'
+      policyNumberInsurance=' not yet defined'
+      pjLevComplexity='Undefined'     
+      do 4 isystCurrent=1,MNS
+        ductwork(isystCurrent)='No, use default leakage'
+        AHUleakage(isystCurrent)='No, use default leakage'
+        duct_tDLd(isystCurrent)=0.15
+        AHU_tDLd(isystCurrent)=0.06
+ 4    continue
+       
+C Also integers from sbem.h 
+      Y_inspect=2009
+      M_inspect=1
+      D_inspect=1
+      S_Yinsur=2009
+      S_Minsur=1
+      S_Dinsur=1
+      E_Yinsur=2010
+      E_Minsur=1
+      E_Dinsur=1
+      pi_limit=0
+      INOTI=0  ! assume we have an original model
       return
       end
 

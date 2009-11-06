@@ -935,7 +935,8 @@ C Manage images or browse by listing out current contents of image folder.
       ELSEIF(INO.eq.25)then
 
 C Enter the definitions for UK NCM related data.
-        call sbmedit
+        call sbmedit(iuact,ier) ! generate stripped model and ncm file
+
       ELSEIF(INO.eq.26)then
 
 C Changing orientation as a function of time.

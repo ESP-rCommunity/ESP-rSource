@@ -2431,21 +2431,19 @@ C Solar radiation values are Global and Diffuse Horizontal.
 
 C Warning : high direct normal.
       CALL DAYCLK(IDYP,BTIMEF,iuout)
-      write(outs,'(a,I7,a,F6.1,a)')' MZSINT: increment',NSINC,
-     &  ' direct n.',QD,' > solar constant '
+      write(outs,'(a,I7,a,F7.0,2a)')' MZSINT: @',NSINC,
+     &  ' dir n.',QD,' > solar constant so using',
+     &  ' diff h.=glob h.; dir n.=0.'
       call edisp(iuout,outs)
-      call edisp(iuout,
-     & ' Default invoked; diffuse h.= global h.; direct n.=0.')
       goto 5
 
 C Warning: diffuse > global.
     3 IF(ICOMP.GT.1)goto 5
       CALL DAYCLK(IDYP,BTIMEF,iuout)
-      write(outs,7)NSINC
-    7 format(' MZSINT: increment',I8,' diffuse h. > global h.')
+      write(outs,'(a,I7,2a)')' MZSINT: @',NSINC,
+     &  ' diff h. > global h. so using',
+     &  ' diff h.=glob h.; dir n.=0.'
       call edisp(iuout,outs)
-      call edisp(iuout,
-     & ' Default invoked; diffuse h.= global h.; direct n.= 0.')
 
 C Default: zero direct normal, diffuse horizontal equals global 
 C horizontal.
@@ -2455,7 +2453,7 @@ C horizontal.
 
 C FATAL ERROR: direct normal > solar constant & altitude > 10deg
     4 CALL DAYCLK(IDYP,BTIMEF,iuout)
-      write(outs,'(a,I7,a,F6.1,a)')' MZSINT fatal: increment',NSINC,
+      write(outs,'(a,I7,a,F6.1,a)')' MZSINT fatal: @',NSINC,
      &  ' direct n.',QD,' > solar constant '
       call edisp(iuout,outs)
       write(outs,'(a,F6.1,a,F6.1)')' and solar altitude is ',SALT,
@@ -3794,6 +3792,8 @@ C Tdf common block to allow using different bidirectional datasets
      & POF(MCOM,MS,MT),IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),
      & pinsst(mcom,mgt,mt,misur)
 
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT     
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)

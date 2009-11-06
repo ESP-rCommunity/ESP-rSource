@@ -2479,7 +2479,7 @@ C graphic window.
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
-      CHARACTER ANS*2,MSG3*124,H*72
+      CHARACTER ANS*2,MSG3*248,H*72
 
 C Generate custom help text and copy NHELP to local variable.
       NHL=NHELP
@@ -2533,7 +2533,7 @@ C Setup a single line menu to pick from via EASKS.
      &    ' i) ',GOPT(1:lg),' ? '
         endif
         ans = '  '
-        call usrmsg(msg1,msg3,'?')
+        call lusrmsg(msg1,msg3,'?')
         read(iuin,'(A2)')ANS
 
         IF(ANS(1:1).EQ.'a'.OR.ANS(1:1).EQ.'A')THEN
@@ -4320,8 +4320,10 @@ C ITPPSW current view - perspective/plan/south/west
      &            'Sep','Oct','Nov','Dec'/
 #ifdef OSX
       integer ivt2,ivt3,ivt4  ! for use with viewtext
+      integer ICPMOD          ! passed from tchild
 #else
       integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
+      integer*8 ICPMOD          ! passed from tchild
 #endif
 
 C If not in graphic mode return.

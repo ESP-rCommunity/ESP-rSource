@@ -73,8 +73,10 @@ C will have been defined prior to calling edmrt.
       integer icni,icnj  ! connection numbers for pair of surfaces.
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer ICPMOD                ! passed from tchild
 #else
-      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iside,isize,ifont   ! passed to viewtext
+      integer*8 ICPMOD              ! passed from tchild
 #endif
 
       cfgmod=.false.

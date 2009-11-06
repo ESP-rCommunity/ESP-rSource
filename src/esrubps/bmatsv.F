@@ -1645,21 +1645,45 @@ C report was issued more than 5 seconds ago.
         call getsecs(ictime)
         istamp=0
 
-        if(simcom.gt.0.95.and.inhsi.lt.6) then
+        if(simcom.gt.0.95.and.inhsi.lt.12) then
           inhsi=inhsi+1
           iperc=95
           istamp=1
-        else if(simcom.gt.0.75.and.inhsi.lt.5) then
+        else if(simcom.gt.0.90.and.inhsi.lt.11) then
           inhsi=inhsi+1
-          iperc=75
+          iperc=90
           istamp=1
-        else if(simcom.gt.0.50.and.inhsi.lt.4) then
+        else if(simcom.gt.0.80.and.inhsi.lt.10) then
+          inhsi=inhsi+1
+          iperc=80
+          istamp=1
+        else if(simcom.gt.0.70.and.inhsi.lt.9) then
+          inhsi=inhsi+1
+          iperc=70
+          istamp=1
+        else if(simcom.gt.0.60.and.inhsi.lt.8) then
+          inhsi=inhsi+1
+          iperc=60
+          istamp=1
+        else if(simcom.gt.0.50.and.inhsi.lt.7) then
           inhsi=inhsi+1
           iperc=50
           istamp=1
-        else if(simcom.gt.0.25.and.inhsi.lt.3) then
+        else if(simcom.gt.0.40.and.inhsi.lt.6) then
           inhsi=inhsi+1
-          iperc=25
+          iperc=40
+          istamp=1
+        else if(simcom.gt.0.30.and.inhsi.lt.5) then
+          inhsi=inhsi+1
+          iperc=30
+          istamp=1
+        else if(simcom.gt.0.20.and.inhsi.lt.4) then
+          inhsi=inhsi+1
+          iperc=20
+          istamp=1
+        else if(simcom.gt.0.10.and.inhsi.lt.3) then
+          inhsi=inhsi+1
+          iperc=10
           istamp=1
         else if(simcom.gt.0.05.and.inhsi.lt.2) then
           inhsi=inhsi+1

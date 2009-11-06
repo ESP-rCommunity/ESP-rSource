@@ -102,10 +102,10 @@ Category ( 3) Metal has a range of metals, some are the same but are painted dif
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
 *item,mat_049, 49, 3,Lead as per CIBSE data
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
-*item,Aluminium 1.5 mm, 50, 3,Aluminium (copy of mat_043)
-210.000,2700.000,880.000,0.220,0.220,0.200,0.200,19200.000,1.5,-
+*item,steelSheedSBEM, 51, 3,Steel sheed SBEM
+60.000,7800.000,502.000,0.120,0.120,0.200,0.200,19200.000,1.0,-
 # class index |nb items|description (32 char)
-*class, 4,18,Wood
+*class, 4,19,Wood
 Category ( 4) Wood holds a range of wood types. Based on data traditionally distributed with ESP-r.
 *item,wood block, 61, 4,Block (wood)
 0.160,800.000,2093.000,0.900,0.900,0.650,0.650,11.000,25.0,-
@@ -143,6 +143,8 @@ Category ( 4) Wood holds a range of wood types. Based on data traditionally dist
 0.787,1900.000,1170.000,0.900,0.900,0.900,0.900,576.000,25.0,-
 *item,Plywood deck, 78, 4,Plywood/felt (UK code)
 0.130,500.000,1500.000,0.900,0.900,0.700,0.700,576.000,19.0,-
+*item,OSB, 79, 4,OSB wood based on the SBEM database
+0.130,650.000,1700.000,0.900,0.900,0.700,0.700,576.000,9.0,-
 # class index |nb items|description (32 char)
 *class, 5, 8,Stone
 Category ( 5) Stone includes building stone and gravels. Based on data traditionally distributed with ESP-r.
@@ -402,7 +404,7 @@ Category (14) Earth includes loose materials. Also check the stone category for 
 *item,Clay underfloor 750 mm,268,14,Clay underfloor default 750 mm
 1.500,1500.000,2085.000,0.900,0.900,0.700,0.700,5.000,750.0,-
 # class index |nb items|description (32 char)
-*class,15,15,Insulation materials (2)
+*class,15,16,Insulation materials (2)
 Category (15) Insulation materials (2) is a second tranche of loose, batt and foam insulating materials. Based on data traditionally distributed with ESP-r.
 *item,glass fibre quilt,281,15,Glass Fibre Quilt
 0.040,12.000,840.000,0.900,0.900,0.650,0.650,30.000,100.0,-
@@ -434,6 +436,8 @@ Category (15) Insulation materials (2) is a second tranche of loose, batt and fo
 0.040,25.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
 *item,Min wool quilt 60 mm,295,15,Insulation (Min wool quilt default 60 mm)
 0.040,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
+*item,PUR,296,15,notional floor UK material
+0.026,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
 # class index |nb items|description (32 char)
 *class,16, 2,Board
 Category (16) Board is similar to plaster and wood. Based on data traditionally distributed with ESP-r.
@@ -442,12 +446,15 @@ Category (16) Board is similar to plaster and wood. Based on data traditionally 
 *item,particle board underlay,302,16,Particle board underlayment
 0.110,640.000,1210.000,0.900,0.900,0.900,0.900,10.000,12.5,-
 # class index |nb items|description (32 char)
-*class,17, 2,Sheathing
+*class,17, 3,Sheathing
 Category (17) Sheathing is similar to the wood category. It also includes a test air gap layer. Based on data traditionally distributed with ESP-r.
 *item,sheating std,321,17,regular density sheathing
 0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,100.0,-
 *item,air 12mm,322,17,place holder for testing an air material type for isbem
-0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.00008,0.00001761,0.00000005,1.232,-0.0043,0.00000,0.00000,1008.000,0.00000
+0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.000080,0.00001761,0.00000005,1.2320,-0.00430,0.000000,0.000000,1008.000,0.000000
+*item,virtual_loft_space,323,17,for notional building loft space air 12mm)
+0.130,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,39.0,-
+# class index |nb items|description (32 char)
 *class,18, 6,GAPS
 Category (18) holds the implied air material with a legacy index of zero.
 *item,air gap,  0,18,Air layer with default properties assumed for legacy treatment of air (index zero).
