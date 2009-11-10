@@ -1189,7 +1189,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       integer IFCFG
                
-      CHARACTER OUTSTR*248,WORD*32,outs*124
+      CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124
       character dstmp*24
       character word248*248
 
@@ -1267,6 +1267,7 @@ C Site related local variables.
       real ht_Setpoint,cl_Setpoint !heating and cooling set-points
       dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
       integer isilentncf !silent decide how many control functions needed
+      integer lsn  ! length of currentfile
       integer iva
       dimension iva(MS)  ! for use with writing arrays of numbers
         
@@ -2357,7 +2358,10 @@ C Update cfg file to know about the control file
       endif
       RETURN
 
- 1001 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+ 1001 write(outs,'(3a)') 'SILENTREAD: conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='SILENTREAD'
         dllmesg=outs
@@ -2366,6 +2370,7 @@ C Update cfg file to know about the control file
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ios)
         RETURN

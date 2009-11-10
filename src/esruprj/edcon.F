@@ -43,6 +43,7 @@ C output, IER=0 OK.
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "epara.h"
+#include "sbem.h"      
 #include "CFC_common.h"
       
       integer lnblnk  ! function definition
@@ -108,6 +109,10 @@ C CFCFILE is default for CFC file
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(DFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
         WRITE(CFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+        IF(INOTI.EQ.1)WRITE(DFILE,'(2A)')
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_not.tmc'
+        IF(INOTI.EQ.3)WRITE(DFILE,'(2A)')
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_typ.tmc'
         WRITE(CFCFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &    '.cfc'
         WRITE(CFCFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
@@ -117,6 +122,10 @@ C CFCFILE is default for CFC file
      &    zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
         WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+        IF(INOTI.EQ.1)WRITE(DFILE,'(4a)')zonepth(1:lnblnk(zonepth)),'/',
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_not.tmc'
+        IF(INOTI.EQ.3)WRITE(DFILE,'(4a)')zonepth(1:lnblnk(zonepth)),'/',
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_typ.tmc'
         WRITE(CFCFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.cfc'
         WRITE(CFCFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
@@ -264,10 +273,12 @@ C If in quiet mode: the file should exist => error if we are here.
 
 C Having done so check to see if there are any transparent surfaces.
 C If surface attribute other than OPAQUE reset ITMCFL otherwise reconcile mismatches!
+C Do not check for UK NCM notional model
       TFOUND=.FALSE.
       DO 60 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0)then
+        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0.
+     &    and.inoti.ne.1)then
           write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
           dok=.true.
           h(1)='The opaque/transparent attribute of the surface is not'
@@ -891,19 +902,24 @@ C Multilayer construction has not been defined.
           IF(IPR(ICF,IE).NE.0)THEN
             if(closemat1.or.closemat2)then
               matarrayindex=IPRMAT(ICF,IE)   ! which legacy index
-	      if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h')then
+              if(matarrayindex.ge.0)then
+	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &             matopaq(matarrayindex)(1:1).eq.'h')then
 
 C Find air gap resistance for this layer.
-                DO 148 IGG=1,NAIRG(ISUR)
-                  IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
-                   WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+                  DO 148 IGG=1,NAIRG(ISUR)
+                    IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
+                    WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
      &                    CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
- 148            CONTINUE
+ 148              CONTINUE
+                else
+                  WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+     &                CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
+  46              FORMAT(A1,I3,I4,F6.3,3F8.2)
+                endif
               else
-                WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &              CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
-  46            FORMAT(A1,I3,I4,F6.3,3F8.2)
+                WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
+     &            ' confused material reference'
               endif
             endif
           ELSE
@@ -1073,6 +1089,10 @@ C If g or h air gap and version 1.2 then assign DRAIR
                   DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
                 endif
               endif
+            else
+              call edisp(iuout,
+     &          'One layer material ref is confused or duplicate name.')
+              goto 12
             endif
           else
 

@@ -248,12 +248,13 @@ C Error subroutine and error details for dll mode.
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,outs*124
+      character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124
       character OTF*4,OPT*12 ! for use with parsemlcdesc
       logical dll,checkbase
       logical havec24
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
+      integer lsn  ! length of currentfile
 
       IER=0
       ZN=' '
@@ -953,7 +954,10 @@ C Close geometry data file before exiting.
       CALL ERPFREE(IUNIT,ios)
       RETURN
 
- 1001 write(outs,'(3a)') 'Conversion error in...',loutstr(1:50),'...'
+ 1001 write(outs,'(3a)') 'EGOMIN: conversion error in...',
+     &  loutstr(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='EGOMIN'
         dllmesg=outs
@@ -962,6 +966,7 @@ C Close geometry data file before exiting.
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ios)
         RETURN
@@ -1010,11 +1015,12 @@ C << calling code to signal that ZNDATA could be used instead.
 C Dummy array for default windows.
       dimension NGLD(MS)
 
-      CHARACTER louts*248
+      CHARACTER louts*248,outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER SO*15    ! to write out legacy
       logical newgeo  ! to use for testing if new/old geometry file.
+      character msg*48
 
       IER=0
 
@@ -1040,23 +1046,27 @@ C over-write) or create a new file.
         RETURN
       ENDIF
 
+      msg='first comment line'
       WRITE(IFILG,30,IOSTAT=ios,ERR=13)
      &  zname(ICOMP)(1:lnzname(ICOMP)),GENFIL(1:lnblnk(GENFIL))
   30  FORMAT('# geometry of ',a,' defined in: ',a)
       lz=lnzname(ICOMP)
 
 C File is always a GEN type as this is representation in common.
+      msg='2nd line starting with GEN'
       WRITE(IFILG,'(a3,2x,A,2x,a,2x,a)',IOSTAT=ios,ERR=13) 'GEN',
      &  zname(ICOMP)(1:lz),zdesc(ICOMP)(1:lnzdesc(ICOMP)),
      &  '# type, name, descr'
 
 C Vertex coordinates.
+      msg='3rd line with nb of surfs and vert'
       WRITE(IFILG,'(I8,I8,F8.3,4x,A)',IOSTAT=ios,ERR=13)
      &  NZTV(ICOMP),NZSUR(ICOMP),AR,
      &  '# vertices, surfaces, rotation angle'
       WRITE(IFILG,32,IOSTAT=ios,ERR=13)
   32  FORMAT('#  X co-ord, Y co-ord, Z co-ord')
       DO 960 I = 1,NTV
+        msg='vertex data line'
         WRITE(IFILG,33,IOSTAT=ios,ERR=13)X(I),Y(I),Z(I),I
   33    FORMAT(1X,3F12.5,'  # vert ',I3)
 960   CONTINUE
@@ -1065,8 +1075,9 @@ C Vertex list.
       WRITE(IFILG,34,IOSTAT=ios,ERR=13)
   34  FORMAT('# no of vertices followed by list of associated vert')
       DO 970 I = 1,NZSUR(ICOMP)
+      msg='edge list data line'
       WRITE(IFILG,5650,IOSTAT=ios,ERR=13)NVER(I),(JVN(I,J),J=1,NVER(I))
-5650    FORMAT(1X,25(I3,','))
+5650    FORMAT(1X,42(I3,','))
 970   CONTINUE
 
 C Unused index. Generate packed strings to write out on as many lines as reqd.
@@ -1091,6 +1102,7 @@ C packed text. Code should be good for any number of surfaces.
       end do
 
 C Default internal insolation.
+      msg='default insolation line'
       WRITE(IFILG,'(I5,3I4,4x,a)',IOSTAT=ios,ERR=13)NDP(ICOMP),
      &  (IDPN(ICOMP,J),J=1,3),'# default insolation distribution'
 
@@ -1153,12 +1165,14 @@ C to write out.
             SO='UNKNOWN'
           endif
         ENDIF
+        msg='surface data line'
         WRITE(IFILG,75,IOSTAT=ios,ERR=13)I,SSNAME(icc),
      &        SSOTF(icc)(1:4),SSVFC(icc),SSMLCN(icc)(1:12),SO
    75   FORMAT(I3,', ',A12,2X,A4,2X,A4,2X,A12,1X,A15)
   102 CONTINUE
 
 C Surfaces associated with base.
+      msg='base area data line'
       WRITE(IFILG,'(a)',IOSTAT=ios,ERR=13)'# base'
       WRITE(IFILG,'(6i3,F9.2,i2)',IOSTAT=ios,ERR=13)IBASES(ICOMP,1),
      &  IBASES(ICOMP,2),IBASES(ICOMP,3),IBASES(ICOMP,4),
@@ -1174,9 +1188,11 @@ C then reset it to 1.0.
 
 C Error messages.
    13 if(IOS.eq.2)then
-        CALL USRMSG('No permission to write ',GENFIL,'W')
+        write(outs,'(2a)')'No permission to write ',msg(1:lnblnk(msg))
+        CALL USRMSG(outs,GENFIL,'W')
       else
-        CALL USRMSG('File write error in ',GENFIL,'W')
+        write(outs,'(2a)')'File write error in ',msg(1:lnblnk(msg))
+        CALL USRMSG(outs,GENFIL,'W')
       endif
       IER=1
       GOTO 99
@@ -1229,6 +1245,9 @@ C Parameters
       integer IR     ! IR 1 range checking is enabled, otherwise only minimal checking
       integer ITRU   ! file unit for feedback
       integer IER    ! zero is ok
+
+      integer iuout,iuin
+      common/OUTIN/IUOUT,IUIN
 
 C X,Y & Z   - coordinates of the vertices defining the zone
 C NSUR      - Number of faces comprising zone
@@ -1292,9 +1311,10 @@ C Error subroutine and error details for dll mode.
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
 
 C This information was previously/also held in zone obstruction
 C file. The intent is that older models when scanned can be upgraded
@@ -1303,19 +1323,20 @@ C GS7/GS8 are defined in geometry.h
 
       DIMENSION IVA(MS)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER OUTSTR*124,LGEOMF*72,WORD*32
+      CHARACTER LGEOMF*72,WORD*32
       CHARACTER tmpvfc*4,tother*15,tother1*15,tother2*15
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,phrase*64,outs*124
+      character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
       character OTF*4,OPT*12 ! for use with parsemlcdesc
       logical dll,checkbase
       logical havec24
       integer nbo   ! local value of nbobs
+      integer lsn   ! length of currentfile
       real VX,VY,VZ ! local values for XOB YOB ZOB
 
       IER=0
@@ -1367,14 +1388,14 @@ C An older file header looks like:
 C # geometry of manager defined in: ../zones/manager.geo
 C GEN  manager  manager describes cellular office  # type, name, descr
 C      22      10   0.000    # vertices, surfaces, rotation angle
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'geo line 1',IER)
-      IF(IER.NE.0)goto 1001
-      if(OUTSTR(1:13).eq.'*Geometry 1.1')then
+      CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'geo line 1',IER)
+      IF(IER.NE.0)goto 1002
+      if(LOUTSTR(1:13).eq.'*Geometry 1.1')then
         K=13
-        CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+        CALL EGETW(LOUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
         zname(ICOMP)=' '
-        CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
+        CALL EGETW(LOUTSTR,K,WORD,'W','Z name',IFLAG)
         ZN=WORD(1:12)
         call st2name(ZN,zname(ICOMP))
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
@@ -1382,32 +1403,32 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
       else
         K=0
         IF(ND.EQ.1)THEN
-          CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+          CALL EGETW(LOUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
           zname(ICOMP)=' '
           lnzname(ICOMP)=0
           zdesc(ICOMP)=' '
           lnzdesc(ICOMP)=0
         ELSEIF(ND.EQ.2)THEN
-          CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+          CALL EGETW(LOUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-          CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
+          CALL EGETW(LOUTSTR,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
           lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
           zdesc(ICOMP)=' '
           lnzdesc(ICOMP)=0
         ELSEIF(ND.gt.2)THEN
-          CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
+          CALL EGETW(LOUTSTR,K,WORD,'W','CTYPE',IFLAG)
           write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-          CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
+          CALL EGETW(LOUTSTR,K,WORD,'W','Z name',IFLAG)
           ZN=WORD(1:12)
           call st2name(ZN,zname(ICOMP))
-          call egetrm(outstr,K,phrase,'W','Z description',IER)
+          call egetrm(loutstr,K,phrase,'W','Z description',IER)
           ZDESC(ICOMP)=phrase
           lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
         ENDIF
-        IF(IFLAG.NE.0)GOTO 1001
+        IF(IFLAG.NE.0)GOTO 1002
 
 C If we have reached this position then it is an older geometry
 C file so close the file and set error message.
@@ -1453,16 +1474,17 @@ C Zone is of type REG, subroutine EGOMIN should have been used.
 C Zone is of type GEN. First read the date stamp line followed
 C by the zone description on the next line. For now zdesc string
 C is short, but will be extended to 248 char.
-        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'date stamp',IER)
-        IF(IER.NE.0) goto 1001
+        CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'date stamp',IER)
+        IF(IER.NE.0) goto 1002
         K=0
-        CALL EGETW(OUTSTR,K,WORD,'W','header tags',IER)
-        IF(IER.NE.0) goto 1001
+        CALL EGETW(LOUTSTR,K,WORD,'W','header tags',IER)
+        IF(IER.NE.0) goto 1002
         if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
-          CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
+          CALL EGETRM(LOUTSTR,K,dstmp,'W','date stamp',IER)
         endif
         zdesc(ICOMP)=' '
         CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,'Z description',IER)
+        IF(IER.NE.0) goto 1002
         write(zdesc(ICOMP),'(a)') LOUTSTR(1:64)
         lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
 
@@ -1470,7 +1492,7 @@ C Next look for *vertex lines, incrementing the value of NTV
 C as each of these lines is scanned. If the tag is *edges then
 C increment the value of NSUR and then scan JVN data. If ier
 C equals 2 then end of file reached so close.
-   62   CALL STRIPC(IUNIT,OUTSTR,99,ND,0,'*vertex *edges etc tags',IER)
+   62   CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,0,'*vertex *edges tags',IER)
         if(IER.EQ.2)then
 
 C End of file sensed, however this is not an error at this point.
@@ -1479,16 +1501,16 @@ C End of file sensed, however this is not an error at this point.
         elseif(IER.eq.0)then
           continue
         else
-          goto 1001
+          goto 1002
         endif
         K=0
-        CALL EGETW(OUTSTR,K,WORD,'W','*vertex or *surface tags',IER)
+        CALL EGETW(LOUTSTR,K,WORD,'W','*vertex or *surface tags',IER)
         if(WORD(1:7).eq.'*vertex')then
           NTV=NTV+1
           if(NTV.le.MTV)then
-            CALL EGETWR(OUTSTR,K,X(NTV),0.,0.,'-','X coord',IER)
-            CALL EGETWR(OUTSTR,K,Y(NTV),0.,0.,'-','Y coord',IER)
-            CALL EGETWR(OUTSTR,K,Z(NTV),0.,0.,'-','Z coord',IER)
+            CALL EGETWR(LOUTSTR,K,X(NTV),0.,0.,'-','X coord',IER)
+            CALL EGETWR(LOUTSTR,K,Y(NTV),0.,0.,'-','Y coord',IER)
+            CALL EGETWR(LOUTSTR,K,Z(NTV),0.,0.,'-','Z coord',IER)
             NZTV(ICOMP)=NTV
           else
             call edisp(iuout,
@@ -1498,20 +1520,20 @@ C End of file sensed, however this is not an error at this point.
         elseif(WORD(1:6).eq.'*edges')then
           NEDGE=NEDGE+1
           if(NEDGE.le.MS)then
-            CALL EGETWI(OUTSTR,K,J,3,MV,'F','nb assoc vertices',IERV)
+            CALL EGETWI(LOUTSTR,K,J,3,MV,'F','nb assoc vertices',IERV)
             NVER(NEDGE)=J
 
 C Now proceed to read vertices on one or more lines.
             DO 12 KV=1,NVER(NEDGE)
-              CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'F','vertex',IERV)
+              CALL EGETWI(LOUTSTR,K,IVAL,0,MTV,'F','vertex',IERV)
               IF(IERV.NE.0) THEN
                 call edisp(ITRU,' reading continuation line...')
-                CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'vertex XYZ',IER)
-                IF(IER.NE.0)goto 1001
+                CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,0,'vertex XYZ',IER)
+                IF(IER.NE.0)goto 1002
                 K=0
-                CALL EGETWI(OUTSTR,K,IVAL,0,MTV,'F','vertex',IERV)
+                CALL EGETWI(LOUTSTR,K,IVAL,0,MTV,'F','vertex',IERV)
               ENDIF
-              IF(IERV.NE.0) GOTO 1001
+              IF(IERV.NE.0) GOTO 1002
               JVN(NEDGE,KV)=IVAL
    12       CONTINUE
 
@@ -1574,14 +1596,14 @@ C   GROUND_USR,i,j     where i is 0 and j is profile index
 C   UNKNOWN,i,j     where i is 0 and j is 0
 
 C Surface name, allow for future spaces in name.
-            CALL EGETP(OUTSTR,K,WORD,'W','surface name',IER)
+            CALL EGETP(LOUTSTR,K,WORD,'W','surface name',IER)
             write(SNAME(ICOMP,NS),'(a)') WORD(1:lnblnk(WORD))
             if(havec24)then
               write(ssname(icn),'(a)') WORD(1:lnblnk(WORD))
             endif
 
 C Surface position
-            CALL EGETW(OUTSTR,K,tmpvfc,'W','surface position',IER)
+            CALL EGETW(LOUTSTR,K,tmpvfc,'W','surface position',IER)
             IF(tmpvfc.EQ.'VERT'.OR.tmpvfc.EQ.'SLOP')then
               write(SVFC(NS),'(a)') tmpvfc
               if(havec24) write(SSVFC(icn),'(a)') tmpvfc
@@ -1594,25 +1616,25 @@ C Surface position
             ENDIF
 
 C Parent name, allow for future spaces in parent name.
-            CALL EGETP(OUTSTR,K,WORD,'W','surface parent',IER)
+            CALL EGETP(LOUTSTR,K,WORD,'W','surface parent',IER)
             write(sparent(NS),'(a)') WORD(1:lnblnk(WORD))
             if(havec24) write(ssparent(icn),'(a)') WORD(1:lnblnk(WORD))
 
 C Surface usage - two tokens.
-            CALL EGETW(OUTSTR,K,WORD,'W','surface use 1',IER)
+            CALL EGETW(LOUTSTR,K,WORD,'W','surface use 1',IER)
             write(SUSE(NS,1),'(a)') WORD(1:lnblnk(WORD))
             if(havec24) write(SSUSE(icn,1),'(a)') WORD(1:lnblnk(WORD))
-            CALL EGETW(OUTSTR,K,WORD,'W','surface use 2',IER)
+            CALL EGETW(LOUTSTR,K,WORD,'W','surface use 2',IER)
             write(SUSE(NS,2),'(a)') WORD(1:lnblnk(WORD))
             if(havec24) write(SSUSE(icn,2),'(a)') WORD(1:lnblnk(WORD))
 
 C Surface construction name, allow for spaces.
-            CALL EGETP(OUTSTR,K,WORD,'W','surface construction',IER)
+            CALL EGETP(LOUTSTR,K,WORD,'W','surface construction',IER)
             write(SMLCN(NS),'(a)') WORD(1:lnblnk(WORD))
             if(havec24) write(SSMLCN(icn),'(a)') WORD(1:lnblnk(WORD))
 
 C Surface optics set name or OPAQ/TRAN, allow for spaces.
-            CALL EGETP(OUTSTR,K,WORD,'W','surface optics',IER)
+            CALL EGETP(LOUTSTR,K,WORD,'W','surface optics',IER)
             if(WORD(1:4).eq.'OPAQ')then
               write(SOTF(NS),'(a)') 'OPAQUE'  ! write OPAQUE
               if(havec24) write(SSOTF(icn),'(a)') 'OPAQUE'
@@ -1670,9 +1692,9 @@ C optical set.
             endif
 
 C Surface other side - three tokens.
-            CALL EGETW(OUTSTR,K,tother,'W','surface other 1',IER)
-            CALL EGETW(OUTSTR,K,tother1,'W','surface other 2',IER)
-            CALL EGETW(OUTSTR,K,tother2,'W','surface other 3',IER)
+            CALL EGETW(LOUTSTR,K,tother,'W','surface other 1',IER)
+            CALL EGETW(LOUTSTR,K,tother1,'W','surface other 2',IER)
+            CALL EGETW(LOUTSTR,K,tother2,'W','surface other 3',IER)
             if(tother(1:7).eq.'UNKNOWN')then
               write(sother(ns,1),'(a)') 'UNKNOWN'
               write(sother(ns,2),'(a)') '0'
@@ -1778,14 +1800,14 @@ C A typical entry would look like:
 C *base_list,1,6,13.50 0
 C were the 1st item is the number of associated surfaces, then the
 C list of surfaces followed by the base area followed by user flag.
-          CALL EGETWI(OUTSTR,K,IB0,0,12,'-','zn base list',IER)
+          CALL EGETWI(LOUTSTR,K,IB0,0,12,'-','zn base list',IER)
           izbaselist(icomp)=IB0
           if(IB0.gt.0)then
 
 C There are items in the list so scan the surface indices.
             do 63 inthelist=1,IB0
               IBASES(ICOMP,inthelist)=0
-              CALL EGETWI(OUTSTR,K,IB1,0,12,'-',
+              CALL EGETWI(LOUTSTR,K,IB1,0,12,'-',
      &          'zn base surface list item',IER)
               IBASES(ICOMP,inthelist)=IB1
   63        continue
@@ -1794,9 +1816,9 @@ C There are items in the list so scan the surface indices.
 C No items in the list so user must have edited the base area.
             iuzbasea(icomp)=1
           endif
-          CALL EGETWR(OUTSTR,K,VAL,0.,99999.,'W','zn base area',IER)
+          CALL EGETWR(LOUTSTR,K,VAL,0.,99999.,'W','zn base area',IER)
           ZBASEA(ICOMP)=VAL
-          CALL EGETWI(OUTSTR,K,IUB,0,2,'-',
+          CALL EGETWI(LOUTSTR,K,IUB,0,2,'-',
      &      'zn base area user flag',IER)
           if(iub.eq.0)then
             iuzbasea(icomp)=0
@@ -1808,7 +1830,7 @@ C No items in the list so user must have edited the base area.
         elseif(WORD(1:10).eq.'*shad_calc')then
 
 C Shading calculation instructions.
-          CALL EGETW(OUTSTR,K,WORD,'W','shad directive',IFLAG)
+          CALL EGETW(LOUTSTR,K,WORD,'W','shad directive',IFLAG)
           if(WORD(1:4).eq.'none')then
             iaplic(icomp,1)=0
             nsurfcalc(icomp)=0
@@ -1820,7 +1842,7 @@ C Shading calculation instructions.
             endif
 
 C Read number of surfaces and then the list
-            CALL EGETWI(OUTSTR,K,iv,0,MS,'-','nsurfcalc',IER)
+            CALL EGETWI(LOUTSTR,K,iv,0,MS,'-','nsurfcalc',IER)
             nsurfcalc(icomp)=iv
             IRVA=nsurfcalc(icomp)
             CALL EGETWIA(IUNIT,IVA,IRVA,0,MS,'F','lstsfcalc',IER)
@@ -1832,7 +1854,7 @@ C Read number of surfaces and then the list
         elseif(WORD(1:11).eq.'*insol_calc')then
 
 C Insolation calculation instructions.
-          CALL EGETW(OUTSTR,K,WORD,'W','insolation directive',IFLAG)
+          CALL EGETW(LOUTSTR,K,WORD,'W','insolation directive',IFLAG)
           if(WORD(1:4).eq.'none')then
             iaplic(icomp,2)=0
             nsurfinso(icomp)=0
@@ -1844,7 +1866,7 @@ C Insolation calculation instructions.
             endif
 
 C Applicable surfaces are the current exterior facing surfaces.
-            CALL EGETWI(OUTSTR,K,iv,0,MS,'-','nsurfinso',IER)
+            CALL EGETWI(LOUTSTR,K,iv,0,MS,'-','nsurfinso',IER)
             nsurfinso(icomp)=iv
             IRVA=nsurfinso(icomp)
             CALL EGETWIA(IUNIT,IVA,IRVA,0,MS,'F','isurfinso',IER)
@@ -1860,13 +1882,13 @@ C in the tag test to clarify.
 C Read default insolation surface numbers. NN = insolation defining 
 C index:  1; one plane, 2; two planes, 3; all planes (diffuse).
 C IDPN defines the default plane numbers.
-          CALL EGETWI(OUTSTR,K,IV,1,3,'W','Def insol index',IER)
+          CALL EGETWI(LOUTSTR,K,IV,1,3,'W','Def insol index',IER)
           NDP(ICOMP)=IV
-          CALL EGETWI(OUTSTR,K,IV,0,NSUR,'W','1st recv surf',IER)
+          CALL EGETWI(LOUTSTR,K,IV,0,NSUR,'W','1st recv surf',IER)
           IDPN(ICOMP,1)=IV
-          CALL EGETWI(OUTSTR,K,IV,0,NSUR,'W','2nd recv surf',IER)
+          CALL EGETWI(LOUTSTR,K,IV,0,NSUR,'W','2nd recv surf',IER)
           IDPN(ICOMP,2)=IV
-          CALL EGETWI(OUTSTR,K,IV,-1,NSUR,'W','3rd insol data',IER)
+          CALL EGETWI(LOUTSTR,K,IV,-1,NSUR,'W','3rd insol data',IER)
           IDPN(ICOMP,3)=IV
           IF(IR.EQ.1)THEN
             DO 40 I=1,3
@@ -1875,8 +1897,8 @@ C IDPN defines the default plane numbers.
               IF(NDP(ICOMP).EQ.2.AND.I.LE.2)IX=1
               if(IDPN(ICOMP,I).NE.-1.AND.IDPN(ICOMP,I).NE.0)then
                 if(IDPN(ICOMP,I).LT.IX.OR.IDPN(ICOMP,I).GT.NSUR)then
-                  CALL USRMSG(' Nonexistent insolation plane!',
-     &              OUTSTR,'W')
+                  CALL LUSRMSG(' Nonexistent insolation plane!',
+     &              LOUTSTR,'W')
                 endif
               endif
    40       CONTINUE
@@ -1886,16 +1908,18 @@ C IDPN defines the default plane numbers.
 
 C Simplified thermal bridge data starts here. Scan three reals after tag.
           nbrdg(icomp)=0
-          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','user fraction thbr',IER)
+          CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','user fraction thbr',IER)
           thbrpercent=VAL
-          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','W/K from loss %',IER)
+          CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','W/K from loss %',IER)
           losspercent(icomp)=VAL
-          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','W/K total',IER)
+          CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','W/K total',IER)
           totheatloss(icomp)=VAL
+          CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','W/K total',IER)
+          uavtotal(icomp)=VAL
           goto 62
         elseif(WORD(1:11).eq.'*ukt_bridge')then
           nbrdg(icomp)=nbrdg(icomp)+1
-          CALL EGETP(OUTSTR,K,phrase,'W','bridge tag',IER)
+          CALL EGETP(LOUTSTR,K,phrase,'W','bridge tag',IER)
           if(phrase(1:10).eq.'roof-wall ')then
             ibrdg(icomp,nbrdg(icomp))=1
           elseif(phrase(1:18).eq.'wall-ground floor ')then
@@ -1930,9 +1954,9 @@ C Simplified thermal bridge data starts here. Scan three reals after tag.
           else
             ibrdg(icomp,nbrdg(icomp))=16
           endif
-          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','length of bridge',IER)
+          CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','length of bridge',IER)
           lngth(icomp,nbrdg(icomp))=VAL
-          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','bridge psi',IER)
+          CALL EGETWR(LOUTSTR,K,VAL,0.,0.,'-','bridge psi',IER)
           psi(icomp,nbrdg(icomp))=VAL
           goto 62
         elseif(WORD(1:11).eq.'*end_bridge')then
@@ -1959,8 +1983,8 @@ C be incremented to iobs() = 2.
 C Following the tag *block_start will be the grid for X and Z. If
 C there are insufficient tokens on line set both to 20.
           if(ND.gt.2)then
-            CALL EGETWI(OUTSTR,K,NOX(icomp),4,20,'F','opq grid X',IER)
-            CALL EGETWI(OUTSTR,K,NOZ(icomp),4,20,'F','opq grid Z',IER)
+            CALL EGETWI(LOUTSTR,K,NOX(icomp),4,20,'F','opq grid X',IER)
+            CALL EGETWI(LOUTSTR,K,NOZ(icomp),4,20,'F','opq grid Z',IER)
           else
             NOX(icomp)=20
             NOZ(icomp)=20
@@ -1968,38 +1992,38 @@ C there are insufficient tokens on line set both to 20.
 
 C Read another line to get the actual blocks. There are slightly different
 C formats depending on whether the key is '*obs' or '*obs3'.
-   72     CALL STRIPC(IUNIT,OUTSTR,99,ND,0,'*obs tags',IER)
+   72     CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,0,'*obs tags',IER)
           k=0
-          CALL EGETP(OUTSTR,K,phrase,'W','block tag',IER)
+          CALL EGETP(LOUTSTR,K,phrase,'W','block tag',IER)
           if(phrase(1:5).eq.'*obs3')then
             if(iobs(icomp).eq.1) goto 72  ! keep reading till *end_block
             if(iobs(icomp).eq.0) iobs(icomp)=2
             nbobs(icomp)=nbobs(icomp)+1
             nbo=nbobs(icomp)
-            CALL EGETWR(OUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
-            CALL EGETWR(OUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
-            CALL EGETWR(OUTSTR,K,VZ, -99., 99.,'W','obs Z org',IER)
+            CALL EGETWR(LOUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
+            CALL EGETWR(LOUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
+            CALL EGETWR(LOUTSTR,K,VZ, -99., 99.,'W','obs Z org',IER)
             XOB(icomp,nbo)=VX
             YOB(icomp,nbo)=VY
             ZOB(icomp,nbo)=VZ
-            CALL EGETWR(OUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
-            CALL EGETWR(OUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
-            CALL EGETWR(OUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+            CALL EGETWR(LOUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
+            CALL EGETWR(LOUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
+            CALL EGETWR(LOUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
             DXOB(icomp,nbo)=VX
             DYOB(icomp,nbo)=VY
             DZOB(icomp,nbo)=VZ
-            CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang a',IER)
+            CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','obs rot ang a',IER)
             BANGOB(icomp,nbo,1)=VX
-            CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang b',IER)
+            CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','obs rot ang b',IER)
             BANGOB(icomp,nbo,2)=VX
-            CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang c',IER)
+            CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','obs rot ang c',IER)
             BANGOB(icomp,nbo,3)=VX
-            CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+            CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
 
 C The name of the construction might contain spaces so use EGETP.
-            CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            CALL EGETP(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
             write(BLOCKMAT(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKMAT(icomp,nbo)=lnblnk(BLOCKMAT(icomp,nbo))
             BLOCKTYP(icomp,nbo)='obs3'
@@ -2017,70 +2041,70 @@ C standard obstruction block when converted into a GB1 common block.
             if(iobs(icomp).eq.0) iobs(icomp)=2
             nbobs(icomp)=nbobs(icomp)+1
             nbo=nbobs(icomp)
-            CALL EGETWI(OUTSTR,K,ival,8,8,'F','obs nb vertices',IER)
-            CALL EGETWI(OUTSTR,K,ival,6,6,'F','obs nb faces',IER)
-            CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+            CALL EGETWI(LOUTSTR,K,ival,8,8,'F','obs nb vertices',IER)
+            CALL EGETWI(LOUTSTR,K,ival,6,6,'F','obs nb faces',IER)
+            CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             write(BLOCKNAME(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
-            CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            CALL EGETW(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
             write(BLOCKMAT(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKMAT(icomp,nbo)=lnblnk(BLOCKMAT(icomp,nbo))
             BLOCKTYP(icomp,nbo)='obsp'
 
-            CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'first 4 coord',IER)
-            IF(IER.NE.0)goto 1001
+            CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'first 4 coord',IER)
+            IF(IER.NE.0)goto 1002
             K=0
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 1',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XBP 1',IER)
             XBP(icomp,nbo,1)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 1',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YBP 1',IER)
             YBP(icomp,nbo,1)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 1',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZBP 1',IER)
             ZBP(icomp,nbo,1)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 2',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XBP 2',IER)
             XBP(icomp,nbo,2)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 2',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YBP 2',IER)
             YBP(icomp,nbo,2)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 2',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZBP 2',IER)
             ZBP(icomp,nbo,2)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 3',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XBP 3',IER)
             XBP(icomp,nbo,3)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 3',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YBP 3',IER)
             YBP(icomp,nbo,3)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 3',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZBP 3',IER)
             ZBP(icomp,nbo,3)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 4',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XBP 4',IER)
             XBP(icomp,nbo,4)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 4',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YBP 4',IER)
             YBP(icomp,nbo,4)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 4',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZBP 4',IER)
             ZBP(icomp,nbo,4)=val1
 
-            CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'2nd 4 coord',IER)
-            IF(IER.NE.0)goto 1001
+            CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'2nd 4 coord',IER)
+            IF(IER.NE.0)goto 1002
             K=0
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 5',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XBP 5',IER)
             XBP(icomp,nbo,5)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 5',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YBP 5',IER)
             YBP(icomp,nbo,5)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 5',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZBP 5',IER)
             ZBP(icomp,nbo,5)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 6',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XBP 6',IER)
             XBP(icomp,nbo,6)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 6',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YBP 6',IER)
             YBP(icomp,nbo,6)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 6',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZBP 6',IER)
             ZBP(icomp,nbo,6)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 7',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XBP 7',IER)
             XBP(icomp,nbo,7)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 7',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YBP 7',IER)
             YBP(icomp,nbo,7)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 7',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZBP 7',IER)
             ZBP(icomp,nbo,7)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','XBP 8',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','XBP 8',IER)
             XBP(icomp,nbo,8)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','YBP 8',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','YBP 8',IER)
             YBP(icomp,nbo,8)=val1
-            CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','ZBP 8',IER)
+            CALL EGETWR(LOUTSTR,K,val1,-999.,998.,'W','ZBP 8',IER)
             ZBP(icomp,nbo,8)=val1
             goto 72
 
@@ -2090,28 +2114,28 @@ C standard obstruction block when converted into a GB1 common block.
             if(iobs(icomp).eq.0) iobs(icomp)=2
             nbobs(icomp)=nbobs(icomp)+1
             nbo=nbobs(icomp)
-            CALL EGETWR(OUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
-            CALL EGETWR(OUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
-            CALL EGETWR(OUTSTR,K,VZ, -99., 99.,'W','obs Z org',IER)
+            CALL EGETWR(LOUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
+            CALL EGETWR(LOUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
+            CALL EGETWR(LOUTSTR,K,VZ, -99., 99.,'W','obs Z org',IER)
             XOB(icomp,nbo)=VX
             YOB(icomp,nbo)=VY
             ZOB(icomp,nbo)=VZ
-            CALL EGETWR(OUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
-            CALL EGETWR(OUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
-            CALL EGETWR(OUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+            CALL EGETWR(LOUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
+            CALL EGETWR(LOUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
+            CALL EGETWR(LOUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
             DXOB(icomp,nbo)=VX
             DYOB(icomp,nbo)=VY
             DZOB(icomp,nbo)=VZ
-            CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang',IER)
+            CALL EGETWR(LOUTSTR,K,VX,-359.,359.,'W','obs rot ang',IER)
             BANGOB(icomp,nbo,1)=VX
             BANGOB(icomp,nbo,2)=0.0   ! there is no 2nd rotation
             BANGOB(icomp,nbo,3)=0.0   ! there is no 3rd rotation
-            CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
+            CALL EGETW(LOUTSTR,K,WORD,'W','obs blk name',IFLAG)
             BLOCKNAME(icomp,nbo)=WORD(1:12)
             LNBLOCKNAME(icomp,nbo)=lnblnk(BLOCKNAME(icomp,nbo))
 
 C The name of the construction might contain spaces so use EGETP.
-            CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            CALL EGETP(LOUTSTR,K,WORD,'W','obs mat name',IFLAG)
             write(BLOCKMAT(icomp,nbo),'(a)') WORD(1:lnblnk(WORD))
             LNBLOCKMAT(icomp,nbo)=lnblnk(BLOCKMAT(icomp,nbo))
             BLOCKTYP(icomp,nbo)='obs '
@@ -2210,7 +2234,11 @@ C Close geometry data file before exiting.
       CALL ERPFREE(IUNIT,ios)
       RETURN
 
- 1001 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+C Errors for loutstr reads.
+ 1002 write(outs,'(3a)') 'GEOREAD: conversion error in...',
+     &  LOUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='EGOMIN'
         dllmesg=outs
@@ -2219,6 +2247,7 @@ C Close geometry data file before exiting.
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ios)
         RETURN
@@ -2274,9 +2303,10 @@ C ZDESC (64 char) - zone notes (from geometry.h).
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
 
 C Error subroutine and error details for dll mode.
       character dllsubr*12,dllmesg*124
@@ -2287,7 +2317,8 @@ C Obstruction blocks common GS5/GS6 is found in geometry.h.
       CHARACTER GENFIL*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character outs*184,outsd*184,outs72*72,OTHSTR*30
+      character outs*144,outsd*144,outs72*72,OTHSTR*30
+      character louts*248,loutsd*248
       character tab*1    ! separator
       character dstmp*24
       character phrase*36 ! for thermal bridge tag
@@ -2323,7 +2354,7 @@ C over-write) or create a new file.
      &      ' could not be written.'
         if(dll)then
           dllsubr='GEOWRITE'
-          dllmesg=outs
+          write(dllmesg,'(a)') outs(1:124)
           ier=2
           return
         else
@@ -2362,11 +2393,11 @@ C Edge list. Write as a packed list comma separated.
      &  '# tag, number of vertices followed by list of associated vert'
 
       DO 970 I = 1,NZSUR(ICOMP)
-        write(outs,'(a,41I4)',IOSTAT=ios,ERR=13) '*edges ',NVER(I),
+        write(louts,'(a,42I4)',IOSTAT=ios,ERR=13) '*edges ',NVER(I),
      &     (JVN(I,J),J=1,NVER(I))
-        call SDELIM(outs,outsd,'C',IW)
+        call SDELIM(louts,loutsd,'C',IW)
         write(ifilg,'(2a,i2)',IOSTAT=IOS,ERR=13) 
-     &    outsd(1:lnblnk(outsd)),'  # ',I
+     &    loutsd(1:lnblnk(loutsd)),'  # ',I
 970   CONTINUE
 
 C Surface list. Write as a packed list comma separated.
@@ -2492,12 +2523,13 @@ C or the losspercent is non-zero.
       if(losspercent(icomp).gt.0.0) havebrdge=.true.
       if(nbrdg(icomp).gt.0.or.havebrdge)then
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
-        WRITE(outs,'(a,F6.3,2F9.3)',IOSTAT=ios,ERR=13) '*bridge_start ',
-     &    thbrpercent,losspercent(icomp),totheatloss(icomp)
+        WRITE(outs,'(a,F6.3,3F9.3)',IOSTAT=ios,ERR=13) '*bridge_start ',
+     &    thbrpercent,losspercent(icomp),totheatloss(icomp),
+     &    uavtotal(icomp)
         call SDELIM(outs,outsd,'C',IW)
         write(ifilg,'(2a)',IOSTAT=IOS,ERR=13) 
-     &    outsd(1:lnblnk(outsd)),
-     &    '  # user fraction, losspercent W/K and total heat loss W/K'
+     &    outsd(1:lnblnk(outsd)),'  # user fraction,losspercent W/K, tot
+     &al heat loss W/K and total UA W/K'
         if(nbrdg(icomp).gt.0)then
           do 88 itb=1,nbrdg(icomp)
             if(ibrdg(icomp,itb).eq.1)then
@@ -3532,6 +3564,7 @@ C 'ZINFO' takes data from the zone geometry commons G1,G2,G3 and returns
 C several derived values.
       SUBROUTINE ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 #include "building.h"
+#include "sbem.h"
 
 C Parameters
       real SNA  ! returned area for each surface
@@ -3582,7 +3615,8 @@ C Surface area is given by:
         SNA(I)=ZAREA
 
 C Check for -ve surface area: windows wrongly specified.
-        IF(SNA(I).LT.0.00001)THEN
+C Suppress warning message if UK NCM notional model
+        IF(SNA(I).LT.0.00001.AND.INOTI.NE.1)THEN
 	  write(outs,'(a,i3,a)') ' Area of zone surf ',i,
      &      ' is less than 0.00001m^2!'
           CALL USRMSG(outs,
@@ -3664,6 +3698,7 @@ C VOL(MCOM)     - zone bounded volume
       SUBROUTINE ZGUPDATE(itrc,icomp,ier)
 #include "building.h"
 #include "geometry.h"
+#include "sbem.h"
       
       integer lnblnk  ! function definition
 
@@ -3729,9 +3764,10 @@ C Compute gross surface area
         ZSUM(I)=ZS
 
 C Compute surface area and check for negative or near zero area.
+C Suppress warning message if UK NCM notional model
         ZAREA=0.5*SQRT(XS*XS+YS*YS+ZS*ZS)
         SSNA(icc)=ZAREA
-        IF(SSNA(icc).LT.0.00001)THEN
+        IF(SSNA(icc).LT.0.00001.AND.INOTI.NE.1)THEN
 	  write(outs,'(a,i3,a)') ' Area of surf connection ',icc,
      &      ' is less than 0.00001m^2!'
           CALL USRMSG(outs,
@@ -3926,8 +3962,8 @@ C iwhich is local variable to sort most often referenced adjacent surf.
 
 C Do test call to surrel to see if it picks up any parent child
 C relationships. Use strict test.
-C          call surrel('-',izone)
-          call surrel('s',izone)
+C          call surrel('-',izone,ier)
+          call surrel('s',izone,ier)
         endif
 
         do 43 isurf=1,NZSUR(izone)
@@ -4189,7 +4225,7 @@ C Note: if surface I and J both have the name number of vertices then
 C a match should be discounted because the two surfaces are likely to
 C be duplicates.
 
-      SUBROUTINE SURREL(ACT,ICOMP)
+      SUBROUTINE SURREL(ACT,ICOMP,IER)
 #include "building.h"
 #include "geometry.h"
 
@@ -4198,53 +4234,49 @@ C be duplicates.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C G9 holds information on children of a surface.
-      integer nbchild       ! how many children (up to 4)
-      integer isgrandchild  ! if 1 child, if 2 grandchild
-      character childname*12 ! name of the child surface
-      common/G9/nbchild(MS),isgrandchild(MS,4),childname(MS,4)
+      integer nbchild   ! how many children (up to 4)
+      integer nbgchild  ! how many grand children (up to 4)
+      integer ichild    ! list of children
+      integer igchild   ! list of grand children
+      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
+     &igchild(MCON,4)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      DIMENSION IDVN(MV),nTbchild(MCON)
       DIMENSION ICOMVER(MS)  ! icomver is the number of vertices in common
       dimension idupv(MS,5)    ! duplicate vertex indices
       dimension iduplist(MS,5) ! position in list
       LOGICAL PARENT,closeazi,closeelv
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
-      CHARACTER ACT*1
+      CHARACTER ACT*1,CHILDRIN*12,PARENTIN*12
       integer isur   ! loop counter for parent surface loop
       integer jsur   ! loop counter for child surface loop
       integer iver   ! loop counter for parent surface vertices
       integer jver   ! loop counter for child surface vertices
       integer iiver,jjver,next
 
-C First identify any surfaces with vertices that are
-C referenced more than once (e.g. surface with hole in it)
+C Initialise various variables
       do 10 isur=1,NZSUR(ICOMP)
-        idupv(isur,1)=0     ! clear 1st duplicate vert index
-        idupv(isur,2)=0     ! clear 2nd duplicate vert index
-        idupv(isur,3)=0     ! clear 3rd duplicate vert index
-        idupv(isur,4)=0     ! clear 4th duplicate vert index
-        idupv(isur,5)=0     ! clear 4th duplicate vert index
-        iduplist(isur,1)=0  ! clear jvn duplicate position of idupv(isur,1)
-        iduplist(isur,2)=0  ! clear jvn duplicate position of idupv(isur,2)
-        iduplist(isur,3)=0  ! clear jvn duplicate position of idupv(isur,3)
-        iduplist(isur,4)=0  ! clear jvn duplicate position of idupv(isur,4)
-        iduplist(isur,5)=0  ! clear jvn duplicate position of idupv(isur,4)
-        nbchild(isur)=0     ! assume no children
-        isgrandchild(isur,1)=0
-        isgrandchild(isur,2)=0
-        isgrandchild(isur,3)=0
-        isgrandchild(isur,4)=0
-        childname(isur,1)=' '
-        childname(isur,2)=' '
-        childname(isur,3)=' '
-        childname(isur,4)=' '
-
+        icc=IZSTOCN(icomp,isur)
+        ssparent(icc)='-'
+        do 20 i=1,5
+          idupv(isur,i)=0     ! clear duplicate vertex index
+          iduplist(isur,i)=0  ! clear duplicate position
+ 20     continue
+        do 21 i=1,4
+          ichild(iCC,i)=0    ! clear array holding children
+          igchild(iCC,i)=0   ! clear array holding grand children
+ 21     continue
+        nbchild(iCC)=0     ! assume no children
+        nbgchild(iCC)=0    ! assume no grand children
         next=0  ! counter to update to get to 2nd dimension.
 
+C First identify any surfaces with vertices that are
+C referenced more than once (e.g. surface with hole in it)
 C Check for 2nd references of a vertex with the fast loop looping
 C through only the untested part of the surface edge list.
         do 11 iver=1,nver(isur)
@@ -4261,13 +4293,12 @@ C through only the untested part of the surface edge list.
   12      continue
 
 C Debug.
-C          if(iduplist(isur,1).gt.0.or.iduplist(isur,2).gt.0)then
-C            write(6,*) isur,iver,iiver,next,idupv(isur,1),
+C         if(iduplist(isur,1).gt.0.or.iduplist(isur,2).gt.0)then
+C           write(6,*) isur,iver,iiver,next,idupv(isur,1),
 C     &        iduplist(isur,1),idupv(isur,2),iduplist(isur,2),
 C     &        idupv(isur,3),iduplist(isur,3),idupv(isur,4),
 C     &        iduplist(isur,4)
-C          endif
-
+C         endif
   11    continue
   10  continue
 
@@ -4299,7 +4330,7 @@ C 2nd duplicate references (e.g. iver is in iduplist)
  103      CONTINUE
           if(NVER(JSUR).eq.3)then
 
-C If the number of vert in jsur is 3 (triangular) then icomver
+C If the number of vertices in jsur is 3 (triangular) then icomver
 C must be >= nver(jsur).
             if(ICOMVER(JSUR).GE.NVER(JSUR))then
               continue
@@ -4308,7 +4339,7 @@ C must be >= nver(jsur).
             endif
           elseif(NVER(JSUR).gt.3)then
 
-C If the number of vert in jsur is 4 or more, icomver must be >= nver()
+C If the number of vertices in jsur is 4 or more, icomver must be >= nver()
 C for the strict case and >= nver()-1 for the loose or blank action.
 C so as to pick up the door-in-corner.
             if(act.eq.'-'.and.(ICOMVER(JSUR).GE.NVER(JSUR)-1))then
@@ -4333,7 +4364,7 @@ C     &          NVER(jsur),NVER(isur)
             endif
           endif
 
-C If there are the same shared virtices check orientation as well.
+C If there are the same shared vertices check orientation as well.
           icc=IZSTOCN(icomp,isur)
           jcc=IZSTOCN(icomp,jsur)
 
@@ -4350,30 +4381,111 @@ C<< Division mod 360 may be a more generic way for angle checking
 
             SSPARENT(JCC)=SSNAME(ICC)
 C Debug.
-C            WRITE(6,*)'PARENT OF ',JCC,SSNAME(JCC),' IS ',
-C     &        SSPARENT(JCC),' match verts ',ICOMVER(JSUR),
-C     &        ' nverts in child ',NVER(JSUR)
+c            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
+c     &        SSPARENT(JCC)!,' Matched vertices= ',ICOMVER(JSUR),
+c     &        ' No of vertices in child= ',NVER(JSUR)
+c            write(6,*)' '
 
 C << Having found a child add it to the list of children of
 C << the parent surface.
-            nbchild(isur)=nbchild(isur)+1
-            isgrandchild(isur,nbchild(isur))=1
-            childname(isur,1)=SSNAME(JCC)
+            nbchild(iCC)=nbchild(iCC)+1
+            ichild(iCC,nbchild(iCC))=jCC
 
-C Debug.
-C            WRITE(6,*)'CHILD OF ',ICC,SSNAME(ICC),' IS ',
-C     &        childname(isur,1)
-
+C Debug...
+c            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
+c     &        childname(isur,1)
           endif
  105      continue
  102    CONTINUE
  101  CONTINUE
 
-C Debug.
-C      write(6,*) 'nbchild ',nbchild
+C Now that parents are known also work out grand parents. This is done
+C by a similar logic to how parents are worked out (by inspecting vertex
+C numbers of surfaces).
+C Only need to work out whether parents are themselves children of some
+C other surface (grandparent)
+      DO 2001 ICC=1,MCON
+        nTbchild(iCC)=nbchild(iCC)
+ 2001 CONTINUE
+      DO 110 ISUR=1,NZSUR(ICOMP)
+        icc=IZSTOCN(icomp,isur)
+        DO 2002 IV=1,MV
+          IDVN(IV)=0
+ 2002   CONTINUE
+        DO 111 ICHLD=1,nTbchild(iCC)
+          NCV=0
+          icv=0 ; ido=0
+          CHILDRIN=SSNAME(ICHILD(ICC,ICHLD))
+          DO 112 JSUR=1,NZSUR(ICOMP)
+            jcc=izstocn(icomp,jsur)
+            PARENTIN=SSNAME(JCC)
+            ISNL=LNBLNK(PARENTIN)
+            ICHL=LNBLNK(CHILDRIN)
+            IF(CHILDRIN(1:ICHL).EQ.PARENTIN(1:ISNL))THEN
+              DO 113 IVER=1,NVER(ISUR) 
+                IIVER=JVN(ISUR,IVER)
+                ICV=0
+                DO 114 JVER=1,NVER(JSUR)
+                  JJVER=JVN(JSUR,JVER)
+                  IF(IIVER.EQ.JJVER)THEN
+                    ICV=1
+                  ENDIF
+ 114            CONTINUE
+		IF(ICV.NE.1)THEN
+                  IDO=0
+                  DO 118 ICCV=1,MV
+                    IF(IDVN(ICCV).EQ.IIVER)THEN
+                      IDO=1
+                    ENDIF
+ 118              CONTINUE
+                  IF(IDO.EQ.0)THEN
+                    NCV=NCV+1
+                    IDVN(NCV)=IIVER
+                  ENDIF
+		ENDIF
+ 113          CONTINUE
+            ENDIF
+ 112      CONTINUE
 
+C Now IDVN holds list of all vertices that define the parents but are
+C not contained in the child. Use these to work out parent of parent
+          DO 115 JSUR=1,NZSUR(ICOMP)
+            IF(ISUR.NE.JSUR)THEN
+              NCOMV=0
+              DO 116 ICV=1,NCV
+                DO 117 JVER=1,NVER(JSUR)
+                  JJVER=JVN(JSUR,JVER)
+                  IF(IDVN(ICV).EQ.JJVER)then
+                    NCOMV=NCOMV+1
+                  ENDIF
+ 117            CONTINUE
+ 116          CONTINUE
+              IF(NCV.GT.0.AND.NCV.LE.NCOMV)THEN
+                Jcc=IZSTOCN(icomp,Jsur)
+                SSPARENT(iCC)=SSNAME(jCC)
+                nbchild(jCC)=nbchild(jCC)+1
+                ichild(jCC,nbchild(jCC))=iCC
+              ENDIF
+            ENDIF
+ 115      CONTINUE
+ 111    CONTINUE
+ 110  CONTINUE
+
+C Now fill grand children commons
+      DO 201 ISUR=1,NZSUR(ICOMP)
+        icc=IZSTOCN(icomp,isur)
+        DO 202 ICHL=1,NBCHILD(ICC)
+          JCC=ICHILD(ICC,ICHL)
+          DO 203 IGCD=1,NBCHILD(JCC)
+            KCC=ICHILD(JCC,IGCD)
+            IGCHILD(ICC,IGCD)=KCC
+             NBGCHILD(ICC)=NBGCHILD(ICC)+1
+ 203      CONTINUE
+ 202    CONTINUE
+ 201  CONTINUE
       RETURN
       END
+
 
 C ***************** ZDATA 
 C ZDATA reads NZONES geometry and uses common blocks G1 G2 etc to fill
@@ -4713,7 +4825,7 @@ C << could this use ?? rather than G1 >>
 #include "building.h"
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       DIMENSION ISASSO(MS)
-      CHARACTER OUTSTR*124
+      CHARACTER OUTSTR*124,LOUTSTR*248
 
       call edisp(ITRU,' ')
       call edisp(ITRU,
@@ -4744,9 +4856,14 @@ C Surfaces with associated vertices.
       call edisp(ITRU,'        |Vertices|')
       DO 9991 I=1,NSUR
         NV=NVER(I)
-        WRITE(OUTSTR,9990)I,NV,(JVN(I,J),J=1,NV)
- 9990   FORMAT(I6,I9,I5,40(',',I3))
-        call edisp(ITRU,OUTSTR)
+        if(NV.le.27)then
+          WRITE(OUTSTR,9990)I,NV,(JVN(I,J),J=1,NV)
+          call edisp(ITRU,OUTSTR)
+        else
+          WRITE(LOUTSTR,9990)I,NV,(JVN(I,J),J=1,NV)
+          call edisp248(ITRU,LOUTSTR,90)
+        endif 
+ 9990   FORMAT(I6,I9,I5,42(',',I3))
  9991 CONTINUE
       RETURN
       END

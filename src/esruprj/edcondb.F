@@ -1926,7 +1926,7 @@ C List database.
         CALL EASKABCD(' Reporting to:',' ',
      &    'summary text feedback','detailed text feedback',
      &    'summary file','detailed file',irpt,4)
-        if(irpt.eq.1)then
+        if(irpt.eq.1.or.irpt.eq.2)then
           itu = iuout
         elseif(irpt.eq.3.or.irpt.eq.4)then
           itu = ixunit
@@ -1957,7 +1957,7 @@ C If user canceled the listing the reset unit to iuout and loop back.
      &  external wall with Rso = 0.04m**2deg.C/W')
         call edisp(itu,
      &  '                  and Rsi = 0.13m**2deg.C/W')
-        if(irpt.eq.2)then
+        if(irpt.eq.3.or.irpt.eq.4)then
 
 C Call ctlexp a 2nd time to close the file.
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','prim db',IER)
@@ -2564,6 +2564,9 @@ C If g or h air gap and version 1.2 then assign DRAIR
                 RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
               endif
             endif
+          else
+            call edisp(iuout,
+     &        'One layer material ref is confused or duplicate name.')
           endif
         else
 

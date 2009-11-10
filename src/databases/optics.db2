@@ -342,10 +342,19 @@ dispGlz_not   :display glazing for notional UK buil
 # 12 char id |  description       | thick | blind
 Glaz_notiona  :Notional UK glazing optical properts
 # def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
-  1   3  0.690  0.070  0.110  5.400
+  1   3  0.690  0.070  0.110  2.200
 # direct trn @ 5 angles, total heat gain @ 5 angles
   0.557 0.536 0.505 0.341 0.164 0.200 0.200 0.200 0.200 0.200
 # refr index, absorption @ 5 angles for each tmc layer
   1.520 0.119 0.130 0.142 0.158 0.162
   1.000 0.001 0.001 0.001 0.001 0.001
   1.520 0.177 0.175 0.165 0.132 0.074
+Glaz_typical  :Typical UK glazing optical properts
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.540  0.070  0.110  3.300
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.624 0.595 0.529 0.371 0.165 0.200 0.200 0.200 0.200 0.200
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.148 0.161 0.175 0.193 0.194
+  1.000 0.001 0.001 0.001 0.001 0.001
+  1.520 0.111 0.118 0.118 0.105 0.074

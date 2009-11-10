@@ -249,6 +249,11 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
+C When iexcludediff_flag is 1, diffuse shading is excluded. 
+C If 0 then the calculation includes diffuse shading.      
+      integer iexcludediff_flag
+      common/excludediff/iexcludediff_flag
+
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
       CHARACTER LCFGF*72
@@ -318,12 +323,13 @@ C code in edcfg to trap updates following on from other modifications).
         h(3)='created or updated after 1996 should use the V3. '
         h(4)=' '
         h(5)='The version 4 format includes within the cfg file '
-        h(6)='some data held in separate files. '
-        h(7)=' '
-        h(8)='Both V3 and V4 files can support newer format '
-        h(9)='geometry and obstruction data. '
+        h(6)='some data held in separate files and uses newer '
+        h(7)='(free format) version of zone geometry files.'
+        h(8)=' '
+        h(9)='Both V3 and V4 files can support newer format '
+        h(10)='geometry and obstruction data. '
         CALL EASKAB(' Configuration file loaded was in old format.',
-     &    ' save in:','current format','cancel',IW,9)
+     &    ' save in:','current format','cancel',IW,10)
         if(IW.EQ.2)then
           call edisp(iuout,'Configuration not being updated.')
           return
@@ -331,7 +337,7 @@ C code in edcfg to trap updates following on from other modifications).
 
 C If no model root name has been set, make from configuration file.
 C If filename > 4 char it might have a .cfg attached.
-          icfgv=3     ! if upgrading do it to this intermediate version
+          icfgv=4     ! if upgrading use version 4
           lcfgr=lnblnk(LCFGF)
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then
@@ -595,6 +601,12 @@ C Solar radiation (half hour data) flag.
      &    iSlr_half_hr_flg,'  # solar timing half-hour centred'
       endif
 
+C Diffuse shading flag.
+      if(iexcludediff_flag.eq.1)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exlude_diff_shad  ',
+     &    iexcludediff_flag,'  # diffuse shading is excluded'
+      endif      
+      
 C SHOCC: library file.
       IF ( bSHOCCed ) then
          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*shl  ',
@@ -1214,33 +1226,14 @@ C BSIMP
 
 C Write connection information.
       WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)
-     &  '*cnn  ',LCNN(1:lnblnk(LCNN)),'  # connections '
-      CALL EFOPSEQ(IUF,LCNN,3,IER)
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=2) '*connections  for ',
-     &  cfgroot(1:lnblnk(cfgroot))
-      call dstamp(dstmp)
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) '*Date ',dstmp
-      WRITE(IUF,'(I7,A)',IOSTAT=IOS,ERR=2)
-     &  NCON,'   # number of connections'
-
-      DO 930 I = 1,NCON
-        CALL CONXINF(1,I,CXSTR)
-        WRITE(IUF,'(5I4,2A)',IOSTAT=IOS,ERR=2) IC1(I),IE1(I),
-     &    ICT(I),IC2(I),IE2(I),'  # ',CXSTR(1:lnblnk(CXSTR))
-
-        IF(ICT(I).NE.4.OR.IC2(I).GT.0)GOTO 930
-        if(IE2(I).GT.NGRDP)then
-           CALL edisp(iuout,
-     &      'Ground connection referenced an unknown monthly profile!')
-        endif
-  930 CONTINUE
+     &  '*cnn ',LCNN(1:lnblnk(LCNN)),'  # connections'
 
 C Re-build zone:surface to connection hash array.
-      CALL ERPFREE(IUF,IOS)
       do 43 icc = 1, NCON
         IZSTOCN(IC1(icc),IE1(icc))=icc
  43   continue
 
+C If there is more than one anchor concept write them out.
       if(NALOC.gt.0)then
         WRITE(IFCFG,'(A,i3)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
         do 44 ia=1,NALOC
@@ -1262,11 +1255,15 @@ C Write packed string of the items associated with each anchor.
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=3) '*End'
       endif
 
-C Write airflow model description
-      IF(IAIRN.EQ.0)WRITE(IFCFG,807,IOSTAT=IOS,ERR=2)IAIRN
-      IF(IAIRN.ge.1)WRITE(IFCFG,808,IOSTAT=IOS,ERR=2)IAIRN
-  807 FORMAT(I7,'   # no fluid flow network')
-  808 FORMAT(I7,'   # fluid flow network:  ')
+C Write airflow model indes and then its description.
+      if(IAIRN.EQ.0)then
+        WRITE(IFCFG,'(i4,a)',IOSTAT=IOS,ERR=2)IAIRN,
+     &    '   # no fluid flow network'
+      elseif(IAIRN.ge.1)then
+        WRITE(IFCFG,'(i4,a)',IOSTAT=IOS,ERR=2)IAIRN,
+     &    '   # fluid flow network:'
+      endif
+
       IF(IAIRN.ge.1)then
 
 C Make up an array of node names to write out substituting a
@@ -1291,6 +1288,7 @@ C zero where there is no association.
         end do
 
       endif
+
  9021 if(INDCFG.EQ.2.or.INDCFG.EQ.3)then
 
 C Plant network information - plant file and model name (if plant only).
@@ -1303,7 +1301,31 @@ C Plant network information - plant file and model name (if plant only).
         endif
       endif
 
- 9028 CALL  ERPFREE(IFCFG,IOS)
+C This is all there is to write so close the files.
+ 9028 CALL ERPFREE(IFCFG,IOS) ! free the cfg file unit
+
+C Now write the connections file 
+      CALL EFOPSEQ(IUF,LCNN,3,IER)
+      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=2) '*connections for',
+     &  cfgroot(1:lnblnk(cfgroot))
+      call dstamp(dstmp)
+      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) '*Date ',dstmp
+      WRITE(IUF,'(I7,A)',IOSTAT=IOS,ERR=2)
+     &  NCON,'   # number of connections'
+
+      DO 930 I = 1,NCON
+        CALL CONXINF(1,I,CXSTR)
+        WRITE(IUF,'(5I4,2A)',IOSTAT=IOS,ERR=2) IC1(I),IE1(I),
+     &    ICT(I),IC2(I),IE2(I),'  # ',CXSTR(1:lnblnk(CXSTR))
+
+        IF(ICT(I).NE.4.OR.IC2(I).GT.0)GOTO 930
+        if(IE2(I).GT.NGRDP)then
+           CALL edisp(iuout,
+     &      'Ground connection referenced an unknown monthly profile!')
+        endif
+  930 CONTINUE
+      CALL ERPFREE(IUF,IOS)   ! free the cnn file unit
+
       RETURN
 
 C Error messages.

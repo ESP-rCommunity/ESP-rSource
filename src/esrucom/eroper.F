@@ -184,12 +184,13 @@ C Descriptive label for a zone load or casual gain types.
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER outstr*124,outs*124,lodlabel*6
+      CHARACTER outstr*124,outs*124,outs2*124,lodlabel*6
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24
       logical havehi,dll
       integer idaytype  ! incremented for each new *day entry.
       integer ijk,ireader
+      integer lsn  ! length of currentfile
       real reader
       
       ijk=0
@@ -658,7 +659,10 @@ C Error messages.
         lodlabel(icomp,7)='NA    ' 
       goto 1235
 
- 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+ 1002 write(outs,'(3a)') 'EROPER: conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='EROPER'
         dllmesg=outs
@@ -667,6 +671,7 @@ C Error messages.
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ios)
         RETURN
@@ -813,7 +818,7 @@ C Error subroutine and error details for dll mode.
 
       CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124,lodlabelc*6
       CHARACTER*(*) FILE
-      character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
+      character dllsubr*12,dllmesg*124,WORD*20,loutstr*248,outs2*124
       character dstmp*24,H*72
       character louts*248
       character actflatfile*1  ! action requested.
@@ -1085,7 +1090,10 @@ C Error messages.
         lodlabelc(7)='NA    ' 
       goto 1235
 
- 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+ 1002 write(outs,'(3a)') 'ERZSCHED: conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='ERZSCHED'
         dllmesg=outs
@@ -1094,6 +1102,7 @@ C Error messages.
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ios)
         RETURN

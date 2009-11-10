@@ -144,8 +144,10 @@ C Uncertainty.
       integer ictl
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer ICPMOD                ! passed from tchild
 #else
-      integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iside,isize,ifont   ! passed to viewtext
+      integer*8 ICPMOD              ! passed from tchild
 #endif
 
 C Set folder separator (fs) to \ or / as required.
@@ -1265,8 +1267,10 @@ C Flag noting whether casual gain periods are currently sorted.
       integer iuf       ! file unit type
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer ICPMOD     ! passed from tchild
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 ICPMOD     ! passed from tchild
 #endif
 
 C Set folder separator (fs) to \ or / as required.
@@ -3972,6 +3976,11 @@ C      common/OUTIN/IUOUT,IUIN
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124
       character brw*8   ! to signal model is being browsed
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

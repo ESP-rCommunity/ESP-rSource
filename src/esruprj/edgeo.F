@@ -8027,7 +8027,8 @@ C Close zip data file as the end of the file has been reached
 
       RETURN
 
-C 1001 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+C 1001 write(outs,'(3a)') 'EZIPIN: conversion error in...',
+C     &  OUTSTR(1:50),'...'
  1001 continue
       if(dll)then
         dllsubr='EZIPIN'
@@ -8104,9 +8105,10 @@ C thbrpercent is the user defined fraction for thermal bridges used by
 C   losspercent and is assumed to apply to all zones in the model.
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
       
       LOGICAL context
 
@@ -8124,7 +8126,7 @@ C   losspercent and is assumed to apply to all zones in the model.
       real exposed,vexposed,areawall  ! local values for QA
       real areaslproof,areafltroof,THPER
       real uavwall,uavfltroof,uavslproof
-      real uavtotal
+
       integer lna,lnb
       real psiv,lenv  ! local variables for psi and length.
       real defpsi     ! default value for psi
@@ -8292,7 +8294,109 @@ C totheatloss is the total heat loss when all linear thermal bridges are added
      &                         (psi(ICOMP,i) * lngth(ICOMP,i))
  1221   continue
         totheatloss(icomp) = totheatloss(icomp) + losspercent(ICOMP)
-        write(outs,*) 'total losses: ',totheatloss(icomp)
+        write(outs,*) 'total losses: ',totheatloss(icomp),' W/K'
+        call edisp(iuout,outs)
+
+C Calculate the total UA heat loss coefficient in W/K:
+C Find the area of external surfaces
+        exposed = 0.0
+        vexposed = 0.0
+        areawall = 0.0
+        areaslproof = 0.0
+        areafltroof = 0.0
+        uavwall = 0.0
+        uavfltroof = 0.0
+        uavslproof = 0.0
+        uavtotal(icomp) =0.0
+        DO 2242 IS=1,NZSUR(icomp)
+          icc=IZSTOCN(icomp,is)
+          if(ICT(icc).eq.0.or.ICT(icc).eq.4)then 
+
+C Check the U value for each external surface.
+C exposed walls and floors, pitched roofs, flat roofs
+            UVH = 0.0
+            UVU = 0.0
+            UVD = 0.0
+            do 1510 ii=1,nmlc
+              if((SSMLCN(icc)(1:12).eq.DESC(ii)(1:12))
+     &            .OR.(ACT.EQ.'s'.and.(SSMLCN(icc)(1:12).eq.
+     &             DESC(ii)(1:12))))then
+
+C Recover the ISO 6946 U values as in prjqa.F.
+                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
+              else
+                continue
+              endif
+ 1510       continue
+            exposed = exposed + SSNA(icc)
+            if(SSVFC(icc)(1:4).eq.'VERT')then
+
+C For vertical walls assume horizontal hc coef.
+              areawall = areawall + SSNA(icc)
+              uavwall = uavwall + (SSNA(icc) * UVH)
+              vexposed = vexposed + SSNA(icc) 
+
+            elseif(SSVFC(icc)(1:4).eq.'SLOP')then
+
+C For sloped surfaces.
+              areaslproof = areaslproof + SSNA(icc)
+              uavslproof = uavslproof + (SSNA(icc) * UVU)
+            elseif(SSVFC(icc)(1:4).eq.'CEIL')then
+
+C For ceilings.
+              areafltroof = areafltroof + SSNA(icc)
+              uavfltroof = uavfltroof + (SSNA(icc) * UVU)
+            else
+
+C For floors.
+              areawall = areawall + SSNA(icc)
+              uavwall = uavwall + (SSNA(icc) * UVD)
+            endif
+          else
+            continue
+          endif
+ 2242   continue       
+
+        if(exposed.gt.0.1)then        
+
+C report UA values
+          call rel16str(exposed,t16a,lna,ier)
+          call rel16str(vexposed,t16b,lnb,ier)
+          if(vexposed.gt.0.1)then
+            write(outs,'(4a)')t16a(1:lna),
+     &      'm2 of exposed (to outside or to ground) surface area, ',
+     &      t16b(1:lnb),'m2 of which is vertical.'
+          else
+            write(outs,'(3a)')' There is ',
+     &        t16a(1:lna),'m2 of exposed surface area.'
+          endif
+          call edisp(iuout,outs)
+        endif        
+
+        if(areawall.gt.0.1)then
+          call rel16str(uavwall,t16b,lnb,ier)
+          write(outs,'(3a)')' Exposed floor and vertical walls UA: ',
+     &      t16b(1:lnb),' W/K'
+          call edisp(iuout,outs)
+        endif
+        if(areaslproof.gt.0.1)then
+          call rel16str(uavslproof,t16b,lnb,ier)
+          write(outs,'(3a)')' Sloped roof UA: ',
+     &        t16b(1:lnb),' W/K'
+          call edisp(iuout,outs)
+        endif
+        if(areafltroof.gt.0.1)then
+          call rel16str(uavfltroof,t16b,lnb,ier)
+          write(outs,'(3a)')' Flat roof UA: ',
+     &      t16b(1:lnb),' W/K'
+          call edisp(iuout,outs)
+        endif
+        
+C Add all the UA results together to get the zone's total UA value
+        uavtotal(icomp) = uavwall + uavslproof + uavfltroof
+        call rel16str(uavtotal(icomp),t16b,lnb,ier)
+        write(outs,*)' Total UA: ',
+     &        t16b(1:lnb),' W/K'
         call edisp(iuout,outs)
 
 C jump back to the main geometry menu
@@ -8403,7 +8507,7 @@ C Find the area of external surfaces
         uavwall = 0.0
         uavfltroof = 0.0
         uavslproof = 0.0
-        uavtotal =0.0
+        uavtotal(icomp) =0.0
         DO 2243 IS=1,NZSUR(icomp)
           icc=IZSTOCN(icomp,is)
           if(ICT(icc).eq.0.or.ICT(icc).eq.4)then 
@@ -8415,7 +8519,8 @@ C exposed walls and floors, pitched roofs, flat roofs
             UVD = 0.0
             do 1511 ii=1,nmlc
               if((SSMLCN(icc)(1:12).eq.DESC(ii)(1:12))
-     &            .OR.ACT.EQ.'s') then
+     &            .OR.(ACT.EQ.'s'.and.(SSMLCN(icc)(1:12).eq.
+     &             DESC(ii)(1:12))))then
 
 C Recover the ISO 6946 U values as in prjqa.F.
                 call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI)
@@ -8488,17 +8593,14 @@ C report UA values
         endif
 
 C Add all the UA results together to get the zone's total UA value
-
-C << uavtotal needs to be in common and it needs to be (MCOM) >>
-
-        uavtotal = uavwall + uavslproof + uavfltroof
-        call rel16str(uavtotal,t16b,lnb,ier)
+        uavtotal(icomp) = uavwall + uavslproof + uavfltroof
+        call rel16str(uavtotal(icomp),t16b,lnb,ier)
         write(outs,'(3a)')' Total UA: ',
      &        t16b(1:lnb),' W/K'
         call edisp(iuout,outs)
 
 C Include the user defined percentage to get the zone's total fabric loss
-        losspercent(ICOMP) = thbrpercent * uavtotal
+        losspercent(ICOMP) = thbrpercent * uavtotal(ICOMP)
         call rel16str(losspercent(ICOMP),t16b,lnb,ier)
         write(outs,'(3a)')' Total percentage loss: ',
      &        t16b(1:lnb),' W/K'

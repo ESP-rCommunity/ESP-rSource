@@ -61,8 +61,10 @@ C exportcad: controls model export facilities.
       logical oke
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer ICPMOD     ! passed from tchild
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 ICPMOD   ! passed from tchild
 #endif
 
       if(.NOT.cfgok)then

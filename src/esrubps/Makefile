@@ -57,7 +57,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  Annex42_fuel_cell.o shocc_dummy.o ADS_storage_tanks.o ADS_storage_unit.o ADS_controller.o \
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
-	  complex_fenestration.o editCFC.o NCHE.o 
+	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o
 
 $(PROG): $(BPS_OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
@@ -314,6 +314,9 @@ mzout6.F:
 mzoutp.F:
 	rm -f mzoutp.F
 	ln -s $(BLDdir)/mzoutp.F .
+ncm_overheating.F:
+	rm -f ncm_overheating.F
+	ln -s $(BLDdir)/ncm_overheating.F .        
 nwkrewr.F:
 	rm -f nwkrewr.F
 	ln -s $(COMdir)/nwkrewr.F .
@@ -677,9 +680,9 @@ clean:
 	inital.F initalc.F initalp.F item.F lisolv.F locmage.F matsv.F MechVentIN.F mfbndr.F \
 	mfcdat.F mfcntl.F mfmach.F mfmode.F mfsbld.F mfsbps.F mfsplt.F \
 	mfutil.F mitzero.F moistr.F monitor.F montrb.F mstmsc.F MultiYear_climate.F mzmrx5.F \
-	mzout6.F mzoutp.F nwkrewr.F pcloop.F pcomp1.F pcomp2.F pcomp3.F pcomp4.F pcomps1.F \
-	pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F plt_zone_gain_coupling.F \
-	pmatrx.F pplib.F ppsub.F precal.F \
+	mzout6.F mzoutp.F ncm_overheating.F nwkrewr.F pcloop.F pcomp1.F pcomp2.F pcomp3.F \
+	pcomp4.F pcomps1.F pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F \
+	plt_zone_gain_coupling.F pmatrx.F pplib.F ppsub.F precal.F \
 	psychro.F rnor.F rwipv.F rwroam.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F \
 	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F temps.F trstyp.F tscon.F \

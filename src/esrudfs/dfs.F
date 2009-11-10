@@ -113,6 +113,11 @@ C Name of current application
       LOGICAL areaSSO
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Clear 'conflated only' commons.
       do 2 I=1,MCOM

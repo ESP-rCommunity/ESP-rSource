@@ -1377,7 +1377,7 @@ C Monitoring file.
       goto 100
 
 C Error trapping.
- 1000 CALL USRMSG(' Conversion error in',OUTSTR,'W')
+ 1000 CALL USRMSG('CFDDTA Conversion error in',OUTSTR,'W')
       goto 100
 
   101 call edisp(IUOUT,' Connection Definition. Surface location.')

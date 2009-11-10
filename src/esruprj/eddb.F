@@ -1683,6 +1683,11 @@ C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
       integer iglib  ! for detecting GTK or X11
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -4055,6 +4060,11 @@ C Calendar.
       integer llt  ! length of string buffer
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

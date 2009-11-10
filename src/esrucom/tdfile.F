@@ -1489,6 +1489,51 @@ C TABU read errors.
 
       END
 
+C ************* ERTABUPREV 
+C ERTABUPREV reads one timesteps info from binary TDF file into TABUPREV array. 
+C ITREC is the timestep record to read. ITRC is the 
+C trace level, IER=0 OK, IER=1 problem. 
+      SUBROUTINE ERTABUPREV(ITRC,ITREC,IER)
+#include "tdf2.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
+     &             LSTREC,NDBSTP,NUWPR
+
+C Single timestep of TABULAR data and temporary storage TABUPREV.
+      COMMON/TDATPREV/TABUPREV(MTABC)
+
+      CHARACTER OUTS*160
+
+C Read tabular data for the given timestep and for the given
+C instance into TAB. Convert from timestep into representation of time.
+C Figure out a way not to print this heading when not needed.
+      IF(ITRC.GT.1.AND.ITREC.EQ.50)THEN
+        CALL EDISP(IUOUT,' Reading tabular timestep data...')
+        CALL EDISP(IUOUT,
+     &  '  T/S  Rec Col 1 Col 2 Col 3 Col 4 Col 5 Col 6 Col 7 Col 8..')
+      ENDIF
+      ITS=ITREC-49
+      CALL CLRTABPREV
+      READ(IUTDF,REC=ITREC,IOSTAT=ISTAT,ERR=103) (TABUPREV(J),J=1,NWPR)
+
+      IF(ITRC.GT.1)THEN
+        nss=min0(39,NWPR)
+        WRITE(iuout,'(A,2I5,40F6.1)')'< ',ITS,ITREC,
+     &    (TABUPREV(J),J=1,nss)
+      ENDIF
+
+  99  RETURN
+
+C TABU read errors.
+ 103  write(outs,'(A,I6,A,I6)')' @ record ',ITREC,' & timestep ',ITS
+      CALL USRMSG('ERTABUPREV: Problem reading tabular data ',outs,'W')
+      IER=1
+      goto 99
+
+      END
+
 C ************* EWTABU 
 C EWTABU writes one timesteps Tabular info to TDF file from the array TAB. 
 C ITREC is the record to be written.  ITRC is the trace level.
@@ -1595,6 +1640,19 @@ C For current timestep item clear tabular array.
         TABU(I)=0.0
   10  CONTINUE
       RETURN
+      END
 
+
+C ************* CLRTABPREV 
+C CLRTABPREV clears the previous records working tabular timestep data.
+      SUBROUTINE CLRTABPREV
+#include "tdf2.h"
+      COMMON/TDATPREV/TABUPREV(MTABC)
+
+C For current timestep item clear tabular array.
+      DO 10 I=1,MTABC
+        TABUPREV(I)=0.0
+  10  CONTINUE
+      RETURN
       END
 

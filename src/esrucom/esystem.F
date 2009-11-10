@@ -494,6 +494,13 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       INTEGER IRNCMD,IRNCMF
       INTEGER ICREPORT,IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY
 
+      integer iexcludediff_flag
+      common/excludediff/iexcludediff_flag
+
+C Simulation parameters
+      COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN,dll,browse,context
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
@@ -790,7 +797,7 @@ C embedded in the configuration file.
       endif
 
 C Reporting.
-      IF(ITRC.GE.1)THEN
+      IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
         CALL EDISP(iuout,' ')
         IF(INDCFG.EQ.0)THEN
           CALL EDISP(iuout,' Project registration configuration')
@@ -847,7 +854,7 @@ C Range checking.
       ENDIF
 
 C Reporting.
-      IF(ITRC.GE.1)CALL SITEINFO(iuout)
+      IF(ITRC.GE.1.AND.ITRC.LT.4)CALL SITEINFO(iuout)
 
 C If initial configuration format (without database sections then
 C skip to building/plant section.
@@ -1086,7 +1093,7 @@ C Open the contaminant file and fill in common block variables
         endif
 
 C Reporting.
-        IF(ITRC.GE.1)THEN
+        IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
           CALL EDISP(iuout,' ')
           CALL EDISP(iuout,' A contaminant network has been defined:')
           WRITE(OUTS,9986)CNTMFIL(1:LNBLNK(CNTMFIL))
@@ -1258,6 +1265,12 @@ C then get the name of the file and test for its existence.
 C Solar radiation (half hour data) flag.
         call egetwi(loutstr,k,iSlr_half_hr_flg,0,1,'W',
      &    'solar half-hour flag',IER)
+
+      elseif(WORD(1:17).eq.'*exlude_diff_shad')then
+
+C Solar radiation (half hour data) flag.
+        call egetwi(loutstr,k,iexcludediff_flag,0,1,'W',
+     &    'exclude diff shad flag',IER)
 
       elseif(WORD(1:4).eq.'*vew')then
         CALL EGETWR(LOUTSTR,K,EYEMI(1),0.,0.,'-','X cord',IER)
@@ -1573,8 +1586,20 @@ C SBEM project specific file
         IRNCMF=1
       elseif(WORD(1:4).eq.'*not')then
 
-C Flag to check if notional model or not
+C Flag to check if UK NCM notional model
         INOTI=1
+      elseif(WORD(1:4).eq.'*ref')then
+
+C Flag to check if UK NCM reference model
+        INOTI=2
+      elseif(WORD(1:4).eq.'*typ')then
+
+C Flag to check if UK NCM typical model
+        INOTI=3
+      elseif(WORD(1:4).eq.'*str')then
+
+C Flag to check if UK NCM stripped model
+        INOTI=4
       elseif(WORD(1:4).eq.'*nlt')then
 
 C Non-linear thermophysical properties configuration file.
@@ -1897,8 +1922,47 @@ C Loop back for next database file.
       
 C --- end of LSTRIPC and LOUTSTRT scanning ---
 
+C Warn user if notional or stripped model. These are generated
+C automatically and should not be modified through project manager
+ 45   H(1)='Additional models are built during the calculation '
+      H(2)='process for the UK NCM. These should not be modified '
+      H(3)='manually i.e. using the project manager (or any other)'
+      H(4)='interface. These models are '
+      H(5)=' *_str.cfg stripped model'
+      H(6)=' *_not.cfg notional model'
+      H(7)=' *_typ.cfg typical model'
+      H(8)=' *_ref.cfg reference model'
+      H(9)=' '
+      h(10)='Only proceed if you are sure of what you are doing'
+      IWARN=0
+      IF(INOTI.EQ.1.AND.ITRC.NE.4)THEN
+        IWARN=1
+        OUTS=
+     &  'This is a UK NCM notional model and should not be modified'
+      ELSEIF(INOTI.EQ.2.AND.ITRC.NE.4)THEN
+        IWARN=1
+        OUTS=
+     &  'This is a UK NCM reference model and should not be modified'
+      ELSEIF(INOTI.EQ.3.AND.ITRC.NE.4)THEN
+        IWARN=1
+        OUTS=
+     &  'This is a UK NCM typical model and should not be modified'
+      ELSEIF(INOTI.EQ.4.AND.ITRC.NE.4)THEN
+        IWARN=1
+        OUTS=
+     &  'This is a UK NCM stripped model and should not be modified'
+      ELSEIF(ISBEM.EQ.1.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
+        continue  ! this model is original which includes NCM file.
+      ENDIF
+      IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN
+         call askok(OUTS,
+     &   'using project manager are you sure you want to continue',
+     &   OK,dok,10)
+         IF(.NOT.OK)STOP
+      ENDIF
+
 C If building or building & plant then read in the building info.
-   45 IF(INDCFG.EQ.2)goto 888
+      IF(INDCFG.EQ.2)goto 888
 
 C At this point there may be ground information, if abscent then
 C this is the `* Building` section.
@@ -1953,7 +2017,7 @@ C Ground monthly temperature profiles. 2nd item is the number of profiles.
    29       CONTINUE
 
 C Reporting.
-            IF(ITRC.GE.1)THEN
+            IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
               CALL EDISP(iuout,' ')
               CALL EDISP(iuout,' Ground temperature profile Jan-Dec:')
               WRITE(OUTS,'(12F6.1)')(UGRDTP(J,IGRDP),J=1,12)
@@ -2326,7 +2390,7 @@ C Fill in a default zone name if blank or UNKNOWN.
         endif
 
 C Reporting.
-        IF(ITRC.GE.1)THEN
+        IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
           WRITE(OUTS,'(a,i3,a,i3,2a)',IOSTAT=ISTAT,ERR=1) ' Zone',
      &        ICOMP,' index',NCCODE(ICOMP),'Named: ',zname(ICOMP)
           CALL EDISP(iuout,OUTS)
@@ -2467,7 +2531,7 @@ C Read in the building connectivity information.
 
 C Reporting.
 C Generate header for connections. Find a variable for -1.
-      IF(ITRC.GE.1)THEN
+      IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
         CALL EDISP(iuout,' ')
         WRITE(OUTS,'(a,i4)')' Number of surfaces in the model =',NCON
         CALL EDISP(iuout,OUTS)
@@ -2605,11 +2669,11 @@ C Instanciate the vcoord and nzjvn nzvner arrays.
 
 C Trace geometry related information. Because not all zones will have
 c beeen read in do not include the extended surface `context`.
-          if(ITRC.ne.0)then
+          if(ITRC.ne.0.and.ITRC.lt.4)then
             call ZINFOREP(iuout,icomp)
             context=.false.
             CALL SURINFO(ICOMP,iuout,context)
-            IF(ITRC.GT.1)CALL VERINFO(iuout)
+            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(iuout)
             CALL INSINFO(ICOMP,iuout)
           endif
         endif
@@ -2617,7 +2681,7 @@ c beeen read in do not include the extended surface `context`.
 
 C Reporting. Connection Zone Surface Type Associated data (zone geometry
 C will have been scanned in by this point and surface names known.
-      IF(ITRC.GE.1)THEN
+      IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
         CALL CONXINFO(1,0,CXSTR)
         CALL EDISP(iuout,CXSTR)
         do 41 icc = 1, NCON
@@ -2627,9 +2691,10 @@ C will have been scanned in by this point and surface names known.
       ENDIF
 
 C Read in anchors if available. For each anchor, get its name, number
-C of links and then the links.
+C of links and then the links. If the string is not *Anchor then
+C it is probably the index indicating flow.
       write(currentfile,'(a)') FILE(1:lnblnk(FILE))
-      CALL STRIPC(IUC,OUTSTR,0,ND,1,'anchors',IER)
+      CALL STRIPC(IUC,OUTSTR,0,ND,1,'anchors or flow',IER)
       IF(IER.NE.0)goto 1
       if(OUTSTR(1:7).eq.'*Anchor')then
         K=8
@@ -2697,7 +2762,7 @@ C is temporarily opened on IUF.
         endif
 
 C Reporting.
-        IF(ITRC.GE.1)THEN
+        IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
           CALL EDISP(iuout,' ')
           CALL EDISP(iuout,' A mass flow network has been defined:')
           WRITE(OUTS,9886)LAPROB(1:LNBLNK(LAPROB))
@@ -2817,7 +2882,7 @@ C No, it is not. Now tranform what we have into a number.
 C Reporting. Make temporary arrays for zone and node names which
 C are then written out in packed format (the first 117 chars) on
 C as many pairs of lines as needed.
-        IF(ITRC.GE.1)THEN
+        IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
           do 777 j=1,ncomp
             namez(j)=zname(j)
             if(ICAAS(J).ne.0)then

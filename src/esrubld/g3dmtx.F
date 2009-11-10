@@ -875,6 +875,9 @@ C *********************************************************************
       common/cctl/icascf(mcom)
 
       common/pstflg/icflg1(mcf),icflg2(mcf)
+
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
       common/tpmodx/iperx,idtypx
 

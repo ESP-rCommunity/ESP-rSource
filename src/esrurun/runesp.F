@@ -401,7 +401,7 @@ C Simulation parameter presets.
       character selres*72,spfdescr*8
               
       character*72 odir    ! where are folders
-      CHARACTER OUTSTR*248,WORD*32,outs*124,outs248*248
+      CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124,outs248*248
 
       character LFILE*144,thefile*72,theresult*72
       integer ier
@@ -480,6 +480,7 @@ C Data related to locating a ground temperature file.
       integer lnw   ! length of weather string.
       integer lnwg   ! length of weather ground string.
       integer igrfile ! unit number of ground file
+      integer lsn    ! length of currentfile
 
       IER=0
 
@@ -1013,7 +1014,11 @@ C Update configuration file to know about simulation parameters.
 
       return
 
- 1001 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+C Generate message about the line contents and the file name.
+ 1001 write(outs,'(3a)') 'parse_oc: conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='SILENTREAD'
         dllmesg=outs
@@ -1022,6 +1027,7 @@ C Update configuration file to know about simulation parameters.
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ios)
         RETURN

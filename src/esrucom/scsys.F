@@ -217,7 +217,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      CHARACTER OUTSTR*124,OUTS*124,text*124,h*72
+      CHARACTER OUTSTR*124,OUTS*124,OUTS2*124,text*124,h*72
       CHARACTER*72 FILE,LCFD
       character*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
@@ -249,6 +249,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER CONTMNAM*12,CNTMDESC*124,cntmfil*72
       character calename*32,calentag*12,calendayname*32,HDR*12
       character LWndSupp*72
+      integer lsn  ! length for currentfile
 
 C Flag for multi-year simulation definition
       logical bMY_sim_sps
@@ -1560,8 +1561,11 @@ C Pass information about the current model to the C interface.
       endif
       RETURN
 
- 1    CALL USRMSG(' Conversion error in',OUTSTR,'W')
-      call edisp(iuout,' Please check your configuration file.')
+ 1    CALL USRMSG('ESCSYS Conversion error in',OUTSTR,'W')
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
+      call edisp(iuout,' Please check your file:')
+      call edisp(iuout,outs2)
       IER=1
       GOTO 6
 
