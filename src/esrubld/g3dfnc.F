@@ -35,6 +35,8 @@ C The main 3D building control function executive.
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
 
       character outs*124
@@ -130,6 +132,9 @@ C with the sensor defined for the control function.
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -178,6 +183,9 @@ C An ideal controller.
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
 
 C Fatal error test.
@@ -245,6 +253,8 @@ C A free-float controller.
 
       SUBROUTINE B3CL02
 
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
 
       QFUT=0.

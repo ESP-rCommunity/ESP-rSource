@@ -1292,9 +1292,10 @@ C Error subroutine and error details for dll mode.
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
 
 C This information was previously/also held in zone obstruction
 C file. The intent is that older models when scanned can be upgraded
@@ -1892,6 +1893,8 @@ C Simplified thermal bridge data starts here. Scan three reals after tag.
           losspercent(icomp)=VAL
           CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','W/K total',IER)
           totheatloss(icomp)=VAL
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','W/K total',IER)
+          uavtotal(icomp)=VAL
           goto 62
         elseif(WORD(1:11).eq.'*ukt_bridge')then
           nbrdg(icomp)=nbrdg(icomp)+1
@@ -2274,9 +2277,10 @@ C ZDESC (64 char) - zone notes (from geometry.h).
 C Thermal bridge common block is described in esruprj/edgeo.F
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
 
 C Error subroutine and error details for dll mode.
       character dllsubr*12,dllmesg*124
@@ -2492,12 +2496,13 @@ C or the losspercent is non-zero.
       if(losspercent(icomp).gt.0.0) havebrdge=.true.
       if(nbrdg(icomp).gt.0.or.havebrdge)then
         write(ifilg,'(a)',IOSTAT=IOS,ERR=13) '# '
-        WRITE(outs,'(a,F6.3,2F9.3)',IOSTAT=ios,ERR=13) '*bridge_start ',
-     &    thbrpercent,losspercent(icomp),totheatloss(icomp)
+        WRITE(outs,'(a,F6.3,3F9.3)',IOSTAT=ios,ERR=13) '*bridge_start ',
+     &    thbrpercent,losspercent(icomp),totheatloss(icomp),
+     &    uavtotal(icomp)
         call SDELIM(outs,outsd,'C',IW)
         write(ifilg,'(2a)',IOSTAT=IOS,ERR=13) 
-     &    outsd(1:lnblnk(outsd)),
-     &    '  # user fraction, losspercent W/K and total heat loss W/K'
+     &    outsd(1:lnblnk(outsd)),'  # user fraction,losspercent W/K, tot
+     &al heat loss W/K and total UA W/K'
         if(nbrdg(icomp).gt.0)then
           do 88 itb=1,nbrdg(icomp)
             if(ibrdg(icomp,itb).eq.1)then
@@ -3532,6 +3537,7 @@ C 'ZINFO' takes data from the zone geometry commons G1,G2,G3 and returns
 C several derived values.
       SUBROUTINE ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 #include "building.h"
+#include "sbem.h"
 
 C Parameters
       real SNA  ! returned area for each surface
@@ -3582,7 +3588,8 @@ C Surface area is given by:
         SNA(I)=ZAREA
 
 C Check for -ve surface area: windows wrongly specified.
-        IF(SNA(I).LT.0.00001)THEN
+C Suppress warning message if UK NCM notional model
+        IF(SNA(I).LT.0.00001.AND.INOTI.NE.1)THEN
 	  write(outs,'(a,i3,a)') ' Area of zone surf ',i,
      &      ' is less than 0.00001m^2!'
           CALL USRMSG(outs,
@@ -3664,6 +3671,7 @@ C VOL(MCOM)     - zone bounded volume
       SUBROUTINE ZGUPDATE(itrc,icomp,ier)
 #include "building.h"
 #include "geometry.h"
+#include "sbem.h"
       
       integer lnblnk  ! function definition
 
@@ -3729,9 +3737,10 @@ C Compute gross surface area
         ZSUM(I)=ZS
 
 C Compute surface area and check for negative or near zero area.
+C Suppress warning message if UK NCM notional model
         ZAREA=0.5*SQRT(XS*XS+YS*YS+ZS*ZS)
         SSNA(icc)=ZAREA
-        IF(SSNA(icc).LT.0.00001)THEN
+        IF(SSNA(icc).LT.0.00001.AND.INOTI.NE.1)THEN
 	  write(outs,'(a,i3,a)') ' Area of surf connection ',icc,
      &      ' is less than 0.00001m^2!'
           CALL USRMSG(outs,
@@ -3926,8 +3935,8 @@ C iwhich is local variable to sort most often referenced adjacent surf.
 
 C Do test call to surrel to see if it picks up any parent child
 C relationships. Use strict test.
-C          call surrel('-',izone)
-          call surrel('s',izone)
+C          call surrel('-',izone,ier)
+          call surrel('s',izone,ier)
         endif
 
         do 43 isurf=1,NZSUR(izone)
@@ -4189,7 +4198,7 @@ C Note: if surface I and J both have the name number of vertices then
 C a match should be discounted because the two surfaces are likely to
 C be duplicates.
 
-      SUBROUTINE SURREL(ACT,ICOMP)
+      SUBROUTINE SURREL(ACT,ICOMP,IER)
 #include "building.h"
 #include "geometry.h"
 
@@ -4198,53 +4207,49 @@ C be duplicates.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C G9 holds information on children of a surface.
-      integer nbchild       ! how many children (up to 4)
-      integer isgrandchild  ! if 1 child, if 2 grandchild
-      character childname*12 ! name of the child surface
-      common/G9/nbchild(MS),isgrandchild(MS,4),childname(MS,4)
+      integer nbchild   ! how many children (up to 4)
+      integer nbgchild  ! how many grand children (up to 4)
+      integer ichild    ! list of children
+      integer igchild   ! list of grand children
+      common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
+     &igchild(MCON,4)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      DIMENSION IDVN(MV),nTbchild(MCON)
       DIMENSION ICOMVER(MS)  ! icomver is the number of vertices in common
       dimension idupv(MS,5)    ! duplicate vertex indices
       dimension iduplist(MS,5) ! position in list
       LOGICAL PARENT,closeazi,closeelv
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
-      CHARACTER ACT*1
+      CHARACTER ACT*1,CHILDRIN*12,PARENTIN*12
       integer isur   ! loop counter for parent surface loop
       integer jsur   ! loop counter for child surface loop
       integer iver   ! loop counter for parent surface vertices
       integer jver   ! loop counter for child surface vertices
       integer iiver,jjver,next
 
-C First identify any surfaces with vertices that are
-C referenced more than once (e.g. surface with hole in it)
+C Initialise various variables
       do 10 isur=1,NZSUR(ICOMP)
-        idupv(isur,1)=0     ! clear 1st duplicate vert index
-        idupv(isur,2)=0     ! clear 2nd duplicate vert index
-        idupv(isur,3)=0     ! clear 3rd duplicate vert index
-        idupv(isur,4)=0     ! clear 4th duplicate vert index
-        idupv(isur,5)=0     ! clear 4th duplicate vert index
-        iduplist(isur,1)=0  ! clear jvn duplicate position of idupv(isur,1)
-        iduplist(isur,2)=0  ! clear jvn duplicate position of idupv(isur,2)
-        iduplist(isur,3)=0  ! clear jvn duplicate position of idupv(isur,3)
-        iduplist(isur,4)=0  ! clear jvn duplicate position of idupv(isur,4)
-        iduplist(isur,5)=0  ! clear jvn duplicate position of idupv(isur,4)
-        nbchild(isur)=0     ! assume no children
-        isgrandchild(isur,1)=0
-        isgrandchild(isur,2)=0
-        isgrandchild(isur,3)=0
-        isgrandchild(isur,4)=0
-        childname(isur,1)=' '
-        childname(isur,2)=' '
-        childname(isur,3)=' '
-        childname(isur,4)=' '
-
+        icc=IZSTOCN(icomp,isur)
+        ssparent(icc)='-'
+        do 20 i=1,5
+          idupv(isur,i)=0     ! clear duplicate vertex index
+          iduplist(isur,i)=0  ! clear duplicate position
+ 20     continue
+        do 21 i=1,4
+          ichild(iCC,i)=0    ! clear array holding children
+          igchild(iCC,i)=0   ! clear array holding grand children
+ 21     continue
+        nbchild(iCC)=0     ! assume no children
+        nbgchild(iCC)=0    ! assume no grand children
         next=0  ! counter to update to get to 2nd dimension.
 
+C First identify any surfaces with vertices that are
+C referenced more than once (e.g. surface with hole in it)
 C Check for 2nd references of a vertex with the fast loop looping
 C through only the untested part of the surface edge list.
         do 11 iver=1,nver(isur)
@@ -4261,13 +4266,12 @@ C through only the untested part of the surface edge list.
   12      continue
 
 C Debug.
-C          if(iduplist(isur,1).gt.0.or.iduplist(isur,2).gt.0)then
-C            write(6,*) isur,iver,iiver,next,idupv(isur,1),
+C         if(iduplist(isur,1).gt.0.or.iduplist(isur,2).gt.0)then
+C           write(6,*) isur,iver,iiver,next,idupv(isur,1),
 C     &        iduplist(isur,1),idupv(isur,2),iduplist(isur,2),
 C     &        idupv(isur,3),iduplist(isur,3),idupv(isur,4),
 C     &        iduplist(isur,4)
-C          endif
-
+C         endif
   11    continue
   10  continue
 
@@ -4299,7 +4303,7 @@ C 2nd duplicate references (e.g. iver is in iduplist)
  103      CONTINUE
           if(NVER(JSUR).eq.3)then
 
-C If the number of vert in jsur is 3 (triangular) then icomver
+C If the number of vertices in jsur is 3 (triangular) then icomver
 C must be >= nver(jsur).
             if(ICOMVER(JSUR).GE.NVER(JSUR))then
               continue
@@ -4308,7 +4312,7 @@ C must be >= nver(jsur).
             endif
           elseif(NVER(JSUR).gt.3)then
 
-C If the number of vert in jsur is 4 or more, icomver must be >= nver()
+C If the number of vertices in jsur is 4 or more, icomver must be >= nver()
 C for the strict case and >= nver()-1 for the loose or blank action.
 C so as to pick up the door-in-corner.
             if(act.eq.'-'.and.(ICOMVER(JSUR).GE.NVER(JSUR)-1))then
@@ -4333,7 +4337,7 @@ C     &          NVER(jsur),NVER(isur)
             endif
           endif
 
-C If there are the same shared virtices check orientation as well.
+C If there are the same shared vertices check orientation as well.
           icc=IZSTOCN(icomp,isur)
           jcc=IZSTOCN(icomp,jsur)
 
@@ -4350,30 +4354,111 @@ C<< Division mod 360 may be a more generic way for angle checking
 
             SSPARENT(JCC)=SSNAME(ICC)
 C Debug.
-C            WRITE(6,*)'PARENT OF ',JCC,SSNAME(JCC),' IS ',
-C     &        SSPARENT(JCC),' match verts ',ICOMVER(JSUR),
-C     &        ' nverts in child ',NVER(JSUR)
+c            WRITE(6,*)'Parent of ',jcc,' ',SSNAME(JCC),' is ',icc,' ',
+c     &        SSPARENT(JCC)!,' Matched vertices= ',ICOMVER(JSUR),
+c     &        ' No of vertices in child= ',NVER(JSUR)
+c            write(6,*)' '
 
 C << Having found a child add it to the list of children of
 C << the parent surface.
-            nbchild(isur)=nbchild(isur)+1
-            isgrandchild(isur,nbchild(isur))=1
-            childname(isur,1)=SSNAME(JCC)
+            nbchild(iCC)=nbchild(iCC)+1
+            ichild(iCC,nbchild(iCC))=jCC
 
-C Debug.
-C            WRITE(6,*)'CHILD OF ',ICC,SSNAME(ICC),' IS ',
-C     &        childname(isur,1)
-
+C Debug...
+c            WRITE(6,*)'Child of ',SSNAME(ICC),' is ',
+c     &        childname(isur,1)
           endif
  105      continue
  102    CONTINUE
  101  CONTINUE
 
-C Debug.
-C      write(6,*) 'nbchild ',nbchild
+C Now that parents are known also work out grand parents. This is done
+C by a similar logic to how parents are worked out (by inspecting vertex
+C numbers of surfaces).
+C Only need to work out whether parents are themselves children of some
+C other surface (grandparent)
+      DO 2001 ICC=1,MCON
+        nTbchild(iCC)=nbchild(iCC)
+ 2001 CONTINUE
+      DO 110 ISUR=1,NZSUR(ICOMP)
+        icc=IZSTOCN(icomp,isur)
+        DO 2002 IV=1,MV
+          IDVN(IV)=0
+ 2002   CONTINUE
+        DO 111 ICHLD=1,nTbchild(iCC)
+          NCV=0
+          icv=0 ; ido=0
+          CHILDRIN=SSNAME(ICHILD(ICC,ICHLD))
+          DO 112 JSUR=1,NZSUR(ICOMP)
+            jcc=izstocn(icomp,jsur)
+            PARENTIN=SSNAME(JCC)
+            ISNL=LNBLNK(PARENTIN)
+            ICHL=LNBLNK(CHILDRIN)
+            IF(CHILDRIN(1:ICHL).EQ.PARENTIN(1:ISNL))THEN
+              DO 113 IVER=1,NVER(ISUR) 
+                IIVER=JVN(ISUR,IVER)
+                ICV=0
+                DO 114 JVER=1,NVER(JSUR)
+                  JJVER=JVN(JSUR,JVER)
+                  IF(IIVER.EQ.JJVER)THEN
+                    ICV=1
+                  ENDIF
+ 114            CONTINUE
+		IF(ICV.NE.1)THEN
+                  IDO=0
+                  DO 118 ICCV=1,MV
+                    IF(IDVN(ICCV).EQ.IIVER)THEN
+                      IDO=1
+                    ENDIF
+ 118              CONTINUE
+                  IF(IDO.EQ.0)THEN
+                    NCV=NCV+1
+                    IDVN(NCV)=IIVER
+                  ENDIF
+		ENDIF
+ 113          CONTINUE
+            ENDIF
+ 112      CONTINUE
 
+C Now IDVN holds list of all vertices that define the parents but are
+C not contained in the child. Use these to work out parent of parent
+          DO 115 JSUR=1,NZSUR(ICOMP)
+            IF(ISUR.NE.JSUR)THEN
+              NCOMV=0
+              DO 116 ICV=1,NCV
+                DO 117 JVER=1,NVER(JSUR)
+                  JJVER=JVN(JSUR,JVER)
+                  IF(IDVN(ICV).EQ.JJVER)then
+                    NCOMV=NCOMV+1
+                  ENDIF
+ 117            CONTINUE
+ 116          CONTINUE
+              IF(NCV.GT.0.AND.NCV.LE.NCOMV)THEN
+                Jcc=IZSTOCN(icomp,Jsur)
+                SSPARENT(iCC)=SSNAME(jCC)
+                nbchild(jCC)=nbchild(jCC)+1
+                ichild(jCC,nbchild(jCC))=iCC
+              ENDIF
+            ENDIF
+ 115      CONTINUE
+ 111    CONTINUE
+ 110  CONTINUE
+
+C Now fill grand children commons
+      DO 201 ISUR=1,NZSUR(ICOMP)
+        icc=IZSTOCN(icomp,isur)
+        DO 202 ICHL=1,NBCHILD(ICC)
+          JCC=ICHILD(ICC,ICHL)
+          DO 203 IGCD=1,NBCHILD(JCC)
+            KCC=ICHILD(JCC,IGCD)
+            IGCHILD(ICC,IGCD)=KCC
+             NBGCHILD(ICC)=NBGCHILD(ICC)+1
+ 203      CONTINUE
+ 202    CONTINUE
+ 201  CONTINUE
       RETURN
       END
+
 
 C ***************** ZDATA 
 C ZDATA reads NZONES geometry and uses common blocks G1 G2 etc to fill

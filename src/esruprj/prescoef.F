@@ -841,6 +841,11 @@ C default file names for databases
       dimension xl(MPCP),zl(MPCP),ior(MPCP),isut(5),inum(5)
       logical ok,dok
       integer iglib  ! are we running X11 or GTK
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Parameters to see whether for a surface a coordinate set has been 
 C defined

@@ -110,11 +110,31 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &          ssparent*12,ssuse*8
       character h*72,stmp*33,act*1
 
+      integer ichoice ! temporary local variable for a call to easkab
+      integer iexcludediff_flag
+      common/excludediff/iexcludediff_flag
+
       ier=0
       if(izone.gt.ncomp.or.izone.eq.0)then
          call usrmsg(' ',' Zone number out of range! ','W')
          ier=1
          return
+      endif
+      h(1) ='In some cases (for example in specific validation tests'
+      h(2) ='or when comparing shading results with more simplified'
+      h(3) ='approaches) it may be necessary to exclude the effect'
+      h(4) ='of diffuse shading. In most cases, diffuse shading '
+      h(5) ='should be included.'      
+      iexcludediff_flag=0     
+      call easkab(' ','Diffuse shading options:',
+     &       'Exclude diffuse shading',
+     &       'Include diffuse shading (default)',ichoice,5)
+      if(ichoice.eq.1)then
+
+C Exclude diffuse shading
+         iexcludediff_flag=1
+      else
+         iexcludediff_flag=0      
       endif
 
  43   h(1) ='A shading analysis computes the temporal patterns of'

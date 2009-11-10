@@ -47,6 +47,7 @@ C << what about including common zndata in this manipulation? >>
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "sbem.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -485,8 +486,14 @@ C of the normal ordering of the vertices.
               h(2)='probably should also be removed but you'
               h(3)='are asked to confirm this action (so that'
               h(4)='the edge topology is consistent). '
-              call askok(outs,
-     &          'remove it from there as well?',ok,dok,4)
+
+C Be on the safe side and do not remove verticies for now, except in UK
+C NCM model generation where removal of surfaces and vertices is
+C expected to be done without user interaction
+c              call askok(outs,
+c     &          'remove it from there as well?',ok,dok,4)
+              ok=.false.
+              IF(INOTI.EQ.1)OK=.TRUE.
               if(ok)then
 
 C Similar logic for identifying the position in the other surface
@@ -940,7 +947,7 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                      write(6,'(a,30i3)') 'now jvn is ',
+C                      write(6,'(a,32i4)') 'now jvn is ',
 C     &                  (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -1092,7 +1099,7 @@ C present editing of vertices with the option for mouse.
             if(ISCOPT.eq.0)then  
               hold64='                                                '
               write(t248,'(4a)') hold64,hold64,hold64,'               '
-              WRITE(t248,'(24I4)')(JJVN(J),J=1,ijvn)
+              WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
               CALL CHITMS(t248,NV)
@@ -1144,7 +1151,7 @@ C User has specified clicking from mouse so just do that.
               endif
               hold64='                                                '
               write(t248,'(4a)') hold64,hold64,hold64,'               '
-              WRITE(t248,'(24I4)')(JJVN(J),J=1,ijvn)
+              WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
               CALL CHITMS(t248,NV)
@@ -1736,7 +1743,7 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                      write(6,'(a,30i3)') 'now jvn is ',
+C                      write(6,'(a,32i4)') 'now jvn is ',
 C     &                  (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -2057,6 +2064,11 @@ C Parameters
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+C Assumption about inserted window surface percentage and assumed
+C door width and height.
+      real defwininsert,defdoorwidth,defdoorheight
+      common/ginsert/defwininsert,defdoorwidth,defdoorheight
+
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -2083,6 +2095,7 @@ C Parameters
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,T14*14
       character guesstype*24  ! for context of surface addition
+
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
@@ -2221,8 +2234,8 @@ C vertices in this surface +6 are < MV.
         ENDIF
         XO1=0.1
         ZO1=0.
-        XW=0.8
-        ZH=2.1
+        XW=defdoorwidth
+        ZH=defdoorheight
         guesstype='door_grill_frame'
 
       elseif(IRT.eq.3)then
@@ -2232,7 +2245,7 @@ C vertices in this surface +6 are < MV.
      &      ' will make the model/zone/surface too complex!','W')
           RETURN
         ENDIF
-        PERC = 15.0
+        PERC = defwininsert
         guesstype='window_grill_frame'
       endif
 
@@ -2515,7 +2528,7 @@ C in the new surface.
      &      'corner of the new surface to connect to: ','lower left',
      &      'lower right',ICH,24)
 
-          WRITE(outs,'(24i3)')(JVN(IS,J),J=1,NVER(IS))
+          WRITE(outs,'(32i3)')(JVN(IS,J),J=1,NVER(IS))
           call edisp(iuout,'The bounding surface vertices are...')
           call edisp(iuout,outs)
  8795     CALL EASKI(IVH,
@@ -2842,7 +2855,7 @@ C inserting the new vertex index.
                   JVN(ivj,ivjj+1)=iwhich3
 
 C Debug.
-C                  write(6,'(a,30i3)') 'now jvn is ',
+C                  write(6,'(a,32i4)') 'now jvn is ',
 C     &              (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.

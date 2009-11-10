@@ -1,0 +1,9 @@
+\end{tabular}\\
+
+\underline{CONCLUSION:} Emissions for actual and notional are within 0.5\%
+
+
+\subsection{Case 2: Small shallow plan office (mechanically ventilated)}
+This is a small shallow plan office which is heated and has mechanical ventilation. The model has been set up to emulate the notional building. Summary results can be seen in table below. Detailed results are presented in Appendix.
+
+\begin{tabular}{|c|c|c|c|c|c|c|c|}

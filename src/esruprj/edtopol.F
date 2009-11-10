@@ -2983,6 +2983,11 @@ C IDST tool commands.
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       logical updatecon,QUIET,concat,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Set flag for zone construction file update.
       updatecon=.false.

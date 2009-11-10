@@ -141,8 +141,15 @@ C matching executables. For normal image viewing take the first option.
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
-
       integer iSlr_half_hr_flg
+
+C Thermal bridges.
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &               thbrpercent,uavtotal(MCOM)
 
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -186,6 +193,12 @@ C Remember if each zone is fully attributed.
       character ipvaction*3  ! signal that external ipv file
       character MLCSYM*12
       character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
+
+C For thermal bridge reporting
+      character TBRIDGE*58
+      dimension phrasemenu(16)
+      character phrasemenu*34
+      logical havebrdge
       
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
@@ -244,6 +257,8 @@ C and itu set so QA report is written to screen.
       fileinfo=0
       destination=0
       itu = iuout
+      inpic = 0
+      isel = 0
 
 C Setup the selection menu.
     3 INO=-4
@@ -598,6 +613,8 @@ C Generate report sorted by surface attributes.
 
         H(1)='You may filter for already attributed surfaces or'
         H(2)='surfaces marked UNKNOWN. '
+
+C << mlcmatch not yet used >>
         CALL EASKABCD(' Filter for surface composition:',' ',
      &    'any construction','those marked UNKNOWN',
      &    'specific construction','cancel',ins4,2)
@@ -909,38 +926,70 @@ C Site information.
         call edisp248(itu,outs248,80)
         call edisp(itu,' ')
 
-C Print address for building and client.
+C Print address for building and client. If there is a UK NCM
+C description then list that out instead.
         if(siteinfo.eq.2)then
-          write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
-          call edisp(itu,outs)
-          write(outs,'(2a)')'Building address: ',baddress
-          call edisp(itu,outs)
-          write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
-          call edisp(itu,outs)
-          write(outs,'(2a)')'Building Postcode: ',buildingPC  
-          call edisp(itu,outs)    
-          call edisp(itu,' ')
-          write(outs,'(2a)')'Building owner name: ',ownername
-          call edisp(itu,outs)   
-          write(outs,'(2a)')'Building owner telephone: ',ownertel
-          call edisp(itu,outs)   
-          write(outs,'(2a)')'Building owner address: ',owneraddr 
-          call edisp(itu,outs) 
-          write(outs,'(2a)')'Building owner city: ',ownercity 
-          call edisp(itu,outs) 
-          write(outs,'(2a)')'Building owner Postcode: ',ownerPC
-          call edisp(itu,outs)     
-          call edisp(itu,' ')
-          write(outs,'(2a)')'Simulationist name: ',certifname 
-          call edisp(itu,outs)     
-          write(outs,'(2a)')'Simulationist telephone: ',certTel 
-          call edisp(itu,outs)     
-          write(outs,'(2a)')'Simulationist address: ',certaddress   
-          call edisp(itu,outs)   
-          write(outs,'(2a)')'Simulationist city: ',certcity  
-          call edisp(itu,outs)    
-          write(outs,'(2a)')'Simulationist postcode: ',certPC  
-          call edisp(itu,outs)          
+          if(ISBEM.ge.1)then
+
+C Re-read sbem db and then the descriptive file.
+            call sbempr(ier)
+            call rsbem
+            call lstncm('p',itu)
+            call edisp(itu,'  ')          
+            call lstncm('e',itu)
+            call edisp(itu,' ')
+            write(outs,'(2a)')'Simulationist name: ',certifname 
+            call edisp(itu,outs)     
+            write(outs,'(2a)')'Simulationist telephone: ',certTel 
+            call edisp(itu,outs)     
+            write(outs,'(2a)')'Simulationist address: ',certaddress   
+            call edisp(itu,outs)   
+            write(outs,'(2a)')'Simulationist city: ',certcity  
+            call edisp(itu,outs)    
+            write(outs,'(2a)')'Simulationist postcode: ',certPC  
+            call edisp(itu,outs)
+            call edisp(itu,'  ')          
+            call lstncm('b',itu)
+            call edisp(itu,'  ')          
+            call lstncm('s',itu)
+            call edisp(itu,'  ')          
+            call lstncm('d',itu)
+            call edisp(itu,'  ')          
+            call lstncm('o',itu)
+            call edisp(itu,'  ')          
+            call lstncm('l',itu)
+            call edisp(itu,'  ') 
+          else
+            write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
+            call edisp(itu,outs)
+            write(outs,'(2a)')'Building address: ',baddress
+            call edisp(itu,outs)
+            write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
+            call edisp(itu,outs)
+            write(outs,'(2a)')'Building Postcode: ',buildingPC  
+            call edisp(itu,outs)    
+            write(outs,'(2a)')'Building owner name: ',ownername
+            call edisp(itu,outs)   
+            write(outs,'(2a)')'Building owner telephone: ',ownertel
+            call edisp(itu,outs)   
+            write(outs,'(2a)')'Building owner address: ',owneraddr 
+            call edisp(itu,outs) 
+            write(outs,'(2a)')'Building owner city: ',ownercity 
+            call edisp(itu,outs) 
+            write(outs,'(2a)')'Building owner Postcode: ',ownerPC
+            call edisp(itu,outs)     
+            call edisp(itu,' ')
+            write(outs,'(2a)')'Simulationist name: ',certifname 
+            call edisp(itu,outs)     
+            write(outs,'(2a)')'Simulationist telephone: ',certTel 
+            call edisp(itu,outs)     
+            write(outs,'(2a)')'Simulationist address: ',certaddress   
+            call edisp(itu,outs)   
+            write(outs,'(2a)')'Simulationist city: ',certcity  
+            call edisp(itu,outs)    
+            write(outs,'(2a)')'Simulationist postcode: ',certPC  
+            call edisp(itu,outs)
+          endif          
         endif
 
         CALL ERPFREE(ICLIM,ISTAT)
@@ -1149,7 +1198,7 @@ C If temporal data associated with the model report it.
             call edisp(itu,' Temporal entities currently used...')
             call edisp(itu,'  ________________________________')
             call edisp(itu,'  |temporal    |generic |associated')
-            call edisp(iuout,
+            call edisp(itu,
      &           '  |entity name |type    |with   zone &     surface ')
             do 28, l=1,ITEMSTD
               WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
@@ -1658,6 +1707,71 @@ C Note: surinfo not dependant on recent geometry scan.
         if(geominfo.eq.2)then
           context=.true.
           CALL SURINFO(IVALS(IZ),itu,context)
+          call eclose(gversion(IZZ),1.1,0.01,newgeo)
+          if(newgeo)then
+            if(losspercent(izz).gt.0.0)then
+              havebrdge=.true.
+            else
+              havebrdge=.false.
+            endif
+            if(nbrdg(izz).gt.0.or.havebrdge)then
+
+C Setup phrases for the menu and for editing length and psi values.
+              phrasemenu(1) ='a roof-wall                    :'
+              phrasemenu(2) ='b wall-ground floor            :'
+              phrasemenu(3) ='c wall-wall (convex corner)    :'
+              phrasemenu(4) ='d wall-wall (concave corner)   :'
+              phrasemenu(5) ='e wall-floor (not ground floor):'
+              phrasemenu(6) ='f lintel above window or door  :'
+              phrasemenu(7) ='g Sill below window            :'
+              phrasemenu(8) ='h jamb at window or door       :'
+              phrasemenu(9) ='i roof-wall                    :'
+              phrasemenu(10)='j wall-ground floor            :'
+              phrasemenu(11)='k wall-wall (corner)-          :'
+              phrasemenu(12)='l wall-floor (not ground floor):'
+              phrasemenu(13)='m lintel above window or door  :'
+              phrasemenu(14)='n Sill below window            :'
+              phrasemenu(15)='o jamb at window or door       :'
+              phrasemenu(16)='p user-defined                 :'
+              call edisp(itu,'Thermal bridges have been defined.')
+              if(nbrdg(izz).gt.0)then   
+                call edisp(itu,
+     &      'Junctions without metal cladding   psi (W/mK) length (m)')
+              endif
+              do 89 itbmenu=1,8
+                if(nbrdg(izz).gt.0)then
+                  do 90 itb=1,nbrdg(izz)
+                    if(itbmenu.eq.ibrdg(izz,itb))then
+                      WRITE(TBRIDGE,'(a,2F10.4)') 
+     &                  phrasemenu(itbmenu),
+     &                  psi(izz,itb),lngth(izz,itb)
+                      call edisp(itu,TBRIDGE)
+                    endif
+  90              continue
+                endif
+  89          continue
+              if(nbrdg(izz).gt.0)then   
+                call edisp(itu,
+     &      'Junctions with metal cladding      psi (W/mK) length (m)')
+              endif
+              do 189 itbmenu=9,16
+                if(nbrdg(izz).gt.0)then   
+                  do 190 itb=1,nbrdg(izz)
+                    if(itbmenu.eq.ibrdg(izz,itb))then
+                      WRITE(TBRIDGE,'(a,2F10.4)') 
+     &                  phrasemenu(itbmenu),
+     &                  psi(izz,itb),lngth(izz,itb)
+                      call edisp(itu,TBRIDGE)
+                    endif
+ 190              continue
+                endif
+ 189          continue
+              if(losspercent(izz).gt.0.0) then
+                WRITE(TBRIDGE,'(a,F7.4)') 'Themal bridge %',thbrpercent
+                call edisp(itu,TBRIDGE)
+              endif
+            endif
+          endif
         endif
 
 C Check if the edges are proprly bounded. Uses G1 common.
