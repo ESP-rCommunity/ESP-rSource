@@ -3927,6 +3927,8 @@ C      real slat_angleX
       real solrad_dir               ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
       real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
       real ang                      ! incident angle of radiation on surface
+      real psazi,pselv              ! solar azimuth and elevation angles relativ to surface
+      
       character msgout*124
 
 C Prior to initiating control logic, set the default slat angle and 
@@ -4110,7 +4112,8 @@ C Determine appropriate solar radiation parameter to use
 C Check that ext. rad sensor is on external surface
           if(IE(isen2,isen3).eq.0)then
             call get_incident_solrad(isen2,isen3,solrad_dir,
-     &                                           solrad_diff,ang)
+     &                                           solrad_diff,
+     &                               ang,psazi,pselv)
             solrad = solrad_dir + solrad_diff   ! total radiation incident on surface
           else
           
@@ -4258,7 +4261,8 @@ C on an external surface (including shading from obstructions).
 C
 C ********************************************************************
       subroutine get_incident_solrad(icomp,isur,solrad_dir, 
-     &                                          solrad_diff, inc_ang)
+     &                                          solrad_diff, 
+     &                               inc_ang,psazi2,pselv2)
 #include "building.h"    
 
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
@@ -4277,8 +4281,6 @@ C ********************************************************************
       real QD, QF       ! future row solar intensity values
       real CAI          ! cosine of angle of incidence
       real ANGI         ! angle of incidence
-      real PSAZI2       ! solar minus surface normal azimuths
-      real PSELV2       ! solar minus surface normal elevations
       real SRADDO       ! direct solar radiation incident on isur (not corrected for shading)
       real SRADF        ! diffuse solar radiation incident on isur (not corrected for shading)
       real skydif       ! sky diffuse component (currently not used here)
@@ -4289,6 +4291,8 @@ C ********************************************************************
       real solrad_dir   ! RETURN: direct solar radiation incident on isur and corrected for shading
       real solrad_diff  ! RETURN: diffuse solar radiation incident on isur and corrected for shading
       real inc_ang      ! RETURN: angle of incidence on surface
+      real PSAZI2       ! RETURN: solar minus surface normal azimuths
+      real PSELV2       ! RETURN: solar minus surface normal elevations
 
       character outs*124
             
@@ -4437,6 +4441,7 @@ C ********************************************************************
       real solrad_dir       ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
       real solrad_diff      ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
       real ang              ! angle of incidence on surface "90" is eq. to "does not see sun"
+      real psazi,pselv      ! solar azimuth and elevation angles relativ to surface
 
       integer i,j,k,l,nn,nc,ne,icfctp,icomp,ivblayr
       integer iH3K_NameLen(2)
@@ -4498,7 +4503,8 @@ C CFC venetian blind slat angle
 C CFC Direct and diffuse radiation incidence
 C       RadIncDirS(icomp,i)
 C       RadIncDifS(icomp,i),
-            call get_incident_solrad(icomp,i,solrad_dir,solrad_diff,ang)
+            call get_incident_solrad(icomp,i,solrad_dir,solrad_diff,
+     &                                 ang,psazi,pselv)
 
             call add_to_xml_reporting (
 C     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
@@ -4513,6 +4519,19 @@ C     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
      &           'units', '(°)',
      &           'CFC radiation incidence angle' )
 
+            call add_to_xml_reporting (
+     &           psazi,
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/psazi',
+     &           'units', '(°)',
+     &           'Solar azimuth angle rel. to CFS surf' )
+
+            call add_to_xml_reporting (
+     &           pselv,
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/pselv',
+     &           'units', '(°)',
+     &           'Solar elevation angle rel. to CFC surf' )
+
+     
 C CFC beam and diffuse transmission
             call add_to_xml_reporting (
      &           transBB_S(icomp,i),
