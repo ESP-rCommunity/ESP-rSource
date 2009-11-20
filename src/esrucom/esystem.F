@@ -786,7 +786,7 @@ C embedded in the configuration file.
       endif
 
 C Reporting.
-      IF(ITRC.GE.1)THEN
+      IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
         CALL EDISP(iuout,' ')
         IF(INDCFG.EQ.0)THEN
           CALL EDISP(iuout,' Project registration configuration')
@@ -843,7 +843,7 @@ C Range checking.
       ENDIF
 
 C Reporting.
-      IF(ITRC.GE.1)CALL SITEINFO(iuout)
+      IF(ITRC.GE.1.AND.ITRC.LT.4)CALL SITEINFO(iuout)
 
 C If initial configuration format (without database sections then
 C skip to building/plant section.
@@ -1082,7 +1082,7 @@ C Open the contaminant file and fill in common block variables
         endif
 
 C Reporting.
-        IF(ITRC.GE.1)THEN
+        IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
           CALL EDISP(iuout,' ')
           CALL EDISP(iuout,' A contaminant network has been defined:')
           WRITE(OUTS,9986)CNTMFIL(1:LNBLNK(CNTMFIL))
@@ -2006,7 +2006,7 @@ C Ground monthly temperature profiles. 2nd item is the number of profiles.
    29       CONTINUE
 
 C Reporting.
-            IF(ITRC.GE.1)THEN
+            IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
               CALL EDISP(iuout,' ')
               CALL EDISP(iuout,' Ground temperature profile Jan-Dec:')
               WRITE(OUTS,'(12F6.1)')(UGRDTP(J,IGRDP),J=1,12)
@@ -2379,7 +2379,7 @@ C Fill in a default zone name if blank or UNKNOWN.
         endif
 
 C Reporting.
-        IF(ITRC.GE.1)THEN
+        IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
           WRITE(OUTS,'(a,i3,a,i3,2a)',IOSTAT=ISTAT,ERR=1) ' Zone',
      &        ICOMP,' index',NCCODE(ICOMP),'Named: ',zname(ICOMP)
           CALL EDISP(iuout,OUTS)
@@ -2520,7 +2520,7 @@ C Read in the building connectivity information.
 
 C Reporting.
 C Generate header for connections. Find a variable for -1.
-      IF(ITRC.GE.1)THEN
+      IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
         CALL EDISP(iuout,' ')
         WRITE(OUTS,'(a,i4)')' Number of surfaces in the model =',NCON
         CALL EDISP(iuout,OUTS)
@@ -2658,11 +2658,11 @@ C Instanciate the vcoord and nzjvn nzvner arrays.
 
 C Trace geometry related information. Because not all zones will have
 c beeen read in do not include the extended surface `context`.
-          if(ITRC.ne.0)then
+          if(ITRC.ne.0.and.ITRC.lt.4)then
             call ZINFOREP(iuout,icomp)
             context=.false.
             CALL SURINFO(ICOMP,iuout,context)
-            IF(ITRC.GT.1)CALL VERINFO(iuout)
+            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(iuout)
             CALL INSINFO(ICOMP,iuout)
           endif
         endif
@@ -2670,7 +2670,7 @@ c beeen read in do not include the extended surface `context`.
 
 C Reporting. Connection Zone Surface Type Associated data (zone geometry
 C will have been scanned in by this point and surface names known.
-      IF(ITRC.GE.1)THEN
+      IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
         CALL CONXINFO(1,0,CXSTR)
         CALL EDISP(iuout,CXSTR)
         do 41 icc = 1, NCON
@@ -2751,7 +2751,7 @@ C is temporarily opened on IUF.
         endif
 
 C Reporting.
-        IF(ITRC.GE.1)THEN
+        IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
           CALL EDISP(iuout,' ')
           CALL EDISP(iuout,' A mass flow network has been defined:')
           WRITE(OUTS,9886)LAPROB(1:LNBLNK(LAPROB))
@@ -2871,7 +2871,7 @@ C No, it is not. Now tranform what we have into a number.
 C Reporting. Make temporary arrays for zone and node names which
 C are then written out in packed format (the first 117 chars) on
 C as many pairs of lines as needed.
-        IF(ITRC.GE.1)THEN
+        IF(ITRC.GE.1.AND.ITRC.LT.4)THEN
           do 777 j=1,ncomp
             namez(j)=zname(j)
             if(ICAAS(J).ne.0)then

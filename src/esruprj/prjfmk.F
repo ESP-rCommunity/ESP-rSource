@@ -3891,7 +3891,9 @@ C Remind users to check their data.
       h(6)='One approach is to generate a new QA report and check this'
       h(7)='against the previous model and then run a short assessment'
       h(8)='to confirm that the predictions are as expected. '
-      CALL PHELPD('operation import confirm',8,'-',0,0,IER)
+          CALL PHELPD('operation import confirm',8,'-',0,0,IER)
+        elseif(iw.eq.-3)then
+          goto 44  ! re-display the menu
         endif
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
@@ -4254,6 +4256,7 @@ C Ask for start and finish times.
       write (hold,'(2i5,a)') ICGSX,ICGFX,'  '
       h(1)='Period during which casual gains applies.'
       CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
+      if(ier.eq.-3) return  ! user canceled
       K=0
       CALL EGETWI(hold,K,IVS,0,24,'F','period start',IER)
       CALL EGETWI(hold,K,IVF,IVS+1,24,'F','period end',IER)
@@ -4310,7 +4313,7 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
      &     'Watts per square meter','Watts per object',
      &     'Square meters per object',IGU,30)
 
-C Commonportion of help message.
+C Common portion of help message.
       h(3)=' '
       h(4)='ESP-r asks for fixed sensible and latent values. The'
       h(5)='values for occupants are really a function of the current'
@@ -4345,6 +4348,7 @@ C Gain as W - require gain only.
         h(2)=' '
         call EASKS(HOLD,'Sensible and latent gain (W):',
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
+        if(ier.eq.-3) goto 10  ! user canceled
         K=0
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLATGN,0.,100000.0,'W','latent gain',IER)
@@ -4364,6 +4368,7 @@ C Gain as W/m^2 - require gain per square meter.
         h(2)=' '
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
+        if(ier.eq.-3) goto 10  ! user canceled
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
@@ -4400,6 +4405,7 @@ C << an actual cancel option not yet implemented >>
         call EASKS(HOLD,'Object sensible and latent gain (W):',
      &          ' ',24,'  0.   0. ','casual gn info',IER,24)
         K=0
+        if(ier.eq.-3) goto 10  ! user canceled
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
         call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 40
@@ -4447,6 +4453,8 @@ C If user cancels go back to initial question.
         else
           goto 50
         endif
+      elseif (IGU.eq.-3) then
+        goto 10  ! user hit the cancel button
       endif
 
 C Ask for rad/ conv split.

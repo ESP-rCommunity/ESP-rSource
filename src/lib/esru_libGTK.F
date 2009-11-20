@@ -39,8 +39,6 @@ C  EASKAB:  Generic A/B choice facility returning 1 or 2 according to which
 C           of the choices has been chosen.
 C  EASKABC: Generic A/B/C choice facility returning 1, 2 or 3 according
 C           to which of the choices has been chosen.
-C EASKABCD: Generic A/B/C/D choice facility returning 1-4 according
-C           to which of the choices has been chosen.
 C  EASKPER: Provides interface to specification of a period of days.
 C eAskPerYear: Provides interface to specification of a multiyear period of days.
 C easkPerGen: Handles specification of both single-year and multi-year
@@ -2919,6 +2917,9 @@ C Querry which one.
           write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
         endif
 
+C Passin the initial selection from the calling code if it is
+C one of the buttons.
+        if(IWHICH.ge.0.and.IWHICH.le.nopt) IW=IWHICH
         CALL espabcbox(prompt,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,IW)
 
 C Debug.

@@ -75,6 +75,12 @@ C Pre calculated data (filtered).
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
 
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
+
       DATA DESC/'very cold, danger        ','cold, shivering          ',
      &          'cool, unpleasant         ','slightly cool, acceptable',
      &          'comfortable, pleasant    ','slightly warm, acceptable',

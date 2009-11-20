@@ -898,19 +898,24 @@ C Multilayer construction has not been defined.
           IF(IPR(ICF,IE).NE.0)THEN
             if(closemat1.or.closemat2)then
               matarrayindex=IPRMAT(ICF,IE)   ! which legacy index
-	      if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h')then
+              if(matarrayindex.ge.0)then
+	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &             matopaq(matarrayindex)(1:1).eq.'h')then
 
 C Find air gap resistance for this layer.
-                DO 148 IGG=1,NAIRG(ISUR)
-                  IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
-                   WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+                  DO 148 IGG=1,NAIRG(ISUR)
+                    IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
+                    WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
      &                    CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
- 148            CONTINUE
+ 148              CONTINUE
+                else
+                  WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+     &                CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
+  46              FORMAT(A1,I3,I4,F6.3,3F8.2)
+                endif
               else
-                WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &              CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
-  46            FORMAT(A1,I3,I4,F6.3,3F8.2)
+                WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
+     &            ' confused material reference'
               endif
             endif
           ELSE
@@ -1080,6 +1085,10 @@ C If g or h air gap and version 1.2 then assign DRAIR
                   DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
                 endif
               endif
+            else
+              call edisp(iuout,
+     &          'One layer material ref is confused or duplicate name.')
+              goto 12
             endif
           else
 

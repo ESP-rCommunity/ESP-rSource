@@ -3827,11 +3827,18 @@ C Ideal Sensor.
           SSTR='senses the temperature of the current zone.'
           SSTRB='senses db T of the current zone.'
         ELSEIF(icsn(1).EQ.-2)THEN
-          write(zn,'(a)') zname(icsn(2))
-          WRITE(SSTR,'(3a)')'senses a mix of db T and MRT in ',
-     &      zn(1:lnblnk(zn)),'.'
-          WRITE(SSTRB,'(3a)')'senses mix db T & MRT in ',
-     &      zn(1:lnblnk(zn)),'.'
+          if(icsn(2).gt.0)then
+            write(zn,'(a)') zname(icsn(2))
+            WRITE(SSTR,'(3a)')'senses a mix of db T and MRT in ',
+     &        zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(3a)')'senses mix db T & MRT in ',
+     &        zn(1:lnblnk(zn)),'.'
+          else
+            WRITE(SSTR,'(2a)')'senses a mix of db T and MRT in ',
+     &        'the current zone.'
+            WRITE(SSTRB,'(2a)')'senses mix db T & MRT in ',
+     &        'the current zone.'
+          endif
         ELSEIF(icsn(1).EQ.-3)THEN
           IF(icsn(2).EQ.0)THEN
             SSTR='senses ambient dry bulb temperature.'

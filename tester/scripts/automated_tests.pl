@@ -83,7 +83,7 @@ my %binalias = ( "vew"    =>   "viewer",
 my @Suppress_code_list  = ( "222 W" );
 my @Dangerous_info_list = ( "340 I" );
                           
-my $Test_base_URL="https://svn2.cvsdude.com/espr/esp-r";
+my $Test_base_URL="https://espr.svn.cvsdude.com/esp-r";
              
              
 #Mailhost to use....only available within NRCan. 
