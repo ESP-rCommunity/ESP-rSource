@@ -19,7 +19,7 @@ Edited by Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 27 August 2009
+Version of 10 November 2009
 .sp 2
 .SH
 Introduction
@@ -1263,7 +1263,7 @@ sequence would be as follows:
   cd Src
   mkdir cvsdude
   cd cvsdude
-  svn checkout https://esp-r.net/espr/esp-r/branches/fred
+  svn checkout https://espr.svn.cvsdude.com/esp-r/branches/fred
   cd fred/src
 .ES
 .LP
@@ -2784,7 +2784,7 @@ The command sequence to implement this is:
   mkdir /home/fred/esru_pre_merge
   cd
   cd Src/cvsdude
-  svn checkout https://esp-r.net/espr/esp-r/branches/fred fred_merge
+  svn checkout https://espr.svn.cvsdude.com/esp-r/branches/fred fred_merge
   cd fred_merge/src
   ./Install -d /home/fred/esru_pre_merge --gcc4
   all_fckX11
@@ -2816,7 +2816,7 @@ that the ./tester.pl command needs to be on one line):
   sudo chown fred /usr/esru
   sudo chgrp staff /usr/esru
   cd Src/cvsdude
-  svn checkout https://esp-r.net/espr/esp-r/branches/development_branch
+  svn checkout https://espr.svn.cvsdude.com/esp-r/branches/development_branch
   cd development_branch/src
   ./Install -d /usr/esru --gcc4
   cd /home/fred/Src/cvsdude/development_branch/tester/scripts
@@ -2872,7 +2872,7 @@ syntax translates to \fIfind all of the differences between the development_bran
 at 4349 and 4350\fR.  The command sequence is:
 .ML
   cd /home/fred/Src/cvsdude/fred_merge/
-  svn merge -r 4349:4350 https://esp-r.net/espr/esp-r/branches/development_branch
+  svn merge -r 4349:4350 https://espr.svn.cvsdude.com/esp-r/branches/development_branch
 .ES
 .LP
 The process can take some time to complete. There will be messages
@@ -3567,10 +3567,10 @@ take are 4102:4105 and 4111:4112 the steps are:
 .ML
   cd
   cd Src/cvsdude
-  svn checkout https://esp-r.net/espr/esp-r/branches/development_branch dev_merge
+  svn checkout https://espr.svn.cvsdude.com/esp-r/branches/development_branch dev_merge
   cd dev_merge/
-  svn merge -r 4102:4105 https://esp-r.net/espr/esp-r/branches/fred
-  svn merge -r 4111:4112 https://esp-r.net/espr/esp-r/branches/fred
+  svn merge -r 4102:4105 https://espr.svn.cvsdude.com/esp-r/branches/fred
+  svn merge -r 4111:4112 https://espr.svn.cvsdude.com/esp-r/branches/fred
 .ES
 .LP
 This is represented by '1c' in Figure 4. 
@@ -3606,11 +3606,11 @@ performing the grand merge (nuke and pave).  If the grand merge
 fails remove the jwh_for_merge folder and extract the tar file.
 .ML
 
-  svn checkout https://esp-r.net/espr/esp-r/branches/Jon_Hand jwh_for_merge
+  svn checkout https://espr.svn.cvsdude.com/esp-r/branches/Jon_Hand jwh_for_merge
   tar cf jwh_before_merge.tar jwh_for_merge
   cd jwh_for_merge
-  svn merge https://esp-r.net/espr/esp-r/branches/Jon_Hand 
-    https://esp-r.net/espr/esp-r/branches/development_branch ./
+  svn merge https://espr.svn.cvsdude.com/esp-r/branches/Jon_Hand 
+    https://espr.svn.cvsdude.com/esp-r/branches/development_branch ./
   ....time passes....
   svn commit
 .ES
@@ -3632,19 +3632,19 @@ The following are an extract from notes that were included as the pending
 commits were merged back into the branch.
 .ML
 Re-establish earlier code:
-svn merge -r 4126:4127 https://esp-r.net/espr/esp-r/branches/Jon_Hand
+svn merge -r 4126:4127 https://espr.svn.cvsdude.com/esp-r/branches/Jon_Hand
 no conflicts
 
-svn merge -r 4134:4135 https://esp-r.net/espr/esp-r/branches/Jon_Hand
+svn merge -r 4134:4135 https://espr.svn.cvsdude.com/esp-r/branches/Jon_Hand
 no conflicts
 
-svn merge -r 4135:4136 https://esp-r.net/espr/esp-r/branches/Jon_Hand
+svn merge -r 4135:4136 https://espr.svn.cvsdude.com/esp-r/branches/Jon_Hand
 no conflicts
 
-svn merge -r 4136:4137 https://esp-r.net/espr/esp-r/branches/Jon_Hand
+svn merge -r 4136:4137 https://espr.svn.cvsdude.com/esp-r/branches/Jon_Hand
 no conflicts
 
-svn merge -r 4151:4152 https://esp-r.net/espr/esp-r/branches/Jon_Hand 
+svn merge -r 4151:4152 https://espr.svn.cvsdude.com/esp-r/branches/Jon_Hand 
 C    src/esrue2r/radcmds.F - minor edit
  svn resolved radcmds.F
 C    src/esruish/graph.F  - minor edit
@@ -3800,6 +3800,10 @@ run after a commit is made have access to a summary of the
 differences between the current syntax check and the prior
 syntax check as in Figure 6.
 .sp
+.ML
+         << figure to be added >>
+
+.ES
 .ce
 Figure 6 reported syntax differences
 .LP
@@ -4056,7 +4060,7 @@ source code, and ``commit'' your changes back to your developer-specific sub-bra
 To perform a checkout, use the following command:
 .ML
 
-  svn checkout https://esp-r.net/espr/esp-r/branches/<sub-branch_name>
+  svn checkout https://espr.svn.cvsdude.com/esp-r/branches/<sub-branch_name>
 .ES
 Provide your developer's account name and password when prompted.
 .LP
@@ -4230,16 +4234,16 @@ merge again using a clean working copy!\fR
 .IP 2. 4
 Check out a clean copy of your work:
 .ML
-  svn  checkout https://esp-r.net/espr/esp-r/branches/<sub-branch name>
+  svn  checkout https://espr.svn.cvsdude.com/esp-r/branches/<sub-branch name>
 .ES
 .IP 3. 4
 Determine the most recent revision (i.e. the highest number) on the development_branch.
 .ML
 
-  svn info https://esp-r.net/espr/esp-r/branches/development_branch
+  svn info https://espr.svn.cvsdude.com/esp-r/branches/development_branch
   ---------------------- (OUTPUT) ----------------------------------------
   Path: development_branch
-  URL: https://esp-r.net/espr/esp-r/branches/development_branch
+  URL: https://espr.svn.cvsdude.com/esp-r/branches/development_branch
   Repository Root: https://esp-r.net/espr/esp-r
   Repository UUID: 7d53e970-de11-0410-8a54-3d01b9da36cf
   Revision: 385
@@ -4254,7 +4258,7 @@ Merge the changes that have occurred on development_branch from the last
 time you took in revisions (say revision 200) to r385.
 .ML
   cd <your_working_copy_from_step_2>
-  svn merge -r 200:385 https://esp-r.net/espr/esp-r/branches/development_branch
+  svn merge -r 200:385 https://espr.svn.cvsdude.com/esp-r/branches/development_branch
   ---------------------- (OUTPUT) ----------------------------------------
   U integer.c
   U button.c
@@ -4309,5 +4313,4 @@ http://www.esru.strath.ac.uk.
 Hand, J., 2009. Documentation of Open-source Simulation - Addressing Multiple
 Points of Interest. IBPSA BS 09 Conference proceedings, Glasgow, Scotland 2009.
 .XP
-Svn repository is at https://esp-r.net/espr/esp-
-r/branches/development_branch
+Svn repository is at https://espr.svn.cvsdude.com/esp-r/branches/development_branch

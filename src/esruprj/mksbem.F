@@ -274,7 +274,7 @@ C stripped model. Define the simulation parameters for the run.
       CALL EASKABCD(' ','Initial assessment period (see help)',
      &      'January','April','July','Annual (official)',IW,4)
       if(isstup.le.0)isstup=20
-      if(isbnstep.le.0)isbnstep=12   ! 1 tsph for testing 4 std 12 for 5m
+      if(isbnstep.le.0)isbnstep=6   ! 1 tsph for testing 4 std 12 for 5m
       if(ispnstep.le.0)ispnstep=10
       NSSET=1
       issave=6

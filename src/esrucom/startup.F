@@ -154,7 +154,7 @@ C initial values because they will not be used.
         foldexe=' '
         cadlbl='no CAD package'
         cadexe=' '
-        cadfmt='ZIP'
+        cadfmt='DXF'
         replbl='No report generator'
         repexe='UNKNOWN'
         gprcmd='UNKNOWN'

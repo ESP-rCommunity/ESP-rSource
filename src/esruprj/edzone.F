@@ -1325,10 +1325,9 @@ C Shift sensor/actuator zone references > IW2 down one.
                   call edisp(iuout,outs)
                 endif
   82          continue
-            endif            
-            
-            
-          endif
+            endif
+
+            endif
         endif
       endif
       
@@ -1624,7 +1623,7 @@ C << should code just deal with common block >>
    45 continue
    46 NCOMP=NCOMP-1
 
-C Update common blocks for Geometry, operation and CFC
+C Update common blocks for Geometry, operation & CFC
 C commons via reading in related files.
       write(outs,'(A)') ' rebuilding model... '
       call usrmsg('  ',outs,'-')
@@ -1658,7 +1657,7 @@ C commons via reading in related files.
         IF(XST)THEN
           CALL ERPFREE(IFIL+1,ISTAT)
           CALL read_in_cfc_file(0,IUOUT,IFIL+1,lcfcin(ir),ir,IER)
-        ENDIF
+        ENDIF        
   48  continue
       call usrmsg('  ','  ','-')
 

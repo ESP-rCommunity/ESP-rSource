@@ -687,6 +687,20 @@ C command line.
         CALL PHELPD('CAD warning',53,'-',0,0,IER)
       endif
 
+C Ask user which format of CAD file will be scanned in.
+      h(1)='Current import options are DXF files and so-called'
+      h(2)='ZIP files (from a Scottish CAD company).'
+      CALL EASKABC('Specify which CAD format to work with',
+     &  'Options:','DXF (version 12)','ZIP CAD format',
+     &  'cancel',IRT,2)
+      if(irt.eq.1)then
+        cadfmt='DXF '
+      elseif(irt.eq.2)then
+        cadfmt='ZIP '
+      elseif(irt.eq.3)then
+        return
+      endif
+
 C If there is a currently loaded model then convert it.
       if(NCOMP.gt.0.and.cadfmt(1:3).eq.'DXF')then
         call tstamp('>','PRJ: start CAD')

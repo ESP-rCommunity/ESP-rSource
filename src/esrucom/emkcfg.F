@@ -376,7 +376,38 @@ C Also check about connections file.
             else
               GOTO 290
             endif
+          elseif(ncon.eq.0.and.indcfg.gt.0)then
+
+C If emkcfg was called from ecnv with an initial registration model
+C that had no zones but where indcfg had already been reset to one
+C then we need to know the name of the connections file.
+            write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
           endif
+        endif
+      elseif(icfgv.ge.3)then
+
+C Also check about connections file if in interactive mode.
+        if(ncon.gt.1)then
+          if(act.eq.'-'.and.LCNN(1:4).eq.'UNKN')then
+  292       H(1)='The surface topology of the model is held'
+            H(2)='in a connections file.'
+            write(LCNN,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
+            DCNN=LCNN
+            ltmp=LCNN
+            CALL EASKS(ltmp,' Connections file name?',' ',
+     &        72,DCNN,'system connx file name',IER,2)
+            if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+              LCNN=ltmp
+            else
+              GOTO 292
+            endif
+          endif
+        elseif(ncon.eq.0.and.indcfg.gt.0)then
+
+C If emkcfg was called from ecnv with an initial registration model
+C that had no zones but where indcfg had already been reset to one
+C then we need to know the name of the connections file.
+          write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
         endif
       endif
 
@@ -1306,24 +1337,26 @@ C This is all there is to write so close the files.
 
 C Now write the connections file 
       CALL EFOPSEQ(IUF,LCNN,3,IER)
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=2) '*connections for',
+      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=2) '*connections for ',
      &  cfgroot(1:lnblnk(cfgroot))
       call dstamp(dstmp)
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) '*Date ',dstmp
       WRITE(IUF,'(I7,A)',IOSTAT=IOS,ERR=2)
      &  NCON,'   # number of connections'
 
-      DO 930 I = 1,NCON
-        CALL CONXINF(1,I,CXSTR)
-        WRITE(IUF,'(5I4,2A)',IOSTAT=IOS,ERR=2) IC1(I),IE1(I),
-     &    ICT(I),IC2(I),IE2(I),'  # ',CXSTR(1:lnblnk(CXSTR))
+      if(NCON.gt.0)then
+        DO 930 I = 1,NCON
+          CALL CONXINF(1,I,CXSTR)
+          WRITE(IUF,'(5I4,2A)',IOSTAT=IOS,ERR=2) IC1(I),IE1(I),
+     &      ICT(I),IC2(I),IE2(I),'  # ',CXSTR(1:lnblnk(CXSTR))
 
-        IF(ICT(I).NE.4.OR.IC2(I).GT.0)GOTO 930
-        if(IE2(I).GT.NGRDP)then
-           CALL edisp(iuout,
+          IF(ICT(I).NE.4.OR.IC2(I).GT.0)GOTO 930
+          if(IE2(I).GT.NGRDP)then
+            CALL edisp(iuout,
      &      'Ground connection referenced an unknown monthly profile!')
-        endif
-  930 CONTINUE
+          endif
+  930   CONTINUE
+      endif
       CALL ERPFREE(IUF,IOS)   ! free the cnn file unit
 
       RETURN
