@@ -338,13 +338,13 @@ C Zone monthly lighting loads in kWh
             fReportMonthlyLighting(imnth,I)=
      &        fmonthLGHT_ncm_Energy(imnth,I)/(1000.0*NTSTEP)
             if(imnth.lt.10)then    
-              write(min,'(5a,i1,2a,f12.3)') 
+              write(min,'(5a,i1,2a,f12.1)') 
      &          LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
      &          tab,'z_Lights_Month_',imnth,'_kWh',tab,
      &          fReportMonthlyLighting(imnth,I)
               call edisp(IWU,min)    
             else
-              write(min,'(5a,i2,2a,f12.3)') 
+              write(min,'(5a,i2,2a,f12.1)') 
      &          LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
      &          tab,'z_Lights_Month_',imnth,'_kWh',tab,
      &          fReportMonthlyLighting(imnth,I)

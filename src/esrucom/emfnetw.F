@@ -464,7 +464,7 @@ C Error trap on read error
       GOTO 100
 
 C File read errors.
- 1001 CALL USRMSG(' Conversion error in',OUTSTR,'W')
+ 1001 CALL USRMSG('EMFREAD: conversion error in',OUTSTR,'W')
       IER=1
       GOTO 100
       END

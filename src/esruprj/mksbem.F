@@ -274,7 +274,7 @@ C stripped model. Define the simulation parameters for the run.
       CALL EASKABCD(' ','Initial assessment period (see help)',
      &      'January','April','July','Annual (official)',IW,4)
       if(isstup.le.0)isstup=20
-      if(isbnstep.le.0)isbnstep=1   !4
+      if(isbnstep.le.0)isbnstep=6   ! 1 tsph for testing 4 std 12 for 5m
       if(ispnstep.le.0)ispnstep=10
       NSSET=1
       issave=6
@@ -298,7 +298,7 @@ C stripped model. Define the simulation parameters for the run.
         isstday(1)=1
         isstmon(1)=1  
         isfnday(1)=31   ! currently set to year
-        isfnmon(1)=1    !2
+        isfnmon(1)=12    ! 1 for testing 12 std
       endif
       spfdescr(1)='stripped'
 
@@ -1621,7 +1621,7 @@ C Ask for systems controls
             do 351 i=1,IPICKS
               iSelFlag = iselected(i)
 
-C<<<<Need to initialise iRecControls
+C << Need to initialise iRecControls
               if(iSelFlag.gt.0)then
                 if(iSelFlag.eq.1)then
                   iRecControls(1,iavailsyst)=1
@@ -1781,7 +1781,7 @@ C yet made that it is hourly and full year.
         IER=0
         call supplyandcheck(LTDFA,'T',ier)
         if(ier.ne.0)then
-          write(6,*) 'non-zero error after call to supplyandcheck'
+          write(6,*) 'error during supplyandcheck'
         endif
       endif
       if(ISBEM.EQ.1)THEN
@@ -1807,8 +1807,10 @@ C controls can be created.
           elseif(IZ.gt.1)then
             if(iactiv_tdf_item(IZ).ne.iactiv_tdf_item(IZ-1))then
               isnotequal=.true.
-c              write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
-c     &                 iactiv_tdf_item(IZ-1)
+
+C Debug.
+C              write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
+C     &                 iactiv_tdf_item(IZ-1)
             endif
           endif
           if(isnotequal)then
@@ -1820,7 +1822,8 @@ C about this counter
             iskipandmatch=1     
             icountnotequal=icountnotequal+1
             iforuseintdfentry(icountnotequal)=iactiv_tdf_item(IZ)
-c            write(6,*)'a:', icountnotequal
+C Debug.
+C            write(6,*)'a:', icountnotequal
 
 C Control items
 C Need a counter here to skip common non-sorted activities and match the right one
@@ -1873,9 +1876,11 @@ C Update the control file and link the control loop to the correct zone.
             icascf(iCTLlink)=icountnotequal
           elseif(iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1))then
             iskipandmatch=iskipandmatch+1
-c            write(6,*)'iz_b: ',iactiv_tdf_item(IZ),'iz_b-1: ',
-c     &                 iactiv_tdf_item(IZ-1)
-c            write(6,*)'b:', icountnotequal
+
+C Debug.
+C            write(6,*)'iz_b: ',iactiv_tdf_item(IZ),'iz_b-1: ',
+C     &                 iactiv_tdf_item(IZ-1)
+C            write(6,*)'b:', icountnotequal
             i2skipandmatch=0
             iCTLlink=1
             do while(.not.ctl_Zonelink_match.and.iCTLlink.le.ncomp)
@@ -2123,7 +2128,7 @@ C It will always be NTBITS=5 here and NTSTAT=11 for NCM activities
           endif 
           write(DFILE,'(a)')subpath(1:lnblnk(subpath))                 
 
-C<<<<<Improve this part in the future>>>>>>>>>>>>
+C << Improve this part in the future >>
           LIMP=DFILE
           IF(ITIMP.EQ.1)THEN
             CALL ERPFREE(IUIMP,ISTAT)
@@ -2143,7 +2148,7 @@ C Import data - open the import file and read them.
             msgl2='Is the name correct?'
             CALL USRMSG('Could not open import file.',msgl2,'W')
 
-C<<<<<<Return may not needed.. test>>>>>>>>>>>>>>>>>
+C << Return may not needed.. test >>
             RETURN
           endif
 
@@ -2209,8 +2214,8 @@ C End of file encountered, close the file and return to menu.
           CALL ERPFREE(IUNIT,ISTAT)
           continue  
 
-C<<<<<<Change this in the future >>>>>>>>>>>>>
-C<<<Need to add "errors when creating string buffers." ??>>>>>>>>>>>>>
+C << Change this in the future >>
+C << Need to add "errors when creating string buffers." ?? >>
   212     continue !write(6,*) 'subpath: ',subpath    
   2     continue 
         NTSPH=1
@@ -3793,10 +3798,10 @@ C << G1 is probably not the common block to use for this >>
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
 C G9 holds information on children of a surface.
-      integer nbchild   ! how many children (up to 4)
-      integer nbgchild  ! how many grand children (up to 4)
-      integer ichild    ! list of children
-      integer igchild   ! list of grand children
+      integer nbchild   ! how many children (up to 4) for each connection
+      integer nbgchild  ! how many grand children (up to 4) for each connection
+      integer ichild    ! list of children for each connection
+      integer igchild   ! list of grand children for each connection
       common/G9/nbchild(MCON),nbgchild(MCON),ichild(MCON,4),
      &igchild(MCON,4)
 
@@ -3813,11 +3818,12 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,NNAME*72,H*72
       CHARACTER OUTS*124,GUESS*24,ADF*124,SNM*12,SNM2*12,USE*8,USE2*8
-      character guesstype*24,dinstpath*48
+      character guesstype*24,dinstpath*48,SN*12
       CHARACTER SNAME*12,SOTF*32,SMLCN*32,SVFC*4,SOTHER*24,SUSE*8
       CHARACTER*12 XJCCU,XKCCU
 
 C ivalsg keeps track of whether a geometry file has alread been copied.
+C irmw keeps track of up to 90 surfaces in each zone which can be deleted
       dimension ivalsg(MCOM),IRMV(MCOM,90),nrmv(mcom)
 
       DIMENSION COE(3),POINT(3),TRANS(3)
@@ -3833,6 +3839,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 C      logical closeelv ! true if surface is close to vertical
       LOGICAL MODIFY,MODLEN,MODBND,QUIET,XST,NEAR
       integer LOOPMAX  ! loop iterator for shifting surface list
+      integer ISCURRENT ! the current connection to be deleted
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -3844,6 +3851,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Initialise variables
       GUESS='notional'
+      SN=' '
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
@@ -3893,7 +3901,9 @@ C standard database locations
       ipathpcdb=1
       call opendb(ier)
 
-C Loop through each zone in the model...
+C Loop through each zone in the model and first scan in the zone
+C geometry, next use surrel to update parent/child information and
+C write out the zone.
       DO 550 ICOMP=1,NCOMP
         IUF=IFIL+2
         EXT='.geo'
@@ -3914,13 +3924,14 @@ C Loop through each zone in the model...
           ier=3  ! signal geometry issue
           return
         endif
+
         CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
         LGEOM(ICOMP)=NNAME
         ACT='s'
         CALL SURREL(ACT,ICOMP,IER)
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
 
-C Make a copy of constructions file and tmc file if applicable
+C Make a copy of constructions file and tmc file if applicable.
         IUNIT=12
         QUIET=.FALSE.
         call FINDFIL(LTHRM(ICOMP),XST)
@@ -3953,7 +3964,7 @@ C of constructions does not re-do it.
 
 C Initialise indices of surfaces to be deleted
         NRMV(icomp)=0
-        do 40 i=1,10
+        do 40 i=1,90
           irmv(ICOMP,i)=0
  40     continue
  550  CONTINUE
@@ -3962,11 +3973,14 @@ C Check length of cfgroot string.
       IROOTLEN=LNBLNK(CFGROOT_O)
       write(cfgroot,'(2a)')cfgroot_O(1:irootlen),ape(1:4)
 
-C Variant connections file also required set this up.
+C Variant connections file also required set up its name and
+C then use emkcfg to create it.
       EXT='.cnn'
       CALL FNCNGR(LCNN,APE,EXT,NNAME)
       LCNN=NNAME
       CALL EMKCFG('-',IER)
+
+C Inform the user that we are setting up the notional model.
       WRITE (OUTS,'(2A)')'Writing notional configuration file ',LCFGF
       CALL EDISP(IUOUT,OUTS)
 
@@ -3996,7 +4010,7 @@ C Re-establish glazing fractions based on UK NCM guidelines
       itrc=0
 
 C Loop through each zone in the model and if ivalsg was set earlier
-C then read in the zone geometry file and re-gather information on
+C then read in the zone geometry file to re-gather information on
 C parent child relationships
       DO 559 ICOMP=1,NCOMP
         IELF=0
@@ -4014,10 +4028,10 @@ C areas of children are held as 0.0
 C For each surface in this zone
           do 555 isur=1,nzsur(icomp)
             ICC=IZSTOCN(icomp,isur)
-            SNM=SSUSE(ICC,1)
+            write(SNM,'(a)') SSUSE(ICC,1)
 
 C For all exterior surfaces that are wall or roof 
-            if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.(
+            if(ssother(icc,1)(1:8).eq.'EXTERIOR'.AND.(
      &      SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
 
 C Only the following types of areas will be retained in this exterior
@@ -4076,14 +4090,31 @@ C type surface with use roof or wall
         ENDIF
  559  CONTINUE
 
-C Remove surfaces marked for deletion in IRMV
+C Loop through all of the zones again and remove surfaces marked 
+C for deletion in IRMV
       DO 6100 ICOMP=1,NCOMP
+
+C Debug the initial list of surfaces to remove.
+C        write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
+C     &    icomp
+C        write(6,*) 'list ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
+C     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
+C     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
+
+C In the current zone we need to delete NRMV surfaces.
         DO 6001 IR=1,NRMV(icomp)
 
-C Decrease surface numbers larger than this surface number.
-C Loop through all (but one) of the current surfaces in the model.
+C Debug.
+C          write(6,*) ' doing conn surf',IRMV(ICOMP,IR),
+C     &      ie1(IRMV(ICOMP,IR)),' for ir ',ir
+
+C Pack the list of TARSURF etc from the current connection data
+C to one less than the end of the number of connections in the
+C model. Set ISCURRENT to the current connection to delete (because 
+C IRMV is going to be altered).
           LOOPMAX=NCON-1
-          DO 6004 IS2=IRMV(ICOMP,IR),LOOPMAX
+          ISCURRENT=IRMV(ICOMP,IR)
+          DO 6004 IS2=ISCURRENT,LOOPMAX
             TARSURF(IS2)=TARSURF(IS2+1)
             XPDAREA(IS2)=XPDAREA(IS2+1)
             XVDAREA(IS2)=XVDAREA(IS2+1)
@@ -4091,18 +4122,34 @@ C Loop through all (but one) of the current surfaces in the model.
             XNWAREA(IS2)=XNWAREA(IS2+1)
             XREAREA(IS2)=XREAREA(IS2+1)
  6004     CONTINUE
+
+C And for subsequent surfaces to delete in this zone, decrement the
+C connection index held in IRMV.
           DO 6005 IRC=IR+1,NRMV(ICOMP)
             IF(IRMV(ICOMP,IR).LT.IRMV(ICOMP,IRC))    
      &        IRMV(ICOMP,IRC)=IRMV(ICOMP,IRC)-1
  6005     CONTINUE
+
+C And for subsequent surfaces in subsequent zones, decrement their
+C connection index held in IRMV.
           DO 6006 IC=ICOMP+1,NCOMP
             DO 6007 IRC=1,NRMV(IC)
               IRMV(IC,IRC)=IRMV(IC,IRC)-1
  6007       CONTINUE
  6006     CONTINUE
 
-C Remove the surface
+C Debug the packed irmv array.
+C        write(6,*) 'listx ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
+C     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
+C     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
+
+C Remove the surface. Get is from the irmv list (which is
+C connection based).
           is=ie1(IRMV(ICOMP,IR))
+
+C Debug.
+C          write(6,*) 'ir is ',ir,' removing surf ',is,' in zone ',icomp
+
           iopt=0
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
           CALL ADDSUR(ITRC,ICOMP,IS,'D','A',iopt,IER)
@@ -4117,13 +4164,17 @@ C Update the image.
           nznog(1)=ICOMP
           izgfoc=ICOMP
           CALL ADJVIEW(IER)
+          call pausems(500)
  6001   CONTINUE
  6100 CONTINUE
 
 C Work out area of glazings etc. into all exterior surfaces
+C that remain in the model. Do this by looping through
+C each zone in the model and in each of the surfaces
+C in the current zone check its attributes.
       DO 557 ICOMP=1,NCOMP
         do 200 isur=1,nzsur(icomp)
-          icC=IZSTOCN(icomp,isur)
+          ICC=IZSTOCN(icomp,isur)
           SNM=SSUSE(ICC,1)
 
 C For all exterior surfaces that are wall or roof 
@@ -4152,24 +4203,25 @@ C additional windows
  200    continue
  557  continue
 
-C Now add required surfaces.
+C Now loop through the model in reverse zone order and
+C add required surfaces.
 C << need to trap error state in georead >>
       DO 551 ICOMP=NCOMP,1,-1
         NUMBS=NZSUR(ICOMP)
         do 580 isur=NUMBS,1,-1
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
           is=isur
-          ICON=IZSTOCN(icomp,nsur)
+          ICON=IZSTOCN(icomp,nsur)  ! the last surface in the zone
           IELF=0
-          ICC=IZSTOCN(icomp,isur)
+          ICC=IZSTOCN(icomp,isur)   ! connection for current surface
           COE(1)=SSURCOG(ICC,1)
           COE(2)=SSURCOG(ICC,2)
           COE(3)=SSURCOG(ICC,3)
           SNM=SSUSE(ICC,1)
 
 C For all exterior surfaces that are wall or roof 
-          if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.(
-     &    SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
+          if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.
+     &      (SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
             IF(SNM(1:4).EQ.'WALL')THEN
               GLZFR=WALLFR
               FRMFR=WALLFRFR
@@ -4193,7 +4245,11 @@ C First put pedestrian door in
               NSUR=NSUR+1
               NZTV(ICOMP)=NTV
               WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
-     &        is,CHAR(96+IELF),'_Pdoor'  ! Name
+     &          is,CHAR(96+IELF),'_Pdoor'  ! Name
+              WRITE(SN,'(i2,2A)')
+     &          is,CHAR(96+IELF),'_Pdoor'  ! Name
+              write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+              call edisp(iuout,outs)
               ISUR2=NSUR
               DO 7212 NV=1,NVER(IS)
                 POINT(1)=X(JVN(IS,NV))
@@ -4245,6 +4301,16 @@ C door and a window are to be added to original surface, the window is
 C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
+
+C Update the image.
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(500)
             ENDIF
 
 C Now put vehicle door in
@@ -4258,7 +4324,11 @@ C Now put vehicle door in
               NSUR=NSUR+1
               NZTV(ICOMP)=NTV
               WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
-     &        is,CHAR(96+IELF),'_Vdoor'  ! Name
+     &          is,CHAR(96+IELF),'_Vdoor'  ! Name
+              WRITE(SN,'(i2,2A)')
+     &          is,CHAR(96+IELF),'_Vdoor'  ! Name
+              write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+              call edisp(iuout,outs)
               ISUR2=NSUR
               DO 7312 NV=1,NVER(IS)
                 POINT(1)=X(JVN(IS,NV))
@@ -4310,6 +4380,16 @@ C door and a window are to be added to original surface, the window is
 C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
+
+C Update the image.
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(500)
             ENDIF
 
 C Now put display glazing in
@@ -4322,7 +4402,11 @@ C Now put display glazing in
               NSUR=NSUR+1
               NZTV(ICOMP)=NTV
               WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
-     &        is,CHAR(96+IELF),'_dispglz'  ! Name
+     &          is,CHAR(96+IELF),'_dispglz'  ! Name
+              WRITE(SN,'(i2,2A)')
+     &          is,CHAR(96+IELF),'_dispglz'  ! Name
+              write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+              call edisp(iuout,outs)
               ISUR2=NSUR
               DO 7412 NV=1,NVER(IS)
                 POINT(1)=X(JVN(IS,NV))
@@ -4374,6 +4458,16 @@ C door and a window are to be added to original surface, the window is
 C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
+
+C Update the image.
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(500)
             ENDIF
 
 C Now put glazing and frame
@@ -4386,7 +4480,11 @@ C Now put glazing and frame
               NSUR=NSUR+1
               NZTV(ICOMP)=NTV
               WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
-     &        is,CHAR(96+IELF),'_glz'  ! Name
+     &          is,CHAR(96+IELF),'_glz'  ! Name
+              WRITE(SN,'(i2,2A)')
+     &          is,CHAR(96+IELF),'_glz'  ! Name
+              write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+              call edisp(iuout,outs)
               ISUR2=NSUR
               DO 7512 NV=1,NVER(IS)
                 POINT(1)=X(JVN(IS,NV))
@@ -4434,13 +4532,27 @@ C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
               is=nsur
 
+C Update the image.
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(500)
+
 C Now put frame
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
               NZTV(ICOMP)=NTV
               WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
-     &        is,CHAR(96+IELF),'_frm'  ! Name
+     &          is,CHAR(96+IELF),'_frm'  ! Name
+              WRITE(SN,'(i2,2A)')
+     &          is,CHAR(96+IELF),'_frm'  ! Name
+              write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+              call edisp(iuout,outs)
               ISUR2=NSUR
               DO 7612 NV=1,NVER(IS)
                 POINT(1)=X(JVN(IS,NV))
@@ -4485,6 +4597,16 @@ C Update connections list before displaying notional model zone
               call zgupdate(itrc,icomp,ier)
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
               call emkcfg('-',IER)
+
+C Update the image.
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(500)
             ENDIF
           ENDIF
  580    CONTINUE
@@ -6183,7 +6305,7 @@ C Calculate CO2 emission from consuming this fuel
             CHPGCO2=FR*FUELCO2(ift)
 
 C Calculate electricity generated by CHP unit
-C<< Check for divided by zero exception
+C << Check for divided by zero exception
             E=E+FR*RENDATA(IREN,1)/RENDATA(IREN,4)
 
 C Calculate CO2 displaced by this electricity
@@ -8109,7 +8231,7 @@ C (this is fully acceptable by EPCgen program)
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' B-ADDRESS-5         = ',
      &'"',BUILDINGPC(1:lnblnk(BUILDINGPC)),' "'
 
-C<<< B-LOC-DESCRIPTION may be an additional output in the future >>>
+C << B-LOC-DESCRIPTION may be an additional output in the future >>
 
 C Specifies the total floor area of the building in m^2
       WRITE(IUF,'(a,f8.2)',IOSTAT=IOS,ERR=3)' BUILDING-AREA       = ',
@@ -8234,8 +8356,8 @@ C applying a fixed improvement factor to the emissions from a reference building
 C CO2 emission rate in kg/m2year for the "typical" building
       WRITE(IUF,'(a,f7.1)',iostat=ios) ' TYR            = ',TyER
 
-C<<< Need interface to give the option here between English and Welsh>>>
-C<<Default is english >>>>>>>>>
+C << Need interface to give the option here between English and Welsh >>
+C << Default is english >>
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' EPC-LANGUAGE       = ',
      &' ENGLISH'
       WRITE(IUF,'(a,1X,F7.1)',iostat=ios)' BER                 = ',BER
@@ -8247,9 +8369,9 @@ C Default is Undefined
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' NOS-LEVEL       = ',
      &  pjLevComplexity(1:lnblnk(pjLevComplexity))
 
-C<<< Some input files seem to also have an "EA-KEY" entry >>>
-C<<<but there is nowhere info about this >>>
-C<<< This is left commented for future use>>>>>>>
+C << Some input files seem to also have an "EA-KEY" entry >>
+C << but there is nowhere info about this >>
+C << This is left commented for future use >>
 C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' EA-KEY           = ',
 C     &  ' ""'
 
@@ -8606,7 +8728,7 @@ C construction. The value can be YES or NO. Hardwired to NO
      &  'NO'  
       WRITE(IUF,'(a)',iostat=ios) ' ..'
 
-C<<<CHECK IF LOOP IS CORRECT
+C << CHECK IF LOOP IS CORRECT
       do 607 ICMSYS=1,NCMSYS
 
 C REC-EPC-H2: Triggered when the heating system does not have centralised time control     
@@ -8616,8 +8738,8 @@ C This is true when iRecControls(1,ICMSYS).ne.1
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H2'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -8679,8 +8801,8 @@ C centralised time control.
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H2'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -8736,12 +8858,12 @@ C If heat generator efficiency <=0.70 then trigger this recommendation
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
-C<<< Next line could be included with additions on the interface
-C<<It is optional for SBEM
+C << Next line could be included with additions on the interface
+C << It is optional for SBEM
 C         WRITE(IUF,'(a)',iostat=ios) 
 C      &    'REC-COMMENT  = "Assesor may provide additional comments"'
 
@@ -8806,12 +8928,12 @@ C recommendation
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
-C<<< Next line could be included with additions on the interface
-C<<It is optional for SBEM
+C << Next line could be included with additions on the interface
+C << It is optional for SBEM
 C         WRITE(IUF,'(a)',iostat=ios) 
 C      &    'REC-COMMENT  = "Assesor may provide additional comments"'
 
@@ -8858,8 +8980,8 @@ C Need the name of the HVAC system here, which uses the specific fuel
         endif
 
 C REC-EPC-H3: Consider replacing heating boiler plant with a condensing type     
-C<<< Condition need to be added on the interface              
-C<<,MAKE SURE IT IS NOT WRITTEN SEVERAL TIMES - CHECK THE DO LOOPS>>>
+C << Condition need to be added on the interface              
+C << MAKE SURE IT IS NOT WRITTEN SEVERAL TIMES - CHECK THE DO LOOPS >>
         if(HGEF(ICMSYS).lt.0.89)then
           if(FUELNAME(IFTYP(ICMSYS))(1:11).eq.'Natural gas'.or.
      &       FUELNAME(IFTYP(ICMSYS))(1:3).eq.'Oil'.or.
@@ -8869,8 +8991,8 @@ C<<,MAKE SURE IT IS NOT WRITTEN SEVERAL TIMES - CHECK THE DO LOOPS>>>
             WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
             WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
             WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
             WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &      'UNKNOWN'
@@ -8895,7 +9017,7 @@ C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and 
 C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
-C<<<Implementation is similar as for EPC-H1
+C << Implementation is similar as for EPC-H1
             CALL ECLOSE(H3_impact,4.0,0.001,ISNEAR)
             IF(H3_impact.GT.4.0)THEN            
               WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
@@ -8928,8 +9050,8 @@ C H3 needs to be written twice (for REC-HVAC-EPC-H3 item)
             WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
             WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
             WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
             WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &        'UNKNOWN'
@@ -8938,7 +9060,7 @@ C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and 
 C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
-C<<<Implementation is similar as for EPC-H1
+C << Implementation is similar as for EPC-H1
             CALL ECLOSE(H3_impact,4.0,0.001,ISNEAR)
             IF(H3_impact.GT.4.0)THEN            
               WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
@@ -8984,8 +9106,8 @@ C This is the same as for EPC-H1
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H4'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &      'UNKNOWN'
@@ -9027,8 +9149,8 @@ C REC-HVAC-EPC-H4:
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H4'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
@@ -9082,8 +9204,8 @@ C REC-EPC-H5: Check if heating systems have room by room time control
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H5'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'UNKNOWN'
@@ -9142,8 +9264,8 @@ C REC-HVAC-EPC-H5: Check if heating systems have room by room time control
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H5'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
@@ -9194,8 +9316,8 @@ C REC-EPC-H6: Check if heating systems have room by room temperature control
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H6'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -9256,8 +9378,8 @@ C temperature control
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H6'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -9308,8 +9430,8 @@ C REC-EPC-H7: Check if heating systems have optimum start/stop control
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H7'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'UNKNOWN'
@@ -9369,8 +9491,8 @@ C start/stop control
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H7'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'          
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'UNKNOWN'
@@ -9418,8 +9540,8 @@ C REC-EPC-H8: Check if heating systems have weather compensation controls
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H8'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'UNKNOWN'
@@ -9478,8 +9600,8 @@ C REC-HVAC-EPC-H8: Check if heating systems have weather compensation controls
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HEATING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-H8'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'          
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'UNKNOWN'
@@ -9525,8 +9647,8 @@ C Need the name of the HVAC system here, which uses the specific fuel
         
 C COOLING
 C If there is a cooling system
-C <<<<Using 2.2 as default cooling efficiency for now
-C <<<The default values in ESP-r seem too high - need to check this
+C << Using 2.2 as default cooling efficiency for now
+C << The default values in ESP-r seem too high - need to check this
 C REC-EPC-C1: Check if using default cooling efficiency
         call eclose(CGEF(ICMSYS),2.2,0.001,ISNEAR)
 	if(INCMSYS(ICMSYS).eq.0)then
@@ -9536,8 +9658,8 @@ C REC-EPC-C1: Check if using default cooling efficiency
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = COOLING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-C1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Temporary change the efficiency to 2.5
@@ -9592,8 +9714,8 @@ C REC-HVAC-EPC-C1: Check if using default cooling efficiency
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = COOLING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-C1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'UNKNOWN'
@@ -9649,8 +9771,8 @@ C greater than 2.0
             WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = COOLING'
             WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-C2'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
             WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
             WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &       'UNKNOWN'
@@ -9694,8 +9816,8 @@ C greater than 2.0
             WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = COOLING'
             WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-C2'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
             WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
             WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &       'UNKNOWN'
@@ -9743,9 +9865,9 @@ C Need the name of the HVAC system here, which uses the specific fuel
         endif
 
 C REC-EPC-C3: Duct and AHU leakage
-C<<<<ADD logic to write it only once for the building and not when triggered 
-C<<<<<<<<<<for every system>>>>>>
-C <<Check for -1111 is not probably necessary since the systems used are known>>
+C << ADD logic to write it only once for the building and not when triggered 
+C << for every system >>
+C << Check for -1111 is not probably necessary since the systems used are known>>
 	if(incmsys(icmsys).eq.0)then
 	  continue
         elseif(ibruklc(1,incmsys(icmsys)).ne.-1111)then
@@ -9764,8 +9886,8 @@ C beam (with displacement ventilation)
               write(iuf,'(a)',iostat=ios) 'CATEGORY     = COOLING'
               write(iuf,'(a)',iostat=ios) 'CODE         = EPC-C3'     
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
               write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -9835,8 +9957,8 @@ C REC-HVAC-EPC-C3: Duct and AHU leakage
               write(iuf,'(a)',iostat=ios) 'CATEGORY     = COOLING'
               write(iuf,'(a)',iostat=ios) 'CODE         = EPC-C3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
               write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -9883,8 +10005,8 @@ C Need the name of the HVAC system here, which uses the specific fuel
                 write(iuf,'(a)',iostat=ios) 'CATEGORY     = COOLING'
                 write(iuf,'(a)',iostat=ios) 'CODE         = EPC-C3'     
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
                 write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -9955,8 +10077,8 @@ C REC-HVAC-EPC-C3: Duct and AHU leakage
                 write(iuf,'(a)',iostat=ios) 'CATEGORY     = COOLING'
                 write(iuf,'(a)',iostat=ios) 'CODE         = EPC-C3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
                 write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10010,8 +10132,8 @@ C REC-HVAC-EPC-F1: Consider switching from oil or LPG to natural gas
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = FUEL-SWITCHING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-F1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10080,8 +10202,8 @@ C REC-HVAC-EPC-F2: Consider converting the boiler from coal to natural gas
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = FUEL-SWITCHING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-F2'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10150,8 +10272,8 @@ C REC-HVAC-EPC-F3: Consider switching from coal to biomass
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = FUEL-SWITCHING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-F3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10221,8 +10343,8 @@ C REC-HVAC-EPC-F4: Consider switching from oil or LPG to biomass
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = FUEL-SWITCHING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-F4'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10291,8 +10413,8 @@ C REC-HVAC-EPC-F5: Consider switching from (natural) gas to biomass
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = FUEL-SWITCHING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-F5'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10361,8 +10483,8 @@ C REC-HVAC-EPC-F6: Consider switching from coal to oil
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = FUEL-SWITCHING'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-F6'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10425,7 +10547,7 @@ C Need the name of the HVAC system here, which uses the specific fuel
 
 C ***Hot water recommendations
 C Check if hot water is provided by the heating generator
-C<<<<<NEED THE CHECK HERE: if DHW not from heating generator >>>
+C << NEED THE CHECK HERE: if DHW not from heating generator >>
 
 C Loop for all DHW systems
       DO 608 IcurrentDHW=1,NDHWSYS          
@@ -10433,14 +10555,14 @@ C Loop for all DHW systems
 C REC-EPC-W1: Install more efficient water heater
         call eclose(HWEF(IcurrentDHW),0.79,0.0001,ISNEAR)
 
-C<<< Confirm that variable HWEF(IcurrentDHW) is correct >>>
+C << Confirm that variable HWEF(IcurrentDHW) is correct >>
         if(ISNEAR.or.(HWEF(IcurrentDHW).lt.0.79))then         
           WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-W1" = RECOMMENDATION'
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HOT-WATER'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-W1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10506,14 +10628,14 @@ C Need the name of the HVAC system here, which uses the specific fuel
 C REC-EPC-W2: Consider replacing (poor) DHW system with point of use system
         call eclose(HWEF(IcurrentDHW),0.70,0.0001,ISNEAR)
 
-C<<< Confirm that variable HWEF(IcurrentDHW) is correct >>>
+C << Confirm that variable HWEF(IcurrentDHW) is correct >>
         if(ISNEAR.or.(HWEF(IcurrentDHW).lt.0.70))then         
           WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-W2" = RECOMMENDATION'
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HOT-WATER'
           WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-W2'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10577,28 +10699,28 @@ C Need the name of the HVAC system here, which uses the specific fuel
         endif        
 
 C REC-EPC-W3: Improve insulation on DHW storage
-C<<<<CHECK if this has to be within the loop 608 of the hot water systems
-C<<<DHW storage still needs to be implemented >>>
+C << CHECK if this has to be within the loop 608 of the hot water systems
+C << DHW storage still needs to be implemented >>
 
-C<<< Logic is: if storage heat loss > default value*0.9 then trigger EPC-W3
-C<<< Default value needs to be decided >>>
+C << Logic is: if storage heat loss > default value*0.9 then trigger EPC-W3
+C << Default value needs to be decided >>
         WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-W3" = RECOMMENDATION'
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HOT-WATER'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-W3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 
-C<<<<Need a new BER calculation here for a DHW system that consumes 
+C << Need a new BER calculation here for a DHW system that consumes 
 C energy based on 50% less storage losses.
-C<<< This needs then to be used and calculate total BER CO2 emissions
-C<<< Then determine the % change from this in TOTAL building emissions
-C<<<If change in total carbon emission is >4% then potential impact is "high"
-C  <<<If change in total carbon emission is greater than 0.5 and 
-C <<<< less or equal than 4% then potential impact is "medium"
-C <<<Otherwise impact is "low"
+C << This needs then to be used and calculate total BER CO2 emissions
+C << Then determine the % change from this in TOTAL building emissions
+C << If change in total carbon emission is >4% then potential impact is "high"
+C << If change in total carbon emission is greater than 0.5 and 
+C << less or equal than 4% then potential impact is "medium"
+C << Otherwise impact is "low"
         WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'LOW'
         WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
@@ -10619,27 +10741,27 @@ C For the next line: Instead of USER, it could also be CALC
 
 C REC-EPC-W3: needs to be written twice
 C REC-EPC-W3: Improve insulation on DHW storage
-C<<<<CHECK if this has to be within the loop 608 of the hot water systems
-C<<<DHW storage still needs to be implemented >>>
+C << CHECK if this has to be within the loop 608 of the hot water systems
+C << DHW storage still needs to be implemented >>
 
-C<<< Logic is: if storage heat loss > default value*0.9 then trigger EPC-W3
-C<<< Default value needs to be decided >>>
+C << Logic is: if storage heat loss > default value*0.9 then trigger EPC-W3
+C << Default value needs to be decided >>>
         WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-W3" = RECOMMENDATION'
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HOT-WATER'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-W3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
-C<<<<Need a new BER calculation here for a DHW system that consumes 
+C << Need a new BER calculation here for a DHW system that consumes 
 C energy based on 50% less storage losses.
-C<<< This needs then to be used and calculate total BER CO2 emissions
-C<<< Then determine the % change from this in TOTAL building emissions
-C<<<If change in total carbon emission is >4% then potential impact is "high"
-C  <<<If change in total carbon emission is greater than 0.5 and 
-C <<<< less or equal than 4% then potential impact is "medium"
-C <<<Otherwise impact is "low"
+C << This needs then to be used and calculate total BER CO2 emissions
+C << Then determine the % change from this in TOTAL building emissions
+C << If change in total carbon emission is >4% then potential impact is "high"
+C << If change in total carbon emission is greater than 0.5 and 
+C << less or equal than 4% then potential impact is "medium"
+C << Otherwise impact is "low"
         WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'LOW'
         WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
@@ -10668,27 +10790,27 @@ C Need the name of the HVAC system here, which uses the specific fuel
 
         
 C REC-EPC-W4: Add time control to DHW secondary circulation
-C<<<<CHECK if this has to be within the loop 608 of the hot water systems
-C <<<Still needs to be implemented 
-C<<< Logic is: if there is secondary DHW circulation and there is no time
-C<<< control then trigger EPC-W4
+C << CHECK if this has to be within the loop 608 of the hot water systems
+C << Still needs to be implemented 
+C << Logic is: if there is secondary DHW circulation and there is no time
+C << control then trigger EPC-W4
 
         WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-W4" = RECOMMENDATION'
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HOT-WATER'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-W4'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
-C<<<<Need a new BER calculation here for a DHW system that consumes 
+C << Need a new BER calculation here for a DHW system that consumes 
 C energy 30% less of total DHW energy.
-C<<< This needs then to be used and calculate total BER CO2 emissions
-C<<< Then determine the % change from this in TOTAL building emissions
-C<<<If change in total carbon emission is >4% then potential impact is "high"
-C  <<<If change in total carbon emission is greater than 0.5 and 
-C <<<< less or equal than 4% then potential impact is "medium"
-C <<<Otherwise impact is "low"
+C << This needs then to be used and calculate total BER CO2 emissions
+C << Then determine the % change from this in TOTAL building emissions
+C << If change in total carbon emission is >4% then potential impact is "high"
+C << If change in total carbon emission is greater than 0.5 and 
+C << less or equal than 4% then potential impact is "medium"
+C << Otherwise impact is "low"
         WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'LOW'
         WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
@@ -10713,21 +10835,21 @@ C REC-EPC-W4: Add time control to DHW secondary circulation
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = HOT-WATER'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-W4'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C For the next line: Instead of CALC, it could also be USER
         WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
 
-C<<<<Need a new BER calculation here for a DHW system that consumes 
+C << Need a new BER calculation here for a DHW system that consumes 
 C energy 30% less of total DHW energy.
-C<<< This needs then to be used and calculate total BER CO2 emissions
-C<<< Then determine the % change from this in TOTAL building emissions
-C<<<If change in total carbon emission is >4% then potential impact is "high"
-C  <<<If change in total carbon emission is greater than 0.5 and 
-C <<<< less or equal than 4% then potential impact is "medium"
-C <<<Otherwise impact is "low"
+C << This needs then to be used and calculate total BER CO2 emissions
+C << Then determine the % change from this in TOTAL building emissions
+C << If change in total carbon emission is >4% then potential impact is "high"
+C << If change in total carbon emission is greater than 0.5 and 
+C << less or equal than 4% then potential impact is "medium"
+C << Otherwise impact is "low"
         WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'LOW'
         WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
@@ -10761,12 +10883,12 @@ C Lighting
         if(ILITYP(ICOMP).eq.1)then
           ExistLightType=.true.
           
-C<< Need a new calculation for a new  BER by using instead T8 Fluorescent 
+C << Need a new calculation for a new  BER by using instead T8 Fluorescent 
 C - triphosphor - high frequency ballast lamps        
 C Recalculate carbon emissions
           LIGHTORIGINAL(ICOMP)=BERLIGHT(ICOMP)
 
-C<<This is hardwired here and it is taken from the SBEM database for
+C << This is hardwired here and it is taken from the SBEM database for
 C T8 high frequency: 3.4 W/m2 per 100 lux divided by T12: 5.0 W/m2 per 100 lux
           BERLIGHT(ICOMP)=(3.4/5.0)*BERLIGHT(ICOMP)
         endif
@@ -10779,8 +10901,8 @@ C with 26mm (T8) tubes
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = LIGHTING'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-L1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10843,7 +10965,7 @@ C REC-EPC-L2: Replace tungsten GLS lamps with CFLs
 C Recalculate carbon emissions
           LIGHTORIGINAL(ICOMP)=BERLIGHT(ICOMP)
 
-C<<This is hardwired here and it is taken from the SBEM database for
+C << This is hardwired here and it is taken from the SBEM database for
 C Compact fluorescent: 4.6 W/m2 per 100 lux divided by
 C Tungsten lamp (GLS): 28.0 W/m2 per 100 lux
           BERLIGHT(ICOMP)=(4.6/28.0)*BERLIGHT(ICOMP)
@@ -10857,8 +10979,8 @@ C Recalculate carbon emissions
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = LIGHTING'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-L2'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10922,7 +11044,7 @@ C plug-in SON replacements (HP sodium)
 C EPC-L6 is the same but the payback period is supposed to differ
           LIGHTORIGINAL(ICOMP)=BERLIGHT(ICOMP)
 
-C<<This is hardwired here and it is taken from the SBEM database for
+C << This is hardwired here and it is taken from the SBEM database for
 C high-pressure sodium: 4.5 W/m2 per 100 lux divided by
 C high-pressure mercury discharge lamps: 7.6 W/m2 per 100 lux
           BERLIGHT(ICOMP)=(4.5/7.6)*BERLIGHT(ICOMP)
@@ -10937,8 +11059,8 @@ C EPC-L6 is the same but the payback period is supposed to differ
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = LIGHTING'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-L3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -10995,8 +11117,8 @@ C EPC-L3 is the same but the payback period is supposed to differ
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = LIGHTING'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-L6'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -11061,8 +11183,8 @@ C Recalculate carbon emissions
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = LIGHTING'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-L4'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -11132,13 +11254,13 @@ C REC-EPC-L5: Replace T8 lamps with retrofit T5 conversion kit
           LIGHTORIGINAL(ICOMP)=BERLIGHT(ICOMP)
           if(ILITYP(ICOMP).eq.2)then
           
-C<<This is hardwired here and it is taken from the SBEM database for
+C << This is hardwired here and it is taken from the SBEM database for
 C T5: 3.4 W/m2 per 100 lux divided by
 C T8 standard ballast: 4.4 W/m2 per 100 lux
             BERLIGHT(ICOMP)=(3.4/4.4)*BERLIGHT(ICOMP)
           elseif(ILITYP(ICOMP).eq.3)then
 
-C<<This is hardwired here and it is taken from the SBEM database for
+C << This is hardwired here and it is taken from the SBEM database for
 C T5: 3.4 W/m2 per 100 lux divided by
 C T8 halophosphate coated fluorescent tube high freq ballast: 3.8 W/m2 per 100 lux
             BERLIGHT(ICOMP)=(3.4/3.8)*BERLIGHT(ICOMP)          
@@ -11152,14 +11274,14 @@ C REC-EPC-L5: Replace T8 lamps with retrofit T5 conversion kit
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = LIGHTING'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-L5'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
         WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT  = UNKNOWN'
 
-C<< Need a new calculation for a new CO2 by using instead T5 lamps
+C << Need a new calculation for a new CO2 by using instead T5 lamps
 C Recalculate carbon emissions
         BERORIGINAL=BER
 
@@ -11219,7 +11341,7 @@ C REC-EPC-L7: Introduce High Frequency ballasts for fluorescent tubes:
 C Reduce number of fittings required
           LIGHTORIGINAL(ICOMP)=BERLIGHT(ICOMP)
 
-C<<This is hardwired here and it is taken from the SBEM database for
+C << This is hardwired here and it is taken from the SBEM database for
 C T8 (25mm dia) triphosphor coated fluorescent tube high 
 C freq ballast: 3.4 W/m2 per 100 lux divided by T8 standard
 C ballast: 4.4 W/m2 per 100 lux
@@ -11234,8 +11356,8 @@ C Reduce number of fittings required
         WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = LIGHTING'
         WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-L7'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
@@ -11296,28 +11418,28 @@ C At the end: reset the ExistLightType logical to false
 
 C ....ADD RENEWABLES.........
 C Loop through renewable systems
-C<<<<need the DO LOOP for this
-C<<<<<NEED a check to see if heating fuel is electricity
-C<<<<IF heating fuel is electricity then check heat generator
-C<<< efficiency. If efficiency is less than 2 then EPC-R1
+C << need the DO LOOP for this
+C << NEED a check to see if heating fuel is electricity
+C << IF heating fuel is electricity then check heat generator
+C << efficiency. If efficiency is less than 2 then EPC-R1
 
 C REC-EPC-R1: Consider Ground Source Heat Pump
       WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-R1" = RECOMMENDATION'
       WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = RENEWABLES'
       WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-R1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
       WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
-C<<<<Need a new heating calculation here (and if appropriate DHW) as
-C<<< a ratio between actual efficiency and 3.1
-C<<< This needs then to be used and calculate total BER CO2 emissions
-C<<< Then determine the % change from this in TOTAL building emissions
-C<<<If change in total carbon emission is >4% then potential impact is "high"
-C  <<<If change in total carbon emission is greater than 0.5 and 
-C <<<< less or equal than 4% then potential impact is "medium"
-C <<<Otherwise impact is "low"
+C << Need a new heating calculation here (and if appropriate DHW) as
+C << a ratio between actual efficiency and 3.1
+C << This needs then to be used and calculate total BER CO2 emissions
+C << Then determine the % change from this in TOTAL building emissions
+C << If change in total carbon emission is >4% then potential impact is "high"
+C << If change in total carbon emission is greater than 0.5 and 
+C << less or equal than 4% then potential impact is "medium"
+C << Otherwise impact is "low"
       WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'LOW'
       WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
@@ -11336,14 +11458,14 @@ C For the next line: Instead of USER, it could also be CALC
       WRITE(IUF,'(a)',iostat=ios) 'CO2-SAVE-POUND-SC = USER'           
       WRITE(IUF,'(a)',iostat=ios) ' ..'
       
-C <<<<<<<<NEED A CHECK TO SEE IF THERE IS WIND TURBINE
+C << NEED A CHECK TO SEE IF THERE IS WIND TURBINE
 C REC-EPC-R2: Consider installing building mounted wind turbine
       WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-R2" = RECOMMENDATION'
       WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = RENEWABLES'
       WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-R2'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
       WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Energy impact is always "low"
@@ -11366,14 +11488,14 @@ C For the next line: Instead of USER, it could also be CALC
       WRITE(IUF,'(a)',iostat=ios) 'CO2-SAVE-POUND-SC = USER'           
       WRITE(IUF,'(a)',iostat=ios) ' ..'
 
-C <<<<<<<<NEED A CHECK TO SEE IF THERE IS SOLAR THERMAL WATER HEATING
+C << NEED A CHECK TO SEE IF THERE IS SOLAR THERMAL WATER HEATING
 C REC-EPC-R3: Consider installing solar water heating
       WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-R3" = RECOMMENDATION'
       WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = RENEWABLES'
       WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-R3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
       WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Energy impact is always "low"
@@ -11397,14 +11519,14 @@ C For the next line: Instead of USER, it could also be CALC
       WRITE(IUF,'(a)',iostat=ios) 'CO2-SAVE-POUND-SC = USER'           
       WRITE(IUF,'(a)',iostat=ios) ' ..'
 
-C <<<<<<<<NEED A CHECK TO SEE IF THERE IS PV
+C << NEED A CHECK TO SEE IF THERE IS PV
 C REC-EPC-R4: Consider installing PV
       WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-R4" = RECOMMENDATION'
       WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = RENEWABLES'
       WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-R4'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
       WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Energy impact is always "low"
@@ -11428,27 +11550,27 @@ C For the next line: Instead of USER, it could also be CALC
       WRITE(IUF,'(a)',iostat=ios) 'CO2-SAVE-POUND-SC = USER'    
       WRITE(IUF,'(a)',iostat=ios) ' ..'
 
-C<<<<<NEED a check to see if heating fuel is electricity
-C<<<<IF heating fuel is electricity then check heat generator
-C<<< efficiency. If efficiency is less than 2 then EPC-R1
+C << NEED a check to see if heating fuel is electricity
+C << IF heating fuel is electricity then check heat generator
+C << efficiency. If efficiency is less than 2 then EPC-R1
 
 C REC-EPC-R5: Consider Air Source Heat Pump
       WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-R5" = RECOMMENDATION'
       WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = RENEWABLES'
       WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-R5'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
       WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
-C<<<<Need a new heating calculation here (and if appropriate DHW) as
-C<<< a ratio between actual efficiency and 2.2
-C<<< This needs then to be used and calculate total BER CO2 emissions
-C<<< Then determine the % change from this in TOTAL building emissions
-C<<<If change in total carbon emission is >4% then potential impact is "high"
-C  <<<If change in total carbon emission is greater than 0.5 and 
-C <<<< less or equal than 4% then potential impact is "medium"
-C <<<Otherwise impact is "low"
+C << Need a new heating calculation here (and if appropriate DHW) as
+C << a ratio between actual efficiency and 2.2
+C << This needs then to be used and calculate total BER CO2 emissions
+C << Then determine the % change from this in TOTAL building emissions
+C << If change in total carbon emission is >4% then potential impact is "high"
+C << If change in total carbon emission is greater than 0.5 and 
+C << less or equal than 4% then potential impact is "medium"
+C << Otherwise impact is "low"
       WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
      &     'LOW'
       WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
@@ -11468,8 +11590,8 @@ C For the next line: Instead of USER, it could also be CALC
       WRITE(IUF,'(a)',iostat=ios) ' ..'
 
 C...Overheating
-C <<<<NEED A LOOP THROUGH THE ZONES TO CHECK THEIR OVERHEATING
-C<<<IF OVERHEATS, trigger EPC-V1 
+C << NEED A LOOP THROUGH THE ZONES TO CHECK THEIR OVERHEATING
+C << IF OVERHEATS, trigger EPC-V1 
 C REC-EPC-V1: Significant risk of overheating. Consider solar control
 C measures such as the application of reflective coating or shading
 C devices to windows
@@ -11477,19 +11599,19 @@ C devices to windows
       WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = OVERHEATING'
       WRITE(IUF,'(a)',iostat=ios) 'CODE         = EPC-V1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
       WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 
-C<<<<Need a new heating calculation here (and if appropriate DHW) as
-C<<< a ratio between actual efficiency and 2.2
-C<<< This needs then to be used and calculate total BER CO2 emissions
-C<<< Then determine the % change from this in TOTAL building emissions
-C<<<If change in total carbon emission is >4% then potential impact is "high"
-C  <<<If change in total carbon emission is greater than 0.5 and 
-C <<<< less or equal than 4% then potential impact is "medium"
-C <<<Otherwise impact is "low"
+C << Need a new heating calculation here (and if appropriate DHW) as
+C << a ratio between actual efficiency and 2.2
+C << This needs then to be used and calculate total BER CO2 emissions
+C << Then determine the % change from this in TOTAL building emissions
+C << If change in total carbon emission is >4% then potential impact is "high"
+C << If change in total carbon emission is greater than 0.5 and 
+C << less or equal than 4% then potential impact is "medium"
+C << Otherwise impact is "low"
 
 C For the next line: Instead of CALC, it could also be USER
       WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -11513,12 +11635,12 @@ C if U value of floor > 1.0 then EPC-E1
         write(iuf,'(a)',iostat=ios) 'CATEGORY     = ENVELOPE'
         write(iuf,'(a)',iostat=ios) 'CODE         = EPC-E1'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
         write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT = UNKNOWN'
       
-C<<< The calculation for this is basic and it is based on a very confusing table
+C << The calculation for this is basic and it is based on a very confusing table
 C inside the recommendations document: Depends on what proportion of the 
 C overall energy consumption heating is accounted for.
 C If U greater than 2.5 then high. All other cases (1.0<U<1.5) is low
@@ -11551,12 +11673,12 @@ C if U value for flat roof > 1.0 then EPC-E2
         write(iuf,'(a)',iostat=ios) 'CATEGORY     = ENVELOPE'
         write(iuf,'(a)',iostat=ios) 'CODE         = EPC-E2'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
         write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT = UNKNOWN'
       
-C<<< The calculation for this is basic and it is based on a very confusing table
+C << The calculation for this is basic and it is based on a very confusing table
 C inside the recommendations document: Depends on what proportion of the 
 C overall energy consumption heating is accounted for.
 C For simplicity reasons: if U>1.5 and less than 2.5 then medium
@@ -11584,22 +11706,22 @@ C For the next line: Instead of USER, it could also be CALC
       endif  
 
 C REC-EPC-E3: Solid walls are poorly insulated 
-C<<<<<EPC RECOMMENDATIONS DOCUMENT talks about "internal walls"
-C <<<but it is probably a typo error
+C << EPC RECOMMENDATIONS DOCUMENT talks about "internal walls"
+C << but it is probably a typo error
 C if U value for solid walls > 1.0 then EPC-E3
       if(wall_max_u.gt.1.0)then
         write(iuf,'(a)',iostat=ios) '"REC-EPC-E3" = RECOMMENDATION'
         write(iuf,'(a)',iostat=ios) 'CATEGORY     = ENVELOPE'
         write(iuf,'(a)',iostat=ios) 'CODE         = EPC-E3'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
         write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT = UNKNOWN'
         
-C<<< The calculation for this is basic and it is based on a very confusing table
+C << The calculation for this is basic and it is based on a very confusing table
 C inside the recommendations document: Depends on what proportion of the 
-C<<<<< overall energy consumption heating is accounted for.
+C << overall energy consumption heating is accounted for.
 C For simplicity reasons: if U>1.5 and less than 2.5 then medium
 C If U greater than 2.5 then high. All other cases (1.0<U<1.5) is low
         if(wall_max_u.gt.1.5.and.wall_max_u.lt.2.5)then
@@ -11626,20 +11748,20 @@ C For the next line: Instead of USER, it could also be CALC
 C REC-EPC-E4: Walls have uninsulated cavities - introduce cavity wall insulation 
 C if U value for cavity walls > 1.0 then EPC-E4
 C There is no way to separate this and EPC-E3 - so trigger them together
-C <<SBEM seems to always trigger EPC-E4
+C << SBEM seems to always trigger EPC-E4
         write(iuf,'(a)',iostat=ios) '"REC-EPC-E4" = RECOMMENDATION'
         write(iuf,'(a)',iostat=ios) 'CATEGORY     = ENVELOPE'
         write(iuf,'(a)',iostat=ios) 'CODE         = EPC-E4'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
         write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
         write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT = UNKNOWN'
         
-C<<< The calculation for this is basic and it is based on a very confusing table
+C << The calculation for this is basic and it is based on a very confusing table
 C inside the recommendations document: Depends on what proportion of the 
-C<<<<< overall energy consumption heating is accounted for.
+C << overall energy consumption heating is accounted for.
 C For simplicity reasons: if U>1.5 and less than 2.5 then medium
 C If U greater than 2.5 then high. All other cases (1.0<U<1.5) is low
         if(wall_max_u.gt.1.5.and.wall_max_u.lt.2.5)then
@@ -11673,12 +11795,12 @@ C EPC-E5 AND EPC-E8 are triggered together
         write(iuf,'(a)',iostat=ios) 'CATEGORY     = ENVELOPE'
         write(iuf,'(a)',iostat=ios) 'CODE         = EPC-E5'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
         write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT = UNKNOWN'
         
-C<<< The calculation for this is basic and it is based on a very confusing table
+C << The calculation for this is basic and it is based on a very confusing table
 C inside the recommendations document: Depends on what proportion of the 
 C overall energy consumption heating is accounted for.
 C For simplicity reasons: if U>3.5 and less than 4.0 then medium
@@ -11711,12 +11833,12 @@ C EPC-E5 AND EPC-E8 are triggered together
         write(iuf,'(a)',iostat=ios) 'CATEGORY     = ENVELOPE'
         write(iuf,'(a)',iostat=ios) 'CODE         = EPC-E8'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
         write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT = UNKNOWN'
         
-C<<< The calculation for this is basic and it is based on a very confusing table
+C << The calculation for this is basic and it is based on a very confusing table
 C inside the recommendations document: Depends on what proportion of the 
 C overall energy consumption heating is accounted for.
 C For simplicity reasons: if U>3.5 and less than 4.0 then medium
@@ -11750,12 +11872,12 @@ C If U value of pitched roof > 1.0 then EPC-E6
         write(iuf,'(a)',iostat=ios) 'CATEGORY     = ENVELOPE'
         write(iuf,'(a)',iostat=ios) 'CODE         = EPC-E6'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
         write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT = UNKNOWN'
 
-C<<< The calculation for this is basic and it is based on a very confusing table
+C << The calculation for this is basic and it is based on a very confusing table
 C inside the recommendations document: it depends on what proportion of the 
 C overall energy consumption heating is accounted for.
 C For simplicity reasons: if U>1.5 and less than 2.5 then medium
@@ -11789,8 +11911,8 @@ C if air permeability > 14 m^3/h (at 50Pa) then EPC-E7
         write(iuf,'(a)',iostat=ios) 'CATEGORY     = ENVELOPE'
         write(iuf,'(a)',iostat=ios) 'CODE         = EPC-E7'
 
-C<< There are also options for the next line to be a user input recommendation
-C<< or that the user has exluded it. keywords for this: USER-IN and USER-OUT
+C << There are also options for the next line to be a user input recommendation
+C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
         write(iuf,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
         write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT = UNKNOWN'
 
@@ -12355,7 +12477,7 @@ C Calculate loads for heating, cooling, DHW etc.
       WRITE(IUF,'(a,F9.2)',iostat=ios)
      &  '  KWH/M2-DHW                = ',RER_DHW
 
-C<<<<<<<<<<<need equipment inform????? >>>>>>>>
+C << need equipment inform????? >>
 C?? To enter total casual gains/m2 here
       WRITE(IUF,'(2a)',iostat=ios)
      &  '  KWH/M2-EQUP               = ',' 0.' 
@@ -12545,10 +12667,10 @@ C Confirm that BINF50 instead of some sort of "translated" air changes
       WRITE(IUF,'(a)',iostat=ios)
      &  '  Q50-INF                    = 15'
 
-C <<Next build_UAN is actually different for notional and typical buildings
-C<< i.e since they use different constructions 
-C<< but EPC up to version 3.2 of sbem has them the same!!!!!
-C<< Keeping temporarily the same value as for the notional 
+C << Next build_UAN is actually different for notional and typical buildings
+C << i.e since they use different constructions 
+C << but EPC up to version 3.2 of sbem has them the same!!!!!
+C << Keeping temporarily the same value as for the notional 
       WRITE(IUF,'(a,f9.2)',iostat=ios)
      &  '  BUILDING-W/K               = ',build_UAN
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
@@ -12587,7 +12709,7 @@ C Calculate loads for heating, cooling, DHW etc.
       WRITE(IUF,'(a,F10.2)',iostat=ios)
      &  '  KWH/M2-DHW                 = ',TyER_DHW
 
-C<<<<<<<<<<<STOPPED HERE need equipm. info????? >>>>>>>>
+C << STOPPED HERE need equipm. info????? >>
 C?? To enter total casual gains/m2 here
       WRITE(IUF,'(a,F10.2)',iostat=ios)
      &  '  KWH/M2-EQUP                = ',0.0
@@ -12967,7 +13089,7 @@ C the auxiliary energy calculation in iSBEM.
             AHU_tDLd(isystCurrent)=0.06
             menulogical=.false.
           
-C<<<<<<ELSE may not needed for this >>>>
+C << ELSE may not needed for this >>
           else
             write(AHUleakage(isystCurrent)(1:24),'(a)')
      &          'No, use default leakage'
@@ -12995,7 +13117,7 @@ C enlargement.
       DIMENSION POINT(3),COE(3),TRANS(3)
       DO 1 I=1,3
 
-C<< Find out when absolute value is required
+C << Find out when absolute value is required
         TRANS(I)=((1.-FACTOR))*COE(I)+FACTOR*POINT(I)
 c        TRANS(I)=(ABS(1.-FACTOR))*COE(I)+FACTOR*POINT(I)
  1    CONTINUE

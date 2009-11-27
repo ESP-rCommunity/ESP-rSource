@@ -96,12 +96,12 @@ You can learn more about accessing the ESP-r subversion repository here:
 Source code for the current release can be downloaded using the subversion
 command:
 
-   svn checkout https://esp-r.net/espr/esp-r/trunk/
+   svn checkout https://espr.svn.cvsdude.com/esp-r/trunk/
 
 Source code for the latest 'development' version of ESP-r can be
 downloaded using the subversion command
 
-   svn checkout https://esp-r.net/espr/esp-r/branches/development_branch
+   svn checkout https://espr.svn.cvsdude.com/esp-r/branches/development_branch
 
 Should you wish to contribute improvements to the archive, you'll also
 need a developer's account. Contact Alex Ferguson (aferguso@nrcan.gc.ca)
@@ -449,6 +449,30 @@ not install or function correctly on some machines.
 The following table summarizes the most recent test results
 on each of ESP-r's supported platforms:
 
+                 Testing for ESP-r Release 11.8
+      (2009-11-20, svn revision r4842 on pre-release_patches branch)
+ -----------------------------------------------------------------------
+ Platform  Compiler    Notes
+ .......................................................................
+ Linux     GCC 4.1.2   A complete regression test was performed against
+                       the last release (2009-05-25, r4324). This 
+                       comparison highlighted numerical differences
+                       introduced by bug fixes in the code (r4682),
+                       new window shading control (r4722), new obstruction
+                       rotations and six-sided obstructions (r4710) and a 
+                       new global control (r3607) where
+                       anticipated numerical differences were observed.
+                       One bug fix (r4841) yielded significant
+                       reductions in runtime. No unintended results were
+                       observed.
+                       
+Complete discussion of these results is provided in the file: 
+'/tester/testing_results/Testing_results_ESPr_11_8.txt'.
+
+The Linux / GCC 4.1.2 reference platform testing archive is provided
+in the file:
+'/tester/testing_results/ref_platform_linux_gcc_4_1_2_results_archive_11_8.tar.gz'.
+                       
                  Testing for ESP-r Release 11.7
       (2009-05-25, svn revision r4286 on pre-release_patches branch)
  -----------------------------------------------------------------------

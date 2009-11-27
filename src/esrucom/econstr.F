@@ -77,8 +77,9 @@ C Error subroutine and error details for dll mode.
       DIMENSION RVC(MS)
 
       CHARACTER OUTSTR*124,LCONS*72,outs248*248
-      character dllsubr*12,dllmesg*124,outs*124
+      character dllsubr*12,dllmesg*124,outs*124,outs2*124
       LOGICAL CLOSE,ILTHPS,ILTHPZ,dll
+      integer lsn  ! length of currentfile
 
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/8000./,SHTCH/3000./,THKCH/0.5/
@@ -138,7 +139,9 @@ C Move across gap position and U value one item at a time.
             RAIRG(I,J)=RAI
             call eclose(RAIRG(I,J),0.0,0.0001,close)
             if(close)then
-              outs=' Air gap resistance too small; please increase!'
+              write(outs,'(a,i3,a,i3,a,i3,a)')
+     &          ' Air gap resistance too small in zone',icomp,
+     &          ' surface',i,' gap ',j,' please increase!'
               if(dll)then
                 dllsubr='ECONSTR'
                 dllmesg=outs
@@ -297,8 +300,10 @@ c Trace output ?
       IF(ITRC.GE.1)CALL CONINF(ICOMP,0,ITRU)
       RETURN
 
- 1001 write(outs,'(3a)') 'Read/conversion error in...',OUTSTR(1:50),
-     &   '...'
+ 1001 write(outs,'(3a)') 'ECONST: Read/conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='ECONSTR'
         dllmesg=outs
@@ -307,6 +312,7 @@ c Trace output ?
         return
       else
         call edisp(itru,outs)
+        call edisp(itru,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ISTAT)
         RETURN
@@ -813,14 +819,15 @@ C if the surface attribute should be updated.
 	if(icn1.ne.0)then
           ITMCFL(ICOMP,I)=IVA(I)
           IF(ITMCFL(ICOMP,I).NE.0.AND.(SSOTF(icn1)(1:4).EQ.'OPAQ'))THEN
-            WRITE(OUTS,'(5a)')' The TMC file ',LUA(1:lnblnk(LUA)),
+            WRITE(OUTS,'(5a)')'The TMC file ',LUA(1:lnblnk(LUA)),
      &        ' not sure if ',SSNAME(icn1),' is transparent.'
             call edisp(itru,outs)
             call edisp(itru,' Check your zone files.')
 	  ENDIF
         else
-          WRITE(OUTS,'(a,i3,a,i3,a)')' The surface in zone ',icomp,
-     &      ' and surface ',i,' does not exist in master list.'
+          WRITE(OUTS,'(a,i3,a,i3,a)')
+     &      'While rebulding optics found surface ',i,'in zone ',icomp,
+     &      ' does not exist in master connections list.'
           call edisp(itru,outs)
         endif
         IF(ITMCFL(ICOMP,I).GT.NTMC)NTMC=ITMCFL(ICOMP,I)

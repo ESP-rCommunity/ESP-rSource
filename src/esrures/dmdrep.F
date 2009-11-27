@@ -66,11 +66,12 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       CHARACTER dmdsdesc*248,outstr*124,bdmds*72,loutstr*248
-      character dllsubr*12,dllmesg*124,WORD*20,outs*124
+      character dllsubr*12,dllmesg*124,WORD*20,outs*124,outs2*124
       character calename*32,calentag*12,calendayname*32
       character dstmp*24
       CHARACTER*6 blodlabel
       logical dll
+      integer lsn
 
       IER=0
 
@@ -242,7 +243,10 @@ C Error messages.
       blodlabel(7)='DHW   '      
       goto 1235
 
- 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+ 1002 write(outs,'(3a)') 'ERBDMD: conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='ERBDMD'
         dllmesg=outs
@@ -251,6 +255,7 @@ C Error messages.
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUO,ISTAT)
         RETURN

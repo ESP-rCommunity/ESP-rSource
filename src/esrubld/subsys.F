@@ -1431,7 +1431,8 @@ C this overheating rule (as per NCM modelling guide)
 C Comment the lines terminating with !!!cmix and uncomment the line
 C starting with !!!cmix to sense dry bulb temperature and not resultant
 C temperature which is being sensed now
-          rTempnotioOverheat=TMAR(itdi,IATDF(itdi,16))+1.
+C The 15th item in IATDF(itdi,15) is heating set point
+          rTempnotioOverheat=TMAR(itdi,IATDF(itdi,15))+1.
           ICOMPP=-1*ICOMP  !!!cmix
           call MZMIXT(ICOMPP,TMRTT,TMIXX) !!!cmix
 !!!          if(tfa(icomp).gt.rTempnotioOverheat)then
@@ -1454,11 +1455,12 @@ C Trap 0 volumes in case notional building is not properly generated
 C Notional building has 10 m3/h/m2 according to UK's NCM instructions
 C Multiply 10 by floor area and divide by Volume and divide by 20
 C Use 15 instead of 10m3/h/m2 if typical building
+C << EXP_AREA is currently zero needs to be calculated
               IF(INOTI.eq.1.OR.INOTI.eq.2.OR.
      &          (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN
-                ACH(ICOMP)=(10.*EXP_AREA/VOL(ICOMP))/20.
+c                ACH(ICOMP)=(10.*EXP_AREA/VOL(ICOMP))/20.
               ELSEIF(INOTI.EQ.3)THEN
-                ACH(ICOMP)=(15.*EXP_AREA/VOL(ICOMP))/20.
+c                ACH(ICOMP)=(15.*EXP_AREA/VOL(ICOMP))/20.
               ENDIF
 
 C Alternatively use 0.167 ach - this will help to avoid high ach in cases
@@ -1755,7 +1757,8 @@ C Output computed results.
      &  ' ZMBI,1=',ZMBI(ICOMP,1),' ZMBI,2=',ZMBI(ICOMP,2),
      &  ' ZMBI,3=',ZMBI(ICOMP,3),' ZMBI,4=',ZMBI(ICOMP,4)
       call edisp(itu,outs)
-      write(outs,'(a,f10.5)')' ZCVENT=',ZCVENT(ICOMP)
+      write(outs,'(a,f10.5,a,f10.5)')' ZCVENT=',ZCVENT(ICOMP),
+     & ' ACH=',ACH(ICOMP)
       call edisp(itu,outs)
 
  9999 RETURN

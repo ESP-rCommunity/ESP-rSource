@@ -289,12 +289,16 @@ C might be problems.
             
 C If this is a registration only model it should be upgraded first.
 C Set ifcfg to the unit number that deals with the configuration file.
-C Then close that file
+C Set indcfg to one to signal a building model, set the number of
+C zones and connections to zero and set the connections file name
+C based on the root name of the model. Write the model cfg and cnn
+C files and close the cfg file.
             if(INDCFG.EQ.0)then
               ifcfg=ioout
               INDCFG=1
               NCOMP=0
               NCON=0
+              write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
               CALL EMKCFG('-',ier)
               close(ifcfg)
             endif
@@ -654,7 +658,7 @@ C Knowing zones, create other zone files.
                  call usrmsg('Configuration file is an old format. ',
      &             'skipping read... ','W')
                  stop 'ecnv aborted.'
-               elseif(icfgv.eq.3)then
+               elseif(icfgv.eq.3.or.icfgv.eq.4)then
                  WRITE(ioout,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
      &             '*zon ',NCCODE(k2),'   # reference for ',zname(k2)
                  WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
@@ -795,6 +799,8 @@ C Use the local wegeom to write out a old style of esp-r
 C geometry file based on the information available. After
 C writing close iotmp2 so that it can be used for the
 C connections file.
+
+C << need an alternative to wegeom for version 1.1 >>
           if(itrc.gt.0)then
             WRITE(outs,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
      &        'Writing zone ',NCCODE(iv),' named ',zname(iv)
@@ -867,7 +873,7 @@ C that LCNN is something other than UNKNOWN.
         if(LCNN(1:7).eq.'UNKNOWN')then
           write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
         endif
-        if(icfgv.eq.3)then
+        if(icfgv.eq.3.or.icfgv.eq.4)then
           WRITE(ioout,'(A,A,A)',IOSTAT=IOS,ERR=2)
      &        '*cnn  ',LCNN(1:lnblnk(LCNN)),'  # connections '
           CALL EFOPSEQ(iotmp2,LCNN,3,IER)
@@ -884,7 +890,7 @@ C that LCNN is something other than UNKNOWN.
   66      continue
   61    continue
         write(ioout,'(a)')'      0   # no mass flow analysis'
-        if(icfgv.eq.3)close(iotmp2)
+        if(icfgv.eq.3.or.icfgv.eq.4)close(iotmp2)
         close(ioout)
 
         if(itmprm.eq.1)then

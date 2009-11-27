@@ -781,11 +781,21 @@ C         THETA is measured from the XY plane.
 #include "building.h"
 #include "geometry.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION COORD(MV,3)
+      character outs*124
 
 C ANACC is the tolerance in degrees before a corner is assumed.
       icc=IZSTOCN(IZN,JSURF)
+      if(icc.eq.0)then
+        write(outs,'(a,i3,a,i3,a)') 
+     &    'When checking corners found surf ',jsurf,
+     &    ' in zone ',izn,' was not in the master connections list.'
+        call edisp(iuout,outs)
+        return
+      endif
+
       ANACC = DACC
 
 C NAPICS counts number of corners located for surface.

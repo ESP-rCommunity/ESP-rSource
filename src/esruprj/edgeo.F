@@ -8027,7 +8027,8 @@ C Close zip data file as the end of the file has been reached
 
       RETURN
 
-C 1001 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+C 1001 write(outs,'(3a)') 'EZIPIN: conversion error in...',
+C     &  OUTSTR(1:50),'...'
  1001 continue
       if(dll)then
         dllsubr='EZIPIN'

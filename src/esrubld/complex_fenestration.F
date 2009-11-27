@@ -1153,19 +1153,18 @@ C index.
 C Calculate beam OFF-NORMAL incidence transmittance and reflectance for
 C reference glass based on extinction coefficient and refractive index 
 C using Snell's law, Fresnel equations.
-	THETA2 = ASIN((SIN(THETA1))/N2)
-	TAU_A = EXP(-1.0*KL/COS(THETA2))
-	RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
-	RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
-	TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
+	    THETA2 = ASIN((SIN(THETA1))/N2)
+	    TAU_A = EXP(-1.0*KL/COS(THETA2))
+	    RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
+	    RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
+	    TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
-	TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
+	    TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
      &            (1.0-(RPARL*RPARL*TAU_A*TAU_A))
-	RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
-	RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
-	TclearON = (TAUPERP+TAUPARL)/2.0
-	RclearON = (RHOPERP+RHOPARL)/2.0
-
+	    RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
+	    RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
+	    TclearON = (TAUPERP+TAUPARL)/2.0
+	    RclearON = (RHOPERP+RHOPARL)/2.0
         END IF
 
 C Calculate glazing layer beam OFF-NORMAL front and back transmittance
@@ -1185,18 +1184,18 @@ C Calculate DIFFUSE-DIFFUSE incidence transmittance and reflectance
 C for glass template based on extinction coefficient and refractive
 C index.
         THETA1=51.*r
-	THETA2 = ASIN((SIN(THETA1))/N2)
-	TAU_A = EXP(-1.0*KL/COS(THETA2))
-	RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
-	RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
-	TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
+	  THETA2 = ASIN((SIN(THETA1))/N2)
+	  TAU_A = EXP(-1.0*KL/COS(THETA2))
+	  RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
+	  RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
+	  TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
-	TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
+	  TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
      &            (1.0-(RPARL*RPARL*TAU_A*TAU_A))
-	RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
-	RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
-	TclearON = (TAUPERP+TAUPARL)/2.0
-	RclearON = (RHOPERP+RHOPARL)/2.0
+	  RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
+	  RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
+	  TclearON = (TAUPERP+TAUPARL)/2.0
+	  RclearON = (RHOPERP+RHOPARL)/2.0
 
 C calculate diffuse-diffuse for given glass layer
         SolTFdd(icomp,isurf,icfctp,i)=
@@ -1221,7 +1220,22 @@ C set beam-diffuse eq. 0
 !         VisRBbd(icomp,isurf,icfctp,i)=0.0
 
        elseif(itype.eq.2)then   ! currently only slat-type blinds are considered 
-
+       
+C If shade is retracted set solar transmittance to 1 and skip to next layer
+        if(i_shd(icomp,icfctp).eq.0)then
+            SolTFbb(icomp,isurf,icfctp,i)=0.999
+            SolRFbd(icomp,isurf,icfctp,i)=0.001
+            SolTFbd(icomp,isurf,icfctp,i)=0.001
+            SolTFdd(icomp,isurf,icfctp,i)=0.999
+            SolRFdd(icomp,isurf,icfctp,i)=0.001
+            SolTBbb(icomp,isurf,icfctp,i)=0.999
+            SolRBbd(icomp,isurf,icfctp,i)=0.001
+            SolTBbd(icomp,isurf,icfctp,i)=0.001
+            SolTBdd(icomp,isurf,icfctp,i)=0.999
+            SolRBdd(icomp,isurf,icfctp,i)=0.001
+            goto 100
+        endif
+        
 C set beam-beam reflectances to zero
         SolRFbb(icomp,isurf,icfctp,i)=0.0
         SolRBbb(icomp,isurf,icfctp,i)=0.0
@@ -1335,20 +1349,6 @@ C calculate back effective diffuse properties adn assign to commons
             SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
         end if
-
-C If shade is retracted set solar transmittance to 1
-        if(i_shd(icomp,icfctp).eq.0)then
-            SolTFbb(icomp,isurf,icfctp,i)=0.999
-            SolRFbd(icomp,isurf,icfctp,i)=0.001
-            SolTFbd(icomp,isurf,icfctp,i)=0.001
-            SolTFdd(icomp,isurf,icfctp,i)=0.999
-            SolRFdd(icomp,isurf,icfctp,i)=0.001
-            SolTBbb(icomp,isurf,icfctp,i)=0.999
-            SolRBbd(icomp,isurf,icfctp,i)=0.001
-            SolTBbd(icomp,isurf,icfctp,i)=0.001
-            SolTBdd(icomp,isurf,icfctp,i)=0.999
-            SolRBdd(icomp,isurf,icfctp,i)=0.001
-        endif
         
        elseif(itype.eq.0)then
 C set gas gap properties to 0 except for bb and dd transmission, set to 1. 
@@ -3864,27 +3864,29 @@ C control loop are valid for current calendar day
   20        continue
           ENDIF
 
-C If we are here then no control for this time step. Jump out of loop
-C and go to Return.    
-      goto 9999
+C If we are here then no control for control loop i. Skip to end of loop and 
+C continue with next control period.  
+          goto 10
       
 C Commence control solution      
-  11  if(btimef.gt.24.)btimef = btimef - 24.  
-      nperiods = nCFCdayctlperiods(ictlfun,idaytype)
+  11      if(btimef.gt.24.)btimef = btimef - 24.  
+            nperiods = nCFCdayctlperiods(ictlfun,idaytype)
       
-      do 40 k = 1, nperiods
-        iperiod = k
-        if(k.eq.nperiods)then
-          if(btimef.gt.CFCctlperiodstart(ictlfun,idaytype,nperiods))
-     &     goto 12
-        else
-          if(btimef.le.CFCctlperiodstart(ictlfun,idaytype,k+1))goto 12
-        endif
-      
-  40  continue    
+          do 40 k = 1, nperiods
+            iperiod = k
+            if(k.eq.nperiods)then
+              if(btimef.gt.
+     &          CFCctlperiodstart(ictlfun,idaytype,nperiods))
+     &          goto 12
+              else
+                if(btimef.le.
+     &           CFCctlperiodstart(ictlfun,idaytype,k+1))goto 12
+              endif   
+  40      continue    
  
-C If we are here then no control for this time step. Go to Return.    
-      goto 9999
+C If we are here then no control for control function i. Skip to end of loop
+C and continue with next control period.   
+          goto 10
  
 C Now we have found a valid daytype and period. Apply appropriate control law. 
 C <<Currently only basic control is avaialble so no need to call separate routine>>
@@ -3893,175 +3895,196 @@ C -------------------------------------------------------------------
 C Determine actuator type and copy control data to working variables
 C -------------------------------------------------------------------
 
-  12  iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule
-      iact2 = iCFCactuator(ictlfun,2)           ! zone index
-      iact3 = iCFCactuator(ictlfun,3)           ! CFC type
+  12      iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule
+          iact2 = iCFCactuator(ictlfun,2)           ! zone index
+          iact3 = iCFCactuator(ictlfun,3)           ! CFC type
 
 C Actuator controls shade ON/OFF state (ie. shade layer deployed/retracted)      
-      if(iact1.eq.0)then
-        shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
-        shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)      
+          if(iact1.eq.0)then
+            shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
+            shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)      
 C Actuator controls slat angle of slat-type shade layer
-      elseif(iact1.eq.1)then
-        shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
-        shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)
-        shdONslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,4)
-        shdOFFslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,5) 
+          elseif(iact1.eq.1)then
+            shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
+            shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)
+            shdONslatPOSITION = 
+     &            CFCmiscdata(ictlfun,idaytype,iperiod,4)
+            shdOFFslatPOSITION = 
+     &            CFCmiscdata(ictlfun,idaytype,iperiod,5) 
 C Schedule
-        elseif(iact1.eq.2)then
-        ischedule_shdstateONorOFF = 
-     &  INT(CFCmiscdata(ictlfun,idaytype,iperiod,2))
-        schedule_slat_angle = CFCmiscdata(ictlfun,idaytype,iperiod,3)
-      endif
+          elseif(iact1.eq.2)then
+            ischedule_shdstateONorOFF = 
+     &      INT(CFCmiscdata(ictlfun,idaytype,iperiod,2))
+            schedule_slat_angle = 
+     &            CFCmiscdata(ictlfun,idaytype,iperiod,3)
+          endif
 
 C -------------------------------------------------------------------
 C Set shade ON/OFF state or slat angle based on sensor and control
 C type data
 C -------------------------------------------------------------------
 
-      isen1 = iCFCsensor(ictlfun,1)
-      isen2 = iCFCsensor(ictlfun,2)
-      isen3 = iCFCsensor(ictlfun,3)
-      ictype = iCFCctltype(ictlfun,idaytype,iperiod)
+          isen1 = iCFCsensor(ictlfun,1)
+          isen2 = iCFCsensor(ictlfun,2)
+          isen3 = iCFCsensor(ictlfun,3)
+          ictype = iCFCctltype(ictlfun,idaytype,iperiod)
 
 C Determine appropriate temperature parameter to use
-      IF(ictype.eq.1.or.ictype.eq.2)then        ! senses temperature
+          IF(ictype.eq.1.or.ictype.eq.2)then        ! senses temperature
       
-        if(isen1.eq.-3.and.isen2.eq.0)then      ! ambient temperature
-            temp = TF
-        elseif(isen1.eq.-3.and.isen2.eq.1)then  ! sol-air temperature
-            !temp = SOLAIR(TF,QFF,QDF)           ! **THIS FUNCTION DOES NOT CURRENTLY WORK**
-        elseif(isen1.eq.-2)then                 ! mix of dry bulb and mean radiant temp.
-            call MZMIXT(isen2,tmrt,temp)        ! **NOT SURE IF THIS WORKS**
-        elseif(isen1.gt.0)then                  ! temperature in zone corresponding to isen1
-            if(isen2.eq.0)then
+            if(isen1.eq.-3.and.isen2.eq.0)then      ! ambient temperature
+              temp = TF
+            elseif(isen1.eq.-3.and.isen2.eq.1)then  ! sol-air temperature
+              !temp = SOLAIR(TF,QFF,QDF)            ! **THIS FUNCTION DOES NOT CURRENTLY WORK**
+            elseif(isen1.eq.-2)then                 ! mix of dry bulb and mean radiant temp.
+              call MZMIXT(isen2,tmrt,temp)          ! **NOT SURE IF THIS WORKS**
+            elseif(isen1.gt.0)then                  ! temperature in zone corresponding to isen1
+              if(isen2.eq.0)then
               
-              temp = tfa(isen1)
+                temp = tfa(isen1)
             
-            elseif(isen2.gt.0)then
+              elseif(isen2.gt.0)then
               
-              if(isen3.eq.0)then
-                temp = tfs(isen1,isen2)
-              elseif(isen3.gt.0)then
-                temp = tfc(isen1,isen2,isen3)
+                if(isen3.eq.0)then
+                  temp = tfs(isen1,isen2)
+                elseif(isen3.gt.0)then
+                  temp = tfc(isen1,isen2,isen3)
+                endif
+            
               endif
-            
             endif
-        endif
 
 C Perform actual control of shade ON/OFF and slat angle here
-        if(temp.gt.shdONsetpoint)then
-          if(iact1.eq.0)then                                ! actuate shade ON/OFF
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-          elseif(iact1.eq.1)then                            ! actuate slat angle
-              vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-          endif
-        elseif(temp.lt.shdOFFsetpoint)then
-          if(iact1.eq.0)then                                ! actuate shade ON/OFF
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 0                    ! shade state OFF
-          elseif(iact1.eq.1)then                            ! actuate slat angle
-              vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state OFF     
-          endif
-        endif
+            if(temp.gt.shdONsetpoint)then
+              if(iact1.eq.0)then                              ! actuate shade ON/OFF
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              elseif(iact1.eq.1)then                          ! actuate slat angle
+                vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              endif
+            elseif(temp.lt.shdOFFsetpoint)then
+              if(iact1.eq.0)then                              ! actuate shade ON/OFF
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 0                    ! shade state OFF
+              elseif(iact1.eq.1)then                          ! actuate slat angle
+                vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state OFF     
+              endif
+            endif
         
-      ELSEIF(ictype.eq.3.or.ictype.eq.4)then    ! senses solar radiation
+          ELSEIF(ictype.eq.3.or.ictype.eq.4)then    ! senses solar radiation
 
 C Determine appropriate solar radiation parameter to use
-        if(isen1.eq.-3.and.isen2.eq.4)then      ! senses diff. horizontal solar radiation
-          solrad = QFF
-        elseif(isen1.eq.-3.and.isen2.eq.5)then  ! senses direct normal solar radiation
-          solrad = QDF
-        elseif(isen1.eq.-4)then                 ! senses total radiation incident on surface
+            if(isen1.eq.-3.and.isen2.eq.4)then      ! senses diff. horizontal solar radiation
+              solrad = QFF
+            elseif(isen1.eq.-3.and.isen2.eq.5)then  ! senses direct normal solar radiation
+              solrad = QDF
+            elseif(isen1.eq.-4)then                 ! senses total radiation incident on surface
             
 C Check that ext. rad sensor is on external surface
-          if(IE(isen2,isen3).eq.0)then
-            call get_incident_solrad(isen2,isen3,solrad_dir,solrad_diff)
-            solrad = solrad_dir + solrad_diff   ! total radiation incident on surface
-          else
-            write(msgout,'(A,i3)')
+              if(IE(isen2,isen3).eq.0)then
+                call get_incident_solrad(isen2,isen3,
+     &                         solrad_dir,solrad_diff)
+                solrad = solrad_dir + solrad_diff   ! total radiation incident on surface
+              else
+                write(msgout,'(A,i3)')
      &               'In CFC control function: ', ictlfun
-            call USRMSG(msgout,
-     &      'Surface incident radiation sensor must be external.'
-     &      ,'W')
+                call USRMSG(msgout,
+     &          'Surface incident radiation sensor must be external.'
+     &          ,'W')
 C-----------Kill simulation     
-            stop    
-          endif
+                stop    
+              endif
           
-        endif
+            endif
 
 C Perform actual control of shade ON/OFF and slat angle here
-        if(solrad.gt.shdONsetpoint)then
-          if(iact1.eq.0)then
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-          elseif(iact1.eq.1)then
-              vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-          endif
-        elseif(solrad.lt.shdOFFsetpoint)then
-          if(iact1.eq.0)then
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 0                    ! shade state OFF
-          elseif(iact1.eq.1)then
-              vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON     
-          endif
-        endif
+            if(solrad.gt.shdONsetpoint)then
+              if(iact1.eq.0)then
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              elseif(iact1.eq.1)then
+                vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              endif
+            elseif(solrad.lt.shdOFFsetpoint)then
+              if(iact1.eq.0)then
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 0                    ! shade state OFF
+              elseif(iact1.eq.1)then
+                vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON     
+              endif
+            endif
 
-      ELSEIF(ictype.eq.5)then                   ! senses wind speed, actuates shade ON/OFF
+          ELSEIF(ictype.eq.5)then                   ! senses wind speed, actuates shade ON/OFF
       
-        if(isen1.eq.-3.and.isen2.eq.2)then
+            if(isen1.eq.-3.and.isen2.eq.2)then
 C Perform actual control of shade ON/OFF and slat angle here
-         if(VF.gt.shdONsetpoint)then
-          if(iact1.eq.0)then
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-          elseif(iact1.eq.1)then
-              vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-          endif
-         elseif(VF.lt.shdOFFsetpoint)then
-          if(iact1.eq.0)then
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 0                    ! shade state OFF
-          elseif(iact1.eq.1)then
-              vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state OFF     
-          endif
-         endif        
-        endif
+              if(VF.gt.shdONsetpoint)then
+                if(iact1.eq.0)then
+                  vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON
+                elseif(iact1.eq.1)then
+                  vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON
+                endif
+              elseif(VF.lt.shdOFFsetpoint)then
+                if(iact1.eq.0)then
+                  vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                  i_shd(iact2,iact3)     = 0                    ! shade state OFF
+                elseif(iact1.eq.1)then
+                  vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state OFF     
+                endif
+              endif        
+            endif
         
-      ELSEIF(ictype.eq.6)then                   ! senses wind direction, actuates shade ON/OFF
+          ELSEIF(ictype.eq.6)then                   ! senses wind direction, actuates shade ON/OFF
       
-        if(isen1.eq.-3.and.isen2.eq.3)then
+            if(isen1.eq.-3.and.isen2.eq.3)then
 C Perform actual control of shade ON/OFF and slat angle here
-         if(DF.gt.shdONsetpoint)then
-          if(iact1.eq.0)then
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-          elseif(iact1.eq.1)then
-              vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-          endif
-         elseif(DF.lt.shdOFFsetpoint)then
-          if(iact1.eq.0)then
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 0                    ! shade state OFF
-          elseif(iact1.eq.1)then
-              vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON     
-          endif
-         endif  
-        endif
+              if(DF.gt.shdONsetpoint)then
+                if(iact1.eq.0)then
+                  vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON
+                elseif(iact1.eq.1)then
+                  vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON
+                endif
+              elseif(DF.lt.shdOFFsetpoint)then
+                if(iact1.eq.0)then
+                  vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                  i_shd(iact2,iact3)     = 0                    ! shade state OFF
+                elseif(iact1.eq.1)then
+                  vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON     
+                endif
+              endif  
+            endif
         
-      ELSEIF(ictype.eq.7)then                   ! no sensor, schedule only
-        i_shd(iact2,iact3) = ischedule_shdstateONorOFF
-        vb_phiNew(iact2,iact3) = schedule_slat_angle
-      ENDIF    
+          ELSEIF(ictype.eq.7)then                   ! no sensor, schedule only
+            i_shd(iact2,iact3) = ischedule_shdstateONorOFF
+            vb_phiNew(iact2,iact3) = schedule_slat_angle
+          ENDIF    
+
+C Check that new slat angle is within correct range:
+C     -90 (deg.) < vb_phiNew < 90 (deg.)
+          icomp=iact2     ! zone index
+          icfctp=iact3    ! CFC type
+
+          if(vb_phiNew(icomp,icfctp).lt.-89.9.or.vb_phiNew(icomp,icfctp)
+     &      .gt.89.9)then
+C send warning error message and overwrite angle to 89.9 deg
+            write(outs,'(a,a,i2,a,i2,a)')
+     &        'WARNING: Calculated slat angle for CFC',
+     &        ' type ',icfctp, 'in zone ',icomp, ' is out of range.'
+            CALL EDISP(IUOUT,outs)
+            write(outs,'(a)')'        Setting slat angle to 89.9 deg. '
+            CALL EDISP(IUOUT,outs)
+            vb_phiNew(icomp,icfctp)=89.9
+          end if
       
   10    continue  
   
@@ -4069,22 +4092,6 @@ C Perform actual control of shade ON/OFF and slat angle here
         goto 9999
       ENDIF
       
-      icomp=iact2     ! need zone index for range check of slat angle
-      icfctp=iact3    ! need CFC type for range check of slat angle
-C Check that new slat angle is within correct range:
-C     -90 (deg.) < vb_phiNew < 90 (deg.)
-      if(vb_phiNew(icomp,icfctp).lt.-89.9.or.vb_phiNew(icomp,icfctp)
-     &      .gt.89.9)then
-C send warning error message and overwrite angle to 89.9 deg
-          write(outs,'(a,a,i2,a,a)')
-     &      'WARNING: Calculated slat angle for CFC',
-     &      ' type ',icfctp, ' is out of range.'
-          CALL EDISP(IUOUT,outs)
-          write(outs,'(a)')'        Setting slat angle to 89.9 deg. '
-          CALL EDISP(IUOUT,outs)
-          vb_phiNew(icomp,icfctp)=89.9
-      end if
-       
 C Save slat angle and shade state for use in future time-step.    
  9999 do 33 i = 1, ncomp
          if(icfc(i).eq.1)then

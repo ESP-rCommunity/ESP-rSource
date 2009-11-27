@@ -222,7 +222,7 @@ C Close geometry data file before exiting.
     6 CALL ERPFREE(IUNIT,ISTAT)
       RETURN
 
- 1001 CALL USRMSG(' Conversion error in... ',OUTSTR,'W')
+ 1001 CALL USRMSG('EGRNIN: conversion error in... ',OUTSTR,'W')
       IER=1
       goto 6
 
