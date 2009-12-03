@@ -3956,6 +3956,10 @@ C containing a shade layer.
               if(icfcltp(i,j,k).eq.2)then
                 vb_phiNew(i,j) = vb_phi_SV(i,j)
                 i_shd(i,j)     = i_shd_SV(i,j)
+                if(NSINC.eq.1)then  
+                  vb_phiNew(i,j) = vb_phi(i,j)  !if first timestep, use initial slat angle from *.cfc input file  
+                  i_shd(i,j) = 1                !if first timestep, initialize shading flag to ON  
+                endif  
               endif
   32        continue
   31      continue   

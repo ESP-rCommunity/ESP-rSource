@@ -2527,11 +2527,11 @@ C...........Build node name
             iLength = iLength_tmp  ! Reset string length in case it was incremeted for 2-digit nodes.
             if(jj<10)then  ! First nine nodes.
               write(Node_name, '(A,A,I1)')
-     &             Base_Name(1:iLength+6),
+     &             Base_Name(1:iLength+4),
      &             '/node_',jj
             else           ! This presumes that no plant component will have more than 99 nodes!
               write(Node_name, '(A,A,I2)')
-     &             Base_Name(1:iLength+6),
+     &             Base_Name(1:iLength+4),
      &             '/node_',jj
             endif
 
