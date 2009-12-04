@@ -163,10 +163,10 @@ C Entry for .rif file found:
 			        if (ifocz_tmp(irif-1) .ne. ifocz) then
                 ! if subsequent rifs in this Scene have different zone => fatal error!
                 call usrmsg('Scene rif files use different zones',
-     &			                                          '  ','F')
+     &                                                    '  ','F')
 			        endif
 			      endif
-			      write(RIFNAME(ifocz,I,irif),'(a)')tmp_rifname
+            write(RIFNAME(ifocz,I,irif),'(a)')tmp_rifname
 			      ! if subsequent scenes have same zone and same purpose => fatal error! ((how???))
             !! ***
 C First rif name corresponds to default blind state, subsquent rifs within 
@@ -204,7 +204,8 @@ C RADCFGOUT writes the contents of the radiance configuration file.
 #include "building.h"
 #include "e2r_common.h"
 
-      integer lnblnk  ! function definition
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
       common/FILEP/IFIL
       common/expath/runpath,pathtype
@@ -213,6 +214,8 @@ C RADCFGOUT writes the contents of the radiance configuration file.
       character dstmp*24,pfile*72,runpath*72,pathtype*24
       integer lnrp  ! length of run path
       integer irif ! loop variable for more than one rif per scene
+
+      integer lnblnk  ! function definition
 
 C Check that ICHK is a sensible value.
       lnrp=lnblnk(runpath)

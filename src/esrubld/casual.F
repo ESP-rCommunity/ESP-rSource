@@ -2300,7 +2300,7 @@ C is non-zero.
  911      format('the TMC surface ',I3,' on zone',I3,' has IBOFOT=',I1)  
           call edisp(itu,outs)
           write(outs,'(A,I3,A,F5.2,A)')'The VT of surface',I,' is ',
-     &      V,'**'
+     &      VTDIR,'**'
           call edisp(itu,outs)
         ENDIF 
  52   CONTINUE  
