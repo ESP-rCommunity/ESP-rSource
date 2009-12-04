@@ -2569,7 +2569,7 @@ C...........Transport State variables
 
            !Temperature:
             write(H3K_rep_NAME,'(A,A)')
-     &           Node_Name(1:iLength+13),
+     &           Node_Name(1:iLength+11),
      &           '/temperature'
             call add_to_xml_reporting (
      &         CSVF(iNode,iProp_temp),
@@ -2581,7 +2581,7 @@ C...........Transport State variables
            !Mass flow (1st phase)
             if (iState .ne.9) then
                write(H3K_rep_NAME,'(A,A,A,A)')
-     &              Node_Name(1:iLength+13),
+     &              Node_Name(1:iLength+11),
      &              '/',char_temp(1:LNBLNK(char_temp)),'_flow'
                call add_to_xml_reporting (
      &            CSVF(iNode,iProp_1st_flow),
@@ -2593,7 +2593,7 @@ C...........Transport State variables
            !Mass flow (2nd phase)
             if( iState .eq. 1 ) then
                write(H3K_rep_NAME,'(A,A)')
-     &              Node_Name(1:iLength+13),
+     &              Node_Name(1:iLength+11),
      &              '/moisture_flow'
                call add_to_xml_reporting (
      &            CSVF(iNode,iProp_2nd_flow),
@@ -2604,7 +2604,7 @@ C...........Transport State variables
             endif
             if( iState .eq. 2 ) then
                write(H3K_rep_NAME,'(A,A)')
-     &              Node_Name(1:iLength+13),
+     &              Node_Name(1:iLength+11),
      &              '/hydrogen_flow'
                call add_to_xml_reporting (
      &            CSVF(iNode,iProp_h2_flow),
@@ -2628,7 +2628,7 @@ C.................Connection #
 C.................Build connection base name
 
                   write(Connect_name,'(A,A,I1)')
-     &                 Node_Name(1:iLength+13),
+     &                 Node_Name(1:iLength+11),
      &                 '/connection_',kk
 
 C.................Get connection properties using H3k_connect_property
@@ -2643,7 +2643,7 @@ C.................Temperature
 
 
                   write(H3K_rep_NAME,'(A,A)')
-     &                 Connect_name(1:iLength+26),
+     &                 Connect_name(1:iLength+24),
      &                 '/temp'
                   call add_to_xml_reporting (
      &               H3K_Connect_property(iConn_numb,iProp_temp),
@@ -2655,7 +2655,7 @@ C.................Mass flow rate - check state of material
                   if (iState .eq. 0) then
 C....................Connection is water. 1st-phase flow only!
                      write(H3K_rep_NAME,'(A,A)')
-     &                    Connect_name(1:iLength+26),
+     &                    Connect_name(1:iLength+24),
      &                    '/water_flow'
                      call add_to_xml_reporting (
      &                    H3K_Connect_property(
@@ -2669,7 +2669,7 @@ C....................Connection is water. 1st-phase flow only!
                   elseif (iState .eq. 1) then
 C....................Connection is to air. 1st & 2nd phase flow
                       write(H3K_rep_NAME,'(A,A)')
-     &                    Connect_name(1:iLength+26),
+     &                    Connect_name(1:iLength+24),
      &                    '/air_flow'
                       call add_to_xml_reporting (
      &                    H3K_Connect_property(
@@ -2682,7 +2682,7 @@ C....................Connection is to air. 1st & 2nd phase flow
 
 
                       write(H3K_rep_NAME,'(A,A)')
-     &                    Connect_name(1:iLength+26),
+     &                    Connect_name(1:iLength+24),
      &                    '/moisture_flow'
 
                       call add_to_xml_reporting (
@@ -2698,7 +2698,7 @@ C....................Connection is to air. 1st & 2nd phase flow
                   elseif (iState .eq. 2 ) then
 C....................Connection is to hydrogen.
                      write(H3K_rep_NAME,'(A,A)')
-     &                    Connect_name(1:iLength+26),
+     &                    Connect_name(1:iLength+24),
      &                    '/hydrogen_flow'
 
                       call add_to_xml_reporting (
