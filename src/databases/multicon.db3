@@ -243,6 +243,6 @@
 # layers  description   optics name   symmetry tag
     3    Vehicle_door  OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
-   50    0.0015  Aluminium 1.5 mm : Aluminium (copy of mat_043)
+   43    0.0015  aluminium : Aluminium
     0    0.0250  air  0.500 0.500 0.500
-   50    0.0015  Aluminium 1.5 mm : Aluminium (copy of mat_043)
+   43    0.0015  aluminium : Aluminium

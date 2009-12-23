@@ -110,10 +110,12 @@ C level configuration file via call to pregist in `sn` mode.
 C If the action is `within` do not create new folders for the model.
 
 C Debug
-      write(6,*)  'action ',action,' ',root,' ',folder
-      write(6,*)  'menu ',modeltitle
-      write(6,*)  'mpath ',mpath
-      write(6,*)  'weather ',weather
+      if(unixok)then
+        write(6,*)  'action ',action,' ',root,' ',folder
+        write(6,*)  'menu ',modeltitle
+        write(6,*)  'mpath ',mpath
+        write(6,*)  'weather ',weather
+      endif
 
       if(action(1:3).eq.'new')then
         write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))

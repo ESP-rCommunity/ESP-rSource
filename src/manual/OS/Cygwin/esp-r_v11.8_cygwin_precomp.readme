@@ -8,17 +8,17 @@ The X11 version is the complete standard interface to
 ESP-r. The GTK version is an almost-complete port to
 an alternative graphics library.
 
-Typically the file you downloaded (esp-r_v11.7_cygwin_precomp.run)
-where v11.7 is the version number, should be placed in /tmp and 
+Typically the file you downloaded (esp-r_v11.8_cygwin_precomp.run)
+where v11.8 is the version number, should be placed in /tmp and 
 run (typcially as Administrator) from 
-that folder via the command ./esp-r_v11.7_cygwin_precomp.run
+that folder via the command ./esp-r_v11.8_cygwin_precomp.run
 
 On most Windows machines running Cygwin a file ending 
 in .run will be treated as an executable.
 If the installer does not execute you may have to
 issue the following command to change its permissions:
 
-  chmod a+x ./esp-r_v11.7_cygwin_precomp.run
+  chmod a+x ./esp-r_v11.8_cygwin_precomp.run
 
 It will ask you a number of yes/no questions and, if
 successful it will place an ESP-r distribution
@@ -41,6 +41,13 @@ Once you have installed ESP-r:
 To start up the ESP-r Project Manger, log into your computer
 (typcially as someone other than Administrator) give the command
  'esp-r' (without the quotes) in a graphic command window.
+
+If you want to open an existing model (e.g. that you created) the
+procedure is to use the Cygwin commands 'cd' to go to the 'cfg'
+folder for the model and the start prj with a command:
+  prj -file xx.cfg
+
+substitute the real model configuration fle for xx.cfg
  
 To find out what command line options are available
 for an ESP-r module use the -help option with

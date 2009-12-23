@@ -1337,16 +1337,16 @@ C Plant network information - plant file and model name (if plant only).
 C This is all there is to write so close the files.
  9028 CALL ERPFREE(IFCFG,IOS) ! free the cfg file unit
 
-C Now write the connections file 
-      CALL EFOPSEQ(IUF,LCNN,3,IER)
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=2) '*connections for ',
-     &  cfgroot(1:lnblnk(cfgroot))
-      call dstamp(dstmp)
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) '*Date ',dstmp
-      WRITE(IUF,'(I7,A)',IOSTAT=IOS,ERR=2)
-     &  NCON,'   # number of connections'
+C Now write the connections file if there are any.
+      if(ncon.gt.0)then
+        CALL EFOPSEQ(IUF,LCNN,3,IER)
+        WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=2) '*connections for ',
+     &    cfgroot(1:lnblnk(cfgroot))
+        call dstamp(dstmp)
+        WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) '*Date ',dstmp
+        WRITE(IUF,'(I7,A)',IOSTAT=IOS,ERR=2)
+     &    NCON,'   # number of connections'
 
-      if(NCON.gt.0)then
         DO 930 I = 1,NCON
           CALL CONXINF(1,I,CXSTR)
           WRITE(IUF,'(5I4,2A)',IOSTAT=IOS,ERR=2) IC1(I),IE1(I),
@@ -1358,8 +1358,8 @@ C Now write the connections file
      &      'Ground connection referenced an unknown monthly profile!')
           endif
   930   CONTINUE
+        CALL ERPFREE(IUF,IOS)   ! free the cnn file unit
       endif
-      CALL ERPFREE(IUF,IOS)   ! free the cnn file unit
 
       RETURN
 

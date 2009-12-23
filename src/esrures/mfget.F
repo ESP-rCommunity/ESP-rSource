@@ -162,6 +162,7 @@ C air flow reporting.
       DIMENSION ICPK(MCNN),INPK(MNOD),INPKT(MNOD),INPKT2(MNOD)
 
       integer YAXSET, ADDLIN
+      integer lcname  ! length of contaminate string
 
       logical CLIST,NLIST,CNLST,CRLST,OKL,dok,CTLST
 #ifdef OSX
@@ -1097,12 +1098,15 @@ C appropriate labels.
                     IMFGETNO(NMFGET,6)=IMFGETNO(NMFGET-1,6)
                     IMFGETNO(NMFGET,7)=IMFGETNO(NMFGET-1,7)
                   ENDIF
+
+C GMFLABEL is 20 char so truncate the text.
+                  lcname=MIN0(LNNAMEC,7)
                   WRITE(GMFLABEL(NMFGET),'(4a)')
-     &              CONTMNAM(ICPK(J))(1:LNNAMEC),' at ',
-     &              NDNAM(INPK(I))(1:lnname),SUFFIX
+     &              CONTMNAM(ICPK(J))(1:lcname),'@',
+     &              NDNAM(INPK(I))(1:8),SUFFIX(1:4)
                   WRITE(GLMFLABEL(NMFGET),'(4a)')
      &              CONTMNAM(ICPK(J))(1:LNNAMEC),' at ',
-     &              NDNAM(INPK(I))(1:lnname),SUFFIX
+     &              NDNAM(INPK(I))(1:lnname),SUFFIX(1:lnblnk(SUFFIX))
  12             CONTINUE
               ELSE
                 if((NMFGET+1).GT.MFRS)then

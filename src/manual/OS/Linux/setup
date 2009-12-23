@@ -128,12 +128,12 @@ fi
 cd /opt/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  zcat $ISD/esp-r_X11_11.7_linux.tar.gz | tar xf - 
+  zcat $ISD/esp-r_X11_11.8_linux.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 elif  [[ $which = 'b' ]] ; then
   echo "proceeding with the GTK version..."
   echo " Extracting GTK ESP-r distribution ..."
-  zcat $ISD/esp-r_GTK_11.7_linux.tar.gz | tar xf - 
+  zcat $ISD/esp-r_GTK_11.8_linux.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 fi
 echo " "

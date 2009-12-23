@@ -2827,7 +2827,7 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
      XSize = gdk_pixbuf_get_width(loadgpbimage);	/* get the actual size of the pixbuf */
      YSize = gdk_pixbuf_get_height(loadgpbimage);
      imageloaded = 1;
-     g_print("loaded image file %s %d %d\n",file_local,XSize,YSize);
+     /* debug g_print("loaded image file %s %d %d\n",file_local,XSize,YSize); */
    }
    image = gtk_image_new_from_pixbuf(loadgpbimage);	/* create a gtk image from the pixbuf */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),image);

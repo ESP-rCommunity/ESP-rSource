@@ -856,7 +856,8 @@ C length : Length of zdescr
 C Trap for I/O error.
  1    call isunix(unixok)
       if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      write(6,*) 'ZLIST: error writing zone names: ',outs
+        call lusrmsg('ZNLIST: error writing zone names: ',
+     &    outs,'-')
       ierr=1
       
       return

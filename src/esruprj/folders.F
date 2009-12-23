@@ -97,8 +97,7 @@ C Passed in parameters.
       character*72 LTMP
       character path*72,LCMDFL*144,LPRJLG*72,LPNF*72,odir*72
       character LCFGF*72,H*72,cfgroot*24
-      character*72 DFCFG
-      character doit*248,tfile*72,longtfile*144,longtfiledos*144
+      character doit*248,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character uname*24,pwd*40,tmode*8
       character limg*72,act*2
@@ -109,7 +108,7 @@ C Passed in parameters.
       character subpath*72,action*3,outs*124
 
       integer iyeart    ! for local editing
-      integer lnmp,lncr ! for with of mpath & cfgroot strings
+      integer lnmp,lncr,lnod ! for with of mpath, cfgroot, odir strings
       character tcname*248   ! for editing image notes
 
 C Set folder separator (fs) to \ or / as required.
@@ -197,13 +196,25 @@ C If sting > 4 char it might have a .cfg attached, otherwise add.
       lcfgl=lcfgr-3
       if(lcfgr.gt.4)then
         if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-          write(cfgroot,'(a)') LCFGF(1:lcfgl-1)
+          if(lcfgl-1.le.24)then
+            write(cfgroot,'(a)') LCFGF(1:lcfgl-1)
+          else
+            write(cfgroot,'(a)') LCFGF(1:24)
+          endif
         else
-          write(cfgroot,'(a)') LCFGF(1:lcfgr)
+          if(lcfgr.le.24)then
+            write(cfgroot,'(a)') LCFGF(1:lcfgr)
+          else
+            write(cfgroot,'(a)') LCFGF(1:24)
+          endif
           write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
         endif
       else
-        write(cfgroot,'(a)') LCFGF(1:lcfgr)
+        if(lcfgr.le.24)then
+          write(cfgroot,'(a)') LCFGF(1:lcfgr)
+        else
+          write(cfgroot,'(a)') LCFGF(1:24)
+        endif
         write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
       endif
 
@@ -233,7 +244,10 @@ C Ask where to put it.
 C Get the current folder and display options to the user.
       odir=' '
       call usrdir(odir)
+      lnod=lnblnk(odir)
       if(act(1:2).eq.'sw')then
+
+C Silent within the pre-registration process.
         if(folder(1:6).eq.'single')then
 
 C Assume all types of files go in the current folder. Set path
@@ -281,6 +295,7 @@ C dialogs.
 
       elseif(act(1:2).eq.'sn')then
 
+C Silent new within the pre-registration process.
         if(folder(1:6).eq.'single')then
 
 C Assume all types of files go in the single project folder (mpath).
@@ -429,19 +444,33 @@ C Assume all types of files go in the single project folder.
         write(dbspth,'(2a)')'.',fs
         lncr=lnblnk(cfgroot)
         write(odir,'(a)')cfgroot(1:lncr)
+        lnod=lncr
         write(doit,'(2a)') 'mkdir ',cfgroot(1:lncr)
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
         call pausems(400)
         call usrmsg('  ','  ','-')
 
-C Re-establish pwd and then project folders.
+C Re-establish pwd and then project folders. Check that path is
+c within the 72 char limit because it will be used in a fully
+C expanded model at various points in ESP-r.
         odir=' '
         call usrdir(odir)
-        write(path,'(4a)')odir(1:lnblnk(odir)),fs,cfgroot(1:lncr),fs
-        call edisp(iuout,
+        lnod=lnblnk(odir)
+        if(lnod+lncr+2.lt.72)then
+          write(path,'(4a)')odir(1:lnod),fs,cfgroot(1:lncr),fs
+          call edisp(iuout,
      &        'System configuration file is located in folder:')
-        call edisp(iuout,path)
+          call edisp(iuout,path)
+        else
+          write(outs,'(4a)') odir(1:lnod),fs,cfgroot(1:lncr),fs
+          call usrmsg(
+     &      'The derived path (below) is > 72 char give shorter root',
+     &       outs,'W')
+          goto 289
+        endif
+
+C Having tested the explicit path reset.
         write(path,'(2a)') cfgroot(1:lncr),fs
         write(outs,'(2a)') 'Resetting path to: ',path
         call edisp(iuout,outs)
@@ -449,6 +478,20 @@ C Re-establish pwd and then project folders.
       elseif(IW.eq.2)then
 
 C Setup the various paths to distributed folders and then create.
+C Check longer paths cause the path variable to have a string buffer overflow.
+        odir=' '
+        call usrdir(odir)
+        lnod=lnblnk(odir)
+        lncr=lnblnk(cfgroot)
+        if(lnod+lncr+6.lt.72)then
+          continue
+        else
+          write(outs,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
+          call usrmsg(
+     &      'The derived path (below) is > 72 char give shorter root',
+     &      outs,'W')
+          goto 289
+        endif
         write(zonepth,'(3a)')'..',fs,'zones'
         write(netpth,'(3a)')'..',fs,'nets'
         write(ctlpth,'(3a)')'..',fs,'ctl'
@@ -459,6 +502,7 @@ C Setup the various paths to distributed folders and then create.
         write(dbspth,'(3a)')'..',fs,'dbs'
         lncr=lnblnk(cfgroot)
         write(odir,'(a)')cfgroot(1:lncr)
+        lnod=lncr
         write(doit,'(2a)') 'mkdir ',cfgroot(1:lncr)
         call usrmsg('Creating folder:',doit,'-')
         call runit(doit,'-')
@@ -501,14 +545,26 @@ C Setup the various paths to distributed folders and then create.
         call pausems(400)
         call usrmsg('  ','  ','-')
 
-C Re-establish pwd and then project folders.
+C Re-establish pwd and then project folders.  Note longer paths
+C can cause the path variable to have a string buffer overflow.
         odir=' '
         call usrdir(odir)
-        write(path,'(6a)')odir(1:lnblnk(odir)),fs,
-     &      cfgroot(1:lnblnk(cfgroot)),fs,'cfg',fs
-        call edisp(iuout,
+        lnod=lnblnk(odir)
+        lncr=lnblnk(cfgroot)
+        if(lnod+lncr+6.lt.72)then
+          write(path,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
+          call edisp(iuout,
      &        'System configuration file is located in folder:')
-        call edisp(iuout,path)
+          call edisp(iuout,path)
+        else
+          write(outs,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
+          call usrmsg(
+     &      'The derived path (below) is > 72 char give shorter root',
+     &      outs,'W')
+          goto 289
+        endif
+
+C Having tested the explicit path reset.
         write(path,'(4a)') cfgroot(1:lncr),fs,'cfg',fs
         write(outs,'(2a)') 'Resetting path to: ',path
         call edisp(iuout,outs)
@@ -636,8 +692,9 @@ C Ask about images and a results summary.
 
 C Provide a listing of the current contents of the ../images folder.
         subpath=' '
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
-     &  path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
+        lnod=lnblnk(odir)
+        write(subpath,'(4a)') odir(1:lnod),fs,
+     &    path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
         call clearfilelist(listf,MFFOLD)
         action='fil'
         call getfilelist(subpath,action,listf,nwlistf,nlistf)
@@ -710,8 +767,8 @@ C user does not cancel the operation.
         else
           iyear=iyeart
           call calenmanage('i',ier)
-          loop=8
-          loopst=1
+C          loop=8
+C          loopst=1
 C          call calenprint(iuout,'t',iyear,loopst,loop)
 C          call edisp(iuout,' ')
 C          call calenprint(iuout,'g',iyear,loopst,loop)
@@ -770,11 +827,7 @@ C geometry.h provides commons G0 and G2.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       
-      integer ncomp,ncon
-      common/C1/NCOMP,NCON
-      common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      common/CFGV/icfgv
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -792,7 +845,7 @@ C Remember width of file/folder names passed back from getfilelist.
 
       character*72 path,LFIL,odir
       character LCFGF*72,H*72,cfgroot*24
-      character doit*248,tfile*72,sfile*72,snpfile*72
+      character doit*248,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,act*1,outstr*124,outs*124
@@ -801,6 +854,7 @@ C Remember width of file/folder names passed back from getfilelist.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24
       character subpath*72,action*3
+      integer lnod   ! length for odir
 
 C Set folder separator (fs) to \ or / as required.
       changedit=.false.
@@ -815,25 +869,25 @@ C Get the current folder and display options to the user.
 C first list any files with .cfg in name.
       odir=' '
       call usrdir(odir)
+      lnod=lnblnk(odir)
+      lnpath=lnblnk(path)
 
 C If subpath is less than 72 char with odir + path use that
 C otherwise just use path.
 
 C Debug...
-C      write(6,*) 'usrdir is ',odir
-C      write(6,*) 'path is ',path
+      write(6,*) 'usrdir is ',odir(1:lnod)
+      write(6,*) 'path is ',path(1:lnpath)
 
       subpath=' '
-      lnodir=lnblnk(odir)
-      lnpath=lnblnk(path)
-      if(lnodir+lnpath+1.le.72)then
-        write(subpath,'(3a)') odir(1:lnodir),fs,
-     &  path(1:lnpath)
+      if(lnod+lnpath+1.le.72)then
+        write(subpath,'(3a)') odir(1:lnod),fs,path(1:lnpath)
       else
         write(subpath,'(a)') path(1:lnpath)
       endif
       write(outs,'(2a)') 'configuration files in ',
      &  subpath(1:lnblnk(subpath))
+      call edisp(iuout,outs)
 
 #ifdef OSX
 C In OSX slightly different logic. If path ls ./ then standard logic
@@ -1086,7 +1140,8 @@ C            write(6,*) 'iier is ',iier,nli
         endif
       elseif(ino.eq.11)then
         subpath=' '
-        write(subpath,'(4a)') odir(1:lnblnk(odir)),fs,
+        lnod=lnblnk(odir)
+        write(subpath,'(4a)') odir(1:lnod),fs,
      &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth))
         write(outs,*) 'files in ',subpath
         call clearfilelist(listf,MFFOLD)
@@ -1192,15 +1247,17 @@ C iformat (char*4) image format 'GIF ' 'TIF ' 'XBMP' or 'XWD '
 C ifocus (char*4) image focus '****' 'FZON' 'FNET' 'FCTL' 'FDFS' or 'FPER'
       subroutine edimage(limg,iformat,ifocus,ier)
 
+C Remove comments to enable debug.
 C      integer lnblnk  ! function definition
-      COMMON/FILEP/IFIL
-      common/OUTIN/IUOUT,IUIN
+C      COMMON/FILEP/IFIL
+C      common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       logical XST,OK,dok
       character iformat*4,ifocus*4,limg*72,t5*5
-      character H*72,outs*124
+      character H*72
+C      character outs*124
 
 C Display current information.
       ier=0
