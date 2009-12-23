@@ -3146,6 +3146,65 @@ C real value.
       RETURN
 
       END
+C *********************** RELESTR
+C REL16STR converts a real into a string (16 char) with no leading
+C blanks. ISWD is the actual length of the resulting string. Takes
+C the magnitude of the number into account.
+      SUBROUTINE RELESTR(RELIN,FSTR,ISWD,IFLAG)
+      common/OUTIN/IUOUT,IUIN
+
+      CHARACTER*16 CSTR, FSTR
+      character outs*124
+      logical close
+
+      IFLAG=0
+      ISWD=0
+      fstr = ' '
+
+C Internal write to STR. If trivally close to zero set, otherwise
+C write out in an appropriate format given the magnitude of the
+C real value.
+      rval=relin
+      CALL ECLOSE(rval,0.00,0.000001,CLOSE)
+      if(close)then
+        rval=0.00
+        fstr='0.00'
+        iswd=4
+        return
+      endif
+      if(abs(rval).gt.1000000.0)then
+        WRITE(CSTR,'(E11.4)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.1000000.0.and.abs(rval).gt.10000.0)then
+        WRITE(CSTR,'(F8.0)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.10000.0.and.abs(rval).gt.100.)then
+        WRITE(CSTR,'(f6.0)',IOSTAT=ios,ERR=999)RVAL
+      elseif(abs(rval).le.100.0.and.abs(rval).gt.0.001)then
+        WRITE(CSTR,'(F7.3)',IOSTAT=ios,ERR=999)RVAL
+      else
+        WRITE(CSTR,'(E11.4)',IOSTAT=ios,ERR=999)RVAL
+      endif
+      K=0
+      DO 99 I=1,LEN(cstr)
+        IF(cstr(I:I).NE.' '.OR.K.GE.1)THEN
+          if(ichar(cstr(I:I)).lt.32)goto 100
+          K=K+1
+          fstr(K:K)=cstr(I:I)
+        ENDIF
+ 99   CONTINUE
+
+  100 ISWD=max(1,LNBLNK(FSTR))
+      RETURN
+
+ 999  if(IOS.eq.2)then
+        WRITE(outs,*) ' RELESTR: permission issue: ',RELIN
+      else
+        WRITE(outs,*) ' RELESTR: invalid real or > 12 char: ',RELIN
+      endif
+      call edisp(iuout,outs)
+      IFLAG=1
+      RETURN
+
+      END
 
 
 C *********************** EXPSTR
@@ -3209,6 +3268,81 @@ C if the array cannot be written out fully in the space available.
         item=' '
         rval=rlist(i)
         call rel16str(rval,item,lna,ier)
+
+C Write next portion of pckstr and if not at the end write a
+C separating comma. If attempting to write past the end of
+C pckstr then set itrunc to the last successfully written
+C rlist index.
+        if(lna.eq.1)then
+          ixl=ix
+        else
+          ixl=ix+(lna-1)
+        endif
+        if(ixl+1.lt.LS)then
+          write(pckstr(ix:ixl),'(a)')item(1:lna)
+          if(i.lt.inrl)then
+            if(delm.eq.'T')then
+              write(pckstr(ixl+1:ixl+1),'(a)') CHAR(9)
+            elseif(delm.eq.'S')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ' '
+            elseif(delm.eq.'C')then
+              write(pckstr(ixl+1:ixl+1),'(a)') ','
+            endif
+            ix=ix+lna+1
+          else
+            ix=ix+lna+1
+          endif
+        else
+          length=ix
+          itrunc = i-1
+          goto 1
+        endif
+  43  continue
+      length=ixl
+      return
+
+C The full array could not be packed into the string so return
+C the position this happened so calling code can deal with it.
+   1  continue
+
+C Debug.
+C      write(outs,*) 'ARLIST: truncation writing array at item: ',
+C     &  itrunc,' & pos ',length
+C      call edisp(iuout,outs)
+
+      return
+      END
+
+C ******************** AELIST ********************
+C AELIST takes the first (inst to inrl) items of a real array (rlist)
+C of array size (inrs) and builds a packed string (pckstr)
+C and returns pckstr and the actual character width (length). If itrunc
+C is zero then all items written, else the index of the last item
+C which was written. Delm is delimeter between items.
+C This subroutine is same as ARLIST but the final string written out is
+C shorter
+
+      SUBROUTINE AELIST(inst,inrl,rlist,inrs,delm,pckstr,length,itrunc)
+      COMMON/OUTIN/IUOUT,IUIN
+      dimension rlist(inrs)
+      character*(*) pckstr
+      CHARACTER item*16,delm*1
+
+C      character outs*124  ! for debug statement
+
+      itrunc=0
+      LS=LEN(pckstr)
+      length=0
+
+C Proceed to fill as much of pckstr as possible, set ierr to one
+C if the array cannot be written out fully in the space available.
+      pckstr=' '
+      ix=1
+      ixl=0
+      do 43 i=inst,inrl
+        item=' '
+        rval=rlist(i)
+        call relestr(rval,item,lna,ier)
 
 C Write next portion of pckstr and if not at the end write a
 C separating comma. If attempting to write past the end of

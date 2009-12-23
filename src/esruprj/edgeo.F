@@ -5289,8 +5289,8 @@ C inserting the new vertex index.
                       JVN(jivj,jivjj+1)=jwhich3
 
 C Debug...
-                      write(6,'(a,30i3)') 'now jvn is ',
-     &                  (JVN(jivj,ii),ii=1,NVER(jivj))
+C                      write(6,'(a,30i3)') 'now jvn is ',
+C     &                  (JVN(jivj,ii),ii=1,NVER(jivj))
  
 C Surface (ivj) vertex list has been updated. Go on to next surface.
                       goto 446 

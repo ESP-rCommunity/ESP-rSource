@@ -1411,14 +1411,21 @@ C Set UK NCM notional and reference infiltration/air leakage to 10 m3/h/m2
         if(INOTI.eq.1.OR.INOTI.eq.2.OR.INOTI.eq.3.OR.
      &    (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))then
           if(i_countsteps(icomp).eq.1)then
+
+C If there is no system linked to the current zone then set SFPHS to zero.
+            if(IHLZ(ICOMP).eq.0)then
+              closeto0=.true.
+            else
+              call eclose(SFPHS(IHLZ(ICOMP)),0.0,0.01,closeto0)
+            endif
             iNatVentilatedFlag=0
-            call eclose(SFPHS(IHLZ(ICOMP)),0.0,0.01,closeto0)
-c            call eclose(SFPHS(IHLZ(ICOMP)),-6666.,0.1,closeto6666)
-            if(IBRUKC(IHLZ(ICOMP)).eq.-1111)then
+            if(IHLZ(ICOMP).eq.0)then
+              iNatVentilatedFlag=1
+            elseif(IBRUKC(IHLZ(ICOMP)).eq.-1111)then
               if(closeto0)then !heated only space (nat. ventilated)
                 iNatVentilatedFlag=1
               endif
-            endif         
+            endif       
           endif
           
 C If zone temperature for naturally ventilated buildigns is greater
@@ -1438,7 +1445,7 @@ C The 15th item in IATDF(itdi,15) is heating set point
 !!!          if(tfa(icomp).gt.rTempnotioOverheat)then
           if(TMIXX.gt.rTempnotioOverheat)then !!!cmix
             if(iNatVentilatedFlag.eq.1)then          
-              ACH(ICOMP)=5.
+c              ACH(ICOMP)=5.
             endif
           else     
 
@@ -2296,15 +2303,19 @@ C Read TDF to get the fresh air requirements
             ValueToCalculateAC=14.0
           endif        
         endif 
-      endif       
-      if(IBRUKC(IHLZ(ICOMP)).eq.0)then !space is not heated (assume: no auxil)
-        zonAuxil(ICOMP)=0.
-        m2zonAuxil(ICOMP)=0.
-        iOperTimestep(ICOMP)=0
-        do 3 im=1,12
-          fmonthAuxil_ncm_Energy(im,icomp)=0.
-          iMonthOperTimestep(im,ICOMP)=0            
- 3      continue                  
+      endif
+
+C If no system associated with this zone then skip this code.
+      if(IHLZ(ICOMP).ne.0)then
+        if(IBRUKC(IHLZ(ICOMP)).eq.0)then !space is not heated (assume: no auxil)
+          zonAuxil(ICOMP)=0.
+          m2zonAuxil(ICOMP)=0.
+          iOperTimestep(ICOMP)=0
+          do 3 im=1,12
+            fmonthAuxil_ncm_Energy(im,icomp)=0.
+            iMonthOperTimestep(im,ICOMP)=0            
+ 3        continue 
+        endif                 
       endif
 
 C Calculate Auxiliary energy for the notional building.
@@ -2317,36 +2328,39 @@ C use NCM modelling guide, v4d, March 2008 paragraph 42:
 C If there is no cooling system and it is not mechanically ventilated
 C or this is the UK NCM reference model (in which case cooling auxiliary 
 C energy is not to be calculated) or stripped model that has been assigned 
-C a reference model flag.              
-        if(IBRUKC(IHLZ(ICOMP)).eq.-1111.OR.INOTI.EQ.2.OR.
-     &    (INOTI.eq.4.AND.iDsmTestingFlag.eq.2))then
-          call eclose(SFPHS(IHLZ(ICOMP)),0.0,0.01,closeto0)        
-c          call eclose(SFPHS(IHLZ(ICOMP)),-6666,0.01,closeto6666) 
-          if(closeto0.OR.INOTI.EQ.2.OR.
+C a reference model flag.
+
+C Another test of IHLZ(ICOMP) being zero.
+        if(IHLZ(ICOMP).ne.0)then  
+          if(IBRUKC(IHLZ(ICOMP)).eq.-1111.OR.INOTI.EQ.2.OR.
      &      (INOTI.eq.4.AND.iDsmTestingFlag.eq.2))then
-            if(qfut.gt.0.)then
-              if(i_countsteps(icomp).gt.numbStartTimesteps)then
+            call eclose(SFPHS(IHLZ(ICOMP)),0.0,0.01,closeto0)        
+            if(closeto0.OR.INOTI.EQ.2.OR.
+     &        (INOTI.eq.4.AND.iDsmTestingFlag.eq.2))then
+              if(qfut.gt.0.)then
+                if(i_countsteps(icomp).gt.numbStartTimesteps)then
                       
 C This means heating operates and hour/timestep should be accounted              
 C 0.61 W/m^2 * area (and integrate over time) for notional and reference
 C and 1.23 for typical model
 C The calculated values will be in Watts
 C Also, determine month number by calling edayr
-                call edayr(idyp,idayn,imonth) 
-                IF(INOTI.EQ.1.OR.INOTI.EQ.2.OR.! notional and reference
-     &            (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN ! or stripped with DSM testing flag
-                  m2zonAuxil(ICOMP)=0.61+m2zonAuxil(ICOMP)           
-                  zonAuxil(ICOMP)=0.61*ZBASEA(ICOMP)+zonAuxil(ICOMP)
-                  fmonthAuxil_ncm_Energy(imonth,icomp)=
-     &              0.61*ZBASEA(ICOMP)+
-     &              fmonthAuxil_ncm_Energy(imonth,icomp)                      
-                ELSEIF(INOTI.EQ.3)THEN ! Typical model
-                  m2zonAuxil(ICOMP)=1.23+m2zonAuxil(ICOMP)           
-                  zonAuxil(ICOMP)=1.23*ZBASEA(ICOMP)+zonAuxil(ICOMP)
-                  fmonthAuxil_ncm_Energy(imonth,icomp)=
-     &              1.23*ZBASEA(ICOMP)+
-     &              fmonthAuxil_ncm_Energy(imonth,icomp)
-                ENDIF 
+                  call edayr(idyp,idayn,imonth) 
+                  IF(INOTI.EQ.1.OR.INOTI.EQ.2.OR.! notional and reference
+     &              (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN ! or stripped with DSM testing flag
+                    m2zonAuxil(ICOMP)=0.61+m2zonAuxil(ICOMP)           
+                    zonAuxil(ICOMP)=0.61*ZBASEA(ICOMP)+zonAuxil(ICOMP)
+                    fmonthAuxil_ncm_Energy(imonth,icomp)=
+     &                0.61*ZBASEA(ICOMP)+
+     &                fmonthAuxil_ncm_Energy(imonth,icomp)                      
+                  ELSEIF(INOTI.EQ.3)THEN ! Typical model
+                    m2zonAuxil(ICOMP)=1.23+m2zonAuxil(ICOMP)           
+                    zonAuxil(ICOMP)=1.23*ZBASEA(ICOMP)+zonAuxil(ICOMP)
+                    fmonthAuxil_ncm_Energy(imonth,icomp)=
+     &                1.23*ZBASEA(ICOMP)+
+     &                fmonthAuxil_ncm_Energy(imonth,icomp)
+                  ENDIF 
+                endif
               endif
             endif
           else

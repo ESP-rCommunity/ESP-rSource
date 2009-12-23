@@ -1721,7 +1721,7 @@ C Check for duplicate names ....
         call dupicname(icn) 
 
 C Debug.
-        write(6,*) 'just after naming of icon ',icn
+C        write(6,*) 'just after naming of icon ',icn
 
         write(outs,'(2a)')  'Loading attributes of ',NWICNM(NNICN) 
         call edisp(iuout,outs)

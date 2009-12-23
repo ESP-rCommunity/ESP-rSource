@@ -52,6 +52,10 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      Logical MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
+     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -234,6 +238,10 @@ C Convert box into a gen description using two rotation angles.
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+        MODLEN=.TRUE.
+        ZBFLG(ICOMP)=0
       ELSEIF(ishape.eq.2)THEN
 
 C User begins with an extruded shape.
@@ -298,6 +306,10 @@ C Convert into a gen body and rotate if required.
         NSUR=NW+2
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=NSUR
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+        MODLEN=.TRUE.
+        ZBFLG(ICOMP)=0
       ENDIF
 
 C Begin with default assumptions for each surface then overwrite
@@ -412,6 +424,10 @@ C Update the connection list and hash for initial surface.
         SSPARENT(iccc)=SPARENT(1)
         IZSTOCN(icomp,1)=iccc
         NCON=ICCC
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+        MODLEN=.TRUE.
+        ZBFLG(icomp)=0
       elseif(ishape.eq.4)then
 
 C Point and click on a bitmap. After return, re-scan the system
@@ -459,7 +475,10 @@ C High level info for all cases except clickonbitmap.
       NZTV(ICOMP)=NTV
 
 C Update the G7 common blocks and then assign ZBASEA.
-      call zgupdate(2,ICOMP,ier)
+      call zgupdate(1,ICOMP,ier)
+
+C Find co-planer surfaces and edges of similar materials.
+      call suredgeadj(itrc,'-',icomp,ier)
       if(ishape.eq.1)then
         ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
         ZBASEA(icomp)= SSNA(ibcs)
@@ -470,6 +489,15 @@ C Update the G7 common blocks and then assign ZBASEA.
         ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
         ZBASEA(icomp)= SSNA(ibcs)
       endif
+
+C Update the global coordinates for this zones surfaces so that
+C the subsequent wireframe image can be drawn and the bounds of
+C the zone can be calculated.
+      DO 40 J=1,NZTV(ICOMP)
+        VCOORD(ICOMP,J,1)=X(J)
+        VCOORD(ICOMP,J,2)=Y(J)
+        VCOORD(ICOMP,J,3)=Z(J)
+   40 CONTINUE
  
 C Save this to file before passing into the geometry editing facility.
       call eclose(gversion(icomp),1.1,0.01,newgeo)

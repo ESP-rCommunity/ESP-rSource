@@ -19,7 +19,7 @@ Edited by Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 10 November 2009
+Version of 8 December 2009
 .sp 2
 .SH
 Introduction
@@ -1183,7 +1183,7 @@ end
 
 .ES
 .LP
-Note the first line of the scrip invokes the \fBcsh\fR command interpretor to 
+Note the first line of the script invokes the \fBcsh\fR command interpretor to 
 process the commands (the \fIforeach\fR syntax is specific to that interpretor). 
 Most users on Linux or OSX will default to the \fBbash\fR command interpretor. If
 you want to know more about command interpretors there are any number of books
@@ -1643,9 +1643,13 @@ generator.
 Documentation patterns
 .LP
 The source code should be well commented and these comments
-should precede the code fragments to which they relate. Such
-comments should be used judiciously and grouped in a manner that illuminates
-rather than obscures the code. Spacing should also be used judiciously to 
+should precede the code fragments to which they relate. If code is related
+to methods published in the literature or in reports include a reference within
+the source code (see example below). This is especially important if
+the document shows the code works as expected.
+.LP
+Comments enchance understanding, but they can obscure the code it poorly
+implemented. The layout of comments can be used to 
 logically group blocks of code. Two examples that illustrate acceptable 
 commenting styles follow.
 .ML
@@ -3449,6 +3453,22 @@ facilities identify which performance data is beyond the
 tolerance of the test as well as the location within the
 model. This is a substantial aide in the identification 
 of offending code as well as faults in test models.
+.LP
+If changes in the source code introduce a new facility
+consider how this might be tested. Inclusion of new models
+in the tester/test_suite can ensure that future changes
+do not have an untended on the new facility.
+.LP
+Models for inclusion in test/test_suite need to be
+configured in specific ways: first, references to 
+standard databases should be in the form of /usr/esru/esp-r/databases
+or should point to model specific databases. Model configuration
+files should include a simulation preset so that it can be
+run without user intervention. The name of the preset must
+be \fItest\fR. The tester process includes the creation
+of XML output files and this requires the inclusion of
+a file named \fIinput.xml\fR in the test model cfg folder. Look
+in other test_suite models for examples of this xml file.
 .LP
 Once the tests are passed the developer
 would send an email to the Archivist with a summary of the

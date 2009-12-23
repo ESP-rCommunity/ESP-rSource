@@ -304,12 +304,19 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
       character outs*124
       logical close
 
-      IC=ICF
-      CONV=FLOAT(IBSN(IC,3))/100.0
+C If a negative number is passed as icmp then change icmp to positive.
       if(icmp.lt.0)then
         icmp=-1*icmp
         conv=0.5
+        ic=1
       endif
+
+C Test that ic is non-zero.
+      if(icf.ne.0)then
+        IC=ICF
+        CONV=FLOAT(IBSN(IC,3))/100.0
+      endif
+
       RAD=1.0-CONV
 
 C Fix sensor type for now.
@@ -347,7 +354,8 @@ C Compute weighted temperature.
       GOTO 7
  1000 call edisp(iuout,
      &  ' MZMIXT: zero area associated with the mrt sensor!')
-      write(outs,'(A,I3)')' Zone',ICMP
+      write(outs,'(A,2I3,2F8.2)')' Zone ',ICMP,' ic tmrt tmix ',
+     &  ic,tmrt,tmix
       call edisp(iuout,outs)
     7 RETURN
       END
@@ -383,7 +391,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
       common/dllerr/dllsubr,dllmesg
 
       character dllsubr*12,dllmesg*124,outs*124
-      DIMENSION VAL(MBITS+2)
+      DIMENSION VAL(MTABC+2)
       
       logical bfngn,svcfgr,dll
       
@@ -612,7 +620,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
       common/dllerr/dllsubr,dllmesg
-      DIMENSION VAL(MBITS+2)
+      DIMENSION VAL(MTABC+2)
       character dllsubr*12,dllmesg*124,outs
       logical dll
 
@@ -5645,12 +5653,16 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
-chsp+1      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
-chsp+1      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
+
+C These two commons relate to setting cooling on if temperature exceeds
+C the heating set point by 1degC for the UKNCM notional model (and
+C associated DSM testing models)
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
+      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
       character dllsubr*12,dllmesg*124,outs*124
       logical dll,near
-      DIMENSION VAL(MBITS+2)
+      DIMENSION VAL(MTABC+2)
       integer COLUMNSETP ! column from control 23
 
 C Check to see if running in dll mode.
@@ -5679,9 +5691,10 @@ C CSP = cooling set point temp. (deg.C)
       TFUT=TNP
 
 C Turn cooling off if no UK NCM cooling generator is linked to this zone
+C If there is no system associated with the zone then set QCM to zero.
       IHLZP=IHLZ(IiCOMP)  ! set up pointer
-      NEAR=.FALSE.
-      CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
+      NEAR=.TRUE.
+      if(ihlzp.ne.0) CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
       IF(NEAR)QCM=0.0
 
 C Read setpoints from tdf here (CSP and HSP)
@@ -5709,15 +5722,15 @@ C then cooling set point is always 27degC
 
 C If notional model or DSM testing then set cooling set point to 1degC
 C more than heating to compensate for overheating (5ach not implemented)
-C When uncommenting the lines below also uncomment two common blocks at
+C When commenting the lines below also comment two common blocks at
 C the begining of this subroutine.
-chsp+1      if(INOTI.eq.1.or.iDsmTestingFlag.eq.1)then
-chsp+1  iitdi=IACTIV(IICOMP)
-chsp+1  if(iNatVentilatedFlag.eq.1)then
-chsp+1          CSP=TMAR(iitdi,IATDF(iitdi,15))+1.!HSP+1.
-chsp+1          QCM=-999999.0
-chsp+1        endif
-chsp+1      endif
+      if(INOTI.eq.1.or.iDsmTestingFlag.eq.1)then
+        iitdi=IACTIV(IICOMP)
+        if(iNatVentilatedFlag.eq.1)then
+          CSP=TMAR(iitdi,IATDF(iitdi,15))+1.!HSP+1.
+          QCM=-999999.0
+        endif
+      endif
       
 C Debug. << there should be a trace code added! >>
 C       write(6,*)'tdf ctl data @',btimef,' is item',itdi,

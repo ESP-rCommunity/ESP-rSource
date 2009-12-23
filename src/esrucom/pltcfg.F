@@ -234,8 +234,7 @@ C Pay attention to the implied path of the plant template db from cfg file.
 
 C Open plant components database on IUNIT1. IRECLN is width of plantdb
 C -> but don't open the database if save-level 0 or 5 are specified!
-      lnpcdb=lnblnk(LPCDB)
-      LLTMP=LPCDB(1:LNPCDB)
+      lnpcdb=lnblnk(lltmp)
       IRECLN=20
       call EFOPRAN(IUNIT1,LLTMP,IRECLN,1,IER)   
       IF(IER.ne.0) GOTO 950

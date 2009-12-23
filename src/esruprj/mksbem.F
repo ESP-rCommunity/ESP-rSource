@@ -63,8 +63,6 @@ C MMGFUN controls all UK NCM related tasks
       IMPLICIT NONE
 #include "building.h"
 #include "sbem.h"
-#include "tdf2.h"
-#include "control.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 #include "lookup_data.h"
@@ -81,9 +79,6 @@ C MMGFUN controls all UK NCM related tasks
       character*72 h
       common/FILEP/IFIL
       integer ifil      
-
-      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      integer ic1,ie1,ict,ic2,ie2
 
       COMMON/HVACINFO/IHVACFLAG,HVACFILE
       INTEGER IHVACFLAG
@@ -513,8 +508,8 @@ C Run simulation and recover information from save level 6 results file
         CALL SIMRUN(2) ! Notional model
 
 C To save time in formal NCM testing comment out the next two lines.
-c        CALL SIMRUN(3) ! Reference model
-c        CALL SIMRUN(4) ! Typical model
+        CALL SIMRUN(3) ! Reference model
+        CALL SIMRUN(4) ! Typical model
       elseif(iecmoption.eq.2)then
       
 C Recover information from save level 6 results file
@@ -558,6 +553,7 @@ C ier is returned as non-zero if there was a problem.
 #include "tdf2.h"
 #include "control.h"
 #include "model.h"
+#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -1778,9 +1774,10 @@ C Default name for temporal file.
 
 C There is an existing temporal file, scan it. NOTE: no checks
 C yet made that it is hourly and full year.
+        call isunix(unixok)
         IER=0
         call supplyandcheck(LTDFA,'T',ier)
-        if(ier.ne.0)then
+        if(ier.ne.0.and.unixok)then
           write(6,*) 'error during supplyandcheck'
         endif
       endif
@@ -1974,6 +1971,10 @@ C first temporal item.
         itdyear=iyear
         CALL ERPFREE(iafil,ISTAT)
         CALL EFOPSEQ(iafil,LTDFA,4,IER)
+        if(ier.eq.0)THEN
+          write(currentfile,'(a)') LTDFA(1:lnblnk(LTDFA))
+        ELSE ! WARNING MESSAGE HERE
+	ENDIF
         WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 'ASCIITDF3'
         WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
      &    '# NWPR NITDF NTSPH itdyear,itdbdoy,itdedoy,columns'
@@ -2144,7 +2145,9 @@ C << Improve this part in the future >>
 C Import data - open the import file and read them.
           IUNIT=IFIL+4
           CALL EFOPSEQ(IUNIT,LIMP,1,IER)
-          if(IER.ne.0) then
+          if(ier.eq.0)THEN
+            write(currentfile,'(a)') LIMP(1:lnblnk(LIMP))
+          ELSE
             msgl2='Is the name correct?'
             CALL USRMSG('Could not open import file.',msgl2,'W')
 
@@ -2216,7 +2219,7 @@ C End of file encountered, close the file and return to menu.
 
 C << Change this in the future >>
 C << Need to add "errors when creating string buffers." ?? >>
-  212     continue !write(6,*) 'subpath: ',subpath    
+  212     continue 
   2     continue 
         NTSPH=1
         itdbdoy=1
@@ -2232,7 +2235,7 @@ C          ITREC=IP+49
             do 5 iwrite=1,iarraycount
               COLUMNWRITE(iwrite)=COLUMNTDF(iwrite,IP) 
   5         continue 
-            call arlist(ipos,icolumns,COLUMNWRITE,
+            call aelist(ipos,icolumns,COLUMNWRITE,
      &        iarraycount,delim,louts,loutln,itrunc)
             if(ipos.eq.1) then
               WRITE(iafil,'(F8.4,2a)',IOSTAT=ios,ERR=101) RDOTY,',',
@@ -3777,11 +3780,9 @@ C This routine assumes newer geometry files are being used.
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-      COMMON/RAY6/LINSTY(MCON)
-
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
@@ -3794,8 +3795,6 @@ C << G1 is probably not the common block to use for this >>
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
-     &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
 C G9 holds information on children of a surface.
       integer nbchild   ! how many children (up to 4) for each connection
@@ -3817,8 +3816,8 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,NNAME*72,H*72
-      CHARACTER OUTS*124,GUESS*24,ADF*124,SNM*12,SNM2*12,USE*8,USE2*8
-      character guesstype*24,dinstpath*48,SN*12
+      CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
+      character dinstpath*48,SN*12
       CHARACTER SNAME*12,SOTF*32,SMLCN*32,SVFC*4,SOTHER*24,SUSE*8
       CHARACTER*12 XJCCU,XKCCU
 
@@ -3850,7 +3849,6 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
 C Initialise variables
-      GUESS='notional'
       SN=' '
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
@@ -4157,14 +4155,16 @@ C          write(6,*) 'ir is ',ir,' removing surf ',is,' in zone ',icomp
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
 
 C Update the image.
-          MODBND=.TRUE.
-          MODIFY=.TRUE.
-          CALL INLNST(1)
-          nzg=1
-          nznog(1)=ICOMP
-          izgfoc=ICOMP
-          CALL ADJVIEW(IER)
-          call pausems(500)
+          if(MMOD.eq.8)then
+            MODBND=.TRUE.
+            MODIFY=.TRUE.
+            CALL INLNST(1)
+            nzg=1
+            nznog(1)=ICOMP
+            izgfoc=ICOMP
+            CALL ADJVIEW(IER)
+            call pausems(500)
+          endif
  6001   CONTINUE
  6100 CONTINUE
 
@@ -4270,7 +4270,6 @@ C First put pedestrian door in
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              guesstype='any_type'
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
@@ -4303,14 +4302,16 @@ C added as child of door and not child of original surface.
               TOTAREA=REQDAREA
 
 C Update the image.
-              MODBND=.TRUE.
-              MODIFY=.TRUE.
-              CALL INLNST(1)
-              nzg=1
-              nznog(1)=ICOMP
-              izgfoc=ICOMP
-              CALL ADJVIEW(IER)
-              call pausems(500)
+              if(MMOD.eq.8)then
+                MODBND=.TRUE.
+                MODIFY=.TRUE.
+                CALL INLNST(1)
+                nzg=1
+                nznog(1)=ICOMP
+                izgfoc=ICOMP
+                CALL ADJVIEW(IER)
+                call pausems(500)
+              endif
             ENDIF
 
 C Now put vehicle door in
@@ -4349,7 +4350,6 @@ C Now put vehicle door in
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              guesstype='any_type'
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
@@ -4382,14 +4382,16 @@ C added as child of door and not child of original surface.
               TOTAREA=REQDAREA
 
 C Update the image.
-              MODBND=.TRUE.
-              MODIFY=.TRUE.
-              CALL INLNST(1)
-              nzg=1
-              nznog(1)=ICOMP
-              izgfoc=ICOMP
-              CALL ADJVIEW(IER)
-              call pausems(500)
+              if(MMOD.eq.8)then
+                MODBND=.TRUE.
+                MODIFY=.TRUE.
+                CALL INLNST(1)
+                nzg=1
+                nznog(1)=ICOMP
+                izgfoc=ICOMP
+                CALL ADJVIEW(IER)
+                call pausems(500)
+              endif
             ENDIF
 
 C Now put display glazing in
@@ -4427,7 +4429,6 @@ C Now put display glazing in
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              guesstype='any_type'
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
@@ -4460,14 +4461,16 @@ C added as child of door and not child of original surface.
               TOTAREA=REQDAREA
 
 C Update the image.
-              MODBND=.TRUE.
-              MODIFY=.TRUE.
-              CALL INLNST(1)
-              nzg=1
-              nznog(1)=ICOMP
-              izgfoc=ICOMP
-              CALL ADJVIEW(IER)
-              call pausems(500)
+              if(MMOD.eq.8)then
+                MODBND=.TRUE.
+                MODIFY=.TRUE.
+                CALL INLNST(1)
+                nzg=1
+                nznog(1)=ICOMP
+                izgfoc=ICOMP
+                CALL ADJVIEW(IER)
+                call pausems(500)
+              endif
             ENDIF
 
 C Now put glazing and frame
@@ -4505,7 +4508,6 @@ C Now put glazing and frame
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              guesstype='any_type'
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
@@ -4533,14 +4535,16 @@ C Update connections list before displaying notional model zone
               is=nsur
 
 C Update the image.
-              MODBND=.TRUE.
-              MODIFY=.TRUE.
-              CALL INLNST(1)
-              nzg=1
-              nznog(1)=ICOMP
-              izgfoc=ICOMP
-              CALL ADJVIEW(IER)
-              call pausems(500)
+              if(MMOD.eq.8)then
+                MODBND=.TRUE.
+                MODIFY=.TRUE.
+                CALL INLNST(1)
+                nzg=1
+                nznog(1)=ICOMP
+                izgfoc=ICOMP
+                CALL ADJVIEW(IER)
+                call pausems(500)
+              endif
 
 C Now put frame
               IELF=IELF+1
@@ -4573,7 +4577,6 @@ C Now put frame
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              guesstype='any_type'
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
@@ -4599,14 +4602,16 @@ C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
 
 C Update the image.
-              MODBND=.TRUE.
-              MODIFY=.TRUE.
-              CALL INLNST(1)
-              nzg=1
-              nznog(1)=ICOMP
-              izgfoc=ICOMP
-              CALL ADJVIEW(IER)
-              call pausems(500)
+              if(MMOD.eq.8)then
+                MODBND=.TRUE.
+                MODIFY=.TRUE.
+                CALL INLNST(1)
+                nzg=1
+                nznog(1)=ICOMP
+                izgfoc=ICOMP
+                CALL ADJVIEW(IER)
+                call pausems(500)
+              endif
             ENDIF
           ENDIF
  580    CONTINUE
@@ -4782,7 +4787,7 @@ C Changes to the model are then made.
       INTEGER IER,LNBLNK,ICOMP,IUNIT,ITRU,ITRC,ILEN,IFU,IUF,I,ICC,lns
       LOGICAL QUIET,XST
       CHARACTER EXT*4,APE*6,TNAME*72,NNAME*72
-      character USE*8,ADF*4,OUTS*124,SNM*12
+      character USE*8,OUTS*124,SNM*12
 
 C Initialise
       IER=0
@@ -4843,7 +4848,6 @@ C Now change constructions.
         DO 601 I=1,NZSUR(icomp)
           icc=izstocn(icomp,i)
           USE=SSUSE(ICC,1)
-          ADF=SSVFC(icc)
           IF(ssother(icc,1)(1:8).eq.'EXTERIOR')THEN
             IF(USE(1:4).EQ.'WALL')THEN
               SSMLCN(ICC)='exWall_typic'
@@ -5005,13 +5009,11 @@ C IMODE = 4 -> Typical model
 #include "sbem.h"
 #include "building.h"
 #include "geometry.h"
+#include "espriou.h"
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       INTEGER IFIL
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER IUOUT,IUIN
 
       common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
@@ -5020,10 +5022,10 @@ C IMODE = 4 -> Typical model
       INTEGER IFCFG
       CHARACTER CFGROOT*24,LCFGF*72
 
-      INTEGER IUR,ND,ISTAT,K,LTW1,LTW2,LTW3,LTW,ICDHW,IER,IMODE,
-     & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp,ii
-      CHARACTER LTXTF*72,OUTSTR*248,WORD1*72,WORD2*24,WORD3*24,LZNM*24,
-     & OUTS*124,LASTZONE*12,TWOL*2
+      INTEGER IUR,ND,ISTAT,K,LTW2,ICDHW,IER,IMODE,
+     & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp
+      CHARACTER LTXTF*72,OUTSTR*248,WORD1*72,WORD2*24,WORD3*24,
+     & LASTZONE*12,TWOL*2
       LOGICAL EOF,Getmonth,cl
       REAL VALZ,tbasea,Heating_efficiency,Cooling_efficiency,
      & DHW_efficiency,total_Heat_S,total_Cool_S,total_DHW_S,total_Light,
@@ -5053,9 +5055,11 @@ C Get text file name and initialise variables
       IUR=IFIL+1
       WRITE(LTXTF,'(2A)')LCFGF(1:LNBLNK(LCFGF)-4),'.txt'
       CALL EFOPSEQ(IUR,LTXTF,1,IER)
+      if(ier.eq.0)THEN
+        write(currentfile,'(a)') LTXTF(1:lnblnk(LTXTF))
+      ELSE ! WARNING MESSAGE HERE
+      eNDIF
 
-      LZNM=ZNAME(NCOMP)
-      LTW=LNBLNK(LZNM)
       EOF=.FALSE.
       LASTZONE=ZNAME(NCOMP)
       LZNL=LNBLNK(LASTZONE)
@@ -5167,9 +5171,7 @@ C Expect to find three strings and one real on each line
         CALL EGETW(OUTSTR,K,WORD1,'W','res 6 first word',IER)
         CALL EGETW(OUTSTR,K,WORD2,'W','res 6 second word',IER)
         CALL EGETW(OUTSTR,K,WORD3,'W','res 6 third word',IER)
-        LTW1=LNBLNK(WORD1)
         LTW2=LNBLNK(WORD2)
-        LTW3=LNBLNK(WORD3)
         IF(WORD3(1:3).NE.'key')
      &  CALL EGETWR(OUTSTR,K,VALZ,1.,-1.,'-','res 6 fourth real',IER)
 
@@ -6085,7 +6087,6 @@ C Part F for Northern Ireland.
 #include "sbem.h"
 #include "building.h"
 #include "geometry.h"
-      integer lnblnk  ! function definition
       
       common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
@@ -6097,12 +6098,12 @@ C Part F for Northern Ireland.
       integer ihlzp  ! pointer from zone to sytem
       INTEGER ITDH   ! pointer set to allow solar thermal contributions
                      ! to be made to HVAC system supplying DHW
-      CHARACTER OUTS*124,TMODE*8,MODE*4
+      CHARACTER OUTS*124
       LOGICAL NEAR,CLOSER,CLOSE
       DIMENSION FHM(MFT) ! Array holding heating supplied by fuel type
       REAL FHM           ! Main Heating Fuel type is held in MHF
       DIMENSION ZCO2N(MCOM) ! Notional zonal CO2 emissions
-      REAL ZCO2N,XIF,TBASEA
+      REAL ZCO2N,XIF,TBASEA,rer_dhwco2
 
 C Solar insolation interpolation variables
       REAL C_ORIENTATION,C_INCLINATION,A,B,C,D,AC,BD,P,
@@ -6628,7 +6629,7 @@ C Air conditioned
 
 C Calculate TER based on calc on Part L 2A/Section 6 page 5.
       XLZC=0.1
-      TER=AER*(1.-FXIF)*(1.-XLZC)
+      TER=ABS(AER*(1.-FXIF)*(1.-XLZC))
 
 C Generate reference model results
       RER=0.
@@ -6701,12 +6702,12 @@ C This is why AERLIGHT(ICOMP) is used here
 C Calculation of emissions and total energy for reference model (use
 C DHW and lighting energy and emissions of notional model and only
 C modify heating, cooling and auxiliary energy)
-C << RERE is not yet referenced >>
-      RERE=RER_HEAT+RER_COOL+RER_DHW+AER_LIGHT+RER_AUX
+C RERE is not yet used anywhere 
+C      RERE=RER_HEAT+RER_COOL+RER_DHW+AER_LIGHT+RER_AUX
       RER=RER_HEATCO2+RER_COOLCO2+RER_DHWCO2+AER_LIGHTCO2+RER_AUXCO2
 
 C Normalise by floor area
-      RERE=RERE/TBASEA
+C      RERE=RERE/TBASEA
       RER=RER/TBASEA
       DO 3000 ICMSYS=1,NCMSYS
         RERSH(ICMSYS)=RERSH(ICMSYS)/TBASEA
@@ -6818,12 +6819,13 @@ C Auxiliary energy
  400  CONTINUE
 
 C Calculation of emissions and total energy for notional model
-      TyERE=TyER_HEAT+TyER_COOL+TyER_DHW+TyER_LIGHT+TyER_AUX
+C TyERE is not yet used anywhere but could be used in the future
+C      TyERE=TyER_HEAT+TyER_COOL+TyER_DHW+TyER_LIGHT+TyER_AUX
       TyER=TyER_HEATCO2+TyER_COOLCO2+TyER_DHWCO2+TyER_LIGHTCO2+
      &     TyER_AUXCO2
 
 C Normalise by floor area
-      TyERE=TyERE/TBASEA
+C      TyERE=TyERE/TBASEA
       TyER=TyER/TBASEA
       DO 4000 ICMSYS=1,NCMSYS
         TyERSH(ICMSYS)=TyERSH(ICMSYS)/TBASEA
@@ -6875,11 +6877,11 @@ C It finally generate BRUKL input document and other SBEM reports.
 #include "esprdbfile.h"
 #include "geometry.h"
 #include "material.h"
+#include "espriou.h"
       common/FILEP/IFIL
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -6896,8 +6898,6 @@ C It finally generate BRUKL input document and other SBEM reports.
      &             dbspth
       common/rpath/path
       common/uhome/upath
-      logical browse
-      common/user/browse
       character DOIT*248
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
       character path*72,upath*72,lupath*72
@@ -6936,11 +6936,10 @@ C Build variable (These should eventually be placed in build_info.h)
 
       CHARACTER BRUKFL*72
       CHARACTER CFGROOT*24,LCFGF*72,MODE*4
-      character*12 SN,ZSN,FN,ZFN,RN,ZRN,TRN,ZTRN
       CHARACTER SSPARENT*12,TMPSTR*24,TMPSTR2*70
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character delim*1,louts*248,outs*124,TEMP1*42
-      LOGICAL CONTEXT,BNDRY,ISNEAR,ISNEAR2,ISNEAR3,XST
+      LOGICAL CONTEXT,BNDRY,ISNEAR,ISNEAR2,ISNEAR3
       LOGICAL UNIXOK
       REAL TMPREAL
       integer iactFlarea
@@ -7004,6 +7003,10 @@ C Building, owner, certifier detail...
       WRITE(BRUKFL,'(2A)')LASBEM(1:ILEN-4),'_brukl.inp'
       IUF=IFIL+1
       CALL EFOPSEQ(IUF,BRUKFL,3,IER)
+      if(ier.eq.0)THEN
+        write(currentfile,'(a)') BRUKFL(1:lnblnk(BRUKFL))
+      ELSE ! WARNING MESSAGE HERE
+      ENDIF
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '$'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) 
      &'$ Compliance input file for BR PART L 2006'
@@ -7516,7 +7519,7 @@ C greater than usual.
 
 C Calculate loads for heating, cooling, DHW etc.
       WRITE(IUF,'(a,f9.2)',iostat=ios) 
-     &  '  KWH/M2-HEAT               = ',BER_HEAT
+     &  '  KWH/M2-HEAT               = ',ABS(BER_HEAT)
       WRITE(IUF,'(a,F9.2)',iostat=ios) 
      &  '  KWH/M2-COOL               = ',ABS(BER_COOL)
       WRITE(IUF,'(a,F9.2)',iostat=ios) 
@@ -7548,7 +7551,7 @@ C?? To enter total casual gains/m2 here
       WRITE(IUF,'(a,F9.2)',iostat=ios) 
      &  '  KWH/M2-BIOMASS            = ',BERF(9)
       WRITE(IUF,'(a,F9.2)',iostat=ios) 
-     &  '  KWH/M2-SUPELEC            = ',BERF(10)
+     &  '  KWH/M2-SUPELEC            = ',ABS(BERF(10))
       WRITE(IUF,'(a,F9.2)',iostat=ios) 
      &  '  KWH/M2-WASTEHEAT          = ',BERF(12)
       
@@ -7657,13 +7660,14 @@ C Next line is required even if there is no cooling in the system.
      &      '  FUEL-TYPE-COOL            = Grid Supplied Electricity' 
           BERSH_DEMAND(ICMSYS)=BERSH(ICMSYS)*HGEF(ICMSYS)
           WRITE(IUF,'(a,F9.2)',iostat=ios) 
-     &      '  MJ/M2-HEAT-DEM            = ',BERSH_DEMAND(ICMSYS)*3.6
+     &      '  MJ/M2-HEAT-DEM            = ',ABS(BERSH_DEMAND(ICMSYS)*
+     &      3.6)
           BERSC_DEMAND(ICMSYS)=BERSC(ICMSYS)*CGEF(ICMSYS)
           WRITE(IUF,'(a,F9.2)',iostat=ios) 
      &      '  MJ/M2-COOL-DEM            = ',
      &      ABS(BERSC_DEMAND(ICMSYS)*3.6)
           WRITE(IUF,'(a,F9.2)',iostat=ios) 
-     &      '  KWH/M2-HEAT               = ',BERSH(ICMSYS)
+     &      '  KWH/M2-HEAT               = ',ABS(BERSH(ICMSYS))
           WRITE(IUF,'(a,F9.2)',iostat=ios) 
      &      '  KWH/M2-COOL               = ',ABS(BERSC(ICMSYS))
           WRITE(IUF,'(a,F9.2)',iostat=ios) 
@@ -7775,7 +7779,7 @@ C Thermal bridges are always 10% for notional building
 
 C Calculate loads for heating, cooling, DHW etc.
       WRITE(IUF,'(a,f9.2)',iostat=ios)
-     &  '  KWH/M2-HEAT                = ',AER_HEAT
+     &  '  KWH/M2-HEAT                = ',ABS(AER_HEAT)
       WRITE(IUF,'(a,F9.2)',iostat=ios)
      &  '  KWH/M2-COOL                = ',ABS(AER_COOL)
       WRITE(IUF,'(a,F9.2)',iostat=ios)
@@ -7808,7 +7812,7 @@ C?? To enter total casual gains/m2 here
       WRITE(IUF,'(a,F9.2)',iostat=ios) 
      &  '  KWH/M2-BIOMASS             = ',AERF(9)
       WRITE(IUF,'(a,F9.2)',iostat=ios) 
-     &  '  KWH/M2-SUPELEC             = ',AERF(10)
+     &  '  KWH/M2-SUPELEC             = ',ABS(AERF(10))
       WRITE(IUF,'(a,F9.2)',iostat=ios) 
      &  '  KWH/M2-WASTEHEAT           = ',AERF(12)
 
@@ -7901,13 +7905,14 @@ C holds index number as NHF
      &      '  FUEL-TYPE-COOL            = Grid Supplied Electricity' 
           AERSH_DEMAND(ICMSYS)=AERSH(ICMSYS)*HeatSCoP_N(ICMSYS)
           WRITE(IUF,'(a,F9.2)',iostat=ios)
-     &      '  MJ/M2-HEAT-DEM            = ',AERSH_DEMAND(ICMSYS)*3.6
+     &      '  MJ/M2-HEAT-DEM            = ',ABS(AERSH_DEMAND(ICMSYS)*
+     &      3.6)
           AERSC_DEMAND(ICMSYS)=AERSC(ICMSYS)*CoolSSEER_N(ICMSYS)
           WRITE(IUF,'(a,F9.2)',iostat=ios)
      &      '  MJ/M2-COOL-DEM            = ',
      &      ABS(AERSC_DEMAND(ICMSYS)*3.6)
           WRITE(IUF,'(a,F9.2)',iostat=ios)
-     &      '  KWH/M2-HEAT               = ',AERSH(ICMSYS)
+     &      '  KWH/M2-HEAT               = ',ABS(AERSH(ICMSYS))
           WRITE(IUF,'(a,F9.2)',iostat=ios)
      &      '  KWH/M2-COOL               = ',ABS(AERSC(ICMSYS))
           WRITE(IUF,'(a,F9.2)',iostat=ios)
@@ -7970,7 +7975,7 @@ C Create a batch file to run the BRUKL input file for Windows only
 C Check if the machine is UNIX, If UNIX, do nothing
       call isunix(unixok)
       if(unixok)then
-        mpof=1  
+        continue
        
 C If not UNIX, first determine the path of the current model folder
       else
@@ -7995,6 +8000,10 @@ C C:\Esru\esp-r\bin to model cfg folder)
         WRITE(BATCHFL,'(2A)')LASBEM(1:ILEN-4),'.bat'
         IUF=IFIL+1
         CALL EFOPSEQ(IUF,BATCHFL,3,IER)
+        if(ier.eq.0)THEN
+          write(currentfile,'(a)') BATCHFL(1:lnblnk(BATCHFL))
+        ELSE ! WARNING MESSAGE HERE
+	ENDIF
         WRITE(IUF,'(8A)',IOSTAT=IOS,ERR=3) 'cd C',col,fs,'Esru',fs,
      &    'esp-r',fs,'bin'
         WRITE(IUF,'(3A)',IOSTAT=IOS,ERR=3) 'BRUKL.exe /F ',
@@ -8020,6 +8029,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
 #include "sbem.h"
 #include "building.h"
 #include "geometry.h"
+#include "espriou.h"
       integer lnblnk  ! function definition
       integer ier
 
@@ -8036,18 +8046,10 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       integer ifcfg
       common/C21/IFCFG,cfgroot,LCFGF
      
-      integer nbrdg, ibrdg
-      real psi,lngth,losspercent,totheatloss,thbrpercent
-      real uavtotal
-      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
-     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent,uavtotal(MCOM)   
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/rpath/path
       common/uhome/upath
-      logical browse
-      common/user/browse
       character DOIT*248
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
       character path*72,upath*72,lupath*72
@@ -8189,6 +8191,10 @@ C Building, owner, certifier detail...
       ENDIF
       IUF=IFIL+1
       CALL EFOPSEQ(IUF,EPCFL,3,IER)
+      if(ier.eq.0)THEN
+        write(currentfile,'(a)') EPCFL(1:lnblnk(EPCFL))
+      ELSE ! WARNING MESSAGE HERE
+      ENDIF
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '$'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) 
      &'$ Compliance input file for BR PART L 2006'
@@ -8360,8 +8366,10 @@ C << Need interface to give the option here between English and Welsh >>
 C << Default is english >>
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' EPC-LANGUAGE       = ',
      &' ENGLISH'
-      WRITE(IUF,'(a,1X,F7.1)',iostat=ios)' BER                 = ',BER
-      WRITE(IUF,'(a,1X,F7.1)',iostat=ios)' TER                 = ',TER
+      WRITE(IUF,'(a,1X,F7.1)',iostat=ios)' BER                 = ',
+     &ABS(BER)
+      WRITE(IUF,'(a,1X,F7.1)',iostat=ios)' TER                 = ',
+     &ABS(TER)
 
 C NOS-LEVEL depends on the complexity of the project
 C Options: Undefined, Level 3, Level 4 and Level 5.
@@ -10689,7 +10697,7 @@ C For the next line: Instead of USER, it could also be CALC
           WRITE(IUF,'(a)',iostat=ios) 'CO2-SAVE-POUND-SC = USER'   
 
 C Next line is only for specific recommendations. 
-          WRITE(IUF,'(a)',iostat=ios) 'REF-OBJECT-TYPE = HWS'        
+          WRITE(IUF,'(a)',iostat=ios) 'REF-OBJECT-TYPE = DHW-GENERATOR'        
       
 C Next line is only for specific recommendations (no where documented).
 C Need the name of the HVAC system here, which uses the specific fuel
@@ -10780,7 +10788,7 @@ C For the next line: Instead of USER, it could also be CALC
         WRITE(IUF,'(a)',iostat=ios) 'CO2-SAVE-POUND-SC = USER'      
 
 C Next line is only for specific recommendations. 
-        WRITE(IUF,'(a)',iostat=ios) 'REF-OBJECT-TYPE = HWS'        
+        WRITE(IUF,'(a)',iostat=ios) 'REF-OBJECT-TYPE = DHW-GENERATOR'        
       
 C Next line is only for specific recommendations (no where documented).
 C Need the name of the HVAC system here, which uses the specific fuel
@@ -10868,7 +10876,7 @@ C For the next line: Instead of USER, it could also be CALC
         WRITE(IUF,'(a)',iostat=ios) 'CO2-SAVE-POUND-SC = USER'  
 
 C Next line is only for specific recommendations. 
-        WRITE(IUF,'(a)',iostat=ios) 'REF-OBJECT-TYPE = HWS'        
+        WRITE(IUF,'(a)',iostat=ios) 'REF-OBJECT-TYPE = DHW-GENERATOR'        
       
 C Next line is only for specific recommendations (no where documented).
 C Need the name of the HVAC system here, which uses the specific fuel
@@ -11994,7 +12002,7 @@ C greater than usual.
 
 C Calculate loads for heating, cooling, DHW etc.
       WRITE(IUF,'(a,f9.2)',iostat=ios)
-     &  '  KWH/M2-HEAT               = ',BER_HEAT
+     &  '  KWH/M2-HEAT               = ',ABS(BER_HEAT)
       WRITE(IUF,'(a,F9.2)',iostat=ios)
      &  '  KWH/M2-COOL               = ',ABS(BER_COOL)
       WRITE(IUF,'(a,F9.2)',iostat=ios)
@@ -12027,7 +12035,7 @@ C?? To enter total casual gains/m2 here
       WRITE(IUF,'(a,F9.2)',iostat=ios)
      &  ' KWH/M2-BIOMASS          = ',BERF(9)
       WRITE(IUF,'(a,F9.2)',iostat=ios)
-     &  ' KWH/M2-SUPELEC          = ',BERF(10)
+     &  ' KWH/M2-SUPELEC          = ',ABS(BERF(10))
       WRITE(IUF,'(a,F9.2)',iostat=ios)
      &  ' KWH/M2-WASTEHEAT        = ',BERF(12)
 
@@ -12116,13 +12124,14 @@ C Next line is required even if there is no cooling in the system.
      &      '  FUEL-TYPE-COOL            = Grid Supplied Electricity' 
           BERSH_DEMAND(ICMSYS)=BERSH(ICMSYS)*HGEF(ICMSYS)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &      '  MJ/M2-HEAT-DEM            = ',BERSH_DEMAND(ICMSYS)*3.6
+     &      '  MJ/M2-HEAT-DEM            = ',ABS(BERSH_DEMAND(ICMSYS)*
+     &      3.6)
           BERSC_DEMAND(ICMSYS)=BERSC(ICMSYS)*CGEF(ICMSYS)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
      &      '  MJ/M2-COOL-DEM            = ',
      &      ABS(BERSC_DEMAND(ICMSYS)*3.6)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &      '  KWH/M2-HEAT               = ',BERSH(ICMSYS)
+     &      '  KWH/M2-HEAT               = ',ABS(BERSH(ICMSYS))
           WRITE(IUF,'(a,F10.2)',iostat=ios)
      &      '  KWH/M2-COOL               = ',ABS(BERSC(ICMSYS))
           WRITE(IUF,'(a,F10.2)',iostat=ios)
@@ -12234,7 +12243,7 @@ C Thermal bridges are always 10% for notional building
      
 C Calculate loads for heating, cooling, DHW etc.
       WRITE(IUF,'(a,f10.2)',iostat=ios)
-     &  '  KWH/M2-HEAT                = ',AER_HEAT
+     &  '  KWH/M2-HEAT                = ',ABS(AER_HEAT)
       WRITE(IUF,'(a,F10.2)',iostat=ios)
      &  '  KWH/M2-COOL                = ',ABS(AER_COOL)
       WRITE(IUF,'(a,F10.2)',iostat=ios)
@@ -12267,7 +12276,7 @@ C?? To enter total casual gains/m2 here
       WRITE(IUF,'(a,F10.2)',iostat=ios)
      &  '  KWH/M2-BIOMASS             = ',AERF(9)
       WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &  '  KWH/M2-SUPELEC             = ',AERF(10)
+     &  '  KWH/M2-SUPELEC             = ',ABS(AERF(10))
       WRITE(IUF,'(a,F10.2)',iostat=ios)
      &  '  KWH/M2-WASTEHEAT           = ',AERF(12)
       
@@ -12360,13 +12369,14 @@ C holds index number as NHF
      &      '  FUEL-TYPE-COOL            = Grid Supplied Electricity' 
           AERSH_DEMAND(ICMSYS)=AERSH(ICMSYS)*HGEF(ICMSYS)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &      '  MJ/M2-HEAT-DEM            = ',AERSH_DEMAND(ICMSYS)*3.6
+     &      '  MJ/M2-HEAT-DEM            = ',ABS(AERSH_DEMAND(ICMSYS)*
+     &      3.6)
           AERSC_DEMAND(ICMSYS)=AERSC(ICMSYS)*CGEF(ICMSYS)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
      &      '  MJ/M2-COOL-DEM            = ',
      &      ABS(AERSC_DEMAND(ICMSYS)*3.6)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &      '  KWH/M2-HEAT               = ',AERSH(ICMSYS)
+     &      '  KWH/M2-HEAT               = ',ABS(AERSH(ICMSYS))
           WRITE(IUF,'(a,F10.2)',iostat=ios)
      &      '  KWH/M2-COOL               = ',ABS(AERSC(ICMSYS))
           WRITE(IUF,'(a,F10.2)',iostat=ios)
@@ -12467,7 +12477,7 @@ C Thermal bridges are always 10% for notional building
 
 C Calculate loads for heating, cooling, DHW etc.
       WRITE(IUF,'(a,f9.2)',iostat=ios)
-     &  '  KWH/M2-HEAT               = ',RER_HEAT
+     &  '  KWH/M2-HEAT               = ',ABS(RER_HEAT)
       WRITE(IUF,'(a,F9.2)',iostat=ios)
      &  '  KWH/M2-COOL               = ',ABS(RER_COOL)
       WRITE(IUF,'(a,F9.2)',iostat=ios)
@@ -12494,7 +12504,7 @@ C Use the total of all fuels from notional (excluding electricity):
       WRITE(IUF,'(a)',iostat=ios) ' KWH/M2-DUELFUEL         = 0.0'
       WRITE(IUF,'(a)',iostat=ios) ' KWH/M2-BIOMASS          = 0.0'
       WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &  ' KWH/M2-SUPELEC           = ',RERF(10)
+     &  ' KWH/M2-SUPELEC           = ',ABS(RERF(10))
       
       WRITE(IUF,'(a)',iostat=ios) ' KWH/M2-WASTEHEAT        = 0.0'
       
@@ -12587,13 +12597,14 @@ C << should HeatSCoP_N be used for BRUKL? >>
      &      '  FUEL-TYPE                 = ','Natural Gas'
           RERSH_DEMAND(ICMSYS)=RERSH(ICMSYS)*HeatSCoP_R(ICMSYS)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &      '  MJ/M2-HEAT-DEM            = ',RERSH_DEMAND(ICMSYS)*3.6
+     &      '  MJ/M2-HEAT-DEM            = ',ABS(RERSH_DEMAND(ICMSYS)*
+     &      3.6)
           RERSC_DEMAND(ICMSYS)=RERSC(ICMSYS)*CoolSSEER_R(ICMSYS)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
      &      '  MJ/M2-COOL-DEM            = ',
      &      ABS(RERSC_DEMAND(ICMSYS)*3.6)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &      '  KWH/M2-HEAT               = ',RERSH(ICMSYS)
+     &      '  KWH/M2-HEAT               = ',ABS(RERSH(ICMSYS))
           WRITE(IUF,'(a,F10.2)',iostat=ios)
      &      '  KWH/M2-COOL               = ',ABS(RERSC(ICMSYS))
           WRITE(IUF,'(a,F10.2)',iostat=ios)
@@ -12699,7 +12710,7 @@ C Thermal bridges are always 10% for notional building
 
 C Calculate loads for heating, cooling, DHW etc.
       WRITE(IUF,'(a,f10.2)',iostat=ios)
-     &  '  KWH/M2-HEAT                = ',TyER_HEAT
+     &  '  KWH/M2-HEAT                = ',ABS(TyER_HEAT)
       WRITE(IUF,'(a,F10.2)',iostat=ios)
      &  '  KWH/M2-COOL                = ',ABS(TyER_COOL)
       WRITE(IUF,'(a,F10.2)',iostat=ios)
@@ -12729,7 +12740,7 @@ C Natural Gas
       WRITE(IUF,'(a)',iostat=ios) ' KWH/M2-DUELFUEL         = 0.0'
       WRITE(IUF,'(a)',iostat=ios) ' KWH/M2-BIOMASS          = 0.0'
       WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &  ' KWH/M2-SUPELEC           = ',TyERF(10)
+     &  ' KWH/M2-SUPELEC           = ',ABS(TyERF(10))
       WRITE(IUF,'(a)',iostat=ios) ' KWH/M2-WASTEHEAT        = 0.0'
       
 C Hardwiring values here as they have not yet been calculated
@@ -12823,13 +12834,14 @@ C Typical building is always natural gas
      &      '  FUEL-TYPE-COOL            = Grid Supplied Electricity' 
           TyERSH_DEMAND(ICMSYS)=TyERSH(ICMSYS)*HeatSCoP_T(ICMSYS)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &      '  MJ/M2-HEAT-DEM            = ',TyERSH_DEMAND(ICMSYS)*3.6
+     &      '  MJ/M2-HEAT-DEM            = ',ABS(TyERSH_DEMAND(ICMSYS)*
+     &      3.6)
           TyERSC_DEMAND(ICMSYS)=TyERSC(ICMSYS)*CoolSSEER_T(ICMSYS)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
      &      '  MJ/M2-COOL-DEM            = ',
      &      ABS(TyERSC_DEMAND(ICMSYS)*3.6)
           WRITE(IUF,'(a,F10.2)',iostat=ios)
-     &      '  KWH/M2-HEAT               = ',TyERSH(ICMSYS)
+     &      '  KWH/M2-HEAT               = ',ABS(TyERSH(ICMSYS))
           WRITE(IUF,'(a,F10.2)',iostat=ios)
      &      '  KWH/M2-COOL               = ',ABS(TyERSC(ICMSYS))
           WRITE(IUF,'(a,F10.2)',iostat=ios)
@@ -12921,6 +12933,10 @@ C C:\Esru\esp-r\bin to model cfg folder)
         WRITE(EPCBATFL,'(2A)')LASBEM(1:ILEN-4),'_epc.bat'
         IUF=IFIL+1
         CALL EFOPSEQ(IUF,EPCBATFL,3,IER)
+        if(ier.eq.0)THEN
+          write(currentfile,'(a)') EPCBATFL(1:lnblnk(EPCBATFL))
+        ELSE ! WARNING MESSAGE HERE
+	ENDIF
         WRITE(IUF,'(8A)',IOSTAT=IOS,ERR=3) 'cd C',col,fs,'Esru',fs,
      &    'esp-r',fs,'bin'
         WRITE(IUF,'(3A)',IOSTAT=IOS,ERR=3) 'EPCgen.exe /F ',
