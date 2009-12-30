@@ -1790,7 +1790,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       CHARACTER H*72,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
-      CHARACTER xfile*144,tg*1,delim*1,outs*124,TITL*72
+      CHARACTER xfile*144,tg*1,delim*1,outs*124
       character NAM*72,NAM99*72,LAYD*124
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
@@ -1807,13 +1807,25 @@ C construction database.
       IF(.NOT.MLDBOK)THEN
         CALL ERMLDB(ITRC,iuout,IER)
         IF(IER.NE.0)THEN
-          CALL USRMSG(' ',' Unable to display information','-')
+          CALL USRMSG(' ','Unable to display constructions.','-')
           IER=2
           RETURN
         ELSE
           MLDBOK=.TRUE.
         ENDIF
       ENDIF
+
+C Check the version of the materials database and exit if they are
+C not available.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        CALL USRMSG(' ','Unable to access materials data.','-')
+        IER=2
+        RETURN
+      endif
 
 C Create a menu showing the available database items.  Allow user to
 C select one and then list details of this construction based on info
@@ -2244,53 +2256,30 @@ C Get number of non-air layers of glass.
 C << todo: make use of the single lay optics from the materials commons
 C << to supply much of the information needed for the g-value calculation.
 
-          call eclose(matver,1.1,0.01,closemat1)
-          call eclose(matver,1.2,0.01,closemat2)
+C << need alternative logic to locate air gaps >>
+
           IPN=0
           DO 501 ILAY=1,LAYERS(IWH)
-            if(closemat1.or.closemat2)then
-              legmat=IPR(IWH,ILAY)   ! which legacy index
-              if(legmat.gt.0)then
-                matarrayindex=mathash(legmat)  ! find matching array index
+            legmat=IPR(IWH,ILAY)   ! which legacy index
+            if(legmat.gt.0)then
+              matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                if(matarrayindex.eq.0)then
-                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                  E=0.99; A=0.99; DRV=1.0
-                  TITL='GAPS'; NAM='AIR'
-                else
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
-                  E=matdbine(matarrayindex)
-                  A=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
-                  write(NAM,'(a)') matname(matarrayindex)(1:32)
-                endif
-              elseif(legmat.eq.-99)then
+C And if matarrayindex is zero then reset dbsht to mimic erpcdb
+              if(matarrayindex.eq.0)then
+                NAM='AIR'
+              else
+                write(NAM,'(a)') matname(matarrayindex)(1:32)
+              endif
+            elseif(legmat.eq.-99)then
 
 C Use the text within the MLC database to find the data.
-                lex=MIN0(72,lnblnk(LAYDESC(IWH,ILAY)))
-                write(NAM99,'(a)')LAYDESC(IWH,ILAY)(1:lex)
-                ileghope=IPR(IWH,ILAY)   ! what we hope we will find a match for
-                call parsematdesc(ileghope,NAM99,matarrayindex)
-                if(matarrayindex.ne.0)then
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
-                  E=matdbine(matarrayindex)
-                  A=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
-                  write(NAM,'(a)') NAM99(1:32)
-                endif
+              lex=MIN0(72,lnblnk(LAYDESC(IWH,ILAY)))
+              write(NAM99,'(a)')LAYDESC(IWH,ILAY)(1:lex)
+              ileghope=IPR(IWH,ILAY)   ! what we hope we will find a match for
+              call parsematdesc(ileghope,NAM99,matarrayindex)
+              if(matarrayindex.ne.0)then
+                write(NAM,'(a)') NAM99(1:32)
               endif
-            else
-
-C << if material arrays were filled there is no need for this call >>
-              CALL ERPCDB(IFMAT,IPR(IWH,ILAY),iuout,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
             endif
             IF(IER.EQ.1)RETURN
             IF(IPR(IWH,ILAY).EQ.0)GOTO 501
@@ -2392,7 +2381,6 @@ C bring up an editing facility.
 C ************* EDWALL 
 C EDWALL Edit a construction common block data.
 C IFMAT is the unit for the associated materials db.
-C IER=0 OK, IER=1 problem.
 C Information is available via common block MLC. 
 C Information on opaque/transparent is added to DESC.
 
@@ -2421,6 +2409,12 @@ C geometry.h provides commons G0/G2/G7/precz.
       
       integer lnblnk  ! function definition
 
+C Paramters
+      integer ITRC  ! if > 1 then be verbose
+      integer IFOC  ! index in the construction (array)
+      logical moddb ! set to true of construction altered
+      integer IER   ! zero is ok, one is a problem
+
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -2444,12 +2438,12 @@ C Material properties.
       integer matarrayindex ! the index within matdatarray
       real guessthick ! initial thickness if from version 1.1 or 1.2
 
-      logical moddb,chdb,showother,layermatch,layermatcha,modgeo
+      logical chdb,showother,layermatch,layermatcha,modgeo
       logical closemat1,closemat2
 
       DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LTMP
-      CHARACTER NAM*72,TITL*72,H*72,KEY*1,GDESCR*36
+      CHARACTER NAM*72,H*72,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,LAYD*124
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,MMLAY*38,MLCSYM*12
@@ -2461,8 +2455,27 @@ C Check to see that optical properties are available.
       IF(.NOT.OPTKOK)THEN
         SOPT='ALL'
         CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
-        OPTKOK=.TRUE.
+        if(IER.eq.0)then
+          OPTKOK=.TRUE.
+        else
+          CALL USRMSG('Opitcal database data not yet filled.',
+     &      'Please fix this first.','W')
+          return
+        endif
       ENDIF
+
+C Check version of material database.  If either closemat1 or closemat2
+C is true then we can continue (the common blocks are filled).
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        CALL USRMSG('Materials database data not yet filled.',
+     &    'Please fix this first.','W')
+        ier=2
+        return
+      endif
 
       IER=0
       moddb=.false.
@@ -2523,58 +2536,44 @@ C Editing menu.
         WRITE(MLED(5),'(2a)')  'd Layers are: ',MLCSYM
       endif
       MLED(6)='  _____________________________  '
-      MLED(7)=' Layer|Prim|Thick| Description   '
+      MLED(7)=' Layer|Matr|Thick| Description   '
       MLED(8)='      |db  |(mm) | of material   '
 
 C Detail menu.
       M=8
       RT=0.
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
       DO 23, IL=1,LAYERS(IFOC)
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
-          if(matarrayindex.ge.0)then
+        matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
+        if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRV=1.0
-              TITL='GAPS'; NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+C And if matarrayindex is zero then resetn dbcon to mimic erpcdb
+          if(matarrayindex.eq.0)then
+            DBCON=0.0; NAM='AIR'
+          else
+            DBCON=matdbcon(matarrayindex)
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
 
 C If g or h air gap and version 1.2 then assign DRAIR
-            if(matarrayindex.eq.0)then
-              continue
-	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h')then
-              if(closemat2)then
-                DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
-                DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
-                DRAIR(IFOC,IL,3)=matgapares(matarrayindex,3)
-                RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
-              endif
+          if(matarrayindex.eq.0)then
+            continue
+	  elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h')then
+            if(closemat2)then
+              DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+              DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
+              DRAIR(IFOC,IL,3)=matgapares(matarrayindex,3)
+              RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
             endif
-          else
-            call edisp(iuout,
-     &        'One layer material ref is confused or duplicate name.')
           endif
         else
 
-C << if material arrays were filled there is no need for this call >>
-          CALL ERPCDB(IFMAT,IPR(IFOC,IL),iuout,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
+C If an earlier scan of MLC detected duplicate material names or
+C was confused then matarrayindex could be -99.
+          call edisp(iuout,
+     &      'One layer material ref is confused or a duplicate name.')
+          NAM='UNKNOWN'
         endif
-        IF(IER.EQ.1)RETURN
 
 C Calculate standard U value and display as well.
 C If a standard air layer include the R values in the display.
@@ -2637,24 +2636,41 @@ C Also compose a list of layers for additions/deletions.
 C Help text for this menu.
     3 continue
       H(1)='A construction is composed of between one and eight'
-      H(2)='layers (three of which may be air gaps).'
-      H(3)='The thermophysical properties of each layer are based'
-      H(4)='on those in the materials db.'
-      H(5)='  '
-      H(6)='Instances of this construction will be inserted in the'
-      H(7)='zone construction file where they may be edited.'
-      H(8)='It is recommended that the user include all types '
-      H(9)='in the db so as not to have to edit the zone file.'
-      H(10)='Current options allow one layer at a time to be added'
-      H(11)='to the end of the list or any layer to be removed.'
-      H(12)='  '
-      H(13)='Note: layer 1 is considered the `outside`.  '
-      H(14)='  '
-      H(15)='The terms SYMMETRIC and NONSYMMETRIC have the following'
-      H(16)='meaning: SYMMETRIC constructions can be referenced from'
-      H(17)='either zone associated with a partition; a NONSYMMETRIC'
-      H(18)='construction must have an `inverted` version in the'
-      H(19)='database in the case of surfaces which are partitions.'
+      H(2)='layers (three of which may be air gaps). Each layer'
+      H(3)='has a thickness and is composed of one material. '
+      H(4)='The thermophysical properties of each layer are based'
+      H(5)='on data in the current materials database.'
+      H(6)='  '
+      H(7)='Instances of the data for this construction will be'
+      H(8)='inserted in the zone construction file. To ensure'
+      H(9)='model quality, avoid further editing of the zone con-'
+      H(10)='struction files (create more constructions if you need'
+      H(11)='variant thermophysical properties).'
+      H(12)=' '
+      H(13)='Current options allow one layer at a time to be added'
+      H(14)='to the end of the list or inserted into the list. You'
+      H(15)='may also delete one layer at a time.  If you alter a'
+      H(16)='construction you will be asked (later) if you want to'
+      H(17)='update the zone construction files.'
+      H(18)='  '
+      H(19)='Note: layer 1 is considered the `outside`.'
+      H(20)='  '
+      H(21)='The terms SYMMETRIC and NONSYMMETRIC have the following'
+      H(22)='meaning: SYMMETRIC constructions can be referenced from'
+      H(23)='either zone associated with a partition; a NONSYMMETRIC'
+      H(24)='construction must have an `inverted` version in the'
+      H(25)='database in the case of surfaces which are partitions.'
+      H(26)=' '
+      H(27)='In ESP-r air gaps in constructions are represented as'
+      H(28)='a fixed resistance to heat flow (depending on the orien-'
+      H(29)='tation of the surface using the construction). The R'
+      H(30)='value supplied should account for the resistance across'
+      H(31)='the cavity (including the impact of low emissivity'
+      H(32)='at the adjacent solid layers).'
+      H(33)=' '
+      H(34)='Air gaps are assumed not to have air movement. If the'
+      H(35)='cavity is ventilated you might have to represent it as'
+      H(36)='a thermal zone and include it in an air flow network.'
  
       CALL EMENU('Construction editing',MLED,NLED,ILED)
       IF(ILED.EQ.NLED)THEN
@@ -2765,7 +2781,7 @@ C Update DESC before returning.
       ELSEIF(ILED.EQ.NLED-1)THEN
 
 C List the help.
-       CALL PHELPD('construction editing',19,'-',0,0,IER)
+       CALL PHELPD('construction editing',36,'-',0,0,IER)
       ELSEIF(ILED.EQ.NLED-2)THEN
 
 C +- Layer.
@@ -2849,32 +2865,20 @@ C << to cancel part way through the process.
 C Ask if user wishes to browse through materials to find suitable
 C reference. Use elistmat to select via materials array.
             dok=.true.
-            h(1)='Unless you know the material reference you can'
-            h(2)='find it by browsing the current database. '
-            CALL ASKOK(' To supply the materials db reference',
-     &        ' do you want to browse through the db ? ',OK,dok,2)
+            h(1)='If you want to keep the current material answer NO'
+            h(2)='otherwise you can find one by browsing the database.'
+            CALL ASKOK('Browse the materials db for a new material',
+     &        '(NO keeps the current material)?',OK,dok,2)
             IF(OK)then
               iwhich = 0
-              if(closemat1.or.closemat2)then
-                CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
-              else
-
-C << if the materials arrays were filled elistc should not be called >>
-                CALL ELISTC(iwhich,chdb,'-',IER)
-              endif
+              CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
               if(iwhich.eq.0)then
                 H(1)='If air is correct then accept, otherwise'
                 H(2)='reselect from the list or abort the task.'
                 CALL EASKABC('Your selection is `0` i.e. air. Options:',
      &            ' ','accept','reselect material','abort',iwair,2)
                  if(iwair.eq.2)then
-                   if(closemat1.or.closemat2)then
-                     CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
-                   else
-
-C << if materials arrays filled there is no need for elistc call >>
-                     CALL ELISTC(iwhich,chdb,'-',IER)
-                   endif
+                   CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
                  elseif(iwair.eq.3)then
                    ILED=-1
                    GOTO 3
@@ -2883,18 +2887,7 @@ C << if materials arrays filled there is no need for elistc call >>
                 continue
               endif
             else
-              H(1)='Each item in the materials db has a reference'
-              H(2)='number. '
-              H(3)='Air is reference 0.'
-              H(4)=' '
-              H(5)='If you cancel then no changes should have been'
-              H(6)='made to your model (but please check). '
-              CALL EASKI(IWHICH,' ',' Material db reference no: ',
-     &          0,'F',600,'F',0,'material reference',IERI,6)
-              if(ieri.eq.-3)then
-                ILED=-1
-                GOTO 3
-              endif 
+              IWHICH=IPR(IFOC,ILN)  ! keep the current material
             endif
 
 C Take the legacy index and assign it to this layer.
@@ -2904,18 +2897,16 @@ C Take the legacy index and assign it to this layer.
 C Make up LAYDESC and PNAM as combination of matnam and matdoc based on
 C the newly selected material. This is necessary so that other
 C code can recover the details of a -99 item.
-            if(closemat1.or.closemat2)then
-	      if(matarrayindex.gt.0)then
-                lnam=lnblnk(matname(matarrayindex))
-                lfordoc = 72 - (lnam +4)    ! space left for doc
-                write(LAYDESC(IFOC,ILN),'(3a)') 
-     &            matname(matarrayindex)(1:lnam),' : ',
-     &            matdoc(matarrayindex)(1:lfordoc)
-                write(PNAM(IFOC),'(3a)')
-     &            matname(matarrayindex)(1:lnam),' : ',
-     &            matdoc(matarrayindex)(1:lfordoc)
-                IPRMAT(IFOC,ILN)=matarrayindex  ! update array index for this layer as well
-              endif
+	    if(matarrayindex.gt.0)then
+              lnam=lnblnk(matname(matarrayindex))
+              lfordoc = 72 - (lnam +4)    ! space left for doc
+              write(LAYDESC(IFOC,ILN),'(3a)') 
+     &          matname(matarrayindex)(1:lnam),' : ',
+     &          matdoc(matarrayindex)(1:lfordoc)
+              write(PNAM(IFOC),'(3a)')
+     &          matname(matarrayindex)(1:lnam),' : ',
+     &          matdoc(matarrayindex)(1:lfordoc)
+              IPRMAT(IFOC,ILN)=matarrayindex  ! update array index for this layer as well
             endif
 
 C If a standard air layer then ask for gap resistance.
@@ -2961,28 +2952,26 @@ C If a standard air layer then ask for gap resistance.
 
 C Recover the stipulated air gap resistance if we have a GAP
 C type of [g] or [h].
-              if(closemat1.or.closemat2)then
-	        if(matarrayindex.gt.0)then
-                  guessthick=matdbthick(matarrayindex)
-	          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &               matopaq(matarrayindex)(1:1).eq.'h')then
-                    if(closemat2)then
-                      DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
-                      DRAIR(IFOC,ILN,2)=matgapares(matarrayindex,2)
-                      DRAIR(IFOC,ILN,3)=matgapares(matarrayindex,3)
-                    endif
+	      if(matarrayindex.gt.0)then
+                guessthick=matdbthick(matarrayindex)
+	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &             matopaq(matarrayindex)(1:1).eq.'h')then
+                  if(closemat2)then
+                    DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
+                    DRAIR(IFOC,ILN,2)=matgapares(matarrayindex,2)
+                    DRAIR(IFOC,ILN,3)=matgapares(matarrayindex,3)
                   endif
                 endif
               endif
 
             ELSE
+
+C Not an air gap so set DRAIR to something and set default thickness.
               DRAIR(IFOC,ILN,1)=0.17
               DRAIR(IFOC,ILN,2)=0.17
               DRAIR(IFOC,ILN,3)=0.17
-              if(closemat1.or.closemat2)then
-	        if(matarrayindex.gt.0)then
-                  guessthick=matdbthick(matarrayindex)
-                endif
+	      if(matarrayindex.gt.0)then
+                guessthick=matdbthick(matarrayindex)
               endif
             ENDIF
             H(1)='The thickness of the layer is nominally between'
@@ -3013,6 +3002,8 @@ C Check if layers no longer match.
 C Edit construction name, if it is linked to another MLC then the
 C linked MLC should point back to the edited name.
         H(1)='A descriptive name (up to 12 characters) is required.'
+        H(2)='Because the name is short it is a good idea to also'
+        H(3)='separately document what this name really means. '
         T12=MLCN
 
 C If changing the name of construction then find out if
@@ -3044,8 +3035,8 @@ C If they do then warn the user.
           endif
         endif
         write(T14,'(2a)') T12(1:12),'  '
-        CALL EASKS(T14,' ',' Name of construction? ',
-     &      14,' ','Construction name',IER,2)
+        CALL EASKS(T14,' ','Name of the construction?',
+     &      14,' ','Construction name',IER,3)
         write(T12,'(a)') T14(1:12)
         call st2name(T12,MLCN)
         if(MLCSYM(1:9).EQ.'SYMMETRIC')then
@@ -3089,27 +3080,27 @@ C Select Opaque or transparent or complex fenestration construction.
         ELSEIF(IW.EQ.3)THEN
           OTF='CFC '
           OPT='USE GSLedit'
-        H(1)='Complex Fenestration Construction (CFC)'
-        H(2)=''
-        H(3)='A CFC allows for a more accurate treatment of'
-        H(4)='modeling windows with or without shading devices.'
-        H(5)=''
-        H(6)='A CFC surface has the following attributes:'
-        H(7)=' '
-        H(8)='-Exterior, vertical surface (IE=0)'
-        H(9)='-Each glazing/shading layer is separated by gas gap'
-        H(10)='-Currently limited to one shading layer per CFC'
-        H(11)=' '
-        H(12)='For an example of usage of CFCs see'
-        H(13)='"Appendix F: CFC User Reference" from'
-        H(14)='http://uwspace.uwaterloo.ca'
-        H(15)='/bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
-        H(16)=''
-        H(17)='The Glazing Shading Layer editor (GSLedit) used for'
-        H(18)='importing CFC input properties can be downloaded from'
-        H(19)='here:'
-        H(20)='TBA'
-        CALL PHELPD('CFC instructions',20,'-',0,0,IER)
+          H(1)='Complex Fenestration Construction (CFC)'
+          H(2)=''
+          H(3)='A CFC allows for a more accurate treatment of'
+          H(4)='modeling windows with or without shading devices.'
+          H(5)=''
+          H(6)='A CFC surface has the following attributes:'
+          H(7)=' '
+          H(8)='-Exterior, vertical surface (IE=0)'
+          H(9)='-Each glazing/shading layer is separated by gas gap'
+          H(10)='-Currently limited to one shading layer per CFC'
+          H(11)=' '
+          H(12)='For an example of usage of CFCs see'
+          H(13)='"Appendix F: CFC User Reference" from'
+          H(14)='http://uwspace.uwaterloo.ca'
+          H(15)='/bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
+          H(16)=''
+          H(17)='The Glazing Shading Layer editor (GSLedit) used for'
+          H(18)='importing CFC input properties can be downloaded from'
+          H(19)='here:'
+          H(20)='TBA'
+          CALL PHELPD('CFC instructions',20,'-',0,0,IER)
 
         ENDIF
         moddb = .true.
@@ -3270,35 +3261,26 @@ C construction and reset showother.
 C Ask if user wishes to browse through materials to find suitable
 C reference.
         dok=.true.
-        h(1)='Unless you know of a specific materials reference '
-        h(2)='you will probably want to scan the database for this.'
-        h(3)='If you are going to choose a material from the GAPS '
-        h(4)='category then you should browse rather than type in '
-        h(5)='an index. '
-        CALL ASKOK('Supply the materials db reference',
-     &             'via browsing the material db?',OK,dok,5)
+        h(1)='To change to a different material select it from the'
+        h(2)='the list within the current materials database.'
+        h(3)='If you need an air gap, choose one from the GAPS '
+        h(4)='category (you may be asked for the air gap resistance'
+        h(5)='values for various orientations of the construction.'
+        h(6)=' '
+        h(7)='If you want to keep the current material just say NO.'
+        CALL ASKOK('Change the materials db reference via browsing',
+     &             'the material db? (NO keeps the current material)',
+     &             OK,dok,7)
         if(OK)then
           iwhich=0
-          if(closemat1.or.closemat2)then
-            CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
-          else
-
-C << if materials arrays filled there is no need for elistc call >>
-            CALL ELISTC(iwhich,chdb,'-',IER)
-          endif
+          CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
           if(iwhich.eq.0)then
             H(1)='If air is correct then accept, otherwise'
             H(2)='reselect from the list or abort the task.'
             CALL EASKABC('Your selection is `0` i.e. air. Options:',
      &        ' ','accept','reselect material','abort',iwair,2)
             if(iwair.eq.2)then
-              if(closemat1.or.closemat2)then
-                CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
-              else
-
-C << if materials arrays filled there is no need for elistc call >>
-                CALL ELISTC(iwhich,chdb,'-',IER)
-              endif
+              CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
             elseif(iwair.eq.3)then
               ILED=-1
               GOTO 3
@@ -3308,29 +3290,11 @@ C << if materials arrays filled there is no need for elistc call >>
           endif
         else
 
-C Allow user to type in legacy index. If possible recover the material array index.
+C Use the current material array index.
           IWHICH=IPR(IFOC,ILED-8)
-          H(1)='Each item in the materials database has a'
-          H(2)='reference number.'
-          H(3)=' '
-          H(4)='Standard air gap that you provide resistances for'
-          H(5)='is reference 0. Specific air gaps may or may not'
-          H(6)='have a reference number (they may be only accessible'
-          H(7)='via their names. '
-          H(8)=' '
-          H(9)='If you cancel then no changes should have been'
-          H(10)='made to your model (but please check). '
-          CALL EASKI(IWHICH,' ',' Materials db reference: ',
-     &        0,'F',600,'F',0,'materials reference',IERI,10)
-          if(ieri.eq.-3)then
-            ILED=-1
-            GOTO 3
-          endif 
-          if(closemat1.or.closemat2)then
-            if(IWHICH.ge.0)then
-              matarrayindex=mathash(IWHICH)  ! find matching array index
-              IPRMAT(IFOC,ILED-8)=matarrayindex
-            endif
+          if(IWHICH.ge.0)then
+            matarrayindex=mathash(IWHICH)  ! find matching array index
+            IPRMAT(IFOC,ILED-8)=matarrayindex
           endif
         endif
         IPR(IFOC,ILED-8)=IWHICH
@@ -3339,18 +3303,16 @@ C Make up LAYDESC and PNAM as combination of matnam and matdoc based on
 C the newly selected material. This is necessary so that other
 C code can recover the details of a -99 item and to update the
 C menu display.
-        if(closemat1.or.closemat2)then
-	  if(matarrayindex.gt.0)then
-            lnam=lnblnk(matname(matarrayindex))
-            lfordoc = 72 - (lnam +4)    ! space left for doc
-            write(LAYDESC(IFOC,ILED-8),'(3a)') 
-     &        matname(matarrayindex)(1:lnam),' : ',
-     &        matdoc(matarrayindex)(1:lfordoc)
-            write(PNAM(IFOC),'(3a)')
-     &        matname(matarrayindex)(1:lnam),' : ',
-     &        matdoc(matarrayindex)(1:lfordoc)
-            IPRMAT(IFOC,ILED-8)=matarrayindex ! update array index for this layer
-          endif
+        if(matarrayindex.gt.0)then
+          lnam=lnblnk(matname(matarrayindex))
+          lfordoc = 72 - (lnam +4)    ! space left for doc
+          write(LAYDESC(IFOC,ILED-8),'(3a)') 
+     &      matname(matarrayindex)(1:lnam),' : ',
+     &      matdoc(matarrayindex)(1:lfordoc)
+          write(PNAM(IFOC),'(3a)')
+     &      matname(matarrayindex)(1:lnam),' : ',
+     &      matdoc(matarrayindex)(1:lfordoc)
+          IPRMAT(IFOC,ILED-8)=matarrayindex ! update array index for this layer
         endif
 
 C If an air gap ask for the three R values.
@@ -3394,30 +3356,7 @@ C If an air gap ask for the three R values.
 
 C We got the new item from ELISTMAT call so use matarryindex.
 C Find the typical thickness and if [g] or [h] gap resistance.
-          if(closemat1.or.closemat2)then
-            if(matarrayindex.ne.0)then
-              guessthick=matdbthick(matarrayindex)
-              write(outs,'(a,f6.1,a)') 
-     &        'Material selected has a thickness of ',guessthick,'mm.'
-              call edisp(iuout,outs)
-	      if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h')then
-                if(closemat2)then
-                  DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
-                  DRAIR(IFOC,ILED-8,2)=matgapares(matarrayindex,2)
-                  DRAIR(IFOC,ILED-8,3)=matgapares(matarrayindex,3)
-                endif
-              endif
-            endif
-          endif
-        ELSE
-
-C Non zero legacy index so assign thickness. And check if the
-C material is a [g] or [h] and might have air gap values.
-          DRAIR(IFOC,ILED-8,1)=0.0
-          DRAIR(IFOC,ILED-8,2)=0.0
-          DRAIR(IFOC,ILED-8,3)=0.0
-          if(closemat1.or.closemat2)then
+          if(matarrayindex.ne.0)then
             guessthick=matdbthick(matarrayindex)
             write(outs,'(a,f6.1,a)') 
      &        'Material selected has a thickness of ',guessthick,'mm.'
@@ -3429,6 +3368,25 @@ C material is a [g] or [h] and might have air gap values.
                 DRAIR(IFOC,ILED-8,2)=matgapares(matarrayindex,2)
                 DRAIR(IFOC,ILED-8,3)=matgapares(matarrayindex,3)
               endif
+            endif
+          endif
+        ELSE
+
+C Non zero legacy index so assign thickness. And check if the
+C material is a [g] or [h] and might have air gap values.
+          DRAIR(IFOC,ILED-8,1)=0.0
+          DRAIR(IFOC,ILED-8,2)=0.0
+          DRAIR(IFOC,ILED-8,3)=0.0
+          guessthick=matdbthick(matarrayindex)
+          write(outs,'(a,f6.1,a)') 
+     &      'Material selected has a thickness of ',guessthick,'mm.'
+          call edisp(iuout,outs)
+	  if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h')then
+            if(closemat2)then
+              DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
+              DRAIR(IFOC,ILED-8,2)=matgapares(matarrayindex,2)
+              DRAIR(IFOC,ILED-8,3)=matgapares(matarrayindex,3)
             endif
           endif
         ENDIF

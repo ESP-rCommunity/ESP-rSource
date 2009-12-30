@@ -663,7 +663,6 @@ C Default ESP-r distribution path.
       character doit*248,LCOPY*72,dinstpath*48,APP*4
       character DFILE*72,LASCI*72,LTMPFL*72
       character sourcefile*72  ! the file to copy
-      DIMENSION ICLN(30)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -768,6 +767,8 @@ C new file name so it can be processed.
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can
 C carry on using the materials common blocks for subsequent access.
+C If original was binary origmatwasbin will be .true.
+
           call scananymat(ier)
           if(ier.ne.0)then
             call usrmsg('Readable materials database was not found',
@@ -781,6 +782,7 @@ C carry on using the materials common blocks for subsequent access.
 
           moddb=.true.
           modcon=.true.
+          chgdb=.false.
           LFMAT=LTMP  ! restore the saved file name
           call tstamp('>','PRJ: enter materials db')
           call eclose(matver,1.1,0.001,closemat1)
@@ -788,12 +790,17 @@ C carry on using the materials common blocks for subsequent access.
           if(closemat1.or.closemat2)then
 
 C Offer display and editing of material common blocks. If chgdb is
-C returned as true then write out the ASCII file.
+C returned as true then write out the ASCII file.  If the original
+C was binary then go ahead and set chgdb .true. to force save.
             CALL ELISTMAT(iw,chgdb,'M',imatarryindex,IER)
+            if(origmatwasbin)then
+              chgdb=.true.
+            endif
           else
 
-C << if the materials arrays were filled elistc should not be called >>
-            CALL ELISTC(iw,chgdb,'M',IER)
+C If the materials arrays were not filled warn the user.
+            call usrmsg('Materials database arrays were not filled',
+     &                  'properly or db file was corrupt','W')
           endif
           if(ier.eq.1)then
 
@@ -810,34 +817,32 @@ C Materials db did not scan. Could be wrong machine type.
 
 C Having returned from editing/browsing the materials, offer to
 C make a backup copy if the initial file was binary.
-          call eclose(matver,1.1,0.001,closemat1)
-          call eclose(matver,1.2,0.001,closemat2)
-          if(closemat1.or.closemat2)then
-            continue
-          else
-            if(chgdb)then
+          if(origmatwasbin.and.chgdb)then
 
-C If the binary materials db was edited write a backup ASCII version.
-              H(1)='The binary Materials db file could get corrupted.'
-              H(2)='It is good to have a backup to restore from and'
-              H(3)='this is held in ascii format.'
-              DFILE='./newmat.db1.a'
-              clkok=.false.
-              LASCI=' '
-              write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-              CALL EASKSCNCL(LASCI,
-     &          'Materials database (ASCII backup)?',
-     &          ' ','cancel',clkok,72,DFILE,'materials db (ascii)',
-     &          IER,3)
-              if(clkok)then
-                continue
-              else
-                IAF=IFIL+1
-                CALL MKAPRC(LASCI,IAF,IER)
-              endif
+C If the binary materials db was edited save an ASCII version.
+            H(1)='The binary Materials db file could get corrupted.'
+            H(2)='It is good to have a backup to restore from and'
+            H(3)='this is held in ascii format.'
+            DFILE='./newmat.db1.a'
+            clkok=.false.
+            LASCI=' '
+            write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+            CALL EASKSCNCL(LASCI,
+     &        'Materials database (ASCII backup)?',
+     &        ' ','cancel',clkok,72,DFILE,'materials db (ascii)',
+     &        IER,3)
+            if(clkok)then
+              continue
+            else
+
+C Write out the ASCII version and make it the new LFMAT.
+              IAF=IFIL+1
+              CALL MKAPRC(LASCI,IAF,IER)
+              LFMAT=LASCI
+              origmatwasbin=.false.   ! reset so only done once
             endif
-            modcon=chgdb
           endif
+          modcon=chgdb
         else
           call usrmsg('Sorry there is no db to browse/edit.',
      &                'Please select another option.','W')
@@ -1117,8 +1122,9 @@ C returned as true then write out the ASCII file.
 
           else
 
-C << if the materials arrays were filled elistc should not be called >>
-            CALL ELISTC(iw,chgdb,'M',IER)
+C If the materials arrays were not filled warn the user.
+            call usrmsg('Materials database arrays were not filled',
+     &                  'properly or db file was corrupt','W')
           endif
 
           if(ier.eq.1)then
