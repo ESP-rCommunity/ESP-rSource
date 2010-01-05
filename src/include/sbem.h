@@ -319,7 +319,7 @@ C are local variables in mksbem.F subroutine BERTER.
      & AER_HEAT,AER_HEATCO2,AER_COOL,AER_COOLCO2,AER_AUX,AER_AUXCO2,
      & AER_LIGHT,AER_LIGHTCO2,AER_DHW,AER_DHWCO2,DHWCO2RATE,
      &RER_HEAT,RER_COOL,RER_DHW,RER_AUX,RER_HEATCO2,RER_COOLCO2,
-     &RER_DHWCO2,RER_AUXCO2,TyER_HEAT,TyER_COOL,TyER_AUX,TyER_LIGHT,
+     &RER_AUXCO2,TyER_HEAT,TyER_COOL,TyER_AUX,TyER_LIGHT,
      &TyER_DHW,TyER_HEATCO2,TyER_COOLCO2,TyER_AUXCO2,TyER_LIGHTCO2,
      &TyER_DHWCO2   
       COMMON/SBEM08/BER_HEAT,BER_HEATCO2,BER_COOL,BER_COOLCO2,
@@ -466,8 +466,8 @@ C Activities global list
      &  fTypicalLighting(MACL)
                 
 C Reals not in common
-      REAL TyERE    ! total annual energy for typical building
-      REAL RERE     ! total annual energy for reference building
+C      REAL TyERE    ! total annual energy for typical building
+C      REAL RERE     ! total annual energy for reference building
 
       real build_UA !stripped/actual building UA value for Brukl and EPCgen
       real build_UAN !notional building UA value for Brukl and EPCgen

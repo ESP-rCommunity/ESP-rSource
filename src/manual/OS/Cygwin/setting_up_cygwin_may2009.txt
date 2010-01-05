@@ -16,7 +16,7 @@
  
  Cygwin differs from virtualization in that it exists within the
  same folder structure of Windows rather than in a virtual computer
- so it naturaly sees the Windows file folders and Windows Explorer
+ so it naturally sees the Windows file folders and Windows Explorer
  can access the files within the Cygwin environment.  Cygwin allows
  ESP-r to run at almost the same speed as a native version.
  
@@ -241,17 +241,17 @@
  process is similar to that for installing from a precompiled version
  but without using the self-extracting installer.
   
- Standard cygwin will install a g77 compiler in /usr/bin/g77
- and there should also be a f77 link. If you issue the command
- which f77 you should get /usr/bin/f77. If you do not, you 
- should create a link to f77 as follows
- 
-   cd /usr/bin
-   ln -s /usr/bin/g77 /usr/bin/f77
+ Standard cygwin will install a gfortran compiler in /usr/bin/
+ If you issue the command which gfortran you should get /usr/bin/gfortran.exe
+ and /usr/bin/gfortran-4.exe.  You will also need matching gcc
+ and g++ compilers.  If these may be listed as g++-4.exe and gcc-4.exe.
+ If this is the case then your subsequent use of the ESP-r Install
+ script will need to include the directive --compiler_version -4
+ in order to ensure that all of the compilers are found.
  
  Issue the command "logout" or "exit" in the Cygwin command
  window and then click on the cygwin icon on the desktop
- to re-establish the PATH environment variable and get an intial
+ to re-establish the PATH environment variable and get an initial
  cygwin command shell window. 
  
  Create a source folder for the esp-r distribution. A typical
@@ -266,7 +266,7 @@
  Once you have the source code have a look at the Readme file. 
  There is an install script which can be invoked via the command
 
-   ./Install
+   ./Install -d /usr/esru --gcc4
 
  and if you want to find out what the install options are
 
@@ -278,43 +278,27 @@
  as it does under Solaris or Linux or OS X. You will be asked
  if you want to install training files [say yes] and databases
  [say yes].
+
  
  1.7 After ESP-r install:
  
  Typically users will start up an X display desktop and work within
  that. There are two general types of X display desktop. The first
- approach creates a virtual screen into which ESP-r and its helper 
- applications run. This is usually called a 'rooted' display and it
- requires an .xinitrc in the home folder of each
- user (see below for typical contents of that file)....
- 
- exec >$HOME/.x11startlog 2>$HOME/.x11startlog 
- xsetroot -bitmap .esru.x
- xterm -name Console -fn 6x13 -C -g 85X8+0+0 &
- xterm -name Xterm1 -fn 6x13 -g 85X35+0-0 -sb -sl 400 &
- xterm -name Xterm2 -fn 6x13 -g 80X24+350-50 -sb -sl 400 &
- xclock -g 75X75-60+0 &
- xstdcmap -delete all
- exec twm
-  
- To invoke a rooted X display desktop 900 pixels wide by 700 pixels 
- tall give the command:
- 
-   startx -- -screen 0 900 700
- 
- The window in command b will be 900 pixels wide by 700 pixels
- high and will have three X terminals running in it along with
- a clock.
- 
- The second type of X display starts up a single graphic terminal
- on you monitor and the ESP-r modules can be positioned anywhere
- on the monitor. This is called a rootless display.
- 
- Recent vesions of cygwin work with scripts startxwin.bat or 
- startxwin.sh. Either of these scripts can be issued in the
- initial cygwin text command window and they will cause a
- single graphic terminal to start up inside which you can
- invoke graphic applications.
+ approach creates begins with the initial cygwin text console in which
+ the command  startxwin.sh or startxwin.bat are run to start up a
+ graphic (X11) terminal from which graphic applications such as ESP-r
+ can be run.  
+
+ Even though you may have to be Administrator to use the single file
+ installer, if you start up a graphic terminal as Administrator you
+ may find that subsequent logins as other users may not work because
+ of some hidden lock files in /tmp/.X11 or because the X11 log file
+ in /var/log cannot be written. If this happens try removing either
+ of these files (as Administrator).
+
+ It may also be possible to run Cygwin in a virtual screen. See the
+ Cygwin documentation for setting this up. It typically requires that
+ you have installed some form of window manager (the most basic is twm).
  
  
  1.8 Radiance install:

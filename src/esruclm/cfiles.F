@@ -720,7 +720,7 @@ C from a list so might as well exit the program.
           write(outs248,'(3a)')'Climate exited because input file was',
      &      tab,LCMDFL(1:lnblnk(LCMDFL))
           call isunix(unixok)
-          if(unixok)then  ! do not both if DOS
+          if(unixok)then  ! do not bother if DOS
             write(6,*)outs248(1:lnblnk(outs248))
           endif
           CALL EPAGEND

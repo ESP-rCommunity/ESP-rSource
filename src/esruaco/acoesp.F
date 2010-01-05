@@ -290,7 +290,8 @@ C length : Length of zdescr
 C If we got to this point must have been an error
       call isunix(unixok)
       if(unixok)then
-        write(6,*) 'ZLIST: error writing zone names: ',outs
+        call lusrmsg('ZNLIST: error writing zone names: ',
+     &    outs,'-')
       endif
       ierr=1
       return

@@ -104,7 +104,7 @@ C updated when the user exits).
       logical gotviabrowse
 
       CHARACTER tcname*248
-      CHARACTER ITEM(15)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
+      CHARACTER ITEM(14)*33,choices(11)*32,H*72,LTMP*72,GFILE*72
       CHARACTER*6 lodlabel
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -826,8 +826,12 @@ C even if modopr has not been set.
      &        'Before exiting do you wish to sort possible changes',
      &        'to the casual gain periods?',OK,DOK,2)
             if(ok)then
-               call PROCESSOLDCAS(ICOMP,0,iuout,IER)
-               MODOPR=.true.
+
+C Sort the gains and then updated the file and mark MODOPR.
+              call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+              IUO=IFIL+1
+              CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+              MODOPR=.false.
             endif
           endif
         endif
@@ -842,6 +846,10 @@ C even if modopr has not been set.
           CALL ASKOK('Before exiting do you wish to',
      &      'save any changes made?',OK,DOK,4)
           IF(.not.OK) return
+
+C So save the changes to the file and then exit.
+          IUO=IFIL+1
+          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
         endif
         RETURN
       ELSEIF(INO.EQ.2)THEN
@@ -941,6 +949,8 @@ C and rewrite the system configuration file if not browsing.
               IER=1
               RETURN
             ENDIF
+          else
+            MODOPR=.false.  ! signal that we have saved the file.
           endif
           CALL EMKCFG('-',IER)
         else

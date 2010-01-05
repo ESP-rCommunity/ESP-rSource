@@ -645,7 +645,8 @@ C Get common block precz/lnprecz from geometry.h
 C I/O error trap.
    1  call isunix(unixok)
       if(unixok)then
-        write(6,*) 'ZLIST: error writing zone names: ',outs
+        call lusrmsg('ZNLIST: error writing zone names: ',
+     &    outs,'-')
       endif
       ierr=1
       return

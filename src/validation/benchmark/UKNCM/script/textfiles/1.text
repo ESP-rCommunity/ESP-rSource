@@ -126,15 +126,7 @@ This report is presented for the accreditation of ESP-r as a Dynamic Simulation 
 The software automatically generates the notional, reference and typical model from the model built for simulation purposes.
 
 \subsection{Infiltration Method}
-Infiltration rates for all zones are calculated using the method specified in SAP 2005 where infiltration rate is calculated as:
-\begin{center}
-\textit{ach = LA/(20V)}
-\end{center}
-where\\
-ach = air changes per hour\\
-L = building leakage rate at 50Pa ($m^{3}/m^{2}$)\\
-A = floor area of zone ($m^{2}$)\\
-V = volume of zone ($m^{3}$)
+Infiltration rates for all zones are determined using guidance given in CIBSE Guide A. The guide provides infiltration rates for different buildings based on pressure tests.
 
 \section{Test Cases}
 \subsection{Case 1: Small shallow plan office (naturally ventilated)}

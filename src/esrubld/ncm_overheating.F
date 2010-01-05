@@ -76,7 +76,7 @@ C Used for UK NCM purposes
       common/btime/btimep,btimef      
       real btimep,btimef
       real VAL
-      dimension VAL(MBITS+2)
+      dimension VAL(MTABC+2)
       common/trc/itrc
       integer itrc
       integer ISD,IFOC,IER
