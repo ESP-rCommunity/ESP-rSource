@@ -103,7 +103,7 @@ C Simulation parameter presets.
       logical closemat1,closemat2
 
       character GDESCR*36
-      CHARACTER NAM*72,TITL*72,outs*124,h*72
+      CHARACTER NAM*72,outs*124,h*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -182,8 +182,17 @@ C Check the version number and set iver.
       if(closec) iver = 14
       if(closed) iver = 20
 
-C Open the primitive and mlc db.
+C Open the material and mlc db. Check that the materials arrays
+C have been filled (warn user if not).
       call opendb(ier)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        WRITE(ioout,'(a)')' '
+        WRITE(ioout,'(a)')'!- == WARNING MATERIAL ARRAYS INCOMPLETE =='
+      endif
 
 C First task is to loop through each of the mlc and get a
 C list of primitives used in this problem. Clear the local
@@ -654,8 +663,6 @@ C Now, for each unique material write description.
       WRITE(ioout,'(a)') ' '
       WRITE(ioout,'(a)') '!- ======= MATERIAL ======'
 
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
       do 25 iy = 1,nmat
         if(iprndx(iy).gt.0)then
           WRITE(ioout,'(a)',iostat=ios,err=3) ' '
@@ -665,32 +672,23 @@ C Now, for each unique material write description.
             WRITE(ioout,'(2a)',iostat=ios,err=3) 
      &        'MATERIAL:WINDOWGLASS',com
           endif
-          if(closemat1.or.closemat2)then
-            legmat=iprndx(iy)   ! which legacy index
-            if(legmat.gt.0)then
-              matarrayindex=mathash(legmat)  ! find matching array index
+          legmat=iprndx(iy)   ! which legacy index
+          if(legmat.gt.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
  
 C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-              if(matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                E=0.99; A=0.99; DRV=1.0
-                TITL='GAPS'; NAM='AIR'
-              else
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRV=matdbdrv(matarrayindex)
-                write(TITL,'(a)') 'placeholder'
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
-              endif
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              E=0.99; A=0.99
+              NAM='AIR'
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
-          else
-
-C << if material arrays were filled there is no need for this call >>
-            CALL ERPCDB(IFMAT,iprndx(iy),ITRU,IER,DBCON,DBDEN,
-     &        DBSHT,E,A,DRV,TITL,NAM)
           endif
 
 C Make up name. t12a holds the thickness as a string w/o leading blanks
