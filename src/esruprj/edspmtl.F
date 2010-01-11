@@ -394,12 +394,25 @@ C sstr in spdesc.
       integer header,footer
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
       CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
-      CHARACTER TITL*72,DADESC*72,spitem2*32
+      CHARACTER DADESC*72,spitem2*32
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER spflnam*72,spdesc*72
       CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72, t144*144
       CHARACTER PCITM(35)*42,DEPRE*40,KEY*1,DESCRC*25
+
+
+C Establish if material data arrays have been filled. If not return
+C with ier=1.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so editing',
+     &    'of special materials not allowed.','W')
+        return
+      endif
 
 C Set the special components reporting variable
       SPREPT=.FALSE.
@@ -1061,40 +1074,21 @@ C Write menu displaying a list of layer names
         write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
         write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
         item(4)='  ----------------------------'
-        call eclose(matver,1.1,0.01,closemat1)
-        call eclose(matver,1.2,0.01,closemat2)
+
+C Loop through each layer.
         do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-          if(closemat1.or.closemat2)then
-            matarrayindex=IPRMAT(imatch,j)   ! which array index
-            if(matarrayindex.ge.0)then
+          matarrayindex=IPRMAT(imatch,j)   ! which array index
+          if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-              if(matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                E=0.99; A=0.99; DRV=1.0
-                TITL='GAPS'; NAM='AIR'
-              else
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRV=matdbdrv(matarrayindex)
-                write(TITL,'(a)') 'placeholder'
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
-              endif
+            if(matarrayindex.eq.0)then
+              NAM='AIR'
+            else
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
-          else
-
-C << if material arrays were filled there is no need for this call >>
-            CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
-     &        DBSHT,E,A,DRV,TITL,NAM)
           endif
-          IF(IER.EQ.1) THEN
-             call edisp(iuout,' Found an error reading PCDB!')
-          ENDIF
           IF(IPR(imatch,j).EQ.0)THEN
             PNAM(j)='Air gap'
           ELSE
@@ -1103,6 +1097,7 @@ C << if material arrays were filled there is no need for this call >>
           write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
           ndisp=header+j
   10    continue
+
         item(ndisp+footer-2)='  ----------------------------' 
         item(ndisp+footer-1)='? help  '
         item(ndisp+footer)  ='- exit  '
