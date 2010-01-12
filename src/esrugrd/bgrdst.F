@@ -43,7 +43,6 @@ C *********************************************************************
       SUBROUTINE MENUSG(ITRC)
 
       COMMON/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -220,7 +219,6 @@ C *********************************************************************
 #include "epara.h"
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -318,7 +316,6 @@ C IMPCMP displays the menu for defining imported component.
 C *********************************************************************
       SUBROUTINE IMPCMP(IComp)
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
 
@@ -660,8 +657,6 @@ C *********************************************************************
       SUBROUTINE EDTMSH(NDim,LDim,DimName)
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
-
       DIMENSION LDim(MLEV)
 
       CHARACTER*72 Promp,StrVal,Msg
@@ -706,7 +701,6 @@ C *********************************************************************
       SUBROUTINE DVDMSH(NDim,LDim,IndDim)
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
       COMMON/GRSD52/IMRowS(MMTR),IMRowE(MMTR)
       COMMON/GRSD53/IMColS(MMTR),IMColE(MMTR)
@@ -1129,7 +1123,6 @@ C *********************************************************************
       SUBROUTINE MTRINP(I)
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
@@ -1388,7 +1381,6 @@ C *********************************************************************
       SUBROUTINE BNDINP(I)
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay
@@ -1479,7 +1471,6 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/C1/NCOMP,NCON
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/PREC8/SLAT,SLON
 
       COMMON/GRSD31/INDLCL(MS)
       COMMON/GRSD41/RefWidth,NRow,NCol,NLay

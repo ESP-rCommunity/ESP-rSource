@@ -451,8 +451,6 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNM*72,TL*72
-
 C Determine the lumped edge thermophysical properties.
       VOLML=0.
       DNHCL=0.
@@ -468,15 +466,10 @@ C Determine the lumped edge thermophysical properties.
 C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
         if(matarrayindex.eq.0)then
           CND=0.0; DBDEN=0.0; DBSHT=0.0 
-          E=0.99; A=0.99
-          PNM='AIR'
         else
           CND=matdbcon(matarrayindex)
           DBDEN=matdbden(matarrayindex)
           DBSHT=matdbsht(matarrayindex)
-          E=matdbine(matarrayindex)
-          A=matdbina(matarrayindex)
-          write(PNM,'(a)') matname(matarrayindex)(1:32)
         endif
 
         VL=DZE(IEG,IDZ)*DYE(IEG,IY)*DXE(IEG,IX)
@@ -609,8 +602,6 @@ C *********************************************************************
       COMMON/GR3D81/ISNDS(MS),ISNDE(MEZ),ISNDC(MCZ)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNAM*72,TITL*72
-
       ISP1=-2
       IS1=ISFEDG(IEG,1)
       IS2=ISFEDG(IEG,2)
@@ -648,15 +639,10 @@ C *********************************************************************
 C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
         if(matarrayindex.eq.0)then
           CND=0.0; DEN=0.0; SHT=0.0 
-          E=0.99; A=0.99
-          PNAM='AIR'
         else
           CND=matdbcon(matarrayindex)
           DEN=matdbden(matarrayindex)
           SHT=matdbsht(matarrayindex)
-          E=matdbine(matarrayindex)
-          A=matdbina(matarrayindex)
-          write(PNAM,'(a)') matname(matarrayindex)(1:32)
         endif
 
 C Create the control volume and node.
@@ -814,8 +800,6 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNM*72,TL*72
-
 C Determine the lumped corner thermophysical properties.
       VOLML=0.
       DNHCL=0.
@@ -832,15 +816,10 @@ C Determine the lumped corner thermophysical properties.
 C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
         if(matarrayindex.eq.0)then
           CND=0.0; DBDEN=0.0; DBSHT=0.0 
-          E=0.99; A=0.99
-          PNM='AIR'
         else
           CND=matdbcon(matarrayindex)
           DBDEN=matdbden(matarrayindex)
           DBSHT=matdbsht(matarrayindex)
-          E=matdbine(matarrayindex)
-          A=matdbina(matarrayindex)
-          write(PNM,'(a)') matname(matarrayindex)(1:32)
         endif
 
         VL=DZC(ICR,IDZ)*DYC(ICR,IY)*DXC(ICR,IX)
@@ -966,8 +945,6 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNAM*72,TITL*72
-
       ISP1=-3
       IS1=ISFCRN(ICR,1)
       IS2=ISFCRN(ICR,2)
@@ -1001,15 +978,10 @@ C *********************************************************************
 C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
         if(matarrayindex.eq.0)then
           CND=0.0; DEN=0.0; SHT=0.0 
-          E=0.99; A=0.99
-          PNAM='AIR'
         else
           CND=matdbcon(matarrayindex)
           DEN=matdbden(matarrayindex)
           SHT=matdbsht(matarrayindex)
-          E=matdbine(matarrayindex)
-          A=matdbina(matarrayindex)
-          write(PNAM,'(a)') matname(matarrayindex)(1:32)
         endif
 
 C Create the control volume and node.

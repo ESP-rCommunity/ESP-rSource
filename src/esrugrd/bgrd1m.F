@@ -64,7 +64,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       CHARACTER*12 ZONENM
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character outs*124,outsd*124,outs72*72,OTHSTR*30
       CHARACTER*72 LMOIST,H,TXT,MSG1,LTMP
 
       DIMENSION IVALZ(MCOM),IVALS(MS)

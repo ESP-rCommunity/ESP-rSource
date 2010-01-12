@@ -504,8 +504,6 @@ C geometry.h provides commons G0 and G2.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -524,8 +522,7 @@ C geometry.h provides commons G0 and G2.
       logical closemat1,closemat2
       LOGICAL GRDOK
       logical newgeo  ! to use for testing if new/old geometry file.
-      DIMENSION ICLN(30)
-      CHARACTER VERTX*2,outs*124
+      CHARACTER VERTX*2
 
 C If materials database not opened warn the user.
       call eclose(matver,1.1,0.001,closemat1)
@@ -572,7 +569,7 @@ C If materials database not opened warn the user.
    10 CONTINUE
 
 C Initialise ground coefficients.
- 139  NDXG=1
+      NDXG=1
       DXG(1)=50.
       NDYG=1
       DYG(1)=50.

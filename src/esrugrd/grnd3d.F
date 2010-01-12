@@ -252,8 +252,8 @@ C reference. Use elistmat to select via materials array.
         h(2)='otherwise you can find one by browsing the database.'
         CALL ASKOK('Browse the materials db for a new material',
      &    '(NO exits the process)?',OK,dok,2)
+        iwhich = 0
         IF(OK)then
-          iwhich = 0
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
           if(iwhich.eq.0)then
             H(1)='If air is correct then accept, otherwise'
@@ -725,7 +725,7 @@ C *********************************************************************
       DIMENSION IZZ(3),VZZ(5)
 
       CHARACTER    MSG*72,FLTYP*25
-      CHARACTER*72 PNAM,TITL,H,LTMP
+      CHARACTER*72 H,LTMP
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
 
 C Initialize the connections,nodes, and control volumes counters.
@@ -786,15 +786,10 @@ C Estimate the start up period for the ground.
 C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
             if(matarrayindex.eq.0)then
               DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99
-              PNAM='AIR'
             else
               DBCON=matdbcon(matarrayindex)
               DBDEN=matdbden(matarrayindex)
               DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              write(PNAM,'(a)') matname(matarrayindex)(1:32)
             endif
             DNHCVL=DNHCVL+DXG(IX)*DYG(IY)*DZG(IL)*DBDEN*DBSHT
             RESIST=RESIST+DZG(IL)/DBCON
@@ -985,8 +980,6 @@ C *********************************************************************
       DIMENSION IXX(3),IYY(3),IZZ(3),VXX(5),VYY(5),VZZ(5)
       DIMENSION ACOND(3)
 
-      CHARACTER PNAM*72,TITL*72
-
       DNHC=0.
       DO 10 II=1,3
         ACOND(II)=0.
@@ -1010,15 +1003,10 @@ C *********************************************************************
 C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
         if(matarrayindex.eq.0)then
           CND=0.0; DBDEN=0.0; DBSHT=0.0 
-          E=0.99; A=0.99
-          PNAM='AIR'
         else
           CND=matdbcon(matarrayindex)
           DBDEN=matdbden(matarrayindex)
           DBSHT=matdbsht(matarrayindex)
-          E=matdbine(matarrayindex)
-          A=matdbina(matarrayindex)
-          write(PNAM,'(a)') matname(matarrayindex)(1:32)
         endif
  
         DNHC=DNHC+VXX(I1)*VYY(I2)*VZZ(I3)*DBDEN*DBSHT

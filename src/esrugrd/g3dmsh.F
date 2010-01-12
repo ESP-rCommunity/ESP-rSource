@@ -537,8 +537,6 @@ C *********************************************************************
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -559,7 +557,6 @@ C *********************************************************************
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      DIMENSION ICLN(30)
 
       CHARACTER MSG*72,FLTYP*25,outs*124
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,H,LTMP
@@ -623,7 +620,7 @@ C Create a binary file for saving the nodes initial temperatures.
       IF(IER.NE.0)RETURN
 
 C Define the degree of boundary nodes modelling.
- 139   H(1)=' two degrees are supported in this version; '
+      H(1)=' two degrees are supported in this version; '
       H(2)=' 1. all boundary nodes will have convective,'
       H(3)='    and radiative boundary conditions.'
       H(4)=' 2. all boundary nodes will have convective'
