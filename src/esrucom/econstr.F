@@ -509,7 +509,7 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER OUTS*124,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
-      character iprtext*4,TITL*72,GDESCR*36
+      character iprtext*4,GDESCR*36
 
 C Use material arrays if available. This also assumes that constructions will
 C have been filled after the model cfg file was scanned.
@@ -589,17 +589,8 @@ C add resistance for layer (using data from constructions file)
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
               if(matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                E=0.99; A=0.99; DRV=1.0
-                TITL='GAPS'; NAM='AIR'
+                NAM='AIR'
               else
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRV=matdbdrv(matarrayindex)
-                write(TITL,'(a)') 'placeholder'
                 write(NAM,'(a)') matname(matarrayindex)(1:32)
               endif
             endif
