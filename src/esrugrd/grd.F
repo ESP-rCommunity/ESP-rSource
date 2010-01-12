@@ -25,12 +25,16 @@ C INITPF is the main program for multi-dimensional gridding of the
 C        solid domain (air volumes gridding is not included).
 C INTGRD initializes the gridding process by reading in the required 
 C        geometry and construction data.
+C Opendb Open materials constructions, multi-layer constructions and
+C        optical properties databases.
 
 C ***************************  initpsfz  ********************************
 C INITPFZ is the main program for multi-dimensional gridding of the  
 C solid domain (air volumes gridding is not included).
+
 C << calling routine could focus - 1D/3D ground etc. so the necessary
 C << file names can be in place.
+
       program grd
 #include "building.h"
 #include "esprdbfile.h"
@@ -268,6 +272,15 @@ C Find the path and local file name.
           MODE='NONE'
           CALL ERSYS(LCFGF,IFCFG,IUF,MODE,ITRC,IER)
           IF(IER.EQ.0)THEN
+
+C Open core of databases.
+            call opendb(ier)
+            if(ier.ne.0)then
+              call usrmsg(
+     &          'Possible problems with one or more of the con-',
+     &          'struction and optical databases, please check.','W')
+            endif
+
             NZONES=NCOMP
             CALL ZDATA (itrc,IER,NZONES,ISFSUM)
             CFGOK=.TRUE.
@@ -380,6 +393,14 @@ C Find the path and local file name.
         MODE='NONE'
         CALL ERSYS(LCFGF,IFCFG,IUF,MODE,ITRC,IER)
         IF(IER.EQ.0)THEN
+
+C Open core of databases.
+          call opendb(ier)
+          if(ier.ne.0)then
+            call usrmsg(
+     &        'Possible problems with one or more of the',
+     &        'construction and optical databases, please check.','W')
+          endif
 
 C Initialize the 1D gridding variables.
           NZONES=NCOMP
@@ -506,6 +527,18 @@ C geometry.h provides commons G0 and G2.
       DIMENSION ICLN(30)
       CHARACTER VERTX*2,outs*124
 
+C If materials database not opened warn the user.
+      call eclose(matver,1.1,0.001,closemat1)
+      call eclose(matver,1.2,0.001,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('No readable material database was found.',
+     &              'check other warnings for advise.','W')
+        MATDBOK=.FALSE.
+        return
+      endif
+
       GRDOK=.true.
       newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
@@ -537,63 +570,6 @@ C geometry.h provides commons G0 and G2.
         CALL NODTWO(ICOMP)
         NNDS=NNDS+NNDZ(ICOMP)
    10 CONTINUE
-
-C If primitive database not opened, do it now.
-      IF(.NOT.MATDBOK)THEN
-        IER=0
-        CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        IF(ier.ne.0)THEN
-          write(outs,'(3a)') ' No materials database ',
-     &      LFMAT(1:lnblnk(LFMAT)),' found.'
-          call edisp(iuout,outs)
-          MATDBOK=.FALSE.
-        else
-
-C Also check to see if the file has correct info. 
-          IREC=601
-          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
-     &      (ICLN(I),I=1,30)
-          if(NCLASS.LE.0)then
-            goto 1000   ! no classifications so try alternatives
-          else
-            MATDBOK=.TRUE.
-            matver = 0.0
-            goto 139  !  a binary file found so carry on.
-          endif
- 1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-          if(ier.eq.-2)then
-            ier=0
-            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-            if(ier.ne.0)then
-              call usrmsg('No readable materials database was found',
-     &                  'or file was corrupt','W')
-              MATDBOK=.FALSE.
-              return
-            else
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
-              if(closemat1.or.closemat2)then
-                call edisp(iuout,' Filled material data arrays...')
-                MATDBOK=.TRUE.
-              else
-                call usrmsg(
-     &            'No readable material database was found. ',
-     &            'check other warnings for advise.','W')
-                MATDBOK=.FALSE.
-                return
-              endif
-            endif
-          elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2)then
-              call edisp(iuout,' Filled material data arrays...')
-              MATDBOK=.TRUE.
-            endif
-          endif
-        endif
-      ENDIF
 
 C Initialise ground coefficients.
  139  NDXG=1
@@ -644,6 +620,137 @@ C ***** Dummy display of images.
 C Dummy subroutine needed to compile (called from library code).
       SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
+
+      return
+      end
+
+C ********** opendb (based on code from eddb.F)
+
+C Open materials constructions, multi-layer constructions and
+C optical properties databases. In the case of materials, first
+C assume it is a binary file, check its contents and if a problem
+C then scan new ascii format and if that does not work try the
+C older ascii materials file to fill the materials data arrays.
+C If sucessful the material common blocks will be filled and
+C closemat1 or closemat2 will be set.
+
+      subroutine opendb(ier)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+      
+      integer lnblnk  ! function definition
+
+      common/OUTIN/IUOUT,IUIN
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
+      character SOPT*12,outs*124,GDESCR*36
+
+      IER=0
+
+C Scan the binary file data into materials commons and if this was
+C sucessful and matver was set to 1.1 in matformbin then we can
+C carry on using the materials common blocks for subsequent access.
+      call MATFROMBIN(IER)  ! fill materials common blocks
+      if(ier.eq.0)then
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
+          goto 139  !  commons filled carry on.
+        else
+          MATDBOK=.TRUE.
+          matver = 0.0
+          goto 139  !  a binary file found so carry on.
+        endif
+      elseif(ier.eq.-2.or.ier.eq.-3)then
+        ier=0  ! clear error state prior to rascimat call
+        goto 1000
+      elseif(ier.eq.-1)then
+        write(outs,'(3a)') ' Materials db ',
+     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MATDBOK=.FALSE.
+        ier=0  ! clear error state before continuing
+        goto 139  !  try the other databases.
+      endif
+
+C Check for ascii versions of the materials database.
+ 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
+      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
+        ier=0
+        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+        if(ier.ne.0)then
+          call usrmsg('No readable materials database was not found',
+     &                'or file was corrupt','W')
+          MATDBOK=.FALSE.
+        else
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
+            MATDBOK=.TRUE.
+          else
+            call usrmsg(
+     &        'No readable Materials database was found!',
+     &        ' ','W')
+            MATDBOK=.FALSE.
+          endif
+        endif
+      elseif(ier.eq.0)then
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
+        endif
+      endif
+
+        
+C Read multilayer db information into common.
+ 139  CALL ERPFREE(IFMUL,ISTAT)
+      call FINDFIL(LFMUL,XST)
+      if(XST)then
+        CALL ERMLDB(0,IUOUT,IER)
+        IF(IER.eq.1)then
+          write(outs,'(3a)') 
+     &    ' Problems with materials used by Constructions db',
+     &     LFMAT(1:lnblnk(LFMAT)),'!'
+          call edisp(iuout,outs)
+          call edisp(iuout,' ')
+          MLDBOK=.FALSE.
+        ELSEIF(IER.eq.2)then
+
+          call edisp(iuout,
+     &      'There were many undefined materials in the constructions')
+          call edisp(iuout,'please check your model.')
+        else
+
+C Scan was ok so set mldbok to true.
+          MLDBOK=.TRUE.
+        endif
+      else
+
+C Could not find Constructions db at this time, report to user.
+        write(outs,'(3a)') 'Constructions db ',
+     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
+        call edisp(iuout,outs)
+        call edisp(iuout,' ')
+        MLDBOK=.FALSE.
+      endif
+
+C Open Ooptical Properties db and read into common.
+      SOPT='ALL'
+      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
+      if(ier.ne.0)then
+        call usrmsg('Optical Properties db not found or',
+     &              'there was a problem reading it!','W')
+        OPTKOK=.FALSE.
+      else
+        OPTKOK=.TRUE.
+      endif
 
       return
       end

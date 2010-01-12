@@ -246,24 +246,32 @@ C Create a material rectangle.
           CALL GRAAPH(IDRW1,IDRW2)
         ENDIF
 
-C Ask if user wishes to browse through primitives to find suitable
-C reference.
-        dok=.true.
-        h(1)='If you know the material db index you can say no and '
-        h(2)='enter the number directly. Otherwise say yes and '
-        h(3)='browse the database. '
-        CALL ASKOK(' Browse material database to locate the material',
-     &    ' index you want? A no will ask you for the index.',OK,dok,3)
+C Ask if user wishes to browse through materials to find suitable
+C reference. Use elistmat to select via materials array.
+        h(1)='If you want to keep the current material answer NO'
+        h(2)='otherwise you can find one by browsing the database.'
+        CALL ASKOK('Browse the materials db for a new material',
+     &    '(NO exits the process)?',OK,dok,2)
         IF(OK)then
-          iwhich=0
-          CALL ELISTC(iwhich,chdb,'-',IER)
+          iwhich = 0
+          CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+          if(iwhich.eq.0)then
+            H(1)='If air is correct then accept, otherwise'
+            H(2)='reselect from the list or abort the task.'
+            CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &        ' ','accept','reselect material','abort',iwair,2)
+            if(iwair.eq.2)then
+              CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+            elseif(iwair.eq.3)then
+              GOTO 10
+            endif
+          elseif(iwhich.eq.-99)then
+            continue
+          endif
         else
-          H(1)='Each item in the primitive construction db has a'
-          H(2)='reference number. '
-          H(3)='Air is reference 0.'
-          CALL EASKI(IWHICH,' ',' Primitive db reference no: ',
-     &        0,'F',600,'F',0,'primitive reference',IER,3)
+          goto 10  ! go back
         endif
+
         LDRU(1)=IWHICH
         WRITE(LMTS,'(4(1X,I2))')(LDRU(K),K=2,5)
         WRITE(MSG,'(2A)')'enter the material rectangle borders',
@@ -704,6 +712,7 @@ C *********************************************************************
       SUBROUTINE GNDMSH(IER)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -765,11 +774,6 @@ C numbers of the control volumes represented by each node).
       IF(IER.NE.0)RETURN
 
 C Estimate the start up period for the ground.
-
-C << note this subroutine assumes that the model is associated
-C << with a binary version of the materials database. It must
-C << be updated to use the material array structures.
-
       DNHCVL=0.
       RESISTM=1.E18
       DO 10 IX=1,NDXG
@@ -777,11 +781,23 @@ C << be updated to use the material array structures.
           RESIST=0.
           DO 30 IL=1,NDZG
             IEL=ITPGND(IX,IY,IL)
-            CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,
-     &              DBSHT,E,A,DRV,TITL,PNAM)
-            IF(IER.NE.0)STOP "error (801): while reading primative db."
+            matarrayindex=IEL   ! which legacy index
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              E=0.99; A=0.99
+              PNAM='AIR'
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              write(PNAM,'(a)') matname(matarrayindex)(1:32)
+            endif
             DNHCVL=DNHCVL+DXG(IX)*DYG(IY)*DZG(IL)*DBDEN*DBSHT
-            RESIST=RESIST+DZG(IL)/CND
+            RESIST=RESIST+DZG(IL)/DBCON
    30     CONTINUE
           RESISTM=AMIN1(RESISTM,RESIST)
    20   CONTINUE
@@ -957,9 +973,7 @@ C *********************************************************************
       SUBROUTINE MKCVGX(IZZ,VZZ,IYY,VYY,IXX,VXX)
 #include "building.h"
 #include "esprdbfile.h"
-
-C << note this subroutine assumes that the model is using a binary
-C << materials database. It should be updated to use the materials arrays.
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
@@ -991,9 +1005,22 @@ C << materials database. It should be updated to use the materials arrays.
       DO 20 I3=1,2
       IF(IXX(I1).GT.0.AND.IYY(I2).GT.0.AND.IZZ(I3).GT.0)THEN
         IEL=ITPGND(IXX(I1),IYY(I2),IZZ(I3))
-        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,
-     &              DBSHT,E,A,DRV,TITL,PNAM)
-        IF(IER.NE.0)STOP "error (803): while reading primative db."
+        matarrayindex=IEL   ! which legacy index
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+        if(matarrayindex.eq.0)then
+          CND=0.0; DBDEN=0.0; DBSHT=0.0 
+          E=0.99; A=0.99
+          PNAM='AIR'
+        else
+          CND=matdbcon(matarrayindex)
+          DBDEN=matdbden(matarrayindex)
+          DBSHT=matdbsht(matarrayindex)
+          E=matdbine(matarrayindex)
+          A=matdbina(matarrayindex)
+          write(PNAM,'(a)') matname(matarrayindex)(1:32)
+        endif
+ 
         DNHC=DNHC+VXX(I1)*VYY(I2)*VZZ(I3)*DBDEN*DBSHT
 
 C LEFT (RIGHT).
