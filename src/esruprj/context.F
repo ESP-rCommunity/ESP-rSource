@@ -56,6 +56,16 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/PREC8/SLAT,SLON
 
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
+     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
+      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
+      CHARACTER*72 SNFNAM,TEMPSTR
+      common/C5R/SKYR,GRDR,BLDR
+      common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
 
@@ -235,7 +245,8 @@ C If there was a change in location, but no zones defined just return.
           endif
           do 42 iz=1,ncomp
             if(ISI(iz).eq.1)then
-              call FINDFIL(LSHAD(iz),XST)
+              TEMPSTR=LSHAD(iz)
+              call FINDFIL(TEMPSTR,XST)
               if(XST)then
                 write(outs,'(3a)') 'Shading for ',
      &            zname(iz)(1:lnzname(iz)),' is out of date.'
@@ -2629,6 +2640,9 @@ C act (char*1) action to take 'i' initialise, '-' interactive
       common/user/browse
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      COMMON/FILEP/IFIL
+      common/cctlnm/ctldoc,lctlf
+      character ctldoc*248,LCTLF*72
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.
@@ -2648,7 +2662,7 @@ C 31
       character h*72,vert*33,DS*7,DS1*10,act*1,key*1
       character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
-      logical modify,browse
+      logical modify,browse,XST
       INTEGER IHL
 
 C If user requested initial calendar.
@@ -2817,6 +2831,13 @@ C Add or delete a day type.
             CALL EASKABC(' Options:',' ',
      &        'add','delete (not available)','continue',IRT,5)
             if(irt.eq.1)then
+
+C Update control file before increasing day types
+              ICTLF=IFIL+1
+              CALL ERPFREE(ICTLF,ISTAT)
+              call FINDFIL(LCTLF,XST)
+              IF(XST) CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+
               nbdaytype=nbdaytype+1
               nbcaldays(nbdaytype)=0
               calentag(nbdaytype)='new'
@@ -2844,7 +2865,8 @@ C Edit calendar day tag and name.
                 endif
               endif
 
-C Update operations data for all zones to include this new day type
+C Update operations and control data for all zones to include this new day type
+              CALL CTLWRT(ICTLF,IER)
               CALL UPDOPR
               modify=.true.
               goto 73
