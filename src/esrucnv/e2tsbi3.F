@@ -54,7 +54,7 @@ C geometry.h provides commons G0/G2/precz.
       logical closemat1,closemat2
 
       character GDESCR*36,DESCRC*25
-      CHARACTER NAM*72,TITL*72,outs*124
+      CHARACTER NAM*72,outs*124
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       dimension iprndx(50),optndx(50)
@@ -83,6 +83,14 @@ C Open the material and construction databases.
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so TSBI3',
+     &    'export is not possible.','W')
+        ier=1
+        return
+      endif
 
 C First task is to loop through each of the mlc and get a
 C list of constructions used in this problem. Clear the 
@@ -117,32 +125,20 @@ C text to form its name.
       WRITE(ioout,'(a)') '#wall_lib'
       WRITE(ioout,'(a)') ' '
       do 25 iy = 1,iij
-        if(closemat1.or.closemat2)then
-          legmat=iprndx(iy)   ! which legacy index
-          if(legmat.gt.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
+        legmat=iprndx(iy)   ! which legacy index
+        if(legmat.gt.0)then
+          matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRV=1.0
-              TITL='GAPS'; NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+C And if matarrayindex is zero then resetn dbcon dbden dbsht
+          if(matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+            NAM='AIR'
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
-        else
-
-C << if material arrays were filled there is no need for this call >>
-          CALL ERPCDB(IFMAT,iprndx(iy),ITRU,IER,DBCON,DBDEN,
-     &      DBSHT,E,A,DRV,TITL,NAM)
         endif
         ln = MIN0(lnblnk(NAM),10)
         if(iprndx(iy).gt.0.and.iprndx(iy).lt.10)then
@@ -221,31 +217,19 @@ C Write layers in reverse order.
           IL=LAYERS(ino)+1
   37      continue
           IL=IL-1
-          if(closemat1.or.closemat2)then
-            matarrayindex=IPRMAT(ino,IL)   ! which array index
-            if(matarrayindex.ge.0)then
+          matarrayindex=IPRMAT(ino,IL)   ! which array index
+          if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-              if(matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                E=0.99; A=0.99; DRV=1.0
-                TITL='GAPS'; NAM='AIR'
-              else
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRV=matdbdrv(matarrayindex)
-                write(TITL,'(a)') 'placeholder'
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
-              endif
+C And if matarrayindex is zero then resetn dbcon dbden dbsht
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              NAM='AIR'
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
-          else
-
-C << if material arrays were filled there is no need for this call >>
-            CALL ERPCDB(IFMAT,IPR(ino,IL),ITRU,IER,DBCON,DBDEN,
-     &        DBSHT,E,A,DRV,TITL,NAM)
           endif
 
 C Not dealing with air gap resistance directly...
@@ -456,31 +440,19 @@ C    &            ' ',q,'unknown',q
 C Calculate the window U-value
             RT = 0
             DO 201, IL=1,LAYERS(ino)
-              if(closemat1.or.closemat2)then
-                matarrayindex=IPRMAT(ino,IL)   ! which array index
-                if(matarrayindex.ge.0)then
+              matarrayindex=IPRMAT(ino,IL)   ! which array index
+              if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                  if(matarrayindex.eq.0)then
-                    DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                    E=0.99; A=0.99; DRV=1.0
-                    TITL='GAPS'; NAM='AIR'
-                  else
-                    DBCON=matdbcon(matarrayindex)
-                    DBDEN=matdbden(matarrayindex)
-                    DBSHT=matdbsht(matarrayindex)
-                    E=matdbine(matarrayindex)
-                    A=matdbina(matarrayindex)
-                    DRV=matdbdrv(matarrayindex)
-                    write(TITL,'(a)') 'placeholder'
-                    write(NAM,'(a)') matname(matarrayindex)(1:32)
-                  endif
+C And if matarrayindex is zero then resetn dbcon dbden dbsht
+                if(matarrayindex.eq.0)then
+                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                  NAM='AIR'
+                else
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
                 endif
-              else
-
-C << if material arrays were filled there is no need for this call >>
-                CALL ERPCDB(IFMAT,IPR(INO,IL),ITRU,IER,DBCON,
-     &            DBDEN,DBSHT,E,A,DRV,TITL,NAM)
               endif
 
 C Calculate std U-value and display as well
@@ -525,31 +497,21 @@ C External obstracles - NONE
             WRITE(ioout,'(4a)') q,'unknown',q,' -1'
 
           ELSE
-            if(closemat1.or.closemat2)then
-              matarrayindex=IPRMAT(ICF,1)   ! which array index
-              if(matarrayindex.ge.0)then
+            matarrayindex=IPRMAT(ICF,1)   ! which array index
+            if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                if(matarrayindex.eq.0)then
-                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                  E=0.99; A=0.99; DRV=1.0
-                  TITL='GAPS'; NAM='AIR'
-                else
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
-                  E=matdbine(matarrayindex)
-                  AE=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
-                  write(NAM,'(a)') matname(matarrayindex)(1:32)
-                endif
+C And if matarrayindex is zero then resetn dbcon dbden dbsht
+              if(matarrayindex.eq.0)then
+                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                AE=0.99
+                NAM='AIR'
+              else
+                DBCON=matdbcon(matarrayindex)
+                DBDEN=matdbden(matarrayindex)
+                DBSHT=matdbsht(matarrayindex)
+                AE=matdbina(matarrayindex)
+                write(NAM,'(a)') matname(matarrayindex)(1:32)
               endif
-            else
-
-C << if material arrays were filled there is no need for this call >>
-              CALL ERPCDB(IFMAT,IPR(ICF,1),iuout,IER,DBCON,DBDEN,
-     &           DBSHT,E,AE,DRV,TITL,NAM)
             endif
             WRITE(ioout,'(f8.3,8a,F8.2)') sna(is),'  ',
      &        q,zsn(is)(1:lnblnk(zsn(is))),q,'   ',
@@ -651,7 +613,6 @@ C and optical db.
 
       LOGICAL XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      DIMENSION ICLN(30)
       character SOPT*12,outs*124,GDESCR*36
       IER=0
 
@@ -669,8 +630,7 @@ C this to 24 words wide.
 
 C Also check to see if the file has correct info in 
         IREC=601
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
-     &    (ICLN(I),I=1,30)
+        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS
         if(NCLASS.LE.0)then
           goto 1000   ! no classifications so try alternatives
         else
@@ -775,7 +735,6 @@ C creates a grey-scale VRML 2.0 world.
       character GDESCR*36,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
       CHARACTER cfgroot*24,LCFGF*72
-      CHARACTER NAM*72,TITL*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER GMLCN*12,GSNAME*6
@@ -785,7 +744,7 @@ C creates a grey-scale VRML 2.0 world.
       logical XST,numb
       logical newgeo  ! to use for testing if new/old geometry file.
       integer llbm    ! length of block material
-
+      
 C Setup standard assumptions.
       IFIL=11
       newgeo=.false.  ! assume older format geometry.
@@ -809,6 +768,14 @@ C Open the matrial and constructions db.
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so VRML',
+     &    'export is not possible.','W')
+        ier=1
+        return
+      endif
 
 C Define a VRML material for each construction in the database.
       WRITE(ioout,'(a)')
@@ -820,29 +787,14 @@ C Pick up general description of the composite.
         call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
 
 C For the inside and outside layer get surface properties (AE & AI).
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IM,1)   ! which array index
-          if(matarrayindex.ge.0)then
-            E=matdbine(matarrayindex)
-            AE=matdbina(matarrayindex)
-          endif
-        else
-
-C << if material arrays were filled there is no need for this call >>
-          CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
-     &      DBSHT,E,AE,DRV,TITL,NAM)
+        matarrayindex=IPRMAT(IM,1)   ! which array index
+        if(matarrayindex.ge.0)then
+          AE=matdbina(matarrayindex)
         endif
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
-          if(matarrayindex.ge.0)then
-            E=matdbine(matarrayindex)
-            AI=matdbina(matarrayindex)
-          endif
-        else
 
-C << if material arrays were filled there is no need for this call >>
-          CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
-     &      DBDEN,DBSHT,E,AI,DRV,TITL,NAM)
+        matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
+        if(matarrayindex.ge.0)then
+          AI=matdbina(matarrayindex)
         endif
 
 C If a tmc then find tranmission functions.  If more transparent than
@@ -932,29 +884,14 @@ C Pick up general description of the composite.
               call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
 
 C For the inside and outside layer get surface properties.
-              if(closemat1.or.closemat2)then
-                matarrayindex=IPRMAT(IM,1)   ! which array index
-                if(matarrayindex.ge.0)then
-                  E=matdbine(matarrayindex)
-                  AE=matdbina(matarrayindex)
-                endif
-              else
-
-C << if material arrays were filled there is no need for this call >>
-                CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
-     &            DBSHT,E,AE,DRV,TITL,NAM)
+              matarrayindex=IPRMAT(IM,1)   ! which array index
+              if(matarrayindex.ge.0)then
+                AE=matdbina(matarrayindex)
               endif
-              if(closemat1.or.closemat2)then
-                matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
-                if(matarrayindex.ge.0)then
-                  E=matdbine(matarrayindex)
-                  AI=matdbina(matarrayindex)
-                endif
-              else
 
-C << if material arrays were filled there is no need for this call >>
-                CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,
-     &            DBDEN,DBSHT,E,AI,DRV,TITL,NAM)
+              matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
+              if(matarrayindex.ge.0)then
+                AI=matdbina(matarrayindex)
               endif
               goto 7
             endif
@@ -1132,17 +1069,9 @@ C Pick up general description of the composite.
               WRITE(MLCN,'(A)')DESC(IM)(1:12)
 
 C For the inside and outside layer get surface properties.
-              if(closemat1.or.closemat2)then
-                matarrayindex=IPRMAT(IM,1)   ! which array index
-                if(matarrayindex.ge.0)then
-                  E=matdbine(matarrayindex)
-                  AE=matdbina(matarrayindex)
-                endif
-              else
-
-C << if material arrays were filled there is no need for this call >>
-                CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
-     &            DBSHT,E,AE,DRV,TITL,NAM)
+              matarrayindex=IPRMAT(IM,1)   ! which array index
+              if(matarrayindex.ge.0)then
+                AE=matdbina(matarrayindex)
               endif
               gvt=0.00
               goto 77
@@ -1237,9 +1166,6 @@ C Write a comma separated list of vertices with a trailing -1.
  302    continue
   4   continue
 
-C Open the matrial and constructions db (again).
-C      call opendb(ier)
-
 C If there is a ground topology create surfaces for it.
       INQUIRE (FILE=gtgeom,EXIST=XST)
       if(XST)then
@@ -1259,17 +1185,9 @@ C Find the matching mlc index.
             DO 701 imm=1,NMLC
               IF(DESC(imm)(1:12).EQ.GMLCN(igg)(1:12))then
                 ifound=im
-                if(closemat1.or.closemat2)then
-                  matarrayindex=IPRMAT(IM,1)   ! which array index
-                  if(matarrayindex.ge.0)then
-                    E=matdbine(matarrayindex)
-                    AE=matdbina(matarrayindex)
-                  endif
-                else
-
-C << if material arrays were filled there is no need for this call >>
-                  CALL ERPCDB(IFMAT,IPR(IMM,1),iuout,IER,DBCON,DBDEN,
-     &              DBSHT,E,AE,DRV,TITL,NAM)
+                matarrayindex=IPRMAT(IM,1)   ! which array index
+                if(matarrayindex.ge.0)then
+                  AE=matdbina(matarrayindex)
                 endif
                 gvt=0.00
 
