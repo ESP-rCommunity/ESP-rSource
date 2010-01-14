@@ -118,6 +118,7 @@ C  ASFLIST: takes an string array (list*48) and builds a packed string.
 C  STRIPC: Strips comments from a ASCII file str (124 char) & returns data.
 C  LSTRIPC: Strips comments from a ASCII file str (248 char) & returns data.
 C  STRIPC400 strips comments from a ASCII file (400 char long) string and returns the data.
+C  STRIPC1K strips comments from a ASCII file (1000 char long) string and returns the data.
 C  CHITMS: Checks a character string & returns the number of data items.
 C  LCHITMS Checks a (248) character string (A), returning the number of data
 C  CHITMS400: Checks a (400) character string & returns the number of data items.
@@ -849,18 +850,12 @@ C Parameters
       integer ier           ! zero is ok, -3 is cancel
       integer NHELP         ! number of help lines
 
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      character h*72
-      common/pophelp/h(60)
 
-      character dh*72
-      dimension dh(60)
-      CHARACTER WORD144*144,A*1,LASTS*144,outs248*248
+      CHARACTER outs248*248
       character llitem*144   ! local string buffer
       character LTMP96*96      ! local string buffer
       character LTMP124*124      ! local string buffer
-      LOGICAL OK,DOK
       integer iglib      ! for detecting GTK or X11
       INTEGER llt,lfn    ! length of the local string buffer
 
@@ -1681,7 +1676,7 @@ C Limit feedback text length to fit within outs text buffer.
           call edisp(iuout,outs)
 	  LNS=lnblnk(sfile)
 	  if(LNS.gt.112) LNS=112
-          write(outs,*) 'addpath: ',sfile(1:lnb)
+          write(outs,*) 'addpath: ',sfile(1:LNS)
           call edisp(iuout,outs)
         endif
       endif
@@ -1820,6 +1815,11 @@ C ******* termode
 C termode: given an index `mode` return a terminal text string.
       SUBROUTINE termode(mode,tmode)
       CHARACTER*(*) tmode
+#ifdef OSX
+      integer mode          ! passed from tchild
+#else
+      integer*8 mode          ! passed from tchild
+#endif
       tmode = ' '
       if(mode.eq.-1)then
         tmode = 'text'
@@ -3692,6 +3692,7 @@ C   IEXP = 99 check number of items and return in ITEMS
 
       SUBROUTINE STRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
 #include "espriou.h"
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*124 tmp,STRING,OUTSTR
@@ -3718,11 +3719,11 @@ C Take the string and check for a #, discarding any text which follows.
 
 C Find out the number of separate words/string groupings.
       if(IEXP.eq.99)then
-        CALL CHITMS(OUTSTR,ITEMS)
+        items = iCountWords(OUTSTR)
       elseif(IEXP.eq.0)then
         ITEMS=0
       elseif(IEXP.gt.0)then
-        CALL CHITMS(OUTSTR,ITEMS)
+        items = iCountWords(OUTSTR)
         if(IEXP.ne.ITEMS)then
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
@@ -3798,6 +3799,7 @@ C   IEXP = 99 check number of items and return in ITEMS
 
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
 #include "espriou.h"
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*248 OUTSTR,STRING,TMP
@@ -3824,11 +3826,11 @@ C Take the string and check for a #, discarding any text which follows.
 
 C Find out the number of separate words/string groupings.
       if(IEXP.eq.99)then
-        CALL LCHITMS(OUTSTR,ITEMS)
+        items = iCountWords(OUTSTR)
       elseif(IEXP.eq.0)then
         ITEMS=0
       elseif(IEXP.gt.0)then
-        CALL LCHITMS(OUTSTR,ITEMS)
+        items = iCountWords(OUTSTR)
         if(IEXP.ne.ITEMS)then
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
@@ -3905,6 +3907,7 @@ C   IEXP = 99 check number of items and return in ITEMS
 
       SUBROUTINE STRIPC400(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
 #include "espriou.h"
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*400 OUTSTR,STRING,TMP
@@ -3934,11 +3937,11 @@ C Take the string and check for a #, discarding any text which follows.
 
 C Find out the number of separate words/string groupings.
       if(IEXP.eq.99)then
-        CALL CHITMS400(OUTSTR,ITEMS)
+        items = iCountWords(OUTSTR)
       elseif(IEXP.eq.0)then
         ITEMS=0
       elseif(IEXP.gt.0)then
-        CALL CHITMS400(OUTSTR,ITEMS)
+        items = iCountWords(OUTSTR)
         if(IEXP.ne.ITEMS)then
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
@@ -3968,6 +3971,123 @@ C Find out the number of separate words/string groupings.
      &      MSG(1:LNM),') in...'
         endif
         CALL LUSRMSG(loutstr,OUTSTR,'W')
+      ENDIF
+      goto 4
+
+  102 IER=2
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') EOF sensed.'
+        else
+          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
+     &      MSG(1:LNM),' EOF sensed.'
+        endif
+        CALL LUSRMSG(' ',loutstr,'-')
+      ENDIF
+      goto 4
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        write(outs,*) 'LSTRIPC4: permission error writing warning re: '
+        call edisp(iuout,outs)
+	call edisp(iuout,outstr(1:72))
+      else
+        write(outs,*) 'LSTRIPC4: error writing warning re: '
+        call edisp(iuout,outs)
+	call edisp(iuout,outstr(1:72))
+      endif
+      return
+
+      END
+
+
+C ******************** STRIPC1K
+C STRIPC1K strips comments from a ASCII file (1000 char long) string and returns the data.
+C It assumes that if a string begins with a '#' then the whole line is
+C a comment an the next line is read.  If a ' #' is discovered within
+C a line the rest of the line is removed.
+C IER=0 if ok. MSG is a text string used in error messages. If
+C IR=0 then acts silently, otherwise notes when EOF found.
+C IEXP is the number of expected items in the line:
+C   IEXP = 0 means don't care or already know no. items - don't check
+C   IEXP >0  means a specific number of items expected (error if not)
+C   IEXP = 99 check number of items and return in ITEMS
+
+      SUBROUTINE STRIPC1K(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
+#include "espriou.h"
+
+      integer iCountWords
+
+      COMMON/OUTIN/IUOUT,IUIN
+      CHARACTER*1000 OUTSTR,STRING,TMP
+      CHARACTER loutstr*248,outs*124
+      character truncstr*248   ! truncate outsr for reporting.
+      CHARACTER*(*) MSG
+      logical unixok
+
+C Read a line of the file, strip off any trailing blanks, if the first
+C character is a # then read the next line from the file.
+      IER=0
+    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+   10 FORMAT(A)
+      tmp=STRING(1:LNBLNK(STRING))
+
+C Take the string and check for a #, discarding any text which follows.
+      iloc = INDEX(tmp,'#')
+      if(iloc.eq.1)then
+        goto 8
+      elseif(iloc.eq.0)then
+        OUTSTR=tmp
+      elseif(iloc.gt.1)then
+        OUTSTR=tmp(1:ILOC-1)
+      endif
+
+C For messages we need to remember the initial part of the long string.
+      lastcc = MIN0(LNBLNK(OUTSTR),247)
+      write(truncstr,'(a)') OUTSTR(1:lastcc)
+
+C Find out the number of separate words/string groupings.
+      if(IEXP.eq.99)then
+        ITEMS = iCountWords(OUTSTR)
+      elseif(IEXP.eq.0)then
+        ITEMS=0
+      elseif(IEXP.gt.0)then
+        ITEMS = iCountWords(OUTSTR)
+        if(IEXP.ne.ITEMS)then
+          LN=max(1,lnblnk(currentfile))
+          LNM=max(1,lnblnk(MSG))
+          if(currentfile(1:2).ne.'  ')then
+            WRITE(loutstr,'(3A,I3,3A)')' In ',currentfile(1:LN),
+     &        ' expecting',IEXP,' items (',MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,truncstr,'F')
+          else
+            WRITE(loutstr,'(A,I3,3A)')' Expecting',IEXP,' items (',
+     &         MSG(1:LNM),') in...'
+            CALL LUSRMSG(loutstr,truncstr,'F')
+          endif
+        endif
+      endif
+
+    4 RETURN
+
+  101 IER=1
+      IF(IR.EQ.1)THEN
+        LN=max(1,lnblnk(currentfile))
+        LNM=max(1,lnblnk(MSG))
+        if(currentfile(1:2).ne.'  ')then
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+     &      ' error reading (',MSG(1:LNM),') in...'
+        else
+          WRITE(loutstr,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
+     &      MSG(1:LNM),') in...'
+        endif
+        lastcc = MIN0(LNBLNK(STRING),247)
+        write(truncstr,'(a)') STRING(1:lastcc)
+        CALL LUSRMSG(loutstr,truncstr,'W')
       ENDIF
       goto 4
 
