@@ -2060,7 +2060,7 @@ C If one parameter.
       call edisp(iuout,'      (ww = ww graphic commands)')
       call edisp(iuout,' -in [file]  = input file')
       call edisp(iuout,
-     &  ' -of [esp|dxf|viewer|tsbi3|xfig|vrml] = dest format')
+     &  ' -of [esp|dxf|viewer|xfig|vrml] = dest format')
       call edisp(iuout,' -out [file] = output file')
       call edisp(iuout,' -v          = verbose mode')
       call edisp(iuout,' -mm -metre  = dxf coords in mm (default)')
@@ -2069,7 +2069,7 @@ C If one parameter.
       call edisp(iuout,' ')
       call edisp(iuout,'The following combinations are supported:')
       call edisp(iuout,'  input format  output format')
-      call edisp(iuout,'  esp-r         dxf, viewer, zip, tsbi3, vrml')
+      call edisp(iuout,'  esp-r         dxf, viewer, zip, vrml')
       call edisp(iuout,'  dxf           esp-r, viewer')
       call edisp(iuout,'  zip           esp-r, viewer')
       call edisp(iuout,' ')
