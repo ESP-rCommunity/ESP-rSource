@@ -1068,7 +1068,7 @@ C Gather information about each layer. Read in the materials db info.
           matarrayindex=IPRMAT(IC,IL)   ! which legacy index
           if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
             if(matarrayindex.eq.0)then
               DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
               E=0.99; A=0.99
@@ -1365,7 +1365,7 @@ C Gather information about each layer. Read in the materials db info.
               matarrayindex=IPRMAT(IC,IL)   ! which array index
               if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
                 if(matarrayindex.eq.0)then
                   DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
                   E=0.99; A=0.99
@@ -2324,7 +2324,7 @@ c homogeneous layer.
             matarrayindex=IPRMAT(IC,IL)   ! which array index
             if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
               if(matarrayindex.eq.0)then
                 DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
               elseif(matarrayindex.gt.0)then

@@ -676,7 +676,7 @@ C Now, for each unique material write description.
           if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
             if(matarrayindex.eq.0)then
               DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
               E=0.99; A=0.99

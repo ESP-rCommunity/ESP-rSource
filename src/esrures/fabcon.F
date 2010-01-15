@@ -458,7 +458,7 @@ C Determine diffusion resistance factor for each element.
         if(legmat.gt.0)then
           matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then reset DRVAL and NAM.
           if(matarrayindex.eq.0)then
             DRVAL=1.0
             NAM='AIR'
@@ -953,7 +953,7 @@ C from ascii or binary materials db and compute layer thickness.
           if(legmat.gt.0)then
             matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then reset DRVAL.
             if(matarrayindex.eq.0)then
               DRVAL=1.0
             else

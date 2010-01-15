@@ -587,7 +587,7 @@ C add resistance for layer (using data from constructions file)
             matarrayindex=IPRMAT(imatch(i),IL)   ! which array index
             if(matarrayindex.ge.0)then
 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then establish NAM.
               if(matarrayindex.eq.0)then
                 NAM='AIR'
               else

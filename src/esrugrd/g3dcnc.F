@@ -463,7 +463,7 @@ C Determine the lumped edge thermophysical properties.
         IEL=ITPEDG(IEG,IX,IY,IDZ)
         matarrayindex=IEL   ! which legacy index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         if(matarrayindex.eq.0)then
           CND=0.0; DBDEN=0.0; DBSHT=0.0 
         else
@@ -636,7 +636,7 @@ C *********************************************************************
         IEL=ITPEDG(IEG,IX,IY,IL)
         matarrayindex=IEL   ! which legacy index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         if(matarrayindex.eq.0)then
           CND=0.0; DEN=0.0; SHT=0.0 
         else
@@ -813,7 +813,7 @@ C Determine the lumped corner thermophysical properties.
         IEL=ITPCRN(ICR,IX,IY,IDZ)
         matarrayindex=IEL   ! which legacy index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         if(matarrayindex.eq.0)then
           CND=0.0; DBDEN=0.0; DBSHT=0.0 
         else
@@ -975,7 +975,7 @@ C *********************************************************************
         IEL=ITPCRN(ICR,IX,IY,IL)
         matarrayindex=IEL   ! which legacy index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         if(matarrayindex.eq.0)then
           CND=0.0; DEN=0.0; SHT=0.0 
         else

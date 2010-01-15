@@ -783,7 +783,7 @@ C Estimate the start up period for the ground.
             IEL=ITPGND(IX,IY,IL)
             matarrayindex=IEL   ! which legacy index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
             if(matarrayindex.eq.0)then
               DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
             else
@@ -1000,7 +1000,7 @@ C *********************************************************************
         IEL=ITPGND(IXX(I1),IYY(I2),IZZ(I3))
         matarrayindex=IEL   ! which legacy index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         if(matarrayindex.eq.0)then
           CND=0.0; DBDEN=0.0; DBSHT=0.0 
         else

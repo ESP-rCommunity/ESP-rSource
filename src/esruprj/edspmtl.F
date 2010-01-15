@@ -1082,7 +1082,7 @@ C If an air layer include the R values in the display.
           matarrayindex=IPRMAT(imatch,j)   ! which array index
           if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then reestablish NAM.
             if(matarrayindex.eq.0)then
               NAM='AIR'
             else

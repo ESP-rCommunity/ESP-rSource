@@ -79,7 +79,7 @@ C Now find the names of the materials.
         if(legmat.gt.0)then
           matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then re-establish NAM.
           if(matarrayindex.eq.0)then
             NAM='AIR'
           else
@@ -266,7 +266,7 @@ C Pick a material in that MLC.
           matarrayindex=IPRMAT(ISEL,IL)   ! which array index
           if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then re-establish NAM.
             if(matarrayindex.eq.0)then
               NAM='AIR'
             else

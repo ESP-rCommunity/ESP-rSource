@@ -6090,7 +6090,6 @@ C Material properties.
       logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      character titl*72,nam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 
@@ -6185,7 +6184,12 @@ C Update or reset properties based on above logic.
 C Find version of materials database. If 1.1 then use material arrays.
         call eclose(matver,1.1,0.01,closemat1)
         call eclose(matver,1.2,0.01,closemat2)
-      
+        if(closemat1.or.closemat2)then
+          continue
+        else
+          call edisp(iuout,'BCL99: Materials arrays are incomplete.')
+        endif
+	
 C Reset properties by reading in zone descriptor files.
 
 C Debug.
@@ -6250,15 +6254,9 @@ C material db info.
                 dbsht=matdbsht(matarrayindex)
                 E=matdbine(matarrayindex)
                 A=matdbina(matarrayindex)
-                drv=matdbdrv(matarrayindex)
-                write(titl,'(a)') 'placeholder'
-                write(nam,'(a)') matname(matarrayindex)(1:32)
               endif
             else
-
-C << if material arrays were filled there is no need for this call >>
-              call erpcdb(ifmat,ipr(ic,i),iuout,ier,dbcon,dbden,
-     &            dbsht,e,a,drv,titl,nam)
+              ier=1  ! incomplete materials arrays so pass back ier
             endif
             if(ier.eq.1)return
             if(ipr(ic,i).ne.0)then

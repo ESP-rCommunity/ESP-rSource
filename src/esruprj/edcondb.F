@@ -1795,7 +1795,7 @@ C << need alternative logic to locate air gaps >>
             if(legmat.gt.0)then
               matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then reset dbsht to mimic erpcdb
+C And if matarrayindex is zero then get NAM.
               if(matarrayindex.eq.0)then
                 NAM='AIR'
               else
@@ -2077,7 +2077,7 @@ C Detail menu.
         matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
         if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon to mimic erpcdb
+C And if matarrayindex is zero then reset dbcon and NAM.
           if(matarrayindex.eq.0)then
             DBCON=0.0; NAM='AIR'
           else
