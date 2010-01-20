@@ -30,7 +30,7 @@ C ******* View cone for plan/elevation.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character direc*1
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
 #else
@@ -163,7 +163,7 @@ C ******* Default views formation.
       character outs*124,LBSRIF*72
       character doit*124,ltmp*72,trvewsh*10
       character vewcmds*124,rvewsh*10
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
 #else

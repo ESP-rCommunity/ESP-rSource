@@ -102,7 +102,7 @@ C IALT is the number of text alternatives available for a text field.
       character*35 ITEMS(9)      
       CHARACTER DFILE*72,tfile*72,LIMP*72,LEXP*72
       CHARACTER OUTSTR*124
-#ifdef OSX
+#ifdef OSI
       integer impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
 #else
       integer*8 impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
@@ -329,7 +329,7 @@ C Help text for this menu.
         ipflge=ipflg
         call evwmenu(head,impxe,impye,imw,irpxe,irpye,inoe,ipflge,
      &    iuresp)
-#ifdef OSX
+#ifdef OSI
         INODA=inoe  !  cast back from returned parameter
 #else
         INODA=int(inoe)  !  cast back to integer from returned parameter
@@ -489,7 +489,7 @@ C Define the beginning and ending dates for the TDF display.
               ipflge=ipflg
               call evwmenu(head,impxe,impye,imw,irpxe,irpye,inoe,
      &          ipflge,iuresp)
-#ifdef OSX
+#ifdef OSI
               INODA=inoe  !  cast back from returned parameter
 #else
               INODA=int(inoe)  !  cast back to integer from returned parameter

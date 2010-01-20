@@ -150,7 +150,8 @@ targets=" "
 #-----------------------------------------------------------
 # Detect architecture.
 #-----------------------------------------------------------
-architecture=`uname -s`      # machine type
+architecture=`uname -s`      # computer type e.g. Linux Darwin SunOS
+machine=`uname -m`           # CPU  e.g. i386 x86_64  sun4u
 
 #-----------------------------------------------------------
 # Is Stat available? assume stat will be in /bin or /usr/bin,
@@ -385,7 +386,7 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
    else
     # Add XML include files to include paths
     xml_libs_found="yes"
-    LIBXML2_INCLUDE="-I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/local/include/xslt"
+    LIBXML2_INCLUDE="-I/usr/include -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/local/include/libxslt"
 
     # xml support may optionally include support for xslt & exslt. Check
     # that libraries are available
@@ -451,7 +452,8 @@ if [ "$mode" = "interactive" ]; then
    if [ "${platform}" = "auto-detect" ]; then
       YN=none;
       echo " "
-      echo " Your computer identifies itself as ${architecture}. "
+      echo " Your computer identifies itself as ${architecture} "
+      echo " and processor as ${machine}. "
       echo " Is this information correct (y/n)? [y]"
 
       while [ "$YN" != "y" ] && [ "$YN" != "n" ] && [ "$YN" != "" ]
@@ -535,8 +537,7 @@ fi
 
 #-----------------------------------------------------------
 #  Architcture is now known. If architecture is sun, prompt
-#  for compiler. On macs, users should use --compiler_version -3.3
-#  directive. Otherwise, use GNU set. 
+#  for compiler. Otherwise, use GNU set. 
 #-----------------------------------------------------------
 if [ "$mode" = "interactive" ]; then
   if [ "$platform" = "sun" ] || [ "$platform" = "linux" ]; then
@@ -851,7 +852,7 @@ LOCAL_INCLUDES="-I../include -I../shocc -I/usr/local/include -I../cetc/h3kreport
 
 
 #---------- MCTYPE ---------------------------------
-# Create short strings for machine types
+# Create short strings for architecture types
 case $platform in
    sun)      MCTYPE=sun ;;
    linux)    MCTYPE=lin ;;
@@ -886,10 +887,23 @@ case $xLibs in
             XDEFDIR="/usr/X11R6 or /usr"
             
             # Try /usr/X11R6 - legacy location on monolithic X locations
-            if [ -d /usr/X11R6/lib/X11 ] ; then
-              X11_found="yes"
-              XINSTALLDIR="/usr/X11R6"
-            fi
+            case $machine in
+              x86_64)
+                if [ -d /usr/X11R6/lib64/X11 ] ; then
+                  X11_found="yes"
+                  XINSTALLDIR="/usr/X11R6"
+                fi;;
+              sun4u)
+                if [ -d /usr/X11R6/lib/64 ] ; then
+                  X11_found="yes"
+                  XINSTALLDIR="/usr/X11R6"
+                fi;;
+              *)
+                if [ -d /usr/X11R6/lib/X11 ] ; then
+                  X11_found="yes"
+                  XINSTALLDIR="/usr/X11R6"
+                fi;;
+            esac
 
             # Try /usr --- location on new linux distros with 'modular X'
             if [ -d /usr/lib/X11 ] && [ "$X11_found" = "no" ]; then
@@ -1013,10 +1027,20 @@ esac
 # Write out platform specific ifdef variables.
 # These will be inserted into FFLAGS, below.
 case $platform in
-   sun)        fDefType="-DSUN";;
-   linux)      fDefType="-DLIN";;
+   sun) case $machine in
+          sun4u)   fDefType="-DSUN -DOSI";;
+          i86PC)   fDefType="-DSUN";;
+          i386)    fDefType="-DSUN";;
+        esac;;
+   linux) case $machine in
+          i386)    fDefType="-DLIN";;
+          i686)    fDefType="-DLIN";;
+          x86_64)  fDefType="-DLIN";;
+        esac;;
    cygwin)     fDefType="-DCYGW";;
-   mac)        fDefType="-DOSX -DLIN";;
+   mac) case $machine in
+          i386)    fDefType="-DOSX -DOSI -DLIN";;
+        esac;;
    mingw)      fDefType="-DMINGW";;
 esac
 
@@ -1102,7 +1126,13 @@ ULIBS="$ULIBS -lfpe"
 
 # Append X11 library paths to ULIBS as required
 case $xLibs in
-  X11) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+  X11) case $machine in
+         sun4u) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+         i386) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+         i86pc) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+         i686) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+         x86_64) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;
+       esac;;
   GTK) ULIBS="$ULIBS -lgtkesru -L${XINSTALLDIR}";;
   noX) ULIBS="$ULIBS -lnoxesru";;
 esac

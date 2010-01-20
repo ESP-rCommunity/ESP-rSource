@@ -3110,7 +3110,7 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
       DIMENSION m1slots(42,2),m2slots(42,2)
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext

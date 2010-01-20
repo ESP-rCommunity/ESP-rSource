@@ -1037,7 +1037,7 @@ C based on the current common block data.
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER PDBDESC*40,ETEXT*72
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot

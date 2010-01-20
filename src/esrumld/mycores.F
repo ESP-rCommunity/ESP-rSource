@@ -263,7 +263,7 @@ C ****************** mycograph *****************************
       CHARACTER*29 ITEM(6)
       CHARACTER H*72,mldnam*48
       logical greyok
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
@@ -468,7 +468,7 @@ C subroutine curvedraw
       common/FILEP/IFIL
 
       character outs*124, mdbnam*72 ,mldnam*48
-#ifdef OSX
+#ifdef OSI
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
 #else

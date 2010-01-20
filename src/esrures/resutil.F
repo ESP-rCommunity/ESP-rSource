@@ -245,7 +245,7 @@ C AXISDRW - draw and label axes.
       character ALABEL(5)*12,act*1
 
       integer YAXSET, ADDLIN
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight,iid1,iid2  ! for use with axiscale
 #else
       integer*8 igwid,igheight,iid1,iid2  ! for use with axiscale

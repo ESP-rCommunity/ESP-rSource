@@ -150,7 +150,8 @@ targets=" "
 #-----------------------------------------------------------
 # Detect architecture.
 #-----------------------------------------------------------
-architecture=`uname -s`      # machine type
+architecture=`uname -s`      # computer type e.g. Linux Darwin SunOS
+machine=`uname -m`           # CPU  e.g. i386 x86_64  sun4u
 
 #-----------------------------------------------------------
 # Is Stat available? assume stat will be in /bin or /usr/bin,
@@ -249,6 +250,11 @@ if [ $help -eq 1 ]; then
   echo " command:"
   echo " "
   echo "   $ ./Install -d ~/esru"
+  echo " "
+  echo " For MSWindows environment using the following "
+  echo " command ensures databases are also copied"
+  echo " "
+  echo "   $ ./Install -d c:/Esru "
   echo " "
   echo " It is also possible to build esp-r executables "
   echo " individually, by specifying the name(s) of the "
@@ -446,7 +452,8 @@ if [ "$mode" = "interactive" ]; then
    if [ "${platform}" = "auto-detect" ]; then
       YN=none;
       echo " "
-      echo " Your computer identifies itself as ${architecture}. "
+      echo " Your computer identifies itself as ${architecture} "
+      echo " and processor as ${machine}. "
       echo " Is this information correct (y/n)? [y]"
 
       while [ "$YN" != "y" ] && [ "$YN" != "n" ] && [ "$YN" != "" ]
@@ -530,8 +537,7 @@ fi
 
 #-----------------------------------------------------------
 #  Architcture is now known. If architecture is sun, prompt
-#  for compiler. On macs, users should use --compiler_version -3.3
-#  directive. Otherwise, use GNU set. 
+#  for compiler. Otherwise, use GNU set. 
 #-----------------------------------------------------------
 if [ "$mode" = "interactive" ]; then
   if [ "$platform" = "sun" ] || [ "$platform" = "linux" ]; then
@@ -720,9 +726,6 @@ else
     echo " The $xLibs libraries will be used."
   fi 
 fi
-
-
-
 
 #---------------------------------------------------------
 # Prepend approprate grapics library to target list
@@ -1016,10 +1019,20 @@ esac
 # Write out platform specific ifdef variables.
 # These will be inserted into FFLAGS, below.
 case $platform in
-   sun)        fDefType="-DSUN";;
-   linux)      fDefType="-DLIN";;
+   sun) case $machine in
+          sun4u)   fDefType="-DSUN -DOSI";;
+          i86PC)   fDefType="-DSUN";;
+          i386)    fDefType="-DSUN";;
+        esac;;
+   linux) case $machine in
+          i386)    fDefType="-DLIN";;
+          i686)    fDefType="-DLIN";;
+          x86_64)  fDefType="-DLIN";;
+        esac;;
    cygwin)     fDefType="-DCYGW";;
-   mac)        fDefType="-DOSX -DLIN";;
+   mac) case $machine in
+          i386)    fDefType="-DOSX -DOSI -DLIN";;
+        esac;;
    mingw)      fDefType="-DMINGW";;
 esac
 
@@ -1105,7 +1118,11 @@ ULIBS="$ULIBS -lfpe"
 
 # Append X11 library paths to ULIBS as required
 case $xLibs in
-  X11) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+  X11) case $machine in
+         i386) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+         i686) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+         x86_64) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;
+       esac;;
   GTK) ULIBS="$ULIBS -lgtkesru -L${XINSTALLDIR}";;
   noX) ULIBS="$ULIBS -lnoxesru";;
 esac
@@ -1757,7 +1774,7 @@ if [ "${LinkDB}" = "yes" ]; then
   echo "*clm ${DBInstDir}/climate/clm67" >> ${ESPdir}/default
   echo "*prs ${DBInstDir}/databases/pressc.db1" >> ${ESPdir}/default
   echo "*prm ${DBInstDir}/databases/material.db3.a" >> ${ESPdir}/default
-  echo "*mlc ${DBInstDir}/databases/multicon.db2" >> ${ESPdir}/default
+  echo "*mlc ${DBInstDir}/databases/multicon.db3" >> ${ESPdir}/default
   echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
   echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
   echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default
@@ -2127,7 +2144,7 @@ zzz
 
    cd ${SRCdir}/databases
    echo -n "   - Copying ASCII databases..."
-   cp multicon.db1 multicon.db2 north_american.constrdb optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
+   cp multicon.db1 multicon.db2 multicon.db3 north_american.constrdb optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
 
 fi

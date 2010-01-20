@@ -4865,7 +4865,7 @@ C      character tmode*8,longtfile*72
 
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
-#ifdef OSX
+#ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
 #else
       integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
@@ -5030,7 +5030,7 @@ C ITPPSW current view - perspective/plan/south/west
 
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
-#ifdef OSX
+#ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
 #else
       integer*8 ivt2,ivt3,ivt4  ! for use with viewtext

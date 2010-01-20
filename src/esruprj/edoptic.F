@@ -638,7 +638,7 @@ C ilabs is string arry for layer insert/delet selection.
       CHARACTER KEY*1,T12*12,ilabs*43
       CHARACTER GS*52,ETEXT*72,GTEXT*72,temp*16
       logical edited
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iigr,iigr2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3

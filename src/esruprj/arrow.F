@@ -38,7 +38,7 @@ C     character outs*124
       logical unixok
 
 C Local variables to pass to edline.
-#ifdef OSX
+#ifdef OSI
       integer iixp,iiyp,iixq,iiyq,iixa,iiya
       integer iixc1,iiyc1,iixc2,iiyc2
       integer iixc3,iiyc3,iixc4,iiyc4

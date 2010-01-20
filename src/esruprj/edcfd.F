@@ -3767,7 +3767,7 @@ C Curvilinear boundary vertex numbers.
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
 
       CHARACTER act*1,H*72,HOLD*72,outs*124
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
       integer*8 iix,iiy,ixd,iyd

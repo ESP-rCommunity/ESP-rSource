@@ -120,7 +120,7 @@ C an object has been saved the set justentered to false.
       logical justentered
       LOGICAL OKC,XST,dok,ok
       logical newgeo  ! to use for testing if new/old geometry file.
-#ifdef OSX
+#ifdef OSI
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer iixx2,iiyy2,iixx3,iiyy3,iix,iiy
@@ -2629,7 +2629,7 @@ C the user edited the value (iwmg=7).
       real xpl,ypl ! most recent metre interval.
 
 C Local variables to pass to edline.
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,iily,iilx,iiuy,iirx
 #else
       integer*8 iix,iiy,iily,iilx,iiuy,iirx
@@ -3008,7 +3008,7 @@ C Other is the grid distance if user supplied (iwmg=7).
       dimension ipxwhis(300),ipywhis(300),viewlim(6)
       dimension iphisznst(MCOM),iphisznfn(MCOM)
       character fname*72,temp6*6,temp3*3
-#ifdef OSX
+#ifdef OSI
       integer iixtn1,iiytn1,iixtn2,iiytn2,iid1,iid2,iid3,iid4
 #else
       integer*8 iixtn1,iiytn1,iixtn2,iiytn2,iid1,iid2,iid3,iid4

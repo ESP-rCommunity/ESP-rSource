@@ -989,7 +989,7 @@ C Grid commons
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12,OUTS1*26
       LOGICAL GON,SON,greyok
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
@@ -2111,7 +2111,7 @@ C      REAL ENV,PARA,CPARA,SUB_MATRIX_A,SUB_MATRIX_B
 C      REAL MATRIX_A,MATRIX_B
 
       LOGICAL ISEL,CSEL,INBOUND,CLOSE
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
       integer iix1,iiy1,iix2,iiy2  ! passed to edline
 #else

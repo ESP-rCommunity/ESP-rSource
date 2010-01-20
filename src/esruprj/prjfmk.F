@@ -3122,7 +3122,7 @@ C  ICOMP zone number
 
       character outs*124
       dimension TACI(24),TACV(24)
-#ifdef OSX
+#ifdef OSI
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
@@ -5189,7 +5189,7 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6, outs*124
 
-#ifdef OSX
+#ifdef OSI
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot

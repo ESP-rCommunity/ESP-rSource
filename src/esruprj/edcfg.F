@@ -142,7 +142,7 @@ C Uncertainty.
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
 #else
@@ -1265,7 +1265,7 @@ C Flag noting whether casual gain periods are currently sorted.
       real val,x1,y1    ! type for passed parameters
       integer inpic     ! type for passed parameters
       integer iuf       ! file unit type
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild
 #else
@@ -3263,7 +3263,7 @@ C Passed parameters for pregist.
 
       integer igraphiclib  ! external definition
       integer numberofzones ! to pass to updwire rather than ncomp
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -3975,7 +3975,7 @@ C      common/OUTIN/IUOUT,IUIN
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124
       character brw*8   ! to signal model is being browsed
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild

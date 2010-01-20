@@ -1239,7 +1239,7 @@ C RESMN      - Minimum reverberation time
 
       CHARACTER title*200
       CHARACTER CalName*12,ACOName*72, LabFreq*4, TxtZone*72
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot

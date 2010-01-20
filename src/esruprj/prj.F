@@ -208,7 +208,7 @@ C Returned parameters from silentread.
       integer numberofzones ! to pass to updwire rather than ncomp
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -1507,7 +1507,7 @@ C dd is character array for selecting simulation parameter sets.
       logical tmcok,shdok
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild
@@ -2493,7 +2493,7 @@ C the first array index is base and 2nd is variant, 3rd diff
       dimension anu_tot_m2(3),anu_tot_bld(3)
       dimension anu_ht_cap_m2(3),anu_ht_cap_bld(3)
       dimension anu_cl_cap_m2(3),anu_cl_cap_bld(3)
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild
@@ -4445,7 +4445,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical updatetitle ! if true the edit IPV titles.
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild

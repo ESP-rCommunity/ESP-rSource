@@ -59,7 +59,7 @@ C exportcad: controls model export facilities.
       character longtfile*144,longtfiledos*144
       character brw*8   ! to signal model is being browsed
       logical oke
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild
 #else

@@ -4645,7 +4645,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       character outs*124,headv*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy
 #else
       integer*8 iix,iiy
@@ -5911,7 +5911,7 @@ C Strings for surface attributes to pass to insrec.
       character rsparent*12
       real XO1,ZO1  ! to prevent name clash in geometry.h
       
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy
 #else
       integer*8 iix,iiy
@@ -7028,7 +7028,7 @@ C IER=0 OK, IER=1 problem.
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
       integer*8 iix,iiy,ixd,iyd

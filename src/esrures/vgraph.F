@@ -784,7 +784,7 @@ C VGDRW initiates axis drawing and displays all requested profiles.
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       character VITEM*24,HITEM*24
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -881,7 +881,7 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       character VITEM*24,HITEM*24,VIT*24,HIT*24
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale
@@ -946,7 +946,7 @@ C to graphical result display.
       CHARACTER outsd*80,outsd1*81
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext

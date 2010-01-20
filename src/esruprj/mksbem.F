@@ -4915,7 +4915,7 @@ C building as described in SBEM - EPBD documents
       CHARACTER AUT*12,DOIT*248,LONGTFILE*144,LONGTFILEDOS*144,OUTS*124,
      & TMODE*8
       LOGICAL CONCAT,UNIXOK
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild

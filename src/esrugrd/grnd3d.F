@@ -1446,7 +1446,7 @@ C *********************************************************************
       COMMON/GRND06/ITPGND(MGXYZ,MGXYZ,MGXYZ)
 
       CHARACTER LABELS*16
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix1,iiy1,iix2,iiy2,iix,iiy
@@ -1545,7 +1545,7 @@ C *********************************************************************
       COMMON/GRND10/NBOUND,IBOUND(MBTYP,3),IBSRF(6,MGXYZ,MGXYZ)
 
       CHARACTER LABELS*4,VERTX*2
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
@@ -1704,7 +1704,7 @@ C *********************************************************************
 
       DIMENSION XGND(8),YGND(8),ZGND(8)
       DIMENSION XS(8),YS(8),ZS(8)
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #else

@@ -105,7 +105,7 @@ C << what about including common zndata in this manipulation? >>
       character HOLD*72,hold64*64,holds*36,t248*248
       character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
       integer*8 iix,iiy,ixd,iyd
@@ -1261,7 +1261,7 @@ C   for new position, IER is -3 user aborted action.
       DIMENSION  SBBOX(3,2)
       LOGICAL MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -1911,7 +1911,7 @@ C << could this be done with G6 and with ??
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       logical bounded,hilight
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -2096,7 +2096,7 @@ C door width and height.
       character SSPARENT*12,T14*14
       character guesstype*24  ! for context of surface addition
 
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
 #else

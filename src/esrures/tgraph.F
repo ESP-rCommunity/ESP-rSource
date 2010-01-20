@@ -203,7 +203,7 @@ C act='p' iget parameters already set.
       integer twoonrightb ! farthest if two axis on right
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iid1,iid2   ! passed to etplot
 #else
@@ -656,7 +656,7 @@ C To extend logic to maximize plotting area.
       CHARACTER PDESCR*60,SDESCR*44,outsd*80,outsd1*81
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character graftitle*64,grlbl*24,t64*64
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -1063,7 +1063,7 @@ C Draws the control graph(s).
       DIMENSION XVAL1(MS),XREM1(MS)
       character BLAB*13,label*8
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL,NOPLOT
-#ifdef OSX
+#ifdef OSI
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
 #else

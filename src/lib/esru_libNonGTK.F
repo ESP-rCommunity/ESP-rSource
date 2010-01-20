@@ -3192,7 +3192,7 @@ C To conform to Fortran -> C passing conventions on 32bit and 64bit
 C computers cast the parameters passed into ewmenu to local variables
 C of either integer or integer*8 to match the long int variables in
 C the C function evwmenu.  Do reverse cast after return from evwmenu.
-#ifdef OSX
+#ifdef OSI
       integer impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
 #else
       integer*8 impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
@@ -3209,7 +3209,7 @@ C Append a null terminator to the title string if possible.
       irpxe=irpx
       irpye=irpy
       call evwmenu (name,impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp)
-#ifdef OSX
+#ifdef OSI
       ino=inoe  !  cast back from returned parameter
       irpx=irpxe
       irpy=irpye
@@ -3242,7 +3242,7 @@ C To conform to Fortran -> C passing conventions on 32bit and 64bit
 C computers cast the parameters passed into ewmenu to local variables
 C of either integer or integer*8 to match the long int variables in
 C the C function evwmenu.  Do reverse cast after return from evwmenu.
-#ifdef OSX
+#ifdef OSI
       integer impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
 #else
       integer*8 impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
@@ -3257,7 +3257,7 @@ C the C function evwmenu.  Do reverse cast after return from evwmenu.
       irpxe=irpx
       irpye=irpy
       call evwmenu (name,impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp)
-#ifdef OSX
+#ifdef OSI
       ino=inoe  !  cast back from returned parameter
       irpx=irpxe
       irpy=irpye
@@ -4318,7 +4318,7 @@ C ITPPSW current view - perspective/plan/south/west
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data mthnam/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
-#ifdef OSX
+#ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
       integer ICPMOD          ! passed from tchild
 #else

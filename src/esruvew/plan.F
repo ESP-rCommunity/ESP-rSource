@@ -10,7 +10,7 @@ C------------------------
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       character outs*80
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
