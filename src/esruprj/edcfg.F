@@ -142,7 +142,7 @@ C Uncertainty.
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
 #else
@@ -1213,6 +1213,13 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
 
+      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
+      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
+     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
+     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
+     &             IVH(MCOM),TAH(MCOM)
+
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Descriptive label for a zone load or casual gain types.
@@ -1265,7 +1272,7 @@ C Flag noting whether casual gain periods are currently sorted.
       real val,x1,y1    ! type for passed parameters
       integer inpic     ! type for passed parameters
       integer iuf       ! file unit type
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild
 #else
@@ -2112,6 +2119,17 @@ C Also update lodlabel commons before writing out.
      &         ' ',72,'new.opr','operations file',IER,2)
             IF(DFILE.NE.' ')THEN
               LPROJ(NCOMP)=DFILE
+              ip3ver(ncomp)=ip3ver(ic)     ! set copied to same version
+              oprdesc(ncomp)=oprdesc(ic)   ! use same description
+              ventdesc(ncomp)=ventdesc(ic) ! use same vent description
+              ITCTL(ncomp)=ITCTL(ic)        ! copy infil and vent controls
+              TLO(ncomp)=TLO(ic); TUP(ncomp)=TUP(ic); THI(ncomp)=THI(ic)
+              ACIL(ncomp)=ACIL(ic); ACVL(ncomp)=ACVL(ic)
+              IVL(ncomp)=IVL(ic); TAL(ncomp)=TAL(ic)
+              ACIU(ncomp)=ACIU(ic); ACVU(ncomp)=ACVU(ic)
+              IVU(ncomp)=IVU(ic); TAU(ncomp)=TAU(ic)
+              ACIH(ncomp)=ACIH(ic); ACVH(ncomp)=ACVH(ic)
+              IVH(ncomp)=IVH(ic); TAH(ncomp)=TAH(ic)
               lodlabel(ncomp,1)=lodlabel(ic,1)
               lodlabel(ncomp,2)=lodlabel(ic,2)
               lodlabel(ncomp,3)=lodlabel(ic,3)
@@ -3263,7 +3281,7 @@ C Passed parameters for pregist.
 
       integer igraphiclib  ! external definition
       integer numberofzones ! to pass to updwire rather than ncomp
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -3975,7 +3993,7 @@ C      common/OUTIN/IUOUT,IUIN
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124
       character brw*8   ! to signal model is being browsed
-#ifdef OSI
+#ifdef OSX
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild
