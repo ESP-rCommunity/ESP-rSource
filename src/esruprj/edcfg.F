@@ -2122,6 +2122,9 @@ C Also update lodlabel commons before writing out.
               ip3ver(ncomp)=ip3ver(ic)     ! set copied to same version
               oprdesc(ncomp)=oprdesc(ic)   ! use same description
               ventdesc(ncomp)=ventdesc(ic) ! use same vent description
+              ctlstr(ncomp,1)=ctlstr(ic,1) ! use same control descriptions
+              ctlstr(ncomp,2)=ctlstr(ic,2)
+              ctlstr(ncomp,3)=ctlstr(ic,3)
               ITCTL(ncomp)=ITCTL(ic)        ! copy infil and vent controls
               TLO(ncomp)=TLO(ic); TUP(ncomp)=TUP(ic); THI(ncomp)=THI(ic)
               ACIL(ncomp)=ACIL(ic); ACVL(ncomp)=ACVL(ic)
