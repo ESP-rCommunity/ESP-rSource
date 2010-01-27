@@ -265,12 +265,11 @@ C For reading in of bi-directional data.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
-      CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,louts*248,h*72,spsname*8,L144*144,fs*1
+      CHARACTER OUTSTR*124,LCFGF*72,MODE*4,cfgroot*24
+      CHARACTER outs*124,louts*248,h*72,spsname*8,L144*144
       CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
-      DIMENSION ICLN(30)  ! for checking material db categories
 
 C HVAC AIM-2
       character hvacfile*72,LAIM2*72
@@ -302,6 +301,7 @@ C Status of multi-year climate database
       logical bMY_clm_err 
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
+      character lworking*144,fs*1
 
 C Reset error indicator and check if running as a dll.
       ier1=0
@@ -550,9 +550,21 @@ C Free plant components database if opened.
 
 C If materials db not yet defined has not yet been opened do so.
 C Use the unit IFMAT=IFIL+5 for this via common condb.
+
+C << this logic could be updated to use MATFROMBIN as in ascii_mat.F >>
+
       IF(.NOT.MATDBOK)THEN
   55    write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
-        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+          call EFOPRAN(IFMAT,lworking,40,1,IER)
+        endif
+
         if(ier.ne.0)then
 C Database was not found, or file could not be read.
           if(dll)then
@@ -560,21 +572,24 @@ C Database was not found, or file could not be read.
             dllmesg='Problem opening materials database.'
             ier=2
             return
+
 C In interactive mode, prompt user for new database.
           elseif ( .not. autook ) then
+
             IER=0
             H(1)='The material db holds the thermophysical'
             H(2)='properties for aluminium, brick, earth, tile, etc.'
-            ltmp=LFMAT
-  56        CALL EASKS(ltmp,' Material database? ',
-     &        ' ',72,DFCON,'materials db file name',IER,2)
-            if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-              LFMAT=ltmp
+            write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+  56        CALL EASKS(lltmp,' Material database? ',
+     &        ' ',144,DFCON,'materials db file name',IER,2)
+            if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+              write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
               goto 55
             else
               goto 56
             endif
           else
+
 C In silent running mode, notify user and terminate simulation.
             call UsrMsg('Materials database could not be found',
      &                  ' ', 'F')
@@ -584,8 +599,7 @@ C In silent running mode, notify user and terminate simulation.
 C Also check to see if the file has correct info (using pattern of
 C code from esruprj/eddb.F subroutine opendb.
           IREC=601
-          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1006)NCLASS,
-     &      (ICLN(I),I=1,30)
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1006)NCLASS
           if(NCLASS.LE.0)then
             goto 1006   ! no classifications so try alternatives
           else
@@ -595,10 +609,27 @@ C code from esruprj/eddb.F subroutine opendb.
           endif
  1006     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
           write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
-          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+          elseif(ipathmat.eq.2)then
+            lndbp=lnblnk(standarddbpath)
+            write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &        LFMAT(1:lnblnk(LFMAT))
+            call rascimat(IFMAT,lworking,IER)  ! try current ascii format
+          endif
+
           if(ier.eq.-2)then
             ier=0
-            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+            if(ipathmat.eq.0.or.ipathmat.eq.1)then
+              call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+            elseif(ipathmat.eq.2)then
+              lndbp=lnblnk(standarddbpath)
+              write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &          LFMAT(1:lnblnk(LFMAT))
+              call rlegacymat(IFMAT,lworking,ier)  ! try older ascii format
+            endif
+
             if(ier.ne.0)then
               if(dll)then
                 dllsubr='mzinpt'
@@ -651,6 +682,7 @@ C Use file unit IAPROB to read db.
             ier=2
             return
           else
+
 C Note: the databases are not actually referenced by bps. This is a non-
 C       critical error --- warn user and clear error flag
             call usrmsg(outs,' ','W')

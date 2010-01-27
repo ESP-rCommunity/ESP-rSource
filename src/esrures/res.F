@@ -427,7 +427,7 @@ C unit ifil+6 for output file.
 
 C Assume primitive constructions input from IFIL+3.
       IFMAT=IFIL+3
-      LFMAT=DFCON
+      write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
 C Assume multilayer input from IFIL+9.
       IFMUL=IFIL+9

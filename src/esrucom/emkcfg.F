@@ -506,8 +506,16 @@ C Begin writing the file with version number in the header.
 
 C Write databases related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* DATABASES'
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prm  ',
+
+C Material database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mat  ',
      &      LFMAT(1:lnblnk(LFMAT))
+      elseif(ipathmat.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmat  ',
+     &      LFMAT(1:lnblnk(LFMAT))
+      endif
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
      &      LFMUL(1:lnblnk(LFMUL))
 

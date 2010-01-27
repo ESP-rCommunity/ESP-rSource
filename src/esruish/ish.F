@@ -1681,6 +1681,8 @@ C older ascii materials file to fill the materials data arrays.
 C If sucessful the material common blocks will be filled and
 C closemat1 or closemat2 will be set.
 
+C << update this to match changes in lfmat >>
+
       subroutine opendb(ier)
 #include "building.h"
 #include "esprdbfile.h"
@@ -1697,75 +1699,32 @@ C closemat1 or closemat2 will be set.
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      character H*72,LASCI*72,DFILE*72
-      character SOPT*12,outs*124,GDESCR*36
+      character H*72,LASCI*144,DFILE*144,fs*1
+      character SOPT*12,outs*124,outs248*248,GDESCR*36
+      integer lndbp   ! for length of standard database path
+      logical unixok
 
-      IER=0
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can
 C carry on using the materials common blocks for subsequent access.
-      call MATFROMBIN(IER)  ! fill materials common blocks
-      if(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-          goto 139  !  commons filled carry on.
-        else
-          MATDBOK=.TRUE.
-          matver = 0.0
-          goto 139  !  a binary file found so carry on.
-        endif
-      elseif(ier.eq.-2.or.ier.eq.-3)then
-        ier=0  ! clear error state prior to rascimat call
-        goto 1000
-      elseif(ier.eq.-1)then
-        write(outs,'(3a)') ' Materials db ',
-     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MATDBOK=.FALSE.
-        ier=0  ! clear error state before continuing
-        goto 139  !  try the other databases.
-      endif
-
-C Check for ascii versions of the materials database.
- 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
-      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
-        ier=0
-        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-        if(ier.ne.0)then
-          call usrmsg('No readable materials database was not found',
-     &                'or file was corrupt','W')
-          MATDBOK=.FALSE.
-        else
-          call eclose(matver,1.1,0.001,closemat1)
-          call eclose(matver,1.2,0.001,closemat2)
-          if(closemat1.or.closemat2)then
-            MATDBOK=.TRUE.
-          else
-            call usrmsg(
-     &        'No readable Materials database was found!',
-     &        ' ','W')
-            MATDBOK=.FALSE.
-          endif
-        endif
-      elseif(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-        endif
-      endif
+      call scananymat(ier)
+      call eclose(matver,1.1,0.001,closemat1)
+      call eclose(matver,1.2,0.001,closemat2)
         
 C Read multilayer db information into common. If in update_silent mode
 C ish might be called during install installation and as there are no
 C materials database but a local constructions database there will be
 C warnings which require an interaction and so treat update_silent as
 C a special case with no interaction.
- 139  CALL ERPFREE(IFMUL,ISTAT)
+      CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
         if(iuout.eq.0) iuout=6  ! reset in case lost
@@ -1780,10 +1739,10 @@ C a special case with no interaction.
 	  goto 138    ! if silent and no materials jump to optics
 	endif
         IF(IER.eq.1)then
-          write(outs,'(3a)') 
+          write(outs248,'(3a)') 
      &    ' Problems with materials used by Constructions db',
      &     LFMAT(1:lnblnk(LFMAT)),'!'
-          call edisp(iuout,outs)
+          call edisp248(iuout,outs248,100)
           call edisp(iuout,' ')
           MLDBOK=.FALSE.
         ELSEIF(IER.eq.2)then
@@ -1798,7 +1757,13 @@ C the ascii version and if it exists, offer to convert it or use it.
           h(5)='the required binary format if you agree.'
           IAF=IFIL+1
           LASCI=' '
-          write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+          elseif(ipathmat.eq.2)then
+            lndbp=lnblnk(standarddbpath)
+            write(LASCI,'(4a)') standarddbpath(1:lndbp),fs,
+     &        LFMAT(1:lnblnk(LFMAT)),'.a'
+          endif
 
 C Label 155 is a jump back point for the case of users supplying a name.
   155     CALL EFOPSEQ(IAF,LASCI,1,IER)
@@ -1825,7 +1790,7 @@ C try and re-scan the Constructions database.
      &              'An ASCII Materials db was found and used.',
      &              'Re-scanning constructions...','P')
                   MATDBOK=.TRUE.
-                  LFMAT=LASCI
+                  write(LFMAT,'(a)') LASCI(1:lnblnk(LASCI))
                   CALL ERPFREE(IFMUL,ISTAT)
                   call FINDFIL(LFMUL,XST)
                   if(XST)then
@@ -1857,7 +1822,7 @@ C try and re-scan the constructions database.
      &          'An ASCII Materials db was found and used.',
      &          'Re-scanning constructions...','P')
               MATDBOK=.TRUE.
-              LFMAT=LASCI
+              write(LFMAT,'(a)') LASCI(1:lnblnk(LASCI))
               CALL ERPFREE(IFMUL,ISTAT)
               call FINDFIL(LFMUL,XST)
               if(XST)then
@@ -1886,7 +1851,7 @@ C Ask user for ascii Materials database to convert.
             IAF=IFIL+1
             DFILE=' '
             CALL EASKS(LASCI,' ','Materials database (ASCII)?',
-     &        72,DFILE,'materials db (ascii)',IER,5)
+     &        144,DFILE,'materials db (ascii)',IER,5)
             goto 155
           endif
         else
@@ -1914,17 +1879,6 @@ C Open optical Properties db and read into common.
       else
         OPTKOK=.TRUE.
       endif
-
-C Open the Pressure Coefficients db.
-C      call FINDFIL(LAPRES,XST)
-C      if(XST)then
-C        t144='  '
-C        CALL ERPRCDB(t144,0,3,IER)
-C        call usrmsg(' ',' ','-')
-C      else
-C        call usrmsg('Pressure Coefficients db not found',
-C     &              'or there was a problem reading it!','W')
-C      endif
 
       return
       end

@@ -511,7 +511,7 @@ C Multi-layer constructions db on channel IFIL+3.
 
 C Materials db on channel IFIL+4.
       IFMAT=IFIL+4
-      LFMAT=DFCON
+      write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
 C System configuration file on channel IFIL+5. 
       IFCFG=IFIL+5
@@ -5244,7 +5244,7 @@ C << probably should be limited to project databases >>
         call edisp(iuout,' Updating model for materials changes...')
         CALL EDISP(IUOUT,' ')
 
-C also make automatically constructions database variant
+C Also make automatically materials database variant
         LFMATEN=LNBLNK(LFMAT)
         IF(LFMAT(LFMATEN:LFMATEN).EQ.'1')THEN
           EXT='.db1'
@@ -5262,7 +5262,7 @@ C << probably should be limited to project databases >>
         call isunix(unixok)
         call fdroot(LFMAT,msg1,MSG2)
         WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
-        CALL FNCNGR(NNAME,APE,EXT,NNAME)
+        CALL FNCNGR(NNAME,APE,EXT,NNAME)  ! ?? why call this
         if(unixok)then
           WRITE(DOIT,'(4A)')'cp ',LFMAT(1:LNBLNK(LFMAT)),' ',
      &       NNAME(1:LNBLNK(NNAME))
@@ -5270,7 +5270,7 @@ C << probably should be limited to project databases >>
           WRITE(DOIT,'(4A)')'copy /y ',LFMAT(1:LNBLNK(LFMAT)),' ',
      &       NNAME(1:LNBLNK(NNAME))
         endif
-        LFMAT=NNAME
+        write(LFMAT,'(a)') NNAME(1:lnblnk(NNAME))
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,'Copying database via ...')
         CALL EDISP(IUOUT,DOIT)

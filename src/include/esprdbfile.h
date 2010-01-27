@@ -71,10 +71,12 @@ C LPRFDB - (144 char) event profile database file name
       COMMON/PRODB/LPRFDB
       character LPRFDB*144
 
-C LFMAT - (72 char) materials db file name
+C << todo convert LFMAT to 144 char >>>
+
+C LFMAT - (144 char) materials db file name
 C LFMUL - (72 char) constructions db file name
       common/CONDB/LFMAT,LFMUL
-      character LFMAT*72,LFMUL*72
+      character LFMAT*144,LFMUL*72
 
 C LCLIM - (144 char) climate file name associated with the model
       COMMON/C22/LCLIM
@@ -84,15 +86,17 @@ C Special materials/Misc components database.
       CHARACTER MCMPDBFL*72
       COMMON/MCMPDBNAM/MCMPDBFL
 
+C << todo convert dfcon to 144 char >>
+
 C Default file names for databases (72 char):
 C DCLIM - default climate, DAPRES - default pressure coef
 C DFCON - default materials, DFMUL - default constructions
 C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
 C DPCDB - default plant components, DSBEM - default UK SBEM
       COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,DSBEM
-      character*72 DFCON,DFMUL
+      character DFMUL*72
       character DOPTDB*144,DPRFDB*144,DAPRES*144,DPCDB*144
-      character DSBEM*144,DCLIM*144
+      character DSBEM*144,DCLIM*144,DFCON*144
 
 C LSBEM - (144 char) SBEM building type and systems db file name
       COMMON/SBEM00/LSBEM

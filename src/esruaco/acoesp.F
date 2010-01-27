@@ -51,79 +51,25 @@ C closemat1 or closemat2 will be set.
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      character SOPT*12,outs*124,GDESCR*36
-
-      IER=0
+      character SOPT*12,outs*124,outs248*248,GDESCR*36,fs*1
 
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can
 C carry on using the materials common blocks for subsequent access.
-      call MATFROMBIN(IER)  ! fill materials common blocks
-      if(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-          goto 139  !  commons filled carry on.
-        else
-          MATDBOK=.TRUE.
-          matver = 0.0
-          goto 139  !  a binary file found so carry on.
-        endif
-      elseif(ier.eq.-2.or.ier.eq.-3)then
-        ier=0  ! clear error state prior to rascimat call
-        goto 1000
-      elseif(ier.eq.-1)then
-        write(outs,'(3a)') ' Materials db ',
-     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MATDBOK=.FALSE.
-        ier=0  ! clear error state before continuing
-        goto 139  !  try the other databases.
-      endif
-
-C Check for ascii versions of the materials database.
- 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
-      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
-        ier=0
-        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-        if(ier.ne.0)then
-          call usrmsg('No readable materials database was not found',
-     &                'or file was corrupt','W')
-          MATDBOK=.FALSE.
-        else
-          call eclose(matver,1.1,0.001,closemat1)
-          call eclose(matver,1.2,0.001,closemat2)
-          if(closemat1.or.closemat2)then
-            MATDBOK=.TRUE.
-          else
-            call usrmsg(
-     &        'No readable Materials database was found!',
-     &        ' ','W')
-            MATDBOK=.FALSE.
-          endif
-        endif
-      elseif(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-        endif
-      endif
-
+      call scananymat(ier)
+      call eclose(matver,1.1,0.001,closemat1)
+      call eclose(matver,1.2,0.001,closemat2)
         
 C Read multilayer db information into common.
- 139  CALL ERPFREE(IFMUL,ISTAT)
+      CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
         IF(IER.eq.1)then
-          write(outs,'(3a)') 
+          write(outs248,'(3a)') 
      &    ' Problems with materials used by Constructions db',
      &     LFMAT(1:lnblnk(LFMAT)),'!'
-          call edisp(iuout,outs)
+          call edisp248(iuout,outs248,100)
           call edisp(iuout,' ')
           MLDBOK=.FALSE.
         ELSEIF(IER.eq.2)then

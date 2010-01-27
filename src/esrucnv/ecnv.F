@@ -1399,6 +1399,7 @@ C << to be done - this code should be identical to that included
 C << in emkcfg up to the point of writing out the zone information.
 C << one option would be to pass a parameter to emkcfg to allow it
 C << to write only the header portion.
+C << MUST be updated to reflect ipath and longer database names >>
 
       subroutine mksyshd(LOUT,ier)
 #include "building.h"
@@ -1501,7 +1502,7 @@ C Comment for configuration index (upgrade registration level).
      &  '   # views to sky ground buildings'
       write(ioout,'(a)')'* DATABASES'
 
-C << updated to use ipath* >>
+C << update to use ipath* >>
       WRITE(ioout,'(A,A)') '*prm  ',LFMAT(1:lnblnk(LFMAT))
       WRITE(ioout,'(A,A)') '*mlc  ',LFMUL(1:lnblnk(LFMUL))
       WRITE(ioout,'(A,A)') '*opt  ',LOPTDB(1:lnblnk(LOPTDB))

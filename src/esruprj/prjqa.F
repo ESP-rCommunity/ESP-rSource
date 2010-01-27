@@ -1217,9 +1217,15 @@ C Databases associated with the model.
         WRITE(outs248,'(2A)')' pressure distributions : ',
      &    LAPRES(1:lnblnk(LAPRES))
         call edisp248(itu,outs248,100)
-        WRITE(outs,'(2A)')' materials              : ',
-     &    LFMAT(1:lnblnk(LFMAT))
-        call edisp(itu,outs)
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          WRITE(outs248,'(2A)')' materials              : ',
+     &      LFMAT(1:lnblnk(LFMAT))
+          call edisp248(itu,outs248,100)
+        elseif(ipathmat.eq.2)then
+          WRITE(outs248,'(2A)')' standard materials     : ',
+     &      LFMAT(1:lnblnk(LFMAT))
+          call edisp248(itu,outs248,100)
+        endif
         WRITE(outs,'(2A)')' constructions          : ',
      &    LFMUL(1:lnblnk(LFMUL))
         call edisp(itu,outs)

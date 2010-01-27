@@ -568,7 +568,7 @@ C Note: escdef must come after scan of .esprc file.
       call escdef(IUF,IER)
       LCLIM=DCLIM
       LAPRES=DAPRES
-      LFMAT=DFCON
+      write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
       LFMUL=DFMUL
       LOPTDB=DOPTDB
       LPRFDB=DPRFDB
@@ -877,7 +877,23 @@ C so LSTRIPC and LOUTSTR are used.
       K=0
       CALL EGETW(LOUTSTR,K,WORD,'W','db names',IFLAG)
       if(WORD(1:4).eq.'*prm')then
+C        CALL EGETRM(LOUTSTR,K,LFMAT,'W','material db',IER)
+        CALL EGETRM(LOUTSTR,K,lworking,'W','material db',IER)
+
+C Process the file name following *prm and depending on its path
+C set the LFMAT common block string via call to findwhichdbpath.
+        call findwhichdbpath('mat',lworking,ier)
+      elseif(WORD(1:4).eq.'*mat')then
+C        CALL EGETRM(LOUTSTR,K,LFMAT,'W','material db',IER)
+        CALL EGETRM(LOUTSTR,K,lworking,'W','material db',IER)
+
+C Process the file name following *mat and depending on its path
+C set the LFMAT common block string via call to findwhichdbpath.
+        call findwhichdbpath('mat',lworking,ier)
+      elseif(WORD(1:7).eq.'*stdmat')then
         CALL EGETRM(LOUTSTR,K,LFMAT,'W','material db',IER)
+        ipathmat=2  ! standard folder for material database
+
       elseif(WORD(1:4).eq.'*mlc')then
         CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
       elseif(WORD(1:4).eq.'*opt')then
@@ -3313,7 +3329,8 @@ C see if the path is local or absolute or standard database folder.
 C Depending on which database (the parameter topic) the
 C common block file string and whichdbpath variable is updated.
 C topic =  'opt' for optics, 'pdb' for plant component templates
-C       =  'prs' for pressure coef, 'sbm' for UK SBEM database.
+C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
+C       =  'mat' for materials database
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3351,6 +3368,9 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mat')then
+            ipathmat=1  ! local folder for materials database
+            write(LFMAT,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -3367,6 +3387,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=2
             write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'mat')then
+            ipathmat=2
+            write(LFMAT,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3381,6 +3404,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'prs')then
+            ipathmat=0
+            write(LFMAT,'(a)') file(1:lnwkg)  ! assign directly
           endif
         endif
       else
@@ -3397,6 +3423,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mat')then
+            ipathmat=1  ! local folder for materials database
+            write(LFMAT,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3411,6 +3440,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=2
             write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'mat')then
+            ipathmat=2
+            write(LFMAT,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3425,25 +3457,31 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mat')then
+            ipathmat=0
+            write(LFMAT,'(a)') file(1:lnwkg)  ! assign directly
           endif
         endif
       endif
 
 C Debug.
-C      write(6,*) file
-C      if(topic(1:3).eq.'opt')then
+      write(6,*) file
+      if(topic(1:3).eq.'opt')then
 C        write(6,*) loptdb
 C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
-C      elseif(topic(1:3).eq.'pdb')then
+      elseif(topic(1:3).eq.'pdb')then
 C        write(6,*) LPCDB
 C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
-C      elseif(topic(1:3).eq.'prs')then
+      elseif(topic(1:3).eq.'prs')then
 C        write(6,*) lapres
 C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
-C      elseif(topic(1:3).eq.'sbm')then
+      elseif(topic(1:3).eq.'sbm')then
 C        write(6,*) lsbem
 C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
-C      endif
+      elseif(topic(1:3).eq.'mat')then
+        write(6,*) LFMAT
+        write(6,*) 'findwhichdbpath ipath is ',ipathmat
+      endif
 
       return
       end

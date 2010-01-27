@@ -260,7 +260,7 @@ C Multi-layer constructions db on channel IFIL+3.
 
 C Materials db on channel IFIL+4.
       IFMAT=IFIL+4
-      LFMAT=DFCON
+      write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
 C System configuration file on channel IFIL+5. 
       IFCFG=IFIL+5

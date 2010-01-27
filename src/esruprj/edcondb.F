@@ -58,11 +58,21 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
       integer iwhicharray   ! for each item in menu point back to array
       dimension iwhicharray(60)
-      character ACTION*1,CLSSEL*36,ltmp*72,CLSDES*32,H*72
+      character ACTION*1,CLSSEL*36,lltmp*144,CLSDES*32,H*72
       CHARACTER KEY*1,PDBM*68,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
+      character lworking*144,fs*1
       logical closemat1,closemat2
       logical mod   ! to signal whether an item has been altered.
+      logical unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Assume no changes to db amd user has not entered password.
       MODDB=.FALSE.
@@ -151,8 +161,13 @@ C If user canceled the listing the reset unit to iuout and loop back.
         elseif(irpt.eq.3)then
           goto 40
         endif
-        call edisp(itu,'In the materials database: ')
-        call edisp(itu, LFMAT)
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          call edisp(itu,'In the materials database: ')
+          call edisp(itu, LFMAT)
+        elseif(ipathmat.eq.2)then
+          call edisp(itu,'In the standard materials database: ')
+          call edisp(itu, LFMAT)
+        endif
         call edisp(itu,' ')
         do 42 list=1,INPIC
           IC=ICLSSEL(list)
@@ -355,19 +370,42 @@ C at the end.
             chgdb=.true.   ! pass back signal to update
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
             CALL ERPFREE(IAF,ISTAT)    ! in case unit is still open
-            ltmp=' '
-            if(origmatwasbin)then
-              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-            else
-              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use lltmp directly. If in
+C the standard location then create lworking which has path
+C prepended.
+            if(ipathmat.eq.0.or.ipathmat.eq.1)then
+              lltmp=' '
+              if(origmatwasbin)then
+                write(lltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+              else
+                write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+              endif
+C              call delfiledosorunix(lltmp,ider)
+              CALL mkascimat(IAF,lltmp,IER)
+            elseif(ipathmat.eq.2)then
+              lndbp=lnblnk(standarddbpath)
+              if(origmatwasbin)then
+                write(lworking,'(4a)') standarddbpath(1:lndbp),fs,
+     &            LFMAT(1:lnblnk(LFMAT)),'.a'
+              else
+                write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &            LFMAT(1:lnblnk(LFMAT))
+              endif
+C Debug.
+              write(6,*) 'working materials ',lworking
+              CALL mkascimat(IAF,lworking,IER)
             endif
-C            call delfiledosorunix(ltmp,ider)
-            CALL mkascimat(IAF,ltmp,IER)
 
 C Having read in binary and saved to ASCII the latter is now the model
 C material database.
             if(origmatwasbin)then
-              LFMAT=ltmp
+              if(ipathmat.eq.0.or.ipathmat.eq.1)then
+                write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
+              elseif(ipathmat.eq.2)then
+                write(LFMAT,'(a)') lworking(1:lnblnk(lworking))
+              endif
               origmatwasbin=.false.
             endif
             MODDB=.FALSE.
@@ -416,19 +454,31 @@ C a new file via mkascimat.
             chgdb=.true.
             call erpfree(ifmat,istat)  ! in case it is still open
             call erpfree(iaf,istat)  ! in case it is still open
-            ltmp=' '
-            if(origmatwasbin)then
-              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-            else
-              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+
+            lltmp=' '
+            if(ipathmat.eq.0.or.ipathmat.eq.1)then
+              if(origmatwasbin)then
+                write(lltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+              else
+                write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+              endif
+C              call delfiledosorunix(lltmp,ider)
+              CALL mkascimat(IAF,lltmp,IER)
+            elseif(ipathmat.eq.2)then
+              lndbp=lnblnk(standarddbpath)
+              write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &          LFMAT(1:lnblnk(LFMAT))
+              CALL mkascimat(IAF,lworking,IER)
             endif
-C            call delfiledosorunix(ltmp,ider)
-            CALL mkascimat(IAF,ltmp,IER)
 
 C Having read in binary and saved to ASCII the latter is now the model
 C material database.
             if(origmatwasbin)then
-              LFMAT=ltmp
+              if(ipathmat.eq.0.or.ipathmat.eq.1)then
+                write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
+              elseif(ipathmat.eq.2)then
+                write(LFMAT,'(a)') lworking(1:lnblnk(lworking))
+              endif
               origmatwasbin=.false.
             endif
 
@@ -2954,14 +3004,35 @@ C convert pass back ier as -2.
       real val
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124
+      character lworking*144,fs*1
+      logical unixok
 
 C Parameters
       integer ifa  ! file unit
-      character LASCI*72 ! ascii file to scan
-       integer ier ! error state
+      character LASCI*144 ! ascii file to scan
+      integer ier ! error state
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C The binary file will be overwritten.
-      call EFOPRAN(IFMAT,LFMAT,40,4,IER)
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use eforan. If in
+C the standard location then create lworking which has path
+C prepended.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        call EFOPRAN(IFMAT,LFMAT,40,4,IER)
+      elseif(ipathmat.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+        call EFOPRAN(IFMAT,lworking,40,4,IER)
+      endif
       if(ier.ne.0)return
 
 C Open the ASCII file for reading.
@@ -3049,14 +3120,39 @@ C current contents of binary file.
       real val
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72
+      character lworking*144,fs*1
+      logical unixok
 
 C Parameters
       integer IFA  ! file unit
-      character LASCI*72  ! file name
+      character LASCI*144  ! file name
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Open the binary materials database (in clase it was closed elsewhere).
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use efopseq. If in
+C the standard location then create lworking which has path
+C prepended.
       CALL ERPFREE(IFMAT,ISTAT)
-      call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+      elseif(ipathmat.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+
+C Debug.
+        write(6,*) 'working materials ',lworking
+        call EFOPRAN(IFMAT,lworking,40,1,IER)
+      endif
       if(ier.ne.0)return
       MATDBOK=.TRUE.
 

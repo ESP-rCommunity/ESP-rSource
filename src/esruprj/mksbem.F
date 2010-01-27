@@ -3887,11 +3887,11 @@ C Set flag for cfg file that this is a notional model
 C Assign standard databases containing UK NCM materials and constructions
 C These files are UK_notional.constrdb, material.db3.a and optics.db2 
       WRITE(LFMAT,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &FS,'databases',FS,'material.db3.a'
+     &  FS,'databases',FS,'material.db3.a'
       WRITE(LFMUL,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &FS,'databases',FS,'UK_notional.constrdb'
+     &  FS,'databases',FS,'UK_notional.constrdb'
       WRITE(LOPTDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &FS,'databases',FS,'optics.db2'
+     &  FS,'databases',FS,'optics.db2'
 
 C Reset path flags so that standard location is not appended (again) to
 C standard database locations

@@ -53,10 +53,12 @@ C espriou.h provides currentfile.
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,layermatch
 
       logical closemat1,closemat2,close4
+      logical unixok
 
-      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
+      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124,outs248*248
       CHARACTER RSTR*124
       CHARACTER WORD*20,MLCN*12,OTF*4,OPT*12,MLCSYM*12
+      character lworking*144,fs*1
 
 C Note that the text which follows the thickness of the layer
 C is extracted from the materials database and should not
@@ -68,20 +70,53 @@ C Keep track of how many times materials db read fails.
       closemat1=.false.  ! assume binary materils until proven otherwise
       closemat2=.false.
 
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
 C If materials database not opened it should have been opened
 C prior to this call and matdbok would be false if it
 C had been previously opened and failed.
       IF(.NOT.MATDBOK)THEN
         IER=0
-        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        IF(ier.ne.0)THEN
-          write(outs,'(3a)') ' No materials db ',
-     &      LFMAT(1:lnblnk(LFMAT)),' found!'
-          call edisp(iuout,outs)
-          MATDBOK=.FALSE.
-          ier=2    ! set error state so calling code will look for ascii version.
-          return
-        else
+
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use efopseq. If in
+C the standard location then create lworking which has path
+C prepended.
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+          if(ier.ne.0)then
+            write(outs248,'(3a)') ' No materials db ',
+     &        LFMAT(1:lnblnk(LFMAT)),' found!'
+            call edisp248(iuout,outs248,100)
+            MATDBOK=.FALSE.
+            ier=2    ! set error state so calling code will look for ascii version.
+            return
+          endif
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+
+C Debug.
+          write(6,*) 'working materials ',lworking
+          call EFOPRAN(IFMAT,lworking,40,1,IER)
+          if(ier.ne.0)then
+            write(outs,'(3a)') ' No materials db ',
+     &        lworking(1:lnblnk(lworking)),' found!'
+            call edisp(iuout,outs)
+            MATDBOK=.FALSE.
+            ier=2    ! set error state so calling code will look for ascii version.
+            return
+          endif
+        endif
+        IF(ier.eq.0)THEN
 
 C Also check to see if the file has correct info in 
           IREC=601

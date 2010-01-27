@@ -1493,8 +1493,18 @@ C closemat1 or closemat2 will be set.
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
       character SOPT*12,outs*124,GDESCR*36
+      character lworking*144,fs*1
+      logical unixok
 
-      IER=0
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C The following code follows the pattern used in ascii_mat.F scananymat
 
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can
@@ -1526,10 +1536,24 @@ C carry on using the materials common blocks for subsequent access.
 
 C Check for ascii versions of the materials database.
  1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
-      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+      elseif(ipathmat.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+        call rascimat(IFMAT,lworking,IER)  ! try current ascii format
+      endif
       if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
         ier=0
-        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+          call rlegacymat(IFMAT,lworking,ier)  ! try older ascii format
+        endif
         if(ier.ne.0)then
           call usrmsg('No readable materials database was not found',
      &                'or file was corrupt','W')

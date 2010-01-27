@@ -1584,7 +1584,8 @@ C The string buffer doit is only used within ifdef code.
       character docpth*24,tmppth*24,dbspth*24,LTMPFL*72
       character LF*72,LFL*144
       CHARACTER dmdsdesc*248,bdmds*72,spflnam*72,entflnam*72
-      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LASCI
+      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
+      character LLASCI*144
       character hvacfile*72,LAIM2*72,LBSIMP*72
 
       logical browse,XST,unixok
@@ -1818,7 +1819,7 @@ C Build up a list of the current files used in the model.
      &  LCNN(1:lnblnk(LCNN))
       do 41 i=1,7
         if(i.eq.1)then
-          LF=LFMAT
+          LFL=LFMAT
         elseif(i.eq.2)then
           LF=LFMUL
         elseif(i.eq.3)then
@@ -1832,22 +1833,21 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.7)then
           LFL=LPCDB
         endif
-        if(i.eq.3.or.i.eq.4.or.i.eq.5.or.i.eq.6.or.i.eq.7)then
+        if(i.eq.1.or.i.eq.3.or.i.eq.4.or.i.eq.5.or.i.eq.6.or.i.eq.7)then
           if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
             call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
+          endif
+
+C Place to write out ascii materials db if a local file exists.
+          if(i.eq.1)then
+            IUF=IFIL+2
+            write(LLASCI,'(2a)') LFL(1:lnblnk(LFL)),'.a'
+            CALL MKAPRC(LLASCI,IUF,IER)
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LLASCI)
           endif
         else
           if(LF(1:9).ne.'/usr/esru'.and.LF(1:4).ne.'UNKN')then
             call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
-
-C Place to write out ascii version of constructions db if a local
-C file exists.
-            if(i.eq.1)then
-              IUF=IFIL+2
-              write(LASCI,'(2a)') LF(1:lnblnk(LF)),'.a'
-              CALL MKAPRC(LASCI,IUF,IER)
-              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LASCI)
-            endif
           endif
         endif
   41  continue
