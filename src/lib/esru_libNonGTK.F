@@ -994,7 +994,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
-
+C Internal string buffer assumes that strval is less than 96 characters.
 C Example:
 C    ....
 C test getting a string.
@@ -1013,7 +1013,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,outs*124
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,outs*124
       LOGICAL OK,DOK
 
    20 WORD=' '
@@ -1311,6 +1311,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
+C Internal buffer size assumes that STRVAL is less than 96 characters.
 
 C Example:
 C    ....
@@ -1331,7 +1332,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
       LOGICAL OK,CMDACT,DOK
 
    20 IER=0
@@ -1500,6 +1501,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
+C Internal buffer size assumes that STRVAL is less than 96 characters.
 
 C Example:
 C    ....
@@ -1520,7 +1522,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
       character outstr248*248
       LOGICAL OK,CNCLACT,DOK
 
@@ -1679,7 +1681,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
-
+C Internal string buffer assumes that strval is less than 96 characters.
 C Example:
 C    ....
 C test getting a string.
@@ -1699,7 +1701,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,CMD2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
       LOGICAL OK,DOK
 
    20 IER=0

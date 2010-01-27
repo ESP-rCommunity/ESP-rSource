@@ -1093,7 +1093,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
-
+C Internal string buffer assumes that strval is less than 96 characters.
 C Example:
 C    ....
 C test getting a string.
@@ -1112,7 +1112,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,outs*124
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,outs*124
       character prompt*144
       LOGICAL OK,DOK
       integer last    ! last blank (or one) in the string.
@@ -1766,7 +1766,8 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
-
+C Assumption is that STRVAL will be up to 96 char wide. This
+C should be generalized.
       SUBROUTINE EASKSCNCL(STRVAL,PROMP1,PROMP2,CNCL,CNCLACT,ISTRW,
      &  DSTR,ERMSG,IER,NHELP)
 
@@ -1776,7 +1777,7 @@ C DSTR is a string to use as a default.
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
       character outstr248*248,prompt*144
       LOGICAL OK,CNCLACT,DOK
 
@@ -1954,6 +1955,8 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
+C Assumption is that STRVAL will be up to 96 char wide. This
+C should be generalized.
 
 C Example:
 C    ....
@@ -1974,7 +1977,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,CMD2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,prompt*144
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,prompt*144
       LOGICAL OK,DOK
 
    20 IER=0
