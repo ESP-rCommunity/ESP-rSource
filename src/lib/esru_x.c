@@ -3873,7 +3873,7 @@ void askdialog_(sstr,id,iq,f_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strcpy(sbuf,"                                                                                                ");
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -4031,7 +4031,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4060,7 +4060,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strcpy(sbuf,"                                                                                                ");
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -4207,7 +4207,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4236,7 +4236,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strcpy(sbuf,"                                                                                               ");
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -4384,7 +4384,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4412,7 +4412,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strcpy(sbuf,"                                                                                              ");
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
