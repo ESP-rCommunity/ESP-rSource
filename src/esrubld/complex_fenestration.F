@@ -2113,10 +2113,10 @@ C gas molar mass, A and B gas property coefficients
       real L,TA,TB,hc
       real g,R,P,Tm,ro,cp,k,mu,dT,Ra,Nu
 
-C if gap is evacuated, set hc to 0.1
+C if gap is evacuated, set hc to 0.01
 C This is a crude idealized treatment.
       if(mlr_mass.lt.0.0001)then
-            hc=0.1
+            hc=0.01
             goto 1000
       endif
 
@@ -4446,6 +4446,8 @@ C ********************************************************************
       integer isunup
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       real qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
+      COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
+      real thrmli
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       real tfa,qfa
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
@@ -4460,6 +4462,8 @@ C ********************************************************************
       real fInc_angle
 
       real RGap1, RGap2, Rsi, Rse, SBOLTZ, T0
+      real RGap1nom ! experimental, 15 K nominal RGap for DGU U-value ...
+      real Gap1Width, hc_nom
       
       real solrad_dir       ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
       real solrad_diff      ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
@@ -4619,8 +4623,9 @@ C      1: glazing
 C      2: venetian blind
 C The following logic assumes that there are not more than 3 consecutive 
 C glass layers - interspersed with gas layers, of course - in the CFC ...
-            if ( icfcltp(icomp,icfctp,l).eq.0 ) then
-              ! this is a gas layer and no IGU has been identified, yet,
+            if ( icfcltp(icomp,icfctp,l).eq.0 
+     &           .and. rmlr_mass(icomp,icfctp,l).gt.0.295E+02) then
+              ! this is a non-air gas layer and no IGU has been identified, yet,
               if (icfcltp(icomp,icfctp,l-1) .eq. 1) then
                 ! the previous layer is glass, 
                 if ((l.le.(ne-1)) .and. 
@@ -4655,11 +4660,29 @@ C glass layers - interspersed with gas layers, of course - in the CFC ...
                     RGap1 = RGap1/(  1.0/rlwEB_sv(icomp,icfctp,l-1)
      &                             + 1.0/rlwEF_sv(icomp,icfctp,l+1)
      &                             - 1.0 )
+                    ! now for "nominal" U-value (experimental, 27.01.10)
+                    RGap1nom = SBOLTZ*ABS((T0+2.5)**4.0
+     &                               - (T0+17.5)**4.0)
+                    RGap1nom = RGap1nom/15.0
+                    RGap1nom = RGap1nom/
+     &                            (  1.0/rlwEB_sv(icomp,icfctp,l-1)
+     &                             + 1.0/rlwEF_sv(icomp,icfctp,l+1)
+     &                             - 1.0 )
                     ! overall gap resistance:
                     RGap1 = RGap1 + 1.0/cfcRgap(icomp,i,l,2)
                     RGap1 = 1.0/RGap1
+C calculate nominal convective gap resistance (code from lines 1836 ff.)
+c            Gap1Width=0.006 !THRMLI(icomp,i,l,4) ! gap width
+c       CALL ConvVertCav(Gap1Width,2.5,17.5,rmlr_mass(icomp,icfctp,l),
+c     &      cond_A(icomp,icfctp,l),cond_B(icomp,icfctp,l),
+c     &      visc_A(icomp,icfctp,l),visc_B(icomp,icfctp,l),
+c     &      spht_A(icomp,icfctp,l),spht_B(icomp,icfctp,l),hc_nom)
+C end nom. conv. gap res.
+                    RGap1nom = RGap1nom + 1.0/cfcRgap(icomp,i,l,2)
+                    RGap1nom = 1.0/RGap1nom
                     ! add first and second glass layer resistances (for simplicity, assume 6 mm glass per pane, lam=1.0 W/(m2 K))
                     RGap1 = RGap1 + 0.012/1.0
+                    RGap1nom = RGap1nom + 0.012/1.0
                   endif ! DGU or TGU
                 endif ! following layer is glass
               endif ! previous layer is glass
@@ -4679,7 +4702,7 @@ C Now calculate and output U-value for IGU of this construction
           sIGU = 'TGU'
         endif
         call add_to_xml_reporting (
-     &       1.0/(RGap1 + RGap2 + 0.17),
+     &       1.0/(RGap1nom + RGap2 + 0.17),
      &       H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/Unom_' // sIGU ,
      &       'units', '(W/(m2 K))',
      &       'Nominal CFC IGU U-value' )

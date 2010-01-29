@@ -444,7 +444,7 @@ C commons.
 
         write(outs,'(a,a)')
      &      '# For each layer: normal visible optical properties - ',
-     &      'R_fr, R_bk, Tran. CURRENTLY NOT USED'
+     &      'R_fr, R_bk, Tran. EXPERIMENTAL, USE WITH CAUTION'
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
         do 140 ie=1,im_ncfc_el(icomp,it)
