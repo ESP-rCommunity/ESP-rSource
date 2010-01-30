@@ -57,6 +57,7 @@ C      set_QELW_to_zero
 C      CFCoutput
 C      CFC_control
 C      get_incident_solrad
+C      CFCoutputH3K (A. Geissler)
 
 C ********************************************************************
 C                   --fenestration_controller--
@@ -4463,7 +4464,7 @@ C ********************************************************************
 
       real RGap1, RGap2, Rsi, Rse, SBOLTZ, T0
       real RGap1nom ! experimental, 15 K nominal RGap for DGU U-value ...
-      real Gap1Width, hc_nom
+      real Gap1Width, hc_nom, TA, TB
       
       real solrad_dir       ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
       real solrad_diff      ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
@@ -4483,6 +4484,9 @@ C ********************************************************************
       
       SBOLTZ=5.6697E-08 ! Stefan Boltzmann Constant
       T0=273.15         ! 0°C in K
+
+      TA=17.5
+	  TB=2.5   ! DT = 15 K for approx. U_nom
 
 C Basic names (should be defined in a header, somewhere ...)
       cBuildingName='bui'
@@ -4661,9 +4665,9 @@ C glass layers - interspersed with gas layers, of course - in the CFC ...
      &                             + 1.0/rlwEF_sv(icomp,icfctp,l+1)
      &                             - 1.0 )
                     ! now for "nominal" U-value (experimental, 27.01.10)
-                    RGap1nom = SBOLTZ*ABS((T0+2.5)**4.0
-     &                               - (T0+17.5)**4.0)
-                    RGap1nom = RGap1nom/15.0
+                    RGap1nom = SBOLTZ*ABS((T0+TA)**4.0
+     &                               - (T0+TB)**4.0)
+                    RGap1nom = RGap1nom/ABS(TA-TB)
                     RGap1nom = RGap1nom/
      &                            (  1.0/rlwEB_sv(icomp,icfctp,l-1)
      &                             + 1.0/rlwEF_sv(icomp,icfctp,l+1)
@@ -4672,13 +4676,13 @@ C glass layers - interspersed with gas layers, of course - in the CFC ...
                     RGap1 = RGap1 + 1.0/cfcRgap(icomp,i,l,2)
                     RGap1 = 1.0/RGap1
 C calculate nominal convective gap resistance (code from lines 1836 ff.)
-c            Gap1Width=0.006 !THRMLI(icomp,i,l,4) ! gap width
-c       CALL ConvVertCav(Gap1Width,2.5,17.5,rmlr_mass(icomp,icfctp,l),
-c     &      cond_A(icomp,icfctp,l),cond_B(icomp,icfctp,l),
-c     &      visc_A(icomp,icfctp,l),visc_B(icomp,icfctp,l),
-c     &      spht_A(icomp,icfctp,l),spht_B(icomp,icfctp,l),hc_nom)
+            Gap1Width=THRMLI(icomp,i,l,4) ! gap width
+       CALL ConvVertCav(Gap1Width,TA,TB,rmlr_mass(icomp,icfctp,l),
+     &      cond_A(icomp,icfctp,l),cond_B(icomp,icfctp,l),
+     &      visc_A(icomp,icfctp,l),visc_B(icomp,icfctp,l),
+     &      spht_A(icomp,icfctp,l),spht_B(icomp,icfctp,l),hc_nom)
 C end nom. conv. gap res.
-                    RGap1nom = RGap1nom + 1.0/cfcRgap(icomp,i,l,2)
+                    RGap1nom = RGap1nom + hc_nom
                     RGap1nom = 1.0/RGap1nom
                     ! add first and second glass layer resistances (for simplicity, assume 6 mm glass per pane, lam=1.0 W/(m2 K))
                     RGap1 = RGap1 + 0.012/1.0
