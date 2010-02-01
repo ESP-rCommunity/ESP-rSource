@@ -23,6 +23,7 @@ C system databases:
 C  EDDB  : Controls specification/ browsing of databases.
 C  opendb: Standard opening of thermophysical and optical databases.
 C EDDBMAT Changes the materials database current cfg file references.
+C EDDBMATERIAL Changes the materials database current cfg file references.
 C EDDBMLC Changes the Constructions db references in the cfg file.
 C EDDBPROFILE Changes the events profile database current cfg file references.
 C EDDBOPT Changes the optical database current cfg file references.
@@ -246,7 +247,8 @@ C Pressure distribution db.
       ELSEIF(INO.EQ.6)THEN
 
 C Since it may be repeatedly accessed, open materials db.
-        call eddbmat(moddb,modcon,'    ')
+C        call eddbmat(moddb,modcon,'    ')
+        call eddbmaterial(moddb,modcon,'    ')
         if(moddb)then
           call usrmsg(
      &      'The database name might have changed. Suggest',
@@ -1186,9 +1188,9 @@ C << temporary shorter buffer >>
      &    'Name for db after copy to project folder?',' ',
      &     92,'materials.db','copied materials database',IER,2)
         call isunix(unixok)
-        IF(LTMP(1:2).NE.'  ')then
+        IF(LLTMP(1:2).NE.'  ')then
           write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &      LTMP(1:lnblnk(LTMP))
+     &      LLTMP(1:lnblnk(LLTMP))
           write(LLTMP,'(a)') LTMP(1:lnblnk(LTMP)) ! cast back to longer buffer
           doit = ' '
           if(unixok)then
@@ -1487,6 +1489,947 @@ C Error messages.
       IER=1
       return
       end
+
+C ********** EDDBMATERIAL
+C Eddbmaterial Changes the materials database current cfg file references.
+C moddb is from version manager
+C modcon signals change in constructions.
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+
+      SUBROUTINE EDDBMATERIAL(moddb,modcon,APP)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+      
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/rpath/path
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+
+C Default ESP-r distribution path.
+      common/deflt4/dinstpath
+
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical moddb,modcon,copydef,clkok,chgdb
+      logical closemat1,closemat2
+
+      character H*72,LLTMP*144,LTMP*92
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24
+      character fs*1,message*48
+      character doit*300,LCOPY*144
+      character DFILE*144,LLASCI*144,LLTMPFL*144
+      character lprev*144
+      character longtfile*144
+      character lworking*144
+      character dirpath*48
+      integer iglib  ! for detecting GTK or X11
+
+      CHARACTER outs248*248,APP*4
+      LOGICAL OK,XST,DOK,concat
+      character cfgroot*24,LCFGF*72
+      character dinstpath*48,path*72
+      character sourcefile*144  ! the file to copy
+
+C Local strings for user selections dependent on graphic library.
+      character opte*28,optf*28,optg*28
+      character lpath*72,fname*72 ! for use with fdroot
+
+      integer lndbp   ! for length of standard database path
+      logical unixok  ! to check for database path file separators
+
+C Clear string buffers.
+      ltmp=' '
+      lltmp=' '
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Setup string buffer with distribution database folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases',fs
+      ldirpath=lnblnk(dirpath)
+
+C Remember the initial file name in case user choice fails.
+C Take into account the current value of ipathmat.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        write(lprev,'(a)') LFMAT(1:lnblnk(LFMAT))
+      elseif(ipathmat.eq.2)then
+        write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+      endif
+
+C Debug.
+C      write(6,*) 'previous materials ',lprev(1:lnblnk(lprev))
+
+C Setup lltmp to hold the full path to the file for use in dialog.
+  60  continue
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        lltmp=lfmat  ! use as is
+      elseif(ipathmat.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmat(1:lnblnk(lfmat))  ! prepend db folder path
+      endif
+
+      H(1)='The Materials database holds the density, specific' 
+      H(2)='heat, conductivity, diffusion resistance and surface'
+      H(3)='absorptivity/emissivity for materials such as brick' 
+      H(4)='concrete, wood, metal etc. Older versions of thie db'
+      H(5)='were held in binary format and newer models tend to' 
+      H(5)='use an ASCII version of the file and support additional'
+      H(6)='attributes. Conversion options between ascii and binary' 
+      H(7)='versions are available.'
+      H(8)=' '
+      H(9)='The following options can be selected:'
+      H(10)=' '
+      H(11)='a) If the file exists than you can browse the database '
+      H(12)='   and if you have permission to update the file you'
+      H(13)='   can edit the entities in the database.'
+      H(14)=' '
+      H(15)='b) select another file: you will asked for a file'
+      H(16)='   name and if it is found you can browse or edit it.'
+      H(17)=' '
+      H(18)='c) make a new database: a new database will be created '
+      H(19)='   based on the file name you supply.'
+      H(20)=' '
+      H(21)='d) copy default database: a project copy of the default'
+      H(22)='  database will be made and you will be offered a '
+      H(23)='  chance to rename it.'
+      H(24)=' '
+      H(25)='e) Convert a binary representation of the db (which is'
+      H(26)='   platform dependant) to an ASCII representation.'
+      H(27)=' '
+      H(28)='f) Convert an ascii representation of the db to a'
+      H(29)='   binary representation (NOTE THIS IS ONLY for'
+      H(30)='   LEGACY models and is depreciated).'
+      H(31)=' '
+
+C If GTK library then there are additional options so include in help.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.2)then
+        H(32)='g) browse ../dbs allows you to look in the model ../dbs'
+        H(33)='  folder for alternative optics files. If you do not'
+        H(34)='  find anything the previous value will be restored.'
+        H(35)=' '
+        H(36)='h) browse distribution displays files in the databases'
+        H(37)='  folder of the ESP-r distribution. If you do not find'
+        H(38)='  anything the previous value will be restored.'
+        H(39)=' '
+        H(40)='i) copy another database to the project allows you to'
+        H(41)=' locate a database and get a project copy of it.'
+      else
+        H(32)='g) select a file (X11 only): edit the file name'
+        H(33)='   and if it is found you can browse or edit it.'
+        H(34)='   Hint: if you eventually want to copy that other file'
+        H(35)='   into the model folder first select it and then ask'
+        H(36)='   for a copy.'
+        H(37)=' '
+        H(38)=' '
+        H(39)=' '
+        H(40)=' '
+        H(41)=' '
+      endif
+
+C If local or absolute path call addpath otherwise if a standard
+C database then set longtfile equal to LLTMP.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        call addpath(lltmp,longtfile,concat)
+      elseif(ipathmat.eq.2)then
+        longtfile=lltmp
+      endif
+      ltf=max(1,lnblnk(longtfile))
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C Make up additional options depending on graphics lib. If using
+C text or X11 option g edits the string while for GTK there are two
+C options to browse for files in ../dbs or the esp-r distribution.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        opte='g edit file name'
+        optf='   '
+        optg='   '
+      elseif(iglib.eq.2)then
+        opte='g browse ../dbs'
+        optf='h browse distribution'
+        optg='i make copy of another file'
+      endif
+
+      IF(.NOT.XST)THEN
+
+C If db does not exist locally offer limited choices.
+        idno=2
+        isw=0
+        call MENUATOL('  ','Materials db',
+     &    ' ','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    'e binary >> ascii convert','f ascii >> binary convert',
+     &    opte,optf,optg,' ',' ',' ',isw,idno,41)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.9)copydef=.false.
+      elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
+
+C If corportate database then offer the following choices (incl /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Materials db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    'e binary >> ascii convert','f ascii >> binary convert',
+     &    opte,optf,optg,' ',' ',' ',isw,idno,41)
+        copydef=.false.
+      elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
+
+C If corportate database then offer the following choices (without /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Materials db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    'e binary >> ascii convert','f ascii >> binary convert',
+     &    opte,optf,optg,' ',' ',' ',isw,idno,41)
+        copydef=.false.
+      else
+
+C If db exists locally toggle whether the user is asked to copy the
+C default database or the current database.
+        idno=1
+        isw=0
+        call MENUATOL('  ','Materials db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    'e binary >> ascii convert','f ascii >> binary convert',
+     &    opte,optf,optg,' ',' ',' ',isw,idno,41)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.9)copydef=.false.
+      endif
+
+C Act on the user's choice. If no choice return to calling menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C If file exists read it and enter editing facility after
+C check to see if it is local or standard or absolute path.
+        if(XST)then
+          call findwhichdbpath('mat',lltmp,ier)
+          goto 44
+        else
+          call usrmsg('No file to browse/edit. Please use one',
+     &                'of the other options.','W')
+          LFMAT=lprev
+          goto 60
+        endif
+
+      elseif(isw.eq.2)then
+
+C There is no select by list for materials database.
+        call usrmsg('No list select for materials databases.',
+     &    'Use browse or make copy instead.','W')
+        goto 60
+
+      elseif(isw.eq.3)then
+
+C User requested the creation of a new materials db. Set up minimal
+C set of categories and items, write this to a scratch file and
+C then scan that into material arrays and create a new db and offer editing.
+        h(1)='The suggested name of this db is related to the'
+        h(2)='current project name.'
+        lr=lnblnk(cfgroot)
+        LTMP=' '
+        LLTMP=' '
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.materialdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.materialdb'
+        endif
+        clkok=.false.
+ 62     h(1)='The suggested name of this db is related to the'
+        h(2)='current project name.'
+        clkok=.false.
+        CALL EASKSCNCL(ltmp,' ','New materials db?',
+     &    'cancel',clkok,92,DFCON,'new materials db',
+     &    IER,2)
+        if(clkok)then
+          LFMAT=lprev  ! user canceled, restore initial name
+          return
+        endif
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          write(LFMAT,'(a)') ltmp(1:lnblnk(ltmp))
+          ipathmat=1  ! this is a local materials database.
+        else
+          goto 62
+        endif
+
+        CALL ERPFREE(IFMAT,ISTAT)
+        MATDBOK=.TRUE.
+        moddb=.true.
+        modcon=.true.
+
+C Write a scratch file which can be re-scanned into common blocks.
+C Materials db. Include typical categories with one item in each.
+C The scratch file is in the format of an older ASCII materials
+C database which will then be scanned into materials arrays.
+
+C << Need to update this scratch file to use a newer format
+C << of ascii Materials db or just assign the data arrays
+C << directly.
+
+        lr=lnblnk(cfgroot)
+        LLTMPFL=' '
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LLTMPFL,'(2a)') cfgroot(1:lr),'.scratch'
+        else
+          write(LLTMPFL,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.scratch'
+        endif
+        IAF=IFIL+1
+        CALL EFOPSEQ(IAF,LLTMPFL,3,IER)
+        write(IAF,'(2a)',IOSTAT=ios,ERR=13)
+     &    '# Materials db defined in ',LFMAT(1:lnblnk(LFMAT))
+        NCLASS=15
+        write(IAF,'(i5,a)',IOSTAT=ios,ERR=13) NCLASS,
+     &    '#  number of classifications'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  1   1   Brick'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  1   Paviour Brick'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  0.960, 2000.000, 840.000, 0.930, 0.700, 12.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  2   1   Concrete'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 21   Light mix conc'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  0.380, 1200.000, 653.000, 0.900, 0.650, 6.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  3   1   Metal'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 41   Copper   '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  200.000, 8900.000, 418.000, 0.720, 0.650, 19200.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  4   1   Wood'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 61   Wood block   '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  0.160, 800.000, 2093.000, 0.900, 0.650, 11.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  5   1   Stone'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 81   Sandstone   '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  1.830, 2200.000, 712.000, 0.900, 0.600, 29.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  6   1   Plaster'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 101  Dense plaster '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  0.500, 1300.000, 1000.000, 0.910, 0.500, 11.000  '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13)
+     &    '  7   1   Screeds and renders'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13)
+     &    ' 121  Ltwt concrete screed '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  0.410, 1200.000, 840.000, 0.900, 0.800, 30.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  8   1   Tiles'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 141  Clay tile '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    ' 0.850, 1900.000, 837.000, 0.900, 0.600, 52.000'  
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13)
+     &    '  9   1   Asphalt and bitumen'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 161  Bitumen felt '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    ' 0.500, 1700.000, 1000.000, 0.900, 0.900, 1000.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  10   1  Fabric '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 181  wool '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  0.060, 198.000, 1360.000, 0.900, 0.600, 10.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  11   1  Insulation '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 201  Fibreboard '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  0.060, 300.000, 1000.000, 0.900, 0.500, 13.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  12   1  Carpet '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 221  Wilton '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    ' 0.060, 186.000, 1360.000, 0.900, 0.600, 10.000' 
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  13   1  Glass '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 241  Glass block '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  0.700, 3500.000, 837.000, 0.830, 0.050, 19200.000'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  14   1  Earth '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 261  Infusorial (9% mc)'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    ' 0.090, 480.000, 180.000, 0.900, 0.850, 5.000 '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '# class|no elements|description'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) '  15   1  Plastic '
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) ' 281   Plastic tile'
+        write(IAF,'(a)',IOSTAT=ios,ERR=13) 
+     &    '  0.500, 1050.000, 837.000, 0.900, 0.400, 1000.000 '
+
+C After creating the new database file close the file unit.
+        CALL ERPFREE(IAF,ISTAT)
+        call pausems(400)
+
+C Now scan the scratch file into material arrays.
+        ier=0
+        call rlegacymat(IAF,LLTMPFL,ier)
+        if(ier.ne.0)then
+          call usrmsg('The initial materials database data could',
+     &                'not be scanned into memory!','W')
+        else
+          call usrmsg('An initial set of material categories has been',
+     &                'setup and you can modify as required.','-')
+        endif
+
+C And now write out the database from the materials arrays. mkascimat
+C expects to be passed the expanded file name.
+        CALL ERPFREE(IAF,ISTAT)
+        CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+        LLTMPFL=' '
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          write(LLTMPFL,'(a)') LFMAT(1:lnblnk(LFMAT))
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(LLTMPFL,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+        endif
+        CALL mkascimat(IAF,LLTMPFL,IER)
+
+        dok=.true.
+        h(1)='A mostly empty materials database has been created'
+        h(2)='and it it useless until it has been populated with'
+        h(3)='data. If you have the information required you can'
+        h(4)='proceed with that task. '
+        CALL ASKOK(' ','Browse or edit new database?',OK,dok,4)
+        if(OK)then
+          moddb=.true.
+          goto 44
+        endif
+
+      elseif(isw.eq.4.or.isw.eq.9)then
+
+C Copy a database to project folder. If iws is 4 then the
+C user has asked for the default database. If isw is 9 then the
+C user wishes to browse for the source file. Suggest a local
+C file name based on the project root name. Lastly do the copy.
+C If the default is to be copied ask for local name. Use LTMP for
+C the file name as known to esp-r and LCOPY for the system cp call.
+C Remember the file to be copied as sourcefile so that subsequent
+C code is general rather than specific (for later consolidation).   
+        if(copydef)then
+          write(outs248,'(2a)') 'The source file is:',
+     &      DFCON(1:lnblnk(DFCON))
+          call edisp248(iuout,outs248,100)
+          sourcefile = DFCON
+        else
+          h(1)='You are asked to confirm the source file for the'
+          h(2)='copy action. If this one is ok then accept it. '
+          lltmp='  '
+          CALL EASKXORGTKF(LFMAT,
+     &      'Materials file name (source)?',' ',
+     &      DFCON,lltmp,'materials database',IER,2)
+
+          sourcefile = lltmp   ! remember this
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3)then
+            LFMAT=lprev
+            goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+          ipathmat=1  ! signal that it is a local database.
+          LFMAT=lltmp
+        endif
+
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.materialdb'
+        elseif(dbspth(1:3).eq.'../')then
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.materialdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.materialdb'
+        endif
+   66   CALL EASKS(LTMP,
+     &    'Database name after it is copied into the project?',
+     &    ' ',92,'material.db','copied material database',IER,2)
+        call isunix(unixok)
+        IF(LTMP(1:2).NE.'  ')then
+
+C If Unix and the path is ./ then no need to prepend this (to
+C avoid .//../dbs in the buffer).  If path ends with file separator
+C no need to duplicat the file separator.
+          if(unixok)then
+            lpp=lnblnk(path)
+            if(path(1:2).eq.'./')then
+              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
+            elseif(path(lpp:lpp).eq.fs)then
+              write(LCOPY,'(2a)') path(1:lnblnk(path)),
+     &          LTMP(1:lnblnk(LTMP))
+            else
+              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &          LTMP(1:lnblnk(LTMP))
+            endif
+          else
+            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &        LTMP(1:lnblnk(LTMP))
+          endif
+
+          if(copydef)then
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          sourcefile(1:lnblnk(sourcefile)),' ',
+     &          LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Standard dos copy logic.
+              message='getting materials file from '
+              call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+            endif
+            call usrmsg('copying default file via',doit,'-')
+            call runit(doit,'-')
+
+C Use LTMP or LCOPY depending on the path because the path will already
+C be pre-pended when using most inbuilt file opening calls.
+C If the file exists with the normal path to model prepended then
+C it should be possible to rebuild the name based on ../dbs.
+            call FINDFIL(LCOPY,XST)
+            if(XST)then
+              call fdroot(lcopy,lpath,fname)
+              write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+            else
+              write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
+            endif
+          else
+            doit = ' '
+            if(unixok)then
+              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &          LPCDB(1:lnblnk(LPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
+            else
+
+C Standard dos copy logic.
+              message='getting plant db file from '
+              call dblongdoscopy(LFMAT,lcopy,message,doit,ier)
+            endif
+            call usrmsg('copying file via',doit,'-')
+            call runit(doit,'-')
+
+C Use LTMP or LCOPY depending on the path because the path will already
+C be pre-pended when using most inbuilt file opening calls.
+            call FINDFIL(LCOPY,XST)
+            if(XST)then
+              call fdroot(lcopy,lpath,fname)
+              write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+            else
+              call FINDFIL(LTMP,XST)
+              if(XST)then
+                write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
+              else
+                write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
+                call edisp(iuout,'Problem locating the new database.')
+                call edisp(iuout,'Try browsing ../dbs to find it.')
+                call edisp(iuout,' ')
+              endif
+            endif
+          endif
+          moddb=.true.
+          ipathmat=1  ! signal that it is a local database.
+          goto 44
+        else
+          goto 66
+        endif
+
+      elseif(isw.eq.5)then
+
+C Materials db: BINARY > ASCII. Open the ascii file on IAF=IFIL+1.
+
+C Do not assume that LFMAT is necessarily the binary file
+C the user may have been working earlier with an ascii version
+C revise to request the name of the binary file before opening it.
+
+C << what about value of ipathmat? >>
+
+        write(LLTMP,'(a)') LFMAT(1:lnblnk(LFMAT))  ! remember current file name
+        lsn2=MIN0(lnblnk(LLTMP),92)
+        LTMP=' '
+        write(LTMP,'(a)') LLTMP(1:lsn2)
+        H(1)='This db is held as a binary representation for speed'
+        H(2)='of access. Supply the name of the binary file.'
+C        CALL EASKSCNCL(LFMAT,'Materials db (binary)?',' ',
+        CALL EASKSCNCL(LTMP,'Materials db (binary)?',' ',
+     &    'cancel',clkok,92,DFILE,'materials database (bin)',IER,2)
+        if(clkok) return
+
+C Open binary Materials db based on value of ipathmat.
+C << cast back from shorter buffer >>
+        write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
+        IAF=IFIL+1
+        IER=0
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+          call EFOPRAN(IFMAT,lworking,40,1,IER)
+        endif
+        if(ier.ne.0)then
+          write(LFMAT,'(a)') LLTMP(1:lnblnk(LLTMP))  ! restore previous
+          call edisp(iuout,'Restoring the previous materials db')
+          call edisp(iuout,LLTMP)
+          goto 60    ! jump back and reload and re-display
+        endif
+        MATDBOK=.TRUE.
+
+C Confirm suggested name and then write out ascii file.
+        H(1)='This db is held as a binary representation for speed'
+        H(2)='of access. It is sometimes necessary to convert to'
+        H(3)='an ASCII representation, e.g. to facilitate manual'
+        H(4)='editing or implementation on an operating system that'
+        H(5)='uses a different binary representation.'
+
+        DFILE='./newmat.db1.a'
+        clkok=.false.
+        LLASCI=' '
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          write(LLASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(LLASCI,'(4a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT)),'.a'
+        endif
+
+C << temporary shorter string until EASKXORGTKF >>
+        lsn2=MIN0(lnblnk(LLASCI),92)
+        LTMP=' '
+        write(LTMP,'(a)') LLASCI(1:lsn2)
+        CALL EASKSCNCL(LTMP,'Materials db (ascii)?',' ',
+     &    'cancel',clkok,92,DFILE,'materials database (ascii)',IER,5)
+        if(clkok)then
+          write(LFMAT,'(a)') LLTMP(1:lnblnk(LLTMP))  ! restore previous
+          call edisp(iuout,'Restoring the previous materials db')
+          call edisp(iuout,LLTMP)
+          goto 60    ! jump back and reload and re-display
+        else
+          write(LLASCI,'(a)') LTMP(1:lnblnk(LTMP))
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
+            CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+            CALL mkascimat(IAF,LLASCI,IER)
+          else
+            CALL MKAPRC(LLASCI,IAF,IER)
+          endif
+        endif
+
+C Before returning restore the original database file and
+C rescan into common blocks.
+        write(LFMAT,'(a)') LLTMP(1:lnblnk(LLTMP)) ! restore previous
+        call edisp(iuout,'Restoring the previous materials db')
+        call edisp(iuout,LLTMP)
+        goto 60    ! jump back and reload and re-display
+
+      elseif(isw.eq.6)then
+
+C Materials db: ASCII > BINARY. Guess that the ascii version has
+C the same name as the binary one and is in the same location.
+        H(1)='An ascii (human readable) version of the Materials db'
+        H(2)='may be manually edited and is also convenient for'
+        H(3)='use in operating systems or computers that employ'
+        H(4)='different binary representations.'
+        H(5)=' '
+        H(6)='NOTE: only older ASCII files can be converted to binary.'
+        H(7)='If you have a newer ASCII materials database the process'
+        H(8)='will fail. '
+        IAF=IFIL+1
+        clkok=.false.
+        DFILE=' '
+        LLASCI=' '
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          write(LLASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(LLASCI,'(4a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT)),'.a'
+        endif
+
+C << temporary shorter string until EASKXORGTKF >>
+        lsn2=MIN0(lnblnk(LLASCI),92)
+        LTMP=' '
+        write(LTMP,'(a)') LLASCI(1:lsn2)
+        CALL EASKSCNCL(LTMP,'Materials db (legacy ascii)?',' ',
+     &    'cancel',clkok,92,DFILE,'materials db (ascii)',IER,8)
+        if(clkok) return
+        write(LLASCI,'(a)') LTMP(1:lnblnk(LTMP))
+
+        DFILE='./newmaterial.db1'
+        clkok=.false.
+        lltmp=' '; ltmp=' '
+        write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+        write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+ 143    CALL EASKSCNCL(ltmp,'Materials db (legacy binary)?',' ',
+     &    'cancel',clkok,92,DFILE,'Materials db (binary)',IER,8)
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          write(LFMAT,'(a)') ltmp(1:lnblnk(ltmp))
+        else
+          goto 143
+        endif
+        if(clkok)then
+          write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))  ! restore original file name
+          call edisp(iuout,'Restoring the previous materials db')
+          call edisp(iuout,LLTMP)
+          goto 60    ! jump back and reload and re-display
+        else
+          CALL MKBPRC(IAF,LLASCI,IER)
+          write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))  ! restore original file name
+          call edisp(iuout,'Restoring the previous materials db')
+          call edisp(iuout,LLTMP)
+          goto 60    ! jump back and reload and re-display
+        endif
+
+      elseif(isw.eq.7)then
+
+C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
+C can see the files in that folder. Note the user may browse away
+C from this location. Easkf returns the absolut path to the
+C file selected (later see if this can be resolved to ../dbs). 
+C Test the returned file and if it is not readable reset LOPTDB.
+        if(iglib.eq.2)then
+          H(1)='The Materials database holds the density, specific' 
+          H(2)='heat, conductivity, diffusion resistance and surface'
+          H(3)='absorptivity/emissivity for materials such as brick' 
+          H(4)='concrete, wood, metal etc. Older versions of thie db'
+          H(5)='were held in binary format and newer models tend to' 
+          H(5)='use an ASCII version of the file and support'
+          H(6)='additional attributes.' 
+          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+          CALL EASKF(LCOPY,' ','Materials db?',
+     &      144,DFCON,'materials database',IER,6)
+          if(ier.eq.-3)then
+            LFMAT=lprev
+            goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+
+C If the file exists with the normal path to model prepended then
+C it should be possible to rebuild the name based on ../dbs.
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+            write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
+          endif
+          moddb=.true.
+          ipathmat=1  ! signal that it is a local database.
+          goto 44
+        else
+
+C For X11 and text allow user to type in a file name.
+          H(1)='The Materials database holds the density, specific' 
+          H(2)='heat, conductivity, diffusion resistance and surface'
+          H(3)='absorptivity/emissivity for materials such as brick' 
+          H(4)='concrete, wood, metal etc. Older versions of thie db'
+          H(5)='were held in binary format and newer models tend to' 
+          H(5)='use an ASCII version of the file and support'
+          H(6)='additional attributes.' 
+          llt=lnblnk(lltmp)
+          if(llt.lt.96)then
+            CALL EASKF(lltmp,' ','Materials db?',
+     &        96,DFCON,'materials database',IER,6)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(lltmp,' ','Materials db?',
+     &        124,DFCON,'materials database',IER,6)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(lltmp,' ','Materials db?',
+     &        144,DFCON,'materials database',IER,6)
+          endif
+          if(ier.eq.-3)then
+            LFMAT=lprev
+            goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+
+          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C This is another place where we need to check what the user might
+C have edited to be sure of setting the correct location value.
+            call findwhichdbpath('mat',lltmp,ier)
+            moddb=.true.
+            goto 44
+          else
+            goto 60
+          endif
+        endif
+
+      elseif(isw.eq.8)then
+
+C Browse distribution database folder. Setup LCOPY to point to
+C the database folder (but no particular file). Use easkf to
+C return a file (which might be from somewhere else if the user
+C decides to do some browsing).
+        if(iglib.eq.2)then
+          H(1)='The Materials database holds the density, specific' 
+          H(2)='heat, conductivity, diffusion resistance and surface'
+          H(3)='absorptivity/emissivity for materials such as brick' 
+          H(4)='concrete, wood, metal etc. Older versions of thie db'
+          H(5)='were held in binary format and newer models tend to' 
+          H(5)='use an ASCII version of the file and support'
+          H(6)='additional attributes.' 
+          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &      fs,'databases',fs
+          CALL EASKF(LCOPY,' ','Materials db?',
+     &      144,DFCON,'materials database',IER,6)
+          if(ier.eq.-3)then
+            LFMAT=lprev
+            goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+
+C This is yet another place where we need to check what the user might
+C have edited to be sure of setting the correct location value. The
+C common block lpcdb will have been updated by call to findwhichdbpath.
+          call findwhichdbpath('mat',lcopy,ier)
+          moddb=.true.
+          goto 44
+        else
+          call usrmsg('Browse feature not available.',' ','W')
+          goto 60
+        endif
+      endif
+
+C Test the selected or copied database. If a problem loop back
+C otherwise edit the database contents.
+   44 continue
+      IER=0
+
+C Scan the binary file data into materials commons and if this was
+C sucessful and matver was set to 1.1 in matformbin then we can
+C carry on using the materials common blocks for subsequent access.
+C If original was binary origmatwasbin will be .true.
+      call scananymat(ier)
+      if(ier.ne.0)then
+        call usrmsg('Readable materials database was not found',
+     &              'or file was corrupt','W')
+        MATDBOK=.FALSE.
+      else
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        MATDBOK=.TRUE.
+      endif
+
+      moddb=.true.
+      modcon=.true.
+      chgdb=.false.
+
+      call tstamp('>','PRJ: enter materials db')
+      call eclose(matver,1.1,0.001,closemat1)
+      call eclose(matver,1.2,0.001,closemat2)
+      if(closemat1.or.closemat2)then
+
+C Offer display and editing of material common blocks. If chgdb is
+C returned as true then write out the ASCII file.  If the original
+C was binary then go ahead and set chgdb .true. to force save.
+        CALL ELISTMAT(iw,chgdb,'M',imatarryindex,IER)
+        if(origmatwasbin)then
+          chgdb=.true.
+        endif
+      else
+
+C If the materials arrays were not filled warn the user.
+        call usrmsg('Materials database arrays were not filled',
+     &              'properly or db file was corrupt','W')
+        goto 60
+      endif
+
+C Having returned from editing/browsing the materials, offer to
+C make a backup copy if the initial file was binary.
+      if(origmatwasbin.and.chgdb)then
+
+C If the binary materials db was edited save an ASCII version.
+        H(1)='The binary Materials db file could get corrupted.'
+        H(2)='It is good to have a backup to restore from and'
+        H(3)='this is held in ascii format.'
+        DFILE='./newmat.db1.a'
+        clkok=.false.
+
+C Create LLASCI based on value of ipathmat.
+        LLASCI=' '
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          write(LLASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(LLASCI,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+        endif
+
+C Work with a shorter string until we can switch to EASKXORGTKF
+        lsn2=MIN0(lnblnk(LLASCI),92)
+        LTMP=' '
+        write(LTMP,'(a)') LLASCI(1:lsn2)
+        CALL EASKSCNCL(LTMP,
+     &    'Materials database (ASCII backup)?',
+     &    ' ','cancel',clkok,92,DFILE,'materials db (ascii)',
+     &    IER,3)
+        if(clkok)then
+          continue
+        else
+
+C Write out the ASCII version and make it the new LFMAT.
+C << shorter string until replacement of EASKXORGTKF >>
+          write(LLASCI,'(a)') LTMP(1:lnblnk(LTMP))
+          IAF=IFIL+1
+          CALL MKAPRC(LLASCI,IAF,IER)
+          write(LFMAT,'(a)') LLASCI(1:lnblnk(LLASCI))
+          origmatwasbin=.false.   ! reset so only done once
+        endif
+      endif
+      modcon=chgdb
+
+      return
+
+C Error messages.
+   13 CALL USRMSG(' Write error to ascii Materials db ',LLTMPFL,'W')
+      IER=1
+      return
+      end
+
 
 C ********** EDDBMLC
 C EDDBMLC Changes the Constructions db references in the cfg file.
