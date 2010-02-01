@@ -87,6 +87,7 @@ C      character rootpdos*72,upathdos*72
 
       moddb=.false.
       modcon=.false.
+
 C Begin with menu of default dbs.
     3 INO=-4
       IER=0
@@ -818,7 +819,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
         optg='   '
       elseif(iglib.eq.2)then
         opte='g browse ../dbs'
-        optf='h browse distribution'
+        optf='h browse esp-r distribution'
         optg='i make copy of another file'
       endif
 
@@ -882,8 +883,8 @@ C check to see if it is local or standard or absolute path.
           call findwhichdbpath('mat',lltmp,ier)
           goto 44
         else
-          call usrmsg('No file to browse/edit. Please use one',
-     &                'of the other options.','W')
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
           LFMAT=lprev
           goto 60
         endif
@@ -891,8 +892,8 @@ C check to see if it is local or standard or absolute path.
       elseif(isw.eq.2)then
 
 C There is no select by list for materials database.
-        call usrmsg('No list select for materials databases.',
-     &    'Use browse or make copy instead.','W')
+        call edisp(iuout,
+     &    'No list select for materials databases.')
         goto 60
 
       elseif(isw.eq.3)then
@@ -1668,7 +1669,7 @@ C Get length of path to where esp-r databases were installed.
         isw=0
         call MENUATOL('  ','Constructions db',
      &    ' ','b select another db',
-     &    'c create a new db','d copy default db',
+     &    'c create a new db','d copy standard db',
      &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
           copydef=.true.
       elseif(LFMUL(1:linst).eq.linstd(1:linst))then
@@ -1688,7 +1689,7 @@ C If db exists locally offer the following choices:
         isw=0
         call MENUATOL('  ','Constructions db',
      &    'a browse or edit db','b select another db',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,21)
         copydef=.true.
       endif
@@ -2083,7 +2084,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
         optg='   '
       elseif(iglib.eq.2)then
         opte='e browse ../dbs'
-        optf='f browse distribution'
+        optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
 
@@ -2094,9 +2095,10 @@ C If db does not exist locally offer limited choices.
         isw=0
         call MENUATOL('  ','Plant Components db',
      &    ' ','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
-        copydef=.true.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.7)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If corportate database then offer the following choices (incl /):
@@ -2104,7 +2106,7 @@ C If corportate database then offer the following choices (incl /):
         isw=0
         call MENUATOL('  ','Plant Components db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
@@ -2114,7 +2116,7 @@ C If corportate database then offer the following choices (without /):
         isw=0
         call MENUATOL('  ','Plant components db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         copydef=.false.
       else
@@ -2125,7 +2127,7 @@ C default database or the current database.
         isw=0
         call MENUATOL('  ','Plant Components db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy the standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -2142,8 +2144,8 @@ C check to see if it is local or standard or absolute path.
           call findwhichdbpath('pdb',lltmp,ier)
           goto 44
         else
-          call usrmsg('No file to browse/edit. Please use one',
-     &                'of the other options.','W')
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
           LPCDB=lprev
           goto 60
         endif
@@ -2151,8 +2153,8 @@ C check to see if it is local or standard or absolute path.
       elseif(isw.eq.2)then
 
 C There is no select by list for plant template database.
-        call usrmsg('No list select for plant template databases.',
-     &    ' ','-')
+        call edisp(iuout,
+     &    'No list select for plant template databases.')
         goto 60
 
       elseif(isw.eq.3)then
@@ -2668,7 +2670,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
         opte='e binary > ascii'
         optf='f ascii > binary'
         optg='g browse ../dbs'
-        opth='h browse distribution'
+        opth='h browse esp-r distribution'
         opti='i make copy of another file'
       endif
 
@@ -2679,9 +2681,10 @@ C If db does not exist locally offer limited choices:
         isw=0
         call MENUATOL('  ','Event Profiles db',
      &    ' ','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
-        copydef=.true.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.9)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If corportate database then offer the following choices (incl /):
@@ -2689,7 +2692,7 @@ C If corportate database then offer the following choices (incl /):
         isw=0
         call MENUATOL('  ','Event Profiles db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
@@ -2699,7 +2702,7 @@ C If corportate database then offer the following choices (without /):
         isw=0
         call MENUATOL('  ','Event Profiles db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
         copydef=.false.
       else
@@ -2710,7 +2713,7 @@ C default database or the current database.
         isw=0
         call MENUATOL('  ','Event Profiles db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.9)copydef=.false.
@@ -2726,8 +2729,8 @@ C If file exists open it, test file type, get number of items and close.
           LPRFDB=lltmp
           goto 44
         else
-          call usrmsg('No db to browse/edit. Please use one',
-     &                'of the other options.','W')
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
           LPRFDB=lprev
           goto 60
         endif
@@ -2735,8 +2738,8 @@ C If file exists open it, test file type, get number of items and close.
       elseif(isw.eq.2)then
 
 C There is no select by list for events database.
-        call usrmsg('No list select for events databases.',
-     &    ' ','-')
+        call edisp(iuout,
+     &    'No list select for events databases.')
         goto 60
 
       elseif(isw.eq.3)then
@@ -3124,12 +3127,15 @@ C database contents.
       IER=0
 
 C Scan the binary event profiles database. If an error state is
-C returned then it might be an ASCII file, try and scan that.
+C returned then it might be an ASCII file, setup lltmp and try 
+C to scan the file as an ASCII.
       call TRIPROBIN(IER)
       if(ier.eq.-2)then
         CALL ERPFREE(IPRODB,ISTAT)
         CALL USRMSG(' opened profiles db...',' ','-')
-        call TRIPROCOM(IPRODB,LPRFDB,IER)
+        write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+        ier=0   ! reset ier after triprobin call
+        call TRIPROCOM(IPRODB,lltmp,IER)
         if(ier.ne.0)then
           call usrmsg('Error opening the db. Please use one',
      &                'of the other options.','W')
@@ -3307,7 +3313,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
         optg='   '
       elseif(iglib.eq.2)then
         opte='e browse ../dbs'
-        optf='f browse distribution'
+        optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
 
@@ -3318,9 +3324,10 @@ C If db does not exist locally offer limited choices.
         isw=0
         call MENUATOL('  ','Optical Properties db',
      &    ' ','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
-        copydef=.true.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.7)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If corportate database then offer the following choices (incl /):
@@ -3328,7 +3335,7 @@ C If corportate database then offer the following choices (incl /):
         isw=0
         call MENUATOL('  ','Optical Properties db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
@@ -3338,7 +3345,7 @@ C If corportate database then offer the following choices (without /):
         isw=0
         call MENUATOL('  ','Optical Properties db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         copydef=.false.
       else
@@ -3349,7 +3356,7 @@ C default database or the current database.
         isw=0
         call MENUATOL('  ','Optical Properties db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,34)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -3366,15 +3373,16 @@ C check to see if it is local or standard or absolute path.
           call findwhichdbpath('opt',lltmp,ier)
           goto 44
         else
-          call usrmsg('No file to browse/edit. Please use one',
-     &                'of the other options.','W')
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
           LOPTDB=lprev
           goto 60
         endif
       elseif(isw.eq.2)then
 
 C There is no select by list for optics database.
-        call usrmsg('No list select for optical databases.',' ','-')
+        call edisp(iuout,
+     &    'No list select for optical databases.')
         goto 60
       elseif(isw.eq.3)then
 
@@ -3874,7 +3882,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
         optg='   '
       elseif(iglib.eq.2)then
         opte='e browse ../dbs'
-        optf='f browse distribution'
+        optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
 
@@ -3885,9 +3893,10 @@ C If db does not exist locally offer limited choices.
         isw=0
         call MENUATOL('  ','Pressure Distributions db',
      &    ' ','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,37)
-        copydef=.true.
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.7)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If corportate database then offer the following choices (incl /):
@@ -3895,7 +3904,7 @@ C If corportate database then offer the following choices (incl /):
         isw=0
         call MENUATOL('  ','Pressure Distributions db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,37)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
@@ -3905,7 +3914,7 @@ C If corportate database then offer the following choices (without /):
         isw=0
         call MENUATOL('  ','Pressure Distributions db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,37)
         copydef=.false.
       else
@@ -3916,7 +3925,7 @@ C default database or the current database.
         isw=0
         call MENUATOL('  ','Pressure Distributions db',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy the default db',
+     &    'c create a new db','d copy standard db',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,37)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -3933,15 +3942,16 @@ C check to see if it is local or standard or absolute path.
           call findwhichdbpath('prs',lltmp,ier)
           goto 44
         else
-          call usrmsg('No file to browse/edit. Please use one',
-     &                'of the other options.','W')
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
           lapres=lprev
           goto 60
         endif
       elseif(isw.eq.2)then
 
 C There is no select by list for pressure database.
-        call usrmsg('No list select for pressure databases.',' ','-')
+        call edisp(iuout,
+     &    'No list select for pressure databases.')
         goto 60
       elseif(isw.eq.3)then
 
@@ -4414,7 +4424,7 @@ C Get length of path to where esp-r databases were installed.
         isw=0
         call MENUATOL('  ','Climate db',
      &      ' ','b select another db',
-     &      'c create a new db','d copy default db',
+     &      'c create a new db','d copy standard db',
      &      ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,36)
         copydef=.true.
       elseif(llclmdb(1:linst).eq.linstd(1:linst))then
@@ -4424,7 +4434,7 @@ C If corportate database then offer the following choices:
         isw=0
         call MENUATOL('  ','Climate db',
      &    'a browse/edit db','b select another db',
-     &    'c create a new db','d copy default db',
+     &    'c create a new db','d copy standard db',
      &    'e binary >> ascii export','f ascii >> binary import',
      &    'g EPW >> binary import',' ',' ',' ',' ',' ',isw,idno,36)
         copydef=.false.
@@ -4435,7 +4445,7 @@ C If db exists locally offer the following choices:
         isw=0
         call MENUATOL('  ','Climate db',
      &      'a browse/edit db','b select another db',
-     &      'c create a new db','d copy default db',
+     &      'c create a new db','d copy standard db',
      &      'e binary >> ascii export','f ascii >> binary import',
      &      'g EPW >> binary import',' ',' ',' ',' ',' ',isw,idno,36)
         copydef=.true.
