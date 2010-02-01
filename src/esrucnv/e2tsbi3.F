@@ -21,69 +21,7 @@ C Boston, MA 02111-1307 USA.
 C ESRU vrml translator - .
 C Current version February 2005.
 
-C opendb: Open common databases - materials, multilayer constructions,
 C e2vrml: Generate VRLM 2.0 world of esp-r model.
-
-
-C Extracted from opendb code in eddb.F
-C opendb Open the common databases - materials, multilayer constructions,
-C and optical db.
-
-      subroutine opendb(ier)
-#include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
-      
-      integer lnblnk  ! function definition
-
-      common/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      LOGICAL XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical closemat1,closemat2
-      character SOPT*12,outs*124,outs248*248,GDESCR*36
-
-C Scan the binary file data into materials commons and if this was
-C sucessful and matver was set to 1.1 in matformbin then we can
-C carry on using the materials common blocks for subsequent access.
-      call scananymat(ier)
-      call eclose(matver,1.1,0.001,closemat1)
-      call eclose(matver,1.2,0.001,closemat2)
-        
-C Read multilayer db information into common.
- 139  CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
-      if(XST)then
-        CALL ERMLDB(0,ITRU,IER)
-        IF(IER.NE.0)then
-          write(outs248,'(3a)') ' Problem with multilayer constr db ',
-     &     LFMAT(1:lnblnk(LFMAT)),'... '
-          call edisp248(iuout,outs248,100)
-          MLDBOK=.FALSE.
-        else
-          call edisp(iuout,' Opened mlc db...')
-          MLDBOK=.TRUE.
-        endif
-      else
-        write(outs,'(3a)') ' No multilayer constructions db ',
-     &     LFMAT(1:lnblnk(LFMAT)),' found.'
-        call edisp(iuout,outs)
-      endif
-
-C Open optical database and read into common.
-      SOPT='ALL'
-      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
-      if(ier.ne.0)then
-        call usrmsg(' Optical properties db not found or there was a ',
-     &  ' problem reading it. Please check database manager ASAP.','W')
-        OPTKOK=.FALSE.
-      else
-        OPTKOK=.TRUE.
-      endif
-
-      return
-      end
 
 C ******* Translate esp data to vrlm world.
 C e2vrml takes zones/obstructions and any ground topology and
@@ -151,7 +89,7 @@ C Set character variable q to be a double quote and hc to the # character.
       hc=CHAR(35)
 
 C Open the matrial and constructions db.
-      call opendb(ier)
+      call module_opendb(ier)
 
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)

@@ -146,7 +146,7 @@ C Now call Radiance with command stored in variable 'outs'.
       endif
 
 C Create inside and outside files, first open databases.
-      call opendb(ier)
+      call module_opendb(ier)
       ftr=0.92
       fict=.false.
       call mkriofil(ftr,fict,'s',IER)

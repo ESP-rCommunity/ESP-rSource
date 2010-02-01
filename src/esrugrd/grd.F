@@ -25,8 +25,6 @@ C INITPF is the main program for multi-dimensional gridding of the
 C        solid domain (air volumes gridding is not included).
 C INTGRD initializes the gridding process by reading in the required 
 C        geometry and construction data.
-C Opendb Open materials constructions, multi-layer constructions and
-C        optical properties databases.
 
 C ***************************  initpsfz  ********************************
 C INITPFZ is the main program for multi-dimensional gridding of the  
@@ -274,7 +272,7 @@ C Find the path and local file name.
           IF(IER.EQ.0)THEN
 
 C Open core of databases.
-            call opendb(ier)
+            call module_opendb(ier)
             if(ier.ne.0)then
               call usrmsg(
      &          'Possible problems with one or more of the con-',
@@ -395,7 +393,7 @@ C Find the path and local file name.
         IF(IER.EQ.0)THEN
 
 C Open core of databases.
-          call opendb(ier)
+          call module_opendb(ier)
           if(ier.ne.0)then
             call usrmsg(
      &        'Possible problems with one or more of the',
@@ -617,83 +615,6 @@ C ***** Dummy display of images.
 C Dummy subroutine needed to compile (called from library code).
       SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
-
-      return
-      end
-
-C ********** opendb (based on code from eddb.F)
-
-C Open materials constructions, multi-layer constructions and
-C optical properties databases. In the case of materials, first
-C assume it is a binary file, check its contents and if a problem
-C then scan new ascii format and if that does not work try the
-C older ascii materials file to fill the materials data arrays.
-C If sucessful the material common blocks will be filled and
-C closemat1 or closemat2 will be set.
-
-      subroutine opendb(ier)
-#include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
-      
-      integer lnblnk  ! function definition
-
-      common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical closemat1,closemat2
-      character SOPT*12,outs*124,outs248*248,GDESCR*36
-
-C Scan the binary file data into materials commons and if this was
-C sucessful and matver was set to 1.1 in matformbin then we can
-C carry on using the materials common blocks for subsequent access.
-      call scananymat(ier)
-      call eclose(matver,1.1,0.001,closemat1)
-      call eclose(matver,1.2,0.001,closemat2)
-        
-C Read multilayer db information into common.
-      CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
-      if(XST)then
-        CALL ERMLDB(0,IUOUT,IER)
-        IF(IER.eq.1)then
-          write(outs248,'(3a)') 
-     &    ' Problems with materials used by Constructions db',
-     &     LFMAT(1:lnblnk(LFMAT)),'!'
-          call edisp248(iuout,outs248,100)
-          call edisp(iuout,' ')
-          MLDBOK=.FALSE.
-        ELSEIF(IER.eq.2)then
-
-          call edisp(iuout,
-     &      'There were many undefined materials in the constructions')
-          call edisp(iuout,'please check your model.')
-        else
-
-C Scan was ok so set mldbok to true.
-          MLDBOK=.TRUE.
-        endif
-      else
-
-C Could not find Constructions db at this time, report to user.
-        write(outs,'(3a)') 'Constructions db ',
-     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MLDBOK=.FALSE.
-      endif
-
-C Open Ooptical Properties db and read into common.
-      SOPT='ALL'
-      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
-      if(ier.ne.0)then
-        call usrmsg('Optical Properties db not found or',
-     &              'there was a problem reading it!','W')
-        OPTKOK=.FALSE.
-      else
-        OPTKOK=.TRUE.
-      endif
 
       return
       end
