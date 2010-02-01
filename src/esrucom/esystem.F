@@ -3465,7 +3465,7 @@ C The initial part of the path matches so only save the file name w/o path.
       endif
 
 C Debug.
-      write(6,*) file
+C      write(6,*) file
       if(topic(1:3).eq.'opt')then
 C        write(6,*) loptdb
 C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
@@ -3479,8 +3479,8 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
 C        write(6,*) lsbem
 C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
       elseif(topic(1:3).eq.'mat')then
-        write(6,*) LFMAT
-        write(6,*) 'findwhichdbpath ipath is ',ipathmat
+C        write(6,*) LFMAT
+C        write(6,*) 'findwhichdbpath ipath is ',ipathmat
       endif
 
       return
