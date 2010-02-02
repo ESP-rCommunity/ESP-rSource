@@ -2586,69 +2586,71 @@ C Remember the initial file name in case user choice fails.
       llt=lnblnk(lltmp)
       H(1)= '   Events Database '
       H(3)= ' '
-      H(4)= 'Profiles in this database are currently used to  '
+      H(4)= 'Profiles in this database are currently used to'
       H(5)= 'assist in the defintion of zone operations.  The'
-      H(6)= 'standard is found in /usr/esru/esp-r/databases '
-      H(7)= ' '
-      H(8)= ' The data requirements are summarised below :- '
-      H(9)= ' '
-      H(10)=' for each profile - number of events.'
-      H(11)=' '
-      H(12)=' for each event - start and finish hours'
-      H(13)='                  percentage of first magnitude '
-      H(14)='                  percentage of second magnitude '
-      H(15)=' '
-      H(16)='The following options can be selected:'
-      H(17)=' '
-      H(18)='a) If the file exists than you can browse the database '
-      H(19)='   and if you have permission to update the file you'
-      H(20)='   can edit the entities in the database.'
-      H(21)=' '
-      H(22)='b) Select from list (not available for events databases).'
-      H(23)=' '
-      H(24)='c) Make a new database: a new database will be created '
-      H(25)='   based on the file name you supply. It will contain a'
-      H(26)='   minimal number of items and you can then modify this'
-      H(27)='   as required. '
-      H(28)='   Exercise care if you use a text editor to copy sets'
-      H(29)='   of data from another event profile database.'
-      H(30)=' '
-      H(31)='d) copy default database: a project copy of the default'
-      H(32)='  database will be made and you will be offered a '
-      H(33)='  chance to rename it.'
-      H(34)=' '
-      H(35)='e) binary -> ascii conversion saves current database '
-      H(36)='  to a computer independant form.'
-      H(37)=' '
-      H(38)='f) ascii -> binary useful when you need to pass the model.'
-      H(39)='   to someone with an old version of ESP-r that only reads'
-      H(40)='   a binary version,'
-      H(41)=' '
+      H(6)= 'standard db are found in /usr/esru/esp-r/databases'
+      H(7)= 'as either ASCII versions (ends with .a) or a binary'
+      H(7)= 'version (depreciated).'
+      H(8)= ' '
+      H(9)= ' The data requirements are summarised below :- '
+      H(10)=' '
+      H(11)=' for each profile - number of events.'
+      H(12)=' '
+      H(13)=' for each event - start and finish hours'
+      H(14)='                  percentage of first magnitude '
+      H(15)='                  percentage of second magnitude '
+      H(16)=' '
+      H(17)='The following options can be selected:'
+      H(18)=' '
+      H(19)='a) If the file exists than you can browse the database '
+      H(20)='   and if you have permission to update the file you'
+      H(21)='   can edit the entities in the database.'
+      H(22)=' '
+      H(23)='b) Select from list (not available for events databases).'
+      H(24)=' '
+      H(25)='c) Make a new database: a new database will be created '
+      H(26)='   based on the file name you supply. It will contain a'
+      H(27)='   minimal number of items and you can then modify this'
+      H(28)='   as required. '
+      H(29)='   Exercise care if you use a text editor to copy sets'
+      H(30)='   of data from another event profile database.'
+      H(31)=' '
+      H(32)='d) copy default database: a project copy of the default'
+      H(33)='  database will be made and you will be offered a '
+      H(34)='  chance to rename it.'
+      H(35)=' '
+      H(36)='e) binary -> ascii conversion saves current database '
+      H(37)='  to a computer independant form.'
+      H(38)=' '
+      H(39)='f) ascii -> binary useful when you need to pass the model.'
+      H(40)='   to someone with an old version of ESP-r that only reads'
+      H(41)='   a binary version,'
+      H(42)=' '
 
 C If GTK library then there are additional options so include in help.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.2)then
-        H(42)='g) browse ../dbs allows you to look in the model ../dbs'
-        H(43)='  folder for alternative profile files. If you do not'
-        H(44)='  find anything the previous name will be restored.'
-        H(45)=' '
-        H(46)='h) browse distribution displays files in the databases'
-        H(47)='  folder of the ESP-r distribution. If you do not find'
-        H(48)='  anything the previous file will be restored.'
-        H(49)=' '
-        H(50)='i) copy another database to the project allows you to'
-        H(51)=' locate a database and get a project copy of it.'
+        H(43)='g) browse ../dbs allows you to look in the model ../dbs'
+        H(44)='  folder for alternative profile files. If you do not'
+        H(45)='  find anything the previous name will be restored.'
+        H(46)=' '
+        H(47)='h) browse distribution displays files in the databases'
+        H(48)='  folder of the ESP-r distribution. If you do not find'
+        H(49)='  anything the previous file will be restored.'
+        H(50)=' '
+        H(51)='i) copy another database to the project allows you to'
+        H(52)=' locate a database and get a project copy of it.'
       else
-        H(42)='g) select a file (X11 only): edit the file name'
-        H(43)='   and if it is found you can browse or edit it.'
-        H(44)='   Hint: if you eventually want to copy that other file'
-        H(45)='   into the model folder first select it and then ask'
-        H(46)='   for a copy.'
-        H(47)=' '
+        H(43)='g) select a file (X11 only): edit the file name'
+        H(44)='   and if it is found you can browse or edit it.'
+        H(45)='   Hint: if you eventually want to copy that other file'
+        H(46)='   into the model folder first select it and then ask'
+        H(47)='   for a copy.'
         H(48)=' '
         H(49)=' '
         H(50)=' '
         H(51)=' '
+        H(52)=' '
       endif
       CALL ERPFREE(IPRODB,ISTAT)
       call addpath(LLTMP,longtfile,concat)
@@ -2682,7 +2684,7 @@ C If db does not exist locally offer limited choices:
         call MENUATOL('  ','Event Profiles db',
      &    ' ','b select from list',
      &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,52)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.9)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
@@ -2693,7 +2695,7 @@ C If corportate database then offer the following choices (incl /):
         call MENUATOL('  ','Event Profiles db',
      &    'a browse/edit db','b select from list',
      &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,52)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
@@ -2703,7 +2705,7 @@ C If corportate database then offer the following choices (without /):
         call MENUATOL('  ','Event Profiles db',
      &    'a browse/edit db','b select from list',
      &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,52)
         copydef=.false.
       else
 
@@ -2714,7 +2716,7 @@ C default database or the current database.
         call MENUATOL('  ','Event Profiles db',
      &    'a browse/edit db','b select from list',
      &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,51)
+     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,52)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.9)copydef=.false.
       endif
@@ -2730,7 +2732,7 @@ C If file exists open it, test file type, get number of items and close.
           goto 44
         else
           call edisp(iuout,
-     &    'No file to browse/edit. Please use another option.')
+     &      'No file to browse/edit. Please use another option.')
           LPRFDB=lprev
           goto 60
         endif
@@ -2750,10 +2752,10 @@ C a new ascii db, populate it and present editing facility.
         h(2)='project name. '
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.profiledb.a'
+          write(LTMP,'(2a)') cfgroot(1:lr),'.eventdb.a'
         else
           write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.profiledb.a'
+     &      cfgroot(1:lr),'.eventdb.a'
         endif
  62     H(1)='An event profiles db holds a schedule of patterns'
         H(2)='over a day. When a new db is created in the model'
@@ -2812,10 +2814,8 @@ C use the editing facility.
         endif
       elseif(isw.eq.4.or.isw.eq.9)then
 
-C << will need to check if the default is an ascii version >>
-
 C Copy a database to project dbs folder. If iws is 4 then the
-C user has asked for the default database. If isw is 7 then the
+C user has asked for the default database. If isw is 9 then the
 C user wishes to browse for the source file.  Suggest a local
 C file name based on the project root name. Lastly do the copy.
 C If the default is to be copied ask for local name. Use LTMP for
@@ -2834,7 +2834,7 @@ C code is general rather than specific (for later consolidation).
           lltmp='  '
           CALL EASKXORGTKF(LPRFDB,
      &      'Event Profiles db (source)?',' ',
-     &      DPRFDB,lltmp,'binary events db',IER,2)
+     &      DPRFDB,lltmp,'events db',IER,2)
           sourcefile = lltmp
 
 C If user request jump back and re-display the menu.
@@ -2846,10 +2846,8 @@ C If user request jump back and re-display the menu.
           LPRFDB=lltmp
         endif
 
-C << why is it eventdb here and profiledb elsewhere?? >>
-
-C << do we want to convert any binary version into a local
-C << ascii version?
+C << We want to convert any binary version into a local
+C << ascii version
 
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
@@ -2930,12 +2928,12 @@ C Ask for the binary file name and then confirm the ASCII db name.
         IAF=IFIL+1
         H(1)='The events db contains one or more descriptions of'
         H(2)='profiles created via a diary entry format. This'
-        H(3)='otion converts from binary to asci version of the '
-        H(4)='file. '
+        H(3)='otion converts from a legacy binary to an asci version'
+        H(4)='of the file.'
         lltmp='  '
         CALL EASKXORGTKF(LPRFDB,
      &    'Event Profiles db (source)?',' ',
-     &    DPRFDB,lltmp,'binary events db',IER,2)
+     &    DPRFDB,lltmp,'source events db',IER,4)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -2965,9 +2963,14 @@ C Read binary file into common blocks.
         call TRIPROBIN(IER)
 
 C Write commons to ASCII and then redisplay the menu.
-        call TROPROCOM(IAF,LLASCI,IER)
-        call tstamp('>','PRO: convert binary to ascii')
-        goto 60
+        if(ier.eq.0)then
+          ier=0  ! reset prior to call to troprocom
+          call TROPROCOM(IAF,LLASCI,IER)
+          call tstamp('>','PRO: convert binary to ascii')
+          goto 60
+        else
+          call edisp(iuout,'Error reading binary events file.')
+        endif
       elseif(isw.eq.6)then
 
 C Profile db: ASCII > BINARY.
@@ -2994,7 +2997,7 @@ C Check the last two characters of the file name.
 
         CALL EASKXORGTKF(LLASCI,
      &    'Event Profiles db (ASCII source)?',' ',
-     &    DPRFDB,lltmp,'ascii events db',IER,2)
+     &    DPRFDB,lltmp,'ascii events db',IER,6)
         LLASCI=lltmp  ! copy returned name to LLASCI
 
         H(1)='The existing binary events db will be overwritten'
@@ -3009,7 +3012,7 @@ C for the binary that has the .a stripped off.
         endif
         CALL EASKXORGTKF(LPRFDB,
      &    'Event Profiles db?',' ',
-     &    DPRFDB,lltmp,'binary events db',IER,2)
+     &    DPRFDB,lltmp,'binary events db',IER,6)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -3031,14 +3034,16 @@ C converted proceed to browse/edit the details.
 
       elseif(isw.eq.7)then
 
+C << the following dialog could be changed to XORGTK >>
+
 C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
 C can see the files in that folder. Note the user may browse away
-C from this location. Easkf returns the absolut path to the
+C from this location. Easkf returns the absolute path to the
 C file selected (later see if this can be resolved to ../dbs). 
 C Test the returned file and if it is not readable reset LPRFDB.
         if(iglib.eq.2)then
           h(1)='An event profiles database holds named sets of profiles'
-          h(2)='in a binary representation. '
+          h(2)='in either a binary or ASCII representation.'
           H(3)=' '
           H(4)='A local database folder (../dbs) is usually associated'
           H(5)='with each model. '
@@ -3057,7 +3062,7 @@ C Test the returned file and if it is not readable reset LPRFDB.
 
 C For X11 and text allow user to type in a file name.
           h(1)='An event profiles database holds named sets of profiles'
-          h(2)='in a binary representation. '
+          h(2)='in either a binary or ASCII representation. '
           write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
           llt=lnblnk(lltmp)
 
@@ -3066,13 +3071,13 @@ C file, while the GTK version will be returning the
 C name with the full path.
           if(llt.lt.96)then
             CALL EASKF(lltmp,' ','Event Profile db?'
-     &        ,96,DPRFDB,'binary events db',IER,2)
+     &        ,96,DPRFDB,'events db',IER,2)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(lltmp,' ','Event Profile db?',
-     &        124,DPRFDB,'binary events db',IER,2)
+     &        124,DPRFDB,'events db',IER,2)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(lltmp,' ','Event Profile db?',
-     &        144,DPRFDB,'binary events db',IER,2)
+     &        144,DPRFDB,'events db',IER,2)
           endif
           if(ier.eq.-3)then
             LPRFDB=lprev
@@ -3128,35 +3133,35 @@ C database contents.
 
 C Scan the binary event profiles database. If an error state is
 C returned then it might be an ASCII file, setup lltmp and try 
-C to scan the file as an ASCII.
+C to scan the file as an ASCII.  Either way commons are filled.
       call TRIPROBIN(IER)
       if(ier.eq.-2)then
         CALL ERPFREE(IPRODB,ISTAT)
-        CALL USRMSG(' opened profiles db...',' ','-')
+        CALL USRMSG('opened profiles db...',' ','-')
         write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
         ier=0   ! reset ier after triprobin call
         call TRIPROCOM(IPRODB,lltmp,IER)
         if(ier.ne.0)then
-          call usrmsg('Error opening the db. Please use one',
+          call usrmsg('Error opening the profiles db. Please use one',
      &                'of the other options.','W')
           LPRFDB=lprev
           goto 60
         else
           CALL ERPFREE(IPRODB,ISTAT)
-          CALL USRMSG(' opened profiles db...ok',' ','-')
+          CALL USRMSG('opened profiles db...ok',' ','-')
 
 C Call casfmk for the editing/browsing interface.
           call casfmk(ier)
           return
         endif
       elseif(ier.eq.0)then
-        CALL USRMSG(' opened profiles db...ok',' ','-')
+        CALL USRMSG('opened profiles db...ok',' ','-')
 
 C Call casfmk for the editing/browsing interface.
         call casfmk(ier)
         return
       else
-        call usrmsg('Error opening the db. Please use one',
+        call usrmsg('Error opening the profiles db. Please use one',
      &              'of the other options.','W')
         LPRFDB=lprev
         goto 60

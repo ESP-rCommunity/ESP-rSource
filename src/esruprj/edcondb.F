@@ -3110,7 +3110,7 @@ C File errors.
 
 C ************* MKAPRC 
 C MKAPRC: Creates an ascii materials db based on the
-C current contents of binary file.
+C current contents of binary materials db.
       SUBROUTINE MKAPRC(LASCI,IFA,IER)
 #include "esprdbfile.h"
       integer lnblnk  ! function definition

@@ -34,6 +34,13 @@ C  TROPRO:  Creates an ASCII profiles db from the binary profiles db.
 C  TROPROCOM:  Creates an ASCII profiles db from common blocks.
 C  PROGRF:  Outputs a graphical display of an event profile (IPRO).
 
+C Event profiles databases were binary databases with an ASCII equivalent
+C and it both cases data is held in common blocks. As with the materials
+C database once the common blocks have been filled then subsequent changes
+C can be saved to the ASCII version and gradually all events databases
+C become ASCII and the binary is only a function of the database management
+C facility rather than the editing menus.
+
 C ************* CASFMK
 C Event profile input/edit control routine. Assume that the
 C common blocks for the event profiles have already been
@@ -261,6 +268,12 @@ C dummy data is displayed first. NFLAG='N' new profile, NFLAG='E'
 C existing profile. Asciupdate is set to true if the profile has
 C been edited so that the calling routine will know to write out
 C a fresh ASCII version file.
+
+C << there is a name clash for IGS1 and ICGF1 with
+C << the common block P3
+
+C << consider moving commons PDBITM and PDBELM into a *.h file.
+
       SUBROUTINE  EDPROF(ITM,NFLAG,asciupdate,IER)
 #include "epara.h"
 #include "esprdbfile.h"

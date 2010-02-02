@@ -4010,12 +4010,13 @@ C Labels for loads.
       IPPFT=0
       IPPF=0
 
-C Scan the binary event profiles database. If an error state is
+C Scan the event profiles database. If an error state is
 C returned then it might be an ASCII file, try and scan that.
       call TRIPROBIN(IER)
       if(ier.ne.0)then
         CALL ERPFREE(IPRODB,ISTAT)
         CALL USRMSG(' opened profiles db...',' ','-')
+        ier=0   ! reset prior to call to triprocom
         call TRIPROCOM(IPRODB,LPRFDB,IER)
         if(ier.ne.0)then
           call usrmsg('Error opening the db. Please use one',
