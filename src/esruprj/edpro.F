@@ -70,8 +70,18 @@ C PDBDESC() (char*40) description of the profile.
       CHARACTER PDBDESC*40,outs*124,KEY*1,H*72,ITEM*42
       character LLASCI*144
       character ermsg*48  ! for read error messages
+      character fs*1
 
       logical asciupdate   ! to signal if user has edited data.
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C If there is at least one profile then the common blocks have
 C been filled. 
@@ -195,6 +205,7 @@ C Instanciate the data.
 C Because we are creating a new profile set asciupdate true.
 C And pass 'N' so that some initial values for the periods
 C can be filled in.
+          lndbp=lnblnk(standarddbpath)
           asciupdate=.true.
           CALL EDPROF(NPDBITEMS,'N',asciupdate,IER)
           if(asciupdate)then
@@ -204,12 +215,19 @@ C then jump back to 77 to check the number of items.
 C If LPRFDB does not end in .a then update LLASACI
             llt=lnblnk(LPRFDB)
 	    if(LPRFDB(llt-1:llt).eq.'.a')then
-              LLASCI=LPRFDB
+              if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+                LLASCI=LPRFDB
+              elseif(ipathprodb.eq.2)then
+                write(LLASCI,'(3a)') standarddbpath(1:lndbp),fs,
+     &            LPRFDB(1:lnblnk(LPRFDB))
+              endif
             else
-              if(llt.le.141)then 
-                write(LLASCI,'(2a)') LPRFDB(1:llt),'.a'
-              else
-                write(LLASCI,'(2a)') LPRFDB(1:141),'.a'
+              if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+                write(LLASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+              elseif(ipathprodb.eq.2)then
+                lndbp=lnblnk(standarddbpath)
+                write(LLASCI,'(4a)') standarddbpath(1:lndbp),fs,
+     &            LPRFDB(1:lnblnk(LPRFDB)),'.a'
               endif
             endif
             IAF=IFIL+1
@@ -217,7 +235,9 @@ C If LPRFDB does not end in .a then update LLASACI
             if(ier.eq.0)then
               call edisp(iuout,'Event data ASCII version placed in...')
               call edisp248(iuout,LLASCI,100)
-              LPRFDB=LLASCI   ! update the database file name
+
+C Set the LPRFDB common block string via call to findwhichdbpath.
+              call findwhichdbpath('evn',LLASCI,ier)
             endif
           endif
           CALL EPMENRC
@@ -244,7 +264,24 @@ C Edit profile identified by KEYIND.
 
 C If update needed write ascii file from common blocks
 C then jump back to 77 to rescan the header of the database.
-          LLASCI=LPRFDB
+          lndbp=lnblnk(standarddbpath)
+          llt=lnblnk(LPRFDB)
+	  if(LPRFDB(llt-1:llt).eq.'.a')then
+            if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+              LLASCI=LPRFDB
+            elseif(ipathprodb.eq.2)then
+              write(LLASCI,'(3a)') standarddbpath(1:lndbp),fs,
+     &          LPRFDB(1:lnblnk(LPRFDB))
+            endif
+          else
+            if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+              write(LLASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+            elseif(ipathprodb.eq.2)then
+              lndbp=lnblnk(standarddbpath)
+              write(LLASCI,'(4a)') standarddbpath(1:lndbp),fs,
+     &          LPRFDB(1:lnblnk(LPRFDB)),'.a'
+            endif
+          endif
           IAF=IFIL+1
           CALL TROPROCOM(IAF,LLASCI,IER)
           if(ier.eq.0)then
@@ -295,7 +332,17 @@ C << consider moving commons PDBITM and PDBELM into a *.h file.
       character llasci*144 ! for writing the ascii file.
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
+      character fs*1       ! file separator
       logical asciupdate   ! signal if user edits data
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Initailly set asciupdate toggle to false (no changes made yet).
       asciupdate=.false.
@@ -449,41 +496,36 @@ C HELP information.
         CALL PHELPD('pro edit',10,'-',0,0,IER)
       ELSEIF(INO.EQ.(MVERT-2))THEN
 
-C Update the ascii database in all cases. If the current file
-C is binary and it is in the standard databases folder then
-C we do not want to replace it with an ASCII version.
-C And signal that a fresh ASCII version needs to be written out.
-C If we have been dealing with a binary source then the value of
-C NO will be non-zero.
-        IREC=NO(ITM)
-	if(IREC.gt.0)then
-          WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)NCG(ITM)
-          IREC=IREC+1
-          WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)PDBDESC(ITM)
-          DO 232 I=1,NCG(ITM)
-            IREC=IREC+1
-            WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)
-     &          ICGS1(ITM,I),ICGF1(ITM,I),CGS1(ITM,I),CGL1(ITM,I)
-  232     CONTINUE
-
-C If a new profile update lastrec and the number of profiles in record 1.
-          if(NFLAG.eq.'N')then
-            lastrec = IREC + 1
-            IREC = 1
-            WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=450)  NPDBITEMS
+C Update the ascii database in all cases.
+        lndbp=lnblnk(standarddbpath)
+        llt=lnblnk(LPRFDB)
+        if(LPRFDB(llt-1:llt).eq.'.a')then
+          if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+            LLASCI=LPRFDB
+          elseif(ipathprodb.eq.2)then
+            write(LLASCI,'(3a)') standarddbpath(1:lndbp),fs,
+     &        LPRFDB(1:lnblnk(LPRFDB))
           endif
-          asciupdate=.true.   ! mark subsequent update of ascii file.
         else
-
-C The initial file was ASCII so write it out now.
-          LLASCI=LPRFDB
-          IAF=IFIL+1
-          CALL TROPROCOM(IAF,LLASCI,IER)
-          if(ier.eq.0)then
-            call edisp(iuout,'Event data updated...')
-            call edisp248(iuout,LLASCI,100)
-            asciupdate=.false.   ! no subsequent update of ascii file needed.
+          if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+            write(LLASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+          elseif(ipathprodb.eq.2)then
+            lndbp=lnblnk(standarddbpath)
+            write(LLASCI,'(4a)') standarddbpath(1:lndbp),fs,
+     &        LPRFDB(1:lnblnk(LPRFDB)),'.a'
           endif
+        endif
+        IAF=IFIL+1
+        CALL TROPROCOM(IAF,LLASCI,IER)
+        if(ier.eq.0)then
+          call edisp(iuout,'Event data updated...')
+          call edisp248(iuout,LLASCI,100)
+
+C Set the LPRFDB common block string via call to findwhichdbpath.
+          call findwhichdbpath('evn',LLASCI,ier)
+          asciupdate=.false.   ! no subsequent update of ascii file needed.
+          call edisp(iuout,'Be sure to UPDATE the model cfg file')
+          call edisp(iuout,'to reflect changes in events db.')
         endif
 
       ELSEIF(INO.EQ.(MVERT-3))THEN
@@ -531,12 +573,6 @@ C Edit profile identified by KEYIND.
       endif
       INO=-4
       GOTO 92
-
-C Error messsages.
-450   write(outs,'(3a,i4)') 'In profile db: error ',
-     &  ermsg(1:lnblnk(ermsg)),' at record ',irec
-      call edisp(iuout,outs)
-      RETURN
 
       END
 
@@ -641,6 +677,17 @@ C espriou.h provides currentfile.
       character outs*124   ! string buffer for messages
       LOGICAL OK,dok
       CHARACTER*(*) LASCI   ! ascii file name
+      character lworking*144
+      character fs*1       ! file separator
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C The binary file will be overwritten.
       dok=.true.
@@ -652,8 +699,15 @@ C The binary file will be overwritten.
         IER=1
         RETURN
       ELSE
+        lndbp=lnblnk(standarddbpath)
         CALL ERPFREE(IPRODB,ISTAT)
-        call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
+        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+          call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
+        elseif(ipathprodb.eq.2)then
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPRFDB(1:lnblnk(LPRFDB))
+          call EFOPRAN(IPRODB,lworking,10,3,IER)
+        endif
         if(ier.ne.0)return
       ENDIF
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
@@ -794,28 +848,47 @@ C remainder of the line after the first word (NCG).
 
 C **************** TROPRO 
 C TROPRO creates an ASCII profiles db from the binary profiles db.
-C NOTE LASCI is 72 char. This is called only by esrudbm.
+C This is called only by esrudbm.
       SUBROUTINE TROPRO(IFA,LASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+      CHARACTER*(*) LASCI   ! ascii file name
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
      &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40,LASCI*72
+      CHARACTER PDBDESC*40
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
+      character fs*1       ! file separator
+      character lworking*144 ! file name
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       IER =0
 
 C Because it is a binary file we are expecting a non-zero ier
 C does not require that we attempt to scan an ascii version of
 C the event profiles db.
+      lndbp=lnblnk(standarddbpath)
       CALL ERPFREE(IPRODB,ISTAT)
-      call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
+      elseif(ipathprodb.eq.2)then
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LPRFDB(1:lnblnk(LPRFDB))
+        call EFOPRAN(IPRODB,lworking,10,1,IER)
+      endif
       if(ier.ne.0)return
 
       ermsg='reading record one number of profiles '
@@ -907,6 +980,17 @@ C ier= -3 no items in the database
       CHARACTER PDBDESC*40
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
+      character fs*1       ! file separator
+      character lworking*144   ! file string
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       IER =0
 
@@ -915,8 +999,15 @@ C does not require that we attempt to scan an ascii version of
 C the event profiles db. But if there is an error in efopran or
 C there is an impossible number of items pass back ier=-2 so
 C other code can check if the file is an ascii version.
+      lndbp=lnblnk(standarddbpath)
       CALL ERPFREE(IPRODB,ISTAT)
-      call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
+      elseif(ipathprodb.eq.2)then
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LPRFDB(1:lnblnk(LPRFDB))
+        call EFOPRAN(IPRODB,lworking,10,1,IER)
+      endif
       if(ier.ne.0)then
         ier=-2
         return
@@ -930,7 +1021,6 @@ C other code can check if the file is an ascii version.
         ier=-3
         return
       elseif(NPDBITEMS.gt.MGIT)then
-C        CALL USRMSG(' ','Events profiles db might be ASCII!','-')
         npdbitems=0   ! reset 
         ier=-2
         return
@@ -981,12 +1071,13 @@ C TROPROCOM creates an ASCII profiles db from common blocks.
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+      CHARACTER*(*) LLASCI   ! ascii file name
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
      &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40,LLASCI*144
+      CHARACTER PDBDESC*40
       character ermsg*48   ! for read error messages
 
       IER =0

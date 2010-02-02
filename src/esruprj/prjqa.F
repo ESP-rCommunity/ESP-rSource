@@ -1214,9 +1214,15 @@ C Databases associated with the model.
       if(databaseinfo.gt.0)then
         call edisp(itu,' ')
         call edisp(itu,'Databases associated with the model: ')
-        WRITE(outs248,'(2A)')' pressure distributions : ',
-     &    LAPRES(1:lnblnk(LAPRES))
-        call edisp248(itu,outs248,100)
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
+          WRITE(outs248,'(2A)')' pressure distributions : ',
+     &      LAPRES(1:lnblnk(LAPRES))
+          call edisp248(itu,outs248,100)
+        elseif(ipathapres.eq.2)then
+          WRITE(outs248,'(2A)')' standard pressure distr: ',
+     &      LAPRES(1:lnblnk(LAPRES))
+          call edisp248(itu,outs248,100)
+        endif
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           WRITE(outs248,'(2A)')' materials              : ',
      &      LFMAT(1:lnblnk(LFMAT))
@@ -1229,15 +1235,33 @@ C Databases associated with the model.
         WRITE(outs,'(2A)')' constructions          : ',
      &    LFMUL(1:lnblnk(LFMUL))
         call edisp(itu,outs)
-        WRITE(outs,'(2A)')' plant components       : ',
-     &    LPCDB(1:lnblnk(LPCDB))
-        call edisp(itu,outs)
-        WRITE(outs,'(2A)')' event profiles         : ',
-     &    LPRFDB(1:lnblnk(LPRFDB))
-        call edisp(itu,outs)
-        WRITE(outs248,'(2A)')' optical properties     : ',
-     &    LOPTDB(1:lnblnk(LOPTDB))
-        call edisp248(itu,outs248,100)   
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          WRITE(outs248,'(2A)')' plant components       : ',
+     &      LPCDB(1:lnblnk(LPCDB))
+          call edisp248(itu,outs248,100)
+        elseif(ipathpcdb.eq.2)then
+          WRITE(outs248,'(2A)')' standard plant comp    : ',
+     &      LPCDB(1:lnblnk(LPCDB))
+          call edisp248(itu,outs248,100)
+        endif
+        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+          WRITE(outs248,'(2A)')' event profiles         : ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+          call edisp248(itu,outs248,100)
+        elseif(ipathprodb.eq.2)then
+          WRITE(outs248,'(2A)')' standard event profiles: ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+          call edisp248(itu,outs248,100)
+        endif
+        if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+          WRITE(outs248,'(2A)')' optical properties     : ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+          call edisp248(itu,outs248,100)   
+        elseif(ipathoptdb.eq.2)then
+          WRITE(outs248,'(2A)')' standard optical prop  : ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+          call edisp248(itu,outs248,100)
+        endif 
       endif
 
 C Control in the model

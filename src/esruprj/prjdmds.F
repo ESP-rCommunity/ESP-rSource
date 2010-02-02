@@ -869,6 +869,17 @@ C Profile database commons.
       CHARACTER H*72,hold*40,blodlabel*6
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
       character calename*32,calentag*12,calendayname*32
+      character lltmp*144
+      character fs*1   ! file separator
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Labels for loads.
       write(ll1,'(1x,a6,1x)') blodlabel(1)
@@ -898,7 +909,14 @@ C returned then it might be an ASCII file, try and scan that.
         CALL ERPFREE(IPRODB,ISTAT)
         CALL USRMSG(' opened profiles db...',' ','-')
         ier=0   ! reset prior to calling triprocom
-        call TRIPROCOM(IPRODB,LPRFDB,IER)
+        lndbp=lnblnk(standarddbpath)
+        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+          lltmp=LPRFDB  ! use as is
+        elseif(ipathprodb.eq.2)then
+          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
+        endif
+        call TRIPROCOM(IPRODB,lltmp,IER)
         if(ier.ne.0)then
           call usrmsg('Error opening the db. Please use one',
      &                'of the other options.','W')

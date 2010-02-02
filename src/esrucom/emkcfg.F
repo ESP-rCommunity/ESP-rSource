@@ -538,8 +538,13 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdprs  ',
      &      LAPRES(1:lnblnk(LAPRES))
       endif
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
+      elseif(ipathprodb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdevn  ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+      endif
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
