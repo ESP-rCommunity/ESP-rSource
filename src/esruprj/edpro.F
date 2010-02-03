@@ -945,6 +945,7 @@ C **************** TRIPROBIN
 C TRIPROBIN fills common blocks from a binary profiles db.
 C Pass back the following error states:
 C ier= 0 file read ok.
+C ier= -1 open file error
 C ier= -2 error opening or reading header
 C ier= -3 no items in the database
       SUBROUTINE TRIPROBIN(IFB,LBIN,IER)
@@ -974,7 +975,7 @@ C other code can check if the file is an ascii version.
       CALL ERPFREE(IFB,ISTAT)
       call EFOPRAN(IFB,LBIN,10,1,IER)
       if(ier.ne.0)then
-        ier=-2
+        ier=-1
         return
       endif
 

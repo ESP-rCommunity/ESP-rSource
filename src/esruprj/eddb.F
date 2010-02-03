@@ -733,8 +733,9 @@ C Take into account the current value of ipathmat.
      &    LFMAT(1:lnblnk(LFMAT))
       endif
 
-C Debug.
-C      write(6,*) 'previous materials ',lprev(1:lnblnk(lprev))
+C Inform user.
+      write(outs248,*) 'Current materials ',lprev(1:lnblnk(lprev))
+      call edisp248(iuout,outs248,100)
 
 C Setup lltmp to hold the full path to the file for use in dialog.
   60  continue
@@ -1385,76 +1386,49 @@ C << temporary shorter string until EASKXORGTKF >>
 
       elseif(isw.eq.7)then
 
-C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
-C can see the files in that folder. Note the user may browse away
-C from this location. Easkf returns the absolut path to the
-C file selected (later see if this can be resolved to ../dbs). 
-C Test the returned file and if it is not readable reset LOPTDB.
-        if(iglib.eq.2)then
-          H(1)='The Materials database holds the density, specific' 
-          H(2)='heat, conductivity, diffusion resistance and surface'
-          H(3)='absorptivity/emissivity for materials such as brick' 
-          H(4)='concrete, wood, metal etc. Older versions of thie db'
-          H(5)='were held in binary format and newer models tend to' 
-          H(5)='use an ASCII version of the file and support'
-          H(6)='additional attributes.' 
-          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-          CALL EASKF(LCOPY,' ','Materials db?',
-     &      144,DFCON,'materials database',IER,6)
-          if(ier.eq.-3)then
-            LFMAT=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
+C Make up browse to the model ../dbs folder suggest the name LCOPY
+C and return file name in lltmp.
+        H(1)='The Materials database holds the density, specific' 
+        H(2)='heat, conductivity, diffusion resistance and surface'
+        H(3)='absorptivity/emissivity for materials such as brick' 
+        H(4)='concrete, wood, metal etc. Older versions of thie db'
+        H(5)='were held in binary format and newer models tend to' 
+        H(5)='use an ASCII version of the file and support'
+        H(6)='additional attributes.' 
+        lltmp=' '
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        CALL EASKXORGTKF(LCOPY,'Materials db?',' ',
+     &    DFCON,lltmp,'materials db',IER,6)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 60  ! redisplay menu.
+        endif
+
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C Ask user whether file is in ../dbs and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../dbs folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+              ipathmat=1  ! signal that it is a local database.
+              moddb=.true.
+              goto 44
+            endif
           endif
 
-C If the file exists with the normal path to model prepended then
-C it should be possible to rebuild the name based on ../dbs.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
-          endif
+C Check what the user might have edited to be sure of setting the
+C correct location value via call to findwhichdbpath.
+          call findwhichdbpath('mat',lltmp,ier)
           moddb=.true.
-          ipathmat=1  ! signal that it is a local database.
           goto 44
         else
-
-C For X11 and text allow user to type in a file name.
-          H(1)='The Materials database holds the density, specific' 
-          H(2)='heat, conductivity, diffusion resistance and surface'
-          H(3)='absorptivity/emissivity for materials such as brick' 
-          H(4)='concrete, wood, metal etc. Older versions of thie db'
-          H(5)='were held in binary format and newer models tend to' 
-          H(5)='use an ASCII version of the file and support'
-          H(6)='additional attributes.' 
-          llt=lnblnk(lltmp)
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' ','Materials db?',
-     &        96,DFCON,'materials database',IER,6)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' ','Materials db?',
-     &        124,DFCON,'materials database',IER,6)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' ','Materials db?',
-     &        144,DFCON,'materials database',IER,6)
-          endif
-          if(ier.eq.-3)then
-            LFMAT=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-
-          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C This is another place where we need to check what the user might
-C have edited to be sure of setting the correct location value.
-            call findwhichdbpath('mat',lltmp,ier)
-            moddb=.true.
-            goto 44
-          else
-            goto 60
-          endif
+          goto 60
         endif
 
       elseif(isw.eq.8)then
@@ -2001,8 +1975,9 @@ C Take into account the current value of whichdbpath.
      &    lpcdb(1:lnblnk(lpcdb))
       endif
 
-C Debug.
-C      write(6,*) 'previous plant ',lprev(1:lnblnk(lprev))
+C Inform user.
+      write(outs248,*) 'Current plant ',lprev(1:lnblnk(lprev))
+      call edisp248(iuout,outs248,100)
 
   60  continue
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
@@ -2242,6 +2217,8 @@ C code is general rather than specific (for later consolidation).
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
           lltmp='  '
+
+C << lguess logic to be added here >>
           CALL EASKXORGTKF(LPCDB,
      &      'Plant template file name (source)?',' ',
      &      DPCDB,lltmp,'plant templates database',IER,2)
@@ -2362,6 +2339,8 @@ C be pre-pended when using most inbuilt file opening calls.
         endif
 
       elseif(isw.eq.5)then
+
+C << update this code to follow pattern near line 3103 >>
 
 C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
 C can see the files in that folder. Note the user may browse away
@@ -2551,7 +2530,7 @@ C
      &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
 
       CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
-      character LLASCI*144,lbin*144,llbin*144
+      character LLASCI*144,lbin*144,llbin*144,lguess*144
       character longtfile*144,LCOPY*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER OUTS*124,OUTS248*248
@@ -2591,6 +2570,10 @@ C Remember the initial file name in case user choice fails.
         write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
      &    LPRFDB(1:lnblnk(LPRFDB))
       endif
+
+C Inform user.
+      write(outs248,*) 'Current profiles ',lprev(1:lnblnk(lprev))
+      call edisp248(iuout,outs248,100)
 
   60  continue
 
@@ -2864,9 +2847,17 @@ C code is general rather than specific (for later consolidation).
         else
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
+
+C Provide a guess based on the current LPRFDB.
           lltmp='  '
-          CALL EASKXORGTKF(LPRFDB,
-     &      'Event Profiles db (source)?',' ',
+          lguess='  '
+          if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+            lguess=LPRFDB  ! use as is
+          elseif(ipathprodb.eq.2)then
+            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &        LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
+          endif
+          CALL EASKXORGTKF(lguess,'Event Profiles db (source)?',' ',
      &      DPRFDB,lltmp,'events db',IER,2)
           sourcefile = lltmp
 
@@ -2968,8 +2959,9 @@ C the file name is returned in lltmp.
         H(3)='otion converts from a legacy binary to an asci version'
         H(4)='of the file.'
         lltmp='  '
-        CALL EASKXORGTKF(LPRFDB,
-     &    'Event Profiles db (source)?',' ',
+
+C << lguess logic to be added later >>
+        CALL EASKXORGTKF(LPRFDB,'Event Profiles db (source)?',' ',
      &    DPRFDB,lltmp,'source events db',IER,4)
 
 C If user request jump back and re-display the menu.
@@ -3095,76 +3087,47 @@ c the current profiles database.
 
       elseif(isw.eq.7)then
 
-C << the following dialog could be changed to XORGTK >>
+C Make up browse to the model ../dbs folder suggest the name LCOPY
+C and return file name in lltmp.
+        h(1)='An event profiles database holds named sets of profiles'
+        h(2)='in either a binary or ASCII representation.'
+        H(3)=' '
+        H(4)='A local database folder (../dbs) is usually associated'
+        H(5)='with each model. '
+        lltmp=' '
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        CALL EASKXORGTKF(LCOPY,'Event Profiles db?',' ',
+     &    DPRFDB,lltmp,'ascii events db',IER,5)
 
-C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
-C can see the files in that folder. Note the user may browse away
-C from this location. Easkf returns the absolute path to the
-C file selected (later see if this can be resolved to ../dbs). 
-C Test the returned file and if it is not readable reset LPRFDB.
-        if(iglib.eq.2)then
-          h(1)='An event profiles database holds named sets of profiles'
-          h(2)='in either a binary or ASCII representation.'
-          H(3)=' '
-          H(4)='A local database folder (../dbs) is usually associated'
-          H(5)='with each model. '
-          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-          CALL EASKF(LCOPY,' ','Event Profiles db?',
-     &      144,DPRFDB,'Event profiles db',IER,5)
-          if(ier.eq.-3)then
-            LPRFDB=lprev
-            goto 60   ! cancel detected, restore name and redisplay menu.
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 60  ! redisplay menu.
+        endif
+
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C Ask user whether file is in ../dbs and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../dbs folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+              ipathprodb=1  ! signal that it is a local database.
+              moddb=.true.
+              goto 44
+            endif
           endif
 
-C If the file exists with the normal path to model prepended then
-C it should be possible to rebuild the name based on ../dbs.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            write(LPRFDB,'(a)') LCOPY(1:lnblnk(LCOPY))
-          endif
-          ipathprodb=1  ! signal that it is a local database.
+C Check what the user might have edited to be sure of setting the
+C correct location value via call to findwhichdbpath.
+          call findwhichdbpath('evn',lltmp,ier)
           moddb=.true.
           goto 44
         else
-
-C For X11 and text allow user to type in a file name.
-          h(1)='An event profiles database holds named sets of profiles'
-          h(2)='in either a binary or ASCII representation. '
-          write(lltmp,'(a)') LPRFDB(1:lnblnk(LPRFDB))
-          llt=lnblnk(lltmp)
-
-C The X11 version will be returning only the name of the
-C file, while the GTK version will be returning the
-C name with the full path.
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' ','Event Profile db?'
-     &        ,96,DPRFDB,'events db',IER,2)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' ','Event Profile db?',
-     &        124,DPRFDB,'events db',IER,2)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' ','Event Profile db?',
-     &        144,DPRFDB,'events db',IER,2)
-          endif
-          if(ier.eq.-3)then
-            LPRFDB=lprev
-            goto 60  ! a cancel was detected, redisplay menu.
-          endif
-          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C This is another place where we need to check what the user might
-C have edited to be sure of setting the correct location value. The
-C common block will be updated with call to findwhichdbpath.
-            call findwhichdbpath('evn',lltmp,ier)
-            moddb=.true.
-            goto 44
-          else
-            goto 60
-          endif
+          goto 60
         endif
 
       elseif(isw.eq.8)then
@@ -3276,7 +3239,7 @@ C This facility offers browsing for GTK version.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
-      character longtfile*144,LCOPY*144,message*48
+      character longtfile*144,LCOPY*144,lguess*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER outs248*248
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
@@ -3319,8 +3282,9 @@ C Take into account the current value of whichdbpath.
      &    loptdb(1:lnblnk(loptdb))
       endif
 
-C Debug.
-C      write(6,*) 'previous optics ',lprev(1:lnblnk(lprev))
+C Inform user.
+      write(outs248,*) 'Current optics ',lprev(1:lnblnk(lprev))
+      call edisp248(iuout,outs248,100)
 
   60  continue
       if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
@@ -3567,10 +3531,17 @@ C and LCOPY for the system cp call.
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
 
+C Provide a guess based on the current LOPTDB.
           lltmp='  '
-          CALL EASKXORGTKF(LPRFDB,
-     &      'Optical Properties db (source)?',' ',
-     &      DOPTDB,lltmp,'optical properties database',IER,2)
+          lguess='  '
+          if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+            lguess=LOPTDB  ! use as is
+          elseif(ipathoptdb.eq.2)then
+            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &        loptdb(1:lnblnk(loptdb))  ! prepend db folder path
+          endif
+          CALL EASKXORGTKF(lguess,'Optical Properties db (source)?',
+     &      ' ',DOPTDB,lltmp,'optical properties database',IER,2)
           sourcefile = lltmp
 
 C If user request jump back and re-display the menu.
@@ -3578,8 +3549,7 @@ C If user request jump back and re-display the menu.
             LOPTDB=lprev
             goto 60  ! cancel detected, redisplay menu.
           endif
-          ipathoptdb=1  ! signal that it is a local database.
-          LOPTDB=lltmp
+          ipathoptdb=1  ! signal that it will be a local database.
         endif
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
@@ -3685,73 +3655,50 @@ C be pre-pended when using most inbuilt file opening calls.
 
       elseif(isw.eq.5)then
 
-C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
-C can see the files in that folder. Note the user may browse away
-C from this location. Easkf returns the absolut path to the
-C file selected (later see if this can be resolved to ../dbs). 
-C Test the returned file and if it is not readable reset LOPTDB.
-        if(iglib.eq.2)then
-          H(1)='An optical properties database holds information for'
-          H(2)='transparent constructions. It is closely related to'
-          H(3)='the constructions database referenced by the project.'
-          H(4)=' '
-          H(5)='A local database folder (../dbs) is usually associated'
-          H(6)='with each model. '
-          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-          CALL EASKF(LCOPY,' ','Optical Properties db?',
-     &      144,DOPTDB,'optical properties database',IER,6)
-          if(ier.eq.-3)then
-            LOPTDB=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
+C Make up browse to the model ../dbs folder suggest the name LCOPY
+C and return file name in lltmp.
+        H(1)='An optical properties database holds information for'
+        H(2)='transparent constructions. It is closely related to'
+        H(3)='the constructions database referenced by the project.'
+        H(4)=' '
+        H(5)='A local database folder (../dbs) is usually associated'
+        H(6)='with each model. '
+        lltmp=' '
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        CALL EASKXORGTKF(LCOPY,'Optical Properties db?',' ',
+     &    DOPTDB,lltmp,'optical properties db',IER,6)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 60  ! redisplay menu.
+        endif
+
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C Ask user whether file is in ../dbs and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../dbs folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(LOPTDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+              ipathoptdb=1  ! signal that it is a local database.
+              moddb=.true.
+              goto 44
+            endif
           endif
 
-C If the file exists with the normal path to model prepended then
-C it should be possible to rebuild the name based on ../dbs.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(LOPTDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            write(LOPTDB,'(a)') LTMP(1:lnblnk(LTMP))
-          endif
+C Check what the user might have edited to be sure of setting the
+C correct location value via call to findwhichdbpath.
+          call findwhichdbpath('opt',lltmp,ier)
           moddb=.true.
-          ipathoptdb=1  ! signal that it is a local database.
           goto 44
         else
-
-C For X11 and text allow user to type in a file name.
-          H(1)='An optical properties database holds information for'
-          H(2)='transparent constructions. It is closely related to'
-          H(3)='the constructions database referenced by the project.'
-          llt=lnblnk(lltmp)
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' ','Optical Properties db?',
-     &        96,DOPTDB,'optical properties database',IER,3)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' ','Optical Properties db?',
-     &        124,DOPTDB,'optical properties database',IER,3)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' ','Optical Properties db?',
-     &        144,DOPTDB,'optical properties database',IER,3)
-          endif
-          if(ier.eq.-3)then
-            LOPTDB=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-
-          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C This is another place where we need to check what the user might
-C have edited to be sure of setting the correct location value. The
-C common block will be updated with call to findwhichdbpath.
-            call findwhichdbpath('opt',lltmp,ier)
-            moddb=.true.
-            goto 44
-          else
-            goto 60
-          endif
+          goto 60
         endif
+
       elseif(isw.eq.6)then
 
 C Browse distribution database folder. Setup LCOPY to point to
@@ -4122,8 +4069,9 @@ C and LCOPY for the system cp call.
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
 
+C << lguess logic to be added later >>
           lltmp='  '
-          CALL EASKXORGTKF(LPRFDB,
+          CALL EASKXORGTKF(lapres,
      &      'Pressure coefficients db (source)?',' ',
      &      dapres,lltmp,'pressure coef database',IER,2)
           sourcefile = lltmp
@@ -4239,6 +4187,8 @@ C be pre-pended when using most inbuilt file opening calls.
         endif
 
       elseif(isw.eq.5)then
+
+C << update this block of code to use pattern near line 3104 >>
 
 C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
 C can see the files in that folder. Note the user may browse away
