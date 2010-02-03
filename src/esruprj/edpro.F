@@ -655,11 +655,9 @@ C If we got to this point we can instanciate the data.
 
 
 C ***************** TRIPRO 
-C TRIPRO reads data supplied from an ASCII profiles db and writes
-C it to a NEW binary events profiles database file. This should
-C be depreciated in the future as models move to ASCII versions
-C of the events profile database.
-      SUBROUTINE TRIPRO(IFA,LASCI,IER)
+C TRIPRO reads data supplied from an ASCII profiles db (LASCI) and writes
+C it to a NEW binary events profiles database file (LBIN).
+      SUBROUTINE TRIPRO(IFA,IFB,LASCI,LBIN,IER)
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
@@ -669,47 +667,28 @@ C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
+C Parameters
+      integer IFA,IFB       ! file unit numbers  
+      CHARACTER*(*) LASCI   ! ascii file name (full path)
+      CHARACTER*(*) LBIN    ! binary file name (full path)
+      integer IER           ! zero is ok, one is asci does not exist
+                            ! two is binary cannot be opened
+
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER PDBDESC*40,OUTSTR*124,h*72
+      CHARACTER PDBDESC*40,OUTSTR*124
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
-      LOGICAL OK,dok
-      CHARACTER*(*) LASCI   ! ascii file name
-      character lworking*144
-      character fs*1       ! file separator
-      logical unixok  ! to check for database path file separators
 
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-
-C The binary file will be overwritten.
-      dok=.true.
-      h(1)='Reading in an ASCII version of the profiles database '
-      h(2)='will overwrite the current profiles database. If this '
-      h(3)='is ok say yes. If not say no so you can respecify. '
-      CALL ASKOK(' ','Ok to overwrite the profiles database?',OK,dok,3)
-      IF(.NOT.OK)THEN
-        IER=1
+C Note existing binary files will be overwritten.
+      CALL ERPFREE(IFB,ISTAT)
+      call EFOPRAN(IFB,LBIN,10,3,IER)
+      IF(IER.NE.0)THEN
+        CALL USRMSG(' ','Binary file cannot be written!','W')
+        IER=2
         RETURN
-      ELSE
-        lndbp=lnblnk(standarddbpath)
-        CALL ERPFREE(IPRODB,ISTAT)
-        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-          call EFOPRAN(IPRODB,LPRFDB,10,3,IER)
-        elseif(ipathprodb.eq.2)then
-          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &      LPRFDB(1:lnblnk(LPRFDB))
-          call EFOPRAN(IPRODB,lworking,10,3,IER)
-        endif
-        if(ier.ne.0)return
       ENDIF
+      if(ier.ne.0)return
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
 C Open the ASCII file for reading.
@@ -728,7 +707,7 @@ C Proceed.
 
       ermsg='writing record one nb of profiles '
       IREC = 1
-      WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
+      WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
 
 C Get number of events and description of profile (EGETRM gets the
 C remainder of the line after the first word (NCG).
@@ -742,10 +721,10 @@ C remainder of the line after the first word (NCG).
         write(ermsg,'(a,i3)') 'writing nb of periods in profile ',I
         IREC = IREC + 1
         NO(I)=IREC
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
+        WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
         write(ermsg,'(a,i3)') 'writing description of profile ',I
         IREC = IREC + 1
-        WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
+        WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
 
         DO 20 J = 1,NCG(I)
           CALL STRIPC(IFA,OUTSTR,0,ND,1,'IS,IF,A,B',IER)
@@ -757,16 +736,17 @@ C remainder of the line after the first word (NCG).
           CALL EGETWR(OUTSTR,K,B,0.,0.,'-','VAL 2',IER)
           write(ermsg,'(a,2i4)') 'writing data of profile ',I,J
           IREC = IREC + 1
-          WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
+          WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
    20   CONTINUE
    10 CONTINUE
 
       ermsg='writing record one nb of profiles & last rec '
       IR=IREC+1
       IREC = 1
-      WRITE(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS,IR
+      WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS,IR
 
-  99  CALL ERPFREE(IPRODB,ISTAT)
+C Free both file units.
+  99  CALL ERPFREE(IFB,ISTAT)
       CALL ERPFREE(IFA,ISTAT)
       RETURN
 
@@ -962,16 +942,21 @@ C For each period.
       END
 
 C **************** TRIPROBIN 
-C TRIPROBIN fills common blocks from binary profiles db.
+C TRIPROBIN fills common blocks from a binary profiles db.
 C Pass back the following error states:
 C ier= 0 file read ok.
 C ier= -2 error opening or reading header
 C ier= -3 no items in the database
-      SUBROUTINE TRIPROBIN(IER)
+      SUBROUTINE TRIPROBIN(IFB,LBIN,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer IFB         ! file unit
+      CHARACTER*(*) LBIN  ! binary file name (full path)
+      integer IER         ! zero is ok, -2 or -3 errors
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
@@ -980,34 +965,14 @@ C ier= -3 no items in the database
       CHARACTER PDBDESC*40
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
-      character fs*1       ! file separator
-      character lworking*144   ! file string
-      logical unixok  ! to check for database path file separators
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-
-      IER =0
 
 C Because it is a binary file we are expecting a non-zero ier
 C does not require that we attempt to scan an ascii version of
 C the event profiles db. But if there is an error in efopran or
 C there is an impossible number of items pass back ier=-2 so
 C other code can check if the file is an ascii version.
-      lndbp=lnblnk(standarddbpath)
-      CALL ERPFREE(IPRODB,ISTAT)
-      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-        call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
-      elseif(ipathprodb.eq.2)then
-        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &    LPRFDB(1:lnblnk(LPRFDB))
-        call EFOPRAN(IPRODB,lworking,10,1,IER)
-      endif
+      CALL ERPFREE(IFB,ISTAT)
+      call EFOPRAN(IFB,LBIN,10,1,IER)
       if(ier.ne.0)then
         ier=-2
         return
@@ -1015,7 +980,7 @@ C other code can check if the file is an ascii version.
 
       ermsg='reading record one number of profiles '
       IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NPDBITEMS
+      READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NPDBITEMS
       if(NPDBITEMS.LE.0)then
         CALL USRMSG(' ','Events profiles db is empty !','W') 
         ier=-3
@@ -1031,22 +996,22 @@ C other code can check if the file is an ascii version.
 C Proceed
       ermsg='reading record one number of profiles '
       IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
+      READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
 
       DO 10 I = 1,NPDBITEMS
         write(ermsg,'(a,i2)') 'reading number events in profile ',I
         IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
+        READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
         write(ermsg,'(a,i2)') 'reading description of profile ',I
         IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
+        READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
 
 C For each period.
         DO 20 J = 1,NCG(I)
           write(ermsg,'(a,i3,a,i2)') 'reading data of profile ',I,
      &      ' at period ',J
           IREC = IREC + 1
-          READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
+          READ(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
           ICGS1(I,J)=IS
           ICGF1(I,J)=IF
           CGS1(I,J)=A
@@ -1054,7 +1019,7 @@ C For each period.
    20   CONTINUE
    10 CONTINUE
 
-  99  CALL ERPFREE(IPRODB,ISTAT)
+  99  CALL ERPFREE(IFB,ISTAT)
       RETURN
 
  1001 write(outs,'(3a,i4)') 'In profile db: error ',

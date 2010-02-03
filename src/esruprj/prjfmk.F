@@ -4023,18 +4023,18 @@ C Labels for loads.
 
 C Scan the event profiles database. If an error state is
 C returned then it might be an ASCII file, try and scan that.
-      call TRIPROBIN(IER)
+      lndbp=lnblnk(standarddbpath)
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        lltmp=LPRFDB  ! use as is
+      elseif(ipathprodb.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
+      endif
+      call TRIPROBIN(IPRODB,lltmp,IER)
       if(ier.ne.0)then
         CALL ERPFREE(IPRODB,ISTAT)
         CALL USRMSG(' opened profiles db...',' ','-')
         ier=0   ! reset prior to call to triprocom
-        lndbp=lnblnk(standarddbpath)
-        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-          lltmp=LPRFDB  ! use as is
-        elseif(ipathprodb.eq.2)then
-          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
-     &      LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
-        endif
         call TRIPROCOM(IPRODB,lltmp,IER)
         if(ier.ne.0)then
           call usrmsg('Error opening the db. Please use one',

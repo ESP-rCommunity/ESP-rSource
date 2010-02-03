@@ -320,7 +320,7 @@ C If vi then spawn a new window to do the editing in.
         H(2)='be edited using the current defined text editor'
         H(3)='(as defined in the default file).'
         H(4)='BE CAREFUL!'
-	llitem=' '    ! reset return string
+        llitem=' '    ! reset return string
         CALL EASKXORGTKF(MCMPDBFL,
      &    'Special materials/misc. comp file name?',' ',
      &    DMCMPDBFL,llitem,'Special materials file',IER,4)
@@ -823,7 +823,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='g browse ../dbs'
+        opte='g browse model ../dbs'
         optf='h browse esp-r distribution'
         optg='i make copy of another file'
       endif
@@ -2087,7 +2087,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='e browse ../dbs'
+        opte='e browse model ../dbs'
         optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
@@ -2550,8 +2550,8 @@ C
       COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
      &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
 
-      CHARACTER H*72,LTMP*72,lltmp*144,lprev*144,llbin*144
-      character LLASCI*144
+      CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
+      character LLASCI*144,lbin*144,llbin*144
       character longtfile*144,LCOPY*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER OUTS*124,OUTS248*248
@@ -2593,6 +2593,8 @@ C Remember the initial file name in case user choice fails.
       endif
 
   60  continue
+
+C Generate file name lltmp taking into account ipathprodb for use later.
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
         lltmp=LPRFDB  ! use as is
       elseif(ipathprodb.eq.2)then
@@ -2695,7 +2697,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
       elseif(iglib.eq.2)then
         opte='e binary > ascii'
         optf='f ascii > binary'
-        optg='g browse ../dbs'
+        optg='g browse model ../dbs'
         opth='h browse esp-r distribution'
         opti='i make copy of another file'
       endif
@@ -2793,7 +2795,7 @@ C DPRFDB might point to binary or ascii.
      &    IER,3)
         if(clkok)then
           LPRFDB=lprev  ! user canceled, restore initial name
-	  return
+          return
         endif
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           write(LPRFDB,'(a)') ltmp(1:lnblnk(ltmp))
@@ -2871,15 +2873,12 @@ C code is general rather than specific (for later consolidation).
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
             LPRFDB=lprev
-	    goto 60  ! restore name and redisplay menu.
+            goto 60  ! restore name and redisplay menu.
           endif
           ipathprodb=1  ! signal that it is a local database.
-          LPRFDB=lltmp
         endif
 
-C << We want to convert any binary version into a local
-C << ascii version
-
+C Ask the user what to call the local file (suggest name).
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
         lr=lnblnk(cfgroot)
@@ -2917,62 +2916,37 @@ C no need to duplicat the file separator.
      &        LTMP(1:lnblnk(LTMP))
           endif
 
-          if(copydef)then
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          sourcefile(1:lnblnk(sourcefile)),' ',
-     &          LCOPY(1:lnblnk(LCOPY))
-            else
+C Now copy sourcefile to lcopy.
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
 
 C Logic for copy similar to the pattern established above.
-              message='getting events db file from '
-              call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-            endif
-            call usrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
+            message='getting events db file from '
+            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+          endif
+          call usrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
 
 C Use LTMP or LCOPY depending on the path because the path will already
 C be pre-pended when using most inbuilt file opening calls.
-            call FINDFIL(LCOPY,XST)
-            if(XST)then
-              call fdroot(lcopy,lpath,fname)
-              write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-            else
-              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP)) ! short local to long
-            endif
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
           else
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          LPRFDB(1:lnblnk(LPRFDB)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
-
-C Standard dos copy logic.
-              message='getting event db file from '
-              call dblongdoscopy(LPRFDB,lcopy,message,doit,ier)
-            endif
-            call usrmsg('copying file via',doit,'-')
-            call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-            call FINDFIL(LCOPY,XST)
+            call FINDFIL(LTMP,XST)
             if(XST)then
-              call fdroot(lcopy,lpath,fname)
-              write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
+              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
             else
-              call FINDFIL(LTMP,XST)
-              if(XST)then
-                write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
-              else
-                write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
-                call edisp(iuout,'Problem locating the new database.')
-                call edisp(iuout,'Try browsing ../dbs to find it.')
-                call edisp(iuout,' ')
-              endif
+              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
+              call edisp(iuout,'Problem locating the new database.')
+              call edisp(iuout,'Try browsing ../dbs to find it.')
+              call edisp(iuout,' ')
             endif
           endif
           moddb=.true.
@@ -2986,10 +2960,8 @@ C be pre-pended when using most inbuilt file opening calls.
 
 C Event profile db: BINARY > ASCII. 
 
-C Do not assume that LPRFDB is necessarily the binary file
-C the user may have been working earlier with an ascii version
-C revise to request the name of the binary file before opening it.
-        lprev=LPRFDB  ! remember current file
+C Users selects a binary file (initial guess is LPRFDB and
+C the file name is returned in lltmp.
         IAF=IFIL+1
         H(1)='The events db contains one or more descriptions of'
         H(2)='profiles created via a diary entry format. This'
@@ -3002,111 +2974,123 @@ C revise to request the name of the binary file before opening it.
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
-          LPRFDB=lprev
-	  goto 60  ! restore name and redisplay menu.
+          goto 60  ! restore name and redisplay menu.
         endif
 
         if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-          LPRFDB=lltmp
+          continue
         else
           goto 60
         endif
 
-C If LPRFDB does not end in .a then update LLASACI
-        llt=lnblnk(LPRFDB)
-	if(LPRFDB(llt-1:llt).eq.'.a')then
-          LLASCI=LPRFDB
+C Create the ASCII version as variant of lltmp. If it does not 
+C end in .a then update LLASACI
+        llt=lnblnk(lltmp)
+        if(lltmp(llt-1:llt).eq.'.a')then
+          LLASCI=lltmp
         else
           if(llt.le.141)then 
-            write(LLASCI,'(2a)') LPRFDB(1:llt),'.a'
+            write(LLASCI,'(2a)') lltmp(1:llt),'.a'
           else
-            write(LLASCI,'(2a)') LPRFDB(1:141),'.a'
+            write(LLASCI,'(2a)') lltmp(1:141),'.a'
           endif
         endif
 
-C Read binary file into common blocks.
-        call TRIPROBIN(IER)
+C Read binary file lltmp into common blocks.
+        call TRIPROBIN(IPRODB,lltmp,IER)
 
 C Write commons to ASCII and then redisplay the menu.
         if(ier.eq.0)then
           ier=0  ! reset prior to call to troprocom
           call TROPROCOM(IAF,LLASCI,IER)
+          if(ier.eq.0)then
+            call edisp(iuout,'Binary -> ASCII conversion done.')
+          else
+            call edisp(iuout,'Binary -> ASCII conversion problems.')
+          endif
           call tstamp('>','PRO: convert binary to ascii')
-          LPRFDB=lprev  ! re-establish the file name
           goto 60
         else
-          call edisp(iuout,'Error reading binary events file.')
-          LPRFDB=lprev  ! re-establish the file name
+          call edisp(iuout,
+     &      'Source file was probably not a binary events file.')
+          goto 60
         endif
 
       elseif(isw.eq.6)then
 
 C Profile db: ASCII > BINARY.
 C Ask for the ASCII file name and then confirm the binary db name.
+C Guess ASCII name based on current LPRFDB.
         IAF=IFIL+1
-        H(1)='The events db contains one or more descriptions of'
-        H(2)='profiles created via a diary entry format. This option'
-        H(3)='allows you to convert an ASCII version to a binary'
-        H(4)='version of the file if you need to pass the model to'
-        H(5)='someone with an older version of ESP-r that only deals'
-        H(6)='with binary versions. '
 
-C Check the last two characters of the file name.
+C Check the last two characters of the file name. Append a '.a'
+C to the current LPRFDB as an initial guess for the name.
         llt=lnblnk(LPRFDB)
-	if(LPRFDB(llt-1:llt).eq.'.a')then
+        if(LPRFDB(llt-1:llt).eq.'.a')then
           if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-            write(LLASCI,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+            write(LLASCI,'(a)') LPRFDB(1:llt)
           elseif(ipathprodb.eq.2)then
             lndbp=lnblnk(standarddbpath)
             write(LLASCI,'(3a)') standarddbpath(1:lndbp),fs,
-     &        LPRFDB(1:lnblnk(LPRFDB))
+     &        LPRFDB(1:llt)
           endif
         else
           if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-            write(LLASCI,'(2a)') LPRFDB(1:lnblnk(LPRFDB)),'.a'
+            write(LLASCI,'(2a)') LPRFDB(1:llt),'.a'
           elseif(ipathprodb.eq.2)then
             lndbp=lnblnk(standarddbpath)
             write(LLASCI,'(4a)') standarddbpath(1:lndbp),fs,
-     &        LPRFDB(1:lnblnk(LPRFDB)),'.a'
+     &        LPRFDB(1:llt),'.a'
           endif
         endif
 
+C Return the selected file in lltmp based on initial guess LLASCI.
+        H(1)='The events db contains one or more descriptions of'
+        H(2)='profiles created via a diary entry format. This option'
+        H(3)='allows you to convert an ASCII version to a binary'
+        H(4)='version of the file (if you need to pass the model to'
+        H(5)='someone with an older version of ESP-r that only deals'
+        H(6)='with binary versions).'
         CALL EASKXORGTKF(LLASCI,
      &    'Event Profiles db (ASCII source)?',' ',
      &    DPRFDB,lltmp,'ascii events db',IER,6)
-        LLASCI=lltmp  ! copy returned name to LLASCI
 
-        H(1)='The existing binary events db will be overwritten'
-        H(2)='with the data from the ASCII version.'
 
-C If LPRFDB ends with .a then make up a temporary file name
-C for the binary that has the .a stripped off.
+C If lltmp ends with .a then make up a temporary file name
+C lbin for the binary that has the .a stripped off. Return
+C llbin for use in tripro.
+        llt=lnblnk(lltmp)
         llbin=' '
-	if(LPRFDB(llt-1:llt).eq.'.a')then
-          write(llbin,'(a)') LPRFDB(1:llt-2)
+        lbin=' '
+        if(lltmp(llt-1:llt).eq.'.a')then
+          write(lbin,'(a)') lltmp(1:llt-2)
         else
-          write(llbin,'(a)') LPRFDB(1:lnblnk(LPRFDB))
+          write(lbin,'(a)') lltmp(1:llt)
         endif
-        CALL EASKXORGTKF(llbin,'Event Profiles db (binary)?',' ',
-     &    DPRFDB,lltmp,'binary events db',IER,6)
+        H(1)='Existing binary events db will be overwritten'
+        H(2)='with the data from the ASCII version. If you'
+        H(3)='want to use the binary file select it.'
+        CALL EASKXORGTKF(lbin,'Event Profiles db (binary)?',' ',
+     &    DPRFDB,llbin,'binary events db',IER,3)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
-          LPRFDB=lprev  ! restore name
-	  goto 60  ! redisplay menu.
+          goto 60  ! redisplay menu.
         endif
 
         if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
 
-C Convert lltmp to lprfdb via findwhichdbpath then create the ASCII
-C file LLASCI
-          call findwhichdbpath('evn',lltmp,ier)
-          CALL TRIPRO(IAF,LLASCI,IER)
-          LPRFDB=lprev  ! restore name
-          moddb=.true.
-          goto 44
+C Convert data in lltmp to binary form in llbin (this does not alter
+c the current profiles database.
+          CALL TRIPRO(IAF,IPRODB,lltmp,llbin,IER)
+          if(ier.eq.0)then
+            call edisp(iuout,'ASCII -> Binary conversion done.')
+          else
+            call edisp(iuout,'ASCII -> Binary conversion problems.')
+          endif
+          goto 60  ! re-display the menu
         else
-          goto 60
+          goto 60  ! re-display the menu
         endif
 
       elseif(isw.eq.7)then
@@ -3129,7 +3113,7 @@ C Test the returned file and if it is not readable reset LPRFDB.
      &      144,DPRFDB,'Event profiles db',IER,5)
           if(ier.eq.-3)then
             LPRFDB=lprev
-	    goto 60   ! cancel detected, restore name and redisplay menu.
+            goto 60   ! cancel detected, restore name and redisplay menu.
           endif
 
 C If the file exists with the normal path to model prepended then
@@ -3168,7 +3152,7 @@ C name with the full path.
           endif
           if(ier.eq.-3)then
             LPRFDB=lprev
-	    goto 60  ! a cancel was detected, redisplay menu.
+            goto 60  ! a cancel was detected, redisplay menu.
           endif
           if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
 
@@ -3202,13 +3186,13 @@ C call to eroptdb and if this is not successful reset LPRFDB.
      &      144,DPRFDB,'Event profiles database',IER,5)
           if(ier.eq.-3)then
             LPRFDB=lprev
-	    goto 60  ! cancel was detected, restore name and redisplay menu.
+            goto 60  ! cancel was detected, restore name and redisplay menu.
           endif
 
 C This is yet another place where we need to check what the user might
 C have edited to be sure of setting the correct location value. The
 C common block will be updated with call to findwhichdbpath.
-          call findwhichdbpath('prs',LCOPY,ier)
+          call findwhichdbpath('evn',LCOPY,ier)
           moddb=.true.
           goto 44
         else
@@ -3226,20 +3210,20 @@ C database contents.
       call edisp248(iuout,outs248,100)
       IER=0
 
-C Scan (first) the binary event profiles database. If an error state is
-C returned as -2 then it might be an ASCII file, setup lltmp and try 
-C to scan the file as an ASCII.  Either way commons are filled.
-      call TRIPROBIN(IER)
+C Scan file (with full path) as a binary event profiles database. 
+C If an error state is returned as -2 then it might be an ASCII
+C file. Either way commons are filled.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        lltmp=LPRFDB  ! use as is
+      elseif(ipathprodb.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
+      endif
+      call TRIPROBIN(IPRODB,lltmp,IER)
       if(ier.eq.-2)then
         CALL ERPFREE(IPRODB,ISTAT)
         CALL USRMSG('opened profiles db...',' ','-')
-        lndbp=lnblnk(standarddbpath)
-        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-          lltmp=LPRFDB  ! use as is
-        elseif(ipathprodb.eq.2)then
-          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
-     &      LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
-        endif
         ier=0   ! reset ier after triprobin call
         call TRIPROCOM(IPRODB,lltmp,IER)
         if(ier.ne.0)then
@@ -3418,7 +3402,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='e browse ../dbs'
+        opte='e browse model ../dbs'
         optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
@@ -3592,7 +3576,7 @@ C and LCOPY for the system cp call.
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
             LOPTDB=lprev
-	    goto 60  ! cancel detected, redisplay menu.
+            goto 60  ! cancel detected, redisplay menu.
           endif
           ipathoptdb=1  ! signal that it is a local database.
           LOPTDB=lltmp
@@ -3718,7 +3702,7 @@ C Test the returned file and if it is not readable reset LOPTDB.
      &      144,DOPTDB,'optical properties database',IER,6)
           if(ier.eq.-3)then
             LOPTDB=lprev
-	    goto 60  ! cancel detected, restore name and redisplay menu.
+            goto 60  ! cancel detected, restore name and redisplay menu.
           endif
 
 C If the file exists with the normal path to model prepended then
@@ -3753,7 +3737,7 @@ C For X11 and text allow user to type in a file name.
           endif
           if(ier.eq.-3)then
             LOPTDB=lprev
-	    goto 60  ! cancel detected, restore name and redisplay menu.
+            goto 60  ! cancel detected, restore name and redisplay menu.
           endif
 
           if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
@@ -3788,7 +3772,7 @@ C call to eroptdb and if this is not successful reset LOPTDB.
      &      144,DOPTDB,'optical properties database',IER,6)
           if(ier.eq.-3)then
             LOPTDB=lprev
-	    goto 60  ! cancel detected, restore name and redisplay menu.
+            goto 60  ! cancel detected, restore name and redisplay menu.
           endif
 
 C This is yet another place where we need to check what the user might
@@ -3987,7 +3971,7 @@ C options to browse for files in ../dbs or the esp-r distribution.
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='e browse ../dbs'
+        opte='e browse model ../dbs'
         optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
@@ -4105,7 +4089,7 @@ C Create a minimal pressure databases.
 C Update the current file and re-scan it and then open editing facilty. 
         CALL EMKAPCDB(LAPRES,IER)
         IF(IER.NE.0) GOTO 60
-	t144='  '
+        t144='  '
         CALL ERPRCDB(t144,0,3,IER)
         IF(IER.NE.0) GOTO 60
         CALL EDPCDB(IER) 
@@ -4147,7 +4131,7 @@ C and LCOPY for the system cp call.
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
             lapres=lprev
-	    goto 60  ! cancel detected, redisplay menu.
+            goto 60  ! cancel detected, redisplay menu.
           endif
           ipathapres=1  ! signal that it is a local database.
           lapres=lltmp
@@ -4273,7 +4257,7 @@ C Test the returned file and if it is not readable reset lapres.
      &      144,dapres,'pressure coef database',IER,6)
           if(ier.eq.-3)then
             lapres=lprev
-	    goto 60  ! cancel detected, restore name and redisplay menu.
+            goto 60  ! cancel detected, restore name and redisplay menu.
           endif
 
 C If the file exists with the normal path to model prepended then
@@ -4308,7 +4292,7 @@ C For X11 and text allow user to type in a file name.
           endif
           if(ier.eq.-3)then
             lapres=lprev
-	    goto 60  ! cancel detected, restore name and redisplay menu.
+            goto 60  ! cancel detected, restore name and redisplay menu.
           endif
 
           if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
@@ -4344,14 +4328,13 @@ C this is not successful reset lapres.
      &      144,dapres,'pressure coef database',IER,6)
           if(ier.eq.-3)then
             lapres=lprev
-	    goto 60  ! cancel detected, restore name and redisplay menu.
+            goto 60  ! cancel detected, restore name and redisplay menu.
           endif
 
 C This is yet another place where we need to check what the user might
 C have edited to be sure of setting the correct location value. The
 C common block will be updated with call to findwhichdbpath.
-C << ?? shouldn't this be LCOPY >>
-          call findwhichdbpath('prs',lltmp,ier)
+          call findwhichdbpath('prs',LCOPY,ier)
           moddb=.true.
           goto 44
         else
