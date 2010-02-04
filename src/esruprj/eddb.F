@@ -1927,7 +1927,7 @@ C     if blank then no file name change implied.
       common/deflt4/dinstpath
 
       CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
-      character longtfile*144,message*48
+      character longtfile*144,lguess*144,message*48
       CHARACTER DOIT*300,fs*1,LCOPY*144
       CHARACTER OUTS*124,outs248*248,APP*4,ext*4
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
@@ -2217,9 +2217,14 @@ C code is general rather than specific (for later consolidation).
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
           lltmp='  '
-
-C << lguess logic to be added here >>
-          CALL EASKXORGTKF(LPCDB,
+          lguess='  '
+          if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+            lguess=LPCDB
+          elseif(ipathpcdb.eq.2)then
+            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &        lpcdb(1:lnblnk(lpcdb))
+          endif
+          CALL EASKXORGTKF(lguess,
      &      'Plant template file name (source)?',' ',
      &      DPCDB,lltmp,'plant templates database',IER,2)
 
@@ -2227,11 +2232,9 @@ C << lguess logic to be added here >>
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
-            LPCDB=lprev
             goto 60  ! cancel detected, restore name and redisplay menu.
           endif
-          ipathpcdb=1  ! signal that it is a local database.
-          LPCDB=lltmp
+          ipathpcdb=1  ! signal that it will be a local database.
         endif
 
         h(1)='The suggested name of this database is based on the '
@@ -2271,68 +2274,42 @@ C no need to duplicat the file separator.
      &        LTMP(1:lnblnk(LTMP))
           endif
 
-          if(copydef)then
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          sourcefile(1:lnblnk(sourcefile)),' ',
-     &          LCOPY(1:lnblnk(LCOPY))
-            else
+C Now copy sourcefile to lcopy.
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
 
 C Standard dos copy logic.
-              message='getting plant db file from '
-              call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-            endif
-            call usrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
+            message='getting plant db file from '
+            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+          endif
+          call usrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
 
 C Use LTMP or LCOPY depending on the path because the path will already
 C be pre-pended when using most inbuilt file opening calls.
-C If the file exists with the normal path to model prepended then
-C it should be possible to rebuild the name based on ../dbs.
-            call FINDFIL(LCOPY,XST)
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+            call FINDFIL(LTMP,XST)
             if(XST)then
-              call fdroot(lcopy,lpath,fname)
-              write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
+              write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
             else
               write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          LPCDB(1:lnblnk(LPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
-
-C Standard dos copy logic.
-              message='getting plant db file from '
-              call dblongdoscopy(LPCDB,lcopy,message,doit,ier)
-            endif
-            call usrmsg('copying file via',doit,'-')
-            call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-            call FINDFIL(LCOPY,XST)
-            if(XST)then
-              call fdroot(lcopy,lpath,fname)
-              write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-            else
-              call FINDFIL(LTMP,XST)
-              if(XST)then
-                write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
-              else
-                write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
-                call edisp(iuout,'Problem locating the new database.')
-                call edisp(iuout,'Try browsing ../dbs to find it.')
-                call edisp(iuout,' ')
-              endif
+              call edisp(iuout,'Problem locating the new database.')
+              call edisp(iuout,'Try browsing ../dbs to find it.')
+              call edisp(iuout,' ')
             endif
           endif
           moddb=.true.
           ipathpcdb=1  ! signal that it is a local database.
+          lltmp=LPCDB  ! reset lltmp for use at 44
           goto 44
         else
           goto 66
@@ -2836,7 +2813,6 @@ C Provide a guess based on the current LPRFDB.
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
-            LPRFDB=lprev
             goto 60  ! restore name and redisplay menu.
           endif
           ipathprodb=1  ! signal that it is a local database.
