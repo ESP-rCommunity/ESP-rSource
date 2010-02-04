@@ -2340,80 +2340,53 @@ C be pre-pended when using most inbuilt file opening calls.
 
       elseif(isw.eq.5)then
 
-C << update this code to follow pattern near line 3103 >>
+C Make up browse to the model ../dbs folder suggest the name LCOPY
+C and return file name in lltmp.
+        h(1)='The plant component database binary file holds the'
+        h(2)='description of available components. If the name'
+        h(3)='given matches an existing file, it will be read in'
+        h(4)='and the components data will be available for'
+        h(5)='listing and editing. If there is no such file then'
+        h(6)='a new one will be created to hold data for new'
+        h(7)='components.'
+        lltmp=' '
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
 
-C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
-C can see the files in that folder. Note the user may browse away
-C from this location. Easkf returns the absolut path to the
-C file selected (later see if this can be resolved to ../dbs). 
-C Test the returned file and if it is not readable reset LOPTDB.
-        if(iglib.eq.2)then
-          h(1)='The plant component database binary file holds the'
-          h(2)='description of available components. If the name'
-          h(3)='given matches an existing file, it will be read in'
-          h(4)='and the components data will be available for'
-          h(5)='listing and editing. If there is no such file then'
-          h(6)='a new one will be created to hold data for new'
-          h(7)='components.'
-          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-          CALL EASKF(LCOPY,' ','Plant templates db?',
-     &      144,DPCDB,'plant templates database',IER,7)
-          if(ier.eq.-3)then
-            LPCDB=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
+        CALL EASKXORGTKF(LCOPY,'Plant templates db?',' ',
+     &    DPCDB,lltmp,'plant templates database',IER,7)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 60  ! redisplay menu.
+        endif
+
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C Ask user whether file is in ../dbs and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../dbs folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+              ipathpcdb=1  ! signal that it is a local database.
+              lltmp=LPCDB  ! reset lltmp for use at 44
+              moddb=.true.
+              goto 44
+            endif
           endif
 
-C If the file exists with the normal path to model prepended then
-C it should be possible to rebuild the name based on ../dbs.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
-          endif
+C Check what the user might have edited to be sure of setting the
+C correct location value via call to findwhichdbpath.
+          call findwhichdbpath('pdb',lltmp,ier)
           moddb=.true.
-          ipathpcdb=1  ! signal that it is a local database.
           goto 44
         else
-
-C For X11 and text allow user to type in a file name.
-          h(1)='The plant component database binary file holds the'
-          h(2)='description of available components. If the name'
-          h(3)='given matches an existing file, it will be read in'
-          h(4)='and the components data will be available for'
-          h(5)='listing and editing. If there is no such file then'
-          h(6)='a new one will be created to hold data for new'
-          h(7)='components.'
-          llt=lnblnk(lltmp)
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' ','Plant templates db?',
-     &        96,DPCDB,'plant database',IER,7)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' ','Plant templates db?',
-     &        124,DPCDB,'plant database',IER,7)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' ','Plant templates db?',
-     &        144,DPCDB,'plant database',IER,7)
-          endif
-          if(ier.eq.-3)then
-            LPCDB=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-
-          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C This is another place where we need to check what the user might
-C have edited to be sure of setting the correct location value. The
-C common block lpcdb will be updated with call to findwhichdbpath.
-            call findwhichdbpath('pdb',lltmp,ier)
-            moddb=.true.
-            goto 44
-          else
-            goto 60
-          endif
+          goto 60
         endif
+
       elseif(isw.eq.6)then
 
 C Browse distribution database folder. Setup LCOPY to point to
