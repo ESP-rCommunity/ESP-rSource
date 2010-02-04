@@ -3759,7 +3759,7 @@ C This facility offers browsing for GTK version.
       common/MFLDOC/DEPRE(MPRD)
 
       CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
-      character longtfile*144,LCOPY*144,message*48
+      character longtfile*144,LCOPY*144,lguess*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4
       CHARACTER outs248*248
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
@@ -3804,8 +3804,9 @@ C Take into account the current value of whichdbpath.
      &    lapres(1:lnblnk(lapres))
       endif
 
-C Debug.
-C      write(6,*) 'previous pres coef ',lprev(1:lnblnk(lprev))
+C Inform user.
+      write(outs248,*) 'Current presure coef ',lprev(1:lnblnk(lprev))
+      call edisp248(iuout,outs248,100)
 
   60  continue
       if(ipathapres.eq.0.or.ipathapres.eq.1)then
@@ -4042,9 +4043,16 @@ C and LCOPY for the system cp call.
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
 
-C << lguess logic to be added later >>
+C Provide a guess based on the current lapres.
           lltmp='  '
-          CALL EASKXORGTKF(lapres,
+          lguess='  '
+          if(ipathapres.eq.0.or.ipathapres.eq.1)then
+            lguess=lapres
+          elseif(ipathapres.eq.2)then
+            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &        lapres(1:lnblnk(lapres))  ! prepend db folder path
+          endif
+          CALL EASKXORGTKF(lguess,
      &      'Pressure coefficients db (source)?',' ',
      &      dapres,lltmp,'pressure coef database',IER,2)
           sourcefile = lltmp
@@ -4055,7 +4063,6 @@ C If user request jump back and re-display the menu.
             goto 60  ! cancel detected, redisplay menu.
           endif
           ipathapres=1  ! signal that it is a local database.
-          lapres=lltmp
         endif
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
@@ -4161,74 +4168,49 @@ C be pre-pended when using most inbuilt file opening calls.
 
       elseif(isw.eq.5)then
 
-C << update this block of code to use pattern near line 3104 >>
+C Make up browse to the model ../dbs folder suggest the name LCOPY
+C and return file name in lltmp.
+        H(1)='Wind pressure coefficients are pressure coefficients'
+        H(2)='for surfaces in typical positions and within several'
+        H(3)='different exposure categories.'
+        H(4)=' '
+        H(5)='A local database folder (../dbs) is usually associated'
+        H(6)='with each model. '
+        lltmp=' '
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
 
-C Browse ../dbs if GTK. Fill LCOPY with the model dbspth so user
-C can see the files in that folder. Note the user may browse away
-C from this location. Easkf returns the absolut path to the
-C file selected (later see if this can be resolved to ../dbs). 
-C Test the returned file and if it is not readable reset lapres.
-        if(iglib.eq.2)then
-          H(1)='Wind pressure coefficients are pressure coefficients'
-          H(2)='for surfaces in typical positions and within several'
-          H(3)='different exposure categories.'
-          H(4)=' '
-          H(5)='A local database folder (../dbs) is usually associated'
-          H(6)='with each model. '
-          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-          CALL EASKF(LCOPY,' ','Pressure coefficients db?',
-     &      144,dapres,'pressure coef database',IER,6)
-          if(ier.eq.-3)then
-            lapres=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
+        CALL EASKXORGTKF(LCOPY,'Pressure coefficients db?',' ',
+     &    dapres,lltmp,'pressure coef database',IER,6)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 60  ! redisplay menu.
+        endif
+
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C Ask user whether file is in ../dbs and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../dbs folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+              ipathapres=1  ! signal that it is a local database.
+              moddb=.true.
+              goto 44
+            endif
           endif
 
-C If the file exists with the normal path to model prepended then
-C it should be possible to rebuild the name based on ../dbs.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
-          endif
+C Check what the user might have edited to be sure of setting the
+C correct location value via call to findwhichdbpath.
+          call findwhichdbpath('prs',lltmp,ier)
           moddb=.true.
-          ipathapres=1  ! signal that it is a local database.
           goto 44
         else
-
-C For X11 and text allow user to type in a file name.
-          H(1)='Wind pressure coefficients are pressure coefficients'
-          H(2)='for surfaces in typical positions and within several'
-          H(3)='different exposure categories.'
-          llt=lnblnk(lltmp)
-          if(llt.lt.96)then
-            CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &        96,dapres,'pressure coef database',IER,3)
-          elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &        124,dapres,'pressure coef database',IER,3)
-          elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(lltmp,' ','Pressure coefficients db?',
-     &        144,dapres,'pressure coef database',IER,3)
-          endif
-          if(ier.eq.-3)then
-            lapres=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-
-          if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C This is another place where we need to check what the user might
-C have edited to be sure of setting the correct location value. The
-C common block will be updated with call to findwhichdbpath.
-            call findwhichdbpath('prs',lltmp,ier)
-            moddb=.true.
-            goto 44
-          else
-            goto 60
-          endif
+          goto 60
         endif
 
       elseif(isw.eq.6)then
