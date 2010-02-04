@@ -4010,11 +4010,11 @@ C Provide a guess based on the current lapres.
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
-            lapres=lprev
             goto 60  ! cancel detected, redisplay menu.
           endif
           ipathapres=1  ! signal that it is a local database.
         endif
+
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
         lr=lnblnk(cfgroot)
@@ -4051,63 +4051,38 @@ C no need to duplicat the file separator.
             write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
      &        LTMP(1:lnblnk(LTMP))
           endif
-          if(copydef)then
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          sourcefile(1:lnblnk(sourcefile)),' ',
-     &          LCOPY(1:lnblnk(LCOPY))
-            else
+
+C Now copy sourcefile to lcopy.
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
 
 C Standard dos copy logic.
-              message='getting pressure db file from '
-              call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-            endif
-            call usrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
+            message='getting pressure db file from '
+            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+          endif
+          call usrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
 
 C Use LTMP or LCOPY depending on the path because the path will already
 C be pre-pended when using most inbuilt file opening calls.
-C If the file exists with the normal path to model prepended then
-C it should be possible to rebuild the name based on ../dbs.
-            call FINDFIL(LCOPY,XST)
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+            call FINDFIL(LTMP,XST)
             if(XST)then
-              call fdroot(lcopy,lpath,fname)
-              write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
+              write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
             else
               write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          lapres(1:lnblnk(lapres)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
-
-C Standard dos copy logic.
-              message='getting pressure db file from '
-              call dblongdoscopy(lapres,lcopy,message,doit,ier)
-            endif
-            call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-            call FINDFIL(LCOPY,XST)
-            if(XST)then
-              call fdroot(lcopy,lpath,fname)
-              write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-            else
-              call FINDFIL(LTMP,XST)
-              if(XST)then
-                write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
-              else
-                write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
-                call edisp(iuout,'Problem locating the new database.')
-                call edisp(iuout,'Try browsing ../dbs to find it.')
-                call edisp(iuout,' ')
-              endif
+              call edisp(iuout,'Problem locating the new database.')
+              call edisp(iuout,'Try browsing ../dbs to find it.')
+              call edisp(iuout,' ')
             endif
           endif
           moddb=.true.
