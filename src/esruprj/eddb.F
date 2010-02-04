@@ -681,7 +681,7 @@ C Default ESP-r distribution path.
       logical moddb,modcon,copydef,clkok,chgdb
       logical closemat1,closemat2
 
-      character H*72,LLTMP*144,LTMP*92
+      character H*72,LLTMP*144,LTMP*92,lguess*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character fs*1,message*48
@@ -1118,7 +1118,14 @@ C code is general rather than specific (for later consolidation).
           h(1)='You are asked to confirm the source file for the'
           h(2)='copy action. If this one is ok then accept it. '
           lltmp='  '
-          CALL EASKXORGTKF(LFMAT,
+          lguess='  '
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT))
+          elseif(ipathmat.eq.2)then
+            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &        LFMAT(1:lnblnk(LFMAT))
+          endif
+          CALL EASKXORGTKF(lguess,
      &      'Materials file name (source)?',' ',
      &      DFCON,lltmp,'materials database',IER,2)
 
@@ -1126,11 +1133,9 @@ C code is general rather than specific (for later consolidation).
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
-            LFMAT=lprev
             goto 60  ! cancel detected, restore name and redisplay menu.
           endif
           ipathmat=1  ! signal that it is a local database.
-          LFMAT=lltmp
         endif
 
         h(1)='The suggested name of this database is based on the '
@@ -1170,64 +1175,37 @@ C no need to duplicat the file separator.
      &        LTMP(1:lnblnk(LTMP))
           endif
 
-          if(copydef)then
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          sourcefile(1:lnblnk(sourcefile)),' ',
-     &          LCOPY(1:lnblnk(LCOPY))
-            else
+C Now copy sourcefile to lcopy.
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
 
 C Standard dos copy logic.
-              message='getting materials file from '
-              call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-            endif
-            call usrmsg('copying default file via',doit,'-')
-            call runit(doit,'-')
+            message='getting materials file from '
+            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+          endif
+          call usrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
 
 C Use LTMP or LCOPY depending on the path because the path will already
 C be pre-pended when using most inbuilt file opening calls.
-C If the file exists with the normal path to model prepended then
-C it should be possible to rebuild the name based on ../dbs.
-            call FINDFIL(LCOPY,XST)
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+            call FINDFIL(LTMP,XST)
             if(XST)then
-              call fdroot(lcopy,lpath,fname)
-              write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
+              write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
             else
               write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            doit = ' '
-            if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          LPCDB(1:lnblnk(LPCDB)),' ',LCOPY(1:lnblnk(LCOPY))
-            else
-
-C Standard dos copy logic.
-              message='getting plant db file from '
-              call dblongdoscopy(LFMAT,lcopy,message,doit,ier)
-            endif
-            call usrmsg('copying file via',doit,'-')
-            call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-            call FINDFIL(LCOPY,XST)
-            if(XST)then
-              call fdroot(lcopy,lpath,fname)
-              write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-            else
-              call FINDFIL(LTMP,XST)
-              if(XST)then
-                write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
-              else
-                write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
-                call edisp(iuout,'Problem locating the new database.')
-                call edisp(iuout,'Try browsing ../dbs to find it.')
-                call edisp(iuout,' ')
-              endif
+              call edisp(iuout,'Problem locating the new database.')
+              call edisp(iuout,'Try browsing ../dbs to find it.')
+              call edisp(iuout,' ')
             endif
           endif
           moddb=.true.
@@ -1469,7 +1447,10 @@ C common block lpcdb will have been updated by call to findwhichdbpath.
 C Test the selected or copied database. If a problem loop back
 C otherwise edit the database contents.
    44 continue
-      IER=0
+      write(outs248,'(2a)') 'Accessing materials db: ',
+     &  LFMAT(1:lnblnk(LFMAT))
+      call edisp248(iuout,outs248,100)
+      ier=0
 
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can
