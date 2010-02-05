@@ -1492,7 +1492,7 @@ C closemat1 or closemat2 will be set.
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      character SOPT*12,outs*124,GDESCR*36
+      character SOPT*12,outs*248,GDESCR*36
       character lworking*144,fs*1
       logical unixok
 
@@ -1527,7 +1527,7 @@ C carry on using the materials common blocks for subsequent access.
       elseif(ier.eq.-1)then
         write(outs,'(3a)') ' Materials db ',
      &    LFMAT(1:lnblnk(LFMAT)),' not found!'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
         call edisp(iuout,' ')
         MATDBOK=.FALSE.
         ier=0  ! clear error state before continuing
@@ -1588,7 +1588,7 @@ C Read multilayer db information into common.
           write(outs,'(3a)') 
      &    ' Problems with materials used by Constructions db',
      &     LFMAT(1:lnblnk(LFMAT)),'!'
-          call edisp(iuout,outs)
+          call edisp248(iuout,outs,100)
           call edisp(iuout,' ')
           MLDBOK=.FALSE.
         ELSEIF(IER.eq.2)then
@@ -1606,7 +1606,7 @@ C Scan was ok so set mldbok to true.
 C Could not find Constructions db at this time, report to user.
         write(outs,'(3a)') 'Constructions db ',
      &     LFMUL(1:lnblnk(LFMUL)),' not found!'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
         call edisp(iuout,' ')
         MLDBOK=.FALSE.
       endif

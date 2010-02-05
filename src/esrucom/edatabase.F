@@ -29,6 +29,8 @@ C  ERPCDB:  Reads one element from a binary materials db.
 C  EMKAMLD: Creates an ascii composite constr db based on common MLC.
 C  EROPTDB: Returns optical properties for TMC.
 C  EDWINO:  Allow user to select a glazing type by name.
+C  module_opendb: open materials constructions, multi-layer constructions and
+C           optical properties databases (for utility applications).
 
 C ************* ERMLDB
 C Given file name and unit number, read  an ASCII composite 
@@ -1269,12 +1271,12 @@ C Parameters
 
 C Assume that data on composites is in common MLC.
       IF(.NOT.MLDBOK)THEN
-        CALL USRMSG(' no information to put in ',LFMUL,'W')
+        CALL LUSRMSG(' no information to put in ',LFMUL,'W')
         IER=1
         RETURN
       ENDIF
       IF(NMLC.GT.MMLC)THEN
-        CALL USRMSG(' too many items to put in ',LFMUL,'W')
+        CALL LUSRMSG(' too many items to put in ',LFMUL,'W')
         IER=1
         RETURN
       ENDIF
@@ -1675,7 +1677,7 @@ C Strip out the initial part of the string.
 
 C **** version of opendb for ESP-r modules that can assume consistent model ******
 
-C Open materials constructions, multi-layer constructions and
+C module_opendb: open materials constructions, multi-layer constructions and
 C optical properties databases. In the case of materials, first
 C assume it is a binary file, check its contents and if a problem
 C then scan new ascii format and if that does not work try the
@@ -1695,7 +1697,7 @@ C closemat1 or closemat2 will be set.
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      character SOPT*12,outs*124,outs248*248,GDESCR*36
+      character SOPT*12,outs248*248,GDESCR*36
 
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can
@@ -1729,9 +1731,9 @@ C Scan was ok so set mldbok to true.
       else
 
 C Could not find Constructions db at this time, report to user.
-        write(outs,'(3a)') 'Constructions db ',
+        write(outs248,'(3a)') 'Constructions db ',
      &     LFMUL(1:lnblnk(LFMUL)),' not found!'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs248,100)
         call edisp(iuout,' ')
         MLDBOK=.FALSE.
       endif

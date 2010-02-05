@@ -1821,7 +1821,7 @@ C Build up a list of the current files used in the model.
         if(i.eq.1)then
           LFL=LFMAT
         elseif(i.eq.2)then
-          LF=LFMUL
+          LFL=LFMUL
         elseif(i.eq.3)then
           LFL=LOPTDB
         elseif(i.eq.4)then
@@ -1833,22 +1833,16 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.7)then
           LFL=LPCDB
         endif
-        if(i.eq.1.or.i.eq.3.or.i.eq.4.or.i.eq.5.or.i.eq.6.or.i.eq.7)then
-          if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
-          endif
+        if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
+        endif
 
 C Place to write out ascii materials db if a local file exists.
-          if(i.eq.1)then
-            IUF=IFIL+2
-            write(LLASCI,'(2a)') LFL(1:lnblnk(LFL)),'.a'
-            CALL MKAPRC(LLASCI,IUF,IER)
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LLASCI)
-          endif
-        else
-          if(LF(1:9).ne.'/usr/esru'.and.LF(1:4).ne.'UNKN')then
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
-          endif
+        if(i.eq.1)then
+          IUF=IFIL+2
+          write(LLASCI,'(2a)') LFL(1:lnblnk(LFL)),'.a'
+          CALL MKAPRC(LLASCI,IUF,IER)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LLASCI)
         endif
   41  continue
 

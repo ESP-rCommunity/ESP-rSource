@@ -256,7 +256,7 @@ C databases may make use of this unit temporarily).
 
 C Multi-layer constructions db on channel IFIL+3.
       IFMUL=IFIL+3
-      LFMUL=DFMUL
+      write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
 C Materials db on channel IFIL+4.
       IFMAT=IFIL+4

@@ -469,7 +469,7 @@ C closemat1 or closemat2 will be set.
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
       character H*72,LASCI*144,DFILE*144,fs*1
-      character SOPT*12,outs*124,outs248*248,GDESCR*36
+      character SOPT*12,outs248*248,GDESCR*36
       character t144*144   ! for use with erprcdb
       integer lndbp   ! for length of standard database path
       logical unixok
@@ -618,9 +618,9 @@ C Scan was ok so set mldbok to true.
       else
 
 C Could not find Constructions db at this time, report to user.
-        write(outs,'(3a)') 'Constructions db ',
+        write(outs248,'(3a)') 'Constructions db ',
      &     LFMUL(1:lnblnk(LFMUL)),' not found!'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs248,100)
         call edisp(iuout,' ')
         MLDBOK=.FALSE.
       endif
@@ -1574,7 +1574,8 @@ C Default esp-r distribution path.
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,modcon,modmlc,unixok,copydef,clkok
 
-      character H*72,LTMP*72,path*72,outs*124
+C Length of LTMP is 92 char (compromise between truncation and editing).
+      character H*72,LTMP*92,path*72,outs248*248
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,linstd*60
       character cfgroot*24,LCFGF*72,fs*1,message*48
@@ -1592,7 +1593,7 @@ C Set folder separator (fs) to \ or / as required.
       moddb=.false.
       modcon=.false.
 
-  38  LTMP=LFMUL
+  38  write(LTMP,'(a)') LFMUL(1:lnblnk(LFMUL))
 
 C If db does not exist offer the following choices:
       CALL ERPFREE(IFMUL,ISTAT)
@@ -1696,9 +1697,9 @@ C the ascii version and if it exists, offer to convert it.
         h(3)='you want this to be a new database the next task is to'
         h(4)='select the `make new database` option. '
   44    CALL EASKS(LTMP,' ','Constructions database?',
-     &          72,DFMUL,'constructions database',IER,4)
+     &          92,DFMUL,'constructions database',IER,4)
         IF(LTMP(1:2).NE.'  ')then
-          LFMUL=LTMP
+          write(LFMUL,'(a)') LTMP(1:lnblnk(LTMP))
         else
           goto 44
         endif
@@ -1708,9 +1709,9 @@ C the ascii version and if it exists, offer to convert it.
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
-          write(outs,'(2a)') 'Accessing Constructions db ',
+          write(outs248,'(2a)') 'Accessing Constructions db ',
      &       LFMUL(1:lnblnk(LFMUL))
-          call edisp(iuout,outs)
+          call edisp248(iuout,outs248,100)
           call edisp(iuout,' ')
           CALL ERMLDB(0,ITRU,IER)
           IF(IER.eq.1)then
@@ -1740,9 +1741,9 @@ C the ascii version and if it exists, offer to convert it.
           moddb=modmlc
           modcon=modmlc
         else
-          write(outs,'(2a)') LFMUL(1:lnblnk(LFMUL)),
+          write(outs248,'(2a)') LFMUL(1:lnblnk(LFMUL)),
      &     ' does not exist!'
-          call edisp(iuout,outs)
+          call edisp248(iuout,outs248,100)
           call edisp(iuout,' ')
           goto 38
         endif
@@ -1761,10 +1762,10 @@ C a new db, populate it and present editing facility.
         endif
         clkok=.false.
    45   CALL EASKSCNCL(LTMP,' ','New constructions db name?',
-     &         'cancel',clkok,72,DFMUL,'constructions database',IER,2)
+     &         'cancel',clkok,92,DFMUL,'constructions database',IER,2)
         if(clkok) goto 38
         IF(LTMP(1:2).NE.'  ')then
-          LFMUL=LTMP
+          write(LFMUL,'(a)') LTMP(1:lnblnk(LTMP))
         else
           goto 45
         endif
@@ -1808,11 +1809,11 @@ C as local to the model. If easkf was used then it would need to
 C be passed the full path to the destination file.   
         call edisp(iuout,'The source file is:')
         if(copydef)then
-          call edisp(iuout,DFMUL)
-          sourcefile = DFMUL
+          call edisp248(iuout,DFMUL,100)
+          write(sourcefile,'(a)') DFMUL(1:lnblnk(DFMUL))
         else
-          call edisp(iuout,LFMUL)
-          sourcefile = LFMUL
+          call edisp248(iuout,LFMUL,100)
+          write(sourcefile,'(a)') LFMUL(1:lnblnk(LFMUL))
         endif
         h(1)='The suggested name of this database is based on the '
         h(2)='project name. '
@@ -1825,7 +1826,7 @@ C be passed the full path to the destination file.
         endif
    46   CALL EASKS(LTMP,
      &    'Database name after it is copied into the project?',
-     &    ' ',72,'multicon.db','copied constructions database',IER,2)
+     &    ' ',92,'multicon.db','copied constructions database',IER,2)
         call isunix(unixok)
         IF(LTMP(1:2).NE.'  ')then
           write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
@@ -1843,12 +1844,12 @@ C Logic as in materials database copy command.
           endif
 
 C Debug.
-C          call lusrmsg('copying default file via',doit,'-')
+          call lusrmsg('copying default file via',doit,'-')
           call runit(doit,'-')
-          LFMUL=LTMP
-          write(outs,'(2a)') 'Accessing Constructions db: ',
+          write(LFMUL,'(a)') LTMP(1:lnblnk(LTMP))
+          write(outs248,'(2a)') 'Accessing Constructions db: ',
      &      LCOPY(1:lnblnk(LCOPY))
-          call edisp(iuout,outs)
+          call edisp248(iuout,outs248,100)
           call edisp(iuout,' ')
           call tstamp('>','PRJ: enter Construction db')
           CALL ERMLDB(0,IUOUT,IER)

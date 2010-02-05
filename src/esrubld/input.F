@@ -180,7 +180,7 @@ C For reading in of bi-directional data.
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
       CHARACTER outs*124,h*72,spsname*8,L144*144,longtmp*144
-      CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
+      CHARACTER outs*248,LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
       DIMENSION ICLN(30)  ! for checking material db categories
@@ -538,7 +538,7 @@ C Use file unit IAPROB to read db.
       CALL ERPFREE(IFMUL,ISTAT)
       call FINDFIL(LFMUL,XST)
       if(.NOT.XST)then
-        write(outs,'(A,A)') ' Could not find construction database ',
+        write(outs248,'(2A)') ' Could not find construction database ',
      &    LFMUL(1:lnblnk(LFMUL))
         call isadll(dll)
         if(dll)then
@@ -547,7 +547,7 @@ C Use file unit IAPROB to read db.
           ier=2
           return
         else
-          call usrmsg(outs,' ','W')
+          call lusrmsg(outs248,' ','W')
         endif
       else
         CALL ERMLDB(0,iuout,IER)

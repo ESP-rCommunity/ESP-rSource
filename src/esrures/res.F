@@ -431,7 +431,7 @@ C Assume primitive constructions input from IFIL+3.
 
 C Assume multilayer input from IFIL+9.
       IFMUL=IFIL+9
-      LFMUL=DFMUL
+      write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
 C Initialise results library.
       CALL MORFIL(iftype)

@@ -1502,14 +1502,44 @@ C Comment for configuration index (upgrade registration level).
      &  '   # views to sky ground buildings'
       write(ioout,'(a)')'* DATABASES'
 
-C << update to use ipath* >>
-      WRITE(ioout,'(A,A)') '*prm  ',LFMAT(1:lnblnk(LFMAT))
+C Write based on current ipath* state.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*mat  ',
+     &      LFMAT(1:lnblnk(LFMAT))
+      elseif(ipathmat.eq.2)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*stdmat  ',
+     &      LFMAT(1:lnblnk(LFMAT))
+      endif
       WRITE(ioout,'(A,A)') '*mlc  ',LFMUL(1:lnblnk(LFMUL))
-      WRITE(ioout,'(A,A)') '*opt  ',LOPTDB(1:lnblnk(LOPTDB))
-      WRITE(ioout,'(A,A)') '*prs  ',LAPRES(1:lnblnk(LAPRES))
-      WRITE(ioout,'(A,A)') '*evn  ',LPRFDB(1:lnblnk(LPRFDB))
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*opt  ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+      elseif(ipathoptdb.eq.2)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*stdopt  ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+      endif
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*prs  ',
+     &      LAPRES(1:lnblnk(LAPRES))
+      elseif(ipathapres.eq.2)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*stdprs  ',
+     &      LAPRES(1:lnblnk(LAPRES))
+      endif
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*evn  ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+      elseif(ipathprodb.eq.2)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*stdevn  ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+      endif
       WRITE(ioout,'(A,A)') '*clm  ',LCLIM(1:lnblnk(LCLIM))
-      WRITE(ioout,'(A,A)') '*pdb  ',LPCDB(1:lnblnk(LPCDB))
+      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*pdb  ',
+     &      LPCDB(1:lnblnk(LPCDB))
+      elseif(ipathpcdb.eq.2)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*stdpdb  ',
+     &      LPCDB(1:lnblnk(LPCDB))
+      endif
 
 C << add test for whether model has SHOCC file >>
 C      WRITE(ioout,'(A,A)') '*shl  ',

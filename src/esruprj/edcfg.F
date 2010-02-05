@@ -1259,7 +1259,7 @@ C Flag noting whether casual gain periods are currently sorted.
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
       character jsparent*12,jsuse*8
       character doit*248,tmode*8,DSFIL*72,ZN*12
-      character outs*124,cfgroot*24
+      character outs*124,outs248*248,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -2430,9 +2430,9 @@ C database gets its name corrupted requiring a re-scan).
         else
 
 C Could not find Constructions db at this time, report to user.
-          write(outs,'(3a)') 'Constructions db ',
+          write(outs248,'(3a)') 'Constructions db ',
      &       LFMUL(1:lnblnk(LFMUL)),' not found!'
-          call edisp(iuout,outs)
+          call edisp248(iuout,outs248,100)
           call edisp(iuout,' ')
         endif
 

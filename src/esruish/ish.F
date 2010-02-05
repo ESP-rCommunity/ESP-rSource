@@ -1862,9 +1862,9 @@ C Scan was ok so set mldbok to true.
       else
 
 C Could not find Constructions db at this time, report to user.
-        write(outs,'(3a)') 'Constructions db ',
+        write(outs248,'(3a)') 'Constructions db ',
      &     LFMUL(1:lnblnk(LFMUL)),' not found!'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs248,100)
         call edisp(iuout,' ')
         MLDBOK=.FALSE.
       endif

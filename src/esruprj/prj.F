@@ -503,11 +503,11 @@ C databases may make use of this unit temporarily).
       ICLIM=IFIL
       LCLIM=DCLIM
 
-      LAPRES=DAPRES
+      write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
 
 C Multi-layer constructions db on channel IFIL+3.
       IFMUL=IFIL+3
-      LFMUL=DFMUL
+      write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
 C Materials db on channel IFIL+4.
       IFMAT=IFIL+4
@@ -5210,7 +5210,7 @@ C Check if geometry file has already been updated.
         endif
       ELSEIF(M.EQ.10)THEN
 
-C material database variant
+C Construction database variant.
         LFMULEN=LNBLNK(LFMUL)
         IF(LFMUL(LFMULEN:LFMULEN).EQ.'1')THEN
           EXT='.db1'
@@ -5224,7 +5224,8 @@ C material database variant
           EXT='.dbs'
         endif
 
-C << probably should be limited to project databases >>
+C This may fail because LFMUL is 144 char. In the future check
+C that LFMUL is held in the model.
         call isunix(unixok)
         call fdroot(LFMUL,msg1,MSG2)
         WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
@@ -5236,12 +5237,12 @@ C << probably should be limited to project databases >>
           WRITE(DOIT,'(4A)')'copy /y ',LFMUL(1:LNBLNK(LFMUL)),' ',
      &       NNAME(1:LNBLNK(NNAME))
         endif
-        LFMUL=NNAME
+        write(LFMUL,'(a)') NNAME(1:lnblnk(NNAME))  ! truncation risk
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,'Copying database via ...')
         CALL EDISP(IUOUT,DOIT)
         CALL RUNIT(DOIT,'-')
-        call edisp(iuout,' Updating model for materials changes...')
+        call edisp(iuout,' Updating model for construction changes...')
         CALL EDISP(IUOUT,' ')
 
 C Also make automatically materials database variant
@@ -5258,7 +5259,8 @@ C Also make automatically materials database variant
           EXT='.dbs'
         endif
 
-C << probably should be limited to project databases >>
+C This may fail because LFMAT is 144 char. In the future check
+C that LFMAT is held in the model.
         call isunix(unixok)
         call fdroot(LFMAT,msg1,MSG2)
         WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
