@@ -1701,6 +1701,7 @@ C << update this to match changes in lfmat >>
       logical closemat1,closemat2
       character H*72,LASCI*144,DFILE*144,fs*1
       character SOPT*12,outs*124,outs248*248,GDESCR*36
+      character lworking*144
       integer lndbp   ! for length of standard database path
       logical unixok
 
@@ -1725,7 +1726,14 @@ C materials database but a local constructions database there will be
 C warnings which require an interaction and so treat update_silent as
 C a special case with no interaction.
       CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=lfmul  ! use as is
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+      endif
+      call FINDFIL(lworking,XST)
       if(XST)then
         if(iuout.eq.0) iuout=6  ! reset in case lost
         CALL ERMLDB(0,IUOUT,IER)
@@ -1785,14 +1793,14 @@ C Ask whether to scan it into the materials arrays.
                 if(closemat1.or.closemat2)then
 
 C Materials data in place, set this as the new file name and then
-C try and re-scan the Constructions database.
+C try and re-scan the Constructions database (using lworking).
                   call usrmsg(
      &              'An ASCII Materials db was found and used.',
      &              'Re-scanning constructions...','P')
                   MATDBOK=.TRUE.
                   write(LFMAT,'(a)') LASCI(1:lnblnk(LASCI))
                   CALL ERPFREE(IFMUL,ISTAT)
-                  call FINDFIL(LFMUL,XST)
+                  call FINDFIL(lworking,XST)
                   if(XST)then
                     CALL ERMLDB(0,IUOUT,IER)
                     if(ier.eq.0)then
@@ -1817,14 +1825,14 @@ C try and re-scan the Constructions database.
             elseif(ier.eq.0)then
 
 C Materials data in place, set this as the new file name and then
-C try and re-scan the constructions database.
+C try and re-scan the constructions database (via lworking).
               call usrmsg(
      &          'An ASCII Materials db was found and used.',
      &          'Re-scanning constructions...','P')
               MATDBOK=.TRUE.
               write(LFMAT,'(a)') LASCI(1:lnblnk(LASCI))
               CALL ERPFREE(IFMUL,ISTAT)
-              call FINDFIL(LFMUL,XST)
+              call FINDFIL(lworking,XST)
               if(XST)then
                 CALL ERMLDB(0,IUOUT,IER)
                 if(ier.eq.0)then

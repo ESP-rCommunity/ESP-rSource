@@ -516,8 +516,15 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmat  ',
      &      LFMAT(1:lnblnk(LFMAT))
       endif
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
+
+C MLC database has the option of two different syntax.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
      &      LFMUL(1:lnblnk(LFMUL))
+      elseif(ipathmul.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmlc  ',
+     &      LFMUL(1:lnblnk(LFMUL))
+      endif
 
 C Optical database has the option of two different syntax to
 C reflect whether the standard database folder is being used.

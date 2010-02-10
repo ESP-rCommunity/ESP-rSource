@@ -536,7 +536,14 @@ C data may be accessed by control and reporting facilities.
 C Use file unit IAPROB to read db.
  139  IFMUL=IAPROB
       CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=lfmul  ! use as is
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+      endif
+      call FINDFIL(lworking,XST)
       if(.NOT.XST)then
         write(outs248,'(2A)') ' Could not find construction database ',
      &    LFMUL(1:lnblnk(LFMUL))

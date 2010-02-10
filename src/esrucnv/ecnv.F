@@ -1510,7 +1510,13 @@ C Write based on current ipath* state.
         WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*stdmat  ',
      &      LFMAT(1:lnblnk(LFMAT))
       endif
-      WRITE(ioout,'(A,A)') '*mlc  ',LFMUL(1:lnblnk(LFMUL))
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*mlc  ',
+     &    LFMUL(1:lnblnk(LFMUL))
+      elseif(ipathmul.eq.2)then
+        WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*stdmlc  ',
+     &    LFMUL(1:lnblnk(LFMUL))
+      endif
       if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*opt  ',
      &      LOPTDB(1:lnblnk(LOPTDB))

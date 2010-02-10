@@ -5211,6 +5211,7 @@ C Check if geometry file has already been updated.
       ELSEIF(M.EQ.10)THEN
 
 C Construction database variant.
+C << check if ipathmul required here >>
         LFMULEN=LNBLNK(LFMUL)
         IF(LFMUL(LFMULEN:LFMULEN).EQ.'1')THEN
           EXT='.db1'
@@ -5224,8 +5225,8 @@ C Construction database variant.
           EXT='.dbs'
         endif
 
-C This may fail because LFMUL is 144 char. In the future check
-C that LFMUL is held in the model.
+C << This may fail because LFMUL is 144 char. In the future check
+C << about ipathmul.
         call isunix(unixok)
         call fdroot(LFMUL,msg1,MSG2)
         WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
@@ -5246,6 +5247,7 @@ C that LFMUL is held in the model.
         CALL EDISP(IUOUT,' ')
 
 C Also make automatically materials database variant
+C << check if this needs ipathat >>
         LFMATEN=LNBLNK(LFMAT)
         IF(LFMAT(LFMATEN:LFMATEN).EQ.'1')THEN
           EXT='.db1'

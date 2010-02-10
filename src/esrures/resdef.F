@@ -1579,9 +1579,16 @@ C Check for ascii versions of the materials database.
       endif
 
         
-C Read multilayer db information into common.
+C Read multilayer db information into common. First check that
+C it exists via lworking (expanded path).
  139  CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=lfmul  ! use as is
+      elseif(ipathmul.eq.2)then
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+      endif
+      call FINDFIL(lworking,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
         IF(IER.eq.1)then

@@ -1264,6 +1264,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character HOLD*32,zd*64
+      character lworking*144
       CHARACTER ETEXT*82
       character sfile*72,snpfile*72,fs*1,lodlabel*6
       CHARACTER LAPROB*72
@@ -2424,7 +2425,14 @@ C Zone construction files. Prior to working with the zones rescan
 C the construction database (occassionally the initial item in this
 C database gets its name corrupted requiring a re-scan).
         CALL ERPFREE(IFMUL,ISTAT)
-        call FINDFIL(LFMUL,XST)
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          lworking=lfmul  ! use as is
+        elseif(ipathmul.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+        endif
+        call FINDFIL(lworking,XST)
         if(XST)then
           CALL ERMLDB(0,IUOUT,IER)
         else

@@ -893,7 +893,14 @@ C set the LFMAT common block string via call to findwhichdbpath.
         ipathmat=2  ! standard folder for material database
 
       elseif(WORD(1:4).eq.'*mlc')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','multilayer db',IER)
+
+C Process the file name following *mlc and depending on its path
+C set the LFMUL common block string via call to findwhichdbpath.
+        call findwhichdbpath('mul',lworking,ier)
+      elseif(WORD(1:7).eq.'*stdmlc')then
         CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
+        ipathmul=2  ! standard folder for material database
       elseif(WORD(1:4).eq.'*opt')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','optical db',IER)
 
@@ -3337,6 +3344,7 @@ C common block file string and whichdbpath variable is updated.
 C topic =  'opt' for optics, 'pdb' for plant component templates
 C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
 C       =  'mat' for materials database, 'evn' for profiles database
+C       =  'mul' for MLC database
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3380,6 +3388,9 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'evn')then
             ipathprodb=1  ! local folder for profiles database
             write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mul')then
+            ipathmul=1  ! local folder for MLC database
+            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -3402,6 +3413,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'evn')then
             ipathprodb=2
             write(LPRFDB,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'mul')then
+            ipathmul=2
+            write(LFMUL,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3422,6 +3436,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'evn')then
             ipathprodb=0
             write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mul')then
+            ipathmul=0
+            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -3444,6 +3461,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'evn')then
             ipathprodb=1  ! local folder for profiles database
             write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mul')then
+            ipathmul=1  ! local folder for MLC database
+            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3464,6 +3484,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'evn')then
             ipathprodb=2
             write(LPRFDB,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'mul')then
+            ipathmul=2
+            write(LFMUL,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3484,6 +3507,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'evn')then
             ipathprodb=0
             write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mul')then
+            ipathmul=0
+            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif
@@ -3508,6 +3534,9 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathmat
       elseif(topic(1:3).eq.'evn')then
         write(6,*) LPRFDB
         write(6,*) 'findwhichdbpath ipath is ',ipathprodb
+      elseif(topic(1:3).eq.'mul')then
+        write(6,*) LFMUL
+        write(6,*) 'findwhichdbpath ipath is ',ipathmul
       endif
 
       return

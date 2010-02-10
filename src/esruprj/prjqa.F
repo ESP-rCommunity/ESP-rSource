@@ -1232,9 +1232,15 @@ C Databases associated with the model.
      &      LFMAT(1:lnblnk(LFMAT))
           call edisp248(itu,outs248,100)
         endif
-        WRITE(outs248,'(2A)')' constructions          : ',
-     &    LFMUL(1:lnblnk(LFMUL))
-        call edisp248(itu,outs,100)
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          WRITE(outs248,'(2A)')' constructions          : ',
+     &      LFMUL(1:lnblnk(LFMUL))
+          call edisp248(itu,outs,100)
+        elseif(ipathmat.eq.2)then
+          WRITE(outs248,'(2A)')' standard constructions : ',
+     &      LFMUL(1:lnblnk(LFMUL))
+          call edisp248(itu,outs,100)
+        endif
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           WRITE(outs248,'(2A)')' plant components       : ',
      &      LPCDB(1:lnblnk(LPCDB))

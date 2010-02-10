@@ -86,7 +86,6 @@ C had been previously opened and failed.
       IF(.NOT.MATDBOK)THEN
         IER=0
 
-
 C Check the value of whichdbpath variable to see what to do with
 C this file. If local or absolute path then use efopseq. If in
 C the standard location then create lworking which has path
@@ -181,7 +180,15 @@ C is true then the material arrays could be problematic.
 
 C Free unit and check if composite file exists.
       IER=0
-      CALL EFOPSEQ(IFMUL,LFMUL,1,IER)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        CALL EFOPSEQ(IFMUL,LFMUL,1,IER)
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMUL(1:lnblnk(LFMUL))
+        CALL EFOPSEQ(IFMUL,lworking,1,IER)
+      endif
+
       IF(IER.NE.0)RETURN
       write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
 
@@ -1268,6 +1275,17 @@ C Parameters
 
       DIMENSION PNAM(ME)
       CHARACTER NAM*72,PNAM*72
+      character lworking*144,fs*1
+      integer lndbp   ! for length of standard database path
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Assume that data on composites is in common MLC.
       IF(.NOT.MLDBOK)THEN
@@ -1294,7 +1312,14 @@ C Check version of material database.
       endif
 
 C The ASCII file will be overwritten if it exists.
-      CALL EFOPSEQ(IFMUL,LFMUL,4,IER)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        CALL EFOPSEQ(IFMUL,LFMUL,4,IER)
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMUL(1:lnblnk(LFMUL))
+        CALL EFOPSEQ(IFMUL,lworking,4,IER)
+      endif
       
 C Write out a file header.
       WRITE(IFMUL,30)LFMUL(1:lnblnk(LFMUL)),LFMAT(1:lnblnk(LFMAT))
@@ -1698,6 +1723,17 @@ C closemat1 or closemat2 will be set.
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
       character SOPT*12,outs248*248,GDESCR*36
+      character lworking*144   ! for use with erprcdb
+      integer lndbp   ! for length of standard database path
+      logical unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can
@@ -1706,9 +1742,17 @@ C carry on using the materials common blocks for subsequent access.
       call eclose(matver,1.1,0.001,closemat1)
       call eclose(matver,1.2,0.001,closemat2)
         
-C Read multilayer db information into common.
+C Read multilayer db information into common after checking
+C that the file exists.
       CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=lfmul  ! use as is
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+      endif
+      call FINDFIL(lworking,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
         IF(IER.eq.1)then

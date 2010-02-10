@@ -491,7 +491,14 @@ C carry on using the materials common blocks for subsequent access.
         
 C Read multilayer db information into common.
       CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=lfmul  ! use as is
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+      endif
+      call FINDFIL(lworking,XST)
       if(XST)then
         CALL ERMLDB(0,IUOUT,IER)
         IF(IER.eq.1)then
@@ -1659,6 +1666,7 @@ C Act on the user's choice.
         return
       elseif(isw.eq.1)then
         if(XST)then
+
           CALL ERMLDB(0,IUOUT,IER)
           IF(IER.eq.1)then
 
@@ -3147,6 +3155,544 @@ C Call casfmk for the editing/browsing interface.
       endif
       return
 
+      end
+
+C ********** EDDBMLCON
+C EDDBMLCON Changes the MLC constructions database current cfg file references.
+C moddb is from version manager
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+
+      SUBROUTINE EDDBMLCON(moddb,modcon,APP)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+      
+      integer lnblnk  ! function definition
+
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/rpath/path
+
+C Default esp-r distribution path.
+      common/deflt4/dinstpath
+
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical concat
+      logical moddb,modcon,modmlc,unixok,copydef,clkok
+
+      CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
+      character longtfile*144,LCOPY*144,lguess*144,message*48
+      CHARACTER DOIT*300,fs*1,APP*4,ext*4
+      CHARACTER outs248*248
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24,linstd*60
+      LOGICAL OK,XST,DOK
+      character cfgroot*24,LCFGF*72
+      character dinstpath*48,path*72,dirpath*48
+      character sourcefile*144  ! the file to copy ??
+
+C Local strings for user selections dependent on graphic library.
+      character opte*28,optf*28,optg*28
+      character lpath*72,fname*72 ! for use with fdroot
+      integer lndbp   ! for length of standard database path
+      logical unixok  ! to check for database path file separators
+      integer iglib  ! for detecting GTK or X11
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+      moddb=.false.
+      modcon=.false.
+
+C Setup string buffer with distribution database folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases',fs
+      ldirpath=lnblnk(dirpath)
+
+C Remember the initial file name in case user choice fails.
+C Take into account the current value of whichdbpath.
+      moddb=.false.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lprev=lfmul
+      elseif(ipathmul.eq.2)then
+        write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))
+      endif
+
+C Inform user.
+      write(outs248,*) 'Current MLC ',lprev(1:lnblnk(lprev))
+      call edisp248(iuout,outs248,100)
+
+  60  continue
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lltmp=lfmul  ! use as is
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+      endif
+
+      H(1)='A (multilayer) construction database defines the com-'
+      H(2)='position of constructions such as walls and glazing'
+      H(3)='systems in terms of layers of materials of particular'
+      H(4)='thickness in a particular order and, where appropriate,' 
+      H(5)='with a named set of optical properties. '
+      H(6)=' '
+      H(7)='The following options can be selected:'
+      H(8)=' '
+      H(9)=' '
+      H(10)='a) If the file exists than you can browse the database '
+      H(11)='   and if you have permission to update the file you'
+      H(12)='   can edit the entities in the database.'
+      H(13)=' '
+      H(14)='b) Select from list (not available for MLC databases).'
+      H(15)=' '
+      H(16)='c) Make a new database: a new database will be created '
+      H(17)='   based on the file name you supply. It will contain a'
+      H(18)='   minimal number of items and you can then modify this'
+      H(19)='   as required. '
+      H(20)='   Exercise care if you use a text editor to copy sets'
+      H(21)='   of data from another MLC database.'
+      H(22)=' '
+      H(23)='d) copy default database: a project copy of the default'
+      H(24)='  database will be made and you will be offered a '
+      H(25)='  chance to rename it.'
+      H(26)=' '
+
+C If GTK library then there are additional options so include in help.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.2)then
+        H(27)='e) browse ../dbs allows you to look in the model ../dbs'
+        H(28)='  folder for alternative MLC files. If you do not'
+        H(29)='  find anything the previous value will be restored.'
+        H(30)=' '
+        H(31)=' f) browse distribution displays files in the databases'
+        H(32)='  folder of the ESP-r distribution. If you do not find'
+        H(33)='  anything the previous value will be restored.'
+        H(34)=' '
+        H(35)=' g) copy another database to the project allows you to'
+        H(36)=' locate a database and get a project copy of it.'
+      else
+        H(27)='e) select a file (X11 only): edit the file name'
+        H(28)='   and if it is found you can browse or edit it.'
+        H(29)='   Hint: if you eventually want to copy that other file'
+        H(30)='   into the model folder first select it and then ask'
+        H(31)='   for a copy.'
+        H(32)=' '
+        H(33)=' '
+        H(34)=' '
+        H(35)=' '
+        H(36)=' '
+      endif
+      CALL ERPFREE(IFMUL,ISTAT)
+
+C If local or absolute path call addpath otherwise if a standard
+C database then set longtfile equal to LLTMP.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        call addpath(LLTMP,longtfile,concat)
+      else
+        longtfile=LLTMP
+      endif
+      ltf=max(1,LNBLNK(longtfile))
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C Make up additional options depending on graphics lib. The second
+C option (list select) is not available for mLC database. If using
+C text or X11 option e edits the string while for GTK there are two
+C options to browse for files in ../dbs or the esp-r distribution.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        opte='e edit file name'
+        optf='   '
+        optg='   '
+      elseif(iglib.eq.2)then
+        opte='e browse model ../dbs'
+        optf='f browse esp-r distribution'
+        optg='g make copy of another file'
+      endif
+
+      IF(.NOT.XST)THEN
+
+C If db does not exist locally offer limited choices.
+        idno=2
+        isw=0
+        call MENUATOL('  ','Constructions db',
+     &    ' ','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,36)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.7)copydef=.false.
+      elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
+
+C If corportate database then offer the following choices (incl /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Constructions db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,36)
+        copydef=.false.
+      elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
+
+C If corportate database then offer the following choices (without /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Constructions db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,36)
+        copydef=.false.
+      else
+
+C If db exists locally toggle whether the user is asked to copy the
+C default database or the current database.
+        idno=1
+        isw=0
+        call MENUATOL('  ','Constructions db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,36)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.7)copydef=.false.
+      endif
+
+C Act on the users choice. If no choice, return to calling menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C << to here >>
+C If file exists read it and enter editing facility after
+C check to see if it is local or standard or absolute path.
+        if(XST)then
+          call findwhichdbpath('mul',lltmp,ier)
+          goto 44
+        else
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
+          LFMUL=lprev
+          goto 60
+        endif
+      elseif(isw.eq.2)then
+
+C There is no select by list for MLC database.
+        call edisp(iuout,
+     &    'No list select for MLC databases.')
+        goto 60
+      elseif(isw.eq.3)then
+
+C No MLC db found so set-up minimal common block, create
+C a new db, populate it and present editing facility. Use the
+C shorter string ltmp for this (easkf cancel option needs to
+C be explored).
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.constrdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.constrdb'
+        endif
+  62    H(1)='A (multilayer) construction database defines the com-'
+        H(2)='position of constructions such as walls and glazing'
+        H(3)='systems in terms of layers of materials of particular'
+        H(4)='thickness in a particular order and, where appropriate,' 
+        H(5)='with a named set of optical properties. '
+        clkok=.false.
+        CALL EASKSCNCL(ltmp,'Constructions database?',
+     &    ' ','cancel',clkok,72,'construction.db','MLC database',IER,5)
+        if(clkok)then
+          LFMUL=lprev
+          return
+        endif
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          write(LFMUL,'(a)') ltmp(1:lnblnk(ltmp)) ! local so direct asignment
+        else
+          goto 62
+        endif
+
+C Create a minimal MLC databases.
+C Set the value of ipathmul to signal local database.
+        ipathmul=1  
+
+        NMLC=1
+        DESC(1)='first_constr  OPAQ  OPAQUE        SYMMETRIC'
+        DTHK(1,1)=0.100
+        IPR(1,1)=1
+        LAYERS(1)=1
+        DRAIR(1,1,1)=0.0
+        DRAIR(1,1,2)=0.0
+        DRAIR(1,1,3)=0.0
+        MLDBOK=.TRUE.
+        moddb=.true.
+        CALL EMKAMLD(iuout,IER)
+        IF(IER.NE.0)THEN
+          CALL USRMSG(' ',' Unable to create database!','W')
+          RETURN
+        ENDIF
+        ISEL=1
+        CALL ERMLDB(0,ITRU,IER)
+        IF(IER.NE.0)goto 60
+        MLDBOK=.TRUE.
+
+C Scan the new file and use the editing facility.
+        dok=.true.
+        h(1)='An empty MLC database has been created. It is'
+        h(2)='useless until it is populated with data. If you '
+        h(3)='have the relevant information you can start now.'
+        CALL ASKOK('  ',' Browse or edit new database?',OK,dok,3)
+        if(OK)then
+          goto 44
+        endif
+
+      elseif(isw.eq.4.or.isw.eq.7)then
+
+C Copy a database to project dbs folder. If iws is 4 then the
+C user has asked for the default database. If isw is 7 then the
+C user wishes to browse for the source file. Suggest a local
+C file name based on the project root name then do the copy.
+C Use LTMP (short buffer) for the file name as known to esp-r
+C and LCOPY for the system cp call.
+        if(copydef)then
+          write(outs248,'(2a)') 'The source file is:',
+     &      DFMUL(1:lnblnk(DFMUL))
+          call edisp248(iuout,outs248,100)
+          sourcefile = DFMUL
+        else
+          h(1)='You are asked to confirm the source file for the'
+          h(2)='copy action. If this one is ok then accept it. '
+
+C Provide a guess based on the current LFMUL.
+          lltmp='  '
+          lguess='  '
+          if(ipathmul.eq.0.or.ipathmul.eq.1)then
+            lguess=LFMUL  ! use as is
+          elseif(ipathmul.eq.2)then
+            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &        lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+          endif
+          CALL EASKXORGTKF(lguess,'Constructions db (source)?',
+     &      ' ',DFMUL,lltmp,'MLC source database',IER,2)
+          sourcefile = lltmp
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3)then
+            goto 60  ! cancel detected, redisplay menu.
+          endif
+          ipathmul=1  ! signal that it will be a local database.
+        endif
+
+        h(1)='The suggested name of this database is based on the'
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.constrdb'
+        elseif(dbspth(1:3).eq.'../')then
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.constrdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.constrdb'
+        endif
+  66    CALL EASKS(LTMP,
+     &    'Database name after it is copied into the project?',
+     &    ' ',72,'construction.db','copied MLC database',IER,2)
+        call isunix(unixok)
+        IF(LTMP(1:2).NE.'  ')then
+
+C If Unix and the path is ./ then no need to prepend this (to
+C avoid .//../dbs in the buffer).  If path ends with file separator
+C no need to duplicat the file separator.
+          if(unixok)then
+            lpp=lnblnk(path)
+            if(path(1:2).eq.'./')then
+              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
+            elseif(path(lpp:lpp).eq.fs)then
+              write(LCOPY,'(2a)') path(1:lnblnk(path)),
+     &          LTMP(1:lnblnk(LTMP))
+            else
+              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &          LTMP(1:lnblnk(LTMP))
+            endif
+          else
+            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &        LTMP(1:lnblnk(LTMP))
+          endif
+
+C Now copy sourcefile to lcopy.
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
+
+C Standard dos copy logic.
+            message='getting MLC db file from '
+            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+          endif
+          call usrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
+
+C Use LTMP or LCOPY depending on the path because the path will already
+C be pre-pended when using most inbuilt file opening calls.
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(LFMUL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+            call FINDFIL(LTMP,XST)
+            if(XST)then
+              write(LFMUL,'(a)') LTMP(1:lnblnk(LTMP))
+            else
+              write(LFMUL,'(a)') LTMP(1:lnblnk(LTMP))
+              call edisp(iuout,'Problem locating the new database.')
+              call edisp(iuout,'Try browsing ../dbs to find it.')
+              call edisp(iuout,' ')
+            endif
+          endif
+          moddb=.true.
+          mldbok=.true.
+          ipathmul=1  ! signal that it is a local database.
+          goto 44
+        else
+          goto 66
+        endif
+
+      elseif(isw.eq.5)then
+
+C Make up browse to the model ../dbs folder suggest the name LCOPY
+C and return file name in lltmp.
+        H(1)='A (multilayer) construction database defines the com-'
+        H(2)='position of constructions such as walls and glazing'
+        H(3)='systems in terms of layers of materials of particular'
+        H(4)='thickness in a particular order and, where appropriate,' 
+        H(5)='with a named set of optical properties. '
+        H(6)=' '
+        H(7)='A local database folder (../dbs) is usually associated'
+        H(8)='with each model. '
+        lltmp=' '
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        CALL EASKXORGTKF(LCOPY,'Constructions db?',' ',
+     &    DFMUL,lltmp,'MLC db in ../dbs',IER,8)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 60  ! redisplay menu.
+        endif
+
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C Ask user whether file is in ../dbs and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../dbs folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(LFMUL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+              ipathmul=1  ! signal that it is a local database.
+              moddb=.true.
+              goto 44
+            endif
+          endif
+
+C Check what the user might have edited to be sure of setting the
+C correct location value via call to findwhichdbpath.
+          call findwhichdbpath('mul',lltmp,ier)
+          moddb=.true.
+          goto 44
+        else
+          goto 60
+        endif
+
+      elseif(isw.eq.6)then
+
+C Browse distribution database folder. Setup LCOPY to point to
+C the database folder (but no particular file). Use easkf to
+C return a file (which might be from somewhere else if the user
+C decides to do some browsing).
+        if(iglib.eq.2)then
+          H(1)='A (multilayer) construction database defines the com-'
+          H(2)='position of constructions such as walls and glazing'
+          H(3)='systems in terms of layers of materials of particular'
+          H(4)='thickness in a particular order and, where approp-' 
+          H(5)='riate, with a named set of optical properties. '
+          H(6)=' '
+          H(7)='The ESP-r distribution includes alternatives to the'
+          H(8)='default which might be useful.'
+          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &      fs,'databases',fs
+          CALL EASKF(LCOPY,' ','Constructions db?',
+     &      144,DFMUL,'MLC database',IER,8)
+          if(ier.eq.-3)then
+            LFMUL=lprev
+            goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+
+C This is yet another place where we need to check what the user might
+C have edited to be sure of setting the correct location value. The
+C common block will be updated with call to findwhichdbpath.
+          call findwhichdbpath('mul',lltmp,ier)
+          moddb=.true.
+          goto 44
+        else
+          call usrmsg('Browse feature not available.',' ','W')
+          goto 60
+        endif
+      endif
+
+C Test the selected or copied database. If a problem loop back
+C otherwise edit the database contents.
+   44 continue
+      write(outs248,'(2a)') 'Accessing MLC db: ',
+     &  LFMUL(1:lnblnk(LFMUL))
+      call edisp248(iuout,outs248,100)
+      ier=0
+      call tstamp('>','PRJ: enter MLC db')
+      CALL ERMLDB(0,IUOUT,IER)
+      IF(IER.eq.1)then
+
+C Problem scanning the constructions db.
+        call usrmsg(
+     &    'There were problems scanning the Constructions db',
+     &    '(and perhaps the Materials db). Please check.','W')
+        goto 38
+      ELSEIF(IER.eq.2)then
+
+C There were lots of undefined materials so likely the materials
+C database is for the wrong machine type. Guess the name of
+C the ascii version and if it exists, offer to convert it.
+        call usrmsg(
+     &    'The Materials db probably needs to be',
+     &    'restored from an archived ASCII version.','W')
+        return
+      endif
+      MLDBOK=.TRUE.
+      call tstamp('>','PRJ: enter construction db')
+      CALL EDMLDB(ITRC,modmlc,IER,ISEL)
+      if(IER.EQ.1)then
+        CALL USRMSG(' ','Problem accessing constructions db','W')
+        LFMUL=lprev
+        MLDBOK=.false.
+        goto 60
+      endif
+      moddb=modmlc
+      modcon=modmlc
+
+      return
       end
 
 C ********** EDDBOPT
