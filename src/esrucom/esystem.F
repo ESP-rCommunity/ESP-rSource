@@ -900,7 +900,7 @@ C set the LFMUL common block string via call to findwhichdbpath.
         call findwhichdbpath('mul',lworking,ier)
       elseif(WORD(1:7).eq.'*stdmlc')then
         CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
-        ipathmul=2  ! standard folder for material database
+        ipathmul=2  ! standard folder for MLC database
       elseif(WORD(1:4).eq.'*opt')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','optical db',IER)
 
@@ -3388,6 +3388,9 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'evn')then
             ipathprodb=1  ! local folder for profiles database
             write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mlc')then
+            ipathmul=1    ! local folder for MLC database
+            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mul')then
             ipathmul=1  ! local folder for MLC database
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly

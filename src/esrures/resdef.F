@@ -1581,7 +1581,10 @@ C Check for ascii versions of the materials database.
         
 C Read multilayer db information into common. First check that
 C it exists via lworking (expanded path).
+
  139  CALL ERPFREE(IFMUL,ISTAT)
+
+C Depending on location expand path to file.
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         lworking=lfmul  ! use as is
       elseif(ipathmul.eq.2)then

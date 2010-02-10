@@ -3885,7 +3885,10 @@ C Set flag for cfg file that this is a notional model
       INOTI=1
 
 C Assign standard databases containing UK NCM materials and constructions
-C These files are UK_notional.constrdb, material.db3.a and optics.db2 
+C These files are UK_notional.constrdb, material.db3.a and optics.db2
+
+C << consider using ipathmul and ipathmat and ipathoptdb here >>
+ 
       WRITE(LFMAT,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
      &  FS,'databases',FS,'material.db3.a'
       WRITE(LFMUL,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),

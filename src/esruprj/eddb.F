@@ -113,7 +113,12 @@ C Begin with menu of default dbs.
       elseif(ipathmat.eq.2)then
         WRITE(ITEMS(6),'(2A)')'d std materials          : ',LFMAT(1:44)
       endif
-      WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:44)
+
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:44)
+      elseif(ipathmul.eq.2)then
+        WRITE(ITEMS(7),'(2A)')'e std constructions      : ',LFMUL(1:44)
+      endif
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         WRITE(ITEMS(8),'(2A)') 'f plant components       : ',LPCDB(1:44)
       elseif(ipathpcdb.eq.2)then
@@ -471,6 +476,7 @@ C closemat1 or closemat2 will be set.
       character H*72,LASCI*144,DFILE*144,fs*1
       character SOPT*12,outs248*248,GDESCR*36
       character t144*144   ! for use with erprcdb
+      character lworking*144 
       integer lndbp   ! for length of standard database path
       logical unixok
 
@@ -489,7 +495,7 @@ C carry on using the materials common blocks for subsequent access.
       call eclose(matver,1.1,0.001,closemat1)
       call eclose(matver,1.2,0.001,closemat2)
         
-C Read multilayer db information into common.
+C Read multilayer db information into common depending on its location.
       CALL ERPFREE(IFMUL,ISTAT)
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         lworking=lfmul  ! use as is
@@ -555,7 +561,9 @@ C try and re-scan the Constructions database.
                   MATDBOK=.TRUE.
                   write(LFMAT,'(a)') LASCI(1:lnblnk(LASCI))
                   CALL ERPFREE(IFMUL,ISTAT)
-                  call FINDFIL(LFMUL,XST)
+
+C Search again for lworking.
+                  call FINDFIL(lworking,XST)
                   if(XST)then
                     CALL ERMLDB(0,IUOUT,IER)
                     if(ier.eq.0)then
@@ -587,7 +595,9 @@ C try and re-scan the constructions database.
               MATDBOK=.TRUE.
               write(LFMAT,'(a)') LASCI(1:lnblnk(LASCI))
               CALL ERPFREE(IFMUL,ISTAT)
-              call FINDFIL(LFMUL,XST)
+
+C Search again for lworking.
+              call FINDFIL(lworking,XST)
               if(XST)then
                 CALL ERMLDB(0,IUOUT,IER)
                 if(ier.eq.0)then
@@ -1600,6 +1610,7 @@ C Set folder separator (fs) to \ or / as required.
       moddb=.false.
       modcon=.false.
 
+C << ipathmul here? >>
   38  write(LTMP,'(a)') LFMUL(1:lnblnk(LFMUL))
 
 C If db does not exist offer the following choices:
@@ -1852,6 +1863,7 @@ C Logic as in materials database copy command.
           endif
 
 C Debug.
+C << ipathmul here >>
           call lusrmsg('copying default file via',doit,'-')
           call runit(doit,'-')
           write(LFMUL,'(a)') LTMP(1:lnblnk(LTMP))

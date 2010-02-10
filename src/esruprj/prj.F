@@ -4440,6 +4440,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
       character ipvaction*3  ! to signal external ipv file
+      character lworking*144,fs*1
       integer irootlen,iapelin  ! string buffer lengths
       LOGICAL XST,OK,DOK,modsit,moddb,QUIET,docnn,silent,donegeo
       logical unixok
@@ -4450,6 +4451,14 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 #else
       integer*8 ICPMOD     ! passed from tchild
 #endif
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       M=ILM
       call isunix(unixok)
@@ -5211,8 +5220,15 @@ C Check if geometry file has already been updated.
       ELSEIF(M.EQ.10)THEN
 
 C Construction database variant.
-C << check if ipathmul required here >>
-        LFMULEN=LNBLNK(LFMUL)
+C Depending on location expand path to file.
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          lworking=LFMUL
+        elseif(ipathmul.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMUL(1:lnblnk(LFMUL))
+        endif
+        LFMULEN=LNBLNK(lworking)
         IF(LFMUL(LFMULEN:LFMULEN).EQ.'1')THEN
           EXT='.db1'
         ELSEIF(LFMUL(LFMULEN:LFMULEN).EQ.'2')THEN
@@ -5228,14 +5244,14 @@ C << check if ipathmul required here >>
 C << This may fail because LFMUL is 144 char. In the future check
 C << about ipathmul.
         call isunix(unixok)
-        call fdroot(LFMUL,msg1,MSG2)
+        call fdroot(lworking,msg1,MSG2)
         WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
         CALL FNCNGR(NNAME,APE,EXT,NNAME)
         if(unixok)then
-          WRITE(DOIT,'(4A)')'cp ',LFMUL(1:LNBLNK(LFMUL)),' ',
+          WRITE(DOIT,'(4A)')'cp ',lworking(1:LNBLNK(lworking)),' ',
      &       NNAME(1:LNBLNK(NNAME))
         else
-          WRITE(DOIT,'(4A)')'copy /y ',LFMUL(1:LNBLNK(LFMUL)),' ',
+          WRITE(DOIT,'(4A)')'copy /y ',lworking(1:LNBLNK(lworking)),' ',
      &       NNAME(1:LNBLNK(NNAME))
         endif
         write(LFMUL,'(a)') NNAME(1:lnblnk(NNAME))  ! truncation risk
@@ -5247,7 +5263,7 @@ C << about ipathmul.
         CALL EDISP(IUOUT,' ')
 
 C Also make automatically materials database variant
-C << check if this needs ipathat >>
+C << use ipathmat here >>
         LFMATEN=LNBLNK(LFMAT)
         IF(LFMAT(LFMATEN:LFMATEN).EQ.'1')THEN
           EXT='.db1'

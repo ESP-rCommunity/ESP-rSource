@@ -1367,15 +1367,25 @@ C If this parameter is changed also change it in subroutine GVALUE
 
       LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO
       logical moddb,chgdb,layermatch,closemat1,closemat2
+      logical unixok
 
       CHARACTER H*72,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*144,tg*1,delim*1,outs*124
       character NAM*72,NAM99*72,LAYD*124
+      character lworking*144,fs*1
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
       REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       IER=0
       ISEL=0
@@ -1532,8 +1542,18 @@ C If user canceled the listing the reset unit to iuout and loop back.
             goto 3
           endif
         endif
-        call edisp(itu,'In the MLC database: ')
-        call edisp(itu, LFMUL)
+
+C Based on ipathmul generate text string.
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          call edisp(itu,'In the MLC database: ')
+          lworking=LFMUL
+        elseif(ipathmul.eq.2)then
+          call edisp(itu,'In the standard MLC database: ')
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMUL(1:lnblnk(LFMUL))
+        endif
+        call edisp(itu,lworking)
         call edisp(itu,' ')
         do 45 IM=1,NMLC
           if(irpt.eq.1)then

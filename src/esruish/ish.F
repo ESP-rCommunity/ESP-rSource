@@ -1704,6 +1704,7 @@ C << update this to match changes in lfmat >>
       character lworking*144
       integer lndbp   ! for length of standard database path
       logical unixok
+      character lworking*144
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1726,6 +1727,8 @@ C materials database but a local constructions database there will be
 C warnings which require an interaction and so treat update_silent as
 C a special case with no interaction.
       CALL ERPFREE(IFMUL,ISTAT)
+
+C Depending on location check existance.
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         lworking=lfmul  ! use as is
       elseif(ipathmul.eq.2)then
@@ -1800,6 +1803,8 @@ C try and re-scan the Constructions database (using lworking).
                   MATDBOK=.TRUE.
                   write(LFMAT,'(a)') LASCI(1:lnblnk(LASCI))
                   CALL ERPFREE(IFMUL,ISTAT)
+
+C Open the expanded location of LFMUL.
                   call FINDFIL(lworking,XST)
                   if(XST)then
                     CALL ERMLDB(0,IUOUT,IER)
@@ -1832,6 +1837,8 @@ C try and re-scan the constructions database (via lworking).
               MATDBOK=.TRUE.
               write(LFMAT,'(a)') LASCI(1:lnblnk(LASCI))
               CALL ERPFREE(IFMUL,ISTAT)
+
+C Again use the expanded path.
               call FINDFIL(lworking,XST)
               if(XST)then
                 CALL ERMLDB(0,IUOUT,IER)

@@ -106,7 +106,7 @@ C prepended.
      &      LFMAT(1:lnblnk(LFMAT))
 
 C Debug.
-          write(6,*) 'working materials ',lworking
+C          write(6,*) 'working materials ',lworking
           call EFOPRAN(IFMAT,lworking,40,1,IER)
           if(ier.ne.0)then
             write(outs,'(3a)') ' No materials db ',
@@ -179,6 +179,15 @@ C is true then the material arrays could be problematic.
       endif
 
 C Free unit and check if composite file exists.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=LFMUL
+        write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMUL(1:lnblnk(LFMUL))
+        write(currentfile,'(a)') lworking(1:lnblnk(lworking))
+      endif
       IER=0
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         CALL EFOPSEQ(IFMUL,LFMUL,1,IER)
@@ -190,7 +199,6 @@ C Free unit and check if composite file exists.
       endif
 
       IF(IER.NE.0)RETURN
-      write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
 
 C Read the number of items in the multi-layer database, followed by
 C the number of layers & construction name.
@@ -1272,6 +1280,7 @@ C Parameters
       integer lnam    ! length of material name
       integer lfordoc ! length available for material documentation
       logical closemat1,closemat2
+      logical unixok
 
       DIMENSION PNAM(ME)
       CHARACTER NAM*72,PNAM*72
@@ -1722,6 +1731,7 @@ C closemat1 or closemat2 will be set.
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
+      logical unixok
       character SOPT*12,outs248*248,GDESCR*36
       character lworking*144   ! for use with erprcdb
       integer lndbp   ! for length of standard database path
