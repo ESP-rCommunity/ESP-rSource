@@ -5219,8 +5219,8 @@ C Check if geometry file has already been updated.
         endif
       ELSEIF(M.EQ.10)THEN
 
-C Construction database variant.
-C Depending on location expand path to file.
+C Construction database variant. Depending on location expand path to file.
+C << probably should only allow a variant if a local database >>
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lworking=LFMUL
         elseif(ipathmul.eq.2)then
@@ -5241,8 +5241,7 @@ C Depending on location expand path to file.
           EXT='.dbs'
         endif
 
-C << This may fail because LFMUL is 144 char. In the future check
-C << about ipathmul.
+C Find last token in lworking and return in msg2.
         call isunix(unixok)
         call fdroot(lworking,msg1,MSG2)
         WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
@@ -5263,8 +5262,15 @@ C << about ipathmul.
         CALL EDISP(IUOUT,' ')
 
 C Also make automatically materials database variant
-C << use ipathmat here >>
-        LFMATEN=LNBLNK(LFMAT)
+C << probably should only allow a variant if a local database >>
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          lworking=LFMAT
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+        endif
+        LFMATEN=LNBLNK(lworking)
         IF(LFMAT(LFMATEN:LFMATEN).EQ.'1')THEN
           EXT='.db1'
         ELSEIF(LFMAT(LFMATEN:LFMATEN).EQ.'2')THEN
@@ -5277,10 +5283,9 @@ C << use ipathmat here >>
           EXT='.dbs'
         endif
 
-C This may fail because LFMAT is 144 char. In the future check
-C that LFMAT is held in the model.
+C Find last token in lworking and return in msg2.
         call isunix(unixok)
-        call fdroot(LFMAT,msg1,MSG2)
+        call fdroot(lworking,msg1,MSG2)
         WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
         CALL FNCNGR(NNAME,APE,EXT,NNAME)  ! ?? why call this
         if(unixok)then

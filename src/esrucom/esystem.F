@@ -3388,9 +3388,6 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'evn')then
             ipathprodb=1  ! local folder for profiles database
             write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mlc')then
-            ipathmul=1    ! local folder for MLC database
-            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mul')then
             ipathmul=1  ! local folder for MLC database
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
@@ -3518,29 +3515,29 @@ C The initial part of the path matches so only save the file name w/o path.
       endif
 
 C Debug.
-      write(6,*) file
-      if(topic(1:3).eq.'opt')then
+C      write(6,*) file
+C      if(topic(1:3).eq.'opt')then
 C        write(6,*) loptdb
 C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
-      elseif(topic(1:3).eq.'pdb')then
+C      elseif(topic(1:3).eq.'pdb')then
 C        write(6,*) LPCDB
 C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
-      elseif(topic(1:3).eq.'prs')then
+C      elseif(topic(1:3).eq.'prs')then
 C        write(6,*) lapres
 C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
-      elseif(topic(1:3).eq.'sbm')then
+C      elseif(topic(1:3).eq.'sbm')then
 C        write(6,*) lsbem
 C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
-      elseif(topic(1:3).eq.'mat')then
+C      elseif(topic(1:3).eq.'mat')then
 C        write(6,*) LFMAT
 C        write(6,*) 'findwhichdbpath ipath is ',ipathmat
-      elseif(topic(1:3).eq.'evn')then
-        write(6,*) LPRFDB
-        write(6,*) 'findwhichdbpath ipath is ',ipathprodb
-      elseif(topic(1:3).eq.'mul')then
-        write(6,*) LFMUL
-        write(6,*) 'findwhichdbpath ipath is ',ipathmul
-      endif
+C      elseif(topic(1:3).eq.'evn')then
+C        write(6,*) LPRFDB
+C        write(6,*) 'findwhichdbpath ipath is ',ipathprodb
+C      elseif(topic(1:3).eq.'mul')then
+C        write(6,*) LFMUL
+C        write(6,*) 'findwhichdbpath ipath is ',ipathmul
+C      endif
 
       return
       end

@@ -1588,6 +1588,7 @@ C Depending on location expand path to file.
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         lworking=lfmul  ! use as is
       elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
         write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
       endif

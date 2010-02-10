@@ -178,25 +178,20 @@ C is true then the material arrays could be problematic.
         return
       endif
 
-C Free unit and check if composite file exists.
+C Free unit and check if composite file exists.  Setup lworking for the
+C MLC database expanded name to be used later.
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         lworking=LFMUL
         write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
-      elseif(ipathmul.eq.2)then
-        lndbp=lnblnk(standarddbpath)
-        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &    LFMUL(1:lnblnk(LFMUL))
-        write(currentfile,'(a)') lworking(1:lnblnk(lworking))
-      endif
-      IER=0
-      if(ipathmul.eq.0.or.ipathmul.eq.1)then
         CALL EFOPSEQ(IFMUL,LFMUL,1,IER)
       elseif(ipathmul.eq.2)then
         lndbp=lnblnk(standarddbpath)
         write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &    LFMUL(1:lnblnk(LFMUL))
+        write(currentfile,'(a)') lworking(1:lnblnk(lworking))
         CALL EFOPSEQ(IFMUL,lworking,1,IER)
       endif
+      IER=0
 
       IF(IER.NE.0)RETURN
 
@@ -1280,7 +1275,6 @@ C Parameters
       integer lnam    ! length of material name
       integer lfordoc ! length available for material documentation
       logical closemat1,closemat2
-      logical unixok
 
       DIMENSION PNAM(ME)
       CHARACTER NAM*72,PNAM*72
@@ -1731,9 +1725,8 @@ C closemat1 or closemat2 will be set.
 
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      logical unixok
       character SOPT*12,outs248*248,GDESCR*36
-      character lworking*144   ! for use with erprcdb
+      character lworking*144,fs*1   ! for use with expanded paths
       integer lndbp   ! for length of standard database path
       logical unixok
 

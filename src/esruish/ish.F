@@ -1704,7 +1704,6 @@ C << update this to match changes in lfmat >>
       character lworking*144
       integer lndbp   ! for length of standard database path
       logical unixok
-      character lworking*144
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

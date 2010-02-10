@@ -1223,6 +1223,7 @@ C Databases associated with the model.
      &      LAPRES(1:lnblnk(LAPRES))
           call edisp248(itu,outs248,100)
         endif
+
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           WRITE(outs248,'(2A)')' materials              : ',
      &      LFMAT(1:lnblnk(LFMAT))
@@ -1252,6 +1253,7 @@ C Databases associated with the model.
      &      LPCDB(1:lnblnk(LPCDB))
           call edisp248(itu,outs248,100)
         endif
+
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
           WRITE(outs248,'(2A)')' event profiles         : ',
      &      LPRFDB(1:lnblnk(LPRFDB))
@@ -1261,6 +1263,7 @@ C Databases associated with the model.
      &      LPRFDB(1:lnblnk(LPRFDB))
           call edisp248(itu,outs248,100)
         endif
+
         if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
           WRITE(outs248,'(2A)')' optical properties     : ',
      &      LOPTDB(1:lnblnk(LOPTDB))

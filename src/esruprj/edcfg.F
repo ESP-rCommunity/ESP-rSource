@@ -1268,7 +1268,6 @@ C Flag noting whether casual gain periods are currently sorted.
       CHARACTER ETEXT*82
       character sfile*72,snpfile*72,fs*1,lodlabel*6
       CHARACTER LAPROB*72
-      character lworking*144
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer itru,ier  ! type for passed parameters

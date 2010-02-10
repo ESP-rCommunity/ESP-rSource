@@ -271,7 +271,8 @@ C Manage materials db.
       ELSEIF(INO.EQ.7)THEN
 
 C Deal with construction databases.
-        call eddbmlc(moddb,modcon,'    ')
+C        call eddbmlc(moddb,modcon,'    ')
+        call eddbmlcon(moddb,modcon,'    ')
         if(modcon)then
           call usrmsg(
      &      'The database details might have changed. In a moment',
@@ -3195,14 +3196,14 @@ C Default esp-r distribution path.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical concat
-      logical moddb,modcon,modmlc,unixok,copydef,clkok
+      logical moddb,modcon,modmlc,copydef,clkok
 
       CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
       character longtfile*144,LCOPY*144,lguess*144,message*48
       CHARACTER DOIT*300,fs*1,APP*4,ext*4
       CHARACTER outs248*248
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,linstd*60
+      character docpth*24,tmppth*24,dbspth*24
       LOGICAL OK,XST,DOK
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -3233,7 +3234,6 @@ C Setup string buffer with distribution database folder name.
 
 C Remember the initial file name in case user choice fails.
 C Take into account the current value of whichdbpath.
-      moddb=.false.
       lndbp=lnblnk(standarddbpath)
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         lprev=lfmul
@@ -3657,7 +3657,7 @@ C decides to do some browsing).
 C This is yet another place where we need to check what the user might
 C have edited to be sure of setting the correct location value. The
 C common block will be updated with call to findwhichdbpath.
-          call findwhichdbpath('mul',lltmp,ier)
+          call findwhichdbpath('mul',LCOPY,ier)
           moddb=.true.
           goto 44
         else
@@ -3681,7 +3681,7 @@ C Problem scanning the constructions db.
         call usrmsg(
      &    'There were problems scanning the Constructions db',
      &    '(and perhaps the Materials db). Please check.','W')
-        goto 38
+        goto 60
       ELSEIF(IER.eq.2)then
 
 C There were lots of undefined materials so likely the materials
@@ -4189,7 +4189,7 @@ C call to eroptdb and if this is not successful reset LOPTDB.
 C This is yet another place where we need to check what the user might
 C have edited to be sure of setting the correct location value. The
 C common block will be updated with call to findwhichdbpath.
-          call findwhichdbpath('opt',lltmp,ier)
+          call findwhichdbpath('opt',LCOPY,ier)
           moddb=.true.
           goto 44
         else
