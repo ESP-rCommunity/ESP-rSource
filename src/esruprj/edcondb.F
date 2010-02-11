@@ -2042,7 +2042,8 @@ C Material properties.
       logical chdb,showother,layermatch,layermatcha,modgeo
       logical closemat1,closemat2
 
-      DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
+C Note: size of MLED supports a dozen layers in a construction.
+      DIMENSION MLED(26),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LTMP
       CHARACTER NAM*72,H*72,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,LAYD*124
@@ -2158,7 +2159,7 @@ C And if matarrayindex is zero then reset dbcon and NAM.
 C If g or h air gap and version 1.2 then assign DRAIR
           if(matarrayindex.eq.0)then
             continue
-	  elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+          elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &       matopaq(matarrayindex)(1:1).eq.'h')then
             if(closemat2)then
               DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
@@ -2429,7 +2430,15 @@ C Check is layers no longer match.
             call edisp(iuout,'This will be reconciled when exiting.')
           endif
         ELSEIF(IW.EQ.2.or.IW.eq.3)THEN
+
+C Although the data structure can support ME layers the interface is
+C currently limited to 12 layers.
           IF(LAYERS(IFOC).LT.ME)THEN
+            if(LAYERS(IFOC).GE.12)then
+              call edisp(iuout,
+     &          'Sorry, can only edit up to 12 layers.')
+              goto 3
+            endif
             if(iw.eq.3)then
 
 C If inserting internal layer, shift inner layers before editing.
@@ -2498,7 +2507,7 @@ C Take the legacy index and assign it to this layer.
 C Make up LAYDESC and PNAM as combination of matnam and matdoc based on
 C the newly selected material. This is necessary so that other
 C code can recover the details of a -99 item.
-	    if(matarrayindex.gt.0)then
+            if(matarrayindex.gt.0)then
               lnam=lnblnk(matname(matarrayindex))
               lfordoc = 72 - (lnam +4)    ! space left for doc
               write(LAYDESC(IFOC,ILN),'(3a)') 
@@ -2553,9 +2562,9 @@ C If a standard air layer then ask for gap resistance.
 
 C Recover the stipulated air gap resistance if we have a GAP
 C type of [g] or [h].
-	      if(matarrayindex.gt.0)then
+              if(matarrayindex.gt.0)then
                 guessthick=matdbthick(matarrayindex)
-	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+                if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
                   if(closemat2)then
                     DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
@@ -2571,7 +2580,7 @@ C Not an air gap so set DRAIR to something and set default thickness.
               DRAIR(IFOC,ILN,1)=0.17
               DRAIR(IFOC,ILN,2)=0.17
               DRAIR(IFOC,ILN,3)=0.17
-	      if(matarrayindex.gt.0)then
+              if(matarrayindex.gt.0)then
                 guessthick=matdbthick(matarrayindex)
               endif
             ENDIF
@@ -2962,7 +2971,7 @@ C Find the typical thickness and if [g] or [h] gap resistance.
             write(outs,'(a,f6.1,a)') 
      &        'Material selected has a thickness of ',guessthick,'mm.'
             call edisp(iuout,outs)
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
@@ -2982,7 +2991,7 @@ C material is a [g] or [h] and might have air gap values.
           write(outs,'(a,f6.1,a)') 
      &      'Material selected has a thickness of ',guessthick,'mm.'
           call edisp(iuout,outs)
-	  if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &       matopaq(matarrayindex)(1:1).eq.'h')then
             if(closemat2)then
               DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
