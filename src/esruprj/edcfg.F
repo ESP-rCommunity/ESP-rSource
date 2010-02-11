@@ -1869,6 +1869,18 @@ C the new geometry file. Retain similar and adiabatic connections if found.
           NCON=ICCC
           call zgupdate(0,ncomp,ier)
 
+C Find co-planer surfaces and edges of similar materials.
+          call suredgeadj(itrc,'-',ncomp,ier)
+
+C Update the global coordinates for this zones surfaces so that
+C the subsequent wireframe image can be drawn and the bounds of
+C the zone can be calculated.
+          DO 41 J=1,NZTV(ncomp)
+            VCOORD(ncomp,J,1)=X(J)
+            VCOORD(ncomp,J,2)=Y(J)
+            VCOORD(ncomp,J,3)=Z(J)
+   41     CONTINUE
+
 C Now it is ok to write out the copied zone.
           call eclose(gversion(NCOMP),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
