@@ -2080,6 +2080,15 @@ C Update the G7 common blocks and then assign ZBASEA.
             IZBASELIST(ICOMP)=1
             ibcs=IZSTOCN(icomp,NSUR)
             ZBASEA(icomp)= SSNA(ibcs)
+
+C Update the global coordinates for this zones surfaces so that
+C the subsequent wireframe image can be drawn and the bounds of
+C the zone can be calculated.
+            DO 40 J=1,NZTV(ICOMP)
+              VCOORD(ICOMP,J,1)=X(J)
+              VCOORD(ICOMP,J,2)=Y(J)
+              VCOORD(ICOMP,J,3)=Z(J)
+   40       CONTINUE
  
 C Save this to file before passing into the geometry editing facility.
             write(outs,'(3a)') 'Updating ',
