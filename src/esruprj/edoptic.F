@@ -1207,7 +1207,7 @@ C Loop until start of "Optical Properties" section.
         iwversion=4
         if(outstr(1:9).eq.'Glazings:')then
           K=9
-          CALL EGETWI(outstr,K,nl,0,10,'F','layers',IER)
+          CALL EGETWI(outstr,K,nl,0,12,'F','layers',IER)
         elseif(outstr(1:9).eq.'Uvalue  :')then
           K=9
           CALL EGETWR(outstr,K,UVALED,-10.,9.99,'W','uval',IER)
@@ -1223,7 +1223,7 @@ C A newer format file.
         iwversion=5
         if(outstr(1:9).eq.'Glazings:')then
           K=9
-          CALL EGETWI(outstr,K,nl,0,10,'F','layers',IER)
+          CALL EGETWI(outstr,K,nl,0,12,'F','layers',IER)
         elseif(outstr(1:9).eq.'Uvalue  :')then
           K=9
           CALL EGETWR(outstr,K,UVALED,-10.,9.99,'W','uval',IER)

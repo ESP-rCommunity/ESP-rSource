@@ -414,13 +414,13 @@ C Write out layer thermophysical properties.
      &                            SHT(I,J),THK(I,J),IVKON(ICOMP,I,J),
      &                            (THRMLI(ICOMP,I,J,K),K=5,7),I,J
 5661        FORMAT(1X,F10.4,',',F10.1,',',F10.1,',',F8.4,',',3X,I1,
-     &             ',',F7.2,',',F8.5,',',F8.5,'  # ',I2,'  ',I1)
+     &             ',',F7.2,',',F8.5,',',F8.5,'  # ',I2,'  ',I2)
           ELSE
             WRITE(IFILT,5663,IOSTAT=IOS,ERR=146)CON(I,J),DEN(I,J),
      &                            SHT(I,J),THK(I,J),IVKON(ICOMP,I,J),
      &                            (THRMLI(ICOMP,I,J,K),K=5,7),J
 5663        FORMAT(1X,F10.4,',',F10.1,',',F10.1,',',F8.4,',',3X,I1,
-     &             ',',F7.2,',',F8.5,',',F8.5,'  # ','    ',I1)
+     &             ',',F7.2,',',F8.5,',',F8.5,'  # ','    ',I2)
           ENDIF
 1210    CONTINUE
 1220  CONTINUE
