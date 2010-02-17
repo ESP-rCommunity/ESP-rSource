@@ -132,6 +132,7 @@ C This is the main network management routine.
 #include "gnetwk.h"
 #include "building.h"
 #include "espriou.h"
+#include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
@@ -151,13 +152,9 @@ C Graphics and ESP-r default commons
 
 C Path to problem and command line file (if any).
       COMMON/RPATH/PATH
-      COMMON/UHOME/UPATH
 
 C Legacy flow file commons.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-
-C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -185,7 +182,7 @@ C Grid commons
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
       COMMON/NWKTYP/INWKTYP,vergnf
       COMMON/ICONDBNAM/ICONDBFL
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
 C Icon rotation angle and grid common blocks.
       COMMON/IROT/ROTA
@@ -221,8 +218,7 @@ C Name of current application
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       CHARACTER*34 ITEM(26)
-      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      CHARACTER INF*144,H*72,PATH*72,UPATH*72
+      CHARACTER INF*144,H*72,PATH*72
       CHARACTER FS*1,STR*72,outs*124,outstr*124
       LOGICAL UNIXOK,OK,DOK,CLOSEM,CLOSEX,isexavail
       dimension IVAL(MNWKTYP)
@@ -231,7 +227,7 @@ C Name of current application
       character dgtagatr*12,dgmenuatr*32,dgatrib*12
       character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
       CHARACTER*72 LAPROB*72
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 

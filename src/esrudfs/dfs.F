@@ -61,7 +61,7 @@ C Path to problem.
       common/uhome/upath
 
 C Defaults.
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
 C CFD common blocks.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -103,7 +103,7 @@ C Name of current application
       CHARACTER*72 TITLE,CFTRFL,LPHI,RESFL,WORD
       integer islice,jslice,kslice
       CHARACTER*72 LVEC,LBIT,t72,vecfil
-      character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DECMPDBFL,DICONDBFL
 
       LOGICAL INCALU,INCALV,INCALW,INCALK,INCALD,INCALT
       LOGICAL IZEROT,IZanKE,IMITZ

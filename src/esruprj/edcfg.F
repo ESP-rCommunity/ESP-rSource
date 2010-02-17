@@ -97,7 +97,7 @@ C Uncertainty.
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
       COMMON/ICONDBNAM/ICONDBFL      
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       COMMON/NWKTYP/INWKTYP,vergnf
       COMMON/NWKGRDL/GON,SON
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -138,7 +138,7 @@ C Uncertainty.
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       character SSPARENT*12,CONTMNAM*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
@@ -168,7 +168,7 @@ C are active.
       if(indcfg.ge.2)nets=nets+1
       if(iairn.ge.1)nets=nets+1
       if(ientxist.gt.0)nets=nets+1
-      ictl=0
+
       ictl=ncf+ncl+ncc+ngf+nof
       IER=0
       WRITE(ITEMS(1),'(A,A)') ' cfg file: ',LCFGF(1:22)
@@ -1293,6 +1293,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Begin with high level menu.
       IUF=IFIL+2
+      OKOB=.false.  ! set before if else 
     3 INO=-3
       IER=0
       WRITE(ITEMS(1),'(A,I3,A)') ' .... Zones ....(',NCOMP,' defined)'
@@ -4429,7 +4430,7 @@ C      of obstruction data.
       character ZN*12,h*72
       character outs*124
       logical DOK,OK
-      integer itrc,iuf,iicomp,ij,iz,i
+      integer itrc,iuf,iicomp,ij,iz
       integer ibe   ! loop for faces of obstruction
       real A,pi,XR,YR,XXX,YYY,CA,SA
        

@@ -28,6 +28,7 @@ C EDDBPCDB Changes the plant component database current cfg file references.
 C EDDBPROFILE Changes the events profile database current cfg file references.
 C EDDBOPT Changes the optical database current cfg file references.
 C EDDBCLM: Changes the climate database current cfg file references.
+C EDDBMSC Changes the miscel comp database current cfg file references.
 
 C ********** EDDB 
 C Controls specification/ browsing of databases.
@@ -65,23 +66,14 @@ C Default esp-r distribution path.
       common/deflt4/dinstpath
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      common/texted/tedlbl,teditor
-
-C Defaults for some of the obscure files.
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
       logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical moddb,browse,modcon,QUIET,concat
+      logical moddb,browse,modcon,QUIET
       logical haveconstr
-      logical unixok  ! to check for database path file separators
 
       character H*72,path*72
       character*72 ITEMS(16)
       character dinstpath*48
-      character longtfile*144,llitem*144,longtfiledos*144
-      character doit*248,tedlbl*20,teditor*20
-      character tmode*8
       
 C Strings for dos version of source and destination of db file.
 C      character rootpdos*72,upathdos*72
@@ -137,8 +129,14 @@ C Begin with menu of default dbs.
      &    LOPTDB(1:44)
       endif
       WRITE(ITEMS(11),'(A)')   'i mould & mycotoxins     : None'
-      WRITE(ITEMS(12),'(2A)')  'j miscel components      : ',
-     &  MCMPDBFL(1:44)
+
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        WRITE(ITEMS(12),'(2A)')  'j miscel components      : ',
+     &    MCMPDBFL(1:44)
+      elseif(ipathmsc.eq.2)then
+        WRITE(ITEMS(12),'(2A)')  'j std miscel components  : ',
+     &    MCMPDBFL(1:44)
+      endif
       ITEMS(13)='  _______________________________ '
       ITEMS(14)='? help                            '
       ITEMS(15)='- exit this menu                  '
@@ -318,48 +316,8 @@ C Place holder for mould database
      &   'db manager. Start `mld` manually.','W')
       ELSEIF(INO.EQ.12)THEN
 
-C Special materials/miscel components database.
-C Use file browser if in GTK mode, in X11 user must type file name.
-C If vi then spawn a new window to do the editing in.
-        H(1)='The Special materials/miscel components database can'
-        H(2)='be edited using the current defined text editor'
-        H(3)='(as defined in the default file).'
-        H(4)='BE CAREFUL!'
-        llitem=' '    ! reset return string
-        CALL EASKXORGTKF(MCMPDBFL,
-     &    'Special materials/misc. comp file name?',' ',
-     &    DMCMPDBFL,llitem,'Special materials file',IER,4)
-     
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          goto 3  ! redisplay menu.
-        endif
-
-C Depending on whether Unix or DOS based setup paths. If DOS
-C then check for spaces in name and change / to \.
-        call isunix(unixok)
-        if(unixok)then
-          call addpath(llitem,longtfile,concat)
-        else
-          call addpath(llitem,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
-        tmode='graph'
-        if(teditor(1:2).eq.'vi')tmode='text'
-        write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
-     &    longtfile(1:lnblnk(longtfile))
-        call runit(doit,tmode)
-
-        h(1)='Exercise care when editing this text file as the'
-        h(2)='format may be sensitive to user edits! '
-        dok=.false.
-        CALL ASKOK('  ','Use this edited database?',OK,dok,2)
-        if(OK)then
-          write(MCMPDBFL,'(a)') llitem(1:lnblnk(llitem))
-          moddb=.true.   ! set so user is asked to update cfg file
-        endif
+C Manage miscellaneous componens database.
+        call EDDBMSC(moddb,'    ')
 
       ELSEIF(INO.EQ.14)THEN
 
@@ -5188,3 +5146,484 @@ C from version manager
       
       RETURN
       END
+
+C ********** EDDBMSC
+C EDDBMSC Changes the misc comp database current cfg file references.
+C moddb is from version manager
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+C This facility offers browsing for GTK version and follows the pattern
+C of the other db file management facilties except that there is no
+C working option for creating a new database and editing of the database
+C is via a text editor.
+      SUBROUTINE EDDBMSC(moddb,APP)
+#include "building.h"
+#include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      common/pophelp/h(60)
+      common/OUTIN/IUOUT,IUIN
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24
+
+      common/texted/tedlbl,teditor
+      character tedlbl*20,teditor*20
+
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/rpath/path
+      common/deflt4/dinstpath
+
+      CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
+      character longtfile*144,longtfiledos*144,LCOPY*144
+      character lguess*144,message*48
+      CHARACTER DOIT*300,fs*1,APP*4,ext*4
+      CHARACTER outs248*248
+      LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
+      character cfgroot*24,LCFGF*72
+      character dinstpath*48,path*72,dirpath*48
+      character sourcefile*144  ! the file to copy ??
+      character tmode*8
+
+C Local strings for user selections dependent on graphic library.
+      character opte*28,optf*28,optg*28
+      character lpath*72,fname*72 ! for use with fdroot
+      integer lndbp   ! for length of standard database path
+      logical unixok  ! to check for database path file separators
+      integer iglib  ! for detecting GTK or X11
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Setup string buffer with distribution database folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases',fs
+      ldirpath=lnblnk(dirpath)
+
+C Remember the initial file name in case user choice fails.
+C Take into account the current value of whichdbpath.
+      moddb=.false.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        lprev=MCMPDBFL
+      elseif(ipathmsc.eq.2)then
+        write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
+     &    MCMPDBFL(1:lnblnk(MCMPDBFL))
+      endif
+
+C Inform user.
+      write(outs248,*) 'Current misc components ',
+     &   MCMPDBFL(1:lnblnk(MCMPDBFL))
+      call edisp248(iuout,outs248,100)
+
+  60  continue
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        lltmp=MCMPDBFL  ! use as is
+      elseif(ipathmsc.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    MCMPDBFL(1:lnblnk(MCMPDBFL))  ! prepend db folder path
+      endif
+
+      H(1)='The miscellaneous components database can'
+      H(2)='be edited using the current defined text editor'
+      H(3)='(as defined in the default file).'
+      H(4)='BE CAREFUL!'
+      H(5)=' '
+      H(6)='The following options can be selected:'
+      H(7)=' '
+      H(8)='a) If the file exists than you can browse the database '
+      H(9)='   and if you have permission to update the file you'
+      H(10)='   can edit the entities in the database.'
+      H(11)=' '
+      H(12)='b) Select from list (not available for mscel comp db).'
+      H(13)=' '
+      H(14)='c) Make a new database: not yet available '
+      H(15)=' '
+      H(16)='d) copy default database: a project copy of the default'
+      H(17)='  database will be made and you will be offered a '
+      H(18)='  chance to rename it.'
+      H(19)=' '
+
+C If GTK library then there are additional options so include in help.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.2)then
+        H(20)='e) browse ../dbs allows you to look in the model ../dbs'
+        H(21)='  folder for alternative files. If you do not'
+        H(22)='  find anything the previous value will be restored.'
+        H(23)=' '
+        H(24)=' f) browse distribution displays files in the databases'
+        H(25)='  folder of the ESP-r distribution. If you do not find'
+        H(26)='  anything the previous value will be restored.'
+        H(27)=' '
+        H(28)=' g) copy another database to the project allows you to'
+        H(29)=' locate a database and get a project copy of it.'
+      else
+        H(20)='e) select a file (X11 only): edit the file name'
+        H(21)='   and if it is found you can browse or edit it.'
+        H(22)='   Hint: if you eventually want to copy that other file'
+        H(23)='   into the model folder first select it and then ask'
+        H(24)='   for a copy.'
+        H(25)=' '
+        H(26)=' '
+        H(27)=' '
+        H(28)=' '
+        H(29)=' '
+      endif
+      IMCFIL=IFIL+1
+      CALL ERPFREE(IMCFIL,ISTAT)
+
+C If local or absolute path call addpath otherwise if a standard
+C database then set longtfile equal to LLTMP.
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        call addpath(LLTMP,longtfile,concat)
+      else
+        longtfile=LLTMP
+      endif
+      ltf=max(1,LNBLNK(longtfile))
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C Make up additional options depending on graphics lib. The second
+C option (list select) is not available for msc comp database. If using
+C text or X11 option e edits the string while for GTK there are two
+C options to browse for files in ../dbs or the esp-r distribution.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        opte='e edit file name'
+        optf='   '
+        optg='   '
+      elseif(iglib.eq.2)then
+        opte='e browse model ../dbs'
+        optf='f browse esp-r distribution'
+        optg='g make copy of another file'
+      endif
+
+      IF(.NOT.XST)THEN
+
+C If db does not exist locally offer limited choices.
+        idno=2
+        isw=0
+        call MENUATOL('  ','Miscellaneous components db',
+     &    ' ','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,29)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.7)copydef=.false.
+      elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
+
+C If corportate database then offer the following choices (incl /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Miscellaneous components db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,29)
+        copydef=.false.
+      elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
+
+C If corportate database then offer the following choices (without /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Miscellaneous components db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,29)
+        copydef=.false.
+      else
+
+C If db exists locally toggle whether the user is asked to copy the
+C default database or the current database.
+        idno=1
+        isw=0
+        call MENUATOL('  ','Miscellaneous components db',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,29)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.7)copydef=.false.
+      endif
+
+C Act on the users choice. If no choice, return to calling menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C If file exists read it and enter editing facility after
+C check to see if it is local or standard or absolute path.
+        if(XST)then
+          call findwhichdbpath('msc',lltmp,ier)
+          goto 44
+        else
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
+          MCMPDBFL=lprev
+          goto 60
+        endif
+      elseif(isw.eq.2)then
+
+C There is no select by list for misc comp database.
+        call edisp(iuout,
+     &    'No list select for misellaneous components databases.')
+        goto 60
+      elseif(isw.eq.3)then
+
+C There is no select by list for misc comp database.
+        call edisp(iuout,
+     &    'No create new for misellaneous components databases.')
+        goto 60
+
+      elseif(isw.eq.4.or.isw.eq.7)then
+
+C Copy a database to project dbs folder. If iws is 4 then the
+C user has asked for the default database. If isw is 7 then the
+C user wishes to browse for the source file. Suggest a local
+C file name based on the project root name then do the copy.
+C Use LTMP (short buffer) for the file name as known to esp-r
+C and LCOPY for the system cp call.
+        if(copydef)then
+          write(outs248,'(2a)') 'The source file is:',
+     &      DMCMPDBFL(1:lnblnk(DMCMPDBFL))
+          call edisp248(iuout,outs248,100)
+          sourcefile = DMCMPDBFL
+        else
+          h(1)='You are asked to confirm the source file for the'
+          h(2)='copy action. If this one is ok then accept it. '
+
+C Provide a guess based on the current MCMPDDBFL.
+          lltmp='  '
+          lguess='  '
+          if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+            lguess=MCMPDBFL  ! use as is
+          elseif(ipathmsc.eq.2)then
+            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &        MCMPDBFL(1:lnblnk(MCMPDBFL))  ! prepend db folder path
+          endif
+          CALL EASKXORGTKF(lguess,'Miscellaneous comp db (source)?',
+     &      ' ',DMCMPDBFL,lltmp,'miscel comp database',IER,2)
+          sourcefile = lltmp
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3)then
+            goto 60  ! cancel detected, redisplay menu.
+          endif
+          ipathmsc=1  ! signal that it will be a local database.
+        endif
+
+        h(1)='The suggested name of this database is based on the '
+        h(2)='project name. '
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.miscdb'
+        elseif(dbspth(1:3).eq.'../')then
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.miscdb'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.miscdb'
+        endif
+  66    CALL EASKS(LTMP,
+     &    'Database name after it is copied into the project?',
+     &    ' ',72,'optics.db','copied msc comp database',IER,2)
+        call isunix(unixok)
+        IF(LTMP(1:2).NE.'  ')then
+
+C If Unix and the path is ./ then no need to prepend this (to
+C avoid .//../dbs in the buffer).  If path ends with file separator
+C no need to duplicat the file separator.
+          if(unixok)then
+            lpp=lnblnk(path)
+            if(path(1:2).eq.'./')then
+              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
+            elseif(path(lpp:lpp).eq.fs)then
+              write(LCOPY,'(2a)') path(1:lnblnk(path)),
+     &          LTMP(1:lnblnk(LTMP))
+            else
+              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &          LTMP(1:lnblnk(LTMP))
+            endif
+          else
+            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &        LTMP(1:lnblnk(LTMP))
+          endif
+
+C Now copy sourcefile to lcopy.
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
+
+C Standard dos copy logic.
+            message='getting optics db file from '
+            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+          endif
+          call usrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
+
+C Use LTMP or LCOPY depending on the path because the path will already
+C be pre-pended when using most inbuilt file opening calls.
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(MCMPDBFL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+            call FINDFIL(LTMP,XST)
+            if(XST)then
+              write(MCMPDBFL,'(a)') LTMP(1:lnblnk(LTMP))
+            else
+              write(MCMPDBFL,'(a)') LTMP(1:lnblnk(LTMP))
+              call edisp(iuout,'Problem locating the new database.')
+              call edisp(iuout,'Try browsing ../dbs to find it.')
+              call edisp(iuout,' ')
+            endif
+          endif
+          moddb=.true.
+          ipathmsc=1  ! signal that it is a local database.
+          goto 44
+        else
+          goto 66
+        endif
+
+      elseif(isw.eq.5)then
+
+C Make up browse to the model ../dbs folder suggest the name LCOPY
+C and return file name in lltmp.
+        H(1)='The miscellaneous components database can'
+        H(2)='be edited using the current defined text editor'
+        H(3)='(as defined in the default file).'
+        H(4)='BE CAREFUL!'
+        H(5)=' '
+        H(6)='A local database folder (../dbs) is usually associated'
+        H(7)='with each model. '
+        lltmp=' '
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        CALL EASKXORGTKF(LCOPY,'Miscellaneous comp db?',' ',
+     &    DMCMPDBFL,lltmp,'misc comp db',IER,7)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 60  ! redisplay menu.
+        endif
+
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C Ask user whether file is in ../dbs and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../dbs folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(MCMPDBFL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+              ipathmsc=1  ! signal that it is a local database.
+              moddb=.true.
+              goto 44
+            endif
+          endif
+
+C Check what the user might have edited to be sure of setting the
+C correct location value via call to findwhichdbpath.
+          call findwhichdbpath('msc',lltmp,ier)
+          moddb=.true.
+          goto 44
+        else
+          goto 60
+        endif
+
+      elseif(isw.eq.6)then
+
+C Browse distribution database folder. Setup LCOPY to point to
+C the database folder (but no particular file). Use easkf to
+C return a file (which might be from somewhere else if the user
+C decides to do some browsing). Test this suggested file via
+C call to eroptdb and if this is not successful reset LOPTDB.
+        if(iglib.eq.2)then
+          H(1)='The miscellaneous components database can'
+          H(2)='be edited using the current defined text editor'
+          H(3)='(as defined in the default file).'
+          H(4)='BE CAREFUL!'
+          H(5)=' '
+          H(6)='The ESP-r distribution includes alternatives to the'
+          H(7)='default which might be useful.'
+          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &      fs,'databases',fs
+          CALL EASKF(LCOPY,' ','Miscellaneous components db?',
+     &      144,DMCMPDBFL,'misc comp database',IER,7)
+          if(ier.eq.-3)then
+            MCMPDBFL=lprev
+            goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+
+C This is yet another place where we need to check what the user might
+C have edited to be sure of setting the correct location value. The
+C common block will be updated with call to findwhichdbpath.
+          call findwhichdbpath('msc',LCOPY,ier)
+          moddb=.true.
+          goto 44
+        else
+          call usrmsg('Browse feature not available.',' ','W')
+          goto 60
+        endif
+      endif
+
+C Test the selected or copied database. If a problem loop back
+C otherwise edit the database contents.
+   44 continue
+      write(outs248,'(2a)') 'Accessing miscellaneous comp db: ',
+     &  MCMPDBFL(1:lnblnk(MCMPDBFL))
+      call edisp248(iuout,outs248,100)
+
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        lltmp=MCMPDBFL  ! use as is
+      elseif(ipathmsc.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    MCMPDBFL(1:lnblnk(MCMPDBFL))  ! prepend db folder path
+      endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+      call isunix(unixok)
+      if(unixok)then
+        call addpath(lltmp,longtfile,concat)
+      else
+        call addpath(lltmp,longtfile,concat)
+        call cmdfiledos(longtfile,longtfiledos,ier)
+        longtfile=' '
+        longtfile=longtfiledos
+      endif
+      tmode='graph'
+      if(teditor(1:2).eq.'vi')tmode='text'
+      write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &  longtfile(1:lnblnk(longtfile))
+      call runit(doit,tmode)
+
+C If this is ok to use then set moddb true but do not try
+C and overwrite the file name so that no additional mangling
+C happens to the path.  This assumes that the user has not
+C altered the file name when saving via the editor.
+      h(1)='Exercise care when editing this text file as the'
+      h(2)='format may be sensitive to user edits! '
+      h(3)='If you alter the file name when saving the text'
+      h(4)='in the editor then you will have to browse to'
+      h(5)='find the new file.'
+      dok=.false.
+      CALL ASKOK('  ','Use this edited database (see help)?',OK,dok,5)
+      if(OK)then
+        moddb=.true.   ! set so user is asked to update cfg file
+      else
+        MCMPDBFL=lprev
+      endif
+
+      return
+      end
+

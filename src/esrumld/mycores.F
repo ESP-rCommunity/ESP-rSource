@@ -47,6 +47,7 @@ C    4-mould information
       subroutine mycorecv(irecov,imld)
 
 #include "mould.h"
+#include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
@@ -64,18 +65,20 @@ C    4-mould information
       common/mglook/GROT(MLOOK,MOULD),GRORH(MLOOK,MOULD)
       common/mglook2/GROW(MLOOK,MOULD)
 
+C The mycotoxin database.
+C << this should become part of model cfg file >>
       common/mdbase/mdbnam
       common/iopnmld/iopmld
 
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
       dimension item(mould+5)
       real maxrh,minrh,maxt,mint
       character outs*124, head*32, item*42, mdbnam*72, outstr*124
       character mldnam*48,h*72,grow*1,str*1,KEY*1
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
 
 C Open the mould database.
       if(iopmld.eq.0) then

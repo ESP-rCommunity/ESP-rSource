@@ -153,7 +153,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (for SBEM database)
-C MCMPDBFL (Special materials/Misc components)
+C MCMPDBFL (Misc components)
 C default file names for databases
 
 #include "net_flow.h"
@@ -246,8 +246,8 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
 
 C Defaults for some of the obscure files.
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
 C Temporal definition commons.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
@@ -948,7 +948,16 @@ C climate database has been defined.
       elseif(WORD(1:7).eq.'*mscldb')then
 
 C special materials and misc component database
+        CALL EGETRM(LOUTSTR,K,lworking,'W','misc comp db',IER)
+
+C Process the file name following *mscldb and depending on its path
+C set the MCMPDBFL common block string via call to findwhichdbpath.
+        call findwhichdbpath('msc',lworking,ier)
+      elseif(WORD(1:10).eq.'*stdmscldb')then
+
+C special materials and misc component database
         CALL EGETRM(LOUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
+        ipathmsc=2  ! standard folder for misc comp db
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','plant comp db',IER)
 
@@ -3344,7 +3353,7 @@ C common block file string and whichdbpath variable is updated.
 C topic =  'opt' for optics, 'pdb' for plant component templates
 C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
 C       =  'mat' for materials database, 'evn' for profiles database
-C       =  'mul' for MLC database
+C       =  'mul' for MLC database, 'msc' for miscellaneous components
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3391,6 +3400,9 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'mul')then
             ipathmul=1  ! local folder for MLC database
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'msc')then
+            ipathmsc=1  ! local folder for miscel comp database
+            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -3416,6 +3428,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'mul')then
             ipathmul=2
             write(LFMUL,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'msc')then
+            ipathmsc=2
+            write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3439,6 +3454,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'mul')then
             ipathmul=0
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'msc')then
+            ipathmsc=0
+            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -3464,6 +3482,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'mul')then
             ipathmul=1  ! local folder for MLC database
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'msc')then
+            ipathmsc=1  ! local folder for miscel comp database
+            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3487,6 +3508,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'mul')then
             ipathmul=2
             write(LFMUL,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'msc')then
+            ipathmsc=2
+            write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3510,6 +3534,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'mul')then
             ipathmul=0
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'msc')then
+            ipathmsc=0
+            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif
@@ -3537,6 +3564,9 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathprodb
 C      elseif(topic(1:3).eq.'mul')then
 C        write(6,*) LFMUL
 C        write(6,*) 'findwhichdbpath ipath is ',ipathmul
+C      elseif(topic(1:3).eq.'msc')then
+C        write(6,*) MCMPDBFL
+C        write(6,*) 'findwhichdbpath ipath is ',ipathmsc
 C      endif
 
       return

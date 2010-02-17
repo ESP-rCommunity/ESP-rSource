@@ -109,19 +109,8 @@ C Indicator of possible focus zone.
 C Redirected text/graphics parameters.
       common/exporttgi/ixopen,ixloc,ixunit
 
-C Defaults for some of the obscure files.
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
-
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-
-C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
@@ -177,7 +166,8 @@ C Name of current application
       character*72 LCFGF,H,LPRJLG
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
-      character outs*124,outstr*124,outs248*248
+      character outs*124,outstr*124
+C      character outs248*248
       character path*72,upath*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
@@ -520,23 +510,23 @@ C System configuration file on channel IFIL+5.
 
 C Mass flow network, profiles and optical dbs on channel IFIL+6. 
       IOPTDB=IFIL+6
-      LOPTDB=DOPTDB
+      write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
 
       IPRODB=IFIL+6
 
 C Temporal information on channel IFIL+7.
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
-      LTDF='UNKNOWN'
-      LTDFA='UNKNOWN'
+      write(LTDF,'(a)') 'UNKNOWN'
+      write(LTDFA,'(a)') 'UNKNOWN'
       ITDFLG=0
 
-      LPRFDB=DPRFDB
+      write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
 
-      LPCDB=DPCDB
+      write(LPCDB,'(a)') DPCDB(1:lnblnk(DPCDB))
 
 C Special materials/miscel component database.
-      MCMPDBFL=DMCMPDBFL
+      write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
 
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9

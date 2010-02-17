@@ -554,9 +554,13 @@ C reflect whether the standard database folder is being used.
       endif
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
-
+      elseif(ipathmsc.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmscldb  ',
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+      endif
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)

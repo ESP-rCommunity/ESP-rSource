@@ -524,9 +524,9 @@ C Clear the model common blocks.
       call clrprb
 
       LUALF='UNKNOWN'
-      MCMPDBFL='UNKNOWN'
-      bidirfile='UNKNOWN'
-      CALENAME='UNKNOWN'
+      write(MCMPDBFL,'(a)') 'UNKNOWN'
+      write(bidirfile,'(a)') 'UNKNOWN'
+      write(CALENAME,'(a)') 'UNKNOWN'
       if(iutdf.eq.0)IUTDF=IFIL+7  ! set if not already done so.
 
 C Set flag indicating that solar radiation data is hour-centered (default)
@@ -841,6 +841,8 @@ C so LSTRIPC and LOUTSTR are used.
       elseif(WORD(1:4).eq.'*pro'.or.WORD(1:4).eq.'*evn')then
         CALL EGETRM(OUTSTR,K,gendbfn(11),'W','profiles db',IER)
       elseif(WORD(1:7).eq.'*mscldb')then
+
+C << add in ipathmsc >>
         CALL EGETRM(LOUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(OUTSTR,K,gendbfn(12),'W','plant comp db',IER)
