@@ -1914,7 +1914,6 @@ C  Phase - which phase the component is connected to 1-3 or 4 all three.
 #include "plant.h"
 
       common/pcnam/pcname(mpcom)
-      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       common/pophelp/h(60)
 
 C Electrical details for specified plant components
@@ -2096,7 +2095,6 @@ C The routine presents a list of surface layers.
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/FILEP/IFIL
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -2108,9 +2106,20 @@ C The routine presents a list of surface layers.
       integer header,footer
       character item*32
       CHARACTER NAM*72,PNAM*20,H*72
-      CHARACTER TITL*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
+
+C Establish if material data arrays have been filled. If not return
+C with ier=1.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so selection',
+     &    'of layer is not possible.','W')
+        return
+      endif
 
 C Check composite name of surface with composite name in MLC common.
       imatch=0
@@ -2123,8 +2132,6 @@ C Check composite name of surface with composite name in MLC common.
          call edisp(iuout,'Error: probably no MLC defined!')
          return
       endif
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
         
 C Write menu displaying a list of layer names
       header=4
@@ -2136,35 +2143,16 @@ C Write menu displaying a list of layer names
       do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(imatch,j)   ! which array index
-          if(matarrayindex.ge.0)then
+        matarrayindex=IPRMAT(imatch,j)   ! which array index
+        if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRV=1.0
-              TITL='GAPS'; NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+C And if matarrayindex is zero then reestablish NAM.
+          if(matarrayindex.eq.0)then
+            NAM='AIR'
+          else
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
-        else
-
-C << if material arrays were filled there is no need for this call >>
-          CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
-     &      DBSHT,E,A,DRV,TITL,NAM)
         endif
-        IF(IER.EQ.1) THEN
-           call edisp(iuout,' Found an error reading PCDB!')
-        ENDIF
         IF(IPR(imatch,j).EQ.0)THEN
           PNAM(j)='Air gap'
         ELSE
@@ -2310,7 +2298,6 @@ C Common for the building plant link
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      common/pcsort/icode(maxpc)
 
       DIMENSION VERT(35), PCTYPE(4)
       CHARACTER PCNAME*15
@@ -2535,7 +2522,6 @@ C Common for the building plant lin
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
 
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR

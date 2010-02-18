@@ -25,11 +25,13 @@ C MOFCON: controlling routine for inter-fabric temperature and
 C         condensation.
 C MOIHED
 C MOSURC
-C MOINTC
+C MOINTC displays the variation in the vapour pressure
+C        and saturated vapour pressure through a construction
 C MOPRES
 C SVP
 C MOIAXS
 C MOIDRW
+C FINDCND reports on condensation within a zone over the reporting period.
 
 C ******************** MOFCON
 
@@ -38,11 +40,8 @@ C of inter-fabric temperature and condensation conditions.
 
       SUBROUTINE MOFCON
 
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/OUTIN/IUOUT,IUIN
-      integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -421,7 +420,7 @@ C VDIF is diffusion res, IPRZ is primitive db ref for each layer.
       integer matarrayindex ! the index within matdatarray
       logical closemat1,closemat2
 
-      character outs*124,H*72,NAM*72,TITL*72
+      character outs*124,H*72,NAM*72
       logical ok,dok
 
       IPICK=0
@@ -435,6 +434,13 @@ C Get element thicknesses for this construction.
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so distri-',
+     &    'bution of vapour not available.','W')
+        return
+      endif
 
 C Convert to node-related thicknesses.
       NN=2*NE(ISUR)+1
@@ -448,33 +454,20 @@ C Determine diffusion resistance factor for each element.
       call edisp(iuout,' Diffusion resistance factor for:')
       call edisp(iuout,' ')
       DO 20 I=1,NE(ISUR)
-        if(closemat1.or.closemat2)then
-          legmat=IPRZ(ISUR,I)   ! which legacy index
-          if(legmat.gt.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
+        legmat=IPRZ(ISUR,I)   ! which legacy index
+        if(legmat.gt.0)then
+          matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRVAL=1.0
-              TITL='GAPS'; NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRVAL=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+C And if matarrayindex is zero then reset DRVAL and NAM.
+          if(matarrayindex.eq.0)then
+            DRVAL=1.0
+            NAM='AIR'
+          else
+            DRVAL=matdbdrv(matarrayindex)
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
-        else
-
-C << if material arrays were filled there is no need for this call >>
-          CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
-     &      DBSHT,E,A,DRVAL,TITL,NAM)
         endif
+
         H(1)='Diffusion resistance factors are found in the'
         H(2)='materials database.'
         write(outs,'(A,I3,2x,A20)')' Element ',I,NAM(1:20)
@@ -880,7 +873,7 @@ C IPRZ is primitive db ref for each layer.
       CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1
+      character ZN*12,SN*12,DS*7,DS1*10,tg*1,delim*1
       integer legmat  ! local variable for legacy index.
       logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -936,6 +929,13 @@ C Read (silently) construction file.
 C Check which version of materials database.
       call eclose(matver,1.1,0.001,closemat1)
       call eclose(matver,1.2,0.001,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so conden-',
+     &    'sation within constructon not available.','W')
+        return
+      endif
 
       write(outs,'(A,A)') ' Condensation search in: ',ZN(1:lnblnk(ZN))
       call edisp(iuout,outs)
@@ -949,32 +949,16 @@ C Determine diffusion resistance factor for each element
 C from ascii or binary materials db and compute layer thickness.
         DO 24 I=1,NE(ISUR)
           ETHK(I)=THK(ISUR,I)*1000.0
-          if(closemat1.or.closemat2)then
-            legmat=IPRZ(ISUR,I)   ! which legacy index
-            if(legmat.gt.0)then
-              matarrayindex=mathash(legmat)  ! find matching array index
+          legmat=IPRZ(ISUR,I)   ! which legacy index
+          if(legmat.gt.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-              if(matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                E=0.99; A=0.99; DRVAL=1.0
-                TITL='GAPS'; NAM='AIR'
-              else
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRVAL=matdbdrv(matarrayindex)
-                write(TITL,'(a)') 'placeholder'
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
-              endif
+C And if matarrayindex is zero then reset DRVAL.
+            if(matarrayindex.eq.0)then
+              DRVAL=1.0
+            else
+              DRVAL=matdbdrv(matarrayindex)
             endif
-          else
-
-C << if material arrays were filled there is no need for this call >>
-            CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
-     &         DBSHT,E,A,DRVAL,TITL,NAM)
           endif
           VDIF(I)=DRVAL
    24   CONTINUE

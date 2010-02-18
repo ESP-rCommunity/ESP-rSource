@@ -40,7 +40,6 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -330,7 +329,6 @@ C DFNCMP displays the components definition menu.
 C *********************************************************************
       SUBROUTINE DFNCMP(IZ,SZN,IDRW1,IDRW2)
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
@@ -393,7 +391,6 @@ C DFNCNC displays the connections definition menu.
 C *********************************************************************
       SUBROUTINE DFNCNC(ICOMP,SZN,IDRW1,IDRW2)
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
@@ -463,7 +460,6 @@ C *********************************************************************
 #include "epara.h"
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -1100,7 +1096,6 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -1438,7 +1433,6 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)

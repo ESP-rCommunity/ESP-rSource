@@ -610,7 +610,7 @@ C TMC data
       character ZSN*28
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
-      CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
+      CHARACTER MLCN*12,OTF*4,OPT*12
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
       character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
@@ -633,6 +633,14 @@ C TMC data
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so creation',
+     &    'of surface attributes not possible.','W')
+        ier=1
+        return
+      endif
 
 C Create a glazing file, default type is 'glass' with user choice 
 C to treat as 'mkillum'.
@@ -817,36 +825,21 @@ C Pick up general description of the composite.
         ENDIF
 
 C For the inside and outside layer get surface properties.
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IM,1)   ! which array index
-          if(matarrayindex.ge.0)then
-            E=matdbine(matarrayindex)
-            AE=matdbina(matarrayindex)
-          endif
-        else
-
-C << if material arrays were filled there is no need for this call >>
-          CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
-     &      DBSHT,E,AE,DRV,TITL,NAM)
+        matarrayindex=IPRMAT(IM,1)   ! which array index
+        if(matarrayindex.ge.0)then
+          AE=matdbina(matarrayindex)
         endif
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which legacy index
-          if(matarrayindex.ge.0)then
-            E=matdbine(matarrayindex)
-            AI=matdbina(matarrayindex)
-          endif
-        else
-
-C << if material arrays were filled there is no need for this call >>
-          CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,DBDEN,
-     &      DBSHT,E,AI,DRV,TITL,NAM)
+	
+        matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which legacy index
+        if(matarrayindex.ge.0)then
+          AI=matdbina(matarrayindex)
         endif
 
 C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if(OTF.EQ.'TRAN')then
+        if(OTF(1:4).NE.'OPAQ')then
           CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
           if(VTRN.gt.0.02)then
           gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))-0.9166530661)

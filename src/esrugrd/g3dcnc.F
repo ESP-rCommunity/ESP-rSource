@@ -437,6 +437,7 @@ C *********************************************************************
       SUBROUTINE LMPEDG(IZ,IEG)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -450,14 +451,7 @@ C *********************************************************************
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNM*72,TL*72
-
 C Determine the lumped edge thermophysical properties.
-
-C << note this subroutine assumes that the model is associated
-C << with a binary version of the materials database. It must
-C << be updated to use the material array structures.
-
       VOLML=0.
       DNHCL=0.
       CNDCL=0.
@@ -467,8 +461,17 @@ C << be updated to use the material array structures.
       DO 10 IY=1,NDYE(IEG)
       DO 10 IX=1,NDXE(IEG)
         IEL=ITPEDG(IEG,IX,IY,IDZ)
-        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
-        IF(IER.NE.0)STOP "error (407): while reading primative db."
+        matarrayindex=IEL   ! which legacy index
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+        if(matarrayindex.eq.0)then
+          CND=0.0; DBDEN=0.0; DBSHT=0.0 
+        else
+          CND=matdbcon(matarrayindex)
+          DBDEN=matdbden(matarrayindex)
+          DBSHT=matdbsht(matarrayindex)
+        endif
+
         VL=DZE(IEG,IDZ)*DYE(IEG,IY)*DXE(IEG,IX)
         VOLML=VOLML+VL
         DNHCL=DNHCL+DBDEN*DBSHT*VL
@@ -584,10 +587,7 @@ C *********************************************************************
       SUBROUTINE DISEDG(IZ,IEG)
 #include "building.h"
 #include "esprdbfile.h"
-
-C << note this subroutine assumes that the model is associated
-C << with a binary version of the materials database. It must
-C << be updated to use the material array structures.
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -601,8 +601,6 @@ C << be updated to use the material array structures.
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D81/ISNDS(MS),ISNDE(MEZ),ISNDC(MCZ)
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
-
-      CHARACTER PNAM*72,TITL*72
 
       ISP1=-2
       IS1=ISFEDG(IEG,1)
@@ -636,8 +634,16 @@ C << be updated to use the material array structures.
         DISX=(X1+X2)/2.
         DELX=X2-X1
         IEL=ITPEDG(IEG,IX,IY,IL)
-        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
-        IF(IER.NE.0)STOP "error (411): while reading primative db."
+        matarrayindex=IEL   ! which legacy index
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+        if(matarrayindex.eq.0)then
+          CND=0.0; DEN=0.0; SHT=0.0 
+        else
+          CND=matdbcon(matarrayindex)
+          DEN=matdbden(matarrayindex)
+          SHT=matdbsht(matarrayindex)
+        endif
 
 C Create the control volume and node.
         CALL GCOORD(ISP1,IEG,DISX,DISY,DISZ,GLBX,GLBY,GLBZ)
@@ -780,10 +786,7 @@ C *********************************************************************
       SUBROUTINE LMPCRN(IZ,ICR)
 #include "building.h"
 #include "esprdbfile.h"
-
-C << note this subroutine assumes that the model is associated
-C << with a binary version of the materials database. It must
-C << be updated to use the material array structures.
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -797,8 +800,6 @@ C << be updated to use the material array structures.
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
 
-      CHARACTER PNM*72,TL*72
-
 C Determine the lumped corner thermophysical properties.
       VOLML=0.
       DNHCL=0.
@@ -810,8 +811,17 @@ C Determine the lumped corner thermophysical properties.
       DO 10 IY=1,NDYC(ICR)
       DO 10 IX=1,NDXC(ICR)
         IEL=ITPCRN(ICR,IX,IY,IDZ)
-        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,DBSHT,E,A,DRV,TL,PNM)
-        IF(IER.NE.0)STOP "error (415): while reading primative db."
+        matarrayindex=IEL   ! which legacy index
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+        if(matarrayindex.eq.0)then
+          CND=0.0; DBDEN=0.0; DBSHT=0.0 
+        else
+          CND=matdbcon(matarrayindex)
+          DBDEN=matdbden(matarrayindex)
+          DBSHT=matdbsht(matarrayindex)
+        endif
+
         VL=DZC(ICR,IDZ)*DYC(ICR,IY)*DXC(ICR,IX)
         VOLML=VOLML+VL
         DNHCL=DNHCL+DBDEN*DBSHT*VL
@@ -921,10 +931,7 @@ C *********************************************************************
       SUBROUTINE DISCRN(IZ,ICR)
 #include "building.h"
 #include "esprdbfile.h"
-
-C << note this subroutine assumes that the model is associated
-C << with a binary version of the materials database. It must
-C << be updated to use the material array structures.
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -937,8 +944,6 @@ C << be updated to use the material array structures.
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
       COMMON/GR3D80/NNDS,NCNV,IR,ND1
       COMMON/GR3D110/ICVS,ICNC,INDC,INDD,ITAQ,ITLW,ILWV,ITF3
-
-      CHARACTER PNAM*72,TITL*72
 
       ISP1=-3
       IS1=ISFCRN(ICR,1)
@@ -968,8 +973,16 @@ C << be updated to use the material array structures.
         DISX=(X1+X2)/2.
         DELX=X2-X1
         IEL=ITPCRN(ICR,IX,IY,IL)
-        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DEN,SHT,E,A,DRV,TITL,PNAM)
-        IF(IER.NE.0)STOP "error (419): while reading primative db."
+        matarrayindex=IEL   ! which legacy index
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+        if(matarrayindex.eq.0)then
+          CND=0.0; DEN=0.0; SHT=0.0 
+        else
+          CND=matdbcon(matarrayindex)
+          DEN=matdbden(matarrayindex)
+          SHT=matdbsht(matarrayindex)
+        endif
 
 C Create the control volume and node.
         CALL GCOORD(ISP1,ICR,DISX,DISY,DISZ,GLBX,GLBY,GLBZ)

@@ -2660,8 +2660,18 @@ C << some variables are off - further debugging required.
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)
 
+C Establish if material data arrays have been filled. If not return.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so admit-',
+     &    'tance of construction attributes cannot be calculated.','W')
+        return
+      endif
+
 C Pick up general description of the composite.
-      ier=0
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
       
 C ESP-r defines layers from outside to inside. The code in
@@ -2672,31 +2682,24 @@ C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
       call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
       do 5 IL=1,LAYERS(IFOC)
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IFOC,IL)   ! which array index
-          if(matarrayindex.ge.0)then
+        matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+        if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRV=1.0
-              TITL='GAPS'; NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+          if(matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+            E=0.99; A=0.99; DRV=1.0
+            TITL='GAPS'; NAM='AIR'
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
-        else
-
-C << if material arrays were filled there is no need for this call >>
-          CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
-     &      DBSHT,E,A,DRV,TITL,NAM)
         endif
         layer=layer-1
         thick(layer)=DTHK(IFOC,IL)
