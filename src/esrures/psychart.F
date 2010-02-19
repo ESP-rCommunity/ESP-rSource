@@ -54,7 +54,8 @@ C component status, act = 'u' for user supplied points.
       CHARACTER H*72,HOLD*24,act*1,pcname*15,pcnam1*15,head*124
       CHARACTER DESCRH*5,outs*124,DESCR*7,DESCR1*10
       CHARACTER ETEXT*124,PDESCR*60,SDESCR*44
-      logical ok,dok,ask
+      logical ok,dok,ask,unixok
+      
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -356,8 +357,10 @@ C indx is the plant component number in the network.
 
 C Obtain the data for this selected component
             CALL fnddat(itstep,mcomp(1),ier)
+            call isunix(unixok)
             if(ier.ne.0)then
-              write(6,*) 'An error in fnddat ',itstep,mcomp(1),ier
+              if(unixok)write(6,*) 'An error in fnddat ',itstep,
+     &          mcomp(1),ier
               goto 99
             endif
 
@@ -407,7 +410,7 @@ C Ask whether user wants to step forwards, backwards or return.
       elseif(ino.eq.7)then
 
 C Several timesteps.
-C TSTART and TFINISH - start and finish timesteps from 00h00 on the 
+C TSTART and TFINSH - start and finish timesteps from 00h00 on the 
 C first day of output.
         if(IMDRW2.eq.0)then
           call edisp(iuout,'Nothing to plot yet...')
@@ -426,9 +429,12 @@ C first day of output.
         istart=((ioh1-1)+(iods-IPSDS)*24)*npts
         if(istart.eq.0)istart=1
         iend  =((ioh2)+(iodf-IPSDS)*24)*npts-1
-        TSTART=float(istart)
-        TFINSH=float(iend)
-        write(6,*) 'start and finish for ',TSTART,TFINSH,ctime
+
+C Debug.
+C        TSTART=float(istart)
+C        TFINSH=float(iend)
+C        write(6,*) 'start and finish for ',TSTART,TFINSH,ctime
+
         do 200 ii=istart, iend, nout
           ctime=ctime+(enterval*float(nout))
           iday=INT(ctime)
@@ -453,7 +459,10 @@ C first day of output.
               WRITE(DESCRH,'(i2,a1,i2)')INT(TIME),'h',MINU
             ENDIF
           endif
-          write(6,*) ' *200 ii ctime iday time ',ii,ctime,iday,time
+
+C Debug.
+C          write(6,*) ' *200 ii ctime iday time ',ii,ctime,iday,time
+
           write(outs,'(a,i4,4a)') 'The timestep (',ii,') is ',
      &      descrh,' on ',DESCR1
 
@@ -477,8 +486,9 @@ C indx is the plant component number in the network.
 
 C Obtain the data for this selected component
             CALL fnddat(ii,mcomp(1),ier)
+            call isunix(unixok)
             if(ier.ne.0)then
-              write(6,*) 'An error in fnddat ',ii,mcomp(1),ier
+              if(unixok)write(6,*)'An error in fnddat ',ii,mcomp(1),ier
               goto 98
             endif
 
@@ -564,9 +574,9 @@ C#include "building.h"
       CHARACTER PUTS*15,outs*124
       logical colok
 #ifdef OSX
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
 #else
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
 #endif
 
       colok=.false.
@@ -593,7 +603,8 @@ C#include "building.h"
               if(ICM.gt.nzonec) ICM=(IPCOMP-100)-nzonec
               call winscl('z',ICM)
             endif
-            call wstxpt(ixs+4,iys-4,puts)
+            iid1=ixs+4; iid2=iys-4;
+            call wstxpt(iid1,iid2,puts)
             if(colok)call winscl('-',0)
             call forceflush()
           ELSEIF(IPCOMP.GT.0.AND.IPCOMP.LE.100) THEN 
@@ -607,24 +618,27 @@ C Keep track of components plotted
               if(ICM.gt.nzonec) ICM=IPCOMP-nzonec
               call winscl('z',ICM)
             endif
-            call wstxpt(ixs+4,iys-4,puts)
+            iid1=ixs+4; iid2=iys-4;
+            call wstxpt(iid1,iid2,puts)
             if(colok)call winscl('-',0)
             call forceflush()
           ELSEIF(IPCOMP.EQ.0) THEN
             WRITE(PUTS,*) 'Ext db'
             call u2pixel(x,y,ixs,iys)
             icm=0
-            call wstxpt(ixs+4,iys-4,puts)
+            iid1=ixs+4; iid2=iys-4;
+            call wstxpt(iid1,iid2,puts)
           ELSEIF(IPCOMP.LT.0) THEN
             WRITE(PUTS,*) 'Zone',-IPCOMP
             call u2pixel(x,y,ixs,iys)
             icm=0
-            call wstxpt(ixs+4,iys-4,puts)
+            iid1=ixs+4; iid2=iys-4; 
+            call wstxpt(iid1,iid2,puts)
           ENDIF
         ENDIF 
-        call u2pixel(x,y,ix,iy)
+        call u2pixel(x,y,iix,iiy)
         if(colok.and.icm.ne.0)call winscl('z',ICM)
-        call ecirc(ix,iy,3,1)
+        call ecirc(iix,iiy,3,1)
         if(colok)call winscl('-',0)
         IF(IPCOMP.GT.0.AND.IPCOMP.LE.100) IPLOTREC(IPCOMP,NOD)=1
         call forceflush()
@@ -986,8 +1000,10 @@ C Case where TD<60 and GS>30
             ENDIF
             call forceflush()
           ENDIF
-C Debug...
+
+C Debug.
 C          write(6,*) TD,xmax,xmax/2.
+
           call eclose(TD,real(int(xmax/2.)),0.001,close)
 C          IF(TD.EQ.int(xmax/2.)) THEN
           IF(close) THEN

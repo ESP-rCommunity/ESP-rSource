@@ -35,15 +35,12 @@ C the results database.
 
       SUBROUTINE MOTHKE(ICOMP,ISUR)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
@@ -57,7 +54,7 @@ C Read (silently) in the zone geometry data.
       IUNITF=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
       else
         call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
       endif
@@ -138,8 +135,7 @@ C attributes are known.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
-      
-      integer lnblnk  ! function definition
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -148,110 +144,25 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
-      DIMENSION ICLN(30)
+      logical closemat1,closemat2
 
-      CHARACTER outs*124,NAM*72,TITL*72,CSTR*25
+      CHARACTER outs*124,CSTR*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
-C Open the material db if not already done.
-      IF(.NOT.MATDBOK)THEN
-        IER=0
-        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        IF(ier.ne.0)THEN
-          write(outs,'(3a)') ' No materials database ',
-     &     LFMAT(1:lnblnk(LFMAT)),' found.'
-          call edisp(iuout,outs)
-          MATDBOK=.FALSE.
-        else
-
-C Also check to see if the file has correct info. 
-          IREC=601
-          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
-     &      (ICLN(I),I=1,30)
-          if(NCLASS.LE.0)then
-            goto 1000   ! no classifications so try alternatives
-          else
-            MATDBOK=.TRUE.
-            matver = 0.0
-            goto 139  !  a binary file found so carry on.
-          endif
- 1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
-          if(ier.eq.-2)then
-            ier=0
-            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
-            if(ier.ne.0)then
-              call usrmsg('No readable materials database was found',
-     &                  'or file was corrupt','W')
-              MATDBOK=.FALSE.
-              return
-            else
-              call eclose(matver,1.1,0.001,closemat)
-              if(closemat)then
-                call edisp(iuout,' Filled material data arrays...')
-                MATDBOK=.TRUE.
-              else
-                call usrmsg(
-     &            'No readable material database was found. ',
-     &            'check other warnings for advise.','W')
-                MATDBOK=.FALSE.
-                return
-              endif
-            endif
-          elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,closemat)
-            if(closemat)then
-              call edisp(iuout,' Filled material data arrays...')
-              MATDBOK=.TRUE.
-            endif
-          endif
-        endif
-      ENDIF
-
-C If the common block MLC has not yet been filled the read in the
-C conposite construction database.
- 139  IF(.NOT.MLDBOK)THEN
-        CALL ERMLDB(0,iuout,IER)
-        IF(IER.NE.0)THEN
-          call edisp(iuout,' Unable to gather information from mlc db.')
-          return
-        ELSE
-          MLDBOK=.TRUE.
-        ENDIF
-      ENDIF
+C Use material arrays if available. This also assumes that constructions will
+C have been filled after the model cfg file was scanned.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('GZPDBE: The materials arrays are incomplete so',
+     &    'this report might not work correctly.','W')
+        return
+      endif
 
 C Clear IPRZ to 1 (not 0 since that is an air gap).
       do 45 ISUR=1,NZSUR(ICOMP)
@@ -262,7 +173,7 @@ C Clear IPRZ to 1 (not 0 since that is an air gap).
 
 C If there is a mlc db scan it for properties of surfaces.
 C Reset number of layers, if at end of loop it is still 0 then
-C the element was not found.
+C the construction was not found.
       do 44 ISUR=1,NZSUR(ICOMP)
         CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
         ICKNE=0
@@ -270,27 +181,8 @@ C the element was not found.
           IF(DESC(IC)(1:12).EQ.SSMLCN(ICN))THEN
             ICKNE=LAYERS(IC)
 
-C Gather information about each layer. Read in the material db info.
-C But we do not do anything with the material properties, why are
-C we reading the raw data?
+C Gather material index about each layer. IPRZ is used elsewhere.
             DO 23 IL=1,LAYERS(IC)
-              if(closemat)then
-                legmat=IPR(IC,IL)   ! which legacy index
-                if(legmat.ge.0)then
-                  matarrayindex=mathash(legmat)  ! find matching array index
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
-                  E=matdbine(matarrayindex)
-                  A=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
-                  write(NAM,'(a)') matname(matarrayindex)(1:32)
-                endif
-              else
-                CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
-     &             DBSHT,E,A,DRV,TITL,NAM)
-              endif
               IPRZ(ISUR,IL)=IPR(IC,IL)
    23       CONTINUE
           ENDIF
@@ -369,16 +261,13 @@ C VAL1(1+NN+2) inside air temperature.
 
       SUBROUTINE MOFGET(ICOMP,ISUR,IDAY)
 #include "building.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
+#include "site.h"
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
-      common/ground/grdtmp(12,mgrdp)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -647,10 +536,10 @@ C IPRZ is material db ref for each layer.
       character ZN*12
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iid1,iid2    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
 #endif
 
 C Re-establish available colours.
@@ -670,8 +559,10 @@ C Get and display results.
       icnt=0
 
 C Draw construction section.
-      call wstxpt(igl,igt-10,TCSTR)
-      call wstxpt(igr,igt-10,ZN)
+      iid1=igl; iid2=igt-10;
+      call wstxpt(iid1,iid2,TCSTR)
+      iid1=igr; iid2=igt-10;
+      call wstxpt(iid1,iid2,ZN)
       igr=13
       X=0.
       YD=TMAX-TMIN
@@ -764,8 +655,10 @@ C If possible reset the foreground colour to white and redraw the line.
             endif
 
 C Re-Draw construction section.
-            call wstxpt(igl,igt-10,TCSTR)
-            call wstxpt(igr,igt-10,ZN)
+            iid1=igl; iid2=igt-10;
+            call wstxpt(iid1,iid2,TCSTR)
+            iid1=igr; iid2=igt-10;
+            call wstxpt(iid1,iid2,ZN)
             igr=13
             X=0.
             YD=TMAX-TMIN

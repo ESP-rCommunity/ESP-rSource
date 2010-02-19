@@ -101,7 +101,7 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10,H*72
-      CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72,cancel*6
+      CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72,cancel*6,outs*124
       LOGICAL OK,DOK
       integer ivalold
 
@@ -290,9 +290,11 @@ C Return to calling module
       GOTO 20
 
    1  if(IOS.eq.2)then
-        write(6,*) 'EASKI: permission error composing prompt.'
+        write(outs,*) 'EASKI: permission error composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKI: error composing message or prompt.'
+        write(outs,*) 'EASKI: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
 
@@ -528,12 +530,13 @@ C Return to calling module
       GOTO 20
 
    1  if(IOS.eq.2)then
-        write(6,*) 'EASKR: permission error composing prompt.'
+        write(outs,*) 'EASKR: permission error composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKR: error composing message or prompt.'
+        write(outs,*) 'EASKR: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
-
  999  if(IOS.eq.2)then
         WRITE(outs,*) 'EASKR: write permission or invalid real: ',RVAL
         call edisp(iuout,outs)
@@ -575,7 +578,7 @@ C by the user.
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*10,STR2*10,H*72
-      CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72
+      CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72,outs*124
       LOGICAL OK,close,DOK
 
       IER=0
@@ -752,10 +755,12 @@ C Return to calling module
  89   CALL USRMSG(' ',' Did not understand, try again..','-')
       GOTO 20
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKE: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKE: error composing message or prompt.'
+        write(outs,*) 'EASKE: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
 
@@ -783,11 +788,12 @@ C << to the GTK version. It should be extended to support browsing etc.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      character h*72
       common/pophelp/h(60)
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
-      CHARACTER WORD144*144,H*72,A*1,LASTS*144,OUTSTR*124,dh*72
+      CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124,dh*72,outs*124
       LOGICAL OK,DOK
 
    20 IER=0
@@ -945,24 +951,30 @@ C Must have input a character string.
 
       RETURN
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKF: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKF: error composing message or prompt.'
+        write(outs,*) 'EASKF: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
    2  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKF: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKF: error composing prompt.'
+        write(outs,*) 'EASKF: error composing prompt.'
+        call edisp(iuout,outs)
       endif
       return
    3  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKF: permissions exception while writing file name.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKF: error writing file name.'
+        write(outs,*) 'EASKF: error writing file name.'
+        call edisp(iuout,outs)
       endif
       return
       END
@@ -1001,7 +1013,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,outs*124
       LOGICAL OK,DOK
 
    20 WORD=' '
@@ -1150,17 +1162,21 @@ C Must have input a character string.
 
       RETURN
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKS: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKS: error composing message or prompt.'
+        write(outs,*) 'EASKS: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
    2  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKS: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKS: error composing prompt.'
+        write(outs,*) 'EASKS: error composing prompt.'
+        call edisp(iuout,outs)
       endif
       return
       END
@@ -2148,14 +2164,16 @@ C passed within the parameter list text.
       SUBROUTINE MENUATOL(prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
      &  GOPT,HOPT,IOPT,JOPT,KOPT,LOPT,index,idindex,nhelp)
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      character h*72
       common/pophelp/h(60)
       LOGICAL SELECT
       CHARACTER*(*) prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
       CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
 
       DIMENSION VERT(16)
-      CHARACTER VERT*48,KEY*1,prompt2*36,h*72
+      CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
 
 C Generate default help text, clear local menu string and remember
 C the incomming index.
@@ -2327,10 +2345,12 @@ C Not one of the legal menu choices.
       goto 92
 
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'MENUATOL: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'MENUATOL: error composing message or prompt.'
+        write(outs,*) 'MENUATOL: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
 
@@ -2348,7 +2368,7 @@ C If NHELP=-1 there is no default option.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       CHARACTER*(*) MSG1,MSG2
-      CHARACTER ANS*2,MSG3*124,H*72
+      CHARACTER ANS*2,MSG3*124,H*72,outs*124
       logical ok,dok,DEFLT
 
 C Check if a default defined and use local var for NHELP.
@@ -2430,10 +2450,12 @@ C Querry yes or no or default.
       RETURN
 
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'ASKOK: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'ASKOK: error composing prompt.'
+        write(outs,*) 'ASKOK: error composing prompt.'
+        call edisp(iuout,outs)
       endif
       RETURN
       END
@@ -2457,7 +2479,7 @@ C graphic window.
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
-      CHARACTER ANS*2,MSG3*124,H*72
+      CHARACTER ANS*2,MSG3*248,H*72
 
 C Generate custom help text and copy NHELP to local variable.
       NHL=NHELP
@@ -2511,7 +2533,7 @@ C Setup a single line menu to pick from via EASKS.
      &    ' i) ',GOPT(1:lg),' ? '
         endif
         ans = '  '
-        call usrmsg(msg1,msg3,'?')
+        call lusrmsg(msg1,msg3,'?')
         read(iuin,'(A2)')ANS
 
         IF(ANS(1:1).EQ.'a'.OR.ANS(1:1).EQ.'A')THEN
@@ -3513,7 +3535,8 @@ C For types -6 writes to ICOUT,
 C For type 8 manages the text which is passed to egdisp for
 C treatment as a scrolling window.
 C Use egdispclr to clear the display window on a new page.
-C The maximum width of text which can be accommodated is 124 characters.
+C The maximum width of text which can be accommodated to a graphic
+C context is 124 characters.
       SUBROUTINE EDISP(ITRU,MSG)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -3521,6 +3544,7 @@ C The maximum width of text which can be accommodated is 124 characters.
       common/textbufl/indexbuf,lnbuf(360)
       CHARACTER*(*) MSG
       CHARACTER WWMSG*124,dispbuf*124
+      logical unixok
 
 C Temporarily set ICOUT.
       ICOUT=0
@@ -3574,13 +3598,25 @@ C Write this to standard text window.
       ENDIF
 
       RETURN
-   1  if(IOS.eq.2)then
-        write(6,*) 'edisp: permission error writing text: ',MSG
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        if(lnm.le.1)then
+          write(6,*) 'edisp: permission error writing blank/null '
+        else
+          write(6,*) 'edisp: permission error writing text: ',MSG
+        endif
       else
-        write(6,*) 'edisp: error writing text: ',MSG
+        if(lnm.le.1)then
+          write(6,*) 'edisp: error writing blank/null '
+        else
+          write(6,*) 'edisp: error writing text: ',MSG
+        endif
       endif
       return
-   2  if(IOS.eq.2)then
+   2  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
         write(6,*) 'edisp: permission error writing text: ',WWMSG
       else
         write(6,*) 'edisp: error writing text: ',WWMSG
@@ -3659,7 +3695,8 @@ C Set folder separator (fs) to \ or / as required.
   43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
      &    iswidth,listact,ino,nhelp)
 
-      write(6,*)listact,'  ',ino
+C Debug
+C      write(6,*)listact,'  ',ino
       if(ino.eq.-1)then
 
 C If no action return.
@@ -3667,7 +3704,7 @@ C If no action return.
       elseif(ino.eq.(nlist+1))then
 
 C If signaled ok then attempt to write out file.
-        write(6,*)sstr(1)
+C        write(6,*)sstr(1)
         tfile=sstr(1)
         ltf=max(1,LNBLNK(tfile))
         iuf=ifil+1
@@ -3802,7 +3839,8 @@ C Set folder separator (fs) to \ or / as required.
   43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
      &    iswidth,listact,ino,nhelp)
 
-      write(6,*)listact,'  ',ino
+C Debug.
+C      write(6,*)listact,'  ',ino
       if(ino.eq.-1)then
 
 C If no action return.
@@ -3810,7 +3848,7 @@ C If no action return.
       elseif(ino.eq.(nlist+1))then
 
 C If signaled ok then attempt to write out file.
-        write(6,*)sstr(1)
+C        write(6,*)sstr(1)
         tfile=sstr(1)
         ltf=max(1,lnblnk(tfile))
         if(listact(2).eq.1)then
@@ -3820,7 +3858,8 @@ C If signaled ok then attempt to write out file.
           LN=max(1,lnblnk(gxwdcmd))
           write(gcmd,'(3a)') gxwdcmd(1:LN),' ',tfile(1:ltf)
         endif
-        write(6,*)gcmd
+C Debug
+C        write(6,*)gcmd
         call runit(gcmd,'-')
         return
       elseif(ino.eq.1)then
@@ -4113,9 +4152,11 @@ C current line index.
       RETURN
 
    1  if(IOS.eq.2)then
-        write(6,*) 'EHELPD: permission error writing help message'
+        write(outs,*) 'EHELPD: permission error writing help message'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EHELPD: error writing help message'
+        write(outs,*) 'EHELPD: error writing help message'
+        call edisp(iuout,outs)
       endif
       return
       END
@@ -4177,16 +4218,18 @@ C dupphelp copies current pop-uphelp common into a string array so that
 C C code does not destroy it.
       SUBROUTINE dupphelp(dh)
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       dimension dh(60)
-      CHARACTER H*72,dh*72
+      CHARACTER H*72,dh*72,outs*124
 
       DO 50 I=1,60
         last=max(LNBLNK(h(I)),1)
         WRITE(dh(i),'(A)',iostat=ios,err=1)h(I)(1:last)
    50 CONTINUE
       RETURN
-   1  write(6,*) 'dupphelp: error copying help line. '
+   1  write(outs,*) 'dupphelp: error copying help line. '
+      call edisp(iuout,outs)
       return
       END
 
@@ -4214,13 +4257,15 @@ C pophelp where IL is the number of lines of help under consideration.
 
 C ************* EVSET
 C EVSET provides setup environment for wire frame view w/in prj.
-C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
+C IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
 
-      SUBROUTINE EVSET(ITRC,act,IER)
+      SUBROUTINE EVSET(act,IER)
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
+#include "esprdbfile.h"
+#include "material.h"
 #include "espriou.h"
 
       COMMON/FILEP/IFIL
@@ -4236,12 +4281,6 @@ C then it represents the zone which is currently being edited.
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/PREC8/SLAT,SLON
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, ext = 2,
 C       partn = 3, similar = 4, surfs + obs+ ground = 5, ground only = 6
@@ -4281,8 +4320,10 @@ C ITPPSW current view - perspective/plan/south/west
      &            'Sep','Oct','Nov','Dec'/
 #ifdef OSX
       integer ivt2,ivt3,ivt4  ! for use with viewtext
+      integer ICPMOD          ! passed from tchild
 #else
       integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
+      integer*8 ICPMOD          ! passed from tchild
 #endif
 
 C If not in graphic mode return.
@@ -4291,7 +4332,6 @@ C If not in graphic mode return.
 C Initial menu entry setup with one line header, 3 control lines.
       redraw=.false.
       ITPPSW=0
-      IUF=IFIL+1
 
 C Menu loop.
    92 IER=0
@@ -4414,11 +4454,11 @@ C If image info altered (view point) then update display.
           MODBND=.FALSE.
           MODIFY=.FALSE.
         elseif(ITPPSW.eq.1)then
-          if(redraw)call PLELEV(IUF,'P',ier)
+          if(redraw)call PLELEV('P')
         elseif(ITPPSW.eq.2)then
-          if(redraw)call PLELEV(IUF,'S',ier)
+          if(redraw)call PLELEV('S')
         elseif(ITPPSW.eq.3)then
-          if(redraw)call PLELEV(IUF,'E',ier)
+          if(redraw)call PLELEV('E')
         endif
       ENDIF
 
@@ -4670,7 +4710,7 @@ C Get file name.
           call FPOPEN(IUO,ISTAT,1,3,LFIL)
           write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
         endif
-        CALL EMKVIEW(ITRC,IUO,CFGOK,IER)
+        CALL EMKVIEW(IUO,CFGOK,IER)
         IF(IER.NE.0)THEN
           CALL USRMSG(' ',
      &          'Problem creating perspective image file!','W')

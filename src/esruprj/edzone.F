@@ -34,6 +34,7 @@ C SCRZONE provides initial form of an enclosure as either a prism or
 C an extrusion. IER=0 OK. 
       SUBROUTINE SCRZONE(ICOMP,IER)
 #include "building.h"
+#include "model.h"
 
 C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
 #include "geometry.h"
@@ -51,13 +52,13 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
      &          SUSE(MS,2),SPARENT(MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      Logical MODIFY,MODLEN,MODBND
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
+     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -73,12 +74,14 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
       CHARACTER HOLD*32
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character MODE*4,SSPARENT*12,fs*1
-      CHARACTER OUTSTR*124,H*72,ZN*12
+      CHARACTER OUTSTR*124,H*72,ZN*12,outs*124
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
+      real DX1,DY1,DZ1  ! to avoid name clash with geometry.h
+      real XO1,YO1,ZO1
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -176,12 +179,12 @@ C Allow user choices of beginning as a simple shape (with image feedback).
      &    'rectangular plan','polygon plan','general 3D',
      &    'bitmap',ishape,22)
  144  IF(ishape.eq.1)THEN
-        XO=0.
-        YO=0.
-        ZO=0.
-        DX=5.0
-        DY=3.0
-        DZ=2.7
+        XO1=0.
+        YO1=0.
+        ZO1=0.
+        DX1=5.0
+        DY1=3.0
+        DZ1=2.7
         H(1)='The specification of a rectangular extrusion requires'
         H(2)='the specification of an origin (relative to the site'
         H(3)='coordinate system, and a length, depthand height.'
@@ -191,26 +194,30 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         H(7)='The rectangle may then be rotated by an angle measured'
         H(8)='from the X axis, anticlockwise positive.'
         HOLD=' '
-        WRITE(HOLD,'(1x,3f8.3)')XO,YO,ZO
+        WRITE(HOLD,'(1x,3f8.3)')XO1,YO1,ZO1
         CALL EASKS(HOLD,' ','Origin X,Y,Z?',
      &           32,' 0. 0. 0. ','origin coord',IER,8)
         K=0
-        CALL EGETWR(HOLD,K,XO,-999.9,999.9,'W','X origin',IER)
-        CALL EGETWR(HOLD,K,YO,-999.9,999.9,'W','Y origin',IER)
-        CALL EGETWR(HOLD,K,ZO,-9.9,999.9,'W','Z origin',IER)
+        CALL EGETWR(HOLD,K,XO1,-999.9,999.9,'W','X origin',IER)
+        CALL EGETWR(HOLD,K,YO1,-999.9,999.9,'W','Y origin',IER)
+        CALL EGETWR(HOLD,K,ZO1,-9.9,999.9,'W','Z origin',IER)
+	write(outs,'(a,3f9.4)') 'Origin is ',XO1,YO1,ZO1
+	call edisp(iuout,outs)
 
  242    H(1)='The length (with no rotation) is along the X axis.'
         H(2)='The width (with no rotation) is along the Y axis.'
         H(3)='The height is along the Z axis.'
         HOLD=' '
-        WRITE(HOLD,'(1x,3f8.3)')DX,DY,DZ
+        WRITE(HOLD,'(1x,3f8.3)')DX1,DY1,DZ1
         CALL EASKS(HOLD,' ','Rectangle length, width and height?',
      &             32,' 2.5 3.5 2.7 ','rectangle size',IER,3)
         K=0
-        CALL EGETWR(HOLD,K,DX,0.001,99.9,'W','box width',IER)
-        CALL EGETWR(HOLD,K,DY,0.001,99.9,'W','box depth',IER)
-        CALL EGETWR(HOLD,K,DZ,0.001,99.9,'W','box height',IER)
-        if(DX.lt.0.001.or.DY.lt.0.001)goto 242
+        CALL EGETWR(HOLD,K,DX1,0.001,99.9,'W','box width',IER)
+        CALL EGETWR(HOLD,K,DY1,0.001,99.9,'W','box depth',IER)
+        CALL EGETWR(HOLD,K,DZ1,0.001,99.9,'W','box height',IER)
+        if(DX1.lt.0.001.or.DY1.lt.0.001)goto 242
+	write(outs,'(a,3f9.4)') 'Width depth height is ',DX1,DY1,DZ1
+	call edisp(iuout,outs)
 
         H(1)='Orientation is the angle between the length (DX) side'
         H(2)='of the rectangle and the X-axis, anticlockwise +ve.'
@@ -218,11 +225,23 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         CALL EASKR(ANG,' ','Rectangle orientation?',
      &       -359.0,'W',359.0,'W',0.0,'box orientation',IER,2)
 
-C Convert box into a gen description.
-        CALL ERECC(XO,YO,ZO,DX,DY,DZ,ANG)
+        H(1)='Elevation is the angle between the length (DX) side'
+        H(2)='of the rectangle and the horizon, +ve is an upwards'
+        H(3)='incline and -ve is a downwards incline. Zero results'
+        H(4)='in a standard horizontal base.'
+        ANGE=0.
+        CALL EASKR(ANGE,' ','Rectangle elevation (see help)?',
+     &       -359.0,'W',359.0,'W',0.0,'box elevation',IER,4)
+
+C Convert box into a gen description using two rotation angles.
+        CALL ERECC3A(XO1,YO1,ZO1,DX1,DY1,DZ1,ANG,ANGE,0.0)
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+        MODLEN=.TRUE.
+        ZBFLG(ICOMP)=0
       ELSEIF(ishape.eq.2)THEN
 
 C User begins with an extruded shape.
@@ -243,10 +262,6 @@ C User begins with an extruded shape.
         CALL EASKI(NW,' ','Number of walls?',
      &           3,'F',MS-2,'F',4,'no of walls',IERI,2)
         if(ieri.eq.-3) goto 42
-C        call edisp(iuout,'Input the coordinates around the base ')
-C        call edisp(iuout,'polygon ANTI-clockwise looking from the')
-C        call edisp(iuout,'top, preferably beginning from the lower ')
-C        call edisp(iuout,'left corner of the enclosure. ')
 
         DO 45 IW=1,NW
           WRITE(OUTSTR,'(A,I2,A)')' For base vertex',IW,'  X & Y:'
@@ -258,7 +273,12 @@ C        call edisp(iuout,'left corner of the enclosure. ')
           K=0
           CALL EGETWR(HOLD,K,XX(IW),-999.,999.,'W','flr X',IER)
           CALL EGETWR(HOLD,K,YY(IW),-999.,999.,'W','flr Y',IER)
+	  write(outs,'(a,i3,a,2f9.4)') 'X&Y for v ',IW,' is ',
+     &      XX(IW),YY(IW)
+	  call edisp(iuout,outs)
    45   CONTINUE
+
+C Allow user to have a 2nd chance to input the vertices.
         dok=.true.
         h(1)='If you have any doubt as to whether you entered the'
         h(2)='correct vertex coordinates you can save time by'
@@ -286,6 +306,10 @@ C Convert into a gen body and rotate if required.
         NSUR=NW+2
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=NSUR
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+        MODLEN=.TRUE.
+        ZBFLG(ICOMP)=0
       ENDIF
 
 C Begin with default assumptions for each surface then overwrite
@@ -293,7 +317,7 @@ C this if user supplied information exists.
       IF(ishape.ne.3.and.ishape.ne.4)THEN
 
 C << does this fill all of the G5 variables? >>
-        CALL FILSUR(iuout,ICOMP,0)
+        CALL FILSUR(ICOMP,0)
 
 C Update the connection list and hash.
         ICCC=NCON
@@ -398,8 +422,12 @@ C Update the connection list and hash for initial surface.
         SSUSE(iccc,1)=SUSE(1,1)
         SSUSE(iccc,2)=SUSE(1,2)
         SSPARENT(iccc)=SPARENT(1)
-        IZSTOCN(icomp,icc)=iccc
+        IZSTOCN(icomp,1)=iccc
         NCON=ICCC
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+        MODLEN=.TRUE.
+        ZBFLG(icomp)=0
       elseif(ishape.eq.4)then
 
 C Point and click on a bitmap. After return, re-scan the system
@@ -447,7 +475,10 @@ C High level info for all cases except clickonbitmap.
       NZTV(ICOMP)=NTV
 
 C Update the G7 common blocks and then assign ZBASEA.
-      call zgupdate(2,ICOMP,ier)
+      call zgupdate(1,ICOMP,ier)
+
+C Find co-planer surfaces and edges of similar materials.
+      call suredgeadj(itrc,'-',icomp,ier)
       if(ishape.eq.1)then
         ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
         ZBASEA(icomp)= SSNA(ibcs)
@@ -458,6 +489,15 @@ C Update the G7 common blocks and then assign ZBASEA.
         ibcs=IZSTOCN(icomp,IBASES(ICOMP,1))
         ZBASEA(icomp)= SSNA(ibcs)
       endif
+
+C Update the global coordinates for this zones surfaces so that
+C the subsequent wireframe image can be drawn and the bounds of
+C the zone can be calculated.
+      DO 40 J=1,NZTV(ICOMP)
+        VCOORD(ICOMP,J,1)=X(J)
+        VCOORD(ICOMP,J,2)=Y(J)
+        VCOORD(ICOMP,J,3)=Z(J)
+   40 CONTINUE
  
 C Save this to file before passing into the geometry editing facility.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -468,7 +508,7 @@ C Save this to file before passing into the geometry editing facility.
       if(newgeo)then
         call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
       else
-        call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+        call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
       endif
       IF(IER.EQ.1)THEN
         dok=.true.
@@ -508,6 +548,7 @@ C ************* NEWZONE
 C NEWZONE controls the creation of a new zone. IER=0 OK. 
       SUBROUTINE NEWZONE(ITRC,IC,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -524,10 +565,6 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
@@ -597,6 +634,7 @@ C Find out if there are geometry files in the ../zones folder.
 
 C Debug.
 C            write(6,*) ltmp
+
           else
 
 C User did not select a file. Take them back to the question.
@@ -637,7 +675,7 @@ C Scan geometry file and update control and connections.
 C Try reading in the geometry to fill in the data below.
         call eclose(gversion(IC),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
+          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
         else
           call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
         endif
@@ -671,8 +709,6 @@ C Update the connection list and then the model configuration.
         NZSUR(NCOMP)=NSUR
         NZTV(NCOMP)=NTV
         NCCODE(NCOMP)=NCOMP
-        INDUTL(NCOMP)=0
-        LUTIL(NCOMP)=' '
         if(OKC)then
           icascf(NCOMP)=0
           call CTLWRT(ICTLF,IER)
@@ -773,7 +809,7 @@ C the geometry file.
           if(newgeo)then
             call geowrite(IFIL+1,LGEOM(ic),ic,iuout,3,IER)
           else
-            call emkgeo(IFIL+1,LGEOM(ic),ic,iuout,3,IER)
+            call emkgeo(IFIL+1,LGEOM(ic),ic,3,IER)
           endif
         endif
 
@@ -817,6 +853,7 @@ C Find out if there are operation files in the model ../zones folder.
 
 C Debug.
 C                write(6,*) ltmp
+
               else
                 LTMP=DFILE
               endif
@@ -877,6 +914,7 @@ C Find out if there are construction files in the model ../zones folder.
 
 C Debug.
 C                write(6,*) ltmp
+
               else
                 LTMP=DFILE
               endif
@@ -927,6 +965,7 @@ C Find out if there are CAD (zip) files in ../zones folder.
 
 C Debug.
 C            write(6,*) ltmp
+
           else
             write(ltmp,'(a)')zonepth(1:lnblnk(zonepth))
           endif
@@ -973,6 +1012,7 @@ C ************* DELZONE
 C DELZONE systematicly removes a thermal zone.
       SUBROUTINE DELZONE(ITRC,IWHICH,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
@@ -995,10 +1035,6 @@ C espriou.h provides currentfile.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -1013,12 +1049,6 @@ C espriou.h provides currentfile.
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
@@ -1038,7 +1068,6 @@ C Anchor data.
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER LAPROB*72,LCFGF*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -1099,7 +1128,7 @@ C should be scanned and converted into flow common blocks.
           write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
           IF(ND.GE.4)THEN
             REWIND(IUM,ERR=999)
-            CALL EMFREAD(IUM,ITRC,IER)
+            CALL EMFREAD(IUM,IER)
             CALL ERPFREE(IUM,ISTAT)
           elseif((ND.eq.1.or.ND.eq.2).and.
      &            OUTSTR(1:18).EQ.'* Graphical_network')then
@@ -1110,7 +1139,7 @@ C into network flow common blocks.
             call NETREAD(IUM,'R',IER)
             CALL NETTOFLW(ier)
           endif
-C          CALL EMFREAD(IUM,ITRC,IER)
+C          CALL EMFREAD(IUM,IER)
 C          CALL ERPFREE(IUM,ISTAT)
           if(ier.ne.0)then
             CALL USRMSG(' ','Problem in flow network!','F')
@@ -1183,7 +1212,7 @@ C If one of the control loops references the zone to be deleted warn
 C the user and ask if it should be deleted.
               do 77 ik=1,ncf
                 if(ibsn(ik,1).eq.IW2.or.iban(ik,1).eq.IW2)then
-                  call LSTCNTL(iuout,0,ik,IER)
+                  call LSTCNTL(iuout,0,ik)
                   write(outs,'(a,i2,a,a)') 'Control loop ',ik,
      &              ' is specific to ',zname(IW2)
                   DOK=.true.
@@ -1195,7 +1224,7 @@ C the user and ask if it should be deleted.
 C User requests deletion of control loop. Do this and then decrement all
 C icascf links to subsequent controls.
                     icfoc=0
-                    call ADDCNTL(icfoc,'D',IER)
+                    call ADDCNTL(icfoc,'D')
                     do 245 IXI=IW2,NCOMP
                       if(icascf(IXI).gt.ik)then
                         write(outs,'(3A)') ' shifting zone-ctl link ',
@@ -1229,7 +1258,7 @@ C If one of the ventilation control loops references the zone to be deleted warn
 C the user and ask if it should be deleted.
               do 79 ik=1,ncc
                 if(ifsn(ik,1).eq.IW2.or.ifan(ik,1).eq.IW2)then
-                  call LSTCNTL(itru,2,ik,IER)
+                  call LSTCNTL(itru,2,ik)
                   write(outs,'(a,i2,a,a)') 'Ventilation control loop ',
      &              ik,' is specific to ',zname(IW2)
                   DOK=.true.
@@ -1238,7 +1267,7 @@ C the user and ask if it should be deleted.
                   CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
                   if(ok)then
                     icfoc=2
-                    call ADDCNTL(icfoc,'D',IER)
+                    call ADDCNTL(icfoc,'D')
                   endif
                 endif
   79          continue
@@ -1259,7 +1288,74 @@ C Shift sensor/actuator zone references > IW2 down one.
                 endif
   80          continue
             endif
-          endif
+            
+            if(nCFCctlloops.gt.0)then
+
+C If one of the control loops references the zone to be deleted warn
+C the user and ask if it should be deleted.
+              ik = 1
+              do while(ik.le.nCFCctlloops)
+                if(iCFCsensor(ik,1).eq.IW2.or.                          ! senses zone temp. 
+     &          (iCFCsensor(ik,1).eq.-2.and.iCFCsensor(ik,2).eq.IW2)    ! senses mix dbT and MRT
+     &          .or.
+     &          (iCFCsensor(ik,1).eq.-4.and.iCFCsensor(ik,2).eq.IW2)    ! senses incidient solar rad. on surface
+     &          .or.iCFCactuator(ik,2).eq.IW2)then
+                  call LSTCNTL(iuout,6,ik)
+                  write(outs,'(a,i2,a,a)') 'Control loop ',ik,
+     &              ' is specific to ',zname(IW2)
+                  DOK=.true.
+                  h(1)='The control sensor or actuator references this'
+                  h(2)='specific zone. '
+                  CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
+                  if(ok)then
+
+C User requests deletion of control loop. Do this and then decrement all
+C icascf links to subsequent controls.
+                    icfoc=6
+                    call ADDCNTL(icfoc,'D')
+                    do 247 IXI=IW2,NCOMP
+                      if(icascf(IXI).gt.ik)then
+                        write(outs,'(3A)') ' shifting zone-ctl link ',
+     &                    zname(IXI),'...'
+                        icascf(IXI)=icascf(IXI)-1
+                      endif
+  247               continue
+                    ik=ik-1 !decrement the control loop counter because control loops have shifted up by 1
+                  endif
+                endif
+                ik = ik +1
+              end do
+
+C Shift sensor/actuator zone references > IW2 down one.
+              do 82 ik=1,nCFCctlloops
+                if(iCFCsensor(ik,1).gt.IW2)then       !senses zone temp.
+                  iCFCsensor(ik,1)=iCFCsensor(ik,1)-1
+                  write(outs,'(a,i2)') 
+     &              'Shifting sensor position in control loop',ik
+                  call edisp(iuout,outs)
+                elseif(iCFCsensor(ik,1).eq.-2.and.    !senses mix dbT and MRT
+     &                 iCFCsensor(ik,2).gt.IW2)then
+                  iCFCsensor(ik,2)=iCFCsensor(ik,2)-1
+                  write(outs,'(a,i2)') 
+     &              'Shifting sensor position in control loop',ik
+                  call edisp(iuout,outs)
+                elseif(iCFCsensor(ik,1).eq.-4.and.    !senses solar incident rad. on surface
+     &                 iCFCsensor(ik,2).gt.IW2)then
+                  iCFCsensor(ik,2)=iCFCsensor(ik,2)-1
+                  write(outs,'(a,i2)') 
+     &              'Shifting sensor position in control loop',ik
+                  call edisp(iuout,outs)
+                endif
+                if(iCFCactuator(ik,2).gt.IW2)then
+                  iCFCactuator(ik,2)=iCFCactuator(ik,2)-1
+                  write(outs,'(a,i2)') 
+     &              'Shifting actuator position in control loop',ik
+                  call edisp(iuout,outs)
+                endif
+  82          continue
+            endif
+
+            endif
         endif
       endif
       
@@ -1272,34 +1368,28 @@ C the values of ICT, IE2 and IC2.
           changed=.FALSE.
           call eclose(gversion(IX),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IX),IX,1,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(IX),IX,1,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(IX),IX,1,0,iuout,IER)
           endif
           do 28 ISX=1,NSUR
             ioc=IZSTOCN(ix,isx)
-            if(SOTHER(ISX,1)(1:12).eq.zname(IW2)(1:12))then
-              SOTHER(ISX,1)='UNKNOWN'
-              SOTHER(ISX,2)='0'
-              SOTHER(ISX,3)='0'
-              SSOTHER(ioc,1)='UNKNOWN'
-              SSOTHER(ioc,2)='0'
-              SSOTHER(ioc,3)='0'
-              ICT(ioc)=-1
-              IE2(ioc)=0
-              IC2(ioc)=0
-              changed = .true.
-            elseif(SOTHER(ISX,1)(1:4).eq.'WITH')then
-              SOTHER(ISX,1)='UNKNOWN'
-              SOTHER(ISX,2)='0'
-              SOTHER(ISX,3)='0'
-              SSOTHER(ioc,1)='UNKNOWN'
-              SSOTHER(ioc,2)='0'
-              SSOTHER(ioc,3)='0'
-              ICT(ioc)=-1
-              IE2(ioc)=0
-              IC2(ioc)=0
-              changed = .true.
+
+C If the surface connection type is 3 and it (ic2) points back to IW2
+C then reset sother and ict and ie2 and ic2.
+            if(ICT(ioc).EQ.3)then
+              if(IC2(ioc).eq.IW2)then
+                SOTHER(ISX,1)='UNKNOWN'
+                SOTHER(ISX,2)='0'
+                SOTHER(ISX,3)='0'
+                SSOTHER(ioc,1)='UNKNOWN'
+                SSOTHER(ioc,2)='0'
+                SSOTHER(ioc,3)='0'
+                ICT(ioc)=-1
+                IE2(ioc)=0
+                IC2(ioc)=0
+                changed = .true.
+              endif
             endif
    28     continue
           if(changed)then
@@ -1313,7 +1403,7 @@ C the values of ICT, IE2 and IC2.
             if(newgeo)then
               call geowrite(IFIL+2,LGEOM(IX),IX,iuout,3,IER)
             else
-              call emkgeo(IFIL+2,LGEOM(IX),IX,iuout,3,IER)
+              call emkgeo(IFIL+2,LGEOM(IX),IX,3,IER)
             endif
           endif
           call usrmsg('  ','  ','-')
@@ -1372,7 +1462,7 @@ C Update operations file if any changes.
           call edisp(iuout,' zone to be deleted.  Links have been')
           call edisp(iuout,' removed and the operation file is now')
           call edisp(iuout,' being updated...')
-          CALL EMKOPER(IUO,LPROJ(IX),IX,iuout,IER)
+          CALL EMKOPER(IUO,LPROJ(IX),IX,IER)
         endif
   25  continue
 
@@ -1382,7 +1472,7 @@ C in reverse order (adjusting the connections as required).
       call usrmsg('  ',outs,'-')
       call eclose(gversion(IW2),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IW2),IW2,1,0,iuout,IER)
+        call georead(IFIL+1,LGEOM(IW2),IW2,1,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IW2),IW2,1,0,iuout,IER)
       endif
@@ -1425,6 +1515,11 @@ C Also update the other side IC2.
         if(IC1(IX).gt.IW2)IC1(IX)=IC1(IX)-1
         if(ICT(IX).eq.3.and.IC2(IX).gt.IW2)IC2(IX)=IC2(IX)-1
    38 continue
+
+C Re-establish link between zone/surfaces and connections.
+      do 335 iccc = 1, NCON
+        IZSTOCN(IC1(iccc),IE1(iccc))=iccc
+ 335  continue
 
 C Ask if user wishes to remove all files related to the zone.
       dok=.false.
@@ -1506,11 +1601,10 @@ C and zone based data.
         LGEOM(IX)=LGEOM(IX+1)
         LTHRM(IX)=LTHRM(IX+1)
         LSHAD(IX)=LSHAD(IX+1)
-        INDUTL(IX)=INDUTL(IX+1)
-        LUTIL(IX)=LUTIL(IX+1)
         LVIEW(IX)=LVIEW(IX+1)
         LHCCO(IX)=LHCCO(IX+1)
         LTWIN(IX)=LTWIN(IX+1)
+        lcfcin(IX)=lcfcin(IX+1)
         LCGCIN(IX)=LCGCIN(IX+1)
         ZOBS(IX)=ZOBS(IX+1)
         IVF(IX)=IVF(IX+1)
@@ -1550,17 +1644,21 @@ C Shift zone default solar distributions and volumes.
         IDPN(IX,2)=IDPN(IX+1,2)
         IDPN(IX,3)=IDPN(IX+1,3)
         VOL(IX)=VOL(IX+1)
+
+C Shift the TMC information in subsequent zones??
+C << should code just deal with common block >>
+
    45 continue
    46 NCOMP=NCOMP-1
 
-C Update common blocks for Geometry & operation
+C Update common blocks for Geometry, operation & CFC
 C commons via reading in related files.
       write(outs,'(A)') ' rebuilding model... '
       call usrmsg('  ',outs,'-')
       do 48 ir=1,NCOMP
         call eclose(gversion(ir),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(ir),ir,1,0,IUOUT,IER)
+          call georead(IFIL+1,LGEOM(ir),ir,1,IUOUT,IER)
         else
           call egomin(IFIL+1,LGEOM(ir),ir,1,0,IUOUT,IER)
         endif
@@ -1582,6 +1680,12 @@ C commons via reading in related files.
           CALL ERPFREE(IFIL+1,ISTAT)
           CALL ERTWIN(0,IUOUT,IFIL+1,LTWIN(ir),ir,IER)
         ENDIF
+        XST=.false.
+        call FINDFIL(lcfcin(ir),XST)
+        IF(XST)THEN
+          CALL ERPFREE(IFIL+1,ISTAT)
+          CALL read_in_cfc_file(0,IUOUT,IFIL+1,lcfcin(ir),ir,IER)
+        ENDIF        
   48  continue
       call usrmsg('  ','  ','-')
 
@@ -1635,19 +1739,11 @@ C act = 'ob+' or 'ob-' obstruction changes.
 C IER=0 OK. 
       SUBROUTINE WARNMOD(ICOMP,act)
 #include "building.h"
+#include "model.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER act*3
 
       LOGICAL XST,comold,tmcold,vwfold,ishold,cfcold
@@ -1726,6 +1822,7 @@ C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
       SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "CFC_common.h"
       
@@ -1733,16 +1830,9 @@ C IER=0 OK.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
       common/C21/IFCFG,cfgroot,LCFGF
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER H*72,act*1
       character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
@@ -1862,21 +1952,16 @@ C     = 'ira'  interactive recalculation (of all files)
 C     = 'in '  interactive new
       subroutine comissionish(iz,act,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/appw/iappw,iappx,iappy
 
       character LCFGF*72
@@ -1884,6 +1969,11 @@ C     = 'in '  interactive new
       character TMODE*8,outs*248,DOIT*248,CFGROOT*24
       character act*3  ! the parameter passed
       logical XST,concat,unixok
+#ifdef OSX
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)

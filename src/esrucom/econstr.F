@@ -77,8 +77,9 @@ C Error subroutine and error details for dll mode.
       DIMENSION RVC(MS)
 
       CHARACTER OUTSTR*124,LCONS*72,outs248*248
-      character dllsubr*12,dllmesg*124,outs*124
+      character dllsubr*12,dllmesg*124,outs*124,outs2*124
       LOGICAL CLOSE,ILTHPS,ILTHPZ,dll
+      integer lsn  ! length of currentfile
 
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/8000./,SHTCH/3000./,THKCH/0.5/
@@ -138,7 +139,9 @@ C Move across gap position and U value one item at a time.
             RAIRG(I,J)=RAI
             call eclose(RAIRG(I,J),0.0,0.0001,close)
             if(close)then
-              outs=' Air gap resistance too small; please increase!'
+              write(outs,'(a,i3,a,i3,a,i3,a)')
+     &          ' Air gap resistance too small in zone',icomp,
+     &          ' surface',i,' gap ',j,' please increase!'
               if(dll)then
                 dllsubr='ECONSTR'
                 dllmesg=outs
@@ -297,8 +300,10 @@ c Trace output ?
       IF(ITRC.GE.1)CALL CONINF(ICOMP,0,ITRU)
       RETURN
 
- 1001 write(outs,'(3a)') 'Read/conversion error in...',OUTSTR(1:50),
-     &   '...'
+ 1001 write(outs,'(3a)') 'ECONST: Read/conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='ECONSTR'
         dllmesg=outs
@@ -307,6 +312,7 @@ c Trace output ?
         return
       else
         call edisp(itru,outs)
+        call edisp(itru,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ISTAT)
         RETURN
@@ -318,14 +324,19 @@ C ************* EMKCON
 C Generic routine to write a construction file based on information cur-
 C rently held in common blocks T1 T2 T4.
 C CONFIL is the name of the file to be written to (any existing file
-C by this name is overwritten).  zname is the zone name (12 char), ICOMP
-C is the zone number.
-C ITRU unit number for user output, IER=0 OK, IER=1 problem.
-      SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,ITRU,QUIET,IER)
+C by this name is overwritten).
+      SUBROUTINE EMKCON(CONFIL,IFILT,ICOMP,QUIET,IER)
 #include "building.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      character CONFIL*72  ! zone constructions file
+      integer IFILT        ! file unit for zone constructions file
+      integer ICOMP        ! index of the zone
+      logical QUIET        ! true acts silently
+      integer IER          ! IER=0 OK, IER=1 problem
 
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
@@ -336,16 +347,14 @@ C ITRU unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-      logical QUIET
 
-      CHARACTER*72 CONFIL
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character outs*124,louts*248
 
       IER=0
 
-C Place output into IFILT. Open any existing file by this name, 
+C Open any existing file by this name (CONFIL), 
 C (ask user for confirmation to over-write) or create a new file.
 C If in quiet mode then file should exist.
       IF(QUIET) THEN
@@ -480,6 +489,7 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -491,42 +501,27 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      integer legmat  ! local variable for legacy index.
+      
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
 
       dimension RT(MS),OPT(MS),PNAM(MS,ME),iprtext(MS,ME),imatch(MS)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER OUTS*124,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
-      character iprtext*4,TITL*72,GDESCR*36
+      character iprtext*4,GDESCR*36
+
+C Use material arrays if available. This also assumes that constructions will
+C have been filled after the model cfg file was scanned.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('CONINF: The materials arrays are incomplete so',
+     &    'this report is not available.','W')
+        return
+      endif
 
 C Heading if all surfaces.
       if(isur.eq.0)then
@@ -588,24 +583,16 @@ C Get the air gap contribution to U value for reporting.
 
 C For each layer recover the name of material. For non-airgap layers
 C add resistance for layer (using data from constructions file)
-          call eclose(matver,1.1,0.01,closemat)
           DO 15, IL=1,NELT
-            if(closemat)then
-              legmat=IPR(imatch(i),IL)   ! which legacy index
-              if(legmat.ge.0)then
-                matarrayindex=mathash(legmat)  ! find matching array index
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRV=matdbdrv(matarrayindex)
-                write(TITL,'(a)') 'placeholder'
+            matarrayindex=IPRMAT(imatch(i),IL)   ! which array index
+            if(matarrayindex.ge.0)then
+
+C And if matarrayindex is zero then establish NAM.
+              if(matarrayindex.eq.0)then
+                NAM='AIR'
+              else
                 write(NAM,'(a)') matname(matarrayindex)(1:32)
               endif
-            else
-              CALL ERPCDB(IFMAT,IPR(imatch(i),IL),ITRU,IER,DBCON,DBDEN,
-     &          DBSHT,E,A,DRV,TITL,NAM)
             endif
             IF(IPR(imatch(i),IL).EQ.0)THEN
 
@@ -823,13 +810,20 @@ C if the surface attribute should be updated.
       NTMC=0
       DO 10 I=1,NS
         icn1=izstocn(icomp,i)
-        ITMCFL(ICOMP,I)=IVA(I)
-        IF(ITMCFL(ICOMP,I).NE.0.AND.(SSOTF(icn1)(1:4).EQ.'OPAQ'))THEN
-          WRITE(OUTS,'(5a)')' The TMC file ',LUA(1:lnblnk(LUA)),
-     &      ' not sure if ',SSNAME(icn1),' is transparent.'
+	if(icn1.ne.0)then
+          ITMCFL(ICOMP,I)=IVA(I)
+          IF(ITMCFL(ICOMP,I).NE.0.AND.(SSOTF(icn1)(1:4).EQ.'OPAQ'))THEN
+            WRITE(OUTS,'(5a)')'The TMC file ',LUA(1:lnblnk(LUA)),
+     &        ' not sure if ',SSNAME(icn1),' is transparent.'
+            call edisp(itru,outs)
+            call edisp(itru,' Check your zone files.')
+	  ENDIF
+        else
+          WRITE(OUTS,'(a,i3,a,i3,a)')
+     &      'While rebulding optics found surface ',i,'in zone ',icomp,
+     &      ' does not exist in master connections list.'
           call edisp(itru,outs)
-          call edisp(itru,' Check your zone files.')
-        ENDIF
+        endif
         IF(ITMCFL(ICOMP,I).GT.NTMC)NTMC=ITMCFL(ICOMP,I)
    10 CONTINUE
       IF(NTMC.EQ.0.OR.NTMC.GT.MTMC)THEN
@@ -1232,12 +1226,18 @@ C Open existing ASCII construction data file as unit IIN.
 C ******** ERBIWIN
 C  ERBIWIN: reads bi-directional optical data from measurements
 C           file.
-      subroutine erbiwin(itrc,itru,iua,lua,ier)
+      subroutine erbiwin(itru,iua,lua,ier)
 #include "building.h"
 #include "espriou.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer itru  ! channel for feedback
+      integer iua   ! file unit
+      character LUA*72  ! optical data file name
+      integer ier   ! error state to return zero is ok
 
       COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
@@ -1289,7 +1289,7 @@ C   sky and ground diffuse radiation
      &  DF_G_GND(MSTMC,MSGAL),DF_RF_GND(MSTMC,MSGAL),
      &  a_dfSKYinner(MSTMC,MSGAL),a_dfGNDinner(MSTMC,MSGAL),
      &  a_dfSKYouter(MSTMC,MSGAL),a_dfGNDouter(MSTMC,MSGAL) 
-      character OUTSTR*124,OUTS*124,LUA*72,WORD*20
+      character OUTSTR*124,OUTS*124,WORD*20
       character bidirfile*72,bidirname*12
       logical bCloseToZero
 
@@ -1485,7 +1485,10 @@ C        if(iv1.eq.37)idataloop=1369
  143        continue
             CALL EGETWR(OUTSTR,K,T2,0.,1.,'-','dirdif trn',IER)
             TMTSOB(ibitype,ibset,ihangindex,ivangindex)=T2
+
+C Debug.
 C          write(6,*) ibitype,ibset,T1,T2
+
             goto 44
           elseif(IBIDATATYPE.eq.2)then
             CALL EGETWR(OUTSTR,K,T1,0.,1.,'-','total trn',IER)

@@ -37,9 +37,12 @@ C EDSITE Edits site/general information for system configuration file.
 C ITRU unit number for user output, IER=0 indicates no error.
       SUBROUTINE EDSITE(ITRC,IER)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
+#include "ipvdata.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -50,27 +53,14 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/PREC8/SLAT,SLON
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      common/C5R/SKYR,GRDR,BLDR
-      common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/CFGV/icfgv
 
 C CPCALC description
@@ -141,14 +131,14 @@ C Initial string for site exposure.
       SALT(6)='isolated rural         '
       SALT(7)='totally enclosed       '
       SALT(8)='user defined           '
-C      WRITE(SALT(8),53)SKYR,GRDR,BLDR
-      SEXP=SALT(IXPOS)
+C      WRITE(SALT(8),53)skyview,groundview,buildingview
+      SEXP=SALT(siteexposureindex)
 
 C Begin with high level menu.
     3 INO=-4
       IER=0
-      WRITE(ITEMS(1),'(A,F6.2)')'a site latitude: ',XLAT
-      WRITE(ITEMS(2),'(A,F6.2)')'b longitude difference:',XLON
+      WRITE(ITEMS(1),'(A,F6.2)')'a site latitude: ',sitelat
+      WRITE(ITEMS(2),'(A,F6.2)')'b longitude difference:',sitelongdif
       if(iSlr_half_hr_flg.eq.0)then
         WRITE(ITEMS(3),'(A)')   'c solar timing: hour centred'
       elseif(iSlr_half_hr_flg.eq.1)then
@@ -158,13 +148,13 @@ C Begin with high level menu.
       endif
 
       WRITE(ITEMS(4),'(A,A)')   'c exposure: ',SEXP(1:21)
-      IF(ITGREF.EQ.1) THEN
+      IF(groundreflmodel.EQ.1) THEN
         WRITE(ITEMS(5),'(a,f5.3,a)')
-     &                     'd grd reflectivity: const. (',GREF,')'
-      ELSEIF(ITGREF.EQ.2) THEN
-        ITEMS(5) =         'd grd reflectivity: simple'
-      ELSEIF(ITGREF.EQ.3) THEN
-        ITEMS(5) =         'd grd reflectivity: advanced'
+     &                   'd grd reflectivity: const. (',groundrefl,')'
+      ELSEIF(groundreflmodel.EQ.2) THEN
+        ITEMS(5) =       'd grd reflectivity: simple'
+      ELSEIF(groundreflmodel.EQ.3) THEN
+        ITEMS(5) =       'd grd reflectivity: advanced'
       ENDIF
       WRITE(ITEMS(6),'(4a)')    'e weekends: ',wkd1,'/',wkd2
       WRITE(ITEMS(7),'(a,I4)')  'f year: ',IYEAR
@@ -190,7 +180,8 @@ C Begin with high level menu.
       ITEMS(23)=                '  ___________________________    '
       WRITE(ITEMS(24),'(a,i3)') 's define images: ',noimg
       ITEMS(25)=                't UK NCM specifications          '
-      ITEMS(26)=                'u transient orientation          '
+c      ITEMS(26)=                'u transient orientation          '
+      ITEMS(26)=                '          '
       ITEMS(27)=                ' _____________________________ '
       ITEMS(28)=                '? help                           '
       ITEMS(29)=                '- exit this menu                 '
@@ -307,7 +298,7 @@ C Produce help text for the menu.
         H(2)='for Glasgow.'
         CALL EASKR(SLAT,' ','Site latitude?',
      &       -89.9,'W',89.9,'W',55.9,'site latitude',IER,2)
-        IF(IER.EQ.0)XLAT=SLAT
+        IF(IER.EQ.0)sitelat=SLAT
         MODSIT=.true.
         modish=.true.
 
@@ -318,7 +309,7 @@ C Produce help text for the menu.
         H(3)='-4.1 for Glasgow (relative to the Greenwich Meridian).'
         CALL EASKR(SLON,' ','Longitude difference?',
      &       -15.0,'W',15.0,'W',-4.1,'longitude difference',IER,3)
-        IF(IER.EQ.0)XLON=SLON
+        IF(IER.EQ.0)sitelongdif=SLON
         MODSIT=.true.
         modish=.true.
 
@@ -334,7 +325,7 @@ C Solar radiation timing toggle.
 
       ELSEIF(INO.EQ.4)THEN
 
-C        WRITE(SALT(8),53)SKYR,GRDR,BLDR
+C        WRITE(SALT(8),53)skyview,groundview,buildingview
 C  53    FORMAT('user defined)
         SALT(8)='user defined'
 
@@ -365,31 +356,33 @@ C  53    FORMAT('user defined)
           GOTO 3
         ENDIF
 
-        IXPOS=IVALS(1)
-        SEXP=SALT(IXPOS)
-        IF(IXPOS.EQ.8)THEN
+        siteexposureindex=IVALS(1)
+        SEXP=SALT(siteexposureindex)
+        IF(siteexposureindex.EQ.8)THEN
           H(1)='0 <= Sky view factor <= .99'
-  290     CALL EASKR(SKYR,' ','Sky view factor?',
+  290     CALL EASKR(skyview,' ','Sky view factor?',
      &         0.0,'W',0.99,'W',0.33,'sky view factor',IER,1)
           H(1)='0 <= Ground view factor <= .99'
-          CALL EASKR(GRDR,' ','Ground view factor?',
+          CALL EASKR(groundview,' ','Ground view factor?',
      &         0.0,'W',0.99,'W',0.33,'ground view factor',IER,1)
           H(1)='0 <= Surroundings view factor <= .99'
-          CALL EASKR(BLDR,' ','Surroundings view factor?',
+          CALL EASKR(buildingview,' ','Surroundings view factor?',
      &         0.0,'W',0.99,'W',0.33,'surroundings view factor',IER,1)
-          IF(SKYR.LT.0.0.or.GRDR.LT.0.0.or.BLDR.LT.0.0)then
+          IF(skyview.LT.0.0.or.groundview.LT.0.0.or.
+     &       buildingview.LT.0.0)then
             CALL USRMSG(' ','View factor cannot be negative!','W')
             GOTO 290
           ENDIF
-          IF(SKYR.GT.1.0.or.GRDR.GT.1.0.or.BLDR.GT.1.0)then
+          IF(skyview.GT.1.0.or.groundview.GT.1.0.or.
+     &       buildingview.GT.1.0)then
             CALL USRMSG(' ','View factor cannot be > 1.0!','W')
             GOTO 290
           ENDIF
-          IF((SKYR+GRDR+BLDR).GT.1.0)THEN
+          IF((skyview+groundview+buildingview).GT.1.0)THEN
             CALL USRMSG(' ','Total view factor cannot be > 1.0!','W')
             GOTO 290
           ENDIF
-          IF(ABS(SKYR+GRDR+BLDR-1.0).GT.0.001)THEN
+          IF(ABS(skyview+groundview+buildingview-1.0).GT.0.001)THEN
             CALL USRMSG(' ','Total view factor must = 1!','W')
             GOTO 290
           ENDIF
@@ -410,14 +403,14 @@ C Ground reflectance type
      &      'constant','monthly simple','mnthly advanced','cancel',IW,7)
 C---- Constant ground reflectance        
         if (IW.EQ.1) then
-          ITGREF=1
+          groundreflmodel=1
           H(1)='0 <= ground reflectance <= .99'
-          CALL EASKR(GREF,' ',' Ground reflectance?',
+          CALL EASKR(groundrefl,' ',' Ground reflectance?',
      &        0.0,'W',0.99,'W',0.2,'ground reflectance',IER,1)
           MODSIT=.true.
 C---- Simple or advanced models: ask for monthly values 
         elseif (IW.EQ.2 .OR. IW.EQ.3) then
-          ITGREF=IW
+          groundreflmodel=IW
           
           h(1)='Suggested ground reflectance (no snow):'
           h(2)='  bituminous/gravel roof 0.13'
@@ -428,7 +421,7 @@ C---- Simple or advanced models: ask for monthly values
           h(7)='  light building surface 0.60'
    83     CONTINUE
           HOLD=' '
-          WRITE(HOLD,'(1X,6F7.2)')(GREF12(J),J=1,6)
+          WRITE(HOLD,'(1X,6F7.2)')(groundreflmonth(J),J=1,6)
           CALL EASKS(HOLD,' ',
      &      'January thro June ground reflectance (no snow)?',
      &      72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jan-jun',IER,7)
@@ -438,11 +431,11 @@ C---- Simple or advanced models: ask for monthly values
           DO 84 J=1,6
             CALL EGETWR(HOLD,K,GV,0.0,0.99,'W','profile',IER)
             IF (IER.NE.0) GOTO 83
-            GREF12(J)=GV
+            groundreflmonth(J)=GV
    84     CONTINUE
    85     CONTINUE
           HOLD = ' '
-          WRITE(HOLD,'(1X,6F7.2)')(GREF12(J),J=7,12)
+          WRITE(HOLD,'(1X,6F7.2)')(groundreflmonth(J),J=7,12)
           CALL EASKS(HOLD,' ',
      &      'July thro December ground reflectance (no snow)?',
      &       72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jul-dec',IER,7)
@@ -452,7 +445,7 @@ C---- Simple or advanced models: ask for monthly values
           DO 86 J=7,12
             CALL EGETWR(HOLD,K,GV,0.0,0.99,'W','profile',IER)
             IF (IER.NE.0) GOTO 85
-            GREF12(J)=GV
+            groundreflmonth(J)=GV
    86     CONTINUE
           MODSIT=.true.
 C---- Simple model: ask for average albedo of snow, and number of days
@@ -463,7 +456,7 @@ C     with snow on the ground
             H(3)='  urban          0.40'
             H(4)='  rural          0.50'
             H(5)='  isolated rural 0.70'
-            CALL EASKR(SREF,' ',
+            CALL EASKR(snowgroundrefl,' ',
      &        ' Average ground reflectance in the presence of snow?',
      &        0.0,'W',0.99,'W',0.4,'snow reflectance',IER,5)
             MODSIT=.true.
@@ -471,7 +464,7 @@ C     with snow on the ground
             H(2)='d=epth typically greater than 5 cm.'
    87       CONTINUE
             HOLD=' '
-            WRITE(HOLD,'(6(1X,I2))')(NSNOW(J),J=1,6)
+            WRITE(HOLD,'(6(1X,I2))')(dayswithsnow(J),J=1,6)
             CALL EASKS(HOLD,' ',
      &        'Number of days in January thro June with snow?',
      &        72,'0 0 0 0 0 0','days with snow jan-jun',IER,2)
@@ -481,11 +474,11 @@ C     with snow on the ground
             DO 88 J=1,6
               CALL EGETWI(HOLD,K,IV,0,31,'W','profile',IER)
               IF (IER.NE.0) GOTO 87
-              NSNOW(J)=IV
+              dayswithsnow(J)=IV
    88       CONTINUE
    89       CONTINUE
             HOLD = ' '
-            WRITE(HOLD,'(6(1X,I2))')(NSNOW(J),J=7,12)
+            WRITE(HOLD,'(6(1X,I2))')(dayswithsnow(J),J=7,12)
             CALL EASKS(HOLD,' ',
      &        'Number of days in July thro December with snow?',
      &        72,'0 0 0 0 0 0 ','days with snow jul-dec',IER,3)
@@ -495,7 +488,7 @@ C     with snow on the ground
             DO 90 J=7,12
               CALL EGETWI(HOLD,K,IV,0,31,'W','profile',IER)
               IF (IER.NE.0) GOTO 89
-              NSNOW(J)=IV
+              dayswithsnow(J)=IV
    90       CONTINUE
           endif
 C---- Advanced model: ask for albedo of fresh snow, and file containing
@@ -506,7 +499,7 @@ C     hourly snow depths
             H(3)='  urban          0.40'
             H(4)='  rural          0.50'
             H(5)='  isolated rural 0.70'
-            CALL EASKR(SREF,' ',
+            CALL EASKR(snowgroundrefl,' ',
      &        ' Ground reflectance in the presence of fresh snow?',
      &        0.0,'W',0.99,'W',0.5,'snow reflectance',IER,5)
 C    
@@ -612,7 +605,7 @@ C otherwise overwrite. (Same logic as in esystem.F
         if(ok)then
           loop=12
           loopst=1
-          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+          call calenprint(iuout,'t',iyear,loopst,loop)
         endif
 
       ELSEIF(INO.EQ.8)THEN
@@ -942,11 +935,13 @@ C Manage images or browse by listing out current contents of image folder.
       ELSEIF(INO.eq.25)then
 
 C Enter the definitions for UK NCM related data.
-        call sbmedit
+        call sbmedit(iuact,ier) ! generate stripped model and ncm file
+
       ELSEIF(INO.eq.26)then
 
 C Changing orientation as a function of time.
-        CALL ROAMING
+C        CALL ROAMING
+        CONTINUE
       ELSE
         GOTO 3
       ENDIF
@@ -978,18 +973,18 @@ C Initialise variables
       DOK=.TRUE.
 
 C Help message
-      H(1) ='This facility is used to change orientation of the model'
-      H(2) ='as a function of time. For this purpose a roaming file is'
-      H(3) ='required. This file includes information about locations'
-      H(4) ='that a model will exist at and the times of validity.'
+      H(1) =' '
+      H(2) =' '
+      H(3) =' '
+      H(4) =' '
       H(5) =' '
-      H(6) ='When defining the file for the first time in a model the '
-      H(7) ='user should generate a template (option to do this follows'
-      H(8) ='this message) and use a text editor to add information to '
-      H(9) ='the template. If you have previously defined a roaming '
-      H(10)='file then you can just view its contents within Project'
-      H(11)='Manager. All editing should be done by a third party text'
-      H(12)='editor.'
+      H(6) =' '
+      H(7) =' '
+      H(8) =' '
+      H(9) =' '
+      H(10)=' '
+      H(11)=' '
+      H(12)=' '
       H(13)=' '
       H(14)=' '
       H(15)=' '
@@ -1030,7 +1025,7 @@ C Display file contents
      &  'Location                      Latitude Longitude')
         DO 1000 ILOC=1,NLOC
           WRITE(OUTS,'(A30,1X,F5.1,5X,F5.1)')
-     &    LOCRM(ILOC),LOCLT(ILOC),LOCLG(ILOC)
+     &    LOCRM(ILOC),XLOCLT(ILOC),XLOCLG(ILOC)
           CALL EDISP(IUOUT,OUTS)
  1000   CONTINUE
         CALL ASKOK('View cruise schedule?',' ',OK,dok,19)
@@ -1043,8 +1038,8 @@ C Display file contents
             ELSE
               TEMPSTR=LOCRM(LLOCT(IPDR))
             ENDIF
-            WRITE(OUTS,'(5X,I3,1X,I3,2X,I3,7X,I4,5X,I2,7X,A30)')
-     &      LHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
+            WRITE(OUTS,'(5X,F3.0,1X,I3,2X,I3,7X,I4,5X,I2,7X,A30)')
+     &      XLHRS(IPDR),LDYS(IPDR),LMTS(IPDR),LORNT(IPDR),
      &      LDTP(IPDR),TEMPSTR
           CALL EDISP(IUOUT,OUTS)
  1100     CONTINUE
@@ -2010,7 +2005,7 @@ C temporal definition entity
      &  'Controls might be suitable for use with temporal data.')
             do 777 ijj=1,ncf
               if(ibclaw(ijj,1,1).eq.23)found=.true.
-              call LSTCNTL(iuout,0,ijj,IER)
+              call LSTCNTL(iuout,0,ijj)
  777        continue
             if(found)then
 
@@ -2172,10 +2167,10 @@ C control law in the first period.
             do 77 ijj=1,ncf
               if(ibsn(ijj,1).eq.-5)then
                 found=.true.
-                call LSTCNTL(iuout,0,ijj,IER)
+                call LSTCNTL(iuout,0,ijj)
               elseif(ibclaw(ijj,1,1).eq.11)then
                 found=.true.
-                call LSTCNTL(iuout,0,ijj,IER)
+                call LSTCNTL(iuout,0,ijj)
               endif
   77        continue
             if(found)then
@@ -2750,14 +2745,14 @@ C If a long list include page facility text.
 
 C Help text for this menu.
       H(1)='This facilitiy sets up and manages a calendar of day'
-      H(2)='types which (can eventually) be associated with zone'
-      H(3)='casual gains, infiltration schedues, zone controls.'
+      H(2)='types which can be associated with zone casual gains,'
+      H(3)='infiltration schedues and controls.'
       H(4)=' '
-      H(5)='This facility is work-in-progress and the data saved'
-      H(6)='within the configuration file.is not yet used by zone '
-      H(7)='operations'
-      H(8)=' '
-      H(9)='Does not yet hold standard calendars for use by projects'
+      H(5)=' '
+      H(6)=' '
+      H(7)=' '
+      H(8)='This facility is still being developed further and '
+      H(9)='does not yet hold standard calendars for use by projects'
       H(10)='nor does it access typical patterns for differenct '
       H(11)='countries. '
 
@@ -2896,6 +2891,14 @@ C Edit calendar day tag and name.
       ELSEIF(IVERT.EQ.MVERT)THEN
         if(modify.and.(.NOT.browse))then
 
+C Update calendar day types
+          DO 21 IB=1,NBDAYTYPE
+            NBCALDAYS(IB)=0
+ 21       CONTINUE
+          DO 22 IB=1,365
+            NBCALDAYS(ICALENDER(IB))=NBCALDAYS(ICALENDER(IB))+1
+ 22       CONTINUE
+
 C update the model if not browsing 
           CALL EMKCFG('-',IER)
         endif
@@ -2938,9 +2941,9 @@ C loopst is the month number to start with
         endif
 
 C Print the calendar.
-        call calenprint(iuout,'t',iyear,loopst,loop,ier)
+        call calenprint(iuout,'t',iyear,loopst,loop)
         call edisp(iuout,' ')
-        call calenprint(iuout,'g',iyear,loopst,loop,ier)
+        call calenprint(iuout,'g',iyear,loopst,loop)
         call edisp(iuout,' ')
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
@@ -2956,30 +2959,59 @@ C user can select one or more.
         IX=1
         CALL EPICKS(IX,IDVALS,' ',' Available day types:',
      &    52,nbdaytype,citem,'available day types',IER,2)
+        h(1)='Days can be selected "one by one" and you can associate'
+        h(2)='any day type with any day. A faster method is to follow'
+        h(3)='a pattern. Here you will first be asked for dates during'
+        h(4)='which the new day type is to be added (called relevant'
+        h(5)='dates) The selected day type will then be added to every'
+        h(6)='Nth day in the relevant dates starting from the first '
+        h(7)='relevant date e.g. N=7 for weekly, N=1 for all days'
         if(ix.ne.0)then
-          idt=idvals(1)
-          do 78 ld=1,365
-            call stdate(iyear,ld,DS,DS1)
-            WRITE(clist(ld),'(3a)') DS1,'  ',
-     &        calentag(icalender(ld))
-  78      continue
-          CALL EPMENSV
-          ixd=365
-          CALL EPICKS(ixd,ixdvals,' ',' Days in the year:',
-     &      52,365,clist,'available days',IER,2)
-          CALL EPMENRC
-          if(ixd.ne.0)then
-            do 79 idayloop=1,ixd
-              ifoc=ixdvals(idayloop)
-              call stdate(iyear,ifoc,DS,DS1)
-              icalender(ifoc)=idt
-              nbcaldays(idt)=nbcaldays(idt) + 1
-              write(outs,*) 'Revised day: ',ifoc,' ',DS1,' ',
-     &          icalender(ifoc),' ',calendayname(icalender(ifoc))
-              call edisp(iuout,outs)
-  79        continue
-            modify=.true.
-          endif
+          IHDT=0
+          CALL EASKABC('How to add day types (see help)?',' ',
+     &    'One by one','Follow pattern','cancel',IHDT,7)
+          IF(IHDT.EQ.1)THEN
+            idt=idvals(1)
+            do 78 ld=1,365
+              call stdate(iyear,ld,DS,DS1)
+              WRITE(clist(ld),'(3a)') DS1,'  ',
+     &          calentag(icalender(ld))
+  78        continue
+            CALL EPMENSV
+            ixd=365
+            CALL EPICKS(ixd,ixdvals,' ',' Days in the year:',
+     &        52,365,clist,'available days',IER,7)
+            CALL EPMENRC
+            if(ixd.ne.0)then
+              do 79 idayloop=1,ixd
+                ifoc=ixdvals(idayloop)
+                call stdate(iyear,ifoc,DS,DS1)
+                icalender(ifoc)=idt
+                nbcaldays(idt)=nbcaldays(idt) + 1
+                write(outs,*) 'Revised day: ',ifoc,' ',DS1,' ',
+     &            icalender(ifoc),' ',calendayname(icalender(ifoc))
+                call edisp(iuout,outs)
+  79          continue
+              modify=.true.
+            endif
+          ELSEIF(IHDT.EQ.2)THEN
+            ISDS=1
+            ISDF=365
+            IFRQ=1
+            call eAskPer('Dates during which to add new day type',
+     &      isds,isdf,ifday,ier)
+
+C Regenerate help string that is clobbered by call to easkper
+        h(1)='Days can be selected "one by one" and you can associate'
+        h(2)='any day type with any day. A faster method is to follow'
+            CALL EASKI(IFRQ,
+     &      ' Enter number of days to repeat pattern after ',
+     &      ' E.g. 7=weekly, 30=monthly, 1=daily ',
+     &      1,'F',30,'F',1,'frequency ',IERI,7)
+            DO 532 IDTT=ISDS,ISDF,IFRQ
+              ICALENDER(IDTT)=idvals(1)
+ 532        CONTINUE
+          ENDIF
         endif
         CALL EPMENRC
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
@@ -3044,9 +3076,15 @@ C at loopst for loop months.
 C Currently it prints to text feedback or file only. Future
 C option is to display in graphic feedback with day types
 C as defined by calenmanage.
-C act (char*1) action to take 't' text feedback, 'g' graphic feedback.
-      subroutine calenprint(itru,act,iyear,loopst,loop,ier)
+      subroutine calenprint(itru,act,iyear,loopst,loop)
 #include "building.h"
+
+C Parameters
+      integer itru    ! reporting unit
+      character act*1 ! action to take 't' text feedback, 'g' graphic feedback
+      integer iyear   ! year to use for day of week calculations
+      integer loopst  ! month to start list/display
+      integer loop    ! number of months to list/display
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -3081,7 +3119,7 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C Text for each slot.
       character*3 am1slots(42),am2slots(42)
       character calename*32,calentag*12,calendayname*32,word3*3
-      character act*1,mohead*44,outs*124,etext*72
+      character mohead*44,outs*124,etext*72
       CHARACTER*9 RAMONTH(12)
       DIMENSION ID(12),MDAYS(12)
 
@@ -3439,10 +3477,10 @@ C ********** EDDGTP **************
 C EDDGTP Sets up ground temperature profiles
       SUBROUTINE EDDGTP(modsit)
 #include "building.h"
+#include "site.h"
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
-      common/C14/UGRDTP(12,MGRDP),NGRDP
 
       CHARACTER H*72,HOLD*72,OUTS*124
       LOGICAL MODSIT
@@ -3551,18 +3589,12 @@ C EDDSHD Sets up shading and insolation files
 
       SUBROUTINE EDDSHD
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/pophelp/h(60)

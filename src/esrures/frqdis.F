@@ -35,6 +35,7 @@ C act='p' iget parameters already set.
 C index is the goget index.
       SUBROUTINE MODGRF(act,index)
 #include "building.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -60,14 +61,6 @@ C index is the goget index.
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-
-C IPV info.
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-
-C Format of the IPV report.
-C  = 1 is human readable text, 2 is tab separated, 3 is java
-      common/IPVFORMAT/ipvform,ipvversion
 
 C Selection menu for graphs and/or tables.
       dimension item(8)
@@ -149,7 +142,10 @@ C then 5C.
           XBIN1=ANINT(XMIN/DXBIN)*DXBIN
           XBINN=ANINT(XMAX/DXBIN)*DXBIN
           NB=INT((XBINN-XBIN1)/DXBIN)
-          write(6,*) 'zone db bin ',xbin1,xbinn,nb
+
+C Debug.
+C          write(6,*) 'zone db bin ',xbin1,xbinn,nb
+
           if(NB.eq.0)then
             call edisp(iuout,'Range of db to small to binn.')
             call edisp(itru,'Range of db to small to binn.')
@@ -303,8 +299,10 @@ C range to be checked by XDIFF (as computed above)
         NBINS=NB+1
         XBIN1=XBIN1-XDIFF
         XBINN=XBINN+XDIFF
-C Debug...
+
+C Debug.
 C        write(6,*) 'nbins xdiff xbin1 xbinn ',nbins,xdiff,xbin1,xbinn
+
         write(outs,'(2a)') 
      &   '*fields range distribution percent cumulative_distrib ',
      &   'cumulative_percent'

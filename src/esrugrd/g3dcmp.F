@@ -297,11 +297,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #endif
 
 C Define the  MAX & MIN surface coordinates.
@@ -354,10 +354,10 @@ C Draw a scale vertical axis.
         CALL ETPLOT(X1,Z1,iupdown,isym)
         iupdown=IPEN
         CALL ETPLOT(X2,Z2,iupdown,isym)
-        CALL U2PIXEL(X1,Z1,IX,IY)
-        CALL ECIRC(IX,IY,3,1)
+        CALL U2PIXEL(X1,Z1,iix,iiy)
+        CALL ECIRC(iix,iiy,3,1)
         IVRT1=ILINB(IS,IL,1)
-        CALL VERTLBL(IX,IY,IVRT1,IER)
+        CALL VERTLBL(iix,iiy,IVRT1,IER)
    20 CONTINUE
       IF(INDXS(IS).EQ.3)THEN
         DO 30 IL=NLINB(IS)+1,NLINA(IS)
@@ -964,6 +964,7 @@ C *********************************************************************
       CHARACTER ITEM*30,SZN*12,STTS*9,STATS*15,MSG*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      real DZX   ! To avoid variable name clash with DX from geometry.h
 
       SZN=zname(IZ)
       SRF(1)=' '
@@ -1088,11 +1089,11 @@ C Define edge gridding in the local z-direction.
         K=0
         TDZ=0.
         DO 50 I=1,NDZ
-          CALL EGETWR(DISCR,K,DZ,0.,THK3,'F',
+          CALL EGETWR(DISCR,K,DZX,0.,THK3,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 40
-          DZE(IEG,I)=DZ
-          TDZ=TDZ+DZ
+          DZE(IEG,I)=DZX
+          TDZ=TDZ+DZX
           IF((TDZ-THK3).GT.1.E-3)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')
@@ -1202,10 +1203,10 @@ C *********************************************************************
       DIMENSION XS(8),YS(8),ZS(8)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #endif
 
       IVRT1=IVXEDG(IEG,1)
@@ -1270,12 +1271,12 @@ C Clear the graphical feedback window.
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the two extreme vertices.
-      CALL U2PIXEL(XS(1),YS(1),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,IVRT1,IER)
-      CALL U2PIXEL(XS(5),YS(5),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,IVRT2,IER)
+      CALL U2PIXEL(XS(1),YS(1),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,IVRT1,IER)
+      CALL U2PIXEL(XS(5),YS(5),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,IVRT2,IER)
 
 C Draw the edge.
       iupdown=0
@@ -1371,6 +1372,7 @@ C *********************************************************************
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER TEXT*124,BAR*1
+      real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
@@ -1439,11 +1441,11 @@ C Define X - gridding.
         K=0
         TDX=0.
         DO 30 I=1,NDX
-          CALL EGETWR(DISCR,K,DX,0.,THK1,'F',
+          CALL EGETWR(DISCR,K,DXX,0.,THK1,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DXE(IEG,I)=DX
-          TDX=TDX+DX
+          DXE(IEG,I)=DXX
+          TDX=TDX+DXX
           IF((TDX-THK1).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')
@@ -1482,11 +1484,11 @@ C Define Y - gridding.
         K=0
         TDY=0.
         DO 50 I=1,NDY
-          CALL EGETWR(DISCR,K,DY,0.,THK2,'F',
+          CALL EGETWR(DISCR,K,DYX,0.,THK2,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DYE(IEG,I)=DY
-          TDY=TDY+DY
+          DYE(IEG,I)=DYX
+          TDY=TDY+DYX
           IF((TDY-THK2).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')
@@ -1509,23 +1511,31 @@ C Create a material rectangle.
         IDRW=2
 
 C Ask if user wishes to browse through materials to find suitable
-C reference.
-        dok=.true.
-        h(1)='If you know the material db index you can say no and '
-        h(2)='enter the number directly. Otherwise say yes and '
-        h(3)='browse the database. '
-        CALL ASKOK(' Browse material database to locate the material',
-     &    ' index you want? A no will ask you for the index.',OK,dok,3)
+C reference. Use elistmat to select via materials array.
+        h(1)='If you want to keep the current material answer NO'
+        h(2)='otherwise you can find one by browsing the database.'
+        CALL ASKOK('Browse the materials db for a new material',
+     &    '(NO exits the process)?',OK,dok,2)
         IF(OK)then
-          iwhich=0
-          CALL ELISTC(iwhich,chdb,'-',IER)
+          iwhich = 0
+          CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+          if(iwhich.eq.0)then
+            H(1)='If air is correct then accept, otherwise'
+            H(2)='reselect from the list or abort the task.'
+            CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &        ' ','accept','reselect material','abort',iwair,2)
+            if(iwair.eq.2)then
+              CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+            elseif(iwair.eq.3)then
+              GOTO 10
+            endif
+          elseif(iwhich.eq.-99)then
+            continue
+          endif
         else
-          H(1)='Each item in the materials database has a'
-          H(2)='reference number. '
-          H(3)='Air is reference 0.'
-          CALL EASKI(IWHICH,' ',' Materials db reference no: ',
-     &        0,'F',600,'F',0,'materials reference',IER,3)
+          goto 10  ! go back
         endif
+
         IUDLR(1)=IWHICH
         WRITE(LMTS,'(4(1X,I2))')(IUDLR(K),K=2,5)
         WRITE(PROPS,'(2A)')'enter the material rectangle borders',
@@ -1634,11 +1644,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer iix1,iiy1,iix2,iiy2
+      integer iix,iiy,iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
-      integer*8 iix1,iiy1,iix2,iiy2
+      integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
 #endif
 
 C Define the two surfaces.
@@ -1658,33 +1668,25 @@ C Define the two surfaces.
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,1)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMX2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMX2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMN2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,1)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMX2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMX2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMN2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
       DO 10 I=1,NDXE(IEG)-1
-        CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
-        CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(FLOAT(I),YMN2,iix1,iiy1)
+        CALL U2PIXEL(FLOAT(I),YMX2,iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYE(IEG)-1
-        CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
-        CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(XMN2,FLOAT(J),iix1,iiy1)
+        CALL U2PIXEL(XMX2,FLOAT(J),iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
@@ -1693,7 +1695,7 @@ C Define the two surfaces.
         YCF=-0.5
         DO 40 J=1,NDYE(IEG)
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')ITPEDG(IEG,I,J,IL)
           ipos=0
           isize=itfs
@@ -1975,6 +1977,7 @@ C *********************************************************************
       CHARACTER ITEM(18)*30,SZN*12,STTS*9,STATS*15,MSG*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      real DZX   ! To avoid variable name clash with DX from geometry.h
 
 
       SZN=zname(IZ)
@@ -2107,11 +2110,11 @@ C Define edge gridding in the local z-direction.
         K=0
         TDZ=0.
         DO 120 I=1,NDZ
-          CALL EGETWR(DISCR,K,DZ,0.,THK3,'F',
+          CALL EGETWR(DISCR,K,DZX,0.,THK3,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DZC(ICR,I)=DZ
-          TDZ=TDZ+DZ
+          DZC(ICR,I)=DZX
+          TDZ=TDZ+DZX
           IF((TDZ-THK3).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is greater than the actual length','W')
@@ -2227,10 +2230,10 @@ C *********************************************************************
       DIMENSION XS(8),YS(8),ZS(8)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy    ! passed to etplot
 #else
-      integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 igwid,igheight  ! for use with axiscale u2pixel
+      integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #endif
 
       IVRX=IVXCRN(ICR)
@@ -2292,9 +2295,9 @@ C Clear the graphical feedback window.
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the vertex.
-      CALL U2PIXEL(XS(1),YS(1),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,IVRX,IER)
+      CALL U2PIXEL(XS(1),YS(1),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,IVRX,IER)
 
 C Draw the corner.
       iupdown=0
@@ -2390,6 +2393,7 @@ C *********************************************************************
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER TEXT*124,BAR*1
+      real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
 
 C Define the three surfaces.
       IS1=ISFCRN(ICR,1)
@@ -2466,11 +2470,11 @@ C Define X - gridding.
         K=0
         TDX=0.
         DO 30 I=1,NDX
-          CALL EGETWR(DISCR,K,DX,0.,THK1,'F',
+          CALL EGETWR(DISCR,K,DXX,0.,THK1,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DXC(ICR,I)=DX
-          TDX=TDX+DX
+          DXC(ICR,I)=DXX
+          TDX=TDX+DXX
           IF((TDX-THK1).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')
@@ -2512,11 +2516,11 @@ C Define Y - gridding.
         K=0
         TDY=0.
         DO 50 I=1,NDY
-          CALL EGETWR(DISCR,K,DY,0.,THK2,'F',
+          CALL EGETWR(DISCR,K,DYX,0.,THK2,'F',
      &               'gridding intervals',IER)
           IF(IER.NE.0)GOTO 10
-          DYC(ICR,I)=DY
-          TDY=TDY+DY
+          DYC(ICR,I)=DYX
+          TDY=TDY+DYX
           IF((TDY-THK2).GT.1.E-4)THEN
             CALL USRMSG('the summation of entered intervals',
      &                  'is heigher than the actual length','W')
@@ -2539,23 +2543,31 @@ C Define Y - gridding.
 C Create a material rectangle.
 
 C Ask if user wishes to browse through materials to find suitable
-C reference.
-        dok=.true.
-        h(1)='If you know the material db index you can say no and '
-        h(2)='enter the number directly. Otherwise say yes and '
-        h(3)='browse the database. '
-        CALL ASKOK(' To supply the material db reference',
-     &    ' do you want to browse through the db?',OK,dok,3)
+C reference. Use elistmat to select via materials array.
+        h(1)='If you want to keep the current material answer NO'
+        h(2)='otherwise you can find one by browsing the database.'
+        CALL ASKOK('Browse the materials db for a new material',
+     &    '(NO exits the process)?',OK,dok,2)
         IF(OK)then
-          iwhich=0
-          CALL ELISTC(iwhich,chdb,'-',IER)
+          iwhich = 0
+          CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+          if(iwhich.eq.0)then
+            H(1)='If air is correct then accept, otherwise'
+            H(2)='reselect from the list or abort the task.'
+            CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &        ' ','accept','reselect material','abort',iwair,2)
+            if(iwair.eq.2)then
+              CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+            elseif(iwair.eq.3)then
+              GOTO 10
+            endif
+          elseif(iwhich.eq.-99)then
+            continue
+          endif
         else
-          H(1)='Each item in the materials db has a'
-          H(2)='reference number. '
-          H(3)='Air is reference 0.'
-          CALL EASKI(IWHICH,' ',' Material db reference no: ',
-     &        0,'F',600,'F',0,'material reference',IER,3)
+          goto 10  ! go back
         endif
+
         IUDLR(1)=IWHICH
         WRITE(LMTS,'(4(1X,I2))')(IUDLR(K),K=2,5)
         WRITE(PROPS,'(2A)')'enter the material rectangle borders',
@@ -2655,11 +2667,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer iix1,iiy1,iix2,iiy2
+      integer iix,iiy,iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer*8 iix1,iiy1,iix2,iiy2
+      integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
 #endif
 
 C Return if not in graghical mode.
@@ -2683,33 +2695,25 @@ C Define the two surfaces.
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,1)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMX2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMX2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMN2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,1)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMX2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMX2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMN2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
       DO 10 I=1,NDXC(ICR)-1
-        CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
-        CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(FLOAT(I),YMN2,iix1,iiy1)
+        CALL U2PIXEL(FLOAT(I),YMX2,iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYC(ICR)-1
-        CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
-        CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(XMN2,FLOAT(J),iix1,iiy1)
+        CALL U2PIXEL(XMX2,FLOAT(J),iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
@@ -2720,7 +2724,7 @@ C Define the two surfaces.
         YCF=-0.5
         DO 40 J=1,NDYC(ICR)
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')ITPCRN(ICR,I,J,IL)
           CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE

@@ -473,7 +473,7 @@ C except where explicitly redefined.
       complex vspm
       character spmlabel*16, outs*124,spflnam*72,strspm*16,unitspm*16,
      &          txtspm*72
-
+      
 C Nominal efficiency.
       neff=spmdat(ispmnod,1)/100.
 
@@ -546,7 +546,7 @@ C Trace output.
      &        'Affected zone, surface and node: ',ispmloc(ispmnod,1),
      &         ispmloc(ispmnod,2),ispmloc(ispmnod,3)
       call edisp(itu,outs)
-      write(outs,'(a,i3)') 'Number of panels in surface: ',npnnls
+C      write(outs,'(a,i3)') 'Number of panels in surface: ',npnnls
       call edisp(itu,outs)
       if(ispmtyp(ispmnod,2).gt.0)then
          write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qsole1
@@ -2262,7 +2262,7 @@ C Phase change material.
       character spmlabel*16,spflnam*72,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
       logical close
-
+      
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
          write(outs,*)'SPMAT53 fatal error: incorrect zone assignment!'
@@ -2469,7 +2469,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -2638,7 +2638,7 @@ C Phase change material.
 
       character spflnam*72,spmlabel*16,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
-
+      
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
          write(outs,*)'SPMAT54 fatal error: incorrect zone assignment!'
@@ -2857,7 +2857,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -3006,7 +3006,7 @@ C Phase change material.
 
       character spflnam*72,spmlabel*16,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
-
+      
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
          write(outs,*)'SPMAT55 fatal error: incorrect zone assignment!'
@@ -3232,7 +3232,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1
@@ -3402,7 +3402,7 @@ C Local variables.
       real LayFrac(3)
       integer presk
       integer db(3)	!- Debug variable, stores 'case' of PCM heating/cooling.
-
+      
 C Data.
       data LayFrac /0.25, 0.5, 0.25/	!- PCM split into 3 layers.
 
@@ -3637,7 +3637,7 @@ C capPCM value at previous time step.
                vcf(isurf,nloc,1)=c(icomp,isurf,nloc,1)*xfactf
                vcf(isurf,nloc,2)=c(icomp,isurf,nloc,2)*x2
                qcf(isurf,nloc)=qc(icomp,isurf,nloc)*x2
-            elseif(iphnl.eq.1.and.ians.eq.1)then    ! ians is not defined
+            elseif(iphnl.eq.1.and.ians1.eq.1)then
                vcp(isurf,nloc,1)=c(icomp,isurf,nloc,1)*x1
                vcp(isurf,nloc,2)=c(icomp,isurf,nloc,2)*xfactp
                qcp(isurf,nloc)=qc(icomp,isurf,nloc)*x1

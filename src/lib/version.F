@@ -13,9 +13,6 @@ C  if the Install script has deemed this to be a 'development build'.
       implicit none
       
 C PASSED VARIABLES 
-      character cType*16            ! Flag indicating if version/build
-                                    !  info should be dumped
-
       character cPassedAppName*(*)
       character cPassedType*(*)
       character cAppName*8           ! Name of current application
@@ -23,7 +20,8 @@ C PASSED VARIABLES
 
 C LOCAL VARIABLES
 C declare variables describing version and build information
-
+      character cType*16             ! Flag indicating if version/build
+                                     !  info should be dumped
       character cBuilder*32          ! User who compiled system
       character cArchitecture*32     ! Machine archictecture
       character cOperSystem*32       ! Operating system
@@ -52,7 +50,7 @@ C declare variables describing version and build information
       character cXlibrary*32         !
       
       character cTemp_a*124, cTemp_b*124 ! Temporary strings
-      integer iLen
+      integer iLen   ! for actual string lengths
       
 C Arrays mapping binary names to longer descriptions
       
@@ -93,7 +91,7 @@ C Arrays mapping binary names to longer descriptions
      &                'Plant Database Tool',
      &                'Project Manager',
      &                'Results Analysis Tool',
-     &                'Temporal Definition Tool',
+     &                ' ',
      &                'Hidden Line Viewer' /
      
       save cBinNames, cBinDesc
@@ -121,14 +119,15 @@ C Deterimine of summary or details
       else
 C cType is set programmically,
 C and needs only rudementry error trapping.
-        STOP " Arguement to ESPrVersion must be 'summary' or 'details'"
+        STOP " Argument to ESPrVersion must be 'summary' or 'details'"
       endif 
 
 C Determine index of current application in cBinNames/cBinDesc arrays      
       do iCurIndex = 1, iBinCount
       
+        iLen = lnblnk ( cBinNames(iCurIndex) )
         if ( cAppName(1:lnblnk(cAppName)) .eq. 
-     &       cBinNames(iCurIndex)(1:lnblnk(cBinNames(iCurIndex)))) then 
+     &       cBinNames(iCurIndex)(1:iLen)) then 
           
           iBinIndex = iCurIndex
           
@@ -143,8 +142,7 @@ C  e.g.: 'ESP-r integrated builing performance simulator (bps)'
 C.....ESP-r banner 
       if ( bRelease ) then 
 C.......Release version        
-        write(cTemp_a,'(A,A,A,A,A,A,A)') 
-     &       "ESP-r ", 
+        write(cTemp_a,'(7A)') "ESP-r ", 
      &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex))), 
      &       " (",
      &       cAppName(1:lnblnk(cAppName)),
@@ -155,13 +153,13 @@ C.......Release version
       
       else 
         
-        write(cTemp_a,'(A,A,A,A,A)') "ESP-r ", 
+        write(cTemp_a,'(5A)') "ESP-r ", 
      &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex))), " (",
      &       cAppName(1:lnblnk(cAppName)),
      &       ")."
         call edisp(iuout,cTemp_a)      
         
-        write(cTemp_a,'(A,A,A,A,A,A)') "This is a development copy of ", 
+        write(cTemp_a,'(6A)') "This is a development copy of ", 
      &       cAppName(1:lnblnk(cAppName)),
      &       ", based on ESP-r release ",
      &       cRelease_Num(1:lnblnk(cRelease_Num)),"."
@@ -173,10 +171,11 @@ C.......Release version
       
 C Copyright information:
       call edisp(iuout," ")      
-      write(cTemp_a,'(A)') 
-     &  "Copyright 2001-2007 Energy Systems Research Unit."
-      
-      call edisp(iuout,cTemp_a)      
+      call edisp(iuout,      
+     &  "Copyright resides with the member organisations of the ESP-r")
+      call edisp(iuout,"development consortium as listed at:")
+      call edisp(iuout,
+     &  "http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm")      
 
 C Check if source was versioned (that is, was svn available, and 
 C is it a working copy)
@@ -184,33 +183,26 @@ C is it a working copy)
 C.......Write out non-versioned disclaimer.        
         
         call edisp(iuout," ")
-       
-        write (cTemp_a,'(A)') 
-     &  "This copy of ESP-r is not under versioning control. Using un-"
 
-        call edisp(iuout,cTemp_a)
+        call edisp(iuout,
+     &  "This copy of ESP-r is not under versioning control. Using")
         
-        write (cTemp_a,'(A)') 
-     &  "versioned copies of ESP-r may prevent you from reconstituting"
-        call edisp(iuout,cTemp_a)
+        call edisp(iuout,
+     &  "un-versioned copies of ESP-r may prevent you from")
         
-        write (cTemp_a,'(A)') 
-     &  "models and reproducing simulation results in the future. "
-        call edisp(iuout,cTemp_a)
+        call edisp(iuout,
+     &  "reconstituting models and reproducing simulation results in")
         
-        write (cTemp_a,'(A)') 
-     &  "Development using unversioned copies of ESP-r is also prone to"
-        call edisp(iuout,cTemp_a)
+        call edisp(iuout,
+     &  "the future. Development using unversioned copies of ESP-r")
         
-        write (cTemp_a,'(A)') 
-     &  "error, and strongly discouraged."
-        call edisp(iuout,cTemp_a)
+        call edisp(iuout,
+     &  "is also prone to error, and strongly discouraged.")
         
         call edisp(iuout," ")
         
-        write (cTemp_a,'(A)') 
-     &  "You can obtain a versioned copy of ESP-r here:"
-        call edisp(iuout,cTemp_a)
+        call edisp(iuout,
+     &  "You can obtain a versioned copy of ESP-r here:")
         
         call edisp(iuout," ")
         
@@ -224,59 +216,54 @@ C.......Write out non-versioned disclaimer.
 C. .....Information about build:
         call edisp(iuout," ")
                  
-                    
-          write (cTemp_a,'(A)') "Build information:"
-          call edisp(iuout,cTemp_a)
+        call edisp(iuout,"Build information:")
         
 C.........Source code version:
 C............' - Source:    BRANCH @ rXYZ (modified state)'
           
-          if ( bVersioned ) then 
+        if ( bVersioned ) then 
             
-            write (cTemp_a,'(A,A,A,A,A)') 
-     &       "  - SVN Source:       ",
-     &       cBranch(1:lnblnk(cBranch)), 
-     &       "@r",
-     &       cRevision(1:lnblnk(cRevision))
+          write (cTemp_a,'(5A)') 
+     &      "  - SVN Source:       ",
+     &      cBranch(1:lnblnk(cBranch)), 
+     &      "@r",
+     &      cRevision(1:lnblnk(cRevision))
   
-            if ( bModified ) then
-              write (cTemp_a,'(A,A)') cTemp_a(1:lnblnk(cTemp_a)),
-     &         " (locally modified)"
-            else 
-              write (cTemp_a,'(A,A)') cTemp_a(1:lnblnk(cTemp_a)),
-     &         " (unmodified)"
-            endif
-             
-             
-            else
-              write (cTemp_a,'(A)') 
+          if ( bModified ) then
+            write (cTemp_a,'(2A)') cTemp_a(1:lnblnk(cTemp_a)),
+     &        " (locally modified)"
+          else 
+            write (cTemp_a,'(2A)') cTemp_a(1:lnblnk(cTemp_a)),
+     &        " (unmodified)"
+          endif
+        
+        else
+           write (cTemp_a,'(A)') 
      &       "  - SVN Source:       UNKNOWN"
-            endif 
-          call edisp(iuout,cTemp_a)      
+        endif 
+        call edisp(iuout,cTemp_a)      
           
 C.........Build Platform (e.g.: i686:LINUX:2.6.9-gentoo-r1)
-          write (cTemp_a,'(A,A,A,A,A,A)')   "  - Platform:         ",
+        write (cTemp_a,'(6A)')   "  - Platform:         ",
      &         cArchitecture(1:lnblnk(cArchitecture)),":",
      &         cOperSystem(1:lnblnk(cOperSystem)),":",
      &         cOSversion(1:lnblnk(cOSversion))
-          call edisp(iuout,cTemp_a)      
+        call edisp(iuout,cTemp_a)      
          
 C.........Compiliers ( eg: gcc/g++/g77)
-          write (cTemp_a,'(A,A,A,A,A,A)')   "  - Compilers:        ",
+        write (cTemp_a,'(6A)')   "  - Compilers:        ",
      &         cCC(1:lnblnk(cCC)),"/",
      &         cCPL(1:lnblnk(cCPL)),"/",
      &         cFC(1:lnblnk(cFC))
         call edisp(iuout,cTemp_a)
 
-
-        call getXlibs(cXlibs)
+        call getXlibs(cXlibs)    ! find out the graphic library used
         
-        write (cTemp_a,'(A,A)')   "  - Graphics Library: ",
+        write (cTemp_a,'(2A)')   "  - Graphics Library: ",
      &         cXLibs(1:3)
         call edisp(iuout,cTemp_a)
 
-
-        if ( rep_xmlstatus() ) then
+        if ( rep_xmlstatus() ) then  ! find whether XML is supported
 
           write (cXML_support, '(A)') "Supported"
 
@@ -286,14 +273,11 @@ C.........Compiliers ( eg: gcc/g++/g77)
 
         endif 
         
-        write (cTemp_a,'(A,A)')   "  - XML output:       ",
+        write (cTemp_a,'(2A)')   "  - XML output:       ",
      &         cXML_support(1:lnblnk(cXML_support))
-        call edisp(iuout,cTemp_a) 
-        
-
+        call edisp(iuout,cTemp_a)
           
       endif
-      
 
 
       return

@@ -53,8 +53,8 @@ extern GdkColor gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;	/* in
 extern gint ter;            /* terminal type passed on initial call */
 extern gint child_ter;      /* child process terminal type  */
 
-extern gint  wwc_ok;   /* assume no echo of drawing commands to wwc */
-extern gint  wwc_macro;   /* assume not in a macro drawing command (etplot) */
+extern int wwc_ok;   /* assume no echo of drawing commands to wwc */
+extern int wwc_macro;   /* assume not in a macro drawing command (etplot) */
 
 extern gint xold, yold;     /* current 'pen' position used by eline_() */
 extern gint x_off,y_off;         /* display X & Y offsets in pixels (see linescale) */
@@ -199,9 +199,6 @@ void	espdozenbox_ (char *msg1, char *aopt, char *bopt, char *copt,
           int dopt_len, int eopt_len, int fopt_len, int gopt_len,
           int hopt_len, int iopt_len, int jopt_len, int kopt_len,
           int lopt_len);
-void	espokbox_ (char *msg1, char *aopt, char *bopt, char *copt, 
-          long int *idef,long int *ipick,int msg1_len,
-          int aopt_len,int bopt_len,int copt_len);
 
 /* Shared functions esp_text.c */
 void	inserttext_ ( char *message , int len);

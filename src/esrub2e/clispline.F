@@ -69,7 +69,7 @@ C << other methods and act tags follow from here.... >>
       elseif(act(1:1).eq.'?')then
 
       else
-        write(6,*) 'unknown request to clspline'
+        call edisp(iuout,'unknown request to clspline')
         ier = 1
         return
       endif

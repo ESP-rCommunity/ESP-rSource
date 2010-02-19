@@ -150,7 +150,9 @@ C complicated logic) the right.
               endif
             endif
           endif
-          write(6,*) ' a number of right axis is ',onright
+
+C Debug.
+C          write(6,*) ' a number of right axis is ',onright
 
 C Take into account which axis needs to be drawn as in esrures/tgraph.F.
           if(IFS.ne.IMFS)call winfnt(IMFS)
@@ -199,8 +201,8 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
           call startbuffer()
 
 C Debug.
-          write(6,*)'clmgrf igl igr igt igb igw igwh',igl,igr,igt,
-     &      igb,igw,igwh
+C          write(6,*)'clmgrf igl igr igt igb igw igwh',igl,igr,igt,
+C     &      igb,igw,igwh
 
           mxmn=.TRUE.
           CALL CLMDRW(IPICK,mxmn,onleft,onright,'-')
@@ -291,7 +293,8 @@ C bounds and redraw the image before presenting the command menu.
             endif
           endif
         endif
-        write(6,*) ' b number of right axis is ',onright
+C Debug.
+C        write(6,*) ' b number of right axis is ',onright
 
 C Take into account which axis needed to be drawn as in esrures/tgraph.F
         if(IFS.ne.IMFS)call winfnt(IMFS)
@@ -387,6 +390,14 @@ C indicate how much space is available for the graph (i.e. what
 C axis that do not need to be drawn)
 C season (1 char) '-' do not bother 's' indicate season.
       SUBROUTINE CLMDRW(IPICK,mxmn,onleft,onright,season)
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+
+#include "seasons.h"
+C seasons.h provides typper and typsea
+
       PARAMETER (MT=24)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -400,14 +411,10 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/DAT24/PT24(6)
 
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-
-C Typical periods and season definitions.
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
 
       character season*1
       logical mxmn,colok
@@ -633,6 +640,8 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/DAT24/PT24(6)
 
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
       DIMENSION IPICK(6)
@@ -780,8 +789,11 @@ C Check if can draw in colour.
 
 C DRAW TIME AXIS
 C Pick up the data increment for the horizontal axis.
-      write(6,*)'dcaxes igl igr igt igb igw igwh onleft onright ',
-     &  igl,igr,igt,igb,igw,igwh,onleft,onright,' ',acthor
+
+C Debug.
+C      write(6,*)'dcaxes igl igr igt igb igw igwh onleft onright ',
+C     &  igl,igr,igt,igb,igw,igwh,onleft,onright,' ',acthor
+
       call dinterval(TMIN,TMAX,DT,NDEC,1)
       if(acthor.eq.'-')then
         call horaxis(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,'Time (hours)')

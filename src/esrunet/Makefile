@@ -9,9 +9,9 @@ PROG = net$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = arrow.o common3dv.o egeometry.o edatabase.o e3dviews.o emfnetw.o eroper.o \
+OBJECTS = arrow.o ascii_mat.o common3dv.o egeometry.o edatabase.o e3dviews.o emfnetw.o eroper.o \
 	esru_misc.o icndbscn.o mfcdat.o netwedit.o network.o nwkrewr.o netwkc2f.o \
-	netutil.o plelev.o read3dv.o sort.o startup.o
+	netutil.o read3dv.o sort.o startup.o
 
 $(PROG): $(OBJECTS) $(C_OBJ)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(CFLAGS) $(OBJECTS) $(ULIBS) 
@@ -19,6 +19,9 @@ $(PROG): $(OBJECTS) $(C_OBJ)
 arrow.F:
 	rm -f arrow.F
 	ln -s $(PRJdir)/arrow.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(COMdir)/ascii_mat.F .
 common3dv.F:
 	rm -f common3dv.F
 	ln -s $(COMdir)/common3dv.F .
@@ -46,9 +49,6 @@ mfcdat.F:
 nwkrewr.F:
 	rm -f nwkrewr.F
 	ln -s $(COMdir)/nwkrewr.F .
-plelev.F:
-	rm -f plelev.F
-	ln -s $(COMdir)/plelev.F .
 read3dv.F:
 	rm -f read3dv.F
 	ln -s $(PRJdir)/read3dv.F .
@@ -67,5 +67,5 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	*.o arrow.F common3dv.F edatabase.F egeometry.F e3dviews.F emfnetw.F eroper.F \
-	esru_misc.F plelev.F nwkrewr.F read3dv.F mfcdat.F sort.F startup.F
+	*.o arrow.F ascii_mat.F common3dv.F edatabase.F egeometry.F e3dviews.F emfnetw.F eroper.F \
+	esru_misc.F nwkrewr.F read3dv.F mfcdat.F sort.F startup.F

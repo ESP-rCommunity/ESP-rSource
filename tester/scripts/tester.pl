@@ -64,13 +64,44 @@ sub is_true_false($);
 sub execute($);
 sub log_msg($);
 sub resolve_path($);
+sub CollectCallGrindResults($$$);
+sub format_instruction_count($);
 sub stream_out($);
 sub echo_config();
+sub IsLowLevel($);
 sub parse_hash_recursively();
 sub create_historical_archive();
 sub process_historical_archive($); 
 sub create_report();
 sub compare_results($$);
+
+#----------------------------------------------------------------------#
+#  FUNCTION:  hashValueAscendingNum                                    #
+#                                                                      #
+#  PURPOSE:   Help sort a hash by the hash 'value', not the 'key'.     #
+#             Values are returned in ascending numeric order (lowest   #
+#             to highest).                                             #
+#----------------------------------------------------------------------#
+
+sub hashValueAscendingNum {
+   my %hash;
+   $hash{$a}{'diff'} <=> $hash{$b}{'diff'};
+}
+
+
+#----------------------------------------------------------------------#
+#  FUNCTION:  hashValueDescendingNum                                   #
+#                                                                      #
+#  PURPOSE:   Help sort a hash by the hash 'value', not the 'key'.     #
+#             Values are returned in descending numeric order          #
+#             (highest to lowest).                                     #
+#----------------------------------------------------------------------#
+
+sub hashValueDescendingNum {
+   my %hash;
+   $hash{$b}{'diff'} <=> $hash{$a}{'diff'};
+}
+
 #-------------------------------------------------------------------
 # Scope global variables. All variables beginning with a 'g' are
 # considered global, and may be used in subordinate routines.
@@ -94,6 +125,8 @@ my %gElements;             #   quickly
 my %gXML_Compare_Vars;     # Variables suitable for numerical
                            #   comparison in xml output .
 
+my %gCallGrindResults;     # Results from call-grind comparisons
+
 my %gMax_difference;       # array containing maximum differences
 
 my %gTolerance;            # Tolerance(s) for comparisons
@@ -116,6 +149,8 @@ my $gAll_tests_pass = 1;   # Flag indicating result of all tests.
 my @gReportUnitComp;
                                                       
 my $gProcessed_Archive_count=0; # number of archives processed.
+
+
                                                       
 #-------------------------------------------------------------------
 # Help text. Dumped if help requested, or if no arguements supplied.
@@ -186,6 +221,22 @@ my $Help_msg = "
     --no_h3k: Don't test h3k files.
     
     --no_xml: Don't test XML files.
+
+    -run_callgrind: Run callgrind to test code efficiency. Note:
+         this option significantly slows testing. It should be
+         invoked with with the '-p <path>' option, where <path>
+         denotes the path to a single .cfg file in the test-suite
+         folder. If run over the entire test suite, call-grind
+         analysis may take days.
+
+         If bps binaries are provided with symbolic debugging
+         information (that is, they are built with the --debug
+         option), callgrind analysis will provide estimates on the
+         comparative increase or decrease in code efficiency on
+         a procedure-by-procedure basis.
+
+         Callgrind analysis requires both the valgrind and
+         callgrind_annotate tools.
 
     --adj_tol <VALUE>: Scale the test's comparison tolerances by
          <VALUE>.
@@ -483,7 +534,7 @@ $gTest_params{'test_efficiency'} = 1;          # Flag indicating efficiency shou
 $gTest_params{'test_eff_arch_version'} = "1.1"; # Earliest historical archive
                                                 # version supporting efficiency
                                                 # test data.                                         
-                                          
+$gTest_params{'run_callgrind'} = 0;
 $gTest_params{"report_format"} = "ascii";    # Format for report.
                                                       
 $gTest_params{"diff_data_files"} = 0;        # Optionally perform a diff of 
@@ -517,7 +568,8 @@ $gTest_params{"third_party_diff_cmd"} = "diff -iw";  # Command to dump out diff
                   "csv" => 1,
                   "h3k" => 1,
                   "data" => 1,
-                  "fcts" => 0
+                  "fcts" => 0,
+                  "callgrind" => 0
              );
                                                       
 # value for close-to-zero comparisons
@@ -691,6 +743,12 @@ foreach $arg (@processed_args){
       }
       last SWITCH;
     }
+
+    if ( $arg =~ /--run_callgrind/ ){
+      $gTest_params{'run_callgrind'} = 1;
+      $gTest_ext{'callgrind'} = 1;
+      last SWITCH;
+    }
     
     if ( $arg =~ /--adj_tol:/ ){
       # Multiply all comparison tolerances by specified value.
@@ -749,9 +807,6 @@ foreach $arg (@processed_args){
       $gTest_params{"verbosity"} = "very_verbose";
       $gTest_params{"logfile"}="";
 
-      # Disable testing of efficiency
-      $gTest_params{"test_efficiency"} = 0;
-  
       last SWITCH;
     }
     if ( $arg =~ /^--short/){
@@ -794,7 +849,7 @@ foreach $arg (@processed_args){
       # use custom thrid-party for .data file comparisons
       $arg =~ s/--diff_tool://g;
       $gTest_params{"third_party_diff_cmd"} = $arg;
-
+# Translate shorthand arguements into longhand
       last SWITCH; 
 
     }
@@ -1490,7 +1545,7 @@ sub create_report(){
   push @output, "                            <>(test)      <> $gTest_params{\"test_bin_graphics_lib\"}";
 
   push @output, "  - XML support:            <>(reference) <> $gRef_Test_params{\"test_bin_xml_support\"}";
-  push @output, "                            <>(test)      <> $gTest_params{\"test_bin_\"}";
+  push @output, "                            <>(test)      <> $gTest_params{\"test_bin_xml_support\"}";
 
   push @output, "  - Modifiation date:       <>(reference) <> $gRef_Test_params{\"test_bin_mod_date\"}";
   push @output, "                            <>(test)      <> $gTest_params{\"test_bin_mod_date\"}";
@@ -1576,11 +1631,12 @@ sub create_report(){
     push @output, " Efficiency testing disabled.";
   }
   push @output, "  ";
-  
+  push @output, " =========== Comparison of XML results ================= ";
   # Detailed report of XML output comparison
   if ( $gTest_ext{"xml"} && ! $gXML_Report_needed ){
+    push @output, " ";
     push @output, " No differences were found in XML output. Detailed report unnecessary. ";
-
+    push @output, " ";
   }elsif ( $gTest_ext{"xml"} ){
 
     my $current_folder = "";
@@ -1690,7 +1746,8 @@ sub create_report(){
 
       push @output, $current_line;
 
-      
+
+                     
     }
 
     # Add footer for last model
@@ -1700,6 +1757,130 @@ sub create_report(){
   }
 
 
+  if ( $gTest_params{'run_callgrind'} ){
+    push @output, " ";
+    push @output, " =========== Comparison of Callgrind results =========== ";
+    push @output, " ";
+ 
+
+    # Loop through models, and note changes
+
+    foreach my $key ( sort keys %gCallGrindResults ){
+      my ($folder,$model) = split /\//, $key;
+
+      push @output, " Model:  $model";
+      push @output, " Folder: $folder";
+      push @output, sprintf(" Instructions - Reference version : %20s",
+                              format_instruction_count($gCallGrindResults{$key}{'reference'}{'all procedures'}{'total_instructions'}));
+      push @output, sprintf(" Instructions - test version :      %20s",
+                              format_instruction_count($gCallGrindResults{$key}{'test'}{'all procedures'}{'total_instructions'}));
+      push @output, sprintf(" Difference :                       %20s",
+                              format_instruction_count($gCallGrindResults{$key}{'deltas'}{'all procedures'}{'diff'}));
+      push @output, sprintf (" Change in number of instructions: %.1f  %%",
+                             $gCallGrindResults{$key}{'deltas'}{'all procedures'}{'percent'} );
+
+      $current_rule = " ^^^^^^^^^^^^^^^^^^^^"
+                    ."^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
+                    ."^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^";
+
+      my $sub_rule = $current_rule;
+      $sub_rule =~ s/\^/./g;
+
+
+      push @output, $current_rule;
+
+      $current_line = sprintf(" %-50s<>  %-20s<>  %20s<>  %-40s", "Procedure", "Change in # of inst.", "% of all inst.", "Called from");
+
+      push @output, $current_line;
+
+      push @output, $current_rule;
+
+
+      my @procedure_order = @{$gCallGrindResults{$key}{"procedures_assorted_desc"}};
+      my $first = 1;
+      foreach my $procedure ( @procedure_order ){
+
+        if ( ! IsLowLevel($procedure) ){
+
+          # Get change in insturctions
+          my $ir_diff = $gCallGrindResults{$key}{"deltas"}{$procedure}{"diff"};
+
+          # only output results if instruction count has changed.
+          if ( $ir_diff != 0 ) {
+
+            if ( ! $first )  {
+              push @output,$sub_rule;
+              
+            }
+            $first = 0;
+
+            # Fill an array containing a wrapped version of the string name.
+            # We do this because some procedure names are very long, and
+            # cannot be accomidated in a readable table. 
+            my @name = ();
+            my $str_start = 0;
+            my $str_end = length($procedure);
+
+            while ( $str_start < $str_end  ){
+
+              my $remaining_string = substr $procedure, $str_start;
+              # Cut string into 40-character segments, and push on to array
+              my $strlength = length($remaining_string) < 40 ? length($remaining_string): 40;
+              my $substr = $str_start == 0 ? " " : "   ";
+              $substr .= (substr $procedure, $str_start, $strlength);
+              push @name,  $substr;
+              $str_start += 40;
+            }
+            
+
+            # Fill an array containing all the references for this
+            # procedure in the test version --- that is, the procedures
+            # that call this routine, and the number of times they call them.
+            my @references = (); 
+
+            my $reference_hash = $gCallGrindResults{$key}{"test"}{$procedure}{"references"};
+
+            foreach my $reference ( sort keys %{$reference_hash} ){
+
+              # Truncate calling procedure name at 60 characters
+              # and append "..." if necesary
+              my $sub_string = length($reference) < 60 ? $reference : ( substr $reference, 0, 60)."...";
+
+              # Add calling routine name and call count to array of references.
+              push @references, "$sub_string $gCallGrindResults{$key}{'test'}{$procedure}{'references'}{$reference}{'callcount'}";
+
+            }
+
+            # Get readable string describing the total change in intstructions to this
+            # procedure 
+            my $inst_delta = format_instruction_count($gCallGrindResults{$key}{'deltas'}{$procedure}{'diff'});
+            
+            my $inst_frac  = sprintf ("%.2f",$gCallGrindResults{$key}{'test'}{$procedure}{"local_instructions"}
+                                                / $gCallGrindResults{$key}{'test'}{'all procedures'}{'total_instructions'} * 100);
+
+            while ( scalar( @name ) != 0 || scalar ( @references ) != 0 ){
+
+              my $name_str = scalar ( @name ) ? shift @name : "";
+              my $call_str = scalar ( @references ) ? shift @references : "";
+
+              push @output, sprintf("%-50s<>  %20s<>  %20s<>  %-60s",
+                                    $name_str, $inst_delta, $inst_frac, $call_str ) ;
+
+              $inst_delta = "";
+              $inst_frac= "";
+
+            }
+          }
+        }
+      }
+
+      push @output, $current_rule;
+      push @output, "";
+      push @output, "";
+
+    }
+
+  }
 
   # Write report to disk
   if ( $gTest_params{"report_format"} =~ /csv/ ){
@@ -2161,6 +2342,7 @@ sub process_case($){
     if ( $save_level =~ /4/ ){
       execute ( "mv input_bak.xml input.xml" );
     }
+
     chdir "$gTest_paths{\"master\"}";
     
   }
@@ -2295,7 +2477,6 @@ sub create_historical_archive(){
 
 }
 
-
 #-------------------------------------------------------------------
 # Run bps from the current directory, move results to
 # archive folder, and post-process as required.
@@ -2305,27 +2486,32 @@ sub invoke_tests($$$$$){
 
   my ($model,$folder,$test_case,$save_level,$zone_shading_status) = @_;
 
-
-
   my $model_path  = getcwd();
 
   my ( $time_start, $time_end, $cmd, $sim_msgs, $system_time, $user_time, $real_time, $run_time);
 
   my @msg_buffer;
-  
-  # optionally exercise reference case.
+
+  my %bps_versions  = ("test" => $gTest_params{'test_binary'} );
+  my %bps_locations = ("test" => $gTest_paths{'test_loc'} );
+
   if ( $gTest_params{"compare_versions"} ){
+    $bps_versions{"reference"}  = $gRef_Test_params{'test_binary'} ;
+    $bps_locations{"reference"} = $gTest_paths{'ref_loc'} ;
+  }
+
+  foreach my $version (sort keys %bps_versions){
     # delete unnecessary files - may be lying around of previous test cycle
     # was interrupted
     delete_old_files();
 
     # Loop through zone shading status flag, and regenerate
-    # shading for any 'shaded zones' using reference ish
+    # shading for any 'shaded zones' using ish
     while ( my($zone,$regen) = each ( %$zone_shading_status ) ){
       if ( $regen ) {
-        stream_out("   Regenerating shading files for zone $zone using $gTest_paths{\"ref_loc\"}/ish ...");
+        stream_out("   Regenerating shading files for zone $zone using $bps_locations{\"$version\"}/ish ...");
         $time_start = (times)[2];
-        $cmd = "$gTest_paths{\"ref_loc\"}/ish -mode text -file $test_case -zone $zone -act update_silent";
+        $cmd = "$bps_locations{\"$version\"}/ish -mode text -file $test_case -zone $zone -act update_silent";
         execute($cmd);
         $time_end = (times)[2];
         $user_time = $time_end-$time_start;
@@ -2333,69 +2519,49 @@ sub invoke_tests($$$$$){
       }
     }
 
-    # run reference binary, and capture results
-    stream_out( "   running: $gRef_Test_params{\"test_binary\"} (reference case, save level $save_level) ...");
-    $cmd = "$gRef_Test_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
+    $cmd = "$bps_versions{\"$version\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
+
+    # Now run call-grind if requested.
+    if ( $gTest_params{'run_callgrind'} && $save_level =~ /5/ ){
+
+      $time_start = (times)[2];
+      stream_out("   performing callgrind analysis on $bps_versions{\"$version\"} ($version, save level $save_level) ...");
+      execute("rm -fr callgind.out.*");
+
+      # Invoke callgrind analysis on bps
+      execute("valgrind --tool=callgrind $cmd ");
+
+      # Use callgrind_annotate to turn raw callgrind output into meaningful
+      # results
+      system("callgrind_annotate --threshold=100 --inclusive=yes --tree=both callgrind.out.* > out.callgrind 2>&1 ");
+
+      $time_end = (times)[2];
+      $user_time = $time_end-$time_start;
+      $run_time = "($user_time seconds on CPU)";
+      stream_out("done. $run_time\n");
+
+    }
+   
+    # run new bin
+    stream_out("   running: $bps_versions{\"$version\"} ($version, save level $save_level) ...");
 
     $time_start = (times)[2];
 
     execute($cmd);
+
     # archive output
-    move_simulation_results($model_path,$model,$folder,$save_level,"reference",);
-      
+    move_simulation_results($model_path,$model,$folder,$save_level,"$version");
+    
     $time_end = (times)[2];
-      
-    # Save runtime data
+  
+    # Save run-time data
     $user_time = $time_end-$time_start;
-    $gRun_Times{"$folder/$model"}{$save_level}{"reference"} = $user_time;
+    $gRun_Times{"$folder/$model"}{$save_level}{"$version"} = $user_time;
 
-    # Prep message
+    # Prep message for reporting to screen.
     $run_time = "($user_time seconds on CPU)";
-
     stream_out("done. $run_time\n");
   }
-
-  # Loop through zone shading status flag, and regenerate
-  # shading for any 'shaded zones' using test ish
-    while ( my($zone,$regen) = each ( %$zone_shading_status ) ){
-      if ( $regen ) {
-        stream_out("   Regenerating shading files for zone $zone using $gTest_paths{\"test_loc\"}/ish ...");
-        $time_start = (times)[2];
-        $cmd = "$gTest_paths{\"test_loc\"}/ish -mode text -file $test_case -zone $zone -act update_silent";
-        execute($cmd);
-        $time_end = (times)[2];
-        $user_time = $time_end-$time_start;
-        stream_out("   Done. ($user_time seconds on CPU)\n");
-      }
-    }
-
-  
-  # run new bin
-  stream_out("   running: $gTest_params{\"test_binary\"} (test case, save level $save_level) ...");
-
-  # delete unnecessary files - may be lying around of previous test cycle
-  # was interrupted
-  delete_old_files();
-
-  $cmd = "$gTest_params{\"test_binary\"} -file $test_case -mode text -p $gTest_params{\"period_name\"} silent";
-
-  $time_start = (times)[2];
-
-  execute($cmd);
-   
-  # archive output
-  move_simulation_results($model_path,$model,$folder,$save_level,"test");
-  
-  $time_end = (times)[2];
- 
-  # Save run-time data
-  $user_time = $time_end-$time_start;
-  $gRun_Times{"$folder/$model"}{$save_level}{"test"} = $user_time;
-
-  # Prep message for reporting to screen.
-  $run_time = "($user_time seconds on CPU)";
-  stream_out("done. $run_time\n");
-  
 }
 
 #--------------------------------------------------------------------
@@ -2451,15 +2617,18 @@ sub move_simulation_results($$$$$){
 
       # Move files to destination folder
       execute ("cp -f $path/$model.data $Destination/$folder/$model/SL4\_$version.data");
+      execute ("cp -f $path/out.callgrind $Destination/$folder/$model/SL4\_$version.callgrind");
       # Get names of files that were actually copied.
       @copied_files = split (/\s/, `ls $Destination/$folder/$model/*SL4\_$version.data`);
     }
 
   }elsif ( $save_level == 5 ){
     # copy files to archive folder.
+    execute ("cp -f $path/out.callgrind $Destination/$folder/$model/SL5\_$version.callgrind");
     execute ("cp -f $path/out.csv $Destination/$folder/$model/SL5\_$version.csv");
     execute ("cp -f $path/out.xml $Destination/$folder/$model/SL5\_$version.xml");
     execute ("cp -f $path/*.h3k   $Destination/$folder/$model/SL5\_$version.h3k");
+    execute ("cp -f $path/callgrind.out* $Destination/$folder/$model/SL5\_$version.raw-callgrind-output");
     execute ("cp -f $path/*.fcts1 $Destination/$folder/$model/SL5\_$version.fcts1");
     execute ("cp -f $path/*.fcts2 $Destination/$folder/$model/SL5\_$version.fcts2");
     execute ("cp -f $path/*.fcts3 $Destination/$folder/$model/SL5\_$version.fcts3");
@@ -2491,7 +2660,7 @@ sub move_simulation_results($$$$$){
   }
   
   # delete all remaining results files.
-  execute("rm -fr $path/*.bres $path/*.pres $path/*.eres $path/*.ires $path/*.h3k $path/out.xml $path/*.fcts* $path/*.data");
+  execute("rm -fr $path/.callgrind $path/*.bres $path/*.pres $path/*.eres $path/*.ires $path/*.h3k $path/out.xml $path/*.fcts* $path/*.data");
   
   # move back to starting path.
   chdir $start_path;
@@ -2566,7 +2735,7 @@ sub compare_results($$){
   
       if ( $gTest_ext{$extention} ){
     
-        stream_out (sprintf ("    - %-12s ","$extention files: ") );
+        stream_out (sprintf ("    - %-20s ","$extention files: ") );
       
         # get reference and test files
         my $reference_file = $reference_files{$extention};
@@ -2643,10 +2812,21 @@ sub compare_results($$){
             # Files are the same
             $gTest_Results{"$folder/$model"}{$extention} = "pass";
           }
-    
+
+        }elsif ( $extention =~/callgrind/ ){
+
+          %gCallGrindResults = CollectCallGrindResults("$folder/$model",$reference_file,$test_file);
+
+          if ( $gCallGrindResults{"$folder/$model"}{"deltas"}{"all procedures"}{"percent"} > 0 ){
+            $gTest_Results{"$folder/$model"}{$extention} = "slowdown by ";
+          }else{
+            $gTest_Results{"$folder/$model"}{$extention} = "speed-up by ";
+          }
+          $gTest_Results{"$folder/$model"}{$extention} .= sprintf("%-.1f %%",$gCallGrindResults{"$folder/$model"}{"deltas"}{"all procedures"}{"percent"});
+          
         }elsif ( $extention =~/XXX/ ){
           # Add new extention-specific analsis here
-    
+          
         }else{
           # Diff files. compare returns 1 if files differ.
           if ( compare( $reference_file, $test_file ) ){
@@ -2715,7 +2895,7 @@ sub compare_results($$){
 
   # Report overall test result to buffer
   stream_out (
-                sprintf ("    - %-12s %s \n","Overall:",
+                sprintf ("    - %-20s %s \n","Overall:",
                           $gTest_Results{"$folder/$model"}
                           {"overall"})
                              
@@ -2731,6 +2911,7 @@ sub compare_results($$){
 sub CollectXMLResults(){
 
   my (%XMLresults);
+  
   #Empty @gCurrent_path and %gElements stacks
   @gCurrent_path = ();
   %gElements = ();
@@ -2882,7 +3063,7 @@ sub CompareXMLResults($){
 
     # Get element"s units
     my $units = $$results{$element_path}{units};
-
+    if ( ! defined($units) ){ $units = "(-)"; }
     # Loop through attributes and perform appropriate comparisons
 
     foreach my $attribute ( sort keys %{$$results{$element_path}} )   {
@@ -2937,6 +3118,260 @@ sub CompareXMLResults($){
   }
 
   return $global_fail;
+}
+
+
+#------------------------------------------------------------------
+# This function compares callgrind data from two bps's, and reports
+# on the changes in computational requirements.
+#------------------------------------------------------------------
+sub CollectCallGrindResults($$$){
+
+  my ($key,$ref_file,$test_file) = @_;
+
+  my (%results, %file);
+
+  $file{"reference"} = $ref_file;
+  $file{"test"} = $test_file;
+
+  # Collect procedure-by-procedure results for reference and test versions.
+  foreach my $version (sort keys %file){
+
+    open(INPUT,$file{"$version"}) or fatalerror("Could not open $file{\"$version\"}");
+
+    my %referenced_by = ();
+    my $program_total;
+    my $parent = "";
+    while ( my $line = <INPUT> ){
+
+      # Delete leading spaces
+      $line =~ s/^\s*//g;
+
+      # Delete any line that does not begin with a number
+      $line =~ s/^[^0-9].*\n//g;
+
+      # if there's anything left, process line.
+      if ( $line ){
+
+        # If line contains PROGRAM TOTALS keyphrase, it's describing
+        # the total number of instructions. append to all-procedures 
+        if ($line =~ /PROGRAM TOTALS/ ){
+
+          $line =~ s/PROGRAM TOTALS//g;
+          $line =~ s/\s*//g;
+          $line =~ s/,//g;
+
+          $results{$key}{"$version"}{"all procedures"}{"total_instructions"} = $line;
+
+          $program_total = $results{$key}{"$version"}{"all procedures"}{"total_instructions"};
+
+
+        }else{
+
+          # Add meaningful delimiters to call-grind output to ensure
+          # it can be consistantly parsed. Delimiter: ':~:'
+
+          # Initial format:
+          # 459,620,468  < bmatsu.F:mzcoe3_ (720x) [/home/aferguso/esp-prp/bin/bps]
+          # 459,620,468  *  casual.F:mzcasi_ [/home/aferguso/esp-test/bin/bps]
+          #      50,644  >   plt_zone_gain_coupling.F:fpltzone_convective_gain__ (720x) [/home/aferguso/esp-test/bin/bps]
+          #       2,880  >   shocc_dummy.c:updateequipment_ (720x) [/home/aferguso/esp-test/bin/bps]
+          #     120,303  >   ???:s_copy (1440x) [/usr/lib/gcc/i686-pc-linux-gnu/3.4.6/libg2c.so.0.0.0]
+          #      50,441  >   plt_zone_gain_coupling.F:fpltzone_radiant_gain__ (720x) [/home/aferguso/esp-test/bin/bps]
+          #      12,240  >   esru_lib.F:eclose_ (720x) [/home/aferguso/esp-test/bin/bps]
+          #      20,160  >   shocc_dummy.c:fetchloads_ (5040x) [/home/aferguso/esp-test/bin/bps
+          # Final format:
+          # 459,620,468:~:<:~:bmatsu.F:mzcoe3_:~:(720x):~:[/home/aferguso/esp-prp/bin/bps] 
+          # 459,620,468:~:*:~:casual.F:mzcasi_:~:[/home/aferguso/esp-prp/bin/bps] 
+          # 50,644:~:>:~:plt_zone_gain_coupling.F:fpltzone_convective_gain__:~:(720x):~:[/home/aferguso/esp-prp/bin/bps] 
+          # 2,880:~:>:~:shocc_dummy.c:updateequipment_:~:(720x):~:[/home/aferguso/esp-prp/bin/bps]
+          # 120,303:~:>:~:???:s_copy:~:(1440x):~:[/usr/lib/gcc/i686-pc-linux-gnu/3.4.6/libg2c.so.0.0.0]
+          
+
+
+          my $line_org = $line;
+
+          # Extract number indicating how many instructions are associated
+          # with this procedure.
+          $line=~ s/(^[0-9,]+) /$1:~:/g;
+          # Extract special character (*,<,>) indicating if this line describes
+          # a procedure (*), a calling procedure (<) or a called procedure (>)
+          $line=~ s/:~:\s*([\*|<|>])+\s* /:~:$1:~:/g;
+
+          # Extract the number of calls to this procedure [e.g. (720x)]
+          $line=~ s/\s*(\([0-9]+x\))\s*/:~:$1 /g;
+          # Extrac the binary this procedure is cotnained in.
+          $line=~ s/\s*(\[[^\s]+\])\s*$/:~:$1/g;
+
+          # Split line according to delimiter.
+          # - $iCount    : number of instructions
+          # - $class     : flag for calling-procedure, current-procedure,
+          #                called-procedure
+          # - $procedure : procedure name
+          # - $callcount : # of times a procedure was called. 
+          my ($iCount, $class, $procedure, $callcount, $arg5) = split /:~:/, $line;
+
+          # Strip ',' from procedure instruction count --- allows them to
+          # be intrepreted as ints
+          $iCount =~ s/,//g;
+
+          # Screen procedure name against known list of low-level procedures
+          # that aren't part of ESP-r, and which we're not interested in
+          # (these are usually elements of the c/c++ libraries)
+          if ( ! IsLowLevel($procedure) ){
+
+            if( $class =~ /\</ ) {
+              # This number indicates the number of times other procedures called
+              # the given procedure.
+            
+              $referenced_by{$procedure}{"callcount"} = $callcount;
+
+            }
+
+            if ( $class =~ /\*/ ){
+              # This is the total number of instructions for a routine
+
+                  $results{$key}{$version}{$procedure}{"total_instructions"} = $iCount;
+
+#                 print ">>> $version : $procedure : $iCount \n";
+
+                # Extract the number of times this procedure was referenced, and append
+                # the number of calls to the procedures that reference it.
+                foreach my $reference (keys %referenced_by ){
+                  $callcount = $referenced_by{$reference}{"callcount"};
+                  $results{$key}{$version}{$procedure}{"references"}{$reference}{"callcount"} = $callcount;
+                }
+
+            }
+
+            # Save data on sub-calls --- that is, the procedures that
+            # this procedure calls. Instructions for each procedure is stored
+            # along side it's current parent for later summing.
+            if ( $class =~/\>/){
+
+              $results{$key}{$version}{$parent}{'children'}{$procedure} = $iCount;
+              
+            }
+          
+          }
+
+          # If this is a summary variable for a procedure, mark it as a
+          # parent and begin tracking its children.
+          if ( $class =~ /\*/ ){
+            %referenced_by = ();
+            $parent = $procedure;
+          }
+
+        }
+
+      }
+
+    }
+
+    # Done parsing callgrind results.
+    # Now compute the actual number of instructions in each procedure
+    foreach my $procedure ( keys %{$results{$key}{$version}} ){
+
+      # Get the number of instructions for this procedure and its children.
+      my $local = defined( $results{$key}{$version}{$procedure}{"total_instructions"} ) ?
+                   $results{$key}{$version}{$procedure}{"total_instructions"} : 0;
+
+      # Skip procedures in low-level libraries
+      if ( ! IsLowLevel($procedure) ){
+
+#         print ">-- $version : $procedure TOTAL -> $local \n";
+
+        # Loop through this procedure's children, and subract their instructions
+        # from the parent's total. 
+        foreach my $child ( keys %{$results{$key}{$version}{$procedure}{'children'}} ){
+          my $subcalls;
+          # Only subtract instructions for children that are actually part of the
+          # ESP-r build; procedures that are part of low-level libraries will be
+          # aggregated into their calling ESP-r procedure. 
+          if ( ! IsLowLevel($child) ){
+            # The number of instructions executed by the child procedure...
+            $subcalls = defined( $results{$key}{$version}{$procedure}{'children'}{$child} ) ?
+                                 $results{$key}{$version}{$procedure}{'children'}{$child} : 0;
+            # ... is subtracted from its parent's total.
+            $local = $local - $subcalls;
+
+          }
+#           print "         - SUBCALL ".substr($child,0,30)."($subcalls) \n";
+        }
+
+        # Save final talley for procedure's instructions.
+        $results{$key}{$version}{$procedure}{"local_instructions"} = $local;
+        
+
+#           print "         = LOCAL  $local \n"
+
+
+      }
+
+    }
+
+  }
+
+  # Loop through all procedures in test version, and compare
+  # them to reference version instructions.
+  my $procedures = $results{$key}{"test"};
+  my %diffs_for_sort=();
+  foreach my $procedure ( keys %$procedures ){
+
+    #print "> $procedure \n";
+
+      # Get instruction counts for test and reference version of this procedure.
+      my ($test_inst, $reference_inst);
+ 
+      $test_inst = defined ( $results{$key}{"test"}{"$procedure"}{"local_instructions"} ) ?
+                   $results{$key}{"test"}{"$procedure"}{"local_instructions"} : 0 ;
+      $reference_inst = defined( $results{$key}{"reference"}{"$procedure"}{"local_instructions"} ) ?
+                        $results{$key}{"reference"}{"$procedure"}{"local_instructions"} : 0 ;
+                        
+      # Compute difference and % change
+      $results{$key}{"deltas"}{"$procedure"}{"diff"} = $test_inst - $reference_inst ;
+      
+      if ( $reference_inst > 0 ) {
+        $results{$key}{"deltas"}{"$procedure"}{"percent"} = ($test_inst - $reference_inst) / $reference_inst * 100;
+      }else{
+        $results{$key}{"deltas"}{"$procedure"}{"percent"} = "NaN";
+      }
+
+      # Save procedure and intruction as unique key for sorting later.
+      $diffs_for_sort{$procedure}=$results{$key}{'deltas'}{$procedure}{'diff'};
+
+
+  }
+
+  # Now loop through reference procedures and make sure none are missing
+  # from test versions
+
+  $procedures = $results{$key}{"reference"};
+  foreach my $procedure ( keys %$procedures ){
+    
+      if ( ! defined( $results{$key}{"deltas"}{$procedure}{"diff"} ) ) {
+        my $reference_inst = $results{$key}{"reference"}{$procedure}{"local_instructions"};
+        $results{$key}{"deltas"}{$procedure}{"diff"} = 0 - $reference_inst;
+        $results{$key}{"deltas"}{$procedure}{"percent"} = -100 ;
+        
+        $results{$key}{"test"}{"$procedure"}{"local_instructions"} = 0;
+        # Save procedure and intruction as unique key for sorting later.
+        $diffs_for_sort{$procedure}=$results{$key}{'deltas'}{$procedure}{'diff'};
+      }
+  }
+
+  # now sort differences,
+  my @procedures_ranked=();
+
+  # Now explode unique keys and save sorted procedures.
+
+  @procedures_ranked = sort { $diffs_for_sort{$b} <=> $diffs_for_sort{$a} } keys %diffs_for_sort;
+
+  # Append list of sorted procedures to results-hash
+  $results{$key}{'procedures_assorted_desc'} = [ @procedures_ranked ];
+
+  return %results;
+  
 }
 
 
@@ -3312,7 +3747,7 @@ sub is_true_false($){
 # Delete simulation files
 #-----------------------------------------------------------------------
 sub delete_old_files(){
-  execute("rm -fr _.xml out.csv out.xml *.h3k *.fcts* *.res *.bres *.eres *.pres libb libp libe");
+  execute("rm -fr _.xml out.csv out.xml *.h3k *.fcts* *.res *.bres *.eres *.pres libb libp libe callgrind.out.* ");
   return;
 }
 
@@ -3440,5 +3875,72 @@ sub format_my_number($$$){
   
   return $value;
 }
+#-------------------------------------------------------------
+# This procedure turns a long int into a readable number. EG:
+#  1225333647 -> +1,225,333,647
+# -12722787   -> -12,722,787
+#-------------------------------------------------------------
+sub format_instruction_count($){
 
+  my $count = "@_";
+
+
+
+  my $buffer = "";
+
+  my $sign = $count =~ /^-/ ? "-" : "+" ;
+  $count =~ s/^[-|+]//g;;
+
+  my $start = 0;
+  my $end = length ($count);
+
+  while ( $end > $start  ){
+    
+    my $length = $end - 3 < $start ? $end - $start : 3;
+    
+    if ( $buffer ){
+
+      $buffer = ",$buffer";
+      
+    }
+
+    $buffer = substr($count,$end-$length,$length)."$buffer";
+    $end = $end-$length;
+    
+  }
+  
+
+  return "$sign$buffer";
+
+}
+
+#-----------------------------------------------------------------------
+# This function is used to query a procedure name against a list of
+# known low-level functions that exist outside ESP-r source code. It's
+# used to filter functions that have no bearing on ESP-r from call-grind
+# results.
+#-----------------------------------------------------------------------
+sub IsLowLevel($){
+
+  my ($procedure) = @_;
+  my $result;
+
+  # Check if procedure matches list of known low-level trouble makers
+  if ( $procedure =~ /^\?\?\?/ ||
+       $procedure =~ /^basic_string\.h/ ||
+       $procedure =~ /^crt[i|n]\.S/ ||
+       $procedure =~ /^[_a-z]+\.h/  ||
+       $procedure =~ /^vector\.tcc/ ){
+       
+    $result = 1;
+
+  }else{
+
+    $result = 0;
+
+  }
+
+  return $result;
+  
+}
 

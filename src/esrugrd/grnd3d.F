@@ -246,24 +246,32 @@ C Create a material rectangle.
           CALL GRAAPH(IDRW1,IDRW2)
         ENDIF
 
-C Ask if user wishes to browse through primitives to find suitable
-C reference.
-        dok=.true.
-        h(1)='If you know the material db index you can say no and '
-        h(2)='enter the number directly. Otherwise say yes and '
-        h(3)='browse the database. '
-        CALL ASKOK(' Browse material database to locate the material',
-     &    ' index you want? A no will ask you for the index.',OK,dok,3)
+C Ask if user wishes to browse through materials to find suitable
+C reference. Use elistmat to select via materials array.
+        h(1)='If you want to keep the current material answer NO'
+        h(2)='otherwise you can find one by browsing the database.'
+        CALL ASKOK('Browse the materials db for a new material',
+     &    '(NO exits the process)?',OK,dok,2)
+        iwhich = 0
         IF(OK)then
-          iwhich=0
-          CALL ELISTC(iwhich,chdb,'-',IER)
+          CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+          if(iwhich.eq.0)then
+            H(1)='If air is correct then accept, otherwise'
+            H(2)='reselect from the list or abort the task.'
+            CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &        ' ','accept','reselect material','abort',iwair,2)
+            if(iwair.eq.2)then
+              CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+            elseif(iwair.eq.3)then
+              GOTO 10
+            endif
+          elseif(iwhich.eq.-99)then
+            continue
+          endif
         else
-          H(1)='Each item in the primitive construction db has a'
-          H(2)='reference number. '
-          H(3)='Air is reference 0.'
-          CALL EASKI(IWHICH,' ',' Primitive db reference no: ',
-     &        0,'F',600,'F',0,'primitive reference',IER,3)
+          goto 10  ! go back
         endif
+
         LDRU(1)=IWHICH
         WRITE(LMTS,'(4(1X,I2))')(LDRU(K),K=2,5)
         WRITE(MSG,'(2A)')'enter the material rectangle borders',
@@ -704,6 +712,7 @@ C *********************************************************************
       SUBROUTINE GNDMSH(IER)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -716,7 +725,7 @@ C *********************************************************************
       DIMENSION IZZ(3),VZZ(5)
 
       CHARACTER    MSG*72,FLTYP*25
-      CHARACTER*72 PNAM,TITL,H,LTMP
+      CHARACTER*72 H,LTMP
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
 
 C Initialize the connections,nodes, and control volumes counters.
@@ -772,11 +781,18 @@ C Estimate the start up period for the ground.
           RESIST=0.
           DO 30 IL=1,NDZG
             IEL=ITPGND(IX,IY,IL)
-            CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,
-     &              DBSHT,E,A,DRV,TITL,PNAM)
-            IF(IER.NE.0)STOP "error (801): while reading primative db."
+            matarrayindex=IEL   ! which legacy index
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+            endif
             DNHCVL=DNHCVL+DXG(IX)*DYG(IY)*DZG(IL)*DBDEN*DBSHT
-            RESIST=RESIST+DZG(IL)/CND
+            RESIST=RESIST+DZG(IL)/DBCON
    30     CONTINUE
           RESISTM=AMIN1(RESISTM,RESIST)
    20   CONTINUE
@@ -952,6 +968,7 @@ C *********************************************************************
       SUBROUTINE MKCVGX(IZZ,VZZ,IYY,VYY,IXX,VXX)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/GRND05/NDXG,NDYG,NDZG,DXG(MGXYZ),DYG(MGXYZ),DZG(MGXYZ)
@@ -962,8 +979,6 @@ C *********************************************************************
 
       DIMENSION IXX(3),IYY(3),IZZ(3),VXX(5),VYY(5),VZZ(5)
       DIMENSION ACOND(3)
-
-      CHARACTER PNAM*72,TITL*72
 
       DNHC=0.
       DO 10 II=1,3
@@ -983,9 +998,17 @@ C *********************************************************************
       DO 20 I3=1,2
       IF(IXX(I1).GT.0.AND.IYY(I2).GT.0.AND.IZZ(I3).GT.0)THEN
         IEL=ITPGND(IXX(I1),IYY(I2),IZZ(I3))
-        CALL ERPCDB(IFMAT,IEL,IUOUT,IER,CND,DBDEN,
-     &              DBSHT,E,A,DRV,TITL,PNAM)
-        IF(IER.NE.0)STOP "error (803): while reading primative db."
+        matarrayindex=IEL   ! which legacy index
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+        if(matarrayindex.eq.0)then
+          CND=0.0; DBDEN=0.0; DBSHT=0.0 
+        else
+          CND=matdbcon(matarrayindex)
+          DBDEN=matdbden(matarrayindex)
+          DBSHT=matdbsht(matarrayindex)
+        endif
+ 
         DNHC=DNHC+VXX(I1)*VYY(I2)*VZZ(I3)*DBDEN*DBSHT
 
 C LEFT (RIGHT).
@@ -1426,11 +1449,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer iix1,iiy1,iix2,iiy2
+      integer iix1,iiy1,iix2,iiy2,iix,iiy
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
-      integer*8 iix1,iiy1,iix2,iiy2
+      integer*8 iix1,iiy1,iix2,iiy2,iix,iiy
 #endif
 
       XMN2=0.
@@ -1447,36 +1470,28 @@ C *********************************************************************
       call axiscale(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &   XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
-      CALL U2PIXEL(XMX2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,1)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMX2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMN2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMX2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
+      CALL U2PIXEL(XMX2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,1)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMX2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMN2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMX2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
       DO 10 I=1,NDXG-1
-        CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
-        CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(FLOAT(I),YMN2,iix1,iiy1)
+        CALL U2PIXEL(FLOAT(I),YMX2,iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NDYG-1
-        CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
-        CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(XMN2,FLOAT(J),iix1,iiy1)
+        CALL U2PIXEL(XMX2,FLOAT(J),iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
@@ -1487,7 +1502,7 @@ C *********************************************************************
         YCF=-0.5
         DO 40 J=1,NDYG
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')ITPGND(I,J,IL)
           CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
@@ -1533,11 +1548,11 @@ C *********************************************************************
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer iix1,iiy1,iix2,iiy2
+      integer iix,iiy,iix1,iiy1,iix2,iiy2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
-      integer*8 iix1,iiy1,iix2,iiy2
+      integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
 #endif
 
       IF(ISRF.EQ.1.OR.ISRF.EQ.3.OR.ISRF.GE.5)THEN
@@ -1564,36 +1579,28 @@ C *********************************************************************
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &   XADD,YADD)
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,1)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMX2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMX2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMN2,YMX2,IX,IY)
-      CALL ELINE(IX,IY,0)
-      CALL ECIRC(IX,IY,3,1)
-      CALL U2PIXEL(XMN2,YMN2,IX,IY)
-      CALL ELINE(IX,IY,0)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,1)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMX2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMX2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMN2,YMX2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL U2PIXEL(XMN2,YMN2,iix,iiy)
+      CALL ELINE(iix,iiy,0)
       DO 10 I=1,NUMX-1
-        CALL U2PIXEL(FLOAT(I),YMN2,IX1,IY1)
-        CALL U2PIXEL(FLOAT(I),YMX2,IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(FLOAT(I),YMN2,iix1,iiy1)
+        CALL U2PIXEL(FLOAT(I),YMX2,iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    10 CONTINUE
       DO 20 J=1,NUMY-1
-        CALL U2PIXEL(XMN2,FLOAT(J),IX1,IY1)
-        CALL U2PIXEL(XMX2,FLOAT(J),IX2,IY2)
-        iix1=IX1
-        iiy1=IY1
-        iix2=IX2
-        iiy2=IY2
+        CALL U2PIXEL(XMN2,FLOAT(J),iix1,iiy1)
+        CALL U2PIXEL(XMX2,FLOAT(J),iix2,iiy2)
         CALL EDLINE(iix1,iiy1,iix2,iiy2,4)
    20 CONTINUE
       XCF=-0.5
@@ -1605,7 +1612,7 @@ C *********************************************************************
           YCF=-0.5
         DO 30 J=1,NUMY
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')IBSRF(1,I,J)
           CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    30   CONTINUE
@@ -1615,7 +1622,7 @@ C *********************************************************************
           YCF=-0.5
         DO 40 J=1,NUMY
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')IBSRF(2,I,J)
           CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    40   CONTINUE
@@ -1625,7 +1632,7 @@ C *********************************************************************
           YCF=-0.5
         DO 50 J=1,NUMY
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')IBSRF(3,I,J)
           CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    50   CONTINUE
@@ -1635,7 +1642,7 @@ C *********************************************************************
           YCF=-0.5
         DO 60 J=1,NUMY
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')IBSRF(4,I,J)
           CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    60   CONTINUE
@@ -1645,7 +1652,7 @@ C *********************************************************************
           YCF=-0.5
         DO 70 J=1,NUMY
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')IBSRF(5,I,J)
           CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    70   CONTINUE
@@ -1655,7 +1662,7 @@ C *********************************************************************
           YCF=-0.5
         DO 80 J=NUMY,1,-1
           YCF=YCF+1.
-          CALL U2PIXEL(XCF,YCF,IX,IY)
+          CALL U2PIXEL(XCF,YCF,iix,iiy)
           WRITE(LABELS,'(I3)')IBSRF(6,I,J)
           CALL ETLABEL(LABELS,XCF,YCF,ipos,isize)
    80   CONTINUE
@@ -1699,10 +1706,10 @@ C *********************************************************************
       DIMENSION XS(8),YS(8),ZS(8)
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #endif
 
       THKX=0.
@@ -1764,30 +1771,30 @@ C Clear the graphical feedback window.
       CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
 
 C Locate and label the vertices.
-      CALL U2PIXEL(XS(1),YS(1),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,1,IER)
-      CALL U2PIXEL(XS(2),YS(2),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,2,IER)
-      CALL U2PIXEL(XS(3),YS(3),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,3,IER)
-      CALL U2PIXEL(XS(4),YS(4),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,4,IER)
-      CALL U2PIXEL(XS(5),YS(5),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,5,IER)
-      CALL U2PIXEL(XS(6),YS(6),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,6,IER)
-      CALL U2PIXEL(XS(7),YS(7),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,7,IER)
-      CALL U2PIXEL(XS(8),YS(8),IX,IY)
-      CALL ECIRC(IX,IY,3,1)
-      CALL VERTLBL(IX,IY,8,IER)
+      CALL U2PIXEL(XS(1),YS(1),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,1,IER)
+      CALL U2PIXEL(XS(2),YS(2),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,2,IER)
+      CALL U2PIXEL(XS(3),YS(3),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,3,IER)
+      CALL U2PIXEL(XS(4),YS(4),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,4,IER)
+      CALL U2PIXEL(XS(5),YS(5),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,5,IER)
+      CALL U2PIXEL(XS(6),YS(6),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,6,IER)
+      CALL U2PIXEL(XS(7),YS(7),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,7,IER)
+      CALL U2PIXEL(XS(8),YS(8),iix,iiy)
+      CALL ECIRC(iix,iiy,3,1)
+      CALL VERTLBL(iix,iiy,8,IER)
 
 C Draw the ground.
       iupdown=0

@@ -1,82 +1,82 @@
 *connections  for systems
-*Date Mon Mar 21 10:41:56 2005
+*Date Wed Sep 30 17:25:21 2009
      79   # number of connections
-   1   1   0   0   0  #   1  south in direct_gain is External
-   1   2   3   2   4  #   2  right in direct_gain >|< left in rad_test
-   1   3   3   5   1  #   3  back_dg in direct_gain >|< prt_dg in passage
-   1   4   0   0   0  #   4  left in direct_gain is External
-   1   5   3   6   1  #   5  ceiling in direct_gain >|< ceil_dg in roof
-   1   6   4   1   0  #   6  floor in direct_gain >|< ground profile 1
-   1   7   0   0   0  #   7  glaz in direct_gain is External
-   1   8   3   5  10  #   8  door in direct_gain >|< door_dg in passage
-   2   1   0   0   0  #   9  south in rad_test is External
-   2   2   3   3   4  #  10  right in rad_test >|< left in heatexch
-   2   3   3   5   2  #  11  back_dg in rad_test >|< prt_rad in passage
-   2   4   3   1   2  #  12  left in rad_test >|< right in direct_gain
-   2   5   3   6   2  #  13  ceiling in rad_test >|< ceil_rad in roof
-   2   6   4   1   0  #  14  floor in rad_test >|< ground profile 1
-   2   7   0   0   0  #  15  glaz in rad_test is External
-   2   8   3   5  11  #  16  door in rad_test >|< door_rad in passage
-   3   1   0   0   0  #  17  south in heatexch is External
-   3   2   3   4   4  #  18  right in heatexch >|< left in mixed_test
-   3   3   3   5   3  #  19  back_dg in heatexch >|< prt_exch in passage
-   3   4   3   2   2  #  20  left in heatexch >|< right in rad_test
-   3   5   3   6   3  #  21  ceiling in heatexch >|< ceil_exch in roof
-   3   6   4   1   0  #  22  floor in heatexch >|< ground profile 1
-   3   7   0   0   0  #  23  glaz in heatexch is External
-   3   8   3   5  12  #  24  door in heatexch >|< door_exch in passage
-   4   1   0   0   0  #  25  south in mixed_test is External
-   4   2   0   0   0  #  26  right in mixed_test is External
-   4   3   3   5   4  #  27  back_dg in mixed_test >|< prt_mix in passage
-   4   4   3   3   2  #  28  left in mixed_test >|< right in heatexch
-   4   5   3   6   4  #  29  ceiling in mixed_test >|< ceil_mix in roof
-   4   6   4   1   0  #  30  floor in mixed_test >|< ground profile 1
-   4   7   0   0   0  #  31  glaz in mixed_test is External
-   4   8   3   5  13  #  32  door in mixed_test >|< door_mix in passage
-   5   1   3   1   3  #  33  prt_dg in passage >|< back_dg in direct_gain
-   5   2   3   2   3  #  34  prt_rad in passage >|< back_dg in rad_test
-   5   3   3   3   3  #  35  prt_exch in passage >|< back_dg in heatexch
-   5   4   3   4   3  #  36  prt_mix in passage >|< back_dg in mixed_test
-   5   5   0   0   0  #  37  right in passage is External
-   5   6   0   0   0  #  38  north in passage is External
-   5   7   0   0   0  #  39  left in passage is External
-   5   8   3   6   5  #  40  ceil in passage >|< ceil_pasg in roof
-   5   9   4   1   0  #  41  floor in passage >|< ground profile 1
-   5  10   3   1   8  #  42  door_dg in passage >|< door in direct_gain
-   5  11   3   2   8  #  43  door_rad in passage >|< door in rad_test
-   5  12   3   3   8  #  44  door_exch in passage >|< door in heatexch
-   5  13   3   4   8  #  45  door_mix in passage >|< door in mixed_test
-   5  14   0   0   0  #  46  door in passage is External
-   5  15   0   0   0  #  47  glaz in passage is External
-   6   1   3   1   5  #  48  ceil_dg in roof >|< ceiling in direct_gain
-   6   2   3   2   5  #  49  ceil_rad in roof >|< ceiling in rad_test
-   6   3   3   3   5  #  50  ceil_exch in roof >|< ceiling in heatexch
-   6   4   3   4   5  #  51  ceil_mix in roof >|< ceiling in mixed_test
-   6   5   3   5   8  #  52  ceil_pasg in roof >|< ceil in passage
-   6   6   0   0   0  #  53  south_rfl in roof is External
-   6   7   0   0   0  #  54  north_rf in roof is External
-   6   8   0   0   0  #  55  left_rf in roof is External
-   6   9   0   0   0  #  56  right_rf in roof is External
-   6  10   0   0   0  #  57  south_rfr in roof is External
-   6  11   0   0   0  #  58  liqd_col in roof is External
-   6  12   3   7   1  #  59  air_l in roof >|< base in air_col_left
-   6  13   3   8   1  #  60  air_m in roof >|< base in air_col_mid
-   6  14   3   9   1  #  61  air_r in roof >|< base in air_col_righ
-   7   1   3   6  12  #  62  base in air_col_left >|< air_l in roof
-   7   2   0   0   0  #  63  cover in air_col_left is External
-   7   3   0   0   0  #  64  left in air_col_left is External
-   7   4   0   0   0  #  65  bot_frame in air_col_left is External
-   7   5   3   8   3  #  66  right in air_col_left >|< left in air_col_mid
-   7   6   0   0   0  #  67  top_frame in air_col_left is External
-   8   1   3   6  13  #  68  base in air_col_mid >|< air_m in roof
-   8   2   0   0   0  #  69  cover in air_col_mid is External
-   8   3   3   7   5  #  70  left in air_col_mid >|< right in air_col_left
-   8   4   0   0   0  #  71  bot_frame in air_col_mid is External
-   8   5   3   9   3  #  72  right in air_col_mid >|< left in air_col_righ
-   8   6   0   0   0  #  73  top_frame in air_col_mid is External
-   9   1   3   6  14  #  74  base in air_col_righ >|< air_r in roof
-   9   2   0   0   0  #  75  cover in air_col_righ is External
-   9   3   3   8   5  #  76  left in air_col_righ >|< right in air_col_mid
-   9   4   0   0   0  #  77  bot_frame in air_col_righ is External
-   9   5   0   0   0  #  78  right in air_col_righ is External
-   9   6   0   0   0  #  79  top_frame in air_col_righ is External
+   1   1   0   0   0  #    1 south in direct_gain is External
+   1   2   3   2   4  #    2 right in direct_gain >|< left in rad_test
+   1   3   3   5   1  #    3 back_dg in direct_gain >|< prt_dg in passage
+   1   4   0   0   0  #    4 left in direct_gain is External
+   1   5   3   6   1  #    5 ceiling in direct_gain >|< ceil_dg in roof
+   1   6   4   1   0  #    6 floor in direct_gain >|< ground profile 1
+   1   7   0   0   0  #    7 glaz in direct_gain is External
+   1   8   3   5  10  #    8 door in direct_gain >|< door_dg in passage
+   2   1   0   0   0  #    9 south in rad_test is External
+   2   2   3   3   4  #   10 right in rad_test >|< left in heatexch
+   2   3   3   5   2  #   11 back_dg in rad_test >|< prt_rad in passage
+   2   4   3   1   2  #   12 left in rad_test >|< right in direct_gain
+   2   5   3   6   2  #   13 ceiling in rad_test >|< ceil_rad in roof
+   2   6   4   1   0  #   14 floor in rad_test >|< ground profile 1
+   2   7   0   0   0  #   15 glaz in rad_test is External
+   2   8   3   5  11  #   16 door in rad_test >|< door_rad in passage
+   3   1   0   0   0  #   17 south in heatexch is External
+   3   2   3   4   4  #   18 right in heatexch >|< left in mixed_test
+   3   3   3   5   3  #   19 back_dg in heatexch >|< prt_exch in passage
+   3   4   3   2   2  #   20 left in heatexch >|< right in rad_test
+   3   5   3   6   3  #   21 ceiling in heatexch >|< ceil_exch in roof
+   3   6   4   1   0  #   22 floor in heatexch >|< ground profile 1
+   3   7   0   0   0  #   23 glaz in heatexch is External
+   3   8   3   5  12  #   24 door in heatexch >|< door_exch in passage
+   4   1   0   0   0  #   25 south in mixed_test is External
+   4   2   0   0   0  #   26 right in mixed_test is External
+   4   3   3   5   4  #   27 back_dg in mixed_test >|< prt_mix in passage
+   4   4   3   3   2  #   28 left in mixed_test >|< right in heatexch
+   4   5   3   6   4  #   29 ceiling in mixed_test >|< ceil_mix in roof
+   4   6   4   1   0  #   30 floor in mixed_test >|< ground profile 1
+   4   7   0   0   0  #   31 glaz in mixed_test is External
+   4   8   3   5  13  #   32 door in mixed_test >|< door_mix in passage
+   5   1   3   1   3  #   33 prt_dg in passage >|< back_dg in direct_gain
+   5   2   3   2   3  #   34 prt_rad in passage >|< back_dg in rad_test
+   5   3   3   3   3  #   35 prt_exch in passage >|< back_dg in heatexch
+   5   4   3   4   3  #   36 prt_mix in passage >|< back_dg in mixed_test
+   5   5   0   0   0  #   37 right in passage is External
+   5   6   0   0   0  #   38 north in passage is External
+   5   7   0   0   0  #   39 left in passage is External
+   5   8   3   6   5  #   40 ceil in passage >|< ceil_pasg in roof
+   5   9   4   1   0  #   41 floor in passage >|< ground profile 1
+   5  10   3   1   8  #   42 door_dg in passage >|< door in direct_gain
+   5  11   3   2   8  #   43 door_rad in passage >|< door in rad_test
+   5  12   3   3   8  #   44 door_exch in passage >|< door in heatexch
+   5  13   3   4   8  #   45 door_mix in passage >|< door in mixed_test
+   5  14   0   0   0  #   46 door in passage is External
+   5  15   0   0   0  #   47 glaz in passage is External
+   6   1   3   1   5  #   48 ceil_dg in roof >|< ceiling in direct_gain
+   6   2   3   2   5  #   49 ceil_rad in roof >|< ceiling in rad_test
+   6   3   3   3   5  #   50 ceil_exch in roof >|< ceiling in heatexch
+   6   4   3   4   5  #   51 ceil_mix in roof >|< ceiling in mixed_test
+   6   5   3   5   8  #   52 ceil_pasg in roof >|< ceil in passage
+   6   6   0   0   0  #   53 south_rfl in roof is External
+   6   7   0   0   0  #   54 north_rf in roof is External
+   6   8   0   0   0  #   55 left_rf in roof is External
+   6   9   0   0   0  #   56 right_rf in roof is External
+   6  10   0   0   0  #   57 south_rfr in roof is External
+   6  11   0   0   0  #   58 liqd_col in roof is External
+   6  12   3   7   1  #   59 air_l in roof >|< base in air_col_left
+   6  13   3   8   1  #   60 air_m in roof >|< base in air_col_mid
+   6  14   3   9   1  #   61 air_r in roof >|< base in air_col_righ
+   7   1   3   6  12  #   62 base in air_col_left >|< air_l in roof
+   7   2   0   0   0  #   63 cover in air_col_left is External
+   7   3   0   0   0  #   64 left in air_col_left is External
+   7   4   0   0   0  #   65 bot_frame in air_col_left is External
+   7   5   3   8   3  #   66 right in air_col_left >|< left in air_col_mid
+   7   6   0   0   0  #   67 top_frame in air_col_left is External
+   8   1   3   6  13  #   68 base in air_col_mid >|< air_m in roof
+   8   2   0   0   0  #   69 cover in air_col_mid is External
+   8   3   3   7   5  #   70 left in air_col_mid >|< right in air_col_left
+   8   4   0   0   0  #   71 bot_frame in air_col_mid is External
+   8   5   3   9   3  #   72 right in air_col_mid >|< left in air_col_righ
+   8   6   0   0   0  #   73 top_frame in air_col_mid is External
+   9   1   3   6  14  #   74 base in air_col_righ >|< air_r in roof
+   9   2   0   0   0  #   75 cover in air_col_righ is External
+   9   3   3   8   5  #   76 left in air_col_righ >|< right in air_col_mid
+   9   4   0   0   0  #   77 bot_frame in air_col_righ is External
+   9   5   0   0   0  #   78 right in air_col_righ is External
+   9   6   0   0   0  #   79 top_frame in air_col_righ is External

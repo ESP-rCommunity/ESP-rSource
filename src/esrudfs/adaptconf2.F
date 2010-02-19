@@ -58,7 +58,10 @@ C When one-way surface conflation is active it takes no action, thus preserving
 C the convection coefficients calculated by adaptive convection algorithm.
 
 C First, make sure that CFD is active in the zone under consideration.
-C      write (6,*) '5 ',ICP,ICOMP,icfd,IFCFD(ICP)
+
+C Debug.
+C      write(6,*) '5 ',ICP,ICOMP,icfd,IFCFD(ICP)
+
       IF( icfdnd(icfd).eq.ICOMP )THEN
 
 C Determine which CFD solid boundary corresponds to the ESP-r surface under

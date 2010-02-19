@@ -53,6 +53,7 @@ C ARF    - future time adjacent incident radiation & casual etc.
 
       SUBROUTINE MZADJC
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 #include "control.h"
 
@@ -79,14 +80,10 @@ C izsceil is the index (within the zone) of a ceiling surface in each zone
 C  (zero is no surface is close to horizontal facing down).
       COMMON/PREC16/izsfloor(MCOM),izsceil(MCOM)
 
-      COMMON/GROUND/GRDTMP(12,MGRDP)
-
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
-
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
 
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
      &            ARF(MCOM,MS)
@@ -176,10 +173,12 @@ C Zone-by-zone.
 C Surface-by-surface.
         IC=ICASCF(ICOMP)
         IF(IC.NE.0)THEN
-C debug...
+
+C Debug.
 C          write(6,'(A,4I3,4F8.2)')'ic,IBAN(1-3),qps,qfs,qpltp,qpltf=',
 C     &      ic,IBAN(IC,1),IBAN(IC,2),IBAN(IC,3),QPS(ICOMP),QFS(ICOMP),
 C     &      QPLTP(ICOMP),QPLTF(ICOMP)
+
         endif
         DO 10 I=1,NC
           ATP(ICOMP,I)=ATFS(ICOMP,I)
@@ -335,7 +334,7 @@ C     &         + fSurface_radiant_gain(iCPLE,iSCPLE,iFuture)
 C     &         / sna(iCPLE,iSCPLE)
 
 
-C Debug...
+C Debug.
 C      write(6,'(A,4I4,4F8.2)')'iz is oiz ois qr QCASRT zoa sna=',
 C     &        icomp,i,ICPLE,ISCPLE,qradcas(I),QCASRT(ICPLE),
 C     &        zonetotsurfacearea(ICPLE),sna(ICPLE,ISCPLE)

@@ -1,0 +1,215 @@
+{\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf430
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww12920\viewh10240\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\f0\fs24 \cf0 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\qc\pardirnatural
+
+\b \cf0 Notes on compiling ESP-r for Windows
+\b0 \
+14 May 2009\
+Jon W. Hand, ESRU, Glasgow, Scotland\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+\cf0 \
+These notes are intended for ESP-r developers who wish to do ESP-r development work on computers running W2K or WinXP.  These procedures have not been tested on Vista.  Reading this whole document prior to touching the keyboard is a REALLY GOOD IDEA.\
+\
+
+\b Setting up MinGW and MSYS
+\b0 \
+\
+The native Windows port of ESP-r is currently compiled with the GNU compilers and within a development environment provided by two packages - MinGW (Minimalist GNU for Windows which is a Windows port of the GNU C and Fortran compilers) and MSYS (Minimal SYStem) which provides basic shell, make, and install utilities needed to support MinGW.  \
+\
+This development environment is similar to that used by ESP-r developers on Linux and Unix and OSX computers.  This follows the classic "Make" driven compilation and linking used on Unix-like platforms. The GNU compilers tend to be used because ESP-r source code is written primarily in FORTRAN-77 with specific F90 extensions supported by GNU compilers as well as Sun Studio compilers and Intel compilers.  The current source distribution can be compiled with the GCC 3.4.5 compiler collection (gcc g++ g77) as well as the newer GCC 4.1 4.2 compiler collection (gcc g++ gfortran).  Your development should include at least the version 3.4.5 compiler collection.\
+\
+Choose a place to put the MinGW and MSYS downloaded files such as C:\\for_MSYS.  Some of the files you will need are Windows executables (to be run in Windows) and others are compressed archives which are dealt with within a running MSYS environment.  For graphic development work you will also need to extract a zip file within the Windows environment.  A free tool for extracting is 7-zip which can be found at <http://www.7-zip.org>\
+\
+MSYS and MinGW are hosted on Source Forge and documentation and links are available at  <http://www.mingw.org>.  If you want to use the older stable MinGW with the GCC 3.4.5 compiler collection use the mingw.org site. \
+\
+Newer versions of the GCC compilers are located at <http://www.tdragon.net/recentgcc/>.  This site provides an alternative setup of the MinGW with the newer GCC 4.4.0 compiler collection.  \
+\
+
+\b Instructions for the older MinGW
+\b0 \
+\
+There are a number of packages you need to download to setup MSYS and MinGW on your computer. On the download page <http://www.mingw.org/download.shtml> look for the 'Current section'. Note the file names might be slightly different from what is listed below. There is a MinGW 
+\i auto installer
+\i0  which reduces much of the complexity of getting MinGW running on your machine. There is also a WIKI at <http://mingw.org/wiki/MSYS> that gives useful hints about setting up MinGW and MSYS.\
+\
+Look for MinGW-5.1.4.exe (the auto installer) on the download page.  The MSYS Base System, MSYS Supplementary Tools, and MSYS System builder are directly linked on the WIKI.  This will get you two Windows executables MSYS-1.0.10.exe, msysDTK-1.0.1.exe and a tar.bz2 file.  \
+\
+It is suggested that you 
+\i first 
+\i0 run the MinGW installer. There is an option to download and install or just to download.  Choose the former. You will be asked whether to install the Previous/Current or Candidate version of packages.  Select Candidate and tick base packages, g++ g77 and MinGW make. Accept the suggested default location for the installation. The Candidate packages GCC 3.4 versions which is adequate for working with ESP-r.  There is the option to upgrade the compilers to GCC version four which is about to be the default for the ESP-r community. The MinGW installer grabs what you have selected plus essential files (w32api, binutils, gcc-core, gcc-g++, gcc-g77, mingw32-make, mingwrt), unpacks them and installs them on your machine. \
+\
+
+\b Instructions for the newer MinGW
+\b0 \
+\
+The instructions above will get you a working GCC compiler collection, however the ESP-r community is standardizing on the GCC 4 series of compilers. The MinGW site is not actually the best place to acquire the newer compiler series - for this visit <http://www.tdragon.net/recentgcc/>.  Look for the web download version of the automated installer.  Place this in a temporary folder of your computer and run it.  Choose the create new MinGW and open up the toggles to make sure you get gcc and gfortran and g++ as well as the run-time and make and utilities.  The standard location for this install is C:\\MinGW.\
+\
+Note there have been problems noted if the Dragon version is copied over an earlier MinGW folder.  If in doubt, archive and then clean up an existing MinGW folder prior to using the Dragon installer.  \
+\
+There have also been reports that executables built with the newest GCC compilers are less robust (for now) than the stable GCC 3.4.5.  Further testing of GCC 4.3 and 4.4 on this and other platforms is needed.  For now, GCC 4.3 and GCC 4.4 can be used for TEXT only Installs (useful for batch production runs) but should be considered work-in-progress for graphic versions of ESP-r.\
+\
+
+\b Instructions for MSYS
+\b0 \
+\
+After installing MinGW, run the MSYS-1.0.10 windows installer. Accept the default install location, answer yes to the post install process, answer yes that MinGW is installed, give the MinGW path C:/MinGW.  It will update your /etc/fstab file with the proper locations and then press any key to continue.  \
+\
+There will now be a MSYS icon on the desktop. Click on it and it will start up a command terminal (which is where you will be later working to compile and debug ESP-r.  Remember that in the MSYS command terminal you should use Linux command syntax.  Applications you start from within the MSYS command syntax are generally restricted to the executables within the C:\\msys\\1.0\\bin folder. There is documentation that shows you how to start up Windows executables located elsewhere.  \
+\
+Note that care should be given to using standard Windows word processors - Word will likely corrupt source code and documents.  WordPad will not damage model files much but is not really a developers source code editor.  Look for GVIM which is a code/text editor which will work with the Unix line endings within the standard ESP-r source code. \
+\
+After you have proven that MSYS will start up exit it and run the windows installer for the MSYS developers toolkit.  Accept the default C:/msys/1.0 location. \
+\
+Next use Windows explorer to copy the *.tar.bz2 you downloaded into C:\\msys\\1.0.  Start up the MSYS environment and locate the msys\\1.0 folder.  For example:   cd /c/msys/1.0 (note the syntax that C: in Windows is /c in MSYS.\
+You can use the Windows 7-zip tool (via right click on the *.tar.bz2 file) to extract to here or you can use a tar file from within MSYS:  tar -xjf msysCORE-1.0.11-2007.01.19-1.tar.bz2\
+There may be a few warnings when extracting the files (where there are existing files).  Ignore this.\
+\
+Check out which gcc has been installed (use the commands 'which gcc'  followed by 'gcc --version' (without the quotes) to see if you have the correct version.  Do this for g77 or gfortran as well as g++. If you are using version 4.0 (or greater) then you will need to include the directive --gcc4 in the Installer command line (see below).\
+\
+Those who a familiar with Linux or Unix or the command line on Mac OSX will find a subset of the commands within MSYS that they normally use in these other ESP-r development platforms.  Those who are new to command lines will have a few to learn (section to be added).\
+\
+
+\b Subversion on PC
+\b0 \
+\
+There are another couple of tools that you will need.  To access the ESP-r source code you need to have subversion on the PC. There is a native windows client called tortoisesvn which allows a right click on a folder in Windows Explorer to access svn functions. You can find this at http://tortoisesvn.net/downloads.  While this makes it easy to checkout the source code tortoisesvn does not provide a command line svn facility and the ESP-r Install script needs one. You can get a working free svn client at www.open.collabnet\
+and http://www.open.collab.net/downloads/subversion. Look for the client for Windows XP.  You can install the server only (untick the Apache box).  The next time you re-start MSYS the ESP-r Install script will have access to a svn command line client as well as the right-click within Explorer version.  Note that the installation of the command line svn tool will update several of the Windows environment variables.\
+\
+Interestingly, this basic setup is enough to allow you to compile a text-only version of ESP-r. There are additional steps required to get the libraries and C header files needed to compile the graphical version of ESP-r.\
+\
+
+\b Folder layout
+\b0 \
+\
+You should find that the msys folder has the following structure:\
+C:\\msys\
+   1.0\
+     bin \
+     doc\
+     etc\
+     home\
+     lib\
+     mingw\
+       src\
+     share\
+     uninstall\
+\
+There will also be a C:\\MinGW resulting from your use of the MinGW installer.  Once you have the files downloaded the process of using the installers for MinGW and MSYS should take about 15 minutes.\
+\
+If the c:\\msys\\1.0\\home folder does not exist create it.  You can do this within the MSYS environment via a command mkdir /home or you can do it via Windows Explorer.  As noted below home should (eventually) be populated with folders which match the names of the people who will log into the computer.  \
+\
+Note:  although MSYS can access folders on the computer outside of the C:\\msys domain the ESP-r source distribution should be placed within the home folder of msys rather than your Windows account area.\
+\
+
+\b Where to get libraries
+\b0 \
+\
+The Native Windows version of ESP-r can be compiled in two forms - a pure text version (useful for batch processing) and a graphical version based on the GTK+ libraries.  The site <http://www.gtk.org> provides an overview of the GTK+ Project.  One the download tab you can find links for Linux, Windows 32/64 bit and OSX.  What we want is the Windows 32 bit version.  Look for the "bundle" link.  This zip file can be extracted via 7-zip (mentioned above).  The suggested location is C:\\GTK (which should be created prior to running 7-zip).  Move the bundle file into C:\\GTK and then you can right-click on it to use 7-zip.\
+\
+There is a gtk+bundle.README.txt  in C:\\GTK which is worth looking at.  It suggests updating your Windows environment PATH (see the discussion below) \
+\
+Additional windows ports of applications and libraries can be found at <http://gnuwin32.sourceforge.net>\
+Other sites are <http://www.gimp.org/~tml/gimp/win32> and <http://www.gimp.org/~tml/gimp/win32/downloads>.  The bundle method (above) is a brute force approach that provides much more than the run-time environment. An alternative method based on installing the GIMP package for windows (that is not discussed here).\
+\
+\
+
+\b Environment variables
+\b0 \
+\
+Pkg-config is used by the compiler to denote where the GTK libraries and include files are located on\
+your machine. You will need to add an environment variable to your Windows system advanced setup:\
+PKG_CONFIG_PATH   C:/GTK/lib/pkgconfig\
+\
+You will need to append to the PATH environment variable ;C:\\Esru\\esp-r\\bin;C:\\GTK\\bin;C\\MinGW\\bin\
+\
+ESP-r needs a place to put new models as well as the results files generated by the simulator.  If you do not specify otherwise the default is C:\\Documents and Settings\\username.  Some people prefer to define a new environment variable HOMEPATH = C:\\Esru\
+\
+The msys 'home' folder (c:\\msys\\1.0\\home) is equivalent to the home folder on Linux and Unix machines.\
+It is a good place for the ESP-r (and other packages) source code. By default there should be an Administrator folder in home after the first time you have logged in.  If you log in as another user then MSYS will create additional subfolders of /home e.g. /home/fred (and owned by that user).\
+\
+
+\b Using the Install script
+\b0 \
+\
+Place the ESP-r source code distribution within your MSYS /home folder.  If your login is fred then create a /home/fred/Src.  If you are going to be Installing the standard version of ESP-r you would use Windows Explorer and right-click on the C:\\msys\\1.0\\home\\fred\\Src folder and ask to checkout https://esp-r.net/espr/esp-r/branches/development_branch and also set the location of the local 'sandbox' to reflect this (e.g. name it development_branch as well).  \
+\
+If you want to compile your own branch substitute its name in the command above.  In Windows, create a folder where the ESP-r distribution will be placed e.g. C:/Esru (if it does not already exist).  Note: ESP-r sometimes has problems if you attempt to install it to a D drive.  \
+\
+For some versions of MSYS there is no bash shell installed and thus the Install script will fail.  You need to use a text editor (GVIM or WordPad or vi for the geeks) to alter the word 'bash' in the first line to 'sh'.\
+\
+Switch back to the MSYS command window and go to /home/fred/Src/development_branch/src to invoke the Install command.  A typical Install invocation would be:\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\ql\qnatural\pardirnatural
+
+\b \cf0   ./Install -d C:/Esru\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\b0 \cf0 \
+If you are using version 4 of the GNU compiler collection then your Install invocation would be:\
+\
+
+\b   ./Install --gcc4 -d C:/Esru\
+
+\b0 \
+You should say yes to creating the databases and the example models.  There is also some benefit in saying yes to the debug option.  Depending on the speed of you machine and how much memory is available the compile and models setup can take a half hour to an hour.  If the Install process crashes, try it again with a -v in the command line so that it will run in a verbose mode.\
+\
+When you are finished using MSYS type 'exit' in the MSYS command window.\
+\
+
+\b Using ESP-r
+\b0 \
+\
+Assuming your Install task worked you will now have an ESP-r distribution on your computer.  The native windows version of ESP-r is a graphic application which should be invoked from within Windows rather than from within MSYS.  The exception would if you wanted to use the GNU debugger gdb and this should be run from within MSYS and from the folder with the source code and executable.\
+\
+There are many ways to use these executables and example models and one pattern which works well for many users is listed below:\
+\
+a) Create a folder for simulation models and a good place is C:\\Esru\\Models\
+\
+b) Create an association between model configuration files (*.cfg) and the esp-r.bat file found in C:\\Esru\\esp-r\\bin  One way to do this is to use Windows explorer and find the training folder e.g. C:\\Esru\\esp-r\\training  and locate a model folder and then its cfg folder and right click on a file ending in .cfg  Associate it with the esp-r.bat file and then try clicking on the cfg file to see if the ESP-r project manager starts up.\
+\
+c) Make a habit of opening up existing models by using Window Explorer to go into the cfg folder of the model and clicking on the model cfg file.   The will ensure that all of your work is 'local' to the model.\
+\
+d) copy the esp-r.bat file into the C:\\Esru\\Models folder\
+\
+e) If you want to create a new model first go to the C:\\Esru\\Models folder and use the esp-r.bat file\
+\
+
+\b Hints
+\b0 \
+\
+A few hints for use of ESP-r on Windows machines (read this before you install MSYS and MinGW):\
+\
+a) Decide how many users you want for your computer.  If the same user owns the software as well as uses the software then it is easy to corrupt databases.  Protect yourself by having separate user accounts for development work and simulation project work.\
+\
+b) Path lengths in ESP-r are limited. To ensure that model file names are not truncated you should\
+place models in a location other than the users desktop. C:\\Esru\\Models would be a good location.\
+\
+Note that when you browse models and wish to 'own them' they will be copied to your Windows default HOME location.  If your Windows home folder is deeply nested you might have problems - a work-around\
+is to move such models to a folder with a shorter path or to alter your default HOME environment variable. \
+\
+c) Windows allows you to write files almost anywhere and this can be problematic for security and model integrity. Imagine if someone alters the conductivity of concrete in a database by mistake. It is essential that you make a backup of the initial databases and climate folders in case they are corrupted. \
+\
+d) Think about where new models should live. The ESP-r distribution (e.g. C:\\Esru\\esp-r is not a good place). Many users create a folder C:\\Esru\\Models for their working files. After ESP-r has been installed look for a file esp-r.cmd and copy this to the location where you would like models to be created (e.g. c:\\Esru\\Models) and then you can click on that cmd file to start up ESP-r.\
+\
+e) The most convenient way to open up an existing model is to use Windows Explorer and go to the 'cfg' folder of the model and click on the *.cfg file. If the file association has been correctly made this will open the model without having to type path information and it also is less likely to cause problems when the model is extended and new files are created.  If *.cfg files are not associated with the esp-r.bat file then you need to manually setup this association.\
+\
+f) ESP-r assumes that real numbers use a .  (period) to mark decimal places and that a comma is a token separator. It gets 
+\i seriously confused in locales where decimals are defined with commas
+\i0 . Please switch locales to UK or USA before running ESP-r.\
+\
+g) The Windows version is a partial port of ESP-r. There are a few facilities that have not yet been implemented (e.g. click-on-bitmap, select via mouse). Not every exemplar model has been tested. When the unexpected happens we urge you to forward comments to ESRU (esru@strath.ac.uk) and/or Jon Hand (jon@esru.strath.ac.uk)\
+\
+h) ESP-r has few 'undo' options. It has been known to crash during long sessions so for your own protection make regular backups of your work.  How to make backups?  Use a tool such as WinZip or 7-zip and right click on the top level folder of the model to create a compressed archive.  Do this often.  If possible give the compressed archive a name that helps you remember which version of the model is held in the archive.\
+\
+i) If you want to transfer a model to a different computer or a computer with a different operating system then you may need to use one of the scripts found in the source code distribution bin folder.\
+\
+j) Join the ESP-r community and send your questions to esp-r@lists.strath.ac.uk!\
+\
+\
+\
+}

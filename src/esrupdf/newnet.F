@@ -358,7 +358,7 @@ C Read the existing flow network
 
 C << Note: should check to see if LAPROB is a network flow file or
 C << a graphic network file (as is done in esystem.F) 
-          CALL EMFREAD(IUF,0,IER)
+          CALL EMFREAD(IUF,IER)
           IF(IER.NE.0)THEN
             CALL EDISP(IUOUT,' ')
             CALL EDISP(IUOUT,'ERROR: Problem reading fluid flow file!')
@@ -1036,6 +1036,7 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
 
 #include "plant.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       common/outin/iuout,iuin
@@ -1050,11 +1051,6 @@ C   cntdat(?,1..3) - supplementary data for containment ?.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       dimension ival(mpcom), cnttyp(4)
       character cnttyp*45,  head*19, emod*1, outs*124, h*72
@@ -1177,7 +1173,7 @@ C and construction node cntdt3 counted from outside.
             ELSEIF(ICLOC.EQ.2.OR.ICLOC.EQ.3)THEN
               call eclose(gversion(IZ),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+                call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
               else
                 call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
               endif
@@ -1918,7 +1914,6 @@ C  Phase - which phase the component is connected to 1-3 or 4 all three.
 #include "plant.h"
 
       common/pcnam/pcname(mpcom)
-      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       common/pophelp/h(60)
 
 C Electrical details for specified plant components
@@ -2096,50 +2091,35 @@ C The routine presents a list of surface layers.
       subroutine CONTLYR(IZ,IS,IND)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      common/FILEP/IFIL
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
 
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
       character item*32
       CHARACTER NAM*72,PNAM*20,H*72
-      CHARACTER TITL*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
+
+C Establish if material data arrays have been filled. If not return
+C with ier=1.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so selection',
+     &    'of layer is not possible.','W')
+        return
+      endif
 
 C Check composite name of surface with composite name in MLC common.
       imatch=0
@@ -2152,7 +2132,6 @@ C Check composite name of surface with composite name in MLC common.
          call edisp(iuout,'Error: probably no MLC defined!')
          return
       endif
-      call eclose(matver,1.1,0.01,closemat)
         
 C Write menu displaying a list of layer names
       header=4
@@ -2164,26 +2143,16 @@ C Write menu displaying a list of layer names
       do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-        if(closemat)then
-          legmat=IPR(imatch,j)   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-            DRV=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
+        matarrayindex=IPRMAT(imatch,j)   ! which array index
+        if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then reestablish NAM.
+          if(matarrayindex.eq.0)then
+            NAM='AIR'
+          else
             write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
-        else
-          CALL ERPCDB(IFMAT,IPR(imatch,j),ITRU,IER,DBCON,DBDEN,
-     &      DBSHT,E,A,DRV,TITL,NAM)
         endif
-        IF(IER.EQ.1) THEN
-           call edisp(iuout,' Found an error reading PCDB!')
-        ENDIF
         IF(IPR(imatch,j).EQ.0)THEN
           PNAM(j)='Air gap'
         ELSE
@@ -2329,7 +2298,6 @@ C Common for the building plant link
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/PCNAM/PCNAME(MPCOM)
-      common/pcsort/icode(maxpc)
 
       DIMENSION VERT(35), PCTYPE(4)
       CHARACTER PCNAME*15
@@ -2532,6 +2500,7 @@ C D - delete
       SUBROUTINE EDBPLINK(MODE,IS)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "plant.h"
 #include "control.h"
@@ -2553,11 +2522,6 @@ C Common for the building plant lin
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY6/LINSTY(MCON)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       CHARACTER MODE*1,H*72
       CHARACTER*124 OUTS,ASKSTR
@@ -2728,7 +2692,7 @@ C Determine the linkage type.
 
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
           else
             call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
           endif

@@ -334,6 +334,15 @@ C sequentially)
 
       enddo zero_storage_routines
 
+C Set zone call heating/cooling bools to false      
+      do 5 i = 1, num_hvac_sys
+        do 4 j = 1, num_sys_zones(i)
+      
+            zone_call_heat(i,j) = .false.
+            zone_call_cool(i,j) = .false.
+      
+  4     continue
+  5   continue
 
 c     For each of the HVAC systems, call the appropriate subroutine to determine
 c     the energy consumption of the system for the current time step. Before the
@@ -367,11 +376,16 @@ C...........PIN is within construction
             endif
             
             if(req_load.gt.0) then
+            
+               zone_call_heat(i,j) = .true.   
                heating_load = heating_load + req_load
+               
             elseif(req_load.lt.0) then
-               cooling_load = cooling_load + abs(req_load)
-            endif
 
+               zone_call_cool(i,j) = .true.
+               cooling_load = cooling_load + abs(req_load)
+
+            endif
  20      continue
 
 c     Initialize the part-load ratios and part-load factors
@@ -1478,7 +1492,7 @@ C...............Energy consumption for cooling
      &       )
 
           System_is_on_C:
-     &    if ( fH3KStorePrimaryEH(i) > 1.0 ) then
+     &    if ( fH3KStorePrimaryEC(i) > 1.0 ) then
             call add_to_xml_reporting(
      &   fH3KStorePLRC(i),
      &   'plant/ideal_hvac_models/component_'

@@ -41,10 +41,8 @@ C a zone transitional shading file.
       common/filep/ifil
       common/filech/ixopen,ixunit,ixpunit
       common/prec8/slat,slon
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
      &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/contr/mon,isc(ms),iyd
       common/headl/irecs(ms)
       common/c24/izstocn(mcom,ms)
@@ -53,8 +51,11 @@ C a zone transitional shading file.
       dimension month(12),iavdec(12)
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-      character blkname*8,blkmat*12,outs*124,month*3,sn*12
+      character outs*124,month*3,sn*12
       logical ok,dok
+ 
+      integer iexcludediff_flag
+      common/excludediff/iexcludediff_flag
 
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
@@ -140,8 +141,13 @@ C No direct shading.
                  read(iunit,rec=irec,iostat=istat,err=1000)pso(i,j),
      &                                                     psof(i,j)
                  irec=irec+1
-                 write(outs,'(i2,a,f8.1,a,2x,2f8.1)')j,
-     &                    ':00     0.0%',psof(i,j)*100.0,'%',sazi,salt
+                 if(iexcludediff_flag.eq.0)then
+                    write(outs,'(i2,a,f8.1,a,2x,2f8.1)')j,
+     &                      ':00     0.0%',psof(i,j)*100.0,'%',sazi,salt
+                 elseif(iexcludediff_flag.eq.1)then                   
+                    write(outs,'(i2,a,a,2x,2f8.1)')j,
+     &                      ':00     0.0%',' excluded',sazi,salt
+                 endif
                  call edisp(itru,outs)
                  shdft=shdft+psof(i,j)*100.0
                  ishdh=ishdh+1
@@ -151,8 +157,13 @@ C Total direct shading.
                  read(iunit,rec=irec,iostat=istat,err=1000)pso(i,j),
      &                                                     psof(i,j)
                  irec=irec+1
-                 write(outs,'(i2,a,f8.1,a,2x,2f8.1)')j,
+                 if(iexcludediff_flag.eq.0)then                 
+                    write(outs,'(i2,a,f8.1,a,2x,2f8.1)')j,
      &                    ':00   100.0%',psof(i,j)*100.0,'%',sazi,salt
+                 elseif(iexcludediff_flag.eq.1)then
+                    write(outs,'(i2,a,a,2x,2f8.1)')j,
+     &                    ':00   100.0%',' excluded',sazi,salt
+                 endif   
                  call edisp(itru,outs)
                  shddt=shddt+100.0
                  shdft=shdft+psof(i,j)*100.0
@@ -161,12 +172,17 @@ C Total direct shading.
 C Partial direct shading: increment irec by nox to skip over
 C ioshd array.
               elseif(inds.eq.0)then
-                 irec=irec+nox
+                 irec=irec+nox(icomp)
                  read(iunit,rec=irec,iostat=istat,err=1000)pso(i,j),
      &                                                     psof(i,j)
                  irec=irec+1
-                 write(outs,'(i2,a,f8.1,a,f8.1,a,2x,2f8.1)')j,':00',
+                 if(iexcludediff_flag.eq.0)then                   
+                   write(outs,'(i2,a,f8.1,a,f8.1,a,2x,2f8.1)')j,':00',
      &                pso(i,j)*100.0,'%',psof(i,j)*100.0,'%',sazi,salt
+                 elseif(iexcludediff_flag.eq.1)then  
+                   write(outs,'(i2,a,f8.1,a,a,2x,2f8.1)')j,':00',
+     &                pso(i,j)*100.0,'%',' excluded',sazi,salt                 
+                 endif   
                  call edisp(itru,outs)
                  shddt=shddt+pso(i,j)*100.0
                  shdft=shdft+psof(i,j)*100.0
@@ -224,7 +240,10 @@ C surface shading for each hour based on common block data.
      &          ssparent*12,ssuse*8
       character outs*124,month*3,sn*12
       logical ok,dok
-
+ 
+      integer iexcludediff_flag
+      common/excludediff/iexcludediff_flag
+      
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
@@ -300,8 +319,13 @@ C assume format for mixed.
 
 C Partial direct shading: increment irec by nox to skip over
 C ioshd array.
-              write(outs,'(i2,a,f8.1,a,f8.1,a,2x,2f8.1)')j,':00',
-     &              pso(i,j)*100.0,'%',psof(i,j)*100.0,'%',sazi,salt
+              if(iexcludediff_flag.eq.0)then    
+                 write(outs,'(i2,a,f8.1,a,f8.1,a,2x,2f8.1)')j,':00',
+     &                 pso(i,j)*100.0,'%',psof(i,j)*100.0,'%',sazi,salt
+              elseif(iexcludediff_flag.eq.1)then
+                 write(outs,'(i2,a,f8.1,a,a,2x,2f8.1)')j,':00',
+     &                 pso(i,j)*100.0,'%',' excluded',sazi,salt              
+              endif
               call edisp(itru,outs)
               shddt=shddt+pso(i,j)*100.0
               shdft=shdft+psof(i,j)*100.0

@@ -1,7 +1,7 @@
 Synopsis
  
 This is a synopsis of the model Systems model with 4 row counterflow cooling
-coil defined in coil_pp.cfg generated on Wed Nov 26 16:15:22 2008. Notes
+coil defined in coil_pp.cfg generated on Wed Sep 30 17:08:15 2009. Notes
 associated with the model are in coil_pp.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -25,21 +25,21 @@ Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate used is: ESP test climate and is held in:
-/usr/esru/esp-r/climate/clm67 and uses hour centred solar data.
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : /usr/esru/esp-r/databases/pressc.db1
- materials              : /usr/esru/esp-r/databases/constr.db1
+ pressure distributions : pressc.db1
+ materials              : /usr/esru/esp-r/databases/constr.db2.a
  constructions          : ./multicon.db1
- plant components       : /usr/esru/esp-r/databases/plantc.db1
+ plant components       : plantc.db1
  event profiles         : /usr/esru/esp-r/databases/profiles.db1.1
- optical properties     : /usr/esru/esp-r/databases/optics.db1
+ optical properties     : optics.db1
  
 The model includes a plant network.
  
- The plant network contains 11 components from /usr/esru/esp-r/databases/plantc.db1
+ The plant network contains 11 components from plantc.db1
  
  Component: 1 ( 1) code  1, db reference 41
  No Control data

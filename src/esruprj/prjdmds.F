@@ -38,6 +38,7 @@ C file unit for the demands file. IER=0 is OK.
       SUBROUTINE PRJDMDS(ITRC,ITRU,IUO,IER)
 
 #include "building.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -57,7 +58,6 @@ C Demands notes and file name.
 
 C Floor area (optionally) associated with each demand type.
       COMMON/BL2/dmdfla(7)
-      common/IPVDMD/idmdinc(7)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -129,9 +129,9 @@ C do with the user.
           loop=4
           loopst=1
           if(MMOD.eq.8)then
-            call calenprint(iuout,'g',iyear,loopst,loop,ier)
+            call calenprint(iuout,'g',iyear,loopst,loop)
           else
-            call calenprint(iuout,'t',iyear,loopst,loop,ier)
+            call calenprint(iuout,'t',iyear,loopst,loop)
           endif
         elseif(IW.eq.2)then
           call usrmsg('Go to the Model context -> calendar option',
@@ -147,9 +147,9 @@ C List out the initial months of the calendar.
         loop=4
         loopst=1
         if(MMOD.eq.8)then
-          call calenprint(iuout,'g',iyear,loopst,loop,ier)
+          call calenprint(iuout,'g',iyear,loopst,loop)
         else
-          call calenprint(iuout,'t',iyear,loopst,loop,ier)
+          call calenprint(iuout,'t',iyear,loopst,loop)
         endif
       endif
         
@@ -507,6 +507,7 @@ C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
 
 #include "building.h"
 #include "epara.h"
+#include "ipvdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -521,7 +522,6 @@ C Calendar commons.
 
 C Descriptive label for each project demands type.
       common/bloadlabel/blodlabel(7)
-      common/IPVDMD/idmdinc(7)
 
 C Local editing arrays.
       dimension IEBCGS(MC),IEBCGF(MC),CEBMGS(MC),CEBMGL(MC),BERADC(MC)
@@ -843,6 +843,7 @@ C patterns.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+#include "ipvdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -852,7 +853,6 @@ C LPRFDB,IPRODB (for event profile database)
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
-      common/IPVDMD/idmdinc(7)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -1000,6 +1000,7 @@ C Maximum number of demands/day       MC=20
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -1018,7 +1019,6 @@ C IBCGT() - type of gain (1-7)
 
 C Descriptive label for a zone load or casual gain types.
       common/bloadlabel/blodlabel(7)
-      common/IPVDMD/idmdinc(7)
       common/b3ver/idmdver
 
 C Calendar commons.
@@ -1029,11 +1029,12 @@ C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
       CHARACTER dmdsdesc*248,outstr*124,bdmds*72,loutstr*248
-      character dllsubr*12,dllmesg*124,WORD*20,outs*124
+      character dllsubr*12,dllmesg*124,WORD*20,outs*124,outs2*124
       character calename*32,calentag*12,calendayname*32
       character dstmp*24
       CHARACTER*6 blodlabel
       integer idt  ! local counter of day type.
+      integer lsn  ! length of currentfile
       logical dll
 
       IER=0
@@ -1206,7 +1207,10 @@ C Error messages.
       blodlabel(7)='DHW   '      
       goto 1235
 
- 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+ 1002 write(outs,'(3a)') 'ERBDMD: conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='ERBDMD'
         dllmesg=outs
@@ -1215,6 +1219,7 @@ C Error messages.
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUO,ISTAT)
         RETURN
@@ -1438,7 +1443,7 @@ C Zero the dmdloadcount arrays for each gain type (ij) and day type (ik).
  40   continue
 
 C Debug..
-      write(6,*) 'Nb of daytype periods for dispersed demands...'
+C      write(6,*) 'Nb of daytype periods for dispersed demands...'
 
 C Loope through each possible day type (ik) and period (ij).
       do 42 ik=1,10
@@ -1496,16 +1501,17 @@ C Determine if any of the casual gain types were mixed.
  43       continue
 
 C Debug..
-          write(6,*) ik,' loadcount loadm2count loadmixed'
-          write(6,*)dmdloadcount(1,ik),dmdloadcount(2,ik),
-     &      dmdloadcount(3,ik),dmdloadcount(4,ik),dmdloadcount(5,ik),
-     &      dmdloadcount(6,ik),dmdloadcount(7,ik)
-          write(6,*)dmdloadm2count(1,ik),dmdloadm2count(2,ik),
-     &      dmdloadm2count(3,ik),dmdloadm2count(4,ik),
-     &      dmdloadm2count(5,ik),dmdloadm2count(6,ik)
-          write(6,*)dmdloadmixed(1,ik),dmdloadmixed(2,ik),
-     &      dmdloadmixed(3,ik),dmdloadmixed(4,ik),dmdloadmixed(5,ik),
-     &      dmdloadmixed(6,ik),dmdloadmixed(7,ik)
+C          write(6,*) ik,' loadcount loadm2count loadmixed'
+C          write(6,*)dmdloadcount(1,ik),dmdloadcount(2,ik),
+C     &      dmdloadcount(3,ik),dmdloadcount(4,ik),dmdloadcount(5,ik),
+C     &      dmdloadcount(6,ik),dmdloadcount(7,ik)
+C          write(6,*)dmdloadm2count(1,ik),dmdloadm2count(2,ik),
+C     &      dmdloadm2count(3,ik),dmdloadm2count(4,ik),
+C     &      dmdloadm2count(5,ik),dmdloadm2count(6,ik)
+C          write(6,*)dmdloadmixed(1,ik),dmdloadmixed(2,ik),
+C     &      dmdloadmixed(3,ik),dmdloadmixed(4,ik),dmdloadmixed(5,ik),
+C     &      dmdloadmixed(6,ik),dmdloadmixed(7,ik)
+
         endif
  42   continue
       return

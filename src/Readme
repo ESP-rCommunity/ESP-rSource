@@ -81,8 +81,7 @@ Precompiled binaries
 Precompiled binaries for Linux, Cygwin, Mac OSX and Microsoft Windows
 are available at:
 
-   ftp://ftp.strath.ac.uk/Esru_public
-/
+   ftp://ftp.strath.ac.uk/Esru_public/
 
 
 Version-controlled source code
@@ -97,16 +96,16 @@ You can learn more about accessing the ESP-r subversion repository here:
 Source code for the current release can be downloaded using the subversion
 command:
 
-   svn checkout https://esp-r.net/espr/esp-r/trunk/
+   svn checkout https://espr.svn.cvsdude.com/esp-r/trunk/
 
 Source code for the latest 'development' version of ESP-r can be
 downloaded using the subversion command
 
-   svn checkout https://esp-r.net/espr/esp-r/branches/development_branch
+   svn checkout https://espr.svn.cvsdude.com/esp-r/branches/development_branch
 
 Should you wish to contribute improvements to the archive, you'll also
 need a developer's account. Contact Alex Ferguson (aferguso@nrcan.gc.ca)
-to arrange one.
+or Bart Lomanowski (blomanow@nrcan.gc.ca) to arrange one.
 
 
 ===========================================================
@@ -131,10 +130,9 @@ compilers suites, including gcc 4.2 and Intel 10.0 have proven erratic
 with the ESP-r source base. While every effort is made to assure the
 quality of ESP-r on these platforms, it may not perform as expected
 with these systems and compilers. Should you wish to use ESP-r on a
-non-Linux platform or with the gcc 4.2 / Intel compiler suites, please
-review Section 10: "QUALITY ASSURANCE AND RELEASE TESTING", below. There,
-you will find an up-to-date description of the status of ESP-r on each
-platform.
+non-Linux platform or with the gcc 4.2+ / Intel compiler suites, please
+review Section 10: "RELEASE TESTING", below. There, you will find an
+up-to-date description of the status of ESP-r on each platform.
 
 
 Architectures
@@ -146,7 +144,7 @@ Installations on MinGW and OS X are regarded as 'beta'.
                       Solaris  Linux   Cygwin  MinGW    OS X
  ...........................................................
  32-bit                  S       S       S       B       B
- 64-bit                  X       B       X       X       X
+ 64-bit                  B       B       X       X       X
  -----------------------------------------------------------
  S = Stable
  B = Beta testing
@@ -173,13 +171,14 @@ recommended only for testing purposes.
                     Solaris  Linux   Cygwin  MinGW    OS X
  .........................................................
  Sun cc  / f90         S       -        -      -       -
- GCC 3.4.X / g77       S       S        S      B       B
- GCC 4.1.2 / gFrotran  X       S        X      X       X
- GCC 4.2.X / gFortran  X       B        X      X       X
+ GCC 3.4.X / g77       S       D        S      B       B
+ GCC 4.1.2 / gFrotran  X       S        S      X       X
+ GCC 4.2.X / gFortran  X       B        B      X       X
  Intel 10.0 / ifort    X       B        X      X       X
  ---------------------------------------------------------
  S = Stable
  B = Beta testing
+ D = Depreciated (support will be discontinued in the future)
  X = Not supported
  - = Not applicable
 
@@ -450,21 +449,52 @@ not install or function correctly on some machines.
 The following table summarizes the most recent test results
 on each of ESP-r's supported platforms:
 
-                 Testing for ESP-r Release 11.6
-                (2008-11-21, svn revision r3670)
+                 Testing for ESP-r Release 11.8
+      (2009-11-20, svn revision r4842 on pre-release_patches branch)
  -----------------------------------------------------------------------
  Platform  Compiler    Notes
  .......................................................................
- Linux     GCC 3.4.6   A complete regression test was performed against
-                       the last release (2008-04-21, r2115). This
+ Linux     GCC 4.1.2   A complete regression test was performed against
+                       the last release (2009-05-25, r4324). This 
                        comparison highlighted numerical differences
-                       introduced by two bugfixes in the code
-                       (r2838 and r3088). No unintended effects were
-                       observed. GCC 3.4.6 continues to be supported,
-                       but comparisons suggest GCC 4.1.2 is more stable
-                       and robust. 
+                       introduced by bug fixes in the code (r4682),
+                       new window shading control (r4722), new obstruction
+                       rotations and six-sided obstructions (r4710) and a 
+                       new global control (r3607) where
+                       anticipated numerical differences were observed.
+                       One bug fix (r4841) yielded significant
+                       reductions in runtime. No unintended results were
+                       observed.
+                       
+Complete discussion of these results is provided in the file: 
+'/tester/testing_results/Testing_results_ESPr_11_8.txt'.
 
-           GCC 4.1.2   A comprehensive comparison between GCC 4.1.2, GCC
+The Linux / GCC 4.1.2 reference platform testing archive is provided
+in the file:
+'/tester/testing_results/ref_platform_linux_gcc_4_1_2_results_archive_11_8.tar.gz'.
+                       
+                 Testing for ESP-r Release 11.7
+      (2009-05-25, svn revision r4286 on pre-release_patches branch)
+ -----------------------------------------------------------------------
+ Platform  Compiler    Notes
+ .......................................................................
+ Linux     GCC 3.4.6   Comparisons suggest GCC 4.1.2 is more stable
+                       and robust than GCC 3.4.x. For this reaseon,
+                       although GCC 3.4.6 continues to be supported, 
+                       regression testing is now performed using GCC
+                       4.1.2. 
+
+           GCC 4.1.2   A complete regression test was performed against
+                       the last release (2008-11-21, r3640). This 
+                       comparison highlighted numerical differences
+                       introduced by bug fixes in the code (r4129) and
+                       new window shading models (r4092) where
+                       anticipated numerical differences were observed.
+                       One bug fix (r4233) yielded significant
+                       reductions in runtime. No unintended results were
+                       observed.
+                       
+                       A comprehensive comparison between GCC 4.1.2, GCC
                        3.4.6, Intel and sun cc builds suggests that the
                        GCC 4.1.2 is the most stable and robust compiler
                        for building ESP-r. For this reason, GCC 4.1.2
@@ -488,13 +518,13 @@ on each of ESP-r's supported platforms:
                        or significantly larger than those observed with
                        optimization deactivated.
  ......................................................................
- Cygwin    GCC 3.4.4   A comprehensive comparison to results from a
-                       Linux/GCC 3.4.6 build produced exact agreement.
+ Cygwin    GCC 4.1.2   A comprehensive comparison to results from a
+                       Linux/GCC 4.1.2 build exhibited very good
+                       agreement.
  ......................................................................
  Solaris   Sun CC      A comprehensive comparison between results from
                        the sun compiler suite and GCC 4.1.2 exhibited 
                        good agreement. 
-                       
  .......................................................................
  OS X     GCC 3.4.6    A comprehensive comparison betwen results from
                        an OS X build revealed unexplained non-trivial
@@ -511,27 +541,27 @@ on each of ESP-r's supported platforms:
 Numerical differences between the reference version of ESP-r (Linux,
 GCC 4.1.2 and X11) each platform and compiler combination
 and the reference version ares summarized below. Complete discussion of
-these results is provided in the file 'Release_testing_results.txt'.
+these results is provided in the file 
+'/tester/testing_results/Testing_results_ESPr_11_7.txt'.
 
    Comparison of results from GCC4.1.2-compiled versions
    (X11, Linux) with builds from other platform/compilers.
  -----------------------------------------------------------------
- Architecture     Platform    Compiler      Maximum difference (%)
- .................................................................
- IA-32            CYGWIN      GCC 3.4.4            3.18
-                  LINUX       GCC 3.4.6            3.18
-                              GCC 4.2.3            0.    (^1)
-                              Intel -O0            0.75 
-                              Intel -O2           38.781 (^2)
- PowerPC          OSX         GCC 3.4             16.1
- Sparc            SOLARIS     Sun CC/f90           1.80
+ Architecture  Platform    Compiler      Maximum difference (%) 
+ ................................................................. 
+    IA-32      CYGWIN      GCC 4.1.2            0.63 
+               LINUX       GCC 4.1.2            (REF)
+               SOLARIS     Sun CC/f90           5.28 (note 2)
+               LINUX       Intel -O0            0.75  
+    PowerPC    OSX         GCC 3.4              3.41 
+    Sparc      SOLARIS     Sun CC/f90           2.61 
  .................................................................
  NOTES:
    1. Some test cases produced numerical exceptions and
-      floating point errors. 
-   2. When the default optimization is activated, agreement
-      between the Intel and GCC 4.1.2 builds deteriorates
-      considerably.
+      floating point errors.
+   2. Two test cases caused a numerical exception.
+   3. Testing on MinGW was not carried out due to an issue
+      with DOS path management in ESP-r.
  -----------------------------------------------------------------
 
 ===========================================================

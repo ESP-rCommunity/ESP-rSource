@@ -14,5 +14,5 @@
 4.550 0.700 0.980 0.010 0.299 1.070 0.000 Fin_righ Frame # block 9
 1.000 1.010 2.050 4.500 1.000 0.010 0.000 LS_in_t Light_sh_t # block 10
 1.000 1.010 2.040 4.500 1.000 0.010 0.000 LS_in_b Light_sh_b # block 11
-# grid opq X opq Z win X win Z
-    15 15    10    10
+# grid opq X opq Z
+    15 15

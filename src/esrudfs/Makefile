@@ -10,7 +10,7 @@ PROG = dfs$(EXE)
 OBJECTS = dfs.o arrow.o ascii_mat.o bndarybl.o bndaryl.o bndaryt.o c2fdum.o cfcalc.o cfdat.o \
 	  cfconv.o cfdrw.o cfdumb.o cfdumm.o cfgrid.o cfmatl.o cfmgerc.o cftext.o \
 	  cfutil.o cgd.o chkconvg.o common3dv.o conc.o e3dviews.o edatabase.o egeometry.o \
-	  eroper.o esru_misc.o lisolv.o locmage.o mitzero.o plelev.o plot.o psychro.o \
+	  eroper.o esru_misc.o lisolv.o locmage.o mitzero.o plot.o psychro.o \
 	  read3dv.o sort.o startup.o visgrd.o visual.o visvec.o wvapour.o
 
 $(PROG): $(OBJECTS)
@@ -21,7 +21,7 @@ arrow.F:
 	ln -s $(PRJdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
-	ln -s $(PRJdir)/ascii_mat.F .
+	ln -s $(COMdir)/ascii_mat.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -49,9 +49,6 @@ eroper.F:
 esru_misc.F:
 	rm -f esru_misc.F
 	ln -s $(COMdir)/esru_misc.F .
-plelev.F:
-	rm -f plelev.F
-	ln -s $(COMdir)/plelev.F .
 psychro.F:
 	rm -f psychro.F
 	ln -s $(COMdir)/psychro.F .
@@ -74,4 +71,4 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	arrow.F ascii_mat.F c2fdum.F cfdrw.F cfgrid.F common3dv.F e3dviews.F edatabase.F egeometry.F \
-	eroper.F esru_misc.F plelev.F psychro.F read3dv.F sort.F startup.F 
+	eroper.F esru_misc.F psychro.F read3dv.F sort.F startup.F 

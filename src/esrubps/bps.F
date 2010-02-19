@@ -106,6 +106,13 @@ C#include "../cetc/AIMS_module.F"
 C GCEP.
 C#include "../cetc/GCEP_module.F"
 
+C======BlockData==========================
+C  This block data is used to initialize
+C  variables in the stratified_tank and NCHE
+C  commons
+
+#include "BlockData.h"
+
       program bps
 
 C======hot3000========================start
@@ -138,6 +145,7 @@ C a subroutine rather than as an application.
 #include "MultiYear_simulations.h"
 #include "cfd.h"
 #include "esprdbfile.h"
+#include "material.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -172,6 +180,7 @@ C IEEE callback (Solaris)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -189,7 +198,6 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       COMMON/DNORGH/IRTYPE
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/rdcgen/irdact
       common/rdcmfs/irdcm,sFLWTIM,sDRYB,sWDIR,sWSPD,sITER,sIOK,
      &              sTNOD(MNOD)
@@ -259,40 +267,35 @@ C Active domain common (expand to other domains?).
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
       
-C Timeout information
-      common/TIMEOUT/sTimeout,iTimeoutFlag
+C Timeout information (not currently referenced)
+C      common/TIMEOUT/sTimeout,iTimeoutFlag
+C      character sTimeout*72
+C      integer iTimeoutFlag
 
-C Material data array.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-      
 C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12
-      character sTimeout*72
-      integer iTimeoutFlag
       integer iverb     ! verbosity passed on command line
 
       LOGICAL OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,OK3D
       LOGICAL IGR1D,BLDG3D,ZONE3D,GRND3D,INPOK,XST,CFDOK,browse
       LOGICAL INTHPS,INTHPZ,MSTROK,MSTRZN
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical unixok,there,photon,flwvis,gopher,dll,ACTCNN,areaSSO
+      logical unixok,there,photon,flwvis,dll,ACTCNN,areaSSO
+C      logical gopher  ! not references
 
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character*29 item(15)
-      character h*72,LTMP*72,OUTS*124,spsname*8
+      character h*72,OUTS*124,spsname*8
       character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72
+      character llclmdb*144
       character browsing*4
       CHARACTER*72 L3DNDD,L3DTLW,L3DLWV,LNLTHP,LGRD1D
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD,Lflpar
       character path*72,upath*72,bresfil*72
       character RFILE*72,PFILE*72,MSTRFILE*72
-      character LAPROB*72,LAFRES*72
+      character LAFRES*72
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character dllsubr*12,dllmesg*124,LTDF*72,LTDFA*72
       character t16*16,outs248*248
@@ -358,10 +361,10 @@ C CFD results output. `photon' indicates whether PHOTON phi files will
 C be created; `flwvis' indicates whether ESP-r's in-built flow visualization
 C facility will be used to generated images of the flow. `gopher' is a flag
 C used to generate images for the preliminary flow field when the adaptive
-C conflation controller is active.
+C conflation controller is active (not referenced).
       photon=.FALSE.
       flwvis=.FALSE.
-      gopher = .false.
+C      gopher = .false.
 
 C CFD results library: IRECPC=current record; ICFDSV=results version
       IRECPC=0
@@ -643,7 +646,7 @@ C Record length of plant results file.
 C Parameter 'nprecl' as defined in 'plant.h'.
       nprl = nprecl
 
-C Unit for primitives constr db in case control -99 is invoked.
+C Unit for materials db in case control -99 is invoked.
       ifmat=ifil+5
 
 C Initialise results averaging flag: 0 means
@@ -908,19 +911,42 @@ C a climate file by reading records 366 and 367.
         H(7)=' [~esru/esp-r/default] holds the name of a '
         H(8)=' default climate file. This might define a TRY or '
         H(9)=' example year. '
-   50   iclim=ifil
+        iclim=ifil
         call erpfree(iclim,istat)
-        LTMP=LCLIM
-        CALL EASKS(LTMP,' Climate file name ?',
-     &    ' ',72,DCLIM,'climate file name',IER,9)
-        IF(LTMP.EQ.' ')GOTO 50
-        LCLIM=LTMP
+	
+        write(llclmdb,'(a)') LCLIM
+ 291    llt=lnblnk(llclmdb)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          if(llt.lt.96)then
+            CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &        ' ',96,DCLIM,'climate file name',IER,4)
+          elseif(llt.ge.96.and.llt.lt.124)then
+            CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &        ' ',124,DCLIM,'climate file name',IER,4)
+          elseif(llt.ge.124.and.llt.le.144)then
+            CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &        ' ',144,DCLIM,'climate file name',IER,4)
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &      ' ',144,DCLIM,'climate file name',IER,4)
+        else
+          CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+     &      ' ',96,DCLIM,'climate file name',IER,4)
+        endif
+        IF(llclmdb(1:2).EQ.'  ')GOTO 291
+        IER=0
+
+C Cast back to LCLIM.
+        llt=lnblnk(llclmdb)
+        write(LCLIM,'(a)') llclmdb(1:llt)
         call tstamp('>','SIM: change climate')
         call tstamp('>',LCLIM)
         call EFOPRAN(ICLIM,LCLIM,144,0,IER)
         IF(ier.eq.0)THEN
           IREC=366
-          READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,IRT
+          READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
           IREC=367
           READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
           WRITE(OUTS,1000)CLMLOC,ICYEAR
@@ -928,7 +954,7 @@ C a climate file by reading records 366 and 367.
           CALL EDISP(IUOUT,' ')
           CALL EDISP(IUOUT,OUTS)
           IRTYPE=0
-          IF(IRT.EQ.123)IRTYPE=1
+          IF(ICDNGH.EQ.123)IRTYPE=1
           if(icfgv.lt.3)then
             h(1)='Older configuration files do not have a year record.'
             h(2)='If you want the year to be taken from the climate'
@@ -1237,7 +1263,7 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
       logical cfgok
       ier=0
       return
@@ -1247,9 +1273,8 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE PLELEV(IUF,direc,ier)
+      SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
-      ier=0
       return
       end
 

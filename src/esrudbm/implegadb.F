@@ -223,6 +223,10 @@ C Match the following 4 lines to instanitm in dbmedit.F
           IF(IER.NE.0)RETURN
           K=0
 
+C << note this subroutine assumes that the model is associated
+C << with a binary version of the materials database. It must
+C << be updated to use the material array structures.
+
 C Crate tag for material and reference tag for material db entry.
 C If legacy material db was opened then scan for ir and sol values.
           CALL EGETWI(OUTSTR,K,IP(il),0,600,'F','legacy index',IER)
@@ -357,8 +361,10 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in pressc file is ',lastr(idbh),
-     &  lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in pressc file is ',lastr(idbh),
+C     &  lastr(idbh)+1
 
 C Close file before exiting.
       call ERPFREE(IFMAT,IOS)
@@ -698,7 +704,9 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in gdb file is ',lastr(idbh),lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in gdb file is ',lastr(idbh),lastr(idbh)+1
 
 C Close file before exiting.
       CALL ERPFREE(IFA,IOS)
@@ -903,8 +911,10 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in pressc file is ',lastr(idbh),
-     &  lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in pressc file is ',lastr(idbh),
+C     &  lastr(idbh)+1
 
 C Close file before exiting.
       CALL ERPFREE(IFA,IOS)
@@ -1129,8 +1139,10 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in profile file is ',lastr(idbh),
-     &  lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in profile file is ',lastr(idbh),
+C     &  lastr(idbh)+1
 
 C Close file before exiting.
       CALL ERPFREE(IFA,IOS)
@@ -1153,7 +1165,7 @@ C Close file before exiting.
 C ************* MKAPRC (copy from edcondb.F)
 C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
-      SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
+      SUBROUTINE MKAPRC(LASCI,IFA,IER)
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition

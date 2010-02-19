@@ -52,6 +52,7 @@ C esprdbfile.h supplies the following:
 C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
 C prj3dv.h provides common blocks drwmat clip and image
@@ -126,14 +127,6 @@ C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12
-
-C Material data array.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
 
       LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ACOOK
       LOGICAL MODIFY,MODLEN,MODBND,XST,BCFOK,unixok
@@ -946,6 +939,12 @@ C keep it (SC)
 
       character focus*4
      
+      return
+      end
+
+C Dummy subroutine needed to compile (called from library code).
+      SUBROUTINE PLELEV(direc)
+      CHARACTER direc*1
       return
       end
 

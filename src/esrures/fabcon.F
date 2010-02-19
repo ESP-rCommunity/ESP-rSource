@@ -25,11 +25,13 @@ C MOFCON: controlling routine for inter-fabric temperature and
 C         condensation.
 C MOIHED
 C MOSURC
-C MOINTC
+C MOINTC displays the variation in the vapour pressure
+C        and saturated vapour pressure through a construction
 C MOPRES
 C SVP
 C MOIAXS
 C MOIDRW
+C FINDCND reports on condensation within a zone over the reporting period.
 
 C ******************** MOFCON
 
@@ -38,11 +40,8 @@ C of inter-fabric temperature and condensation conditions.
 
       SUBROUTINE MOFCON
 
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/OUTIN/IUOUT,IUIN
-      integer menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/pophelp/h(60)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -398,6 +397,7 @@ C multilayered construction at any user-specified time.
       SUBROUTINE MOINTC(IZ)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
@@ -416,31 +416,11 @@ C VDIF is diffusion res, IPRZ is primitive db ref for each layer.
       COMMON/T7/VDIF(ME)
       common/T8/IPRZ(MS,ME)
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
       integer legmat  ! local variable for legacy index.
-      integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      integer matarrayindex ! the index within matdatarray
+      logical closemat1,closemat2
 
-      character outs*124,H*72,NAM*72,TITL*72
+      character outs*124,H*72,NAM*72
       logical ok,dok
 
       IPICK=0
@@ -452,7 +432,15 @@ C Get element thicknesses for this construction.
       CALL MOTHKE(IZ,ISUR)
 
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so distri-',
+     &    'bution of vapour not available.','W')
+        return
+      endif
 
 C Convert to node-related thicknesses.
       NN=2*NE(ISUR)+1
@@ -466,23 +454,20 @@ C Determine diffusion resistance factor for each element.
       call edisp(iuout,' Diffusion resistance factor for:')
       call edisp(iuout,' ')
       DO 20 I=1,NE(ISUR)
-        if(closemat)then
-          legmat=IPRZ(ISUR,I)   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
+        legmat=IPRZ(ISUR,I)   ! which legacy index
+        if(legmat.gt.0)then
+          matarrayindex=mathash(legmat)  ! find matching array index
+ 
+C And if matarrayindex is zero then reset DRVAL and NAM.
+          if(matarrayindex.eq.0)then
+            DRVAL=1.0
+            NAM='AIR'
+          else
             DRVAL=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
             write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
-        else
-          CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
-     &      DBSHT,E,A,DRVAL,TITL,NAM)
         endif
+
         H(1)='Diffusion resistance factors are found in the'
         H(2)='materials database.'
         write(outs,'(A,I3,2x,A20)')' Element ',I,NAM(1:20)
@@ -549,13 +534,12 @@ C and saturated vapour pressure gradients.
 
       SUBROUTINE MOPRES(ICOMP,ISUR)
 #include "building.h"
+#include "site.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/ground/grdtmp(12,mgrdp)
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
 
@@ -782,9 +766,11 @@ C IPRZ is primitive db ref for each layer.
 #ifdef OSX
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
+      integer iid1,iid2
 #else
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iid1,iid2
 #endif
 
 C Determine the 'other' zone and connection information.
@@ -793,8 +779,10 @@ C Determine the 'other' zone and connection information.
       ZN=zname(ICOMP)
 
 C Draw construction section.
-      call wstxpt(igl,igt-10,TCSTR)
-      call wstxpt(igr,igt-10,ZN)
+      iid1=igl; iid2=igt-10;
+      call wstxpt(iid1,iid2,TCSTR)
+      iid1=igr; iid2=igt-10;
+      call wstxpt(iid1,iid2,ZN)
       igr=13
       X=0.
       YD=PMAX-PMIN
@@ -846,8 +834,11 @@ C period.
 
       SUBROUTINE FINDCND(ICOMP)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -865,14 +856,8 @@ C period.
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
-      common/ground/grdtmp(12,mgrdp)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -884,33 +869,13 @@ C IPRZ is primitive db ref for each layer.
       common/T8/IPRZ(MS,ME)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
       DIMENSION TMP(MN),PSS(MN),PS(MN),VRN(MN)
       CHARACTER CSTR*25,outs*124,TDESCR*5,xfile*144
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character ZN*12,SN*12,DS*7,DS1*10,TITL*72,NAM*72,tg*1,delim*1
+      character ZN*12,SN*12,DS*7,DS1*10,tg*1,delim*1
       integer legmat  ! local variable for legacy index.
-      logical closemat
+      logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
 C Set chosen result set.
@@ -935,7 +900,7 @@ C Read (silently) in the zone geometry data.
       IUNITF=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
+        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
       else
         call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
       endif
@@ -962,7 +927,15 @@ C Read (silently) construction file.
       ENDIF
 
 C Check which version of materials database.
-      call eclose(matver,1.1,0.001,closemat)
+      call eclose(matver,1.1,0.001,closemat1)
+      call eclose(matver,1.2,0.001,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so conden-',
+     &    'sation within constructon not available.','W')
+        return
+      endif
 
       write(outs,'(A,A)') ' Condensation search in: ',ZN(1:lnblnk(ZN))
       call edisp(iuout,outs)
@@ -976,22 +949,16 @@ C Determine diffusion resistance factor for each element
 C from ascii or binary materials db and compute layer thickness.
         DO 24 I=1,NE(ISUR)
           ETHK(I)=THK(ISUR,I)*1000.0
-          if(closemat)then
-            legmat=IPRZ(ISUR,I)   ! which legacy index
-            if(legmat.ge.0)then
-              matarrayindex=mathash(legmat)  ! find matching array index
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
+          legmat=IPRZ(ISUR,I)   ! which legacy index
+          if(legmat.gt.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
+ 
+C And if matarrayindex is zero then reset DRVAL.
+            if(matarrayindex.eq.0)then
+              DRVAL=1.0
+            else
               DRVAL=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
-          else
-            CALL ERPCDB(IFMAT,IPRZ(ISUR,I),iuout,IER,DBCON,DBDEN,
-     &         DBSHT,E,A,DRVAL,TITL,NAM)
           endif
           VDIF(I)=DRVAL
    24   CONTINUE

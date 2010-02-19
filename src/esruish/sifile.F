@@ -75,6 +75,7 @@ C  ifstat = 5  error writing record 4 of file
 
       subroutine sifile(icomp,ifstat)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -82,12 +83,6 @@ C  ifstat = 5  error writing record 4 of file
       common/outin/iuout,iuin
       common/filep/ifil
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/indics/ivf(mcom),isi(mcom),ihc(mcom),
-     &              itw(mcom),icgc(mcom),iobs(mcom)
       common/ract/paction
 
       dimension isadd(12),ishd(12),idum(ms)
@@ -212,23 +207,20 @@ C zone shading & insolation db for all zone surfaces regardless
 C of their selection for shading calculation. Is called from shdcon
 C once per day-month.
 
-      subroutine ssave(ier)
+      subroutine ssave(icomp,ier)
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
       common/data1/ical,idifc,init
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/contr/mon,isc(ms),iyd
       common/pophelp/h(60)
       common/data2/pso(ms,24),psof(ms,24)
 
-      dimension isadd(12),ishd(12),month(12)
-      character outs*124,h*72,month*3
+      dimension isadd(12),ishd(12)
+      character outs*124,h*72
       logical ok,dok
-
-      data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
-     &           'Sep','Oct','Nov','Dec'/
 
 C SI db unit number.
       ifilsi=ifil+3
@@ -263,7 +255,7 @@ C          when db first created.
 C Consistency check.
     1 irec=2
       read(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsurs,msurs
-      if(nsur.ne.nsurs.or.msurs.ne.misur)goto 1002
+      if(nzsur(icomp).ne.nsurs.or.msurs.ne.misur)goto 1002
 
       if(isadd(mon).eq.0)isadd(mon)=irecx
 
@@ -295,7 +287,7 @@ C Shading data already exists for this month.
 C For each zone surface (whether included in the shading calculation
 C or not), write out 24 hours of direct then diffuse shading data.
     3 irec=isadd(mon)
-      do 20 i=1,nsur
+      do 20 i=1,nzsur(icomp)
         write(ifilsi,rec=irec,iostat=istat,err=1000)(pso(i,j),j=1,24)
         irec=irec+1
         write(ifilsi,rec=irec,iostat=istat,err=1000)(psof(i,j),j=1,24)
@@ -308,7 +300,8 @@ C Re-write header records to record changes.
       write(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
      &                                            (isadd(i),i=1,12)
       irec=2
-      write(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsur,misur
+      write(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nzsur(icomp),
+     &  misur
 
 C Return to menu.
       ical=0
@@ -335,12 +328,12 @@ C internal insolated surfaces to the zone shading & insolation
 C db for each defined insolation source. Is called by inscon
 C once per day-month.
 
-      subroutine isave(ier)
+      subroutine isave(icomp,ier)
 #include "building.h"
+#include "geometry.h"
 
       common/outin/iuout,iuin
       common/data1/ical,idifc,init
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/contr/mon,isc(ms),iyd
       common/pophelp/h(60)
       common/filep/ifil
@@ -396,7 +389,7 @@ C        expanded dataset.
 C Consistency check.
     1 irec=2
       read(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsurs,msurs
-      if(nsur.ne.nsurs.or.msurs.ne.misur)goto 1002
+      if(nzsur(icomp).ne.nsurs.or.msurs.ne.misur)goto 1002
 
       if(isadd(mon).eq.0)then
          isadd(mon)=irecx
@@ -417,10 +410,11 @@ C expansion of the number of records required (new = 0 for no, 1
 C for yes).
       new=0
       irec=4
-      read(ifilsi,rec=irec,iostat=istat,err=1000)(ntmc(i),i=1,nsur)
+      read(ifilsi,rec=irec,iostat=istat,err=1000)
+     &    (ntmc(i),i=1,nzsur(icomp))
       if(paction(1:13).ne.'update_silent')call edisp(iuout,' ')
       ishdt=ishd(mon)
-      do 20 i=1,nsur
+      do 20 i=1,nzsur(icomp)
          if(itmc(i).ne.0)then
             if(ntmc(i).eq.0.or.(ishdt.eq.0.or.ishdt.eq.1))then
                if(multi.eq.1)new=1
@@ -467,7 +461,7 @@ C data-set has expanded (i.e. new = 1).
          irecn=isadd(mon)
       endif
       iof=1
-      do 30 i=1,nsur
+      do 30 i=1,nzsur(icomp)
         if(new.eq.1)then
            read(ifilsi,rec=ireco,iostat=istat,err=1000)
      &                                        (pso(i,j),j=1,24)
@@ -496,18 +490,18 @@ C number of possible internal insolated surfaces (misur).
    30 continue
       if(new.eq.1)then
          write(ifilsi,rec=irecn,iostat=istat,err=1000)
-     &                                        (ioffs(i),i=1,nsur)
+     &     (ioffs(i),i=1,nzsur(icomp))
          irecn=irecn+1
       else
          write(ifilsi,rec=ireco,iostat=istat,err=1000)
-     &                                        (ioffs(i),i=1,nsur)
+     &     (ioffs(i),i=1,nzsur(icomp))
          ireco=ireco+1
       endif
 
 C Move/write hourly insolation index number for each of the misur
 C surfaces that can potentially be insolated.
       isrc=0
-      do 40 i=1,nsur
+      do 40 i=1,nzsur(icomp)
          if(ioffs(i).eq.0)goto 40
          if(itmc(i).ne.0)isrc=isrc+1
          do 50 j=1,misur
@@ -575,9 +569,11 @@ C Write header items to capture potential changes.
       write(ifilsi,rec=irec,iostat=istat,err=1000)(ishd(i),i=1,12),
      &                                            (isadd(i),i=1,12)
       irec=2
-      write(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nsur,misur
+      write(ifilsi,rec=irec,iostat=istat,err=1000)irecx,nzsur(icomp),
+     &  misur
       irec=4
-      write(ifilsi,rec=irec,iostat=istat,err=1000)(itmc(i),i=1,nsur)
+      write(ifilsi,rec=irec,iostat=istat,err=1000)
+     &  (itmc(i),i=1,nzsur(icomp))
       ical=0
       return
 

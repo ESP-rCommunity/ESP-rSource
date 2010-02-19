@@ -208,6 +208,7 @@ C act='m' called from ipv metric with parameters already set.
 
       SUBROUTINE ZONTAB(act)
 #include "building.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -232,15 +233,14 @@ C act='m' called from ipv metric with parameters already set.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-C Format of the IPV report.
-C  = 1 is human readable text, 2 is tab separated, 3 is java
-      common/IPVFORMAT/ipvform,ipvversion
-
-      character outs*124,act*1,sq*1,unit*7,t20*20
+      character outs*124,outs248*248 ! string buffers
+      character outs400*400,outs400d*400  ! really long string buffers
+      character act*1,sq*1,unit*7,t20*20,dg*1
       character SLABEL*32,GLABEL*20,LTIME*5,LJTIME*8
       character prompt*124,tg*1,delim*1,xfile*144
       CHARACTER PDESCR*60,SDESCR*44,RSNAME*40,DESCR*7,DESCR1*10
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
+      integer lnb   ! length of buffer to write to
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -310,29 +310,41 @@ C Write general header information (skip if IPV mode).
 C If requested or writing to file start lines with a '#'.
         if (IHFLAG.eq.1.or.ixopen.eq.1) then
           call edisp(itru,'# Timestep performance metrics.')
-          lsn1=MIN0(lnblnk(RFILE),22)
+          lsn1=MIN0(lnblnk(RFILE),36)
           if(NSIM.gt.1)then
-            write(outs,'(3A,I4,2A)')'# Lib: ',RFILE(1:lsn1),' Set:',
+            write(outs248,'(3A,I4,2A)')'# Lib: ',RFILE(1:lsn1),' Set:',
      &      ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
           else
-            write(outs,'(4A)')'# Lib: ',RFILE(1:lsn1),
+            write(outs248,'(4A)')'# Lib: ',RFILE(1:lsn1),
      &        ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
           endif
-          call edisp(itru,outs)
+          if(ixopen.eq.1)then
+            lnb=lnblnk(outs248)   ! write directly to file
+            write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
+          else
+            lnb=MIN0(lnblnk(outs248),124)
+            call edisp248(itru,outs248,lnb)
+          endif
           WRITE(outs,'(4A)')'# ',PDESCR(1:lnblnk(PDESCR)),' ',
      &      SDESCR(11:lnblnk(SDESCR))
           call edisp(itru,outs)
         else
           call edisp(itru,'Timestep performance metrics.')
-          lsn1=MIN0(lnblnk(RFILE),22)
+          lsn1=MIN0(lnblnk(RFILE),36)
           if(NSIM.gt.1)then
-            write(outs,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',ISIM,
-     &        ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
+            write(outs248,'(3A,I4,2A)')'Lib: ',RFILE(1:lsn1),' Set:',
+     &        ISIM,': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
           else
-            write(outs,'(4A)')'Lib: ',RFILE(1:lsn1),
+            write(outs248,'(4A)')'Lib: ',RFILE(1:lsn1),
      &        ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
           endif
-          call edisp(itru,outs)
+          if(ixopen.eq.1)then
+            lnb=lnblnk(outs248)   ! write directly to file
+            write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
+          else
+            lnb=MIN0(lnblnk(outs248),124)
+            call edisp248(itru,outs248,lnb)
+          endif
           WRITE(outs,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
      &      SDESCR(11:lnblnk(SDESCR))
           call edisp(itru,outs)
@@ -371,24 +383,31 @@ C   don't do this if printing to file.
           if (ixopen.eq.1) irows=1
           is=1
           do 100 ir=1,irows
-            K=6
+            K=6   ! initial value for 248 buffer
+            K4=6  ! initial value for 400 buffer
             if (ir.gt.1) then
-              outs='     '
+              outs248='     '  ! clear for 248 buffer
+              outs400='     '  ! clear for 400 buffer
             else
               if (IHFLAG.eq.1.and.ixopen.eq.1) then
                 if (delim.eq.'X') then
-                  outs='*time'
+                  outs248='*time'
+                  outs400='*time'
                 else
-                  outs='#Time'
+                  outs248='#Time'
+                  outs400='#Time'
                 endif
               elseif (IHFLAG.eq.1.and.ixopen.eq.0) then
                 if (delim.eq.'X') then
-                  outs='*time'
+                  outs248='*time'
+                  outs400='*time'
                 else
-                  outs='Time'
+                  outs248='Time'
+                  outs400='Time'
                 endif
               else
-                outs='Time '
+                outs248='Time '
+                outs400='Time '
               endif
             endif
             do 20 IL=1,NGET
@@ -411,24 +430,43 @@ C Define units.
                 unit='(-)'
               endif
               
-C Set end character for output string (KE) and for section of 
+C Set end character for output string (KE or KE4) and for section of 
 C  glabel (ie) to be printed (if to screen).
-              KE=K+(33/irows)
+              KE=K+(33/irows)   ! set for 248
+              KE4=K4+(33/irows) ! set for 400
               ie=is+9
-              if(KE.le.124)then
+              if(KE.le.248)then
                 
 C If writing to file remove blanks from label.
                 if (ixopen.eq.1) then
                   call SDELIM(GLABEL(IL),t20,'N',IW)
-                  write (outs(K:KE),'(3a)') ' ',t20(1:lnblnk(t20)),unit
+                  write (outs248(K:KE),'(3a)') ' ',t20(1:lnblnk(t20)),
+     &              unit
                   K=K+lnblnk(t20)+lnblnk(unit)+1
                 else
                   if (ir.lt.3) then
-                    write (outs(K:KE),'(2a)') '|',GLABEL(IL)(is:ie)
+                    write (outs248(K:KE),'(2a)') '|',GLABEL(IL)(is:ie)
                   else
-                    write (outs(K:KE),'(2a)') '| ',unit
+                    write (outs248(K:KE),'(2a)') '| ',unit
                   endif
                   K=KE
+                endif
+              endif
+
+C For writing to file also fill the 400 char buffer
+              if(KE4.le.400)then
+                if (ixopen.eq.1) then
+                  call SDELIM(GLABEL(IL),t20,'N',IW)
+                  write (outs400(K4:KE4),'(3a)') ' ',t20(1:lnblnk(t20)),
+     &              unit
+                  K4=K4+lnblnk(t20)+lnblnk(unit)+1
+                else
+                  if (ir.lt.3) then
+                    write (outs400(K4:KE4),'(2a)') '|',GLABEL(IL)(is:ie)
+                  else
+                    write (outs400(K4:KE4),'(2a)') '| ',unit
+                  endif
+                  K4=KE4
                 endif
               endif
  20         continue
@@ -436,13 +474,22 @@ C If writing to file remove blanks from label.
 
 C Print titles on first day and only on subsequent ones if day
 C demarcations are omitted.
+            lnb=lnblnk(outs248)+1   ! ensure we do not warp line
             if (IDAY.eq.IODS)then
-              call eddisp(itru,outs)
+              if(ixopen.eq.1)then
+                lnb=lnblnk(outs400)   ! write directly to file
+                write(itru,'(A)',iostat=ios,err=1)outs400(1:lnb)
+              else
+                lnb=MIN0(lnblnk(outs248),124)
+                call edisp248(itru,outs248,lnb)
+              endif
             else
               if (IDHFLG.eq.1.and.ixopen.eq.1)then
-                call eddisp(itru,outs)
+                lnb=lnblnk(outs400)   ! write directly to file
+                write(itru,'(A)',iostat=ios,err=1)outs400(1:lnb)
               elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
-                call eddisp(itru,outs)
+                lnb=MIN0(lnblnk(outs248),124)
+                call edisp248(itru,outs248,lnb)
               else
                 continue
               endif
@@ -466,33 +513,40 @@ C TIME - time in hours since start of first day plotted.
 C Within requested output period.
           IF(TIME.LT.(TSTART-1.0).or.TIME.GT.TFINSH)goto 421
 
-C Display data.
-C Create data string for this timestep.
-          outs='  '
+C Display data. Create both data strings for this timestep.
+          outs248='  '
+          outs400='  '
           if (IHFLAG.eq.0) then 
             if(ipvform.eq.3)then
               call SJTIME(J,LJTIME)
-              write (outs,'(3a)') sq,LJTIME,sq
+              write (outs248,'(3a)') sq,LJTIME,sq
+              write (outs400,'(3a)') sq,LJTIME,sq
               K=11
             else
               call STIME(J,LTIME)
-              write (outs,'(a5)') LTIME
+              write (outs248,'(a5)') LTIME
+              write (outs400,'(a5)') LTIME
               K=6
             endif
           else
             if(ipvform.eq.3)then
               call SJTIME(J,LJTIME)
-              write (outs,'(3a)') sq,LJTIME,sq
+              write (outs248,'(3a)') sq,LJTIME,sq
+              write (outs400,'(3a)') sq,LJTIME,sq
               K=11
             else
               RDOTY=FLOAT(IDAY)+(ATIME/24.)
-              write (outs,'(f10.4)') RDOTY
+              write (outs248,'(f10.4)') RDOTY
+              write (outs400,'(f10.4)') RDOTY
               K=11
             endif
           endif
+
+C First write data to the 248 char string buffer.
+          klast=k
           do 410 IG=1,NGET
             KE=K+11
-            if(KE.le.124)then
+            if(KE.le.248)then
               IZONE=IGETNO(IG,2)
 
 C If there is occupancy filter and occupancy then include in check.
@@ -501,21 +555,72 @@ C Assume fully occupied.
               ioc=1
               if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
               if(ioc.ne.0) then
-                write (outs(K:KE),'(f11.2)') VAL2(IG,J)
+                write (outs248(K:KE),'(f11.2)') VAL2(IG,J)
               elseif (IGETNO(IG,1).ge.50.AND.IGETNO(IG,1).le.59) then
                 if (VAL2(IG,J).gt.100.0) then
-                  write (outs(K:KE),'(a)') '  invl dT  '
+                  write (outs248(K:KE),'(a)') '  invl dT  '
                   IINLVDT=1
                 else
-                  write (outs(K:KE),'(f11.2)') VAL2(IG,J)
+                  write (outs248(K:KE),'(f11.2)') VAL2(IG,J)
                 endif
               else
-                write (outs(K:KE),'(a)') '  not occ  '
+                write (outs248(K:KE),'(a)') '  not occ  '
               endif
               K=K+11
             endif
  410      continue
-          call eddisp(itru,outs)
+
+C If writing to file then write data to the 400 char string buffer.
+          if(ixopen.eq.1)then
+            k=klast   ! re-establish k position value
+            do 411 IG=1,NGET
+              KE=K+11
+              if(KE.le.400)then
+                IZONE=IGETNO(IG,2)
+
+C If there is occupancy filter and occupancy then include in check.
+C Assume fully occupied.
+                ih=int(ATIME+1.)
+                ioc=1
+                if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+                if(ioc.ne.0) then
+                  write (outs400(K:KE),'(f11.2)') VAL2(IG,J)
+                elseif (IGETNO(IG,1).ge.50.AND.IGETNO(IG,1).le.59) then
+                  if (VAL2(IG,J).gt.100.0) then
+                    write (outs400(K:KE),'(a)') '  invl dT  '
+                    IINLVDT=1
+                  else
+                    write (outs400(K:KE),'(f11.2)') VAL2(IG,J)
+                  endif
+                else
+                  write (outs400(K:KE),'(a)') '  not occ  '
+                endif
+                K=K+11
+              endif
+ 411        continue
+          endif
+
+          if(ixopen.eq.1)then
+            lnb=lnblnk(outs400)   ! write directly to file
+
+            if(delim.eq.'-')then
+              write(itru,'(A)',iostat=ios,err=1)outs400(1:lnb)
+            else
+
+C If delimiter set to alternative then process text before writing.
+C If using X delimeter (tagged data) then set the delimeter to a comma.
+              dg=delim
+              if (delim.eq.'X') dg='C'
+              call SDELIM(outs400,outs400d,dg,IW)
+              lnb=lnblnk(outs400d)   ! write directly to file
+              write(itru,'(A)',iostat=ios,err=1) outs400d(1:lnb)
+            endif
+          else
+
+C Writing to screen so use shorter file buffer.
+            lnb=MIN0(lnblnk(outs248),124)
+            call eddisp248(itru,outs248,lnb)
+          endif
  421    CONTINUE
  10   continue
 

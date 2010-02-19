@@ -250,6 +250,7 @@ C  difference between the external ambient and surface temperatures.
 
       SUBROUTINE MZELWE(ICOMP)
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 #include "CFC_common.h"
       
@@ -279,9 +280,6 @@ C  difference between the external ambient and surface temperatures.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C5R/SKYR,GRDR,BLDR
 
       COMMON/COE33/QELWP(MS),QELWF(MS)
       COMMON/COE33Z/QELWS(MCOM,MS)
@@ -393,16 +391,16 @@ C Set initial cloud cover = 0.4
 
 C << place to use connection based viewfactors >>
 C << props/propg/propb would be replaced by vfgr vfsk vfbl vfob >>
-      IF(IXPOS.NE.8)goto 101
-      PROPS(8)=SKYR
-      PROPG(8)=GRDR
-      PROPB(8)=BLDR
+      IF(siteexposureindex.NE.8)goto 101
+      PROPS(8)=skyview
+      PROPG(8)=groundview
+      PROPB(8)=buildingview
 
 C Depending on the Index of Exposure the proportions of the
 C surroundings are assigned new variable names.
-  101 AV=PROPB(IXPOS)
-      BV=PROPS(IXPOS)
-      CV=PROPG(IXPOS)
+  101 AV=PROPB(siteexposureindex)
+      BV=PROPS(siteexposureindex)
+      CV=PROPG(siteexposureindex)
 
 C For each surface calculate the ratio of sky vault,
 C surrounding building(s) and ground associated with the
@@ -678,7 +676,7 @@ C End For NT
 C Ground solar gain. 
       QGGF=0.0
       IF(ISUNUP.EQ.0)goto 305
-      QGGF=QT*(1.0-GREF)
+      QGGF=QT*(1.0-groundrefl)
   305 CONTINUE
 
 C Completing ground model matrix.
@@ -900,7 +898,7 @@ C Sum all components.
         QELWF(I)=QELWFB(I)+QELWFK(I)+QELWFG(I)
 
 C Use equation of Berdahl and Martin, if INDEX OF EXPOSURE is 8
-C      IF(IXPOS.EQ.8)THEN
+C      IF(siteexposureindex.EQ.8)THEN
 C        QELWF(I)=QELWFB(I)+QELWFC(I)+QELWFG(I)
 C      ENDIF
 
@@ -1220,7 +1218,22 @@ C     This prevents the zone becoming too cold.
       DIMENSION ACC(MCOM),CCVVFM(MCOM),CCVVF(MCOM)
       logical closeto0
       real rTempnotioOverheat
+      common/ncmOperHrSystem/iOperTimestep(MCOM),
+     &       iMonthOperTimestep(12,MCOM)
+      integer iOperTimestep,iMonthOperTimestep       
       
+      common/CountTimesteps/i_countsteps(mcom),numbStartTimesteps,
+     &numTotTimstps      
+      integer i_countsteps
+      integer numbStartTimesteps  !total number of start-up timesteps
+      integer numTotTimstps !total number of timesteps including the start-up days      
+
+      integer imonth !current month at simulation time (to accumulate monthly results)
+      integer idayn
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
+
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
 
@@ -1309,8 +1322,8 @@ C depending on the unit of flow (ifunit).
 
 C Debug.
         CALL DAYCLK(IDYP,BTIMEF,6)
-        write(6,*)'tdf infil data @',btimef,' is item',itdi,
-     &   ' values ',ifunit,aci,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
+C        write(6,*)'tdf infil data @',btimef,' is item',itdi,
+C     &   ' values ',ifunit,aci,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
 
         CVVF=0.
         SUM=0.
@@ -1360,31 +1373,116 @@ C Note: set trace to verbose for testing.
         IFOC=itdi
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)       
 
+        call eclose(val(isd),0.0,0.001,closeto0) 
+        if(.not.closeto0)then
+
 C Multiply: outdoor air value from tdf (based on fresh air requirements
-C in l/s/pers)*Occupants density (pers/m2)*occupancy fraction*zone area
-        ACI=TMAR(itdi,IATDF(itdi,9))*TMAR(itdi,IATDF(itdi,1))*
-     &      VAL(ISD)*ZBASEA(ICOMP)
+C in l/s/pers)*Occupants density (pers/m2)*zone area
+C Removed the occcupant fraction val(isd) from the calculation of ACI 
+C because the default ncm calculation assumes that there is no "demand-ventilation".
+          ACI=TMAR(itdi,IATDF(itdi,9))*TMAR(itdi,IATDF(itdi,1))
+     &       *ZBASEA(ICOMP)
+        else
+          ACI=0.0
+        endif
+
+C <<<Check what would happen if there was also a ventilation value in the>>>>
+C <<<original model - variables ACC1 & ACC2>>>>
 
 C Convert l/s to ach
-        ACI=ACI*(3600.0/1000)/VOL(ICOMP)
+        ACI=ACI*(3600.0/1000.)/VOL(ICOMP)
 
-C Set notional infiltration/air leakage to 10 m3/h/m2
-        if(INOTI.EQ.1)then
+C Need the number of timesteps of operation - be based on the heating
+C and cooling flux
+        call eclose(qfut,0.0,0.01,closeto0)  
+        if(.not.closeto0)then
+          if(i_countsteps(icomp).gt.numbStartTimesteps)then
+            call edayr(idyp,idayn,imonth)               
+            iOperTimestep(ICOMP)=1+iOperTimestep(ICOMP)
+            iMonthOperTimestep(imonth,ICOMP)=
+     &        iMonthOperTimestep(imonth,ICOMP)+1  
+          endif      
+        endif
+        
+C Set UK NCM notional and reference infiltration/air leakage to 10 m3/h/m2
+        if(i_countsteps(icomp).eq.1)then
+          CALL RSBEM !this is needed for obtaining iDsmTestingFlag
+        endif
+        if(INOTI.eq.1.OR.INOTI.eq.2.OR.INOTI.eq.3.OR.
+     &    (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))then
+          if(i_countsteps(icomp).eq.1)then
 
-C If Occupancy fraction is 0 and zone temperature is greater
-C than setpoint+1oC, add 5 ach (according to UK NCM guidance)
-          rTempnotioOverheat=TMAR(itdi,IATDF(itdi,15))+1.
-          call eclose(VAL(ISD),0.0,0.001,closeto0)
-          if(closeto0.and.tfa(icomp).gt.rTempnotioOverheat)then
-            ACH(ICOMP)=5
-          else     
-            ACH(ICOMP)=0.5
+C If there is no system linked to the current zone then set SFPHS to zero.
+            if(IHLZ(ICOMP).eq.0)then
+              closeto0=.true.
+            else
+              call eclose(SFPHS(IHLZ(ICOMP)),0.0,0.01,closeto0)
+            endif
+            iNatVentilatedFlag=0
+            if(IHLZ(ICOMP).eq.0)then
+              iNatVentilatedFlag=1
+            elseif(IBRUKC(IHLZ(ICOMP)).eq.-1111)then
+              if(closeto0)then !heated only space (nat. ventilated)
+                iNatVentilatedFlag=1
+              endif
+            endif       
           endif
+          
+C If zone temperature for naturally ventilated buildigns is greater
+C than setpoint+1oC, add 5 ach (according to UK NCM guidance)          
+C <<<<Should this be during unoccupied hours?????>>>>
+C Natur. ventilated buildings with mech. supply/extract are treated
+C as mechanically ventilated in SBEM. So, they are not included in
+C this overheating rule (as per NCM modelling guide)
+
+C Comment the lines terminating with !!!cmix and uncomment the line
+C starting with !!!cmix to sense dry bulb temperature and not resultant
+C temperature which is being sensed now
+C The 15th item in IATDF(itdi,15) is heating set point
+          rTempnotioOverheat=TMAR(itdi,IATDF(itdi,15))+1.
+          ICOMPP=-1*ICOMP  !!!cmix
+          call MZMIXT(ICOMPP,TMRTT,TMIXX) !!!cmix
+!!!          if(tfa(icomp).gt.rTempnotioOverheat)then
+          if(TMIXX.gt.rTempnotioOverheat)then !!!cmix
+            if(iNatVentilatedFlag.eq.1)then          
+c              ACH(ICOMP)=5.
+            endif
+          else     
+
+C Trap 0 volumes in case notional building is not properly generated
+            call eclose(VOL(ICOMP),0.0,0.001,closeto0)
+            if(closeto0)then            
+              write(outs,'(2A)')' Volume of 0 found in zone: ',
+     &        zname(ICOMP)
+              call edisp(itu,outs)
+              write(outs,'(A)')' Check the notional model and try again'
+              call edisp(itu,outs)
+            else
+            
+C Notional building has 10 m3/h/m2 according to UK's NCM instructions
+C Multiply 10 by floor area and divide by Volume and divide by 20
+C Use 15 instead of 10m3/h/m2 if typical building
+C << EXP_AREA is currently zero needs to be calculated
+              IF(INOTI.eq.1.OR.INOTI.eq.2.OR.
+     &          (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN
+c                ACH(ICOMP)=(10.*EXP_AREA/VOL(ICOMP))/20.
+              ELSEIF(INOTI.EQ.3)THEN
+c                ACH(ICOMP)=(15.*EXP_AREA/VOL(ICOMP))/20.
+              ENDIF
+
+C Alternatively use 0.167 ach - this will help to avoid high ach in cases
+C where sloped roofs are used, etc.
+            endif
+          endif
+          call NOTVENTAUX(ICOMP)
         else      
 
 C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file
-          CALL RSBEM
+          if(i_countsteps(icomp).eq.1)then
+            CALL RSBEM
+          endif
         endif
+
         ACI=ACI+ACH(ICOMP)
 
         CVVF=0.
@@ -1393,7 +1491,7 @@ C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file
         IF(ACI.LE.0.)CVIF=0.
 
 C set x=0 for now. Not used at the moment but attempting
-C to follow similar patter as the classic ventilation
+C to follow similar pattern as the classic ventilation
 C entry in tdf
         X=0. 
         XX3=CVIF*TF+SUM*X
@@ -1666,7 +1764,8 @@ C Output computed results.
      &  ' ZMBI,1=',ZMBI(ICOMP,1),' ZMBI,2=',ZMBI(ICOMP,2),
      &  ' ZMBI,3=',ZMBI(ICOMP,3),' ZMBI,4=',ZMBI(ICOMP,4)
       call edisp(itu,outs)
-      write(outs,'(a,f10.5)')' ZCVENT=',ZCVENT(ICOMP)
+      write(outs,'(a,f10.5,a,f10.5)')' ZCVENT=',ZCVENT(ICOMP),
+     & ' ACH=',ACH(ICOMP)
       call edisp(itu,outs)
 
  9999 RETURN
@@ -2095,3 +2194,239 @@ C Append computed results to early trace statements.
 
  9999 RETURN
       END
+
+C ******************** NOTVENTAUX ********************
+C NOTVENTAUX models the Auxiliary energy for the notional, reference and 
+C typical building based on rules in the UK NCM guide (v4d March 2008)
+
+      SUBROUTINE NOTVENTAUX(ICOMP)
+      IMPLICIT NONE
+#include "building.h"
+#include "geometry.h"
+#include "tdf2.h"
+#include "sbem.h"
+
+      logical closeto0
+      integer itdi,icomp
+
+C TDFREL are ranges allowed for real fields in the instance.
+C TMIN,TMAX: Acceptable minimum and maximum for range checking.
+C TMAR : real attributes to be passed to outside code.
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
+      real TMAR,TMIN,TMAX
+      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
+      integer ITDFTR,IATDF,ITCOL
+      common/btime/btimep,btimef      
+      real btimep,btimef
+      real VAL
+      dimension VAL(MBITS+2)
+      common/trc/itrc
+      integer itrc
+      integer ISD,IFOC,IER
+
+C Auxiliary energy:
+      common/ncmAuxilEnergy/zonAuxil(MCOM),m2zonAuxil(MCOM),
+     &      fmonthAuxil_ncm_Energy(12,MCOM)
+      real zonAuxil,m2zonAuxil,fmonthAuxil_ncm_Energy       
+
+      common/CountTimesteps/i_countsteps(mcom),numbStartTimesteps,
+     &numTotTimstps
+      integer i_countsteps
+      integer numbStartTimesteps  !total number of start-up timesteps
+      integer numTotTimstps !total number of timesteps including the start-up days
+
+C Temporal db commons.
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)      
+      integer IALLCLM,ICASUAL,IZIVENT,IRAIRVL,ISETPTT,ICTLSTA,ISKYLUX
+      integer IDBTEXT,IWINDVL,IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL
+      integer IOBJVEL,IOBJDIR,ISKYTMP,IGLOVRT,ICASUAL3,IACTIV,IBIDIRS
+      integer IVERSOL,IHTCLSETP
+
+C Common to count for the number of timesteps that systems are in operatrion
+C Used to calculate an NCM Auxiliary energy (post-processed in save level 6)
+C It excludes start-up timesteps
+      common/ncmOperHrSystem/iOperTimestep(MCOM),
+     &       iMonthOperTimestep(12,MCOM)
+      integer iOperTimestep,iMonthOperTimestep !iMonthOperTimestep is the total monthly timesteps
+                                               !that heating is operational
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer imonth !current month at simulation time (to accumulate monthly results)
+      integer idayn,im  
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
+      real ValueToCalculateAC !needed for determining if fresh air * SFP is greater
+                              !than a specific value (air-conditioned buildings)
+      real ValueToCalculateMechVent ! the product of fresh air*SFP. No need to compare
+                                    !it with anything (mechanically ventilated buildings)
+      if(i_countsteps(icomp).eq.1)then
+        zonAuxil(icomp)=0.
+        m2zonAuxil(icomp)=0.
+        ValueToCalculateAC=0. 
+        ValueToCalculateMechVent=0.
+        do 1 im=1,12
+          fmonthAuxil_ncm_Energy(im,icomp)=0.
+ 1      continue
+
+C This will apply only for air-conditioned spaces. According to the 
+C NCM guide (paragr. 42 & 88): we need to determine the greatest between
+C fresh air requirement * SFP and 8.5 W/m2 (notional/reference buildings)
+C AND fresh air requirement * SFP and 14.0 W/m2 (typical building)
+C SFP is 2 W/l/s for notional/reference buildings and 3 W/l/s for the typical building
+C Do it only at 1st timestep:
+C Read TDF to get the fresh air requirements
+        itrc=0
+        itdi=IACTIV(ICOMP)
+        IFOC=itdi
+        CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+        if(inoti.eq.1.or.inoti.eq.2.or. !notional and reference
+     &    (inoti.eq.4.and.iDsmTestingFlag.gt.0))then ! or stripped with DSM testing flag
+          ValueToCalculateMechVent=
+     &      TMAR(itdi,IATDF(itdi,1))*TMAR(itdi,IATDF(itdi,9))*2. !for Mech. ventil. buildings          
+          ValueToCalculateAC=
+     &      TMAR(itdi,IATDF(itdi,1))*TMAR(itdi,IATDF(itdi,9))*2. !for Air-Cond. buildings      
+          if(ValueToCalculateAC.lt.8.5)then
+            ValueToCalculateAC=8.5
+          endif
+        elseif(inoti.eq.3)then ! Typical model
+          ValueToCalculateMechVent=
+     &      TMAR(itdi,IATDF(itdi,1))*TMAR(itdi,IATDF(itdi,9))*3. !for Mech. ventil. buildings
+          ValueToCalculateAC=
+     &      TMAR(itdi,IATDF(itdi,1))*TMAR(itdi,IATDF(itdi,9))*3. !for Air-Cond. buildings       
+          if(ValueToCalculateAC.lt.14.0)then
+            ValueToCalculateAC=14.0
+          endif        
+        endif 
+      endif
+
+C If no system associated with this zone then skip this code.
+      if(IHLZ(ICOMP).ne.0)then
+        if(IBRUKC(IHLZ(ICOMP)).eq.0)then !space is not heated (assume: no auxil)
+          zonAuxil(ICOMP)=0.
+          m2zonAuxil(ICOMP)=0.
+          iOperTimestep(ICOMP)=0
+          do 3 im=1,12
+            fmonthAuxil_ncm_Energy(im,icomp)=0.
+            iMonthOperTimestep(im,ICOMP)=0            
+ 3        continue 
+        endif                 
+      endif
+
+C Calculate Auxiliary energy for the notional building.
+C ***Heated only spaces:
+C If heating flux is greater than zero, then account this hour and
+C use NCM modelling guide, v4d, March 2008 paragraph 42:
+      call eclose(qfut,0.0,0.01,closeto0)  
+      if(.not.closeto0)then
+      
+C If there is no cooling system and it is not mechanically ventilated
+C or this is the UK NCM reference model (in which case cooling auxiliary 
+C energy is not to be calculated) or stripped model that has been assigned 
+C a reference model flag.
+
+C Another test of IHLZ(ICOMP) being zero.
+        if(IHLZ(ICOMP).ne.0)then  
+          if(IBRUKC(IHLZ(ICOMP)).eq.-1111.OR.INOTI.EQ.2.OR.
+     &      (INOTI.eq.4.AND.iDsmTestingFlag.eq.2))then
+            call eclose(SFPHS(IHLZ(ICOMP)),0.0,0.01,closeto0)        
+            if(closeto0.OR.INOTI.EQ.2.OR.
+     &        (INOTI.eq.4.AND.iDsmTestingFlag.eq.2))then
+              if(qfut.gt.0.)then
+                if(i_countsteps(icomp).gt.numbStartTimesteps)then
+                      
+C This means heating operates and hour/timestep should be accounted              
+C 0.61 W/m^2 * area (and integrate over time) for notional and reference
+C and 1.23 for typical model
+C The calculated values will be in Watts
+C Also, determine month number by calling edayr
+                  call edayr(idyp,idayn,imonth) 
+                  IF(INOTI.EQ.1.OR.INOTI.EQ.2.OR.! notional and reference
+     &              (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN ! or stripped with DSM testing flag
+                    m2zonAuxil(ICOMP)=0.61+m2zonAuxil(ICOMP)           
+                    zonAuxil(ICOMP)=0.61*ZBASEA(ICOMP)+zonAuxil(ICOMP)
+                    fmonthAuxil_ncm_Energy(imonth,icomp)=
+     &                0.61*ZBASEA(ICOMP)+
+     &                fmonthAuxil_ncm_Energy(imonth,icomp)                      
+                  ELSEIF(INOTI.EQ.3)THEN ! Typical model
+                    m2zonAuxil(ICOMP)=1.23+m2zonAuxil(ICOMP)           
+                    zonAuxil(ICOMP)=1.23*ZBASEA(ICOMP)+zonAuxil(ICOMP)
+                    fmonthAuxil_ncm_Energy(imonth,icomp)=
+     &                1.23*ZBASEA(ICOMP)+
+     &                fmonthAuxil_ncm_Energy(imonth,icomp)
+                  ENDIF 
+                endif
+              endif
+            endif
+          else
+
+C Mech. Ventilated spaces or naturally ventilated with mechanical extract/supply
+C Take into account only the hours of operation - be based on the heating
+C and cooling flux
+            if(i_countsteps(icomp).gt.numbStartTimesteps)then
+
+C zonAuxil= Occupants density (pers/m2)*
+C fresh air requirements in l/s/pers*SpecificFanPower* zone Area
+C<<<< Using 2.0 W/l/s as specific fan power for Notional and Reference
+C<<<< model and 3.0 W/l/s for typical building here but it needs 
+C<<<< interface additions to distinguish between all the cases 
+C<<<< described in Table 7 and 12 of the NCM modelling guide
+              call edayr(idyp,idayn,imonth)   
+              if(INOTI.EQ.1.OR.INOTI.EQ.2.OR.! notional and reference (never reference at this point)
+     &          (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN ! or stripped with DSM testing flag
+                m2zonAuxil(ICOMP)=ValueToCalculateMechVent+
+     &            m2zonAuxil(ICOMP)
+                zonAuxil(ICOMP)=ValueToCalculateMechVent*ZBASEA(ICOMP)+
+     &            zonAuxil(ICOMP)
+                fmonthAuxil_ncm_Energy(imonth,icomp)=
+     &            ValueToCalculateMechVent*ZBASEA(ICOMP)+
+     &            fmonthAuxil_ncm_Energy(imonth,icomp)               
+              elseif(INOTI.EQ.3)then ! Typical model
+                 m2zonAuxil(ICOMP)=ValueToCalculateMechVent+
+     &             m2zonAuxil(ICOMP)
+                zonAuxil(ICOMP)=ValueToCalculateMechVent*ZBASEA(ICOMP)+
+     &             zonAuxil(ICOMP)
+                fmonthAuxil_ncm_Energy(imonth,icomp)=
+     &            ValueToCalculateMechVent*ZBASEA(ICOMP)+
+     &            fmonthAuxil_ncm_Energy(imonth,icomp) 
+              endif
+            endif
+          endif
+        else
+
+C Air conditioned space (same as Mech. Ventil. but according to NCM guide:
+C it needs to be compared at the end with 8.5 W/m2 and report the greater
+C This comparison has now been implemented).
+          if(i_countsteps(icomp).gt.numbStartTimesteps)then
+
+C zonAuxil= Occupants density (pers/m2)*
+C fresh air requirements in l/s/pers*SpecificFanPower* zone Area
+C<<<< Using 2.0 W/l/s as specific fan power for Notional and Reference
+C<<<< model and 3.0 W/l/s for typical building here but it needs 
+C<<<< interface additions to distinguish between all the cases 
+C<<<< described in Table 7 and 12 of the NCM modelling guide
+            call edayr(idyp,idayn,imonth)
+            if(INOTI.EQ.1.OR.INOTI.EQ.2.OR.! notional and reference (never reference at this point)
+     &        (INOTI.eq.4.AND.iDsmTestingFlag.gt.0))THEN ! or stripped with DSM testing flag
+              m2zonAuxil(ICOMP)=ValueToCalculateAC+m2zonAuxil(ICOMP)     
+              zonAuxil(ICOMP)=ValueToCalculateAC*ZBASEA(ICOMP)+
+     &          zonAuxil(ICOMP) 
+              fmonthAuxil_ncm_Energy(imonth,icomp)=ValueToCalculateAC*
+     &          ZBASEA(ICOMP)+fmonthAuxil_ncm_Energy(imonth,icomp)    
+            elseif(INOTI.EQ.3)then ! Typical model
+              m2zonAuxil(ICOMP)=ValueToCalculateAC+m2zonAuxil(ICOMP)
+              zonAuxil(ICOMP)=ValueToCalculateAC*ZBASEA(ICOMP)+
+     &          zonAuxil(ICOMP)
+              fmonthAuxil_ncm_Energy(imonth,icomp)=ValueToCalculateAC*
+     &          ZBASEA(ICOMP)+fmonthAuxil_ncm_Energy(imonth,icomp)
+            endif
+          endif          
+        endif           
+      endif
+      return
+      end

@@ -29,6 +29,7 @@ C ********** exportcad
 C exportcad: controls model export facilities.
       subroutine exportcad(itrc,IER)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -36,10 +37,6 @@ C exportcad: controls model export facilities.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/appw/iappw,iappx,iappy
@@ -53,7 +50,7 @@ C exportcad: controls model export facilities.
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       logical MODIFY,MODLEN,MODBND,unixok,browse
 
-      DIMENSION ITEMS1(12)
+      DIMENSION ITEMS1(11)
 
       character LFIL*72,H*72,path*72,LCFGF*72,tfile*72
       character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
@@ -64,8 +61,10 @@ C exportcad: controls model export facilities.
       logical oke
 #ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
+      integer ICPMOD     ! passed from tchild
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 ICPMOD   ! passed from tchild
 #endif
 
       if(.NOT.cfgok)then
@@ -84,12 +83,11 @@ C Check if Unix-based or DOS based.
       ITEMS1(4) ='d to RADIANCE              '
       ITEMS1(5) ='e to xfig (vector ploting) '
       ITEMS1(6) ='f to MicroGDS (THINGS file)'
-      ITEMS1(7) ='g to TSBI3                 '
-      ITEMS1(8) ='h to EnergyPlus            '
-      ITEMS1(9) ='i to VRML #2.0             '
-      ITEMS1(10)='j to ESP-r meta file       '
-      ITEMS1(11)='? help                     '
-      ITEMS1(12)='- exit this menu           '
+      ITEMS1(7) ='g to EnergyPlus            '
+      ITEMS1(8) ='i to VRML #2.0             '
+      ITEMS1(9) ='j to ESP-r meta file       '
+      ITEMS1(10)='? help                     '
+      ITEMS1(11)='- exit this menu           '
 
 C Help text for this menu.
       H(1)='This facility allows you to export the current model'
@@ -100,10 +98,10 @@ C Help text for this menu.
       H(6)='DXF (version 12) file (see the note below);'
       H(7)='XZIP, a CAD program from IES;'
       H(8)='RADIANCE, a lighting simulation program from LBL;'
-      H(9)='XFIG, a vector plotting program;'
-      H(10)='MicroGDS, a CAD program;'
-      H(11)='TSBI3, a building thermal simulation program the Danish'
-      H(12)='       Building Research Institute;'
+      H(9)='XFIG, a vector plotting program (available on Linux and'
+      H(10)='OSX and Cygwin) so that wire-frame images can be exported'
+      H(11)='in high resolution.'
+      H(12)='MicroGDS, a CAD program;'
       H(13)='EnergyPlus, a building thermal simulation program from'
       H(14)='       North America'
       H(15)='VRML Version 2.0, with a matching html file containing'
@@ -361,7 +359,7 @@ C If user canceled the wireframe export loop back.
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
           call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                 iicfgz,iicfgn,iicfgc,iicfgdfn)
-          WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+          WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
           iside=1
           isize=1
           ifont=1
@@ -429,45 +427,6 @@ C Why is the addpath not used?
         call edisp(iuout,outs)
       ELSEIF(INO1.EQ.7)THEN
 
-C Export to TSBI3 file.
-        call tstamp('>','PRJ: export to TSBI3')
-        doit = ' '
-        H(1)='This file is used with the TSBI3 program from the Danish'
-        H(2)='Building Research Institute. Note that zone schedules'
-        H(3)='are not fully translated and will need to be manually'
-        H(3)='augmented.'
-        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.TSBI3'
-        CALL EASKS(LFIL,' ','TSBI3 input file name?',
-     &                 72,' ','TSBI3 file',IER,4)
-C        call edisp(iuout,' Performing model conversion.')
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
-        if(itrc.le.1)then
-          write(doit,'(4a)') 'ecnv -if esp -in ',
-     &      longtfile(1:lnblnk(longtfile)),
-     &      ' -of tsbi3 -out ',LFIL(1:lnblnk(LFIL))
-        elseif(itrc.gt.1)then
-          write(doit,'(4a)') 'ecnv -v -if esp -in ',
-     &      longtfile(1:lnblnk(longtfile)),
-     &      ' -of tsbi3 -out ',LFIL(1:lnblnk(LFIL))
-        endif
-        call usrmsg('Starting TSBI3 conversion via',doit,'-')
-        tmode = 'text'
-        call runit(doit,tmode)
-C        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
-C     &    ' has been created.'
-C        call edisp(iuout,outs)
-      ELSEIF(INO1.EQ.8)THEN
-
 C Export to EnergyPlus IDF file (work in progress)
         call tstamp('>','PRJ: export to energyplus')
         doit = ' '
@@ -495,7 +454,7 @@ C          call edisp(iuout,' Performing model conversion.')
           close(ioout)
         endif
 
-      ELSEIF(INO1.EQ.9)THEN
+      ELSEIF(INO1.EQ.8)THEN
 
 C Export to VRML (2.0) file.
         call tstamp('>','PRJ: export to VRML')
@@ -535,7 +494,7 @@ C     &    ' has been created.'
 C        call edisp(iuout,outs)
 C        call edisp(iuout,'Use a VRML viewer to explore it.')
 
-      ELSEIF(INO1.EQ.10)THEN
+      ELSEIF(INO1.EQ.9)THEN
 
 C Export to ESP-r meta file.
         call tstamp('>','PRJ: export to ESP-r meta')
@@ -562,12 +521,12 @@ C and change any / to \.
         endif
         ioout=2
         call METAWRITE(ioout,longtfile,'-',IER)
-      ELSEIF(INO1.EQ.11)THEN
+      ELSEIF(INO1.EQ.10)THEN
       
 C Pop up the help text.
        CALL PHELPD('export menu',55,'-',0,0,IER)
 
-      ELSEIF(INO1.EQ.12)THEN
+      ELSEIF(INO1.EQ.11)THEN
         RETURN
       else
         goto 33
@@ -575,7 +534,10 @@ C Pop up the help text.
       goto 33
 
 C Error.
- 901  write(6,*) 'Unable to open IDF file ',LFIL,' on ',ioout
+ 901  call isunix(unixok)
+      if(unixok)then
+        write(6,*) 'Unable to open IDF file ',LFIL,' on ',ioout
+      endif
       return
      
       END
@@ -683,6 +645,20 @@ C command line.
         CALL PHELPD('CAD warning',58,'-',0,0,IER)
       else
         CALL PHELPD('CAD warning',53,'-',0,0,IER)
+      endif
+
+C Ask user which format of CAD file will be scanned in.
+      h(1)='Current import options are DXF files and so-called'
+      h(2)='ZIP files (from a Scottish CAD company).'
+      CALL EASKABC('Specify which CAD format to work with',
+     &  'Options:','DXF (version 12)','ZIP CAD format',
+     &  'cancel',IRT,2)
+      if(irt.eq.1)then
+        cadfmt='DXF '
+      elseif(irt.eq.2)then
+        cadfmt='ZIP '
+      elseif(irt.eq.3)then
+        return
       endif
 
 C If there is a currently loaded model then convert it.
@@ -1455,11 +1431,19 @@ C the user to kill it.
 C ***** wtarentry
 C wtarentry: write entry in tar names file taking into account case where file
 C name begins with ../ .
-      subroutine wtarentry(iunit,pathome,tr,ltr,tp,ltp,lf,ier)
+      subroutine wtarentry(iunit,pathome,tr,ltr,tp,ltp,lf)
       integer lnblnk  ! function definition
-      logical pathome,unixok
-      character*(*) lf
-      character tp*32,tr*32,fs*1
+
+C Parameters
+      integer iunit   ! file unit for written entries
+      logical pathome ! true uses tp, false uses tr
+      character tp*32 ! path including final file separator
+      character tr*32 ! path without 
+      character*(*) lf ! file name for entries
+      integer ltr,ltp  ! length of strings tp and tr
+      
+      character fs*1
+      logical unixok
 
       call isunix(unixok)
       if(unixok)then
@@ -1507,6 +1491,7 @@ C and if the user is browsing the model.
 C << to be done - then name file generated is never cleaned up >>
       subroutine archiveit(ier)
 #include "building.h"
+#include "model.h"
 #include "uncertainty.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -1526,18 +1511,9 @@ C ICLIM,LCLIM (for climate file)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
-      common/C3F/LCNN
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/LOG/LPRJLG
       common/radcfg/LRADCF
@@ -1582,8 +1558,7 @@ C ICLIM,LCLIM (for climate file)
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
       character LPRJLG*72,LPNF*72,LMOIST*72
-      character*72 LCNN
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,LCFD
+      character*72 LCFD
       character LCMDFL*144,LFIL*72
       
 C The string buffer doit is only used within ifdef code.
@@ -1669,7 +1644,10 @@ C in users home folder.
 C Can user write at the curdir folder?
         ifold=-1
         call ckaccess(ifold,iaccess,icerr,curdir)
-        if(iaccess.eq.1)write(6,*) 'cannot write at',curdir(1:lcd)
+        if(iaccess.eq.1)then
+          call isunix(unixok)
+          if(unixok)write(6,*) 'cannot write at',curdir(1:lcd)
+        endif
 
 C Determine how to treat the path. See if the root name falls into the
 C path somewhere.
@@ -1718,7 +1696,10 @@ C so then easy to write, if not then try for the token before that).
 C Can user write at the path folder?
       ifold=-1
       call ckaccess(ifold,iaccess,icerr,path)
-      if(iaccess.eq.1)write(6,*) 'cannot write at',path(1:lnblnk(path))
+      if(iaccess.eq.1)then
+        call isunix(unixok)
+        if(unixok)write(6,*) 'cannot write at',path(1:lnblnk(path))
+      endif
 
 C Determine how to treat the path. If the start of the path matches
 C the root name check for rootname/cfg folders.
@@ -1742,7 +1723,10 @@ C are now so this can be subtracted from curdir for testing.
      &            fs,WORDS(IW)(1:lnblnk(WORDS(IW)))
           llf=lnblnk(LF)
           write(LF,'(a)') curdir(1:lcd-llf)
-          write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
+
+C Debug.
+          call isunix(unixok)
+          if(unixok)write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
           ifold=-1
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
@@ -1776,7 +1760,10 @@ C are now so this can be subtracted from curdir for testing.
           write(LF,'(a)') WORDS(IW)(1:lnblnk(WORDS(IW)))
           llf=lnblnk(LF)
           write(LF,'(a)') curdir(1:lcd-llf)
-          write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
+
+C Debug.
+          call isunix(unixok)
+          if(unixok)write(6,*) 'checking writing at ',LF(1:lnblnk(LF))
           ifold=-1
           call ckaccess(ifold,iaccess,icerr,LF)
           if(ifold.eq.1.and.icerr.eq.0)then
@@ -1841,25 +1828,25 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.5)then
           LFL=LPRFDB
         elseif(i.eq.6)then
-          LF=LCLIM
+          LFL=LCLIM
         elseif(i.eq.7)then
           LFL=LPCDB
         endif
-        if(i.eq.3.or.i.eq.4.or.i.eq.5.or.i.eq.7)then
+        if(i.eq.3.or.i.eq.4.or.i.eq.5.or.i.eq.6.or.i.eq.7)then
           if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL,ier)
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
           endif
         else
           if(LF(1:9).ne.'/usr/esru'.and.LF(1:4).ne.'UNKN')then
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
 
 C Place to write out ascii version of constructions db if a local
 C file exists.
             if(i.eq.1)then
               IUF=IFIL+2
               write(LASCI,'(2a)') LF(1:lnblnk(LF)),'.a'
-              CALL MKAPRC(IUOUT,LASCI,IUF,IER)
-              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LASCI,ier)
+              CALL MKAPRC(LASCI,IUF,IER)
+              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LASCI)
             endif
           endif
         endif
@@ -1884,7 +1871,7 @@ C Write control file if it exists.
      &       ctlpth(3:lc),fs,LCTLF(lc+1:lnblnk(LCTLF))
           endif
         else
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LCTLF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LCTLF)
         endif
       endif
 
@@ -1892,18 +1879,18 @@ C Write HOT3000 hvac file if known.
       if(ihvacflag.eq.0)then
         continue
       else
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,hvacfile,ier)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,hvacfile)
       endif
 
 C Write HOT3000 AIM-2 file if known.
       if(iAIM2.eq.0)then
         continue
       else
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LAIM2,ier)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LAIM2)
       endif
 
 C Write uncertainty analysis library file if known.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LUALF,ier)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LUALF)
 
 C Write images if any.
       if(noimg.gt.0)then
@@ -1924,13 +1911,13 @@ C Write images if any.
      &          imgpth(3:lc),fs,LF(lc+1:lnblnk(LF))
             endif
           else
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           endif
  42     continue
       endif
 
 C IPV file, if known.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lipvdatf,ier)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lipvdatf)
 
 C Write non-specific demads.
       if(bdmds(1:4).eq.'UNKN'.or.bdmds(1:2).eq.'  ')then
@@ -1951,28 +1938,31 @@ C Write non-specific demads.
      &      ctlpth(3:lc),fs,bdmds(lc+1:lnblnk(bdmds))
           endif
         else
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,bdmds,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,bdmds)
         endif
       endif
 
       if(lradcf(1:4).eq.'UNKN'.or.lradcf(1:2).eq.'  ')then
         continue
       else
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lradcf,ier)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lradcf)
       endif
 
 C Non-linear thermophysical properties configuration file.
-      if(INTHPS)then
-        WRITE(6,'(2A)') '*nlt ',LNLTHP(1:lnblnk(LNLTHP))
+
+C << ?? why write to unit 6 rather than iunit ?? >>
+       call isunix(unixok)
+       if(INTHPS)then
+        if(unixok)WRITE(6,'(2A)') '*nlt ',LNLTHP(1:lnblnk(LNLTHP))
       endif
       if(IGR1D)then
-        WRITE(6,'(2A)') '*g1d ',LGRD1D(1:lnblnk(LGRD1D))
+        if(unixok)WRITE(6,'(2A)') '*g1d ',LGRD1D(1:lnblnk(LGRD1D))
       endif
       if(spflnam(1:4).eq.'UNKN'.or.spflnam(1:2).eq.'  ')then
         continue
       else
         if(ispmxist.gt.0)then
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,spflnam,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,spflnam)
         endif
       endif
       if(ientxist.gt.0)then
@@ -2001,18 +1991,18 @@ C Temporal database.
       endif
 
 C Project log file.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LPRJLG,ier)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LPRJLG)
 
 C Ground information.
       IF(GRND3D)THEN
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDCVS,ier)
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDCNC,ier)
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDNDC,ier)
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDTAQ,ier)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDCVS)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDCNC)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDNDC)
+        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGDTAQ)
       ENDIF
 
 C Ground topology.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,GTGEOM,ier)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,GTGEOM)
 
 C Write zone files.
       DO 920 I = 1,NCOMP
@@ -2055,7 +2045,7 @@ C Write zone files.
      &            zonepth(3:lc),fs,LF(lc+1:lnblnk(LF))
               endif
             else
-              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
             endif
           endif
  921    continue
@@ -2065,7 +2055,7 @@ C Write zone BASESIMP description if known.
           continue
         else
           LF=LBSIMP(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
 
 C Write zone CFD file if known.
@@ -2090,27 +2080,27 @@ C Write zone CFD file if known.
      &         zonepth(3:lc),fs,LF(lc:lnblnk(LF))
             endif
           else
-            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           endif
         endif
 
 C The following write statements do not detect the file location
         if(ZONE3D(I))then
           LF=L3DCVS(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           LF=L3DCNC(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           LF=L3DNDC(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
           LF=L3DTAQ(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
         if(MSTRZN(I))then
           LF=LMOIST(I)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
         if(IndxSt.EQ.I)then
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGrdSt,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LGrdSt)
         endif
  920  continue
 
@@ -2132,7 +2122,7 @@ C Flow network.
      &       netpth(3:lc),fs,LF(lc:lnblnk(LF))
           endif
         else
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
       endif
       if(INDCFG.EQ.2.or.INDCFG.EQ.3)then
@@ -2154,7 +2144,7 @@ C Plant network information.
      &        netpth(3:lc),fs,LF(lc:lnblnk(LF))
           endif
         else
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF,ier)
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
       endif
       call ERPFREE(IUNIT,ISTAT)

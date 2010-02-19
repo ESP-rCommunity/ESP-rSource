@@ -21,11 +21,15 @@ C Boston, MA 02111-1307 USA.
 C This file contains the following routines:
 
 C  makeCFCfile          Creates a *.cfc file from imported GSLedit data.
+
 C  importGSLedit        Imports data from *.GSL files and stores in CFC
 C                       import commons
+
 C  read_in_cfc_file     Reads an annotated ASCII *.cfc file and stores
 C                       CFC data in commons
 
+C  askCFCtype           Presents list of CFC types in zone and asks user
+C                       to select a CFC type for editing shading schedule.
 
 C ********************************************************************
 C                        --makeCFCfile--
@@ -41,7 +45,6 @@ C of Waterloo.
 C
 C ********************************************************************
       subroutine makeCFCfile(icomp,ier)
-      IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
 #include "CFC_common.h"
@@ -459,28 +462,28 @@ C commons.
 
         write(outs,'(a,a)')
      &      '# For each layer: normal longwave radiative properties - ',
-     &      'R_fr, R_bk, Tran.'
+     &      'EmisF, EmisB, Tran.'
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
 
         do 150 ie=1,im_ncfc_el(icomp,it)
 
               if(im_cfcltp(icomp,it,ie).eq.2)then
-                write(outs,'(3F8.3,a)')rim_lwRf(icomp,it,ie),
-     &            rim_lwRb(icomp,it,ie),rim_lwT(icomp,it,ie),
+                write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
+     &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
      &            '   # slat-type blind '
                 WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &                        outs(1:lnblnk(outs))
 
               elseif(im_cfcltp(icomp,it,ie).eq.1)then
-                write(outs,'(3F8.3,a)')rim_lwRf(icomp,it,ie),
-     &            rim_lwRb(icomp,it,ie),rim_lwT(icomp,it,ie),
+                write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
+     &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
      &            '   # glazing '
                 WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &                        outs(1:lnblnk(outs))
 
               elseif(im_cfcltp(icomp,it,ie).eq.0)then
-                write(outs,'(3F8.3,a)')rim_lwRf(icomp,it,ie),
-     &            rim_lwRb(icomp,it,ie),rim_lwT(icomp,it,ie),
+                write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
+     &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
      &            '   # gas gap '
                 WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &                        outs(1:lnblnk(outs))
@@ -587,6 +590,8 @@ c User cancelled if we are here
       write(outs,'(a,a)')' Removing incomplete cfc file: ',
      &                   lcfcin(ICOMP)
       call EDISP(IUOUT,outs)
+      CALL ERPFREE(IFU,ISTAT)
+      CALL EFOPSEQ(IFU,lcfcin(icomp),1,IER)
       CALL EFDELET(IFU,ISTAT)
       GOTO 1111
 
@@ -619,7 +624,6 @@ C TO DO: add solar optical and longwave property summation checks.
 C
 C ********************************************************************
       subroutine importGSLedit(IUF,GSLfile,icomp,icfctp,isur,IER)
-      IMPLICIT NONE
 #include "building.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
@@ -736,21 +740,19 @@ C angle.
           if(IWA.eq.2)cim_VorH(icomp,icfctp)='HORZ'
 
           h(1)=' Initial Slat angle:'
-          h(2)=' Currently, this slat angle is constant.'
-          h(3)=' You can add slat angle control in source'
-          h(4)=' code in subroutine CFC_shading_control.'
-          h(5)=''
-          h(6)=' For slat angle sign convention, see Figure F.12 in:'
-          h(7)=' "Appendix F: CFC User Reference" from'
-          h(8)=' http://uwspace.uwaterloo.ca'
-          h(9)=' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
+          h(2)=' This is a constant if there is not slat control'
+          h(3)=''
+          h(4)=' For slat angle sign convention, see Figure F.12 in:'
+          h(5)=' "Appendix F: CFC User Reference" from'
+          h(6)=' http://uwspace.uwaterloo.ca'
+          h(7)=' /bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
           
           write(outs,'(a,i2)')
      &      'Specify intial blind slat angle for cfc type: ',icfctp
           rphi=0.0
           ln_outs=lnblnk(outs)
           CALL EASKR(rphi,' ',outs(1:ln_outs),-89.999,'F',
-     &               89.999,'F',0.0,'slat angle',IER,9)
+     &               89.999,'F',0.0,'slat angle',IER,7)
           rim_vb_phi(icomp,icfctp)=rphi
       endif
 
@@ -788,11 +790,11 @@ C curvature ratio), slat thickness and slat apparent thickness
      &            'long wave transmission',IER)
             rim_lwT(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave reflectance - front',IER)
-            rim_lwRf(icomp,icfctp,i)=1.-rprop
+     &            'long wave emissivity - front',IER)
+            rim_lwEf(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave reflectance - back',IER)
-            rim_lwRb(icomp,icfctp,i)=1.-rprop
+     &            'long wave emissivity - back',IER)
+            rim_lwEb(icomp,icfctp,i)=rprop
 
          elseif(im_cfcltp(icomp,icfctp,i).eq.2)then
 
@@ -829,11 +831,11 @@ C to GSLedit
      &            'long wave transmission',IER)
             rim_lwT(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave reflectance - front',IER)
-            rim_lwRf(icomp,icfctp,i)=1.-rprop
+     &            'long wave emissivity - front',IER)
+            rim_lwEf(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave reflectance - back',IER)
-            rim_lwRb(icomp,icfctp,i)=1.-rprop
+     &            'long wave emissivity - back',IER)
+            rim_lwEb(icomp,icfctp,i)=rprop
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.3,'F',
      &            'slat thickness (m)',IER)
             rim_vb_t(icomp,icfctp)=rprop*1000.  ![convert to mm]
@@ -851,8 +853,8 @@ C assign optical properties for air gap
          rim_VisRf(icomp,icfctp,i+1)=     0.0001
          rim_VisRb(icomp,icfctp,i+1)=     0.0001
          rim_lwT(icomp,icfctp,i+1)  =     0.0001
-         rim_lwRf(icomp,icfctp,i+1) =     0.0001
-         rim_lwRb(icomp,icfctp,i+1) =     0.0001
+         rim_lwEf(icomp,icfctp,i+1) =     0.0001
+         rim_lwEb(icomp,icfctp,i+1) =     0.0001
         endif
 
  20   continue
@@ -958,7 +960,6 @@ C TO DO: add solar optical and longwave property summation checks.
 C
 C ********************************************************************
       subroutine read_in_cfc_file(itrc,itru,iua,lua,icomp,ier)
-      IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
 #include "espriou.h"
@@ -1103,12 +1104,12 @@ C Read long-wave properties for complex fenestration construction.
         K=0
         CALL EGETWR(OUTSTR,K,VAL,0.,0.999,'W','front lw emiss.',
      &              IER)
-        rlwRF(ICOMP,i,j)=VAL
-        rlwRF_sv(icomp,i,j)=VAL
+        rlwEF(ICOMP,i,j)=VAL
+        rlwEF_sv(icomp,i,j)=VAL
         CALL EGETWR(OUTSTR,K,VAL,0.,0.999,'W','back lw emiss. ',
      &              IER)
-        rlwRB(ICOMP,i,j)=VAL
-        rlwRB_sv(icomp,i,j)=VAL
+        rlwEB(ICOMP,i,j)=VAL
+        rlwEB_sv(icomp,i,j)=VAL
         CALL EGETWR(OUTSTR,K,VAL,0.,0.999,'W','lw trans.',
      &              IER)
         rlwT(ICOMP,i,j)=VAL
@@ -1140,7 +1141,7 @@ C Reporting
          CALL EDISP(ITRU,
      &      ' Normal longwave-optical prop. front/back/tran. ')
          do 34 j=1,ncfc_el(icomp,i)
-         WRITE(OUTS,'(2X,3F7.3)')rlwRF(icomp,i,j),rlwRB(icomp,i,j),
+         WRITE(OUTS,'(2X,3F7.3)')rlwEF(icomp,i,j),rlwEB(icomp,i,j),
      &                           rlwT(icomp,i,j)
   34     continue
          CALL EDISP(ITRU,OUTS)
@@ -1334,3 +1335,185 @@ C Error messages.
       IER=1
       goto 1000
       end
+
+C ********************************************************************
+C                          --askCFCtype--
+C
+C Presents a list of CFC types to select from and returns icfctype
+C UNDER CONSTRUCTION
+C Based on subroutine ASKZONE
+C
+C     - check if *.cfc file exists for this zone
+C     - determine number of CFC types
+C
+C ********************************************************************
+      
+C ASKZONE presents  a list of zones to select from.
+C It is passed a prompt, menu title, default
+C index and indicates current index (if zero then says no prior
+C selection). It is assumed that the user will make one selection only.
+C MOD display modifier - `c` note constructions defined, `o` note
+C operations defined, `s` note shading defined, `z` note zone attrib
+C complete, `v` note view factors, `g` casual gain ctl, `d` domain flow,
+C `h` heat transfer (comvective) methods, `-` zone names only.
+      subroutine askCFCtype(icomp,icfctype,IER)
+#include "building.h"
+#include "epara.h"
+#include "CFC_common.h"
+#include "geometry.h"
+
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      CHARACTER SSPARENT*12
+
+      COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
+      integer izstocn
+
+      COMMON/FILEP/IFIL
+      common/pophelp/h(60)
+
+      LOGICAL XST
+      CHARACTER title*72
+      
+      DIMENSION VERT(35)
+      CHARACTER VERT*27,KEY*1
+      character h*72
+      
+      character OUTSTR*124
+      integer IUA, NS, K, M, L, i, j, icn
+
+      DIMENSION IVA(MS)
+      
+      IUA=IFIL+1
+      
+      XST=.false.
+
+   5  MHEAD=0
+      MCTL=3
+
+C Initial menu entry setup.
+      IER=0
+      IVERT=-3
+
+C find *.cfc file for this zone and read it in      
+      call FINDFIL(lcfcin(icomp),XST)
+      
+      IF(XST.and.icfc(icomp).eq.1)then
+
+C Read CFC type index from zone *.cfc file
+        CALL EFOPSEQ(IUA,lcfcin(icomp),1,IER)
+        IF(IER.NE.0)THEN
+         IER=1
+         goto 1000
+        ENDIF
+
+C read in number of surfaces in zone
+        CALL STRIPC(IUA,OUTSTR,1,ND,1,'no zone surfaces',IER)
+        IF(IER.NE.0)GOTO 1001
+        K=0
+        CALL EGETWI(OUTSTR,K,NS,4,MS,'W','no zone cfc surf',IER)
+
+C Read pointer to type of CFC for each surface, strip comments etc.
+C Determine number of CFC types in zone
+        IRVA=NS
+        CALL EGETWIA(IUA,IVA,IRVA,0,MCFC,'W','cfc list',IER)
+        ncfc(icomp)=0
+        DO 10 I=1,NS
+          icfcfl(icomp,i)=iva(i)
+          IF(icfcfl(icomp,i).GT.ncfc(icomp))
+     &    ncfc(icomp)=icfcfl(icomp,i)
+   10   CONTINUE
+
+        ILEN=ncfc(icomp)
+        IPACT=1!CREATE
+        CALL EKPAGE(IPACT)
+        
+        M=MHEAD
+        do 20 L=1,ILEN
+            M=M+1
+            CALL EMKEY(L,KEY,IER)
+            WRITE(VERT(M),'(a1, 1x, a10, i2)')KEY, 'CFC type ', L
+   20   continue
+
+C write out corresponding surfaces to each CFC type in zone
+        VERT(M+1)=  '  ______________________'
+        VERT(M+2)=  'Corresponding surface(s)'
+        VERT(M+3)=' '
+        M=M+3
+
+        do 30 LL=1,ILEN
+        M=M+1
+          WRITE(VERT(M),'(a10, i2)')
+     &         '  CFC type', LL
+
+          do 40 j=1,NS
+            if(icfcfl(icomp,j).eq.LL)then
+              icn=izstocn(icomp,j)
+              M=M+1
+              WRITE(VERT(M), '(a6,a12)')'',SSNAME(icn)
+            endif
+   40     continue
+
+   30   continue
+   
+
+C If a long list include page facility text and info on portion seen.      
+        IF(IPFLG.EQ.0)THEN
+          VERT(M+1)=  '  ______________________'
+        ELSE
+          WRITE(VERT(M+1),15)IPM,MPM 
+   15     FORMAT ('0 page part: ',I1,' -- of:',I1)
+        ENDIF
+
+        VERT(M+2)  ='? help                  '
+        VERT(M+3)  ='- exit this menu        '
+
+C Number of actual items displayed
+        MVERT=M+MCTL
+        
+C Help message for this menu.
+        H(1)='Select CFC type to apply shading schedule/control.'
+
+C Display the menu.
+        write(title,'(2a)')'Select CFC type in ',
+     &  zname(icomp)(1:lnblnk(zname(icomp)))
+        CALL EMENU(title,VERT,MVERT,IVERT)        
+        
+C Get user selection
+        if (IVERT.EQ.MVERT) then
+          return
+        elseif (IVERT.EQ.(MVERT-1)) then
+          CALL PHELPD('Choose CFC type',1,'-',0,0,IER)
+        elseif (IVERT.GT.MHEAD.AND.IVERT.LT.(ILEN+1)) then
+          icfctype=IVERT
+          goto 1000
+        else
+          !do nothing
+        end if
+      
+C Redisplay menu.
+      IVERT=-4
+      GOTO 5      
+
+      ELSE
+      
+        H(1)='*.cfc file not found'
+        H(2)=''
+        H(3)='CFC input data must first be imported before'
+        H(4)='editing the shading schedule can commence.'
+       
+        CALL PHELPD('CFC file not found',4,'-',0,0,IER)      
+        
+      ENDIF
+ 
+c Free file.
+ 1000 CALL ERPFREE(IUA,ISTAT)
+      return
+
+C Error messages.
+ 1001 CALL USRMSG(' Problem reading data in:',OUTSTR,'W')
+      IER=1
+      goto 1000
+      
+      END

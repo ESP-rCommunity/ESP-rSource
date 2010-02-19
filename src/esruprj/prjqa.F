@@ -28,6 +28,8 @@ C Prjqa writes out a QA report (to screen or file) for
 C the current model.
       subroutine prjqa(ier)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/G7/prec2/precz/c20.
 #include "geometry.h"
@@ -42,9 +44,12 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+#include "material.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "sbem.h"
+#include "ipvdata.h"
+#include "seasons.h"
       
       integer lnblnk  ! function definition
 
@@ -54,17 +59,8 @@ C espriou.h provides currentfile.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C4/XLAT,XLON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      common/C5R/SKYR,GRDR,BLDR
       common/C6/INDCFG
-      common/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
 
 C IFPNF is the unit for the plant network file.
@@ -75,11 +71,6 @@ C LPNF (72 char) plant network file name.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
@@ -93,19 +84,12 @@ C LPNF (72 char) plant network file name.
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cctlnm/ctldoc,lctlf
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
 C AIM-2.
       common/aim2def/iAIM2,LAIM2
-
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
@@ -119,18 +103,7 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       COMMON/CLMDT1/CLMLOC
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/CFGV/icfgv
-
-C ipvtitl (char 40) is the title that shows up in reports
-C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
-C ipvsynop (char 248) documents the integrated performance view
-C ipvsimu (char 6) is a short tag describing the assessments to be run
-C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
-C   season assessment with all days included.
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
 
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
@@ -168,8 +141,15 @@ C matching executables. For normal image viewing take the first option.
 
 C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
-
       integer iSlr_half_hr_flg
+
+C Thermal bridges.
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &               thbrpercent,uavtotal(MCOM)
 
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -186,7 +166,7 @@ C Remember if each zone is fully attributed.
       dimension items(25)
 
       character*72 LTMP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,GTGEOM
+      character*72 GTGEOM
       character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,H*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
@@ -198,8 +178,6 @@ C Remember if each zone is fully attributed.
       character aok*17,CTLDOC*248,LCTLF*72,items*33
       character xfile*144,tg*1,delim*1,head*21,mlcmatch*12
       character outs*124,outs248*248
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248
       character dstmp*24,mlcname*12
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
@@ -215,6 +193,12 @@ C Remember if each zone is fully attributed.
       character ipvaction*3  ! signal that external ipv file
       character MLCSYM*12
       character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
+
+C For thermal bridge reporting
+      character TBRIDGE*58
+      dimension phrasemenu(16)
+      character phrasemenu*34
+      logical havebrdge
       
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
@@ -224,6 +208,8 @@ C in the current model. A -1 means not applicable
       integer destination
 
       integer iercl  ! error state returned for scanning climate list.
+      integer llbm,llbn  ! string lengths for obstructions
+      integer ivz        ! index of current zone in list
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -271,6 +257,8 @@ C and itu set so QA report is written to screen.
       fileinfo=0
       destination=0
       itu = iuout
+      inpic = 0
+      isel = 0
 
 C Setup the selection menu.
     3 INO=-4
@@ -625,6 +613,8 @@ C Generate report sorted by surface attributes.
 
         H(1)='You may filter for already attributed surfaces or'
         H(2)='surfaces marked UNKNOWN. '
+
+C << mlcmatch not yet used >>
         CALL EASKABCD(' Filter for surface composition:',' ',
      &    'any construction','those marked UNKNOWN',
      &    'specific construction','cancel',ins4,2)
@@ -664,7 +654,7 @@ C Generate report sorted by surface attributes.
         call tstamp('>','PRJ: global reporting by attribution')
         write(outs,'(A,A)') 'cfg: ',LCFGF(1:lnblnk(LCFGF))
         call edisp(itu,outs)
-        write(outs,'(A,A)') 'project: ',LSNAM(1:lnblnk(LSNAM))
+        write(outs,'(A,A)') 'model: ',modeltitle(1:lnblnk(modeltitle))
         call edisp(itu,outs)
         call dstamp(dstmp)
         write(outs,'(A,A)') 'print date: ',dstmp
@@ -735,7 +725,7 @@ C << it might not be necesary to scan geometry file >>
             LTMP=LGEOM(IVALS(IZ))
             call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+              call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
             else
               call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
             endif
@@ -896,8 +886,9 @@ C Generate the QA report.
       call edisp(itu,'Synopsis')
       call edisp(itu,' ')
       write(outs248,'(9A)') 'This is a synopsis of the model ',
-     &  LSNAM(1:lnblnk(LSNAM)),' defined in ',LCFGF(1:lnblnk(LCFGF)),
-     &  ' generated on ',dstmp,'. Notes associated with the model',
+     &  modeltitle(1:lnblnk(modeltitle)),' defined in ',
+     &  LCFGF(1:lnblnk(LCFGF)),' generated on ',
+     &  dstmp,'. Notes associated with the model',
      &  ' are in ',LPRJLG(1:lnblnk(LPRJLG))
       call edisp248(itu,outs248,80)
       call edisp(itu,' ')
@@ -905,68 +896,100 @@ C Generate the QA report.
 C Site information.
       if(siteinfo.gt.0)then
         write(outs248,'(a,f7.2,a,f6.2,2a,i4,5a)') 
-     &    'The model is located at latitude ',XLAT,
-     &    ' with a longitude difference of ',XLON,
+     &    'The model is located at latitude ',sitelat,
+     &    ' with a longitude difference of ',sitelongdif,
      &    ' from the local time meridian. The year used in',
      &    ' simulations is ',IYEAR,' and weekends occur on ', 
      &     wkd1(1:lnblnk(wkd1)),' and ',wkd2(1:lnblnk(wkd2)),'.'
         call edisp248(itu,outs248,80)
-        if(ixpos.eq.1)then
+        if(siteexposureindex.eq.1)then
           WRITE(outs,'(a)')'site exposure is typical city centre'
-        elseif(ixpos.eq.2)then
+        elseif(siteexposureindex.eq.2)then
           WRITE(outs,'(a)')'site exposure is typical urban site'
-        elseif(ixpos.eq.3)then
+        elseif(siteexposureindex.eq.3)then
           WRITE(outs,'(a)')'site exposure is typical rural site'
-        elseif(ixpos.eq.4)then
+        elseif(siteexposureindex.eq.4)then
           WRITE(outs,'(a)')'site exposure is city: = sky, grnd, bldgs'
-        elseif(ixpos.eq.5)then
+        elseif(siteexposureindex.eq.5)then
           WRITE(outs,'(a)')'site exposure is city: below surroundings'
-        elseif(ixpos.eq.6)then
+        elseif(siteexposureindex.eq.6)then
           WRITE(outs,'(a)')'site exposure is isolated rural site site'
-        elseif(ixpos.eq.7)then
+        elseif(siteexposureindex.eq.7)then
           WRITE(outs,'(a)')'site exposure is totally enclosed (no sky)'
-        elseif(ixpos.eq.8)then
-          WRITE(outs,53)SKYR,GRDR,BLDR
+        elseif(siteexposureindex.eq.8)then
+          WRITE(outs,53)skyview,groundview,buildingview
   53      FORMAT('site exposure is sky=',F4.2,' ground=',F4.2,
      &      ' other buildings=',F4.2)
         endif
         write(outs248,'(3a,f4.2,a)') 'The ',outs(1:lnblnk(outs)),
-     &    ' and the ground reflectance is ',GREF,'.'
+     &    ' and the ground reflectance is ',groundrefl,'.'
         call edisp248(itu,outs248,80)
         call edisp(itu,' ')
 
-C Print address for building and client.
+C Print address for building and client. If there is a UK NCM
+C description then list that out instead.
         if(siteinfo.eq.2)then
-          write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
-          call edisp(itu,outs)
-          write(outs,'(2a)')'Building address: ',baddress
-          call edisp(itu,outs)
-          write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
-          call edisp(itu,outs)
-          write(outs,'(2a)')'Building Postcode: ',buildingPC  
-          call edisp(itu,outs)    
-          call edisp(itu,' ')
-          write(outs,'(2a)')'Building owner name: ',ownername
-          call edisp(itu,outs)   
-          write(outs,'(2a)')'Building owner telephone: ',ownertel
-          call edisp(itu,outs)   
-          write(outs,'(2a)')'Building owner address: ',owneraddr 
-          call edisp(itu,outs) 
-          write(outs,'(2a)')'Building owner city: ',ownercity 
-          call edisp(itu,outs) 
-          write(outs,'(2a)')'Building owner Postcode: ',ownerPC
-          call edisp(itu,outs)     
-          call edisp(itu,' ')
-          write(outs,'(2a)')'Simulationist name: ',certifname 
-          call edisp(itu,outs)     
-          write(outs,'(2a)')'Simulationist telephone: ',certTel 
-          call edisp(itu,outs)     
-          write(outs,'(2a)')'Simulationist address: ',certaddress   
-          call edisp(itu,outs)   
-          write(outs,'(2a)')'Simulationist city: ',certcity  
-          call edisp(itu,outs)    
-          write(outs,'(2a)')'Simulationist postcode: ',certPC  
-          call edisp(itu,outs)          
+          if(ISBEM.ge.1)then
+
+C Re-read sbem db and then the descriptive file.
+            call sbempr(ier)
+            call rsbem
+            call lstncm('p',itu)
+            call edisp(itu,'  ')          
+            call lstncm('e',itu)
+            call edisp(itu,' ')
+            write(outs,'(2a)')'Simulationist name: ',certifname 
+            call edisp(itu,outs)     
+            write(outs,'(2a)')'Simulationist telephone: ',certTel 
+            call edisp(itu,outs)     
+            write(outs,'(2a)')'Simulationist address: ',certaddress   
+            call edisp(itu,outs)   
+            write(outs,'(2a)')'Simulationist city: ',certcity  
+            call edisp(itu,outs)    
+            write(outs,'(2a)')'Simulationist postcode: ',certPC  
+            call edisp(itu,outs)
+            call edisp(itu,'  ')          
+            call lstncm('b',itu)
+            call edisp(itu,'  ')          
+            call lstncm('s',itu)
+            call edisp(itu,'  ')          
+            call lstncm('d',itu)
+            call edisp(itu,'  ')          
+            call lstncm('o',itu)
+            call edisp(itu,'  ')          
+            call lstncm('l',itu)
+            call edisp(itu,'  ') 
+          else
+            write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
+            call edisp(itu,outs)
+            write(outs,'(2a)')'Building address: ',baddress
+            call edisp(itu,outs)
+            write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
+            call edisp(itu,outs)
+            write(outs,'(2a)')'Building Postcode: ',buildingPC  
+            call edisp(itu,outs)    
+            write(outs,'(2a)')'Building owner name: ',ownername
+            call edisp(itu,outs)   
+            write(outs,'(2a)')'Building owner telephone: ',ownertel
+            call edisp(itu,outs)   
+            write(outs,'(2a)')'Building owner address: ',owneraddr 
+            call edisp(itu,outs) 
+            write(outs,'(2a)')'Building owner city: ',ownercity 
+            call edisp(itu,outs) 
+            write(outs,'(2a)')'Building owner Postcode: ',ownerPC
+            call edisp(itu,outs)     
+            call edisp(itu,' ')
+            write(outs,'(2a)')'Simulationist name: ',certifname 
+            call edisp(itu,outs)     
+            write(outs,'(2a)')'Simulationist telephone: ',certTel 
+            call edisp(itu,outs)     
+            write(outs,'(2a)')'Simulationist address: ',certaddress   
+            call edisp(itu,outs)   
+            write(outs,'(2a)')'Simulationist city: ',certcity  
+            call edisp(itu,outs)    
+            write(outs,'(2a)')'Simulationist postcode: ',certPC  
+            call edisp(itu,outs)
+          endif          
         endif
 
         CALL ERPFREE(ICLIM,ISTAT)
@@ -976,15 +999,15 @@ C Print address for building and client.
 
 C Tell about climate taking note of timing of solar data.
         if(iSlr_half_hr_flg.eq.0)then
-          WRITE(outs248,'(5A)')'The climate used is: ',
+          WRITE(outs248,'(5A)')'The climate is: ',
      &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
      &      LCLIM(1:lnblnk(LCLIM)),
-     &      ' and uses hour centred solar data.'
+     &      ' with hour centred solar data.'
         else
-          WRITE(outs248,'(5A)')'The climate used is: ',
+          WRITE(outs248,'(5A)')'The climate is: ',
      &      CLMLOC(1:lnblnk(CLMLOC)),' and is held in: ',
      &      LCLIM(1:lnblnk(LCLIM)),
-     &      ' and uses half hour centred solar data.'
+     &      ' with half hour centred solar data.'
         endif
         call edisp248(itu,outs248,80)
 
@@ -1122,24 +1145,29 @@ C Check if embedded within configuration file.
             call edisp248(itu,ipvsynop,80)
           elseif(contextinfo.eq.2)then
 
-C Rescan the climatelist file to get seasons. If this was successful
-C then include a description of the IPV. Otherwise warn user about
+C If there is no local season definition, rescan the climatelist
+C file to get seasons. If this was successful then include
+C a description of the IPV. Otherwise warn user about
 C the climate file and attempt to print out IPV contents.
-            INQUIRE (FILE=cdblfil,EXIST=XST)
-            if(XST)then
-              IUF=IFIL+2
-              call scancdblist(IUF,LCLIM,ok,iercl)
-              if(iercl.eq.0)then
-                call listipvdat(itu,'a',ier)
-              else
-                call edisp(itu,
-     &            'The climatelist was incomplete or missing so the')
-                call edisp(itu,'IPV details might be incorrect.')
-                if(ieripv.eq.0)then
+            if(ihaveseason.ge.1)then
+              call listipvdat(itu,'a',ier)
+            else
+              INQUIRE (FILE=cdblfil,EXIST=XST)
+              if(XST)then
+                IUF=IFIL+2
+                call scancdblist(IUF,LCLIM,ok,iercl)
+                if(iercl.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else
                   call edisp(itu,
+     &            'The climatelist was incomplete or missing so the')
+                  call edisp(itu,'IPV details might be incorrect.')
+                  if(ieripv.eq.0)then
+                    call listipvdat(itu,'a',ier)
+                  else
+                    call edisp(itu,
      &              'The IPV description was incomplete or missing.')
+                  endif
                 endif
               endif
             endif
@@ -1170,7 +1198,7 @@ C If temporal data associated with the model report it.
             call edisp(itu,' Temporal entities currently used...')
             call edisp(itu,'  ________________________________')
             call edisp(itu,'  |temporal    |generic |associated')
-            call edisp(iuout,
+            call edisp(itu,
      &           '  |entity name |type    |with   zone &     surface ')
             do 28, l=1,ITEMSTD
               WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
@@ -1239,9 +1267,9 @@ C List control data.
           call edisp248(itu,znctldoc,80)
           if(controlinfo.eq.2)then
             do 244 ii=1,NCF
-              call LSTCNTL(itu,0,ii,IER)
+              call LSTCNTL(itu,0,ii)
  244        continue
-            call LSTCNTL(itu,0,0,IER)
+            call LSTCNTL(itu,0,0)
           endif
         endif
         if(NCL.gt.0)then
@@ -1252,7 +1280,7 @@ C List control data.
           call edisp248(itu,plctldoc,80)
           if(controlinfo.eq.2)then
             do 245 ii=1,NCL
-              call LSTCNTL(itu,1,ii,IER)
+              call LSTCNTL(itu,1,ii)
  245        continue
           endif
         endif
@@ -1264,7 +1292,7 @@ C List control data.
           call edisp248(itu,flctldoc,80)
           if(controlinfo.eq.2)then
             do 246 ii=1,NCC
-              call LSTCNTL(itu,2,ii,IER)
+              call LSTCNTL(itu,2,ii)
  246        continue
           endif
         endif
@@ -1276,7 +1304,7 @@ C List control data.
           call edisp248(itu,glctldoc,80)
           if(controlinfo.eq.2)then
             do 147 ii=1,NGF
-              call LSTCNTL(itu,3,ii,IER)
+              call LSTCNTL(itu,3,ii)
  147        continue
           endif
         endif
@@ -1344,7 +1372,7 @@ C Jump if no zones.
           LTMP=LGEOM(IVALS(IZ))
           call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
+            call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
           else
             call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
           endif
@@ -1427,7 +1455,7 @@ C Jump if no zones or no zone info requested.
         LTMP=LGEOM(IZZ)
         call eclose(gversion(izz),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUF,LTMP,IZZ,1,0,itu,IER)
+          call georead(IUF,LTMP,IZZ,1,itu,IER)
         else
           call egomin(IUF,LTMP,IZZ,1,0,itu,IER)
         endif
@@ -1491,6 +1519,7 @@ C the U and UA reporting below.
 C Debug.
 C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI',
 C     &            ii,UVH,UVU,UVD,UVI
+
               else
                 continue
               endif
@@ -1678,6 +1707,71 @@ C Note: surinfo not dependant on recent geometry scan.
         if(geominfo.eq.2)then
           context=.true.
           CALL SURINFO(IVALS(IZ),itu,context)
+          call eclose(gversion(IZZ),1.1,0.01,newgeo)
+          if(newgeo)then
+            if(losspercent(izz).gt.0.0)then
+              havebrdge=.true.
+            else
+              havebrdge=.false.
+            endif
+            if(nbrdg(izz).gt.0.or.havebrdge)then
+
+C Setup phrases for the menu and for editing length and psi values.
+              phrasemenu(1) ='a roof-wall                    :'
+              phrasemenu(2) ='b wall-ground floor            :'
+              phrasemenu(3) ='c wall-wall (convex corner)    :'
+              phrasemenu(4) ='d wall-wall (concave corner)   :'
+              phrasemenu(5) ='e wall-floor (not ground floor):'
+              phrasemenu(6) ='f lintel above window or door  :'
+              phrasemenu(7) ='g Sill below window            :'
+              phrasemenu(8) ='h jamb at window or door       :'
+              phrasemenu(9) ='i roof-wall                    :'
+              phrasemenu(10)='j wall-ground floor            :'
+              phrasemenu(11)='k wall-wall (corner)-          :'
+              phrasemenu(12)='l wall-floor (not ground floor):'
+              phrasemenu(13)='m lintel above window or door  :'
+              phrasemenu(14)='n Sill below window            :'
+              phrasemenu(15)='o jamb at window or door       :'
+              phrasemenu(16)='p user-defined                 :'
+              call edisp(itu,'Thermal bridges have been defined.')
+              if(nbrdg(izz).gt.0)then   
+                call edisp(itu,
+     &      'Junctions without metal cladding   psi (W/mK) length (m)')
+              endif
+              do 89 itbmenu=1,8
+                if(nbrdg(izz).gt.0)then
+                  do 90 itb=1,nbrdg(izz)
+                    if(itbmenu.eq.ibrdg(izz,itb))then
+                      WRITE(TBRIDGE,'(a,2F10.4)') 
+     &                  phrasemenu(itbmenu),
+     &                  psi(izz,itb),lngth(izz,itb)
+                      call edisp(itu,TBRIDGE)
+                    endif
+  90              continue
+                endif
+  89          continue
+              if(nbrdg(izz).gt.0)then   
+                call edisp(itu,
+     &      'Junctions with metal cladding      psi (W/mK) length (m)')
+              endif
+              do 189 itbmenu=9,16
+                if(nbrdg(izz).gt.0)then   
+                  do 190 itb=1,nbrdg(izz)
+                    if(itbmenu.eq.ibrdg(izz,itb))then
+                      WRITE(TBRIDGE,'(a,2F10.4)') 
+     &                  phrasemenu(itbmenu),
+     &                  psi(izz,itb),lngth(izz,itb)
+                      call edisp(itu,TBRIDGE)
+                    endif
+ 190              continue
+                endif
+ 189          continue
+              if(losspercent(izz).gt.0.0) then
+                WRITE(TBRIDGE,'(a,F7.4)') 'Themal bridge %',thbrpercent
+                call edisp(itu,TBRIDGE)
+              endif
+            endif
+          endif
         endif
 
 C Check if the edges are proprly bounded. Uses G1 common.
@@ -1759,12 +1853,36 @@ C Remind user of standard optics as well as the alternatives.
 
 C Note optional zone extensions.
         if(zoneextrainfo.ge.1)then
-          if(IVF(IVALS(IZ)).EQ.1)call edisp(itu,
+          ivz=IVALS(IZ)   ! remember the selected zone
+          if(IVF(ivz).EQ.1)call edisp(itu,
      &      ' Explicit viewfactors have been derived for this zone.')
-          if(ICGC(IVALS(IZ)).EQ.1)call edisp(itu,
+          if(ICGC(ivz).EQ.1)call edisp(itu,
      &      ' Casual gains are controlled in this zone.')
-          if(ISI(IVALS(IZ)).EQ.1)then
-            call FINDFIL(LSHAD(IVALS(IZ)),XST)
+
+          if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
+            call edisp(itu,
+     &   'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
+            DO 9995 I=1,nbobs(ivz)
+              llbm=LNBLOCKMAT(ivz,I)
+              llbn=LNBLOCKNAME(ivz,I)
+              if(BLOCKTYP(ivz,I)(1:4).eq.'obs '.or.
+     &           BLOCKTYP(ivz,I)(1:4).eq.'obs3')then
+                WRITE(OUTS,9994)I,XOB(ivz,I),YOB(ivz,I),ZOB(ivz,I),
+     &            DXOB(ivz,I),DYOB(ivz,I),DZOB(ivz,I),
+     &            BANGOB(ivz,I,1),BANGOB(ivz,I,2),
+     &            BLOCKNAME(ivz,I)(1:llbn),BLOCKMAT(ivz,I)(1:llbm)
+ 9994           FORMAT(I3,8F8.1,' ',a,' ',a)
+                call edisp(itu,OUTS)
+              else
+                WRITE(OUTS,'(i3,a,44x,3a)')I,' user defined coords ',
+     &            BLOCKNAME(ivz,I)(1:llbn),' ',BLOCKMAT(ivz,I)(1:llbm)
+                call edisp(itu,OUTS)
+              endif
+ 9995       CONTINUE
+            CALL EDISP(itu,' ')
+          endif
+          if(ISI(ivz).EQ.1)then
+            call FINDFIL(LSHAD(ivz),XST)
             if(XST)then
               call edisp(itu,
      &          ' Shading patterns have been calculated for this zone.')
@@ -1773,15 +1891,15 @@ C Note optional zone extensions.
      &          ' Shading patterns have not yet been calculated.')
             endif
           endif
-          if(IHC(IVALS(IZ)).EQ.1)then
+          if(IHC(ivz).EQ.1)then
             if(zoneextrainfo.eq.1)then
               call edisp(itu,
      &         ' Non-default convection regimes are used in this zone.')
             elseif(zoneextrainfo.eq.2)then
-              call FINDFIL(LHCCO(IVALS(IZ)),XST)
+              call FINDFIL(LHCCO(ivz),XST)
               IF(XST)THEN
-                call ehtcff(LHCCO(IVALS(IZ)),IUF,itrc,IER)
-                call listhtc(itu,IVALS(IZ),IER)
+                call ehtcff(LHCCO(ivz),IUF,itu,IER)
+                call listhtc(itu,ivz,IER)
               endif
             endif
           endif
@@ -2035,7 +2153,7 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
       goto 3
 
 C Error trap.
- 1000 call usrmsg('Problem scanning climate file',lclim,'W')
+ 1000 call lusrmsg('Problem scanning climate file',lclim,'W')
       goto 1001
 
       end
@@ -2047,8 +2165,11 @@ C not browsing.
 
       subroutine mupdate(ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "espriou.h"
+#include "seasons.h"
       
       integer lnblnk  ! function definition
 
@@ -2061,18 +2182,10 @@ C not browsing.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/CFGV/icfgv
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
       common/p3ver/ip3ver(MCOM)
@@ -2093,13 +2206,12 @@ C Images.
       common/imagfi/noimg,iton
 
       character cfgroot*24,LCFGF*72,h*72,outs*124
-      character LVIEW*72,LHCCO*72,LTWIN*72,LCGCIN*72,ZOBS*72
       CHARACTER CTLDOC*248,LCTLF*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character ZN*12
       character ipvaction*3  ! to instruct it to read from external IPV file
-      logical ok,dok,ddok,found,XST,anyish,unixok
+      logical ok,dok,XST,anyish,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical allnew  ! if true then all zones are v1.1 or newer.
       logical forceupgrade  ! if any other zone is version 1.1
@@ -2134,6 +2246,24 @@ C is still a need for upgrading.
           endif
         endif
   775 continue
+
+C Check whether the climate file is associated with seasons defined
+C in the climatelist file and if none written to the model set flag
+C for this to happen.
+      if(ihaveseason.gt.0)then
+        continue
+      else
+        INQUIRE (FILE=cdblfil,EXIST=XST)
+        if(XST)then
+          IUF=IFIL+2
+          call scancdblist(IUF,LCLIM,ok,iercl)
+          if(iercl.eq.0)then
+            ihaveseason=1
+            allnew=.false.
+          endif
+        endif
+      endif
+
       if(allnew)then
         igupgrade=2
         forceupgrade=.false.
@@ -2168,7 +2298,7 @@ C igupgrade was set to 2 in preferences also force an upgrade.
 
 C If all of the shading directives are zero then double check to
 C see if there are shading and obstruction files.
-              call georead(IFIL+2,LGEOM(iz),iz,0,0,iuout,IER)
+              call georead(IFIL+2,LGEOM(iz),iz,0,iuout,IER)
               if(nsurfcalc(iz).eq.0.and.nsurfinso(iz).eq.0)then
                 if(ISI(iz).eq.0.and.IOBS(iz).eq.0)then
                   continue
@@ -2212,11 +2342,10 @@ C see if there are shading and obstruction files.
 
 C If there is a v1.1 geometry file and iobs() is 1 then the
 C obstructions need to be moved into the geometry file and
-C zobs() cleared for this zone..
+C zobs() cleared for this zone and iobs set.
               if(iobs(iz).eq.0)then
                 continue
               elseif(iobs(iz).eq.1)then
-                CALL EGOMST(IFIL+2,ZOBS(iz),0,ITRC,ITRU,IER)
                 iobs(iz)=2
                 zobs(iz)=' '
                 call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
@@ -2275,11 +2404,10 @@ C Otherwise assume all applicable for shading and insolation.
               call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
 
 C If iobs() is 1 then the obstructions need to be moved into the
-C geometry file and zobs() cleared for this zone..
+C geometry file and zobs() cleared for this zone and iobs set.
               if(iobs(iz).eq.0)then
                 continue
               elseif(iobs(iz).eq.1)then
-                CALL EGOMST(IFIL+2,ZOBS(iz),0,ITRC,ITRU,IER)
                 iobs(iz)=2
                 zobs(iz)=' '
                 call geowrite(IFIL+2,LGEOM(iz),iz,iuout,3,IER)
@@ -2337,11 +2465,11 @@ C current format.
 C Save the file, sorting the periods if necessary.
               if(MODOPR)then
                 if(sorted)then
-                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,ITRU,IER)
+                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)
                 else
                   call PROCESSOLDCAS(iz,0,iuout,IER)
                   MODOPR=.true.
-                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,ITRU,IER)
+                  CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)
                 endif
               endif
             endif
@@ -2349,6 +2477,23 @@ C Save the file, sorting the periods if necessary.
 
 C Save the model configuration file before continuing.
           CALL EMKCFG('-',IER)
+
+C Check if climate file season data is available via the climatelist
+C file and then include seasonal tokens in the model.
+          if(ihaveseason.gt.0)then
+            continue
+          else
+            INQUIRE (FILE=cdblfil,EXIST=XST)
+            if(XST)then
+              IUF=IFIL+2
+              call scancdblist(IUF,LCLIM,ok,iercl)
+              if(iercl.eq.0)then
+                ihaveseason=1
+                CALL EMKCFG('-',IER)
+              endif
+            endif
+          endif
+
 
 C While we are at it, control files often include out of date descriptions
 C and if there is a control file scan it and write it back out again.
@@ -2409,46 +2554,6 @@ C string for the image documentation.
 C Update the model configuration file.
           CALL EMKCFG('-',IER)
 
-C Check if there were zone utility files and if so check and see if
-C they can be deleted.
-          found=.false.
-          if(ncomp.gt.0)then
-            do 2 iz=1,ncomp
-              if(INDUTL(iz).eq.1)then
-                XST=.false.
-                call FINDFIL(LUTIL(iz),XST)
-                if(XST)found=.true.
-              endif
-  2         continue
-            if(found)then
-              dok=.true.
-              h(1)='This must be an ancient ESP-r model. It has some'
-              h(2)='data held in an obsolete file and you should'
-              h(3)='allow this to be put in the current format.'
-              call askok('Remove legacy zone utility files?',' ',
-     &          ddok,dok,3)
-              do 4 iz=1,ncomp
-                if(INDUTL(iz).eq.1)then
-                  XST=.false.
-                  call FINDFIL(LUTIL(iz),XST)
-                  if(XST)then
-                    if(ddok)then 
-                      INDUTL(iz)=0
-                      call usrmsg('Removing file: ',LUTIL(iz),'-')
-                      CALL ERPFREE(IUF,ISTAT)
-                      CALL EFOPSEQ(IUF,LUTIL(iz),1,IER)
-                      CALL EFDELET(IUF,ISTAT)
-                    else
-                      INDUTL(iz)=0
-                      call usrmsg('Dereferencing file: ',LUTIL(iz),'-')
-                    endif
-                  endif
-                  CALL EMKCFG('-',IER)
-                  call usrmsg(' ',' ','-')
-                endif
-  4           continue
-            endif
-          endif
         else
           return
         endif
@@ -2544,36 +2649,10 @@ C << some variables are off - further debugging required.
       subroutine ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
       
       dimension thick(8),rho(8),Cp(8),cond(8)
       CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
@@ -2581,8 +2660,18 @@ C Arrays of material properties.
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)
 
+C Establish if material data arrays have been filled. If not return.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so admit-',
+     &    'tance of construction attributes cannot be calculated.','W')
+        return
+      endif
+
 C Pick up general description of the composite.
-      ier=0
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
       
 C ESP-r defines layers from outside to inside. The code in
@@ -2590,12 +2679,18 @@ C subroutine admit works from inside to outside.
 C Debug layer info.
 C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
       layer=LAYERS(IFOC)+1
-      call eclose(matver,1.1,0.01,closemat)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
       do 5 IL=1,LAYERS(IFOC)
-        if(closemat)then
-          legmat=IPR(IFOC,IL)   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
+        matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+        if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+          if(matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+            E=0.99; A=0.99; DRV=1.0
+            TITL='GAPS'; NAM='AIR'
+          else
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)
             DBSHT=matdbsht(matarrayindex)
@@ -2605,9 +2700,6 @@ C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
             write(TITL,'(a)') 'placeholder'
             write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
-        else
-          CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
-     &      DBSHT,E,A,DRV,TITL,NAM)
         endif
         layer=layer-1
         thick(layer)=DTHK(IFOC,IL)

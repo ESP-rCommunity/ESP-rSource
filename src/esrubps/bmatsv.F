@@ -32,6 +32,7 @@ C Include files req'd for deleting temporary files after the simulation is compl
 C HOT3000: Fuel cell.
 #include "SOFC.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "plant.h"
@@ -46,6 +47,7 @@ C HOT3000: Fuel cell.
 #include "bc_data.h"
 #include "lookup_data.h"
 #include "control.h"
+#include "roam.h"
 
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
@@ -61,10 +63,6 @@ C CWEC Degree Day and ground temperature parameters
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/c6/indcfg
 
       COMMON/PREC7/ITCNST
@@ -243,6 +241,8 @@ C    BLIND,FIXED  BLIND,MOVE (??explicit blinds)
 C    otherwise  -,- )
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      COMMON/TRANSO/LTROR,PAZIO(MCOM,MS)
 
 C SHOCC: iblnd - SHOCC blinds corresponding to ESP-r TMCs:
 C   0, no; else, a f77 index [1,~] to access SHOCC zone blind data structure
@@ -1139,6 +1139,10 @@ C Update ground reflectivity depending on the model used (constant
 C reflectivity; simple model; or advanced model)
             CALL MZGREF
 
+C Execute complex fenestration control to determine state of shading
+C layers for the current time step.
+            call CFC_control()
+      
 C Consider each zone in turn.
             do 40 l=1,ncomp
               icomp=l
@@ -1186,8 +1190,7 @@ C                 endif
                   igu=ifil+1
                   call eclose(gversion(icomp),1.1,0.01,newgeo)
                   if(newgeo)then
-                    call georead(igu,LGEOM(icomp),icomp,1,itrc,iuout,
-     &                IER)
+                    call georead(igu,LGEOM(icomp),icomp,1,iuout,IER)
                   else
                     call egomin(igu,LGEOM(icomp),icomp,1,itrc,iuout,
      &                IER)
@@ -1209,6 +1212,34 @@ C Remember the rotation.
                   zrotp(icomp)=OBROT
                 endif
               endif
+
+C If roaming is activated then rotate the zone if applicable. Rotation
+C using roaming is considered to be better than using temporal
+C definition because only azimuth angles for surfaces will change and
+C file read/write and various calls to subroutines will not be performed
+C as is the case with tdf (above)
+              IF(IROAM.EQ.1)THEN
+                HOUR=BTIMEF
+                S_TIME=REAL(IDYP)+HOUR/24.0        ! Calculate simulation time
+                DO 130 IPDR=1,NPDR
+
+C Calculate roaming day of year
+                  IRoamD=LDYS(IPDR)
+                  IRoamM=LMTS(IPDR)
+                  CALL EDAY(IRoamD,IRoamM,IYDNRoam)
+                  RTIME=REAL(IYDNRoam)+XLHRS(IPDR)/24.0 ! Calculate roaming time 
+                  IF(S_TIME.LT.RTIME)THEN ! Roaming not started yet
+                    CONTINUE
+                  ELSEIF(S_TIME.GE.RTIME)THEN 
+                    DO 131 ISurf=1,MS
+                      PAZI(ICOMP,ISurf)=PAZIO(ICOMP,ISurf)+LORNT(IPDR)
+                      IF(PAZI(ICOMP,ISurf).GT.360.)
+     &                PAZI(ICOMP,ISurf)=PAZI(ICOMP,ISurf)-360.
+                      LTROR=LORNT(IPDR)
+ 131                CONTINUE
+                  ENDIF
+ 130            CONTINUE
+              ENDIF
 
 C For 1D zone model.
               IF(INDX3.EQ.1)THEN
@@ -1316,7 +1347,7 @@ C For 3D zone model, close the associated files.
               ENDIF
 
 C CFC output
-!             call CFCoutput(icomp)
+C             call CFCoutput(icomp)
 
    40       continue
 
@@ -1614,21 +1645,45 @@ C report was issued more than 5 seconds ago.
         call getsecs(ictime)
         istamp=0
 
-        if(simcom.gt.0.95.and.inhsi.lt.6) then
+        if(simcom.gt.0.95.and.inhsi.lt.12) then
           inhsi=inhsi+1
           iperc=95
           istamp=1
-        else if(simcom.gt.0.75.and.inhsi.lt.5) then
+        else if(simcom.gt.0.90.and.inhsi.lt.11) then
           inhsi=inhsi+1
-          iperc=75
+          iperc=90
           istamp=1
-        else if(simcom.gt.0.50.and.inhsi.lt.4) then
+        else if(simcom.gt.0.80.and.inhsi.lt.10) then
+          inhsi=inhsi+1
+          iperc=80
+          istamp=1
+        else if(simcom.gt.0.70.and.inhsi.lt.9) then
+          inhsi=inhsi+1
+          iperc=70
+          istamp=1
+        else if(simcom.gt.0.60.and.inhsi.lt.8) then
+          inhsi=inhsi+1
+          iperc=60
+          istamp=1
+        else if(simcom.gt.0.50.and.inhsi.lt.7) then
           inhsi=inhsi+1
           iperc=50
           istamp=1
-        else if(simcom.gt.0.25.and.inhsi.lt.3) then
+        else if(simcom.gt.0.40.and.inhsi.lt.6) then
           inhsi=inhsi+1
-          iperc=25
+          iperc=40
+          istamp=1
+        else if(simcom.gt.0.30.and.inhsi.lt.5) then
+          inhsi=inhsi+1
+          iperc=30
+          istamp=1
+        else if(simcom.gt.0.20.and.inhsi.lt.4) then
+          inhsi=inhsi+1
+          iperc=20
+          istamp=1
+        else if(simcom.gt.0.10.and.inhsi.lt.3) then
+          inhsi=inhsi+1
+          iperc=10
           istamp=1
         else if(simcom.gt.0.05.and.inhsi.lt.2) then
           inhsi=inhsi+1

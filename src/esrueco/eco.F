@@ -48,6 +48,7 @@ C LAPRES,IAPRES (for window pressure database)
 C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C default file names for databases
+#include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
       
@@ -91,12 +92,6 @@ C Zone information
       COMMON/Displ/SelSurf(MCON)
 
 C Composites information
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
@@ -149,35 +144,14 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
 
-      LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
+      LOGICAL OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,SelSurf
       LOGICAL MODIFY,MODLEN,MODBND,XST,chdb,BCFOK,unixok
 
-      DIMENSION ITEM(19) 
-      DIMENSION ICLN(30)
+      DIMENSION ITEM(18) 
 
       REAL HeightCo,WidthCo, Perimeter, Area
       CHARACTER BCFName*72,DBCFNam*72,System*72,BCFVer*5
@@ -186,7 +160,7 @@ C Arrays of material properties.
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER path*72,upath*72,L144*144
-      CHARACTER NAM*72,TITL*72
+      CHARACTER NAM*72
 C      CHARACTER tab*1
       character fs*1, TxtReport*24,dstmp*24
       CHARACTER TxtZone*31,TxtCompo*22,TxtMat*22, TxtLCA*28
@@ -287,7 +261,6 @@ C Set defaults.
 
 C Name and category of the selected primitive
       Nam='  '
-      Titl='  '
       LCFGF='UNKNOWN'
 
 C Assume no focous zone.
@@ -422,7 +395,7 @@ C properties, display it and then present the main menu.
       if(XST)then
         call fdroot(LCMDFL,path,LCFGF)
         call usrmsg('Scanning supplied problem...',' ','-')
-        MODE='NONE'
+        MODE='ALL '
         call ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
         if(IER.eq.0)then
           NZONES=NCOMP
@@ -553,10 +526,9 @@ C Display menu
       write(ITEM(14),'(A,A)')  '* Calculation ',TxtLCA(1:18)
       ITEM(15) =               '  ------------------------------- '
       ITEM(16) =               'X Export results to file '
-      ITEM(17)=                'C Clear textual feedback          '
-      ITEM(18)=                '? Help                            '
-      ITEM(19)=                '- exit eco                        '
-      NITEMS = 19
+      ITEM(17)=                '? Help                            '
+      ITEM(18)=                '- exit eco                        '
+      NITEMS = 18
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
       call askabout('eco ',1)
@@ -569,6 +541,7 @@ c End program.
         call usrmsg(' Closing Eco desktop...',' ','P')
         CALL EPAGEND
         STOP
+
       elseif(INO.EQ.10)THEN
 
 C Define the reporting level
@@ -577,10 +550,12 @@ C Define the reporting level
         else
           IRep = 1 
         endif
+
       elseif(INO.EQ.NITEMS-1)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display
         call askabout('eco ',0)
+
       elseif(INO.EQ.12)THEN
 
 C Define Units
@@ -618,14 +593,10 @@ C Define Units
           GOTO 10
         ENDIF
 
-C Clear textual feed back
-      elseif(INO.EQ.NITEMS-2)THEN
-        call edisp(itu,outs)
-        call edisp(itu,'*************************** ')
+      elseif(INO.EQ.16)THEN
 
 C Export results to file
 C First open the file, then write in and finally close the file
-      elseif(INO.EQ.16)THEN
         H(1)='Export current result in an ASCII file according '
         H(2)='to the format in the textual feedback. '
         itu = ixunit
@@ -643,12 +614,11 @@ C First open the file, then write in and finally close the file
         endif
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T',' text',IER)        
 C        CALL ERPFREE(itu,ISTAT)
-      goto 10
+        goto 10
 
-
+      elseif(INO.EQ.9)THEN
 
 C Reporting level
-      elseif(INO.EQ.9)THEN
         itrc=itrc+1
 
         if (IcalType.eq.1) then
@@ -669,6 +639,7 @@ C MLC analysis
           if(itrc.ge.4)then
             itrc=1
           endif
+
 C MLC analysis
           if (itrc.eq.1) then
             TxtReport =             'Composite'
@@ -678,6 +649,7 @@ C            itrc=2
             itrc=3
           endif
         elseif(IcalType.eq.3)then
+
 C Material analysis
           if(itrc.eq.3)then
             itrc=1
@@ -691,8 +663,9 @@ C Material analysis
 
         goto 10
 
-C Incllude break and loss in results
       elseif(INO .EQ. 11)THEN
+
+C Include break and loss in results
         ILoss = ILoss+1
         if(ILoss .eq. 2)then
           ILoss = 0
@@ -733,6 +706,7 @@ C name with the full path.
         IF(L144.EQ.' ')GOTO 289
         LCMDFL=L144
         goto 42
+
       elseif (INO.eq.3) then 
 
 C Select/change BCF file.
@@ -760,7 +734,7 @@ C Attempt to read in the BCF file.
         INQUIRE (FILE=BCFName,EXIST=XST)
         if(XST)then
           BCFOK=.TRUE.
-          write(outs,'(a,a,a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
+          write(outs,'(3a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
      &      '...'
           call usrmsg(outs,' ','-')
           CALL SCNBCF(IBCF,BCFName,IER)
@@ -770,7 +744,7 @@ C Attempt to read in the BCF file.
             BCFNAME='UNKNOWN'
             GOTO 10
           ELSE
-            write(outs,'(a,a,a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
+            write(outs,'(3a)') 'Loading ',BCFName(1:lnblnk(BCFName)),
      &        '...done.'
             call usrmsg(outs,' ','P')
           ENDIF
@@ -780,7 +754,8 @@ C Attempt to read in the BCF file.
         ENDIF
         GOTO 10
 
-      elseif (INO.eq.5) then 
+      elseif (INO.eq.5) then
+
         H(1)='Assessing the environmental impacts.'
         H(2)='----------------------------------- '
         H(3)='The ECO module provides a facility for an environmental'
@@ -790,7 +765,7 @@ C Attempt to read in the BCF file.
         H(7)='To proced with an EIA, first use one of the following '
         H(8)='approach : '
         H(9)=' '
-       H(10)='1) Approach >> project based : In this case, the AIE will'
+        H(10)='1) Approach >> project based: In this case, the AIE will'
         H(11)='   be related to a project, which has to be loaded using'
         H(12)='   the [a Problem] item. Then select the desired zone(s)'
         H(13)='   and surface(s) by clicking item [d Zone] in the menu.'
@@ -822,8 +797,8 @@ C << update zoneslist to also ask for surfaces >>
             CALL USRMSG(' No zone has been selected.',' ','-')
             GOTO 10
           ELSE
+
 C Selection of the surfaces to include
-C           if (Ncomp.EQ.NZG) then
 C All the zones in the project have been selected
              h(1)='If you want to select manually the surfaces to '
              h(2)='include in the calculation, select Yes.'
@@ -841,16 +816,10 @@ C All the zones in the project have been selected
                   CALL ZoneDisp(NZNOG(ixd),1)
   40           continue
              ENDIF
-C           else
-C             do 43 ixd=1,NZG
-C                CALL ZoneDisp(NZNOG(ixd),1)
-C  43         continue
-C            endif
           ENDIF
 
 C update menu text
-          TxtZone = 'UNKNOWN' 
-          ISel = 0    
+          TxtZone = 'UNKNOWN'   
           if (nzg .EQ. 1) then
             write(TxtZone,'(a)') zname(nznog(1))(1:12)
             if (NbSurSel(nznog(1)) .EQ. 1) then
@@ -879,6 +848,7 @@ C update menu text
         GOTO 10
  
       ELSEIF (Ino.eq.6.and.IcalType.eq.2)then
+
         NZG = 0
 C Display the composites list.
         CALL CompoList
@@ -888,7 +858,7 @@ C Display the composites list.
         ELSEIF (NComPik .EQ. MMLC) THEN
           CALL USRMSG(' All composite have been selected.',' ','-')        
           TxtCompo=' All'
-         GOTO 10
+          GOTO 10
         ELSE
           TxtCompo= DESC(LstComp(1))(1:12)
           TxtMat= 'All'
@@ -915,6 +885,7 @@ C update menu text
         IF (NComPik.GT.1)  WRITE(TxtLCA,'(a)')' of selected composites'
         IF (NComPik.EQ.MMLC)  WRITE(TxtLCA,'(a)')' of all composites'
         GOTO 10
+
       ELSEIF (Ino.eq.6.and.IcalType.eq.3)then 
 
 C Display Material list and allow selection of materials.
@@ -922,119 +893,57 @@ C Display Material list and allow selection of materials.
         H(1)='See menu level help.'
         IF (.NOT.BCFOK) THEN
           call usrmsg('No BCF file loaded',
-     &                      'Select a BCF file first','W')
+     &                'Select a BCF file first','W')
           goto 10
         ENDIF
-        IF (.NOT.MATDBOK) THEN
-
-C Open Materials database and allow user to select material.
-          IER=0
-          CALL ERPFREE(IFMAT,ISTAT)
-          
-C If materials database not opened, do it now.
-          IER=0
-          CALL EFOPRAN(IFMAT,LFMAT,40,1,IER)
-          IF(ier.ne.0)THEN
-            write(outs,'(3a)') ' No materials database ',
-     &        LFMAT(1:lnblnk(LFMAT)),' found.'
-            call edisp(iuout,outs)
-            MATDBOK=.FALSE.
-          else
-
-C Also check to see if the file has correct info. 
-            IREC=601
-            READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
-     &        (ICLN(I),I=1,30)
-            if(NCLASS.LE.0)then
-              goto 1000   ! no classifications so try alternatives
-            else
-              MATDBOK=.TRUE.
-              matver = 0.0
-              goto 139  !  a binary file found so carry on.
-            endif
- 1000       CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-            call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
-            if(ier.eq.-2)then
-              ier=0
-              call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
-              if(ier.ne.0)then
-                call usrmsg('No readable materials database was',
-     &                      'found or file was corrupt','W')
-                MATDBOK=.FALSE.
-                goto 10
-              else
-                call eclose(matver,1.1,0.001,closemat)
-                if(closemat)then
-                  call edisp(iuout,' Filled material data arrays...')
-                  MATDBOK=.TRUE.
-                else
-                  call usrmsg(
-     &              'No readable material database was found. ',
-     &              'check other warnings for advise.','W')
-                  MATDBOK=.FALSE.
-                  goto 10
-                endif
-              endif
-            elseif(ier.eq.0)then
-              call eclose(matver,1.1,0.001,closemat)
-              if(closemat)then
-                call edisp(iuout,' Filled material data arrays...')
-                MATDBOK=.TRUE.
-              endif
-            endif
-          endif
 
 C Find version of materials database.
- 139      call eclose(matver,1.1,0.01,closemat)
-
-          dok=.true.
-          h(1)='If you happen to know the material db index you '
-          h(2)='can say no. Otherwise, say yes and then browse '
-          h(3)='the database for the relevant entry. '
-          CALL ASKOK(' To supply the material db reference',
-     &               ' do you want to browse through the db?',OK,dok,3)
-          IF(OK)then
-
-C If material database not opened, do it now.
-            iwhich=0
-            CALL ELISTCMOD(iwhich,chdb,'-',IER)
-            if(iwhich.eq.0)then
-              H(1)='If air is correct then accept, otherwise'
-              H(2)='reselect from the list or abort the task.'
-              CALL EASKABC('Your selection is `0` i.e. air. Options:',
-     &          ' ','accept','reselect material','cancel',iwair,2)
-              if(iwair.eq.2)then
-                CALL ELISTCMOD(iwhich,chdb,'-',IER)
-              elseif(iwair.eq.3)then
-               GOTO 10
-              endif
-            ENDIF
-          ELSE
-            H(1)='Each item in the materials db has a'
-            H(2)='reference number. '
-            H(3)='Air is reference 0.'
-            CALL EASKI(IWHICH,' ',' Primitive db reference no: ',
-     &        0,'F',600,'F',0,'primitive reference',IER,3)
-          ENDIF
+ 139    call eclose(matver,1.1,0.01,closemat1)
+        call eclose(matver,1.2,0.01,closemat2)
+        if(closemat1.or.closemat2)then
+          continue
+        else
+          call usrmsg(
+     &      'No materials data available. Re-load the model config-',
+     &      'uration file or check model in the project manager.','W')
+          goto 10
         endif
 
-        if(closemat)then
-          legmat=IWHICH   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
+C Select from the available materials.
+        iwhich=0
+        CALL ELISTCMOD(iwhich,chdb,'-',IER)
+        if(iwhich.eq.0)then
+          H(1)='If air is correct then accept, otherwise'
+          H(2)='reselect from the list or abort the task.'
+          CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &      ' ','accept','reselect material','cancel',iwair,2)
+          if(iwair.eq.2)then
+            CALL ELISTCMOD(iwhich,chdb,'-',IER)
+          elseif(iwair.eq.3)then
+            GOTO 10
+          endif
+        endif
+
+        legmat=IWHICH   ! which legacy index
+        if(legmat.gt.0)then
+          matarrayindex=mathash(legmat)  ! find matching array index
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+          if(matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+            E=0.99; A=0.99; DRV=1.0
+            NAM='AIR'
+          else
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)
             DBSHT=matdbsht(matarrayindex)
             E=matdbine(matarrayindex)
             A=matdbina(matarrayindex)
             DRV=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
             write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
-        else
-          CALL ERPCDB(IFMAT,IWHICH,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
-     &      DRV,TITL,NAM)
         endif
+
         call edisp(iuout,' ')
         write(outs,'(a,a)')'Selected category: ',
      &                      MatCat(IMatDbID(IWHICH))
@@ -1116,9 +1025,9 @@ C LCA calculation.
             CALL LCADet(itrc,iuout)
           endif
         ELSE
-          call edisp(iuout,' Not available. Select :')
+          call edisp(iuout,' Not available. Select:')
           write(outs,'(a,a)')' one or many zone(s) and/or ',
-     &    ' one or many composite(s) and/or one or many material(s).'
+     &      'one or many composite(s) and/or one or many material(s).'
           call edisp(iuout,outs)
           GOTO 10
         ENDIF
@@ -1136,6 +1045,13 @@ C Dummy routine (needed for call back from c).
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
      
+      return
+      end
+
+C Dummy subroutine needed to compile (called from library code).
+      SUBROUTINE PLELEV(direc)
+      CHARACTER direc*1
+
       return
       end
 

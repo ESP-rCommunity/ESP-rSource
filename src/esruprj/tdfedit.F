@@ -49,6 +49,13 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
 
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      character cfgroot*24,LCFGF*72
+      common/C21/IFCFG,cfgroot,LCFGF
+
 C Common blocks unique to TDF:
 C Related to TDF ITEMS db.
 C ITDFLG is zero if no file, one if older version, two if pre-2005
@@ -186,7 +193,8 @@ C If tdf file has been specified then load it.
         IER=0
         call supplyandcheck(LTDFA,'T',ier)
         if(ier.ne.0)then
-          write(6,*) 'non-zero error after call to supplyandcheck'
+          write(outs,*) 'non-zero error after call to supplyandcheck'
+          call edisp(iuout,outs)
         endif
       else
 
@@ -455,16 +463,15 @@ C File not found so offer option to create a minimal file.
             call isunix(unixok)
             if(unixok)then
               fs = char(47)
-              call esppid(ipid)
-              LTMPFL=' '
-              write(LTMPFL,'(2a,i7,a)') '/tmp',fs,ipid,
-     &          '.temporalscratch'
             else
               fs = char(92)
-              call esppid(ipid)
-              LTMPFL=' '
-              write(LTMPFL,'(4a,i7,a)') 'C:',fs,'temp',fs,ipid,
+            endif
+            if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
+              WRITE(LTMPFL,'(2a)')cfgroot(1:lnblnk(cfgroot)),
      &          '.temporalscratch'
+            else
+              WRITE(LTMPFL,'(4a)') netpth(1:lnblnk(netpth)),fs,
+     &          cfgroot(1:lnblnk(cfgroot)),'.temporalscratch'
             endif
             call st2file(LTMPFL,LTDF)
             ITWPR=20
@@ -595,7 +602,10 @@ C column of zeros after the time column).
           if(itnwprc.gt.itnwpr) itnwpr=itnwprc
           if(itnwpr.lt.nuwpr)then
             idif=itnwpr-nuwpr
-            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
+
+C Debug.
+C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
+
             call ewtdfa(itrc,ltdfa,iutdfa,idif,ier)
           else
             call ewtdfa(itrc,ltdfa,iutdfa,0,ier)
@@ -1012,7 +1022,10 @@ C one minute of the given time and then get the data and write.
           CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
           ITIME=IP-(INT(CDAY)*NTSPH*24)
           RDOTY=REAL(itdbdoy)+CDAY+(REAL(ITIME)/(REAL(NTSPH)*24.))
-          if(ITRC.gt.1)write(6,*)'cday itime rdoty',cday,itime,rdoty
+          if(ITRC.gt.1)then
+            write(outs,*)'cday itime rdoty',cday,itime,rdoty
+            call edisp(iuout,outs)
+          endif
           if(.NOT.found)then
             call eclose(RDOTY,TIMEJD,0.0006,CLOSE)
             if(CLOSE)then

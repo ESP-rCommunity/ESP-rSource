@@ -500,8 +500,10 @@ C (Re)draw the network prior to building menu strings.
       CALL NETWDRW
 
 C If there has been a new connection added check with user.
-C Debug..
+
+C Debug.
 C      write(6,*) 'ihavenewcnn c',ihavenewcnn
+
       if(ihavenewcnn.ne.0)then
         dok=.true.
         h(1)='Recently a new connection was added to the network.'
@@ -942,7 +944,8 @@ C Re-draw the screen to impliment any changes before redrawing menu.
       CALL NETWDRW
 
 C If there has been a new connection added check with user.
-C Debug..
+
+C Debug.
 C      write(6,*) 'ihavenewcnn b',ihavenewcnn
 
       GOTO 5
@@ -1526,15 +1529,16 @@ C Get details of icon and then get its attributes (if any).
      &        nbedge,iedge,nbdot,idot,nblabel,ilabel,labeltx,
      &        nbarc,iarc,nbatt,iatt,nbtext,text,IER)
      
-C Debug...
+C Debug.
 C      write(6,*) nbvert,nbedge,nbdot,nblabel,nbarc,nbatt,nbtext
 C      write(6,*) iedge
 C      write(6,*) idot
-C      write(6,*) ilabel   
+C      write(6,*) ilabel
+   
             call geticonatr(inwktyp,category,ICDNAM,natrib,
      &        tagatr,atrib,menuatr,IER)
      
-C Debug...
+C Debug.
 C      write(6,*) natrib		 
 C      write(6,*) tagatr		 
 C      write(6,*) atrib		 
@@ -1716,8 +1720,9 @@ C Check for duplicate names ....
         icn=nnicn
         call dupicname(icn) 
 
-C Debug..
-        write(6,*) 'just after naming of icon ',icn 
+C Debug.
+C        write(6,*) 'just after naming of icon ',icn
+
         write(outs,'(2a)')  'Loading attributes of ',NWICNM(NNICN) 
         call edisp(iuout,outs)
         icnpick=icn
@@ -2240,7 +2245,8 @@ C pixel radius (ir1) via call to crowxyz.
             elseif(IVARC(ICN,I,6).eq.2)then
               call winscl('z',icol)
             endif
-C debug...
+
+C Debug.
 C            write(6,*) ix1,iy1,is,ir,ir1,iang1,iang2,icol
 
 C Draw unfilled or filled arc.
@@ -2323,7 +2329,10 @@ C If domain is primitive part draw a circle and setup ICPP array.
 C            ICPP(ICN,I,1)=CPP(1,KKK)
 C            ICPP(ICN,I,2)=CPP(2,KKK)
 C            ICPP(ICN,I,3)=CPP(3,KKK)
+
+C Debug.
 C            WRITE(6,*),CPP(1,III),III
+
           else
 
 C Otherwise draw a square.
@@ -2832,6 +2841,13 @@ C Dummy routine (needed for call back from c).
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
      
+      return
+      end
+
+C Dummy subroutine needed to compile.
+      SUBROUTINE PLELEV(direc)
+      CHARACTER direc*1
+
       return
       end
 
@@ -3707,3 +3723,4 @@ C Scan the model summary file and report on zone names, volumes and height.
       IER=1
       return
       end
+

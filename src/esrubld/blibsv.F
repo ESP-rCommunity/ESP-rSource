@@ -38,6 +38,7 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 
       SUBROUTINE  MZLS1
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 
@@ -46,14 +47,8 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/LIBREC/IRECPL
@@ -84,7 +79,7 @@ C     &     'CREATE TABLE ',zname(I),' (time DATETIME,',
 C     &     ' ait_T REAL, plant REAL, inf REAL, vent REAL, tmcon REAL,',
 C     &     ' outopq REAL, outtrn REAL, QW1 REAL, QW2 REAL)',
 C     &     QT,'|mysql -u iain -pxx fred'
-C        write (6,*) doit
+C        write(6,*) doit
 C        call runit(doit,'-')
 C 10   continue
 
@@ -99,7 +94,7 @@ C Clear dummy zones variable (in place of old NDOORS array).
       IF(NCOMP.GT.18)NCP=18
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCOMP,NCON
       IREC = IREC + 1
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSNAM
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)modeltitle
       IREC = IREC + 1
 
 C Record width is slightly sensitive to the number of zones in the model
@@ -111,6 +106,8 @@ C an extra record is used.
       IF(NCOMP.LE.20)goto  4
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(NCCODE(I),
      &I=21,NCOMP)
+
+C Note: LCLIM is 144 char so this assume a minimal record width.
       IREC = IREC + 1
     4 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LCLIM
       IREC=IREC+1
@@ -242,13 +239,17 @@ C Save floor area of each zone.
 C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZBASEA(I),I=1,NCOMP)
       IREC = IREC + 1
-C      write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
+
+C Debug.
+C      write(6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
 
 C Save area of transparent surfaces connected to external type BC.
 C Record width is tied to number of zones! << !!! >>
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (ZTRANA(I),I=1,NCOMP)
       IREC = IREC + 1
-C      write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
+
+C Debug.
+CC      write(6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
 
 C Save surface area of each surface in each zone. Record width is
 C sensitive to the number of surfaces in the zone.
@@ -755,7 +756,8 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       real psi,lngth,losspercent,totheatloss,thbrpercent
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
+      real uavtotal   
 
 C This declaration is required to support the bugfix noted below
       logical bInStartup        ! <- function for determining if simulation
@@ -1082,6 +1084,8 @@ C
 C CETC's implementation:
 C
       if (bInStartup())then
+
+C Debug.
 C       write(6,*) 'bInstartup is true'
 C       write(6,*) IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS,BTIMEP,
 C     &    BTIMEF,ISSNY,IDAY,ISDS,ISDF
@@ -1090,9 +1094,12 @@ C While in startup check if ISSNY is 1 and if IDAY is 1 reset ISSNY.
           if(issny.eq.1.and.iday.eq.1) issny=0
        return
       else
+
+C Debug.
 C       write(6,*) 'bInstartup is false'
 C       write(6,*) IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS,BTIMEP,
 C     &    BTIMEF,ISSNY,IDAY,ISDS,ISDF
+
       endif
 
 C Previous implementation:
@@ -1286,6 +1293,8 @@ C Store the currently computed value.
       ZSPMP2(ICOMP)=ZSPMF2(ICOMP)    
  
 C Write out solar zone info (to see if similar to that of solar.F)
+
+C Debug.
 C      write(6,*) 'solsum blibsv',BTIMEF,ICOMP,q1adjz(2),q1outs(2),
 C     &   q2adjz(2),q2lost(2),q2tmc(2),q2wall(2),q2rem(2)
 
@@ -1626,29 +1635,32 @@ C     & 'replace INTO indoor_climate (ref, ic_code, datetime, ',
 C     & 'ic_item, value) VALUES ("',cfgroot(1:lnblnk(cfgroot)),'_',
 C     & ICOMP,'","ESP",',DT,',"DB",',TMA,')',QT,
 C     & '|mysql -u manager -pmanager -h130.159.102.16 merit'
-C          write (6,*) doit
+C          write(6,*) doit
 C          call runit(doit,'-')
 C          write (doit,'(6a,i2.2,3a,f7.3,3a)') 'echo ',QT,
 C     & 'replace INTO indoor_climate (ref, ic_code, datetime, ',
 C     & 'ic_item, value) VALUES ("',cfgroot(1:lnblnk(cfgroot)),'_',
 C     & ICOMP,'","ESP",',DT,',"RH",',ZRH,')',QT,
 C     & '|mysql -u manager -pmanager -h130.159.102.16 merit'
-C          write (6,*) doit
+C          write(6,*) doit
 C          call runit(doit,'-')
 C          write (doit,'(6a,i2.2,3a,2(f8.1,a),2a)') 'echo ',QT,
 C     & 'replace INTO energy (ref, meter_id, fuel_type, r_type,',
 C     & 'to_datetime, dial_1, tot) VALUES ("',cfgroot(1:lnblnk(cfgroot)),
 C     & '_',ICOMP,'","HF","HF","ESP",',DT,',',QM,',',QM,')',QT,
 C     & '|mysql -u manager -pmanager -h130.159.102.16 merit'
-C          write (6,*) doit
+C          write(6,*) doit
 C          call runit(doit,'-')
 
 C If the bems flag is active then write out the current zone temperature to the bems
 C output file (fort.60). Currently only write out the data for optimum start
 C stop. This will later be replaced by a dedicated call to res. 
           if(ibems.gt.0) then
+
+C Debug.
 C            WRITE(*,'(A,I2)') 'Dumpimg BEMS data ..... Zone ',ICOMP
             WRITE(60,*) '#Zone  Day  Time   Temperature '
+	    
             CALL ECLOSE(BTIMEF,1.000,0.001,CLOSE)
             IF(CLOSE)THEN
               WRITE(60,'(I6,1X,F8.4,1X,F8.4,1X,F8.4)') 
@@ -2402,7 +2414,7 @@ C Energy balance.
 
       LOGICAL IVTHPS,IVTHPZ
       real zoar  ! local for zonetotsurfacearea(MCOM)
-
+      
 C Do for all surfaces.
       do 10 ISFN=1,NCONST(ICOMP)
       
@@ -2448,12 +2460,12 @@ C STANDARD ESP-R CALCULATION APPLIES
           icfcLayerType = icfcltp(icomp,icfcType,ne) !CFC layer type: 0-gas gap, 1-glass, 2-slat blind
 
           if(icfcLayerType.ge.2)then    !INDOOR BLIND PRESENT
-
+           
             qconvi(icomp,isfn,2)=(q_blind_airndS(icomp,isfn)    !conv. flux from back blind surface to air node
      &                           +q_glass_airndS(icomp,isfn)    !conv. flux from interior glass to air node
      &        +(hcif(icomp,isfn)*(tfa(icomp)-tfs(icomp,isfn)))) !conv. flux from front blind surface to air node
      &                            *sna(icomp,isfn)
-
+           
           endif
 
         ENDIF

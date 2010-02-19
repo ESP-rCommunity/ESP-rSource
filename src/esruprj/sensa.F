@@ -915,14 +915,10 @@ C any duplicates.
 
       subroutine UPELM(IPRIM,PRIMLIST,IER)
 #include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

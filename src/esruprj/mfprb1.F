@@ -181,7 +181,7 @@ C then an older file so rewind the file and call emfread.
         IF(IER.NE.0)goto 179
         IF(ND.GE.4)THEN
           REWIND(IUM,ERR=999)
-          CALL EMFREAD(IUM,0,IIER)
+          CALL EMFREAD(IUM,IIER)
           CALL ERPFREE(IUM,ISTAT)
         elseif((ND.eq.1.or.ND.eq.2).and.
      &          OUTSTR(1:18).EQ.'*Graphical_network')then
@@ -681,6 +681,7 @@ C
       SUBROUTINE MFNDES(MOD,INOD)
 #include "net_flow.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -692,10 +693,6 @@ C LAPRES,IAPRES (for window pressure databases)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -989,7 +986,7 @@ C (Re)Set all surfaces to standard line width.
 C General image option flags.
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,0,0,ITRU,IER)
+            call georead(IFIL+1,LGEOM(IZ),IZ,0,ITRU,IER)
           else
             call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,ITRU,IER)
           endif
@@ -1831,14 +1828,11 @@ C Fluid flow model file: edit or input wind speed reduction factor
 
 #include "net_flow.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MFLCLM/DRYB,QDIF,QDNR,IRVH,WDIR,WSPD,WRED
 
@@ -1907,7 +1901,7 @@ C Allow the user to select the roof of the building
       itrc=0
       call eclose(gversion(IZ),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
       else
         call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
       endif
@@ -2076,6 +2070,7 @@ C << should mode Z be visible when user first enters flow facility? >>
 
       SUBROUTINE MFNAUTO(MODE,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "net_flow.h"
 #include "esprdbfile.h"
@@ -2106,11 +2101,6 @@ C << should mode Z be visible when user first enters flow facility? >>
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
 
-C LPROJ   - zone scheduling (operation file)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
@@ -2515,8 +2505,8 @@ C Note works if ventilation is always from only one other zone.
  402          CONTINUE
 
 C Debug.
-              write(6,*) 'iz finfmax fvntmax isrczforvent',iz,
-     &          finfmax(iz),fvntmax(iz),isrczforvent(iz)
+C              write(6,*) 'iz finfmax fvntmax isrczforvent',iz,
+C     &          finfmax(iz),fvntmax(iz),isrczforvent(iz)
 
               call ECLOSE(finfmax(iz),0.0,0.0001,closeiz)
               call ECLOSE(fvntmax(iz),0.0,0.0001,closevz)
@@ -2684,6 +2674,7 @@ C Debug.
 C                      write(6,*) 'a icfv isfv itis ',icompforvent(itis),
 C     & isrczforvent(itis),iz,icaas(isrczforvent(itis)),isrczforvent(iz),
 C     & icaas(isrczforvent(iz))
+
                       NODPS(NCNN)=icaas(isrczforvent(iz))
                     endif
                     NODNE(NCNN)=nodeforcurrent
@@ -2722,9 +2713,12 @@ C Add connection using the new component (remember component index in ITPCON).
 C Use isrczforvent to get the index of the zone where ventilation is
 C coming from and then use this as an index for icompforvent to get
 C the actual component index.
-                      write(6,*) 'b icfv isfv iz ',icompforvent(iz),
-     &                  isrczforvent(iz),iz,icaas(iz),
-     &                  icaas(isrczforvent(iz))
+
+C Debug.
+C                      write(6,*) 'b icfv isfv iz ',icompforvent(iz),
+C     &                  isrczforvent(iz),iz,icaas(iz),
+C     &                  icaas(isrczforvent(iz))
+
                       NODPS(NCNN)=icaas(isrczforvent(iz))
                     endif
                     NODNE(NCNN)=nodeforcurrent
@@ -2755,9 +2749,12 @@ C and connection for ventilation.
      &                'which is not yet implemented. Using inf_source.')
                     NODPS(NCNN)=1
                   else
-                      write(6,*) 'c icfv isfv iz ',icompforvent(iz),
-     &                  isrczforvent(iz),iz,icaas(iz),
-     &                  icaas(isrczforvent(iz))
+
+C Debug.
+C                      write(6,*) 'c icfv isfv iz ',icompforvent(iz),
+C     &                  isrczforvent(iz),iz,icaas(iz),
+C     &                  icaas(isrczforvent(iz))
+
                     NODPS(NCNN)=icaas(isrczforvent(iz))
                   endif
                   NODNE(NCNN)=nodeforcurrent

@@ -882,6 +882,7 @@ C setdfgrid allows the creation of the daylight factor grid points.
 C if MODE is not - then sensor points file name confirmation required.
       subroutine setdfgrid(MODE,izone,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -897,10 +898,6 @@ C if MODE is not - then sensor points file name confirmation required.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/rad2/mono,intext,ifocz
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
@@ -996,7 +993,7 @@ C Now read zone geometry file to enable edge selection.
       ITRC=0
       call eclose(gversion(ifocz),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
+        call georead(ITA1,LGEOM(ifocz),ifocz,0,IUOUT,IER)
       else
         call EGOMIN(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
       endif
@@ -1144,6 +1141,11 @@ C      COMMON/OUTIN/IUOUT,IUIN
       integer lnrp  ! length of run path
 
       LOGICAL MODIFY,MODLEN,MODBND
+#ifdef OSX
+      integer iix,iiy,iid1,iid2
+#else
+      integer*8 iix,iiy,iid1,iid2
+#endif
       
 C If not in graphical mode return.
       if (MMOD.ne.8) return
@@ -1214,8 +1216,8 @@ C Loop through grid points.
         COG1(3)=DFPTS(I,3)
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix,iy)
-        CALL ecirc(ix,iy,3,1)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        CALL ecirc(iix,iiy,3,1)
         if(act.eq.'g'.or.act.eq.'G')then
           IF(I.le.9)THEN
             WRITE(VT,'(i1)') I
@@ -1231,7 +1233,8 @@ C Loop through grid points.
             WRITE(VT,'(f4.1)') DFVALS(I)
           ENDIF
         endif
-        CALL wstxpt(ix+1,iy-1,VT)
+        iid1=iix+1; iid2=iiy-1;
+        CALL wstxpt(iid1,iid2,VT)
  10   continue
 
 C Reset display options.
@@ -1248,6 +1251,7 @@ C for use with a 'Coupling' scene purpose.
 
       SUBROUTINE SENLOC
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -1264,9 +1268,6 @@ C for use with a 'Coupling' scene purpose.
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -1274,7 +1275,6 @@ C for use with a 'Coupling' scene purpose.
       common/rad2/mono,intext,ifocz
 
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCGCINT,LDFGRID
       character outs*124,runpath*72,pathtype*24
 
@@ -1445,6 +1445,7 @@ C gain control file.
 
       SUBROUTINE RDCFTMP(LFTMP,ISET)
 #include "building.h"
+#include "model.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1468,12 +1469,8 @@ C MDCFV - max no of sky patches.
       COMMON/DCOEF/NDCFP,NDCFS(MDCFP),DCOEF(MDCFP,MDCFS,MDCFV),
      & IDCFID(MCOM,MLCOM,MDF)
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
       common/rad2/mono,intext,ifocz
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LCGCINT,LFTMP
       character outs*124
 

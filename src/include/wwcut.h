@@ -1,5 +1,5 @@
 /*
- * copyright ESRU 2001-6
+ * copyright ESRU 2001-9
  * This source may be copied, distributed, altered or used, but not sold
  * for profit.  This notice should remain in the source unaltered, and
  * any changes to the source made known to ESRU.

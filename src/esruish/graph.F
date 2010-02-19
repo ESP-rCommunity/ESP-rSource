@@ -34,21 +34,26 @@ C to superimpose any direct shading.
 
       subroutine graph(icomp)
 #include "building.h"
+#include "geometry.h"
+
+C Parameter
+      integer icomp  ! the focus zone
 
       common/outin/iuout,iuin
       common/filep/ifil
       common/pophelp/h(60)
       common/spad/mmod,limit,limtty
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/headl/irecs(ms)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+      common/c24/izstocn(mcom,ms)
 
-      character blkname*8,blkmat*12,outs*124,h*72
+      character outs*124,h*72
       dimension ioshd(mox,moz),iva(ms)
       logical ok,dok
+      integer icc,is,nv   ! local variables for connextion and vertices
+      
 #ifdef OSX
       integer igwid,igheight  ! for use with axiscale
 #else
@@ -57,6 +62,7 @@ C to superimpose any direct shading.
 
       iunit=ifil
 
+C Ask user for the surface to focus on.
     2 call pickssur(icomp,np,'L',iva,ier)
       if(np.eq.0)then
         goto 1
@@ -64,8 +70,10 @@ C to superimpose any direct shading.
         is=iva(1)
       endif
 
-C Retrieve surface transformed coordinates.
-      nv=nver(is)
+C Find connection and number of edges and then retrieve the
+C surface transformed coordinates.
+      icc=izstocn(icomp,is)
+      nv=nznver(icc)
       irec=irecs(is)
       read(iunit,rec=irec,iostat=istat,err=1000)(xft(i),i=1,nv)
       irec=irec+1
@@ -73,7 +81,7 @@ C Retrieve surface transformed coordinates.
       irec=irec+1
 
 C Set up mesh centre points.
-      call mesh(is)
+      call mesh(icomp,is)
 
 C Make the right offset for the graphic box is the character
 C width of the menu.
@@ -87,21 +95,21 @@ C Clear the viewing box, draw its border and return the offsets
 C that define it. The win3d parameters match those in facdrw
 C and sitpln.
       call startbuffer()
-      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      call win3d(menuchw,7,4,4,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
       igwh=igb-igt
       igwid=igw
       igheight=igwh
 
 C Update the plane equation.
-      call trnsf1(is)
+      call trnsf1(icomp,is)
 
-C Find maximum & minimum surface coordinates.
+C Find maximum & minimum surface coordinates for this surface.
       xmax=-1.E+8
       zmax=-1.E+8
       xmin=1.E+8
       zmin=1.E+8
-      do 10 i=1,nv
+      do 10 i=1,nznver(icc)
         xmax=amax1(xmax,xft(i))
         zmax=amax1(zmax,zft(i))
         xmin=amin1(xmin,xft(i))
@@ -147,23 +155,23 @@ C Total direct shading.
             if(j.lt.ih)goto 20
             call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
      &                                               Xadd,Zadd,sca)
-            call shddrw(is,1,ioshd)
+            call shddrw(icomp,is,1,ioshd)
 
 C Partial direct shading.
          elseif(inds.eq.0)then
             if(j.lt.ih)then
-               irec=irec+nox+1
+               irec=irec+nox(icomp)+1
                goto 20
             endif
-            do 30 k=1,nox
+            do 30 k=1,nox(icomp)
                read(iunit,rec=irec,iostat=istat,err=1000)
-     &                                            (ioshd(k,l),l=1,noz)
+     &           (ioshd(k,l),l=1,noz(icomp))
                irec=irec+1
    30       continue
             irec=irec+1
             call facdrw(j,icomp,is,nv,xmin,xmax,zmin,zmax,
      &                                               Xadd,Zadd,sca)
-            call shddrw(is,2,ioshd)
+            call shddrw(icomp,is,2,ioshd)
          endif
 
          dok=.true.
@@ -248,29 +256,41 @@ C Draw target surface.
 C ********** SHDDRW **********
 C Plots points on target surface representing direct shaded portion.
 
-      subroutine shddrw(is,ishad,ioshd)
+      subroutine shddrw(izone,is,ishad,ioshd)
 #include "building.h"
+#include "geometry.h"
+
+C Parameters
+      integer izone  ! index of zone
+      integer is     ! target surface
+      integer ishad  ! denotes partial or full shading - see below
+      integer ioshd  ! array of points
+      dimension ioshd(mox,moz)
 
       common/grid11/xop(mox,moz),zop(mox,moz)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
-      dimension ioshd(mox,moz)
-      character blkname*8,blkmat*12
 
-      do 10 i=1,nox
-         do 20 j=1,noz
+#ifdef OSX
+      integer iix,iiy,iid1,iid2
+#else
+      integer*8 iix,iiy,iid1,iid2
+#endif
+
+      do 10 i=1,nox(izone)
+         do 20 j=1,noz(izone)
 
 C ishad=2 corresponds to the partial shading case, while ishad=1
 C corresponds to 100% shading for which ioshd points falling outwith
 C the surface polygon will not have been set to -1.
             if(ishad.eq.1)then
-               call point1(is,xop(i,j),zop(i,j),ians)
+               call point1(izone,is,xop(i,j),zop(i,j),ians)
                if(ians.eq.0)goto 20
                goto 1
             endif
             if(ioshd(i,j).eq.1)goto 1
             goto 20
-    1       call u2pixel(xop(i,j),zop(i,j),ix,iy)
-            call edwline(ix-1,iy,ix+1,iy)
+    1       call u2pixel(xop(i,j),zop(i,j),iix,iiy)
+            iid1=iix-1; iid2=iix+1;
+            call edwline(iid1,iiy,iid2,iiy)
    20    continue
    10 continue
       call forceflush()
@@ -279,178 +299,32 @@ C the surface polygon will not have been set to -1.
 
 C ********** SITPLN **********
 C Scales and draws the site plan showing the object boundary
-C and the surrounding obstruction blocks.
+C and the surrounding obstruction blocks based on common block
+C data structures.
 
       subroutine sitpln(icomp)
 #include "building.h"
-#include "geometry.h"
 
       common/spad/mmod,limit,limtty
-      common/outin/iuout,iuin
-      common/filep/ifil
 
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
-      common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-      common/prec8/slat,slon
-      integer menuchw,igl,igr,igt,igb,igw,igwh
-      common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
-      integer ifs,itfs,imfs
-      common/gfont/ifs,itfs,imfs
+      character direc*1
 
-      character sstr*72,blabel*4,blkname*8,blkmat*12
-      character tz*13
-      logical newgeo  ! used to test for new/old geometry file.
-#ifdef OSX
-      integer igwid,igheight
-      integer iside,isize     ! passed to viewtext
-      integer ipos,iupdown,isym,ifont    ! passed to etplot
-#else
-      integer*8 igwid,igheight
-      integer*8 iside,isize     ! passed to viewtext
-      integer*8 ipos,iupdown,isym,ifont    ! passed to etplot
-#endif
-
-C The right offset for the graphic box is the character width
-C of the menu. Also allow 2 text lines at the bottom for future
-C dialogue. Axiscale is in wwlib.c.
+C Return if not in graphic mode.
       ier=0
       if(mmod.lt.8)then
         call usrmsg('Not in graphic mode!',' ','W')
         return
       endif
-      newgeo=.false.  ! assume old geometry format.
 
-C Define a viewing box, draw its border after clearing it and
-C return the offsets that define it and set local variables.
-      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
-      igwid=igw
-      igheight=igwh
-
-      call startbuffer()
-
-C Reopen the dialogue box.
-      call usrmsg(' ',' ','-')
-
-C Re-read zone geometry file and establish the maximum and minimum
-C vertix values.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
-      else
-        call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
-      endif
-      xmx=-1.E+8
-      ymx=-1.E+8
-      xmn=1.E+8
-      ymn=1.E+8
-      do 10 i=1,ntv
-         xmn=amin1(xmn,x(i))
-         ymn=amin1(ymn,y(i))
-         xmx=amax1(xmx,x(i))
-         ymx=amax1(ymx,y(i))
-   10 continue
-
-C Convert obstruction block geometry to GEN format (/g1/) and
-C establish maximum and minimum site coordinates.
-      do 20 i=1,nb
-         call erecc(xo(i),yo(i),zo(i),dx(i),dy(i),dz(i),ang(i))
-         do 30 j=1,ntv
-            xmn=amin1(xmn,x(j))
-            ymn=amin1(ymn,y(j))
-            xmx=amax1(xmx,x(j))
-            ymx=amax1(ymx,y(j))
-   30    continue
-   20 continue
-
-C Determine scaling ratios for the drawing and axis.
-      call axiscale(igwid,igheight,xmn,xmx,ymn,ymx,xsc,ysc,sca,
-     &  Xadd,Yadd)
-
-C Place scaling in static C variables for use by line drawing routines.
-      call linescale(igl,Xadd,sca,igb,Yadd,sca)
-
-C Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmn,xmx,igl,igr,igb,Xadd,sca,1,'East ->')
-
-C Draw a scale vertical axis.
-      call vrtaxis(ymn,ymx,igl,igb,igt,Yadd,sca,1,0,'^ North')
-
-C Re-read the geometry file, plot it and move to the first vertex and
-C output the zone name.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-         call georead(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
-      else
-         call egomin(ifil+1,lgeom(icomp),icomp,0,0,iuout,ier)
-      endif
-      call u2pixel(x(1),y(1),ix,iy)
-      iupdown=0
-      isym=0
-      call etplot(x(1),y(1),iupdown,isym)
-      if(lnzname(icomp).gt.1)then
-         write(tz,'(a)')zname(icomp)
-         call winfnt(itfs)
-         call wstxpt(ix+2,iy-2,tz)
-      else
-         call winfnt(itfs)
-         call wstxpt(ix+2,iy-2,'Target')
-      endif
-
-      iupdown=0
-      isym=0
-      do 40 i=1,nsur
-         j=jvn(i,1)
-         call etplot(x(j),y(j),iupdown,isym)
-         k=nver(i)
-         iupdown=-302
-         do 50 l=2,k
-            m=jvn(i,l)
-            call etplot(x(m),y(m),iupdown,isym)
-   50    continue
-         call etplot(X(J),Y(J),iupdown,isym)
-   40 continue
-
-C Convert obstruction block geometry to GEN format (/g1/) and plot.
-      if(nb.eq.0)goto 1
-      do 60 ib= 1,nb
-         call erecc(xo(ib),yo(ib),zo(ib),dx(ib),dy(ib),dz(ib),ang(ib))
-         iupdown=0
-         isym=0
-         do 70 i=1,nsur
-            j=jvn(i,1)
-            call etplot(x(j),y(j),iupdown,isym)
-            k=nver(i)
-            iupdown=1
-            do 80 l=2,k
-               m=jvn(i,l)
-               call etplot(x(m),y(m),iupdown,isym)
-   80       continue
-            call etplot(X(J),Y(J),iupdown,isym)
-   70    continue
-
-         call u2pixel(X(J),Y(J),ix,iy)
-         write(blabel,2)ib
-    2    format('B',i2)
-         call wstxpt(ix+2,iy-2,blabel)
-   60 continue
-
-C Print labels and return to default font.
-    1 call winfnt(ifs)
-      write(sstr,3)slat,slon
-    3 format('Site Plan, Latitude ',f5.1,', Longitude ',f4.1)
-      iy=igt-5
-      ix=igl
-      call wstxpt(ix,iy,sstr)
-      call forceflush()
-
+C Use plelv to draw the site plan for the current zone.
+      nzg=1
+      nznog(1)=icomp
+      izgfoc=icomp
+      direc='P'
+      call PLELEV(direc)
+      
       return
       end
 

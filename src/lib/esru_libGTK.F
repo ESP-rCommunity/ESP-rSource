@@ -39,8 +39,6 @@ C  EASKAB:  Generic A/B choice facility returning 1 or 2 according to which
 C           of the choices has been chosen.
 C  EASKABC: Generic A/B/C choice facility returning 1, 2 or 3 according
 C           to which of the choices has been chosen.
-C EASKABCD: Generic A/B/C/D choice facility returning 1-4 according
-C           to which of the choices has been chosen.
 C  EASKPER: Provides interface to specification of a period of days.
 C eAskPerYear: Provides interface to specification of a multiyear period of days.
 C easkPerGen: Handles specification of both single-year and multi-year
@@ -114,7 +112,7 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10,H*72
-      CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72
+      CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72,outs*124
       character prompt*144
       LOGICAL OK,DOK
       integer ivalold
@@ -166,14 +164,24 @@ C If in graphic mode use graphic faciltiies to edit the number.
         IVALUE=IVAL
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
-C        write (6,*) '< askint prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< askint prompt ',PROMPT(1:lnblnk(PROMPT))
+
         CALL askint(PROMPT,IVALUE,IFLG)
 
 C Debug.
-C        write (6,*) 'EASKI',IVALUE,IVAL,IFLG
+C        write(6,*) 'EASKI',IVALUE,IVAL,IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -305,9 +313,11 @@ C Return to calling module
       GOTO 20
 
    1  if(IOS.eq.2)then
-        write(6,*) 'EASKI: permission error composing prompt.'
+        write(outs,*) 'EASKI: permission error composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKI: error composing message or prompt.'
+        write(outs,*) 'EASKI: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
 
@@ -414,12 +424,21 @@ C If in graphic mode use graphic facilities to edit the number.
         endif
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
         RVALUE=RVAL
         CALL askreal(PROMPT,RVALUE,IFLG)
 
 C Debug.
-C        write (6,*) 'EASKR',RVALUE,IFLG
+C        write(6,*) 'EASKR',RVALUE,IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -550,9 +569,11 @@ C Return to calling module
       GOTO 20
 
    1  if(IOS.eq.2)then
-        write(6,*) 'EASKR: permission error composing prompt.'
+        write(outs,*) 'EASKR: permission error composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKR: error composing message or prompt.'
+        write(outs,*) 'EASKR: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
 
@@ -598,7 +619,7 @@ C by the user.
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*10,STR2*10,H*72
-      CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72
+      CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72,outs*124
       character prompt*144
       LOGICAL OK,close,DOK
 
@@ -655,15 +676,24 @@ C        iquery=0
         endif
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
-C        write (6,*) '< aske prompt ',PROMPT(1:lnblnk(PROMPT))
-C        write (6,*) '< aske string ',ask(1:lnblnk(ask))
+C        write(6,*) '< aske prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< aske string ',ask(1:lnblnk(ask))
         CALL askdialog(PROMPT,ask,IFLG)
 
 C Debug.
-C        write (6,*) 'aske VAL:',ask,' iflg ',IFLG
+C        write(6,*) 'aske VAL:',ask,' iflg ',IFLG
 
         IF(iflg.EQ.-3)THEN
 
@@ -793,10 +823,12 @@ C Return to calling module
  89   CALL USRMSG(' ',' Did not understand, try again..','-')
       GOTO 20
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKE: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKE: error composing message or prompt.'
+        write(outs,*) 'EASKE: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
 
@@ -822,11 +854,12 @@ C DSTR is a string to use as a default.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      character h*72
       common/pophelp/h(60)
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
-      CHARACTER WORD144*144,H*72,A*1,LASTS*144,OUTSTR*124,dh*72
+      CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124,dh*72,outs*124
       character prompt*144
       LOGICAL OK,DOK
 
@@ -874,12 +907,23 @@ C        iquery=0
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C << There are potentially several things that need updating >>
 C << to this call and to askf (within esp_file.c). >>
         CALL askf(PROMPT,FILEN)
-        write (6,*) 'askdialog FILEN:',FILEN
+
+C Debug
+C        write(6,*) 'askdialog FILEN:',FILEN
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1006,24 +1050,30 @@ C Must have input a character string.
 
       RETURN
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKF: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKF: error composing message or prompt.'
+        write(outs,*) 'EASKF: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
    2  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKF: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKF: error composing prompt.'
+        write(outs,*) 'EASKF: error composing prompt.'
+        call edisp(iuout,outs)
       endif
       return
    3  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKF: permissions exception while writing file name.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKF: error writing file name.'
+        write(outs,*) 'EASKF: error writing file name.'
+        call edisp(iuout,outs)
       endif
       return
       END
@@ -1062,7 +1112,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,outs*124
       character prompt*144
       LOGICAL OK,DOK
       integer last    ! last blank (or one) in the string.
@@ -1104,15 +1154,25 @@ C        iquery=0
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
-C        write (6,*) '< askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
-C        write (6,*) '< askdialog string ',STRVAL(1:lnblnk(STRVAL))
+C        write(6,*) '< askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< askdialog string ',STRVAL(1:lnblnk(STRVAL))
+
         CALL askdialog(PROMPT,STRVAL,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
+C        write(6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1226,17 +1286,21 @@ C Must have input a character string.
 
       RETURN
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKS: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKS: error composing message or prompt.'
+        write(outs,*) 'EASKS: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
    2  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKS: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKS: error composing prompt.'
+        write(outs,*) 'EASKS: error composing prompt.'
+        call edisp(iuout,outs)
       endif
       return
       END
@@ -1262,7 +1326,7 @@ C DSTR is a string to use as a default.
       common/pophelp/h(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
       CHARACTER H*72,t72*72,t72a*72,t72b*72,t72c*72
-      character outstr*248,word*248,prompt*144,LASTS*248
+      character outstr*248,word*248,prompt*144,LASTS*248,outs*124
       LOGICAL next,OK,DOK
 
    20 IER=0
@@ -1303,15 +1367,25 @@ C For graphic version use the standard GTK widget as does easks.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
-C        write (6,*) '< 248 askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
-C        write (6,*) '< 248 askdialog string ',STRVAL(1:lnblnk(STRVAL))
+C        write(6,*) '< 248 askdialog prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< 248 askdialog string ',STRVAL(1:lnblnk(STRVAL))
+
         CALL askdialog248(PROMPT,STRVAL,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
+C        write(6,*) 'askdialog STRVAL:',STRVAL,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1319,7 +1393,8 @@ C PATCH to restore mmod (occassioanlly gets corrupted in linux)
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
         call c2fstr(STRVAL,WORD)
-        write(6,*) word
+C Debug
+C        write(6,*) word
 
         IF(iflg.EQ.-3)THEN
 
@@ -1358,8 +1433,10 @@ C wishes to use prior/existing string.
 
 C Must have input a character string.
         STRVAL=WORD(1:lnblnk(WORD))
+
 C Debug.
 C        write(6,*) 'eask248 returning ',STRVAL(1:lnblnk(STRVAL))
+
         RETURN
       ELSE
 
@@ -1450,10 +1527,12 @@ C When writing out the combined text, put a space between each section.
       return
 
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'EASKS248: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EASKS248: error composing message or prompt.'
+        write(outs,*) 'EASKS248: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
       end
@@ -1531,11 +1610,20 @@ C        iquery=0
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
         CALL askdialogcmd(PROMPT,STRVAL,CMD,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialogcmd STRVAL:',STRVAL,' iflg ',IFLG
+C        write(6,*) 'askdialogcmd STRVAL:',STRVAL,' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
         if(lmmod.ne.mmod)mmod=lmmod
@@ -1725,11 +1813,20 @@ C        iquery=0
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
         CALL askdialogcncl(PROMPT,STRVAL,CNCL,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialogcncl STRVAL:',STRVAL(1:lnblnk(STRVAL)),
+C        write(6,*) 'askdialogcncl STRVAL:',STRVAL(1:lnblnk(STRVAL)),
 C     &    ' iflg ',IFLG
 
 C PATCH to restore mmod (occassioanlly gets corrupted in linux)
@@ -1911,15 +2008,24 @@ C If in terminal type 8 use dialogue box.
         lmmod=mmod
         LN1=max(1,lnblnk(PROMP1))
         LN2=max(1,lnblnk(PROMP2))
-        write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') PROMP2(1:LN2)
+          else
+            write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') PROMP1(1:LN1),' ',PROMP2(1:LN2)
+        endif
 
 C Debug.
-C        write (6,*) '< askdialog2cmd prompt ',PROMPT(1:lnblnk(PROMPT))
-C        write (6,*) '< askdialog2cmd string ',STRVAL(1:lnblnk(STRVAL))
+C        write(6,*) '< askdialog2cmd prompt ',PROMPT(1:lnblnk(PROMPT))
+C        write(6,*) '< askdialog2cmd string ',STRVAL(1:lnblnk(STRVAL))
         CALL askdialog2cmd(PROMPT,STRVAL,CMD,CMD2,IFLG)
 
 C Debug.
-C        write (6,*) 'askdialog2cmd STRVAL:',STRVAL,' iflg ',IFLG
+C        write(6,*) 'askdialog2cmd STRVAL:',STRVAL,' iflg ',IFLG
 
 C Strip off the last character (end of line mark) as well as any
 C leading blanks from string returned.
@@ -2354,14 +2460,16 @@ C passed within the parameter list text.
       SUBROUTINE MENUATOL(prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
      &  GOPT,HOPT,IOPT,JOPT,KOPT,LOPT,index,idindex,nhelp)
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      character h*72
       common/pophelp/h(60)
       LOGICAL SELECT
       CHARACTER*(*) prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
       CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
 
       DIMENSION VERT(16)
-      CHARACTER VERT*48,KEY*1,prompt2*36,h*72
+      CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
 
 C Generate default help text, clear local menu string and remember
 C the incomming index.
@@ -2533,10 +2641,12 @@ C Not one of the legal menu choices.
       goto 92
 
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'MENUATOL: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'MENUATOL: error composing message or prompt.'
+        write(outs,*) 'MENUATOL: error composing message or prompt.'
+        call edisp(iuout,outs)
       endif
       return
 
@@ -2554,7 +2664,9 @@ C If NHELP=-1 there is no default option.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       CHARACTER*(*) MSG1,MSG2
-      CHARACTER ANS*2,MSG3*124,H*72,opta*8,optb*8,optc*14,head*12
+      CHARACTER ANS*2,MSG3*124,H*72,opta*14,optb*14,optc*14
+      character optd*2,opte*2,optf*2,optg*2,outs*124
+      character head*12
       character prompt*144
       logical ok,dok,DEFLT
 
@@ -2612,25 +2724,51 @@ C Querry yes or no or default. Concat MSG1 & MSG2 together for prompt.
   19    continue
         LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-        write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') MSG2(1:LN2)
+          else
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+        endif
         opta='yes'
         optb='no'
+        optc='  '
+        optd='  '
+        opte='  '
+        optf='  '
+        optg='  '
         if (DEFLT) then
           if(DOK)then
             id=1
-            optc='default (yes)'
-            call espokbox(prompt,opta,optb,optc,id,IW)
+            iw=1
+            opta='default (yes)'
+            optb='no'
+            call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,
+     &        iw)
           else
             id=2
-            optc='default (no)'
-            call espokbox(prompt,opta,optb,optc,id,IW)
+            iw=2
+            opta='yes'
+            optb='default (no)'
+            call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,
+     &        iw)
           endif
         else
           id=0
-          optc=' '
-          call espokbox(prompt,opta,optb,optc,ID,IW)
+          iw=0
+          opta='yes'
+          optb='no'
+          optc='  '
+          call espabcbox(prompt,opta,optb,optc,optd,opte,optf,optg,IW)
         endif
-        write(6,*) 'espokbox selected id iw ',id,iw
+	
+C Debug.
+C        write(6,*) 'espabcbox selected id iw ',id,iw,opta,optb,optc
+
         IF(IW.eq.1)THEN
           OK=.TRUE.
         ELSEIF(IW.eq.2)THEN
@@ -2648,10 +2786,12 @@ C of help supplied and then provide the prompt again.
       RETURN
 
    1  if(IOS.eq.2)then
-        write(6,*) 
+        write(outs,*) 
      &  'ASKOK: permissions exception while composing prompt.'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'ASKOK: error composing prompt.'
+        write(outs,*) 'ASKOK: error composing prompt.'
+        call edisp(iuout,outs)
       endif
       RETURN
       END
@@ -2674,7 +2814,7 @@ C and the messages will appear in a pop-up dialogue box.
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
-      CHARACTER ANS*2,MSG3*124,H*72,head*12
+      CHARACTER ANS*2,MSG3*124,H*72,head*12,outs*124
       character prompt*144
 
 C Generate custom help text and copy NHELP to local variable.
@@ -2766,12 +2906,25 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-        write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') MSG2(1:LN2)
+          else
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+        endif
 
+C Passin the initial selection from the calling code if it is
+C one of the buttons.
+        if(IWHICH.ge.0.and.IWHICH.le.nopt) IW=IWHICH
         CALL espabcbox(prompt,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,IW)
 
 C Debug.
-C        write (6,*) 'call to espabcbox returned ',IW
+C        write(6,*) 'call to espabcbox returned ',IW
+
         IF(IW.EQ.-8)THEN
 
 C A probable request for help has been received. Print out the lines
@@ -2783,7 +2936,8 @@ C of help supplied and then provide the prompt again.
       ENDIF
       RETURN
 
-   1  write(6,*) 'EASKatog: error composing message or prompt.'
+   1  write(outs,*) 'EASKatog: error composing message or prompt.'
+      call edisp(iuout,outs)
       return
       END
 
@@ -2806,7 +2960,7 @@ C and the messages will appear in a pop-up dialogue box.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
       CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
-      CHARACTER ANS*2,MSG3*124,H*72,head*12
+      CHARACTER ANS*2,MSG3*124,H*72,head*12,outs*124
       character prompt*144
 
 C Generate custom help text and copy NHELP to local variable.
@@ -2939,13 +3093,22 @@ C of help supplied and then provide the prompt again.
 C Querry which one.
   19    LN1=max(1,lnblnk(MSG1))
         LN2=max(1,lnblnk(MSG2))
-        write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	if((LN1+LN2+1).lt.144)then
+          if(LN1.eq.1)then
+            write(prompt,'(a)') MSG2(1:LN2)
+          else
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
+        else
+          LN2=142-LN1
+          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+        endif
 
         CALL espdozenbox(prompt,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,
      &    HOPT,IOPT,JOPT,KOPT,LOPT,IW)
 
 C Debug.
-C        write (6,*) 'call to espdozenbox returned ',IW
+C        write(6,*) 'call to espdozenbox returned ',IW
         IF(IW.EQ.-8)THEN
 
 C A probable request for help has been received. Print out the lines
@@ -2957,7 +3120,8 @@ C of help supplied and then provide the prompt again.
       ENDIF
       RETURN
 
-   1  write(6,*) 'EASKatog: error composing message or prompt.'
+   1  write(outs,*) 'EASKatog: error composing message or prompt.'
+      call edisp(iuout,outs)
       return
       END
 
@@ -3380,7 +3544,7 @@ c If MMOD set to valid index, assume it, dont ask.
         RETURN
       ELSEIF(MM.eq.'8    '.OR.MODEL.EQ.8)THEN
         MMOD = 8
-        write (HEAD,'(a)') TITLE
+        write(HEAD,'(a)') TITLE
 
 C Take the pixel width and height passed.
 C << figure out how to work with the positon on the screen >>
@@ -3594,7 +3758,8 @@ C x pixel and the last 4 the y pixel.
       if (ino.lt.0) then
 C        ino=-100000000*iuresp-10000*irpx-irpy
 
-C Debug...        write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
+C Debug.
+C        write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
 
       endif
 
@@ -3704,10 +3869,19 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	  if((LN1+LN2+1).lt.144)then
+            if(LN1.eq.1)then
+              write(prompt,'(a)') MSG2(1:LN2)
+            else
+              write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+            endif
+          else
+            LN2=142-LN1
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
 
 C Debug.
-C          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
+C          write(6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
           CALL continuebox(prompt,cont)
         ELSEIF(LEVEL.EQ.'P'.OR.LEVEL.EQ.'p')THEN
           CALL msgbox(MSG1,MSG2)
@@ -3837,10 +4011,19 @@ C Single line prompt.
 C If warning mode then clear continuebox after use clicks continue.
           LN1=max(1,LNBLNK(MSG1))
           LN2=max(1,LNBLNK(MSG2))
-          write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+	  if((LN1+LN2+1).lt.144)then
+            if(LN1.eq.1)then
+              write(prompt,'(a)') MSG2(1:LN2)
+            else
+              write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+            endif
+          else
+            LN2=142-LN1
+            write(prompt,'(3a)') MSG1(1:LN1),' ',MSG2(1:LN2)
+          endif
 
 C Debug.
-C          write (6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
+C          write(6,*) '< msgbox prompt ',prompt(1:lnblnk(prompt))
           CALL continuebox(prompt,cont)
         ELSEIF(LEVEL.EQ.'P'.OR.LEVEL.EQ.'p')THEN
           CALL msgbox(MSG1,MSG2)
@@ -3884,6 +4067,7 @@ C treatment as a scrolling window.
       common/textbufl/indexbuf,lnbuf(360)
       CHARACTER*(*) MSG
       CHARACTER WWMSG*124,dispbuf*124
+      logical unixok
 
 C Temporarily set ICOUT.
       ICOUT=0
@@ -3937,13 +4121,25 @@ C Write this to standard text window.
       ENDIF
 
       RETURN
-   1  if(IOS.eq.2)then
-        write(6,*) 'edisp: permission error writing text: ',MSG
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        if(lnm.le.1)then
+          write(6,*) 'edisp: permission error writing blank/null '
+        else
+          write(6,*) 'edisp: permission error writing text: ',MSG
+        endif
       else
-        write(6,*) 'edisp: error writing text: ',MSG
+        if(lnm.le.1)then
+          write(6,*) 'edisp: error writing blank/null '
+        else
+          write(6,*) 'edisp: error writing text: ',MSG
+        endif
       endif
       return
-   2  if(IOS.eq.2)then
+   2  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
         write(6,*) 'edisp: permission error writing text: ',WWMSG
       else
         write(6,*) 'edisp: error writing text: ',WWMSG
@@ -4021,7 +4217,9 @@ C Set folder separator (fs) to \ or / as required.
   43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
      &    iswidth,listact,ino,nhelp)
 
-      write(6,*)listact,'  ',ino
+C Debug
+C      write(6,*)listact,'  ',ino
+
       if(ino.eq.-1)then
 
 C If no action return.
@@ -4029,7 +4227,8 @@ C If no action return.
       elseif(ino.eq.(nlist+1))then
 
 C If signaled ok then attempt to write out file.
-        write(6,*)sstr(1)
+C        write(6,*)sstr(1)
+
         tfile=sstr(1)
         ltf=max(1,LNBLNK(tfile))
         iuf=ifil+1
@@ -4163,7 +4362,9 @@ C Set folder separator (fs) to \ or / as required.
   43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
      &    iswidth,listact,ino,nhelp)
 
-      write(6,*)listact,'  ',ino
+C Debug.
+C      write(6,*)listact,'  ',ino
+
       if(ino.eq.-1)then
 
 C If no action return.
@@ -4171,7 +4372,8 @@ C If no action return.
       elseif(ino.eq.(nlist+1))then
 
 C If signaled ok then attempt to write out file.
-        write(6,*)sstr(1)
+C        write(6,*)sstr(1)
+
         tfile=sstr(1)
         ltf=max(1,lnblnk(tfile))
         if(listact(2).eq.1)then
@@ -4181,7 +4383,10 @@ C If signaled ok then attempt to write out file.
           LN=max(1,lnblnk(gxwdcmd))
           write(gcmd,'(3a)') gxwdcmd(1:LN),' ',tfile(1:ltf)
         endif
-        write(6,*)gcmd
+
+C Debug
+C        write(6,*)gcmd
+
         call runit(gcmd,'-')
         return
       elseif(ino.eq.1)then
@@ -4480,9 +4685,11 @@ C current line index.
       RETURN
 
    1  if(IOS.eq.2)then
-        write(6,*) 'EHELPD: permission error writing help message'
+        write(outs,*) 'EHELPD: permission error writing help message'
+        call edisp(iuout,outs)
       else
-        write(6,*) 'EHELPD: error writing help message'
+        write(outs,*) 'EHELPD: error writing help message'
+        call edisp(iuout,outs)
       endif
       return
       END
@@ -4545,6 +4752,7 @@ C C code does not destroy it. Note: this uses the esp_text.c version
 C rather than the esru_x.c version.
       SUBROUTINE dupphelp(NH)
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       CHARACTER H*72,dh*72
 
@@ -4553,7 +4761,7 @@ C rather than the esru_x.c version.
         dh=h(I)
         call updhelp(dh)
    50 CONTINUE
-      RETURN
+      return
       END
 
 C ********************* PHELPW
@@ -4669,8 +4877,11 @@ C Refresh the image.
       MODLEN=.TRUE.
       MODBND=.TRUE.
       MODIFY=.TRUE.
-      write(6,*)ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
-     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
+C Debug
+C      write(6,*)ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+C     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
+
       if(ITPPSW.eq.0)then
 
 C If perspective view do the normal wireframe calls.
@@ -4694,15 +4905,15 @@ C          ITHLZ=ISEL
       elseif(ITPPSW.eq.1)then
 
 C User toggle to a plan view.
-        call PLELEV(IUF,'P',ier)
+        call PLELEV('P')
       elseif(ITPPSW.eq.2)then
 
 C User toggle to a south view.
-        call PLELEV(IUF,'S',ier)
+        call PLELEV('S')
       elseif(ITPPSW.eq.3)then
 
 C User toggled to an east view.
-        call PLELEV(IUF,'E',ier)
+        call PLELEV('E')
       elseif(ITPPSW.eq.4)then
 
 C Perspective view from the sun.
@@ -4765,9 +4976,9 @@ C Generate a heading for the view.
 
 C ************* EVSET
 C EVSET provides setup environment for wire frame view w/in prj.
-C ITRC = trace level, IER=0 OK, IER=1 problem. If izgfoc is not 0
+C IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
-      SUBROUTINE EVSET(ITRC,act,IER)
+      SUBROUTINE EVSET(act,IER)
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
@@ -4856,11 +5067,11 @@ C If image info altered (viewpoint) then update display.
           MODBND=.FALSE.
           MODIFY=.FALSE.
         elseif(ITPPSW.eq.1)then
-          if(redraw)call PLELEV(IUF,'P',ier)
+          if(redraw)call PLELEV('P')
         elseif(ITPPSW.eq.2)then
-          if(redraw)call PLELEV(IUF,'S',ier)
+          if(redraw)call PLELEV('S')
         elseif(ITPPSW.eq.3)then
-          if(redraw)call PLELEV(IUF,'E',ier)
+          if(redraw)call PLELEV('E')
         endif
       ENDIF
 
@@ -5002,7 +5213,7 @@ C Get file name.
           call FPOPEN(IUO,ISTAT,1,3,LFIL)
           write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
         endif
-        CALL EMKVIEW(ITRC,IUO,CFGOK,IER)
+        CALL EMKVIEW(IUO,CFGOK,IER)
         IF(IER.NE.0)THEN
           CALL USRMSG(' ',' problem creating image file... ','W')
           goto 92
@@ -5101,17 +5312,14 @@ C EVTOGSET provides setup environment for wire frame toggles w/in prj.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EVTOGSET(ITRC,act,IER)
 #include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
 
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/rpath/path
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
 C       similar = 4, surfs + obs+ ground = 5, ground only = 6
@@ -5257,11 +5465,11 @@ C If image info altered (viewpoint) then update display.
           MODBND=.FALSE.
           MODIFY=.FALSE.
         elseif(ITPPSW.eq.1)then
-          if(redraw)call PLELEV(IUF,'P',ier)
+          if(redraw)call PLELEV('P')
         elseif(ITPPSW.eq.2)then
-          if(redraw)call PLELEV(IUF,'S',ier)
+          if(redraw)call PLELEV('S')
         elseif(ITPPSW.eq.3)then
-          if(redraw)call PLELEV(IUF,'E',ier)
+          if(redraw)call PLELEV('E')
         endif
       ENDIF
 

@@ -218,15 +218,24 @@ C Depending on change type call editing routine.
         call UAT01(IACT,DIR)
       elseif (IDTYP(IACTD(IACT,1)).eq.1002) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C        call UAT02(IACT,DIR)
       elseif (IDTYP(IACTD(IACT,1)).eq.1004) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C        call UAT04(IACT,DIR)
       elseif (IDTYP(IACTD(IACT,1)).eq.1005) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C        call UAT05(IACT,DIR)
       endif
 
@@ -304,15 +313,24 @@ C Depending on change type call editing routine.
           call UAT01(IACT,DIR)
         elseif (IDTYP(IACTD(IACT,1)).eq.1002) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+c         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C          call UAT02(IACT,DIR)
         elseif (IDTYP(IACTD(IACT,1)).eq.1004) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C          call UAT04(IACT,DIR)
         elseif (IDTYP(IACTD(IACT,1)).eq.1005) then 
          write (36,*) 'WARNING UNDEFINED UNCERTAINTY'
-         write (6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
+C Debug.
+C         write(6,*) 'WARNING UNDEFINED UNCERTAINTY'
+
 C          call UAT05(IACT,DIR)
         endif
  10   continue
@@ -589,6 +607,7 @@ C               the common/ua2/ arrays).
 #include "building.h"
 #include "uncertainty.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -596,12 +615,6 @@ C               the common/ua2/ arrays).
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
 
@@ -1191,14 +1204,11 @@ C IEL = index of matching elements
 
       SUBROUTINE CHKPRIM(IZONE,ISURF,IPRIM,NEL,IEL)
 #include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12

@@ -11,10 +11,10 @@
    0.080   0.080   0.881   # glazing
    0.000   0.000   0.000   # gas gap
    0.080   0.080   0.881   # glazing
-# For each layer: normal longwave radiative properties - R_fr, R_bk, Tran.
-   0.160   0.160   0.000   # glazing
+# For each layer: normal longwave radiative properties - EmisF, EmisB, Tran.
+   0.840   0.840   0.000   # glazing
    0.000   0.000   0.000   # gas gap
-   0.160   0.160   0.000   # glazing
+   0.840   0.840   0.000   # glazing
    5   # layers in cfc type:  2
 # For each layer: normal solar optical properties - R_fr, R_bk, Tran.
    0.150   0.150   0.000   # slat-type blind
@@ -28,12 +28,12 @@
    0.080   0.080   0.881   # glazing
    0.000   0.000   0.000   # gas gap
    0.080   0.080   0.881   # glazing
-# For each layer: normal longwave radiative properties - R_fr, R_bk, Tran.
-   0.150   0.150   0.000   # slat-type blind
+# For each layer: normal longwave radiative properties - EmisF, EmisB, Tran.
+   0.850   0.850   0.000   # slat-type blind
    0.000   0.000   0.000   # gas gap
-   0.160   0.160   0.000   # glazing
+   0.840   0.840   0.000   # glazing
    0.000   0.000   0.000   # gas gap
-   0.160   0.160   0.000   # glazing
+   0.840   0.840   0.000   # glazing
    5   # layers in cfc type:  3
 # For each layer: normal solar optical properties - R_fr, R_bk, Tran.
    0.071   0.071   0.775   # glazing
@@ -47,12 +47,12 @@
    0.070   0.070   0.600   # slat-type blind
    0.000   0.000   0.000   # gas gap
    0.080   0.080   0.881   # glazing
-# For each layer: normal longwave radiative properties - R_fr, R_bk, Tran.
-   0.160   0.160   0.000   # glazing
+# For each layer: normal longwave radiative properties - EmisF, EmisB, Tran.
+   0.840   0.840   0.000   # glazing
    0.000   0.000   0.000   # gas gap
-   0.150   0.150   0.000   # slat-type blind
+   0.850   0.850   0.000   # slat-type blind
    0.000   0.000   0.000   # gas gap
-   0.160   0.160   0.000   # glazing
+   0.840   0.840   0.000   # glazing
 # layer type index for cfc type:  1
 1,0,1
 # Gas mixture properties for cfc type:  1
@@ -76,7 +76,7 @@
  0.100E+04  0.147E-01        # a and b coeffs.- specific heat (J/kg.K)
 # slat-type blind attributes for cfc type:  2
 # slat: width(mm); spacing(mm); angle(deg); orientation(HORZ/VERT); crown (mm); w/r ratio; slat thickness (mm)
-  25.400  21.170  89.000  HORZ    0.000   0.000   0.330
+  25.400  21.170   89.000  HORZ    0.000   0.000   0.330
 # layer type index for cfc type:  3
 1,0,2,0,1
 # Gas mixture properties for cfc type:  3
@@ -92,4 +92,4 @@
  0.100E+04  0.147E-01        # a and b coeffs.- specific heat (J/kg.K)
 # slat-type blind attributes for cfc type:  3
 # slat: width(mm); spacing(mm); angle(deg); orientation(HORZ/VERT); crown (mm); w/r ratio; slat thickness (mm)
-  25.400  21.170   0.000  HORZ    0.000   0.000   0.330
+  25.400  21.170   89.000  HORZ    0.000   0.000   0.330

@@ -39,10 +39,12 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#include <esp-r.h>
+#include "esp-r.h"
 #include <commons.h>    
 
 extern FILE *wwc;
+extern int  wwc_ok;   /* assume this set in esru_util.c */
+extern int  wwc_macro;   /* assume this set in esru_util.c */
 
 /* f_height and f_width which already declared globaly in esp-r.c are used here. */ 
 extern gint f_height;
@@ -1682,8 +1684,8 @@ void u2pixel_(ux,uy,ix,iy)
   x=(x + x_add) * x_scale;
   y=(y + y_add) * y_scale;
 
-  *ix = x_off + (int) x;
-  *iy = y_off - (int) y;
+  *ix = (long int) x_off + (long int) x;
+  *iy = (long int) y_off - (long int) y;
   return;
 }
 
@@ -2825,7 +2827,7 @@ void popupimage_(char *prom,char *docu,char *act,char *file,int lenprom,int lend
      XSize = gdk_pixbuf_get_width(loadgpbimage);	/* get the actual size of the pixbuf */
      YSize = gdk_pixbuf_get_height(loadgpbimage);
      imageloaded = 1;
-     g_print("loaded image file %s %d %d\n",file_local,XSize,YSize);
+     /* debug g_print("loaded image file %s %d %d\n",file_local,XSize,YSize); */
    }
    image = gtk_image_new_from_pixbuf(loadgpbimage);	/* create a gtk image from the pixbuf */
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(askbox)->vbox),image);

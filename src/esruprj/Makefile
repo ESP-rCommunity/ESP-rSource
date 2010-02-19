@@ -19,7 +19,7 @@ PROG = prj$(EXE)
 
 OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
-	  clickonbitmap.o common3dv.o context.o ctlexp.o ctlwrt.o ctprob.o \
+	  clickonbitmap.o common3dv.o commonclm.o context.o ctlexp.o ctlwrt.o ctprob.o \
 	  ctread.o DG_controller_menu.o DHW_module.o dossupport.o e2eplus.o \
 	  e3dviews.o ecasctl.o econstr.o econtrol.o edatabase.o edcasctl.o \
 	  edcfd.o edcfg.o edcon.o edcondb.o eddb.o edgeo.o edipv.o editCFC.o edmrt.o \
@@ -29,7 +29,7 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  ground_temp_mains.o gtopol.o h3k_utils.o hcfmk.o initalc.o insert.o item.o \
 	  maintn.o mcdbscn.o mfcdat.o mfelst.o mfnmsc.o mfprb1.o mfprb2.o mfrlst.o \
 	  mksbem.o MultiYear_climate.o mvalid.o \
-	  net2pdf.o newnet.o nwkrewr.o plelev.o pltcfg.o pltnet.o prescoef.o \
+	  net2pdf.o newnet.o nwkrewr.o plelevvc.o pltcfg.o pltnet.o prescoef.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
@@ -41,6 +41,9 @@ $(PROG): $(OBJECTS)
 anlytc.F:
 	rm -f anlytc.F
 	ln -s $(VLDdir)/anlytc.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(COMdir)/ascii_mat.F .
 bsimsel.F:
 	rm -f bsimsel.F
 	ln -s $(COMdir)/bsimsel.F .
@@ -65,6 +68,9 @@ cgd.F:
 common3dv.F:
 	rm -f common3dv.F
 	ln -s $(COMdir)/common3dv.F .
+commonclm.F:
+	rm -f commonclm.F
+	ln -s $(COMdir)/commonclm.F .
 ctlexp.F:
 	rm -f ctlexp.F
 	ln -s $(COMdir)/ctlexp.F .
@@ -167,9 +173,9 @@ newnet.F:
 nwkrewr.F:
 	rm -f nwkrewr.F
 	ln -s $(COMdir)/nwkrewr.F .
-plelev.F:
-	rm -f plelev.F
-	ln -s $(COMdir)/plelev.F .
+plelevvc.F:
+	rm -f plelevvc.F
+	ln -s $(COMdir)/plelevvc.F .
 pltcfg.F:
 	rm -f pltcfg.F
 	ln -s $(COMdir)/pltcfg.F .
@@ -234,13 +240,13 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	anlytc.F aim2_pretimestep.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
-	cfgrid.F cgd.F common3dv.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
+	anlytc.F aim2_pretimestep.F ascii_mat.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
+	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
 	DHW_module.F exlgrad.F dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F \
 	edatabase.F egeometry.F egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F \
 	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
-	net2pdf.F newnet.F nwkrewr.F plelev.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
+	net2pdf.F newnet.F nwkrewr.F plelevvc.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
 	readTrnsys.F PltDummy.F
 

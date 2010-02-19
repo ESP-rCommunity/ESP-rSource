@@ -33,6 +33,7 @@ C SDDEF001 - Material properties distribution definition.
 #include "building.h"
 #include "uncertainty.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -41,37 +42,31 @@ C SDDEF001 - Material properties distribution definition.
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       common/UADFLT/MATTYPE(30),DFLTMAT(5,6)
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-      logical closemat
+      logical closemat1,closemat2
 
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
 
-      CHARACTER NAM*72,TITL*72
+      CHARACTER NAM*72
       CHARACTER LUALF*72,LCNG*15,LLOC*15,t15*15
       CHARACTER H*72, ITEM(8)*16, LELM(MMLC*ME)*36
 
       DIMENSION IVALP(6),IVALE(MMLC*ME),IELM(MMLC*ME)
       
       IER=0
+
+C Establish if material data arrays have been filled. If not return.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so admit-',
+     &    'tance of construction attributes cannot be calculated.','W')
+        ier=1
+        return
+      endif
+
 C Materials - find and display unique elements.
       call edisp(iuout,' Material selection. ')
 
@@ -79,30 +74,21 @@ C This returns the number of unique elements and there db ref.
       call UPELM(NPRIM,IELM,IER)
 
 C Now find the names of the materials.
-      call eclose(matver,1.1,0.01,closemat)
       DO 20 II=1,NPRIM
-        IDB=IELM(II)
-        IER=0
-        if(closemat)then
-          legmat=IELM(II)   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-            DRV=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
+        legmat=IELM(II)   ! which legacy index
+        if(legmat.gt.0)then
+          matarrayindex=mathash(legmat)  ! find matching array index
+ 
+C And if matarrayindex is zero then re-establish NAM.
+          if(matarrayindex.eq.0)then
+            NAM='AIR'
+          else
             write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
-        else
-          CALL ERPCDB(IFMAT,IDB,iuout,IERR,DBCON,DBDEN,DBSHT,E,A,
-     &      DRV,TITL,NAM)
         endif
 
 C Check for errors - add to the total error counter if error has occured.
-        if (IERR.ne.0) then
+        if (IER.ne.0) then
           IER=101
           return
         endif
@@ -149,7 +135,7 @@ C Now determine the property of the element which is uncertain.
       H(3)='Exit will return to the main menu '
       H(4)='without saving any data. '
       IPPIC=6
- 6    CALL EPICKS(IPPIC,IVALP,' ',' Which property : ',
+      CALL EPICKS(IPPIC,IVALP,' ',' Which property : ',
      &                       16,NITMS,ITEM,LELM(IVALE(1)),IERR,4)
 
 C Check for errors - add to the total error counter if error has occured.
@@ -225,55 +211,42 @@ C Work out material category and property and hence uncertainty.
       end
 
 C ****************** SDDEF002 ******************
-C SDDEF002 - Composite constructions dietribution definition.
+C SDDEF002 - Composite constructions distribution definition.
       subroutine SDDEF002(ICDEF,IER)
 #include "building.h"
 #include "uncertainty.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA31/MATNAM(MNCNG,2)
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
 
-      CHARACTER NAM*72,TITL*72
+      CHARACTER NAM*72
       CHARACTER H*72, LELM(MMLC*ME)*36
       CHARACTER MATNAM*12
 
       DIMENSION IVALE(MMLC*ME)
 
       IER=0
+
+C Establish if material data arrays have been filled. If not return.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so distri-',
+     &    'bution of constructions not available.','W')
+        ier=102
+        return
+      endif
+
 C Composite constructions.
       call EPKMLC(ISEL,'Which construction?','  ',IERR)
 
@@ -288,25 +261,17 @@ C Check for errors - add to the total error counter if error has occured.
       if (IRT.eq.1) then
 
 C Pick a material in that MLC.
-        call eclose(matver,1.1,0.01,closemat)
         II=0
         do 10 IL=1,LAYERS(ISEL)
-          if(closemat)then
-            legmat=IPR(ISEL,IL)   ! which legacy index
-            if(legmat.ge.0)then
-              matarrayindex=mathash(legmat)  ! find matching array index
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
+          matarrayindex=IPRMAT(ISEL,IL)   ! which array index
+          if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then re-establish NAM.
+            if(matarrayindex.eq.0)then
+              NAM='AIR'
+            else
               write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
-          else
-            CALL ERPCDB(IFMAT,IPR(ISEL,IL),iuout,IERR,DBCON,DBDEN,
-     &        DBSHT,E,A,DRV,TITL,NAM)
           endif
 
 C Check for errors - add to the total error counter if error has occured.
@@ -433,6 +398,8 @@ C SDDEF004 - Operations distribution definition.
 
       CHARACTER H*72
 
+C << contextual help should be added >>
+
       IER=0
 C Operations file data.
       call edisp(iuout,' Operations parameter selection. ')
@@ -477,11 +444,8 @@ C SDDEF005 - Convection coefficients distribution definition.
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
-
-      CHARACTER H*72
 
       IDMAT(ICDEF,1)=1
       IDMAT(ICDEF,2)=1
@@ -522,11 +486,8 @@ C SDDEF101 - Zone geometry distribution definition.
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
-
-      CHARACTER H*72
 
       IDMAT(ICDEF,1)=1
       IDMAT(ICDEF,2)=1

@@ -686,6 +686,10 @@ C     ****************************************************
 #include "building.h"
 #include "CETC_definitions.h"
 
+C number of zones and number of constructions in model
+      common/c1/ncomp,ncon
+      integer ncomp,ncon
+
 C     Flag indicating if radiant floor is active.
       COMMON/RadFloor/RadFloor_active
 
@@ -725,8 +729,8 @@ C     the radiant floor model is not active; otherwise it will
 C     unnecessarly slow the simulation down!
       IF ( RadFloor_active ) THEN
 
-         DO Iz = 1, MCOM
-            DO Is = 1, MS
+         DO Iz = 1, ncomp
+            DO Is = 1, ncon
                DO J = 1, Nmax
                   DO I = 1, Nmax
 

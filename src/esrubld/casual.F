@@ -46,6 +46,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 
       subroutine mzcasi(icomp)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "sbem.h"
@@ -59,9 +60,6 @@ C QLAT   - latent load for present (1) and future (2) time step.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
       common/btime/btimep,btimef
-
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Zone lighting and power commons.
       COMMON/ELECFLG/IELF(MCOM)
@@ -88,7 +86,16 @@ C Temporal db commons.
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      common/prec7/itcnst
 
+C Common ncmtmstps is used as a flag to start counting simulation timesteps
+C and is used for code related to UK NCM method
+      common/CountTimesteps/i_countsteps(mcom),numbStartTimesteps,
+     &numTotTimstps
+      integer i_countsteps
+      integer numbStartTimesteps  !total number of start-up timesteps
+      integer numTotTimstps !total number of timesteps including the start-up days
+     
       COMMON/COE34/QCASRT(MCOM),QCASCT
       COMMON/COE34D/QCASR(2),QCASC(2)
       COMMON/COE34S/QCCS(MCOM),QCRS(MCOM)
@@ -164,7 +171,26 @@ C that are taken from the activities temporal data
       REAL QEQUIPCASR,QEQUIPLATN,QTOTLIGHT,QLIGHTCASC,QLIGHTCASR
       REAL QLIGHTLATN
       INTEGER ILIGHT_IN_SBEMDB
+
 C.........END: USED FOR ACTIVITY TDF DATA.....................
+
+C Common to calculate ncm lighting energy calculation for results output
+      common/ncmlightEnergy/LGHT_ncm_Energy(MCOM),
+     &      fmonthLGHT_ncm_Energy(12,MCOM)
+      real LGHT_ncm_Energy,fmonthLGHT_ncm_Energy
+
+C Common to count the number of occupied hours above 27oC (oper. temperature)
+C Used for UK NCM purposes
+C NOTE: this is timestep overheating
+      common/ncmHrOverheat/ihroverheats(MCOM),ihroccup(MCOM)
+      integer ihroverheats,ihroccup
+
+C Common to count for the number of timesteps that systems are in operatrion
+C Used to calculate an NCM Auxiliary energy (post-processed in save level 6).
+C It excludes start-up timesteps
+      common/ncmOperHrSystem/iOperTimestep(MCOM),
+     &       iMonthOperTimestep(12,MCOM)      
+      integer iOperTimestep,iMonthOperTimestep      
 
       REAL QCASLT  ! to hold the summation of pres + future latent
 
@@ -197,6 +223,8 @@ C.....Named constnats for timerows
       integer iPresent, iFuture
       parameter (iPresent=1, iFuture=2) 
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+      integer imonth !current month at simulation time (to accumulate monthly results)
+      integer idayn  
 
 C Trace output ?
       traceok = .true.
@@ -212,15 +240,22 @@ C Trace output ?
         CALL DAYCLK(IDYP,BTIMEF,ITU)
       endif
 
+C This loop executes 6720 times per timestep since
+C MC=24*MCT*MDTY and MPHAS =4 as defined in building.h. This is
+C extremely inefficient and causes a significant increase in 
+C run-time. This loop is only used for trace. Loop is now skipped
+C unless trace is on. 
+      if(traceok) then
 C Update present and zero the future zone power values. 
-      DO 4 IPHS=1,MPHAS
-        DO 5 ICAS=1,MC
-          RP(ICOMP,1,ICAS,IPHS)=RP(ICOMP,2,ICAS,IPHS)
-          QP(ICOMP,1,ICAS,IPHS)=QP(ICOMP,2,ICAS,IPHS)
-          RP(ICOMP,2,ICAS,IPHS)=0.
-          QP(ICOMP,2,ICAS,IPHS)=0.
-  5     CONTINUE
-  4   CONTINUE
+        DO 4 IPHS=1,MPHAS
+          DO 5 ICAS=1,MC
+            RP(ICOMP,1,ICAS,IPHS)=RP(ICOMP,2,ICAS,IPHS)
+            QP(ICOMP,1,ICAS,IPHS)=QP(ICOMP,2,ICAS,IPHS)
+            RP(ICOMP,2,ICAS,IPHS)=0.
+            QP(ICOMP,2,ICAS,IPHS)=0.
+  5       CONTINUE
+  4     CONTINUE
+      endif
 
 C Zero zone power loads and update present control fractions.
       DO 9 ITY=1,MGTY
@@ -245,7 +280,10 @@ C Recover definitions for current day type and timeF.
         ID=IDWP
       endif
       if (btimef.gt.24.) then
-        write (6,*) 'btimef.gt.24'
+
+C Debug.
+C        write(6,*) 'btimef.gt.24'
+
         btimef=btimef-24.
         ID=IDWF
       endif
@@ -374,40 +412,72 @@ C activity data type changes (in the tdf file).
 
 C Total occupancy gains are equal to: occupancy density*metabolic rate*fraction*
 C Zone floor area
-        QTOTOCCUP=TMAR(1,1)*ITMAR(1,2)*VAL(ISD)*ZBASEA(ICOMP)
+        QTOTOCCUP=TMAR(IFOC,1)*ITMAR(IFOC,2)*VAL(ISD)*ZBASEA(ICOMP)
 
 C Get the casual sensible gains from occupants (using the percentage of 
 C latent occupant gains here)
-        QOCCCASC=(QTOTOCCUP-((QTOTOCCUP*ITMAR(1,3))/100))/2
+        QOCCCASC=(QTOTOCCUP-((QTOTOCCUP*ITMAR(IFOC,3))/100.0))/2.0
 
 C Convective and radiative occupant gains are the same at the moment (50%)
         QOCCCASR=QOCCCASC
 
 C Using again the percentage of latent gains for the occupants' latent heat gains
-        QOCCLATN=((QTOTOCCUP*ITMAR(1,3))/100)
+        QOCCLATN=((QTOTOCCUP*ITMAR(IFOC,3))/100.0)
+
+C For UK NCM calculations, check for overheating: call RegOveheat
+        if(isbem.eq.1)then
+
+C Count and increment timesteps to store overheating and lighting
+C results that do not include start-up days
+          i_countsteps(icomp)=i_countsteps(icomp)+1        
+
+C Initialise counters for occupied and overheating hours
+          if(i_countsteps(icomp).eq.1)then
+            ihroverheats(icomp)=0
+            ihroccup(icomp)=0
+            iOperTimestep(ICOMP)=0 
+          endif
+   
+C Calculate total number of start-up timesteps 
+          numbStartTimesteps=itcnst*NTSTEP*24
+          if(i_countsteps(icomp).gt.numbStartTimesteps)then
+
+C NOTE: this is timestep overheating
+            call RegOveheat(icomp)
+          endif
+        endif
 
 C Total EQUIPMENT gains are equal to: equipment gains in w/m2*fraction*
 C Zone floor area
-        QTOTEQUIP=TMAR(1,4)*VAL(ISD+2)*ZBASEA(ICOMP)
+        QTOTEQUIP=TMAR(IFOC,4)*VAL(ISD+2)*ZBASEA(ICOMP)
 
 C C Get the casual sensible gains from equipment (using the percentage of 
 C latent equipment gains)
-        QEQUIPCASC=(QTOTEQUIP-((QTOTEQUIP*ITMAR(1,5))/100))/2
+        QEQUIPCASC=(QTOTEQUIP-
+     &  ((QTOTEQUIP*(real(ITMAR(IFOC,5))))/100.0))/2.
 
 C Convective and radiative equipment gains are the same at the moment (50%)
         QEQUIPCASR=QEQUIPCASC
-        QEQUIPLATN=((QTOTEQUIP*ITMAR(1,5))/100)        
+        QEQUIPLATN=QTOTEQUIP*(real(ITMAR(IFOC,5)))/100.0
 
-C If UK notional model then assign the value of 3.75 W/m2 per 100 lux. Number of
-C lux and fraction of opearation is still taken from then activity database (tdf).
+C If UK notional or reference model then assign the value of 3.75 or 5.2 W/m2 per 100 lux (sbem.db1). 
+C If UK Typical model then assign the value of 4.5 or 6.2 W/m2 per 100 lux (sbem.db1).
+C Number of lux and fraction of opearation is still taken from then activity database (tdf).
 C Additional logic in the future should separate office/storage/industrial spaces
 C for notional building that take 3.75 W/m2 per 100 lux from "other spaces 
-C that take 5.2 W/m2 per 100 lux.
-        IF(INOTI.EQ.1)THEN
-          QTOTLIGHT=3.75*(ITMAR(1,6)/100)*VAL(ISD+1)*ZBASEA(ICOMP)
+C that take 5.2 W/m2 per 100 lux.     
+C Also display lighting TMAR(IFOC,7) is added for 24hrs every day   
+        IF(INOTI.EQ.1.OR.INOTI.EQ.2)THEN ! Notional and refernce models
+          QTOTLIGHT=fNotionalLighting(theactivityindex(ICOMP))*
+     &     (real(ITMAR(IFOC,6))/100.0)*VAL(ISD+1)*ZBASEA(ICOMP)+
+     &     TMAR(IFOC,7)*ZBASEA(ICOMP)
+        ELSEIF(INOTI.EQ.3)THEN ! Typical model
+          QTOTLIGHT=fTypicalLighting(theactivityindex(ICOMP))*
+     &     (real(ITMAR(IFOC,6))/100.0)*VAL(ISD+1)*ZBASEA(ICOMP)+
+     &      TMAR(IFOC,7)*ZBASEA(ICOMP)
         ELSE
 
-C Need type of light and then a value
+C Fall to here if INOTI is 4 or INOTI is zero. Need type of light and then a value
 C taken from sbem.db1 will be combined with a TDF static data        
           IF(ILIGHTUSER(ICOMP).EQ.0)THEN
             ILIGHT_IN_SBEMDB=ILITYP(ICOMP)
@@ -417,20 +487,28 @@ C a value (in w/m2/100lux) taken from ncm file for the specific type of lights
 C In PDRL(ILIGHT_IN_SBEMDB,2): 2 means commercial buildings. This is the only option
 C for the moment. Additional logic required to add: 1, which is for industrial
 C buildings in the NCM methodology
-            QTOTLIGHT=
-     &      PDRL(ILIGHT_IN_SBEMDB,2)*(ITMAR(1,6)/100)*VAL(ISD+1)*
-     &      ZBASEA(ICOMP)
+C Also display lighting TMAR(IFOC,7) is added for 24hrs every day
+            if(ILIGHT_IN_SBEMDB.eq.0)then
+              QTOTLIGHT=0.
+            else            
+              QTOTLIGHT=
+     &        PDRL(ILIGHT_IN_SBEMDB,2)*(real(ITMAR(IFOC,6))/100.0)*
+     &        VAL(ISD+1)*ZBASEA(ICOMP)+TMAR(IFOC,7)*ZBASEA(ICOMP)
+            endif
           ELSEIF(ILIGHTUSER(ICOMP).EQ.1)THEN
 
-C User specfied gains from lights (NCM purposes)
-            QTOTLIGHT=LIGHTWATTAGE(ICOMP)*VAL(ISD+1)
+C User specfied gains from lights (NCM purposes) in W/m2 per 100 lux
+C Gains=W/m2per100lux*fraction lights on*area*(required lux level/100lux)+
+C DisplaylightingW/m2*Area
+            QTOTLIGHT=LIGHTWATTAGE(ICOMP)*VAL(ISD+1)*ZBASEA(ICOMP)*
+     &         (real(ITMAR(IFOC,6)/100.0))+TMAR(IFOC,7)*ZBASEA(ICOMP)
           ENDIF
         ENDIF
-        
-C Convective and radiative equipment gains are the same at the moment (50%)
-        QLIGHTCASC=QTOTLIGHT/2
-        QLIGHTCASR=QLIGHTCASC
 
+C Convective and radiative lighting gains are the same at the moment (50%)
+        QLIGHTCASC=QTOTLIGHT/2.
+        QLIGHTCASR=QLIGHTCASC
+              
 C For lighting heat gains assume latent gains are zero
         QLIGHTLATN=0
 C       QTOTGAIN=QTOTOCCUP+QTOTEQUIP+QTOTLIGHT
@@ -450,6 +528,47 @@ C it can be used within MZLS3.
         ctlperocupl(icomp,2)=QOCCLATN
         ctlperlightl(icomp,2)=QLIGHTLATN
         ctlequipl(icomp,2)=QEQUIPLATN
+
+C Using LGHT_ncm_Energy(icomp) for the results of the UK's NCM method
+C This will be in Wh units. It will also need to be divided with NTSTEP
+C (number of timesteps) to use it in results.
+        if(isbem.eq.1)then
+
+C Initialise LGHT_ncm_Energy(icomp)
+          if(i_countsteps(icomp).eq.1)then
+            LGHT_ncm_Energy(icomp)=0.
+            do 333 imonth=1,12
+              fmonthLGHT_ncm_Energy(imonth,icomp)=0.
+ 333        continue
+          endif          
+
+C Calculate total number of start-up timesteps 
+C           numbStartTimesteps=itcnst*NTSTEP*24
+          if(i_countsteps(icomp).gt.numbStartTimesteps)then
+
+C tmpLGHT_ncm_Energy(icomp) is a temporary array to pass the lighting energy
+C gains/consumption back to LGHT_ncm_Energy(icomp) and allow re-initialiasation
+C for the next simulation
+            LGHT_ncm_Energy(icomp)=LGHT_ncm_Energy(icomp)+
+     &        ctlperlightc(icomp,2)+ctlperlightr(icomp,2)+
+     &        ctlperlightl(icomp,2)    
+
+C determine month number by calling edayr
+            call edayr(idyp,idayn,imonth)
+            fmonthLGHT_ncm_Energy(imonth,icomp)=
+     &          fmonthLGHT_ncm_Energy(imonth,icomp)+ 
+     &          ctlperlightc(icomp,2)+ctlperlightr(icomp,2)+
+     &          ctlperlightl(icomp,2)       
+          endif
+
+C At the last timestep - re-initialise i_countsteps(icomp) to 0
+C First find total number of simulation period timesteps including start-up period
+          numTotTimstps=(((isdf-isds)+1)*24*NTSTEP)+numbStartTimesteps
+          if(i_countsteps(icomp).eq.numTotTimstps)then
+            i_countsteps(icomp)=0
+          endif           
+        endif
+        
         if(traceok)then
           write(outs,*)'TOTAL OCCUPANT gains from temporal db=',
      &      QTOTOCCUP,QOCCCASC,QOCCCASR,QOCCLATN
@@ -544,12 +663,14 @@ C If adaptive comfort algorithm is active add sensible heat gains when on
       call eclose(PREVSTATFAN,1.00,0.01,closea)
       IF(CLOSEA)THEN
 
-C Debug...
+C Debug.
 C        write(6,*)"before addition",QCASC(2)
+
         QCASC(2)=QCASC(2)+TOTPWR(ICOMP)
 
-C Debug...
+C Debug.
 C        write(6,*)"after addition",QCASC(2)
+
       ENDIF
 
 C BEGIN NRCan casual-gain -> electrical coupling code.
@@ -724,6 +845,7 @@ C  FRAC : fraction of casual gain (returned value)
 
       SUBROUTINE INTLUM(ICOMP,FRAC)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
@@ -746,10 +868,6 @@ C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
 
 C Zone casual gain control data.
@@ -841,7 +959,7 @@ C If esp pre-processor or user defined df then read in geometry data.
       if(nog)then
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
+          call georead(iunit,lgeom(icomp),icomp,0,itu,ier)
         else
           call egomin(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
         endif
@@ -1272,9 +1390,12 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               write(doit,'(3a,i3,3a)')'e2r -file ',
      &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
      &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
-              write(6,'(3a,i3,3a)')'e2r -file ',
-     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
-     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
+
+C Debug.
+C              write(6,'(3a,i3,3a)')'e2r -file ',
+C     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
+C     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
+
               call edisp(icout,'Lighting simulation has now commenced.')
               call runit(doit,'-')
 
@@ -1442,7 +1563,7 @@ C includes the maintinence factor.
                     subT=diftzn*DFDAT(ICOMP,N,J,I)
                     if(IFT.EQ.1)then
                       write(outs,103)I,J,
-     &                      DFDAT(ICOMP,N,J,I)*100.,diftzn,
+     &                      DFDAT(ICOMP,N,J,I)*100.0,diftzn,
      &                      subT,SETPT(ICOMP,N)
   103                 format(I5,' via internal ',I5,F9.2,'      ',
      &                     F8.1,F7.1,F6.0)
@@ -1458,7 +1579,7 @@ C same way as for external, but do not check for sun dir illuminance:
                     subT=skycon
                     if(IFT.EQ.1)then
                       write(outs,107)N,I,J,
-     &                 DFDAT(ICOMP,N,J,I)*V*100.,V,
+     &                 DFDAT(ICOMP,N,J,I)*V*100.0,V,
      &                 suncon,skycon,subT,SETPT(ICOMP,N),Ev
   107                 format(I6,I5,'  no ',I7,F9.2,F6.2,F8.1,F8.1,
      &                       F7.1,F6.0,F9.0)
@@ -1522,7 +1643,7 @@ C glazing and get current visible transmission of glazing.
                       subT=suncon+skycon
                       if(IFT.EQ.1)then
                         write(outs,101)N,I,J,
-     &                   DFDAT(ICOMP,N,J,I)*V*100.,V,
+     &                   DFDAT(ICOMP,N,J,I)*V*100.0,V,
      &                    suncon,skycon,subT,SETPT(ICOMP,N),Ev
   101                   format(I6,I5,' yes ',I7,F9.2,F6.2,F8.1,F8.1,
      &                       F7.1,F6.0,F9.0)
@@ -1535,7 +1656,7 @@ C glazing and get current visible transmission of glazing.
                       subT=skycon
                       if(IFT.EQ.1)then
                         write(outs,102)N,I,J,
-     &                   DFDAT(ICOMP,N,J,I)*V*100.,V,
+     &                   DFDAT(ICOMP,N,J,I)*V*100.0,V,
      &                   suncon,skycon,subT,SETPT(ICOMP,N),Ev
   102                   format(I6,I5,'  no ',I7,F9.2,F6.2,F8.1,F8.1,
      &                       F7.1,F6.0,F9.0)
@@ -1557,7 +1678,7 @@ C glazing and get current visible transmission of glazing.
                 subT=skycon
                 if(IFT.EQ.1)then
                   write(outs,104)N,I,J,
-     &              DFDAT(ICOMP,N,J,I)*V*100.,V,
+     &              DFDAT(ICOMP,N,J,I)*V*100.0,V,
      &              suncon,skycon,subT,SETPT(ICOMP,N),Ev
   104             format(I6,I5,'  no ',I7,F9.2,F6.2,F8.1,F8.1,
      &                  F7.1,F6.0,F9.0)
@@ -2403,7 +2524,7 @@ C sky patch:
          z1 = sin(alt(nzone)*RAD)
       endif
 
-C Debug
+C Debug.
 C      write(6,*) 'x3: ',x3,' y3: ',y3,'z3: ',z3
 C      write(6,*) 'x2: ',x2,' y2: ',y2,'z2: ',z2
 C      write(6,*) 'x1: ',x1,' y1: ',y1,'z1: ',z1

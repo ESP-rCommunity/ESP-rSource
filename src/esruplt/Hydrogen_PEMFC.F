@@ -1209,7 +1209,9 @@ C                Set heat & power flow in normal operation to zero.
 C-------------------------------------------------------------------------
                  fNorm_OP_DC_Power                 = 0.0     ! (W)
                  fNorm_OP_Heat                     = 0.0     ! (W)
-                 fNorm_OP_Stack_Voltage            = 0.0     ! (V)
+                 fNorm_OP_Stack_Voltage            =
+     &             fNerst_Voltage
+     &             * float ( iNum_Cells_In_Stack ( iComponent ) )     ! (V)
                  fNorm_OP_Stack_Current            = 0.0     ! (Amps)
                  fNorm_OP_Skin_Losses              = 0.0     ! (W)
                  fNorm_OP_AC_Power_use             = 0.0     ! (W)
@@ -1408,7 +1410,6 @@ C-------------------------------------------------------------------------
 C        Save stack operational voltage in esp-r common block
 C-------------------------------------------------------------------------     
          bVoltP (iComponent) = fNorm_OP_Stack_Voltage         ! (V)
-         
 C-------------------------------------------------------------------------
 C        Calculate stack accumulated operating time
 C-------------------------------------------------------------------------

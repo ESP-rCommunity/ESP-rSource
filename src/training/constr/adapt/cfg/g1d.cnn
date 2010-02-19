@@ -1,109 +1,109 @@
 *connections  for g1d
-*Date Wed Jul 28 16:51:56 2004
+*Date Fri Jul 17 13:34:40 2009
     106   # number of connections
-   1   1   0   0   0  #   1  north in bin_c is External
-   1   2   0   0   0  #   2  porch in bin_c is External
-   1   3   3   2   1  #   3  stairs in bin_c >|< bin_c in stairs
-   1   4   1   0   0  #   4  east in bin_c >|< Identical environment
-   1   5   3   6   7  #   5  bathrm in bin_c >|< bin_c in bathrm
-   1   6   4   1   0  #   6  floor in bin_c >|< ground profile 1
-   2   1   3   1   3  #   7  bin_c in stairs >|< stairs in bin_c
-   2   2   3   3   4  #   8  hall1 in stairs >|< stairs in hall_1
-   2   3   3   5   1  #   9  livrm in stairs >|< stairs in liv_room
-   2   4   1   0   0  #  10  east in stairs >|< Identical environment
-   2   5   3   6   8  #  11  bathrm in stairs >|< stairs in bathrm
-   2   6   4   1   0  #  12  floor in stairs >|< ground profile 1
-   2   7   3   8   6  #  13  w_heat_c in stairs >|< stairs in w_heat_c
-   2   8   3   9  10  #  14  hall2 in stairs >|< stairs in hall_2
-   3   1   0   0   0  #  15  door_ext in hall_1 is External
-   3   2   3   4   4  #  16  kitchn in hall_1 >|< hall1 in kitchen
-   3   3   3   5   7  #  17  door_living in hall_1 >|< door_hall1 in liv_room
-   3   4   3   2   2  #  18  stairs in hall_1 >|< hall1 in stairs
-   3   5   3   9   8  #  19  hall_2 in hall_1 >|< hall1 in hall_2
-   3   6   4   1   0  #  20  floor in hall_1 >|< ground profile 1
-   3   7   3   6   9  #  21  bathrm in hall_1 >|< hall_1 in bathrm
-   3   8   3   4  10  #  22  door_kitchn in hall_1 >|< door_hall1 in kitchen
-   4   1   0   0   0  #  23  north in kitchen is External
-   4   2   1   0   0  #  24  west in kitchen >|< Identical environment
-   4   3   3   5   8  #  25  living in kitchen >|< kitch in liv_room
-   4   4   3   3   2  #  26  hall1 in kitchen >|< kitchn in hall_1
-   4   5   3   7   6  #  27  bed1 in kitchen >|< kitchn in bed1
-   4   6   4   1   0  #  28  floor in kitchen >|< ground profile 1
-   4   7   3  10   8  #  29  bed2 in kitchen >|< kitch in bed2
-   4   8   0   0   0  #  30  east in kitchen is External
-   4   9   0   0   0  #  31  window in kitchen is External
-   4  10   3   3   8  #  32  door_hall1 in kitchen >|< door_kitchn in hall_1
-   5   1   3   2   3  #  33  stairs in liv_room >|< livrm in stairs
-   5   2   1   0   0  #  34  west in liv_room >|< Identical environment
-   5   3   0   0   0  #  35  south in liv_room is External
-   5   4   1   0   0  #  36  east in liv_room >|< Identical environment
-   5   5   3  10   7  #  37  bed2 in liv_room >|< living in bed2
-   5   6   4   1   0  #  38  floor in liv_room >|< ground profile 1
-   5   7   3   3   3  #  39  door_hall1 in liv_room >|< door_living in hall_1
-   5   8   3   4   3  #  40  kitch in liv_room >|< living in kitchen
-   5   9   0   0   0  #  41  window in liv_room is External
-   5  10   3  11   6  #  42  bed3 in liv_room >|< living in bed3
-   5  11   0   0   0  #  43  TIM in liv_room is External
-   6   1   0   0   0  #  44  north in bathrm is External
-   6   2   3   7   4  #  45  bed1 in bathrm >|< bathrm in bed1
-   6   3   3   8   4  #  46  w_heat_c in bathrm >|< bathrm in w_heat_c
-   6   4   1   0   0  #  47  east in bathrm >|< Identical environment
-   6   5   3  12   1  #  48  loft in bathrm >|< bathrm in loft
-   6   6   0   0   0  #  49  porch in bathrm is External
-   6   7   3   1   5  #  50  bin_c in bathrm >|< bathrm in bin_c
-   6   8   3   2   5  #  51  stairs in bathrm >|< bathrm in stairs
-   6   9   3   3   7  #  52  hall_1 in bathrm >|< bathrm in hall_1
-   6  10   3   9   1  #  53  door_hall2 in bathrm >|< door_bath in hall_2
-   6  11   0   0   0  #  54  window in bathrm is External
-   7   1   0   0   0  #  55  north in bed1 is External
-   7   2   1   0   0  #  56  west in bed1 >|< Identical environment
-   7   3   3  10   2  #  57  bed2 in bed1 >|< bed1 in bed2
-   7   4   3   6   2  #  58  bathrm in bed1 >|< bed1 in bathrm
-   7   5   3  12   7  #  59  loft in bed1 >|< bed1 in loft
-   7   6   3   4   5  #  60  kitchn in bed1 >|< bed1 in kitchen
-   7   7   3   9   2  #  61  door_hall2 in bed1 >|< door_bed1 in hall_2
-   7   8   0   0   0  #  62  window in bed1 is External
-   8   1   3   9   6  #  63  door_hall2 in w_heat_c >|< door_whc in hall_2
-   8   2   3   9   5  #  64  hall2 in w_heat_c >|< w_heater_c in hall_2
-   8   3   1   0   0  #  65  east in w_heat_c >|< Identical environment
-   8   4   3   6   3  #  66  bathrm in w_heat_c >|< w_heat_c in bathrm
-   8   5   3  12   9  #  67  loft in w_heat_c >|< w_heat_c in loft
-   8   6   3   2   7  #  68  stairs in w_heat_c >|< w_heat_c in stairs
-   9   1   3   6  10  #  69  door_bath in hall_2 >|< door_hall2 in bathrm
-   9   2   3   7   7  #  70  door_bed1 in hall_2 >|< door_hall2 in bed1
-   9   3   3  11   1  #  71  bed3 in hall_2 >|< hall2 in bed3
-   9   4   1   0   0  #  72  east in hall_2 >|< Identical environment
-   9   5   3   8   2  #  73  w_heater_c in hall_2 >|< hall2 in w_heat_c
-   9   6   3   8   1  #  74  door_whc in hall_2 >|< door_hall2 in w_heat_c
-   9   7   3  12   8  #  75  ceiling in hall_2 >|< hall2 in loft
-   9   8   3   3   5  #  76  hall1 in hall_2 >|< hall_2 in hall_1
-   9   9   3  10   1  #  77  door_bed2 in hall_2 >|< door_hall2 in bed2
-   9  10   3   2   8  #  78  stairs in hall_2 >|< hall2 in stairs
-   9  11   3  11   8  #  79  door_bed3 in hall_2 >|< door_hall2 in bed3
-  10   1   3   9   9  #  80  door_hall2 in bed2 >|< door_bed2 in hall_2
-  10   2   3   7   3  #  81  bed1 in bed2 >|< bed2 in bed1
-  10   3   1   0   0  #  82  west in bed2 >|< Identical environment
-  10   4   0   0   0  #  83  south in bed2 is External
-  10   5   3  11   2  #  84  bed3 in bed2 >|< bed2 in bed3
-  10   6   3  12   6  #  85  loft in bed2 >|< bed2 in loft
-  10   7   3   5   5  #  86  living in bed2 >|< bed2 in liv_room
-  10   8   3   4   7  #  87  kitch in bed2 >|< bed2 in kitchen
-  10   9   0   0   0  #  88  window in bed2 is External
-  11   1   3   9   3  #  89  hall2 in bed3 >|< bed3 in hall_2
-  11   2   3  10   5  #  90  bed2 in bed3 >|< bed3 in bed2
-  11   3   0   0   0  #  91  south in bed3 is External
-  11   4   1   0   0  #  92  east in bed3 >|< Identical environment
-  11   5   3  12  10  #  93  loft in bed3 >|< bed3 in loft
-  11   6   3   5  10  #  94  living in bed3 >|< bed3 in liv_room
-  11   7   0   0   0  #  95  window in bed3 is External
-  11   8   3   9  11  #  96  door_hall2 in bed3 >|< door_bed3 in hall_2
-  12   1   3   6   5  #  97  bathrm in loft >|< loft in bathrm
-  12   2   1   0   0  #  98  east in loft >|< Identical environment
-  12   3   1   0   0  #  99  west in loft >|< Identical environment
-  12   4   0   0   0  # 100  north in loft is External
-  12   5   0   0   0  # 101  south in loft is External
-  12   6   3  10   6  # 102  bed2 in loft >|< loft in bed2
-  12   7   3   7   5  # 103  bed1 in loft >|< loft in bed1
-  12   8   3   9   7  # 104  hall2 in loft >|< ceiling in hall_2
-  12   9   3   8   5  # 105  w_heat_c in loft >|< loft in w_heat_c
-  12  10   3  11   5  # 106  bed3 in loft >|< loft in bed3
+   1   1   0   0   0  #    1 north in bin_c is External
+   1   2   0   0   0  #    2 porch in bin_c is External
+   1   3   3   2   1  #    3 stairs in bin_c >|< bin_c in stairs
+   1   4   1   0   0  #    4 east in bin_c >|< Identical environment
+   1   5   3   6   7  #    5 bathrm in bin_c >|< bin_c in bathrm
+   1   6   4   1   0  #    6 floor in bin_c >|< ground profile 1
+   2   1   3   1   3  #    7 bin_c in stairs >|< stairs in bin_c
+   2   2   3   3   4  #    8 hall1 in stairs >|< stairs in hall_1
+   2   3   3   5   1  #    9 livrm in stairs >|< stairs in liv_room
+   2   4   1   0   0  #   10 east in stairs >|< Identical environment
+   2   5   3   6   8  #   11 bathrm in stairs >|< stairs in bathrm
+   2   6   4   1   0  #   12 floor in stairs >|< ground profile 1
+   2   7   3   8   6  #   13 w_heat_c in stairs >|< stairs in w_heat_c
+   2   8   3   9  10  #   14 hall2 in stairs >|< stairs in hall_2
+   3   1   0   0   0  #   15 door_ext in hall_1 is External
+   3   2   3   4   4  #   16 kitchn in hall_1 >|< hall1 in kitchen
+   3   3   3   5   7  #   17 door_living in hall_1 >|< door_hall1 in liv_room
+   3   4   3   2   2  #   18 stairs in hall_1 >|< hall1 in stairs
+   3   5   3   9   8  #   19 hall_2 in hall_1 >|< hall1 in hall_2
+   3   6   4   1   0  #   20 floor in hall_1 >|< ground profile 1
+   3   7   3   6   9  #   21 bathrm in hall_1 >|< hall_1 in bathrm
+   3   8   3   4  10  #   22 door_kitchn in hall_1 >|< door_hall1 in kitchen
+   4   1   0   0   0  #   23 north in kitchen is External
+   4   2   1   0   0  #   24 west in kitchen >|< Identical environment
+   4   3   3   5   8  #   25 living in kitchen >|< kitch in liv_room
+   4   4   3   3   2  #   26 hall1 in kitchen >|< kitchn in hall_1
+   4   5   3   7   6  #   27 bed1 in kitchen >|< kitchn in bed1
+   4   6   4   1   0  #   28 floor in kitchen >|< ground profile 1
+   4   7   3  10   8  #   29 bed2 in kitchen >|< kitch in bed2
+   4   8   0   0   0  #   30 east in kitchen is External
+   4   9   0   0   0  #   31 window in kitchen is External
+   4  10   3   3   8  #   32 door_hall1 in kitchen >|< door_kitchn in hall_1
+   5   1   3   2   3  #   33 stairs in liv_room >|< livrm in stairs
+   5   2   1   0   0  #   34 west in liv_room >|< Identical environment
+   5   3   0   0   0  #   35 south in liv_room is External
+   5   4   1   0   0  #   36 east in liv_room >|< Identical environment
+   5   5   3  10   7  #   37 bed2 in liv_room >|< living in bed2
+   5   6   4   1   0  #   38 floor in liv_room >|< ground profile 1
+   5   7   3   3   3  #   39 door_hall1 in liv_room >|< door_living in hall_1
+   5   8   3   4   3  #   40 kitch in liv_room >|< living in kitchen
+   5   9   0   0   0  #   41 window in liv_room is External
+   5  10   3  11   6  #   42 bed3 in liv_room >|< living in bed3
+   5  11   0   0   0  #   43 TIM in liv_room is External
+   6   1   0   0   0  #   44 north in bathrm is External
+   6   2   3   7   4  #   45 bed1 in bathrm >|< bathrm in bed1
+   6   3   3   8   4  #   46 w_heat_c in bathrm >|< bathrm in w_heat_c
+   6   4   1   0   0  #   47 east in bathrm >|< Identical environment
+   6   5   3  12   1  #   48 loft in bathrm >|< bathrm in loft
+   6   6   0   0   0  #   49 porch in bathrm is External
+   6   7   3   1   5  #   50 bin_c in bathrm >|< bathrm in bin_c
+   6   8   3   2   5  #   51 stairs in bathrm >|< bathrm in stairs
+   6   9   3   3   7  #   52 hall_1 in bathrm >|< bathrm in hall_1
+   6  10   3   9   1  #   53 door_hall2 in bathrm >|< door_bath in hall_2
+   6  11   0   0   0  #   54 window in bathrm is External
+   7   1   0   0   0  #   55 north in bed1 is External
+   7   2   1   0   0  #   56 west in bed1 >|< Identical environment
+   7   3   3  10   2  #   57 bed2 in bed1 >|< bed1 in bed2
+   7   4   3   6   2  #   58 bathrm in bed1 >|< bed1 in bathrm
+   7   5   3  12   7  #   59 loft in bed1 >|< bed1 in loft
+   7   6   3   4   5  #   60 kitchn in bed1 >|< bed1 in kitchen
+   7   7   3   9   2  #   61 door_hall2 in bed1 >|< door_bed1 in hall_2
+   7   8   0   0   0  #   62 window in bed1 is External
+   8   1   3   9   6  #   63 door_hall2 in w_heat_c >|< door_whc in hall_2
+   8   2   3   9   5  #   64 hall2 in w_heat_c >|< w_heater_c in hall_2
+   8   3   1   0   0  #   65 east in w_heat_c >|< Identical environment
+   8   4   3   6   3  #   66 bathrm in w_heat_c >|< w_heat_c in bathrm
+   8   5   3  12   9  #   67 loft in w_heat_c >|< w_heat_c in loft
+   8   6   3   2   7  #   68 stairs in w_heat_c >|< w_heat_c in stairs
+   9   1   3   6  10  #   69 door_bath in hall_2 >|< door_hall2 in bathrm
+   9   2   3   7   7  #   70 door_bed1 in hall_2 >|< door_hall2 in bed1
+   9   3   3  11   1  #   71 bed3 in hall_2 >|< hall2 in bed3
+   9   4   1   0   0  #   72 east in hall_2 >|< Identical environment
+   9   5   3   8   2  #   73 w_heater_c in hall_2 >|< hall2 in w_heat_c
+   9   6   3   8   1  #   74 door_whc in hall_2 >|< door_hall2 in w_heat_c
+   9   7   3  12   8  #   75 ceiling in hall_2 >|< hall2 in loft
+   9   8   3   3   5  #   76 hall1 in hall_2 >|< hall_2 in hall_1
+   9   9   3  10   1  #   77 door_bed2 in hall_2 >|< door_hall2 in bed2
+   9  10   3   2   8  #   78 stairs in hall_2 >|< hall2 in stairs
+   9  11   3  11   8  #   79 door_bed3 in hall_2 >|< door_hall2 in bed3
+  10   1   3   9   9  #   80 door_hall2 in bed2 >|< door_bed2 in hall_2
+  10   2   3   7   3  #   81 bed1 in bed2 >|< bed2 in bed1
+  10   3   1   0   0  #   82 west in bed2 >|< Identical environment
+  10   4   0   0   0  #   83 south in bed2 is External
+  10   5   3  11   2  #   84 bed3 in bed2 >|< bed2 in bed3
+  10   6   3  12   6  #   85 loft in bed2 >|< bed2 in loft
+  10   7   3   5   5  #   86 living in bed2 >|< bed2 in liv_room
+  10   8   3   4   7  #   87 kitch in bed2 >|< bed2 in kitchen
+  10   9   0   0   0  #   88 window in bed2 is External
+  11   1   3   9   3  #   89 hall2 in bed3 >|< bed3 in hall_2
+  11   2   3  10   5  #   90 bed2 in bed3 >|< bed3 in bed2
+  11   3   0   0   0  #   91 south in bed3 is External
+  11   4   1   0   0  #   92 east in bed3 >|< Identical environment
+  11   5   3  12  10  #   93 loft in bed3 >|< bed3 in loft
+  11   6   3   5  10  #   94 living in bed3 >|< bed3 in liv_room
+  11   7   0   0   0  #   95 window in bed3 is External
+  11   8   3   9  11  #   96 door_hall2 in bed3 >|< door_bed3 in hall_2
+  12   1   3   6   5  #   97 bathrm in loft >|< loft in bathrm
+  12   2   1   0   0  #   98 east in loft >|< Identical environment
+  12   3   1   0   0  #   99 west in loft >|< Identical environment
+  12   4   0   0   0  #  100 north in loft is External
+  12   5   0   0   0  #  101 south in loft is External
+  12   6   3  10   6  #  102 bed2 in loft >|< loft in bed2
+  12   7   3   7   5  #  103 bed1 in loft >|< loft in bed1
+  12   8   3   9   7  #  104 hall2 in loft >|< ceiling in hall_2
+  12   9   3   8   5  #  105 w_heat_c in loft >|< loft in w_heat_c
+  12  10   3  11   5  #  106 bed3 in loft >|< loft in bed3

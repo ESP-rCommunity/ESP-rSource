@@ -1,11 +1,11 @@
 #!/bin/bash -f
 
 echo " "
-echo "This script installs an ESP-r 11.5 X11 or GTK distribution on"
+echo "This script installs an ESP-r 11.6 X11 or GTK distribution on"
 echo "a Mac OSX 10.4+ computer which already has the X11, developers"
 echo "environment and the fink environment setup and running. On a"
 echo "PPC Mac this should run natively. On an Intel based Mac it"
-echo "should run in emulation mode.  NOT TESTED ON OSX 10.5"
+echo "should run in emulation mode."
 echo " "
 echo "It includes ESP-r executables, example models and standard"
 echo "databases as well as some helper applications. "
@@ -150,14 +150,15 @@ echo " This may take a few minutes ..."
 if [ ! -d /opt/esru ]; then
   sudo mkdir /opt/esru
 fi
-  
-cd /opt/esru
+
+# assumes that the tar file was created in / and is not compressed
+cd /
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  sudo zcat $ISD/esp-r_X11_11.5_osx.tar.gz | tar xf - 
+  sudo tar xf $ISD/esp-r_X11_11.6_ppc_osx.tar 
 elif [[ $which = 'b' ]] ; then
   echo " Extracting GTK ESP-r distribution ..."
-  sudo zcat $ISD/esp-r_GTK_11.5_osx.tar.gz | tar xf -
+  sudo tar xf $ISD/esp-r_GTK_11.6_ppc_osx.tar
 fi
 echo " Extracting ESP-r distribution ...done."
 echo " "
