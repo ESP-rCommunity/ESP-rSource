@@ -245,10 +245,6 @@ C ESP-r then a series of files will be opened.
         write(outs,'(2a)')'The viewer output file will be: ',
      &                  filname2(1:lnblnk(filname2))
         call edisp248(iuout,outs,100)
-      elseif(oformat(1:5).eq.'tsbi3')then
-        write(outs,'(2a)')'The tsbi3 output file will be: ',
-     &                  filname2(1:lnblnk(filname2))
-        call edisp248(iuout,outs,100)
       elseif(oformat(1:4).eq.'vrml')then
         write(outs,'(2a)')'The vrml world will be: ',
      &                  filname2(1:lnblnk(filname2))
@@ -357,7 +353,7 @@ C If input format is ww and output is xfig go and do this.
         stop
       endif
 
-C If input format is esp and output is viewer, tsbi3, thf, dxf or
+C If input format is esp and output is viewer, thf, dxf or
 C vrml do this.
       if(iformat(1:3).eq.'esp')then
 
@@ -412,19 +408,6 @@ C Create THF (THINGS) file.
           WRITE(ioout,'(a)') 'ESP'
           WRITE(ioout,'(a)') 'ANT'
           call e2zip(itrc,incobs,ichop)
-          CALL ERPFREE(ioout,ISTAT)
-          call edisp(iuout,' End of conversion.')
-          CALL EPAGEND
-          STOP
-        endif
-        if(oformat(1:5).eq.'tsbi3')then
-          open(ioout,file=filname2,status='UNKNOWN', err=901)
-          WRITE(ioout,'(a)') '#TSBI3-B 11'
-          WRITE(ioout,'(a)') '#comment'
-          WRITE(ioout,'(a)') 'Data converted from esp config. file'
-          WRITE(ioout,'(a)')  filname(:lnblnk(filname))
-          WRITE(ioout,'(a)') ' '
-          call e2tsbi3(itrc,incobs,ichop)
           CALL ERPFREE(ioout,ISTAT)
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND

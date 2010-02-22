@@ -24,7 +24,8 @@ C ELISTCMOD: Controls display and editing of materials.
 C If ACTION = 'M' then include editing if ACTION = '-' only
 C allow choice.  Chgdb flagged true if an mod made to db during session.
 
-C << there might be an alternative to this for materials arrays >>
+C << adapted to use material arrays but still need options for editing 
+C << the other data types
 
       SUBROUTINE ELISTCMOD(iwhich,chgdb,ACTION,IER)
 #include "building.h"
@@ -35,56 +36,55 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       integer lnblnk  ! function definition
 
+C Parameters
+      integer iwhich
+      logical chgdb
+      integer imatarrayindex  ! << needs to be added to parameter list above >>
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/H(60)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
 
-      integer legmat  ! local variable for legacy index.
-      integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
+      logical mod ! to signal whether an item has been altered.
 
-      LOGICAL     OK,dok,MODDB,chgdb
-      DIMENSION ICLN(30),CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
-      DIMENSION EDBCON(19),EDBDEN(19),EDBSHT(19),EE(19),EA(19),EDRV(19)
-      DIMENSION ENAM(19),IDBE(19)
-      CHARACTER ACTION*1,CLSSEL*36
-      CHARACTER CLSDES*30,IDESC*72,H*72,TITL*72,NAM*72,ENAM*72
-      CHARACTER OUTSTR*124,KEY*1,PDBM*64,outs*124
-      CHARACTER xfile*144,tg*1,delim*1
+      LOGICAL OK,dok,MODDB
+      DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
+      integer iwhicharray
+      dimension iwhicharray(60)
+      CHARACTER ACTION*1,CLSSEL*36,ltmp*72,CLSDES*30,H*72
+      CHARACTER KEY*1,PDBM*64,outs*124
+      CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
 
 C Assume no changes to db amd user has not entered password.
       MODDB=.FALSE.
       chgdb=.false.
 
-C Check that the primitive db is not empty.
-    4 IER=0
-      IREC=601
-      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(I),I=1,30)
-      IF(NCLASS.LE.0)THEN
-        CALL USRMSG(' Materials db is empty.',' ','W')
-        IER=1
-        RETURN
-      ENDIF
-
-C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat1)
+C Establish if material data arrays have been filled. If not return
+C with ier=1.
+   4  call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so editing',
+     &    'of material attributes not allowed.','W')
+        return
+      endif
 
 C Setup for menu.
 C Gather the names of the various classes and present this list.
   40  ICO=-1
       CLSDES(1)=  '  Description        No. Items'
       M=1
-      DO 44 I=1,NCLASS
-        IC=ICLN(I)
-        IREC=IC*20-19
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
-        write(CLSSEL(I),'(A)') IDESC(1:36)
-        IF(NE.GT.0)THEN
+      DO 44 I=1,matcats
+        write(CLSSEL(I),'(A)') matcatname(I)(1:32)
+        IF(matcatitems(I).GT.0)THEN
           M=M+1
           CALL EMKEY(M-1,KEY,IER)
-          WRITE(CLSDES(M),'(A1,1X,A,2X,I2)')KEY,IDESC(1:24),NE
+          WRITE(CLSDES(M),'(A1,1X,A,2X,I2)')KEY,matcatname(I)(1:24),
+     &      matcatitems(I)
         ENDIF
    44 CONTINUE
 
@@ -114,7 +114,7 @@ C Now display the menu.
       ELSEIF(ICO.EQ.(NCO-2))THEN
 
 C List one or more classifications.
-        INPIC=NCLASS
+        INPIC=matcats
         h(1)='You may select one or more classes to list. '
         CALL EPICKS(INPIC,ICLSSEL,' ',' Which classes to list:',
      &        36,NCLASS,CLSSEL,'Primative classes',IER,1)
@@ -131,55 +131,32 @@ C List one or more classifications.
         elseif(irpt.eq.3)then
           goto 40
         endif
-        call edisp(itu,'In the primitive elements database: ')
+        call edisp(itu,'In the materials database: ')
         call edisp(itu, LFMAT)
         call edisp(itu,' ')
         do 42 list=1,INPIC
           IC=ICLSSEL(list)
-          IREC=IC*20-19
-          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
-          IF(NE.GT.0)THEN
+          IF(matcatitems(IC).GT.0)THEN
             WRITE(outs,'(a,a,a,i2,a)')' Classification: ',
-     &        IDESC(1:lnblnk(IDESC)),' (',IC,')'
+     &        matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,')'
             call edisp(itu,outs)
             call edisp(itu,' ')
             call edisp(itu,
      &      'Index|Con-   |Den- |Specif|IR  |Solr|Diffus|Description')
             call edisp(itu,
      &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
-            IDB=IC*20-20
-            DO 47 J=1,NE
-              IDB=IDB+1
-              if(closemat1.or.closemat2)then
-                legmat=IDB   ! which legacy index
-                if(legmat.gt.0)then
-                  matarrayindex=mathash(legmat)  ! find matching array index
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                  if(matarrayindex.eq.0)then
-                    DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                    E=0.99; A=0.99; DRV=1.0
-                    TITL='GAPS'; NAM='AIR'
-                  else
-                    DBCON=matdbcon(matarrayindex)
-                    DBDEN=matdbden(matarrayindex)
-                    DBSHT=matdbsht(matarrayindex)
-                    E=matdbine(matarrayindex)
-                    A=matdbina(matarrayindex)
-                    DRV=matdbdrv(matarrayindex)
-                    write(TITL,'(a)') 'placeholder'
-                    write(NAM,'(a)') matname(matarrayindex)(1:32)
-                  endif
-                endif
-              else
 
-C << if material arrays were filled there is no need for this call >>
-                CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
-     &            DRV,TITL,NAM)
-              endif
-              WRITE(outs,46)IDB,DBCON,DBDEN,DBSHT,E,A,DRV,NAM(1:36)
+C Loop through all of the items in the array and list out those that are
+C associated with this class.
+            DO 47 J=1,matdbitems
+              if(matcatindex(J).eq.IC)then
+                IDB=matlegindex(J)
+                WRITE(outs,46)IDB,matdbcon(J),matdbden(J),matdbsht(J),
+     &            matdboute(J),matdbouta(J),matdbdrv(J),
+     &            matname(J)(1:lnblnk(matname(J)))
    46         FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
               call edisp(itu,outs)
+              endif
    47       CONTINUE
           ELSE
             call edisp(itu,' No items in this classification.')
@@ -193,161 +170,125 @@ C << if material arrays were filled there is no need for this call >>
         endif
       ELSEIF(ICO.EQ.(NCO-3))THEN
 
-C Rewrite the last record so that when file is closed it contains
-C all the information.
-        if(NCLASS.LT.30)then
-          NCLASS=NCLASS+1
-          ICLN(NCLASS)=NCLASS
-          IREC=601
-          WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
-     &          (ICLN(I),I=1,30)
-          H(1)='This description may be up to 72 char. '
-          CALL EASKS(IDESC,' Classification name ?',' ',
-     &      72,' ','class name',IER,1)
-          ILNE=1
-          IDBE(ILNE)=(NCLASS*20-19)+1
-          ENAM(ILNE)='new_element'
-          EDBCON(ILNE)=1.
-          EDBDEN(ILNE)=1.
-          EDBSHT(ILNE)=1.
-          EE(ILNE)=0.9
-          EA(ILNE)=0.5
-          EDRV(ILNE)=10.
+C Add another category to the database << not yet tested >>
+        if(matcats.LT.30)then
+          matcats=matcats+1
+          H(1)='This description may be up to 32 char. '
+          t32=' '
+          CALL EASKS(t32,' Classification name (<32 char)?',' ',
+     &      32,' ','class name',IER,1)
+          write(matcatname(matcats),'(a)') t32
+          write(matcatdoc(matcats),'(a,i2,3a)')
+     &      'Category (',matcats,') named ',t32(1:lnblnk(t32)),
+     &      ' was inserted manually. No other documentation (yet).'
+          ILNE=matdbitems+1
+          matname(ILNE)='new_material'
+          matopaq(ILNE)='o'
+          matdoc(ILNE)='no documentation (yet)'
+          matcatindex(ILNE)=matcats
+          matdbcon(ILNE)=1.0
+          matdbden(ILNE)=1.0
+          matdbsht(ILNE)=1.0
+          matdboute(ILNE)=0.9
+          matdbine(ILNE)=0.9
+          matdbouta(ILNE)=0.5
+          matdbina(ILNE)=0.5
+          matdbdrv(ILNE)=10.0
+          matdbthick(ILNE)=10.0
+          matirtran(ILNE)=0.0
+          matsoldrtrn(ILNE)=0.0
+          matsoldrotrfl(ILNE)=0.5
+          matsoldrinrfl(ILNE)=0.5
+          matvistran(ILNE)=0.0
+          matvisotrfl(ILNE)=0.5
+          matvisinrfl(ILNE)=0.5
+          matrender(ILNE)=0.0
 
-          IREC=NCLASS*20-19
-          NREC=IREC
-          WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)ILNE,IDESC
-          DO 41 J=1,ILNE
-            IREC=IREC+1
-            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
-     &            EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
-   41     CONTINUE
+          matgapcnd(ILNE,1)=0.0
+          matgapcnd(ILNE,2)=0.0
+          matgapcnd(ILNE,3)=0.0
+          matgapcnd(ILNE,4)=0.0
+          matvisco(ILNE,1)=0.0
+          matvisco(ILNE,2)=0.0
+          matvisco(ILNE,3)=0.0
+          matvisco(ILNE,4)=0.0
+          matgapden(ILNE,1)=0.0
+          matgapden(ILNE,2)=0.0
+          matgapden(ILNE,3)=0.0
+          matgapden(ILNE,4)=0.0
+          matprandtl(ILNE,1)=0.0
+          matprandtl(ILNE,2)=0.0
+          matgapsht(ILNE,1)=0.0
+          matgapsht(ILNE,2)=0.0
           chgdb=.true.
         endif
         goto 40
       ELSEIF(ICO.GT.1.AND.ICO.LT.(NCO-4))THEN
         
-C Loop through and read in data for this classification into local
-C arrays for manipulation.
+C Loop through data for this classification for manipulation.
         IC=ICO-1
-        IREC=IC*20-19
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
-        IF(NE.GT.0)THEN
-          IDB=IC*20-20
-          DO 20 J=1,NE
-            IDB=IDB+1
-            if(closemat1.or.closemat2)then
-              legmat=IDB   ! which legacy index
-              if(legmat.gt.0)then
-                matarrayindex=mathash(legmat)  ! find matching array index
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                if(matarrayindex.eq.0)then
-                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                  E=0.99; A=0.99; DRV=1.0
-                  TITL='GAPS'; NAM='AIR'
-                else
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
-                  E=matdbine(matarrayindex)
-                  A=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
-                  write(NAM,'(a)') matname(matarrayindex)(1:32)
-                endif
-              endif
-            else
-
-C << if material arrays were filled there is no need for this call >>
-              CALL ERPCDB(IFMAT,IDB,iuout,IER,DBCON,DBDEN,DBSHT,E,A,
-     &          DRV,TITL,NAM)
-            endif
-            IDBE(J)=IDB
-            EDBCON(J)=DBCON
-            EDBDEN(J)=DBDEN
-            EDBSHT(J)=DBSHT
-            EE(J)=E
-            EA(J)=A
-            EDRV(J)=DRV
-            ENAM(J)=NAM
-   20     CONTINUE
-        ELSE
+        IF(matcatitems(IC).EQ.0)THEN
          CALL USRMSG(' No items in this classification.',' ','W')
          GOTO 40
         ENDIF
+
 C Set_up the default display
       Idisp=2
 
-C Display the elements of the classification in a menu.
+C Display the materials of the classification in a menu.
     3   PDBM(1)= '  Units:  Conductivity W/(m deg.C), Density kg/m**3'
         PDBM(2)= '         Specific Heat J/(kg deg.C) '
-        WRITE(PDBM(3),33)IDESC(1:lnblnk(IDESC)),IC
+        WRITE(PDBM(3),33)matcatname(IC)(1:lnblnk(matcatname(IC))),IC
    33   FORMAT    ('a Classification: ',A,' (',I2,')')
-        WRITE(PDBM(4),'(A,I2)')'  Number of elements: ',NE
+        WRITE(PDBM(4),'(A,I3)')'  Number of materials:',matcatitems(IC)
         PDBM(5)=   '  ___________________________________'
 
 C Display thermal properties, starting from letter b.
-        IF (Idisp.EQ.1) THEN
           PDBM(6)=
-     &    ' |Prm|Con-  |Den- |Specif|IR  |Solr|Diffu|Description  '
+     &  ' |Conduc-|Den- |Specif|IR  |Solr|Diffu|Description  '
           PDBM(7)=
-     &    ' |db |duct. |sity |heat  |emis|abs |resis|of material  '
+     &  ' |tivity |sity |heat  |emis|abs |resis|of material  '
           M=7
-          DO 30 J=1,NE
-            M=M+1
-            CALL EMKEY(M-6,KEY,IER)
-            WRITE(PDBM(M),24)KEY,IDBE(J),EDBCON(J),EDBDEN(J),EDBSHT(J),
-     &                     EE(J),EA(J),EDRV(J),ENAM(J)(1:20)
-   24       FORMAT(A1,1X,I3,F7.2,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
-   30     CONTINUE
-        ELSEIF (Idisp.EQ.2) THEN
+        DO 30 J=1,matdbitems
 
-C Display Ecobalance properties
-          PDBM(6)=
-     &    ' |Prm|Con-  |Den- |Specif|IR  |Solr|Diffu|Description  '
-          PDBM(7)=
-     &    ' |db |duct. |sito |heat  |emis|abs |resis|of material  '
-          M=7
-          DO 31 J=1,NE
-            M=M+1
-            CALL EMKEY(M-6,KEY,IER)
-            WRITE(PDBM(M),25)KEY,IDBE(J),EDBCON(J),EDBDEN(J),EDBSHT(J),
-     &                     EE(J),EA(J),EDRV(J),ENAM(J)(1:20)
-   25       FORMAT(A1,1X,I3,F7.2,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
-   31     CONTINUE
-        ELSEIF (Idisp.EQ.3) THEN
+C Loop through all of the items in the array and list out those that are
+C associated with this class.
+          if(matcatindex(J).eq.IC)then
 
-C       Display Acoustic properties
-          PDBM(6)=
-     &    ' |Prm|Con-  |Den- |Specif|IR  |Solr|Diffu|Description  '
-          PDBM(7)=
-     &    ' |db |duct. |sito |heat  |emis|abs |resis|of material  '
-          M=7
-          DO 32 J=1,NE
+C Remember the array index that goes with the menu position (m).
             M=M+1
+            iwhicharray(M)=J  ! menu position M relates to data array J.
             CALL EMKEY(M-6,KEY,IER)
-            WRITE(PDBM(M),26)KEY,IDBE(J),EDBCON(J),EDBDEN(J),EDBSHT(J),
-     &                     EE(J),EA(J),EDRV(J),ENAM(J)(1:20)
-   26       FORMAT(A1,1X,I3,F7.2,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
-   32     CONTINUE
-        ELSEIF (Idisp.EQ.4) THEN
+            if(matopaq(J).eq.'o')then
+              WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:24)
+   24         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
+            elseif(matopaq(J).eq.'-')then
+              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+   25         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
+            elseif(matopaq(J).eq.'t')then
+              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+            elseif(matopaq(J).eq.'g')then
+              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+            elseif(matopaq(J).eq.'h')then
+              WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+            else
+              WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
+     &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
+     &          matname(J)(1:24)
+            endif
+          endif
+   30   CONTINUE
 
-C Display Visible properties
-          PDBM(6)=
-     &    ' |Prm|Con-  |Den- |Specif|IR  |Solr|Diffu|Description  '
-          PDBM(7)=
-     &    ' |db |duct. |sito |heat  |emis|abs |resis|of material  '
-          M=7
-          DO 34 J=1,NE
-            M=M+1
-            CALL EMKEY(M-6,KEY,IER)
-            WRITE(PDBM(M),27)KEY,IDBE(J),EDBCON(J),EDBDEN(J),EDBSHT(J),
-     &                     EE(J),EA(J),EDRV(J),ENAM(J)(1:20)
-   27       FORMAT(A1,1X,I3,F7.2,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
-   34     CONTINUE
-        ENDIF
-      
         NC=M
         PDBM(NC+1)=  '  __________________________     '
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
@@ -373,7 +314,22 @@ C Display Visible properties
         NITMS=NC+7
         INO=-4
 
-    2   CALL EMENU('Elements Database',PDBM,NITMS,INO)
+    2   continue
+        H(1)='The information in this display is based on data from'
+        H(2)='a materials database.  Databases of this'
+        H(3)='type are used to build a construction database.'
+        H(4)='Data in this db rarely changes. However, users may '
+        H(5)='wish to add additional materials or classifications to'
+        H(6)='conform to materials in their region.  '
+        H(7)='  '
+        H(8)='Adding or Deleting a material is supported. The'
+        H(9)='former creates a material at the end of the current'
+        H(10)='classification which may then be edited. '
+        H(11)=' '
+        H(12)='You may copy an existing material into a new item at'
+        H(13)='the end of the list. BE SURE TO ALTER ITS NAME! '
+
+        CALL EMENU('Materials Database',PDBM,NITMS,INO)
 
         IF(INO.EQ.NITMS.OR.INO.EQ.0)THEN
           IF(MODDB.and.ACTION.eq.'M')THEN
@@ -384,20 +340,16 @@ C Display Visible properties
      &        'update the db.  Update the db now ? ',OK,dok,2)
             IF(.NOT.OK)GOTO 4
             chgdb=.true.
-            IREC=IC*20-19
-            NREC=IREC
-            WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
-            DO 51 J=1,NE
-              IREC=IREC+1
-              WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
-     &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
-   51       CONTINUE
-
-C Rewrite the last record so that when file is closed it contains
-C all the information.
-            IREC=601
-            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
-     &            (ICLN(I),I=1,30)
+            CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+            CALL ERPFREE(IAF,ISTAT)    ! in case unit is still open
+            ltmp=' '
+            if(origmatwasbin)then
+              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+            else
+              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+            endif
+C            call delfiledosorunix(ltmp,ider)
+            CALL mkascimat(IAF,ltmp,IER)
             MODDB=.FALSE.
           ENDIF
           GOTO 4
@@ -407,9 +359,29 @@ C all the information.
 
 C Edit classification name.
           H(1)='A classification has a descriptive name (up to '
-          H(2)='72 char).'
-          CALL EASKS(IDESC,' ',' Classification name ? ',
-     &      72,' ','class name',IER,2)
+          H(2)='32 char).'
+          write(t32,'(a)')matcatname(IC)(1:lnblnk(matcatname(IC)))
+          CALL EASKS(t32,' ',' Classification name (<32 char)?',
+     &      32,' ','class name',IER,2)
+          if(t32(1:2).ne.'  ')then
+            write(matcatname(IC),'(a)') t32(1:lnblnk(t32))
+            chgdb=.true.
+            MODDB=.TRUE.
+          endif
+
+C Also edit classification documentation.
+          H(1)='Notes (<248 char) for this category of materials' 
+          H(2)='are useful for descriptions that apply to all'
+          H(3)='the materials.'
+          t248=matdoc(IC)(1:lnblnk(matdoc(IC)))
+          CALL EASKS248(t248,'Category notes:',' ',
+     &      72,'this category...','category notes',IER,3)
+          if(t248(1:2).ne.'  ')then
+            write(matdoc(IC),'(a)') t248(1:lnblnk(t248))
+            chgdb=.true.
+            MODDB=.TRUE.
+          endif
+
         ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
 
 C Go back to previous menu
@@ -422,19 +394,8 @@ C Change the display
         ELSEIF(INO.EQ.NITMS-1)THEN
 
 C Display HELP
-         H(1)='The information in this display is based on data from'
-         H(2)='a primitive construction database.  Databases of this'
-         H(3)='type are used to build a composite construction db.'
-         H(4)='Data in this db rarely changes. However, users may '
-         H(5)='wish to add additional elements or classifications to'
-         H(6)='conform to materials in their region.  '
-         H(7)='  '
-         H(8)='Adding or Deleting an element is supported. The'
-         H(9)='former creates an element at the end of the current'
-         H(10)='classification which may then be edited. '
-         H(11)=' '
-         H(12)='You may copy an existing element into a new item at'
-         H(13)='the end of the list. BE SURE TO ALTER ITS NAME! '
+          CALL PHELPD('materials database',13,'-',0,0,IER)
+
         ELSEIF(INO.EQ.NITMS-2)THEN
 
 C Update material db with all elements in this classification and
@@ -442,100 +403,240 @@ C reset flag to show db is current with local arrays.
           IF(.NOT.MODDB)THEN
             CALL USRMSG(' ',' No changes in db...','-')
           ELSE
-            dok=.true.
-            h(1)='Recent changes will be lost unless you save them '
-            h(2)='to file. '
-            CALL ASKOK(' ','Do you want to update database?',OK,dok,2)
-            IF(.NOT.OK)GOTO 2
             chgdb=.true.
-            IREC=IC*20-19
-            NREC=IREC
-            WRITE(IFMAT,REC=NREC,IOSTAT=ISTAT,ERR=1001)NE,IDESC
-            DO 50 J=1,NE
-              IREC=IREC+1
-              WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1002)EDBCON(J),
-     &              EDBDEN(J),EDBSHT(J),EE(J),EA(J),EDRV(J),ENAM(J)
-   50       CONTINUE
-
-C Rewrite the last record so that when file is closed it contains
-C all the information.
-            IREC=601
-            WRITE(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
-     &            (ICLN(I),I=1,30)
+            call erpfree(ifmat,istat)  ! in case it is still open
+            call erpfree(iaf,istat)  ! in case it is still open
+            ltmp=' '
+            if(origmatwasbin)then
+              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+            else
+              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+            endif
+C            call delfiledosorunix(ltmp,ider)
+            CALL mkascimat(IAF,ltmp,IER)
             MODDB=.FALSE.
           ENDIF
         ELSEIF(INO.EQ.NITMS-3)THEN
 
-C Copy an existing element to a new one at end of classificaton.
+C Copy an existing material to a new one at end of the array.
+C Use iwhicharray to go from the menu position to the array
+C end of the array.  
           CALL USRMSG(' ',' Which item of list?','-')
-          CALL EMENU('Copy Element',PDBM,NITMS,IW)
-          IWHICH=IW-7
-          IF(NE.LT.18)THEN
-            ILNE=NE+1
-            IDBE(ILNE)=(IC*20-19)+NE
-            EDBCON(ILNE)=EDBCON(IWHICH)
-            EDBDEN(ILNE)=EDBDEN(IWHICH)
-            EDBSHT(ILNE)=EDBSHT(IWHICH)
-            EE(ILNE)=EE(IWHICH)
-            EA(ILNE)=EA(IWHICH)
-            EDRV(ILNE)=EDRV(IWHICH)
-            ENAM(ILNE)=ENAM(IWHICH)
-            NE=NE+1
+          CALL EMENU('Copy material',PDBM,NITMS,IW)
+          IWHICH=iwhicharray(IW)
+          ILNE=matdbitems+1
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices. If so make up the initial name but allow the user to
+C edit it. If not then assign -99 and make up initial name based
+C on the original.
+          ip=matlegindex(IWHICH)
+          call getnextascislot(ip,inext)
+          if(inext.le.600)then 
+            write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+            matlegindex(ILNE)=inext
+            mathash(inext)=ILNE
+          else
+            write(matname(ILNE),'(2a)') 
+     &        matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
+            matlegindex(ILNE)=-99
+          endif
+
+C If there is room add a note about its origin.
+          ils=lnblnk(matdoc(IWHICH))
+          iln=lnblnk(matname(IWHICH))
+          if(ils.le.200)then
+            write(matdoc(ILNE),'(4a)') 
+     &        matdoc(IWHICH)(1:ils),' (copy of ',
+     &        matname(IWHICH)(1:iln),')'
+          else
+            matdoc(ILNE)=matdoc(IWHICH)
+          endif
+          matdbcon(ILNE)=matdbcon(IWHICH)
+          matdbden(ILNE)=matdbden(IWHICH)
+          matdbsht(ILNE)=matdbsht(IWHICH)
+          matdboute(ILNE)=matdboute(IWHICH)
+          matdbine(ILNE)=matdbine(IWHICH)
+          matdbouta(ILNE)=matdbouta(IWHICH)
+          matdbina(ILNE)=matdbina(IWHICH)
+          matdbdrv(ILNE)=matdbdrv(IWHICH)
+          matdbthick(ILNE)=matdbthick(IWHICH)
+          matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
+          matopaq(ILNE)=matopaq(IWHICH)
+          matirtran(ILNE)=matirtran(IWHICH)
+          matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
+          matsoldrotrfl(ILNE)=matsoldrotrfl(IWHICH)
+          matsoldrinrfl(ILNE)=matsoldrinrfl(IWHICH)
+          matvistran(ILNE)=matvistran(IWHICH)
+          matvisotrfl(ILNE)=matvisotrfl(IWHICH)
+          matvisinrfl(ILNE)=matvisinrfl(IWHICH)
+          matrender(ILNE)=matrender(IWHICH)
+
+          matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
+          matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
+          matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
+          matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
+          matvisco(ILNE,1)=matvisco(IWHICH,1)
+          matvisco(ILNE,2)=matvisco(IWHICH,2)
+          matvisco(ILNE,3)=matvisco(IWHICH,3)
+          matvisco(ILNE,4)=matvisco(IWHICH,4)
+          matgapden(ILNE,1)=matgapden(IWHICH,1)
+          matgapden(ILNE,2)=matgapden(IWHICH,2)
+          matgapden(ILNE,3)=matgapden(IWHICH,3)
+          matgapden(ILNE,4)=matgapden(IWHICH,4)
+          matprandtl(ILNE,1)=matprandtl(IWHICH,1)
+          matprandtl(ILNE,2)=matprandtl(IWHICH,2)
+          matgapsht(ILNE,1)=matgapsht(IWHICH,1)
+          matgapsht(ILNE,2)=matgapsht(IWHICH,2)
+          matdbitems=matdbitems+1
+          matcatitems(IC)=matcatitems(IC)+1
             MODDB=.TRUE.
             chgdb=.true.
-          ELSE
-            CALL USRMSG(' ',' Exceeds classification limit!','W')
-            GOTO 3
-          ENDIF
         ELSEIF(INO.EQ.NITMS-4)THEN
 
-C Add or delete and element from db.
-          h(1)='You cannot recover a deleted element.  After you '
-          h(2)='copy an element, be sure to give it a unique name. '
-          CALL EASKABC(' ','Element: ',' Delete existing element',
-     &      ' Insert element @ next available slot','continue',IW,2)
+C Add or delete and material from db.
+          h(1)='You cannot recover a deleted material.  After you '
+          h(2)='copy it, be sure to give it a unique name. '
+          CALL EASKABC(' ','Options: ',' Delete existing material',
+     &      ' Insert material','continue',IW,2)
           IF(IW.EQ.1)THEN
 
-C Ask the user which one to remove then loop through elements and
-C copy the contents of elements > IWHICH into the next lower one.
+C Ask the user which one to remove then loop through materials and
+C copy the contents of material > IWHICH into the next lower one.
             CALL USRMSG(' ',' Which item of list? ','-')
-            CALL EMENU('delete element',PDBM,NITMS,IW)
-            dok=.false.
-            h(1)='Pause in case you made a selection error. '
-            CALL ASKOK(' ',' Are you sure?',OK,dok,1)
-            IF(.NOT.OK)GOTO 2
-            IWHICH=IW-7
-            DO 791 IVV=IWHICH,NE-1
-              IDBE(IVV)=IDBE(IVV+1)-1
-              EDBCON(IVV)=EDBCON(IVV+1)
-              EDBDEN(IVV)=EDBDEN(IVV+1)
-              EDBSHT(IVV)=EDBSHT(IVV+1)
-              EE(IVV)=EE(IVV+1)
-              EA(IVV)=EA(IVV+1)
-              EDRV(IVV)=EDRV(IVV+1)
-              ENAM(IVV)=ENAM(IVV+1)
+            CALL EMENU('delete material',PDBM,NITMS,IW)
+            IWHICH=iwhicharray(IW)
+            ip=matlegindex(IWHICH)  ! remove legacy index from the hash table.
+            if(ip.gt.0) mathash(ip)=-1
+            DO 791 IVV=IWHICH,matdbitems-1
+              matlegindex(IVV)=matlegindex(IVV+1)
+              matdbcon(IVV)=matdbcon(IVV+1)
+              matdbden(IVV)=matdbden(IVV+1)
+              matdbsht(IVV)=matdbsht(IVV+1)
+              matdboute(IVV)=matdboute(IVV+1)
+              matdbine(IVV)=matdbine(IVV+1)
+              matdbouta(IVV)=matdbouta(IVV+1)
+              matdbina(IVV)=matdbina(IVV+1)
+              matdbdrv(IVV)=matdbdrv(IVV+1)
+              matdbthick(IVV)=matdbthick(IVV+1)
+              matcatindex(IVV)=matcatindex(IVV+1)  ! keep in same category
+              matname(IVV)=matname(IVV+1)
+              matdoc(IVV)=matdoc(IVV+1)
+              matopaq(IVV)=matopaq(IVV+1)
+              matirtran(IVV)=matirtran(IVV+1)
+              matsoldrtrn(IVV)=matsoldrtrn(IVV+1)
+              matsoldrotrfl(IVV)=matsoldrotrfl(IVV+1)
+              matsoldrinrfl(IVV)=matsoldrinrfl(IVV+1)
+              matvistran(IVV)=matvistran(IVV+1)
+              matvisotrfl(IVV)=matvisotrfl(IVV+1)
+              matvisinrfl(IVV)=matvisinrfl(IVV+1)
+              matrender(IVV)=matrender(IVV+1)
+
+              matgapcnd(IVV,1)=matgapcnd(IVV+1,1)
+              matgapcnd(IVV,2)=matgapcnd(IVV+1,2)
+              matgapcnd(IVV,3)=matgapcnd(IVV+1,3)
+              matgapcnd(IVV,4)=matgapcnd(IVV+1,4)
+              matvisco(IVV,1)=matvisco(IVV+1,1)
+              matvisco(IVV,2)=matvisco(IVV+1,2)
+              matvisco(IVV,3)=matvisco(IVV+1,3)
+              matvisco(IVV,4)=matvisco(IVV+1,4)
+              matgapden(IVV,1)=matgapden(IVV+1,1)
+              matgapden(IVV,2)=matgapden(IVV+1,2)
+              matgapden(IVV,3)=matgapden(IVV+1,3)
+              matgapden(IVV,4)=matgapden(IVV+1,4)
+              matprandtl(IVV,1)=matprandtl(IVV+1,1)
+              matprandtl(IVV,2)=matprandtl(IVV+1,2)
+              matgapsht(IVV,1)=matgapsht(IVV+1,1)
+              matgapsht(IVV,2)=matgapsht(IVV+1,2)
   791       CONTINUE
-            NE=NE-1
+            matdbitems=matdbitems-1
+            matcatitems(IC)=matcatitems(IC)-1
             MODDB=.TRUE.
             chgdb=.true.
           ELSEIF(IW.EQ.2)THEN
 
-C Add an element, initiate it to the values of last element in class.
-            IF(NE.LT.18)THEN
-              ILNE=NE+1
-              IDBE(ILNE)=(IC*20-19)+NE
-              ENAM(ILNE)='new_element'
-              EDBCON(ILNE)=EDBCON(NE)
-              EDBDEN(ILNE)=EDBDEN(NE)
-              EDBSHT(ILNE)=EDBSHT(NE)
-              EE(ILNE)=EE(NE)
-              EA(ILNE)=EA(NE)
-              EDRV(ILNE)=EDRV(NE)
-              CALL EDPELEM(EDBCON(ILNE),EDBDEN(ILNE),EDBSHT(ILNE),
-     &           EE(ILNE),EA(ILNE),EDRV(ILNE),ENAM(ILNE),IER) 
-              NE=NE+1
+C Add a material, initiate it to the values of last material in class.
+            IF(matdbitems.LT.MGIT)THEN
+              ILNE=matdbitems+1
+              lastcatitem=0
+              DO 793 J=1,matdbitems
+                if(matcatindex(J).eq.IC)then
+                  lastcatitem=J
+                endif
+  793         continue
+              if(lastcatitem.gt.0)then
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices and make up name and index based on inext value.
+                ip=matlegindex(lastcatitem)
+                call getnextascislot(ip,inext)
+                if(inext.le.600)then 
+                  write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+                  matlegindex(ILNE)=inext
+                  mathash(inext)=ILNE
+                else
+                  matname(ILNE)='new_material'
+                  matlegindex(ILNE)=-99
+                endif
+                matdbcon(ILNE)=matdbcon(lastcatitem)
+                matdbden(ILNE)=matdbden(lastcatitem)
+                matdbsht(ILNE)=matdbsht(lastcatitem)
+                matdboute(ILNE)=matdboute(lastcatitem)
+                matdbine(ILNE)=matdbine(lastcatitem)
+                matdbouta(ILNE)=matdbouta(lastcatitem)
+                matdbina(ILNE)=matdbina(lastcatitem)
+                matdbdrv(ILNE)=matdbdrv(lastcatitem)
+                matdbthick(ILNE)=matdbthick(lastcatitem)
+                matcatindex(ILNE)=matcatindex(lastcatitem)  ! keep in same category
+
+C If there is room add a note about its origin.
+                ils=lnblnk(matdoc(lastcatitem))
+                iln=lnblnk(matname(lastcatitem))
+                if(ils.le.200)then
+                  write(matdoc(ILNE),'(4a)') 
+     &              matdoc(IWHICH)(1:ils),' (derived from ',
+     &              matname(lastcatitem)(1:iln),')'
+                else
+                  matdoc(ILNE)=matdoc(lastcatitem)
+                endif
+                matopaq(ILNE)=matopaq(lastcatitem)
+                matirtran(ILNE)=matirtran(lastcatitem)
+                matsoldrtrn(ILNE)=matsoldrtrn(lastcatitem)
+                matsoldrotrfl(ILNE)=matsoldrotrfl(lastcatitem)
+                matsoldrinrfl(ILNE)=matsoldrinrfl(lastcatitem)
+                matvistran(ILNE)=matvistran(lastcatitem)
+                matvisotrfl(ILNE)=matvisotrfl(lastcatitem)
+                matvisinrfl(ILNE)=matvisinrfl(lastcatitem)
+                matrender(ILNE)=matrender(lastcatitem)
+
+                matgapcnd(ILNE,1)=matgapcnd(lastcatitem,1)
+                matgapcnd(ILNE,2)=matgapcnd(lastcatitem,2)
+                matgapcnd(ILNE,3)=matgapcnd(lastcatitem,3)
+                matgapcnd(ILNE,4)=matgapcnd(lastcatitem,4)
+                matvisco(ILNE,1)=matvisco(lastcatitem,1)
+                matvisco(ILNE,2)=matvisco(lastcatitem,2)
+                matvisco(ILNE,3)=matvisco(lastcatitem,3)
+                matvisco(ILNE,4)=matvisco(lastcatitem,4)
+                matgapden(ILNE,1)=matgapden(lastcatitem,1)
+                matgapden(ILNE,2)=matgapden(lastcatitem,2)
+                matgapden(ILNE,3)=matgapden(lastcatitem,3)
+                matgapden(ILNE,4)=matgapden(lastcatitem,4)
+                matprandtl(ILNE,1)=matprandtl(lastcatitem,1)
+                matprandtl(ILNE,2)=matprandtl(lastcatitem,2)
+                matgapsht(ILNE,1)=matgapsht(lastcatitem,1)
+                matgapsht(ILNE,2)=matgapsht(lastcatitem,2)
+                matdbitems=matdbitems+1
+                matcatitems(IC)=matcatitems(IC)+1
+
+C Browse/Edit the details of this new item. Mark as unmodified first
+C and then resetn MODDB and chgdb if mod is true.
+                mod=.false.
+                call edonemat(ILNE,mod,ier)
+                if(mod)then 
               MODDB=.TRUE.
               chgdb=.true.
+                endif
+              endif
             ELSE
               CALL USRMSG(' ','Exceeds classification limit!','W')
               GOTO 3
@@ -547,22 +648,51 @@ C Add an element, initiate it to the values of last element in class.
             GOTO 2
         ELSEIF(INO.GT.7.AND.INO.LT.NITMS-4)THEN
 
-C Identified one of the elements to edit or select.
-          IFOC=INO-7
-          CALL EDPELEM(EDBCON(IFOC),EDBDEN(IFOC),EDBSHT(IFOC),
-     &               EE(IFOC),EA(IFOC),EDRV(IFOC),ENAM(IFOC),IER) 
+C Identified one of the materials to edit or select.
+          IFOC=iwhicharray(INO)
+
+C Debug.
+C          write(6,*) 'selected menu ',ino,'got array',ifoc
+
           if(ACTION.eq.'M')then
+
+C Browse/Edit the details of this item. Mark as unmodified first
+C and then resetn MODDB and chgdb if mod is true.
+            mod=.false.
+            call edonemat(ifoc,mod,ier)
+            if(mod)then 
             MODDB=.TRUE.
             chgdb=.true.
+              imatarrayindex=ifoc ! set to edited array index
+            endif
           elseif(ACTION.eq.'-')then
-            iwhich=IDBE(ifoc)
-            lsn=MIN0(lnblnk(ENAM(IFOC)),32)
-            write(outs,'(a,i3,a,a)') ' Use element (',iwhich,') ',
-     &        ENAM(IFOC)(1:lsn)
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &        ' Units: Conduct W/(m deg.C), Density kg/m**3')
+            call edisp(iuout,
+     &        '        Specific Heat J/(kg deg.C) ')
+            call edisp(iuout,' ')
+            call edisp(iuout,
+     &    'Index|Con-    |Den-  |Specif|IR  |Solar|Vapour|Description')
+            call edisp(iuout,
+     &    '     |duct.   |sity  |heat  |emis|abs  |resist|of material')
+            WRITE(outs,244)matlegindex(IFOC),matdbcon(IFOC),
+     &        matdbden(IFOC),matdbsht(IFOC),matdboute(IFOC),
+     &        matdbouta(IFOC),matdbdrv(IFOC),matname(IFOC)(1:20)
+  244       FORMAT(I5,F9.3,F7.1,F7.0,F5.2,F6.2,F7.0,1X,A)
+            CALL EDISP(iuout,outs)
+            CALL EDISP(iuout,' ')
+            iwhich=matlegindex(ifoc)
+            lsn=MIN0(lnblnk(matname(IFOC)),32)
+            write(outs,'(a,i3,a,a)') ' Use material (',iwhich,') ',
+     &        matname(IFOC)(1:lsn)
             dok=.true.
-            h(1)='Pause to confirm the selection. '
-            CALL ASKOK(outs,'as your selection?',OK,dok,1)
-            if(OK)return
+            h(1)='Last chance to abort the selection. '
+            CALL ASKOK(outs,'as your selection ?',OK,dok,1)
+            if(OK)then
+              imatarrayindex=IFOC ! set to selected array index
+              return
+            endif
           endif
         ENDIF
         GOTO 3
@@ -571,24 +701,7 @@ C Identified one of the elements to edit or select.
       endif
       call usrmsg(' ',' ','-')
       goto 40
-      
-   99 RETURN
 
-C Error messages.
- 1000 WRITE(OUTSTR,8)IREC
-    8 FORMAT(' Primitive db error NE,IDESC: Record',I6)
-      CALL EDISP(iuout,OUTSTR)
-      GOTO 99
-
- 1001 WRITE(OUTSTR,9)IREC
-    9 FORMAT(' Primitive db write error NE,IDESC: Record',I6)
-      CALL EDISP(iuout,OUTSTR)
-      GOTO 99
-
- 1002 WRITE(OUTSTR,10)IREC
-   10 FORMAT(' Primitive db element data write error: Record',I6)
-      CALL EDISP(iuout,OUTSTR)
-      GOTO 99
       END
 
 C ********** opendb (based on code from eddb.F)
@@ -933,7 +1046,7 @@ C Recover zone data (read only, no display).
       OPQ=0.
       TRN=0.
       DO 41 I=1,NSUR
-        if(SOTF(I).EQ.'TRAN')then
+        if(SOTF(I)(1:4).NE.'OPAQ')then
           TRN=TRN+SNA(I)
         else
           OPQ=OPQ+SNA(I)
@@ -942,7 +1055,7 @@ C Recover zone data (read only, no display).
 
 C Present menu with surfaces and their associated composite
 C construction names.
-  777 MHEAD=6
+      MHEAD=6
       MCTL=4
       ILEN=NSUR
       IPACT=CREATE
@@ -1055,10 +1168,9 @@ C Selected more thane once.
      &  ' multilayer  |environment')
         CALL EDISP(ITRU,OUTSTR)
         WRITE(OUTSTR,94)
-   94   FORMAT('    | name       | m^2   |deg |deg |type|loc|',
+   94   FORMAT('  name       | m^2   |deg |deg |type|loc|',
      &  ' constr name |other side ')
         CALL EDISP(ITRU,OUTSTR)
-        CALL EDISP(ITRU,' ')
         WRITE(OUTSTR,8894)SNAME(ICOMP,IS),SNA(IS),PAZI(IS),
      &       PELV(IS),SOTF(IS),SVFC(IS),SMLCN(IS),SOTHER(IS,1)(1:13)
  8894   FORMAT(1X,A12,1X,F7.2,F5.0,F5.0,1X,A4,1X,A4,1X,A12,1X,A13)
@@ -1163,7 +1275,7 @@ C Two composites cannot have the same number.
           endif
  30     continue
  32   continue
- 666  RETURN
+      RETURN
       END
 
 
@@ -2173,7 +2285,7 @@ C Loop trough transport or maintenance or steps
 
 C Write results at stage level, only if required by the user
               IF (itrc.EQ.4) THEN
-                WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
+                WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
      &            (LabelOut(L),L=1,4),(StageTot(L),L=1,MIMP)
                 CALL edisp(Ichanel,outs)
               ENDIF
@@ -2211,7 +2323,7 @@ C If elementary step
                 elseif (IWB.eq.1) then
                   LabelOut(4)=LabelTmp(4)
                 endif
-                WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
+                WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
      &                (LabelOut(L),L=1,4),(LayerTot(L),L=1,MIMP)
                 CALL edisp(Ichanel,outs)
               ENDIF
@@ -2235,7 +2347,7 @@ C If elementary step
                   LabelOut(4)=LabelTmp(4)
                 endif
                 if (IWB.NE.1) then
-                  WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
+                  WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
      &                (LabelOut(L),L=1,4),(LayerTot(L),L=1,MIMP)
                   CALL edisp(Ichanel,outs)
                 endif
@@ -2278,7 +2390,7 @@ C If process exits, loop trough the impacts
  27                 CONTINUE
 C Display reults if user has required surface, layer or impacts level results
                     IF (itrc.gt.2) THEN
-                      WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
+                      WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
      &                    (LabelOut(L),L=1,4),
      &                    (STEPIMP(ICurzone,ICurComp,J,K,L,3),L=1,MIMP)
                       CALL edisp(Ichanel,outs)
@@ -2314,7 +2426,7 @@ C If process exits, loop trough the impacts
  127                CONTINUE
 C Display reults if user has required surface, layer or impacts level results
                     IF (itrc.gt.2) THEN
-                      WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
+                      WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
      &                     (LabelOut(L),L=1,4),
      &                    (STEPIMP(ICurzone,ICurComp,J,K,L,5),L=1,MIMP)
                       CALL edisp(Ichanel,outs)
@@ -2347,7 +2459,7 @@ C If process exits, loop trough the impacts
  29                   CONTINUE
                     IF (itrc.gt.2) THEN
 C Display reults if user has required surface, layer or impacts level results
-                      WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
+                      WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
      &                          (LabelOut(L),L=1,4),
      &                    (STEPIMP(ICurzone,ICurComp,J,K,L,6),L=1,MIMP)
                       CALL edisp(Ichanel,outs)
@@ -2391,8 +2503,8 @@ C If whole life cycle
               ELSE
                     LabelOut(4)='Life-cycle  '
               ENDIF
-C 665          WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
-              WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
+C 665          WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
+              WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
      &            (LabelOut(L),L=1,4), (CompoTot(L),L=1,MIMP)
               CALL edisp(Ichanel,outs)
 
@@ -2408,7 +2520,7 @@ C If Layer level
                  LabelOut(3)='Tot.compos.='
               ENDIF
               LabelOut(4)= '-----------'
- 664          WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
+              WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
      &             (LabelOut(L),L=1,4), (CompoTot(L),L=1,MIMP)
               CALL edisp(Ichanel,outs)
               CALL edisp(Ichanel,' ')
@@ -2418,7 +2530,7 @@ C if life-cycle stage
               LabelOut(2)= 'Tot.surface='
               LabelOut(3)= '-----------'
               LabelOut(4)= '-----------'
- 663          WRITE(outs,'(4(1x,a12),4(2x,1P1E9.3,1x))')
+              WRITE(outs,'(4(1x,a12),4(2x,1E9.3,1x))')
      &             (LabelOut(L),L=1,4), (CompoTot(L),L=1,MIMP)
               CALL edisp(Ichanel,outs)
 
@@ -2436,7 +2548,7 @@ C Next Surface
 C For project based, display the results at zone level
           IF (IcalType.EQ.1) THEN
             if(itrc.gt.0) then
-              WRITE(outs,'(1x,a12,2a,4(3x,1P1E9.3))')Zname(nznog(IZ)),
+              WRITE(outs,'(1x,a12,2a,4(3x,1E9.3))')Zname(nznog(IZ)),
      &               'Total Zone = ','-------------------------',
      &               (ZoneTot(L),L=1,MIMP)
               CALL edisp(Ichanel,outs)
@@ -2459,7 +2571,7 @@ C Absolute value
           CALL edisp(Ichanel,outs)
           WRITE(outs,'(53x,a)')LabelD(1:lnblnk(LabelD))
           CALL edisp(Ichanel,outs)
-          WRITE(outs,'(1x,a,4(3x,1P1E9.3))')
+          WRITE(outs,'(1x,a,4(3x,1E9.3))')
      &     'Total project (absolute value) = -----------------',
      &                (WholeTot(L),L=1,MIMP)
           CALL edisp(Ichanel,outs)
@@ -2474,7 +2586,7 @@ C Relative value
           LabelD='  [kg/m2]* |  [kg/m2]* |  [kg/m2]* | [MJ/m2]* |'
           WRITE(outs,'(53x,a)')LabelD(1:lnblnk(LabelD))
           CALL edisp(Ichanel,outs)
-          WRITE(outs,'(1x,a,4(3x,1P1E9.3))')
+          WRITE(outs,'(1x,a,4(3x,1E9.3))')
      &     'Total project (relative value) = -----------------',
      &                (WholeTot(L)/SRE,L=1,MIMP)
           CALL edisp(Ichanel,outs)
@@ -2609,7 +2721,6 @@ C phylosophy as LCACalc
 
       COMMON/ZFunction/ZFun(NbSteps,MMLC,ME)
 
-      integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
@@ -3397,7 +3508,7 @@ C First transport line display is different than others
  602              CONTINUE
                   WRITE(outs,603) ComAsPt(ICurComp,K),
      &                          (StageTot(L),IY=1,MIMP)
- 603              FORMAT(1X,A12, 11X, 4(3x, 1P1E9.3))
+ 603              FORMAT(1X,A12, 11X, 4(3x,1E9.3))
                   IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                 endif
  601          CONTINUE
@@ -3421,7 +3532,7 @@ C First transport line display is different than others
  621              CONTINUE
                   WRITE(outs,623)AsProjPt(ICurComp,K), 
      &                          (LCAValuP(IY)+LCAValuS(IY),IY=1,MIMP)
- 623              FORMAT(1X,A12,12x, 4(3x, 1P1E9.3))
+ 623              FORMAT(1X,A12,12x, 4(3x,1E9.3))
                   IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                 endif
  620          CONTINUE
@@ -3444,7 +3555,7 @@ C First transport line display is different than others
                   WRITE(outs,723)MaintPt(ICurComp,K),
      &                           PerMaint(ICurComp,K),
      &                           (LCAValuP(IY)+LCAValuS(IY),IY=1,MIMP)
- 723              FORMAT(1X,A12,13x, 3x, f9.1, 4(3x, 1P1E9.3))
+ 723              FORMAT(1X,A12,13x, 3x, f9.1, 4(3x,1E9.3))
                   IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                 ENDIF
  720          CONTINUE
@@ -3512,7 +3623,7 @@ C First transport line display is different than others
      &                               TrDist(ICurMat,K),
      &                               (LCAValue(IY),IY=1,MIMP)
 312                   FORMAT(1X,A12,3x,1PE9.3,3X,A12,3x,I2,3x,
-     &                          0PF7.1,4(3x,1P1E9.3))
+     &                          0PF7.1,4(3x,1E9.3))
                       IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                       ELSE
                         if (TrPt(ICurMat,K)(1:4).NE.'none') then
@@ -3520,7 +3631,7 @@ C First transport line display is different than others
      &                       INT(ZFun(M,ICurComp,J)),TrDist(ICurMat,K),
      &                       (LCAValue(IY),IY=1,MIMP)
 314                       FORMAT(26x,A1,1x,A12,3x,I2,3x,F7.1,
-     &                             4(3x,1P1E9.3))
+     &                             4(3x,1E9.3))
                           IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                         endif
                       ENDIF
@@ -3541,7 +3652,7 @@ C Relevant only for pre-fabricated element
                           WRITE(outs,505)
      &              'Total for composite = --------------------------',
      &                            (LCAValue(IY),IY=1,MIMP)
-505                        FORMAT(2X,A, 4(3x, 1P1E9.3))
+505                        FORMAT(2X,A, 4(3x,1E9.3))
                            CALL edisp(Ichanel,outs)
                            CALL edisp(Ichanel,' ')
                          endif
@@ -3553,13 +3664,13 @@ C First transport line display is different than others
      &                    WeitLayr(J),CoTrPt(ICurComp,K),
      &                   CoTrDist(ICurComp,K),(LCAValue(IY),IY=1,MIMP)
 325                     FORMAT(1X,A12,3x,1PE9.3,3X,A12,3x,
-     &                               0PF7.1, 4(3x,1P1E9.3))
+     &                               0PF7.1, 4(3x,1E9.3))
                         IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                       ELSE
                         if (CoTrPt(ICurMat,K)(1:4).NE.'none') then
                           WRITE (outs,326) '+', CoTrPt(ICurComp,K),
      &                     CoTrDist(ICurComp,K),(LCAValue(IY),IY=1,MIMP)
-326                       FORMAT(26x,A1,1x,A12,3x,F7.1,4(3x,1P1E9.3))
+326                       FORMAT(26x,A1,1x,A12,3x,F7.1,4(3x,1E9.3))
                           IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                         endif
                       ENDIF
@@ -3572,13 +3683,13 @@ C First transport line display is different than others
      &                          WtLayrDu(J),DuTrPt(ICurMat,K),
      &                   DuTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
 315                     FORMAT(1X,A12,3x,1PE9.3,3X,A12,3x,
-     &                               0PF7.1, 4(3x,1P1E9.3))
+     &                               0PF7.1, 4(3x,1E9.3))
                         IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                       ELSE
                         if (DuTrPt(ICurMat,K)(1:4).NE.'none') then
                           WRITE (outs,316) '+', DuTrPt(ICurMat,K),
      &                      DuTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
-316                       FORMAT(26x,A1,1x,A12,3x,F7.1,4(3x,1P1E9.3))
+316                       FORMAT(26x,A1,1x,A12,3x,F7.1,4(3x,1E9.3))
                           IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                         endif
                       ENDIF
@@ -3591,13 +3702,13 @@ C First transport line display is different than others
      &                     WtLayrBu(J),BuTrPt(ICurMat,K),
      &                     BuTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
 318                     FORMAT(1X,A12,3x,1PE9.3,3X,A12,3x,
-     &                               0PF7.1, 4(3x,1P1E9.3))
+     &                               0PF7.1, 4(3x,1E9.3))
                         IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                       ELSE
                         if (BuTrPt(ICurMat,K)(1:4).NE.'none') then
                           WRITE (outs,319) '+',BuTrPt(ICurMat,K),
      &                     BuTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
-319                       FORMAT(26x,A1,1x,A12,3x,F7.1,4(3x,1P1E9.3))
+319                       FORMAT(26x,A1,1x,A12,3x,F7.1,4(3x,1E9.3))
                           IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                         endif
                       ENDIF
@@ -3611,13 +3722,13 @@ C First transport line display is different than others
      &                         WtLayrRe(J),ReTrPt(ICurMat,K),
      &                     ReTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
 321                     FORMAT(1X,A12,3x,1PE9.3,3X,A12,3x,
-     &                                            0PF7.1, 4(3x,1P1E9.3))
+     &                                            0PF7.1, 4(3x,1E9.3))
                         IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                       ELSE
                         if (ReTrPt(ICurMat,K)(1:4).NE.'none') then
                           WRITE (outs,322) '+', ReTrPt(ICurMat,K),
      &                     ReTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
-322                       FORMAT(26x,A1,1x,A12,3x,F7.1,4(3x,1P1E9.3))
+322                       FORMAT(26x,A1,1x,A12,3x,F7.1,4(3x,1E9.3))
                           IF (itrc.eq.3) CALL edisp(Ichanel,outs)
                         endif
                       ENDIF
@@ -3634,11 +3745,10 @@ C -------------
      &              M.EQ.13 .OR. M.EQ.14) THEN
                 DO 11 J=1,NbLays
                   ICurMat = IMatID(ICurComp,J)
-                  if(closemat1.or.closemat2)then
                     matarrayindex=IPRMAT(ICurComp,J)   ! which arrat index
                     if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then reset dbcon dbden dbsht.
                       if(matarrayindex.eq.0)then
                         DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
                         E=0.99; A=0.99; DRV=1.0
@@ -3654,12 +3764,6 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
                         write(NAM,'(a)') matname(matarrayindex)(1:32)
                       endif
                     endif
-                  else
-
-C << if material arrays were filled there is no need for this call >>
-                    CALL ERPCDB(IFMAT,IPR(ICurComp,J),iuout,IER,
-     &                DBCON,DBDEN,DBSHT,E,A,DRV,TITL,NAM)
-                  endif
 
 C Loop over the impacts
                   DO 12 L=1,MIMP
@@ -3680,7 +3784,7 @@ C Material fabrication
                   IF (M.EQ.1) THEN 
                     WRITE (outs,80)LayerNam(ICurComp,J),WeitLayr(J),
      &                               (LayerTot(IY),IY=1,MIMP)
- 80                 FORMAT(1x,A12,13x, 3x, 1P1E9.3, 4(3x, 1P1E9.3))
+ 80                 FORMAT(1x,A12,13x, 3x,1E9.3, 4(3x,1E9.3))
 
 C Material replacement 
                   ELSEIF (M.EQ.7) THEN
@@ -3699,28 +3803,28 @@ C Material replacement
      &                                RMatLife(ICurMat),NbRep,
      &                          (SurReImp(ICurComp,J,IY)*Area,IY=1,MIMP)
                     ENDIF
- 92                 FORMAT(1X,A12,1x,f9.1, 5x, I2,4x, 4(3x, 1P1E9.3))
+ 92                 FORMAT(1X,A12,1x,f9.1, 5x, I2,4x, 4(3x,1E9.3))
 
 C 9 Dump treatment  
                   ELSEIF (M.EQ.9) THEN
                     WRITE(outs,109)LayerNam(ICurComp,J),
      &                             DumpRate(IMatID(ICurComp,J))*100,
      &                             WtLayrDu(J), (LayerTot(IY),IY=1,MIMP)
-109                 FORMAT(1X,A12,4x,F5.1,5x,1P1E9.3,4(3x,1P1E9.3))
+109                 FORMAT(1X,A12,4x,F5.1,5x,1E9.3,4(3x,1E9.3))
 
 C 11 Incineration treatment  
                   ELSEIF (M.EQ.11) THEN
                     WRITE(outs,110)LayerNam(ICurComp,J),
      &                             BurnRate(IMatID(ICurComp,J))*100,
      &                             WtLayrBu(J),(LayerTot(IY),IY=1,MIMP)
-110                 FORMAT(1X,A12,4x,F5.1,5x,1P1E9.3,4(3x,1P1E9.3))
+110                 FORMAT(1X,A12,4x,F5.1,5x,1E9.3,4(3x,1E9.3))
 
 C 13 Recycling treatment  
                   ELSEIF (M.EQ.13) THEN
                     WRITE(outs,166)LayerNam(ICurComp,J),
      &                             RecyRate(IMatID(ICurComp,J))*100,
      &                             WtLayrRe(J),(LayerTot(IY),IY=1,MIMP)
-166                 FORMAT(1X,A12,4x,F5.1,5x,1P1E9.3,4(3x,1P1E9.3))
+166                 FORMAT(1X,A12,4x,F5.1,5x,1E9.3,4(3x,1E9.3))
 
 C 14 Total disposal waste  
                   ELSEIF (M.EQ.14) THEN
@@ -3729,11 +3833,11 @@ C 14 Total disposal waste
      &                     RecyRate(IMatID(ICurComp,J))*100,WtLayrRe(J),
      &                     BurnRate(IMatID(ICurComp,J))*100,WtLayrBu(J),
      &                     DumpRate(IMatID(ICurComp,J))*100,WtLayrDu(J)
-  111               FORMAT(1X,A12,3x,1P1E9.3,3(4x,0PF6.1,4x,1P1E9.3))
+  111               FORMAT(1X,A12,3x,1E9.3,3(4x,0PF6.1,4x,1E9.3))
 C                    ELSEIF (M.EQ.14) THEN
 C                      WRITE(outs,112)LayerNam(IFOC,J),WtLayrRe(J),
 C     &                                     WtLayrBu(J),WtLayrDu(J)
-C  112                 FORMAT(1X,A12,3(4x,1P1E9.3))
+C  112                 FORMAT(1X,A12,3(4x,1E9.3))
 C End of Layer related stage
                     ENDIF
 
@@ -3756,7 +3860,7 @@ C--------------------------
      &                    TotRecyM/TotMass, TotRecyM,
      &                    TotBurnM/TotMass, TotBurnM,
      &                    TotDumpM/TotMass, TotDumpM
-58                   FORMAT(1x,A,3x,1P1E9.3,5x,3(F6.2, 4x,1P1E9.3,3x))
+58                   FORMAT(1x,A,3x,1E9.3,5x,3(F6.2, 4x,1E9.3,3x))
                       TotDumpZ = TotDumpZ + TotDumpM
                       TotBurnZ = TotBurnZ + TotBurnM
                       TotRecyZ = TotRecyZ + TotRecyM
@@ -3766,75 +3870,75 @@ C--------------------------
                     ELSE
                       WRITE(outs,581)SName(nznog(IZ),N),SMLCN(N),
      &                        CompoMass ,(CompoTot(IY),IY=1,MIMP)
-581                   FORMAT(1X,A12, 3x, A12, 5(3x, 1P1E9.3))
+581                   FORMAT(1X,A12, 3x, A12, 5(3x,1E9.3))
                     ENDIF
                   elseif (ICalType.eq.2) then
                     WRITE(outs,582)SMLCN(N),
      &               CompoMass ,(CompoTot(IY),IY=1,MIMP)
-582                 FORMAT(1X,12x, 3x, A12, 5(3x, 1P1E9.3))
+582                 FORMAT(1X,12x, 3x, A12, 5(3x,1E9.3))
                   endif
                 ELSEIF (itrc.eq.3) THEN
                   IF (M.EQ.1) THEN
                     WRITE(outs,583)
      &                'Total for composite = ---',CompoMass,
      &                (CompoTot(IY),IY=1,MIMP)
-583                 FORMAT(1X,A, 5(3x, 1P1E9.3))
+583                 FORMAT(1X,A, 5(3x,1E9.3))
                   ELSEIF (M.EQ.2) THEN
                     WRITE(outs,584) 'Total for composite = ----',
      &                              (CompoTot(IY),IY=1,MIMP)
-584                 FORMAT(1X,28x,A,4(3x, 1P1E9.3))
+584                 FORMAT(1X,28x,A,4(3x,1E9.3))
                   ELSEIF (M.EQ.3 .OR. M.EQ.5) THEN
 C Check mise en page
                     WRITE(outs,83)'Total for composite =',
      &                            (CompoTot(IY),IY=1,MIMP)
- 83                 FORMAT(3X,A, 4(3x, 1P1E9.3))
+ 83                 FORMAT(3X,A, 4(3x,1E9.3))
 
 C 4 Composite Transport
                   ELSEIF (M.EQ.4) THEN
                     WRITE(outs,585)
      &              'Total for composite = --------------------------',
      &                            (CompoTot(IY),IY=1,MIMP)
-585                 FORMAT(2X,A, 4(3x, 1P1E9.3))
+585                 FORMAT(2X,A, 4(3x,1E9.3))
                   ELSEIF (M.EQ.6) THEN
                    WRITE(outs,600)'Total for composite = -------------',
      &                             (CompoTot(IY),IY=1,MIMP)
-600                 FORMAT(3X,A, 4(3x, 1P1E9.3))
+600                 FORMAT(3X,A, 4(3x,1E9.3))
                   ELSEIF (M.EQ.7) THEN
                     WRITE(outs,599)'Total for composite = -----------', 
      &                             (CompoTot(IY),IY=1,MIMP)
-599                 FORMAT(1X,A, 4(3x, 1P1E9.3))
+599                 FORMAT(1X,A, 4(3x,1E9.3))
 
 C 9 Dumped waste treatment 
                   ELSEIF (M.EQ.9) THEN
                     WRITE(outs,586)
      &               ' Total for composite = --- ', TotDumpM,
      &                                          (CompoTot(IY),IY=1,MIMP)
-586                 FORMAT(A, 5(1P1E9.3,3x))
+586                 FORMAT(A, 5(1E9.3,3x))
 C 11 Incinarated waste treatment
                   ELSEIF (M.EQ.11) THEN
                     WRITE(outs,587)
      &               ' Total for composite = --- ', TotBurnM,
      &                                          (CompoTot(IY),IY=1,MIMP)
-587                 FORMAT(A, 5(1P1E9.3,3x))
+587                 FORMAT(A, 5(1E9.3,3x))
 C 13 Recycled waste treatment
                   ELSEIF (M.EQ.13) THEN
                     WRITE(outs,508)
      &               ' Total for composite = --- ', TotRecyM,
      &                                          (CompoTot(IY),IY=1,MIMP)
-508                 FORMAT(A, 5(1P1E9.3,3x))
+508                 FORMAT(A, 5(1E9.3,3x))
 C 8 Dumped waste transportation & 10 Incinerated waste transportation
 C & 12 Recycling transport 
                   ELSEIF (M.EQ.8 .OR. M.EQ.10 .OR. M.EQ.12) THEN
                     WRITE(outs,588)
      &            'Total for composite = ----------------------------', 
      &                             (CompoTot(IY),IY=1,MIMP)
-588                 FORMAT(A, 4(3x, 1P1E9.3))
+588                 FORMAT(A, 4(3x,1E9.3))
 C 14 Disposal mass
                   ELSEIF (M.EQ.14) THEN
                     WRITE(outs,589) 'Total =', 
      &                              TotRecyM + TotBurnM + TotDumpM,
      &                              TotRecyM, TotBurnM, TotDumpM
-589                 FORMAT(3x,A,6x,4(1P1E9.3,14x))
+589                 FORMAT(3x,A,6x,4(1E9.3,14x))
                     TotDumpZ = TotDumpZ+TotDumpM
                     TotBurnZ = TotBurnZ+TotBurnM
                     TotRecyZ = TotRecyZ+TotRecyM
@@ -3858,40 +3962,40 @@ C Next Surface
                     WRITE(outs,818) zname(nznog(IZ)),
      &                           TotRecyZ + TotBurnZ + TotDumpZ,
      &                           TotRecyZ, TotBurnZ, TotDumpZ
- 818                FORMAT(1x,A12,10x,4(1P1E9.3,6x))
+ 818                FORMAT(1x,A12,10x,4(1E9.3,6x))
                   ELSE
                     WRITE (outs,812) zname(nznog(IZ)),
      &                        (ZoneTot(IY),IY=1,MIMP)
- 812                FORMAT(1X,A18, 4(3x, 1P1E9.3))
+ 812                FORMAT(1X,A18, 4(3x,1E9.3))
                   ENDIF
                 elseif (itrc.eq.2) then
                   IF (M.eq.14) THEN
                     WRITE(outs,819) 'Total zone = ',
      &                           TotRecyZ + TotBurnZ + TotDumpZ,
      &                           TotRecyZ, TotBurnZ, TotDumpZ
- 819                FORMAT(1x,A,2x,4(1P1E9.3,14x))
+ 819                FORMAT(1x,A,2x,4(1E9.3,14x))
                   ELSE
                     WRITE (outs,813)' Total for zone = ',TotMass,
      &                        (ZoneTot(IY),IY=1,MIMP)
- 813                FORMAT(10X,A18, 5(3x, 1P1E9.3))
+ 813                FORMAT(10X,A18, 5(3x,1E9.3))
                   ENDIF
                 else
                   IF (M.eq.14) THEN
                     WRITE(outs,820)'Total zone = ',
      &                          TotRecyZ +TotBurnZ + TotDumpZ,
      &                          TotRecyZ, TotBurnZ, TotDumpZ
- 820                 FORMAT(1x,A,2x,4(1P1E9.3,14x))
+ 820                 FORMAT(1x,A,2x,4(1E9.3,14x))
                   ELSE                
                     WRITE (outs,84) zname(nznog(IZ)),
      &                           (ZoneTot(IY),IY=1,MIMP)
- 84                 FORMAT(2X,A12,5x, 4(3x, 1P1E9.3))
+ 84                 FORMAT(2X,A12,5x, 4(3x,1E9.3))
                   ENDIF
                 endif
               ELSEIF (ICalType.eq.2) THEN
                 if ((itrc.eq.1).and.(ICalType.eq.2).and.(M.eq.14)) then
                   WRITE(outs,88)CompoNam(ICurComp),TotRecyM+TotBurnM+
      &                          TotDumpM,TotRecyM, TotBurnM, TotDumpM
- 88               FORMAT(16x,A12,3x,4(1P1E9.3,8x))
+ 88               FORMAT(16x,A12,3x,4(1E9.3,8x))
                 else
                  IF (ZoneTot(1).GT.0) THEN
                    IF (M.eq.1) THEN
@@ -3919,11 +4023,11 @@ C Next Surface
                    IF (M.eq.6) THEN
                      WRITE (outs,685)CompoNam(ICurComp) , '-',
      &                        (ZoneTot(IY),IY=1,MIMP)
- 685                  FORMAT(1X, A27,A12, 4(3x, 1P1E9.3))
+ 685                  FORMAT(1X, A27,A12, 4(3x,1E9.3))
                    ELSE                  
                      WRITE (outs,85)CompoNam(ICurComp) ,TotMasDisp,
      &                        (ZoneTot(IY),IY=1,MIMP)
- 85                  FORMAT(1X, A27, 5(3x, 1P1E9.3))
+ 85                  FORMAT(1X, A27, 5(3x,1E9.3))
                   ENDIF
                 endif
               ENDIF
@@ -3948,7 +4052,7 @@ C Next zone
 
             IF (itrc.eq.0) THEN
               WRITE (outs,86)StepName(M),(StageTot(IY),IY=1,MIMP)
- 86           FORMAT(1X,A32,4(3x, 1P1E9.3))
+ 86           FORMAT(1X,A32,4(3x,1E9.3))
             ELSEIF (itrc.eq.1) THEN
             ENDIF
             if (ICalType.eq.1) then
@@ -3957,27 +4061,27 @@ C Next zone
                   WRITE(outs,190)'Total disposal',
      &                          TotRecyS +TotBurnS + TotDumpS,
      &                          TotRecyS, TotBurnS, TotDumpS
- 190              FORMAT(A15,8x,4(1P1E9.3,6x))
+ 190              FORMAT(A15,8x,4(1E9.3,6x))
                 elseif (itrc.eq.2) then
                   WRITE(outs,191)'Total disposal',
      &                          TotRecyS +TotBurnS + TotDumpS,
      &                          TotRecyS, TotBurnS, TotDumpS
- 191              FORMAT(A15,1x,4(1P1E9.3,14x))
+ 191              FORMAT(A15,1x,4(1E9.3,14x))
                 endif
               ELSE                
                 if (Itrc.eq.1) then        
                   WRITE (outs,184)' Total for stage = ', 
      &                                          (StageTot(IY),IY=1,MIMP)
-184               FORMAT(A,4(3x, 1P1E9.3))
+184               FORMAT(A,4(3x,1E9.3))
                 elseif (Itrc.eq.2) then
                   IF ((M.EQ.1).or.(M.EQ.2)) THEN
                    WRITE (outs,185)' Total for stage = ---------------', 
      &                                          (StageTot(IY),IY=1,MIMP)
- 185                FORMAT(4X,A,2x,4(3x, 1P1E9.3))
+ 185                FORMAT(4X,A,2x,4(3x,1E9.3))
                   ELSE
                    WRITE (outs,176)' Total for stage = ---------------', 
      &                                          (StageTot(IY),IY=1,MIMP)
- 176                FORMAT(4X,A,2x,4(3x, 1P1E9.3))
+ 176                FORMAT(4X,A,2x,4(3x,1E9.3))
                   ENDIF
                 elseif (Itrc.le.3) then
 C Ckeck mise en page for itrc 3
@@ -3985,40 +4089,40 @@ C Ckeck mise en page for itrc 3
                     WRITE(outs,19)
      &                         ' Total for stage = -------------------', 
      &                                          (StageTot(IY),IY=1,MIMP)
- 19                 FORMAT(A,4(3x, 1P1E9.3))
+ 19                 FORMAT(A,4(3x,1E9.3))
                   ELSEIF (M.EQ.2)  THEN
                     WRITE(outs,18)
      &        ' Total for stage = ------------------------------------', 
      &                                          (StageTot(IY),IY=1,MIMP)
- 18                 FORMAT(A,4(3x, 1P1E9.3))
+ 18                 FORMAT(A,4(3x,1E9.3))
                   ELSEIF ((M.EQ.3).OR.(M.EQ.5)) THEN
                     WRITE(outs,180)' Total for stage = ------- ', 
      &                                          (StageTot(IY),IY=1,MIMP)
- 180                 FORMAT(A,4(1P1E9.3, 3x))
+ 180                 FORMAT(A,4(1E9.3, 3x))
                   ELSEIF (M.EQ.4)  THEN
                     WRITE(outs,181)
      &             ' Total for stage = -------------------------------', 
      &                                          (StageTot(IY),IY=1,MIMP)
- 181                FORMAT(A,4(3x, 1P1E9.3))
+ 181                FORMAT(A,4(3x,1E9.3))
                   ELSEIF (M.EQ.6) THEN
                     WRITE(outs,182)
      &             ' Total for stage = -------------------', 
      &                                          (StageTot(IY),IY=1,MIMP)
- 182                FORMAT(A,4(3x, 1P1E9.3))
+ 182                FORMAT(A,4(3x,1E9.3))
                   ELSEIF (M.EQ.7) THEN
                     WRITE(outs,183)' Total for stage = ---------------', 
      &                                          (StageTot(IY),IY=1,MIMP)
- 183                FORMAT(A,4(3x, 1P1E9.3))
+ 183                FORMAT(A,4(3x,1E9.3))
                   ELSEIF ((M.EQ.8).or.(M.EQ.10).or.(M.EQ.12)) THEN
                     WRITE(outs,135)
      &             ' Total for stage = -------------------------------', 
      &                                          (StageTot(IY),IY=1,MIMP)
- 135                FORMAT(A,4(3x, 1P1E9.3))
+ 135                FORMAT(A,4(3x,1E9.3))
                   ELSEIF ((M.EQ.9).or.(M.EQ.11).or.(M.EQ.13)) THEN
                     WRITE(outs,136)
      &                 ' Total for stage = ------------------- ',
      &                                          (StageTot(IY),IY=1,MIMP)
- 136                FORMAT(A,4(1P1E9.3,3x))
+ 136                FORMAT(A,4(1E9.3,3x))
                   ENDIF
                 endif
               ENDIF
@@ -4044,11 +4148,11 @@ C Next Stage
             IF(IRep.EQ.2) then
               WRITE (outs,87)'Total for all stages=',
      &                      (ProjTot(IY),IY=1,MIMP)
- 87           FORMAT(A,1x,4(1P1E9.3,3x))
+ 87           FORMAT(A,1x,4(1E9.3,3x))
             ELSE
               WRITE (outs,89)' Total for all stages = ',
      &                      (ProjTot(IY),IY=1,MIMP)
- 89           FORMAT(6X,A,1x,4(1P1E9.3,3x))
+ 89           FORMAT(6X,A,1x,4(1E9.3,3x))
             ENDIF
           elseif (itrc.eq.2)THEN
             IF (IWB.EQ.2) THEN        
@@ -4064,7 +4168,7 @@ C Next Stage
             ENDIF
             WRITE (outs,90) TmpString,
      &                      (ProjTot(IY),IY=1,MIMP)
- 90         FORMAT(A40,3x,4(1P1E9.3,3x))
+ 90         FORMAT(A40,3x,4(1E9.3,3x))
           endif
           CALL edisp(Ichanel,outs)
           DO 888 IN = 1,MIMP
@@ -4075,7 +4179,7 @@ C Next Stage
           if(iwb.ne.1)then
             WRITE (outs,889)' Total for stages = ',
      &                      (ProjTot(IY),IY=1,MIMP)
-889         FORMAT(10X,A,7x,4(1P1E9.3,3x))
+889         FORMAT(10X,A,7x,4(1E9.3,3x))
             CALL edisp(Ichanel,outs)
           endif
         ENDIF

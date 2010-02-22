@@ -1511,23 +1511,31 @@ C Create a material rectangle.
         IDRW=2
 
 C Ask if user wishes to browse through materials to find suitable
-C reference.
-        dok=.true.
-        h(1)='If you know the material db index you can say no and '
-        h(2)='enter the number directly. Otherwise say yes and '
-        h(3)='browse the database. '
-        CALL ASKOK(' Browse material database to locate the material',
-     &    ' index you want? A no will ask you for the index.',OK,dok,3)
+C reference. Use elistmat to select via materials array.
+        h(1)='If you want to keep the current material answer NO'
+        h(2)='otherwise you can find one by browsing the database.'
+        CALL ASKOK('Browse the materials db for a new material',
+     &    '(NO exits the process)?',OK,dok,2)
         IF(OK)then
-          iwhich=0
-          CALL ELISTC(iwhich,chdb,'-',IER)
+          iwhich = 0
+          CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+          if(iwhich.eq.0)then
+            H(1)='If air is correct then accept, otherwise'
+            H(2)='reselect from the list or abort the task.'
+            CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &        ' ','accept','reselect material','abort',iwair,2)
+            if(iwair.eq.2)then
+              CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+            elseif(iwair.eq.3)then
+              GOTO 10
+            endif
+          elseif(iwhich.eq.-99)then
+            continue
+          endif
         else
-          H(1)='Each item in the materials database has a'
-          H(2)='reference number. '
-          H(3)='Air is reference 0.'
-          CALL EASKI(IWHICH,' ',' Materials db reference no: ',
-     &        0,'F',600,'F',0,'materials reference',IER,3)
+          goto 10  ! go back
         endif
+
         IUDLR(1)=IWHICH
         WRITE(LMTS,'(4(1X,I2))')(IUDLR(K),K=2,5)
         WRITE(PROPS,'(2A)')'enter the material rectangle borders',
@@ -2535,23 +2543,31 @@ C Define Y - gridding.
 C Create a material rectangle.
 
 C Ask if user wishes to browse through materials to find suitable
-C reference.
-        dok=.true.
-        h(1)='If you know the material db index you can say no and '
-        h(2)='enter the number directly. Otherwise say yes and '
-        h(3)='browse the database. '
-        CALL ASKOK(' To supply the material db reference',
-     &    ' do you want to browse through the db?',OK,dok,3)
+C reference. Use elistmat to select via materials array.
+        h(1)='If you want to keep the current material answer NO'
+        h(2)='otherwise you can find one by browsing the database.'
+        CALL ASKOK('Browse the materials db for a new material',
+     &    '(NO exits the process)?',OK,dok,2)
         IF(OK)then
-          iwhich=0
-          CALL ELISTC(iwhich,chdb,'-',IER)
+          iwhich = 0
+          CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+          if(iwhich.eq.0)then
+            H(1)='If air is correct then accept, otherwise'
+            H(2)='reselect from the list or abort the task.'
+            CALL EASKABC('Your selection is `0` i.e. air. Options:',
+     &        ' ','accept','reselect material','abort',iwair,2)
+            if(iwair.eq.2)then
+              CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+            elseif(iwair.eq.3)then
+              GOTO 10
+            endif
+          elseif(iwhich.eq.-99)then
+            continue
+          endif
         else
-          H(1)='Each item in the materials db has a'
-          H(2)='reference number. '
-          H(3)='Air is reference 0.'
-          CALL EASKI(IWHICH,' ',' Material db reference no: ',
-     &        0,'F',600,'F',0,'material reference',IER,3)
+          goto 10  ! go back
         endif
+
         IUDLR(1)=IWHICH
         WRITE(LMTS,'(4(1X,I2))')(IUDLR(K),K=2,5)
         WRITE(PROPS,'(2A)')'enter the material rectangle borders',

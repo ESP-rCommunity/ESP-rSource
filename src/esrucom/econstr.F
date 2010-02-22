@@ -509,7 +509,19 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER OUTS*124,sn*12,SOPT*12,OPT*12,PNAM*72,NAM*72
-      character iprtext*4,TITL*72,GDESCR*36
+      character iprtext*4,GDESCR*36
+
+C Use material arrays if available. This also assumes that constructions will
+C have been filled after the model cfg file was scanned.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('CONINF: The materials arrays are incomplete so',
+     &    'this report is not available.','W')
+        return
+      endif
 
 C Heading if all surfaces.
       if(isur.eq.0)then
@@ -571,35 +583,17 @@ C Get the air gap contribution to U value for reporting.
 
 C For each layer recover the name of material. For non-airgap layers
 C add resistance for layer (using data from constructions file)
-          call eclose(matver,1.1,0.01,closemat1)
-          call eclose(matver,1.2,0.01,closemat2)
           DO 15, IL=1,NELT
-            if(closemat1.or.closemat2)then
               matarrayindex=IPRMAT(imatch(i),IL)   ! which array index
               if(matarrayindex.ge.0)then
 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then establish NAM.
                 if(matarrayindex.eq.0)then
-                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                  E=0.99; A=0.99; DRV=1.0
-                  TITL='GAPS'; NAM='AIR'
+                NAM='AIR'
                 else
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
-                  E=matdbine(matarrayindex)
-                  A=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
                   write(NAM,'(a)') matname(matarrayindex)(1:32)
                 endif
               endif
-            else
-
-C << if material arrays were filled there is no need for this call >>
-              CALL ERPCDB(IFMAT,IPR(imatch(i),IL),ITRU,IER,DBCON,DBDEN,
-     &          DBSHT,E,A,DRV,TITL,NAM)
-            endif
             IF(IPR(imatch(i),IL).EQ.0)THEN
 
 C Find matching air gap layer and resistance.

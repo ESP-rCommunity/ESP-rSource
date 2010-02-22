@@ -522,9 +522,20 @@ C 0=all; 1=distributions; 2=locations; 3=uncertainties.
       integer matarrayindex ! the indes within matdatarray
 
       character LUALF*72,LCNG*15,LLOC*15,outs*124
-      character NAM*72,TITL*72,MATNAM*12,ITEM(6)*20
+      character NAM*72,MATNAM*12,ITEM(6)*20
 
       IER=0
+
+C Find version of materials database.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so un-',
+     &    'certainty attributes not possible.','W')
+        return
+      endif
 
       call edisp (iuout,'  ')
       write(outs,'(a,a)')'Uncertainty analysis library: ',LUALF(1:40)
@@ -536,8 +547,6 @@ C List distributions.
         call edisp (iuout,'  ')
         write(outs,'(a,i4)')'Number of distributions defined:',NICNG
         call edisp (iuout,outs)
-        call eclose(matver,1.1,0.01,closemat1)
-        call eclose(matver,1.2,0.01,closemat2)
         do 10 I=1,NICNG
           if (IELM.eq.0.or.IELM.eq.I) then
             call edisp (iuout,'  ')
@@ -545,33 +554,17 @@ C List distributions.
             call edisp (iuout,outs)
             if (IDTYP(I).eq.1) then
               IDB=IDMAT(I,1)
-              if(closemat1.or.closemat2)then
                 legmat=IDB   ! which legacy index
                 if(legmat.gt.0)then
                   matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht
                   if(matarrayindex.eq.0)then
-                    DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                    E=0.99; A=0.99; DRV=1.0
-                    TITL='GAPS'; NAM='AIR'
+                  NAM='AIR'
                   else
-                    DBCON=matdbcon(matarrayindex)
-                    DBDEN=matdbden(matarrayindex)
-                    DBSHT=matdbsht(matarrayindex)
-                    E=matdbine(matarrayindex)
-                    A=matdbina(matarrayindex)
-                    DRV=matdbdrv(matarrayindex)
-                    write(TITL,'(a)') 'placeholder'
                     write(NAM,'(a)') matname(matarrayindex)(1:32)
                   endif
                 endif
-              else
-
-C << if material arrays were filled there is no need for this call >>
-                CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
-     &            DRV,TITL,NAM)
-              endif
               write(outs,'(2a)')' Material: ',NAM
               call edisp (iuout,outs)
               if (IDMAT(I,2).eq.1) then
@@ -594,33 +587,17 @@ C << if material arrays were filled there is no need for this call >>
                 call edisp (iuout,'Undefined')
               else
                 IDB=IDMAT(I,1)
-                if(closemat1.or.closemat2)then
                   legmat=IDB   ! which legacy index
                   if(legmat.gt.0)then
                     matarrayindex=mathash(legmat)  ! find matching array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+C And if matarrayindex is zero then resetn dbcon dbden dbsht
                     if(matarrayindex.eq.0)then
-                      DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                      E=0.99; A=0.99; DRV=1.0
-                      TITL='GAPS'; NAM='AIR'
+                    NAM='AIR'
                     else
-                      DBCON=matdbcon(matarrayindex)
-                      DBDEN=matdbden(matarrayindex)
-                      DBSHT=matdbsht(matarrayindex)
-                      E=matdbine(matarrayindex)
-                      A=matdbina(matarrayindex)
-                      DRV=matdbdrv(matarrayindex)
-                      write(TITL,'(a)') 'placeholder'
                       write(NAM,'(a)') matname(matarrayindex)(1:32)
                     endif
                   endif
-                else
-
-C << if material arrays were filled there is no need for this call >>
-                  CALL ERPCDB(IFMAT,IDB,ITRU,IERR,DBCON,DBDEN,DBSHT,E,A,
-     &              DRV,TITL,NAM)
-                endif
                 write(outs,'(2a)')' Thickness of material: ',NAM
                 call edisp (iuout,outs)
               endif

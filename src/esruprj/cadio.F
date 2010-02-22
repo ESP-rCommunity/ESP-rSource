@@ -50,7 +50,7 @@ C exportcad: controls model export facilities.
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       logical MODIFY,MODLEN,MODBND,unixok,browse
 
-      DIMENSION ITEMS1(12)
+      DIMENSION ITEMS1(11)
 
       character LFIL*72,H*72,path*72,LCFGF*72,tfile*72
       character ITEMS1*34,doit*248,outs*124,cfgroot*24,tmode*12
@@ -83,12 +83,11 @@ C Check if Unix-based or DOS based.
       ITEMS1(4) ='d to RADIANCE              '
       ITEMS1(5) ='e to xfig (vector ploting) '
       ITEMS1(6) ='f to MicroGDS (THINGS file)'
-      ITEMS1(7) ='g to TSBI3                 '
-      ITEMS1(8) ='h to EnergyPlus            '
-      ITEMS1(9) ='i to VRML #2.0             '
-      ITEMS1(10)='j to ESP-r meta file       '
-      ITEMS1(11)='? help                     '
-      ITEMS1(12)='- exit this menu           '
+      ITEMS1(7) ='g to EnergyPlus            '
+      ITEMS1(8) ='i to VRML #2.0             '
+      ITEMS1(9) ='j to ESP-r meta file       '
+      ITEMS1(10)='? help                     '
+      ITEMS1(11)='- exit this menu           '
 
 C Help text for this menu.
       H(1)='This facility allows you to export the current model'
@@ -99,10 +98,10 @@ C Help text for this menu.
       H(6)='DXF (version 12) file (see the note below);'
       H(7)='XZIP, a CAD program from IES;'
       H(8)='RADIANCE, a lighting simulation program from LBL;'
-      H(9)='XFIG, a vector plotting program;'
-      H(10)='MicroGDS, a CAD program;'
-      H(11)='TSBI3, a building thermal simulation program the Danish'
-      H(12)='       Building Research Institute;'
+      H(9)='XFIG, a vector plotting program (available on Linux and'
+      H(10)='OSX and Cygwin) so that wire-frame images can be exported'
+      H(11)='in high resolution.'
+      H(12)='MicroGDS, a CAD program;'
       H(13)='EnergyPlus, a building thermal simulation program from'
       H(14)='       North America'
       H(15)='VRML Version 2.0, with a matching html file containing'
@@ -428,45 +427,6 @@ C Why is the addpath not used?
         call edisp(iuout,outs)
       ELSEIF(INO1.EQ.7)THEN
 
-C Export to TSBI3 file.
-        call tstamp('>','PRJ: export to TSBI3')
-        doit = ' '
-        H(1)='This file is used with the TSBI3 program from the Danish'
-        H(2)='Building Research Institute. Note that zone schedules'
-        H(3)='are not fully translated and will need to be manually'
-        H(3)='augmented.'
-        write(LFIL,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.TSBI3'
-        CALL EASKS(LFIL,' ','TSBI3 input file name?',
-     &                 72,' ','TSBI3 file',IER,4)
-C        call edisp(iuout,' Performing model conversion.')
-        if(unixok)then
-          call addpath(LCFGF,longtfile,concat)
-        else
-
-C If running on a non-unix machine see if there are spaces in the name
-C and change any / to \.
-          call addpath(LCFGF,longtfile,concat)
-          call cmdfiledos(longtfile,longtfiledos,ier)
-          longtfile=' '
-          longtfile=longtfiledos
-        endif
-        if(itrc.le.1)then
-          write(doit,'(4a)') 'ecnv -if esp -in ',
-     &      longtfile(1:lnblnk(longtfile)),
-     &      ' -of tsbi3 -out ',LFIL(1:lnblnk(LFIL))
-        elseif(itrc.gt.1)then
-          write(doit,'(4a)') 'ecnv -v -if esp -in ',
-     &      longtfile(1:lnblnk(longtfile)),
-     &      ' -of tsbi3 -out ',LFIL(1:lnblnk(LFIL))
-        endif
-        call usrmsg('Starting TSBI3 conversion via',doit,'-')
-        tmode = 'text'
-        call runit(doit,tmode)
-C        write(outs,'(3a)')' The file ',LFIL(1:lnblnk(LFIL)),
-C     &    ' has been created.'
-C        call edisp(iuout,outs)
-      ELSEIF(INO1.EQ.8)THEN
-
 C Export to EnergyPlus IDF file (work in progress)
         call tstamp('>','PRJ: export to energyplus')
         doit = ' '
@@ -494,7 +454,7 @@ C          call edisp(iuout,' Performing model conversion.')
           close(ioout)
         endif
 
-      ELSEIF(INO1.EQ.9)THEN
+      ELSEIF(INO1.EQ.8)THEN
 
 C Export to VRML (2.0) file.
         call tstamp('>','PRJ: export to VRML')
@@ -534,7 +494,7 @@ C     &    ' has been created.'
 C        call edisp(iuout,outs)
 C        call edisp(iuout,'Use a VRML viewer to explore it.')
 
-      ELSEIF(INO1.EQ.10)THEN
+      ELSEIF(INO1.EQ.9)THEN
 
 C Export to ESP-r meta file.
         call tstamp('>','PRJ: export to ESP-r meta')
@@ -561,12 +521,12 @@ C and change any / to \.
         endif
         ioout=2
         call METAWRITE(ioout,longtfile,'-',IER)
-      ELSEIF(INO1.EQ.11)THEN
+      ELSEIF(INO1.EQ.10)THEN
       
 C Pop up the help text.
        CALL PHELPD('export menu',55,'-',0,0,IER)
 
-      ELSEIF(INO1.EQ.12)THEN
+      ELSEIF(INO1.EQ.11)THEN
         RETURN
       else
         goto 33

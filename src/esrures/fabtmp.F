@@ -136,8 +136,6 @@ C attributes are known.
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -147,85 +145,24 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
 
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
-      DIMENSION ICLN(30)
 
-      CHARACTER outs*124,NAM*72,TITL*72,CSTR*25
+      CHARACTER outs*124,CSTR*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
 
-C Open the material db if not already done.
-      IF(.NOT.MATDBOK)THEN
-        IER=0
-        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        IF(ier.ne.0)THEN
-          write(outs,'(3a)') ' No materials database ',
-     &     LFMAT(1:lnblnk(LFMAT)),' found.'
-          call edisp(iuout,outs)
-          MATDBOK=.FALSE.
-        else
-
-C Also check to see if the file has correct info. 
-          IREC=601
-          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
-     &      (ICLN(I),I=1,30)
-          if(NCLASS.LE.0)then
-            goto 1000   ! no classifications so try alternatives
-          else
-            MATDBOK=.TRUE.
-            matver = 0.0
-            goto 139  !  a binary file found so carry on.
-          endif
- 1000     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-          if(ier.eq.-2)then
-            ier=0
-            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-            if(ier.ne.0)then
-              call usrmsg('No readable materials database was found',
-     &                  'or file was corrupt','W')
-              MATDBOK=.FALSE.
-              return
-            else
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
+C Use material arrays if available. This also assumes that constructions will
+C have been filled after the model cfg file was scanned.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
               if(closemat1.or.closemat2)then
-                call edisp(iuout,' Filled material data arrays...')
-                MATDBOK=.TRUE.
+        continue
               else
-                call usrmsg(
-     &            'No readable material database was found. ',
-     &            'check other warnings for advise.','W')
-                MATDBOK=.FALSE.
+        call usrmsg('GZPDBE: The materials arrays are incomplete so',
+     &    'this report might not work correctly.','W')
                 return
               endif
-            endif
-          elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2)then
-              call edisp(iuout,' Filled material data arrays...')
-              MATDBOK=.TRUE.
-            endif
-          endif
-        endif
-      ENDIF
-
-C If the common block MLC has not yet been filled the read in the
-C conposite construction database.
- 139  IF(.NOT.MLDBOK)THEN
-        CALL ERMLDB(0,iuout,IER)
-        IF(IER.NE.0)THEN
-          call edisp(iuout,' Unable to gather information from mlc db.')
-          return
-        ELSE
-          MLDBOK=.TRUE.
-        ENDIF
-      ENDIF
 
 C Clear IPRZ to 1 (not 0 since that is an air gap).
       do 45 ISUR=1,NZSUR(ICOMP)
@@ -236,7 +173,7 @@ C Clear IPRZ to 1 (not 0 since that is an air gap).
 
 C If there is a mlc db scan it for properties of surfaces.
 C Reset number of layers, if at end of loop it is still 0 then
-C the element was not found.
+C the construction was not found.
       do 44 ISUR=1,NZSUR(ICOMP)
         CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
         ICKNE=0
@@ -244,36 +181,8 @@ C the element was not found.
           IF(DESC(IC)(1:12).EQ.SSMLCN(ICN))THEN
             ICKNE=LAYERS(IC)
 
-C Gather information about each layer. Read in the material db info.
-C But we do not do anything with the material properties, why are
-C we reading the raw data?
+C Gather material index about each layer. IPRZ is used elsewhere.
             DO 23 IL=1,LAYERS(IC)
-              if(closemat1.or.closemat2)then
-                matarrayindex=IPRMAT(IC,IL)   ! which array index
-                if(matarrayindex.ge.0)then
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
-                  if(matarrayindex.eq.0)then
-                    DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-                    E=0.99; A=0.99; DRV=1.0
-                    TITL='GAPS'; NAM='AIR'
-                  else
-                    DBCON=matdbcon(matarrayindex)
-                    DBDEN=matdbden(matarrayindex)
-                    DBSHT=matdbsht(matarrayindex)
-                    E=matdbine(matarrayindex)
-                    A=matdbina(matarrayindex)
-                    DRV=matdbdrv(matarrayindex)
-                    write(TITL,'(a)') 'placeholder'
-                    write(NAM,'(a)') matname(matarrayindex)(1:32)
-                  endif
-                endif
-              else
-
-C << if material arrays were filled there is no need for this call >>
-                CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
-     &             DBSHT,E,A,DRV,TITL,NAM)
-              endif
               IPRZ(ISUR,IL)=IPR(IC,IL)
    23       CONTINUE
           ENDIF
@@ -353,8 +262,6 @@ C VAL1(1+NN+2) inside air temperature.
       SUBROUTINE MOFGET(ICOMP,ISUR,IDAY)
 #include "building.h"
 #include "site.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 

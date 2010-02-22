@@ -336,8 +336,7 @@ C Assume that this category is glass. ?? WIS data
   10  CONTINUE
 
 C If there has been no air material read in then add in one more
-C category for air and fill it with the default information that
-C the standard call to ERPCDB would have returned.
+C category for air and fill it with tdefault information.
       if(mathash(0).eq.-1)then
         matcats=matcats+1
         matcatitems(matcats)=1
@@ -1077,8 +1076,7 @@ C Assume that this category is glass. ?? WIS data
    10 CONTINUE
 
 C If there has been no air material read in then add in one more
-C category for air and fill it with the default information that
-C the standard call to ERPCDB would have returned.
+C category for air and fill it with default information.
       if(mathash(0).eq.-1)then
         matcats=matcats+1
         matcatitems(matcats)=1

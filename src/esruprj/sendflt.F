@@ -30,21 +30,14 @@ C SDDFLT001 set defaults based on material type.
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 #include "material.h"
-      
-      integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/exporttg/xfile,tg,delim
-      COMMON/exporttgi/ixopen,ixloc,ixunit
 
       common/UADFLT/MATTYPE(30),DFLTMAT(5,6)
 
-      DIMENSION ICLN(30),CLSDES(40),CLSSEL(30),ICLSSEL(30)
+      DIMENSION CLSDES(40)
 
-      character CLSSEL*36
-      character CLSDES*48,IDESC*72,H*72,KEY*1,outs*124
-      character xfile*144,tg*1,delim*1
+      character CLSDES*48,H*72,KEY*1,outs*124
       character TYPEDES(5)*20,t32*32,d32*32
       logical closemat1,closemat2
       
@@ -58,7 +51,6 @@ C Define material types.
 C Set default values of material type.
       do 10 I=1,30
         MATTYPE(I)=1
-        ICLN(I)=0
  10   continue
 
 C Set default uncertainties.
@@ -68,7 +60,7 @@ C Set default uncertainties.
  13     continue
  12   continue
 
-C Fix values based on current construction database.
+C Fix values based on current materials database categories.
       MATTYPE(1)=4
       MATTYPE(2)=4
       MATTYPE(3)=2
@@ -84,79 +76,32 @@ C Fix values based on current construction database.
       MATTYPE(13)=2
       MATTYPE(14)=4
       MATTYPE(15)=3
+      MATTYPE(16)=1
 
 C Present list of material categories with toggles.
 C Add uncertainty percentages to foot of list.
-
-C Check that the material db is not empty.
-      CALL ERPFREE(IFMAT,ISTAT)
-      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
-      IF(ier.ne.0)THEN
-        write(outs,'(3a)') ' Materials db ',
-     &     LFMAT(1:lnblnk(LFMAT)),' not found!'
-        call edisp(iuout,outs)
-        IER=1
-        return
-      else
-
-C Check to see if the file has correct info. This block of text
-C is similar to that used in eddb.F
-        IREC=601
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)NCLASS,
-     &    (ICLN(I),I=1,30)
-        if(NCLASS.LE.0)then
-          goto 1000   ! no classifications so try alternatives
-        else
-          goto 40
-        endif
- 1001   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-        if(ier.eq.-2)then
-          ier=0
-          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-          if(ier.ne.0)then
-            call usrmsg('No readable materials database was not found',
-     &                  'or file was corrupt','W')
-            IER=1
-            return
-          else
             call eclose(matver,1.1,0.001,closemat1)
             call eclose(matver,1.2,0.001,closemat2)
             if(closemat1.or.closemat2)then
-              goto 40
+        continue
             else
-              call usrmsg(
-     &          'No readable Materials database was found!',
-     &          ' ','W')
+        call usrmsg('No materials data was found!',' ','W')
               IER=1
               return
             endif
-          endif
-        elseif(ier.eq.0)then
-          call eclose(matver,1.1,0.001,closemat1)
-          call eclose(matver,1.2,0.001,closemat2)
-          if(closemat1.or.closemat2)then
-            goto 40
-          endif
-        endif
-      endif
 
 C Setup for menu.
 C Gather the names of the various classes and present this list.
   40  ICO=-1
       CLSDES(1)=  '  Material category         type '
       M=1
-      DO 44 I=1,NCLASS
-        IC=ICLN(I)
-        IREC=IC*20-19
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
-        write(CLSSEL(I),'(A)') IDESC(1:36)
-        IF(NE.GT.0)THEN
+      DO 44 I=1,matcats
+        if(matcatitems(I).GT.0)then
           M=M+1
           CALL EMKEY(M-1,KEY,IER)
-          WRITE(CLSDES(M),'(A1,1X,3A)')
-     &          KEY,IDESC(1:24),'>>',TYPEDES(MATTYPE(I))
-        ENDIF
+          WRITE(CLSDES(M),'(A1,1X,3A)')KEY,matcatname(I)(1:24),
+     &      '>>',TYPEDES(MATTYPE(I))
+        endif
    44 CONTINUE
 
       CLSDES(M+1)=  '  --------------------------  '
@@ -209,7 +154,5 @@ C Help text for this menu.
       endif
 
       goto 40
- 1000 CALL USRMSG(' Cannot read material classes.',' ','W')
-      RETURN
 
       end
