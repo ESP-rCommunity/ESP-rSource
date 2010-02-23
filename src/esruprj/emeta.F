@@ -408,7 +408,7 @@ C textmass (char *32 4*3) text associated with mass
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,name,shape,nbwalls,nbmass,nbedges,
+      subroutine silentzone(ICOMP,shape,nbwalls,nbmass,nbedges,
      &  nbpolyc,list,origin,size,coords,rotateit,
      &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstr,
      &  boundarytype,datamass,textmass,use,usefile,IER)
@@ -471,7 +471,6 @@ C =2 with more than 3 day types
                            !questions about the operation files data
 
 C Paremeters passed in:
-      character name*12   ! name given to the zone
       character shape*8   ! box or extrude
       integer nbwalls     ! nb of vertical walls
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
@@ -513,6 +512,7 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       logical willneedtmc  !  if a tmc file will be required.
       logical closev       !  mass is close to vertical
       LOGICAL QUIET
+      logical anunknownmlc ! if true then there was an unknown MLC
 
 C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
@@ -529,6 +529,7 @@ C If browsing then user cannot create a new zone.
 
 C Initialise flag
       ifullysilent=0
+      anunknownmlc=.false.  
       
 C Set folder separator (fs) to \ or / as required.
       willneedtmc=.false.
@@ -545,10 +546,8 @@ C Clear local coordinate array.
         YY(iw)=0.0
  345  continue
 
-C Creation of a new zone, begin with name, trapping out
-C illegal characters.
+C Creation of a new zone, begin with length of zone name.
       call tstamp('>','PRJ: new zone')
-      call st2name(name,zname(ICOMP))
       lnzname(ICOMP)=lnblnk(zname(ICOMP))
 
 C << Unix vs Windows needs to be updated >>
@@ -689,6 +688,7 @@ C section of the string DESC.
         if(imatch.eq.0) then
           call edisp(iuout,'Warning: no matching MLC defined!')
           SOTF(icc)='UNKNOWN'
+          anunknownmlc=.true.   ! mark that one MLC is unknown
         else
           if(DESC(imatch)(15:18).EQ.'OPAQ')then
             SOTF(icc)='OPAQUE'
@@ -843,6 +843,7 @@ C section of the string DESC.
  56         continue
             if(imatch.eq.0) then
               rsotf='UNKNOWN'
+              anunknownmlc=.true.   ! mark that one MLC is unknown
             else
               if(DESC(imatch)(15:18).EQ.'OPAQ')then
                 rsotf='OPAQUE'
@@ -923,6 +924,7 @@ C section of the string DESC.
  55         continue
             if(imatch.eq.0) then
               rsotf='UNKNOWN'
+              anunknownmlc=.true.   ! mark that one MLC is unknown
             else
               if(DESC(imatch)(15:18).EQ.'OPAQ')then
                 rsotf='OPAQUE'
@@ -1003,25 +1005,34 @@ C file name is already known, assume that attribution is complete
 C so write the header of construction file so something exists and then
 C call edcon to complete the process. If the file already exists
 C it should be overwritten.
-      IUF=IFIL+2
-      LTHRM(ICOMP)=CFILE
-      CALL EFOPSEQ(IUF,LTHRM(ICOMP),3,IER)
-      WRITE(IUF,31,IOSTAT=IOS,ERR=146)
-     &  zname(ICOMP)(1:lnzname(ICOMP)),CFILE(1:lnblnk(CFILE))
-  31  FORMAT('# thermophysical properties of ',a,' defined in ',a,/,
-     &'# no of |air |surface(from geo)| multilayer construction',/,
-     &'# layers|gaps|  no.  name      | database name ')
-      CALL ERPFREE(IUF,ISTAT)
+      if(anunknownmlc)then   ! if a MLC is unknown do not bother with edcon
+        continue
+      else
+        IUF=IFIL+2
+        LTHRM(ICOMP)=CFILE
+        CALL EFOPSEQ(IUF,LTHRM(ICOMP),3,IER)
+        WRITE(IUF,31,IOSTAT=IOS,ERR=146)
+     &    zname(ICOMP)(1:lnzname(ICOMP)),CFILE(1:lnblnk(CFILE))
+  31    FORMAT('# thermophysical properties of ',a,' defined in ',a,/,
+     &  '# no of |air |surface(from geo)| multilayer construction',/,
+     &  '# layers|gaps|  no.  name      | database name ')
+        CALL ERPFREE(IUF,ISTAT)
+      endif
 
       if(willneedtmc)then
         ITW(icomp)=1
         LTWIN(ICOMP)=TFILE
       endif
-      QUIET=.true.
-      CALL EDCON(0,iuout,ICOMP,QUIET,IER)  ! should auto create files.
-      if(ier.ne.0)then 
+      if(anunknownmlc)then   ! if a MLC is unknown do not bother with edcon
         call usrmsg('Problem autogenerating zone construction',
-     &    'files. Please check','W')
+     &    'files. A surface construction was unknown.','W')
+      else
+        QUIET=.true.
+        CALL EDCON(0,iuout,ICOMP,QUIET,IER)  ! should auto create files.
+        if(ier.ne.0)then 
+          call usrmsg('Problem autogenerating zone construction',
+     &      'files. Please check','W')
+        endif
       endif
 
 C Operational details for this zone need to be handled. One
@@ -1217,8 +1228,6 @@ C Same as local variable actions which is passed back to calling code.
       real valx,valy,valz      ! local variable for extrude co-ords.
 
 C Paremeters passed to:silentzone
-      character name*12   ! name given to the zone
-      dimension name(MSZ)
       character shape*8   ! box or extrude or poly
       dimension shape(MSZ)
       character use*8,szuse*8,usefile*32  ! usage pattern directives
@@ -1227,8 +1236,8 @@ C Paremeters passed to:silentzone
       integer nbmass(MSZ)      ! nb of paired mass rectangles
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
-      integer list(MS,24) ! indices of coords making up edges of each surface
-      integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
+      integer list(MS,MV) ! indices of coords making up edges of each surface
+      integer iszlist(MSZ,MS,MV) ! indices of coords making up edges of each surface
       integer nbglz(MSZ)       ! nb of windows (META directive)
       integer nbdoor(MSZ)      ! nb of doors (META directive)
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
@@ -1333,8 +1342,15 @@ C in the file.
         simplanttimestep=0
         simsavelevel=0
         isilentncf=0
+
+C For each of the possible ESP-r zones, clear values.
+        do 41 iz=1,MCOM
+          zname(iz) = ' '
+
+  41    continue
+
+C For each of the META specific arrays, clear values.
         do 42 iz=1,MSZ
-          name(iz) = ' '
           shape(iz) = ' '
           szuse(iz,1) = ' '
           szuse(iz,2) = ' '
@@ -2115,8 +2131,10 @@ C zones then set icomp to the next available zone.
           endif
         endif
         nsz=nsz+1
-        CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-        write(name(nsz),'(a)') WORD(1:12)
+
+C Scan for zone name, convert any unallowed characters via st2name.
+        CALL EGETW(OUTSTR,K,WORD,'W','Zone name',IFLAG)
+        call st2name(WORD,zname(nsz))
         goto 43
       elseif(WORD(1:8).eq.'*surface')then
 
@@ -2321,11 +2339,10 @@ C be included in the version 1.1 geometry file.
             ICASCF(isz)=ncf
           endif
           
-          write(outs,'(2a)') 'Processing ',name(isz)
+          write(outs,'(2a)') 'Processing ',zname(isz)
           call edisp(iuout,outs)
 
 C Debug.
-C          write(6,*) 'name',name
 C          write(6,*) 'shape',shape
 C          write(6,*) 'nbwalls',nbwalls
 C          write(6,*) 'nbmass',nbmass
@@ -2333,7 +2350,8 @@ C          write(6,*) 'nbedges',nbedges
 C          write(6,*) 'nbcord',nbcord
 C          write(6,*) 'list',list
 
-          call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
+C Create zone based on a set of parameters (created above).
+          call silentzone(ICOMP,shape(isz),nbwalls(isz),
      &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,rotateit(isz),nbglz(isz),hasglaze,
      &      nbdoor(isz),hasdoor,hasname,hasconstr,
