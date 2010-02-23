@@ -377,7 +377,6 @@ C Error trap. Set ier as two.
 C ************* silentzone 
 C silentzone creates a zone based on meta parameters passed
 C to it.
-C shape (8 char) box/extrude
 C nbwalls (integer) how many walls (e.g. 4 for a box, 3-20 for extrude). Note
 C   the top surface is assumed to be index nbwalls+1 and the base surface is
 C   assumed to be index nbwalls+2
@@ -408,7 +407,7 @@ C textmass (char *32 4*3) text associated with mass
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,shape,nbwalls,nbmass,nbedges,
+      subroutine silentzone(ICOMP,nbwalls,nbmass,nbedges,
      &  nbpolyc,list,origin,size,coords,rotateit,
      &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstr,
      &  boundarytype,datamass,textmass,use,usefile,IER)
@@ -471,7 +470,6 @@ C =2 with more than 3 day types
                            !questions about the operation files data
 
 C Paremeters passed in:
-      character shape*8   ! box or extrude
       integer nbwalls     ! nb of vertical walls
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
@@ -570,17 +568,17 @@ C << Unix vs Windows needs to be updated >>
 
       write(zd,'(4a)') 
      &  zname(ICOMP)(1:lnzname(ICOMP)),' auto-generated for shape ',
-     &  shape(1:lnblnk(shape)),' & attributes.'
+     &  shape(ICOMP)(1:lnblnk(shape(ICOMP))),' & attributes.'
       zdesc(ICOMP)=zd
       lnzdesc(ICOMP)=lnblnk(zd)  ! update the length of this string.
 
 C Choices based on the value of shape. 
       IER=0
-      if(shape(1:3).eq.'box')then
+      if(shape(ICOMP)(1:3).eq.'box')then
         ishape=1
-      elseif(shape(1:7).eq.'extrude')then
+      elseif(shape(ICOMP)(1:7).eq.'extrude')then
         ishape=2
-      elseif(shape(1:4).eq.'poly')then
+      elseif(shape(ICOMP)(1:4).eq.'poly')then
         ishape=3
       else
         ier=1
@@ -1228,8 +1226,6 @@ C Same as local variable actions which is passed back to calling code.
       real valx,valy,valz      ! local variable for extrude co-ords.
 
 C Paremeters passed to:silentzone
-      character shape*8   ! box or extrude or poly
-      dimension shape(MSZ)
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
       integer nbwalls(MSZ)     ! nb of vertical walls or polygons in poly zone
@@ -1346,12 +1342,12 @@ C in the file.
 C For each of the possible ESP-r zones, clear values.
         do 41 iz=1,MCOM
           zname(iz) = ' '
+          shape(iz) = ' '
 
   41    continue
 
 C For each of the META specific arrays, clear values.
         do 42 iz=1,MSZ
-          shape(iz) = ' '
           szuse(iz,1) = ' '
           szuse(iz,2) = ' '
           szuse(iz,3) = ' '
@@ -2343,7 +2339,6 @@ C be included in the version 1.1 geometry file.
           call edisp(iuout,outs)
 
 C Debug.
-C          write(6,*) 'shape',shape
 C          write(6,*) 'nbwalls',nbwalls
 C          write(6,*) 'nbmass',nbmass
 C          write(6,*) 'nbedges',nbedges
@@ -2351,7 +2346,7 @@ C          write(6,*) 'nbcord',nbcord
 C          write(6,*) 'list',list
 
 C Create zone based on a set of parameters (created above).
-          call silentzone(ICOMP,shape(isz),nbwalls(isz),
+          call silentzone(ICOMP,nbwalls(isz),
      &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,rotateit(isz),nbglz(isz),hasglaze,
      &      nbdoor(isz),hasdoor,hasname,hasconstr,
@@ -2498,8 +2493,6 @@ C For passing to silentmodel.
       logical dll,unixok,XST
 
 C Paremeters passed to:silentzone
-      character shape*8   ! box or extrude or poly
-      dimension shape(MSZ)
       character szuse*8,usefile*32  ! usage pattern directives
       dimension szuse(MSZ,3),usefile(MSZ)
       integer nbwalls(MSZ)     ! nb of vertical walls

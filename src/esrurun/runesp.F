@@ -378,6 +378,7 @@ C parent action: 'create_silent' or 'create_model' or 'create_run_model'
 #include "model.h"
 #include "espriou.h"
 #include "esprdbfile.h"
+#include "geometry.h"
 C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -428,10 +429,6 @@ C Local string values.
 C Documentation (modeltitle) comes from model.h
 
 C Paremeters passed to:silentzone
-      character name*12   ! name given to the zone
-      dimension name(MSZ)
-      character shape*8   ! box or extrude
-      dimension shape(MSZ)
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
 
@@ -517,11 +514,16 @@ C Set logicals for locations of windows.
       subpath=' '
       haveground=.false.
 
+C For each of the possible ESP-r zones, clear values.
+      do 41 iz=1,MCOM
+        zname(iz) = ' '
+        shape(iz) = ' '
+
+  41  continue
+
 C Clear the sz array structures.
       weather=' '
       do 40 iz=1,MSZ
-        name(iz) = ' '
-        shape(iz) = ' '
         szuse(iz,1) = ' '
         szuse(iz,2) = ' '
         szuse(iz,3) = ' '
@@ -836,7 +838,7 @@ C      write(szuse(nsz,3),'(a)') 'allcas'
 C      write(usefile(nsz),'(a)') 'warehouse.opr'
 
 C Set the name of the new zone.
-      write(name(nsz),'(a)') 'the_space'
+      write(zname(nsz),'(a)') 'the_space'
 
 C Assign the intial box surface name and construction attributes.
       write(szhasname(nsz,1),'(a)') 'front'
@@ -952,9 +954,9 @@ C Fill surface arrays.
         boundarytype(isu,3)=szboundarytype(isz,isu,3)
   49  continue
 
-      write(outs,'(2a)') 'Processing ',name(isz)
+      write(outs,'(2a)') 'Processing ',zname(isz)
       call edisp(iuout,outs)
-      call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
+      call silentzone(ICOMP,nbwalls(isz),
      &    nbmass,nbedges,nbcord(isz),list,origin,size,
      &    coords,rotateit(isz),nbglz(isz),hasglaze,
      &    nbdoor(isz),hasdoor,hasname,hasconstr,
@@ -962,13 +964,13 @@ C Fill surface arrays.
 
 C Overwrite the initial zone operation file with the correct
 C density information.
-      call setschedule(isz,name(isz),densityof)
+      call setschedule(isz,zname(isz),densityof)
 
 C Create a standard control file if runtype is 1.
       if(runtype.eq.1)then
         call  setcontrol(setpoints)
       endif
-      write(outs,'(3a)') 'Processing ',name(isz),' done.'
+      write(outs,'(3a)') 'Processing ',zname(isz),' done.'
       call edisp(iuout,outs)
 
 C Set values of simulation parameter set for an annual simulation.
