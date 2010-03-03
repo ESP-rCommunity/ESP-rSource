@@ -2080,7 +2080,7 @@ C Number of building zones.
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'no of zones',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWI(OUTSTR,K,NCOMP,1,MCOM,'W','zones',IER)
+      CALL EGETWI(OUTSTR,K,NCOMP,0,MCOM,'W','zones',IER)
       IF(IER.NE.0) GOTO 1
 
 C Reporting.
@@ -2282,6 +2282,10 @@ C in then proceed to check zone names.
           else
             goto 142
           endif
+        elseif(WORD(1:4).eq.'*cnn')then
+
+C If there were zero zones then the next line might be *cnn.
+          goto 23  ! jump to code block that processes *cnn
         else
           call usrmsg('Unknown config tag ',WORD,'W')
         endif
@@ -2517,7 +2521,10 @@ C Include SHOCC zone file name in the report.
 C Read in the building connectivity information.
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'no of connections',IER)
       IF(IER.NE.0)goto 1
-      if(OUTSTR(1:4).eq.'*cnn')then
+
+C Jump to 23 if the building type model does no have any zones
+C so the subsequent line might be *cnn.
+  23  if(OUTSTR(1:4).eq.'*cnn')then
         cnnok=.true.
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','connections tag',IER)
@@ -2538,15 +2545,20 @@ C Read in the building connectivity information.
           CALL EGETWI(OUTSTR,K,NCON,3,MCON,'W','no connex',IER)
           IF(IER.NE.0) GOTO 1
         else
-          CALL USRMSG('Connections file not found!',LCNN,'W')
-          if(dll)then
-            dllsubr='ersys'
-            dllmesg='Connections file does not exist!'
-            ier=2
-            return
+          if(NCOMP.eq.0)then
+            continue   ! if there are no zones then cnn file does not need to exist
+            goto 6     ! close the cfg file
           else
-            IER=1
-            RETURN
+            CALL USRMSG('Connections file not found!',LCNN,'W')
+            if(dll)then
+              dllsubr='ersys'
+              dllmesg='Connections file does not exist!'
+              ier=2
+              return
+            else
+              IER=1
+              RETURN
+            endif
           endif
         endif
       else
