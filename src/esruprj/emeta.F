@@ -392,8 +392,6 @@ C   1st value is X and 2nd is Y (in world coordinates) following the normal
 C   floor plan extrusion conventions. For shape=poly the Z is used.
 C list (integer array (nbwalls,24) equivalent to jvn() for shape=poly
 C nbedges (integer array (nbwalls) equivalent to nver() for shape=poly
-C rotateit (real) angle to rotate the zone using the normal conventions and assuming
-C   rotation is about the site origin
 C hasglaze (real array) for each surface in the initial shape a zero has no glazing
 C   and non-zero is the percentage of the parent surface for the glazing. It is
 C   assumed that a default shape for the glazing is ok.
@@ -408,7 +406,7 @@ C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
       subroutine silentzone(ICOMP,nbwalls,nbmass,nbedges,
-     &  nbpolyc,list,origin,size,coords,rotateit,
+     &  nbpolyc,list,origin,size,coords,
      &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstr,
      &  boundarytype,datamass,textmass,use,usefile,IER)
 #include "building.h"
@@ -477,7 +475,6 @@ C Paremeters passed in:
       real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
       real size(3)        ! values dependant on shape
       real coords(MTV,3)  ! all of the coordinates in the zone X/Y/Z
-      real rotateit       ! angle of rotation
       real hasglaze(MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS)    ! width of door in each surface of the initial shape
       character hasconstr*32
@@ -592,10 +589,19 @@ C Choices based on the value of shape.
         DYC=size(2)
         DZC=size(3)
 
-        ANG=rotateit
+C Pending rotation angle and set point to origin of the zone.
+        ANG=rotateit(ICOMP,1)
+        rotateit(ICOMP,2)=XOC
+        rotateit(ICOMP,3)=YOC
 
 C Convert box into a gen description.
         CALL ERECC(XOC,YOC,ZOC,DXC,DYC,DZC,ANG)
+        rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! remmeber the pending rotation
+        rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
+        rotateit(ICOMP,6)=rotateit(ICOMP,3)
+        rotateit(ICOMP,1)=0.0
+        rotateit(ICOMP,2)=0.0
+        rotateit(ICOMP,3)=0.0
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
@@ -612,7 +618,10 @@ C User begins with an extruded shape.
           YY(IW)=coords(IW,2)
    45   CONTINUE
 
-        AR=rotateit
+C Assume that the origin of the zone is 1st coord.
+        AR=rotateit(ICOMP,1)
+        rotateit(ICOMP,2)=XX(1)
+        rotateit(ICOMP,3)=YY(1)
 
 C Convert into a gen body and rotate if required.
         CALL EREGC(NW,Z1,Z2,XX,YY)
@@ -620,6 +629,12 @@ C Convert into a gen body and rotate if required.
           x1=XX(1)
           y1=YY(1)
           CALL ESCROT(AR,x1,y1)
+          rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! remmeber the pending rotation
+          rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
+          rotateit(ICOMP,6)=rotateit(ICOMP,3)
+          rotateit(ICOMP,1)=0.0
+          rotateit(ICOMP,2)=0.0
+          rotateit(ICOMP,3)=0.0
         endif
         NSUR=NW+2
         IUZBASEA(icomp)=0
@@ -632,12 +647,16 @@ C For a poly shaped zone use similar logic to reading geometry file.
         NZSUR(ICOMP)=NSUR
         NTV=nbpolyc
         NZTV(ICOMP)=NTV
-        AR=rotateit
+        AR=rotateit(ICOMP,1)
         DO 62 I=1,NTV
           X(I)=coords(I,1)
           Y(I)=coords(I,2)
           Z(I)=coords(I,3)
    62   CONTINUE
+
+C Remember first zone point as rotation point.
+        rotateit(ICOMP,2)=X(1)
+        rotateit(ICOMP,3)=Y(1)
         DO 10 I=1,NSUR
           NVER(I)=nbedges(I)
           DO 12 KV=1,NVER(I)
@@ -648,7 +667,7 @@ C For a poly shaped zone use similar logic to reading geometry file.
         IBASES(ICOMP,1)=NSUR  ! initial guess, need to check
         IZBASELIST(ICOMP)=1
 
-C Rotate if required.
+C Rotate if pending.
         if(AR.LT.-.01.OR.AR.GT..01)then
           x1=X(1)
           y1=Y(1)
@@ -1237,7 +1256,6 @@ C Paremeters passed to:silentzone
       integer nbglz(MSZ)       ! nb of windows (META directive)
       integer nbdoor(MSZ)      ! nb of doors (META directive)
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
-      real rotateit(MSZ)        ! angle of rotation
       real origin(3),szorigin(MSZ,3)      ! values dependant on shape
       real datamass(4,7),sdatamass(MSZ,4,7) ! origin and size and orientations of mass (4 per zone)
       real size(3),szsize(MSZ,3)        ! values dependant on shape
@@ -1343,7 +1361,12 @@ C For each of the possible ESP-r zones, clear values.
         do 41 iz=1,MCOM
           zname(iz) = ' '
           shape(iz) = ' '
-
+          rotateit(iz,1) = 0.0
+          rotateit(iz,2) = 0.0
+          rotateit(iz,3) = 0.0
+          rotateit(iz,4) = 0.0
+          rotateit(iz,5) = 0.0
+          rotateit(iz,6) = 0.0
   41    continue
 
 C For each of the META specific arrays, clear values.
@@ -1357,7 +1380,6 @@ C For each of the META specific arrays, clear values.
           nbglz(iz) = 0
           nbdoor(iz) = 0
           nbcord(iz) = 0
-          rotateit(iz) = 0
           szorigin(iz,1) = 0.0
           szorigin(iz,2) = 0.0
           szorigin(iz,3) = 0.0
@@ -2019,8 +2041,34 @@ C An obstruction block to be associated with the current zone.
         endif
         goto 43
       elseif(WORD(1:7).eq.'*rotate')then
+
+C Scan for pending X and Y coordinates to rotate around if there are 3 items on the line.
         CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation angle',IER)
-        rotateit(nsz)=rot
+        rotateit(nsz,1)=rot
+        if(ND.gt.2)then
+          CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation point X',IER)
+          rotateit(nsz,2)=rot
+          CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation point Y',IER)
+          rotateit(nsz,3)=rot
+        else
+          rotateit(nsz,2)=0.0  ! assume site origin to rotate around
+          rotateit(nsz,3)=0.0
+        endif
+        goto 43
+      elseif(WORD(1:18).eq.'*previous_rotation')then
+
+C Scan for prior X and Y coordinates rotated around if there are 3 items on the line.
+        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','prior rotation angle',IER)
+        rotateit(nsz,4)=rot
+        if(ND.gt.2)then
+          CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','prior rotation X',IER)
+          rotateit(nsz,5)=rot
+          CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','prior rotation Y',IER)
+          rotateit(nsz,6)=rot
+        else
+          rotateit(nsz,5)=0.0  ! assume site origin to rotate around
+          rotateit(nsz,6)=0.0
+        endif
         goto 43
       elseif(WORD(1:15).eq.'*sim_parameters')then
 
@@ -2348,7 +2396,7 @@ C          write(6,*) 'list',list
 C Create zone based on a set of parameters (created above).
           call silentzone(ICOMP,nbwalls(isz),
      &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
-     &      coords,rotateit(isz),nbglz(isz),hasglaze,
+     &      coords,nbglz(isz),hasglaze,
      &      nbdoor(isz),hasdoor,hasname,hasconstr,
      &      boundarytype,datamass,textmass,use,usefile(isz),IER)
   63    continue
@@ -2496,7 +2544,6 @@ C Paremeters passed to:silentzone
       character szuse*8,usefile*32  ! usage pattern directives
       dimension szuse(MSZ,3),usefile(MSZ)
       integer nbwalls(MSZ)     ! nb of vertical walls
-      real rotateit(MSZ)        ! angle of rotation
 
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character stextmass*32
@@ -2511,6 +2558,7 @@ C Site related local variables.
       integer groundtempsets
       logical havegroundtempsets
       logical havesimparameters
+      logical rotationknown  ! true if we need to remember a rotation
       integer simstartup   ! use for isstup
       integer simzonetimestep ! use for isbnstep
       integer simplanttimestep ! use for ispnstep
@@ -2641,7 +2689,7 @@ C Simulation parameter sets.
       endif
 
 C For each of the zones instanciate values.
-C << add in zone description >>
+C << todo - add in zone description >>
       do 42 iz=1,ncomp
         shape(iz) = 'poly'    ! zone shape is poly
         szuse(iz,1) = ' '     ! szuse (skip for now)
@@ -2649,7 +2697,6 @@ C << add in zone description >>
         szuse(iz,3) = ' '
         usefile(iz) = ' '       ! usefile (skip for now)
         nbwalls(iz) = NZSUR(IZ) ! surfaces in the zone
-        rotateit(iz) = 0.0      ! rotation is always zero
 
 C Control data - ignore for now.
         ht_Setpoint(iz)= 0.0
@@ -2775,6 +2822,32 @@ C is per zone, the nsc loop is for each coordinate.
           write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)
      &      '*shape',tab,shape(nsz),'  # polygon enclosure'
 
+C If prior rotateit array is all zero then skip. Otherwise write out the last
+C directive that the user gave.  There is no facility to write a pending
+C rotation (because it will have already been carried out).
+          call eclose3(rotateit(nsz,4),rotateit(nsz,5),
+     &      rotateit(nsz,6),0.0,0.0,0.0,0.01,rotationknown)
+          if(rotationknown)then
+            continue
+          else
+            write(ifilg,'(a,f6.2,a,f8.3,a,f8.3,a,f8.3,a)',IOSTAT=IOS,
+     &        ERR=13) '*previous_rotate ',
+     &        rotateit(nsz,4),tab,rotateit(nsz,5),tab,
+     &        rotateit(nsz,6),'  # previous rotation angle X Y'
+          endif
+
+C Write out any pending rotate directives (usually only used by 3rd party).
+          call eclose3(rotateit(nsz,1),rotateit(nsz,2),
+     &      rotateit(nsz,3),0.0,0.0,0.0,0.01,rotationknown)
+          if(rotationknown)then
+            continue
+          else
+            write(ifilg,'(a,f6.2,a,f8.3,a,f8.3,a,f8.3,a)',IOSTAT=IOS,
+     &        ERR=13) '*rotate ',
+     &        rotateit(nsz,1),tab,rotateit(nsz,2),tab,
+     &        rotateit(nsz,3),'  # pending rotation angle X Y'
+          endif
+
           do 143 nsc=1,NZTV(nsz)
             write(outs,'(a,3F8.4)',IOSTAT=IOS,ERR=13)
      &        '*cord ',VCOORD(nsz,nsc,1),VCOORD(nsz,nsc,2),
@@ -2787,11 +2860,6 @@ C is per zone, the nsc loop is for each coordinate.
 C The origin is ignored in poly type enclosure so do not bother with *origin.
 
 C The size is ignored in poly type enclosure so do not bother with *size.
-
-C Rotation is always zero (in this version of poly).
-          write(ifilg,'(2a,F8.4,a)',IOSTAT=IOS,ERR=13)
-     &      '*rotate',tab,rotateit(nsz),
-     &      '  # rotation around zone origin'
 
 C Number of surfaces.
 

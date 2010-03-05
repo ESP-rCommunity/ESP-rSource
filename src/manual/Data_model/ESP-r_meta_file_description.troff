@@ -26,7 +26,7 @@ Edited by Dr. Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 8 October 2009
+Version of 5 March 2010
 .sp 2
 .SH
 Introduction
@@ -335,7 +335,8 @@ the file contents each of the tokens will be explained.
 *shape,box
 *origin,0.0,0.0,0.0  # origin of zone
 *size,20.0,10.0,5.0  # length width height (m)
-*rotate,0.0          # rotation
+*rotate,0.0,0.0,0.0     # pending rotation angle X Y
+*previous_rotate,10.0,0.0,1.0  # prior rotation angle X Y
 *glaze,1,1,20.0         # how many, index of parent and percent
 *door,1,1,2.5    # how many, index of parent and width of door
 *surface,front,extern_wall,0,0,0
@@ -366,7 +367,7 @@ the file contents each of the tokens will be explained.
 *cord,5.0,10.0,6.0
 *origin,0.0,3.0,0.0  # base and topsilent and ignored
 *size,0.0,0.0,0.0    # not used for extrude shape.
-*rotate,0.0          # rotation
+*previous_rotate,10.0,0.0,1.0  # prior rotation angle X Y
 *surface,base,susp_ceil,3,1,5
 *list,4,1,4,3,2
 *surface,front,extern_wall,0,0,0
@@ -400,7 +401,7 @@ the file contents each of the tokens will be explained.
 *cord,2.5,19.0
 *origin,0.0,3.0,0.0  # base and top and ignored
 *size,0.0,0.0,0.0    # not used for extrude shape.
-*rotate,0.0          # rotation
+*previous_rotate,10.0,0.0,1.0  # prior rotation angle X Y
 *glaze,1,1,20.0         # how many, index of parent and percent
 *door,1,2,1.5    # how many, index of parent and width of door
 *surface,front,extern_wall,0,0,0
@@ -727,7 +728,8 @@ a zone which is defined as a \fBbox shape\fR.
   *shape,box
   *origin,0.0,0.0,0.0  # origin of zone
   *size,20.0,10.0,5.0  # length width height (m)
-  *rotate,0.0          # rotation
+  *rotate,0.0,0.0,0.0  # pending rotation angle X Y
+  *previous_rotate,10.0,0.0,1.0  # prior rotation angle X Y
   . . .
 .ES
 .LP
@@ -744,13 +746,17 @@ the north axis if there is no rotation, 3rd is the height (m).
 If a *size line is encountered for other shape types the data 
 is ignored.
 .LP
-A *rotate line can happen anywhere within the *start_zone 
-and *end_zone tags. It has one real data which is the degrees 
+A *rotate or *previous_rotate line can happen anywhere within the *start_zone 
+and *end_zone tags. It has three real data which are the degrees 
 (positive is anti-clockwise) of rotation to be applied to the 
-zone.  A *rotate token is optional for \fBbox\fR and \fBextrude\fR shape
-types. If it is not found no rotation will be applied. Currently
-a shape type \fBpoly\fR does not expect and does not act on a
-*rotate directive.
+zone followed by the X and Y coordinate to rotate around.  
+A *rotate or *previous_rotate token is optional for \fBbox\fR and \fBextrude\fR and
+\fBpoly\fR shape types.
+.LP
+A *rotate tag signals a pending operation while the *previous_rotate
+tag records the users prior request for rotation (for a possible
+un-do command). Third party application can use the *rotate tag
+to apply transforms to an initial set of coordinates.
 .SH
 Use of extrude shape type
 .LP

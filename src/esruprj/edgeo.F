@@ -1486,6 +1486,8 @@ C Produce help text for the menu.
           goto 77
         elseif(INOR.EQ.2.or.INOR.eq.3.or.INOR.eq.4.or.INOR.eq.5)then
 
+C Remember what the user requested in prior rotateit structure and
+C clear the pending rotateit structure.
           VAL=0.
           CALL EASKR(VAL,' ','Rotation (+ = anticlockwise)?',
      &      -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
@@ -1494,6 +1496,12 @@ C Produce help text for the menu.
               x1=x(1)     ! get position of vertex 1.
               y1=y(1)
               CALL ESCROT(VAL,x1,y1)
+              rotateit(icomp,1)=0.0
+              rotateit(icomp,2)=0.0
+              rotateit(icomp,3)=0.0
+              rotateit(icomp,4)=VAL
+              rotateit(icomp,5)=x1
+              rotateit(icomp,6)=y1
             elseif(INOR.eq.3)then
               inpick=1
               call EPKVERT(INPICK,IVLST,'Rotation Point',
@@ -1502,6 +1510,12 @@ C Produce help text for the menu.
                 ivc=IVLST(1)
                 x1=x(ivc)     ! get position of this vertex.
                 y1=y(ivc)
+                rotateit(icomp,1)=0.0
+                rotateit(icomp,2)=0.0
+                rotateit(icomp,3)=0.0
+                rotateit(icomp,4)=VAL
+                rotateit(icomp,5)=x1
+                rotateit(icomp,6)=y1
               else
                 goto 77
               endif
@@ -1510,6 +1524,12 @@ C Produce help text for the menu.
               x1=0.         ! site origin is X=0. Y=0.
               y1=0.
               CALL ESCROT(VAL,x1,y1)
+              rotateit(icomp,1)=0.0
+              rotateit(icomp,2)=0.0
+              rotateit(icomp,3)=0.0
+              rotateit(icomp,4)=VAL
+              rotateit(icomp,5)=x1
+              rotateit(icomp,6)=y1
             elseif(INOR.eq.5)then
               x1=0.
               CALL EASKR(x1,' ','X-coord?',
@@ -1518,6 +1538,12 @@ C Produce help text for the menu.
               CALL EASKR(y1,' ',' Y-coord?',
      &          0.0,'-',0.0,'-',0.0,'y point',IER,58)
               CALL ESCROT(VAL,x1,y1)
+              rotateit(icomp,1)=0.0
+              rotateit(icomp,2)=0.0
+              rotateit(icomp,3)=0.0
+              rotateit(icomp,4)=VAL
+              rotateit(icomp,5)=x1
+              rotateit(icomp,6)=y1
             endif
           else
             goto 77
@@ -7579,9 +7605,18 @@ C If only 3 items on first line read another OUTSTR and try to continue.
         CALL EGETWR(OUTSTR,K,DY1,0.,0.,'-','width',IER)
         CALL EGETWR(OUTSTR,K,DZ1,0.,0.,'-','height',IER)
         CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rotation angle',IER)
+        rotateit(icomp,1)=ARX
+        rotateit(icomp,2)=XO1
+        rotateit(icomp,3)=YO1
 
 C Now convert to a gen description.
         CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,ARX)
+        rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! shift the pending rotation
+        rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
+        rotateit(ICOMP,6)=rotateit(ICOMP,3)
+        rotateit(ICOMP,1)=0.0
+        rotateit(ICOMP,2)=0.0
+        rotateit(ICOMP,3)=0.0
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
         CTYPE(icomp)='GEN '
@@ -7597,6 +7632,7 @@ C Zone is of type REG.
         CALL EGETWR(OUTSTR,K,Z1X,0.,1000.,'W','floor height',IER)
         CALL EGETWR(OUTSTR,K,Z2X,Z1X,1000.,'F','ceiling ht',IER)
         CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rot angle',IER)
+        rotateit(icomp,1)=ARX
 
 C Read base vertex data.
         DO 60 IW=1,NW
@@ -7612,7 +7648,15 @@ C Now convert to GEN body type and place into in common block.
         IF(ARX.LT.-.01.OR.ARX.GT..01)then
           x1=X(1)
           y1=Y(1)
+          rotateit(icomp,2)=x1
+          rotateit(icomp,3)=y1
           CALL ESCROT(ARX,x1,y1)
+          rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! shift the pending rotation
+          rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
+          rotateit(ICOMP,6)=rotateit(ICOMP,3)
+          rotateit(ICOMP,1)=0.0
+          rotateit(ICOMP,2)=0.0
+          rotateit(ICOMP,3)=0.0
         endif
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
@@ -7672,11 +7716,19 @@ C Now proceed to read vertices on one or more lines.
           ENDIF
    10   CONTINUE
 
-C Rotate if required.
+C Rotate if required.  Shift pending rotate to prior rotate.
         if(ARX.LT.-.01.OR.ARX.GT..01)then
           x1=X(1)
           y1=Y(1)
+          rotateit(ICOMP,1)=x1
+          rotateit(ICOMP,2)=y1
           CALL ESCROT(ARX,x1,y1)
+          rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! remmeber the pending rotation
+          rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
+          rotateit(ICOMP,6)=rotateit(ICOMP,3)
+          rotateit(ICOMP,1)=0.0
+          rotateit(ICOMP,2)=0.0
+          rotateit(ICOMP,3)=0.0
         endif
       ELSE
         write(outs,'(2a)') ' Geometry shape type illegal in ',

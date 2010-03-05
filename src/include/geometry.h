@@ -7,6 +7,15 @@ C shape (8 char) - META file zone shape (extrude, poly, box)
       character CTYPE*4,shape*8
       common/g0/CTYPE(MCOM),shape(MCOM)
 
+C rotateit (zone,1) pending angle of rotation using std conventions for REC zones or any shape
+C rotateit (zone,2) pending X coordinate to rotate around
+C rotateit (zone,3) pending Y coordinate to rotate around
+C rotateit (zone,4) prior angle of rotation to support un-do operations
+C rotateit (zone,5) prior X coordinate to rotate around
+C rotateit (zone,6) prior Y coordinate to rotate around
+      real rotateit
+      common/metadat/rotateit(mcom,6)
+
 C gversion (real) version of the geometry file (1.0 legacy, 1.1 current).
 C igupgrade (integer) 0 = do nothing, 1 = leave at 1.0, 2 = upgrade to 1.1
       real gversion

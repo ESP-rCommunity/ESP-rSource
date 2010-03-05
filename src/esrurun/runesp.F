@@ -444,7 +444,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       integer nbglz(MSZ)       ! nb of windows
       integer nbdoor(MSZ)      ! nb of doors
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
-      real rotateit(MSZ)        ! angle of rotation
       real origin(3),szorigin(MSZ,3)      ! values dependant on shape
       real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
       real size(3),szsize(MSZ,3)        ! values dependant on shape
@@ -532,7 +531,12 @@ C Clear the sz array structures.
         nbglz(iz) = 0
         nbdoor(iz) = 0
         nbcord(iz) = 0
-        rotateit(iz) = 0
+        rotateit(iz,1) = 0.0
+        rotateit(iz,2) = 0.0
+        rotateit(iz,3) = 0.0
+        rotateit(iz,4) = 0.0
+        rotateit(iz,5) = 0.0
+        rotateit(iz,6) = 0.0
         szorigin(iz,1) = 0.0
         szorigin(iz,2) = 0.0
         szorigin(iz,3) = 0.0
@@ -675,9 +679,21 @@ C Try where-the-input-file is.
         CALL EGETWR(OUTSTR,K,size(3),0.,0.,'-','box height',IER)
         szsize(nsz,3)=size(3)
         goto 43
-      elseif(WORD(1:9).eq.'*rotation')then
+      elseif(WORD(1:9).eq.'*rotate')then
         CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation angle',IER)
-        rotateit(nsz)=rot
+        rotateit(nsz,1)=rot
+        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation X',IER)
+        rotateit(nsz,2)=rot
+        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation Y',IER)
+        rotateit(nsz,3)=rot
+        goto 43
+      elseif(WORD(1:16).eq.'*previous_rotate')then
+        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','prior rotation angle',IER)
+        rotateit(nsz,4)=rot
+        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','prior rotation X',IER)
+        rotateit(nsz,5)=rot
+        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','prior rotation Y',IER)
+        rotateit(nsz,6)=rot
         goto 43
       elseif(WORD(1:10).eq.'*Roof type'.or.
      &       WORD(1:10).eq.'*roof type')then
@@ -958,7 +974,7 @@ C Fill surface arrays.
       call edisp(iuout,outs)
       call silentzone(ICOMP,nbwalls(isz),
      &    nbmass,nbedges,nbcord(isz),list,origin,size,
-     &    coords,rotateit(isz),nbglz(isz),hasglaze,
+     &    coords,nbglz(isz),hasglaze,
      &    nbdoor(isz),hasdoor,hasname,hasconstr,
      &    boundarytype,datamass,textmass,use,usefile(isz),IER)
 

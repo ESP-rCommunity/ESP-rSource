@@ -497,6 +497,12 @@ C Clear SHOCC zone information as well.
         IDPN(IX,3)=0
         CTYPE(IX)=' '
         gversion(ix)=1.0
+        rotateit(ix,1)=0.0
+        rotateit(ix,2)=0.0
+        rotateit(ix,3)=0.0
+        rotateit(ix,4)=0.0
+        rotateit(ix,5)=0.0
+        rotateit(ix,6)=0.0
         zdesc(IX)=' '
         lnzdesc(IX)=0
         zname(IX)=' '

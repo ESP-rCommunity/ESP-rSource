@@ -1775,6 +1775,8 @@ C Act on the skip transform request.
             ZBFLG(NCOMP)=0.
             okzt=.true.
           endif
+
+C Record rotation information in rotateit array.
           dok=.false.
           h(1)='If you want to rotate the zone from its initial'
           h(2)='position now is a good time to do this if the '
@@ -1788,7 +1790,8 @@ C Act on the skip transform request.
      &        -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
             if(VAL.LT.-.01.OR.VAL.GT..01)then
 
-C Rotation choices.
+C Rotation choices. Clear pending rotateit, update prior rotateit.
+             rotateit(ncomp,1)=VAL
              H(1)='The default rotation is about vertex 1 of the'
              H(2)='zone with a positive angle denoting anticlockwise.'
              H(3)='You may change this to rotate the zone about the'
@@ -1800,11 +1803,27 @@ C Rotation choices.
               if(IRT.eq.1)then
                 x1=X(1)
                 y1=Y(1)
+                rotateit(ncomp,2)=x1
+                rotateit(ncomp,3)=y1
                 CALL ESCROT(VAL,x1,y1)
+                rotateit(ncomp,4)=rotateit(ncomp,1)   ! shift the pending rotation
+                rotateit(ncomp,5)=rotateit(ncomp,2)   ! and the origin of the zone
+                rotateit(ncomp,6)=rotateit(ncomp,3)
+                rotateit(ncomp,1)=0.0
+                rotateit(ncomp,2)=0.0
+                rotateit(ncomp,3)=0.0
               elseif(IRT.EQ.2)THEN
                 x1=0.
                 y1=0.
+                rotateit(ncomp,2)=x1
+                rotateit(ncomp,3)=y1
                 CALL ESCROT(VAL,x1,y1)
+                rotateit(ncomp,4)=rotateit(ncomp,1)   ! shift the pending rotation
+                rotateit(ncomp,5)=rotateit(ncomp,2)   ! and the origin of the zone
+                rotateit(ncomp,6)=rotateit(ncomp,3)
+                rotateit(ncomp,1)=0.0
+                rotateit(ncomp,2)=0.0
+                rotateit(ncomp,3)=0.0
               elseif(IRT.EQ.3)THEN
                 H(1)='Point is in the site coordinate system.'
                 x1=0.
@@ -1813,8 +1832,20 @@ C Rotation choices.
                 y1=0.
                 CALL EASKR(y1,' ',' Y point (metres) ? ',
      &            0.0,'-',0.0,'-',0.0,'y point',IER,1)
+                rotateit(ncomp,2)=x1
+                rotateit(ncomp,3)=y1
                 CALL ESCROT(VAL,x1,y1)
+                rotateit(ncomp,4)=rotateit(ncomp,1)   ! shift the pending rotation
+                rotateit(ncomp,5)=rotateit(ncomp,2)   ! and the origin of the zone
+                rotateit(ncomp,6)=rotateit(ncomp,3)
+                rotateit(ncomp,1)=0.0
+                rotateit(ncomp,2)=0.0
+                rotateit(ncomp,3)=0.0
                 call usrmsg(' ',' ','-')
+              elseif(IRT.EQ.4)THEN
+                rotateit(ncomp,1)=0.0
+                rotateit(ncomp,2)=0.0
+                rotateit(ncomp,3)=0.0
               endif
               ZBFLG(NCOMP)=0.
             endif
@@ -4394,6 +4425,10 @@ C   izlistnb (integer) is the number of selected zones
 C   izlist is the array holding selected zone indicies to rotate
 C   silent (logical) if true then do not ask user about rotations
 C      of obstruction data.
+
+C Also apply rotation directives to rotateit array so that later the
+C user can un-do this action.
+
       subroutine globalrotate(val,x1,y1,izlistnb,izlist,silent,itru,ier)
 
       implicit none
@@ -4451,6 +4486,13 @@ C      of obstruction data.
           endif
           CALL ESCROT(VAL,x1,y1)
           ZBFLG(IICOMP)=0.
+
+C Remember user directive for future un-do.
+          rotateit(iicomp,1)=0.0
+          rotateit(iicomp,2)=0.0
+          rotateit(iicomp,3)=0.0
+          rotateit(iicomp,4)=val
+          rotateit(iicomp,5)=x1; rotateit(iicomp,6)=y1
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iicomp) =1.1
             newgeo = .true.
