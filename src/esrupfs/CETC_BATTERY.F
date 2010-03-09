@@ -4713,7 +4713,7 @@ C figure out heat needed from battery to bring back into safe limits
 
         pHeaters = min(neededHeat,maxPheaters) !needed heat can't exceed maximum
         
-        pLoad = min((pLoad - pHeaters),0.) ! this is what's left for the battery
+        pLoad = max((pLoad - pHeaters),0.) ! this is what's left for the battery
         
       ELSE ! Normal operation
             
