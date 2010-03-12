@@ -2434,7 +2434,7 @@ C code can recover the details of a -99 item.
                 write(LAYDESC(IFOC,ILN),'(3a)') 
      &            matname(matarrayindex)(1:lnam),' : ',
      &            matdoc(matarrayindex)(1:lfordoc)
-                write(PNAM(IFOC),'(3a)')
+                write(PNAM(ILN),'(3a)')
      &            matname(matarrayindex)(1:lnam),' : ',
      &            matdoc(matarrayindex)(1:lfordoc)
                 IPRMAT(IFOC,ILN)=matarrayindex  ! update array index for this layer as well
@@ -2840,7 +2840,7 @@ C menu display.
             write(LAYDESC(IFOC,ILED-8),'(3a)') 
      &        matname(matarrayindex)(1:lnam),' : ',
      &        matdoc(matarrayindex)(1:lfordoc)
-            write(PNAM(IFOC),'(3a)')
+            write(PNAM(ILED-8),'(3a)')
      &        matname(matarrayindex)(1:lnam),' : ',
      &        matdoc(matarrayindex)(1:lfordoc)
             IPRMAT(IFOC,ILED-8)=matarrayindex ! update array index for this layer
