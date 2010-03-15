@@ -490,12 +490,14 @@ C Clear SHOCC zone information as well.
 
         NZSUR(IX)=0
         NZTV(IX)=0
+        NBWALLS(IX)=0
         NCCODE(IX)=0
         NDP(IX)=3
         IDPN(IX,1)=0
         IDPN(IX,2)=0
         IDPN(IX,3)=0
         CTYPE(IX)=' '
+        shape(IX)=' '
         gversion(ix)=1.0
         rotateit(ix,1)=0.0
         rotateit(ix,2)=0.0

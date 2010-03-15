@@ -26,10 +26,15 @@ C Default solar distribution and shading directives.
       integer ndp,idpn
       common/g4/ndp(MCOM),idpn(MCOM,3)
 
-C NZSUR is the number of surfaces in each zone.
-C NZTV is the number of vertices in each zone.
-      integer nzsur,nztv
-      common/c20/nzsur(MCOM),nztv(MCOM)
+C NZSUR (integer) is the number of surfaces in each zone.
+C NZTV (integer) is the number of vertices in each zone.
+C nbwalls (integer) how many vertical walls (e.g. 4 for a box, 3+ for extrude).
+C   For box and extrude the top surface is assumed to be index nbwalls+1 and
+C   the base surface is assumed to be index nbwalls+2. For poly type zones
+C   nbwalls is the initial number of surfaces prior to addition of META
+C   objects.
+      integer nzsur,nztv,nbwalls
+      common/c20/nzsur(MCOM),nztv(MCOM),nbwalls(MCOM)
 
 C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
 C which make up the floor, IUZBASEA signals that the user selected

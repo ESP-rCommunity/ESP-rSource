@@ -377,9 +377,6 @@ C Error trap. Set ier as two.
 C ************* silentzone 
 C silentzone creates a zone based on meta parameters passed
 C to it.
-C nbwalls (integer) how many walls (e.g. 4 for a box, 3-20 for extrude). Note
-C   the top surface is assumed to be index nbwalls+1 and the base surface is
-C   assumed to be index nbwalls+2
 C nbmass (integer) how many pairs of mass walls to append to zone. Note these
 C   surfaces are not included in the *surface list
 C origin (real * 3) XYZ of the origin in the case of shape=box. For shape=extrude
@@ -405,7 +402,7 @@ C textmass (char *32 4*3) text associated with mass
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,nbwalls,nbmass,nbedges,
+      subroutine silentzone(ICOMP,nbmass,nbedges,
      &  nbpolyc,list,origin,size,coords,
      &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstr,
      &  boundarytype,datamass,textmass,use,usefile,IER)
@@ -468,7 +465,6 @@ C =2 with more than 3 day types
                            !questions about the operation files data
 
 C Paremeters passed in:
-      integer nbwalls     ! nb of vertical walls
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
       real origin(3)      ! values dependant on shape
@@ -611,7 +607,7 @@ C Convert box into a gen description.
 C User begins with an extruded shape.
         Z1=origin(1)
         Z2=origin(2)
-        NW=nbwalls
+        NW=nbwalls(ICOMP)
 
         DO 45 IW=1,NW
           XX(IW)=coords(IW,1)
@@ -643,7 +639,7 @@ C Convert into a gen body and rotate if required.
       ELSEIF(ishape.eq.3)THEN
 
 C For a poly shaped zone use similar logic to reading geometry file.
-        NSUR=nbwalls
+        NSUR=nbwalls(ICOMP)
         NZSUR(ICOMP)=NSUR
         NTV=nbpolyc
         NZTV(ICOMP)=NTV
@@ -1247,7 +1243,6 @@ C Same as local variable actions which is passed back to calling code.
 C Paremeters passed to:silentzone
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
-      integer nbwalls(MSZ)     ! nb of vertical walls or polygons in poly zone
       integer nbmass(MSZ)      ! nb of paired mass rectangles
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
@@ -1361,6 +1356,7 @@ C For each of the possible ESP-r zones, clear values.
         do 41 iz=1,MCOM
           zname(iz) = ' '
           shape(iz) = ' '
+          nbwalls(iz) = 0
           rotateit(iz,1) = 0.0
           rotateit(iz,2) = 0.0
           rotateit(iz,3) = 0.0
@@ -1375,7 +1371,6 @@ C For each of the META specific arrays, clear values.
           szuse(iz,2) = ' '
           szuse(iz,3) = ' '
           usefile(iz) = ' '
-          nbwalls(iz) = 0
           nbmass(iz) = 0
           nbglz(iz) = 0
           nbdoor(iz) = 0
@@ -1712,6 +1707,7 @@ C surface area to have as glazing.
       elseif(WORD(1:19).eq.'*ground_refl_annual')then
         CALL EGETWR(OUTSTR,K,groundrefl,0.,1.,'W',
      &    'Ground reflectance annual value',IER)
+        groundreflmodel=1  ! if annual value provided set constant albedo model
         goto 43
       elseif(WORD(1:20).eq.'*ground_refl_monthly')then
 
@@ -1816,6 +1812,20 @@ C Number of days with snow on the ground (if ground refl model 2)
 
 C Number of parent surfaces has a meaning for extruded shapes and set to 6 for
 C box shapes.
+        if(shape(nsz)(1:7).eq.'extrude')then
+          CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
+          nbwalls(nsz)=nbw
+        elseif(shape(nsz)(1:4).eq.'poly')then
+          CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
+          nbwalls(nsz)=nbw
+        else
+          nbwalls(nsz)=4
+        endif
+        goto 43
+      elseif(WORD(1:8).eq.'*nbsurfs')then
+
+C Number of parent surfaces has a meaning for extruded shapes and set to 6 for
+C box shapes (typically used with poly type zones).
         if(shape(nsz)(1:7).eq.'extrude')then
           CALL EGETWI(OUTSTR,K,nbw,1,MS,'W','nb parent surfs',IER)
           nbwalls(nsz)=nbw
@@ -2195,7 +2205,7 @@ C Surface construction name, allow for spaces.
         write(szhasconstr(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
 
 C Read three indices representing boundary condition.
-        CALL EGETWI(OUTSTR,K,ival1,-1,4,'W','connection type',IER)
+        CALL EGETWI(OUTSTR,K,ival1,-1,7,'W','connection type',IER)
         CALL EGETWI(OUTSTR,K,ival2,0,MCOM,'W','connection ic2',IER)
         CALL EGETWI(OUTSTR,K,ival3,0,MS,'W','connection ie2',IER)
         szboundarytype(nsz,NS,1)=ival1
@@ -2387,14 +2397,13 @@ C be included in the version 1.1 geometry file.
           call edisp(iuout,outs)
 
 C Debug.
-C          write(6,*) 'nbwalls',nbwalls
 C          write(6,*) 'nbmass',nbmass
 C          write(6,*) 'nbedges',nbedges
 C          write(6,*) 'nbcord',nbcord
 C          write(6,*) 'list',list
 
 C Create zone based on a set of parameters (created above).
-          call silentzone(ICOMP,nbwalls(isz),
+          call silentzone(ICOMP,
      &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,nbglz(isz),hasglaze,
      &      nbdoor(isz),hasdoor,hasname,hasconstr,
@@ -2543,7 +2552,6 @@ C For passing to silentmodel.
 C Paremeters passed to:silentzone
       character szuse*8,usefile*32  ! usage pattern directives
       dimension szuse(MSZ,3),usefile(MSZ)
-      integer nbwalls(MSZ)     ! nb of vertical walls
 
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character stextmass*32
@@ -2696,6 +2704,10 @@ C << todo - add in zone description >>
         szuse(iz,2) = ' '
         szuse(iz,3) = ' '
         usefile(iz) = ' '       ! usefile (skip for now)
+
+C Until we store all META component history the creation of a META
+C file treats everything as polygons so that nbwalls is the same as
+C nzsur. For some 3rd party sources nbwalls will be less than nzsur.
         nbwalls(iz) = NZSUR(IZ) ! surfaces in the zone
 
 C Control data - ignore for now.
@@ -2862,11 +2874,16 @@ C The origin is ignored in poly type enclosure so do not bother with *origin.
 C The size is ignored in poly type enclosure so do not bother with *size.
 
 C Number of surfaces.
-
-C << consider altering the tag to *nbsurfs >>
-
-          write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13)
-     &      '*nbwalls',tab,nbwalls(nsz),'  # number of surfaces'
+          if(shape(nsz)(1:3).eq.'box')then
+            write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13)
+     &        '*nbwalls',tab,nbwalls(nsz),'  # number of surfaces'
+          elseif(shape(nsz)(1:7).eq.'extrude')then
+            write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13)
+     &        '*nbwalls',tab,nbwalls(nsz),'  # number of surfaces'
+          else
+            write(ifilg,'(2a,i3,a)',IOSTAT=IOS,ERR=13)
+     &        '*nbsurfs',tab,nbwalls(nsz),'  # number of surfaces'
+          endif
 
 C << consider adding more attributes and putting each attribute
 C << on a separate line with a tag.

@@ -372,6 +372,7 @@ C If only 3 items on first line read another loutstr and try to continue.
         rotateit(ICOMP,1)=AR1   ! remember the pending rotation
         rotateit(ICOMP,2)=XO1   ! and the origin of the zone
         rotateit(ICOMP,3)=YO1
+        nbwalls(ICOMP)=4        ! there are 4 walls in box
 
 C Now convert to a gen description. After this move the rotateit from
 C pending to previous.
@@ -392,6 +393,7 @@ C Zone is of type REG.
         IF(IER.NE.0)goto 1001
         K=0
         CALL EGETWI(loutstr,K,NW,3,MS-2,'W','no of walls',IER)
+        nbwalls(ICOMP)=NW
         CALL EGETWR(loutstr,K,Z1,0.,1000.,'W','floor height',IER)
         CALL EGETWR(loutstr,K,Z2,Z1,1000.,'F','ceiling ht',IER)
         CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rot angle',IER)
@@ -438,6 +440,7 @@ C Read verticies
 C Read surfaces
 C (Shouldn't four planar surfaces be required to fully-bound a zone?)
         CALL EGETWI(loutstr,K,NSUR,3,MS,'F','# of surfaces',IER)
+        nbwalls(ICOMP)=NSUR   ! remember so can work with META
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
 

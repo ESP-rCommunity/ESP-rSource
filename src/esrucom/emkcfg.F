@@ -564,7 +564,7 @@ C reflect whether the standard database folder is being used.
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
-      IF(groundreflmodel.NE.1) WRITE(IFCFG,803) '*gref ',
+      IF(groundreflmodel.GT.1) WRITE(IFCFG,803) '*gref ',
      &   groundreflmodel,(groundreflmonth(I),I=1,12),snowgroundrefl
   803 FORMAT(A,I1,13(1X,F5.3))
 

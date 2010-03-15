@@ -436,7 +436,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character textmass*32 
       dimension textmass(4,3)
 
-      integer nbwalls(MSZ)     ! nb of vertical walls
       integer nbedges(MS)      ! nb of edges per surface in poly shaped zone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24)      ! indices of coords making up edges of each surface
@@ -517,26 +516,26 @@ C For each of the possible ESP-r zones, clear values.
       do 41 iz=1,MCOM
         zname(iz) = ' '
         shape(iz) = ' '
-
-  41  continue
-
-C Clear the sz array structures.
-      weather=' '
-      do 40 iz=1,MSZ
-        szuse(iz,1) = ' '
-        szuse(iz,2) = ' '
-        szuse(iz,3) = ' '
-        usefile(iz) = ' '
         nbwalls(iz) = 0
-        nbglz(iz) = 0
-        nbdoor(iz) = 0
-        nbcord(iz) = 0
         rotateit(iz,1) = 0.0
         rotateit(iz,2) = 0.0
         rotateit(iz,3) = 0.0
         rotateit(iz,4) = 0.0
         rotateit(iz,5) = 0.0
         rotateit(iz,6) = 0.0
+
+  41  continue
+
+C Clear the msz array structures.
+      weather=' '
+      do 40 iz=1,MSZ
+        szuse(iz,1) = ' '
+        szuse(iz,2) = ' '
+        szuse(iz,3) = ' '
+        usefile(iz) = ' '
+        nbglz(iz) = 0
+        nbdoor(iz) = 0
+        nbcord(iz) = 0
         szorigin(iz,1) = 0.0
         szorigin(iz,2) = 0.0
         szorigin(iz,3) = 0.0
@@ -972,7 +971,7 @@ C Fill surface arrays.
 
       write(outs,'(2a)') 'Processing ',zname(isz)
       call edisp(iuout,outs)
-      call silentzone(ICOMP,nbwalls(isz),
+      call silentzone(ICOMP,
      &    nbmass,nbedges,nbcord(isz),list,origin,size,
      &    coords,nbglz(isz),hasglaze,
      &    nbdoor(isz),hasdoor,hasname,hasconstr,

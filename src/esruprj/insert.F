@@ -362,6 +362,10 @@ C G5 contents into the surface below. The G6 commons were done already.
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
 
+C Until we know whether the deleted surface was in the initial
+C description it is difficult to know whether to update the value
+C of nbwalls() as well. 
+
 C If the deleted surface was a child then it should also be possible
 C to remove the vertices of the child from the parent surface. Loop
 C through surfaces in the zone to find one matching the name myparentis.
