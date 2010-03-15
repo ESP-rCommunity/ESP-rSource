@@ -391,6 +391,11 @@ C Where ESP-r was installed (as recorded when it was compiled).
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
 
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
       common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
@@ -451,8 +456,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
       character hasconstr*32,szhasconstr*32
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
-      character hasname*12,szhasname*12
-      dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
 
 C Array of percent window area in the parent surfaces
       real glzpercent(5)
@@ -523,6 +526,7 @@ C For each of the possible ESP-r zones, clear values.
         rotateit(iz,5) = 0.0
         rotateit(iz,6) = 0.0
         do 39 isu=1,MS
+          sname(iz,isu)=' '
           szboundarytype(iz,isu,1)=0
           szboundarytype(iz,isu,2)=0
           szboundarytype(iz,isu,3)=0
@@ -553,7 +557,6 @@ C Clear the msz array structures.
           szhasglaze(iz,isu)=0.0
           szhasdoor(iz,isu)=0.0
           szhasconstr(iz,isu)=' '
-          szhasname(iz,isu)=' '
   52    continue
   40  continue
 
@@ -856,17 +859,17 @@ C Set the name of the new zone.
       write(zname(nsz),'(a)') 'the_space'
 
 C Assign the intial box surface name and construction attributes.
-      write(szhasname(nsz,1),'(a)') 'front'
+      write(sname(nsz,1),'(a)') 'front'
       write(szhasconstr(nsz,1),'(a)') wallconstr
-      write(szhasname(nsz,2),'(a)') 'right'
+      write(sname(nsz,2),'(a)') 'right'
       write(szhasconstr(nsz,2),'(a)') wallconstr
-      write(szhasname(nsz,3),'(a)') 'back'
+      write(sname(nsz,3),'(a)') 'back'
       write(szhasconstr(nsz,3),'(a)') wallconstr
-      write(szhasname(nsz,4),'(a)') 'left'
+      write(sname(nsz,4),'(a)') 'left'
       write(szhasconstr(nsz,4),'(a)') wallconstr
-      write(szhasname(nsz,5),'(a)') 'roof'
+      write(sname(nsz,5),'(a)') 'roof'
       write(szhasconstr(nsz,5),'(a)') roofconstr
-      write(szhasname(nsz,6),'(a)') 'floor'
+      write(sname(nsz,6),'(a)') 'floor'
       write(szhasconstr(nsz,6),'(a)') floorconstr
 
 C Determine how many surfaces in the model.
@@ -876,27 +879,27 @@ C Determine how many surfaces in the model.
       if(glzin1)then
         nbglz(nsz)=nbglz(nsz)+1
         NS = NS + 1
-        write(szhasname(nsz,NS),'(a)') 'glz_front'
+        write(sname(nsz,NS),'(a)') 'glz_front'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
       endif
       if(glzin2)then
         NS = NS + 1
-        write(szhasname(nsz,NS),'(a)') 'glz_right'
+        write(sname(nsz,NS),'(a)') 'glz_right'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
       endif
       if(glzin3)then
         NS = NS + 1
-        write(szhasname(nsz,NS),'(a)') 'glz_back'
+        write(sname(nsz,NS),'(a)') 'glz_back'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
       endif
       if(glzin4)then
         NS = NS + 1
-        write(szhasname(nsz,NS),'(a)') 'glz_left'
+        write(sname(nsz,NS),'(a)') 'glz_left'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
       endif
       if(glzin5)then
         NS = NS + 1
-        write(szhasname(nsz,NS),'(a)') 'skylight'
+        write(sname(nsz,NS),'(a)') 'skylight'
         write(szhasconstr(nsz,NS),'(a)') skylightconstr
       endif
 
@@ -963,7 +966,6 @@ C Fill surface arrays.
         hasglaze(isu)=szhasglaze(isz,isu)
         hasdoor(isu)=szhasdoor(isz,isu)
         hasconstr(isu)=szhasconstr(isz,isu)
-        hasname(isu)=szhasname(isz,isu)
   49  continue
 
       write(outs,'(2a)') 'Processing ',zname(isz)
@@ -971,7 +973,7 @@ C Fill surface arrays.
       call silentzone(ICOMP,
      &    nbmass,nbedges,nbcord(isz),list,origin,size,
      &    coords,nbglz(isz),hasglaze,
-     &    nbdoor(isz),hasdoor,hasname,hasconstr,
+     &    nbdoor(isz),hasdoor,hasconstr,
      &    datamass,textmass,use,usefile(isz),IER)
 
 C Overwrite the initial zone operation file with the correct

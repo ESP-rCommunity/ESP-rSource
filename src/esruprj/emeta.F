@@ -394,7 +394,6 @@ C   and non-zero is the percentage of the parent surface for the glazing. It is
 C   assumed that a default shape for the glazing is ok.
 C hasdoor (real array) for each surface in the initial shape a zero indicates
 C   no door and a non-zero indicates the width of the door (m).
-C hasname (string array) the surface name for each surface
 C hasconstr (string array) the name of the MLC to use for each surface
 C datamass (real 4*7) values to create mass
 C textmass (char *32 4*3) text associated with mass
@@ -403,7 +402,7 @@ c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
       subroutine silentzone(ICOMP,nbmass,nbedges,
      &  nbpolyc,list,origin,size,coords,
-     &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstr,
+     &  nbglz,hasglaze,nbdoor,hasdoor,hasconstr,
      &  datamass,textmass,use,usefile,IER)
 #include "building.h"
 #include "model.h"
@@ -472,10 +471,13 @@ C Paremeters passed in:
       real coords(MTV,3)  ! all of the coordinates in the zone X/Y/Z
       real hasglaze(MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS)    ! width of door in each surface of the initial shape
-      character hasconstr*32
-      dimension hasconstr(MS)  ! construction to use for each surface
+
+C hasname (string array) the surface name for each surface (so fillsur does not wipe)
       character hasname*12
       dimension hasname(MS)  ! name to use for each surface
+
+      character hasconstr*32
+      dimension hasconstr(MS)  ! construction to use for each surface
       character use*8,usefile*32  ! usage pattern directives
       dimension use(3)
 
@@ -671,6 +673,10 @@ C Rotate if pending.
       ENDIF
 
 C Begin with default assumptions for each surface then overwrite.
+C Because filsur clears the surface name rememeber in hasname first.
+      do 322 ICC=1,NSUR
+        write(hasname(icc),'(a)') sname(icomp,icc)  ! remember surface name
+ 322  continue
       CALL FILSUR(ICOMP,0)
 
 C Update the connection list.
@@ -683,7 +689,7 @@ C Update the connection list.
         IC2(ICCC)=szboundarytype(icomp,icc,2)
         IE2(ICCC)=szboundarytype(icomp,icc,3)
 
-C Instanciate the surface names and the constructions.
+C Instanciate the surface constructions.
         write(sname(icomp,icc),'(a)') hasname(icc)
         write(smlcn(icc),'(a)') hasconstr(icc)
 
@@ -840,7 +846,7 @@ C parent surface.  Later add logic to better place the door..
               ZH=ZMAX-0.3
             endif
             act='sd'
-            write(rsname,'(a)') hasname(newsurf)
+            write(rsname,'(a)') sname(icomp,newsurf)
             write(rsmlcn,'(a)') hasconstr(newsurf)
 
 C Loop thru all of the constructions to find the matching construction
@@ -923,7 +929,7 @@ C the parent surface as a percentage of area.
             ZOC=0.0
             XW=0.0
             ZH=0.0
-            write(rsname,'(a)') hasname(newsurf)
+            write(rsname,'(a)') sname(icomp,newsurf)
             write(rsmlcn,'(a)') hasconstr(newsurf)
 
 C Loop thru all of the constructions to find the matching construction
@@ -1188,6 +1194,10 @@ C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C IPV description via ipvdata.h.
+      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
+      CHARACTER SPARENT*12
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
 
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248  
@@ -1266,8 +1276,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
 
       character hasconstr*32,szhasconstr*32
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
-      character hasname*12,szhasname*12
-      dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
 
 C Site related local variables.
       logical havesite       ! true if tokens included
@@ -1368,6 +1376,7 @@ C For each of the possible ESP-r zones, clear values.
             szboundarytype(iz,isu,1)=0
             szboundarytype(iz,isu,2)=0
             szboundarytype(iz,isu,3)=0
+            sname(iz,isu)=' '
   39      continue
   41    continue
 
@@ -1425,7 +1434,6 @@ C For each of the META specific arrays, clear values.
             szhasglaze(iz,isu)=0.0
             szhasdoor(iz,isu)=0.0
             szhasconstr(iz,isu)=' '
-            szhasname(iz,isu)=' '
   52      continue
           do 59 imu=1,4
             sdatamass(iz,imu,1)= 0.0
@@ -2201,7 +2209,7 @@ C then any windows and then any doors.
 
 C Surface name, allow for future spaces in name.
         CALL EGETP(OUTSTR,K,WORD,'W','surface name',IER)
-        write(szhasname(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
+        write(sname(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
 
 C Surface construction name, allow for spaces.
         CALL EGETP(OUTSTR,K,WORD,'W','surface construction',IER)
@@ -2339,7 +2347,6 @@ C        usefile(iz) = ' '
             hasglaze(isu)=szhasglaze(isz,isu)
             hasdoor(isu)=szhasdoor(isz,isu)
             hasconstr(isu)=szhasconstr(isz,isu)
-            hasname(isu)=szhasname(isz,isu)
   49      continue
           do 158 imu=1,4
             datamass(imu,1)=sdatamass(isz,imu,1)
@@ -2406,7 +2413,7 @@ C Create zone based on a set of parameters (created above).
           call silentzone(ICOMP,
      &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,nbglz(isz),hasglaze,
-     &      nbdoor(isz),hasdoor,hasname,hasconstr,
+     &      nbdoor(isz),hasdoor,hasconstr,
      &      datamass,textmass,use,usefile(isz),IER)
   63    continue
 
