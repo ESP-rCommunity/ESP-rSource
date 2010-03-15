@@ -458,7 +458,10 @@ C Season data.
 C Zone level common blocks.
       do 42 IX = 1,MCOM
         do 43 IXS = 1,MS
-          SNAME(IX,IXS)=' '
+          SNAME(IX,IXS)=' '   ! clear surface name
+          szboundarytype(IX,IXS,1)=0  ! clear surface boundary
+          szboundarytype(IX,IXS,2)=0
+          szboundarytype(IX,IXS,3)=0
    43   continue
 
 C Clear obstructions in all zones.

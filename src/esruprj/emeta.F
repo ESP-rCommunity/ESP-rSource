@@ -396,7 +396,6 @@ C hasdoor (real array) for each surface in the initial shape a zero indicates
 C   no door and a non-zero indicates the width of the door (m).
 C hasname (string array) the surface name for each surface
 C hasconstr (string array) the name of the MLC to use for each surface
-C boundarytype (integer (MS,3) the connection data for each surface.
 C datamass (real 4*7) values to create mass
 C textmass (char *32 4*3) text associated with mass
 C use integer*3 directives for zone use pattern.,
@@ -405,7 +404,7 @@ C IER=0 OK.
       subroutine silentzone(ICOMP,nbmass,nbedges,
      &  nbpolyc,list,origin,size,coords,
      &  nbglz,hasglaze,nbdoor,hasdoor,hasname,hasconstr,
-     &  boundarytype,datamass,textmass,use,usefile,IER)
+     &  datamass,textmass,use,usefile,IER)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -477,7 +476,6 @@ C Paremeters passed in:
       dimension hasconstr(MS)  ! construction to use for each surface
       character hasname*12
       dimension hasname(MS)  ! name to use for each surface
-      integer boundarytype(MS,3)
       character use*8,usefile*32  ! usage pattern directives
       dimension use(3)
 
@@ -681,9 +679,9 @@ C Update the connection list.
         ICCC=ICCC+1
         IC1(ICCC)=ICOMP
         IE1(ICCC)=ICC
-        ICT(ICCC)=boundarytype(icc,1)  ! used passed in boundarytype
-        IC2(ICCC)=boundarytype(icc,2)
-        IE2(ICCC)=boundarytype(icc,3)
+        ICT(ICCC)=szboundarytype(icomp,icc,1)  ! use boundarytype
+        IC2(ICCC)=szboundarytype(icomp,icc,2)
+        IE2(ICCC)=szboundarytype(icomp,icc,3)
 
 C Instanciate the surface names and the constructions.
         write(sname(icomp,icc),'(a)') hasname(icc)
@@ -714,30 +712,30 @@ C section of the string DESC.
         SUSE(icc,1)='-'
         SUSE(icc,2)='-'
 
-C Use boundarytype to instanciate sother & ssother << to be done >>
-        IF(boundarytype(icc,1).EQ.0)THEN
+C Use szboundarytype to instanciate sother & ssother << to be done >>
+        IF(szboundarytype(icomp,icc,1).EQ.0)THEN
           SOTHER(icc,1)='EXTERIOR'
-        ELSEIF(boundarytype(icc,1).EQ.1)THEN
+        ELSEIF(szboundarytype(icomp,icc,1).EQ.1)THEN
           SOTHER(icc,1)='SIMILAR'
-        ELSEIF(boundarytype(icc,1).EQ.2)THEN
+        ELSEIF(szboundarytype(icomp,icc,1).EQ.2)THEN
           SOTHER(icc,1)='CONSTANT'
-        ELSEIF(boundarytype(icc,1).EQ.3)THEN
+        ELSEIF(szboundarytype(icomp,icc,1).EQ.3)THEN
           SOTHER(icc,1)='ANOTHER'
-        ELSEIF(boundarytype(icc,1).EQ.4)THEN
+        ELSEIF(szboundarytype(icomp,icc,1).EQ.4)THEN
           SOTHER(icc,1)='GROUND'
-        ELSEIF(boundarytype(icc,1).EQ.5)THEN
+        ELSEIF(szboundarytype(icomp,icc,1).EQ.5)THEN
           SOTHER(icc,1)='ADIABATIC'
-        ELSEIF(boundarytype(icc,1).EQ.6)THEN
+        ELSEIF(szboundarytype(icomp,icc,1).EQ.6)THEN
           SOTHER(icc,1)='BASESIMP'
-        ELSEIF(boundarytype(icc,1).EQ.7)THEN
+        ELSEIF(szboundarytype(icomp,icc,1).EQ.7)THEN
           SOTHER(icc,1)='IDENT_CEN'
         ELSE
 
 C Reset to represent UNKNOWN
           SOTHER(icc,1)='UNKNOWN'
         ENDIF
-        write(SOTHER(icc,2),'(i2.2)') boundarytype(icc,2)
-        write(SOTHER(icc,3),'(i2.2)') boundarytype(icc,3)
+        write(SOTHER(icc,2),'(i2.2)') szboundarytype(icomp,icc,2)
+        write(SOTHER(icc,3),'(i2.2)') szboundarytype(icomp,icc,3)
 
         SSNAME(iccc)=SNAME(icomp,icc)
         SSOTF(iccc)=SOTF(icc)
@@ -873,34 +871,36 @@ C section of the string DESC.
 
 C Connection information needs to be updated.
             ibcs=IZSTOCN(icomp,newsurf)
-            ICT(ibcs)=boundarytype(newsurf,1)  ! used passed in boundarytype
-            IC2(ibcs)=boundarytype(newsurf,2)
-            IE2(ibcs)=boundarytype(newsurf,3)
+            ICT(ibcs)=szboundarytype(icomp,newsurf,1)  ! use boundarytype
+            IC2(ibcs)=szboundarytype(icomp,newsurf,2)
+            IE2(ibcs)=szboundarytype(icomp,newsurf,3)
 
-C Use boundarytype to instanciate sother & ssother << to be done >>
-            IF(boundarytype(newsurf,1).EQ.0)THEN
+C Use szboundarytype to instanciate sother & ssother << to be done >>
+            IF(szboundarytype(icomp,newsurf,1).EQ.0)THEN
               SOTHER(newsurf,1)='EXTERIOR'
-            ELSEIF(boundarytype(newsurf,1).EQ.1)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.1)THEN
               SOTHER(newsurf,1)='SIMILAR'
-            ELSEIF(boundarytype(newsurf,1).EQ.2)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.2)THEN
               SOTHER(newsurf,1)='CONSTANT'
-            ELSEIF(boundarytype(newsurf,1).EQ.3)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.3)THEN
               SOTHER(newsurf,1)='ANOTHER'
-            ELSEIF(boundarytype(newsurf,1).EQ.4)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.4)THEN
               SOTHER(newsurf,1)='GROUND'
-            ELSEIF(boundarytype(newsurf,1).EQ.5)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.5)THEN
               SOTHER(newsurf,1)='ADIABATIC'
-            ELSEIF(boundarytype(newsurf,1).EQ.6)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.6)THEN
               SOTHER(newsurf,1)='BASESIMP'
-            ELSEIF(boundarytype(newsurf,1).EQ.7)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.7)THEN
               SOTHER(newsurf,1)='IDENT_CEN'
             ELSE
 
 C Reset to represent UNKNOWN
               SOTHER(newsurf,1)='UNKNOWN'
             ENDIF
-            write(SOTHER(newsurf,2),'(i2.2)') boundarytype(newsurf,2)
-            write(SOTHER(newsurf,3),'(i2.2)') boundarytype(newsurf,3)
+            write(SOTHER(newsurf,2),'(i2.2)') 
+     &        szboundarytype(icomp,newsurf,2)
+            write(SOTHER(newsurf,3),'(i2.2)') 
+     &        szboundarytype(icomp,newsurf,3)
             SSOTHER(ibcs,1)=SOTHER(newsurf,1)
             SSOTHER(ibcs,2)=SOTHER(newsurf,2)
             SSOTHER(ibcs,3)=SOTHER(newsurf,3)
@@ -954,34 +954,36 @@ C section of the string DESC.
 
 C Connection information needs to be updated.
             ibcs=IZSTOCN(icomp,newsurf)
-            ICT(ibcs)=boundarytype(newsurf,1)  ! used passed in boundarytype
-            IC2(ibcs)=boundarytype(newsurf,2)
-            IE2(ibcs)=boundarytype(newsurf,3)
+            ICT(ibcs)=szboundarytype(icomp,newsurf,1)  ! use boundarytype
+            IC2(ibcs)=szboundarytype(icomp,newsurf,2)
+            IE2(ibcs)=szboundarytype(icomp,newsurf,3)
 
-C Use boundarytype to instanciate sother & ssother << to be done >>
-            IF(boundarytype(newsurf,1).EQ.0)THEN
+C Use szboundarytype to instanciate sother & ssother << to be done >>
+            IF(szboundarytype(icomp,newsurf,1).EQ.0)THEN
               SOTHER(newsurf,1)='EXTERIOR'
-            ELSEIF(boundarytype(newsurf,1).EQ.1)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.1)THEN
               SOTHER(newsurf,1)='SIMILAR'
-            ELSEIF(boundarytype(newsurf,1).EQ.2)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.2)THEN
               SOTHER(newsurf,1)='CONSTANT'
-            ELSEIF(boundarytype(newsurf,1).EQ.3)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.3)THEN
               SOTHER(newsurf,1)='ANOTHER'
-            ELSEIF(boundarytype(newsurf,1).EQ.4)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.4)THEN
               SOTHER(newsurf,1)='GROUND'
-            ELSEIF(boundarytype(newsurf,1).EQ.5)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.5)THEN
               SOTHER(newsurf,1)='ADIABATIC'
-            ELSEIF(boundarytype(newsurf,1).EQ.6)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.6)THEN
               SOTHER(newsurf,1)='BASESIMP'
-            ELSEIF(boundarytype(newsurf,1).EQ.7)THEN
+            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.7)THEN
               SOTHER(newsurf,1)='IDENT_CEN'
             ELSE
 
 C Reset to represent UNKNOWN
               SOTHER(newsurf,1)='UNKNOWN'
             ENDIF
-            write(SOTHER(newsurf,2),'(i2.2)') boundarytype(newsurf,2)
-            write(SOTHER(newsurf,3),'(i2.2)') boundarytype(newsurf,3)
+            write(SOTHER(newsurf,2),'(i2.2)') 
+     &        szboundarytype(icomp,newsurf,2)
+            write(SOTHER(newsurf,3),'(i2.2)') 
+     &        szboundarytype(icomp,newsurf,3)
             SSOTHER(ibcs,1)=SOTHER(newsurf,1)
             SSOTHER(ibcs,2)=SOTHER(newsurf,2)
             SSOTHER(ibcs,3)=SOTHER(newsurf,3)
@@ -1266,7 +1268,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
       character hasname*12,szhasname*12
       dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
-      integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
 
 C Site related local variables.
       logical havesite       ! true if tokens included
@@ -1363,6 +1364,11 @@ C For each of the possible ESP-r zones, clear values.
           rotateit(iz,4) = 0.0
           rotateit(iz,5) = 0.0
           rotateit(iz,6) = 0.0
+          do 39 isu=1,MS
+            szboundarytype(iz,isu,1)=0
+            szboundarytype(iz,isu,2)=0
+            szboundarytype(iz,isu,3)=0
+  39      continue
   41    continue
 
 C For each of the META specific arrays, clear values.
@@ -1420,9 +1426,6 @@ C For each of the META specific arrays, clear values.
             szhasdoor(iz,isu)=0.0
             szhasconstr(iz,isu)=' '
             szhasname(iz,isu)=' '
-            szboundarytype(iz,isu,1)=0
-            szboundarytype(iz,isu,2)=0
-            szboundarytype(iz,isu,3)=0
   52      continue
           do 59 imu=1,4
             sdatamass(iz,imu,1)= 0.0
@@ -2337,9 +2340,6 @@ C        usefile(iz) = ' '
             hasdoor(isu)=szhasdoor(isz,isu)
             hasconstr(isu)=szhasconstr(isz,isu)
             hasname(isu)=szhasname(isz,isu)
-            boundarytype(isu,1)=szboundarytype(isz,isu,1)
-            boundarytype(isu,2)=szboundarytype(isz,isu,2)
-            boundarytype(isu,3)=szboundarytype(isz,isu,3)
   49      continue
           do 158 imu=1,4
             datamass(imu,1)=sdatamass(isz,imu,1)
@@ -2407,7 +2407,7 @@ C Create zone based on a set of parameters (created above).
      &      nbmass(isz),nbedges,nbcord(isz),list,origin,size,
      &      coords,nbglz(isz),hasglaze,
      &      nbdoor(isz),hasdoor,hasname,hasconstr,
-     &      boundarytype,datamass,textmass,use,usefile(isz),IER)
+     &      datamass,textmass,use,usefile(isz),IER)
   63    continue
 
         if(unixok)then

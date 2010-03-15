@@ -36,6 +36,11 @@ C   objects.
       integer nzsur,nztv,nbwalls
       common/c20/nzsur(MCOM),nztv(MCOM),nbwalls(MCOM)
 
+C Arrays of verious types which hold data in (zone,surface) size primarily
+C for use with META files.
+      integer szboundarytype  ! equivalent to ICT/IC2/IE2 in common c3
+      common/metac3/szboundarytype(MCOM,MS,3)
+
 C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
 C which make up the floor, IUZBASEA signals that the user selected
 C specific surfaces (two), has edited the floor area (one) or it was

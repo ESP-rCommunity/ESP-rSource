@@ -453,7 +453,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
       character hasname*12,szhasname*12
       dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
-      integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
 
 C Array of percent window area in the parent surfaces
       real glzpercent(5)
@@ -523,7 +522,11 @@ C For each of the possible ESP-r zones, clear values.
         rotateit(iz,4) = 0.0
         rotateit(iz,5) = 0.0
         rotateit(iz,6) = 0.0
-
+        do 39 isu=1,MS
+          szboundarytype(iz,isu,1)=0
+          szboundarytype(iz,isu,2)=0
+          szboundarytype(iz,isu,3)=0
+  39    continue
   41  continue
 
 C Clear the msz array structures.
@@ -551,9 +554,6 @@ C Clear the msz array structures.
           szhasdoor(iz,isu)=0.0
           szhasconstr(iz,isu)=' '
           szhasname(iz,isu)=' '
-          szboundarytype(iz,isu,1)=0
-          szboundarytype(iz,isu,2)=0
-          szboundarytype(iz,isu,3)=0
   52    continue
   40  continue
 
@@ -964,9 +964,6 @@ C Fill surface arrays.
         hasdoor(isu)=szhasdoor(isz,isu)
         hasconstr(isu)=szhasconstr(isz,isu)
         hasname(isu)=szhasname(isz,isu)
-        boundarytype(isu,1)=szboundarytype(isz,isu,1)
-        boundarytype(isu,2)=szboundarytype(isz,isu,2)
-        boundarytype(isu,3)=szboundarytype(isz,isu,3)
   49  continue
 
       write(outs,'(2a)') 'Processing ',zname(isz)
@@ -975,7 +972,7 @@ C Fill surface arrays.
      &    nbmass,nbedges,nbcord(isz),list,origin,size,
      &    coords,nbglz(isz),hasglaze,
      &    nbdoor(isz),hasdoor,hasname,hasconstr,
-     &    boundarytype,datamass,textmass,use,usefile(isz),IER)
+     &    datamass,textmass,use,usefile(isz),IER)
 
 C Overwrite the initial zone operation file with the correct
 C density information.
