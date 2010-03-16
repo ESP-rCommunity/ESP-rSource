@@ -448,7 +448,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       integer nbglz(MSZ)       ! nb of windows
       integer nbdoor(MSZ)      ! nb of doors
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
-      real origin(3),szorigin(MSZ,3)      ! values dependant on shape
       real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
       real size(3),szsize(MSZ,3)        ! values dependant on shape
       real coords(MS,3)
@@ -525,6 +524,9 @@ C For each of the possible ESP-r zones, clear values.
         rotateit(iz,4) = 0.0
         rotateit(iz,5) = 0.0
         rotateit(iz,6) = 0.0
+        zorigin(iz,1) = 0.0
+        zorigin(iz,2) = 0.0
+        zorigin(iz,3) = 0.0
         do 39 isu=1,MS
           sname(iz,isu)=' '
           szboundarytype(iz,isu,1)=0
@@ -543,9 +545,6 @@ C Clear the msz array structures.
         nbglz(iz) = 0
         nbdoor(iz) = 0
         nbcord(iz) = 0
-        szorigin(iz,1) = 0.0
-        szorigin(iz,2) = 0.0
-        szorigin(iz,3) = 0.0
         szsize(iz,1) = 0.0
         szsize(iz,2) = 0.0
         szsize(iz,3) = 0.0
@@ -839,12 +838,9 @@ C Always create a single folder. Fill in default menu and doc.
       write(modeltitle,'(a)') 'auto generation of warehouse'
 
 C Place the origin of the model at the site origin.
-      origin(1)=0.0
-      origin(2)=0.0
-      origin(3)=0.0
-      szorigin(nsz,1)=origin(1)
-      szorigin(nsz,2)=origin(2)
-      szorigin(nsz,3)=origin(3)
+      zorigin(nsz,1)=0.0
+      zorigin(nsz,2)=0.0
+      zorigin(nsz,3)=0.0
       nbdoor(nsz)=0
 
 C If a standard pattern of operations can be used assign standard
@@ -946,9 +942,6 @@ C single folder then no folder is created.
 C Generate the zone and zone files.
       icomp=1
       isz=1
-      origin(1)=szorigin(isz,1)
-      origin(2)=szorigin(isz,2)
-      origin(3)=szorigin(isz,3)
       size(1)=szsize(isz,1)
       size(2)=szsize(isz,2)
       size(3)=szsize(isz,3)
@@ -971,7 +964,7 @@ C Fill surface arrays.
       write(outs,'(2a)') 'Processing ',zname(isz)
       call edisp(iuout,outs)
       call silentzone(ICOMP,
-     &    nbmass,nbedges,nbcord(isz),list,origin,size,
+     &    nbmass,nbedges,nbcord(isz),list,size,
      &    coords,nbglz(isz),hasglaze,
      &    nbdoor(isz),hasdoor,hasconstr,
      &    datamass,textmass,use,usefile(isz),IER)

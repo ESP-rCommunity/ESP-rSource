@@ -358,6 +358,9 @@ C Zone is of type REC, look for 7 items on one or two lines.
         CALL EGETWR(loutstr,K,XO1,0.,0.,'-','rec X origin',IER)
         CALL EGETWR(loutstr,K,YO1,0.,0.,'-','rec Y origin',IER)
         CALL EGETWR(loutstr,K,ZO1,0.,0.,'-','rec Z origin',IER)
+        zorigin(icomp,1)=XO1
+        zorigin(icomp,2)=YO1
+        zorigin(icomp,3)=ZO1
 
 C If only 3 items on first line read another loutstr and try to continue.
         IF(ND.EQ.3) THEN
@@ -396,6 +399,9 @@ C Zone is of type REG.
         nbwalls(ICOMP)=NW
         CALL EGETWR(loutstr,K,Z1,0.,1000.,'W','floor height',IER)
         CALL EGETWR(loutstr,K,Z2,Z1,1000.,'F','ceiling ht',IER)
+        zorigin(icomp,1)=Z1
+        zorigin(icomp,2)=Z2
+        zorigin(icomp,3)=0.0
         CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rot angle',IER)
         rotateit(ICOMP,1)=AR1   ! remmeber the pending rotation
 
@@ -443,6 +449,9 @@ C (Shouldn't four planar surfaces be required to fully-bound a zone?)
         nbwalls(ICOMP)=NSUR   ! remember so can work with META
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
+        zorigin(icomp,1)=0.0
+        zorigin(icomp,2)=0.0
+        zorigin(icomp,3)=0.0
 
 C Read rotation angle.  If there are enough items on the line also
 C look for the rotation point.

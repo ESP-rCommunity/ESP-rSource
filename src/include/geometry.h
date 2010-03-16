@@ -33,8 +33,12 @@ C   For box and extrude the top surface is assumed to be index nbwalls+1 and
 C   the base surface is assumed to be index nbwalls+2. For poly type zones
 C   nbwalls is the initial number of surfaces prior to addition of META
 C   objects.
+C zorigin (real * 3) XYZ of the origin in the case of shape=box. For shape=extrude
+C   the 1st value is Z point of base, 2nd is the ceiling Z value, 3rd not used.
+C   And for shape=poly this is ignored.
       integer nzsur,nztv,nbwalls
-      common/c20/nzsur(MCOM),nztv(MCOM),nbwalls(MCOM)
+      real zorigin
+      common/c20/nzsur(MCOM),nztv(MCOM),nbwalls(MCOM),zorigin(MCOM,3)
 
 C Arrays of verious types which hold data in (zone,surface) size primarily
 C for use with META files.
@@ -51,11 +55,14 @@ C number of items in the list.
       common/prec17/zbasea(MCOM),ibases(MCOM,12),iuzbasea(MCOM),
      &  izbaselist(MCOM)
 
-C Global coordinates for whole model.
+C Global coordinates for whole model (connection based).
       real VCOORD    ! X,Y & Z coordinates of vertices in all zones.
       integer NZNVER ! number of vertices associated with each connection.
       integer NZJVN  ! topology of vertices associated with each connection.
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
+
+C Global coordinates for whole model (zone & surface based).
+
 
 C The following section will hold derived data such as volume and surface
 C areas which are of general interest to many subroutines.
