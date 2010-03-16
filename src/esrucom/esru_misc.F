@@ -508,6 +508,12 @@ C Clear SHOCC zone information as well.
         rotateit(ix,4)=0.0
         rotateit(ix,5)=0.0
         rotateit(ix,6)=0.0
+        zorigin(ix,1)=0.0
+        zorigin(ix,2)=0.0
+        zorigin(ix,3)=0.0
+        zsize(ix,1)=0.0
+        zsize(ix,2)=0.0
+        zsize(ix,3)=0.0
         zdesc(IX)=' '
         lnzdesc(IX)=0
         zname(IX)=' '

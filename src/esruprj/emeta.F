@@ -379,8 +379,6 @@ C silentzone creates a zone based on meta parameters passed
 C to it.
 C nbmass (integer) how many pairs of mass walls to append to zone. Note these
 C   surfaces are not included in the *surface list
-C size (real *3) for shape=box this is the length/width/height (m) and for
-C   shape=extrude this should be zero
 C nbpolyc (integer) number of initial coordinates
 C coords (real array (nbwalls,3)) for shape=box ignore, for shape=extrude the
 C   1st value is X and 2nd is Y (in world coordinates) following the normal
@@ -399,7 +397,7 @@ C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
       subroutine silentzone(ICOMP,nbmass,nbedges,
-     &  nbpolyc,list,size,coords,
+     &  nbpolyc,list,coords,
      &  nbglz,hasglaze,nbdoor,hasdoor,hasconstr,
      &  datamass,textmass,use,usefile,IER)
 #include "building.h"
@@ -464,7 +462,6 @@ C Paremeters passed in:
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
       real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
-      real size(3)        ! values dependant on shape
       real coords(MTV,3)  ! all of the coordinates in the zone X/Y/Z
       real hasglaze(MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS)    ! width of door in each surface of the initial shape
@@ -578,9 +575,9 @@ C Choices based on the value of shape.
         XOC=zorigin(icomp,1)
         YOC=zorigin(icomp,2)
         ZOC=zorigin(icomp,3)
-        DXC=size(1)
-        DYC=size(2)
-        DZC=size(3)
+        DXC=zsize(icomp,1)
+        DYC=zsize(icomp,2)
+        DZC=zsize(icomp,3)
 
 C Pending rotation angle and set point to origin of the zone.
         ANG=rotateit(ICOMP,1)
@@ -1261,7 +1258,6 @@ C Paremeters passed to:silentzone
       integer nbdoor(MSZ)      ! nb of doors (META directive)
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real datamass(4,7),sdatamass(MSZ,4,7) ! origin and size and orientations of mass (4 per zone)
-      real size(3),szsize(MSZ,3)        ! values dependant on shape
       real coords(MTV,3),szcoords(MSZ,MTV,3) 
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
@@ -1371,6 +1367,9 @@ C For each of the possible ESP-r zones, clear values.
           zorigin(iz,1) = 0.0
           zorigin(iz,2) = 0.0
           zorigin(iz,3) = 0.0
+          zsize(iz,1) = 0.0
+          zsize(iz,2) = 0.0
+          zsize(iz,3) = 0.0
           do 39 isu=1,MS
             szboundarytype(iz,isu,1)=0
             szboundarytype(iz,isu,2)=0
@@ -1389,9 +1388,6 @@ C For each of the META specific arrays, clear values.
           nbglz(iz) = 0
           nbdoor(iz) = 0
           nbcord(iz) = 0
-          szsize(iz,1) = 0.0
-          szsize(iz,2) = 0.0
-          szsize(iz,3) = 0.0
           nbobs(iz) = 0
           ht_Setpoint(iz)= 0.0
           cl_Setpoint(iz)= 0.0
@@ -2146,20 +2142,20 @@ C This format is included for older META files.
         goto 43
       elseif(WORD(1:5).eq.'*size')then
         if(shape(nsz)(1:3).eq.'box')then
-          CALL EGETWR(OUTSTR,K,size(1),0.,0.,'-','box length',IER)
-          CALL EGETWR(OUTSTR,K,size(2),0.,0.,'-','box width',IER)
-          CALL EGETWR(OUTSTR,K,size(3),0.,0.,'-','box height',IER)
-          szsize(nsz,1)=size(1)
-          szsize(nsz,2)=size(2)
-          szsize(nsz,3)=size(3)
+          CALL EGETWR(OUTSTR,K,val1,0.,0.,'-','box length',IER)
+          zsize(nsz,1)=val1
+          CALL EGETWR(OUTSTR,K,val1,0.,0.,'-','box width',IER)
+          zsize(nsz,2)=val1
+          CALL EGETWR(OUTSTR,K,val1,0.,0.,'-','box height',IER)
+          zsize(nsz,3)=val1
         elseif(shape(nsz)(1:7).eq.'extrude')then
-          szsize(nsz,1)=0.0   ! this is ignored for extruded shape
-          szsize(nsz,2)=0.0
-          szsize(nsz,3)=0.0
+          zsize(nsz,1)=0.0   ! this is ignored for extruded shape
+          zsize(nsz,2)=0.0
+          zsize(nsz,3)=0.0
         elseif(shape(nsz)(1:4).eq.'poly')then
-          szsize(nsz,1)=0.0   ! this is ignored for extruded shape
-          szsize(nsz,2)=0.0
-          szsize(nsz,3)=0.0
+          zsize(nsz,1)=0.0   ! this is ignored for extruded shape
+          zsize(nsz,2)=0.0
+          zsize(nsz,3)=0.0
         endif
         goto 43
       elseif(WORD(1:10).eq.'*start_xml')then  
@@ -2320,9 +2316,6 @@ C If there are no zones and no *start_zone found return.
 
 C Call silent zone and then loop back for more possible definiitons.
 C Copy from sz* arrays into parameter arrays prior to silentzone call.
-          size(1)=szsize(isz,1)
-          size(2)=szsize(isz,2)
-          size(3)=szsize(isz,3)
           use(1)= szuse(isz,1)
           use(2)= szuse(isz,2)
           use(3)= szuse(isz,3)
@@ -2404,7 +2397,7 @@ C          write(6,*) 'list',list
 
 C Create zone based on a set of parameters (created above).
           call silentzone(ICOMP,
-     &      nbmass(isz),nbedges,nbcord(isz),list,size,
+     &      nbmass(isz),nbedges,nbcord(isz),list,
      &      coords,nbglz(isz),hasglaze,
      &      nbdoor(isz),hasdoor,hasconstr,
      &      datamass,textmass,use,usefile(isz),IER)

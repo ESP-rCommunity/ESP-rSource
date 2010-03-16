@@ -449,7 +449,6 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       integer nbdoor(MSZ)      ! nb of doors
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
-      real size(3),szsize(MSZ,3)        ! values dependant on shape
       real coords(MS,3)
       real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
       real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
@@ -527,6 +526,9 @@ C For each of the possible ESP-r zones, clear values.
         zorigin(iz,1) = 0.0
         zorigin(iz,2) = 0.0
         zorigin(iz,3) = 0.0
+        zsize(iz,1) = 0.0
+        zsize(iz,2) = 0.0
+        zsize(iz,3) = 0.0
         do 39 isu=1,MS
           sname(iz,isu)=' '
           szboundarytype(iz,isu,1)=0
@@ -545,9 +547,6 @@ C Clear the msz array structures.
         nbglz(iz) = 0
         nbdoor(iz) = 0
         nbcord(iz) = 0
-        szsize(iz,1) = 0.0
-        szsize(iz,2) = 0.0
-        szsize(iz,3) = 0.0
         do 52 isu=1,MS
           isznbedges(iz,isu)=0
           do 54 ivu=1,MV
@@ -669,16 +668,16 @@ C Try where-the-input-file is.
         endif
         goto 43
       elseif(WORD(1:7).eq.'*length')then
-        CALL EGETWR(OUTSTR,K,size(1),0.,0.,'-','box length',IER)
-        szsize(nsz,1)=size(1)
+        CALL EGETWR(OUTSTR,K,val1,0.,0.,'-','box length',IER)
+        zsize(nsz,1)=val1
         goto 43
       elseif(WORD(1:6).eq.'*width')then
-        CALL EGETWR(OUTSTR,K,size(2),0.,0.,'-','box width',IER)
-        szsize(nsz,2)=size(2)
+        CALL EGETWR(OUTSTR,K,val1,0.,0.,'-','box width',IER)
+        zsize(nsz,2)=val1
         goto 43
       elseif(WORD(1:7).eq.'*heigth'.or.WORD(1:7).eq.'*height')then
-        CALL EGETWR(OUTSTR,K,size(3),0.,0.,'-','box height',IER)
-        szsize(nsz,3)=size(3)
+        CALL EGETWR(OUTSTR,K,val1,0.,0.,'-','box height',IER)
+        zsize(nsz,3)=val1
         goto 43
       elseif(WORD(1:9).eq.'*rotate')then
         CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation angle',IER)
@@ -942,9 +941,6 @@ C single folder then no folder is created.
 C Generate the zone and zone files.
       icomp=1
       isz=1
-      size(1)=szsize(isz,1)
-      size(2)=szsize(isz,2)
-      size(3)=szsize(isz,3)
       use(1)= szuse(isz,1)
       use(2)= szuse(isz,2)
       use(3)= szuse(isz,3)
@@ -964,7 +960,7 @@ C Fill surface arrays.
       write(outs,'(2a)') 'Processing ',zname(isz)
       call edisp(iuout,outs)
       call silentzone(ICOMP,
-     &    nbmass,nbedges,nbcord(isz),list,size,
+     &    nbmass,nbedges,nbcord(isz),list,
      &    coords,nbglz(isz),hasglaze,
      &    nbdoor(isz),hasdoor,hasconstr,
      &    datamass,textmass,use,usefile(isz),IER)

@@ -36,9 +36,12 @@ C   objects.
 C zorigin (real * 3) XYZ of the origin in the case of shape=box. For shape=extrude
 C   the 1st value is Z point of base, 2nd is the ceiling Z value, 3rd not used.
 C   And for shape=poly this is ignored.
+C zsize (real * 3) initial length/width/height of box shaped zones (not used for
+C   any other zone shapes).
       integer nzsur,nztv,nbwalls
-      real zorigin
-      common/c20/nzsur(MCOM),nztv(MCOM),nbwalls(MCOM),zorigin(MCOM,3)
+      real zorigin,zsize
+      common/c20/nzsur(MCOM),nztv(MCOM),nbwalls(MCOM),zorigin(MCOM,3),
+     &  zsize(MCOM,3)
 
 C Arrays of verious types which hold data in (zone,surface) size primarily
 C for use with META files.

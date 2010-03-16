@@ -371,6 +371,9 @@ C If only 3 items on first line read another loutstr and try to continue.
         CALL EGETWR(loutstr,K,DX1,0.,0.,'-','length',IER)
         CALL EGETWR(loutstr,K,DY1,0.,0.,'-','width',IER)
         CALL EGETWR(loutstr,K,DZ1,0.,0.,'-','height',IER)
+        zsize(icomp,1)=DX1
+        zsize(icomp,2)=DY1
+        zsize(icomp,3)=DZ1
         CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rotation angle',IER)
         rotateit(ICOMP,1)=AR1   ! remember the pending rotation
         rotateit(ICOMP,2)=XO1   ! and the origin of the zone
@@ -402,6 +405,9 @@ C Zone is of type REG.
         zorigin(icomp,1)=Z1
         zorigin(icomp,2)=Z2
         zorigin(icomp,3)=0.0
+        zsize(icomp,1)=0.0
+        zsize(icomp,2)=0.0
+        zsize(icomp,3)=0.0
         CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rot angle',IER)
         rotateit(ICOMP,1)=AR1   ! remmeber the pending rotation
 
@@ -452,6 +458,9 @@ C (Shouldn't four planar surfaces be required to fully-bound a zone?)
         zorigin(icomp,1)=0.0
         zorigin(icomp,2)=0.0
         zorigin(icomp,3)=0.0
+        zsize(icomp,1)=0.0
+        zsize(icomp,2)=0.0
+        zsize(icomp,3)=0.0
 
 C Read rotation angle.  If there are enough items on the line also
 C look for the rotation point.
@@ -1543,6 +1552,12 @@ C is short, but will be extended to 248 char.
         IF(IER.NE.0) goto 1002
         write(zdesc(ICOMP),'(a)') LOUTSTR(1:64)
         lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
+        zorigin(icomp,1)=0.0   ! clear the zorigin and zsize arrays
+        zorigin(icomp,2)=0.0
+        zorigin(icomp,3)=0.0
+        zsize(icomp,1)=0.0
+        zsize(icomp,2)=0.0
+        zsize(icomp,3)=0.0
 
 C Next look for *vertex lines, incrementing the value of NTV
 C as each of these lines is scanned. If the tag is *edges then
