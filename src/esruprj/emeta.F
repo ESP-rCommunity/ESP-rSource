@@ -385,11 +385,7 @@ C   1st value is X and 2nd is Y (in world coordinates) following the normal
 C   floor plan extrusion conventions. For shape=poly the Z is used.
 C list (integer array (nbwalls,24) equivalent to jvn() for shape=poly
 C nbedges (integer array (nbwalls) equivalent to nver() for shape=poly
-C hasglaze (real array) for each surface in the initial shape a zero has no glazing
-C   and non-zero is the percentage of the parent surface for the glazing. It is
 C   assumed that a default shape for the glazing is ok.
-C hasdoor (real array) for each surface in the initial shape a zero indicates
-C   no door and a non-zero indicates the width of the door (m).
 C hasconstr (string array) the name of the MLC to use for each surface
 C datamass (real 4*7) values to create mass
 C textmass (char *32 4*3) text associated with mass
@@ -397,8 +393,7 @@ C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
       subroutine silentzone(ICOMP,nbmass,nbedges,
-     &  nbpolyc,list,coords,
-     &  nbglz,hasglaze,nbdoor,hasdoor,hasconstr,
+     &  nbpolyc,list,coords,hasconstr,
      &  datamass,textmass,use,usefile,IER)
 #include "building.h"
 #include "model.h"
@@ -463,8 +458,6 @@ C Paremeters passed in:
       integer list(MS,24) ! indices of coords making up edges of each surface
       real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
       real coords(MTV,3)  ! all of the coordinates in the zone X/Y/Z
-      real hasglaze(MS)   ! percentage of glazing in each surface of intial shape
-      real hasdoor(MS)    ! width of door in each surface of the initial shape
 
 C hasname (string array) the surface name for each surface (so fillsur does not wipe)
       character hasname*12
@@ -679,9 +672,9 @@ C Update the connection list.
         ICCC=ICCC+1
         IC1(ICCC)=ICOMP
         IE1(ICCC)=ICC
-        ICT(ICCC)=szboundarytype(icomp,icc,1)  ! use boundarytype
-        IC2(ICCC)=szboundarytype(icomp,icc,2)
-        IE2(ICCC)=szboundarytype(icomp,icc,3)
+        ICT(ICCC)=zboundarytype(icomp,icc,1)  ! use boundarytype
+        IC2(ICCC)=zboundarytype(icomp,icc,2)
+        IE2(ICCC)=zboundarytype(icomp,icc,3)
 
 C Instanciate the surface constructions.
         write(sname(icomp,icc),'(a)') hasname(icc)
@@ -712,30 +705,30 @@ C section of the string DESC.
         SUSE(icc,1)='-'
         SUSE(icc,2)='-'
 
-C Use szboundarytype to instanciate sother & ssother << to be done >>
-        IF(szboundarytype(icomp,icc,1).EQ.0)THEN
+C Use zboundarytype to instanciate sother & ssother << to be done >>
+        IF(zboundarytype(icomp,icc,1).EQ.0)THEN
           SOTHER(icc,1)='EXTERIOR'
-        ELSEIF(szboundarytype(icomp,icc,1).EQ.1)THEN
+        ELSEIF(zboundarytype(icomp,icc,1).EQ.1)THEN
           SOTHER(icc,1)='SIMILAR'
-        ELSEIF(szboundarytype(icomp,icc,1).EQ.2)THEN
+        ELSEIF(zboundarytype(icomp,icc,1).EQ.2)THEN
           SOTHER(icc,1)='CONSTANT'
-        ELSEIF(szboundarytype(icomp,icc,1).EQ.3)THEN
+        ELSEIF(zboundarytype(icomp,icc,1).EQ.3)THEN
           SOTHER(icc,1)='ANOTHER'
-        ELSEIF(szboundarytype(icomp,icc,1).EQ.4)THEN
+        ELSEIF(zboundarytype(icomp,icc,1).EQ.4)THEN
           SOTHER(icc,1)='GROUND'
-        ELSEIF(szboundarytype(icomp,icc,1).EQ.5)THEN
+        ELSEIF(zboundarytype(icomp,icc,1).EQ.5)THEN
           SOTHER(icc,1)='ADIABATIC'
-        ELSEIF(szboundarytype(icomp,icc,1).EQ.6)THEN
+        ELSEIF(zboundarytype(icomp,icc,1).EQ.6)THEN
           SOTHER(icc,1)='BASESIMP'
-        ELSEIF(szboundarytype(icomp,icc,1).EQ.7)THEN
+        ELSEIF(zboundarytype(icomp,icc,1).EQ.7)THEN
           SOTHER(icc,1)='IDENT_CEN'
         ELSE
 
 C Reset to represent UNKNOWN
           SOTHER(icc,1)='UNKNOWN'
         ENDIF
-        write(SOTHER(icc,2),'(i2.2)') szboundarytype(icomp,icc,2)
-        write(SOTHER(icc,3),'(i2.2)') szboundarytype(icomp,icc,3)
+        write(SOTHER(icc,2),'(i2.2)') zboundarytype(icomp,icc,2)
+        write(SOTHER(icc,3),'(i2.2)') zboundarytype(icomp,icc,3)
 
         SSNAME(iccc)=SNAME(icomp,icc)
         SSOTF(iccc)=SOTF(icc)
@@ -824,16 +817,16 @@ C the parent surface. To avoid clashes with any subsequent windows
 C place the door offset to the right (get bounding box via a call
 C to SURLEHI with some space between it and the right edge of the
 C parent surface.  Later add logic to better place the door..
-      if(nbdoor.gt.0)then
+      if(znbdoor(icomp).gt.0)then
         do 78 ids=1,NZSUR(ICOMP)
-          if(hasdoor(ids).gt.0.0)then
+          if(zhasdoor(icomp,ids).gt.0.0)then
             call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             newsurf=nsur+1
             isurf=ids
             CALL SURLEHI(isurf,XYMAX,ZMAX)  ! get width of parent
-            XOC=XYMAX-(hasdoor(ids)+0.3)
+            XOC=XYMAX-(zhasdoor(icomp,ids)+0.3)
             ZOC=0.0
-            XW=hasdoor(ids)
+            XW=zhasdoor(icomp,ids)
             if(ZMAX.gt.2.3)then
               ZH=2.1
             else
@@ -871,26 +864,26 @@ C section of the string DESC.
 
 C Connection information needs to be updated.
             ibcs=IZSTOCN(icomp,newsurf)
-            ICT(ibcs)=szboundarytype(icomp,newsurf,1)  ! use boundarytype
-            IC2(ibcs)=szboundarytype(icomp,newsurf,2)
-            IE2(ibcs)=szboundarytype(icomp,newsurf,3)
+            ICT(ibcs)=zboundarytype(icomp,newsurf,1)  ! use boundarytype
+            IC2(ibcs)=zboundarytype(icomp,newsurf,2)
+            IE2(ibcs)=zboundarytype(icomp,newsurf,3)
 
-C Use szboundarytype to instanciate sother & ssother << to be done >>
-            IF(szboundarytype(icomp,newsurf,1).EQ.0)THEN
+C Use zboundarytype to instanciate sother & ssother << to be done >>
+            IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
               SOTHER(newsurf,1)='EXTERIOR'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.1)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.1)THEN
               SOTHER(newsurf,1)='SIMILAR'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.2)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.2)THEN
               SOTHER(newsurf,1)='CONSTANT'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.3)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.3)THEN
               SOTHER(newsurf,1)='ANOTHER'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.4)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.4)THEN
               SOTHER(newsurf,1)='GROUND'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.5)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.5)THEN
               SOTHER(newsurf,1)='ADIABATIC'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.6)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.6)THEN
               SOTHER(newsurf,1)='BASESIMP'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.7)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.7)THEN
               SOTHER(newsurf,1)='IDENT_CEN'
             ELSE
 
@@ -898,9 +891,9 @@ C Reset to represent UNKNOWN
               SOTHER(newsurf,1)='UNKNOWN'
             ENDIF
             write(SOTHER(newsurf,2),'(i2.2)') 
-     &        szboundarytype(icomp,newsurf,2)
+     &        zboundarytype(icomp,newsurf,2)
             write(SOTHER(newsurf,3),'(i2.2)') 
-     &        szboundarytype(icomp,newsurf,3)
+     &        zboundarytype(icomp,newsurf,3)
             SSOTHER(ibcs,1)=SOTHER(newsurf,1)
             SSOTHER(ibcs,2)=SOTHER(newsurf,2)
             SSOTHER(ibcs,3)=SOTHER(newsurf,3)
@@ -912,14 +905,14 @@ C Reset to represent UNKNOWN
 
 C Next, if there are windows make standard calls to insert them into
 C the parent surface as a percentage of area.
-      if(nbglz.gt.0)then
+      if(znbglz(icomp).gt.0)then
         do 77 ids=1,NZSUR(ICOMP)
-          if(hasglaze(ids).gt.0.0)then
+          if(zhasglaze(icomp,ids).gt.0.0)then
             call georead(IFIL+2,LGEOM(ICOMP),ICOMP,1,iuout,IER)
             newsurf=nsur+1
             isurf=ids
             act='sp'
-            XOC=hasglaze(ids)
+            XOC=zhasglaze(icomp,ids)
             ZOC=0.0
             XW=0.0
             ZH=0.0
@@ -954,26 +947,26 @@ C section of the string DESC.
 
 C Connection information needs to be updated.
             ibcs=IZSTOCN(icomp,newsurf)
-            ICT(ibcs)=szboundarytype(icomp,newsurf,1)  ! use boundarytype
-            IC2(ibcs)=szboundarytype(icomp,newsurf,2)
-            IE2(ibcs)=szboundarytype(icomp,newsurf,3)
+            ICT(ibcs)=zboundarytype(icomp,newsurf,1)  ! use boundarytype
+            IC2(ibcs)=zboundarytype(icomp,newsurf,2)
+            IE2(ibcs)=zboundarytype(icomp,newsurf,3)
 
-C Use szboundarytype to instanciate sother & ssother << to be done >>
-            IF(szboundarytype(icomp,newsurf,1).EQ.0)THEN
+C Use zboundarytype to instanciate sother & ssother << to be done >>
+            IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
               SOTHER(newsurf,1)='EXTERIOR'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.1)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.1)THEN
               SOTHER(newsurf,1)='SIMILAR'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.2)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.2)THEN
               SOTHER(newsurf,1)='CONSTANT'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.3)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.3)THEN
               SOTHER(newsurf,1)='ANOTHER'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.4)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.4)THEN
               SOTHER(newsurf,1)='GROUND'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.5)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.5)THEN
               SOTHER(newsurf,1)='ADIABATIC'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.6)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.6)THEN
               SOTHER(newsurf,1)='BASESIMP'
-            ELSEIF(szboundarytype(icomp,newsurf,1).EQ.7)THEN
+            ELSEIF(zboundarytype(icomp,newsurf,1).EQ.7)THEN
               SOTHER(newsurf,1)='IDENT_CEN'
             ELSE
 
@@ -981,9 +974,9 @@ C Reset to represent UNKNOWN
               SOTHER(newsurf,1)='UNKNOWN'
             ENDIF
             write(SOTHER(newsurf,2),'(i2.2)') 
-     &        szboundarytype(icomp,newsurf,2)
+     &        zboundarytype(icomp,newsurf,2)
             write(SOTHER(newsurf,3),'(i2.2)') 
-     &        szboundarytype(icomp,newsurf,3)
+     &        zboundarytype(icomp,newsurf,3)
             SSOTHER(ibcs,1)=SOTHER(newsurf,1)
             SSOTHER(ibcs,2)=SOTHER(newsurf,2)
             SSOTHER(ibcs,3)=SOTHER(newsurf,3)
@@ -1254,13 +1247,9 @@ C Paremeters passed to:silentzone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,MV) ! indices of coords making up edges of each surface
       integer iszlist(MSZ,MS,MV) ! indices of coords making up edges of each surface
-      integer nbglz(MSZ)       ! nb of windows (META directive)
-      integer nbdoor(MSZ)      ! nb of doors (META directive)
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real datamass(4,7),sdatamass(MSZ,4,7) ! origin and size and orientations of mass (4 per zone)
       real coords(MTV,3),szcoords(MSZ,MTV,3) 
-      real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
-      real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
 
 C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       character textmass*32,stextmass*32
@@ -1370,11 +1359,15 @@ C For each of the possible ESP-r zones, clear values.
           zsize(iz,1) = 0.0
           zsize(iz,2) = 0.0
           zsize(iz,3) = 0.0
+          znbglz(iz) = 0
+          znbdoor(iz) = 0
           do 39 isu=1,MS
-            szboundarytype(iz,isu,1)=0
-            szboundarytype(iz,isu,2)=0
-            szboundarytype(iz,isu,3)=0
+            zboundarytype(iz,isu,1)=0
+            zboundarytype(iz,isu,2)=0
+            zboundarytype(iz,isu,3)=0
             sname(iz,isu)=' '
+            zhasglaze(iz,isu)=0.0
+            zhasdoor(iz,isu)=0.0
   39      continue
   41    continue
 
@@ -1385,8 +1378,6 @@ C For each of the META specific arrays, clear values.
           szuse(iz,3) = ' '
           usefile(iz) = ' '
           nbmass(iz) = 0
-          nbglz(iz) = 0
-          nbdoor(iz) = 0
           nbcord(iz) = 0
           nbobs(iz) = 0
           ht_Setpoint(iz)= 0.0
@@ -1423,8 +1414,6 @@ C For each of the META specific arrays, clear values.
             do 54 ivu=1,MV
               iszlist(iz,isu,ivu)=0
   54        continue
-            szhasglaze(iz,isu)=0.0
-            szhasdoor(iz,isu)=0.0
             szhasconstr(iz,isu)=' '
   52      continue
           do 59 imu=1,4
@@ -1678,12 +1667,12 @@ C Feedback. << but simact is not passed to anything >>
         CALL EGETWI(OUTSTR,K,nbd,0,MS,'W','no of doors',IER)
 
 C Scan for pairs of parent surface index and the door width.
-        nbdoor(nsz)=nbd
-        if(nbdoor(nsz).gt.0)then
-          do 47 igl=1,nbdoor(nsz)
+        znbdoor(nsz)=nbd
+        if(znbdoor(nsz).gt.0)then
+          do 47 igl=1,znbdoor(nsz)
             CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
             CALL EGETWR(OUTSTR,K,val,0.,0.,'-','width',IER)
-            szhasdoor(nsz,iparen)=val
+            zhasdoor(nsz,iparen)=val
   47      continue
         endif
         goto 43
@@ -1698,12 +1687,12 @@ C Jump to process the collected data.
 
 C Scan for pairs of parent surface index and the percentage of the parent
 C surface area to have as glazing.
-        nbglz(nsz)=nbg
-        if(nbglz(nsz).gt.0)then
-          do 144 igl=1,nbglz(nsz)
+        znbglz(nsz)=nbg
+        if(znbglz(nsz).gt.0)then
+          do 144 igl=1,znbglz(nsz)
             CALL EGETWI(OUTSTR,K,iparen,1,MS,'W','parent surf',IER)
             CALL EGETWR(OUTSTR,K,val,0.,0.,'-','percent',IER)
-            szhasglaze(nsz,iparen)=val
+            zhasglaze(nsz,iparen)=val
  144      continue
         endif
         goto 43
@@ -2211,9 +2200,9 @@ C Read three indices representing boundary condition.
         CALL EGETWI(OUTSTR,K,ival1,-1,7,'W','connection type',IER)
         CALL EGETWI(OUTSTR,K,ival2,0,MCOM,'W','connection ic2',IER)
         CALL EGETWI(OUTSTR,K,ival3,0,MS,'W','connection ie2',IER)
-        szboundarytype(nsz,NS,1)=ival1
-        szboundarytype(nsz,NS,2)=ival2
-        szboundarytype(nsz,NS,3)=ival3
+        zboundarytype(nsz,NS,1)=ival1
+        zboundarytype(nsz,NS,2)=ival2
+        zboundarytype(nsz,NS,3)=ival3
 
 C Note: if shape=poly for the each of the declaired walls the
 C following line should start with the token *list.
@@ -2330,8 +2319,6 @@ C        usefile(iz) = ' '
             do 57 ivu=1,MV
               list(isu,ivu)=iszlist(isz,isu,ivu)
   57        continue
-            hasglaze(isu)=szhasglaze(isz,isu)
-            hasdoor(isu)=szhasdoor(isz,isu)
             hasconstr(isu)=szhasconstr(isz,isu)
   49      continue
           do 158 imu=1,4
@@ -2398,8 +2385,7 @@ C          write(6,*) 'list',list
 C Create zone based on a set of parameters (created above).
           call silentzone(ICOMP,
      &      nbmass(isz),nbedges,nbcord(isz),list,
-     &      coords,nbglz(isz),hasglaze,
-     &      nbdoor(isz),hasdoor,hasconstr,
+     &      coords,hasconstr,
      &      datamass,textmass,use,usefile(isz),IER)
   63    continue
 

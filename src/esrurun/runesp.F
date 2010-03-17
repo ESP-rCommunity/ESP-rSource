@@ -445,13 +445,9 @@ C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24)      ! indices of coords making up edges of each surface
       integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
-      integer nbglz(MSZ)       ! nb of windows
-      integer nbdoor(MSZ)      ! nb of doors
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
       real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
       real coords(MS,3)
-      real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
-      real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
       character hasconstr*32,szhasconstr*32
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
 
@@ -529,11 +525,15 @@ C For each of the possible ESP-r zones, clear values.
         zsize(iz,1) = 0.0
         zsize(iz,2) = 0.0
         zsize(iz,3) = 0.0
+        znbglz(iz) = 0
+        znbdoor(iz) = 0
         do 39 isu=1,MS
           sname(iz,isu)=' '
-          szboundarytype(iz,isu,1)=0
-          szboundarytype(iz,isu,2)=0
-          szboundarytype(iz,isu,3)=0
+          zboundarytype(iz,isu,1)=0
+          zboundarytype(iz,isu,2)=0
+          zboundarytype(iz,isu,3)=0
+          zhasglaze(iz,isu)=0.0
+          zhasdoor(iz,isu)=0.0
   39    continue
   41  continue
 
@@ -544,16 +544,12 @@ C Clear the msz array structures.
         szuse(iz,2) = ' '
         szuse(iz,3) = ' '
         usefile(iz) = ' '
-        nbglz(iz) = 0
-        nbdoor(iz) = 0
         nbcord(iz) = 0
         do 52 isu=1,MS
           isznbedges(iz,isu)=0
           do 54 ivu=1,MV
             iszlist(iz,isu,ivu)=0
   54      continue
-          szhasglaze(iz,isu)=0.0
-          szhasdoor(iz,isu)=0.0
           szhasconstr(iz,isu)=' '
   52    continue
   40  continue
@@ -704,7 +700,7 @@ C Try where-the-input-file is.
 C A window on the North is the 3rd surface in the zone
         CALL EGETWR(OUTSTR,K,glzpercent(3),0.,0.,'-','glz surf 1',IER)
         glzin3 = .true.
-        szhasglaze(nsz,3)=glzpercent(3)
+        zhasglaze(nsz,3)=glzpercent(3)
         goto 43
       elseif(WORD(1:10).eq.'*Window(S)'.or.
      &       WORD(1:10).eq.'*window(s)')then
@@ -712,7 +708,7 @@ C A window on the North is the 3rd surface in the zone
 C A window on the (South 1st surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(1),0.,0.,'-','glz surf 1',IER)
         glzin1 = .true.
-        szhasglaze(nsz,1)=glzpercent(1)
+        zhasglaze(nsz,1)=glzpercent(1)
         goto 43
       elseif(WORD(1:10).eq.'*Window(E)'.or.
      &       WORD(1:10).eq.'*window(e)')then
@@ -720,7 +716,7 @@ C A window on the (South 1st surface) of the box.
 C A window on the (East 2nd surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(2),0.,0.,'-','glz surf 2',IER)
         glzin2 = .true.
-        szhasglaze(nsz,2)=glzpercent(2)
+        zhasglaze(nsz,2)=glzpercent(2)
         goto 43
       elseif(WORD(1:10).eq.'*Window(W)'.or.
      &       WORD(1:10).eq.'*window(w)')then
@@ -728,7 +724,7 @@ C A window on the (East 2nd surface) of the box.
 C A window on the (West 4th surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(4),0.,0.,'-','glz surf 2',IER)
         glzin4 = .true.
-        szhasglaze(nsz,4)=glzpercent(4)
+        zhasglaze(nsz,4)=glzpercent(4)
         goto 43
       elseif(WORD(1:10).eq.'*Window(R)'.or.
      &       WORD(1:10).eq.'*window(r)')then
@@ -736,7 +732,7 @@ C A window on the (West 4th surface) of the box.
 C A window on the (Roof 5th surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(5),0.,0.,'-','glz surf 2',IER)
         glzin5 = .true.
-        szhasglaze(nsz,5)=glzpercent(5)
+        zhasglaze(nsz,5)=glzpercent(5)
         goto 43
       elseif(WORD(1:5).eq.'*Roof'.or.WORD(1:5).eq.'*roof')then
         CALL EGETP(OUTSTR,K,roofconstr,'W','roof construction',IER)
@@ -840,7 +836,7 @@ C Place the origin of the model at the site origin.
       zorigin(nsz,1)=0.0
       zorigin(nsz,2)=0.0
       zorigin(nsz,3)=0.0
-      nbdoor(nsz)=0
+      znbdoor(nsz)=0
 
 C If a standard pattern of operations can be used assign standard
 C uses parameters. In this case file is written manually so lease
@@ -872,7 +868,7 @@ C Determine how many surfaces in the model.
       nbwalls(nsz)=4
       NS=6
       if(glzin1)then
-        nbglz(nsz)=nbglz(nsz)+1
+        znbglz(nsz)=znbglz(nsz)+1
         NS = NS + 1
         write(sname(nsz,NS),'(a)') 'glz_front'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
@@ -904,18 +900,18 @@ C in that file.
       do 70 isurf=1,NS
         if(isurf.eq.6)then
           if(.NOT.haveground)then
-            szboundarytype(nsz,isurf,1)=4
-            szboundarytype(nsz,isurf,2)=1
-            szboundarytype(nsz,isurf,3)=0
+            zboundarytype(nsz,isurf,1)=4
+            zboundarytype(nsz,isurf,2)=1
+            zboundarytype(nsz,isurf,3)=0
           else
-            szboundarytype(nsz,isurf,1)=4
-            szboundarytype(nsz,isurf,2)=0
-            szboundarytype(nsz,isurf,3)=1
+            zboundarytype(nsz,isurf,1)=4
+            zboundarytype(nsz,isurf,2)=0
+            zboundarytype(nsz,isurf,3)=1
           endif
         else
-          szboundarytype(nsz,isurf,1)=0
-          szboundarytype(nsz,isurf,2)=0
-          szboundarytype(nsz,isurf,3)=0
+          zboundarytype(nsz,isurf,1)=0
+          zboundarytype(nsz,isurf,2)=0
+          zboundarytype(nsz,isurf,3)=0
         endif
   70  continue
   
@@ -952,8 +948,6 @@ C Fill surface arrays.
         do 57 ivu=1,MV
           list(isu,ivu)=iszlist(iz,isu,ivu)
   57    continue
-        hasglaze(isu)=szhasglaze(isz,isu)
-        hasdoor(isu)=szhasdoor(isz,isu)
         hasconstr(isu)=szhasconstr(isz,isu)
   49  continue
 
@@ -961,8 +955,7 @@ C Fill surface arrays.
       call edisp(iuout,outs)
       call silentzone(ICOMP,
      &    nbmass,nbedges,nbcord(isz),list,
-     &    coords,nbglz(isz),hasglaze,
-     &    nbdoor(isz),hasdoor,hasconstr,
+     &    coords,hasconstr,
      &    datamass,textmass,use,usefile(isz),IER)
 
 C Overwrite the initial zone operation file with the correct

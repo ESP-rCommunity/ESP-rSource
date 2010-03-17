@@ -45,8 +45,17 @@ C   any other zone shapes).
 
 C Arrays of verious types which hold data in (zone,surface) size primarily
 C for use with META files.
-      integer szboundarytype  ! equivalent to ICT/IC2/IE2 in common c3
-      common/metac3/szboundarytype(MCOM,MS,3)
+      integer zboundarytype  ! equivalent to ICT/IC2/IE2 in common c3
+      common/metac3/zboundarytype(MCOM,MS,3)
+
+      integer znbglz   ! nb of windows (META directive)
+      integer znbdoor  ! nb of doors (META directive)
+      real zhasglaze   ! percentage of glazing (default position) in each surface of
+                       ! the initial room shape and where zero is no glazing
+      real zhasdoor    ! width of door in each surface of the initial room shape
+                       ! where zero is no door
+      common/metahas/znbglz(MCOM),zhasglaze(MCOM,MS),
+     &               znbdoor(MCOM),zhasdoor(MCOM,MS)
 
 C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
 C which make up the floor, IUZBASEA signals that the user selected

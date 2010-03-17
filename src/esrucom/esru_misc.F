@@ -459,9 +459,11 @@ C Zone level common blocks.
       do 42 IX = 1,MCOM
         do 43 IXS = 1,MS
           SNAME(IX,IXS)=' '   ! clear surface name
-          szboundarytype(IX,IXS,1)=0  ! clear surface boundary
-          szboundarytype(IX,IXS,2)=0
-          szboundarytype(IX,IXS,3)=0
+          zboundarytype(IX,IXS,1)=0  ! clear surface boundary
+          zboundarytype(IX,IXS,2)=0
+          zboundarytype(IX,IXS,3)=0
+          zhasglaze(ix,ixs)=0.0
+          zhasdoor(ix,ixs)=0.0
    43   continue
 
 C Clear obstructions in all zones.
@@ -514,6 +516,8 @@ C Clear SHOCC zone information as well.
         zsize(ix,1)=0.0
         zsize(ix,2)=0.0
         zsize(ix,3)=0.0
+        znbglz(ix) = 0
+        znbdoor(ix) = 0
         zdesc(IX)=' '
         lnzdesc(IX)=0
         zname(IX)=' '
