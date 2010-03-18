@@ -518,6 +518,19 @@ C Clear SHOCC zone information as well.
         zsize(ix,3)=0.0
         znbglz(ix) = 0
         znbdoor(ix) = 0
+        znbmass(ix) = 0
+        do 158 imu=1,4
+          zdatamass(ix,imu,1)=0.0
+          zdatamass(ix,imu,2)=0.0
+          zdatamass(ix,imu,3)=0.0
+          zdatamass(ix,imu,4)=0.0
+          zdatamass(ix,imu,5)=0.0
+          zdatamass(ix,imu,6)=0.0
+          zdatamass(ix,imu,7)=0.0
+          ztextmass(ix,imu,1)=' '
+          ztextmass(ix,imu,2)=' '
+          ztextmass(ix,imu,3)=' '
+  158   continue
         zdesc(IX)=' '
         lnzdesc(IX)=0
         zname(IX)=' '

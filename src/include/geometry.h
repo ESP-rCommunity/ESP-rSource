@@ -54,8 +54,17 @@ C for use with META files.
                        ! the initial room shape and where zero is no glazing
       real zhasdoor    ! width of door in each surface of the initial room shape
                        ! where zero is no door
+      integer znbmass  ! number of META paired mass rectangles in room
+                       ! Note these pairs of surfaces are not included in the *surface list
+      real zdatamass   ! origin, size, orientations of META mass objects (4 per zone).
       common/metahas/znbglz(MCOM),zhasglaze(MCOM,MS),
-     &               znbdoor(MCOM),zhasdoor(MCOM,MS)
+     &               znbdoor(MCOM),zhasdoor(MCOM,MS),
+     &               znbmass(MCOM),zdatamass(MCOM,4,7)
+
+
+C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
+      character ztextmass*32
+      common/metathas/ztextmass(MCOM,4,3)
 
 C ZBASEA is the floor area of the zone, IBASES is a list of surfaces
 C which make up the floor, IUZBASEA signals that the user selected

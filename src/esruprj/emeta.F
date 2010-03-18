@@ -377,8 +377,6 @@ C Error trap. Set ier as two.
 C ************* silentzone 
 C silentzone creates a zone based on meta parameters passed
 C to it.
-C nbmass (integer) how many pairs of mass walls to append to zone. Note these
-C   surfaces are not included in the *surface list
 C nbpolyc (integer) number of initial coordinates
 C coords (real array (nbwalls,3)) for shape=box ignore, for shape=extrude the
 C   1st value is X and 2nd is Y (in world coordinates) following the normal
@@ -387,14 +385,12 @@ C list (integer array (nbwalls,24) equivalent to jvn() for shape=poly
 C nbedges (integer array (nbwalls) equivalent to nver() for shape=poly
 C   assumed that a default shape for the glazing is ok.
 C hasconstr (string array) the name of the MLC to use for each surface
-C datamass (real 4*7) values to create mass
-C textmass (char *32 4*3) text associated with mass
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,nbmass,nbedges,
+      subroutine silentzone(ICOMP,nbedges,
      &  nbpolyc,list,coords,hasconstr,
-     &  datamass,textmass,use,usefile,IER)
+     &  use,usefile,IER)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -456,7 +452,6 @@ C =2 with more than 3 day types
 C Paremeters passed in:
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,24) ! indices of coords making up edges of each surface
-      real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
       real coords(MTV,3)  ! all of the coordinates in the zone X/Y/Z
 
 C hasname (string array) the surface name for each surface (so fillsur does not wipe)
@@ -467,10 +462,6 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       dimension hasconstr(MS)  ! construction to use for each surface
       character use*8,usefile*32  ! usage pattern directives
       dimension use(3)
-
-C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
-      character textmass*32 
-      dimension textmass(4,3)
      
       DIMENSION XX(MS),YY(MS)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -987,20 +978,25 @@ C Reset to represent UNKNOWN
       endif
 
 C Next, if there are mass pairs to add make standard calls to insert them.
-      if(nbmass.gt.0)then
-        do 79 imu=1,nbmass
-          call eclose(datamass(imu,1),90.0,0.01,closev)
-          write(SN,'(a)') textmass(imu,1)(1:lnblnk(textmass(imu,1)))
-          write(constr,'(a)') textmass(imu,2)(1:lnblnk(textmass(imu,2)))
-          write(opt,'(a)') textmass(imu,3)(1:lnblnk(textmass(imu,3)))
+      if(znbmass(icomp).gt.0)then
+        do 79 imu=1,znbmass(icomp)
+          call eclose(zdatamass(icomp,imu,1),90.0,0.01,closev)
+          write(SN,'(a)') 
+     &      ztextmass(icomp,imu,1)(1:lnblnk(ztextmass(icomp,imu,1)))
+          write(constr,'(a)') 
+     &      ztextmass(icomp,imu,2)(1:lnblnk(ztextmass(icomp,imu,2)))
+          write(opt,'(a)') 
+     &      ztextmass(icomp,imu,3)(1:lnblnk(ztextmass(icomp,imu,3)))
           if(closev)then
-            call addmass(ICOMP,'VM','s',datamass(imu,2),
-     &        datamass(imu,3),datamass(imu,4),datamass(imu,7),
-     &        datamass(imu,5),datamass(imu,6),SN,constr,OPT,INVT)
+            call addmass(ICOMP,'VM','s',zdatamass(icomp,imu,2),
+     &        zdatamass(icomp,imu,3),zdatamass(icomp,imu,4),
+     &        zdatamass(icomp,imu,7),zdatamass(icomp,imu,5),
+     &        zdatamass(icomp,imu,6),SN,constr,OPT,INVT)
           else
-            call addmass(ICOMP,'HM','s',datamass(imu,2),
-     &        datamass(imu,3),datamass(imu,4),datamass(imu,7),
-     &        datamass(imu,5),datamass(imu,6),SN,constr,OPT,INVT)
+            call addmass(ICOMP,'HM','s',zdatamass(icomp,imu,2),
+     &        zdatamass(icomp,imu,3),zdatamass(icomp,imu,4),
+     &        zdatamass(icomp,imu,7),zdatamass(icomp,imu,5),
+     &        zdatamass(icomp,imu,6),SN,constr,OPT,INVT)
           endif
 
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
@@ -1242,18 +1238,12 @@ C Same as local variable actions which is passed back to calling code.
 C Paremeters passed to:silentzone
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
-      integer nbmass(MSZ)      ! nb of paired mass rectangles
       integer nbedges(MS) ! nb of edges per surface in poly shaped zone
       integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
       integer list(MS,MV) ! indices of coords making up edges of each surface
       integer iszlist(MSZ,MS,MV) ! indices of coords making up edges of each surface
       integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
-      real datamass(4,7),sdatamass(MSZ,4,7) ! origin and size and orientations of mass (4 per zone)
       real coords(MTV,3),szcoords(MSZ,MTV,3) 
-
-C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
-      character textmass*32,stextmass*32
-      dimension textmass(4,3),stextmass(MSZ,4,3)
 
       character hasconstr*32,szhasconstr*32
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
@@ -1361,6 +1351,7 @@ C For each of the possible ESP-r zones, clear values.
           zsize(iz,3) = 0.0
           znbglz(iz) = 0
           znbdoor(iz) = 0
+          znbmass(iz) = 0
           do 39 isu=1,MS
             zboundarytype(iz,isu,1)=0
             zboundarytype(iz,isu,2)=0
@@ -1377,7 +1368,6 @@ C For each of the META specific arrays, clear values.
           szuse(iz,2) = ' '
           szuse(iz,3) = ' '
           usefile(iz) = ' '
-          nbmass(iz) = 0
           nbcord(iz) = 0
           nbobs(iz) = 0
           ht_Setpoint(iz)= 0.0
@@ -1417,16 +1407,16 @@ C For each of the META specific arrays, clear values.
             szhasconstr(iz,isu)=' '
   52      continue
           do 59 imu=1,4
-            sdatamass(iz,imu,1)= 0.0
-            sdatamass(iz,imu,2)= 0.0
-            sdatamass(iz,imu,3)= 0.0
-            sdatamass(iz,imu,4)= 0.0
-            sdatamass(iz,imu,5)= 0.0
-            sdatamass(iz,imu,6)= 0.0
-            sdatamass(iz,imu,7)= 0.0
-            stextmass(iz,imu,1)= ' '
-            stextmass(iz,imu,2)= ' '
-            stextmass(iz,imu,3)= ' '
+            zdatamass(iz,imu,1)= 0.0
+            zdatamass(iz,imu,2)= 0.0
+            zdatamass(iz,imu,3)= 0.0
+            zdatamass(iz,imu,4)= 0.0
+            zdatamass(iz,imu,5)= 0.0
+            zdatamass(iz,imu,6)= 0.0
+            zdatamass(iz,imu,7)= 0.0
+            ztextmass(iz,imu,1)= ' '
+            ztextmass(iz,imu,2)= ' '
+            ztextmass(iz,imu,3)= ' '
   59      continue
   42    continue
       endif
@@ -1751,31 +1741,31 @@ C Now proceed to read vertices on one or more lines.
       elseif(WORD(1:5).eq.'*mass')then
 
 C The *mass keyword is followed by 9 tokens as follows:
-        nbmass(nsz)=nbmass(nsz)+1
-        nma=nbmass(nsz)
+        znbmass(nsz)=znbmass(nsz)+1
+        nma=znbmass(nsz)
         CALL EGETW(OUTSTR,K,WORD,'W','mass vertical or horiz',IER)
         if(WORD(1:2).eq.'VM'.or.WORD(1:2).eq.'vm')then
-          sdatamass(nsz,nma,1)= 90.0  ! signal vertical
+          zdatamass(nsz,nma,1)= 90.0  ! signal vertical
         elseif(WORD(1:2).eq.'HM'.or.WORD(1:2).eq.'hm')then
-          sdatamass(nsz,nma,1)= 0.0   ! signal horizontal
+          zdatamass(nsz,nma,1)= 0.0   ! signal horizontal
         endif
         CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass X org',IER)
-        sdatamass(nsz,nma,2)=val1
+        zdatamass(nsz,nma,2)=val1
         CALL EGETWR(OUTSTR,K,val1,-999.,998.,'W','mass Y org',IER)
-        sdatamass(nsz,nma,3)=val1
+        zdatamass(nsz,nma,3)=val1
         CALL EGETWR(OUTSTR,K,val1, -99., 99.,'W','mass Z org',IER)
-        sdatamass(nsz,nma,4)=val1
+        zdatamass(nsz,nma,4)=val1
         CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass X dis',IER)
-        sdatamass(nsz,nma,5)=val1
+        zdatamass(nsz,nma,5)=val1
         CALL EGETWR(OUTSTR,K,val1,   0., 99.,'W','mass Z dis',IER)
-        sdatamass(nsz,nma,6)=val1
+        zdatamass(nsz,nma,6)=val1
         CALL EGETWR(OUTSTR,K,val1,-359.,359.,'W','mass rotate',IER)
-        sdatamass(nsz,nma,7)=val1
+        zdatamass(nsz,nma,7)=val1
         CALL EGETW(OUTSTR,K,WORD,'W','mass name',IFLAG)
-        write(stextmass(nsz,nma,1),'(a)') WORD(1:lnblnk(WORD))
+        write(ztextmass(nsz,nma,1),'(a)') WORD(1:lnblnk(WORD))
         CALL EGETW(OUTSTR,K,WORD,'W','mass constr name',IFLAG)
-        write(stextmass(nsz,nma,2),'(a)') WORD(1:lnblnk(WORD))
-        write(stextmass(nsz,nma,3),'(a)') 'OPAQUE'   ! set as opaque
+        write(ztextmass(nsz,nma,2),'(a)') WORD(1:lnblnk(WORD))
+        write(ztextmass(nsz,nma,3),'(a)') 'OPAQUE'   ! set as opaque
         goto 43
       elseif(WORD(1:16).eq.'*monthly_profile')then
 
@@ -2321,18 +2311,6 @@ C        usefile(iz) = ' '
   57        continue
             hasconstr(isu)=szhasconstr(isz,isu)
   49      continue
-          do 158 imu=1,4
-            datamass(imu,1)=sdatamass(isz,imu,1)
-            datamass(imu,2)=sdatamass(isz,imu,2)
-            datamass(imu,3)=sdatamass(isz,imu,3)
-            datamass(imu,4)=sdatamass(isz,imu,4)
-            datamass(imu,5)=sdatamass(isz,imu,5)
-            datamass(imu,6)=sdatamass(isz,imu,6)
-            datamass(imu,7)=sdatamass(isz,imu,7)
-            textmass(imu,1)=stextmass(isz,imu,1)
-            textmass(imu,2)=stextmass(isz,imu,2)
-            textmass(imu,3)=stextmass(isz,imu,3)
- 158      continue
           icomp=icomp+1
 
 C If there are obstructions fill in relevant common blocks. Set iobs()=2
@@ -2377,16 +2355,15 @@ C be included in the version 1.1 geometry file.
           call edisp(iuout,outs)
 
 C Debug.
-C          write(6,*) 'nbmass',nbmass
 C          write(6,*) 'nbedges',nbedges
 C          write(6,*) 'nbcord',nbcord
 C          write(6,*) 'list',list
 
 C Create zone based on a set of parameters (created above).
           call silentzone(ICOMP,
-     &      nbmass(isz),nbedges,nbcord(isz),list,
+     &      nbedges,nbcord(isz),list,
      &      coords,hasconstr,
-     &      datamass,textmass,use,usefile(isz),IER)
+     &      use,usefile(isz),IER)
   63    continue
 
         if(unixok)then
@@ -2531,10 +2508,6 @@ C For passing to silentmodel.
 C Paremeters passed to:silentzone
       character szuse*8,usefile*32  ! usage pattern directives
       dimension szuse(MSZ,3),usefile(MSZ)
-
-C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
-      character stextmass*32
-      dimension stextmass(MSZ,4,3)
 
 C Site related local variables.
       logical havesnowdays     ! true if days with snow defined
