@@ -381,9 +381,7 @@ C hasconstr (string array) the name of the MLC to use for each surface
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,
-     &  hasconstr,
-     &  use,usefile,IER)
+      subroutine silentzone(ICOMP,hasconstr,use,usefile,IER)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -1118,8 +1116,9 @@ C menu and descriptive text block for the file. Otherwise scan
 C and act on the information within the file.
  
        SUBROUTINE SILENTREAD(IUNIT,LFILE,act,silentreturndirec,IER)
-       integer MSZ   ! number of silent zones array sizes
-       PARAMETER (MSZ=10) 
+       integer MSZ   ! number of META zones array sizes, edit to
+                     ! match MCOM in building.h
+       PARAMETER (MSZ=72) 
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -2327,9 +2326,7 @@ C be included in the version 1.1 geometry file.
           call edisp(iuout,outs)
 
 C Create zone based on a set of parameters (created above).
-          call silentzone(ICOMP,
-     &      hasconstr,
-     &      use,usefile(isz),IER)
+          call silentzone(ICOMP,hasconstr,use,usefile(isz),IER)
   63    continue
 
         if(unixok)then
@@ -2378,9 +2375,10 @@ C METAWRITE creates an esp-r meta file. Data input is from
 C the current zones common blocks. If act is .... Otherwise create
 C the file with minimum interaction.
  
-       SUBROUTINE METAWRITE(ifilg,LFILE,act,IER)
-       integer MSZ   ! number of meta zones array sizes
-       PARAMETER (MSZ=10) 
+      SUBROUTINE METAWRITE(ifilg,LFILE,act,IER)
+      integer MSZ   ! number of META zones array sizes, edit to
+                    ! match MCOM in building.h
+      PARAMETER (MSZ=72) 
 #include "building.h"
 #include "model.h"
 #include "site.h"

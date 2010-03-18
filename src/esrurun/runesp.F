@@ -372,8 +372,9 @@ C parse_oc reads the contents of the input file (LFILE) and generates
 C silentread data structures.
 C parent action: 'create_silent' or 'create_model' or 'create_run_model'
       subroutine parse_oc(LFILE,parentaction,ier)
-      integer MSZ   ! number of silent zones array sizes
-      PARAMETER (MSZ=10) 
+      integer MSZ   ! number of META zones array sizes, edit to
+                    ! match MCOM in building.h
+      PARAMETER (MSZ=72) 
 #include "building.h"
 #include "model.h"
 #include "espriou.h"
@@ -938,9 +939,7 @@ C Fill surface arrays.
 
       write(outs,'(2a)') 'Processing ',zname(isz)
       call edisp(iuout,outs)
-      call silentzone(ICOMP,
-     &    hasconstr,
-     &    use,usefile(isz),IER)
+      call silentzone(ICOMP,hasconstr,use,usefile(isz),IER)
 
 C Overwrite the initial zone operation file with the correct
 C density information.
