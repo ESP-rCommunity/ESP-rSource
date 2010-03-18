@@ -377,19 +377,12 @@ C Error trap. Set ier as two.
 C ************* silentzone 
 C silentzone creates a zone based on meta parameters passed
 C to it.
-C nbpolyc (integer) number of initial coordinates
-C coords (real array (nbwalls,3)) for shape=box ignore, for shape=extrude the
-C   1st value is X and 2nd is Y (in world coordinates) following the normal
-C   floor plan extrusion conventions. For shape=poly the Z is used.
-C list (integer array (nbwalls,24) equivalent to jvn() for shape=poly
-C nbedges (integer array (nbwalls) equivalent to nver() for shape=poly
-C   assumed that a default shape for the glazing is ok.
 C hasconstr (string array) the name of the MLC to use for each surface
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,nbedges,
-     &  nbpolyc,list,coords,hasconstr,
+      subroutine silentzone(ICOMP,
+     &  hasconstr,
      &  use,usefile,IER)
 #include "building.h"
 #include "model.h"
@@ -448,11 +441,6 @@ C =2 with more than 3 day types
       common/SLNTFULL/ifullysilent
       integer ifullysilent !flag to drive the silent model creation without
                            !questions about the operation files data
-
-C Paremeters passed in:
-      integer nbedges(MS) ! nb of edges per surface in poly shaped zone
-      integer list(MS,24) ! indices of coords making up edges of each surface
-      real coords(MTV,3)  ! all of the coordinates in the zone X/Y/Z
 
 C hasname (string array) the surface name for each surface (so fillsur does not wipe)
       character hasname*12
@@ -588,8 +576,8 @@ C User begins with an extruded shape.
         NW=nbwalls(ICOMP)
 
         DO 45 IW=1,NW
-          XX(IW)=coords(IW,1)
-          YY(IW)=coords(IW,2)
+          XX(IW)=szcoords(icomp,IW,1)
+          YY(IW)=szcoords(icomp,IW,2)
    45   CONTINUE
 
 C Assume that the origin of the zone is 1st coord.
@@ -618,23 +606,22 @@ C Convert into a gen body and rotate if required.
 
 C For a poly shaped zone use similar logic to reading geometry file.
         NSUR=nbwalls(ICOMP)
-        NZSUR(ICOMP)=NSUR
-        NTV=nbpolyc
-        NZTV(ICOMP)=NTV
+        NZSUR(ICOMP)=nbwalls(ICOMP)
+        NTV=nztv(icomp)
         AR=rotateit(ICOMP,1)
         DO 62 I=1,NTV
-          X(I)=coords(I,1)
-          Y(I)=coords(I,2)
-          Z(I)=coords(I,3)
+          X(I)=szcoords(ICOMP,I,1)
+          Y(I)=szcoords(ICOMP,I,2)
+          Z(I)=szcoords(ICOMP,I,3)
    62   CONTINUE
 
 C Remember first zone point as rotation point.
         rotateit(ICOMP,2)=X(1)
         rotateit(ICOMP,3)=Y(1)
         DO 10 I=1,NSUR
-          NVER(I)=nbedges(I)
+          NVER(I)=isznbedges(ICOMP,I)
           DO 12 KV=1,NVER(I)
-            JVN(I,KV)=list(I,KV)
+            JVN(I,KV)=iszlist(ICOMP,I,KV)
    12     CONTINUE
    10   CONTINUE
         IUZBASEA(icomp)=0
@@ -1238,12 +1225,6 @@ C Same as local variable actions which is passed back to calling code.
 C Paremeters passed to:silentzone
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
-      integer nbedges(MS) ! nb of edges per surface in poly shaped zone
-      integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
-      integer list(MS,MV) ! indices of coords making up edges of each surface
-      integer iszlist(MSZ,MS,MV) ! indices of coords making up edges of each surface
-      integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
-      real coords(MTV,3),szcoords(MSZ,MTV,3) 
 
       character hasconstr*32,szhasconstr*32
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
@@ -1334,6 +1315,7 @@ C in the file.
 
 C For each of the possible ESP-r zones, clear values.
         do 41 iz=1,MCOM
+          nztv(iz) = 0
           zname(iz) = ' '
           shape(iz) = ' '
           nbwalls(iz) = 0
@@ -1359,7 +1341,23 @@ C For each of the possible ESP-r zones, clear values.
             sname(iz,isu)=' '
             zhasglaze(iz,isu)=0.0
             zhasdoor(iz,isu)=0.0
+            isznbedges(iz,isu)=0
+            do 54 ivu=1,MV
+              iszlist(iz,isu,ivu)=0
+  54        continue
   39      continue
+          do 59 imu=1,4
+            zdatamass(iz,imu,1)= 0.0
+            zdatamass(iz,imu,2)= 0.0
+            zdatamass(iz,imu,3)= 0.0
+            zdatamass(iz,imu,4)= 0.0
+            zdatamass(iz,imu,5)= 0.0
+            zdatamass(iz,imu,6)= 0.0
+            zdatamass(iz,imu,7)= 0.0
+            ztextmass(iz,imu,1)= ' '
+            ztextmass(iz,imu,2)= ' '
+            ztextmass(iz,imu,3)= ' '
+  59      continue
   41    continue
 
 C For each of the META specific arrays, clear values.
@@ -1368,7 +1366,6 @@ C For each of the META specific arrays, clear values.
           szuse(iz,2) = ' '
           szuse(iz,3) = ' '
           usefile(iz) = ' '
-          nbcord(iz) = 0
           nbobs(iz) = 0
           ht_Setpoint(iz)= 0.0
           cl_Setpoint(iz)= 0.0
@@ -1400,24 +1397,8 @@ C For each of the META specific arrays, clear values.
             szcoords(iz,isu,3)=0.0
   53      continue
           do 52 isu=1,MS
-            isznbedges(iz,isu)=0
-            do 54 ivu=1,MV
-              iszlist(iz,isu,ivu)=0
-  54        continue
             szhasconstr(iz,isu)=' '
   52      continue
-          do 59 imu=1,4
-            zdatamass(iz,imu,1)= 0.0
-            zdatamass(iz,imu,2)= 0.0
-            zdatamass(iz,imu,3)= 0.0
-            zdatamass(iz,imu,4)= 0.0
-            zdatamass(iz,imu,5)= 0.0
-            zdatamass(iz,imu,6)= 0.0
-            zdatamass(iz,imu,7)= 0.0
-            ztextmass(iz,imu,1)= ' '
-            ztextmass(iz,imu,2)= ' '
-            ztextmass(iz,imu,3)= ' '
-  59      continue
   42    continue
       endif
 
@@ -1640,8 +1621,8 @@ C Feedback. << but simact is not passed to anything >>
      &       'cool Setp',IER)
         goto 43
       elseif(WORD(1:5).eq.'*cord')then
-        nbcord(nsz)=nbcord(nsz)+1   ! increment number of coordinates in zone
-        nbc=nbcord(nsz)
+        nztv(nsz)=nztv(nsz)+1   ! increment number of coordinates in zone
+        nbc=nztv(nsz)
         CALL EGETWR(OUTSTR,K,valx,0.,0.,'-','cord-x',IER)
         CALL EGETWR(OUTSTR,K,valy,0.,0.,'-','cord-y',IER)
         szcoords(nsz,nbc,1)=valx
@@ -2299,16 +2280,7 @@ C Copy from sz* arrays into parameter arrays prior to silentzone call.
           use(2)= szuse(isz,2)
           use(3)= szuse(isz,3)
 C        usefile(iz) = ' '
-          do 48 isu=1,nbcord(isz)   ! for each coordinate in the zone
-            coords(isu,1)=szcoords(isz,isu,1)
-            coords(isu,2)=szcoords(isz,isu,2)
-            coords(isu,3)=szcoords(isz,isu,3)
-  48      continue
           do 49 isu=1,MS
-            nbedges(isu)=isznbedges(isz,isu)
-            do 57 ivu=1,MV
-              list(isu,ivu)=iszlist(isz,isu,ivu)
-  57        continue
             hasconstr(isu)=szhasconstr(isz,isu)
   49      continue
           icomp=icomp+1
@@ -2354,15 +2326,9 @@ C be included in the version 1.1 geometry file.
           write(outs,'(2a)') 'Processing ',zname(isz)
           call edisp(iuout,outs)
 
-C Debug.
-C          write(6,*) 'nbedges',nbedges
-C          write(6,*) 'nbcord',nbcord
-C          write(6,*) 'list',list
-
 C Create zone based on a set of parameters (created above).
           call silentzone(ICOMP,
-     &      nbedges,nbcord(isz),list,
-     &      coords,hasconstr,
+     &      hasconstr,
      &      use,usefile(isz),IER)
   63    continue
 

@@ -82,7 +82,18 @@ C Global coordinates for whole model (connection based).
       integer NZJVN  ! topology of vertices associated with each connection.
       COMMON/ZNDATA/VCOORD(MCOM,MTV,3),NZNVER(MCON),NZJVN(MCON,MV)
 
-C Global coordinates for whole model (zone & surface based).
+C Global coordinates for whole model (zone & surface based). These are used
+C to accumulate information prior to the generation of the connection list.
+      integer isznbedges ! nb of edges per surface in poly shaped zone
+                         ! equivalent to nznver and nver
+      integer iszlist    ! indices of coords making up edges of each surface
+                         ! equivalent to NZJVN and jvn
+      real szcoords      ! coordinates associated with each zone, equivalent
+                         ! to X Y Z and VCOORD for shape=box ignore,
+                         ! for shape=extrude the 1st value is X and 2nd is Y
+                         ! For shape=poly the Z is also used.
+      common/metageo/isznbedges(MCOM,MS),iszlist(MCOM,MS,MV),
+     &               szcoords(MCOM,MTV,3)
 
 
 C The following section will hold derived data such as volume and surface

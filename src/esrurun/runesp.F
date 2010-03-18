@@ -437,12 +437,6 @@ C Paremeters passed to:silentzone
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
 
-      integer nbedges(MS)      ! nb of edges per surface in poly shaped zone
-      integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
-      integer list(MS,24)      ! indices of coords making up edges of each surface
-      integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
-      integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
-      real coords(MS,3)
       character hasconstr*32,szhasconstr*32
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
 
@@ -505,6 +499,7 @@ C Set logicals for locations of windows.
 
 C For each of the possible ESP-r zones, clear values.
       do 41 iz=1,MCOM
+        nztv(iz) = 0
         zname(iz) = ' '
         shape(iz) = ' '
         nbwalls(iz) = 0
@@ -529,24 +524,11 @@ C For each of the possible ESP-r zones, clear values.
           zboundarytype(iz,isu,3)=0
           zhasglaze(iz,isu)=0.0
           zhasdoor(iz,isu)=0.0
-  39    continue
-  41  continue
-
-C Clear the msz array structures.
-      weather=' '
-      do 40 iz=1,MSZ
-        szuse(iz,1) = ' '
-        szuse(iz,2) = ' '
-        szuse(iz,3) = ' '
-        usefile(iz) = ' '
-        nbcord(iz) = 0
-        do 52 isu=1,MS
           isznbedges(iz,isu)=0
           do 54 ivu=1,MV
             iszlist(iz,isu,ivu)=0
   54      continue
-          szhasconstr(iz,isu)=' '
-  52    continue
+  39    continue
 
 C Clear data for internal mass (not currently used).
         do 158 imu=1,4
@@ -561,6 +543,18 @@ C Clear data for internal mass (not currently used).
           ztextmass(iz,imu,2)=' '
           ztextmass(iz,imu,3)=' '
  158    continue
+  41  continue
+
+C Clear the msz array structures.
+      weather=' '
+      do 40 iz=1,MSZ
+        szuse(iz,1) = ' '
+        szuse(iz,2) = ' '
+        szuse(iz,3) = ' '
+        usefile(iz) = ' '
+        do 52 isu=1,MS
+          szhasconstr(iz,isu)=' '
+  52    continue
   40  continue
 
       NS=0     ! temporary array for counting surfaces.
@@ -939,18 +933,13 @@ C Generate the zone and zone files.
 
 C Fill surface arrays.
       do 49 isu=1,MS
-        nbedges(isu)=isznbedges(iz,isu)
-        do 57 ivu=1,MV
-          list(isu,ivu)=iszlist(iz,isu,ivu)
-  57    continue
         hasconstr(isu)=szhasconstr(isz,isu)
   49  continue
 
       write(outs,'(2a)') 'Processing ',zname(isz)
       call edisp(iuout,outs)
       call silentzone(ICOMP,
-     &    nbedges,nbcord(isz),list,
-     &    coords,hasconstr,
+     &    hasconstr,
      &    use,usefile(isz),IER)
 
 C Overwrite the initial zone operation file with the correct

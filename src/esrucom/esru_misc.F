@@ -464,6 +464,13 @@ C Zone level common blocks.
           zboundarytype(IX,IXS,3)=0
           zhasglaze(ix,ixs)=0.0
           zhasdoor(ix,ixs)=0.0
+          isznbedges(ix,ixs)=0
+          do 54 ivu=1,MV
+            iszlist(ix,ixs,ivu)=0
+            szcoords(ix,ixs,1)=0.0
+            szcoords(ix,ixs,2)=0.0
+            szcoords(ix,ixs,3)=0.0
+  54      continue
    43   continue
 
 C Clear obstructions in all zones.
