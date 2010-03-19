@@ -933,7 +933,7 @@ C weather file and Moore model.
       endif    
        
 C Steady component of below-grade heat loss (W).
-	  Qbgavg = Sbgavg(icon) * 
+      Qbgavg = Sbgavg(icon) * 
      &             ( TBSAVG-basesimp_grd_temp_avg )
 
 C Time-varying component of below-grade heat loss (W). `time' measures the
