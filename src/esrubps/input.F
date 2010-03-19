@@ -184,6 +184,9 @@ C default file names for databases
 #include "tdf2.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
+
+      include "drain_water_HR.h"
+      
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -455,6 +458,12 @@ c DHW.
        if( iDHW_Flag.eq.1)then
         call DHW_READIN
        endif
+       
+       
+C Drain-Water HR
+       if ( bDwhrActive ) then 
+         call process_dwhr_inputs(autook)
+       endif 
 
 C Mechanicanical ventilation.
       if(iMech.eq.1)then

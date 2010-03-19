@@ -172,6 +172,7 @@ C espriou.h provides currentfile and defdbfl.
 #include "CFC_common.h"
 #include "ipvdata.h"
 #include "seasons.h"
+#include "drain_water_HR.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -407,7 +408,7 @@ C Mechanical Ventilation systems
       Integer iMech
       Character LMech*72
       common/mechvdef/iMech,LMech
-
+      
 C External Longwave Radiation 
       common/LongRad/iExtLgRadFlag,eGrdTp
       REAL      eGrdTp(12)
@@ -1160,6 +1161,42 @@ C and sets the flag into the DHW Modules Variable iDHW_Flag
           endif
         endif
 
+      elseif(WORD(1:15).eq.'*drain-water-HR' ) then
+C Drain-water heat recovery model.
+        CALL EGETRM(LOUTSTR,K,cDwhrFilename,'W',
+     &   'Drain-water heat recovery data',
+     &    IER )
+        bDwhrActive = .FALSE.
+        call FINDFIL(cDwhrFilename,bDwhrActive)
+        
+        
+        DWHRNotFound: if ( .not. bDwhrActive ) then 
+C.........File could not be found. Warn user and stop simulation
+C.........in auto-running mode. 
+
+          write(outs,'(3a)') 'Drain-water HR input file ',
+     &      cDwhrFilename(1:min(50,lnblnk(cDwhrFilename))),
+     &      ' was referenced but not found.'
+        
+          if(dll)then
+            dllsubr='ersys'
+            dllmesg=outs
+            ier=2
+            return
+
+          elseif (autook) then
+
+            call usrmsg(
+     &        outs,
+     &        'Could not perform simulation.','F')          
+          else 
+
+            call edisp(iuout,outs)
+          
+          endif
+        
+        endif DWHRNotFound
+        
       elseif(WORD(1:5).eq.'*mvnt')then
 
 C Mechanical Ventilation, test and see if it exists.
