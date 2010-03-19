@@ -392,6 +392,10 @@ C Unless error occured, initiate computation/setting-up of:
               ier=2
               return
             endif
+          elseif (autook) then
+            call usrmsg(
+     &        'The configuration file was not scanned correctly',
+     &        'Could not parse configuration file. ','F')
           else
             dok=.false.
             h(1)='Usually problems with a model are detected prior to'
