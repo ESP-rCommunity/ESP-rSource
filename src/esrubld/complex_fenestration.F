@@ -4531,6 +4531,13 @@ C CFC venetian blind slat angle
      &         'units', '(°)',
      &         'Venetian type blind slat angle' )
 
+C CFC ON/OFF flag
+        call add_to_xml_reporting (
+     &         int(i_shd(icomp,icfctp)),
+     &         H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc_vb/on-off',
+     &         'units', '(-)',
+     &         'Venetian type blind ON/OFF flag' )
+
 C CFC Direct and diffuse radiation incidence
 C       RadIncDirS(icomp,i)
 C       RadIncDifS(icomp,i),
