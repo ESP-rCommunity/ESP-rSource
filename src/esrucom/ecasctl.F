@@ -602,6 +602,7 @@ C If daylight coefficient method write data.
           if (IDFST(ICOMP,N).EQ.5) then
             do 333 ISEN=1,NDF(ICOMP,N)
               JDC=IDCFID(ICOMP,N,ISEN)
+			if (JDC.le.0) JDC=1 ! bounds error fix (?) ag@23.03.2010
               JST=NDCFS(JDC)
               write(IUNIT,'(2i3,a)') JDC,JST, 
      &               ' # Daylight coefficient No. & No. of stages '

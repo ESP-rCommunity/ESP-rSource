@@ -235,6 +235,7 @@ C Reset all surface lines to standard width and redraw if revised data.
         izgfoc=ICOMP
         CALL ADJVIEW(IER)
       endif
+	  if (N.le.0) N=1 ! bounds error fix (?) ag@23/03/2010
       NL=NLITZ(ICOMP)
       write(ITEM(1),'(A,A)')   '  Zone: ',zname(ICOMP)
       write(ITEM(2),'(A,A36)') '  Desc: ',cgcdesc(ICOMP)(1:36)
