@@ -1598,7 +1598,10 @@ C Continue only if this surface is vertical, is TMC or CFC, has 4 vertices
 C and is connected to either the exterior or another real zone.  
 C Keep track of total windows in zone with nt. Exclude skylights.
             IF(ITMCFL(ICOMP,J).GT.0 .or. ICFCFL(ICOMP,J).gt.0) THEN
-              call eclose(PELV(ICOMP,J),0.00,0.70,close)
+c              call eclose(PELV(ICOMP,J),0.00,0.70,close)
+c Hack - allow tilt angles of up to 20° from the vertical
+c should be removed ...
+              call eclose(PELV(ICOMP,J),0.00,20.00,close)
               IF(close)THEN
                 IF((NVER(J).NE.4).and.(IDFST(ICOMP,N).ne.2))then
                   WRITE(ITU,843) zname(icomp),J
@@ -1717,7 +1720,7 @@ C range of 0 to 360 degrees.
                     IF(PP2.GE.360.)PP2=PP2-360.
                     TT1=T1*TODEG
                     TT2=T2*TODEG
-
+			
 C Calculate Ev vertical unobstructed illumination @ plane of
 C glazing and get current visible transmission of glazing.
                     CALL VRTILM(PAZI(ICOMP,J),QDIR,QDIF,SRADDO,SKYDIF)
@@ -1757,8 +1760,9 @@ C glazing and get current visible transmission of glazing.
               ELSE
                 if(IDFST(ICOMP,N).ne.2)then
                   WRITE(ITU,844) zname(icomp),J
-  844         format('Zone ',A,'TMC',I2,'is not vertical-no dir illum!')
-                endif
+  844             format('Zone ',A,'TMC',I2,
+     &               'is not vertical-no dir illum!')
+                  endif
                 CALL DWINVT(ICOMP,J,VTDIR,VTDIF,RATIO)
                 suncon=0.
                 skycon=esky*DFDAT(ICOMP,N,J,I)*VTDIF

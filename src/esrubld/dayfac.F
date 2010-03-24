@@ -33,6 +33,7 @@ C Initiate calc. of daylight factor(s) for standard CIE overcast sky.
       SUBROUTINE  DAYFAC(ICOMP)
 #include "building.h"
 #include "geometry.h"
+#include "CFC_common.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -138,8 +139,11 @@ C Trace heading.
 C Continue only if this surface is vertical, is TMC, has 4 vertices
 C and is connected to either the exterior or another real zone.  Keep track
 C of total windows in zone with nt. Exclude skylights.
-            call eclose(PELV(ICOMP,J),0.00,0.5,close)
-            IF(close.AND.(ITMCFL(ICOMP,J).GT.0))THEN
+c hack - turn off "vertical", allow 20° from vertical
+            call eclose(PELV(ICOMP,J),0.00,20.00,close)
+c            call eclose(PELV(ICOMP,J),0.00,0.5,close)
+            IF(close.AND.(ITMCFL(ICOMP,J).GT.0 
+     &                    .or. ICFCFL(ICOMP,J).gt.0))THEN
               IF (NVER(J).NE.4)THEN
                 WRITE(ITU,811) zname(icomp),J
   811           format('Zone ',A,' TMC surf ',I2,' not 4 vertexes!')
@@ -158,7 +162,7 @@ C Determine the 'other' zone and connection information.
                 ZPL(K)=Z(JVN(J,K))
   201         CONTINUE
 
-C Test if the TMC is rectangular and calculate window width
+C Test if the TMC (or CFC) is rectangular and calculate window width
 C and high WIDTH, HIGH:
               call eclose(XPL(1),XPL(2),0.01,closea)
               call eclose(XPL(1),XPL(3),0.01,closeb)
