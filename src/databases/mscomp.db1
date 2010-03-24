@@ -904,6 +904,92 @@ This is a very simple short line model that ignores the capacitive properties
 of the conductor. 
 *ENDTEXT
 *END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special
+#            power only model no
+     6            22
+*DESC
+Lithium Ion Battery (CETC Battery subroutine)
+*SPECDATA
+47 0
+       Number of cells connected in parrallel
+       Number of cells connected in series
+       reference capacity for a unit cell (Amp h)
+       battery reference operating temperature
+       DOD=0 (V) of a single cell
+       DOD=100% (V) of a single cell
+       Maximum charge/discharge current of one cell(Amps)
+       Maximum charge/discharge voltage of one cell(V)
+       initial battery temperature  (°C) 
+       initial depth of discharge (probably zero for a charged battery)
+       thermal mass of a single cell -mass*Cp (J/Â°C)
+       heat loss factor h*A (W/Â°C)
+       resistance of the heaters (Ohm)
+       maximum DOD of battery (in percentage... probably 0.8)
+       minimum DOD of battery (in percentage... probably 0)
+       Maximum battery temperature (°C)
+       Minimum battery temperature (°C)
+       E5 Exponential coefficent for OCV
+       E4 Exponential coefficent for OCV
+       E3 Exponential coefficent for OCV
+       E2 Exponential coefficent for OCV
+       E1 Exponential coefficent for OCV
+       E0 Exponential coefficent for OCV
+       Rint5 Exponential coefficent for Rint
+       Rint4 Exponential coefficent for Rint
+       Rint3 Exponential coefficent for Rint
+       Rint2 Exponential coefficent for Rint
+       Rint1 Exponential coefficent for Rint
+       Rint0 Exponential coefficent for Rint
+       The first current discharged at (Amps)
+       The alpha required to discharge/charge at first rate
+       The second current discharged at (Amps)
+       The alpha required to discharge/charge at second rate
+       The third current discharged at (Amps) 
+       The alpha required to discharge/charge at third rate 
+       The fourth current discharged at (Amps) THIS SHOULD ALSO BE YOUR REFERENCE CURRENT
+       The alpha required to discharge/charge at fourth rate THIS SHOULD ALSO BE YOUR REFERENCE CURRENT
+       The fifth current discharged at (Amps)
+       The alpha required to discharge/charge at fifth rate
+       The sixth current discharged at (Amps)
+       The alpha required to discharge/charge at sixth rate
+       The seventh current discharged at (Amps)
+       The alpha required to discharge/charge at seventh rate
+       The eighth current discharged at (Amps)
+       The alpha required to discharge/charge at eighth rate
+       The first temperature discharged/charged at in Celsius
+       The beta required to discharge/charge at the first temperature
+       The voltage offset required to discharge/charge at the first temperature (V)
+       The second temperature discharged/charged at in Celsius
+       The beta required to discharge/charge at the second temperature
+       The voltage offset required to discharge/charge at the second temperature (V)
+       The third temperature discharged/charged at in Celsius
+       The beta required to discharge/charge at the third temperature
+       The voltage offset required to discharge/charge at the third temperature (V)
+       The fourth temperature discharged/charged at in Celsius THIS SHOULD ALSO BE YOUR REFERENCE TEMPERATURE
+       The beta required to discharge/charge at the fourth temperature THIS SHOULD ALSO BE YOUR REFERENCE TEMPERATURE
+       The voltage offset required to discharge/charge at the fourth temperature (V) THIS SHOULD ALSO BE YOUR REFERENCE TEMPERATURE
+       The fifth temperature discharged/charged at in Celsius
+       The beta required to discharge/charge at the fifth temperature
+       The voltage offset required to discharge/charge at the fifth temperature (V)
+       The sixth temperature discharged/charged at in Celsius
+       The beta required to discharge/charge at the sixth temperature
+       The voltage offset required to discharge/charge at the sixth temperature (V)
+       The seventh temperature discharged/charged at in Celsius
+       The beta required to discharge/charge at the seventh temperature
+       The voltage offset required to discharge/charge at the seventh temperature (V)
+       The eighth temperature discharged/charged at in Celsius
+       The beta required to discharge/charge at the eighth temperature
+       The voltage offset required to discharge/charge at the eighth temperature (V)
+       self discharge constant in amps (keep zero if unknown or for zero self discharge)
+       Activation energy for self-discharge in kJ.kmol-1 (keep zero if unknown  or for zero self discharge)
+       The index of the zone where the battery is located (-)
+       The power required to run the li-on BMS circuitry (W)
+*TEXT
+Lithium Ion Battery model developed Neil Saldanha
+*ENDTEXT
+*END
 *ENDCONDDB 
 #*LOADSDB
 #*MOGENDB

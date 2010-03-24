@@ -3940,22 +3940,22 @@ C************** Initialisation
 C These are the temperature correction factors and the 
 C corresponding temperatures discussed in Neil Saldanha's thesis
 
-      t_1 = POWCDAT(IPWC,40)
-      beta_1 = POWCDAT(IPWC,41)
-      t_2 = POWCDAT(IPWC,43)
-      beta_2 = POWCDAT(IPWC,44)
-      t_3 = POWCDAT(IPWC,46)
-      beta_3 = POWCDAT(IPWC,47)
-      t_4 = POWCDAT(IPWC,49)
-      beta_4 = POWCDAT(IPWC,50)
-      t_5 = POWCDAT(IPWC,52)
-      beta_5 = POWCDAT(IPWC,53)
-      t_6 = POWCDAT(IPWC,55)
-      beta_6 = POWCDAT(IPWC,56)
-      t_7 = POWCDAT(IPWC,58)
-      beta_7 = POWCDAT(IPWC,59)
-      t_8 = POWCDAT(IPWC,61)
-      beta_8 = POWCDAT(IPWC,62)
+      t_1 = POWCDAT(IPWC,46)
+      beta_1 = POWCDAT(IPWC,47)
+      t_2 = POWCDAT(IPWC,49)
+      beta_2 = POWCDAT(IPWC,51)
+      t_3 = POWCDAT(IPWC,52)
+      beta_3 = POWCDAT(IPWC,53)
+      t_4 = POWCDAT(IPWC,55)
+      beta_4 = POWCDAT(IPWC,56)
+      t_5 = POWCDAT(IPWC,58)
+      beta_5 = POWCDAT(IPWC,59)
+      t_6 = POWCDAT(IPWC,61)
+      beta_6 = POWCDAT(IPWC,62)
+      t_7 = POWCDAT(IPWC,64)
+      beta_7 = POWCDAT(IPWC,65)
+      t_8 = POWCDAT(IPWC,67)
+      beta_8 = POWCDAT(IPWC,68)
 
       
 C************** Calculations
@@ -4071,14 +4071,13 @@ C corresponding rates discussed in Neil Saldanha's thesis
       i_4 = POWCDAT(IPWC,36)
       alpha_4 = POWCDAT(IPWC,37)
       i_5 = POWCDAT(IPWC,38)
-      alpha_5 = POWCDAT(IPWC,39)
-C the rest have yet to be assigned      
-      i_6 = POWCDAT(IPWC,55)
-      alpha_6 = POWCDAT(IPWC,56)
-      i_7 = POWCDAT(IPWC,58)
-      alpha_7 = POWCDAT(IPWC,59)
-      i_8 = POWCDAT(IPWC,61)
-      alpha_8 = POWCDAT(IPWC,62)
+      alpha_5 = POWCDAT(IPWC,39)  
+      i_6 = POWCDAT(IPWC,40)
+      alpha_6 = POWCDAT(IPWC,41)
+      i_7 = POWCDAT(IPWC,42)
+      alpha_7 = POWCDAT(IPWC,43)
+      i_8 = POWCDAT(IPWC,44)
+      alpha_8 = POWCDAT(IPWC,45)
 
       
 C************** Calculations
@@ -4401,22 +4400,22 @@ C************** Initialisation
 C These are the voltage offset correction factors and the 
 C corresponding temperatures discussed in Neil Saldanha's thesis
 
-      t_1 = POWCDAT(IPWC,40)
-      offset_1 = POWCDAT(IPWC,42)
-      t_2 = POWCDAT(IPWC,43)
-      offset_2 = POWCDAT(IPWC,45)
-      t_3 = POWCDAT(IPWC,46)
-      offset_3 = POWCDAT(IPWC,48)
-      t_4 = POWCDAT(IPWC,49)
-      offset_4 = POWCDAT(IPWC,51)
-      t_5 = POWCDAT(IPWC,52)
-      offset_5 = POWCDAT(IPWC,54)
-      t_6 = POWCDAT(IPWC,55)
-      offset_6 = POWCDAT(IPWC,57)
-      t_7 = POWCDAT(IPWC,58)
-      offset_7 = POWCDAT(IPWC,60)
-      t_8 = POWCDAT(IPWC,61)
-      offset_8 = POWCDAT(IPWC,63)
+      t_1 = POWCDAT(IPWC,46)
+      offset_1 = POWCDAT(IPWC,48)
+      t_2 = POWCDAT(IPWC,49)
+      offset_2 = POWCDAT(IPWC,51)
+      t_3 = POWCDAT(IPWC,52)
+      offset_3 = POWCDAT(IPWC,54)
+      t_4 = POWCDAT(IPWC,55)
+      offset_4 = POWCDAT(IPWC,57)
+      t_5 = POWCDAT(IPWC,58)
+      offset_5 = POWCDAT(IPWC,60)
+      t_6 = POWCDAT(IPWC,61)
+      offset_6 = POWCDAT(IPWC,63)
+      t_7 = POWCDAT(IPWC,64)
+      offset_7 = POWCDAT(IPWC,66)
+      t_8 = POWCDAT(IPWC,67)
+      offset_8 = POWCDAT(IPWC,69)
 
       
 C************** Calculations
@@ -4559,8 +4558,8 @@ C************** Initialisation
       nParal = int(POWCDAT(IPWC,1))
       nSerie = int(POWCDAT(IPWC,2))         
 	  pParasitic = (POWCDAT(IPWC,70))
-	  ko = (POWCDAT(IPWC,66))          
-	  E_as = (POWCDAT(IPWC,67)) 
+	  ko = (POWCDAT(IPWC,70))          
+	  E_as = (POWCDAT(IPWC,71)) 
 	  heatersRes = POWCDAT(IPWC,13)/(float(nParal)*float(nSerie))
       hA = POWCDAT(IPWC,12)*(float(nParal)+float(nSerie)) 
       mCp = POWCDAT(IPWC,11)*(float(nParal)+float(nSerie))       
@@ -4861,3 +4860,103 @@ C   POWCDAT(IPWC,56): Mandatory charge interval (days)
 C   POWCDAT(IPWC,57): Maximum duration mandatory charge cycle (hours)
 
 
+
+
+
+
+C****************************************************				
+C List of inut parameters for lithium ion battery model (IPWC = 22)				
+C****************************************************				
+C---------------------------				
+C Lithium ion battery parameters				
+C---------------------------				
+C POWCDAT (IPWC,1):	 nParal			Number of cells connected in parrallel
+C POWCDAT (IPWC,2):	 nSeries		Number of cells connected in series
+C POWCDAT (IPWC,3):	 cellCapRef		reference capacity for a unit cell (Amp h)
+C POWCDAT (IPWC,4):	 tempRef		battery reference operating temperature
+C POWCDAT (IPWC,5):	 maxVolt	 	DOD=0 (V) of a single cell
+C POWCDAT (IPWC,6):	 minVolt	 	DOD=100% (V) of a single cell
+C POWCDAT (IPWC,7):	 currentMax		Maximum charge/discharge current of one cell(Amps)
+C POWCDAT (IPWC,8):	 voltMax		Maximum charge/discharge voltage of one cell(V)
+C POWCDAT (IPWC,9):	 batTempInit	initial battery temperature  (°C) 
+C POWCDAT (IPWC,10): batinitDOD		initial depth of discharge (probably zero for a charged battery)
+C POWCDAT (IPWC,11): thermalMass	thermal mass of a single cell -mass*Cp (J/Â°C)
+C POWCDAT (IPWC,12): heatLossFact	heat loss factor h*A (W/Â°C)
+C POWCDAT (IPWC,13): heatersRes	 	resistance of the heaters (Ohm)
+C POWCDAT (IPWC,14): upperBoundDOD	maximum DOD of battery (in percentage... probably 0.8)
+C POWCDAT (IPWC,15): lowerBoundDOD	minimum DOD of battery (in percentage... probably 0)
+C POWCDAT (IPWC,16): tempMax		Maximum battery temperature (°C)
+C POWCDAT (IPWC,17): tempMin		Minimum battery temperature (°C)
+C---------------------------				
+C OCV voltage as a function of DOD of a single cell Vocv(DOD) = E5*DOD^5 + E4*DOD^4 + E3*DOD^3 + E2*DOD^2 + E1*DOD + E0				
+C---------------------------				
+C POWCDAT (IPWC,18): E5	
+C POWCDAT (IPWC,19): E4	
+C POWCDAT (IPWC,20): E3	
+C POWCDAT (IPWC,21): E2	
+C POWCDAT (IPWC,22): E1	
+C POWCDAT (IPWC,23): E0	
+C---------------------------				
+C Rint as a function of DOD at REFERENCE CURRENT of a single cell Rint(DOD) = Rint5*DOD^5 +  Rint4*DOD^4 + Rint3*DOD^3 + Rint2*DOD^2 + Rint1*DOD + Rint0				
+C This is determined by polyfitting the difference between the OCV and Vref divided 				
+C by the reference current using the OCV DOD scale (see Neil Saldanha's thesis for more info)				
+C---------------------------				
+C POWCDAT (IPWC,24):	Rint5	
+C POWCDAT (IPWC,25):	Rint4	
+C POWCDAT (IPWC,26):	Rint3	
+C POWCDAT (IPWC,27):	Rint2	
+C POWCDAT (IPWC,28):	Rint1	
+C POWCDAT (IPWC,29):	Rint0	
+C---------------------------				
+C current factors and alphas relative to OCV as described by Gao (2002) and in Neil Saldanha's master thesis				
+C---------------------------				
+C POWCDAT (IPWC,30):	c1	The first current discharged at (Amps)
+C POWCDAT (IPWC,31):	alpha1	The alpha required to discharge/charge at first rate
+C POWCDAT (IPWC,32):	c2	The second current discharged at (Amps)
+C POWCDAT (IPWC,33):	alpha2	The alpha required to discharge/charge at second rate
+C POWCDAT (IPWC,34):	c3	The third current discharged at (Amps) 
+C POWCDAT (IPWC,35):	alpha3	The alpha required to discharge/charge at third rate 
+C POWCDAT (IPWC,36):	c4	The fourth current discharged at (Amps) THIS SHOULD ALSO BE YOUR REFERENCE CURRENT
+C POWCDAT (IPWC,37):	alpha4	The alpha required to discharge/charge at fourth rate THIS SHOULD ALSO BE YOUR REFERENCE CURRENT
+C POWCDAT (IPWC,38):	c5	The fifth current discharged at (Amps)
+C POWCDAT (IPWC,39):	alpha5	The alpha required to discharge/charge at fifth rate
+C POWCDAT (IPWC,40):	c6	The sixth current discharged at (Amps)
+C POWCDAT (IPWC,41):	alpha6	The alpha required to discharge/charge at sixth rate
+C POWCDAT (IPWC,42):	c7	The seventh current discharged at (Amps)
+C POWCDAT (IPWC,43):	alpha7	The alpha required to discharge/charge at seventh rate
+C POWCDAT (IPWC,44):	c8	The eighth current discharged at (Amps)
+C POWCDAT (IPWC,45):	alpha8	The alpha required to discharge/charge at eighth rate
+C---------------------------				
+C temperature factors, betas and offsets relative to OCV as described by Gao (2002) and in Neil Saldanha's master thesis				
+C---------------------------				
+C POWCDAT (IPWC,46):	t1	The first temperature discharged/charged at in Celsius
+C POWCDAT (IPWC,47):	beta1	The beta required to discharge/charge at the first temperature
+C POWCDAT (IPWC,48):	offset1	The voltage offset required to discharge/charge at the first temperature (V)
+C POWCDAT (IPWC,49):	t2	The second temperature discharged/charged at in Celsius
+C POWCDAT (IPWC,50):	beta2	The beta required to discharge/charge at the second temperature
+C POWCDAT (IPWC,51):	offset2	The voltage offset required to discharge/charge at the second temperature (V)
+C POWCDAT (IPWC,52):	t3	The third temperature discharged/charged at in Celsius
+C POWCDAT (IPWC,53):	beta3	The beta required to discharge/charge at the third temperature
+C POWCDAT (IPWC,54):	offset3	The voltage offset required to discharge/charge at the third temperature (V)
+C POWCDAT (IPWC,55):	t4	The fourth temperature discharged/charged at in Celsius THIS SHOULD ALSO BE YOUR REFERENCE TEMPERATURE
+C POWCDAT (IPWC,56):	beta4	The beta required to discharge/charge at the fourth temperature THIS SHOULD ALSO BE YOUR REFERENCE TEMPERATURE
+C POWCDAT (IPWC,57):	offset4	The voltage offset required to discharge/charge at the fourth temperature (V) THIS SHOULD ALSO BE YOUR REFERENCE TEMPERATURE
+C POWCDAT (IPWC,58):	t5	The fifth temperature discharged/charged at in Celsius
+C POWCDAT (IPWC,59):	beta5	The beta required to discharge/charge at the fifth temperature
+C POWCDAT (IPWC,60):	offset5	The voltage offset required to discharge/charge at the fifth temperature (V)
+C POWCDAT (IPWC,61):	t6	The sixth temperature discharged/charged at in Celsius
+C POWCDAT (IPWC,62):	beta6	The beta required to discharge/charge at the sixth temperature
+C POWCDAT (IPWC,63):	offset6	The voltage offset required to discharge/charge at the sixth temperature (V)
+C POWCDAT (IPWC,64):	t7	The seventh temperature discharged/charged at in Celsius
+C POWCDAT (IPWC,65):	beta7	The beta required to discharge/charge at the seventh temperature
+C POWCDAT (IPWC,66):	offset7	The voltage offset required to discharge/charge at the seventh temperature (V)
+C POWCDAT (IPWC,67):	t8	The eighth temperature discharged/charged at in Celsius
+C POWCDAT (IPWC,68):	beta8	The beta required to discharge/charge at the eighth temperature
+C POWCDAT (IPWC,69):	offset8	The voltage offset required to discharge/charge at the eighth temperature (V)
+C---------------------------				
+C Extra parameters				
+C---------------------------				
+C POWCDAT (IPWC,70):	k_o	self discharge constant in amps (keep zero if unknown or for zero self discharge)
+C POWCDAT (IPWC,71):	E_as	Activation energy for self-discharge in kJ.kmol-1 (keep zero if unknown  or for zero self discharge)
+C POWCDAT (IPWC,72):	iZoneIndex	The index of the zone where the battery is located (-)
+C POWCDAT (IPWC,73):	pParasitic	The power required to run the li-on BMS circuitry (W)
