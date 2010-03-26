@@ -1166,6 +1166,7 @@ C Drain-water heat recovery model.
         CALL EGETRM(LOUTSTR,K,cDwhrFilename,'W',
      &   'Drain-water heat recovery data',
      &    IER )
+        
         bDwhrActive = .FALSE.
         call FINDFIL(cDwhrFilename,bDwhrActive)
         

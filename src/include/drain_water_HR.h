@@ -8,6 +8,9 @@ C.....Flag that dhwr is active
 
 C.....Filename
       character*72 cDwhrFilename
+      
+C.....File-handle for I/O
+      integer iDwhrFileNumber       
 
 C.....File version number
       integer iDwhrFileVersion 
@@ -16,12 +19,22 @@ C.....Maximum number of systems permitted.
       integer iMaxNumDwhr
       parameter ( iMaxNumDwhr = 20 )
 
+C.....Number of systems defined.
+      integer iDwhrSystemCount
     
 C.....System name 
       character*72 cDwhrSystemName(iMaxNumDwhr)
 
 C.....Rated efficiency
       real fDwhrRatedEfficiency(iMaxNumDwhr)
+      
+C.....System configuration 
+      integer iDwhrConfiguation(iMaxNumDwhr)
+      
+C.....Named constants for system configuration`
+      integer iEqualFlow
+      integer iUnequalFlow 
+      parameter ( iEqualFlow = 1, iUnequalFlow = 2 )
       
 C.....Model Coefficients
       real fDwhrModelCoeff_a0(iMaxNumDwhr)
@@ -69,12 +82,21 @@ C.....Shower Start Time (hour)
       real fShowerStartTimeHOUR(iMaxNumDwhr)
       real fShowerEndTimeHOUR(iMaxNumDwhr)
 
+C.....Parsing data.       
+      integer iMaxTokens
+      parameter (iMaxTokens=30)
+      character*248 cTokens(iMaxNumDwhr,iMaxTokens) 
+      character*248 cValues(iMaxNumDwhr,iMaxTokens)       
+      
 C.....Common to make data available in memory
       common/drain_water_HR/
      &   bDwhrActive,
+     &   iDwhrFileNumber,
      &   cDwhrFilename,
      &   iDwhrFileVersion,
+     &   iDwhrSystemCount,
      &   cDwhrSystemName,
+     &   iDwhrConfiguation,
      &   fDwhrRatedEfficiency,
      &   fDwhrModelCoeff_a0,
      &   fDwhrModelCoeff_a1,
@@ -92,5 +114,7 @@ C.....Common to make data available in memory
      &   fShowerDurationMIN,
      &   iNumShowersPerDay,
      &   fShowerStartTimeHOUR,
-     &   fShowerEndTimeHOUR
+     &   fShowerEndTimeHOUR,
+     &   cTokens,
+     &   cValues
       

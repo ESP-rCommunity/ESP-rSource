@@ -306,6 +306,10 @@ C Status of multi-year climate database
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
 
+C Status of DWHR model descirption (local only)
+      logical bDwhrFatalError
+      data bDwhrFatalError / .false. /
+      
 C Reset error indicator and check if running as a dll.
       ier1=0
       call isadll(dll)
@@ -462,7 +466,8 @@ c DHW.
        
 C Drain-Water HR
        if ( bDwhrActive ) then 
-         call process_dwhr_inputs(autook)
+         call process_dwhr_inputs(ifil, autook,bDwhrFatalError)
+         if ( bDwhrFatalError ) bDwhrActive = .false.
        endif 
 
 C Mechanicanical ventilation.
