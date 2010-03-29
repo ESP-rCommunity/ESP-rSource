@@ -1292,15 +1292,6 @@ c Check if in startup period via function bInStartup.
       if (bInStartup())then
         return
       endif
-C        bInStartUp=.true.
-C        IF((ISSNY.EQ.1.AND.IDYP.EQ.365.AND.IHRP.EQ.24.AND.ISDS.EQ.1)
-C     &    .OR.(ISSNY.EQ.0.AND.(IDYP.GE.ISDS.OR.
-C     &        (IDYP.EQ.ISDS-1.AND.IHRP.EQ.24))))bInStartUp=.false.
-
-C If still in start up return.
-C       IF (bInStartUp) then
-C         RETURN
-C       ENDIF
 
       fWaterDraw = fDHW_WaterDraw() 
 
