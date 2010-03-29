@@ -590,6 +590,7 @@ C Variable will be reset if 'slr_half_hr' included in .cfg
 C Initialise NCM data read flags
       IRNCMD=0
       IRNCMF=0
+      LASBEM='UNKNOWN'  ! assume no UK NCM description
 
 C Initialize HVAC flag to indicate no HVAC models active. This
 C will be reset if `*hvac' included in .cfg.
@@ -1607,7 +1608,7 @@ C Radiance scene file.
         CALL EGETRM(LOUTSTR,K,lradcf,'W','radiance scene file',IER)
       elseif(WORD(1:4).eq.'*ncm')then
 
-C SBEM project specific file
+C SBEM project specific NCM description file.
         CALL EGETW(LOUTSTR,K,LASBEM,'W','SBEM file',IER)
         ISBEM=1
         IRNCMF=1
