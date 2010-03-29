@@ -402,6 +402,14 @@ C.......Zero matching token flags for this system
           bTokenMatched(iSystem,iToken) = .false.
         enddo ZeroTokens
 
+C.......Set model coefficients to default values.
+        fDwhrModelCoeff_c (iSystem) = fDwhrDefaultCoeff_c
+        fDwhrModelCoeff_a0(iSystem) = fDwhrDefaultCoeff_a0 
+        fDwhrModelCoeff_a1(iSystem) = fDwhrDefaultCoeff_a1  
+        fDwhrModelCoeff_a2(iSystem) = fDwhrDefaultCoeff_a2 
+        fDwhrModelCoeff_a3(iSystem) = fDwhrDefaultCoeff_a3 
+        
+        
 C----------------------------------------------------------------------
 C       Search token list for known tokens
 C----------------------------------------------------------------------
@@ -818,27 +826,371 @@ C    This routine imposes the drain-water HR model described by
 C    Ferguson (2010) to predict the heat-recovery and supply 
 C    temperature to the hot-water tank.
 C
-C  Inputs
+C  Inputs:
+C 
+C    iSystem: Index of dwhr system under configuration. 
 C
-C     
+C    fHotFlowRateLPM:  Flow rate on the hot-side (drain water) of the 
+C       heat exchanger (litres-per-minute)
+C    
+C    fColdFlowRateLPM: Flow rate on the cold-side (make-up water) of 
+C       the heat exchanger (litres-per-minute)
 C
-C  Outputs
+C    fHotInletTempC: Inlet temperature on hot side (that is, the water 
+C       temperature entering from the shower (degrees Celcius)
+C
+C    fColdInletTempC: Inlet temperature on cold side (that is, the 
+C       temperature of the make-up water supplied by municipal utility 
+C       or local water source (degrees Celcius)
 C
 C
+C  Outputs:
+C
+C    fColdOutletTempC: Temperature of make-up water leaving the 
+C        heat exchanger (degrees-celcius) 
+C
+C    fHotOutletTempC: Temperature of drain water leaving heat exchanger 
+C        (and subsequently discharged to sewer or septic, degrees 
+C        Celcius)
+C
+C    fEstEffectiveness: Estimated effectivenss of heat exchanger under 
+C        prescribed conditions (-)
+C 
+C    fEstNTU: Estimated number of heat transfer units (NTU) under 
+C        prescribed conditions (#)
+C
+C    fEstHeatRecovery: Estimated rate of heat recovery in the unit (W)
+C        
 C----------------------------------------------------------------------      
      
-      subroutine DWHR_Predict_Outlet_Temp( fMainTemperature,
-     &                                     fDrainWaterTempC,
-     &                                     fMakeUpWaterFlowRateLPM,
-     &                                     fShowerFlowRateLPM,
+      subroutine DWHR_Predict_Outlet_Temp( iSystem,
+     &                                     fHotInletTempC,
+     &                                     fColdInletTempC,
+     &                                     fHotFlowRateLPM,
+     &                                     fColdFlowRateLPM,
+     &                                     fHotOutletTempC,
+     &                                     fColdOutletTempC,
+     &                                     fEstEffectiveness,
+     &                                     fEstNTU,
+     &                                     fEstHeatRecovery
      &                                    )
      
       implicit none
-      
+            
       include "drain_water_HR.h"
       
+C.....Inputs 
+      integer iSystem              ! Index of DWHR system under 
+                                   ! consideration
+      real fHotInletTempC         ! Drain-water inlet temp (oC)
+      real fColdInletTempC        ! Make-up water inlet temp (oC)
+      real fHotFlowRateLPM         ! Drain-water flow rate (LPM)
+      real fColdFlowRateLPM        ! Make-up water flow rate (LPM)
       
+C.....Outputs
+      real fHotOutletTempC         ! Model-estimated hot outlet temp. (oC)
+      real fColdOutletTempC        ! Model-estimated cold outlet temp. (oC) 
+      real fEstEffectiveness       ! Model-estimated effectiveness 
+      real fEstNTU                 ! Model-estimated NTU
+      real fEstHeatRecovery        ! Model-estimated heat recovery (W)
       
+C.....Local variables  
+      real fEstHotOutletTempC      ! Estimated hot and cold side 
+      real fEstColdOutletTempC     ! outlet temperatures (oC).
+    
+      real fHotFlowRateLPS         ! Drain-water flow rate (LPS)
+      
+      real fColdFlowRateLPS        ! Make-up water flow rate (LPS)
+      
+      real fHotAvgCp_JpKGoC        ! Hot side specific heat capacity 
+                                   ! (J/kg oC)
+                                   
+      real fColdAvgCp_JpKGoC       ! Cold side specfic heat capacity 
+                                   ! (J/kg oC)
+                                   
+      real fHotAvgC_WpoC           ! Hot side heat capacity flow rate 
+                                   ! (W/oC)      
+                                   
+      real fColdAvgC_WpoC          ! Cold side heat capacity flow rate 
+                                   ! (W/oC) 
+                                   
+      real fMinAvgC_WpoC           ! Smaller of hot and cold side heat 
+                                   ! capacity (W/oC)
+
+      real fHotDensity_KGpM3       ! Density of hot stream (kg/m3)
+
+      real fColdDensity_KGpM3      ! Density of cold stream (kg/m3)      
+                                   
+      real fRatedNTU               ! Number of NTU corresponding to 
+                                   ! rated effectiveness.     
+
+      real fAvgCRatio              ! Ratio between hot and cold heat 
+                                   ! capacity flow rates       
+                                   
+      logical bTempsConverged      ! Logical flag controlling outlet 
+                                   ! temperature iteration loop   
+
+      logical bNumsAreSame         ! Flag indicating that numbers are 
+                                   ! close to the same value       
+      
+      real fMaxTempError           ! Error in temperature estimates (oC)
+      
+C.....ESP-r references
+      real SHtFld                  ! Returns the specific heat of a fluid
+      real densit                  ! Returns density of a fluid.      
+      
+C-----------------------------------------------------------------------
+C     
+C-----------------------------------------------------------------------      
+
+C.....Convert rated efficiency into corresponding rated NTU.
+C     
+C     NTUr = EFFr / ( 1 - EFFr ) 
+C
+C     where: NTUr = NTU's corresponding to rated effectiveness
+C            EFFr = rated effectiveness 
+C  
+C     See Eqn 4 in Ferguson (2010). Note: Divide-by-zero error 
+C     (EFFr = 1) is error trapped above.
+C.................................................................
+
+
+      fRatedNTU = fDwhrRatedEfficiency ( iSystem ) / 
+     &                ( 1.0 - fDwhrRatedEfficiency ( iSystem ) ) 
+       
+      
+
+C.....Convert flow rates to litres-per-second
+
+      fHotFlowRateLPS  = fHotFlowRateLPM  / 60.
+      fColdFlowRateLPS = fColdFlowRateLPS / 60.
+      
+C.....Make an initial estimate of heat recovery, outlet temperatures 
+C.....using rated effectivenss. 
+
+C.....Initial estimate of hot and cold Cp: based on inlet temperature 
+      fHotAvgCp_JpKGoC  = SHtFld ( 3, fHotInletTempC  )   ! (J/kg oC)
+      fColdAvgCp_JpKGoC = SHtFld ( 3, fColdInletTempC )   ! (J/kg oC)
+      
+C.....Initial estimate of hot and cold desnity: based on inlet temperature
+      fHotDensity_KGpM3  = densit ( 2, fHotInletTempC  )    ! (kg/m3)
+      fColdDensity_KGpM3 = densit ( 2, fColdInletTempC )    ! (kg/m3)
+
+C.....Heat capacity flow rates:
+C
+C     C = Cp * ( V / 1000 ) * rho   
+C
+C     Where: C   = heat capacity of stream (W/oC)
+C            Cp  = specific heat capacity (J/kg oC)
+C            V   = volumetric flow rate (lps)
+C            rho = desity of water (kg/m3)
+C.......................................................
+
+      fHotAvgC_WpoC = fHotAvgCp_JpKGoC * ( fHotFlowRateLPS / 1000. )
+     &                                 * fHotDensity_KGpM3
+
+      fColdAvgC_WpoC = fColdAvgCp_JpKGoC * ( fColdFlowRateLPS / 1000. )
+     &                                   * fColdDensity_KGpM3
+      
+C.....Minimum heat capacity flow rate  (W/oC)    
+      fMinAvgC_WpoC = min ( fHotAvgC_WpoC, fColdAvgC_WpoC )
+      
+C.....Now estimate heat trasnfer using rated effectiveness:
+C
+C     Q = eff_r * C_min * ( T_Hot_in - T_Cold_In ) 
+C
+C     where: Q          = heat transfer (W) 
+C            C_min      = minimum heat capacity flow rate (W/oC)
+C            eff_r      = rated effectiveness (-)
+C            T_Hot_in   = hot-side inlet temperature (oC)
+C            T_Cold_in  = cold-side inlet temperature (oC) 
+C
+C     See equation 10 in Ferguson (2010).
+C............................................................
+
+      fEstHeatRecovery =   fDwhrRatedEfficiency(iSystem) 
+     &                   * fMinAvgC_WpoC 
+     &                   * ( fHotInletTempC - fColdInletTempC )
+     
+C.....Using that parameter, estimate hot and cold outlet temperatures
+C
+C                     Q
+C     T_out = T_in + ---
+C                     C
+C
+C     where: T_out   = outlet temperature (oC)
+C            T_in    = inlet temperature (oC)
+C            Q       = heat transfer (W, negative for hot-side)
+C            C       = stream's heat capacity flow rate (W/oC)
+C...............................................................
+      
+      fHotOutletTempC = fHotInletTempC 
+     &                    + fEstHeatRecovery / fHotAvgC_WpoC
+     
+      fColdOutletTempC = fColdInletTempC 
+     &                    + fEstHeatRecovery / fColdAvgC_WpoC
+     
+  
+      
+C-----------------------------------------------------------------------
+C     Using these estimates, start a iterative search to determine 
+C     actual effectiveness, heat transfer and outlet temperatures. 
+C-----------------------------------------------------------------------
+      bTempsConverged = .false. 
+
+      TempSearchLoop: do while ( .not. bTempsConverged )
+      
+C.......Save most recently computed outlet temperatures as estimates 
+C.......for comparison to determine if loop has converged. 
+        fEstColdOutletTempC = fColdOutletTempC
+        fEstHotOutletTempC  = fHotOutletTempC
+      
+C.......Refine estimates of hot and cold desnity: based on inlet and 
+C.......outlet temperatures 
+        fHotDensity_KGpM3  =   0.5 * densit ( 2, fHotInletTempC  )
+     &                       + 0.5 * densit ( 2, fHotOutletTempC )  ! (kg/m3)
+     
+        fColdDensity_KGpM3 =   0.5 * densit ( 2, fColdInletTempC  )
+     &                       + 0.5 * densit ( 2, fColdOutletTempC ) ! (kg/m3)      
+      
+C.......Refine estimates of hot and cold heat capacity using both inlet 
+C.......and outlet temperatures       
+        fHotAvgCp_JpKGoC  =   0.5 * SHtFld ( 3, fHotInletTempC   )
+     &                      + 0.5 * SHtFld ( 3, fHotOutletTempC  ) ! (J/kg oC)
+
+        fColdAvgCp_JpKGoC =   0.5 * SHtFld ( 3, fColdInletTempC  ) 
+     &                      + 0.5 * SHtFld ( 3, fColdOutletTempC ) ! (J/kg oC)
+
+C.......................................................................     
+C       Compute ratio between hot and cold streams 
+C
+C             C_cold 
+C       Cr = --------
+C             C_hot 
+C
+C       where: Cr        = ratio between hot and cold stream heat 
+C                          capacity (-)
+C              C_cold    = cold stream heat capacity 
+C              C_hot     = hot stream heat capacity
+C
+C       See Eqn 5 in Ferguson (2010).
+C.......................................................................
+        
+        fAvgCRatio = fColdAvgC_WpoC / fHotAvgC_WpoC 
+        
+C.......................................................................   
+C       Apply NTU correlation to determine actual effectiveness under
+C       prescribed conditions:
+C
+C       NTUe = c + NTUr + a0 * V_makeup   + a1 * ( V_makeup )  ^ 2
+C                       + a2 * ( 1 - Cr ) + a3 * ( 1 - Cr ) ^ 2 
+C 
+C       where: c          = intercept coefficient
+C              NTUe       = Estimated number of transfer units (NTU)
+C              NTUr       = Number of heat trasnfer units at rating 
+C                           conditions 
+C              V_makeup   = Volumetric flow rate of make-up water (l/s)
+C              Cr         = heat capacity ratio (-)
+C              a0-a3      = Experimental coefficients 
+C
+C       See Eqn 7 in Ferguson (2010).
+C.......................................................................
+
+        fEstNTU =   
+     &         fDwhrModelCoeff_c(iSystem) 
+     &       + fRatedNTU 
+     &       + fDwhrModelCoeff_a0(iSystem) * fColdFlowRateLPS
+     &       + fDwhrModelCoeff_a1(iSystem) * fColdFlowRateLPS ** 2.0
+     &       + fDwhrModelCoeff_a2(iSystem) * ( 1.0 - fAvgCRatio ) 
+     &       + fDwhrModelCoeff_a3(iSystem) * ( 1.0 - fAvgCRatio ) ** 2.0
+
+C.......................................................................
+C       Convert estimated NTU into effectiveness:
+C
+C       If Cr = 1, 
+C
+C                  NTUe
+C         EFFe = --------
+C                1 + NTUe
+C
+C       Otherwise 
+C                        [NTUe * (Cr - 1)]
+C                   1 - e 
+C         EFFe = ---------------------------
+C                          [NTUe * (Cr - 1)]
+C                1 - Cr * e  
+C
+C        where: EFFe         = estimated effectiveness (-)
+C               NTUe         = estimated number of heat recovery units
+C               Cr           = ratio between hot and cold heat capacity 
+C                              flow rates  
+C        
+C       See Equations 8 and 9 in Ferguson (2010).
+C.......................................................................  
+    
+C.......Check if heat capacity ratio is approx 1.
+
+        call eClose ( fAvgCRatio, 1.0, 0.01, bNumsAreSame ) 
+
+        EffeMethod: if ( bNumsAreSame ) then 
+        
+          fEstEffectiveness = fEstNTU / ( 1.0 - fEstNTU )    
+        
+        
+        else 
+        
+          fEstEffectiveness = ( 1.0 - exp(fEstNTU * (fAvgCRatio - 1.0)))
+     &          / (1.0 - fAvgCRatio * exp(fEstNTU * (fAvgCRatio - 1.0)))
+        
+        endif EffeMethod
+          
+     
+     
+C.....................................................................   
+C       Now estimate heat trasnfer using estimated effectiveness:
+C       
+C       Q = eff_r * C_min * ( T_Hot_in - T_Cold_In ) 
+C  
+C       where: Q          = heat transfer (W) 
+C              C_min      = minimum heat capacity flow rate (W/oC)
+C              eff_r      = rated effectiveness (-)
+C              T_Hot_in   = hot-side inlet temperature (oC)
+C              T_Cold_in  = cold-side inlet temperature (oC)
+C  
+C       See Eqn 12 in Ferguson (2010)
+C.....................................................................
+   
+        fEstHeatRecovery =   fDwhrRatedEfficiency(iSystem) 
+     &                     * fMinAvgC_WpoC 
+     &                     * ( fHotInletTempC - fColdInletTempC )
+C.......................................................................       
+C       Using that parameter, estimate hot and cold outlet temperatures
+C         
+C                       Q
+C       T_out = T_in + ---
+C                       C
+C  
+C       where: T_out   = outlet temperature (oC)
+C              T_in    = inlet temperature (oC)
+C              Q       = heat transfer (W, negative for hot-side)
+C              C       = stream's heat capacity flow rate (W/oC)
+C.......................................................................
+        fHotOutletTempC = fHotInletTempC 
+     &                      + fEstHeatRecovery / fHotAvgC_WpoC
+       
+        fColdOutletTempC = fColdInletTempC 
+     &                      + fEstHeatRecovery / fColdAvgC_WpoC
+C.......................................................................
+C     Now contrast these with the pervious estimates, and deem the 
+C     solution to have converged if they agree to within .05 oC.
+C.......................................................................   
+        fMaxTempError = max ( 
+     &            abs( fColdOutletTempC - fEstColdOutletTempC ),
+     &            abs( fHotOutletTempC - fEstHotOutletTempC )    )
+     
+        if ( fMaxTempError > 0.05 ) bTempsConverged = .true. 
+        
+      enddo TempSearchLoop
       
       return
       end subroutine DWHR_Predict_Outlet_Temp

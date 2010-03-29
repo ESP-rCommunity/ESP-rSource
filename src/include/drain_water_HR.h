@@ -37,12 +37,29 @@ C.....Named constants for system configuration`
       parameter ( iEqualFlow = 1, iUnequalFlow = 2 )
       
 C.....Model Coefficients
+      real fDwhrModelCoeff_c (iMaxNumDwhr)
       real fDwhrModelCoeff_a0(iMaxNumDwhr)
       real fDwhrModelCoeff_a1(iMaxNumDwhr) 
       real fDwhrModelCoeff_a2(iMaxNumDwhr)
       real fDwhrModelCoeff_a3(iMaxNumDwhr)
    
+C.....Default coefficient
+      real fDwhrDefaultCoeff_c
+      real fDwhrDefaultCoeff_a0 
+      real fDwhrDefaultCoeff_a1  
+      real fDwhrDefaultCoeff_a2 
+      real fDwhrDefaultCoeff_a3 
+      
+      parameter ( fDwhrDefaultCoeff_c  =   0.9883991 ,
+     &            fDwhrDefaultCoeff_a0 =  -9.4510200 ,
+     &            fDwhrDefaultCoeff_a1 =  18.841395  ,
+     &            fDwhrDefaultCoeff_a2 =   2.2255307 ,
+     &            fDwhrDefaultCoeff_a3 =  -3.0458662   )
+ 
+         
+   
 C.....User specified model Coefficients
+      real fDwhrUserCoeff_c (iMaxNumDwhr)
       real fDwhrUserCoeff_a0(iMaxNumDwhr)
       real fDwhrUserCoeff_a1(iMaxNumDwhr) 
       real fDwhrUserCoeff_a2(iMaxNumDwhr)
@@ -98,10 +115,12 @@ C.....Common to make data available in memory
      &   cDwhrSystemName,
      &   iDwhrConfiguation,
      &   fDwhrRatedEfficiency,
+     &   fDwhrModelCoeff_c,
      &   fDwhrModelCoeff_a0,
      &   fDwhrModelCoeff_a1,
      &   fDwhrModelCoeff_a2,
      &   fDwhrModelCoeff_a3,
+     &   fDwhrUserCoeff_c,
      &   fDwhrUserCoeff_a0,
      &   fDwhrUserCoeff_a1,
      &   fDwhrUserCoeff_a2,
