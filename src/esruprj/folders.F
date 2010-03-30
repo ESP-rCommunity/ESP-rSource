@@ -110,6 +110,7 @@ C Passed in parameters.
       integer iyeart    ! for local editing
       integer lnmp,lncr,lnod ! for with of mpath, cfgroot, odir strings
       character tcname*248   ! for editing image notes
+      character WORDS(12)*32,testw*32
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -333,23 +334,73 @@ C Create the folder mpath and inside that the standard folders.
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'ctl'
+
+C Check that the control folder path is standard.
+          call GETTOKENS(ctlpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'ctl'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'ctl'
+            write(ctlpth,'(3a)')'..',fs,'ctl'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'zones'
+
+C Check that the zones folder path is standard or was not yet defined.
+          call GETTOKENS(zonepth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'zones'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'zones'
+            write(zonepth,'(3a)')'..',fs,'zones'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'nets'
+
+C Check that the nets folder path is standard.
+          call GETTOKENS(netpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'nets'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'nets'
+            write(netpth,'(3a)')'..',fs,'nets'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'images'
+
+C Check that the images folder path is standard.
+          call GETTOKENS(imgpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'images'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'images'
+            write(imgpth,'(3a)')'..',fs,'images'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'doc'
+
+C Check that the doc folder path is standard.
+          call GETTOKENS(docpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'doc'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'doc'
+            write(docpth,'(3a)')'..',fs,'doc'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
@@ -357,19 +408,23 @@ C Create the folder mpath and inside that the standard folders.
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'dbs'
+
+C Check that the dbs folder path is standard.
+          call GETTOKENS(dbspth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'dbs'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'dbs'
+            write(dbspth,'(3a)')'..',fs,'dbs'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
 
-          write(zonepth,'(3a)')'..',fs,'zones'
-          write(netpth,'(3a)')'..',fs,'nets'
-          write(ctlpth,'(3a)')'..',fs,'ctl'
-          write(imgpth,'(3a)')'..',fs,'images'
           write(radpth,'(3a)')'..',fs,'rad'
-          write(docpth,'(3a)')'..',fs,'doc'
           write(tmppth,'(3a)')'..',fs,'tmp'
-          write(dbspth,'(3a)')'..',fs,'dbs'
 
 C Re-establish pwd and then project folders.
           write(path,'(4a)')mpath(1:lnblnk(mpath)),fs,'cfg',fs

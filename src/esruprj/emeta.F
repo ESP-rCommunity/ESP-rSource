@@ -1482,6 +1482,30 @@ C Debug.
           write(6,*)  's mpath ',mpath
         endif
         goto 43
+      elseif(WORD(1:7).eq.'*zonpth')then
+        CALL EGETRM(OUTSTR,K,zonepth,'W','path to zones',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*netpth')then
+        CALL EGETRM(OUTSTR,K,netpth,'W','path to nets',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*ctlpth')then
+        CALL EGETRM(OUTSTR,K,ctlpth,'W','path to ctl',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*imgpth')then
+        CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*tmppth')then
+        CALL EGETRM(OUTSTR,K,tmppth,'W','path to scratch',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*docpth')then
+        CALL EGETRM(OUTSTR,K,docpth,'W','path to documents',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*radpth')then
+        CALL EGETRM(OUTSTR,K,radpth,'W','path to radnce',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*dbspth')then
+        CALL EGETRM(OUTSTR,K,dbspth,'W','path to loc databases',IER)
+        goto 43
       elseif(WORD(1:12).eq.'*assessments')then
 
 C Get tags related to assessments: after the tag *assessments the
@@ -2671,6 +2695,26 @@ C *silent_input
      &  actions(1:lnblnk(actions)),tab,
      &  root(1:lnblnk(root)),tab,
      &  folder(1:lnblnk(folder)),tab,mpath(1:lnblnk(mpath))
+
+C Include the model folder tags as in the cfg file. This will be used when
+C extracting to a set of standard ESP-r files.
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*zonpth ',zonepth(1:lnzp),
+     &  '  # path to zones'
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*netpth ',netpth(1:lnnp),
+     &  '  # path to networks'
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*ctlpth ',ctlpth(1:lncp),
+     &  '  # path to controls'
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*radpth ',radpth,
+     &  '  # path to radiance files'
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*imgpth ',imgpth,
+     &  '  # path to project images'
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*tmppth ',tmppth,
+     &  '  # path to project scratch folder'
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*docpth ',docpth(1:lndcp),
+     &  '  # path to project documents'
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*dbspth ',dbspth(1:lndbp),
+     &  '  # path to local databases'
+
       write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)'*weather_station',tab,
      &  weather(1:lnblnk(weather)),'  # climate file'
 
