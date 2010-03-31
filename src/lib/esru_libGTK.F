@@ -870,7 +870,7 @@ C DSTR is a string to use as a default.
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
       CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124,dh*72,outs*124
       character prompt*144
-      LOGICAL OK,DOK
+      LOGICAL OK,DOK,unixok
 
    20 IER=0
 
@@ -961,7 +961,8 @@ C        ENDIF
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
             if(last.lt.144)then
               write(FILEN,'(a)',iostat=ios,err=3) LASTS(1:last)
             else
@@ -1215,7 +1216,8 @@ C A cancel answer detected, set ier to -3 and return.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS.NE.' ')THEN
-            WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
             STRVAL=LASTS(1:last)
             RETURN
           ELSE
@@ -1671,7 +1673,8 @@ C A cancel answer detected, set ier to -3 and return.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
             IF(LASTS(1:2).NE.'  ')THEN
-              WRITE(IUOUT,55)LASTS(1:last)
+              call isunix(unixok)
+              if(unixok) WRITE(IUOUT,55)LASTS(1:last)
               STRVAL=LASTS(1:last)
               CMDACT=.TRUE.
               RETURN
@@ -1688,7 +1691,8 @@ C Must have input a character string.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55)LASTS(1:last)
             STRVAL=LASTS(1:last)
             CMDACT=.FALSE.
             RETURN
@@ -1879,7 +1883,8 @@ C leading blanks from string returned.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55)LASTS(1:last)
             STRVAL=LASTS(1:last)
             CNCLACT=.FALSE.
             RETURN
@@ -2079,7 +2084,8 @@ C A cancel answer detected, set ier to -3 and return.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
             IF(LASTS(1:2).NE.'  ')THEN
-              WRITE(IUOUT,55)LASTS(1:last)
+              call isunix(unixok)
+              if(unixok) WRITE(IUOUT,55)LASTS(1:last)
               STRVAL=LASTS(1:last)
               ICACT=1
               RETURN
@@ -2096,7 +2102,8 @@ C Must have input a character string.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
             IF(LASTS(1:2).NE.'  ')THEN
-              WRITE(IUOUT,55)LASTS(1:last)
+              call isunix(unixok)
+              if(unixok) WRITE(IUOUT,55)LASTS(1:last)
               STRVAL=LASTS(1:last)
               ICACT=2
               RETURN
@@ -2113,7 +2120,8 @@ C Must have input a character string.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55)LASTS(1:last)
             STRVAL=LASTS(1:last)
             ICACT=0
             RETURN
@@ -3447,8 +3455,6 @@ C MMOD=-1 Text: never wait, page with blank line.
         IF(IEND.EQ.0)THEN
           IF(IPAG.EQ.1)THEN
             WRITE(IUOUT,'(a)') '  '
-C            WRITE(IUOUT,300)
-C 300        FORMAT(/,' ',72('-'),/)
           ENDIF
           LIMIT=LIMTTY
           RETURN
