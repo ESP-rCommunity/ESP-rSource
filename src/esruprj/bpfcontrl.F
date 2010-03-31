@@ -4788,10 +4788,10 @@ C Miscellaneous data for proportional controller.
           cm(1)=5.
   54      WRITE(HOLD,'(5f8.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
           H(1)='Number of items for proportional controller = 5 '
-          H(2)='  1st is signal (what is sensed for this control)',
+          H(2)='  1st is signal (what is sensed for this control)'
           H(3)='      lower limit,'
           H(4)='  2nd is valve position at lower limit (0-100 %),'
-          H(5)='  3rd is signal (what is sensed for this control)',
+          H(5)='  3rd is signal (what is sensed for this control)'
           H(6)='      upper limit, '
           H(7)='  4th is valve position at upper limit (0-100 %),'
           H(8)='  5th delta signal to overcome hysteresis.'

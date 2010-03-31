@@ -86,7 +86,7 @@ C Check number of periods in each day and the start and finish times
           END IF
           IF(FLWTIM.GT.TPS.AND.FLWTIM.LE.TPF) GOTO 30
    22   CONTINUE
-        call edisp(iuout,' MFCNTR: cannot locate appropriate day-period')
+        call edisp(iuout,'MFCNTR: cannot locate appropriate day-period')
         call epwait
         CALL EPAGEND
         STOP
