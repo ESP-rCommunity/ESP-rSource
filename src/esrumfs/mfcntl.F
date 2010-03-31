@@ -34,7 +34,8 @@ C Boston, MA 02111-1307 USA.
       character outs*124
 
       do 102 i=1,MCNN
- 102    ctlpos(i)=1.0
+        ctlpos(i)=1.0
+ 102  continue
 
 C Return if no mass flow control function active
       IF(NCC.EQ.0) GOTO 999
@@ -43,86 +44,85 @@ C Determine year day number of present day
       IDAY=IYD
 
       DO 100 ICC=1,NCC
-      ICFP=ICC
+        ICFP=ICC
 C Set up day type and period pointers
-      NDAYT=NFCDT(ICFP)
+        NDAYT=NFCDT(ICFP)
 
 c determine current day of the week
-      CALL EWEEKD(IRD,IRM,IRY,IDW)
+        CALL EWEEKD(IRD,IRM,IRY,IDW)
 
 C If NDAYT=0 set data to all day types
-      NIN=0
-      IF(NDAYT.EQ.0)THEN
-        NDAYT=NBDAYTYPE
-        NIN=-1*NBDAYTYPE
-      ENDIF
-      DO 10 IDTYPP=1,NDAYT
-        IDS=IFCDV(ICFP,IDTYPP,1)
-        IDF=IFCDV(ICFP,IDTYPP,2)
-        IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
-   10 CONTINUE
-      WRITE(outs,*) ' MFCNTR: mass flow control connection ',ICFP
-      call edisp(iuout,outs)
-      WRITE(outs,*) '	      no valid day type for year-day ',IDAY
-      call edisp(iuout,outs)
-      call edisp(iuout,
-     &       ' MFCNTR: cannot locate appropriate day type')
-      call epwait
-      CALL EPAGEND
-      STOP
-
-C Check number of periods in each day and the start and finish times
-   20 if(nin.le.-1.or.ndayt.lt.1)idtypp=icalender(iday)
-      NDAYP=NFCDP(ICFP,IDTYPP)
-      IF(NDAYP.EQ.0) STOP ' MFCNTR: no day-periods defined'
-      DO 22 IDAYP=1,NDAYP
-      IPERP=IDAYP
-      TPS=TFCPS(ICFP,IDTYPP,IDAYP)
-      IF(IDAYP.LT.NDAYP) THEN
-         TPF=TFCPS(ICFP,IDTYPP,IDAYP+1)
-      ELSE
-         TPF=24.
-      END IF
-      IF(FLWTIM.GT.TPS.AND.FLWTIM.LE.TPF) GOTO 30
-   22 CONTINUE
-      call edisp(iuout,' MFCNTR: cannot locate appropriate day-period')
-      call epwait
-      CALL EPAGEND
-      STOP
-
-C Valid period established; now invoke appropriate control law routine
-C Mass flow control law 0: ON/OFF controller
-   30 IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.0)THEN
-         CALL FCL00
-
-C Mass flow control law 1: Proportional controller with hysteresis
-      ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.1)THEN
-         CALL FCL01
-C Mass flow control law 2: Range controller for components 30 35 40 110.
-      ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.2)THEN
-         CALL FCL02
-C Mass flow control law 3: multi-sensor ON/OFF controller
-      ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.3)THEN
-         CALL FCL03
-C Nicol control algorithm
-      ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.4)THEN
-         CALL FCL04
- 
-C PI controller
-      ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.5)THEN
-         CALL FCL05
- 
-C New controllers inserted here!
-      ELSE
-        WRITE(outs,*) 'MFCNTR: invalid m. flow control law ',
-     &    IFCLAW(ICFP,IDTYPP,IPERP),' has been referenced ',
-     &    ICFP,IDTYPP,IPERP
+        NIN=0
+        IF(NDAYT.EQ.0)THEN
+          NDAYT=NBDAYTYPE
+          NIN=-1*NBDAYTYPE
+        ENDIF
+        DO 10 IDTYPP=1,NDAYT
+          IDS=IFCDV(ICFP,IDTYPP,1)
+          IDF=IFCDV(ICFP,IDTYPP,2)
+          IF(IDAY.GE.IDS.AND.IDAY.LE.IDF) GOTO 20
+   10   CONTINUE
+        WRITE(outs,*) ' MFCNTR: mass flow control connection ',ICFP
         call edisp(iuout,outs)
+        WRITE(outs,*) '      no valid day type for year-day ',IDAY
+        call edisp(iuout,outs)
+        call edisp(iuout,
+     &       ' MFCNTR: cannot locate appropriate day type')
         call epwait
         CALL EPAGEND
         STOP
-      END IF
 
+C Check number of periods in each day and the start and finish times
+   20   if(nin.le.-1.or.ndayt.lt.1)idtypp=icalender(iday)
+        NDAYP=NFCDP(ICFP,IDTYPP)
+        IF(NDAYP.EQ.0) STOP ' MFCNTR: no day-periods defined'
+        DO 22 IDAYP=1,NDAYP
+          IPERP=IDAYP
+          TPS=TFCPS(ICFP,IDTYPP,IDAYP)
+          IF(IDAYP.LT.NDAYP) THEN
+            TPF=TFCPS(ICFP,IDTYPP,IDAYP+1)
+          ELSE
+           TPF=24.
+          END IF
+          IF(FLWTIM.GT.TPS.AND.FLWTIM.LE.TPF) GOTO 30
+   22   CONTINUE
+        call edisp(iuout,' MFCNTR: cannot locate appropriate day-period')
+        call epwait
+        CALL EPAGEND
+        STOP
+
+C Valid period established; now invoke appropriate control law routine
+C Mass flow control law 0: ON/OFF controller
+   30   IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.0)THEN
+          CALL FCL00
+
+C Mass flow control law 1: Proportional controller with hysteresis
+        ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.1)THEN
+          CALL FCL01
+C Mass flow control law 2: Range controller for components 30 35 40 110.
+        ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.2)THEN
+          CALL FCL02
+C Mass flow control law 3: multi-sensor ON/OFF controller
+        ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.3)THEN
+          CALL FCL03
+C Nicol control algorithm
+        ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.4)THEN
+          CALL FCL04
+ 
+C PI controller
+        ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.5)THEN
+          CALL FCL05
+ 
+C New controllers inserted here!
+        ELSE
+          WRITE(outs,*) 'MFCNTR: invalid m. flow control law ',
+     &      IFCLAW(ICFP,IDTYPP,IPERP),' has been referenced ',
+     &      ICFP,IDTYPP,IPERP
+          call edisp(iuout,outs)
+          call epwait
+          CALL EPAGEND
+          STOP
+        END IF
  100  CONTINUE
 
  999  RETURN
@@ -606,11 +606,11 @@ C ***** POSITN
 #include "building.h"
 #include "control.h"
 
-C     SIGL  - signal lower limit Sl (?)
-C     PSIGL - relative valve position H/H100 at Sl (%)
-C     SIGU  - signal upper limit Su (?)
-C     PSIGU - relative valve position H/H100 at Su (%)
-C     DSHY  - dS to overcome valve/damper hysteresis (?)
+C SIGL  - signal lower limit Sl (whatever is sensed by ctl loop)
+C PSIGL - relative valve position H/H100 at Sl (%)
+C SIGU  - signal upper limit Su (whatever is sensed by ctl loop)
+C PSIGU - relative valve position H/H100 at Su (%)
+C DSHY  - delta sensor value to overcome valve/damper hysteresis
 
       COMMON/MFCPOS/HHH100(MCNN),HSASC(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
@@ -633,7 +633,6 @@ C Calculate relative valve position, incorporate hysteresis effect.
         ELSE
           HH100=PSIGL+(PSIGU-PSIGL)*(SIGNAL-(SIGL-DSHY))/(SIGU-SIGL)
         END IF
-C     ELSE IF(SIGNAL.GT.HSASC(ICFP)) THEN
       ELSE
         IF(SIGNAL.LE.SIGL) THEN
           HH100=PSIGL
@@ -646,7 +645,6 @@ C     ELSE IF(SIGNAL.GT.HSASC(ICFP)) THEN
 
 C Refresh history for H/H100 and in case of change recalculate HSASC
       call eclose(HH100,HHH100(ICFP),0.001,close)
-C      IF(HH100.NE.HHH100(ICFP)) THEN
       IF(.NOT.close) THEN
          HHH100(ICFP)=HH100
          IF(HH100.GE.PSIGU) THEN
@@ -981,8 +979,8 @@ C based on the control file being used hence is ignored.
 C Calculate comfort temperature TCOMF (based on the summer and winter behaviours)
 C These are algorithm version 1 equations and will be overwritten
 C (retained for historic purposes)
-        IF(TRM.GE.10.)TCOMF=0.33*TRM+18.8
-        IF(TRM.LT.10.)TCOMF=0.09*TRM+22.6
+      IF(TRM.GE.10.)TCOMF=0.33*TRM+18.8
+      IF(TRM.LT.10.)TCOMF=0.09*TRM+22.6
 
 C Pakistan mode determination (four modes)
 C Mode = AC air conditioning
@@ -992,13 +990,13 @@ C Mode = FR free running (no heating or air conditioning, may have fan)
 C Calculate mode and Tcomfort.
       IF(ACAVAIL.GT.0..AND.TRM.GT.28.1)THEN
         MODE='AC'
-	TCOMF=0.416*TRM+16.5
+        TCOMF=0.416*TRM+16.5
       ELSEIF(Havail.GT.0..AND.TRM.LT.10.)THEN
         MODE='HT'
-	TCOMF=0.156*TRM+19.1
+        TCOMF=0.156*TRM+19.1
       ELSE
         MODE='FR'
-	IF(IFANON.EQ.0)THEN
+        IF(IFANON.EQ.0)THEN
           TCOMF=0.408*TRM+16.6
         ELSE
           TCOMF=0.480*TRM+16.6
@@ -1021,7 +1019,7 @@ C in AC mode. If Tout < 23.6 then fans are assumed to be off.
           IFANON=0
         ENDIF
       ELSEIF(MODE.EQ.'AC'.AND.Fposs.GT.0.)THEN
-      	IFANON=1
+        IFANON=1
       ELSE
         IFANON=0
       ENDIF

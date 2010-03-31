@@ -4787,22 +4787,24 @@ C Miscellaneous data for on / off controller.
 C Miscellaneous data for proportional controller.
           cm(1)=5.
   54      WRITE(HOLD,'(5f8.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
-          H(1)= 'Number of items for proportional controller = 5 '
-          H(2)= '  1st is signal lower limit,'
-          H(3)= '  2nd is valve position at lower limit (%),'
-          H(4)= '  3rd is signal upper limit, '
-          H(5) ='  4th is valve position at upper limit (%),'
-          H(6) ='  5th dS to overcome hysteresis,'
+          H(1)='Number of items for proportional controller = 5 '
+          H(2)='  1st is signal (what is sensed for this control)',
+          H(3)='      lower limit,'
+          H(4)='  2nd is valve position at lower limit (0-100 %),'
+          H(5)='  3rd is signal (what is sensed for this control)',
+          H(6)='      upper limit, '
+          H(7)='  4th is valve position at upper limit (0-100 %),'
+          H(8)='  5th delta signal to overcome hysteresis.'
           CALL EASKS(HOLD,
      &   ' Proportional: signal lower lmt, lower valve psn (%), signal',
      &   ' upper lmt, upper valve psn (%), hysteresis: ',42,
      &      ' 10.  0.  20. 100.  1.',' flow proportional controller',
-     &      IER,6)
+     &      IER,8)
           K=0
-          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','signl low',IER)
-          CALL EGETWR(HOLD,K,cm(3),0.,100.,'F','valv psn l',IER)
-          CALL EGETWR(HOLD,K,cm(4),0.,0.,'-','signl high',IER)
-          CALL EGETWR(HOLD,K,cm(5),0.,100.,'F','valv psn h',IER)
+          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','signal low',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,100.,'F','valve psn l',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,0.,'-','signal high',IER)
+          CALL EGETWR(HOLD,K,cm(5),0.,100.,'F','valve psn h',IER)
           CALL EGETWR(HOLD,K,cm(6),0.,9999.,'F','ds for hist',IER)
           if(ier.ne.0)goto 54
         elseif(iclaw.eq.2)then
@@ -4813,23 +4815,24 @@ C Miscellaneous data for proportional controller.
           H(3)= ' 2nd is mid setpint'
           H(4)= ' 3nd is high setpint'
           H(5)= ' which yields 4 ranges as follows:'
-          h(6)= '   low range < low setpoint, '
-          h(7)= '   default range between low and mid setpoints, '
-          h(8)= '   mid range between mid and hi setpoints, '
-          h(9)= '   above high setpoint. '
-          H(10)=' 4th is low range ratio (of rate or area), '
-          H(11)=' 5th is mid range ratio (of rate or area),'
-          H(12)=' 6th is high range ratio (of rate or area)'
-          h(13)=' '
-          h(14)='If within default range then the nominal rate or '
-          h(15)='area is used. '
-          h(16)=' '
-          h(17)='NOTE: this controller works with sensed conditions'
-          h(18)='such as node temperature and can be used with '
-          h(19)='components 30 35 40 110 and 130. '
+          h(6)= '   low range - below low setpoint, '
+          h(7)= '   default range - (nominal area or rate of the'
+          h(8)= '      component) between low and mid setpoints,'
+          h(9)= '   mid range - between mid and hi setpoints,'
+          h(10)='   high range - above high setpoint. '
+          H(11)=' 4th is low range ratio (of rate or area), '
+          H(12)=' 5th is mid range ratio (of rate or area),'
+          H(13)=' 6th is high range ratio (of rate or area)'
+          h(14)=' '
+          h(15)='If within default range then the nominal rate or '
+          h(16)='area is used. '
+          h(17)=' '
+          h(18)='NOTE: this controller works with sensed conditions'
+          h(19)='such as node temperature and can be used with '
+          h(20)='components 30 35 40 110 and 130. '
           CALL EASKS(HOLD,
      &      ' Range setpoints: low, mid, high (see help)',
-     &      ' : ',42,' 0. 10. 20. ',' flow range controller',IER,19)
+     &      ' : ',42,' 0. 10. 20. ',' flow range controller',IER,20)
           K=0
           CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','low set pt',IER)
           CALL EGETWR(HOLD,K,cm(3),0.,0.,'-','mid set pt',IER)
@@ -4838,7 +4841,7 @@ C Miscellaneous data for proportional controller.
  157      WRITE(HOLD,'(3f9.4)')cm(5),cm(6),cm(7)
           CALL EASKS(HOLD,
      &      ' Ratios of rate or area for: low, mid, high (see help)',
-     &      ' : ',42,' 0. 1. 1. ',' flow range controller',IER,16)
+     &      ' : ',42,' 0.1 1.0 2.0 ',' flow range controller',IER,20)
           K=0
           CALL EGETWR(HOLD,K,cm(5),0.,0.,'-','low ratio',IER)
           CALL EGETWR(HOLD,K,cm(6),0.,0.,'-','mid ratio',IER)

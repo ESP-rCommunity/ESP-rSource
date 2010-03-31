@@ -1920,10 +1920,10 @@ C Now it is ok to write out the copied zone.
             newgeo = .true.
           endif
           if(newgeo)then
-	    iuf=ifil+2
+            iuf=ifil+2
             call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           else
-	    iuf=ifil+2
+            iuf=ifil+2
             call emkgeo(iuf,LGEOM(NCOMP),NCOMP,3,IER)
           endif
           IF(IER.EQ.1)THEN
@@ -1981,7 +1981,7 @@ C If geometry file can hold obstructions save them there
 C otherwise write out write out zone obstruction file.
             call eclose(gversion(ncomp),1.1,0.01,newgeo)
             if(newgeo)then
-	      iuf=ifil+2
+              iuf=ifil+2
               call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
               IOBS(NCOMP)=2    ! reset to signal obs in geom file
               ZOBS(NCOMP)='  '
@@ -3378,7 +3378,7 @@ C Also scan utility files if they exist.
         H(15)='permission. Other example models are available'
         H(16)='via the `exemplars` option.'
 
-	LTMP=' '    ! reset return string
+        LTMP=' '    ! reset return string
         CALL EASKXORGTKF(LCMDFL,
      &    'System configuration file?',' ',
      &    DFCFG,LTMP,'config file name',IER,16)
