@@ -26,7 +26,7 @@ Edited by Dr. Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 5 March 2010
+Version of 31 March 2010
 .sp 2
 .SH
 Introduction
@@ -320,6 +320,14 @@ the file contents each of the tokens will be explained.
 *menu,Creates three zone model in /tmp/poly3
 *doc,Model of a box and roof and triangual room within distributed folders to be created in /tmp/poly3 and then set site to use data from uk_oban climate file.
 *action,new,poly,distributed,/tmp/poly3
+*zonpth ../zones # path to zones
+*netpth ../nets # path to networks
+*ctlpth ../ctl # path to controls
+*radpth ../rad # path to radiance files
+*imgpth ../images # path to project images
+*tmppth ../tmp # path to project scratch folder
+*docpth ../doc # path to project documents
+*dbspth ../dbs # path to local databases
 *weather_station,uk_oban
 *site_loc,45.320,0.000,0.0,6 # latitude, long diff, time zone
 *site_exp,1,28.0,38.0,34  # site expoure views to sky ground buildings
@@ -465,6 +473,9 @@ the file.
 .LP
 the *doc line is followed by a block of text (up to 248 char) 
 on one line which provides a summary of the model.
+
+.SH
+Model folder related data
 .MBL
 
   *action,new,poly,distributed,/tmp/poly3
@@ -488,6 +499,32 @@ single - all the model files are in one folder.
 .LP
 The 5th token is the absolute path to the location of the model.  In 
 the above case the model files will be /tmp/poly3/cfg /tmp/poly3/zones etc.
+.MBL
+
+   *zonpth ../zones # path to zones
+   *netpth ../nets # path to networks
+   *ctlpth ../ctl # path to controls
+   *radpth ../rad # path to radiance files
+   *imgpth ../images # path to project images
+   *tmppth ../tmp # path to project scratch folder
+   *docpth ../doc # path to project documents
+   *dbspth ../dbs # path to local databases
+.ES
+.LP
+There are an optional set of tokens which define the folder layout
+of the ESP-r model derived from the META file. For the case where
+the 4th token of the *action line is distributed the standard
+ESP-r folder structure is created e.g. ../zones ../nets ../ctl 
+if no directives are given. If a bespoke folder structure is
+required, for example to place local databases in ../databases
+instead of ../dbs then a *dbspth line would be added.
+.LP
+In each case there are two tokens on the line. The first is the
+tag and the second is a relative path to the relevant folder.
+.LP
+When the project manager of ESP-r exports an existing model 
+these lines are added to ensure that the equivalent folder 
+structure is recovered. 
 .SH
 Site related data
 .MBL
