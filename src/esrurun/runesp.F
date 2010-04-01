@@ -440,6 +440,8 @@ C Paremeters passed to:silentzone
 
       character hasconstr*32,szhasconstr*32
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
+      character hasoptic*32,szhasoptic*32
+      dimension hasoptic(MS),szhasoptic(MSZ,MS)  ! optics to use for each surface
 
 C Array of percent window area in the parent surfaces
       real glzpercent(5)
@@ -463,6 +465,8 @@ C Data related to locating a ground temperature file.
       integer igrfile ! unit number of ground file
       integer lsn    ! length of currentfile
 
+      integer metaver  ! one for 1.1 and two for 1.2
+
       IER=0
 
 C Get the current folder and display options to the user.
@@ -482,6 +486,7 @@ C Debug.
 C      write(6,*) 'usrdir is ',odir
 
 C Set logicals for locations of windows.
+      metaver =2  ! initial assumption
       glzin1 = .false.
       glzin2 = .false.
       glzin3 = .false.
@@ -555,6 +560,7 @@ C Clear the msz array structures.
         usefile(iz) = ' '
         do 52 isu=1,MS
           szhasconstr(iz,isu)=' '
+          szhasoptic(iz,isu)=' '
   52    continue
   40  continue
 
@@ -842,16 +848,22 @@ C Set the name of the new zone.
 C Assign the intial box surface name and construction attributes.
       write(sname(nsz,1),'(a)') 'front'
       write(szhasconstr(nsz,1),'(a)') wallconstr
+      write(szhasoptic(nsz,1),'(a)') 'OPAQUE'
       write(sname(nsz,2),'(a)') 'right'
       write(szhasconstr(nsz,2),'(a)') wallconstr
+      write(szhasoptic(nsz,2),'(a)') 'OPAQUE'
       write(sname(nsz,3),'(a)') 'back'
       write(szhasconstr(nsz,3),'(a)') wallconstr
+      write(szhasoptic(nsz,3),'(a)') 'OPAQUE'
       write(sname(nsz,4),'(a)') 'left'
       write(szhasconstr(nsz,4),'(a)') wallconstr
+      write(szhasoptic(nsz,4),'(a)') 'OPAQUE'
       write(sname(nsz,5),'(a)') 'roof'
       write(szhasconstr(nsz,5),'(a)') roofconstr
+      write(szhasoptic(nsz,5),'(a)') 'OPAQUE'
       write(sname(nsz,6),'(a)') 'floor'
       write(szhasconstr(nsz,6),'(a)') floorconstr
+      write(szhasoptic(nsz,6),'(a)') 'OPAQUE'
 
 C Determine how many surfaces in the model.
       write(shape(nsz),'(a)') 'box '
@@ -862,26 +874,31 @@ C Determine how many surfaces in the model.
         NS = NS + 1
         write(sname(nsz,NS),'(a)') 'glz_front'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
+        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
       if(glzin2)then
         NS = NS + 1
         write(sname(nsz,NS),'(a)') 'glz_right'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
+        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
       if(glzin3)then
         NS = NS + 1
         write(sname(nsz,NS),'(a)') 'glz_back'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
+        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
       if(glzin4)then
         NS = NS + 1
         write(sname(nsz,NS),'(a)') 'glz_left'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
+        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
       if(glzin5)then
         NS = NS + 1
         write(sname(nsz,NS),'(a)') 'skylight'
         write(szhasconstr(nsz,NS),'(a)') skylightconstr
+        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
 
 C For the surfaces other than ground set to outside. If there was
@@ -935,11 +952,13 @@ C Generate the zone and zone files.
 C Fill surface arrays.
       do 49 isu=1,MS
         hasconstr(isu)=szhasconstr(isz,isu)
+        hasoptic(isu)=szhasoptic(isz,isu)
   49  continue
 
       write(outs,'(2a)') 'Processing ',zname(isz)
       call edisp(iuout,outs)
-      call silentzone(ICOMP,hasconstr,use,usefile(isz),IER)
+      call silentzone(ICOMP,metaver,hasconstr,hasoptic,use,
+     &  usefile(isz),IER)
 
 C Overwrite the initial zone operation file with the correct
 C density information.

@@ -21,7 +21,7 @@ C Boston, MA 02111-1307 USA.
 C The file emeta.f is a collection of support facilities for 
 C reading and creating esp-r model meta files:
 C  silentmodel creates a model from passed parameters.
-C  silentzone: creates a zone (or limited complexity) based on parameters
+C  silentzone: creates a zone based on parameters
 C              passed to it.
 C  silentread: Reads esp-r meta file zones geometry data.
 C  metawrite:  Creates an esp-r meta file. Data input is from
@@ -378,10 +378,12 @@ C ************* silentzone
 C silentzone creates a zone based on meta parameters passed
 C to it.
 C hasconstr (string array) the name of the MLC to use for each surface
+C hasoptic (string array) the name of the optics to use for each surface
 C use integer*3 directives for zone use pattern.,
 c usefile char*32 file name (w/o path) of pattern operation file.
 C IER=0 OK. 
-      subroutine silentzone(ICOMP,hasconstr,use,usefile,IER)
+      subroutine silentzone(ICOMP,metaver,hasconstr,hasoptic,use,
+     &  usefile,IER)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -391,6 +393,16 @@ C IER=0 OK.
       
       integer lnblnk  ! function definition
 
+C Parameters
+      integer icomp    ! focus zone index
+      integer metaver  ! one for 1.1 and two for 1.2
+      character hasconstr*32
+      dimension hasconstr(MS)  ! construction to use for each surface
+      character hasoptic*32
+      dimension hasoptic(MS)   ! optics to use for each surface
+      character use*8,usefile*32  ! usage pattern directives
+      dimension use(3)
+     
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/FILEP/IFIL
@@ -443,12 +455,6 @@ C =2 with more than 3 day types
 C hasname (string array) the surface name for each surface (so fillsur does not wipe)
       character hasname*12
       dimension hasname(MS)  ! name to use for each surface
-
-      character hasconstr*32
-      dimension hasconstr(MS)  ! construction to use for each surface
-      character use*8,usefile*32  ! usage pattern directives
-      dimension use(3)
-     
       DIMENSION XX(MS),YY(MS)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -657,24 +663,45 @@ C Instanciate the surface constructions.
         write(smlcn(icc),'(a)') hasconstr(icc)
 
 C Loop thru all of the constructions to find the matching construction
-C and then see if it is opaque or transparent and copy out the relevant
-C section of the string DESC.
         imatch=0
         do 5 ii=1,nmlc
           if(SMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
             imatch=ii          
           endif
   5     continue
-        if(imatch.eq.0) then
-          call edisp(iuout,'Warning: no matching MLC defined!')
-          SOTF(icc)='UNKNOWN'
-          anunknownmlc=.true.   ! mark that one MLC is unknown
-        else
-          if(DESC(imatch)(15:18).EQ.'OPAQ')then
-            SOTF(icc)='OPAQUE'
+
+        if(metaver.eq.2)then
+
+C Take the optics from the META file. If there are unknown constructions
+C mark anunknownmlc so construction files are not created.
+          write(SOTF(icc),'(a)') hasoptic(icc)
+          if(hasoptic(icc)(1:4).EQ.'OPAQ')then
+            continue
           else
-            WRITE(SOTF(icc),'(A)') DESC(imatch)(21:32)
             willneedtmc=.true.
+          endif
+          if(imatch.eq.0) then
+            anunknownmlc=.true.   ! mark that one MLC is unknown
+          endif
+        elseif(metaver.eq.1)then
+
+C See if it is opaque or transparent and copy out the relevant
+C section of the string DESC.
+          if(imatch.eq.0) then
+
+C If we do not have a match it might be because we are referencing a local
+C database (which does not yet exist because it has not been copied from
+C the original model. In this case << ? >>
+            call edisp(iuout,'Warning: no matching MLC defined!')
+            SOTF(icc)='UNKNOWN'
+            anunknownmlc=.true.   ! mark that one MLC is unknown
+          else
+            if(DESC(imatch)(15:18).EQ.'OPAQ')then
+              SOTF(icc)='OPAQUE'
+            else
+              WRITE(SOTF(icc),'(A)') DESC(imatch)(21:32)
+              willneedtmc=.true.
+            endif
           endif
         endif
         SPARENT(icc)='-'
@@ -1227,11 +1254,14 @@ C Paremeters passed to:silentzone
 
       character hasconstr*32,szhasconstr*32
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
+      character hasoptic*32,szhasoptic*32
+      dimension hasoptic(MS),szhasoptic(MSZ,MS)  ! optics to use for each surface
 
 C Site related local variables.
       logical havesite       ! true if tokens included
       logical havesnowdays     ! true if days with snow defined
       character hourlysnowfile*72  ! same as SNFNAM
+      character lworking*144  ! for processing database file names
       logical havehourlysnowfile   ! true if set
       real hoursGTM   ! hours before or after GTM 
       real groundtemps(12,MGRDP)
@@ -1250,6 +1280,8 @@ C Site related local variables.
       integer lsn  ! length of currentfile
       integer iva
       dimension iva(MS)  ! for use with writing arrays of numbers
+
+      integer metaver  ! one for 1.1 and two for 1.2
         
       IER=0
 
@@ -1397,6 +1429,7 @@ C For each of the META specific arrays, clear values.
   53      continue
           do 52 isu=1,MS
             szhasconstr(iz,isu)=' '
+            szhasoptic(iz,isu)=' '
   52      continue
   42    continue
       endif
@@ -1404,6 +1437,8 @@ C For each of the META specific arrays, clear values.
       NS=0     ! temporary array for counting surfaces.
       nsz=0
       weather='none'
+      OUTSTR=' '
+      metaver =1  ! initial assumption
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -1428,10 +1463,14 @@ C Initialise geometry data file. and set currentfile.
 
 C Read header lines from file, the 1.1 version looks like: 
 C *silent_input
-      CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'silent line 1',IER)
+C The version 1.2 (which includes surface optical attributes looks like:
+C *meta_file
+      CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'meta line 1',IER)
       IF(IER.NE.0)goto 1001
       if(OUTSTR(1:13).eq.'*silent_input')then
-        continue
+        metaver =1
+      elseif(OUTSTR(1:10).eq.'*meta_file')then
+        metaver =2
       else
 
 C If we have reached this position then it is an older geometry
@@ -1506,6 +1545,124 @@ C Debug.
       elseif(WORD(1:7).eq.'*dbspth')then
         CALL EGETRM(OUTSTR,K,dbspth,'W','path to loc databases',IER)
         goto 43
+
+C Databases
+      elseif(WORD(1:4).eq.'*prm')then
+
+        CALL EGETRM(OUTSTR,K,lworking,'W','material db',IER)
+
+C Process the file name following *prm and depending on its path
+C set the LFMAT common block string via call to findwhichdbpath.
+        call findwhichdbpath('mat',lworking,ier)
+        goto 43
+
+      elseif(WORD(1:4).eq.'*mat')then
+
+        CALL EGETRM(OUTSTR,K,lworking,'W','material db',IER)
+
+C Process the file name following *mat and depending on its path
+C set the LFMAT common block string via call to findwhichdbpath.
+        call findwhichdbpath('mat',lworking,ier)
+        goto 43
+
+      elseif(WORD(1:7).eq.'*stdmat')then
+
+        CALL EGETRM(OUTSTR,K,LFMAT,'W','material db',IER)
+        ipathmat=2  ! standard folder for material database
+        goto 43
+
+      elseif(WORD(1:4).eq.'*mlc')then
+
+        CALL EGETRM(OUTSTR,K,lworking,'W','multilayer db',IER)
+
+C Process the file name following *mlc and depending on its path
+C set the LFMUL common block string via call to findwhichdbpath.
+        call findwhichdbpath('mul',lworking,ier)
+        goto 43
+
+      elseif(WORD(1:7).eq.'*stdmlc')then
+
+        CALL EGETRM(OUTSTR,K,LFMUL,'W','multilayer db',IER)
+        ipathmul=2  ! standard folder for MLC database
+        goto 43
+
+      elseif(WORD(1:4).eq.'*opt')then
+
+        CALL EGETRM(OUTSTR,K,lworking,'W','optical db',IER)
+
+C Process the file name following *opt and depending on its path
+C set the LOPTDB common block string via call to findwhichdbpath.
+        call findwhichdbpath('opt',lworking,ier)
+        goto 43
+
+      elseif(WORD(1:7).eq.'*stdopt')then
+
+        ipathoptdb=2  ! standard folder for optical database
+        CALL EGETRM(OUTSTR,K,LOPTDB,'W','optical db',IER)
+        goto 43
+
+      elseif(WORD(1:4).eq.'*prs')then
+
+        CALL EGETRM(OUTSTR,K,lworking,'W','pressure db',IER)
+
+C Process the file name folloing *prs and depending on its path
+C set the lapres common block string via call to findwhichdbpath.
+        call findwhichdbpath('prs',lworking,ier)
+        goto 43
+
+      elseif(WORD(1:7).eq.'*stdprs')then
+
+        ipathapres=2  ! standard folder for pressure coef database
+        CALL EGETRM(OUTSTR,K,LAPRES,'W','pressure db',IER)
+        goto 43
+
+      elseif(WORD(1:4).eq.'*evn')then
+
+        CALL EGETRM(OUTSTR,K,lworking,'W','profiles db',IER)
+
+C Process the file name following *evn and depending on its path
+C set the LPRFDB common block string via call to findwhichdbpath.
+        call findwhichdbpath('evn',lworking,ier)
+        goto 43
+
+      elseif(WORD(1:7).eq.'*stdevn')then
+
+        CALL EGETRM(OUTSTR,K,LPRFDB,'W','profile db',IER)
+        ipathprodb=2  ! standard folder for profiles database
+        goto 43
+
+      elseif(WORD(1:7).eq.'*mscldb')then
+
+C special materials and misc component database
+        CALL EGETRM(OUTSTR,K,lworking,'W','misc comp db',IER)
+
+C Process the file name following *mscldb and depending on its path
+C set the MCMPDBFL common block string via call to findwhichdbpath.
+        call findwhichdbpath('msc',lworking,ier)
+        goto 43
+
+      elseif(WORD(1:10).eq.'*stdmscldb')then
+
+C special materials and misc component database
+        CALL EGETRM(OUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
+        ipathmsc=2  ! standard folder for misc comp db
+        goto 43
+
+      elseif(WORD(1:4).eq.'*pdb')then
+
+        CALL EGETRM(OUTSTR,K,lworking,'W','plant comp db',IER)
+
+C Process the file name folloing *pdb and depending on its path
+C set the LPCDB common block string via call to findwhichdbpath.
+        call findwhichdbpath('pdb',lworking,ier)
+        goto 43
+
+      elseif(WORD(1:7).eq.'*stdpdb')then
+
+        ipathpcdb=2  ! standard folder for plant template database
+        CALL EGETRM(OUTSTR,K,LPCDB,'W','plant template db',IER)
+        goto 43
+
       elseif(WORD(1:12).eq.'*assessments')then
 
 C Get tags related to assessments: after the tag *assessments the
@@ -2190,6 +2347,12 @@ C Surface construction name, allow for spaces.
         CALL EGETP(OUTSTR,K,WORD,'W','surface construction',IER)
         write(szhasconstr(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
 
+C If metaver is two then also read surface optical property.
+        if(metaver.eq.2)then
+          CALL EGETP(OUTSTR,K,WORD,'W','surface optics',IER)
+          write(szhasoptic(nsz,NS),'(a)') WORD(1:lnblnk(WORD))
+        endif
+
 C Read three indices representing boundary condition.
         CALL EGETWI(OUTSTR,K,ival1,-1,7,'W','connection type',IER)
         CALL EGETWI(OUTSTR,K,ival2,0,MCOM,'W','connection ic2',IER)
@@ -2305,6 +2468,7 @@ C Copy from sz* arrays into parameter arrays prior to silentzone call.
 C        usefile(iz) = ' '
           do 49 isu=1,MS
             hasconstr(isu)=szhasconstr(isz,isu)
+            hasoptic(isu)=szhasoptic(isz,isu)
   49      continue
           icomp=icomp+1
 
@@ -2350,7 +2514,8 @@ C be included in the version 1.1 geometry file.
           call edisp(iuout,outs)
 
 C Create zone based on a set of parameters (created above).
-          call silentzone(ICOMP,hasconstr,use,usefile(isz),IER)
+          call silentzone(ICOMP,metaver,hasconstr,hasoptic,use,
+     &      usefile(isz),IER)
   63    continue
 
         if(unixok)then
@@ -2518,6 +2683,8 @@ C Site related local variables.
       character tab*1
       integer lnzp,lnnp,lncp,lndcp,lndbp ! lengths of paths to model folders
 
+      integer metaver  ! one for 1.1 and two for 1.2
+
 C  The following data statements carry the proportions of
 C  surrounding buildings, sky vault and ground assumed
 C  to be seen by a vertical surface for a particular site
@@ -2681,10 +2848,15 @@ C Initialise geometry data file. and set currentfile.
       ENDIF
       write(currentfile,'(a)') LFILE(1:lnblnk(LFILE))
 
+      tab=','    ! make the separator a comma.
 C Write header lines from file, the 1.1 version looks like: 
 C *silent_input
-      tab=','    ! make the separator a comma.
-      write(ifilg,'(a)',IOSTAT=ios,ERR=13) '*silent_input'
+C      write(ifilg,'(a)',IOSTAT=ios,ERR=13) '*silent_input'
+
+C The version 1.2 (which includes surface optical attributes looks like:
+C *meta_file
+      metaver =2
+      write(ifilg,'(a)',IOSTAT=ios,ERR=13) '*meta_file'
       write(ifilg,'(3a)',IOSTAT=ios,ERR=13)'*title',tab,
      &  modeltitle(1:lnblnk(modeltitle))
       write(ifilg,'(3a)',IOSTAT=ios,ERR=13)'*doc',tab,
@@ -2776,6 +2948,60 @@ C line of 12 values for each included profile.
   28    CONTINUE
       endif
 
+C Write databases related to this model.
+C Material database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mat  ',
+     &      LFMAT(1:lnblnk(LFMAT)),' # materials db'
+      elseif(ipathmat.eq.2)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdmat  ',
+     &      LFMAT(1:lnblnk(LFMAT)),' # materials db'
+      endif
+
+C MLC database has the option of two different syntax.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mlc  ',
+     &      LFMUL(1:lnblnk(LFMUL)),' # constructions db'
+      elseif(ipathmul.eq.2)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdmlc  ',
+     &      LFMUL(1:lnblnk(LFMUL)),' # constructions db'
+      endif
+
+C Optical database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*opt  ',
+     &      LOPTDB(1:lnblnk(LOPTDB)),' # optical db'
+      elseif(ipathoptdb.eq.2)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdopt  ',
+     &      LOPTDB(1:lnblnk(LOPTDB)),' # optical db'
+      endif
+
+C Pressure coef database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*prs  ',
+     &      LAPRES(1:lnblnk(LAPRES)),' # pressure coef db'
+      elseif(ipathapres.eq.2)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdprs  ',
+     &      LAPRES(1:lnblnk(LAPRES)),' # pressure coef db'
+      endif
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*evn  ',
+     &      LPRFDB(1:lnblnk(LPRFDB)),' # profiles db'
+      elseif(ipathprodb.eq.2)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdevn  ',
+     &      LPRFDB(1:lnblnk(LPRFDB)),' # profiles db'
+      endif
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mscldb  ',
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL)),' # miscel cmp db'
+      elseif(ipathmsc.eq.2)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdmscldb  ',
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL)),' # miscel cmp db'
+      endif
+
 C Simulation parameters.
       if(havesimparameters)then
         write(ifilg,'(2a,I2,a,I2,a,I2,a,I1,a)',IOSTAT=IOS,ERR=13)
@@ -2851,9 +3077,18 @@ C << on a separate line with a tag.
             icc=IZSTOCN(nsz,isu)    ! get the connection
             lnsn=lnblnk(SSNAME(icc))
             lnsc=lnblnk(SSMLCN(icc))
-            write(outs,'(5a,3I4)',IOSTAT=IOS,ERR=13)
-     &        '*surface ',SSNAME(icc)(1:lnsn),' ',
-     &        SSMLCN(icc)(1:lnsc),' ',ICT(icc),IC2(icc),IE2(icc)
+            lnso=lnblnk(SSOTF(icc))
+
+            if(metaver.eq.1)then
+              write(outs,'(5a,3I4)',IOSTAT=IOS,ERR=13)
+     &          '*surface ',SSNAME(icc)(1:lnsn),' ',
+     &          SSMLCN(icc)(1:lnsc),' ',ICT(icc),IC2(icc),IE2(icc)
+            elseif(metaver.eq.2)then
+              write(outs,'(7a,3I4)',IOSTAT=IOS,ERR=13)
+     &          '*surface ',SSNAME(icc)(1:lnsn),' ',
+     &          SSMLCN(icc)(1:lnsc),' ',SSOTF(icc)(1:lnso),' ',
+     &          ICT(icc),IC2(icc),IE2(icc)
+            endif
             call SDELIM(outs,outsd,'C',IW)
             write(ifilg,'(2a)',IOSTAT=IOS,ERR=13) 
      &        outsd(1:lnblnk(outsd)),'  # surface attributes '
