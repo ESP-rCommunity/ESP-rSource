@@ -818,7 +818,7 @@ xsh.y = START_ULY;
     strncpy(m_list[i],
     "                                                                                   ",82);
   }
-  strncpy(mtype_list,"                                           ",42);
+  strncpy(mtype_list,"                                        ",40);
 
 /* initial clear of proforma editing and display lists */
   for ( i = 0; i < PROFMA_LEN-1; i++ ) {
