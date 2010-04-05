@@ -1618,7 +1618,7 @@ XFontStruct  *tfst;
   if (vfw < f_width && vfw > 1 ) tf_width = vfw;
   *nlines = (int) ((disp.b_bottom - disp.b_top) / (tf_height+1));
   *cw = ((disp.b_right - disp.b_left) / tf_width)-2;
-  fprintf(stderr,"current font info: fh %d fw %d vfw %d nlines %d characters %d \n",
+  fprintf(stderr,"current font info: fh %d fw %d vfw %d nlines %ld characters %ld \n",
     tf_height,tf_width,vfw,*nlines,*cw);
 
   return;
@@ -7520,7 +7520,7 @@ point*/
                   break;
               }
             }else{
-              fprintf(stderr," menu: display grid %d snap %d \n",grid_oo,snap);
+              fprintf(stderr," menu: display grid %ld snap %ld \n",grid_oo,snap);
               if(igrid>0&&isnap>0){
               epopup_("Display control",netgm2menuca,&iugx,&iugy,&choice);
               }else if(igrid>0&&isnap<1){

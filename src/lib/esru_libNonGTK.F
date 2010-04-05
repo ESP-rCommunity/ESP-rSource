@@ -4323,9 +4323,13 @@ C ITPPSW current view - perspective/plan/south/west
 #ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
       integer ICPMOD          ! passed from tchild
+      integer iappr,iappt,iappb ! for use with findrtb
+      integer iapprp,iapptp,iappbp ! for local offsets
 #else
       integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
       integer*8 ICPMOD          ! passed from tchild
+      integer*8 iappr,iappt,iappb ! for use with findrtb
+      integer*8 iapprp,iapptp,iappbp ! for local offsets
 #endif
 
 C If not in graphic mode return.
@@ -4474,20 +4478,35 @@ C width of the control menu.
         call findrtb(iappr,iappt,iappb)
         head='Image Control'
         if(menuchw.lt.10)then
-          call vwmenu (head,ITEMS,MVERT,iappr-160,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-160
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         elseif(menuchw.ge.10.and.menuchw.lt.20)then
-          call vwmenu (head,ITEMS,MVERT,iappr-120,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-120
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         elseif(menuchw.ge.20.and.menuchw.lt.30)then
-          call vwmenu (head,ITEMS,MVERT,iappr-60,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-60
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         elseif(menuchw.ge.30.and.menuchw.lt.35)then
-          call vwmenu (head,ITEMS,MVERT,iappr-20,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-20
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         elseif(menuchw.ge.35)then
-          call vwmenu (head,ITEMS,MVERT,iappr-10,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-10
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         endif
       endif
       IF(IVERT.EQ.MVERT)THEN
