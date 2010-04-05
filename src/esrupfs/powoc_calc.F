@@ -150,6 +150,10 @@ C-----Vanadium Redox Battery (VRB)
       elseif ( itype .eq. 21 ) then
          CALL POWOC_CETC_Battery(IPWC)
 
+C-----Lithium Ion Battery (Li-on)
+      elseif ( itype .eq. 22 ) then
+         CALL POWOC_CETC_Battery(IPWC)
+
 C-----Add support for other power-only components here.
 c     ELSEIF (ITYPE==??) THEN
 
