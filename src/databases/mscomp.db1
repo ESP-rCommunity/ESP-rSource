@@ -925,7 +925,7 @@ Lithium Ion Battery (CETC Battery subroutine)
 0.       initial depth of discharge (probably zero for a charged battery)
 0.058    thermal mass of a single cell -mass*Cp (J/°C)
 2.       heat loss factor h*A (W/°C)
-10       resistance of the heaters (Ohm)
+600.     resistance of the heaters (Ohm)
 0.8      maximum DOD of battery (in percentage... probably 0.8)
 0.       minimum DOD of battery (in percentage... probably 0)
 60.      Maximum battery temperature (�C)
@@ -994,4 +994,3 @@ Lithium Ion Battery
 #*LOADSDB
 #*MOGENDB
 *ENDDB
- 
