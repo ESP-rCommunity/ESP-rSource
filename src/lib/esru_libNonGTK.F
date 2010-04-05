@@ -1918,6 +1918,11 @@ C will be truncated at the width ISTRW.
       character lista*74,listb*74,KEY*1,outs*124
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STALT(*)
       CHARACTER H*72,SEL*40
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
 C At this point bring up a menu with the string alternatives, assuming
 C there is more than one alternative to pick from.
@@ -2042,7 +2047,10 @@ C If a long list include page facility text.
 
 C Now display the menu (depending on the width of the strings).
       IF(MMOD.EQ.8)THEN
-        call VWMENU(SEL,LISTA,MVERT,0,0,ISTRW+4,irpx,irpy,ivert)
+        impx=0
+        impy=0
+        iw=ISTRW+4
+        call VWMENU(SEL,LISTA,MVERT,impx,impy,iw,irpx,irpy,ivert)
       ELSE
         DO 144 IJ=1,MVERT
           if((ISTRW+4).LT.74)then
@@ -2176,6 +2184,11 @@ C passed within the parameter list text.
 
       DIMENSION VERT(16)
       CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
 C Generate default help text, clear local menu string and remember
 C the incomming index.
@@ -2306,7 +2319,10 @@ C Number of actual items displayed.
 C Display the menu, if in graphic mode pass display width.
       call usrmsg(PROMPT,PROMPT2,'-')
       if(MMOD.EQ.8)then
-        call VWMENU(title,VERT,MVERT,0,0,ISTRW+2,irpx,irpy,ivert)
+        impx=0
+        impy=0
+        iw=ISTRW+2
+        call VWMENU(title,VERT,MVERT,impx,impy,iw,irpx,irpy,ivert)
       else
         CALL EMENU(title,VERT,MVERT,IVERT)
       endif
@@ -3238,7 +3254,7 @@ C allows the string widths to be variable widths.
       SUBROUTINE VWMENU(name,items,nitms,impx,impy,iw,irpx,irpy,ino)
       character*(*) name, items(*)
       character itypes*40
-      integer iw,irpx,irpy
+      integer irpx,irpy
 
 C To conform to Fortran -> C passing conventions on 32bit and 64bit
 C computers cast the parameters passed into ewmenu to local variables
@@ -3246,8 +3262,10 @@ C of either integer or integer*8 to match the long int variables in
 C the C function evwmenu.  Do reverse cast after return from evwmenu.
 #ifdef OSI
       integer impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+      integer impx,impy,iw
 #else
       integer*8 impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+      integer*8 impx,impy,iw
 #endif
       iwe=iw    ! assign to local passed parameter
       write(itypes,9)

@@ -2892,6 +2892,11 @@ C CATIES is menu entry for each data field
       CHARACTER CATSI*12,IECDATE*34,CATIES*32,
      &IECDATEs*49,DATCATIE*12,TAGCATIE*12,t32*32
 
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
 C Clear the menu structures.
       NCATI=0
@@ -3071,8 +3076,10 @@ C If a long list include page facility text.
 
 C Make menu only as wide as it needs to be.
         if(MMOD.eq.8)then
+          impx=0
+          impy=0
           CALL VWMENU('Global attributes',IECDATEs,NECDATAs,
-     &      0,0,iw,irpx,irpy,ICOUT2)
+     &      impx,impy,iw,irpx,irpy,ICOUT2)
         else
           CALL EMENU('Global attributes',IECDATEs,NECDATAs,
      &      ICOUT2)

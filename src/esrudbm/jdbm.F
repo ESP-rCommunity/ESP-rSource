@@ -114,6 +114,12 @@ C      character curfile*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
+
       call ezero
       call curmodule('dbm ')
       cAppName = 'dbm'
@@ -481,7 +487,11 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
       call askabout('dbm ',1)
 
       if(MMOD.eq.8)then
-        CALL VWMENU(' Database manager',ITEM,mitm,0,0,IWE,irpx,irpy,INO)
+        impx=0
+        impy=0
+        iw=iwe
+        CALL VWMENU('Database manager',ITEM,mitm,impx,impy,IW,
+     &    irpx,irpy,INO)
       else
         CALL EMENU(' Database manager',ITEM,mitm,INO)
       endif

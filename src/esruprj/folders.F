@@ -1440,6 +1440,12 @@ C CFD
       character sfile*72,snpfile*72,fs*1
       logical modcfg,XST,unixok
 
+#ifdef OSI
+      integer impx,impy,iwe
+#else
+      integer*8 impx,impy,iwe
+#endif
+
 C Note L is a temporary file and D is used for defaul file names.
       modcfg=.FALSE.
       newgeo=.false.  ! assume older format geometry.
@@ -1609,7 +1615,10 @@ C Help text for this menu.
 
       WRITE(head,'(A,A)') 'Files for ',ZN
   2   if(MMOD.EQ.8)then
-        CALL VWMENU(head,ITEMS,MITEM,0,0,IW,irpx,irpy,INO)
+        impx=0
+        impy=0
+        iwe=iw
+        CALL VWMENU(head,ITEMS,MITEM,impx,impy,IWE,irpx,irpy,INO)
       else
         CALL EMENU(head,ITEMS,MITEM,INO)
       endif

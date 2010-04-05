@@ -889,6 +889,12 @@ C Strings for dos version of rootp and upath and a double quote.
       character useraction*8
       logical XST,unixok
 
+#ifdef OSI
+      integer impx,impy,iwe
+#else
+      integer*8 impx,impy,iwe
+#endif
+
 C Make up a double quote and file separator for xcopy.
       useraction ='-'
       call isunix(unixok)
@@ -983,8 +989,11 @@ C Help text for this menu.
       h(12)='word syntax as explained in the exemplars file.'
 
       if(MMOD.EQ.8)then
-        CALL VWMENU('Exemplar Categories',gitem,NCOG,0,0,IW,irpx,
-     &               irpy,ICOG)
+        impx=0
+        impy=0
+        iwe=iw
+        CALL VWMENU('Exemplar Categories',gitem,NCOG,
+     &    impx,impy,iwe,irpx,irpy,ICOG)
       else
         CALL EMENU('Exemplar Categories',gitem,NCOG,ICOG)
       endif
@@ -1101,7 +1110,9 @@ C Help text for this menu.
       endif
 
       if(MMOD.EQ.8)then
-        CALL VWMENU(head,mitem,NCO,0,0,IWE,irpx,irpy,ICO)
+        impx=0
+        impy=0
+        CALL VWMENU(head,mitem,NCO,impx,impy,IWE,irpx,irpy,ICO)
       else
         CALL EMENU(head,mitem,NCO,ICO)
       endif
@@ -1121,8 +1132,10 @@ C Help @ db file level.
       ELSEIF(ICO.EQ.(NCO-2))THEN
         icod=0
         if(MMOD.EQ.8)then
-          CALL VWMENU('Select exemplar...',mitem,NCO,0,0,IWE,irpx,irpy,
-     &      icod)
+          impx=0
+          impy=0
+          CALL VWMENU('Select exemplar...',mitem,NCO,impx,impy,IWE,
+     &      irpx,irpy,icod)
         else
           CALL EMENU('Select exemplar...',mitem,NCO,icod)
         endif

@@ -78,6 +78,12 @@ C Default esp-r distribution path.
 C Strings for dos version of source and destination of db file.
 C      character rootpdos*72,upathdos*72
 
+#ifdef OSI
+      integer impx,impy,iwe
+#else
+      integer*8 impx,impy,iwe
+#endif
+
       moddb=.false.
       modcon=.false.
 
@@ -170,8 +176,11 @@ C Help text for this menu.
       H(19)='/usr/esru/esp-r/climate & /usr/esru/esp-r/databases.'
 
       if(MMOD.EQ.8)then
-        CALL VWMENU('Database Maintenance',ITEMS,15,0,0,IW,irpx,irpy,
-     &               INO)
+        impx=0
+        impy=0
+        iwe=iw
+        CALL VWMENU('Database Maintenance',ITEMS,15,impx,impy,iwe,
+     &    irpx,irpy,INO)
       else
         CALL EMENU('Database Maintenance',ITEMS,15,INO)
       endif
