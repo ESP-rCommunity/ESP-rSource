@@ -303,6 +303,8 @@ C Status of multi-year climate database
       character lltmp*144  ! to re-create plant database file name with path
       character lworking*144,fs*1
 
+      integer IClmErr  ! the error state for climate file opening
+
 C Reset error indicator and check if running as a dll.
       ier1=0
       call isadll(dll)
@@ -742,6 +744,7 @@ C Collect & process single-year climate file
 C Note: the climate file uses a different error flag than
 C the global model definition, as it can be specified separately.
          write(currentfile,'(a)') lclim(1:lnblnk(lclim))
+         IClmErr=0   ! clear error state before call
          call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
          IF(iClmErr.eq.0)THEN
             IREC=366
