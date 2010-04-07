@@ -931,8 +931,8 @@ C If subpath is less than 72 char with odir + path use that
 C otherwise just use path.
 
 C Debug...
-      write(6,*) 'usrdir is ',odir(1:lnod)
-      write(6,*) 'path is ',path(1:lnpath)
+C      write(6,*) 'usrdir is ',odir(1:lnod)
+C      write(6,*) 'path is ',path(1:lnpath)
 
       subpath=' '
       if(lnod+lnpath+1.le.72)then
