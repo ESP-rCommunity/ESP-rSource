@@ -1433,7 +1433,10 @@ C   2 - should not exist, error 300 & message if exists.
 C   3 - if exists use otherwise create.
 C   4 - if exists ask user before overwriting otherwise create.
 C IRW is the record width to use when opening the file.
-C IER is the error status (0 is OK).
+C IER is the error status (0 is OK). Note - if the file opens correctly
+C     the value of ier is not altered from its state in the calling
+C     code.  Thus the ier state should always be set prior to a call
+C     to efopran.
 C If the path is other than `./' but is not `/usr/esru' then
 C concatenate path with sfile.
 
