@@ -1007,15 +1007,23 @@ C             Compare time elapsed since last full charge to mandatory charge in
         
       ELSEIF ( POWCOMID(IPWC) .EQ. lion) THEN             ! Li-on check to see if battery is in safe limits 
         IF (batTFinal .GT. POWCDAT(IPWC,16))    THEN      ! Battery is too hot for safe operation
-          hiTempLion = 1                                  ! Set high temp flag on
+          hiTempLion = 1
+          WRITE(*,*) 'high Temp flag set *DEBUGGING LI-ON*'
+                                                          ! Set high temp flag on
         ELSEIF (batTFinal .LT. POWCDAT(IPWC,17)) THEN  ! Battery is too cold for safe operation
-          loTempLion = 1                                  ! Set low temp flag on
+          loTempLion = 1
+          WRITE(*,*) 'low Temp flag set *DEBUGGING LI-ON*'
+                                                          ! Set low temp flag on
         ENDIF      
         
         IF (DODFinal .LT. POWCDAT(IPWC,15))  THEN      ! Battery is overcharged for safe operation
-          hiVoltLion = 1                                  ! Set overvoltage flag on
+          hiVoltLion = 1
+          WRITE(*,*) 'high voltage flag set *DEBUGGING LI-ON*'
+                                                          ! Set overvoltage flag on
         ELSEIF (DODFinal .GT. POWCDAT(IPWC,14)) THEN  ! Battery is undercharged for safe operation
-          loVoltLion = 1                                  ! Set undervoltage flag on
+          loVoltLion = 1                                  
+          WRITE(*,*) 'low voltage flag set *DEBUGGING LI-ON*'          
+          ! Set undervoltage flag on
         ENDIF  
       
       ENDIF     ! Lead-acid battery and lithium ion
@@ -3873,6 +3881,7 @@ C     Determine temperature (beta) and current (alpha) factors to scale referenc
 C     Capacity of the battery is the capacity of one cell times the number of cells in parallel      
 C
       BatteryCap_Lion = beta*alpha*cellCapRef*nParal
+      
 
 C     Make sure no negative value is returned
       IF (BatteryCap_Lion .LE. 0.0) THEN
@@ -3880,7 +3889,11 @@ C     Make sure no negative value is returned
      &                 'Nul capacity in function BatteryCap_Lion'
         BatteryCap_Lion = 0.01
       ENDIF
-
+      
+C      WRITE(*,*) '*DEBUGGING LI-ON* BattCapacity', (BatteryCap_Lion)
+C      WRITE(*,*) '*DEBUGGING LI-ON* alpha', (alpha)
+C      WRITE(*,*) '*DEBUGGING LI-ON* beta', (beta)
+      
       END
 
 C**************************************************************************
@@ -4229,8 +4242,9 @@ C others
 
 
 C     Free voltage of the battery is the free voltage of a cell time the number of cells in series
-      OCV_Lion = (E5*batDOD**5. + E4*batDOD**4. + E3*batDOD**3. +
-     &               E2*batDOD**2. + E1*batDOD + E0) + deltaVforT
+      OCV_Lion = ((E5*batDOD**5. + E4*batDOD**4. + E3*batDOD**3. +
+     &               E2*batDOD**2. + E1*batDOD + E0) + deltaVforT)
+     &               *nSerie
 
 C     Make sure value is within boundaries
 C     This check is partly bypassed if the lead-acid battery is performing a mandatory
@@ -4754,6 +4768,13 @@ C     Get battery's final state      **NEED TO CHANGE DODIni to DODavg for BOTH 
       batTFin = (RInt_Lion(IPWC,(DODIni+batDODFin)/2.,batMode)*
      &           batCur**2. +     
      &           pHeaters - hA*(batTini-zoneT))*dtTStep/mCp + batTIni
+     
+      WRITE(*,*) '*DEBUGGING LI-ON* batDODFin', (batDODFin)
+      WRITE(*,*) '*DEBUGGING LI-ON* batTFin', (batTFin)
+      WRITE(*,*) '*DEBUGGING LI-ON* dtTStep', (dtTStep)
+      WRITE(*,*) '*DEBUGGING LI-ON* hA', (hA)
+      WRITE(*,*) '*DEBUGGING LI-ON* mCp', (mCp)
+      WRITE(*,*) '*DEBUGGING LI-ON* batTIni', (batTIni)
           
       END
             
