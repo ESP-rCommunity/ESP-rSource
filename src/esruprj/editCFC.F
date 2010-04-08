@@ -125,7 +125,8 @@ C 1. scan G6 common and check that CFCs are VERT and EXTERIOR
       DO 10 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
         IF(SSOTF(icn1)(1:4).eq.'CFC ')then
-            if(SSVFC(icn1)(1:4).eq.'VERT'.and.
+c            if(SSVFC(icn1)(1:4).eq.'VERT'.and.
+            if(
      &            SSOTHER(icn1,1)(1:5).eq.'EXTER')then
                   ncfccount=ncfccount+1   !count CFCs in zone
                   con_name(is)=SSMLCN(icn1)
