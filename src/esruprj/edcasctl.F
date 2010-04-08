@@ -268,7 +268,7 @@ C Reset all surface lines to standard width and redraw if revised data.
       endif
       write(ITEM(10),'(A,4F6.1,I3)') 'f Control data  :',SETPT(ICOMP,N),
      & SOFFLL(ICOMP,N),SMLOUT(ICOMP,N),SMEOUT(ICOMP,N),IOFFDT(ICOMP,N)
-      write(ITEM(11),'(A,F6.1,I3)') 'g Photocell data:',SYSPER(ICOMP,N),
+      write(ITEM(11),'(A,F6.2,I3)') 'g Photocell data:',SYSPER(ICOMP,N),
      &                              NDF(ICOMP,N)
 
       if(IDFST(ICOMP,N).EQ.1.OR.IDFST(ICOMP,N).EQ.2.OR.
