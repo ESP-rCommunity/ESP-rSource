@@ -55,6 +55,7 @@ C *********************************************************************
       CHARACTER*72 LMTS,MSG,H,VALUES
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
       CHARACTER ITEM(16)*28
+      integer ier
 
       MODIFY=.FALSE.
       SAVEOK=.FALSE.
@@ -310,21 +311,25 @@ C Delete 3D ground gridding files.
         IF(GRND3D)THEN
           CALL FINDFIL(LGDCVS,XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,LGDCVS,3,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
           CALL FINDFIL(LGDCNC,XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,LGDCNC,7,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
           CALL FINDFIL(LGDNDC,XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,LGDNDC,3,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
           CALL FINDFIL(LGDTAQ,XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,LGDTAQ,2,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
@@ -727,6 +732,7 @@ C *********************************************************************
       CHARACTER    MSG*72,FLTYP*25
       CHARACTER*72 H,LTMP
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
+      integer ier
 
 C Initialize the connections,nodes, and control volumes counters.
       NNDS=0
@@ -741,6 +747,7 @@ C Open the control volumes file.
       LTMP= LGDCVS
       CALL FLNAME(-1,LTMP,FLTYP,'.cvs',3,IER)
       LGDCVS=LTMP
+      ier=0
       CALL EFOPRAN(ICVS,LGDCVS,3,4,IER)
       IF(IER.NE.0)RETURN
 
@@ -750,6 +757,7 @@ C Open the connections file.
       LTMP=LGDCNC
       CALL FLNAME(-1,LTMP,FLTYP,'.cnc',3,IER)
       LGDCNC=LTMP
+      ier=0
       CALL EFOPRAN(ICNC,LGDCNC,7,4,IER)
       IF(IER.NE.0)RETURN
 
@@ -760,6 +768,7 @@ C numbers of the control volumes represented by each node).
       LTMP=LGDNDC
       CALL FLNAME(-1,LTMP,FLTYP,'.ndc',3,IER)
       LGDNDC=LTMP
+      ier=0
       CALL EFOPRAN(INDC,LGDNDC,3,4,IER)
       IF(IER.NE.0)RETURN
 
@@ -770,6 +779,7 @@ C numbers of the control volumes represented by each node).
       LTMP=LGDTAQ
       CALL FLNAME(-1,LTMP,FLTYP,'.taq',3,IER)
       LGDTAQ=LTMP
+      ier=0
       CALL EFOPRAN(ITAQ,LGDTAQ,2,4,IER)
       IF(IER.NE.0)RETURN
 

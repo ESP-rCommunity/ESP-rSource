@@ -682,6 +682,7 @@ C Parameters
 
 C Note existing binary files will be overwritten.
       CALL ERPFREE(IFB,ISTAT)
+      ier=0
       call EFOPRAN(IFB,LBIN,10,3,IER)
       IF(IER.NE.0)THEN
         CALL USRMSG(' ','Binary file cannot be written!','W')
@@ -863,8 +864,10 @@ C the event profiles db.
       lndbp=lnblnk(standarddbpath)
       CALL ERPFREE(IPRODB,ISTAT)
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        ier=0
         call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
       elseif(ipathprodb.eq.2)then
+        ier=0
         write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &    LPRFDB(1:lnblnk(LPRFDB))
         call EFOPRAN(IPRODB,lworking,10,1,IER)
@@ -973,6 +976,7 @@ C the event profiles db. But if there is an error in efopran or
 C there is an impossible number of items pass back ier=-2 so
 C other code can check if the file is an ascii version.
       CALL ERPFREE(IFB,ISTAT)
+      ier=0
       call EFOPRAN(IFB,LBIN,10,1,IER)
       if(ier.ne.0)then
         ier=-1

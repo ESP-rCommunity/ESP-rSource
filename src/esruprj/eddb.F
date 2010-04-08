@@ -688,6 +688,7 @@ C Local strings for user selections dependent on graphic library.
       character lpath*72,fname*72 ! for use with fdroot
 
       integer lndbp   ! for length of standard database path
+      integer ier
       logical unixok  ! to check for database path file separators
 
 C Clear string buffers.
@@ -1225,8 +1226,10 @@ C << cast back from shorter buffer >>
         IAF=IFIL+1
         IER=0
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          ier=0
           call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         elseif(ipathmat.eq.2)then
+          ier=0
           lndbp=lnblnk(standarddbpath)
           write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &      LFMAT(1:lnblnk(LFMAT))
@@ -1566,6 +1569,7 @@ C Local strings for user selections dependent on graphic library.
       character lpath*72,fname*72 ! for use with fdroot
       CHARACTER ZPDESC*25
       integer lndbp   ! for length of standard database path
+      integer ier
       logical unixok  ! to check for database path file separators
       integer iglib  ! for detecting GTK or X11
 #ifdef OSI
@@ -1799,6 +1803,7 @@ C Create a minimal plant databases (code similar to pdb.F).
         ipathpcdb=1  
         moddb=.true.
         CALL ERPFREE(ipcdb,ISTAT)
+        ier=0
         call EFOPRAN(ipcdb,LPCDB,IRECLN,3,IER)
         CALL PCUPDT (ipcdb,0)
         CALL ERPFREE(ipcdb,ISTAT)
@@ -2037,6 +2042,7 @@ C implied path.
 C Debug.
 C      write(6,*) 'longtfile plant b ',longtfile(1:lnblnk(longtfile))
 
+      ier=0
       call EFOPRAN(ipcdb,longtfile,IRECLN,1,IER)
       IF(ier.eq.0)THEN
         IREC = 1
@@ -4429,6 +4435,7 @@ C Calendar.
       CHARACTER*72 NNAME
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
+      integer ier
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
 #ifdef OSI

@@ -194,6 +194,8 @@ C HVAC AIM-2
       logical dll,closemat1,closemat2,unixok
       character lworking*144,fs*1
 
+      integer ier
+
 C Reset error indicator and check if running as a dll.
       ier1=0
       call isadll(dll)
@@ -406,6 +408,7 @@ C If IREP=1 then use default.
       IF(GRND3D)THEN
 
 C Specify ground simulation start-up period.
+        ier=0
         CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
         READ(ICNC,REC=1,IOSTAT=ISTAT,ERR=7)ITCNSTG
         CALL ERPFREE(ICNC,ISTAT)
@@ -443,8 +446,10 @@ C << this logic could be updated to use MATFROMBIN as in ascii_mat.F >>
   55    write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
 
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          ier=0
           call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         elseif(ipathmat.eq.2)then
+          ier=0
           lndbp=lnblnk(standarddbpath)
           write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &      LFMAT(1:lnblnk(LFMAT))
@@ -634,6 +639,8 @@ C but if using GTK then we need the full length to avoid truncation.
 
         endif
       endif
+
+      ier=0
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
       IF(ier.eq.0)THEN
         IREC=366

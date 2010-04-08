@@ -62,6 +62,8 @@ C espriou.h provides currentfile.
       CHARACTER WORD*20,MLCN*12,OTF*4,OPT*12,MLCSYM*12
       character lworking*144,fs*1
 
+      integer ier
+
 C Note that the text which follows the thickness of the layer
 C is extracted from the materials database and should not
 C be edited by the user as it is scanned to check the specific
@@ -91,6 +93,7 @@ C this file. If local or absolute path then use efopseq. If in
 C the standard location then create lworking which has path
 C prepended.
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          ier=0
           call EFOPRAN(IFMAT,LFMAT,40,1,IER)
           if(ier.ne.0)then
             write(outs248,'(3a)') ' No materials db ',
@@ -107,6 +110,7 @@ C prepended.
 
 C Debug.
 C          write(6,*) 'working materials ',lworking
+          ier=0
           call EFOPRAN(IFMAT,lworking,40,1,IER)
           if(ier.ne.0)then
             write(outs,'(3a)') ' No materials db ',

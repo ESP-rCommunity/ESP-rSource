@@ -304,6 +304,7 @@ C Status of multi-year climate database
       character lworking*144,fs*1
 
       integer IClmErr  ! the error state for climate file opening
+      integer ier
 
 C Reset error indicator and check if running as a dll.
       ier1=0
@@ -485,6 +486,7 @@ C with lltmp because the standard database path might be pre-pended.
      &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
         endif
         write(currentfile,'(a)') lltmp(1:lnblnk(lltmp))
+        ier=0
         call EFOPRAN(ipcdb,lltmp,20,1,IER)
         call mzpmxt(ipcdb)
 
@@ -519,6 +521,7 @@ C Report specified start-up period.
       IF(GRND3D)THEN
 
 C Specify ground simulation start-up period.
+        ier=0
         CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
         READ(ICNC,REC=1,IOSTAT=ISTAT,ERR=7)ITCNSTG
         CALL ERPFREE(ICNC,ISTAT)
@@ -559,8 +562,10 @@ C << this logic could be updated to use MATFROMBIN as in ascii_mat.F >>
   55    write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
 
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          ier=0
           call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         elseif(ipathmat.eq.2)then
+          ier=0
           lndbp=lnblnk(standarddbpath)
           write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &      LFMAT(1:lnblnk(LFMAT))

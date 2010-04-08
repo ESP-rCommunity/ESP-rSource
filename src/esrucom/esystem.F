@@ -1703,6 +1703,7 @@ C Scan the first record of this file.
               CALL ERPFREE(IUTDF,ISTAT)
               NWPR=MTABC
               ITWPR=NWPR+1
+              ier=0
               call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
               IREC=1
               READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103)HDR,NWPR
@@ -1724,6 +1725,7 @@ C Scan the first record of this file.
             CALL ERPFREE(IUTDF,ISTAT)
             NWPR=MTABC
             ITWPR=NWPR+1
+            ier=0
             call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
             IREC=1
             READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=102)HDR,NWPR

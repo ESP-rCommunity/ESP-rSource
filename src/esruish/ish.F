@@ -178,6 +178,7 @@ C Name of current application.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnshd   ! length of current shading file string.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer ier
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -607,6 +608,7 @@ C asci2bin.
               call findfil(lshad(icomp),xst)
               if(xst)then
                 call erpfree(ifilsi,istst)
+                ier=0
                 call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
                 write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
                 call edisp(iuout,outs)
@@ -659,6 +661,7 @@ C starting conversion.
              call findfil(lshad(icomp),xst)
              if(xst)then
                call erpfree(ifilsi,istst)
+               ier=0
                call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
                write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
                call edisp(iuout,outs)
@@ -722,6 +725,7 @@ C starting calculations.
             call findfil(lshad(icomp),xst)
             if(xst)then
                call erpfree(ifilsi,istst)
+               ier=0
                call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
                write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
                if(paction(1:13).eq.'update_silent'.or.
@@ -1113,6 +1117,7 @@ C If there is already data in the file ask user what to do.
                   maxrec=24
                   if(nzsur(icomp).gt.24)maxrec=nzsur(icomp)
                   call erpfree(ifilsi,istst)
+                  ier=0
                   call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
                   write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
                   if(paction(1:13).eq.'update_silent'.or.
@@ -1170,6 +1175,7 @@ C Allow for number of surfaces within the zone transitional shading
 C file.
             irecw=ms+5
             write(tbase,'(a,a3)')ltrns(:lnblnk(ltrns)),month(mon)
+            ier=0
             call efopran(iunit,tbase,irecw,1,ier)
             if(ier.eq.0)then
 
@@ -1218,6 +1224,7 @@ C Allow for number of surfaces within the zone transitional shading
 C file.
             irecw=ms+5
             write(tbase,'(a,a3)')ltrns(:lnblnk(ltrns)),month(mon)
+            ier=0
             call efopran(iunit,tbase,irecw,1,ier)
             if(ier.eq.0)then
                call edisp(iuout,' ')
@@ -1270,6 +1277,7 @@ C source surfaces.
                   maxrec=24
                   if(nzsur(icomp).gt.24)maxrec=nzsur(icomp)
                   call erpfree(ifilsi,istst)
+                  ier=0
                   call efopran(ifilsi,lshad(icomp),maxrec,1,ier)
                   write(outs,'(2a)') 'Deleting previous ',lshad(icomp)
                   if(paction(1:13).eq.'update_silent'.or.

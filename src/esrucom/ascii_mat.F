@@ -952,8 +952,10 @@ C this file. If local or absolute path then use eforan. If in
 C the standard location then create lworking which has path
 C prepended.
       if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        ier=0
         call EFOPRAN(IFMAT,LFMAT,40,1,IER)
       elseif(ipathmat.eq.2)then
+        ier=0
         lndbp=lnblnk(standarddbpath)
         write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &    LFMAT(1:lnblnk(LFMAT))

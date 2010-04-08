@@ -3055,8 +3055,10 @@ C this file. If local or absolute path then use eforan. If in
 C the standard location then create lworking which has path
 C prepended.
       if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        ier=0
         call EFOPRAN(IFMAT,LFMAT,40,4,IER)
       elseif(ipathmat.eq.2)then
+        ier=0
         lndbp=lnblnk(standarddbpath)
         write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &    LFMAT(1:lnblnk(LFMAT))
@@ -3146,6 +3148,7 @@ C current contents of binary materials db.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       integer icln
+      integer ier
       real val
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72
@@ -3172,8 +3175,10 @@ C the standard location then create lworking which has path
 C prepended.
       CALL ERPFREE(IFMAT,ISTAT)
       if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        ier=0
         call EFOPRAN(IFMAT,LFMAT,40,1,IER)
       elseif(ipathmat.eq.2)then
+        ier=0
         lndbp=lnblnk(standarddbpath)
         write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
      &    LFMAT(1:lnblnk(LFMAT))

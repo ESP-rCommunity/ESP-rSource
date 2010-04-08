@@ -488,6 +488,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
+      integer ier
       logical unixok  ! to check for database path file separators
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
@@ -1244,6 +1245,7 @@ C Scan the first record of this file.
               CALL ERPFREE(IUTDF,ISTAT)
               NWPR=MTABC
               ITWPR=NWPR+1
+              ier=0
               call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
               IREC=1
               READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103)HDR,NWPR
@@ -1265,6 +1267,7 @@ C Scan the first record of this file.
             CALL ERPFREE(IUTDF,ISTAT)
             NWPR=MTABC
             ITWPR=NWPR+1
+            ier=0
             call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
             IREC=1
             READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=102)HDR,NWPR
