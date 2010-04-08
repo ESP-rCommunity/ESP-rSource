@@ -86,7 +86,8 @@ C Write airflow network file, number of contaminants
       WRITE(IFCTM,1006,IOSTAT=ISTAT,ERR=99)
  1006 FORMAT('#name and ambient concentrations (kg/kg) of contaminants')
       WRITE(IFCTM,1056,IOSTAT=ISTAT,ERR=99)
- 1056 FORMAT('#(max conc, min conc, hour at which max conc occurs)')
+c 1056 FORMAT('#(max conc, min conc, hour at which max conc occurs)')
+ 1056 FORMAT('#(24 values, one for each hour of the day (??))')
       WRITE(IFCTM,1007,IOSTAT=ISTAT,ERR=99)
  1007 FORMAT('#followed by no. of source/sink models and model no.s')
 
