@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 #
 # For use on sun/linux/cygwin/mingw/OS X/Windows platforms.
 #
@@ -980,8 +980,15 @@ case $xLibs in
      ;;
   noX) XINSTALLDIR="";;
 esac
-    
-
+# For the case of mingw and XLM we need to set the paths for the library.    
+if [ "$platform" = "mingw" ]; then
+  if [ "$xLibs" = "noX" ]; then
+    if [ "$xml_support" = "yes" ]; then
+      XINSTALLDIR=" -IC:/GTK/include -LC:/GTK/lib "
+      echo "for MINGW the library is $XINSTALLDIR"
+    fi
+  fi
+fi
 
 #--------------- CC, CPL, FC -----------------------
 # Assign compilers
@@ -1134,7 +1141,11 @@ case $xLibs in
          x86_64) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;
        esac;;
   GTK) ULIBS="$ULIBS -lgtkesru -L${XINSTALLDIR}";;
-  noX) ULIBS="$ULIBS -lnoxesru";;
+  noX) case $platform in
+# For the case of mingw and XLM we need to use the paths for the library.    
+         mingw) ULIBS="$ULIBS -lnoxesru -L${XINSTALLDIR}";;
+         *) ULIBS="$ULIBS -lnoxesru";;
+       esac;;
 esac
 
 
