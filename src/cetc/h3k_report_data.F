@@ -81,32 +81,32 @@ C.....Common variables
       integer npgap           ! Location of air gap. (not used)
 
 C TPA(MCOM),           ! - present zone air point temperature (oC)
-C QPA(MCOM)            ! - zone air point heat injection (W)
+C QPA(MCOM)            ! - present zone air point heat injection (W)
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
       REAL TPA, QPA
       
 C TFA(MCOM)            ! - future zone air point temperature (oC)
-C QFA(MCOM)            ! - zone air point heat injection (W)
+C QFA(MCOM)            ! - future zone air point heat injection (W)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       REAL TFA, QFA
 
 C TPC(MCOM,MS,MN),     ! - present construction temperature (oC)
-C QPC(MCOM)            ! - construction heat injection (W)
+C QPC(MCOM)            ! - present construction heat injection (W)
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
       REAL TPC, QPC
 
 C TFC(MCOM,MS,MN),     ! - future construction temperature (oC)
-C QFC(MCOM)            ! - construction heat injection (W)
+C QFC(MCOM)            ! - future construction heat injection (W)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
       REAL TFC, QFC
 
 C TPS(MCOM,MS),        ! - present surface temperature (oC)
-C QPS(MCOM)            ! - surface heat injection (W)
+C QPS(MCOM)            ! - present surface heat injection (W)
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
       REAL TPS, QPS
 
 C TFS(MCOM,MS),        ! - future surface temperature (oC)
-C QFS(MCOM)            ! - surface heat injection (W)
+C QFS(MCOM)            ! - future surface heat injection (W)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       REAL TFS, QFS
 
@@ -1119,6 +1119,8 @@ C=======================================================================
      &                + fZoneUsefulInternalGains
 
       fZoneCoolLoad =   Q_Cool
+     &                + fZoneAdverseSolarGains    ! ? added ag@10042010
+     &                + fZoneAdverseInternalGains ! ? added ag@10042010
 
 
 C=======================================================================
@@ -1127,7 +1129,7 @@ C=======================================================================
 
 C.....Update total building heat injection/extraction variables
       fSUMHeatInjection  = fSUMHeatInjection  + Q_Heat
-      fSUMHeatExtraction = fSUMHeatExtraction + Q_cool
+      fSUMHeatExtraction = fSUMHeatExtraction + Q_Cool
       fSUMNetFlux        = fSUMNetFlux        + Q_Zone
 
 C.....Solar gains
