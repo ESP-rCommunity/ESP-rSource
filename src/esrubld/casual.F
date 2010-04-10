@@ -1524,10 +1524,11 @@ C Trace output:
                   if(IFT.EQ.1)then
 c                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
                     write(78,111)NSINC,zname(ICOMP),IBLIND,
-     &               NN,I,selum(NN,I),SETPT(ICOMP,NN),NDBENT(ICOMP)
+     &               NN,I,selum(NN,I),SETPT(ICOMP,NN),NDBENT(ICOMP),
+     &               suma/float(NDF(ICOMP,NN))
   111               format(I6,' ',(a),I5,I5,I5,' N/A ','  N/A  ',
      &               '  N/A  ','  N/A ',
-     &               '  N/A  ','  N/A  ',F7.1,F6.0,I7)
+     &               '  N/A  ','  N/A  ',F7.1,F6.0,I7,F8.2)
                     call edisp(itu,outs)
                   endif
                   ift=ift_old
