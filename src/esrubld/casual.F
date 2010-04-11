@@ -152,8 +152,9 @@ C ICGCTL - pointer to controlled gain type.
      &               ELR(MCOM,MDTY,MGTY,MGPER,MPHAS)
 
 C Average illuminance in lighting zone (for h3k output)
-      real AveLtzIllum
       common/CFCLighting/AveLtzIllum(mcom,mlcom),NLITZ2(MCOM)
+      real AveLtzIllum
+	  integer NLITZ2
 
 C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
@@ -925,8 +926,9 @@ C Illuminance database.
 
 
 C Average illuminance in lighting zone (for h3k output)
-      real AveLtzIllum
       common/CFCLighting/AveLtzIllum(mcom,mlcom),NLITZ2(MCOM)
+      real AveLtzIllum
+	  integer NLITZ2
 
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
       DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)
@@ -1528,7 +1530,7 @@ c                  write(outs,111)N,I,selum(N,I),SETPT(ICOMP,N)
      &               suma/float(NDF(ICOMP,NN))
   111               format(I6,' ',(a),I5,I5,I5,' N/A ','  N/A  ',
      &               '  N/A  ','  N/A ',
-     &               '  N/A  ','  N/A  ',F7.1,F6.0,I7,F8.2)
+     &               '  N/A  ','  N/A  ',F7.1,F6.0,I7,F9.2)
                     call edisp(itu,outs)
                   endif
                   ift=ift_old

@@ -164,9 +164,9 @@ C ICGCTL - pointer to controlled gain type.
       real Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
 
 C Average illuminance in lighting zone
+      common/CFCLighting/AveLtzIllum(mcom,mlcom),Nlitz2(MCOM)
       real AveLtzIllum
       integer Nlitz2
-      common/CFCLighting/AveLtzIllum(mcom,mlcom),Nlitz2(MCOM)
  
 C.....Window properties
       common/prectc/itmcfl(mcom,ms),tmct(mcom,mtmc,5),
