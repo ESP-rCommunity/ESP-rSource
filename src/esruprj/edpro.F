@@ -322,6 +322,11 @@ C << consider moving commons PDBITM and PDBELM into a *.h file.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
       COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+
+C ICGS1 (integer) is the start hour of the profile period.
+C ICSF1 (integer) is the finish hour of the profile period.
+C CGS1 (real) is the first item (e.g. sensible gain) of the period.
+C GCL1 (real) is the 2nd item (e.g. latent gain) of the period.
       COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
      &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
 
