@@ -655,6 +655,9 @@ C Remember the 'start value' of the unix system clock.
 
 123   continue
 
+C Initialize time-row variables for DWHR model. 
+      call DWHRDrawInitialize()
+
 C At startup, SHOCC is initially out of sync with ESP-r time
 C (i.e. ESP-r new day starts at 1., while SHOCC starts at 0.)
 
@@ -1066,8 +1069,9 @@ C Output current simulation increment if trace on.
 C ** DEBUG ** Write nsinc to screen
 C If uncommented, this line will write the current timestep #,
 C hour and day to the screen.
-C           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
-C     &                ' yr:', iMY_current_year
+           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
+     &                ' yr:', iMY_current_year
+           print*, "Current hour: ", fCurrentHour() 
 C           call edisp(itu,outs)
 
 
@@ -1396,7 +1400,8 @@ C For type 6 time-step controller, possibly 'rewind' simulation,
 C Reset h3k zone control action flags
 
             call h3kReports_reset_zone_flags()
-
+            
+     
 C Building side now complete.
             if(indcfg.eq.1)goto 77
 
@@ -1597,9 +1602,6 @@ C.....H3Kreports.(UPDATE).start.................
 C.....Timestep is now complete; call reporting
 C.....object update function to process and
 C.....store logged data
-C.....
-C.....Any changes to this code should be made within
-C.....the H3Kreports demarcaration comments
 
 C.....Check to see present time is close to midnight
             if (ihrp.eq.24) then

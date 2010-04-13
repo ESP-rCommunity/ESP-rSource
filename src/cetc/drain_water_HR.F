@@ -683,9 +683,11 @@ C...........Read value
      
              if ( bError ) then
              
-              call dwhr_error_handler(bAutoOK, ' ', 
+               call dwhr_error_handler(bAutoOK, ' ', 
      &        ' Error parsing Entry "*specified_ground_temperature_oC"')
-             
+              
+               bFatalError = .true.
+              
              endif 
      
           else 
@@ -715,7 +717,8 @@ C...........Read value
      &       bError )
      
              if ( bError ) then
-             
+              
+              bFatalError = .true.
               call dwhr_error_handler(bAutoOK, ' ', 
      &        ' Error parsing Entry "*shower_supply_temperature_oC"')
              
@@ -738,7 +741,7 @@ C...........Read value
      &       bError )
      
              if ( bError ) then
-             
+              bFatalError = .true.
               call dwhr_error_handler(bAutoOK, ' ', 
      &      ' Error parsing Entry "*drain_water_return_temperature_oC"')
              
@@ -761,14 +764,106 @@ C...........Read value
      &       bError )
      
              if ( bError ) then
-             
+              bFatalError = .true.
               call dwhr_error_handler(bAutoOK, ' ', 
      &      ' Error parsing Entry "*shower_flow_rate_lpm"')
              
              endif 
-       
+                             
         endif ShowerFlowFound 
+       
+C.......Average shower duration (minutes)
+        iToken = iMatchTokens('avg_shower_duration_minutes',
+     &                        iSystem, bFound )
+     
+        ShowerDurFound: if ( bFound ) then 
         
+          bTokenMatched(iSystem, iToken) = .true.
+          
+C...........Read value
+          fShowerDurationMIN(iSystem) = 
+     &        fCtoR_err(
+     &          cValues(iSystem,iToken),
+     &          'Average shower duration', 
+     &          bError )
+          if (bError) then 
+            bFatalError = .true. 
+            call dwhr_error_handler(bAutoOK, ' ',
+     &      ' Error parsing Entry "*avg_shower_duration_minutes"')
+
+          endif 
+            
+        endif ShowerDurFound
+        
+C.......Number of showers per day (-)  
+        iToken = iMatchTokens('avg_number_showers_per_day',
+     &                        iSystem, bFound )
+     
+        ShowerCountFound: if ( bFound ) then 
+        
+          bTokenMatched(iSystem, iToken) = .true.
+          
+C...........Read value
+          iNumShowersPerDay(iSystem) = 
+     &        iCtoI_err(
+     &          cValues(iSystem,iToken),
+     &          'Avg # of showers per day', 
+     &          bError )
+          if (bError) then 
+            bFatalError = .true. 
+            call dwhr_error_handler(bAutoOK, ' ',
+     &      ' Error parsing Entry "*avg_number_showers_per_day"')
+
+          endif 
+            
+        endif ShowerCountFound
+        
+C.......Shower start time (hour)  
+        iToken = iMatchTokens('shower_start_time_h',
+     &                        iSystem, bFound )
+     
+        ShowerStartHFound: if ( bFound ) then 
+        
+          bTokenMatched(iSystem, iToken) = .true.
+          
+C...........Read value
+          fShowerStartTimeHOUR(iSystem) = 
+     &        fCtoR_err(
+     &          cValues(iSystem,iToken),
+     &          'Shower period start hour', 
+     &          bError )
+          if (bError) then 
+            bFatalError = .true. 
+            call dwhr_error_handler(bAutoOK, ' ',
+     &      ' Error parsing Entry "*shower_start_time_h"')
+
+          endif 
+            
+        endif ShowerStartHFound
+
+C.......Shower end time (h)  
+        iToken = iMatchTokens('shower_end_time_h',
+     &                        iSystem, bFound )
+     
+        ShowerEndHFound: if ( bFound ) then 
+        
+          bTokenMatched(iSystem, iToken) = .true.
+          
+C...........Read value
+          fShowerEndTimeHOUR(iSystem) = 
+     &        fCtoR_err(
+     &          cValues(iSystem,iToken),
+     &          'Shower period end hour', 
+     &          bError )
+          if (bError) then 
+            bFatalError = .true. 
+            call dwhr_error_handler(bAutoOK, ' ',
+     &      ' Error parsing Entry "*shower_end_time_h"')
+
+          endif 
+            
+        endif ShowerEndHFound
+       
 C-----------------------------------------------------------------------
 C       We've processed all known tokens, but there may be other tokens
 C       in the file that did not match above strings because of
@@ -781,7 +876,8 @@ C.........Found an unmatched token: flag token.
 
             write (cMsg,'(A,I2,A,A,A)')
      &            ' Unknown or out-of-context entry in DWHR system ',
-     &            iSystem,': "*', cTokens(iSystem,iToken)(1:60),'"'
+     &            iSystem,': "*', cTokens(iSystem,iToken)
+     &            (1:min(lnblnk(cTokens(iSystem,iToken)),60)),'"'
 
             call dwhr_error_handler( bAutoOK, ' ', cMsg)
 
@@ -813,8 +909,6 @@ C.....Close the file, if it is open
 
       endif ReportStatus
 
-
-      STOP
       return
       end subroutine process_dwhr_inputs
 
@@ -1310,3 +1404,264 @@ C.....If running silently, stop simulator. Otherwise, warn user.
       return
       end subroutine dwhr_error_handler
 
+C------------ DWHRDrawTSTransport ---------------------------------------
+C  ABSTRACT:
+C
+C    This simple routine copies future row values to present-row 
+C    variables at the end of a timestep.
+C
+C INPUTS/OUTPUTS:
+C
+C    None.
+C
+C-----------------------------------------------------------------------      
+      subroutine DWHRDrawTSTransport()
+      implicit none
+      include "drain_water_HR.h"
+      
+      integer iSystem 
+      
+      if ( bDwhrActive ) then 
+        do iSystem = 1, iDwhrSystemCount
+        
+          fTSDeficitP(iSystem) = fTSDeficitF(iSystem)
+          fTSDeficitF(iSystem) = 0.
+        
+        enddo 
+      endif 
+      
+      return 
+      end subroutine DWHRDrawTSTransport
+ 
+C------------ DWHRDrawInitialize ---------------------------------------
+C  ABSTRACT:
+C
+C    This simple routine zeros present and future time-row variables.
+C
+C INPUTS/OUTPUTS:
+C
+C    None.
+C
+C-----------------------------------------------------------------------      
+      subroutine DWHRDrawInitialize()
+      implicit none
+      include "drain_water_HR.h"
+      
+      integer iSystem 
+      
+      if ( bDwhrActive ) then 
+        do iSystem = 1, iDwhrSystemCount
+        
+          fTSDeficitP(iSystem) = 0.
+          fTSDeficitF(iSystem) = 0.
+        
+        enddo 
+      endif 
+      
+      return 
+      end subroutine DWHRDrawInitialize  
+      
+C------------ ShowerScheduler ------------------------------------------
+C  ABSTRACT:
+C
+C    This routine...
+C
+C-----------------------------------------------------------------------
+      subroutine ShowerScheduler(iSystem,                 
+     &                           fTotalDrawL,
+     &                           fHotWaterTempC,
+     &                           fColdWaterTempC,
+     &                           bShowerActive,     
+     &                           fAdjustedHotDrawL,
+     &                           fShowerHotDrawL,
+     &                           fShowerColdDrawL,
+     &                           fShowerTSFraction
+     &                          )
+
+      implicit none 
+      include "drain_water_HR.h"
+      
+C.....Inputs/outputs 
+                             
+      integer iSystem        ! Integer flag indicating which system 
+                             !   is under consideration      
+                             
+      real fTotalDrawL       ! Total volumetric draw (litres) from 
+                             ! dwh load model 
+                             
+      real fHotWaterTempC    ! Temperature of hot water supplied by 
+                             !   dhw system       
+                             
+      real fColdWaterTempC   ! Temperature of cold water flowing into 
+                             !   shower (after DWHR, if any)
+      
+      logical bShowerActive  ! Flag indicating if shower is in use
+      
+      real fAdjustedHotDrawL  ! Adjusted hot water draw without showers 
+                              !   (litres)       
+                             
+      real fShowerHotDrawL ! Corresponding cold water draw (litres)                             
+                             
+      real fShowerColdDrawL ! Corresponding cold water draw (litres)
+      
+      real fShowerTSFraction  ! Fraction of current TS that shower is 
+                              !   in use 
+
+C.....ESP-r commons 
+      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
+      integer isd1              ! not used in current context
+      integer ism1              ! not used in current context
+      integer isd2              ! not used in current context           
+      integer ism2              ! not used in current context
+      integer isds              ! not used in current context
+      integer isdf              ! not used in current context 
+      integer ntstep            ! number of building steps/hour
+      
+      common/pctstp/ntstpp
+      integer ntstpp            ! number of plant timesteps / building timestep      
+                                    
+                              
+C.....Local variables
+
+      real fNetDrawThisTSL   ! Variable containing the net water draw 
+                             !   after deficits from previous timesteps 
+                             !   have been applied. 
+
+      logical bNumsAreSame   ! Flag for floating point comparisons.
+      
+      logical bAfterStart    ! Flag indicating that current hour is 
+                             !   after the start hour
+                             
+      logical bBeforeEnd     ! Flag indicating that current hour is 
+                             !   after the end hour 
+                             
+      real fHour             ! Current hour of the day.  
+
+      real fDailyShowerDrawL ! Volume of water used each day in 
+                                 !   showers (L)      
+
+
+      real fHourlyShowerDrawL ! Average volume of water used each hour 
+                              !   in showers. (L)
+                              
+      real fTSShowerDrawL     ! Average volume of water used each TS
+                              !   in showers (L)
+   
+      
+                                 
+C.....References: 
+      real fCurrentHour      ! Function returning the current hour as 
+                             !    a float (0->23.999...)
+
+                             
+C-----------------------------------------------------------------------
+C     Apply any deficits from last TS to determine net availaible water
+C     draw 
+C-----------------------------------------------------------------------                             
+      fNetDrawThisTSL = fTotalDrawL - fTSDeficitP(iSystem)
+      print*, '   -> fTSDeficitP(isystem): ', fTSDeficitP(iSystem)
+      print*, '   -> fNetDrawThisTSL: ', fNetDrawThisTSL
+C-----------------------------------------------------------------------
+C     Check if shower is active: is current hour within start and end 
+C     time for showers?
+C-----------------------------------------------------------------------      
+
+      fHour = fCurrentHour()
+
+C.....Compare current hour to starting hour 
+
+      bAfterStart = .false.       
+      
+      call eclose(fHour, fShowerStartTimeHOUR(iSystem), 0.01,
+     &            bNumsAreSame) 
+                  
+      if ( bNumsAreSame .or. 
+     &     fHour > fShowerStartTimeHOUR(iSystem) ) bAfterStart = .true.
+     
+C.....Compare current hour to ending hour 
+
+      bBeforeEnd = .true.
+    
+      call eclose(fHour, fShowerEndTimeHOUR(iSystem), 0.01,
+     &            bNumsAreSame) 
+                  
+      if ( bNumsAreSame .or. 
+     &     fHour > fShowerEndTimeHOUR(iSystem) ) bBeforeEnd = .false.
+    
+C.....Now set shower active flag if we're within the shower period     
+    
+      if ( bAfterStart .and. bBeforeEnd ) then 
+    
+        bShowerActive = .true.
+        
+      else 
+       
+        bShowerActive = .false. 
+        
+      endif 
+      
+      
+C-----------------------------------------------------------------------
+C     If shower is active, adjust daily water draw to reflect 
+C     hot water usage. 
+C-----------------------------------------------------------------------      
+      IsShowerActive: if ( bShowerActive ) then
+
+C-----------------------------------------------------------------------
+C       Compute average amount of water used each day in showers
+C
+C       Avg. Use = ( # of showers ) * ( duration ) * ( flow rate )
+C
+C-----------------------------------------------------------------------      
+        fDailyShowerDrawL = 
+     &          float ( iNumShowersPerDay(iSystem ) )
+     &        * fShowerDurationMIN(iSystem) 
+     &        * fShowerFlowRateLPM(iSystem)         
+        
+        print*, '   -> fDailyShowerDrawL :', fDailyShowerDrawL
+C-----------------------------------------------------------------------
+C       Compute the hour-averaged water use in the shower(s)
+C
+C                           ( Avg. Use ) 
+C       Hr. Avg. Use = -------------------------
+C                      ( End hour - Start hour ) 
+C
+C-----------------------------------------------------------------------            
+        fHourlyShowerDrawL = fDailyShowerDrawL / 
+     &       ( fShowerEndTimeHOUR(iSystem) 
+     &          - fShowerStartTimeHOUR(iSystem) ) 
+        print*, '   -> fHourlyShowerDrawL :', fHourlyShowerDrawL 
+C-----------------------------------------------------------------------
+C       Compute the time-step averaged water use in the shower(s)
+C-----------------------------------------------------------------------        
+ 
+        fTSShowerDrawL = fHourlyShowerDrawL / float ( ntstep * ntstpp ) 
+        print*, '   -> fTSShowerDrawL: ', fTSShowerDrawL 
+      else 
+
+        fTSShowerDrawL = 0.   
+ 
+      endif IsShowerActive
+      
+C-----------------------------------------------------------------------
+C       Deduct time-step shower draw from total water draw. If result is 
+C       negative, set adjusted draw to zero and save deficit for use 
+C       in future timesteps.
+C
+C       fAdjustedHotDrawL is now the DHW draw net of showers.
+C
+C-----------------------------------------------------------------------
+       
+      fAdjustedHotDrawL = fNetDrawThisTSL - fTSShowerDrawL
+        
+      HotWaterDeficit: if ( fAdjustedHotDrawL < 0. ) then 
+        
+        fTSDeficitF(iSystem) = abs( fAdjustedHotDrawL )
+        fAdjustedHotDrawL = 0.
+ 
+      endif HotWaterDeficit
+      
+      print*, '   -> fTSDeficitF(iSystem):', fTSDeficitF(iSystem)
+      
+      return 
+      end subroutine ShowerScheduler

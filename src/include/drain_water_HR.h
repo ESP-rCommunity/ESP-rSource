@@ -104,6 +104,13 @@ C.....Parsing data.
       parameter (iMaxTokens=30)
       character*248 cTokens(iMaxNumDwhr,iMaxTokens) 
       character*248 cValues(iMaxNumDwhr,iMaxTokens)       
+
+C.....Storage arrays that track deficits on water draws which occur 
+C.....when the shower water usage exceeds the hourly water draw.                                   
+      real fTSDeficitP(iMaxNumDwhr) 
+      real fTSDeficitF(iMaxNumDwhr) 
+      
+
       
 C.....Common to make data available in memory
       common/drain_water_HR/
@@ -135,5 +142,7 @@ C.....Common to make data available in memory
      &   fShowerStartTimeHOUR,
      &   fShowerEndTimeHOUR,
      &   cTokens,
-     &   cValues
+     &   cValues, 
+     &   fTSDeficitP, fTSDeficitF
+      
       
