@@ -4839,11 +4839,18 @@ C Show the new point on the current wireframe.
               CALL EASKABC(outs,' ','new vertex',
      &          'new vertex after editing','cancel',INVT,1)
               if(INVT.eq.1)then
+
+C Update the global coordinates for this zones surfaces so that
+C the subsequent wireframe image can be drawn and the bounds of
+C the zone can be calculated.
                 NTV=NTV+1
                 NZTV(icomp)=NTV
                 x(ntv)=x3
                 y(ntv)=y3
                 z(ntv)=z3
+                VCOORD(ICOMP,ntv,1)=x3
+                VCOORD(ICOMP,ntv,2)=y3
+                VCOORD(ICOMP,ntv,3)=z3
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
@@ -4857,6 +4864,9 @@ C Show the new point on the current wireframe.
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
                 CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
                 if(ier.ne.0)goto 443
+                VCOORD(ICOMP,ntv,1)=x3
+                VCOORD(ICOMP,ntv,2)=y3
+                VCOORD(ICOMP,ntv,3)=z3
               elseif(INVT.eq.3)then
                 continue
               endif
@@ -4866,7 +4876,7 @@ C Show the new point on the current wireframe.
               MODGEO=.TRUE.
               MODIFY=.TRUE.
               MODBND=.TRUE.
-              ZBFLG(ICOMP)=0.
+              ZBFLG(ICOMP)=0.  ! force recalculation of bounds
               call usrmsg(' ',' ','-')
               CALL INLNST(1)
               nzg=1
@@ -5035,6 +5045,9 @@ C Show the new point on the current wireframe.
                 x(ntv)=x3
                 y(ntv)=y3
                 z(ntv)=z3
+                VCOORD(ICOMP,ntv,1)=x3
+                VCOORD(ICOMP,ntv,2)=y3
+                VCOORD(ICOMP,ntv,3)=z3
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
@@ -5048,6 +5061,9 @@ C Show the new point on the current wireframe.
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
                 CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
                 if(ier.ne.0)goto 543
+                VCOORD(ICOMP,ntv,1)=x3
+                VCOORD(ICOMP,ntv,2)=y3
+                VCOORD(ICOMP,ntv,3)=z3
               elseif(INVT.eq.3)then
                 continue
               endif
@@ -5224,6 +5240,9 @@ C Ask if it should be added.
                     x(ntv)=x3
                     y(ntv)=y3
                     z(ntv)=z3
+                    VCOORD(ICOMP,ntv,1)=x3
+                    VCOORD(ICOMP,ntv,2)=y3
+                    VCOORD(ICOMP,ntv,3)=z3
                   elseif(INVT.eq.2)then
                     NTV=NTV+1
                     NZTV(icomp)=NTV
@@ -5238,6 +5257,9 @@ C Ask if it should be added.
                     CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
                     CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
                     if(ier.ne.0)goto 136
+                    VCOORD(ICOMP,ntv,1)=x3
+                    VCOORD(ICOMP,ntv,2)=y3
+                    VCOORD(ICOMP,ntv,3)=z3
                   elseif(INVT.eq.3)then
                     goto 147
                   endif
@@ -5639,6 +5661,9 @@ C be a new vertex and update the wireframe.
               x(ntv)=x3
               y(ntv)=y3
               z(ntv)=z3
+              VCOORD(ICOMP,ntv,1)=x3
+              VCOORD(ICOMP,ntv,2)=y3
+              VCOORD(ICOMP,ntv,3)=z3
             elseif(INVT.eq.2)then
               NTV=NTV+1
               NZTV(icomp)=NTV
@@ -5652,6 +5677,9 @@ C be a new vertex and update the wireframe.
               CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
               CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
               if(ier.ne.0)goto 43
+              VCOORD(ICOMP,ntv,1)=x3
+              VCOORD(ICOMP,ntv,2)=y3
+              VCOORD(ICOMP,ntv,3)=z3
             elseif(INVT.eq.3)then
               goto 3
             endif
@@ -6706,6 +6734,9 @@ C Add the transformed points to the zone (later check for unique).
                 X(NTV)=XT(ix)
                 Y(NTV)=YT(ix)
                 Z(NTV)=ZT(ix)
+                VCOORD(ICOMP,ntv,1)=XT(ix)
+                VCOORD(ICOMP,ntv,2)=YT(ix)
+                VCOORD(ICOMP,ntv,3)=ZT(ix)
                 XMN=AMIN1(XMN,X(NTV))
                 YMN=AMIN1(YMN,Y(NTV))
                 ZMN=AMIN1(ZMN,Z(NTV))

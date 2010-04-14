@@ -1442,6 +1442,9 @@ C its future position via `one connection past the current last
         Y(NTV+J)=YYW(J)
         Z(NTV+J)=ZZW(J)
         JVN(NSUR,J)=NTV+J
+        VCOORD(ICOMP,ntv+J,1)=XXW(J)
+        VCOORD(ICOMP,ntv+J,2)=YYW(J)
+        VCOORD(ICOMP,ntv+J,3)=ZZW(J)
   251 CONTINUE
 
 C Remember the reverse order of vertices for matching surface.
@@ -1505,6 +1508,9 @@ C Update the data for the matching surface.
           Y(NTV+J)=YYM(J)
           Z(NTV+J)=ZZM(J)
           JVN(NSUR,J)=JVNM(J)  ! user the reversed order list.
+          VCOORD(ICOMP,ntv+J,1)=XXM(J)
+          VCOORD(ICOMP,ntv+J,2)=YYM(J)
+          VCOORD(ICOMP,ntv+J,3)=ZZM(J)
   252   CONTINUE
 
 C If SN is less than 12 characters add an _
@@ -1680,7 +1686,7 @@ C otherwise continue.
   144       continue
 
 C If an existing vertex is close then skip to next, otherwise
-C add a new vertex to the end of the zone list.
+C add a new vertex to the end of the zone list and update vcoord.
   145       if(found)then
               continue
             else
@@ -1689,6 +1695,9 @@ C add a new vertex to the end of the zone list.
               X(NTV)=X1(ix)
               Y(NTV)=Y1(ix)
               Z(NTV)=Z1(ix)
+              VCOORD(ICOMP,ntv,1)=X1(ix)
+              VCOORD(ICOMP,ntv,2)=Y1(ix)
+              VCOORD(ICOMP,ntv,3)=Z1(ix)
 
 C For a unique vertex also test to see if it is close (+-0.003m) to
 C one of the existing lines. Also check the last edge in the surface.
@@ -1795,7 +1804,7 @@ C a repeat of an existing vertex, otherwise continue.
   244     continue
 
 C If an existing vertex is close then skip to next, otherwise
-C add a new vertex to the end of the zone list.
+C add a new vertex to the end of the zone list and update vcoord.
   245     if(found)then
             continue
           else
@@ -1804,6 +1813,9 @@ C add a new vertex to the end of the zone list.
             X(NTV)=X1(1)
             Y(NTV)=Y1(1)
             Z(NTV)=Z1(1)
+            VCOORD(ICOMP,ntv,1)=X1(ix)
+            VCOORD(ICOMP,ntv,2)=Y1(ix)
+            VCOORD(ICOMP,ntv,3)=Z1(ix)
 
 C For a unique vertex also test to see if it is close (+-0.003m) to
 C one of the existing lines. Also check the last edge in the surface.
