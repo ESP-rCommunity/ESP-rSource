@@ -886,6 +886,9 @@ C add a new vertex to the end of the zone list.
               X(NTV)=X1(ix)
               Y(NTV)=Y1(ix)
               Z(NTV)=Z1(ix)
+              VCOORD(ICOMP,ntv,1)=X1(ix)
+              VCOORD(ICOMP,ntv,2)=Y1(ix)
+              VCOORD(ICOMP,ntv,3)=Z1(ix)
               XMN=AMIN1(XMN,X(NTV))
               YMN=AMIN1(YMN,Y(NTV))
               ZMN=AMIN1(ZMN,Z(NTV))
@@ -1813,9 +1816,9 @@ C add a new vertex to the end of the zone list and update vcoord.
             X(NTV)=X1(1)
             Y(NTV)=Y1(1)
             Z(NTV)=Z1(1)
-            VCOORD(ICOMP,ntv,1)=X1(ix)
-            VCOORD(ICOMP,ntv,2)=Y1(ix)
-            VCOORD(ICOMP,ntv,3)=Z1(ix)
+            VCOORD(ICOMP,ntv,1)=X1(1)
+            VCOORD(ICOMP,ntv,2)=Y1(1)
+            VCOORD(ICOMP,ntv,3)=Z1(1)
 
 C For a unique vertex also test to see if it is close (+-0.003m) to
 C one of the existing lines. Also check the last edge in the surface.
@@ -2428,6 +2431,9 @@ C surface in the zone`. ICONO is the connection for the parent surface.
         Y(NTV+J)=YA(J)
         Z(NTV+J)=ZA(J)
         JVN(NSUR,J)=NTV+J
+        VCOORD(ICOMP,ntv+J,1)=XA(J)
+        VCOORD(ICOMP,ntv+J,2)=YA(J)
+        VCOORD(ICOMP,ntv+J,3)=ZA(J)
   151 CONTINUE
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then
         write(SN,'(a)') rsname(1:12)
