@@ -33,7 +33,7 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
-	  PltDummy.o
+	  PltDummy.o drain_water_HR.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
@@ -227,6 +227,10 @@ ground_temp_mains.F:
 PltDummy.F:
 	rm -f PltDummy.F
 	ln -s $(PLTdir)/PltDummy.F .
+drain_water_HR.F:
+	rm -f drain_water_HR.F
+	ln -s $(CETCdir)/drain_water_HR.F
+  
 
 readTrnsys.F:
 	rm -f readTrnsys.F
@@ -248,7 +252,7 @@ clean:
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelevvc.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
-	readTrnsys.F PltDummy.F
+	readTrnsys.F PltDummy.F drain_water_HR.F
 
 
 
