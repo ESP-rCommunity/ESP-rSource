@@ -26,7 +26,7 @@ Edited by Dr. Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 31 March 2010
+Version of 15 April 2010
 .sp 2
 .SH
 Introduction
@@ -1359,6 +1359,36 @@ currently not attributed in an exported META file.
 *end
 
 .ES
+.sp 2
+.SH
+Revisions
+.LP
+The following is a summary of changes made to the META file format. This
+section is work-in-progress.
+.LP
+March 2010 - added *zonpth, *netpth, *ctlpth, *radpth, *imgpth,
+*tmppth, *docpth and *dbspth tokens to support custom model folder
+naming. Relax 10 zone limit on model complexity.
+.LP
+February 2010 - added *previous_rotate token to record prior rotation requests
+and modified the *rotate token to include the X and Y of the point for 
+zone rotation.
+.LP
+December 2009 updated documentation about META file.
+.LP
+September 2009 - modified the *site token to *site_loc and *site_exp tokens,
+removed the *action,cont option to simplify the code and allowed longer
+text block after the *menu token.
+.LP
+September 2009 - added dual rotation shading obstruction descriptions *obs3.
+.LP
+August 2009 - added directives for shading and insolation calculations.
+.LP
+June 2009 - added directives for the day-type callendar equivalent to that
+used in the ESP-r configuration file.
+.LP
+March 2009 - added facility to export a META file from an existing ESP-r
+model in the prj module.
 
 
 
