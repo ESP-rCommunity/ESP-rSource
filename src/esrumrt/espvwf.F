@@ -168,8 +168,8 @@ C     temp(i)           : Temperature for surface i. [C]
 
 C Initialize global common data.
       call ezero
-      call curmodule('vwf ')
-      cAppName = 'vwf'
+      call curmodule('mrt ')
+      cAppName = 'mrt'
       IUIN=5
       IUOUT=6
       LIMTTY=24
@@ -508,7 +508,8 @@ C that zone.  If inzone = UNKNOWN or the index 0 present a list.
       NITEMS = 17
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
-      call askabout('vwf ',1)
+c      call askabout('vwf ',1)
+      call askabout('mrt ',1)
 
 20    CALL EMENU('  Viewfactors & MRT',ITEM,NITEMS,INO)
 
@@ -731,7 +732,8 @@ C Save view factor file.
       ELSEIF(INO.EQ.16)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display
-        call askabout('vwf ',0)
+c        call askabout('vwf ',0)
+        call askabout('mrt ',0)
       ELSEIF(INO.EQ.17)THEN
 
 c End program, free and delete the scratch file.
