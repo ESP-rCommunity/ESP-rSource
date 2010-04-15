@@ -426,6 +426,7 @@ C weather (32 char) the weather file name (no path included)
       character subpath*72
       character parentaction*16 ! action passed from calling code
       character action*8       ! to pass to silentmodel
+      character simact*6       ! to pass to silentmodel
       character longtfile*144,longtfiledos*144
 
 C Local string values.
@@ -932,13 +933,16 @@ C folder /tmp/box/cfg if mpath is /tmp/box. If 'within' and
 C single folder then no folder is created.
       if(parentaction(1:13).eq.'create_silent')then
         action='new'
-        call silentmodel(action,root,mpath,folder,weather,ier)
+        simact='------'
+        call silentmodel(action,root,mpath,folder,weather,simact,ier)
       elseif(parentaction(1:12).eq.'create_model')then
         action='within'
-        call silentmodel(action,root,mnpath,folder,weather,ier)
+        simact='------'
+        call silentmodel(action,root,mnpath,folder,weather,simact,ier)
       elseif(parentaction(1:16).eq.'create_run_model')then
         action='new'
-        call silentmodel(action,root,mpath,folder,weather,ier)
+        simact='------'
+        call silentmodel(action,root,mpath,folder,weather,simact,ier)
       endif
 
 C Generate the zone and zone files.

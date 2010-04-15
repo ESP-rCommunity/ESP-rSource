@@ -38,16 +38,22 @@ C root   (24 char) the root name of the model
 C mpath  (72 char) the path to the folder with cfg file.
 C folder (12 char) model folder layout: 'single' or 'distributed'
 C weather (32 char) the weather file name (no path included)
+C simact (6 char) assessments to be carried out '------' if
+C   none requested, otherwise follow pattern in edipv.F.
 
 C Current functionality is to update the climate & site data.
 
-      subroutine silentmodel(action,root,mpath,folder,weather,ier)
+      subroutine silentmodel(action,root,mpath,folder,weather,simact,
+     &  ier)
 #include "building.h"
 #include "model.h"
 #include "site.h"
 #include "espriou.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies lclim.
+#include "seasons.h"
+C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -76,6 +82,9 @@ C Calendar commons.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       character calename*32,calentag*12,calendayname*32 
 
+C Simulation parameter sets.
+      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+
 C Passed in parameters.
       character action*8,root*24,mpath*72,folder*12,menu*72
       character fs*1           ! file separator
@@ -83,9 +92,10 @@ C Passed in parameters.
       character weathergr*36   ! file name for weather related ground temps (no path)
       character groundfile*72  ! file name for weather related gorund temps (with path)
       character subpath*72
+      character simact*6 ! action for creating assessments.
 
       character outs*124,OUTSTR*124
-      logical unixok
+      logical unixok,XST,ok
       logical haveground ! set true if ground temp file has been found
       integer lnw   ! length of weather string.
       integer lnwg   ! length of weather ground string.
@@ -115,6 +125,7 @@ C Debug
         write(6,*)  'menu ',modeltitle
         write(6,*)  'mpath ',mpath
         write(6,*)  'weather ',weather
+        write(6,*)  'assessments ',simact
       endif
 
       if(action(1:3).eq.'new')then
@@ -245,6 +256,59 @@ C Impose climate site data on the model.
      &    clong,' & Year DN flag ',IYEAR,ICDNGH,
      &    '. Previously used ',sitelat,sitelongdif,'.'
         call edisp(iuout,outs)
+
+C Rescan the `climatelist` file. Check if this climate is
+C in the list. If not instanciate season and typical start and end dates.
+        if(ihaveseason.gt.0)then
+          continue
+        else
+          INQUIRE (FILE=cdblfil,EXIST=XST)
+          if(XST)then
+            IUF=IFIL+2
+            call scancdblist(IUF,LCLIM,ok,ier)
+            if(ok)then
+              continue
+            else
+
+C Set default early winter, spring, summer, autumn, late winter periods.
+              CALL EDAY(9,1,ia1wins)
+              CALL EDAY(15,1,ia1winf)
+              CALL EDAY(6,3,ia1sprs)
+              CALL EDAY(12,3,ia1sprf)
+              CALL EDAY(11,7,iasums)
+              CALL EDAY(17,7,iasumf)
+              CALL EDAY(2,10,ia2sprs)
+              CALL EDAY(8,10,ia2sprf)
+              CALL EDAY(20,11,ia2wins)
+              CALL EDAY(26,11,ia2winf)
+
+C Default season definitions.
+              CALL EDAY(1,1,is1wins)
+              CALL EDAY(28,2,is1winf)
+              CALL EDAY(1,11,is2wins)
+              CALL EDAY(31,12,is2winf)
+              CALL EDAY(1,3,is1sprs)
+              CALL EDAY(30,4,is1sprf)
+              CALL EDAY(1,9,is2sprs)
+              CALL EDAY(31,10,is2sprf)
+              CALL EDAY(1,5,is1sums)
+              CALL EDAY(31,8,is1sumf)
+            endif
+          endif
+        endif
+
+        if(nsset.gt.0)then
+
+C Instanciate the IPV data based on value of simact.
+          call ipvdatinit(simact)
+
+          if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.nipvassmt.eq.5)then
+
+C If one of the standard number of IPV assessments transfer the relevant
+C data into the simulation parameter set data structure.
+            call ipv2simpar(simact)
+          endif
+        endif
 
 C Write calendar information (just the default one for the moment)       
         calename='standard weekday Sat & Sun'
@@ -1188,6 +1252,10 @@ C Obstruction blocks via geometry.h.
 
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
+      character spfdescr*8
+      common/spfldes/spfdescr(MSPS)
+      common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
+     &               isfnmon(MSPS)
 
 C IPV description via ipvdata.h.
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -1328,6 +1396,8 @@ C in the file.
         modeldocblock=' '
         weather=' '
         hourlysnowfile=' '
+        simact='------'   ! assume no simulation directives
+
         groundreflmodel=0
         skyview=0.0
         groundview=0.0
@@ -1674,14 +1744,17 @@ C   `spring` followed by `typical_week` or `season` or 'fortnight'
 C   `summer` followed by `typical_week` or `season` or 'fortnight'
 C   `autumn` followed by `typical_week` or `season` or 'fortnight'
 C   `three_season` followed by `typical_week` `forthnight` `user` or `season` 
-C   `five_season` followed by `typical_week` `forthnight` `user` or `season` 
+C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
+
         CALL EGETW(OUTSTR,K,WORD,'W','*assessment tags',IER)
         if(WORD(1:7).eq.'Default'.or.WORD(1:7).eq.'default')then
           nipvassmt=1
+          nsset=1
           simsavelevel=-1   ! signal to ipv2simpar to use defaults
           simact='i1d   '
         elseif(WORD(1:6).eq.'Annual'.or.WORD(1:6).eq.'annual')then
           nipvassmt=1
+          nsset=1
           simact='ias   '
         elseif(WORD(1:6).eq.'Single'.or.WORD(1:6).eq.'single')then
           CALL EGETW(OUTSTR,K,WORD,'W','Single tags',IER)
@@ -1705,6 +1778,7 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
             simact='icwins'
           endif
           nipvassmt=1
+          nsset=1
         elseif(WORD(1:6).eq.'Spring'.or.WORD(1:6).eq.'spring')then
           CALL EGETW(OUTSTR,K,WORD,'W','Spring tags',IER)
           if(WORD(1:12).eq.'Typical_week'.or.
@@ -1718,6 +1792,7 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
             simact='icsprs'
           endif
           nipvassmt=1
+          nsset=1
         elseif(WORD(1:6).eq.'Summer'.or.WORD(1:6).eq.'summer')then
           CALL EGETW(OUTSTR,K,WORD,'W','Summer tags',IER)
           if(WORD(1:12).eq.'Typical_week'.or.
@@ -1731,6 +1806,7 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
             simact='icsums'
           endif
           nipvassmt=1
+          nsset=1
         elseif(WORD(1:6).eq.'Autumn'.or.WORD(1:6).eq.'autumn')then
           CALL EGETW(OUTSTR,K,WORD,'W','Autumn tags',IER)
           if(WORD(1:12).eq.'Typical_week'.or.
@@ -1744,6 +1820,7 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
             simact='icauts'
           endif
           nipvassmt=1
+          nsset=1
         elseif(WORD(1:12).eq.'Three_season'.or.
      &         WORD(1:12).eq.'three_season')then
           CALL EGETW(OUTSTR,K,WORD,'W','three_season tags',IER)
@@ -1763,6 +1840,7 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
             simact='i3s   '
           endif
           nipvassmt=3
+          nsset=3
         elseif(WORD(1:11).eq.'Five_season'.or.
      &         WORD(1:11).eq.'five_season')then
           CALL EGETW(OUTSTR,K,WORD,'W','five_season tags',IER)
@@ -1786,12 +1864,14 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
             simact='i5s   '
           endif
           nipvassmt=5
+          nsset=5
         else
           nipvassmt=0
           simact='i1d   '
+          nsset=0
         endif
 
-C Feedback. << but simact is not passed to anything >>
+C Feedback. simact is passed to silentmodel.
         write(outs,*) 'the value of simact is ',simact
 	call edisp(iuout,outs)
 
@@ -2227,9 +2307,13 @@ C Scan for prior X and Y coordinates rotated around if there are 3 items on the 
 
 C Get the assessment independant simulation parameters.
         CALL EGETWI(OUTSTR,K,simstartup,0,300,'W','startup',IER)
+        isstup=simstartup
         CALL EGETWI(OUTSTR,K,simzonetimestep,1,60,'W','zone_ts',IER)
+        isbnstep=simzonetimestep
         CALL EGETWI(OUTSTR,K,simplanttimestep,0,100,'W','plant_ts',IER)
+        ispnstep=simplanttimestep
         CALL EGETWI(OUTSTR,K,simsavelevel,0,6,'W','save_lv',IER)
+        issave=simsavelevel
         havesimparameters=.true.
         goto 43
       elseif(WORD(1:9).eq.'*site_loc')then
@@ -2428,7 +2512,7 @@ C Create new model. Note for a single folder option the
 C configuration will be in /tmp/box if mpath is /tmp/box. For the
 C distributed folder option the onfiguration file will be in the
 C folder /tmp/box/cfg if mpath is /tmp/box.
-      call silentmodel(actions,root,mpath,folder,weather,ier)
+      call silentmodel(actions,root,mpath,folder,weather,simact,ier)
 
 C Add in site information if tokens were included.
       if(havesite)then

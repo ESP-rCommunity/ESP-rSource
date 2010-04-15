@@ -177,12 +177,16 @@ C User did not cancel so instantiate data for new model.
 C At some point switch from default version 3 to v4.
       icfgv=4   ! alter this to 4 when working correctly
       INDCFG=0
-      sitelat=55.9
-      SLAT=55.9
-      sitelongdif=-4.1
-      SLON=-4.1
-      siteexposureindex=1
-      groundrefl=0.2
+      if(act(1:2).eq.'sn'.or.act(1:2).eq.'sw')then
+        continue  ! META file will already have set sitelat etc.
+      else
+        sitelat=55.9
+        SLAT=55.9
+        sitelongdif=-4.1
+        SLON=-4.1
+        siteexposureindex=1
+        groundrefl=0.2
+      endif
       NCOMP=0
       noimg=0
       LPNF='UNKNOWN'
