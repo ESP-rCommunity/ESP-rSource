@@ -97,15 +97,27 @@ extern "C"
    *  Output results in xml/csv formats
    */
 
-  void rep_xml_summary__( )
+  void rep_xml_summary__( char *sRootName, int iNameLength )
   {
+    std::string sFileName;
+	// Turn the passed Fortran string into a C string
+	std::string sRoot = std::string(sRootName, iNameLength);
     // produce a dictionary of results
+	sFileName = sRoot + ".dictionary";
+//    TReportsManager::Instance()->OutputDictionary(sFileName);
     TReportsManager::Instance()->OutputDictionary();
     // produce out.xml
+	sFileName = sRoot + ".xml";
+//    TReportsManager::Instance()->OutputXMLSummary(sFileName);
     TReportsManager::Instance()->OutputXMLSummary();
     // produce out.csv
+	sFileName = sRoot + ".csv";
+cout << "sFileName= >%s<\n" << sFileName;
+//    TReportsManager::Instance()->OutputCSVData(sFileName);
     TReportsManager::Instance()->OutputCSVData();
     // produce out.summary
+	sFileName = sRoot + ".summary";
+//    TReportsManager::Instance()->OutputTXTsummary(sFileName);
     TReportsManager::Instance()->OutputTXTsummary();
 
   }
@@ -326,9 +338,9 @@ void add_to_xml_reporting__(float* value,
     rep_summary__();
   }
 
-  void rep_xml_summary_( )
+  void rep_xml_summary_( char *sRootName, int iNameLength )
   {
-    rep_xml_summary__();
+    rep_xml_summary__(sRootName,iNameLength);
   }
 
   void rep_set_meta_(char *sVarName, char *sMetaName, char *sMetaValue,

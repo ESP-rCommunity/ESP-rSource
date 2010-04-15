@@ -204,6 +204,12 @@ C Common for electrical file.
       COMMON/rcmd/LCMDFL
       CHARACTER LCMDFL*144
 
+C Common for results file names (ag@15/4/10)
+      common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
+     &  smstres(MSPS),selres(MSPS),sipvres
+      character sblres*72,sflres*72,splres*72
+      character smstres*72,selres*72,sipvres*72
+
 C Additional commons for SHOCC.
 
 C SNAME (12 char) - surface name attribute
@@ -269,6 +275,10 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 
+C Array of strings, string index and root name length for split of results file path (ag@15/4/10)
+      CHARACTER*32 LocalWords(12)
+      integer iRootLen, IW
+
       dimension VAL(MBITS+2)
       logical ok,itpmod,WDARDO,MSTROK,MSTRZN
       logical rewnd,irew,tsclaw,pasone
@@ -319,7 +329,9 @@ C water
       logical autook
       logical newgeo  ! to use for testing if new/old geometry file.
 
-
+C Root file name for xml output
+      character*24 cOutputRoot
+	  
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
 #else
@@ -1784,8 +1796,15 @@ C the data collected by the reporting object.
 C
 C Any changes to this code should be made within
 C the H3Kreports demarcaration comments
+C Set the output root file name to the root file name of the 
+C building results library file ***(in work)***
+      call GETTOKENS(sblres(1),IW,LocalWords)
+      iRootLen=lnblnk(LocalWords(IW))
+	  iRootLen=iRootLen-4
 
-      CALL REP_XML_SUMMARY
+      write(cOutputRoot,'(A)'),LocalWords(IW)(1:iRootLen)
+      write(*,*)'iRootLen=',iRootLen,' cOutputRoot=',cOutputRoot,':'
+      CALL REP_XML_SUMMARY(cOutputRoot,iRootLen)
       CALL REP_CLEANUP_FILES
       
 C........H3Kreports.(SUMMARY).end........................
