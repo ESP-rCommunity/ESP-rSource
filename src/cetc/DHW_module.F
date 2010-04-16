@@ -1322,7 +1322,8 @@ c Check if in startup period via function bInStartup.
       
 C.....ideal DHW model onl      
       iSystem = 1
-      
+      fHotWaterTempC = 60.
+      fColdWaterTempC = 12.
       call ShowerScheduler(iSystem,
      &                     fWaterDraw,
      &                     fHotWaterTempC,
@@ -1375,7 +1376,9 @@ C Report data to h3kreports, site-utilities facility
 C Transport drain-water data, if needed.
       call DWHRDrawTSTransport()      
       
+      
       print*, '------------ dhw model END ----------------'
+      
       RETURN
       END
       

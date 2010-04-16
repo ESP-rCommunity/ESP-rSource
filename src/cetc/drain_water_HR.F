@@ -116,7 +116,10 @@ C----------------------------------------------------------------------
                                ! reached.
 
 
-      integer iSystem
+      integer iSystem          ! Counter for system.
+      
+      real fTimeNeeded         ! Time required for showers (hours)
+      real fTimeAvailable      ! Time available for showers (hours)
 
 C.....Variables for reading contents of a line.
       character*248 cLnBuffer     ! Line buffer
@@ -150,6 +153,9 @@ C.....Flags for various components of the DWHR model
       logical bValidShowerSupplyTemp   (iMaxNumDwhr)
       logical bValidDrainReturnTemp    (iMaxNumDwhr)
 
+C.....Counter
+      integer iShower 
+      
 C.....Flags for matched & un-matched tokens
       logical bTokenMatched(iMaxNumDwhr, iMaxTokens)
 
@@ -826,8 +832,8 @@ C.......Shower start time (hour)
         
           bTokenMatched(iSystem, iToken) = .true.
           
-C...........Read value
-          fShowerStartTimeHOUR(iSystem) = 
+C.........Read value
+          fShowerPeriodStartHOUR(iSystem) = 
      &        fCtoR_err(
      &          cValues(iSystem,iToken),
      &          'Shower period start hour', 
@@ -850,7 +856,7 @@ C.......Shower end time (h)
           bTokenMatched(iSystem, iToken) = .true.
           
 C...........Read value
-          fShowerEndTimeHOUR(iSystem) = 
+          fShowerPeriodEndHOUR(iSystem) = 
      &        fCtoR_err(
      &          cValues(iSystem,iToken),
      &          'Shower period end hour', 
@@ -887,7 +893,65 @@ C.........Found an unmatched token: flag token.
 
         enddo CheckTokens
 
+C-----------------------------------------------------------------------
+C       Check this system's shower period start and end times to  
+C       ensure enough time is allotted for the showers. 
+C-----------------------------------------------------------------------
+        fTimeNeeded = float(iNumShowersPerDay(iSystem)) 
+     &                * fShowerDurationMIN(iSystem)/60.
+     
+C.......Time needed must be less than 24 hours. 
+        if ( fTimeNeeded > 24. ) then 
+          bFatalError = .true. 
+          call dwhr_error_handler(
+     &          bAutoOK, ' ',
+     &          ' Difference between shower period start and end '
+     &      //  'must be less than 24 hours.'  ) 
+        endif 
+     
+        IsThereTime: if (   fShowerPeriodEndHOUR(iSystem) 
+     &       - fShowerPeriodStartHOUR(iSystem) < fTimeNeeded ) then 
+C.........There's not enough time. Adjust end hour to ensure 
+C.........sufficient time is allotted.
+          fShowerPeriodEndHOUR(iSystem) = 
+     &                   fShowerPeriodStartHOUR(iSystem) 
+     &                   + fTimeNeeded 
+C.........Check that we haven't pushed the end past midnight,     
+          if ( fShowerPeriodEndHOUR(iSystem) > 24. ) then 
+               fShowerPeriodEndHOUR(iSystem) = 24.
+               fShowerPeriodStartHOUR(iSystem) = 24. - fTimeNeeded
+          endif     
+          
+C.........Now check that start hour is not before midnight:
+          if ( fShowerPeriodStartHOUR(iSystem) < 0. ) then 
+            bFatalError = .true. 
+             
+            call dwhr_error_handler(
+     &          bAutoOK, ' ',
+     &          ' Shower period start hour must be greater than zero.') 
+             
+          endif
 
+        endif IsThereTime 
+        
+C.......Time available for showers 
+        fTimeAvailable =   fShowerPeriodEndHOUR(iSystem) 
+     &                   - fShowerPeriodStartHOUR(iSystem)        
+        
+C.......Compute the start-time and end-time for each shower.
+        ShowerTimes: do iShower = 1, iNumShowersPerDay(iSystem)
+        
+          fShowerStartHOUR(iSystem,iShower) = 
+     &        fShowerPeriodStartHOUR(iSystem) 
+     &      + fTimeAvailable * float(iShower - 1) 
+     &                       / float( iNumShowersPerDay(iSystem) ) 
+     
+          fShowerEndHOUR(iSystem,iShower) = 
+     &          fShowerStartHOUR(iSystem,iShower) 
+     &        + fShowerDurationMIN(iSystem)/60.
+     
+        enddo ShowerTimes 
+        
       enddo SystemTokenLoop
 
 
@@ -1506,7 +1570,7 @@ C.....Inputs/outputs
       
       real fShowerTSFraction  ! Fraction of current TS that shower is 
                               !   in use 
-
+ 
 C.....ESP-r commons 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       integer isd1              ! not used in current context
@@ -1523,11 +1587,23 @@ C.....ESP-r commons
                               
 C.....Local variables
 
+      integer iShower        ! indicies of shower being simulated.
+      integer iNumActiveSh
+          
+      real fThisShowerTSfrac ! Fraction of timestep that an individual 
+                             !   shower overlaps 
+                             
+      real fTSStart, fTSEnd  ! Start and end of the time-step (hour)                             
+      
+      real fShowerStart,       ! Start and end time of the shower (hour)
+     &     fShowerEnd
+      
       real fNetDrawThisTSL   ! Variable containing the net water draw 
                              !   after deficits from previous timesteps 
                              !   have been applied. 
 
       logical bNumsAreSame   ! Flag for floating point comparisons.
+      
       
       logical bAfterStart    ! Flag indicating that current hour is 
                              !   after the start hour
@@ -1541,65 +1617,120 @@ C.....Local variables
                                  !   showers (L)      
 
 
-      real fHourlyShowerDrawL ! Average volume of water used each hour 
-                              !   in showers. (L)
+      real fAvgShowerDrawLPS  ! Average volume of water used in showers
+                              !   in showers. (LPS) during period. 
                               
       real fTSShowerDrawL     ! Average volume of water used each TS
                               !   in showers (L)
-   
+                              
+      real fHotFlowRateKGpS,  ! Hot and cold flow rates for water 
+     &     fColdFlowRateKGpS  !   supplied to shower (kg/s)
+
+      real fHotFlowRateLPS,  ! Hot and cold flow rates for water 
+     &     fColdFlowRateLPS  !   supplied to shower (l/s)     
+ 
+      real fShowerMassFlowKGpS ! mass flow of mixed water in shower (kg/s)
       
-                                 
+                             
+      real fShowerCpHot,    ! Specific heat hot and cold water entering 
+     &     fShowerCpCold,   !   shower faucet, and mixed water leaving 
+     &     fShowerCpMixed   !   shower faucet (J/kg oC)
+    
+                            
+                            
+      real fTSDurationS     ! Duration of a timestep (seconds)
+      
+      integer iNumPltSteps  ! Number of plant time steps.
+                            
 C.....References: 
       real fCurrentHour      ! Function returning the current hour as 
                              !    a float (0->23.999...)
+                             
+      real densit            ! Function returning density of a fluid 
+                             !    kg/m3
+                             
+      real shtfld            ! Function returing the specific heat of a 
+                             !    fluid (J/kg oC) 
 
                              
 C-----------------------------------------------------------------------
 C     Apply any deficits from last TS to determine net availaible water
-C     draw 
+C     draw. Note: this result can be negative. We'll handle negative
+C     values later.
 C-----------------------------------------------------------------------                             
+      
+      
       fNetDrawThisTSL = fTotalDrawL - fTSDeficitP(iSystem)
-      print*, '   -> fTSDeficitP(isystem): ', fTSDeficitP(iSystem)
-      print*, '   -> fNetDrawThisTSL: ', fNetDrawThisTSL
+      
 C-----------------------------------------------------------------------
 C     Check if shower is active: is current hour within start and end 
 C     time for showers?
 C-----------------------------------------------------------------------      
 
-      fHour = fCurrentHour()
+C.....Compute duration of each timestep (seconds)
+C      
+C     duration = 1 hour / ( # building steps/hour * 
+C                           # plant steps / building step ) 
+C
 
-C.....Compare current hour to starting hour 
+C.....(number of plant timesteps might be zero if plant domain is not 
+C.....defined)
 
-      bAfterStart = .false.       
+      iNumPltSteps = max( 1, ntstpp )
       
-      call eclose(fHour, fShowerStartTimeHOUR(iSystem), 0.01,
-     &            bNumsAreSame) 
-                  
-      if ( bNumsAreSame .or. 
-     &     fHour > fShowerStartTimeHOUR(iSystem) ) bAfterStart = .true.
-     
-C.....Compare current hour to ending hour 
+      fTSDurationS = 3600. / float ( ntstep * iNumPltSteps )  ! (s)
 
-      bBeforeEnd = .true.
-    
-      call eclose(fHour, fShowerEndTimeHOUR(iSystem), 0.01,
-     &            bNumsAreSame) 
-                  
-      if ( bNumsAreSame .or. 
-     &     fHour > fShowerEndTimeHOUR(iSystem) ) bBeforeEnd = .false.
-    
-C.....Now set shower active flag if we're within the shower period     
-    
-      if ( bAfterStart .and. bBeforeEnd ) then 
-    
-        bShowerActive = .true.
+C.....Start and end of the timestep, in hours
+
+      fTSEnd   = fCurrentHour()                ! (h)
+      fTSStart = fTSEnd - fTSDurationS / 3600. ! (h)
+
+      print*, '   -> TS start - end:        [',fTSStart,'-',fTSEnd,'h]' 
+      print*, '   -> fTSDeficitP(isystem): ', fTSDeficitP(iSystem)
+      print*, '   -> fNetDrawThisTSL:      ',  fNetDrawThisTSL
+      
+C.....Initialize fraction of timestep for which showers are active to zero
+      fShowerTSFraction = 0. 
+      
+C.....Loop through scheduled showers, and determine if shower overlaps 
+C.....current time-step      
+      
+      ShowerSearch: do iShower = 1, iNumShowersPerDay(iSystem)
+      
+C.......Shower start and end times
+        fShowerStart = fShowerStartHOUR(iSystem,iShower)      
+        fShowerEnd   = fShowerEndHOUR(iSystem,iShower)      
         
-      else 
-       
+C.......Determine the fraction of the current timestep that 
+C.......overlaps with the current shower.
+
+        fThisShowerTSfrac = (   min( fTSEnd, fShowerEnd ) 
+     &                        - max( fTSStart, fShowerStart ) )
+     &                       / ( fTSDurationS / 3600. ) 
+     
+C.......If fraction is less than zero, there's no overlap.     
+        if ( fThisShowerTSfrac < 0. ) fThisShowerTSfrac = 0.
+        print*, '      -> Shower:', iShower, ' [ ', fShowerStart, '-',
+     &  fShowerEnd, 'h ]        ', ' Frac:',fThisShowerTSfrac
+
+C.......Now append fraction of overlap to running total.        
+        fShowerTSFraction = fShowerTSFraction + fThisShowerTSfrac 
+      
+      enddo ShowerSearch
+      print*, '   -> fShowerTSFraction:    ', fShowerTSFraction
+
+C.....If total fraction active in this timestep is less than a second, 
+C.....flag shower as inactive 
+
+      if ( fShowerTSFraction * fTSDurationS * 3600. < 1. ) then 
+        
         bShowerActive = .false. 
         
-      endif 
+      else 
+        
+        bShowerActive = .true.
       
+      endif 
       
 C-----------------------------------------------------------------------
 C     If shower is active, adjust daily water draw to reflect 
@@ -1608,60 +1739,109 @@ C-----------------------------------------------------------------------
       IsShowerActive: if ( bShowerActive ) then
 
 C-----------------------------------------------------------------------
-C       Compute average amount of water used each day in showers
-C
-C       Avg. Use = ( # of showers ) * ( duration ) * ( flow rate )
-C
-C-----------------------------------------------------------------------      
-        fDailyShowerDrawL = 
-     &          float ( iNumShowersPerDay(iSystem ) )
-     &        * fShowerDurationMIN(iSystem) 
-     &        * fShowerFlowRateLPM(iSystem)         
+C       Now we need to determine the amount of hot and cold water needed 
+C       to meet the shower temperature. First convert shower volumetric 
+C       flow rate (LPM) to mass flow rate (kg/s). Function densit returns 
+C       density of water in kg/m3
+C-----------------------------------------------------------------------  
         
-        print*, '   -> fDailyShowerDrawL :', fDailyShowerDrawL
+        fShowerMassFlowKGpS = (fShowerFlowRateLPM(iSystem) / 60.)/1000. 
+     &       * densit( 2, fShowerSupplyTempC(iSystem) )
+        print*, '   -> fShowerMassFlowKGpS:  ',fShowerMassFlowKGpS
+C.......Collect specific heat of water at inlets and outlets of shower. 
+C.......(J/kg oC)
+        fShowerCpHot   = shtfld( 3, fHotWaterTempC )
+        fShowerCpCold  = shtfld( 3, fColdWaterTempC )
+        fShowerCpMixed = shtfld( 3, fShowerSupplyTempC(iSystem) ) 
+   
+ 
 C-----------------------------------------------------------------------
-C       Compute the hour-averaged water use in the shower(s)
+C       Compute required hot water flow rate using equation 16 in 
+C       Ferguson 2010:
 C
-C                           ( Avg. Use ) 
-C       Hr. Avg. Use = -------------------------
-C                      ( End hour - Start hour ) 
+C       [ mass flow ]_hot  =  [ mass flow ]_mixed 
+C                               * (   [Cp]_mixed * [T]_mixed 
+C                                   - [Cp]_cold * [T]_cold 
+C                                 )  
+C                               / (   [Cp]_hot * [T]_hot 
+C                                   - [Cp]_cold * [T]_cold 
+C                                 )
 C
-C-----------------------------------------------------------------------            
-        fHourlyShowerDrawL = fDailyShowerDrawL / 
-     &       ( fShowerEndTimeHOUR(iSystem) 
-     &          - fShowerStartTimeHOUR(iSystem) ) 
-        print*, '   -> fHourlyShowerDrawL :', fHourlyShowerDrawL 
+C-----------------------------------------------------------------------
+        
+        fHotFlowRateKGpS = fShowerMassFlowKGpS  
+     &                          * (   fShowerCpMixed   
+     &                                  * fShowerSupplyTempC(iSystem)
+     &                              - fShowerCpCold * fColdWaterTempC 
+     &                            )
+     &                          / (   fShowerCpHot * fHotWaterTempC 
+     &                              - fShowerCpCold * fColdWaterTempC 
+     &                             )     
+        
+        fColdFlowRateKGpS = fShowerMassFlowKGpS - fHotFlowRateKGpS
+
+C.......Convert hot and cold mass flow rates into volumetric flow rates
+        fHotFlowRateLPS = fHotFlowRateKGpS 
+     &                      / densit( 2, fHotWaterTempC ) * 1000.
+        fColdFlowRateLPS = fColdFlowRateKGpS 
+     &                      / densit( 2, fColdWaterTempC ) * 1000.
+     
+        print*, '   -> fHotFlowRateLPS:      ', fHotFlowRateKGpS
+        print*, '   -> fColdFlowRateLPS:     ', fColdFlowRateKGpS
 C-----------------------------------------------------------------------
 C       Compute the time-step averaged water use in the shower(s)
 C-----------------------------------------------------------------------        
  
-        fTSShowerDrawL = fHourlyShowerDrawL / float ( ntstep * ntstpp ) 
-        print*, '   -> fTSShowerDrawL: ', fTSShowerDrawL 
       else 
 
-        fTSShowerDrawL = 0.   
- 
+        fHotFlowRateLPS  = 0.
+        
+        fColdFlowRateLPS = 0.
+        
       endif IsShowerActive
       
 C-----------------------------------------------------------------------
-C       Deduct time-step shower draw from total water draw. If result is 
-C       negative, set adjusted draw to zero and save deficit for use 
-C       in future timesteps.
+C     Deduct time-step shower draw from total water draw. If result is 
+C     negative, set adjusted draw to zero and save deficit for use 
+C     in future timesteps.
 C
-C       fAdjustedHotDrawL is now the DHW draw net of showers.
+C     fAdjustedHotDrawL is now the DHW draw net of showers.
 C
 C-----------------------------------------------------------------------
-       
+
+ 
+C-----------------------------------------------------------------------
+C     Compute amount of hot water used for shower in this timestep 
+C
+C     Volume (l)  = flow-rate (l/s) * time step duration (s) 
+C                                   * fraction of timestep for shower 
+C
+C-----------------------------------------------------------------------
+      fTSShowerDrawL = fHotFlowRateLPS * fTSDurationS 
+     &                                 * fShowerTSFraction
+      print*, '   -> fTSShowerDrawL:       ', fTSShowerDrawL
+C.....Subtract shower water usage from total. If result is less than 
+C.....zero, compute      
+
       fAdjustedHotDrawL = fNetDrawThisTSL - fTSShowerDrawL
         
       HotWaterDeficit: if ( fAdjustedHotDrawL < 0. ) then 
         
         fTSDeficitF(iSystem) = abs( fAdjustedHotDrawL )
-        fAdjustedHotDrawL = 0.
+        fAdjustedHotDrawL    = 0.
  
       endif HotWaterDeficit
-      
+
+C-----------------------------------------------------------------------
+C     Now, schedule showers, and compute resulting flow rates, 
+C     delivery temperatures. First, determine how many timesteps 
+C     a shower takes:
+C-----------------------------------------------------------------------
+      print*, '   -> fAdjustedHotDrawL:   ', fAdjustedHotDrawL
       print*, '   -> fTSDeficitF(iSystem):', fTSDeficitF(iSystem)
+      
+      
+      
       
       return 
       end subroutine ShowerScheduler

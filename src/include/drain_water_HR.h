@@ -18,6 +18,10 @@ C.....File version number
 C.....Maximum number of systems permitted.
       integer iMaxNumDwhr
       parameter ( iMaxNumDwhr = 20 )
+      
+C.....Maximum number of showers per day
+      integer iMaxNumShowersPerDay
+      parameter ( iMaxNumShowersPerDay = 24 )      
 
 C.....Number of systems defined.
       integer iDwhrSystemCount
@@ -95,10 +99,14 @@ C.....Shower Duration (minutes)
 C.....Number of showers per day 
       integer iNumShowersPerDay(iMaxNumDwhr)
       
-C.....Shower Start Time (hour)
-      real fShowerStartTimeHOUR(iMaxNumDwhr)
-      real fShowerEndTimeHOUR(iMaxNumDwhr)
-
+C.....Shower period start and end times (hour)
+      real fShowerPeriodStartHOUR(iMaxNumDwhr)
+      real fShowerPeriodEndHOUR(iMaxNumDwhr)
+      
+C.....Shower start and end times (hour)      
+      real fShowerStartHOUR(iMaxNumDwhr,iMaxNumShowersPerDay)
+      real fShowerEndHOUR(iMaxNumDwhr,iMaxNumShowersPerDay)
+      
 C.....Parsing data.       
       integer iMaxTokens
       parameter (iMaxTokens=30)
@@ -139,8 +147,10 @@ C.....Common to make data available in memory
      &   fShowerFlowRateLPM,
      &   fShowerDurationMIN,
      &   iNumShowersPerDay,
-     &   fShowerStartTimeHOUR,
-     &   fShowerEndTimeHOUR,
+     &   fShowerPeriodStartHOUR,
+     &   fShowerPeriodEndHOUR,
+     &   fShowerStartHour,
+     &   fShowerEndHour,
      &   cTokens,
      &   cValues, 
      &   fTSDeficitP, fTSDeficitF
