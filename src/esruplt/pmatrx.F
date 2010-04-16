@@ -782,6 +782,8 @@ C
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
 
+      COMMON/ITERINDEX/ITERNU !plant iteration number
+
 C Tolerance for iteration of hydrogen flow matrix
       common/PITER_H2/fH2_iteration_tolerance
       real fH2_iteration_tolerance
@@ -866,6 +868,8 @@ C Initialize and/or adjust the plant solution process iteration count
 C set flag for plant iteration - initialize to true
       bPltCon = .true.
    10 ITERP=ITERP+1
+C Store the iteration number for reference by plant routines.
+      ITERNU=ITERP
 C
 C Loop over all three ISTATS balances
 C Note that first phase mass balance will be handled first
@@ -1279,6 +1283,9 @@ C 2 node (ISV>20) AC  cooling coil fed by WCH system
 C 2 node (ISV=20) exponent model radiator
          ELSE IF(ITYPE.EQ.44) THEN
             CALL CMP44C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=20) WCH Air Source Heat Pump
+         ELSE IF(ITYPE.EQ.45) THEN
+            CALL CMP45C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=29) WCH thermostatic radiator valve
          ELSE IF(ITYPE.EQ.50) THEN
             CALL CMP50C(IPCOMP,OUT,ISTATS)
