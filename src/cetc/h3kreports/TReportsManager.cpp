@@ -99,9 +99,12 @@ extern "C"
 
   void rep_xml_summary__( char *sRootName, int iNameLength )
   {
+cout << "double __ sRootName= " << sRootName << ":" ;
+cout << "  iNameLength= " << iNameLength << endl;
     std::string sFileName;
 	// Turn the passed Fortran string into a C string
 	std::string sRoot = std::string(sRootName, iNameLength);
+//cout << "sRoot= " << sRoot << ":" << endl;
     // produce a dictionary of results
 	sFileName = sRoot + ".dictionary";
 //    TReportsManager::Instance()->OutputDictionary(sFileName);
@@ -112,7 +115,7 @@ extern "C"
     TReportsManager::Instance()->OutputXMLSummary();
     // produce out.csv
 	sFileName = sRoot + ".csv";
-cout << "sFileName= >%s<\n" << sFileName;
+//cout << "sFileName= " << sFileName << ":\n";
 //    TReportsManager::Instance()->OutputCSVData(sFileName);
     TReportsManager::Instance()->OutputCSVData();
     // produce out.summary
@@ -340,6 +343,7 @@ void add_to_xml_reporting__(float* value,
 
   void rep_xml_summary_( char *sRootName, int iNameLength )
   {
+cout << "single _ sRootName= " << sRootName << ":" << endl;
     rep_xml_summary__(sRootName,iNameLength);
   }
 

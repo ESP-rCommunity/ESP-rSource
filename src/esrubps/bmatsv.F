@@ -277,7 +277,8 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
 C Array of strings, string index and root name length for split of results file path (ag@15/4/10)
       CHARACTER*32 LocalWords(12)
-      integer iRootLen, IW
+      integer*8 iRootLen
+      integer IW
 
       dimension VAL(MBITS+2)
       logical ok,itpmod,WDARDO,MSTROK,MSTRZN
@@ -1803,10 +1804,11 @@ C building results library file ***(in work)***
 	  iRootLen=iRootLen-4
 
       write(cOutputRoot,'(A)'),LocalWords(IW)(1:iRootLen)
-      write(*,*)'iRootLen=',iRootLen,' cOutputRoot=',cOutputRoot,':'
-      CALL REP_XML_SUMMARY(cOutputRoot,iRootLen)
+      write(*,*)'iRootLen=',iRootLen,
+     &          ' cOutputRoot=',cOutputRoot(1:iRootLen),':'
+      CALL REP_XML_SUMMARY(cOutputRoot(1:iRootLen),iRootLen)
       CALL REP_CLEANUP_FILES
-      
+
 C........H3Kreports.(SUMMARY).end........................
 
 
