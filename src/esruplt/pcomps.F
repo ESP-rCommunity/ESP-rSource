@@ -66,6 +66,7 @@ C      CMP42S   2 node (ISV=20) WCH modulating boiler
 C      CMP43S   2 node (ISV=20) AC  cooling coil fed
 C                                   by WCH system
 C      CMP44S   2 node (ISV=20) WCH exponent model radiator
+C      CMP45S   1 node (ISV=20) WCH air source heat pump
 C      CMP50S   1 node (ISV=29) WCH thermostatic valve
 C      CMP51S   1 node (ISV=29)     mechanical room thermostat
 C PP-based components
@@ -205,6 +206,8 @@ C Component by component, call routine to deal with relevant type
          CALL CMP43S(IPCOMP)
       ELSE IF(ITYPE.EQ.44) THEN
          CALL CMP44S(IPCOMP)
+      ELSE IF(ITYPE.EQ.45) THEN
+         CALL CMP45S(IPCOMP)
       ELSE IF(ITYPE.EQ.50) THEN
          CALL CMP50S(IPCOMP)
       ELSE IF(ITYPE.EQ.51) THEN
@@ -3329,6 +3332,273 @@ C Error handling
   990 WRITE(IUOUT,*) ' CMP44S: connection error for component ',IPCOMP
       WRITE(IUOUT,*) '         should be ',NCONS,' water connection(s)'
       STOP ' CMP44S: unresolvable error'
+C
+      END
+
+C ******************** CMP45S ********************
+C CMP45S establishes for a plant component with plant db code 450 ie.
+C 1 node (ISV=20) WCH air-source heat pump feeding a hydronic heating system
+C whether the specified number of controlled variables is OK, and also
+C whether the number of connections to this component is correct
+C and whether the connected nodes are of a type as expected by the
+C corresponding coefficient generator routine.
+C
+      SUBROUTINE CMP45S(IPCOMP)
+
+      implicit none
+
+#include "plant.h"
+#include "building.h"
+C
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+
+      COMMON/ASHPvar1/CompMass,AveSpHt,UAMod,CarEffMod,COPa0,COPa1,
+     &COPa2,COPa3,Compa0,Compa1,Compa2,Compa3,
+     &CompressPf,PumpRating,PumpPf,RatedFlow,
+     &FanRating,FanPf,CtlRating,CtlPf,ToutMax,TinMax,DefrostT,
+     &DefrostTime,Defrostb0,Defrostb1,DefrostLockout,DefrostMinTime,
+     &DefrostMaxTime,NomRetT,NomRetTDeadB,TempCompS,TempCompE,
+     &TempCompc0,DefrostDur,DefrostLockDur
+
+      COMMON/ASHPvar2/COPModel,CompModel,DefrostCalc,AmbientTempComp,
+     &DeviceONOFFp,DeviceONOFF
+
+      COMMON/ASHPvar3/CallforHeat,InDeadB,DefrostLock,InDefrost
+
+      REAL SMALL 
+      PARAMETER (SMALL=1.0E-20)
+
+      INTEGER COPModel,CompModel,DefrostCalc,AmbientTempComp,
+     &DeviceONOFFp,DeviceONOFF
+
+      REAL CompMass,AveSpHt,UAMod,CarEffMod,COPa0,COPa1,
+     &COPa2,COPa3,Compa0,Compa1,Compa2,Compa3,CompressPf,
+     &PumpRating,PumpPf,RatedFlow,FanRating,FanPf,CtlRating,CtlPf,
+     &ToutMax,TinMax,DefrostTime,DefrostT,Defrostb0,Defrostb1,
+     &DefrostLockout,DefrostMinTime,DefrostMaxTime,NomRetT,NomRetTDeadB,
+     &TempCompS,TempCompE,TempCompc0,DefrostDur,DefrostLockDur
+
+      LOGICAL CallforHeat,InDeadB,DefrostLock,InDefrost,ConError
+
+      INTEGER IUOUT,IUIN,ITC,ICNT,ITCF,ITRACE,IZNTRC,ITU,NPCOMP,NCI,
+     &ICONTP,ICONDX,J,NCITM,NCONS,IPCONC,IPCOMP,IPCON,IX1,NITMS
+      
+      REAL CDATA,ADATA,BDATA,CONVAR
+
+      INTEGER IDAT
+
+      CHARACTER OUTS*248
+      
+C To be edited to include increased data entry nos. 
+
+C Establish static data derivable from the data read from database
+      DO 10 IDAT=4,36
+10      BDATA(IPCOMP,IDAT-3)=ADATA(IPCOMP,IDAT)
+
+C Initialise parameters      
+      InDeadB=.false.
+      CallforHeat=.false.
+      DefrostLock=.false.
+      InDefrost=.false.
+      DefrostDur=0.0
+      DefrostLockDur=0.0
+      DeviceONOFF=0
+      DeviceONOFFp=0
+
+C Assign variables to be used in coeff generator. 
+C ADATA: 
+C Mass of component (solids+liquid) (kg)
+      CompMass=ADATA(IPCOMP,1)
+C Mass weighted average specific heat node (J/kgK)
+      AveSpHt=ADATA(IPCOMP,2)
+C UA modulus for component (W/K)
+      UAMod=ADATA(IPCOMP,3)
+
+C BDATA: 
+C COP model [1- fixed 2 - modified Carnot efficiency; 3- cubic polynomial]
+      COPModel=NINT(BDATA(IPCOMP,1))
+
+C COP empirical coefficient a0 (or fixed COP, or Eff. modifier)
+      COPa0=BDATA(IPCOMP,2)
+
+C COP empirical coefficient a1 [Ti]
+      COPa1=BDATA(IPCOMP,3)
+
+C COP empirical coefficient a2 [Ti^2]
+      COPa2=BDATA(IPCOMP,4)
+
+C COP empirical coefficient a3 [Ti^3]
+      COPa3=BDATA(IPCOMP,5)
+
+C Compressor model (W) 
+      CompModel=NINT(BDATA(IPCOMP,6))
+
+C Comp empirical coefficient a0 (or fixed COP, or Eff. modifier)
+      Compa0=BDATA(IPCOMP,7)
+
+C Comp empirical coefficient a1 
+      Compa1=BDATA(IPCOMP,8)
+
+C Comp empirical coefficient a2 
+      Compa2=BDATA(IPCOMP,9)
+
+C Comp empirical coefficient a3 
+      Compa3=BDATA(IPCOMP,10)
+C ****
+C Compressor pf (-)
+      CompressPf=BDATA(IPCOMP,11)
+      IF(CompressPf.LT.SMALL)THEN
+        WRITE(OUTS,'(a)')'Error in ASHP: comp pf is close to zero!'
+        CALL EDISP(IUOUT,OUTS)
+        STOP
+      
+      ENDIF
+
+C Pump rating (W)
+      PumpRating=BDATA(IPCOMP,12)
+
+C Pump pf (-)
+      PumpPf=BDATA(IPCOMP,13)
+
+C Flowrate at rated pump power (l/s)
+      RatedFlow=BDATA(IPCOMP,14)
+      IF(RatedFlow.LT.SMALL)THEN
+        WRITE(OUTS,'(a)')'Error in ASHP: rated flow is close to zero!'
+        CALL EDISP(IUOUT,OUTS)
+        STOP
+      ENDIF
+
+C Fan rating (W)
+      FanRating=BDATA(IPCOMP,15)
+
+C Fan power factor (-)
+      FanPf=BDATA(IPCOMP,16)
+      IF(FanPf.LT.SMALL)THEN
+        WRITE(OUTS,'(a)')'Error in ASHP: fan pf is close to zero!'
+        CALL EDISP(IUOUT,OUTS)
+        STOP
+      ENDIF
+
+C Controller power (W)
+      CtlRating=BDATA(IPCOMP,17)
+
+C Controller power factor (W)
+      CtlPf=BDATA(IPCOMP,18)
+      IF(CtlPf.LT.SMALL)THEN
+        WRITE(OUTS,'(a)')'Error in ASHP: ctl pf is close to zero!'
+        CALL EDISP(IUOUT,OUTS)
+        STOP
+      ENDIF
+
+C To max (degC)
+      ToutMax=BDATA(IPCOMP,19)
+
+C Ti max (degC)
+      TinMax=BDATA(IPCOMP,20)
+
+C Defrost cycle trigger ambient temp (degC)
+      DefrostT=BDATA(IPCOMP,21)
+
+C Defrost cycle time calc (0-no defrost 1-user def 2-f(RH))
+      DefrostCalc=NINT(BDATA(IPCOMP,22))
+
+C Defrost cycle  calc coefficient b1 or fixed defrost time (-)
+      Defrostb0=BDATA(IPCOMP,23)
+
+C Defrost cycle  calc coefficient b2 (-)
+      Defrostb1=BDATA(IPCOMP,24)
+
+C Defrost cycle  lockout time (mins)
+      DefrostLockout=BDATA(IPCOMP,25)
+
+C Min defrost time (mins)
+      DefrostMinTime=BDATA(IPCOMP,26)
+
+C Max defrost time (mins)
+      DefrostMaxTime=BDATA(IPCOMP,27)
+
+C AmbientTemp compensation on/off
+      AmbientTempComp=NINT(BDATA(IPCOMP,28))
+
+C Nominal water return temperature (Deg C)
+      NomRetT=BDATA(IPCOMP,29)
+      IF(NomRetT.GE.TinMax)THEN
+        WRITE(OUTS,'(a)')'Error in ASHP Tnom => Tin max'
+        call EDISP(IUOUT,OUTS)
+        STOP
+      ENDIF
+
+C Nominal water return deadband (Deg C)
+      NomRetTDeadB=BDATA(IPCOMP,30)
+      IF((NomRetT+0.5*(NomRetTDeadB)).GE.TinMax)THEN
+        WRITE(OUTS,'(a)')'Error in ASHP Tnom + TdeadB < Tin max'
+        call EDISP(IUOUT,OUTS)
+        STOP
+      ENDIF
+
+C Ambient temperature for temp compensation start [Deg C]
+      TempCompS=BDATA(IPCOMP,31)
+
+C Ambient temperature for temp compensation end [Deg C]
+      TempCompE=BDATA(IPCOMP,32)
+
+C Temp compensation gradient (-)
+      TempCompc0=BDATA(IPCOMP,33)
+
+
+C Trace output
+      IF(ITC.GT.0.AND.ITRACE(35).NE.0) THEN
+         WRITE(ITU,*) ' Component ',IPCOMP,' pre-simulation data for a:'
+         WRITE(ITU,*) ' 1 node (ISV=20) WCH heat rejection device'
+         NITMS=3
+         WRITE(ITU,*) ' ADATA ',(ADATA(IPCOMP,J),J=1,NITMS)
+	 NITMS=33
+         WRITE(ITU,*) ' BDATA ',(BDATA(IPCOMP,J),J=1,NITMS)
+         NITMS=1
+         WRITE(ITU,*) ' CDATA ',(CDATA(IPCOMP,J),J=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/5)*5
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         ENDIF
+      ENDIF
+C
+C Check user specified number of controlled variables
+      NCITM=1
+      IF(NCI(IPCOMP).NE.NCITM)
+     &   WRITE(ITU,*) ' CMP45S warning: user specified wrong number',
+     &                ' of controlled variables'
+
+C Check for a single connection to water.
+      ConError=.false.
+      NCONS=1
+      IPCONC=1
+      DO WHILE(IPCONC.LE.MPCONC.AND..NOT.ConError)
+        IPCON=ICONDX(IPCOMP,1,IPCONC)
+        IF(IPCONC.LE.NCONS) THEN
+          IF(IPCON.EQ.0) THEN
+            ConError=.true.
+          ELSE IF(ICONTP(IPCON).NE.20) THEN
+            ConError=.true.
+          END IF
+        ELSE IF(IPCON.NE.0) THEN
+          ConError=.true.
+        END IF
+        IPCONC=IPCONC+1
+      ENDDO
+
+C Error handling
+      IF(ConError)THEN
+        WRITE(IUOUT,*) 'CMP45S: connection error for component ',IPCOMP
+        WRITE(IUOUT,*) '        should be ',NCONS,' water connection(s)'
+        STOP 'CMP45S: unresolvable error'
+      ENDIF
 C
       END
 
