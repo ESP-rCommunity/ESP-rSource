@@ -167,7 +167,12 @@ class TReportsManager
    * Update configuration file with new options
    */
      void UpdateConfigFile();
-     
+
+  /**
+   * Return the current status of h3k output file name (enabled/disabled)
+   */
+     bool UseResFilenameRoot();
+        
   /**
    * Clean-up files
    */ 
@@ -283,7 +288,8 @@ class TReportsManager
   bool bWildCardsEnabled;
   bool bTS_averaging;
   bool bDumpDictionary;
-	 
+  bool bUseResFilenameRoot;
+
   bool bStyleSheetGood;
   bool bLinkStyleSheet;
   bool bTransformXMLRequested;

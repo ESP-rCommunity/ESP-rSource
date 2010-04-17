@@ -99,28 +99,31 @@ extern "C"
 
   void rep_xml_summary__( char *sRootName, int iNameLength )
   {
-cout << "double __ sRootName= " << sRootName << ":" ;
-cout << "  iNameLength= " << iNameLength << endl;
     std::string sFileName;
-	// Turn the passed Fortran string into a C string
-	std::string sRoot = std::string(sRootName, iNameLength);
-//cout << "sRoot= " << sRoot << ":" << endl;
+	
+	if ( TReportsManager::Instance()->UseResFilenameRoot() ) {
+	  // Turn the passed Fortran string into a C string
+	  std::string sRoot = std::string(sRootName, iNameLength);
+	  
+	  sFileName = sRoot + ".xml";
+      TReportsManager::Instance()->OutputXMLSummary(sFileName);
+	  
+	  sFileName = sRoot + ".csv";
+      TReportsManager::Instance()->OutputCSVData(sFileName);
+	  
+    } else {
+	  // old "out.*" names
+      // produce out.xml
+      TReportsManager::Instance()->OutputXMLSummary();
+      // produce out.csv
+      TReportsManager::Instance()->OutputCSVData();
+    }
+	
+	// Leave these with "out.*" 
     // produce a dictionary of results
-	sFileName = sRoot + ".dictionary";
-//    TReportsManager::Instance()->OutputDictionary(sFileName);
     TReportsManager::Instance()->OutputDictionary();
-    // produce out.xml
-	sFileName = sRoot + ".xml";
-//    TReportsManager::Instance()->OutputXMLSummary(sFileName);
-    TReportsManager::Instance()->OutputXMLSummary();
-    // produce out.csv
-	sFileName = sRoot + ".csv";
-//cout << "sFileName= " << sFileName << ":\n";
-//    TReportsManager::Instance()->OutputCSVData(sFileName);
-    TReportsManager::Instance()->OutputCSVData();
-    // produce out.summary
-	sFileName = sRoot + ".summary";
-//    TReportsManager::Instance()->OutputTXTsummary(sFileName);
+	
+	// produce out.summary
     TReportsManager::Instance()->OutputTXTsummary();
 
   }
@@ -343,7 +346,6 @@ void add_to_xml_reporting__(float* value,
 
   void rep_xml_summary_( char *sRootName, int iNameLength )
   {
-cout << "single _ sRootName= " << sRootName << ":" << endl;
     rep_xml_summary__(sRootName,iNameLength);
   }
 
@@ -732,6 +734,13 @@ void TReportsManager::SetMeta(const std::string& sName, const std::string& sMeta
  */
 bool TReportsManager::ReportsEnabled(){
    return bReports_Enabled;
+}
+
+/**
+ * Function returing the current status of reporting output file name
+ */
+bool TReportsManager::UseResFilenameRoot(){
+   return bUseResFilenameRoot;
 }
 
 /**
@@ -1255,6 +1264,9 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
 
   // Dictionary output
   m_params["output_dictionary"] = inputXML.GetFirstNodeValue("output_dictionary", inputXML.RootNode());
+
+  // Output file name root = results file name root?
+  m_params["use_resfilenameroot"] = inputXML.GetFirstNodeValue("use_resfilenameroot", inputXML.RootNode());
   
   // Save to disk
   m_params["save_to_disk"] = inputXML.GetFirstNodeValue("save_to_disk", inputXML.RootNode());
@@ -1384,6 +1396,14 @@ void TReportsManager::SetFlags(){
   }else{
     m_params["output_dictionary"] = "false";
     bDumpDictionary = false;
+  }
+
+  // Output file name root = results file name root?
+  if ( m_params["use_resfilenameroot"] == "true" ){
+    bUseResFilenameRoot = true;
+  }else{
+    m_params["use_resfilenameroot"] = "false";
+    bUseResFilenameRoot = false;
   }
 
   // Timestep averaging 

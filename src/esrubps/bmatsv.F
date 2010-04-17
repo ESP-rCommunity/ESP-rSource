@@ -1804,9 +1804,7 @@ C building results library file ***(in work)***
 	  iRootLen=iRootLen-4
 
       write(cOutputRoot,'(A)'),LocalWords(IW)(1:iRootLen)
-      write(*,*)'iRootLen=',iRootLen,
-     &          ' cOutputRoot=',cOutputRoot(1:iRootLen),':'
-      CALL REP_XML_SUMMARY(cOutputRoot(1:iRootLen),iRootLen)
+      CALL REP_XML_SUMMARY(cOutputRoot(1:iRootLen))
       CALL REP_CLEANUP_FILES
 
 C........H3Kreports.(SUMMARY).end........................
