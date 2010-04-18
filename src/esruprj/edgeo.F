@@ -4854,7 +4854,7 @@ C the zone can be calculated.
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
-                WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
+                WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
                 H(1)='The vertex coordinates should be in metres.'
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
@@ -5051,7 +5051,7 @@ C Show the new point on the current wireframe.
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
-                WRITE(HOLD,'(1x,3f10.5,a)')x3,y3,z3,'  '
+                WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
                 H(1)='The vertex coordinates should be in metres.'
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
@@ -5246,7 +5246,7 @@ C Ask if it should be added.
                   elseif(INVT.eq.2)then
                     NTV=NTV+1
                     NZTV(icomp)=NTV
-                    WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
+                    WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
                     H(1)='The vertex coordinates should be in metres. '
                     H(2)='It is not advisable for Z to be negative.'
                     write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z(m):'
@@ -5629,7 +5629,7 @@ C Show the new point on the current wireframe.
             if(OK)then
               x(IWHICH1)=x3
               y(IWHICH1)=y3
-              z(IWHICH1)=z3
+              z(IWHICH1)=z3 ! place to update vcoord?
             endif
             MODGEO=.TRUE.
             MODIFY=.TRUE.
@@ -5667,7 +5667,7 @@ C be a new vertex and update the wireframe.
             elseif(INVT.eq.2)then
               NTV=NTV+1
               NZTV(icomp)=NTV
-              WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
+              WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z (m):'
@@ -5840,7 +5840,7 @@ C Select (possibly via mouse) and then edit.
               ifoc=IVLST(ij)
 
 C Present vertex coords for editing then parse data from HOLD.
-              WRITE(HOLD,'(3f10.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
+              WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')
@@ -5875,7 +5875,7 @@ C Edit vertex identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
 
 C Present vertex coords for editing then parse data from HOLD.
-        WRITE(HOLD,'(3f10.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
+        WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
         H(1)='The vertex coordinates should be in metres. '
         H(2)='It is not advisable for Z to be negative.'
         write(outs,'(a,i2,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'

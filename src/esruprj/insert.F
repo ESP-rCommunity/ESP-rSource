@@ -1583,7 +1583,7 @@ C   pass back in ier.
       logical ok,dok,matchver
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
-      CHARACTER H*72,OUTSTR*124,ACTION*1,HOLD*32,outs*124
+      CHARACTER H*72,OUTSTR*124,ACTION*1,HOLD*36,outs*124
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       integer iier  ! local variable for use in can't delete
@@ -1661,12 +1661,12 @@ C vertex.
           if(I.eq.1)then
             HOLD = ' 0.000  0.000  0.000    '
           else
-            WRITE(HOLD,'(3f9.3,a)')X1(I-1),Y1(I-1),Z1(I-1),'  '
+            WRITE(HOLD,'(3f11.5,a)')X1(I-1),Y1(I-1),Z1(I-1),'  '
           endif
           H(1)='The vertex coordinates should be in metres. '
           H(2)='It is not advisable for Z to be negative.'
           CALL EASKS(HOLD,' Vertex  X  Y  Z (in metres): ',
-     &     '  ',32,' 0. 0. 0. ','vertex coord',IER,2)
+     &     '  ',36,' 0. 0. 0. ','vertex coord',IER,2)
           K=0
           CALL EGETWR(HOLD,K,X1(I),-999.9,999.9,'W','Xcoord',IER)
           CALL EGETWR(HOLD,K,Y1(I),-999.9,999.9,'W','Ycoord',IER)
@@ -1778,14 +1778,14 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
 C Copy vertex index and then increment NTV and present vertex coords 
 C then parse into new vertex.
         call tstamp('>','PRJ: copy vertex')
-        WRITE(HOLD,'(3f9.3,a)')X(NUM),Y(NUM),Z(NUM),'  '
+        WRITE(HOLD,'(3f11.5,a)')X(NUM),Y(NUM),Z(NUM),'  '
         H(1)='The vertex coordinates should be in metres. '
         H(2)='Exact duplicate vertices should be avoided.'
         H(3)='It is not advisable for Z to be negative.'
         write(outs,'(a,i2,a,i2,a)')'Copied Vertex (',NUM,
      &    ' old; current index ',NTV+1,')'
         CALL EASKS(HOLD,outs,' X  Y  Z (in metres): ',
-     &    32,' 0. 0. 0. ','vertex coord',IER,3)
+     &    36,' 0. 0. 0. ','vertex coord',IER,3)
         K=0
         CALL EGETWR(HOLD,K,X1(1),-999.9,999.9,'W','X coord',IER)
         CALL EGETWR(HOLD,K,Y1(1),-999.9,999.9,'W','Y coord',IER)
@@ -2298,7 +2298,7 @@ C edited to a thick line if currently in graphics mode.
         write(hold,'(4f8.3,a)') XO1,ZO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Z offset, Width, Height: (see help)',
-     &    ' ',36,' 0.1 0.1 1.0 1.0','Xoff Zoff width height',IER,9)
+     &    ' ',36,' 0.2 0.8 1.0 1.0','Xoff Zoff width height',IER,9)
         K=0
         CALL EGETWR(HOLD,K,XO1,0.0,99.,'W','X offset',IER)
         CALL EGETWR(HOLD,K,ZO1,0.0,99.,'W','Z offset',IER)
