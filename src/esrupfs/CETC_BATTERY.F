@@ -229,7 +229,7 @@ C     is not considered. It is put here for the reference of future improvement.
          iZoneIndex = INT(powcdat(IPWC,26))
 
       ELSEIF(POWCOMID(IPWC) .EQ. lion) THEN !Lithium-ion battery
-         iZoneIndex = INT(powcdat(IPWC,69)) !this will probably change once I finalize the list
+         iZoneIndex = INT(powcdat(IPWC,72))
          
 C-----Add support for other battery types
 C     ELSEIF (POWCOMID(IPWC) .EQ.??) THEN
@@ -254,7 +254,6 @@ C Following time steps -> Initialise parameters to their final value at the prev
       ENDIF     ! nTimeStep
 
 C************** Get mode (charge/discharge)
-
       IF (mandChargeCycle .NE. 1) THEN      ! Normal operation, the battery mode is determined 
                                             ! by the controller based upon the overall power balance
         IF (batDemandP .EQ. 0. ) THEN
@@ -284,10 +283,15 @@ C       batMode is an index indicating the mode of operating (e.g. charging).
 C       dtTStep is the duration of the simulation time-step (hours)
         maxCBatCharge = MaxCurrent(IPWC,batTIni,batDODIni,0,dtTStep)
         maxCBatDischarge = MaxCurrent(IPWC,batTIni,batDODIni,1,dtTStep)
+       
         maxPBatCharge = PowForCur(IPWC,batTIni,batDODIni,0,dtTStep,
      &                             maxCBatCharge)
         maxPBatDischarge = PowForCur(IPWC,batTIni,batDODIni,1,dtTStep,
      &                             maxCBatDischarge)
+        write(99,*) 'max Charge' , maxCBatCharge
+        write(99,*) 'max Discharge' , maxCBatDischarge 
+C        write(99,*) 'max PCharge' , maxPBatCharge
+C        write(99,*) 'max PDischarge' , maxPBatDischarge      
       ELSE       ! Mandatory charge cycle
 C     If the battery is performing a mandatory charge cycle, the controller's leadership in 
 C     assigning the load to the battery is carefully overruled. The specific action depends
@@ -347,8 +351,8 @@ C-------solution that should be replaced with a more generalized approach in the
       IF(batMode .EQ. 1 .OR. batMode .EQ. 2 ) THEN  ! Discharge or idle
          maxCBat = maxCBatDischarge
          maxPBat = maxPBatDischarge
-      ! First, try to see if putting the load on the battery will result in a thermal emergency
-         batLoad = MIN(batDemandP, maxPBat)
+C      ! First, try to see if putting the load on the battery will result in a thermal emergency
+         batLoad = MIN(batDemandP, maxPBat) !<------ I (Neil) don't know if this line is necessary***
          IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
            CALL DoDischarge(IPWC,batTIni,zoneT,batDODIni,dtTStep,
      &                    maxCBat,maxPBat,batLoad,pBat,pHeaters,
@@ -426,8 +430,7 @@ C Save variables that are required by control sensors.
       iPow_Time_Row_Count(IPWC) = 2                         ! # of additional data
       fPow_Time_Row_Future(IPWC,1) = (1. - batDODFin)*100.  ! battery SOC, %
       fPow_Time_Row_Future(IPWC,2) = batTFin                ! battery temperature
-
-
+      
 C power returned/taken to meet the demand 
       IF ( batMode .EQ. 1 .OR. batMode .EQ. 2 ) THEN  ! discharge
           ppowoc(ipwc) = pBatSystem                   ! generation is +ve
@@ -1005,25 +1008,19 @@ C             Compare time elapsed since last full charge to mandatory charge in
         ENDIF     ! active battery life control 
         
         
-      ELSEIF ( POWCOMID(IPWC) .EQ. lion) THEN             ! Li-on check to see if battery is in safe limits 
-        IF (batTFinal .GT. POWCDAT(IPWC,16))    THEN      ! Battery is too hot for safe operation
+      ELSEIF ( POWCOMID(IPWC) .EQ. lion) THEN            ! Li-on check to see if battery is in safe limits 
+        IF (batTFinal .GT. POWCDAT(IPWC,16))    THEN     ! Battery is too hot for safe operation
           hiTempLion = 1
-          WRITE(*,*) 'high Temp flag set *DEBUGGING LI-ON*'
-                                                          ! Set high temp flag on
-        ELSEIF (batTFinal .LT. POWCDAT(IPWC,17)) THEN  ! Battery is too cold for safe operation
-          loTempLion = 1
-          WRITE(*,*) 'low Temp flag set *DEBUGGING LI-ON*'
-                                                          ! Set low temp flag on
+                                                         ! Set high temp flag on
+        ELSEIF (batTFinal .LT. POWCDAT(IPWC,17)) THEN    ! Battery is too cold for safe operation
+          loTempLion = 1                                 ! Set low temp flag on
         ENDIF      
         
-        IF (DODFinal .LT. POWCDAT(IPWC,15))  THEN      ! Battery is overcharged for safe operation
-          hiVoltLion = 1
-          WRITE(*,*) 'high voltage flag set *DEBUGGING LI-ON*'
-                                                          ! Set overvoltage flag on
-        ELSEIF (DODFinal .GT. POWCDAT(IPWC,14)) THEN  ! Battery is undercharged for safe operation
-          loVoltLion = 1                                  
-          WRITE(*,*) 'low voltage flag set *DEBUGGING LI-ON*'          
-          ! Set undervoltage flag on
+        IF (DODFinal .LT. POWCDAT(IPWC,15))  THEN        ! Battery is overcharged for safe operation
+          hiVoltLion = 1                                 ! Set overvoltage flag on
+        ELSEIF (DODFinal .GT. POWCDAT(IPWC,14)) THEN     ! Battery is undercharged for safe operation
+          loVoltLion = 1
+C          write(99,*) 'lo volt flag set'                                 ! Set undervoltage flag on
         ENDIF  
       
       ENDIF     ! Lead-acid battery and lithium ion
@@ -1430,7 +1427,8 @@ C     Initialise curents to zero
 C************** Calculation
       ! initialise the dummy current to the value of the current at the last iteration
 610   dumCurrent = batCurrent
-
+C      WRITE(*,*) 'numIter' , numIter
+C      WRITE(*,*) 'dumcurrent' , dumCurrent
 
       IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
 C      The position 48, 49 is temporarily set here, needs to be changed once the
@@ -1456,15 +1454,20 @@ C      input parameters are finalized.
          RIntAvg = RInt_VRB(IPWC,batTemp,(DODInit+DODEnd)/2.0,
      &             batCurrent,batMode)
       ELSEIF ( POWCOMID(IPWC) .EQ. lion) THEN  !Lion
-         upperBoundDOD = POWCDAT(IPWC,15)
-         lowerBoundDOD = POWCDAT(IPWC,14)
+         upperBoundDOD = POWCDAT(IPWC,14)
+         lowerBoundDOD = POWCDAT(IPWC,15)
          DODEnd = FinalDOD_Lion(IPWC,batTemp,DODInit,batMode,dtTStep,
      &             batCurrent)
          FreeVEnd = OCV_Lion(IPWC,DODEnd,batTemp)
-         FreeVAvg = OCV_Lion(IPWC,(DODInit+DODEnd)/2.0,batTemp)
+         FreeVAvg = OCV_Lion(IPWC,(DODInit+DODEnd)/2.0,batTemp)                           
          RIntEnd = RInt_Lion(IPWC, DODEnd,batMode)
          RIntAvg = RInt_Lion(IPWC,(DODInit+DODEnd)/2.0,batMode)
-
+         
+C         WRITE(*,*) 'FreeVEnd' , FreeVEnd
+C         WRITE(*,*) 'FreeVAvg' , FreeVAvg
+C         WRITE(*,*) 'RIntEnd' , RIntEnd
+C         WRITE(*,*) 'RIntAvg' , RIntAvg
+C         WRITE(*,*) 'DODEnd' , DODEnd
       
       ENDIF
 
@@ -1769,7 +1772,12 @@ C initialise the dummy current to the value of the current at the last iteration
 
       ENDIF
 
-
+      write(99,*) 'dod', (DODAvg)
+      write(99,*) 'R', (RintAvg)
+      write(99,*) 'volt', (E0Avg)
+      write(99,*) 'batMode', (batMode)
+      write(99,*) 'batPow', (batPow)      
+      
       IF (batMode .EQ. 0) THEN   ! charge
          batCurrent=(-E0Avg+(E0Avg**2+4*batPow*RIntAvg)**0.5)/2./RIntAvg
       ELSE  ! Discharge
@@ -3796,7 +3804,6 @@ C PARAMETERS FROM SIGNATURE
 
 C Declaration of functions used
       REAL BatteryCap_Lion
-
 C************** Calculation
       IF(batMode .EQ. 0) THEN   !Charge
         FinalDOD_Lion = DODIni - batCur*dtTStep/
@@ -3889,10 +3896,6 @@ C     Make sure no negative value is returned
      &                 'Nul capacity in function BatteryCap_Lion'
         BatteryCap_Lion = 0.01
       ENDIF
-      
-C      WRITE(*,*) '*DEBUGGING LI-ON* BattCapacity', (BatteryCap_Lion)
-C      WRITE(*,*) '*DEBUGGING LI-ON* alpha', (alpha)
-C      WRITE(*,*) '*DEBUGGING LI-ON* beta', (beta)
       
       END
 
@@ -4226,8 +4229,8 @@ C proper node in the electrical network
       nSerie = int(POWCDAT(IPWC,2))
 
 C     Voltages are multiplied by the number of units connected in series
-      batMaxVolt = POWCDAT(IPWC,5) * nSerie
-      batMinVolt = POWCDAT(IPWC,6) * nSerie
+      batMaxVolt = POWCDAT(IPWC,5) * float(nSerie)
+      batMinVolt = POWCDAT(IPWC,6) * float(nSerie)
 
 C ************** Calculations
 
@@ -4244,20 +4247,25 @@ C others
 C     Free voltage of the battery is the free voltage of a cell time the number of cells in series
       OCV_Lion = ((E5*batDOD**5. + E4*batDOD**4. + E3*batDOD**3. +
      &               E2*batDOD**2. + E1*batDOD + E0) + deltaVforT)
-     &               *nSerie
+     &               *float(nSerie)
 
 C     Make sure value is within boundaries
 C     This check is partly bypassed if the lead-acid battery is performing a mandatory
 C     charge cycle, because then the voltage is expected to surpass the batMaxVolt
-      IF (OCV_Lion .GT. batMaxVolt) THEN
-        if (mandChargeCycle .NE. 1) then
-          WRITE(IUOUT,*) 'Warning Battery Model: Free voltage above ',
+      IF ((OCV_Lion - deltaVforT*float(nSerie)) .GT. batMaxVolt) THEN
+        WRITE(IUOUT,*) 'Warning Battery Model: Free voltage above ',
      &                  ' max in function OCV_Lion', (NSINC)
-         OCV_Lion = batMaxVolt
-        endif
-      ELSEIF(OCV_Lion .LT. batMinVolt) THEN
+C        WRITE(*,*) 'OCV_Lion' , (OCV_Lion)
+C        WRITE(*,*) 'BatDOD' , (batDOD)
+C        WRITE(*,*) 'batMaxVolt' , (batMaxVolt)
+        OCV_Lion = batMaxVolt
+
+      ELSEIF((OCV_Lion - deltaVforT*float(nSerie)) .LT. batMinVolt) THEN
         WRITE(IUOUT,*) 'Warning Battery Model: Free voltage below ',
      &                 'min in function OCV_Lion', (NSINC)
+C        WRITE(99,*) 'OCV_Lion' , (OCV_Lion)
+C        WRITE(99,*) 'BatDOD' , (batDOD)
+C        WRITE(99,*) 'batMinVolt' , (batMinVolt)
         OCV_Lion = batMinVolt
       ENDIF
 
@@ -4537,9 +4545,8 @@ C network input file.
 
 C PARAMETERS FROM SIGNATURE (see routine comments for description)
       REAL batTIni,zoneT,DODIni,dtTStep,maxC,maxP,pLoad,pBat,pHeaters,
-     &     pParasitic, batVolt,batTFin,batDODFin,batCur,pIntHeat,
-     &     batMode
-      INTEGER IPWC
+     &     pParasitic, batVolt,batTFin,batDODFin,batCur,pIntHeat     
+      INTEGER IPWC, batMode
       INTEGER hiVoltLion,loVoltLion,hiTempLion,loTempLion
 
 C Declaration of functions used
@@ -4574,7 +4581,7 @@ C************** Initialisation
 	  pParasitic = (POWCDAT(IPWC,70))
 	  ko = (POWCDAT(IPWC,70))          
 	  E_as = (POWCDAT(IPWC,71)) 
-	  heatersRes = POWCDAT(IPWC,13)/(float(nParal)*float(nSerie))
+	  heatersRes = POWCDAT(IPWC,13)/(float(nParal)+float(nSerie)) !Should that be plus or time series & parrallel?
       hA = POWCDAT(IPWC,12)*(float(nParal)+float(nSerie)) 
       mCp = POWCDAT(IPWC,11)*(float(nParal)+float(nSerie))       
 
@@ -4592,19 +4599,19 @@ C Set a relaxation factor & iterations
       relax = 0.1
       iteration = 0
       max_iteration = 100
-      
-               	       
+ 	       
       IF (hiVoltLion .EQ. 1) THEN      ! Over voltage flag is on, battery needs to discharge
 C evaluate how much the battery would have to dump over the next time step to bring into 
 C safe limits
-
         batMode = 1  
         dummy = 0.
         batCur = 100. !initial high guess
         
-        DO WHILE (abs(batCur-dummy) .GT. relax .OR. iteration 
+        DO WHILE (abs(batCur-dummy) .GT. relax .AND. iteration 
      &        .LT. max_iteration )
           dummy = batCur
+          
+C         The needed energy in watts to return to safe points          
           needed_power = (POWCDAT(IPWC,15)-DODIni)                 !delta DOD
      &        *BatteryCap_Lion(IPWC,batTIni,batCur)                !battery capacity
      &        *AvgVolt(IPWC,batTIni,DODIni,batMode,dtTStep,batCur) !voltage
@@ -4649,7 +4656,7 @@ C safe limits
         dummy = 0.
         batCur = 100.
         
-        DO WHILE (abs(batCur-dummy) .GT. relax .OR. iteration 
+        DO WHILE (abs(batCur-dummy) .GT. relax .AND. iteration 
      &        .LT. max_iteration )
           dummy = batCur
           needed_power = (DODIni-POWCDAT(IPWC,14))                 !delta DOD
@@ -4665,7 +4672,7 @@ C safe limits
         
         IF (iteration .EQ. max_iteration) THEN
           WRITE(IUOUT,*) 'Warning Battery Model: Troublesome',
-     &                   'Convergeance in Lion_BMS loVoltage flag'
+     &                   'Convergeance in Lion_BMS loVoltage flag'               
         ENDIF    
 
         IF (batMode_or .NE. 0) THEN ! discharge or idle, can't happen
@@ -4716,8 +4723,9 @@ C figure out heat needed from battery to bring back into safe limits
         END DO
         
         IF (iteration .EQ. max_iteration) THEN
-        WRITE(IUOUT,*) 'Warning Battery Model: Troublesome',
+          WRITE(IUOUT,*) 'Warning Battery Model: Troublesome',
      &                   'Convergeance in Lion_BMS loTemp flag'
+
         ENDIF
         
         !YOU NEED A DODAVG HERE              |
@@ -4762,19 +4770,28 @@ C     Evaluate the load on the battery
       
 
 C     Get battery's final state      **NEED TO CHANGE DODIni to DODavg for BOTH NEIL - Nevermind i think this should work**
-      batDODFin = FinalDOD_Lion(IPWC,batTIni,DODIni,batMode,dtTStep,
-     &            batCur)      
 
-      batTFin = (RInt_Lion(IPWC,(DODIni+batDODFin)/2.,batMode)*
-     &           batCur**2. +     
-     &           pHeaters - hA*(batTini-zoneT))*dtTStep/mCp + batTIni
-     
-      WRITE(*,*) '*DEBUGGING LI-ON* batDODFin', (batDODFin)
-      WRITE(*,*) '*DEBUGGING LI-ON* batTFin', (batTFin)
-      WRITE(*,*) '*DEBUGGING LI-ON* dtTStep', (dtTStep)
-      WRITE(*,*) '*DEBUGGING LI-ON* hA', (hA)
-      WRITE(*,*) '*DEBUGGING LI-ON* mCp', (mCp)
-      WRITE(*,*) '*DEBUGGING LI-ON* batTIni', (batTIni)
+C      IF (batMode .EQ. 0) THEN !The only reason this if is here is to change the current to a positive value in charge
+        batDODFin = FinalDOD_Lion(IPWC,batTIni,DODIni,batMode,dtTStep,
+     &            batCur)
+
+C      ELSE
+C        batDODFin = FinalDOD_Lion(IPWC,batTIni,DODIni,batMode,dtTStep,
+C     &            batCur)
+           
+C      ENDIF
+      
+      write(*,*) 'effin DOD' , (batDODFin) 
+      write(*,*) 'current' , (batCur)
+      write(*,*) 'voltage' , (batVolt)  
+
+      batTFin = batTIni*exp(-hA*dtTStep/mCp) + (zoneT + 
+     &    (RInt_Lion(IPWC,(DODIni+batDODFin)/2.,batMode)
+     &    *batCur**2. + pHeaters)/hA)*(1. - exp(-hA/mCp*dtTStep))
+      
+           
+C**To keep the battery at 25 Celcius for debugging     
+C      batTFin = 25.
           
       END
             

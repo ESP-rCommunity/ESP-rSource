@@ -917,8 +917,8 @@ Lithium Ion Battery (CETC Battery subroutine)
 6        Number of cells connected in series
 6.       reference capacity for a unit cell (Amp h)
 25.      battery reference operating temperature
-4.1      DOD=0 (V) of a single cell
-3.0      DOD=100% (V) of a single cell
+4.3      DOD=0 (V) of a single cell
+2.9      DOD=100% (V) of a single cell
 10.      Maximum charge/discharge current of one cell(Amps)
 4.3      Maximum charge/discharge voltage of one cell(V)
 25.      initial battery temperature  (°C) 
@@ -930,12 +930,12 @@ Lithium Ion Battery (CETC Battery subroutine)
 0.       minimum DOD of battery (in percentage... probably 0)
 60.      Maximum battery temperature (°C)
 -40.     Minimum battery temperature (°C)
-0.       E5 Exponential coefficent for OCV
-0.       E4 Exponential coefficent for OCV
-0.       E3 Exponential coefficent for OCV
-0.       E2 Exponential coefficent for OCV
--1.1     E1 Exponential coefficent for OCV
-4.1      E0 Exponential coefficent for OCV
+-5.8601  E5 Exponential coefficent for OCV
+14.8224  E4 Exponential coefficent for OCV
+-15.0530 E3 Exponential coefficent for OCV
+6.9328   E2 Exponential coefficent for OCV
+-2.2137  E1 Exponential coefficent for OCV
+4.2221   E0 Exponential coefficent for OCV
 0.       Rint5 Exponential coefficent for Rint
 0.       Rint4 Exponential coefficent for Rint
 0.       Rint3 Exponential coefficent for Rint
