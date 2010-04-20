@@ -6,11 +6,9 @@ C profile.h holds common block for the profiles database. References
 C to profile.h should follow esprdbfile.h to ensure that the
 C parameters MGIT MPRFDBPER have been defined. 
 
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+      COMMON/PDBITM/NPDBITEMS,NCG(MGIT),PDBDESC(MGIT)
       integer NPDBITEMS ! the number of profiles in the database.
-      integer lastrec ! the next available record in the database.
       integer NCG  ! the number of periods in a profile.
-      integer NO   ! record where profile X starts.
       character PDBDESC*40 ! description of the profile.
 
       COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),

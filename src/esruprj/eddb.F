@@ -2367,7 +2367,6 @@ C The name of the ascii file includes an .a at the end.
         ipathprodb=1  
         moddb=.true.
         NPDBITEMS = 1
-        NO(1) = 2
         NCG(1)= 1
         PDBDESC(1)='Always ON 100%'
         ICGS1(1,1)=0

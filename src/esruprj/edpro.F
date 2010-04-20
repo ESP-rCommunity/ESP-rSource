@@ -188,7 +188,6 @@ C Insert a profile.
         else
 
 C Instanciate the data.
-          NO(NPDBITEMS+1)=lastrec
           NCG(NPDBITEMS)=IV
           PDBDESC(NPDBITEMS)='New profile'
 	  
@@ -709,7 +708,6 @@ C remainder of the line after the first word (NCG).
 
         write(ermsg,'(a,i3)') 'writing nb of periods in profile ',I
         IREC = IREC + 1
-        NO(I)=IREC
         WRITE(IFB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
         write(ermsg,'(a,i3)') 'writing description of profile ',I
         IREC = IREC + 1
@@ -792,7 +790,6 @@ C remainder of the line after the first word (NCG).
         CALL EGETWI(OUTSTR,K,NCG(I),1,MPRFDBPER,'W',
      &    'Number of periods in an event item',IER)
         CALL EGETRM(OUTSTR,K,PDBDESC(I),'W','profile descr',IER)
-        NO(I)=0   ! to signal ascii source.
         DO 20 J = 1,NCG(I)
           CALL STRIPC(IFA,OUTSTR,0,ND,1,'IS,IF,A,B',IER)
           IF(IER.NE.0)RETURN
