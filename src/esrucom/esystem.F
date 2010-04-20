@@ -172,6 +172,7 @@ C espriou.h provides currentfile and defdbfl.
 #include "CFC_common.h"
 #include "ipvdata.h"
 #include "seasons.h"
+#include "schedule.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -368,9 +369,6 @@ C Uncertainty analysis common.
 C IPV data is from ipvdata.h.
       common/IPVF/lipvdatf
 
-C Dispersed demands (lifts/fans/DHW).
-      COMMON/BL1/dmdsdesc,bdmds
-
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
@@ -521,7 +519,6 @@ C Simulation parameters
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      CHARACTER dmdsdesc*248,bdmds*72
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8

@@ -39,6 +39,7 @@ C file unit for the demands file. IER=0 is OK.
 
 #include "building.h"
 #include "ipvdata.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -53,31 +54,12 @@ C file unit for the demands file. IER=0 is OK.
      &             dbspth
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-C Demands notes and file name.
-      COMMON/BL1/dmdsdesc,bdmds
-
-C Floor area (optionally) associated with each demand type.
+C Floor area (optionally) associated with each demand type in an IPV.
       COMMON/BL2/dmdfla(7)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-
-C Support for up to 10 calendar day types
-C NBCAS() number of gains on each day type.
-C IBCGS(),IBCGF() - start and finish hours of each demand
-C CBMGS(),CBMGL() - sensible and latent magnitude (in Watts) of each demand
-C BRADC(),BCONC(), - radiant and convective portions of each demand
-C IBCGT() - type of gain for each day type and period
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
-
-C idmdver is the version of dispersed demands.
-C idmdver =0 standard, idmdver =1 with header
-      common/b3ver/idmdver
-
-C Descriptive label for each project demands type.
-      common/bloadlabel/blodlabel(7)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -86,9 +68,8 @@ C Flags noting whether casual gain periods are currently sorted.
       logical sorted,problem
 
       DIMENSION ITEM(13)
-      CHARACTER dmdsdesc*248,tcname*248,bdmds*72
+      CHARACTER tcname*248
       CHARACTER ITEM*36,H*72,LTMP*72,GFILE*72
-      CHARACTER*6 blodlabel
       character cfgroot*24,LCFGF*72,hold*60
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -508,20 +489,15 @@ C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
 #include "building.h"
 #include "epara.h"
 #include "ipvdata.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
 
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
-
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-
-C Descriptive label for each project demands type.
-      common/bloadlabel/blodlabel(7)
 
 C Local editing arrays.
       dimension IEBCGS(MC),IEBCGF(MC),CEBMGS(MC),CEBMGL(MC),BERADC(MC)
@@ -530,7 +506,6 @@ C Local editing arrays.
       CHARACTER vert*43,head*28,H*72,outs*124,KEY*1,hold*40
 
 C blodlabel(1)='Occup',(2)='Lights',(3)='SmPowr',(4)='Fans',(5)='Pumps',(6)='Lifts',(7)='DHW'     
-      character blodlabel*6
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
       character calename*32,calentag*12,calendayname*32
 
@@ -845,15 +820,16 @@ C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 #include "ipvdata.h"
 #include "profile.h"
+#include "schedule.h"
+
+C << introduce concept of profiles with multiple day types as well
+C << as multiple casual gain types
+
+C << also consider that periods can be defined as reals for later
+C << use in the demands file timings
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
-
-C Descriptive label for a zone load or casual gain types.
-      common/bloadlabel/blodlabel(7)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -864,7 +840,7 @@ C Profile database commons via profile.h.
 
       DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
-      CHARACTER H*72,hold*40,blodlabel*6
+      CHARACTER H*72,hold*40
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
       character calename*32,calentag*12,calendayname*32
       character lltmp*144
@@ -1005,38 +981,18 @@ C The current calendar day type gains.
 C ******************** ERBDMD
 C ERBDMD reads project level demand profiles for fans, pumps, DHW etc.
 
-C Common block variables are:
-C dmdsdesc      - dispersed demands description
-
-C NBCAS()  - number of demand sets during a typical Weekday,
-C            Saturday and Sunday etc respectively.
-
-C Maximum number of demands/day       MC=20
-
       SUBROUTINE ERBDMD(ITRC,ITRU,IUO,IER)
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "ipvdata.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
-
-C Support for up to 10 calendar day types
-C IBCGS(),IBCGF() - start and finish hours of each demand
-C CBMGS(),CBMGL() - sensible and latent magnitude (in Watts) of each demand
-C BRADC(),BCONC(), - radiant and convective portions of each demand
-C IBCGT() - type of gain (1-7)
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
-
-C Descriptive label for a zone load or casual gain types.
-      common/bloadlabel/blodlabel(7)
-      common/b3ver/idmdver
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -1045,11 +1001,10 @@ C Calendar commons.
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER dmdsdesc*248,outstr*124,bdmds*72,loutstr*248
+      CHARACTER outstr*124,loutstr*248
       character dllsubr*12,dllmesg*124,WORD*20,outs*124,outs2*124
       character calename*32,calentag*12,calendayname*32
       character dstmp*24
-      CHARACTER*6 blodlabel
       integer idt  ! local counter of day type.
       integer lsn  ! length of currentfile
       logical dll
@@ -1252,28 +1207,20 @@ C written to (confirm if to be overwritten).
 C ITRC unit number for user output, IER=0 OK IER=1 problem.
       SUBROUTINE EMKBDMD(IUO,OPFIL,IER)
 #include "building.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
-
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
-      common/b3ver/idmdver
-
-C Descriptive label for a zone load or casual gain types.
-      common/bloadlabel/blodlabel(7)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
-      CHARACTER dmdsdesc*248,bdmds*72,OPFIL*72
+      CHARACTER OPFIL*72
       character calename*32,calentag*12,calendayname*32
-      CHARACTER*6 blodlabel
       character dstmp*24
 
       IER=0
@@ -1347,23 +1294,15 @@ C from common block data.
       SUBROUTINE BDMDINF(ITRU,ier)
 
 #include "building.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
-
-      COMMON/BL1/dmdsdesc,bdmds
-
-C Descriptive label for a zone load or casual gain types.
-      common/bloadlabel/blodlabel(7)
-
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
-      CHARACTER dmdsdesc*248,outs*124,bdmds*72
-      CHARACTER*6 blodlabel
+      CHARACTER outs*124
       character calename*32,calentag*12,calendayname*32
 
       call edisp(itru,' ')
@@ -1408,17 +1347,9 @@ C Parameters:
 C   ier - set to 1 if there was a problem
       subroutine dmdcheckcascount(ier)
 #include "building.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
-C Support for up to 10 calendar day types
-C NBCAS() number of gains on each day type.
-C IBCGS(),IBCGF() - start and finish hours of each demand
-C CBMGS(),CBMGL() - sensible and latent magnitude (in Watts) of each demand
-C BRADC(),BCONC(), - radiant and convective portions of each demand
-C IBCGT() - type of gain for each day type and period
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C dmdloadcount(gaintype,daytype) - nb of each gain type (whether
 C   absolute or W/m2).
@@ -1432,10 +1363,10 @@ C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
 
 C How many of each dispersed demands for each gaintype/daytype.
       integer dmdloadcount,dmdloadm2count,dmdloadmixed
-      common/dmdsloadcnt/dmdloadcount(7,10),dmdloadm2count(7,10),
-     &               dmdloadmixed(7,10)
+      common/dmdsloadcnt/dmdloadcount(7,MDTY),dmdloadm2count(7,MDTY),
+     &               dmdloadmixed(7,MDTY)
 
-      common/dmdloadall/dmdload24(7,10,2)
+      common/dmdloadall/dmdload24(7,MDTY,2)
       logical dmdload24
 
 C Keep track of how many non-zero positive and negative casual
@@ -1449,7 +1380,7 @@ C gain types - in order to figure out value of loadmixed.
 
 C Zero the dmdloadcount arrays for each gain type (ij) and day type (ik).
       do 40 ij=1,7
-        do 41 ik=1,10
+        do 41 ik=1,MDTY
           dmdloadcount(ij,ik)=0
           dmdloadm2count(ij,ik)=0
           dmdloadm2nonzero(ij,ik)=0
@@ -1539,33 +1470,28 @@ C dmdchecksort does a quick check of dispersed demands for sorted state.
 C not extensive, but should catch most issues.
       subroutine dmdchecksort(idaytype,problem,ier)
 #include "building.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
 
-      common/b3ver/idmdver
-
-C Descriptive label for each project demands type.
-      common/bloadlabel/blodlabel(7)
-
 C How many of each dispersed demands for each gaintype/daytype.
       integer dmdloadcount,dmdloadm2count,dmdloadmixed
-      common/dmdsloadcnt/dmdloadcount(7,10),dmdloadm2count(7,10),
-     &               dmdloadmixed(7,10)
+      common/dmdsloadcnt/dmdloadcount(7,MDTY),dmdloadm2count(7,MDTY),
+     &               dmdloadmixed(7,MDTY)
 
 C Does each gain type on each day:
 C   start at zero dmdload24(gaintype,daytype,1)=.true.
 C   and end at 24 hours (dmdload24(gaintype,daytype,2)=.true.
-      common/dmdloadall/dmdload24(7,10,2)
+      common/dmdloadall/dmdload24(7,MDTY,2)
       logical dmdload24
 
 C logical problem set to true if daytype might not be sorted.
       logical problem
       character outs*124
       character calename*32,calentag*12,calendayname*32
-      CHARACTER*6 blodlabel
 
       if(idmdver.eq.0)then
         call edisp(iuout,'older format dispersed demands file detected')

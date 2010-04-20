@@ -72,6 +72,7 @@ C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "sbem.h"
 #include "ipvdata.h"
 #include "seasons.h"
+#include "schedule.h"
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
@@ -134,9 +135,6 @@ C IPV description.
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
-
-C Project demands (lifts/fans/DHW).
-      COMMON/BL1/dmdsdesc,bdmds
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -257,7 +255,7 @@ C door width and height.
       character hvacfile*72,LAIM2*72,LBSIMP*72
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
-      character dmdsdesc*248,bdmds*72,lradcf*72
+      character lradcf*72
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8

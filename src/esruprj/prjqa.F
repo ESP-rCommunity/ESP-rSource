@@ -50,6 +50,7 @@ C espriou.h provides currentfile.
 #include "sbem.h"
 #include "ipvdata.h"
 #include "seasons.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -116,9 +117,6 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-C Demands notes and file name.
-      COMMON/BL1/dmdsdesc,bdmds
-
 C Project log file.
       common/LOG/LPRJLG
 
@@ -182,7 +180,6 @@ C Remember if each zone is fully attributed.
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16
-      CHARACTER dmdsdesc*248,bdmds*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48

@@ -52,6 +52,7 @@ C ************************************************************
 #include "espriou.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "schedule.h"
       PARAMETER (MSTMC=20)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -104,7 +105,6 @@ C Uncertainty.
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
-      COMMON/BL1/dmdsdesc,bdmds
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       
       CHARACTER INTER*144,INF*144
@@ -122,7 +122,6 @@ C Uncertainty.
       character*72 LCFGF,LPRJLG
       character LCTLF*72,ctldoc*248,lradcf*72,LTDFA*72
       character LTDF*72,LAPROB*72 
-      CHARACTER dmdsdesc*248,bdmds*72
       character bidirfile*72,bidirname*12
       LOGICAL unixok,concat
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

@@ -2094,6 +2094,14 @@ C
       SUBROUTINE EDDBPROFILE(moddb,APP)
 #include "esprdbfile.h"
 #include "profile.h"
+
+C << introduce concept of profiles with multiple day types as well
+C << as multiple casual gain types
+
+C << also consider that periods can be defined as reals and for
+C << only the start time to be held in the file
+
+C << introduce concept of types of profiles
       
       integer lnblnk  ! function definition
 

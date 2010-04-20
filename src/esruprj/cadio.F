@@ -1514,6 +1514,7 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -1530,7 +1531,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/LOG/LPRJLG
       common/radcfg/LRADCF
-      COMMON/BL1/dmdsdesc,bdmds
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/TDFFT/LTDF,ltdfa
@@ -1596,7 +1596,7 @@ C The string buffer doit is only used within ifdef code.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,LTMPFL*72
       character LF*72,LFL*144
-      CHARACTER dmdsdesc*248,bdmds*72,spflnam*72,entflnam*72
+      CHARACTER spflnam*72,entflnam*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
       character LLASCI*144
       character hvacfile*72,LAIM2*72,LBSIMP*72

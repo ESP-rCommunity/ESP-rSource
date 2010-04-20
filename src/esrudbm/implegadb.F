@@ -951,6 +951,12 @@ C not actually used.
       subroutine improfl(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
 #include "profile.h"
+
+C << introduce concept of profiles with multiple day types as well
+C << as multiple casual gain types
+
+C << also consider that periods can be defined as reals and only
+C << the start of period held
       
       integer lnblnk  ! function definition
 

@@ -3959,6 +3959,12 @@ C SCASL: Import a profile from a profiles database to build casual
 C gain patterns.
       SUBROUTINE  SCASL(IN,IDAY,IER,ICOMP)
 
+C << introduce concept of profiles with multiple day types as well
+C << as multiple casual gain types
+
+C << also consider that periods can be defined as reals for later
+C << use in the zone operation file timings
+
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -4200,6 +4206,7 @@ C << and small power can be entered in terms of W/m2.
       ENDIF
  42   call usrmsg(' ',' ','-')
 
+C Instanciate the casual gain commons with data from the profile.
       NCAS(IDAY) = NCAS(IDAY) + NCG(INDEX)
       DO 140 I = 1,NCG(INDEX)
 	ICGS(IDAY,I+IN) = ICGS1(INDEX,I)

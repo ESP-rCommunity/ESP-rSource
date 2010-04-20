@@ -146,6 +146,7 @@ C espriou.h provides currentfile and defdbfl.
 #include "sbem.h"
 #include "roam.h"
 #include "ipvdata.h"
+#include "schedule.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -320,9 +321,6 @@ C Uncertainty analysis common.
 C IPV description come from ipvdata.h.
       common/IPVF/lipvdatf
 
-C Dispersed demands (lifts/fans/DHW).
-      COMMON/BL1/dmdsdesc,bdmds
-
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
@@ -463,7 +461,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      CHARACTER dmdsdesc*248,bdmds*72
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12

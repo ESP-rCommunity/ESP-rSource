@@ -52,6 +52,7 @@ C ICLIM,LCLIM (for climate file)
 #include "ipvdata.h"
 #include "seasons.h"
       PARAMETER (MSTMC=20,MSGAL=40)
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -148,9 +149,6 @@ C Primary energy and emissions conversions.
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-
-C Project demands (lifts/fans/DHW).
-      COMMON/BL1/dmdsdesc,bdmds
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -272,7 +270,7 @@ C If 0 then the calculation includes diffuse shading.
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      CHARACTER dmdsdesc*248,bdmds*72,outs*124
+      CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,ltmp*72,louts*144
       character bidirfile*72,bidirname*12

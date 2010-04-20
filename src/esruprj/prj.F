@@ -55,6 +55,7 @@ C espriou.h provides currentfile, defdbfl exemfl.
 #include "prj3dv.h"
 #include "ipvdata.h"
 #include "sbem.h"
+#include "schedule.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -147,8 +148,6 @@ C IDST tool commands
       common/idstb/nidst
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
 
-C Dispersed demands notes and file name.
-      COMMON/BL1/dmdsdesc,bdmds
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       COMMON/Vld20/Vldtng
 
@@ -181,7 +180,7 @@ C      character outs248*248
       character docpth*24,tmppth*24,dbspth*24
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
-      CHARACTER dmdsdesc*248,bdmds*72,cpth*48,cmdn*48,topt*72
+      CHARACTER cpth*48,cmdn*48,topt*72
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
       CHARACTER dinstpath*48,dirpath*48
       character useraction*8  ! returned from exemplar access call.

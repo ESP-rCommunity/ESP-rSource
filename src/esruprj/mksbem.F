@@ -72,6 +72,7 @@ C MMGFUN controls all UK NCM related tasks
 #include "model.h"
 #include "site.h"
 #include "ipvdata.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
       
@@ -153,9 +154,6 @@ C MMGFUN controls all UK NCM related tasks
       COMMON/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER IPCONV
       REAL pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
-
-      COMMON/BL1/dmdsdesc,bdmds
-      CHARACTER dmdsdesc*248,bdmds*72
 
       COMMON/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe

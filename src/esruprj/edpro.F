@@ -302,6 +302,12 @@ C a fresh ASCII version file.
 C << there is a name clash for IGS1 and ICGF1 with
 C << the common block P3
 
+C << introduce concept of profiles with multiple day types as well
+C << as multiple casual gain types
+
+C << also consider that periods can be defined as reals and for
+C << only the start time to be held in the file
+
       SUBROUTINE  EDPROF(ITM,NFLAG,asciupdate,IER)
 #include "epara.h"
 #include "esprdbfile.h"
@@ -412,6 +418,9 @@ C current menu line index. Build up text strings for the menu.
   303     FORMAT(A1,I4,I6,I4,F10.1,F7.1)
         ENDIF
    10 CONTINUE
+
+C << number of day types to be added and the description extended
+C << add logic depending on the type of profile
 
       write(ITEM(1),'(A,A20)') 'a profile: ',PDBDESC(ITM)(1:20)
       write(ITEM(2),'(A,I3)')'  nb. of periods: ',NCG(ITM)
@@ -575,6 +584,8 @@ C EDEVENT: Edit details of a profile event.
       character outs*124,H*72
       logical shiftnext
 
+C << probably need to pass in the day type index as well >>
+
 C Set notification of need to shift next period start to false
       shiftnext=.false.
 
@@ -652,6 +663,10 @@ C LPRFDB,IPRODB (for event profile database)
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "profile.h"
+
+C << the ASCII file should have a header with a version number as well
+C << as a date stamp a block of documentation but none of this would
+C << fit in the binary file
       
       integer lnblnk  ! function definition
 
@@ -756,6 +771,9 @@ C LPRFDB,IPRODB (for event profile database)
 #include "espriou.h"
 C espriou.h provides currentfile.
 #include "profile.h"
+
+C << the ASCII file should have a header with a version number as well
+C << as a date stamp a block of documentation and categories
       
       integer lnblnk  ! function definition
 
@@ -1017,6 +1035,11 @@ C TROPROCOM creates an ASCII profiles db from common blocks.
 #include "esprdbfile.h"
 #include "espriou.h"
 #include "profile.h"
+
+C << the ASCII file should have a header with a version number as well
+C << as a date stamp a block of documentation and categories
+C << and a type indicator for each profile. Legacy profiles are ?
+C << a subset of activities profiles.
       
       integer lnblnk  ! function definition
       CHARACTER*(*) LLASCI   ! ascii file name
