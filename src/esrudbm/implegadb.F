@@ -950,6 +950,7 @@ C not actually used.
  
       subroutine improfl(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
+#include "profile.h"
       
       integer lnblnk  ! function definition
 
@@ -972,11 +973,7 @@ C not actually used.
       common/gendb8c/nbitusc(MGIT),nbitdat(MGIT),
      &               nbitrep(MGIT),ibitusc(MGIT)
 
-C Event profiles common blocks.
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40
+C Event profiles common blocks via profile.h.
 
       dimension DayT(72),ST(72),FN(72),A(72),B(72),C(72)
       dimension Patr(72)
@@ -1246,14 +1243,12 @@ C NOTE LASCI is 72 char. This is called only by esrudbm.
       SUBROUTINE TROPRO(IFA,LASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "profile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40,LASCI*72
+      CHARACTER LASCI*72
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
       integer ier

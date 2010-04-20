@@ -52,6 +52,7 @@ C   control information to the configuration control file.
       SUBROUTINE  CASFMK(ier)
 #include "epara.h"
 #include "esprdbfile.h"
+#include "profile.h"
       
       integer lnblnk  ! function definition
 
@@ -59,15 +60,8 @@ C   control information to the configuration control file.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-C NPDBITEMS (integer) is the number of profiles in the database.
-C lastrec (integer) is the next available record in the database.
-C NCG() (integer) is the number of periods in a profile.
-C NO() (integer) record where profile X starts.
-C PDBDESC() (char*40) description of the profile.
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-
       DIMENSION ITEM(35)
-      CHARACTER PDBDESC*40,outs*124,KEY*1,H*72,ITEM*42
+      CHARACTER outs*124,KEY*1,H*72,ITEM*42
       character LLASCI*144
       character ermsg*48  ! for read error messages
       character fs*1
@@ -309,11 +303,10 @@ C a fresh ASCII version file.
 C << there is a name clash for IGS1 and ICGF1 with
 C << the common block P3
 
-C << consider moving commons PDBITM and PDBELM into a *.h file.
-
       SUBROUTINE  EDPROF(ITM,NFLAG,asciupdate,IER)
 #include "epara.h"
 #include "esprdbfile.h"
+#include "profile.h"
       
       integer lnblnk  ! function definition
 
@@ -321,18 +314,10 @@ C << consider moving commons PDBITM and PDBELM into a *.h file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-
-C ICGS1 (integer) is the start hour of the profile period.
-C ICSF1 (integer) is the finish hour of the profile period.
-C CGS1 (real) is the first item (e.g. sensible gain) of the period.
-C GCL1 (real) is the 2nd item (e.g. latent gain) of the period.
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
 
       DIMENSION ITEM(30)
       character NFLAG*1
-      CHARACTER PDBDESC*40,KEY*1,TMP*40
+      CHARACTER KEY*1,TMP*40
       character ITEM*33,H*72,cstr*72
       character llasci*144 ! for writing the ascii file.
       character ermsg*48   ! for read error messages
@@ -585,12 +570,10 @@ C ************* EDEVENT
 C EDEVENT: Edit details of a profile event.
       SUBROUTINE EDEVENT(IPR,IFOC,IER)
 #include "esprdbfile.h"
+#include "profile.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      character outs*124,H*72,PDBDESC*40
+      character outs*124,H*72
       logical shiftnext
 
 C Set notification of need to shift next period start to false
@@ -669,6 +652,7 @@ C LPRFDB,IPRODB (for event profile database)
 
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "profile.h"
       
       integer lnblnk  ! function definition
 
@@ -679,9 +663,8 @@ C Parameters
       integer IER           ! zero is ok, one is asci does not exist
                             ! two is binary cannot be opened
 
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
       COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER PDBDESC*40,OUTSTR*124
+      CHARACTER OUTSTR*124
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
 
@@ -774,13 +757,11 @@ C LPRFDB,IPRODB (for event profile database)
 
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "profile.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40,OUTSTR*124,LLASCI*144
+      CHARACTER OUTSTR*124,LLASCI*144
       character ermsg*48   ! for read error messages
 
 C Free file unit
@@ -838,15 +819,12 @@ C This is called only by esrudbm.
       SUBROUTINE TROPRO(IFA,LASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "profile.h"
       
       integer lnblnk  ! function definition
       CHARACTER*(*) LASCI   ! ascii file name
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
       character fs*1       ! file separator
@@ -959,6 +937,7 @@ C ier= -3 no items in the database
       SUBROUTINE TRIPROBIN(IFB,LBIN,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "profile.h"
       
       integer lnblnk  ! function definition
 
@@ -968,10 +947,6 @@ C Parameters
       integer IER         ! zero is ok, -2 or -3 errors
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
 
@@ -1044,15 +1019,12 @@ C TROPROCOM creates an ASCII profiles db from common blocks.
       SUBROUTINE TROPROCOM(IFA,LLASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "profile.h"
       
       integer lnblnk  ! function definition
       CHARACTER*(*) LLASCI   ! ascii file name
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40
       character ermsg*48   ! for read error messages
 
       IER =0
@@ -1106,16 +1078,14 @@ C 'PROGRF' outputs a graphical display of an event profile (IPRO)
 C based on the current common block data.
       SUBROUTINE PROGRF(IPRO)
 #include "esprdbfile.h"
+#include "profile.h"
 
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
-      CHARACTER PDBDESC*40,ETEXT*72
+      CHARACTER ETEXT*72
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext

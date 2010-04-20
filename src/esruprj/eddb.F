@@ -2093,6 +2093,7 @@ C     if blank then no file name change implied.
 C
       SUBROUTINE EDDBPROFILE(moddb,APP)
 #include "esprdbfile.h"
+#include "profile.h"
       
       integer lnblnk  ! function definition
 
@@ -2104,9 +2105,6 @@ C
       common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
 
       CHARACTER H*72,LTMP*72,lltmp*144,lprev*144
       character LLASCI*144,lbin*144,llbin*144,lguess*144
@@ -2115,7 +2113,6 @@ C
       CHARACTER OUTS*124,OUTS248*248
       CHARACTER*24 ZONEPTH,NETPTH,CTLPTH,IMGPTH,RADPTH,DBSPTH
       CHARACTER*24 DOCPTH,TMPPTH
-      character PDBDESC*40
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
