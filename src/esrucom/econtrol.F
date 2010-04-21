@@ -1060,7 +1060,7 @@ C Reporting: Get a string describing the current sensor based on common.
 
 C Range checking.
         if((ifan(ii,1).gt.-3).or.(ifan(ii,1).lt.-4)) goto 1005
-        if(ifan(ii,2).lt.0)goto 1063
+        if(ifan(ii,2).le.0)goto 1063
 
         IF(ifan(ii,1).eq.-4.AND.(ITPCMP(ifan(II,2)).EQ.220.OR.
      &    ITPCMP(ifan(II,2)).EQ.230.OR.ITPCMP(ifan(II,2)).EQ.240.OR.
