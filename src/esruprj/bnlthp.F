@@ -439,6 +439,7 @@ C is called by THMENU .
 C ****************************************************************
       SUBROUTINE THRMEQ(ITHF)
 #include "building.h"
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -520,7 +521,7 @@ C Add a new equation manually
   101   FORMAT(I2,2(1X,F7.2))
         WRITE(EQNMSG,*)' Enter the property type and temperature range.'
         CALL EASKS(EQNTXT,EQNMSG,' ',72,' ','thermal data',IER,12)
-        CALL CHITMS(EQNTXT,NCFF)
+        NCFF = iCountWords(EQNTXT)
         IF(NCFF.NE.3)THEN
           CALL USRMSG(' ',
      &    ' Please enter an integer and two real numbers!','W')
@@ -535,7 +536,7 @@ C Add a new equation manually
   102   FORMAT(F8.3,4(1X,F8.5,1X,F6.2))
         WRITE(EQNMSG,*)' Coefficient value?'
         CALL EASKS(EQNTXT,EQNMSG,' ',72,' ',' data ',IER,13)
-        CALL CHITMS(EQNTXT,NCFF)
+        NCFF = iCountWords(EQNTXT)
         IF(NCFF.NE.9)THEN
           CALL USRMSG(' ',' Please enter 9 values!','W')
           DO 110 I12=1,12

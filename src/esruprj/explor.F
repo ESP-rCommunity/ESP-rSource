@@ -842,6 +842,7 @@ C IFTIME 0 gives '10h30', 1 gives '10.50', 2 gives '0.4375'
       SUBROUTINE STRTIM(WORD,IFTIME,NTS,DTIME,HTIME,ITPER,IER)
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       CHARACTER USRT*10,WORD*10
       LOGICAL CLOSE
@@ -852,7 +853,7 @@ C IFTIME 0 gives '10h30', 1 gives '10.50', 2 gives '0.4375'
 C Looking for either a '12h00' input or '12 00' input, if one word 
 C detected strip out the 'h' or 'H' and then parse the hours & minutes.
         USRT=WORD
-        CALL CHITMS(USRT,IW)
+        IW = iCountWords(USRT)
         IF(IW.EQ.1)THEN
           DO 12 I=1,lnblnk(USRT)
             IF(USRT(I:I).EQ.'h'.OR.USRT(I:I).EQ.'h')USRT(I:I)=' '

@@ -461,6 +461,7 @@ C *********************************************************************
 C VldBnd
 C *********************************************************************
       SUBROUTINE VldBnd(TempB,HTranB)
+      integer iCountWords
 
       common/pophelp/h(60)
 
@@ -476,7 +477,7 @@ C *********************************************************************
   10  CALL EASKS(StrVal,'Enter the ambient temperature and hc value:',
      &  '  ',25,' ','boundary details',IER,4)
       CALL USRMSG('  ','  ','-')
-      CALL CHITMS(StrVal,NInp)
+      NInp = iCountWords(StrVal)
       NExpct=2
       IF(NInp.NE.NExpct)THEN
         WRITE(Msg,'(A,I1,A)')'You should enter ',NExpct,' values.'
@@ -628,6 +629,7 @@ C VConEd
 C *********************************************************************
       SUBROUTINE VConEd(I,ier)
 #include "building.h"
+      integer iCountWords
 
       common/pophelp/h(60)
 
@@ -652,7 +654,7 @@ C *********************************************************************
      &  'layer details',IER,11)
       if(ier.ne.0)return
       CALL USRMSG('  ','  ','-')
-      CALL CHITMS(StrVal,NInp)
+      NInp = iCountWords(StrVal)
       NExpct=5
       IF(NInp.NE.NExpct)THEN
         WRITE(Msg,'(A,I1,A)')'You should enter ',NExpct,' values.'

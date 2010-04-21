@@ -208,8 +208,12 @@ C MMGFUN controls all UK NCM related tasks
 
       COMMON/C6/INDCFG
       INTEGER INDCFG
+
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      INTEGER IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+
       LOGICAL OK,DOK,XST
-      integer ier,iier,itrc,IAPROB,iecmoption,ISTAT,lns,iw
+      integer ier,iier,itrc,IAPROB,iecmoption,ISTAT,lns,iw,IYEAR_O
       integer iuact  ! return state from sbmedit call
       character EXT*4,APE*6,MODE*4
       character LASBEM_O*72  ! to re-establish the ncm file name
@@ -231,9 +235,10 @@ C and model title.
       CFGROOT_O = CFGROOT
       LCNN_O    = LCNN
       LSNAM_O   = modeltitle
+      IYEAR_O   = IYEAR
 
 C Generate stripped, notional, reference and typical model 
-C configuration file names
+C configuration file names.
       EXT='.cfg'
       APE='_str  '
       CALL FNCNGR(LCFGF,APE,EXT,LCFGF_S)
@@ -261,7 +266,8 @@ C Strip model of optional higher resolution
 C Dereference all files that are to be dereferenced and generate
 C stripped model. Define the simulation parameters for the run.
       ISBEM=1
-      INOTI=4  ! mark explicitly as stripped model
+      INOTI=4    ! mark explicitly as stripped model
+      IYEAR=2008 ! match SBEM activities database version year
       H(1)='Assessment period choices allow you to do quick'
       H(2)='checks of your model for the month of January or'          
       H(3)='April or July. And eventually you MUST do the'          
@@ -269,8 +275,8 @@ C stripped model. Define the simulation parameters for the run.
       CALL EASKABCD(' ','Initial assessment period (see help)',
      &      'January','April','July','Annual (official)',IW,4)
       if(isstup.le.0)isstup=20
-      if(isbnstep.le.0)isbnstep=6   ! 1 tsph for testing 4 std 12 for 5m
-      if(ispnstep.le.0)ispnstep=10
+      if(isbnstep.le.2)isbnstep=6   ! 1 tsph for testing 4 std 12 for 5m
+      if(ispnstep.le.2)ispnstep=10
       NSSET=1
       issave=6
       isavgh=1
@@ -305,9 +311,8 @@ C Adapt title of model from original.
         write(modeltitle,'(2a)') LSNAM_O(1:61),' (stripped)'
       endif
 
-
 C Dereference optional higher resolution information
-      groundreflmodel=1                          ! ground reflectivity
+      groundreflmodel=1                 ! ground reflectivity
       bMY_climates_defined=.FALSE.      ! multi year climates
       ihvacflag=0                       ! HVAC flag
       IDHW_FLAG=0                       ! DHW flag
@@ -347,13 +352,11 @@ C Ask for *ncm specific information and generate stripped model
 C Detect a returned state so if user has asked to proceed with
 C the calculations (iuact=2) based on the current model files this
 C will be done.
-      CALL SBMEDIT(iuact,ier) ! generate stripped model and ncm file
+      CALL SBMEDIT(iuact,ier)
 
 C If ier return as 2 or 4 then exit.
       if(ier.eq.2.or.ier.eq.4) return
-      
       LASBEM_O = LASBEM   ! remember ncm file name
-      
  42   continue
       if(iuact.eq.0)then
         H(1)='You exited from the detailed configuration of the'
@@ -384,17 +387,20 @@ C If ier return as 2 or 4 then exit.
       H(17)='make additions open the original model (not the stripped'
       H(18)='model which has now been generated).'
       H(19)=' '
-      H(20)='4. For testing scan existing save 6 files and re-'
-      H(21)='generate the NCM file (to be removed).'
+      H(20)='4. Scan existing save 6 files and re-generate the'
+      H(21)='NCM file (e.g. if done on a compute server).'
+      H(22)=' '
+      H(23)='If you plan on using existing models and or existing'
+      H(24)='assessments check that you have loaded your ORIGINAL'
+      H(25)='model prior to asking for assessments or reports. '
       if(iuact.eq.0.or.iuact.eq.1)then
         CALL EASKABCD(' ','Options (see help):',
      &    'generate remaining models and EPC','N/A',
-     &    'continue editing NCM',
-     &    'exit NCM facility',iecmoption,18)
+     &    'continue editing NCM','exit NCM facility',iecmoption,25)
       elseif(iuact.eq.2)then
         CALL EASKABCD(' ','Options (see help):',
      &    'use existing models to calculate EPC','use existing runs',
-     &    'continue editing NCM','exit NCM facility',iecmoption,21)
+     &    'continue editing NCM','exit NCM facility',iecmoption,25)
       endif
       if(iecmoption.eq.3.or.iecmoption.eq.4)then
 
@@ -409,6 +415,7 @@ C before returning.
         MODE='ALL '
         ITRC=0
         CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
+        IYEAR=IYEAR_O 	          ! re-establish simulation year
         modeltitle  = LSNAM_O     ! re-establish model title
         LASBEM = LASBEM_O    ! re-establish ncm name in original model
         ITDFLG=0             ! clear temporal data generated as alt models created
@@ -465,12 +472,14 @@ C the existing save level 6 files.
           H(7)='later time.'
           CALL ASKOK('Run NCM simulations (see help)',' ',OK,dok,7)
         elseif(iecmoption.eq.2)then
+          dok=.false.
           H(1)='You are using existing save level 6 files from'
           H(2)='stripped, notional, reference and typical model runs.'
-          H(3)='In order to generateEPC and BRUKL (UK building'
+          H(3)='In order to generate EPC and BRUKL (UK building'
           H(4)='regulations) data will be re-scanned. FOR TESTING'
           H(5)='PURPOSES.'
-          ok=.true.
+          CALL ASKOK('Re-scan prior assessments (see help)',' ',OK,
+     &      dok,5)
         endif
       endif
       IF(.NOT.OK)then
@@ -504,8 +513,8 @@ C before returning.
       if(iecmoption.eq.1)then
 
 C Run simulation and recover information from save level 6 results file
-        CALL SIMRUN(1) ! Stripped model
         CALL SIMRUN(2) ! Notional model
+        CALL SIMRUN(1) ! Stripped model
 
 C To save time in formal NCM testing comment out the next two lines.
         CALL SIMRUN(3) ! Reference model
@@ -513,11 +522,12 @@ C To save time in formal NCM testing comment out the next two lines.
       elseif(iecmoption.eq.2)then
       
 C Recover information from save level 6 results file
-C Reset cfg files and call rsl6tf.
-        LCFGF=LCFGF_S
-        CALL RSL6TF(1)
+C Reset cfg files and call rsl6tf.  Do the notional
+C set first to make sure AER is filled.
         LCFGF=LCFGF_N
         CALL RSL6TF(2)
+        LCFGF=LCFGF_S
+        CALL RSL6TF(1)
         LCFGF=LCFGF_R
         CALL RSL6TF(3)
         LCFGF=LCFGF_T
@@ -527,7 +537,7 @@ C Reset cfg files and call rsl6tf.
 
 C Generate BER and TER - if doing DSM testing the call is made from 
 C RSL6TF
-      IF(iDsmTestingFlag.NE.1.or.iDsmTestingFlag.NE.2)CALL BERTER(IER)
+      IF(iDsmTestingFlag.LE.0.OR.iDsmTestingFlag.GE.3)CALL BERTER(IER)
 
 C Generate BRUKL information
       CALL NCMCAL(IER)
@@ -770,14 +780,14 @@ C Check if the model is sufficiently attributed for NCM purposes.
         elseif(ier.eq.2)then
           call edisp(iuout,'Model is old format. Correct this and')
           call edisp(iuout,'try again.')
-	  return
+          return
         elseif(ier.eq.3)then
           call edisp(iuout,'Zone surface attribution incomplete. ')
           call edisp(iuout,'Use geometry facilities to complete.')
         elseif(ier.eq.4)then
           call edisp(iuout,'Model geometry is overly complex. Correct')
           call edisp(iuout,'this and try again.')
-	  return
+          return
         endif
       ELSE
 
@@ -791,16 +801,16 @@ C Check if the model is sufficiently attributed for NCM purposes.
         elseif(ier.eq.2)then
           call edisp(iuout,'Model is old format. Correct this and')
           call edisp(iuout,'try again.')
-	  WRITE(LASBEM,'(a)') '  '   ! clear ncm file name   
-	  return
+          WRITE(LASBEM,'(a)') '  '   ! clear ncm file name   
+          return
         elseif(ier.eq.3)then
           call edisp(iuout,'Zone surface attribution incomplete. ')
           call edisp(iuout,'It will probably not run NCM cleanly.')
         elseif(ier.eq.4)then
           call edisp(iuout,'Model geometry is overly complex. Correct')
           call edisp(iuout,'this and try again.')
-	  WRITE(LASBEM,'(a)') '  '   ! clear ncm file name       
-	  return
+          WRITE(LASBEM,'(a)') '  '   ! clear ncm file name       
+          return
         endif
 
 C Ask about building, owner and certifier detail. Note that
@@ -846,7 +856,23 @@ C Generate help text
       H(29)='with assumptions about infiltration.'
       H(30)=' '
       H(31)='It is a GOOD IDEA to use the display current information'
-      H(32)='choice to review the current contents (work in progress).'
+      H(32)='choice to review the current contents before proceeding'
+      H(33)='to the `setting up required models` stage. '
+      H(34)=' '
+      H(35)='Facade surfaces in the model must be attributed for their'
+      H(36)='USE e.g. WINDOW DISPLAY prior to setting up the models.'
+      H(37)='It is recommended that you FIRST define the information'
+      H(38)='in the first three menu items (to register the model as'
+      H(39)='being used for code assessments and THEN return to the'
+      H(40)='zone attribution menu and define the surface USE'
+      H(41)='attributes (only certain USE types are allowed). '
+      H(42)=' '
+      H(43)='It is a good idea to back up your model after you have'
+      H(44)='setup the required models. '
+      H(45)=' '
+      H(46)='When running required assessments on Native Windows you'
+      H(47)='may not see the progress of the assessments (it can take'
+      H(48)='several hours). '
 
 C Make high level menu asking for different parts of UK NCM 
       ITEMX(1) = 'Building, owner and certifier information'
@@ -866,7 +892,7 @@ C Make high level menu asking for different parts of UK NCM
       ITEMX(15)= 'Run required assessments '
       IX=1
       CALL EPICKS(IX,KSTR,' ','Define UK NCM data',
-     &  50,15,ITEMX,'Define UK NCM data',IER,33)
+     &  50,15,ITEMX,'Define UK NCM data',IER,48)
       IF(KSTR(1).EQ.0)THEN
 
 C User did not pick anything. Save any changes in the NCM
@@ -1702,6 +1728,8 @@ c        call mksbem2
 C If we reached this point then proceed with setting
 C up the notional model. Assumes that geometry files
 C are version 1.1. If not exit with ier set to 2.
+      call edisp(iuout,
+     &  'Processing zones for notional building variant.')
       GUESS='notional'
       DO 551 ICOMP=1,NCOMP
         IUF=IFIL+2
@@ -1756,6 +1784,7 @@ C      call mksbem2
 
 C If there is no temporal file generate initial file contents over
 C the whole year at one tsph and with one activity item.
+      call edisp(iuout,'Generating occupancy patterns.')
       if (LTDFA(1:4).eq.'UNKN'.or.LTDFA(1:2).eq.'  ') then
         XST=.false.
 
@@ -1845,9 +1874,9 @@ C always be the 6th colum so set cm(2) and cm(3) with
 C fixed values. Later when the temporal data is scanned
 C the returned array of values for the current ACTIVITY item
 C will have the heating and cooling at this offset.
-            ibsn(icountnotequal,1)=-2!0
+            ibsn(icountnotequal,1)=-2 !0
             ibsn(icountnotequal,2)=0
-            ibsn(icountnotequal,3)=50!0
+            ibsn(icountnotequal,3)=50 !0
             ibsn(icountnotequal,4)=0
             val_converted=REAL(icountnotequal)
             cm(2)=5.0*val_converted
@@ -1917,6 +1946,7 @@ C the do while loop finished.
             icascf(iCTLlink-1)=icountnotequal
           endif            
   622   CONTINUE
+        call edisp(iuout,'Generating zone controls.')
         iloc1=0
         iloc2=0
         iloc3=0
@@ -1954,6 +1984,7 @@ C Write control file (filename.ctl is saved to filename_str.ctl)
 
 C Write configuration file for stripped file (filename.ctl is 
 C saved to filename_str.ctl)
+        call edisp(iuout,'Generating stripped model configuration.')
         LCFGF=LCFGF_S
         CALL EMKCFG('-',IER)
 
@@ -1974,7 +2005,8 @@ C first temporal item.
         if(ier.eq.0)THEN
           write(currentfile,'(a)') LTDFA(1:lnblnk(LTDFA))
         ELSE ! WARNING MESSAGE HERE
-	ENDIF
+        ENDIF
+        call edisp(iuout,'Generating hourly room use data.')
         WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 'ASCIITDF3'
         WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
      &    '# NWPR NITDF NTSPH itdyear,itdbdoy,itdedoy,columns'
@@ -2026,31 +2058,31 @@ C Write the header of the ASCII tdf file.
 C NTBITS and NTSTAT are hardwired here to 5 and 11 respectively
           WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*other,  11  5'
           WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101) '*fields,16'
-          WRITE(iafil,'(1a,F4.3,2a)',IOSTAT=ios,ERR=101) 
+          WRITE(iafil,'(a,F4.3,2a)',IOSTAT=ios,ERR=101) 
      &      'REAL  1  0   ',occupant_dens(iforuseintdfentry(i)),
      &      ' 0.000    100.000  ','Occupant density (pers/m2):'
-          WRITE(iafil,'(1a,I3,2a)',IOSTAT=ios,ERR=101) 
+          WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101) 
      &      'INTG  2  0   ',metabolic_rate(iforuseintdfentry(i)),
      &      ' 0       999  ','Metabolic rate (W/pers):'
-          WRITE(iafil,'(1a,I3,2a)',IOSTAT=ios,ERR=101) 
+          WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101) 
      &      'INTG  3  0   ',latent_ocup_percent(iforuseintdfentry(i)),
      &      ' 0       100  ','Occup. Latent gain % (0-100):'
-          WRITE(iafil,'(1a,F6.3,2a)',IOSTAT=ios,ERR=101) 
+          WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101) 
      &      'REAL  4  0    ',equip_gain(iforuseintdfentry(i)),
      &      ' 0.000    400.000  ','Equipment (W/m2):'
           WRITE(iafil,'(1a,I3,2a)',IOSTAT=ios,ERR=101) 
      &      'INTG  5  0    ',latent_equip_percent(iforuseintdfentry(i)),
      &      ' 0       100  ','Equip. Latent gain % (0-100):'
-          WRITE(iafil,'(1a,I3,2a)',IOSTAT=ios,ERR=101) 
+          WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101) 
      &      'INTG  6  0    ',lighting_lux(iforuseintdfentry(i)),
      &      ' 0       999  ','Number of luxes (lux):'
-          WRITE(iafil,'(1a,F6.3,2a)',IOSTAT=ios,ERR=101) 
+          WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101) 
      &      'REAL  7  0    ',display_lighting(iforuseintdfentry(i)),
      &      ' 0.000    400.000  ','Display Lighting (W/m2):'
-          WRITE(iafil,'(1a,F6.3,2a)',IOSTAT=ios,ERR=101) 
-     &      'REAL  8  0    ',dhw_litres(iforuseintdfentry(i)),
+          WRITE(iafil,'(a,F7.2,2a)',IOSTAT=ios,ERR=101) 
+     &      'REAL  8  0   ',dhw_litres(iforuseintdfentry(i)),
      &      ' 0.000    400.000  ','Dom. Hot Water (l/d/m2):'
-          WRITE(iafil,'(1a,F6.3,2a)',IOSTAT=ios,ERR=101) 
+          WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101) 
      &      'REAL  9  0    ',fresh_air(iforuseintdfentry(i)),
      &      ' 0.000    400.000  ','Outdoor air (l/s/pers.):'
           WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101) 
@@ -2667,7 +2699,7 @@ C EDSBMSYS edits the system definition within the UK NCM file.
       common/pophelp/h(60)
       character h*72
       
-      integer IHO,JC,IY  ! positions in menu
+      integer IHO,JC,IY,IIN  ! positions in menu
       integer ICMSYS,NITEMH,KSYS,ITHND,IHSYS,IHCG,ICS,ICNDX
       dimension ITEMH(MCOM+4),KSYS(MHT),ITHND(MPT),PRSSN(MPT)
       character ITEMH*70,D64*64,PRSSN*60
@@ -2911,25 +2943,40 @@ C Ask for ventilation specific fan power SFP if applicable
 C Define system adjustment inputs for ductwork and AHU
             call defLeakage(NCMSYS,IER)
           ELSE
-
-C Ask if there is a supply/extract fun (for nat. ventil. cases only)
-            H(1) ='If supply/extract then additional ventilation '
-            H(2) =' losses will be taken for the heating loads plus'   
-            H(3) =' additional auxiliary loads.'                     
-            CALL EASKAB('Zone ventilation type',
-     &      ' ','Natural','Machanical supply or extract',INatMech,3) 
-            if(INatMech.eq.1)then
-              SFPHS(NCMSYS)=0.0   
-            elseif(INatMech.eq.2)then
-              SFPHS(NCMSYS)=1.5 !1.5 W/l/s is the default in SBEM
-              CALL EASKR(SFPHS(NCMSYS),
-     &        'Enter supply/extract specifc fan power SFP or',
-     &        'accept default (Watts/liter/sec)',
-     &        0.,'F',0.,'-',50.,'sfp mech ',IER,2)              
-            endif      
             duct_tDLd(NCMSYS)=0.0 !assume no ducts for these systems
             AHU_tDLd(NCMSYS)=0.0               
           ENDIF
+
+C Ask if there is a supply/extract fun (for nat. ventil. cases only)
+          H(1) ='If supply/extract then additional ventilation '
+          H(2) ='losses will be taken for the heating loads plus'   
+          H(3) ='additional auxiliary loads.'  		   
+          H(4) =' '
+          H(5) ='Choose centralised system for centralised balanced'
+          H(6) ='mechanical ventilation system including air supplies'
+          H(7) ='to centralised air conditioning system'
+          H(8) =''
+          H(9) ='Choose zonal supply for where the fan in remote from'
+          H(10)='the zone such as ceiling void or roof mounted units'
+          H(11) =''
+          H(12)='Choose zonal extract where the fan is remote from the'
+          H(13)='zone'
+          CALL EASKABCD('Zone ventilation type (see help)',
+     &    ' ','Natural','Centralised balanced',
+     &    'Zonal supply','Zonal extract',Ivent(ncmsys),13)
+          CALL EASKAB('Does system have local ventilation only units',
+     &    'e.g. toilet exhausts ','Yes','No',IIN,1)
+          INatMech=IVENT(NCMSYS)+1
+          IF(IIN.EQ.1)IVENT(NCMSYS)=10+IVENT(NCMSYS)
+          if(INatMech.eq.1)then
+            SFPHS(NCMSYS)=0.0	
+          else
+            SFPHS(NCMSYS)=1.5 !1.5 W/l/s is the default in SBEM
+            CALL EASKR(SFPHS(NCMSYS),
+     &      'Enter supply/extract specifc fan power SFP or',
+     &      'accept default (Watts/liter/sec)',
+     &      0.,'F',0.,'-',50.,'sfp mech ',IER,2)	      
+          endif      
         ELSEIF(JC.EQ.2)THEN
 
 C Delete HVAC and system information
@@ -3000,24 +3047,24 @@ C Edit corresponding heat generator, efficiency and fuel type
         IHGEF(IHO)=ITHND(KSYS(1))
 
 C Display HVAC heat generator exceptions if applicable
- 	IF(IHGEF(IHO).EQ.21)THEN
- 	  H(1)='You will be asked for system efficiency/COP next'
- 	  H(2)='For the district heating option note that default'
- 	  H(3)='emission factor specified in iSBEM v3.4.a is 0.293'
- 	  H(4)='kgCO2/kWh. Default efficiency of the system is '
- 	  H(5)='set to 0.65, this corresponds to natural gas as fuel'
- 	  H(6)='for aforementioned emission factor.'
- 	  CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
- 	  HGEF(IHO)=0.65
- 	ELSEIF(IHGEF(IHO).LE.20.AND.IHGEF(IHO).GE.9)THEN
- 	  H(1)='You will be asked for system efficiency/COP next'
- 	  H(2)='For heat pumps values for natural gas are quoted as'
- 	  H(3)='default values. The same values are applicable to '
- 	  H(4)='oil as well. If electricity is being used as fuel '
- 	  H(5)='then it is appropriate to multiply the COP with 2.5'
- 	  H(6)='(following iSBEM ver 3.4.a)'
- 	  CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
- 	ENDIF
+        IF(IHGEF(IHO).EQ.21)THEN
+          H(1)='You will be asked for system efficiency/COP next'
+          H(2)='For the district heating option note that default'
+          H(3)='emission factor specified in iSBEM v3.4.a is 0.293'
+          H(4)='kgCO2/kWh. Default efficiency of the system is '
+          H(5)='set to 0.65, this corresponds to natural gas as fuel'
+          H(6)='for aforementioned emission factor.'
+          CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
+          HGEF(IHO)=0.65
+        ELSEIF(IHGEF(IHO).LE.20.AND.IHGEF(IHO).GE.9)THEN
+          H(1)='You will be asked for system efficiency/COP next'
+          H(2)='For heat pumps values for natural gas are quoted as'
+          H(3)='default values. The same values are applicable to '
+          H(4)='oil as well. If electricity is being used as fuel '
+          H(5)='then it is appropriate to multiply the COP with 2.5'
+          H(6)='(following iSBEM ver 3.4.a)'
+          CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
+        ENDIF
 
         CALL EASKR(HGEF(IHO),
      &    'Edit heat/cool generator efficiency/COP',' ',
@@ -3108,7 +3155,7 @@ C EDSBMBLD edits the building contact definition within the UK NCM file.
       common/pophelp/h(60)
       character h*72
       DIMENSION ITEMS(33)
-      character HEAD*30,ITEMS*50,D64*64
+      character HEAD*30,ITEMS*50,D64*64,D20*20
       integer INO
             
 C Enter building, owner and verifier information      
@@ -3116,7 +3163,7 @@ C Enter building, owner and verifier information
      &  'Enter/Confirm building, owner and certifier details')
       INO=-1
       ITEMS(1)  = 'a Project name: '
-      write(ITEMS(2),'(2A)') '  ',pjname(1:48)
+      write(ITEMS(2),'(2A)') '  ',pjname(1:20)
       ITEMS(3)  = 'b Building address: '
       write(ITEMS(4),'(2A)') '  ',baddress(1:48)
       ITEMS(5)  = 'c Building city: '
@@ -3170,8 +3217,8 @@ C Produce help text for the menu.
   
 C Building/owner/certifier data description
         H(1)='Input a succinct description of the project name here.'
-        CALL EASKS(pjname,'project name?','(<64 characters)',
-     &    64,D64,'project name',IER,1)
+        CALL EASKS(pjname,'project name?','(20 characters maximum)',
+     &    20,D20,'project name',IER,1)
         call tstamp('>','PRJ: edited project name')
       ELSEIF(INO.EQ.3)THEN
   
@@ -3268,8 +3315,8 @@ C Building/owner/certifier data description
 
 C Enter all information
         H(1)='Input a succinct description of the project name here.'
-        CALL EASKS(pjname,'project name?','(<64 characters)',
-     &    64,D64,'project name',IER,1)
+        CALL EASKS(pjname,'project name?','(20 characters maximum)',
+     &    20,D20,'project name',IER,1)
         H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
      &    64,D64,'build address',IER,1)
@@ -3578,6 +3625,7 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
 
       character KEY*1,outs*124
       character*35 ZITEMS(MCOM+4)
+      CHARACTER*46 CIBSESTR2(4) ! concatenation of no. floors and area
       DIMENSION JSTR(8)
       dimension IVALSS(29)       ! array to get epicks answer from
       dimension iedit(MCOM) !to use for menu and saving of air leakage (ach per zone)
@@ -3641,21 +3689,68 @@ C Enter building permeability
         APCHK='YES'
       ENDIF
 
+C Ask user if CIBSE data is to be used
+      CALL EASKABC(
+     &  'Infer air changes per hour from permeability',
+     &  'value using CIBSE data',
+     &  'yes','no','Do not know',IW,2)
+ 4252 IF(IW.EQ.1)THEN
+        ICIBSE1=1 ; ICIBSE2=1 ; ICIBSE3=1 ! initialise
+        CALL EPICKS(IX,JSTR,' ','CIBSE building selection',
+     &  54,8,CIBSESTR1,'Pick building that best matches model',IER,2)
+        ICIBSE1=JSTR(1)
+        DO 134 IBT=1,4
+          IF(ICIBSESTOR(ICIBSE1,IBT).EQ.0)THEN
+            WRITE(CIBSESTR2(IBT),'(A,1I6)')
+     &      'Area per floor(m2) of ',ICIBSEAREA(ICIBSE1,IBT)
+          ELSEIF(ICIBSEAREA(ICIBSE1,IBT).EQ.0)THEN
+            WRITE(CIBSESTR2(IBT),'(1I4,A)')
+     &      ICIBSESTOR(ICIBSE1,IBT),' storeys '
+          ELSE
+            WRITE(CIBSESTR2(IBT),'(1I4,A,1I6)')
+     &      ICIBSESTOR(ICIBSE1,IBT),' storeys & area per floor(m2) of ',
+     &      ICIBSEAREA(ICIBSE1,IBT)
+          ENDIF
+ 134    CONTINUE
+        CALL EPICKS(IX,JSTR,'Pick storeys and floor area ',
+     &  'per floor that best matches model',
+     &  46,4,CIBSESTR2,'Pick closest storeys and/or floor area',IER,2)
+        ICIBSE2=JSTR(1)
+        
+C Select CIBSE table value that best fits user supplied permeability value
+C Do not worry too much about comparison between reals because table
+C values are approximations
+        IF(BINF50.LT.4.0)THEN      ! nominal permeability value of 3
+          ICIBSE3=5
+        ELSEIF(BINF50.LT.6.5)THEN  ! nominal permeability value of 5
+          ICIBSE3=4
+        ELSEIF(BINF50.LT.8.5)THEN  ! nominal permeability value of 7
+          ICIBSE3=3
+        ELSEIF(BINF50.LT.15.0)THEN ! nominal permeability value of 10
+          ICIBSE3=2
+        ELSE                       ! nominal permeability value of 20
+          ICIBSE3=1
+        ENDIF
+        ACH(IZ)=CIBSEACH(ICIBSE1,ICIBSE2,ICIBSE3)
+        call usrmsg('Appropriate air change rates selected',' ','W')
+      ELSE
+
 C Approximate zone infiltration based on volume unless
 C the user already edited the value.
-      do 231 IZ=1,NCOMP
-        CALL ECLOSE(ACH(IZ),0.,0.001,NEAR)
-        if(iedit(iz).ne.1.OR.NEAR)then
-          if(VOL(IZ).gt.0.)then
-            ACH(IZ)=(10.0*ZBASEA(IZ)/VOL(IZ))/20.0
-          else
-            ACH(IZ)=0.0
-            write(outs,'(2A)')
-     &     'Volume of 0 or negative found in zone: ',zname(IZ)
-            call edisp(itu,outs)      
+        do 231 IZ=1,NCOMP
+          CALL ECLOSE(ACH(IZ),0.,0.001,NEAR)
+          if(iedit(iz).ne.1.OR.NEAR)then
+            if(VOL(IZ).gt.0.)then
+              ACH(IZ)=(10.0*ZBASEA(IZ)/VOL(IZ))/20.0
+            else
+              ACH(IZ)=0.0
+              write(outs,'(2A)')
+     &       'Volume of 0 or negative found in zone: ',zname(IZ)
+              call edisp(itu,outs)      
+            endif
           endif
-        endif
- 231  continue
+ 231    continue
+      ENDIF
          
 C Enter air changes per hour for every zone as air leakage
 C This will be added to the ventilation rates taken from the tdf (as
@@ -3885,13 +3980,16 @@ C Set flag for cfg file that this is a notional model
       INOTI=1
 
 C Assign standard databases containing UK NCM materials and constructions
-C These files are UK_notional.constrdb, material.db3.a and optics.db2 
+C These files are UK_notional.constrdb, material.db3.a and optics.db2
+C and the standard plant template. 
       WRITE(LFMAT,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
      &FS,'databases',FS,'material.db3.a'
       WRITE(LFMUL,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
      &FS,'databases',FS,'UK_notional.constrdb'
       WRITE(LOPTDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
      &FS,'databases',FS,'optics.db2'
+      WRITE(LPCDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
+     &FS,'databases',FS,'plantc.db1'
 
 C Reset path flags so that standard location is not appended (again) to
 C standard database locations
@@ -4912,8 +5010,8 @@ C building as described in SBEM - EPBD documents
       INTEGER IAPPW,IAPPX,IAPPY
 
       INTEGER IER,LNBLNK,IMODE
-      CHARACTER AUT*12,DOIT*248,LONGTFILE*144,LONGTFILEDOS*144,OUTS*124,
-     & TMODE*8
+      CHARACTER AUT*12,DOIT*248,LONGTFILE*144,LONGTFILEDOS*144
+      character OUTS*248,TMODE*8
       LOGICAL CONCAT,UNIXOK
 #ifdef OSX
       integer ICPMOD     ! passed from tchild
@@ -4960,32 +5058,38 @@ C on to child with an offset from prj start position.
      &    longtfile(1:lnblnk(longtfile)),' -p ',
      &    'stripped ',aut
         tmode = 'text '   ! force system call in text mode
+        call edisp248(iuout,doit,100)
       else
-        if(iappw.gt.0.and.iappw.le.200)then
-          write(doit,'(a,3i4,5a)') 'bps -s ',
-     &      iappw,iappx+15,iappy+50,' -file ',
-     &      longtfile(1:lnblnk(longtfile)),' -p ',
-     &      'stripped ',aut
-        else
-          write(doit,'(5a)') 'bps -s 0 0 0 -file ',
-     &      longtfile(1:lnblnk(longtfile)),
-     &      ' -p ','stripped ',aut
-        endif
+        write(doit,'(5a)') 'bps -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -p ',
+     &    'stripped ',aut
+        tmode='graph'
+        call edisp248(iuout,doit,100)
         call tchild(ICPMOD)   ! find out if in text or graphic mode
         call termode(ICPMOD,tmode)
       endif
 
-C Run simulation
+C Run simulation with a message to the user before and after.
       IF(IMODE.EQ.1)THEN      ! simulating stripped building
-        call edisp(iuout,'Simulating stripped model')
+        call edisp(iuout,'Simulating stripped model...')
       ELSEIF(IMODE.EQ.2)THEN  ! simulating notional building
-        call edisp(iuout,'Simulating notional model')
+        call edisp(iuout,'Simulating notional model...')
       ELSEIF(IMODE.EQ.3)THEN  ! simulating reference building
-        call edisp(iuout,'Simulating reference model')
+        call edisp(iuout,'Simulating reference model...')
       ELSEIF(IMODE.EQ.4)THEN  ! simulating typical building
-        call edisp(iuout,'Simulating typical model')
+        call edisp(iuout,'Simulating typical model...')
       ENDIF
       call runit(doit,tmode)
+
+      IF(IMODE.EQ.1)THEN      ! simulating stripped building
+        call edisp(iuout,'Simulating stripped model...done')
+      ELSEIF(IMODE.EQ.2)THEN  ! simulating notional building
+        call edisp(iuout,'Simulating notional model...done')
+      ELSEIF(IMODE.EQ.3)THEN  ! simulating reference building
+        call edisp(iuout,'Simulating reference model...done')
+      ELSEIF(IMODE.EQ.4)THEN  ! simulating typical building
+        call edisp(iuout,'Simulating typical model...done')
+      ENDIF
 
 C Now fill arrays for heating, cooling, DHW, auxiliary energy and
 C lighting for this UK NCM (stripped/notional/reference/typical) model
@@ -5067,73 +5171,87 @@ C Get text file name and initialise variables
 C Individual indices for DHW, heating etc. required because of the way
 C the save level 6 results file is formatted
       ICDHW=1 ; ICHT=1 ; ICCL=1 ; ICLT=1 ; ICAUX=1
-      IZNOVERHEAT=1 
+      IZNOVERHEAT=1
+
+C Read the first line of the file (which is only text).
+      K=0
+      CALL STRIPC(IUR,OUTSTR,99,ND,1,'res 6 line 1',IER)
+
+C Loop until the end of the file detected.
       DO WHILE(.NOT.EOF)
 
 C Set up efficiencies according to Modelling Guide for the various
 C models
+        if(IHLZ(ICHT).eq.0)then
+          Heating_efficiency=0.0
+        else
 
 C Heated and Mechanically ventilated
-        IF(INCMSYS(IHLZ(ICHT)).EQ.4)THEN
-          IF(IMODE.EQ.2)THEN
-            Heating_efficiency=0.78
-          ELSEIF(IMODE.EQ.3)THEN
-            Heating_efficiency=0.73
-          ELSEIF(IMODE.EQ.4)THEN
-            Heating_efficiency=0.55
-          ENDIF
+          IF(INCMSYS(IHLZ(ICHT)).EQ.4)THEN
+            IF(IMODE.EQ.2)THEN
+              Heating_efficiency=0.78
+            ELSEIF(IMODE.EQ.3)THEN
+              Heating_efficiency=0.73
+            ELSEIF(IMODE.EQ.4)THEN
+              Heating_efficiency=0.55
+            ENDIF
 
 C Heated and naturally ventilated (or heated only)
-        ELSEIF(INCMSYS(IHLZ(ICHT)).LE.11)THEN
-          IF(IMODE.EQ.2)THEN
-            Heating_efficiency=0.73
-          ELSEIF(IMODE.EQ.3)THEN
-            Heating_efficiency=0.73
-          ELSEIF(IMODE.EQ.4)THEN
-            Heating_efficiency=0.55
-          ENDIF
+          ELSEIF(INCMSYS(IHLZ(ICHT)).LE.11)THEN
+            IF(IMODE.EQ.2)THEN
+              Heating_efficiency=0.73
+            ELSEIF(IMODE.EQ.3)THEN
+              Heating_efficiency=0.73
+            ELSEIF(IMODE.EQ.4)THEN
+              Heating_efficiency=0.55
+            ENDIF
 
 C Air conditioned
-        ELSE
-          IF(IMODE.EQ.2)THEN
-            Heating_efficiency=0.83
-          ELSEIF(IMODE.EQ.3)THEN
-            Heating_efficiency=0.73
-          ELSEIF(IMODE.EQ.4)THEN
-            Heating_efficiency=0.55
+          ELSE
+            IF(IMODE.EQ.2)THEN
+              Heating_efficiency=0.83
+            ELSEIF(IMODE.EQ.3)THEN
+              Heating_efficiency=0.73
+            ELSEIF(IMODE.EQ.4)THEN
+              Heating_efficiency=0.55
+            ENDIF
           ENDIF
-        ENDIF
+        endif
 
-C Heated and Mechanically ventilated
-        IF(INCMSYS(IHLZ(ICCL)).EQ.4)THEN
-          IF(IMODE.EQ.2)THEN
-            Cooling_efficiency=0.
-          ELSEIF(IMODE.EQ.3)THEN
-            Cooling_efficiency=2.25
-          ELSEIF(IMODE.EQ.4)THEN
-            Cooling_efficiency=0.
-          ENDIF
+C Heated and Mechanically ventilated.
+        if(IHLZ(ICCL).eq.0)then
+          Cooling_efficiency=0.  ! if no system set eff to zero
+        else
+          IF(INCMSYS(IHLZ(ICCL)).EQ.4)THEN
+            IF(IMODE.EQ.2)THEN
+              Cooling_efficiency=0.
+            ELSEIF(IMODE.EQ.3)THEN
+              Cooling_efficiency=2.25
+            ELSEIF(IMODE.EQ.4)THEN
+              Cooling_efficiency=0.
+            ENDIF
 
 C Heated and naturally ventilated (or heated only)
-        ELSEIF(INCMSYS(IHLZ(ICCL)).LE.11)THEN
-          IF(IMODE.EQ.2)THEN
-            Cooling_efficiency=0.
-          ELSEIF(IMODE.EQ.3)THEN
-            Cooling_efficiency=2.25
-          ELSEIF(IMODE.EQ.4)THEN
-            Cooling_efficiency=0.
-          ENDIF
+          ELSEIF(INCMSYS(IHLZ(ICCL)).LE.11)THEN
+            IF(IMODE.EQ.2)THEN
+              Cooling_efficiency=0.
+            ELSEIF(IMODE.EQ.3)THEN
+              Cooling_efficiency=2.25
+            ELSEIF(IMODE.EQ.4)THEN
+              Cooling_efficiency=0.
+            ENDIF
 
 C Air conditioned
-        ELSE
-          IF(IMODE.EQ.2)THEN
-            Cooling_efficiency=1.67
-          ELSEIF(IMODE.EQ.3)THEN
-            Cooling_efficiency=2.25
-          ELSEIF(IMODE.EQ.4)THEN
-            Cooling_efficiency=1.17
+          ELSE
+            IF(IMODE.EQ.2)THEN
+              Cooling_efficiency=1.67
+            ELSEIF(IMODE.EQ.3)THEN
+              Cooling_efficiency=2.25
+            ELSEIF(IMODE.EQ.4)THEN
+              Cooling_efficiency=1.17
+            ENDIF
           ENDIF
-        ENDIF
+        endif
 
         IF(IMODE.EQ.1)THEN
           IF(IDHWLZ(ICDHW).EQ.0)IDHWLZ(ICDHW)=-1*IHLZ(ICDHW)
@@ -5148,8 +5266,16 @@ C Air conditioned
             Heating_efficiency=0.73
             Cooling_efficiency=2.25
           else
-            Heating_efficiency=HGEF(IHLZ(ICHT))
-            Cooling_efficiency=CGEF(IHLZ(ICCL))
+            if(IHLZ(ICHT).eq.0)then
+              Heating_efficiency=0.0
+            else
+              Heating_efficiency=HGEF(IHLZ(ICHT))
+            endif
+            if(IHLZ(ICCL).eq.0)then
+              Cooling_efficiency=0.0
+            else
+              Cooling_efficiency=CGEF(IHLZ(ICCL))
+            endif
           endif
         ELSE
           IF(IDHWLZ(ICDHW).EQ.0)IDHWLZ(ICDHW)=-1*IHLZ(ICDHW)
@@ -5165,9 +5291,10 @@ C Air conditioned
 C If DSM testing then DHW efficiency is always 45%
         if(iDsmTestingFlag.gt.0)DHW_efficiency=0.45 
         
-C Expect to find three strings and one real on each line
+C Expect to find three strings and one real on each line. The first
+C line of the file is only for documentation. 
         K=0
-        CALL STRIPC(IUR,OUTSTR,99,ND,1,'res 6 line 1',IER)
+        CALL STRIPC(IUR,OUTSTR,99,ND,1,'res 6 line 2+',IER)
         CALL EGETW(OUTSTR,K,WORD1,'W','res 6 first word',IER)
         CALL EGETW(OUTSTR,K,WORD2,'W','res 6 second word',IER)
         CALL EGETW(OUTSTR,K,WORD3,'W','res 6 third word',IER)
@@ -5180,15 +5307,19 @@ C Get month no. for DHW, aux and lights
         IF(WORD3(1:9).EQ.'z_Aux_Mon')THEN
           Istart=13 ; Ifinish=14
           Getmonth=.true.
-        ELSEIF(WORD3(1:12).EQ.'z_DHW_Month_'.AND.
-     &         (WORD3(15:17).EQ.'kWh'.OR.WORD3(16:18).EQ.'kWh'))THEN
-          Istart=13 ; Ifinish=14
-          Getmonth=.true.
+        ELSEIF(WORD3(1:12).EQ.'z_DHW_Month_')then
+
+C z_DHW_Month_ can be followed by kWh or MJ.
+          if(WORD3(15:17).EQ.'kWh'.OR.WORD3(16:18).EQ.'kWh'.or.
+     &       WORD3(15:16).EQ.'MJ'.OR.WORD3(16:17).EQ.'MJ')THEN
+            Istart=13 ; Ifinish=14
+            Getmonth=.true.
+          endif
         ELSEIF(WORD3(1:9).EQ.'z_Lights')THEN
           Istart=16 ; Ifinish=17
           Getmonth=.true.
         ENDIF
-        TWOL=WORD3(Istart:Ifinish)
+        TWOL=WORD3(Istart:Ifinish)  ! copy out the two characters for month
         IF(Getmonth)THEN
           IF(TWOL.EQ.'1_')THEN
             IM=1
@@ -5219,6 +5350,9 @@ C Get month no. for DHW, aux and lights
           ENDIF
         ENDIF
 
+C Debug.
+C        write(6,*) IM,'word3 is ',WORD3
+
 C Get monthly lighting loads
         IF(WORD3(1:14).EQ.'z_Lights_Month')THEN
           Light_Supply(IM)=Light_Supply(IM)+VALZ          
@@ -5229,7 +5363,7 @@ C Get monthly auxiliary loads
           Aux_Supply(IM)=Aux_Supply(IM)+VALZ          
           total_Aux=total_Aux+VALZ
 
-C Get monthly DHW loads
+C Get monthly DHW loads (if expressed in kWh).
         ELSEIF(WORD3(1:12).EQ.'z_DHW_Month_'.AND.
      &         (WORD3(15:17).EQ.'kWh'.OR.WORD3(16:18).EQ.'kWh'))THEN
           DHW_Demand(IM)=DHW_Demand(IM)+VALZ
@@ -5797,10 +5931,37 @@ c Integrate for total energy
       DO 60 ICOMP=1,NCOMP
         TBASEA=TBASEA+ZBASEA(ICOMP)
  60   CONTINUE
+
+C Debug.
+C      write(6,*) 'prior to call to berter '
+C      write(6,*) 'monthly heating demand ',Heat_Demand
+C      write(6,*) 'monthly heating supply ',Heat_Supply
+C      write(6,*) 'total heat s',total_Heat_S
+C      write(6,*) 'monthly cooling demand ',Cool_Demand
+C      write(6,*) 'monthly cooling supply ',Cool_Supply
+C      write(6,*) 'total cool s',total_Cool_S
+C      write(6,*) 'bercool ',bercool
+C      write(6,*) 'berheat ',berheat
+C      write(6,*) 'aerheat ',aerheat
+C      write(6,*) 'AER is ',AER
+
       IF(iDsmTestingFlag.GT.0)THEN
 
 c Call BERTER for calculating BER if in iDSM mode
         CALL BERTER(IER)
+
+C Debug.
+C      write(6,*) 'after call to berter '
+C      write(6,*) 'monthly heating demand ',Heat_Demand
+C      write(6,*) 'monthly heating supply ',Heat_Supply
+C      write(6,*) 'total heat s',total_Heat_S
+C      write(6,*) 'monthly cooling demand ',Cool_Demand
+C      write(6,*) 'monthly cooling supply ',Cool_Supply
+C      write(6,*) 'total cool s',total_Cool_S
+C      write(6,*) 'bercool ',bercool
+C      write(6,*) 'berheat ',berheat
+C      write(6,*) 'aerheat ',aerheat
+C      write(6,*) 'AER is ',AER
 
         IF(IMODE.EQ.1)THEN
           write(98,*)'writing,stripped,model,from,file ',LTXTF,',,,,'
@@ -5853,215 +6014,215 @@ c Call BERTER for calculating BER if in iDSM mode
 
 C Write summary Latex input text
         IF(IMODE.EQ.1)THEN
+          write(91,*)"\\multicolumn{8}{|c|}{Actual model (annual results
+     &)} \\\\"
+          write(91,*)"\\hline"
+          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+     &ts & Gas & Electricity \\\\"
+          write(91,*)"\\hline"
+          write(91,'(f6.2,7(a,f6.2),a)')BER,
+     &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
+          write(91,*)"\\hline"
+          write(91,*)"\\multicolumn{8}{|c|}{ }\\\\"
+          write(91,*)"\\hline"
+        ELSEIF(IMODE.EQ.2)THEN
+          write(91,*)""
           write(91,*)"\\hline"
           write(91,*)"CO2 $kg/m^{2}$ & \\multicolumn{7}{|c|}{Energy $kWh
      &/m^{2}$} \\\\"
           write(91,*)"\\hline"
-          write(91,*)"\\multicolumn{8}{|c|}{Actual model (annual results
-     &)} \\\\"
-          write(91,*)"\\hline"
-	  write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
-	  write(91,*)"\\hline"
-	  write(91,'(f6.2,7(a,f6.2),a)')BER,
-     &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)"\\multicolumn{8}{|c|}{ }\\\\"
-	  write(91,*)"\\hline"
-	ELSEIF(IMODE.EQ.2)THEN
-	  write(91,*)""
-	  write(91,*)"\\multicolumn{8}{|c|}{Notional model (annual resul
+          write(91,*)"\\multicolumn{8}{|c|}{Notional model (annual resul
      &ts)} \\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(91,*)"\\hline"
+          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(91,*)"\\hline"
-	  write(91,'(f6.2,7(a,f6.2),a)')AER,
+          write(91,*)"\\hline"
+          write(91,'(f6.2,7(a,f6.2),a)')AER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)"\\multicolumn{8}{|c|}{ }\\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)""
-	ELSEIF(IMODE.EQ.3)THEN
-	  write(91,*)"\\multicolumn{8}{|c|}{Reference model (annual resu
+          write(91,*)"\\hline"
+          write(91,*)"\\multicolumn{8}{|c|}{ }\\\\"
+          write(91,*)"\\hline"
+          write(91,*)""
+        ELSEIF(IMODE.EQ.3)THEN
+          write(91,*)"\\multicolumn{8}{|c|}{Reference model (annual resu
      &lts)} \\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(91,*)"\\hline"
+          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(91,*)"\\hline"
-	  write(91,'(f6.2,7(a,f6.2),a)')RER,
+          write(91,*)"\\hline"
+          write(91,'(f6.2,7(a,f6.2),a)')RER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
-	  write(91,*)"\\hline"
+          write(91,*)"\\hline"
         ENDIF
 
 C Write detailed Latex input file
         IF(IMODE.EQ.1)THEN
-	  write(92,*)"\\hline"
-	  write(92,*)"\\multicolumn{8}{|c|}{Actual model Energy $kWh/m^{
+          write(92,*)"\\hline"
+          write(92,*)"\\multicolumn{8}{|c|}{Actual model Energy $kWh/m^{
      &2}$} \\\\"
-	  write(92,*)"\\hline"
-	  write(92,*)"Month & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(92,*)"\\hline"
+          write(92,*)"Month & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
      &" & ",X(1)," & ",Y(1)," & ",Z(1),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Feb & ",T(2)," & ",U(2)," & ",V(2)," & ",W(2),
      &" & ",X(2)," & ",Y(2)," & ",Z(2),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Mar & ",T(3)," & ",U(3)," & ",V(3)," & ",W(3),
      &" & ",X(3)," & ",Y(3)," & ",Z(3),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Apr & ",T(4)," & ",U(4)," & ",V(4)," & ",W(4),
      &" & ",X(4)," & ",Y(4)," & ",Z(4),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"May & ",T(5)," & ",U(5)," & ",V(5)," & ",W(5),
      &" & ",X(5)," & ",Y(5)," & ",Z(5),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jun & ",T(6)," & ",U(6)," & ",V(6)," & ",W(6),
      &" & ",X(6)," & ",Y(6)," & ",Z(6),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jul & ",T(7)," & ",U(7)," & ",V(7)," & ",W(7),
      &" & ",X(7)," & ",Y(7)," & ",Z(7),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Aug & ",T(8)," & ",U(8)," & ",V(8)," & ",W(8),
      &" & ",X(8)," & ",Y(8)," & ",Z(8),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Sep & ",T(9)," & ",U(9)," & ",V(9)," & ",W(9),
      &" & ",X(9)," & ",Y(9)," & ",Z(9),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Oct & ",T(10)," & ",U(10)," & ",V(10)," & ",W(10),
      &" & ",X(10)," & ",Y(10)," & ",Z(10),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Nov & ",T(11)," & ",U(11)," & ",V(11)," & ",W(11),
      &" & ",X(11)," & ",Y(11)," & ",Z(11),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Dec & ",T(12)," & ",U(12)," & ",V(12)," & ",W(12),
      &" & ",X(12)," & ",Y(12)," & ",Z(12),"\\\\"
-	  write(92,*)"\\hline"
-	ELSEIF(IMODE.EQ.2)THEN
-	  write(92,*)"\\multicolumn{8}{|c|}{Notional model Energy $kWh/m
+          write(92,*)"\\hline"
+        ELSEIF(IMODE.EQ.2)THEN
+          write(92,*)"\\multicolumn{8}{|c|}{Notional model Energy $kWh/m
      &^{2}$} \\\\"
-	  write(92,*)"\\hline"
-	  write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(92,*)"\\hline"
+          write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
      &" & ",X(1)," & ",Y(1)," & ",Z(1),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Feb & ",T(2)," & ",U(2)," & ",V(2)," & ",W(2),
      &" & ",X(2)," & ",Y(2)," & ",Z(2),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Mar & ",T(3)," & ",U(3)," & ",V(3)," & ",W(3),
      &" & ",X(3)," & ",Y(3)," & ",Z(3),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Apr & ",T(4)," & ",U(4)," & ",V(4)," & ",W(4),
      &" & ",X(4)," & ",Y(4)," & ",Z(4),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"May & ",T(5)," & ",U(5)," & ",V(5)," & ",W(5),
      &" & ",X(5)," & ",Y(5)," & ",Z(5),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jun & ",T(6)," & ",U(6)," & ",V(6)," & ",W(6),
      &" & ",X(6)," & ",Y(6)," & ",Z(6),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jul & ",T(7)," & ",U(7)," & ",V(7)," & ",W(7),
      &" & ",X(7)," & ",Y(7)," & ",Z(7),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Aug & ",T(8)," & ",U(8)," & ",V(8)," & ",W(8),
      &" & ",X(8)," & ",Y(8)," & ",Z(8),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Sep & ",T(9)," & ",U(9)," & ",V(9)," & ",W(9),
      &" & ",X(9)," & ",Y(9)," & ",Z(9),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Oct & ",T(10)," & ",U(10)," & ",V(10)," & ",W(10),
      &" & ",X(10)," & ",Y(10)," & ",Z(10),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Nov & ",T(11)," & ",U(11)," & ",V(11)," & ",W(11),
      &" & ",X(11)," & ",Y(11)," & ",Z(11),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Dec & ",T(12)," & ",U(12)," & ",V(12)," & ",W(12),
      &" & ",X(12)," & ",Y(12)," & ",Z(12),"\\\\"
-	  write(92,*)"\\hline"
-	ELSEIF(IMODE.EQ.3)THEN
-	  write(92,*)"\\multicolumn{8}{|c|}{Reference model Energy $kWh/
+          write(92,*)"\\hline"
+        ELSEIF(IMODE.EQ.3)THEN
+          write(92,*)"\\multicolumn{8}{|c|}{Reference model Energy $kWh/
      &m^{2}$} \\\\"
-	  write(92,*)"\\hline"
-	  write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(92,*)"\\hline"
+          write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
      &" & ",X(1)," & ",Y(1)," & ",Z(1),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Feb & ",T(2)," & ",U(2)," & ",V(2)," & ",W(2),
      &" & ",X(2)," & ",Y(2)," & ",Z(2),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Mar & ",T(3)," & ",U(3)," & ",V(3)," & ",W(3),
      &" & ",X(3)," & ",Y(3)," & ",Z(3),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Apr & ",T(4)," & ",U(4)," & ",V(4)," & ",W(4),
      &" & ",X(4)," & ",Y(4)," & ",Z(4),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"May & ",T(5)," & ",U(5)," & ",V(5)," & ",W(5),
      &" & ",X(5)," & ",Y(5)," & ",Z(5),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jun & ",T(6)," & ",U(6)," & ",V(6)," & ",W(6),
      &" & ",X(6)," & ",Y(6)," & ",Z(6),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jul & ",T(7)," & ",U(7)," & ",V(7)," & ",W(7),
      &" & ",X(7)," & ",Y(7)," & ",Z(7),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Aug & ",T(8)," & ",U(8)," & ",V(8)," & ",W(8),
      &" & ",X(8)," & ",Y(8)," & ",Z(8),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Sep & ",T(9)," & ",U(9)," & ",V(9)," & ",W(9),
      &" & ",X(9)," & ",Y(9)," & ",Z(9),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Oct & ",T(10)," & ",U(10)," & ",V(10)," & ",W(10),
      &" & ",X(10)," & ",Y(10)," & ",Z(10),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Nov & ",T(11)," & ",U(11)," & ",V(11)," & ",W(11),
      &" & ",X(11)," & ",Y(11)," & ",Z(11),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Dec & ",T(12)," & ",U(12)," & ",V(12)," & ",W(12),
      &" & ",X(12)," & ",Y(12)," & ",Z(12),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,*)""
+          write(92,*)"\\hline"
+          write(92,*)""
         ENDIF
       ENDIF
       RETURN
@@ -6133,6 +6294,8 @@ C       REAL RER_HEAT,RER_COOL,RER_AUX,RER_HEATCO2,RER_COOLCO2
 C       REAL RER_AUXCO2
 
 C Initialise
+      AER=0. ; AERE=0. ; RER=0. 
+      BER=0. ; BERE=0. ; TyER=0.
       BER_HEAT=0.0 ; BER_HEATCO2=0.0 ; BER_COOL=0.0 ; BER_COOLCO2=0.0
       BER_AUX=0.0 ; BER_AUXCO2=0.0 ; BER_LIGHT=0.0 ; BER_LIGHTCO2=0.0
       BER_DHW=0.0 ; BER_DHWCO2=0.0
@@ -6150,12 +6313,15 @@ C Initialise
       ITDH=0
       Ren_energy=0.0
       DO 10 IFT=1,MFT
-        FHM(IFT)=0.0
-        BERF(IFT)=0.0
-        AERF(IFT)=0.0
-        RERF(IFT)=0.0
-        TyERF(IFT)=0.0      
+        FHM(IFT)=0.0 ; BERF(IFT)=0.0 ; AERF(IFT)=0.0 
+        RERF(IFT)=0.0 ; TyERF(IFT)=0.0      
  10   CONTINUE
+      DO 11 IFT=1,MNS
+        BERSH(IFT)=0.0 ; BERSC(IFT)=0.0 ; BERSA(IFT)=0.0
+        AERSH(IFT)=0.0 ; AERSC(IFT)=0.0 ; AERSA(IFT)=0.0
+        RERSH(IFT)=0.0 ; RERSC(IFT)=0.0 ; RERSA(IFT)=0.0
+        TYERSH(IFT)=0.0 ; TyERSC(IFT)=0.0 ; TyERSA(IFT)=0.0
+ 11   CONTINUE
       Q_ses=0.0 ; TLOAD=0.0 ; Q_pv=0.0 ; PVDCO2=0.0 ; KR=0.0 ; Z0=0.0
       K_wt=0.0 ; Q_wt=0.0 ; WTDCO2=0.0 ; THEAT=0.0 ; TDHW=0.0 ; FR=0.0
       CHPGCO2=0.0 ; E=0.0 ; CHPDCO2=0.0
@@ -6197,7 +6363,7 @@ C Interpolate across inclination
             X=(X1*(Q-ANG_I)+X2*(ANG_I-P))/(Q-P)
           ENDIF
           IF(NRENTYPE(IREN).EQ.1)THEN 
-	  
+  
 C Solar thermal
 C Calculate energy according to SBEM technical manual
             Q_ses=X*0.38*RENDATA(IREN,2)
@@ -6341,7 +6507,7 @@ C Integrating for total energy
 
 C Integrating for total CO2 emissions
         BER_HEATCO2=BER_HEATCO2+
-     &  BERHEAT_afterefficiency(ICOMP)*FUELCO2(IFTYP(IHLZP))
+     &    BERHEAT_afterefficiency(ICOMP)*FUELCO2(IFTYP(IHLZP))
 
 C Integrating for fuel type
         BERF(IFTYP(IHLZP))=
@@ -6356,7 +6522,7 @@ C Hold heating energy based on fuel type (to work out main heating fuel)
 
 C Cooling energy is always supplied by electricity type (10).
 C Only if a coolth generator is associated with this zone
-        BERCOOL(ICOMP)=-1.*BERCOOL(ICOMP)
+        BERCOOL(ICOMP)=ABS(BERCOOL(ICOMP))
         NEAR=.FALSE.
         CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
         IF(.NOT.NEAR)THEN
@@ -6389,11 +6555,11 @@ C user had not defined it warn the user and assume DHW is supplied from
 C HVAC system.
         IF(IDHWLZ(ICOMP).EQ.0)THEN
           WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
-     &    ZNAME(ICOMP)
+     &      ZNAME(ICOMP)
           CALL EDISP(IUOUT,OUTS)
           OUTS=' '
           write(outs,'(2A)')' Assuming DHW supplied from ',
-     &    HVACNAME(IHLZP)
+     &      HVACNAME(IHLZP)
           CALL EDISP(IUOUT,OUTS)
           IDHWLZ(ICOMP)=-1*IHLZP
         ENDIF
@@ -6463,7 +6629,7 @@ C Normalise by floor area
 C Assuming that there are MFT fuel types.
       DO 1001 IHF=1,MFT
         call eclose(BERF(IHF),0.00,0.01,close)
-	if(close)then
+        if(close)then
           continue
         else
           BERF(IHF)=BERF(IHF)/TBASEA
@@ -6518,13 +6684,13 @@ C Heating energy
         AERHEAT_afterefficiency(ICOMP)=AERHEAT(ICOMP)/HeatSCoP_N(IHLZP)
         AER_HEAT=AER_HEAT+AERHEAT_afterefficiency(ICOMP)
         AER_HEATCO2=AER_HEATCO2+
-     &  AERHEAT_afterefficiency(ICOMP)*FUELCO2(NHF)
+     &    AERHEAT_afterefficiency(ICOMP)*FUELCO2(NHF)
         AERF(NHF)=AERF(NHF)+AERHEAT_afterefficiency(ICOMP)
         AERSH(IHLZP)=AERSH(IHLZP)+AERHEAT_afterefficiency(ICOMP)
 
 C Cooling energy only if a coolth generator is associated with this zone
 C Cooling energy is always supplied by electricity type (10).
-        AERCOOL(ICOMP)=-1.*AERCOOL(ICOMP)
+        AERCOOL(ICOMP)=ABS(AERCOOL(ICOMP))
         NEAR=.FALSE.
         CALL ECLOSE(CoolSSEER_N(IHLZP),0.0,0.001,NEAR)
         IF(.NOT.NEAR)THEN
@@ -6579,12 +6745,12 @@ C Auxiliary energy
 
 C Get zonal CO2 emissions for calculation of Improvement Factor
         ZCO2N(ICOMP)=AERHEAT_afterefficiency(ICOMP)*FUELCO2(NHF)+
-     &  AERCOOL_afterefficiency(ICOMP)*FUELCO2(10)+
-     &  AERDHW_afterefficiency(ICOMP)*DHWCO2RATE+
-     &  AERLIGHT(ICOMP)*FUELCO2(10)+AERAUX(ICOMP)*FUELCO2(10)
+     &    AERCOOL_afterefficiency(ICOMP)*FUELCO2(10)+
+     &    AERDHW_afterefficiency(ICOMP)*DHWCO2RATE+
+     &    AERLIGHT(ICOMP)*FUELCO2(10)+AERAUX(ICOMP)*FUELCO2(10)
  200  CONTINUE
 
-C Calculation of emissions and total energy for notional model
+C Calculation of emissions and AER (total energy for notional model)
       AERE=AER_HEAT+AER_COOL+AER_DHW+AER_LIGHT+AER_AUX
       AER=AER_HEATCO2+AER_COOLCO2+AER_DHWCO2+AER_LIGHTCO2+AER_AUXCO2
 
@@ -6680,7 +6846,7 @@ C Heating and hot water are always supplied by Natural Gas for reference buildin
         RER_DHWCO2=RER_DHWCO2+RERDHW_afterefficiency(ICOMP)*DHWCO2RATE
                 
 C Cooling energy is always supplied by electricity type (10). 
-        RERCOOL(ICOMP)=-1.*RERCOOL(ICOMP)
+        RERCOOL(ICOMP)=ABS(RERCOOL(ICOMP))
         RERCOOL_afterefficiency(ICOMP)=RERCOOL(ICOMP)/CoolSSEER_R(IHLZP)
         RER_COOL=RER_COOL+RERCOOL_afterefficiency(ICOMP)
         RER_COOLCO2=RER_COOLCO2+
@@ -6760,14 +6926,14 @@ C Heating energy
      &    TyERHEAT(ICOMP)/HeatSCoP_T(IHLZP)
         TyER_HEAT=TyER_HEAT+TyERHEAT_afterefficiency(ICOMP)
         TyER_HEATCO2=TyER_HEATCO2+
-     &  TyERHEAT_afterefficiency(ICOMP)*FUELCO2(1)
+     &    TyERHEAT_afterefficiency(ICOMP)*FUELCO2(1)
 
 C Heating and hot water are always supplied by Natural Gas for typical building (NHF=1)
         TyERF(1)=TyERF(1)+TyERHEAT_afterefficiency(ICOMP)  
         TyERSH(IHLZP)=TyERSH(IHLZP)+TyERHEAT_afterefficiency(ICOMP)
         
 C Cooling energy only if a coolth generator is associated with this zone
-        TyERCOOL(ICOMP)=-1.*TyERCOOL(ICOMP)
+        TyERCOOL(ICOMP)=ABS(TyERCOOL(ICOMP))
         NEAR=.FALSE.
         CALL ECLOSE(CoolSSEER_T(IHLZP),0.0,0.001,NEAR)
         IF(.NOT.NEAR)THEN
@@ -7009,56 +7175,56 @@ C Building, owner, certifier detail...
       ENDIF
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '$'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) 
-     &'$ Compliance input file for BR PART L 2006'
+     &  '$ Compliance input file for BR PART L 2006'
       WRITE(IUF,'(a)',iostat=ios)  '$ ESP-r -> BRUKL 3.2.b'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '$'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '"BRUKL-PROJECT" = GENERAL'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  P-NAME             = ',
-     &'"',pjname(1:lnblnk(pjname)),'"'
+     &  '"',pjname(1:lnblnk(pjname)),'"'
       IF(IBUSERTYP.NE.0)THEN
         TMPSTR2=BTYPNAME(IBUSERTYP)
       ELSE
         TMPSTR2='Building type not defined (yet)'
       ENDIF
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'  B-TYPE             = ',
-     &TMPSTR2(1:LNBLNK(TMPSTR2))
+     &  TMPSTR2(1:LNBLNK(TMPSTR2))
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  B-ADDRESS          = ',
-     &'"',BADDRESS(1:lnblnk(BADDRESS)),'"'
+     &  '"',BADDRESS(1:lnblnk(BADDRESS)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  B-CITY             = ',
-     &'"',BCITY(1:lnblnk(BCITY)),'"'
+     &  '"',BCITY(1:lnblnk(BCITY)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  B-POSTCODE         = ',
-     &'"',BUILDINGPC(1:lnblnk(BUILDINGPC)),'"'
+     &  '"',BUILDINGPC(1:lnblnk(BUILDINGPC)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  O-NAME             = ',
-     &'"',ownername(1:lnblnk(ownername)),'"'
+     &  '"',ownername(1:lnblnk(ownername)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  O-TELEPHONE        = ',
-     &'"',ownertel(1:lnblnk(ownertel)),'"'
+     &  '"',ownertel(1:lnblnk(ownertel)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  O-ADDRESS          = ',
-     &'"',owneraddr(1:lnblnk(owneraddr)),'"'
+     &  '"',owneraddr(1:lnblnk(owneraddr)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  O-CITY             = ',
-     &'"',ownercity(1:lnblnk(ownercity)),'"'
+     &  '"',ownercity(1:lnblnk(ownercity)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  O-POSTCODE         = ',
-     &'"',ownerPC(1:lnblnk(ownerPC)),'"'
+     &  '"',ownerPC(1:lnblnk(ownerPC)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  C-NAME             = ',
-     &'"',certifname(1:lnblnk(certifname)),'"'
+     &  '"',certifname(1:lnblnk(certifname)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  C-TELEPHONE        = ',
-     &'"',certTel(1:lnblnk(certTel)),'"'
+     &  '"',certTel(1:lnblnk(certTel)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  C-ADDRESS          = ',
-     &'"',certaddress(1:lnblnk(certaddress)),'"'
+     &  '"',certaddress(1:lnblnk(certaddress)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  C-CITY             = ',
-     &'"',certcity(1:lnblnk(certcity)),'"'
+     &  '"',certcity(1:lnblnk(certcity)),'"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  C-POSTCODE         = ',
-     &'"',certPC(1:lnblnk(certPC)),'"'
+     &  '"',certPC(1:lnblnk(certPC)),'"'
 
 C Calculation engine and interface detail...
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'  CENGINE            = ',
-     &'"ESP-r"'
+     &  '"ESP-r"'
       WRITE(IUF,'(6A)',IOSTAT=IOS,ERR=3)'  CENGINE-VERSION    = ',
-     &cBranch(1:lnblnk(cBranch)),'@r',
+     &  cBranch(1:lnblnk(cBranch)),'@r',
      &cRevision(1:lnblnk(cRevision)),' ',cState(1:lnblnk(cState))
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)'  INTERFACE          = ',
-     &'"ESP-r Project Manager"'
+     &  '"ESP-r Project Manager"'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)'  INTERFACE-VERSION  = ',
-     &'"',cRelease_num(1:lnblnk(cRelease_num)),'"'
+     &  '"',cRelease_num(1:lnblnk(cRelease_num)),'"'
       WRITE(IUF,'(a)',iostat=ios)       '  ..'
       WRITE(IUF,'(2a)',iostat=ios) '"ESP-r" = ','COMPLIANCE'
       WRITE(IUF,'(2a)',iostat=ios)      '  TYPE               = ',
@@ -7069,7 +7235,7 @@ C Calculation engine and interface detail...
 C Enter Scottish building information if applicable
       IF(ISBT.NE.0)THEN
         WRITE(IUF,'(2a)',iostat=ios)    '  BR-S6-BTYPE        = ',
-     &  SBTYP(ISBT)(1:LNBLNK(SBTYP(ISBT)))
+     &    SBTYP(ISBT)(1:LNBLNK(SBTYP(ISBT)))
         WRITE(IUF,'(2a)',iostat=ios)    '  BR-S6-ACCRED-CONST = ',SBREF
       ENDIF
 
@@ -7267,7 +7433,7 @@ C Write information for walls
      &    WALL_MAX_N
       else     
         WRITE(IUF,'(2a)',iostat=ios)    '  WALL-MAX           = ',
-     &  '"No external walls in project"'
+     &    '"No external walls in project"'
       endif
 
 C write out information for floors
@@ -7363,11 +7529,11 @@ C DHW checks
       DO 40 IDHWSYS=1,NDHWSYS
         TMPSTR2=DHWNAME(IDHWSYS)
         write(iuf,'(3a)',iostat=ios)'"',TMPSTR2(1:LNBLNK(TMPSTR2)),
-     &  '" = CHECK2-DHW'
+     &    '" = CHECK2-DHW'
         write(iuf,'(a,I5)',iostat=ios)  '  HVACGUIDE-DHW      = ',
-     &   IBRUKW(IDHWSYS)
+     &    IBRUKW(IDHWSYS)
         write(iuf,'(a,F6.3)',iostat=ios)'  DHW-ACT-EFF        = ',
-     &   HWEF(IDHWSYS)
+     &    HWEF(IDHWSYS)
         WRITE(IUF,'(a)',iostat=ios)     '  ..'
  40   CONTINUE
 
@@ -7407,7 +7573,7 @@ C Check if we have data for this combination of IBRUKLC.
         else
           IBRUK=0
         endif
-	
+
         IF(IBRUK.LE.0)IBRUK=-5555
         IF(INCMSYS(ICMSYS).LE.11)IBRUK=-1111
         WRITE(IUF,'(a,I5)',iostat=ios)  '  HVACGUIDE-COOL     = ',IBRUK
@@ -7419,7 +7585,7 @@ C Check if we have data for this combination of IBRUKLC.
           WRITE(IUF,'(a)',iostat=ios)   '  SFP-ACT            = -6666'
         ELSE
           WRITE(IUF,'(a,F6.3)',iostat=ios)'  SFP-ACT            = ',
-     &    TMPREAL
+     &      TMPREAL
         ENDIF
         WRITE(IUF,'(a)',iostat=ios)     '  ..'
  20   CONTINUE
@@ -7430,7 +7596,7 @@ C If Scottish building regulations, skip checks 3 to 6 inclusive
 C Write remainder of the check information
         do 30 iz=1, ncomp
           WRITE(IUF,'(3a)',iostat=ios) '"',
-     &    zname(iz)(1:lnzname(IZ)),'" = CHECK3'
+     &      zname(iz)(1:lnzname(IZ)),'" = CHECK3'
 
 C Rules for overheating are based on NCM modelling Guide v4d.
           call eclose(prcnt_Overheat(iz),0.5,0.0001,ISNEAR)
@@ -7615,7 +7781,7 @@ C Section for each HVAC system
           TMPSTR2=HVACNAME(ICMSYS) 
           LNB=lnblnk(TMPSTR2)
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNB),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
           WRITE(IUF,'(a,f8.2)',iostat=ios) 
      &      '  AREA                      = ',hvacarea(ICMSYS)
           LNB=lnblnk(HSYSNAME(INCMSYS(ICMSYS)))
@@ -7687,7 +7853,7 @@ C If there is a cooling system then:
      &        '  COOL-SSEER                = ',CGEF(ICMSYS) !?? Needs to be updated
           endif
           WRITE(IUF,'(a,F7.4)',iostat=ios)   
-     &        '  HEAT-GEN-SEFF             = ',HGEF(ICMSYS)
+     &      '  HEAT-GEN-SEFF             = ',HGEF(ICMSYS)
 
 C If there is a cooling system then:
           if(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111)then
@@ -7718,8 +7884,8 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &        loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios) 
-     &       '  ACT-AREA                  = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '  ACT-AREA                  = ',
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do 
           WRITE(IUF,'(a)',iostat=ios) '  ..'     
@@ -7728,7 +7894,7 @@ C the array for the call to arlist
 
 C Notional building related data
       WRITE(IUF,'(2a)',iostat=ios)'"BUILDING_DATA" = ',
-     &'BUILDING-DATA'
+     &  'BUILDING-DATA'
       WRITE(IUF,'(a)',iostat=ios) 
      &  '  ANALYSIS                   =  NOTIONAL'
       WRITE(IUF,'(a,f8.2)',iostat=ios)
@@ -7756,10 +7922,10 @@ C BRUKL manual
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then  
         WRITE(IUF,'(a,f10.2)',iostat=ios)
-     &  '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
+     &    '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)   
-     &  '  BUILDING-W/M2K             =  0.0'
+     &    '  BUILDING-W/M2K             =  0.0'
       endif
       
 C Using info from common of thermal bridges to find the percentage of heat loss
@@ -7848,13 +8014,13 @@ C number of activities
       delim='C'
       do while (itrunc.ne.0)          
         call arlist(ipos,iactFlarea,act_area,ITWOMNS,delim,louts,
-     &      loutln,itrunc)
+     &    loutln,itrunc)
 
 C here we write each activity and the related floor area. SBEM seems to sum up the
 C floor areas and writes the activity once if it covers many zones. 
 C BRUKL v3.2 seems to accept either ways.
         WRITE(IUF,'(4a)',iostat=ios) '  ACT-AREA                = ',
-     &   '{ ',louts(1:loutln),' }'
+     &    '{ ',louts(1:loutln),' }'
         ipos=itrunc+1
       end do  
       WRITE(IUF,'(a)',iostat=ios) '  ..'
@@ -7878,7 +8044,7 @@ C Section for each HVAC system for the notional building
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNBLNK(TMPSTR2)),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
 
 C Same as actual building
           WRITE(IUF,'(a,f8.2)',iostat=ios)
@@ -7928,14 +8094,14 @@ C If there is no ooling system:
 
 C then only heated space.
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_N(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_N(ICMSYS)
 
 C Treat all the other cases as heated and mechanically ventilated
           else
             WRITE(IUF,'(a,f6.2)',iostat=ios) 
-     &      '  HEAT-SSEFF                = ',HeatSCoP_N(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_N(ICMSYS)
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  COOL-SSEER                = ',CoolSSEER_N(ICMSYS)
+     &        '  COOL-SSEER                = ',CoolSSEER_N(ICMSYS)
           endif
 
 C Now start the logic needed for ACT-AREA entry     
@@ -7961,7 +8127,7 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &          loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios) ' ACT-AREA            = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do 
           WRITE(IUF,'(a)',iostat=ios) ' ..'     
@@ -8003,7 +8169,7 @@ C C:\Esru\esp-r\bin to model cfg folder)
         if(ier.eq.0)THEN
           write(currentfile,'(a)') BATCHFL(1:lnblnk(BATCHFL))
         ELSE ! WARNING MESSAGE HERE
-	ENDIF
+        ENDIF
         WRITE(IUF,'(8A)',IOSTAT=IOS,ERR=3) 'cd C',col,fs,'Esru',fs,
      &    'esp-r',fs,'bin'
         WRITE(IUF,'(3A)',IOSTAT=IOS,ERR=3) 'BRUKL.exe /F ',
@@ -8056,7 +8222,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character fs*1, col*1
-      CHARACTER EPCBATFL*72
+      CHARACTER EPCBATFL*72,EPCINIFL*72
       integer mpof, ibrowse
       LOGICAL UNIXOK
 
@@ -8178,6 +8344,7 @@ C Read cfg file for the stripped model
       mode='ALL '
       itrc=4 ! To skip warning message about stripped model
       call ersys(lcfgf_s,ifcfg,iaprob,mode,itrc,ier)
+
 C Read *.ncm file and SBEM database
       CALL RSBEM
 
@@ -8197,12 +8364,12 @@ C Building, owner, certifier detail...
       ENDIF
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '$'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) 
-     &'$ Compliance input file for BR PART L 2006'
+     &  '$ Compliance input file for BR PART L 2006'
       WRITE(IUF,'(a)',iostat=ios)  '$ ESP-r -> EPCgen '
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '$'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) '"EPC-PROJECT" = GENERAL'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' P-NAME              = ',
-     &'"',pjname(1:lnblnk(pjname)),' "'
+     &  '"',pjname(1:lnblnk(pjname)),' "'
 
 C UPRN stands for the Unique Property Reference Number (UPRN) of the building
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' UPRN            = ','"',
@@ -8210,8 +8377,8 @@ C UPRN stands for the Unique Property Reference Number (UPRN) of the building
 
 C B-INSP-DATE specifies the inspection date of the building by the Energy Assessor
       WRITE(IUF,'(2A,I4,A,I2,A,I2,A)',IOSTAT=IOS,ERR=3)
-     &' B-INSP-DATE       = ',' {',Y_inspect,',',M_inspect,',',
-     &D_inspect,'}'
+     &  ' B-INSP-DATE       = ',' {',Y_inspect,',',M_inspect,',',
+     &  D_inspect,'}'
 
       IF(IBUSERTYP.NE.0)THEN
         TMPSTR2=BTYPNAME(IBUSERTYP)
@@ -8219,23 +8386,23 @@ C B-INSP-DATE specifies the inspection date of the building by the Energy Assess
         TMPSTR2='Building type not defined (yet)'
       ENDIF
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' B-TYPE              = ',
-     &TMPSTR2(1:LNBLNK(TMPSTR2))
+     &  TMPSTR2(1:LNBLNK(TMPSTR2))
 
 C Specifies one line of the building address
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' B-ADDRESS-0         = ',
-     &'"',BADDRESS(1:lnblnk(BADDRESS)),' "'
+     &  '"',BADDRESS(1:lnblnk(BADDRESS)),' "'
 
 C Specifies a fourth additional line of the building address
 C We will skip ADDRESS-1,2,3 here and we will assume that City is
 C is described in this line (this is fully acceptable by EPCgen program)
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' B-ADDRESS-4         = ',
-     &'"',BCITY(1:lnblnk(BCITY)),' "'
+     &  '"',BCITY(1:lnblnk(BCITY)),' "'
 
 C Specifies a fifth additional line of the building address
 C We will assume here that post-code is described in this line 
 C (this is fully acceptable by EPCgen program)
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' B-ADDRESS-5         = ',
-     &'"',BUILDINGPC(1:lnblnk(BUILDINGPC)),' "'
+     &  '"',BUILDINGPC(1:lnblnk(BUILDINGPC)),' "'
 
 C << B-LOC-DESCRIPTION may be an additional output in the future >>
 
@@ -8244,74 +8411,74 @@ C Specifies the total floor area of the building in m^2
      &   tot_floor_area
 
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' O-NAME              = ',
-     &'"',ownername(1:lnblnk(ownername)),' "'
+     &  '"',ownername(1:lnblnk(ownername)),' "'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' O-TELEPHONE         = ',
-     &'"',ownertel(1:lnblnk(ownertel)),' "'
+     &  '"',ownertel(1:lnblnk(ownertel)),' "'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' O-ADDRESS           = ',
-     &'"',owneraddr(1:lnblnk(owneraddr)),' "'
+     &  '"',owneraddr(1:lnblnk(owneraddr)),' "'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' O-CITY              = ',
-     &'"',ownercity(1:lnblnk(ownercity)),' "'
+     &  '"',ownercity(1:lnblnk(ownercity)),' "'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' O-POSTCODE          = ',
-     &'"',ownerPC(1:lnblnk(ownerPC)),' "'
+     &  '"',ownerPC(1:lnblnk(ownerPC)),' "'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-NAME              = ',
-     &'"',certifname(1:lnblnk(certifname)),' "'
+     &  '"',certifname(1:lnblnk(certifname)),' "'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-TELEPHONE         = ',
-     &'"',certTel(1:lnblnk(certTel)),' "'
+     &  '"',certTel(1:lnblnk(certTel)),' "'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-ADDRESS           = ',
-     &'"',certaddress(1:lnblnk(certaddress)),' "'
+     &  '"',certaddress(1:lnblnk(certaddress)),' "'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-CITY              = ',
-     &'"',certcity(1:lnblnk(certcity)),' "'
+     &  '"',certcity(1:lnblnk(certcity)),' "'
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-POSTCODE          = ',
-     &'"',certPC(1:lnblnk(certPC)),' "'
+     &  '"',certPC(1:lnblnk(certPC)),' "'
 
 C Accreditation Scheme (E,W and NI only)
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-ACCRED-SCHEME     = ',
-     &'"',Accr_Scheme(1:lnblnk(Accr_Scheme)),' "'   
+     &  '"',Accr_Scheme(1:lnblnk(Accr_Scheme)),' "'   
 
 C Assessor registration number (E,W and NI only)
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-REG-NUMBER        = ',
-     &'"',assessRegNumber(1:lnblnk(assessRegNumber)),'"' 
+     &  '"',assessRegNumber(1:lnblnk(assessRegNumber)),'"' 
 
 C Employer/trading name of energy assessor
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-EMP-TRAD-NAME     = ',
-     &'"',empl_Trading_name(1:lnblnk(empl_Trading_name)),'"' 
+     &  '"',empl_Trading_name(1:lnblnk(empl_Trading_name)),'"' 
 
 C Employer/trading address of energy assessor
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-EMP-TRAD-ADDRESS  = ',
-     &'"',addr_empl_Trading(1:lnblnk(addr_empl_Trading)),'"'
+     &  '"',addr_empl_Trading(1:lnblnk(addr_empl_Trading)),'"'
 
 C Related party disclosure
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-REL-PART-DISC    = ',
-     &'"',party_disclosure(1:lnblnk(party_disclosure)),'"'
+     &  '"',party_disclosure(1:lnblnk(party_disclosure)),'"'
 
 C Qualifications of energy assessor
 C Available choices are 3: NOS3 , NOS4 , NOS5
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' C-QUALIFICATIONS   = ',
-     &qualifications_assessor(1:lnblnk(qualifications_assessor))
+     &  qualifications_assessor(1:lnblnk(qualifications_assessor))
 
 C Insurer company
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-INSURER       = ',
-     &'"',insurer_Company(1:lnblnk(insurer_Company)),'"'
+     &  '"',insurer_Company(1:lnblnk(insurer_Company)),'"'
 
 C Insurance policy number
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' C-INS-POL-NUMBER = ',
-     &'"',policyNumberInsurance(1:lnblnk(policyNumberInsurance)),'"'
+     &  '"',policyNumberInsurance(1:lnblnk(policyNumberInsurance)),'"'
 
 C Insurance policy start date
       WRITE(IUF,'(2A,I4,A,I2,A,I2,A)',IOSTAT=IOS,ERR=3)
-     &' C-INS-EFF-DATE  = ','"',S_Yinsur,'-',S_Minsur,'-',S_Dinsur,'"'
+     & ' C-INS-EFF-DATE  = ','"',S_Yinsur,'-',S_Minsur,'-',S_Dinsur,'"'
 
 C Insurance policy expiry date
       WRITE(IUF,'(2A,I4,A,I2,A,I2,A)',IOSTAT=IOS,ERR=3)
-     &' C-INS-EXP-DATE  = ','"',E_Yinsur,'-',E_Minsur,'-',E_Dinsur,'"'
+     & ' C-INS-EXP-DATE  = ','"',E_Yinsur,'-',E_Minsur,'-',E_Dinsur,'"'
 
 C Insurance policy cover limit
       WRITE(IUF,'(2A,I9,A)',IOSTAT=IOS,ERR=3)' C-INS-PI-LIMIT  = ',
-     &'"',pi_limit,'"'
+     &  '"',pi_limit,'"'
 
 C Calculation engine and interface detail...
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' CENGINE             = ',
-     &'"','Not Approved','"'
+     &  '"','Not Approved','"'
 
 C For trying the export, change ESP-r to "Not Approved"
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' CENGINE-VAL         = ',
@@ -8329,7 +8496,7 @@ C This can be left as it is for now. EPC manual says for this entry:
 C "Specifies the path location of the input file to the interface software"
 C Examples give the nct file path in SBEM (i.e. input for interface isbem)
       WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3)' PATH-FILE-INTERFACE = ',
-     &'"',' hardwired again ',' "'
+     &  '"',' hardwired again ',' "'
 
 C This can be left as it is for now. EPC manual says for this entry:
 C "Specifies the path location of the input file to the calculation engine"
@@ -8344,13 +8511,13 @@ C There is an option for "NO" here but there is no point incuding it
       WRITE(IUF,'(2a)',iostat=ios) '"ESP-r" = ',' EPC'
       if(BLDREG(IRGG)(1:7).eq.'England')then
         WRITE(IUF,'(2a)',iostat=ios) ' TYPE = ',
-     &  'England and Wales'
+     &    'England and Wales'
       elseif(BLDREG(IRGG)(1:8).eq.'Scottish')then
         WRITE(IUF,'(2a)',iostat=ios) ' TYPE = ',
-     &  'Scottish'      
+     &    'Scottish'      
       elseif(BLDREG(IRGG)(1:8).eq.'Northern')then
         WRITE(IUF,'(2a)',iostat=ios) ' TYPE = ',
-     &  'Northern Ireland'   
+     &    'Northern Ireland'   
       endif    
       
 C SER is defined as the Standard CO2 emission rate in kg/m2year. 
@@ -8365,11 +8532,11 @@ C CO2 emission rate in kg/m2year for the "typical" building
 C << Need interface to give the option here between English and Welsh >>
 C << Default is english >>
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' EPC-LANGUAGE       = ',
-     &' ENGLISH'
+     &  ' ENGLISH'
       WRITE(IUF,'(a,1X,F7.1)',iostat=ios)' BER                 = ',
-     &ABS(BER)
+     &  ABS(BER)
       WRITE(IUF,'(a,1X,F7.1)',iostat=ios)' TER                 = ',
-     &ABS(TER)
+     &  ABS(TER)
 
 C NOS-LEVEL depends on the complexity of the project
 C Options: Undefined, Level 3, Level 4 and Level 5.
@@ -8394,7 +8561,7 @@ C << TO BE DONE  - hardwired to LPG for now>>
         endif
  161  continue
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
-     &   ' MAIN-FUEL-TYPE    = ',cNameMainFuel(1:lnblnk(cNameMainFuel))
+     &  ' MAIN-FUEL-TYPE    = ',cNameMainFuel(1:lnblnk(cNameMainFuel))
 
 C Building services for the actual building. 
 C This seems to be a global value but there is no explanation
@@ -8402,7 +8569,7 @@ C on how to determine it (currently depends on the type of
 C system per zone. Probably, it should be based on zone areas
 C << TO BE DONE -hardwired to Heating and Natural Ventilation >>
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' BUILDING-ENVIRONMENT = ',
-     &' Heating and Natural Ventilation'
+     &  ' Heating and Natural Ventilation'
      
       WRITE(IUF,'(a)',iostat=ios) ' ..'
 
@@ -8416,8 +8583,10 @@ C way to generate the recommendations report
         if(IDHWLZ(ICOMP).gt.0)then
           dhwxst=.true.
         endif
-        if(INCMSYS(IHLZ(ICOMP)).gt.0)then !check also if there is a heating system
-          heatingxst=.true.
+        if(IHLZ(ICOMP).gt.0)then
+          if(INCMSYS(IHLZ(ICOMP)).gt.0)then !check also if there is a heating system
+            heatingxst=.true.
+          endif
         endif
  99   continue
  
@@ -8431,25 +8600,25 @@ C NOT APPLICABLE
       elseif(dhwxst)then
         fSumDhwEfficiencies=0.
         do 88 idhw=1,NDHWSYS
-          fSumDhwEfficiencies=HWEF(IcurrentDHW)+fSumDhwEfficiencies
+          fSumDhwEfficiencies=HWEF(idhw)+fSumDhwEfficiencies
  88     continue
         fAverageDhwEfficiency=fSumDhwEfficiencies/real(NDHWSYS)
         call eclose(fAverageDhwEfficiency,0.70,0.0001,ISNEAR)           
         if(ISNEAR.or.fAverageDhwEfficiency.lt.0.70)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-DHW-ENERGY       = POOR'      
+     &      ' PERF-DHW-ENERGY       = POOR'      
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-DHW-CO2          = POOR'  
+     &      ' PERF-DHW-CO2          = POOR'  
         elseif(fAverageDhwEfficiency.gt.0.79)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-DHW-ENERGY       = GOOD'           
+     &      ' PERF-DHW-ENERGY       = GOOD'           
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-DHW-CO2          = GOOD'  
+     &      ' PERF-DHW-CO2          = GOOD'  
         else
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-DHW-ENERGY       = FAIR'   
+     &      ' PERF-DHW-ENERGY       = FAIR'   
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-DHW-CO2          = FAIR'               
+     &      ' PERF-DHW-CO2          = FAIR'               
         endif
       endif
       
@@ -8461,26 +8630,26 @@ C documents). iSBEM seems to be following the same logic.
       call eclose(BER_DHW,AER_DHW,0.001,ISNEAR)        
       if(BER_DHW.lt.AER_DHW)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-DHW-SYSTEM-ENERGY       = GOOD'      
+     &    ' PERF-DHW-SYSTEM-ENERGY       = GOOD'      
       elseif((isnear.or.BER_DHW.gt.AER_DHW).and.BER_DHW.lt.TyER_DHW)
      &  then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-DHW-SYSTEM-ENERGY       = FAIR'     
+     &    ' PERF-DHW-SYSTEM-ENERGY       = FAIR'     
       else
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-DHW-SYSTEM-ENERGY       = POOR'                
+     &    ' PERF-DHW-SYSTEM-ENERGY       = POOR'                
       endif
       call eclose(BER_DHWCO2,AER_DHWCO2,0.001,ISNEAR)        
       if(BER_DHWCO2.lt.AER_DHWCO2)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-DHW-SYSTEM-CO2         = GOOD'      
+     &    ' PERF-DHW-SYSTEM-CO2         = GOOD'      
       elseif((isnear.or.BER_DHWCO2.gt.AER_DHWCO2).and.
      &        BER_DHWCO2.lt.TyER_DHWCO2)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-DHW-SYSTEM-CO2         = FAIR'     
+     &    ' PERF-DHW-SYSTEM-CO2         = FAIR'     
       else
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-DHW-SYSTEM-CO2         = POOR'                
+     &    ' PERF-DHW-SYSTEM-CO2         = POOR'                
       endif      
       if(.not.dhwxst)then      
         WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' DHW-PERCENT-CO2      = ',
@@ -8492,19 +8661,19 @@ C iSBEM does not yet consider renewables in the percentage calculations
      &   (BER_DHWCO2/(BER_HEATCO2+BER_COOLCO2+BER_DHWCO2+
      &    BER_LIGHTCO2+BER_AUXCO2))*100
         WRITE(IUF,'(a,f7.2)',IOSTAT=IOS,ERR=3)
-     &   ' DHW-PERCENT-CO2      = ',fPercentDhw          
+     &    ' DHW-PERCENT-CO2      = ',fPercentDhw          
       endif
 
 C Section for heating
       if(.not.heatingxst)then      
         WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' PERF-HEAT-ENERGY       = ',
-     &  'NOT APPLICABLE'
+     &    'NOT APPLICABLE'
         WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' PERF-HEAT-CO2       = ',
-     &  'NOT APPLICABLE'     
+     &    'NOT APPLICABLE'     
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-HEAT-SYSTEM-ENERGY       = NOT APPLICABLE'  
+     &    ' PERF-HEAT-SYSTEM-ENERGY       = NOT APPLICABLE'  
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-HEAT-SYSTEM-CO2       = NOT APPLICABLE'       
+     &    ' PERF-HEAT-SYSTEM-CO2       = NOT APPLICABLE'       
       else
         fSumHeatingGenEfficiencies=0
         do 91 icmsys=1,ncmsys
@@ -8533,38 +8702,38 @@ C Section for heating
         call eclose(BER_HEAT,AER_HEAT,0.001,ISNEAR)  
         if(BER_HEAT.lt.AER_HEAT)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-HEAT-SYSTEM-ENERGY       = GOOD'      
+     &      ' PERF-HEAT-SYSTEM-ENERGY       = GOOD'      
         elseif((isnear.or.BER_HEAT.gt.AER_HEAT).and.
      &          BER_HEAT.lt.TyER_HEAT)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-HEAT-SYSTEM-ENERGY       = FAIR'     
+     &      ' PERF-HEAT-SYSTEM-ENERGY       = FAIR'     
         else
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-HEAT-SYSTEM-ENERGY       = POOR'                
+     &      ' PERF-HEAT-SYSTEM-ENERGY       = POOR'                
         endif      
         call eclose(BER_HEATCO2,AER_HEATCO2,0.001,ISNEAR)
         if(BER_HEATCO2.lt.AER_HEATCO2)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-HEAT-SYSTEM-CO2         = GOOD'            
+     &      ' PERF-HEAT-SYSTEM-CO2         = GOOD'            
         elseif((isnear.or.BER_HEATCO2.gt.AER_HEATCO2).and.
      &          BER_HEATCO2.lt.TyER_HEATCO2)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-HEAT-SYSTEM-CO2         = FAIR'     
+     &      ' PERF-HEAT-SYSTEM-CO2         = FAIR'     
         else
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-HEAT-SYSTEM-CO2         = POOR'                
+     &      ' PERF-HEAT-SYSTEM-CO2         = POOR'                
         endif  
       endif 
       fPercentHeating=
      &   (BER_HEATCO2/(BER_HEATCO2+BER_COOLCO2+BER_DHWCO2+
      &    BER_LIGHTCO2+BER_AUXCO2))*100      
       WRITE(IUF,'(a,f7.2)',IOSTAT=IOS,ERR=3)
-     & ' HEAT-PERCENT-CO2      = ',fPercentHeating         
+     &  ' HEAT-PERCENT-CO2      = ',fPercentHeating         
       coolxst =.false.
       do 565 ICMSYS=1,NCMSYS
-          if(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111)then
-            coolxst =.true.
-          endif
+        if(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111)then
+          coolxst =.true.
+        endif
  565  continue
       if(.not.coolxst)then
         WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' PERF-COOL-ENERGY       = ',
@@ -8608,95 +8777,95 @@ C Assuming poor in this case
         call eclose(BER_COOL,AER_COOL,0.001,ISNEAR)  
         if(BER_COOL.lt.AER_COOL)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-COOL-SYSTEM-ENERGY       = GOOD'      
+     &      ' PERF-COOL-SYSTEM-ENERGY       = GOOD'      
         elseif((isnear.or.BER_COOL.gt.AER_COOL).and.
      &    BER_COOL.lt.TyER_COOL)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-COOL-SYSTEM-ENERGY       = FAIR'     
+     &      ' PERF-COOL-SYSTEM-ENERGY       = FAIR'     
         else
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-COOL-SYSTEM-ENERGY       = POOR'                
+     &      ' PERF-COOL-SYSTEM-ENERGY       = POOR'                
         endif 
         call eclose(BER_COOLCO2,AER_COOLCO2,0.001,ISNEAR)  
         if(BER_COOLCO2.lt.AER_COOLCO2)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-COOL-SYSTEM-CO2          = GOOD'      
+     &      ' PERF-COOL-SYSTEM-CO2          = GOOD'      
         elseif((isnear.or.BER_COOLCO2.gt.AER_COOLCO2).and.
      &    BER_COOLCO2.lt.TyER_COOLCO2)then
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-COOL-SYSTEM-CO2          = FAIR'     
+     &      ' PERF-COOL-SYSTEM-CO2          = FAIR'     
         else
           WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &    ' PERF-COOL-SYSTEM-CO2          = POOR'                
+     &      ' PERF-COOL-SYSTEM-CO2          = POOR'                
         endif         
         fPercentCooling=
      &    (BER_COOLCO2/(BER_HEATCO2+BER_COOLCO2+BER_DHWCO2+
      &     BER_LIGHTCO2+BER_AUXCO2))*100       
         WRITE(IUF,'(a,f7.2)',IOSTAT=IOS,ERR=3)
-     &   ' COOL-PERCENT-CO2      = ',fPercentCooling  
+     &    ' COOL-PERCENT-CO2      = ',fPercentCooling  
       endif
 
 C Always applicable for lights
       call eclose(BER_LIGHT,AER_LIGHT,0.001,ISNEAR)  
       if(BER_LIGHT.lt.AER_LIGHT)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-LIGHT-SYSTEM-ENERGY       = GOOD'      
+     &    ' PERF-LIGHT-SYSTEM-ENERGY       = GOOD'      
       elseif((isnear.or.BER_LIGHT.gt.AER_LIGHT).and.
      &       BER_LIGHT.lt.TyER_LIGHT)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-LIGHT-SYSTEM-ENERGY       = FAIR'     
+     &    ' PERF-LIGHT-SYSTEM-ENERGY       = FAIR'     
       else
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-LIGHT-SYSTEM-ENERGY       = POOR'                
+     &    ' PERF-LIGHT-SYSTEM-ENERGY       = POOR'                
       endif      
       call eclose(BER_LIGHTCO2,AER_LIGHTCO2,0.001,ISNEAR)  
       if(BER_LIGHTCO2.lt.AER_LIGHTCO2)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-LIGHT-SYSTEM-CO2          = GOOD'      
+     &    ' PERF-LIGHT-SYSTEM-CO2          = GOOD'      
       elseif((isnear.or.BER_LIGHTCO2.gt.AER_LIGHTCO2).and.
      &       BER_LIGHTCO2.lt.TyER_LIGHTCO2)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-LIGHT-SYSTEM-CO2          = FAIR'     
+     &    ' PERF-LIGHT-SYSTEM-CO2          = FAIR'     
       else
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-LIGHT-SYSTEM-CO2          = POOR'                
+     &    ' PERF-LIGHT-SYSTEM-CO2          = POOR'                
       endif    
       fPercentLighting=
      &   (BER_LIGHTCO2/(BER_HEATCO2+BER_COOLCO2+BER_DHWCO2+
      &    BER_LIGHTCO2+BER_AUXCO2))*100       
       WRITE(IUF,'(a,f7.2)',IOSTAT=IOS,ERR=3)
-     & ' LIGHT-PERCENT-CO2      = ',fPercentLighting  
+     &  ' LIGHT-PERCENT-CO2      = ',fPercentLighting  
 
 C Always applicable for Auxiliary output
       call eclose(BER_AUX,AER_AUX,0.001,ISNEAR)  
       if(BER_AUX.lt.AER_AUX)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-AUX-SYSTEM-ENERGY       = GOOD'      
+     &    ' PERF-AUX-SYSTEM-ENERGY       = GOOD'      
       elseif((isnear.or.BER_AUX.gt.AER_AUX).and.
      &       BER_AUX.lt.TyER_AUX)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-AUX-SYSTEM-ENERGY       = FAIR'     
+     &    ' PERF-AUX-SYSTEM-ENERGY       = FAIR'     
       else
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-AUX-SYSTEM-ENERGY       = POOR'                
+     &    ' PERF-AUX-SYSTEM-ENERGY       = POOR'                
       endif      
       call eclose(BER_AUXCO2,AER_AUXCO2,0.001,ISNEAR)  
       if(BER_AUXCO2.lt.AER_AUXCO2)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-AUX-SYSTEM-CO2          = GOOD'      
+     &    ' PERF-AUX-SYSTEM-CO2          = GOOD'      
       elseif((isnear.or.BER_AUXCO2.gt.AER_AUXCO2).and.
      &       BER_AUXCO2.lt.TyER_AUXCO2)then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-AUX-SYSTEM-CO2          = FAIR'     
+     &    ' PERF-AUX-SYSTEM-CO2          = FAIR'     
       else
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
-     &  ' PERF-AUX-SYSTEM-CO2          = POOR'                
+     &    ' PERF-AUX-SYSTEM-CO2          = POOR'                
       endif 
       fPercentAuxiliary=
      &   (BER_AUXCO2/(BER_HEATCO2+BER_COOLCO2+BER_DHWCO2+
      &    BER_LIGHTCO2+BER_AUXCO2))*100       
       WRITE(IUF,'(a,f7.2)',IOSTAT=IOS,ERR=3)
-     & ' AUX-PERCENT-CO2      = ',fPercentAuxiliary    
+     &  ' AUX-PERCENT-CO2      = ',fPercentAuxiliary    
 
 C Rules for overheating are based on NCM modelling Guide v4d.
 C EPCgen seems to report one output for this and not for each zone
@@ -8778,15 +8947,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H2_impact,4.0,0.001,ISNEAR) 
           IF(H2_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H2_impact.LT.4.0.OR.ISNEAR).AND.H2_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
           
 C For the next line: Instead of CALC, it could also be USER
@@ -8822,22 +8988,18 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H2_impact,4.0,0.001,ISNEAR) 
           IF(H2_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H2_impact.LT.4.0.OR.ISNEAR).AND.H2_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
           
 C For the next line: Instead of CALC, it could also be USER
           WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
 
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT-SC = ',         
-     &     'CALC'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT-SC = ','CALC'
 
 C For the next line: Instead of CALC, it could also be USER
           WRITE(IUF,'(a)',iostat=ios) 'CO2-IMPACT-SC = CALC'     
@@ -8900,15 +9062,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(H1_impact,4.0,0.001,ISNEAR)            
           IF(H1_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H1_impact.LT.4.0.OR.ISNEAR).AND.H1_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
           
 C For the next line: Instead of CALC, it could also be USER
@@ -8946,7 +9105,7 @@ C         WRITE(IUF,'(a)',iostat=ios)
 C      &    'REC-COMMENT  = "Assesor may provide additional comments"'
 
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &    'UNKNOWN'
+     &      'UNKNOWN'
      
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and 
@@ -8954,15 +9113,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(H1_impact,4.0,0.001,ISNEAR)
           IF(H1_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H1_impact.LT.4.0.OR.ISNEAR).AND.H1_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9028,15 +9184,12 @@ C Otherwise impact is "low"
 C << Implementation is similar as for EPC-H1
             CALL ECLOSE(H3_impact,4.0,0.001,ISNEAR)
             IF(H3_impact.GT.4.0)THEN            
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'HIGH'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
             ELSEIF((H3_impact.LT.4.0.OR.ISNEAR).AND.H3_impact.GT.0.5)
      &         THEN
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'MEDIUM'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
             ELSE 
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'LOW'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
             ENDIF     
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9071,15 +9224,12 @@ C Otherwise impact is "low"
 C << Implementation is similar as for EPC-H1
             CALL ECLOSE(H3_impact,4.0,0.001,ISNEAR)
             IF(H3_impact.GT.4.0)THEN            
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'HIGH'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
             ELSEIF((H3_impact.LT.4.0.OR.ISNEAR).AND.H3_impact.GT.0.5)
      &         THEN
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'MEDIUM'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
             ELSE 
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'LOW'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
             ENDIF  
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9127,15 +9277,12 @@ C Otherwise impact is "low"
 C Using H1_impact as it is the same for H4
           CALL ECLOSE(H1_impact,4.0,0.001,ISNEAR)
           IF(H1_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H1_impact.LT.4.0.OR.ISNEAR).AND.H1_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF     
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9167,21 +9314,15 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(H1_impact,4.0,0.001,ISNEAR)
           IF(H1_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &      'HIGH'
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H1_impact.LT.4.0.OR.ISNEAR).AND.H1_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &      'MEDIUM'
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &      'LOW'
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF   
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9216,7 +9357,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'UNKNOWN'
+     &      'UNKNOWN'
    
 C Need a new BER calculation here for an improvement of 1% on the heating
 C efficiency and calculate total BER CO2 emissions after this change.
@@ -9242,15 +9383,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H5_impact,4.0,0.001,ISNEAR) 
           IF(H5_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H5_impact.LT.4.0.OR.ISNEAR).AND.H5_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
           
 C For the next line: Instead of CALC, it could also be USER
@@ -9277,7 +9415,7 @@ C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and 
@@ -9285,15 +9423,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H5_impact,4.0,0.001,ISNEAR) 
           IF(H5_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H5_impact.LT.4.0.OR.ISNEAR).AND.H5_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9355,15 +9490,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H6_impact,4.0,0.001,ISNEAR) 
           IF(H6_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H6_impact.LT.4.0.OR.ISNEAR).AND.H6_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
      
 C For the next line: Instead of CALC, it could also be USER
@@ -9399,15 +9531,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H6_impact,4.0,0.001,ISNEAR) 
           IF(H6_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H6_impact.LT.4.0.OR.ISNEAR).AND.H6_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
           
 C For the next line: Instead of CALC, it could also be USER
@@ -9442,7 +9571,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'UNKNOWN'
+     &      'UNKNOWN'
    
 C Need a new BER calculation here for an improvement of 2% on the heating
 C efficiency and calculate total BER CO2 emissions after this change.
@@ -9468,15 +9597,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H7_impact,4.0,0.001,ISNEAR) 
           IF(H7_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H7_impact.LT.4.0.OR.ISNEAR).AND.H7_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF          
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9503,7 +9629,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'          
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and 
@@ -9511,15 +9637,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H7_impact,4.0,0.001,ISNEAR) 
           IF(H7_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H7_impact.LT.4.0.OR.ISNEAR).AND.H7_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF   
           WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
 
@@ -9552,7 +9675,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'UNKNOWN'
+     &      'UNKNOWN'
    
 C Need a new BER calculation here for an improvement of 1.5% on the heating
 C efficiency and calculate total BER CO2 emissions after this change.
@@ -9578,15 +9701,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H8_impact,4.0,0.001,ISNEAR) 
           IF(H8_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H8_impact.LT.4.0.OR.ISNEAR).AND.H8_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
      
 C For the next line: Instead of CALC, it could also be USER
@@ -9612,7 +9732,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'          
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and 
@@ -9620,15 +9740,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(H8_impact,4.0,0.001,ISNEAR) 
           IF(H8_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((H8_impact.LT.4.0.OR.ISNEAR).AND.H8_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
           
 C For the next line: Instead of CALC, it could also be USER
@@ -9659,8 +9776,8 @@ C << Using 2.2 as default cooling efficiency for now
 C << The default values in ESP-r seem too high - need to check this
 C REC-EPC-C1: Check if using default cooling efficiency
         call eclose(CGEF(ICMSYS),2.2,0.001,ISNEAR)
-	if(INCMSYS(ICMSYS).eq.0)then
-	  continue
+        if(INCMSYS(ICMSYS).eq.0)then
+          continue
         elseif(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111.and.ISNEAR)then
           WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-C1" = RECOMMENDATION'
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = COOLING'
@@ -9692,15 +9809,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(C1_impact,4.0,0.001,ISNEAR)
           IF(C1_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((C1_impact.LT.4.0.OR.ISNEAR).AND.C1_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF                         
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9726,7 +9840,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and 
@@ -9734,15 +9848,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(C1_impact,4.0,0.001,ISNEAR) 
           IF(C1_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((C1_impact.LT.4.0.OR.ISNEAR).AND.C1_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9769,8 +9880,8 @@ C Need the name of the HVAC system here, which uses the specific fuel
 
 C REC-EPC-C2: Check if cooling efficiency is less or equal to 2.4 and
 C greater than 2.0
-	if(INCMSYS(ICMSYS).eq.0)then
-	  continue
+        if(INCMSYS(ICMSYS).eq.0)then
+          continue
         elseif(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111)then
           call eclose(CGEF(ICMSYS),2.4,0.001,ISNEAR)
           if(ISNEAR.or.(CGEF(ICMSYS).lt.2.4.and.CGEF(ICMSYS).gt.2.0))
@@ -9783,7 +9894,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
             WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
             WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &       'UNKNOWN'
+     &        'UNKNOWN'
      
 C this is the same as C1 - so use C1_impact
             CALL ECLOSE(C1_impact,4.0,0.001,ISNEAR)
@@ -9793,15 +9904,12 @@ C If change in total carbon emission is greater than 0.5 and
 C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
             IF(C1_impact.GT.4.0)THEN            
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'HIGH'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
             ELSEIF((C1_impact.LT.4.0.OR.ISNEAR).AND.C1_impact.GT.0.5)
      &         THEN
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'MEDIUM'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
             ELSE 
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'LOW'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
             ENDIF                         
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9828,7 +9936,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
             WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
             WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &       'UNKNOWN'
+     &        'UNKNOWN'
      
 C this is the same as C1 - so use C1_impact
             CALL ECLOSE(C1_impact,4.0,0.001,ISNEAR)
@@ -9838,15 +9946,12 @@ C If change in total carbon emission is greater than 0.5 and
 C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
             IF(C1_impact.GT.4.0)THEN            
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'HIGH'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
             ELSEIF((C1_impact.LT.4.0.OR.ISNEAR).AND.C1_impact.GT.0.5)
      &         THEN
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'MEDIUM'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
             ELSE 
-              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &        'LOW'
+              WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
             ENDIF                         
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9876,8 +9981,8 @@ C REC-EPC-C3: Duct and AHU leakage
 C << ADD logic to write it only once for the building and not when triggered 
 C << for every system >>
 C << Check for -1111 is not probably necessary since the systems used are known>>
-	if(incmsys(icmsys).eq.0)then
-	  continue
+        if(incmsys(icmsys).eq.0)then
+          continue
         elseif(ibruklc(1,incmsys(icmsys)).ne.-1111)then
 
 C Check if HVAC system is VAV, fan coil, induction, constant volume,
@@ -9935,15 +10040,12 @@ C If change in total carbon emission is greater than 0.5 and
 C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
               if(c3_impact.gt.4.0)then            
-                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &          'HIGH'
+                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
               elseif((c3_impact.lt.4.0.or.isnear).and.c3_impact.gt.0.5)
      &          then
-                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &          'MEDIUM'
+                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
               else 
-                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &          'LOW'
+                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
               endif           
 
 C For the next line: Instead of CALC, it could also be USER
@@ -9973,15 +10075,12 @@ C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
               write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT  = UNKNOWN'
               call eclose(c3_impact,4.0,0.001,isnear)
               if(c3_impact.gt.4.0)then            
-                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &          'HIGH'
+                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
               elseif((c3_impact.lt.4.0.or.isnear).and.c3_impact.gt.0.5)
      &          then
-                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &          'MEDIUM'
+                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
               else 
-                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &          'LOW'
+                write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
               endif                         
 
 C For the next line: Instead of CALC, it could also be USER
@@ -10055,15 +10154,13 @@ C If change in total carbon emission is greater than 0.5 and
 C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
                 if(c3_impact.gt.4.0)then            
-                  write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &            'HIGH'
+                  write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
                 elseif((c3_impact.lt.4.0.or.isnear)
      &            .and.c3_impact.gt.0.5)then
                   write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
      &            'MEDIUM'
                 else 
-                  write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &            'LOW'
+                  write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
                 endif           
 
 C For the next line: Instead of CALC, it could also be USER
@@ -10093,15 +10190,13 @@ C Calculation for ENERGY-IMPACT is optional for detailed simulation programs
                 write(iuf,'(a)',iostat=ios) 'ENERGY-IMPACT  = UNKNOWN'
                 call eclose(c3_impact,4.0,0.001,isnear)
                 if(c3_impact.GT.4.0)THEN            
-                  write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &            'HIGH'
+                  write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
                 elseif((c3_impact.lt.4.0.or.isnear)
      &            .and.c3_impact.gt.0.5)then
                   write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
      &            'MEDIUM'
                 else 
-                  write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &            'LOW'
+                  write(iuf,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
                 endif                         
 
 C For the next line: Instead of CALC, it could also be USER
@@ -10168,15 +10263,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(F1_impact,4.0,0.001,ISNEAR)
           IF(F1_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((F1_impact.LT.4.0.OR.ISNEAR).AND.F1_impact.GT.0.5)
      &      THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF   
      
 C For the next line: Instead of CALC, it could also be USER
@@ -10238,15 +10330,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(F2_impact,4.0,0.001,ISNEAR)
           IF(F2_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((F2_impact.LT.4.0.OR.ISNEAR).AND.F2_impact.GT.0.5)
      &      THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF   
           
 C For the next line: Instead of CALC, it could also be USER
@@ -10308,15 +10397,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(F3_impact,4.0,0.001,ISNEAR)
           IF(F3_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((F3_impact.LT.4.0.OR.ISNEAR).AND.F3_impact.GT.0.5)
      &      THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF   
 
 C For the next line: Instead of CALC, it could also be USER
@@ -10379,15 +10465,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(F4_impact,4.0,0.001,ISNEAR)
           IF(F4_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((F4_impact.LT.4.0.OR.ISNEAR).AND.F4_impact.GT.0.5)
      &      THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF   
           
 C For the next line: Instead of CALC, it could also be USER
@@ -10449,15 +10532,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(F5_impact,4.0,0.001,ISNEAR)
           IF(F5_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((F5_impact.LT.4.0.OR.ISNEAR).AND.F5_impact.GT.0.5)
      &      THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF   
           
 C For the next line: Instead of CALC, it could also be USER
@@ -10519,15 +10599,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
           CALL ECLOSE(F6_impact,4.0,0.001,ISNEAR)
           IF(F6_impact.GT.4.0)THEN            
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((F6_impact.LT.4.0.OR.ISNEAR).AND.F6_impact.GT.0.5)
      &      THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF   
      
 C For the next line: Instead of CALC, it could also be USER
@@ -10600,15 +10677,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(W1_impact,4.0,0.001,ISNEAR) 
           IF(W1_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((W1_impact.LT.4.0.OR.ISNEAR).AND.W1_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF          
      
 C For the next line: Instead of CALC, it could also be USER
@@ -10673,15 +10747,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low".
           CALL ECLOSE(W2_impact,4.0,0.001,ISNEAR) 
           IF(W2_impact.GT.4.0)THEN               
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'HIGH'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
           ELSEIF((W2_impact.LT.4.0.OR.ISNEAR).AND.W2_impact.GT.0.5)
      &       THEN
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'MEDIUM'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
           ELSE 
-            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &      'LOW'
+            WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
           ENDIF          
      
 C For the next line: Instead of CALC, it could also be USER
@@ -10729,10 +10800,8 @@ C << If change in total carbon emission is >4% then potential impact is "high"
 C << If change in total carbon emission is greater than 0.5 and 
 C << less or equal than 4% then potential impact is "medium"
 C << Otherwise impact is "low"
-        WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'LOW'
-        WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'LOW'
+        WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
+        WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
 
 C For the next line: Instead of CALC, it could also be USER
         WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -10770,10 +10839,8 @@ C << If change in total carbon emission is >4% then potential impact is "high"
 C << If change in total carbon emission is greater than 0.5 and 
 C << less or equal than 4% then potential impact is "medium"
 C << Otherwise impact is "low"
-        WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'LOW'
-        WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'LOW'
+        WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
+        WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
 
 C For the next line: Instead of CALC, it could also be USER
         WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -10819,10 +10886,8 @@ C << If change in total carbon emission is >4% then potential impact is "high"
 C << If change in total carbon emission is greater than 0.5 and 
 C << less or equal than 4% then potential impact is "medium"
 C << Otherwise impact is "low"
-        WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'LOW'
-        WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'LOW'  
+        WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
+        WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'  
 
 C For the next line: Instead of CALC, it could also be USER
         WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -10858,10 +10923,8 @@ C << If change in total carbon emission is >4% then potential impact is "high"
 C << If change in total carbon emission is greater than 0.5 and 
 C << less or equal than 4% then potential impact is "medium"
 C << Otherwise impact is "low"
-        WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'LOW'
-        WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'LOW' 
+        WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
+        WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW' 
 
 C For the next line: Instead of CALC, it could also be USER
         WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -10935,15 +10998,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
         CALL ECLOSE(L1_impact,4.0,0.001,ISNEAR)
         IF(L1_impact.GT.4.0)THEN            
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'HIGH'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
         ELSEIF((L1_impact.LT.4.0.OR.ISNEAR).AND.L1_impact.GT.0.5)
      &    THEN
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &   'MEDIUM'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
         ELSE 
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'LOW'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
         ENDIF             
 
 C For the next line: Instead of CALC, it could also be USER
@@ -11013,15 +11073,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
         CALL ECLOSE(L2_impact,4.0,0.001,ISNEAR)
         IF(L2_impact.GT.4.0)THEN            
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'HIGH'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
         ELSEIF((L2_impact.LT.4.0.OR.ISNEAR).AND.L2_impact.GT.0.5)
      &    THEN
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &   'MEDIUM'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
         ELSE 
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'LOW'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
         ENDIF             
 
 C For the next line: Instead of CALC, it could also be USER
@@ -11093,15 +11150,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
         CALL ECLOSE(L3_impact,4.0,0.001,ISNEAR)
         IF(L3_impact.GT.4.0)THEN            
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'HIGH'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
         ELSEIF((L3_impact.LT.4.0.OR.ISNEAR).AND.L3_impact.GT.0.5)
      &    THEN
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &   'MEDIUM'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
         ELSE 
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'LOW'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
         ENDIF             
 
 C For the next line: Instead of CALC, it could also be USER
@@ -11138,15 +11192,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
         CALL ECLOSE(L3_impact,4.0,0.001,ISNEAR)
         IF(L3_impact.GT.4.0)THEN            
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'HIGH'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
         ELSEIF((L3_impact.LT.4.0.OR.ISNEAR).AND.L3_impact.GT.0.5)
      &    THEN
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &   'MEDIUM'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
         ELSE 
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'LOW'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
         ENDIF             
                 
 C For the next line: Instead of CALC, it could also be USER
@@ -11217,15 +11268,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
         CALL ECLOSE(L4_impact,4.0,0.001,ISNEAR)
         IF(L4_impact.GT.4.0)THEN            
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'HIGH'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
         ELSEIF((L4_impact.LT.4.0.OR.ISNEAR).AND.L4_impact.GT.0.5)
      &    THEN
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &   'MEDIUM'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
         ELSE 
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'LOW'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
         ENDIF        
              
 C For the next line: Instead of CALC, it could also be USER
@@ -11309,15 +11357,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
         CALL ECLOSE(L5_impact,4.0,0.001,ISNEAR)
         IF(L5_impact.GT.4.0)THEN            
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'HIGH'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
         ELSEIF((L5_impact.LT.4.0.OR.ISNEAR).AND.L5_impact.GT.0.5)
      &    THEN
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &   'MEDIUM'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
         ELSE 
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'LOW'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
         ENDIF             
 
 C For the next line: Instead of CALC, it could also be USER
@@ -11391,15 +11436,12 @@ C less or equal than 4% then potential impact is "medium"
 C Otherwise impact is "low"
         CALL ECLOSE(L7_impact,4.0,0.001,ISNEAR)
         IF(L7_impact.GT.4.0)THEN            
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'HIGH'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','HIGH'
         ELSEIF((L7_impact.LT.4.0.OR.ISNEAR).AND.L7_impact.GT.0.5)
      &    THEN
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &   'MEDIUM'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','MEDIUM'
         ELSE 
-          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &    'LOW'
+          WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
         ENDIF             
 
 C For the next line: Instead of CALC, it could also be USER
@@ -11448,10 +11490,8 @@ C << If change in total carbon emission is >4% then potential impact is "high"
 C << If change in total carbon emission is greater than 0.5 and 
 C << less or equal than 4% then potential impact is "medium"
 C << Otherwise impact is "low"
-      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'LOW'
-      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
      
 C For the next line: Instead of CALC, it could also be USER
       WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -11477,11 +11517,9 @@ C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
       WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Energy impact is always "low"
-      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
 C Carbon impact is always "low"
-      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',         
-     &    'LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
 
 C For the next line: Instead of CALC, it could also be USER
       WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -11507,12 +11545,10 @@ C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
       WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Energy impact is always "low"
-      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
 
 C Carbon impact is always "low"
-      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',         
-     &    'LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
 
 C For the next line: Instead of CALC, it could also be USER
       WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -11538,12 +11574,10 @@ C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
       WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
 C Energy impact is always "low"
-      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
 
 C Carbon impact is always "low"
-      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',         
-     &    'LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
      
 C For the next line: Instead of CALC, it could also be USER
       WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -11579,10 +11613,8 @@ C << If change in total carbon emission is >4% then potential impact is "high"
 C << If change in total carbon emission is greater than 0.5 and 
 C << less or equal than 4% then potential impact is "medium"
 C << Otherwise impact is "low"
-      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',      
-     &     'LOW'
-      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ',      
-     &     'LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ','LOW'
+      WRITE(IUF,'(2a)',iostat=ios) 'CO2-IMPACT = ','LOW'
      
 C For the next line: Instead of CALC, it could also be USER
       WRITE(IUF,'(a)',iostat=ios) 'ENERGY-IMPACT-SC = CALC'
@@ -11980,10 +12012,10 @@ C coefficient through all external/exposed envelopes"
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then  
         WRITE(IUF,'(a,f9.2)',iostat=ios)
-     &  '  BUILDING-W/M2K            = ',build_UA/EXP_AREA
+     &    '  BUILDING-W/M2K            = ',build_UA/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)
-     &  '  BUILDING-W/M2K            =  0.0'
+     &    '  BUILDING-W/M2K            =  0.0'
       endif
       
 C Using info from common of thermal bridges to find the percentage of heat loss
@@ -12219,10 +12251,10 @@ C BRUKL manual
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then  
         WRITE(IUF,'(a,f10.2)',iostat=ios)
-     &  '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
+     &    '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)
-     &  '  BUILDING-W/M2K             =  0.0'
+     &    '  BUILDING-W/M2K             =  0.0'
       endif
 
       
@@ -12342,7 +12374,7 @@ C Section for each HVAC system for the notional building
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNBLNK(TMPSTR2)),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
 
 C Same as actual building
           WRITE(IUF,'(a,f8.2)',iostat=ios)
@@ -12392,14 +12424,14 @@ C If there is no ooling system:
 
 C then only heated space.
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF               = ',HeatSCoP_N(ICMSYS)
+     &        '  HEAT-SSEFF               = ',HeatSCoP_N(ICMSYS)
 
 C Treat all the other cases as heated and mechanically ventilated
           else
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF               = ',HeatSCoP_N(ICMSYS)
+     &        '  HEAT-SSEFF               = ',HeatSCoP_N(ICMSYS)
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  COOL-SSEER               = ',CoolSSEER_N(ICMSYS)
+     &        '  COOL-SSEER               = ',CoolSSEER_N(ICMSYS)
           endif
           
 C Now start the logic needed for ACT-AREA entry     
@@ -12425,7 +12457,7 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &          loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios) ' ACT-AREA                = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do 
           WRITE(IUF,'(a)',iostat=ios) ' ..'     
@@ -12454,10 +12486,10 @@ C Confirm that BINF50 instead of some sort of "translated" air changes
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then  
         WRITE(IUF,'(a,f9.2)',iostat=ios)
-     &  '  BUILDING-W/M2K            = ',build_UAN/EXP_AREA
+     &    '  BUILDING-W/M2K            = ',build_UAN/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)
-     &  '  BUILDING-W/M2K            =  0.0'
+     &    '  BUILDING-W/M2K            =  0.0'
       endif
 
 C Using info from common of thermal bridges to find the percentage of heat loss
@@ -12573,7 +12605,7 @@ C Section for each HVAC system for the reference building
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNBLNK(TMPSTR2)),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
 
 C Same as actual building
           WRITE(IUF,'(a,f8.2)',iostat=ios)
@@ -12620,14 +12652,14 @@ C If there is no ooling system:
 
 C then only heated space.
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_R(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_R(ICMSYS)
 
 C Treat all the other cases as heated and mechanically ventilated
           else
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_R(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_R(ICMSYS)
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  COOL-SSEER                = ',CoolSSEER_R(ICMSYS)
+     &        '  COOL-SSEER                = ',CoolSSEER_R(ICMSYS)
           endif
           
 C Now start the logic needed for ACT-AREA entry     
@@ -12653,7 +12685,7 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &          loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios) ' ACT-AREA                = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do 
           WRITE(IUF,'(a)',iostat=ios) ' ..'     
@@ -12687,10 +12719,10 @@ C << Keeping temporarily the same value as for the notional
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then  
         WRITE(IUF,'(a,f9.2)',iostat=ios)
-     &  '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
+     &    '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)
-     &  '  BUILDING-W/M2K             =  0.0'
+     &    '  BUILDING-W/M2K             =  0.0'
       endif
       
 C Using info from common of thermal bridges to find the percentage of heat loss
@@ -12809,7 +12841,7 @@ C Section for each HVAC system for the notional building
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNB),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
 
 C Same as actual building
           WRITE(IUF,'(a,f8.2)',iostat=ios)
@@ -12857,14 +12889,14 @@ C If there is no ooling system:
 
 C then only heated space.
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_T(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_T(ICMSYS)
 
 C Treat all the other cases as heated and mechanically ventilated
           else
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_T(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_T(ICMSYS)
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  COOL-SSEER                = ',CoolSSEER_T(ICMSYS)
+     &        '  COOL-SSEER                = ',CoolSSEER_T(ICMSYS)
           endif
 
 C Now start the logic needed for ACT-AREA entry     
@@ -12890,7 +12922,7 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &          loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios) ' ACT-AREA                = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do 
           WRITE(IUF,'(a)',iostat=ios) ' ..'     
@@ -12926,9 +12958,29 @@ C Determine the path of current model
      &    ibrowse)
         fs = char(92)
         col = char(58)
+
+C Generate an ini file for use with EPCgen.exe (v3.4b)
+C Three lines in the file - 1st line includes the path
+C to the location of EPCgen.exe, 2nd line is the path
+C to the epc inp file, 3rd line is the path for the
+C EPCgen log file (assumed to be the model cfg folder).
+        ILEN=LNBLNK(LASBEM)
+        WRITE(EPCINIFL,'(2A)')LASBEM(1:ILEN-4),'_epc.ini'
+        IUF=IFIL+1
+        CALL EFOPSEQ(IUF,EPCINIFL,3,IER)
+        if(ier.eq.0)THEN
+          write(currentfile,'(a)') EPCINIFL(1:lnblnk(EPCINIFL))
+        ELSE ! WARNING MESSAGE HERE
+        ENDIF
+        WRITE(IUF,'(7A)',IOSTAT=IOS,ERR=3) 'C',col,fs,'Esru',fs,
+     &    'UKNCMbin',fs
+        WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) 
+     &    lpath(1:lnblnk(lpath)),EPCFL(1:lnblnk(EPCFL))
+        WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3) lpath(1:lnblnk(lpath))
+        CALL ERPFREE(IUF,ISTAT)
         
-C Write batch file (also add command to copy EPCgen.log from 
-C C:\Esru\esp-r\bin to model cfg folder)           
+C Write batch file that drives EPCgen.exe via the /I command
+C option. Also copy EPCgen.log from  C:\Esru\esp-r\bin to model cfg folder)           
         ILEN=LNBLNK(LASBEM)
         WRITE(EPCBATFL,'(2A)')LASBEM(1:ILEN-4),'_epc.bat'
         IUF=IFIL+1
@@ -12936,13 +12988,13 @@ C C:\Esru\esp-r\bin to model cfg folder)
         if(ier.eq.0)THEN
           write(currentfile,'(a)') EPCBATFL(1:lnblnk(EPCBATFL))
         ELSE ! WARNING MESSAGE HERE
-	ENDIF
-        WRITE(IUF,'(8A)',IOSTAT=IOS,ERR=3) 'cd C',col,fs,'Esru',fs,
-     &    'esp-r',fs,'bin'
-        WRITE(IUF,'(3A)',IOSTAT=IOS,ERR=3) 'EPCgen.exe /F ',
-     &  lpath(1:lnblnk(lpath)),EPCFL(1:lnblnk(EPCFL))
+        ENDIF
+        WRITE(IUF,'(6A)',IOSTAT=IOS,ERR=3) 'cd C',col,fs,'Esru',fs,
+     &    'UKNCMbin'
+        WRITE(IUF,'(3A)',IOSTAT=IOS,ERR=3) 'EPCgen.exe /I ',
+     &    lpath(1:lnblnk(lpath)),EPCINIFL(1:lnblnk(EPCINIFL))
         WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) 'copy EPCgen.log ',
-     &  lpath(1:lnblnk(lpath))
+     &    lpath(1:lnblnk(lpath))
         CALL ERPFREE(IUF,ISTAT)
         
 C Run batch file to call EPCgen.exe
@@ -13014,7 +13066,7 @@ C value it should be preserved.
             continue
           else
             call eclose(duct_tDLd(isystCurrent),0.0,0.0001,close)
-	    if(close)then 
+            if(close)then 
               duct_tDLd(isystCurrent)=0.15
             endif
             call eclose(AHU_tDLd(isystCurrent),0.0,0.0001,closea)
@@ -13033,9 +13085,9 @@ C Produce help text for the menu.
           H(2)='Class B is the best option here. See '          
           H(3)='EN 13779 Standard for more details.'
           call easkabcd(' ',
-     &   'Has the ductwork been leakage tested ?',
-     &   'No use default leakage','Class B','Class A',
-     &   'Class Worse than A',IansLeakage,3)
+     &     'Has the ductwork been leakage tested ?',
+     &     'No use default leakage','Class B','Class A',
+     &     'Class Worse than A',IansLeakage,3)
           if(IansLeakage.eq.1)then
             write(ductwork(isystCurrent)(1:24),'(a)')
      &           'No, use default leakage'
@@ -13190,7 +13242,7 @@ C Set folder separator (fs) to \ or / as required.
 C The version of the cfg file must be 4 or greater.
       if(icfgv.lt.4)then
         ier=2
-	call usrmsg(
+        call usrmsg(
      &    'Model configuration file is an older format. Go to pre-',
      &    'ferences menu & update it and attribute surfaces.','W')
         return
@@ -13221,7 +13273,7 @@ C If surface is exterior then check if use is specified.
      &          ' in zone ',zname(icomp)(1:lnzname(icomp)),
      &          ' is unknown and must be defined.'
                 call edisp(iuout,outs)
-	        ier=3
+                ier=3
               endif
             endif
 
@@ -13232,12 +13284,12 @@ C of creating the notional model will fail.
      &          ' in zone ',zname(icomp)(1:lnzname(icomp)),
      &          ' has multiple child surfaces.'
               call edisp(iuout,outs)
-	      ier=4
+              ier=4
             endif
  552      continue
 
 C If a fatal errors exit now.
-	  if(ier.eq.3.or.ier.eq.4)then
+          if(ier.eq.3.or.ier.eq.4)then
             call edisp(iuout,
      &        'Correct issues via the geometry menu.')
             return
@@ -13248,10 +13300,10 @@ C << to be done >>
 
         else
           ier=2
-	  write(outs,'(3a)') 'Zone file ',
+          write(outs,'(3a)') 'Zone file ',
      &      LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP))),
      &      ' is an older format.'
-	  call usrmsg(outs,
+          call usrmsg(outs,
      &    'Go to the preferences menu, update it & add surface use.',
      &    'W')
           return

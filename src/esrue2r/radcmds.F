@@ -1164,6 +1164,7 @@ C getglr recovers view information and runs glare calculation.
 #include "building.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype
@@ -1198,7 +1199,7 @@ C glare angle (set minimum angle to 90 degrees).
         if ((angv/2.).gt.glang) glang=angv/2.
       else
         K=0
-        call CHITMS(vewcmds(ipckvew),ITMS)
+        ITMS = iCountWords(vewcmds(ipckvew))
         do 2112 IX=1,(ITMS-1)
           CALL EGETW(vewcmds(ipckvew),K,word,'-','view data',IFLAG)
           if (word(1:3).eq.'-vh'.or.word(1:3).eq.'-vv') then

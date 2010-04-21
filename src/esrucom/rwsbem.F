@@ -41,14 +41,14 @@ C the tags in the file are in a specific order.
 
 C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
-      CHARACTER OUTSTR*124,LOUTSTR*248,fs*1
+      CHARACTER OUTSTR*124,LOUTSTR*1000,fs*1,OUTSTR2*124
       CHARACTER*42 WORD,FUELNAM
       CHARACTER SYSNAM*60
       CHARACTER*48 ACTNAME
       CHARACTER*72 ACTLNAME ! to hold name of activity in list of assoc bld
       CHARACTER*124 ACTDOC  ! to hold documentation string for activity
       character*144 lworking ! for processing the path of LSBEM
-      integer NIT,lndbp
+      integer NIT,lndbp,lnbl ! length of string
       logical unixok,near
       
 C Initialise counters
@@ -68,7 +68,8 @@ C Set folder separator (fs) to \ or / as required.
 
 C Read SBEM database. If lsbem has not yet been assigned
 C then assign from default name (which has a
-C full path). Process DSBEM with findwhichdbpath. Use the value
+C path to the distribution database folder).
+C Process DSBEM with findwhichdbpath. Use the value
 C of ipathsbem to control file opening logic. This is similar
 C to the logic used for the optics database which is also ASCII.
       if(isbem.eq.0)then
@@ -438,20 +439,35 @@ C g) occupant density people/m2 (occupant_dens)
 C h) metabolic rate W/person/m2 (metabolic_rate)
 C i) Main cooling setpoint (Cmainsetpoint)
 C j) Main heating set point (Hmainsetpoint) to use for notional
-C       building overheating (in subsys.F at the moment)
+C       building overheating when naturally ventilated. This will be
+C       the maximum hourly heating value in that activities timestep data.
 C k) skip set back
 C l) outside air per person litres/sec/person (fresh_air)
 C m) lighting lux (lighting_lux)
 C n) equipment W/m2  (equip_gain)
-C o) domestic hot water litres/day/m2 (dhw_litres)
+C o) domestic hot water litres/year/m2 (dhw_litres)
 C p) skip humidity minimum %
 C q) skip humidity maximum %
 C r) quoted string description (roomactdoc)
 C s) occupant latent percentage (of the whole gain) (latent_ocup_percent)
 C t) equipment latent percentage (of the whole gain) (latent_equip_percent)
 C u) lighting display W/m2  (display_lighting)
+
+C << attitional data items to be documented below >>
+C 13 items fMonthEstSysHrs for each month assumed hours of env sys use
+C    with 13th value as annual assumed hours of env systems use      
+C v) hours of year with non-zero occupancy
+C w) summation of hourly occupancy faction
+C x) days which have (at least some) occupancy
+C y) hours of the year with non-zero lighting
+C z) summation of the hourly lighting fraction
+C 1) days which have (at least some) lighting
+C 2) hours of year with non-zero equipment
+C 3) summation of hourly equipment fraction
+c 4) days which have (at least some) equipment
       DO 130 ICBTP=1,NCBTP
-        CALL LSTRIPC(IUF,LOUTSTR,0,ND,1,'Activity types',IER)
+        CALL STRIPC1K(IUF,LOUTSTR,0,ND,1,'Activity types',IER)
+        lnbl=lnblnk(LOUTSTR)  ! remember how long the line is
         K=0
         CALL EGETWI(LOUTSTR,K,IBTN,0,0,'-','crrspnd bld typ index',IER)
         CALL EGETWI(LOUTSTR,K,iactindex,0,0,'-','activity index',IER)
@@ -483,14 +499,13 @@ C Database version 1.1 includes values for lighting for the notional building
         lighting_lux(iactindex)=IVAL
         CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W','equipment W/m2',IER)
         equip_gain(iactindex)=VAL
-        CALL EGETWR(LOUTSTR,K,VAL,0.,1000.,'W',
-     &    'domestic hot water litres/day/m2',IER)
+        CALL EGETWR(LOUTSTR,K,VAL,0.,50000.,'W',
+     &    'domestic hot water litres/year/m2',IER)
         dhw_litres(iactindex)=VAL
         CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W','humidity minimum %',IER)
         CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W','humidity max %',IER)
         call egetdq(LOUTSTR,K,ACTDOC,'-','activity description',IER)
         write(roomactdoc(iactindex),'(a)') ACTDOC(1:lnblnk(ACTDOC))
-
         CALL EGETWI(LOUTSTR,K,IVAL,0,100,'W',
      &    'occupant latent percentage',IER)
         latent_ocup_percent(iactindex)=IVAL
@@ -500,6 +515,105 @@ C Database version 1.1 includes values for lighting for the notional building
         CALL EGETWR(LOUTSTR,K,VAL,0.,100.,'W','lighting displ W/m2',IER)
         display_lighting(iactindex)=VAL
 
+C Gather the fMonthEstSysHrs(MACL,13) and nonzerohours(MACL,3),
+C and atleastonehour(MACL,3) and casualfracsum(MACL,3) if we have
+C not yet reached the end of the data line.
+        if(K.ge.lnbl.or.K+1.ge.lnbl)then
+          fMonthEstSysHrs(iactindex,1)=0.0  ! jan estimated system run hours
+          fMonthEstSysHrs(iactindex,2)=0.0  ! feb estaimated system run hours
+          fMonthEstSysHrs(iactindex,3)=0.0
+          fMonthEstSysHrs(iactindex,4)=0.0
+          fMonthEstSysHrs(iactindex,5)=0.0
+          fMonthEstSysHrs(iactindex,6)=0.0
+          fMonthEstSysHrs(iactindex,7)=0.0
+          fMonthEstSysHrs(iactindex,8)=0.0
+          fMonthEstSysHrs(iactindex,9)=0.0
+          fMonthEstSysHrs(iactindex,10)=0.0
+          fMonthEstSysHrs(iactindex,11)=0.0
+          fMonthEstSysHrs(iactindex,12)=0.0
+          fMonthEstSysHrs(iactindex,13)=0.0  ! annual estimated system run hours
+          nonzerohours(iactindex,1)=0.0      ! hours of year with non-zero occupancy
+          casualfracsum(iactindex,1)=0.0     ! summation of the hourly occupant
+          atleastonehour(iactindex,1)=0.0    ! days which have (at least some) occupancy
+          nonzerohours(iactindex,2)=0.0
+          casualfracsum(iactindex,2)=0.0
+          atleastonehour(iactindex,2)=0.0
+          nonzerohours(iactindex,3)=0.0
+          casualfracsum(iactindex,3)=0.0
+          atleastonehour(iactindex,3)=0.0
+        else
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,1)=VAL  ! jan estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,2)=VAL  ! feb estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,3)=VAL  ! mar estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,4)=VAL  ! apr estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,5)=VAL  ! may estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,6)=VAL  ! jun estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,7)=VAL  ! jul estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,8)=VAL  ! aug estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,9)=VAL  ! sep estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,10)=VAL  ! oct estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,11)=VAL  ! nov estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,750.,'W','est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,12)=VAL  ! dec estimated system run hours
+          CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
+     &      'annual est sys run hours',IER)
+          fMonthEstSysHrs(iactindex,13)=VAL  ! annu estimated system run hours
+
+          if(K.ge.lnbl.or.K+1.ge.lnbl)then
+
+C If there are monthly estimates but no summary for activity casual
+C gains fill these with zeros.
+            nonzerohours(iactindex,1)=0.0      ! hours of year with non-zero occupancy
+            casualfracsum(iactindex,1)=0.0     ! summation of the hourly occupant
+            atleastonehour(iactindex,1)=0.0    ! days which have (at least some) occupancy
+            nonzerohours(iactindex,2)=0.0
+            casualfracsum(iactindex,2)=0.0
+            atleastonehour(iactindex,2)=0.0
+            nonzerohours(iactindex,3)=0.0
+            casualfracsum(iactindex,3)=0.0
+            atleastonehour(iactindex,3)=0.0
+          else
+            CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
+     &        'non-zero hours with ocupant',IER)
+            nonzerohours(iactindex,1)=VAL
+            CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
+     &        'summation of occupant fractions',IER)
+            casualfracsum(iactindex,1)=VAL
+            CALL EGETWR(LOUTSTR,K,VAL,0.,370.,'W',
+     &        'days with at least some ocupants',IER)
+            atleastonehour(iactindex,1)=VAL
+
+            CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
+     &        'non-zero hours with lights',IER)
+            nonzerohours(iactindex,2)=VAL
+            CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
+     &        'summation of lighting fracctions',IER)
+            casualfracsum(iactindex,2)=VAL
+            CALL EGETWR(LOUTSTR,K,VAL,0.,370.,'W',
+     &        'days with at least some lights',IER)
+            atleastonehour(iactindex,2)=VAL
+            CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
+     &        'non-zero hours with equipment',IER)
+            nonzerohours(iactindex,3)=VAL
+            CALL EGETWR(LOUTSTR,K,VAL,0.,8760.,'W',
+     &        'summation of equipment fractions',IER)
+            casualfracsum(iactindex,3)=VAL
+            CALL EGETWR(LOUTSTR,K,VAL,0.,370.,'W',
+     &        'days with at least some equipment',IER)
+            atleastonehour(iactindex,3)=VAL
+          endif
+        endif
         IATYPNDX(IAT,IBTN)=1
         IF(IDEBUG.EQ.1.and.unixok)THEN
           IF(IATYPNDX(IAT,IBTN).EQ.1)WRITE(6,*)' btypes ',BTYPNAME(IBTN)
@@ -533,7 +647,7 @@ C Read insolation values and average annual wind speed
         CONTINUE ! WARNING MsG TO GO HERE   
       endif   
       IAT=1
- 21   CALL LSTRIPC(IUF,LOUTSTR,99,ND,1,'Insolation',IER)
+ 21   CALL STRIPC1K(IUF,LOUTSTR,99,ND,1,'Insolation',IER)
       IF(LOUTSTR(1:21).EQ.'*end_solar_insolation')GOTO 22
       K=0
       CALL EGETW(LOUTSTR,K,WORD,'W','climate name',IER)
@@ -549,7 +663,55 @@ C Read insolation values and average annual wind speed
       IAT=IAT+1
       GOTO 21
       
- 22   CALL ERPFREE(IUF,ISTAT)
+C Read air change per hour values
+  22  CALL STRIPC(IUF,OUTSTR,99,ND,1,'CIBSE ach',IER)
+      IF(OUTSTR(1:23).NE.'*start_CIBSE_tables_ach')then
+        CONTINUE ! WARNING MsG TO GO HERE   
+      endif
+      DO 132 IAT=1,8
+        CALL STRIPC(IUF,OUTSTR,99,ND,1,'CIBSE ach',IER)
+        CIBSEBLDN(IAT)=OUTSTR(1:LNBLNK(OUTSTR))
+        CALL STRIPC(IUF,OUTSTR,99,ND,1,'CIBSE ach',IER)
+        CIBSEBLDD(IAT)=OUTSTR(1:LNBLNK(OUTSTR))
+        WRITE(CIBSESTR1(IAT),'(3A)')CIBSEBLDN(IAT),'; ',CIBSEBLDD(IAT)
+        CALL STRIPC(IUF,OUTSTR,99,ND,1,'CIBSE ach',IER)
+        K=0
+        CALL EGETWI(OUTSTR,K,ICIBSESTOR(IAT,1),0,0,'-','no. floors',IER)
+        CALL EGETWI(OUTSTR,K,ICIBSESTOR(IAT,2),0,0,'-','no. floors',IER)
+        CALL EGETWI(OUTSTR,K,ICIBSESTOR(IAT,3),0,0,'-','no. floors',IER)
+        CALL EGETWI(OUTSTR,K,ICIBSESTOR(IAT,4),0,0,'-','no. floors',IER)
+        CALL STRIPC(IUF,OUTSTR,99,ND,1,'CIBSE ach',IER)
+        K=0
+        CALL EGETWI(OUTSTR,K,ICIBSEAREA(IAT,1),0,0,'-','area',IER)
+        CALL EGETWI(OUTSTR,K,ICIBSEAREA(IAT,2),0,0,'-','area',IER)
+        CALL EGETWI(OUTSTR,K,ICIBSEAREA(IAT,3),0,0,'-','area',IER)
+        CALL EGETWI(OUTSTR,K,ICIBSEAREA(IAT,4),0,0,'-','area',IER)
+        DO 133 IBT=1,5
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'CIBSE ach',IER)
+          K=0
+          CALL EGETWR(OUTSTR,K,CIBSEACH(IAT,1,IBT),0.,0.,'-','ACH',IER)
+          CALL EGETWR(OUTSTR,K,CIBSEACH(IAT,2,IBT),0.,0.,'-','ACH',IER)
+          CALL EGETWR(OUTSTR,K,CIBSEACH(IAT,3,IBT),0.,0.,'-','ACH',IER)
+          CALL EGETWR(OUTSTR,K,CIBSEACH(IAT,4,IBT),0.,0.,'-','ACH',IER)
+ 133    CONTINUE
+
+C Debug.
+      IF(IDEBUG.EQ.1)THEN
+        if(unixok)THEN
+          WRITE(6,*)CIBSEBLDN(IAT),CIBSEBLDD(IAT)
+          DO 135 IBT=1,4
+            WRITE(6,*)ICIBSESTOR(IAT,IBT)
+            WRITE(6,*)ICIBSEAREA(IAT,IBT)
+            WRITE(6,*)CIBSEACH(IAT,IBT,1)
+            WRITE(6,*)CIBSEACH(IAT,IBT,2)
+            WRITE(6,*)CIBSEACH(IAT,IBT,3)
+            WRITE(6,*)CIBSEACH(IAT,IBT,4)
+            WRITE(6,*)CIBSEACH(IAT,IBT,5)
+ 135      CONTINUE
+        ENDIF
+      ENDIF
+ 132  CONTINUE
+      CALL ERPFREE(IUF,ISTAT)
       RETURN
       END
 
@@ -733,11 +895,16 @@ C whole of the next line as the name.
           CALL STRIPC(IUF,OUTSTR,99,ND,1,'NCM HVAC system name',IER)
           HVACNAME(ICMSYS)=OUTSTR(1:LNBLNK(OUTSTR))
 
-C Read the index number (pointing to ??) but do not bother with the text.
+C Read the index number but do not bother with the text.
           CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC system index',IER)
           K=0
           CALL EGETWI(OUTSTR,K,NMSYS,0,0,'-','HVAC systems index.',IER)
           INCMSYS(ICMSYS)=NMSYS
+
+C Read ventilation strategy but do not bother with the text.
+          CALL STRIPC(IUF,OUTSTR,99,ND,1,'HVAC system index',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,IVENT(ICMSYS),0,0,'-','vent index.',IER)
 
 C The heat generator line has 3 tokens - efficiency, heat index but do not
 C bother with the text forming the last token.
@@ -1089,6 +1256,9 @@ C Published by Department of Communities and Local Government, UK
         lnb=lnblnk(HSYSNAME(INCMSYS(ICMSYS)))
         WRITE(IUF,'(1X,I4,1X,A)',IOSTAT=IOS,ERR=3)INCMSYS(ICMSYS),
      &     HSYSNAME(INCMSYS(ICMSYS))(1:lnb)
+
+        WRITE(IUF,'(1X,I4,1X,A)',IOSTAT=IOS,ERR=3)IVENT(ICMSYS),
+     &    ' #Ventilation strategy '
 
         WRITE(IUF,'(A)')'# heat generator efficiency, index and name'
         lnb=lnblnk(SYSNAME(IHGEF(ICMSYS)))

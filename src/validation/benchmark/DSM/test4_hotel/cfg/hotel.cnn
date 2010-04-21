@@ -1,0 +1,705 @@
+*connections forhotel_str
+*Date Mon Sep 21 18:46:47 2009
+    702   # number of connections
+   1   1   0   0   0  #    1 south in eating_area is External
+   1   2   0   0   0  #    2 north in eating_area is External
+   1   3   4   1   0  #    3 floor in eating_area >|< ground profile 1
+   1   4   3   3   4  #    4 ptn-2a in eating_area >|< ptn_b in store_area
+   1   5   3   2   4  #    5 ptn-2b in eating_area >|< ptn_b in food_area
+   1   6   0   0   0  #    6 win1_frame in eating_area is External
+   1   7   0   0   0  #    7 win2_frame in eating_area is External
+   1   8   3   4   2  #    8 ptn_2 in eating_area >|< ptn_e in cell_office
+   1   9   3   6   2  #    9 ptn-2d in eating_area >|< ptn_2d in circ_area
+   1  10   3  32  16  #   10 Base-13 in eating_area >|< floor_b in cirArea_St2
+   1  11   3  10   8  #   11 Base-8 in eating_area >|< floor in bed3_st2
+   1  12   3  11   8  #   12 Base-9 in eating_area >|< floor in bed4_st2
+   1  13   3  25   5  #   13 Base-10 in eating_area >|< floor in bath3-4
+   1  14   3  12   8  #   14 Base-11 in eating_area >|< floor in bed5_st2
+   1  15   3  13   8  #   15 Base-12 in eating_area >|< floor in bed6_st2
+   1  16   3  26   5  #   16 Base13b in eating_area >|< floor in bath5-6
+   1  17   3  18   8  #   17 Base-14 in eating_area >|< floor in bed11_st2
+   1  18   3  19   8  #   18 Base-15 in eating_area >|< floor in bed12_st2
+   1  19   3  29   5  #   19 Base-16 in eating_area >|< floor in bath11-12
+   1  20   3  20   8  #   20 Base-17 in eating_area >|< floor in bed13_st2
+   1  21   3  21   8  #   21 Base17b in eating_area >|< floor in bed14_st2
+   1  22   3  30   5  #   22 Base-19 in eating_area >|< floor in bath13-14
+   1  23   0   0   0  #   23 win1_glz in eating_area is External
+   1  24   0   0   0  #   24 win2_glz in eating_area is External
+   2   1   0   0   0  #   25 south in food_area is External
+   2   2   0   0   0  #   26 east in food_area is External
+   2   3   3   3   1  #   27 ptn_a in food_area >|< ptn_a in store_area
+   2   4   3   1   5  #   28 ptn_b in food_area >|< ptn-2b in eating_area
+   2   5   4   1   0  #   29 floor in food_area >|< ground profile 1
+   2   6   0   0   0  #   30 win1_frame in food_area is External
+   2   7   0   0   0  #   31 win2_frame in food_area is External
+   2   8   3  32  41  #   32 Base-14 in food_area >|< floor_c in cirArea_St2
+   2   9   3  14   8  #   33 Base-8 in food_area >|< floor in bed7_st2
+   2  10   3  15   8  #   34 Base-9 in food_area >|< floor in bed8_st2
+   2  11   3  27   5  #   35 Base-10 in food_area >|< floor in bath7-8
+   2  12   0   0   0  #   36 win1_glz in food_area is External
+   2  13   0   0   0  #   37 win2_glz in food_area is External
+   3   1   3   2   3  #   38 ptn_a in store_area >|< ptn_a in food_area
+   3   2   0   0   0  #   39 east in store_area is External
+   3   3   0   0   0  #   40 north in store_area is External
+   3   4   3   1   4  #   41 ptn_b in store_area >|< ptn-2a in eating_area
+   3   5   4   1   0  #   42 floor in store_area >|< ground profile 1
+   3   6   0   0   0  #   43 win1_frame in store_area is External
+   3   7   0   0   0  #   44 win2_frame in store_area is External
+   3   8   3  22   8  #   45 Base-8 in store_area >|< floor in bed15_st2
+   3   9   3  23   8  #   46 Base-9 in store_area >|< floor in bed16_st2
+   3  10   3  31   5  #   47 Base-10 in store_area >|< floor in bath15-16
+   3  11   0   0   0  #   48 win1_glz in store_area is External
+   3  12   0   0   0  #   49 win2_glz in store_area is External
+   4   1   3   6   3  #   50 ptn_c in cell_office >|< ptn_c in circ_area
+   4   2   3   1   8  #   51 ptn_e in cell_office >|< ptn_2 in eating_area
+   4   3   0   0   0  #   52 north in cell_office is External
+   4   4   3   6   4  #   53 ptn-a in cell_office >|< ptn_a in circ_area
+   4   5   4   1   0  #   54 floor in cell_office >|< ground profile 1
+   4   6   0   0   0  #   55 win_frame in cell_office is External
+   4   7   3  16   8  #   56 Base-8 in cell_office >|< floor in bed9_st2
+   4   8   3  17   8  #   57 Base-10 in cell_office >|< floor in bed10_st2
+   4   9   3  28   5  #   58 Base-11 in cell_office >|< floor in bath9-10
+   4  10   0   0   0  #   59 win_glz in cell_office is External
+   5   1   3   6   7  #   60 ptn_ca in int_void >|< ptn_d in circ_area
+   5   2   3   6   6  #   61 ptn_cb in int_void >|< ptn_b in circ_area
+   5   3   0   0   0  #   62 north in int_void is External
+   5   4   0   0   0  #   63 west in int_void is External
+   5   5   3   7   6  #   64 ceiling in int_void >|< floor in intVoid_st2
+   5   6   4   1   0  #   65 floor in int_void >|< ground profile 1
+   5   7   0   0   0  #   66 win1_frame in int_void is External
+   5   8   0   0   0  #   67 win2_frame in int_void is External
+   5   9   0   0   0  #   68 win1_glz in int_void is External
+   5  10   0   0   0  #   69 win2_glz in int_void is External
+   6   1   0   0   0  #   70 south in circ_area is External
+   6   2   3   1   9  #   71 ptn_2d in circ_area >|< ptn-2d in eating_area
+   6   3   3   4   1  #   72 ptn_c in circ_area >|< ptn_c in cell_office
+   6   4   3   4   4  #   73 ptn_a in circ_area >|< ptn-a in cell_office
+   6   5   0   0   0  #   74 north in circ_area is External
+   6   6   3   5   2  #   75 ptn_b in circ_area >|< ptn_cb in int_void
+   6   7   3   5   1  #   76 ptn_d in circ_area >|< ptn_ca in int_void
+   6   8   0   0   0  #   77 west in circ_area is External
+   6   9   4   1   0  #   78 floor in circ_area >|< ground profile 1
+   6  10   0   0   0  #   79 win1_frame in circ_area is External
+   6  11   0   0   0  #   80 win2_frame in circ_area is External
+   6  12   0   0   0  #   81 win3_frame in circ_area is External
+   6  13   3  32  10  #   82 Base-12 in circ_area >|< floor_a in cirArea_St2
+   6  14   3   8   8  #   83 Base-8 in circ_area >|< floor in bed1_st2
+   6  15   3   9   8  #   84 Base-9 in circ_area >|< floor in bed2_st2
+   6  16   3  24   5  #   85 Base-6 in circ_area >|< floor in bath1-2
+   6  17   0   0   0  #   86 win1_glz in circ_area is External
+   6  18   0   0   0  #   87 win2_glz in circ_area is External
+   6  19   0   0   0  #   88 win3_glz in circ_area is External
+   7   1   3  32   7  #   89 ptn_a in intVoid_st2 >|< ptn_d in cirArea_St2
+   7   2   3  32   6  #   90 ptn_b in intVoid_st2 >|< ptn_c in cirArea_St2
+   7   3   0   0   0  #   91 north in intVoid_st2 is External
+   7   4   0   0   0  #   92 west in intVoid_st2 is External
+   7   5   3  41   6  #   93 ceiling in intVoid_st2 >|< floor in intVoid_st3
+   7   6   3   5   5  #   94 floor in intVoid_st2 >|< ceiling in int_void
+   7   7   0   0   0  #   95 win1_frame in intVoid_st2 is External
+   7   8   0   0   0  #   96 win2_frame in intVoid_st2 is External
+   7   9   0   0   0  #   97 win1_glz in intVoid_st2 is External
+   7  10   0   0   0  #   98 win2_glz in intVoid_st2 is External
+   8   1   0   0   0  #   99 south in bed1_st2 is External
+   8   2   3   9   6  #  100 ptn_a in bed1_st2 >|< ptn_e in bed2_st2
+   8   3   3  24   6  #  101 ptn_b in bed1_st2 >|< ptn_e in bath1-2
+   8   4   3  24   3  #  102 ptn_c in bed1_st2 >|< ptn_c in bath1-2
+   8   5   3  32  17  #  103 ptn_d in bed1_st2 >|< ptn_ba in cirArea_St2
+   8   6   3  32   2  #  104 ptn_e in bed1_st2 >|< ptn_a in cirArea_St2
+   8   7   3  42   8  #  105 ceiling in bed1_st2 >|< floor in bed1_st3
+   8   8   3   6  14  #  106 floor in bed1_st2 >|< Base-8 in circ_area
+   8   9   0   0   0  #  107 Win-1_frame in bed1_st2 is External
+   8  10   0   0   0  #  108 win_glz in bed1_st2 is External
+   9   1   0   0   0  #  109 south in bed2_st2 is External
+   9   2   3  10   6  #  110 ptn_a in bed2_st2 >|< ptn_e in bed3_st2
+   9   3   3  32  19  #  111 ptn_b in bed2_st2 >|< ptn_bc in cirArea_St2
+   9   4   3  24   1  #  112 ptn_c in bed2_st2 >|< ptn_a in bath1-2
+   9   5   3  24   7  #  113 ptn_d in bed2_st2 >|< ptn_f in bath1-2
+   9   6   3   8   2  #  114 ptn_e in bed2_st2 >|< ptn_a in bed1_st2
+   9   7   3  43   8  #  115 ceiling in bed2_st2 >|< floor in bed2_st3
+   9   8   3   6  15  #  116 floor in bed2_st2 >|< Base-9 in circ_area
+   9   9   0   0   0  #  117 Win-1-frame in bed2_st2 is External
+   9  10   0   0   0  #  118 win1_glz in bed2_st2 is External
+  10   1   0   0   0  #  119 south in bed3_st2 is External
+  10   2   3  11   6  #  120 ptn_a in bed3_st2 >|< ptn_e in bed4_st2
+  10   3   3  25   6  #  121 ptn_b in bed3_st2 >|< ptn_d in bath3-4
+  10   4   3  25   3  #  122 ptn_c in bed3_st2 >|< ptn_c in bath3-4
+  10   5   3  32  20  #  123 ptn_d in bed3_st2 >|< ptn_bd in cirArea_St2
+  10   6   3   9   2  #  124 ptn_e in bed3_st2 >|< ptn_a in bed2_st2
+  10   7   3  44   8  #  125 ceiling in bed3_st2 >|< floor in bed3_st3
+  10   8   3   1  11  #  126 floor in bed3_st2 >|< Base-8 in eating_area
+  10   9   0   0   0  #  127 Win-1-frame in bed3_st2 is External
+  10  10   0   0   0  #  128 win_glz in bed3_st2 is External
+  11   1   0   0   0  #  129 south in bed4_st2 is External
+  11   2   3  12   6  #  130 ptn_a in bed4_st2 >|< ptn_e in bed5_st2
+  11   3   3  32  22  #  131 ptn_b in bed4_st2 >|< ptn_bf in cirArea_St2
+  11   4   3  25   1  #  132 ptn_c in bed4_st2 >|< ptn_a in bath3-4
+  11   5   3  25   7  #  133 ptn_d in bed4_st2 >|< ptn_e in bath3-4
+  11   6   3  10   2  #  134 ptn_e in bed4_st2 >|< ptn_a in bed3_st2
+  11   7   3  57   8  #  135 ceiling in bed4_st2 >|< floor in bed4_st3
+  11   8   3   1  12  #  136 floor in bed4_st2 >|< Base-9 in eating_area
+  11   9   0   0   0  #  137 win_frame in bed4_st2 is External
+  11  10   0   0   0  #  138 win_glz in bed4_st2 is External
+  12   1   0   0   0  #  139 south in bed5_st2 is External
+  12   2   3  13   6  #  140 ptn_a in bed5_st2 >|< ptn_e in bed6_st2
+  12   3   3  26   6  #  141 ptn_b in bed5_st2 >|< ptn_d in bath5-6
+  12   4   3  26   3  #  142 ptn_c in bed5_st2 >|< ptn_c in bath5-6
+  12   5   3  32  23  #  143 ptn_d in bed5_st2 >|< ptn_bg in cirArea_St2
+  12   6   3  11   2  #  144 ptn_e in bed5_st2 >|< ptn_a in bed4_st2
+  12   7   3  58   8  #  145 ceiling in bed5_st2 >|< floor in bed5_st3
+  12   8   3   1  14  #  146 floor in bed5_st2 >|< Base-11 in eating_area
+  12   9   0   0   0  #  147 win_frame in bed5_st2 is External
+  12  10   0   0   0  #  148 win_glz in bed5_st2 is External
+  13   1   0   0   0  #  149 south in bed6_st2 is External
+  13   2   3  14   6  #  150 ptn_a in bed6_st2 >|< ptn_e in bed7_st2
+  13   3   3  32  25  #  151 ptn_b in bed6_st2 >|< ptn_bi in cirArea_St2
+  13   4   3  26   1  #  152 ptn_c in bed6_st2 >|< ptn_a in bath5-6
+  13   5   3  26   7  #  153 ptn_d in bed6_st2 >|< ptn_e in bath5-6
+  13   6   3  12   2  #  154 ptn_e in bed6_st2 >|< ptn_a in bed5_st2
+  13   7   3  45   8  #  155 ceiling in bed6_st2 >|< floor in bed6_st3
+  13   8   3   1  15  #  156 floor in bed6_st2 >|< Base-12 in eating_area
+  13   9   0   0   0  #  157 win-frame in bed6_st2 is External
+  13  10   0   0   0  #  158 win_glz in bed6_st2 is External
+  14   1   0   0   0  #  159 south in bed7_st2 is External
+  14   2   3  15   6  #  160 ptn_a in bed7_st2 >|< ptn_d in bed8_st2
+  14   3   3  27   6  #  161 ptn_b in bed7_st2 >|< ptn_d in bath7-8
+  14   4   3  27   3  #  162 ptn_c in bed7_st2 >|< ptn_c in bath7-8
+  14   5   3  32  26  #  163 ptn_d in bed7_st2 >|< ptn_bj in cirArea_St2
+  14   6   3  13   2  #  164 ptn_e in bed7_st2 >|< ptn_a in bed6_st2
+  14   7   3  46   8  #  165 ceiling in bed7_st2 >|< floor in bed7_st3
+  14   8   3   2   9  #  166 floor in bed7_st2 >|< Base-8 in food_area
+  14   9   0   0   0  #  167 win-frame in bed7_st2 is External
+  14  10   0   0   0  #  168 win_glz in bed7_st2 is External
+  15   1   0   0   0  #  169 south in bed8_st2 is External
+  15   2   0   0   0  #  170 east in bed8_st2 is External
+  15   3   3  32  28  #  171 ptn_a in bed8_st2 >|< ptn_bm in cirArea_St2
+  15   4   3  27   1  #  172 ptn_b in bed8_st2 >|< ptn_a in bath7-8
+  15   5   3  27   7  #  173 ptn_c in bed8_st2 >|< ptn_e in bath7-8
+  15   6   3  14   2  #  174 ptn_d in bed8_st2 >|< ptn_a in bed7_st2
+  15   7   3  47   8  #  175 ceiling in bed8_st2 >|< floor in bed8_st3
+  15   8   3   2  10  #  176 floor in bed8_st2 >|< Base-9 in food_area
+  15   9   0   0   0  #  177 win_1_frame in bed8_st2 is External
+  15  10   0   0   0  #  178 win_2_frame in bed8_st2 is External
+  15  11   0   0   0  #  179 win1_glz in bed8_st2 is External
+  15  12   0   0   0  #  180 win2_glz in bed8_st2 is External
+  16   1   3  32  29  #  181 ptn_a in bed9_st2 >|< ptn_ca in cirArea_St2
+  16   2   3  28   3  #  182 ptn_b in bed9_st2 >|< ptn_c in bath9-10
+  16   3   3  28   6  #  183 ptn_c in bed9_st2 >|< ptn_d in bath9-10
+  16   4   3  17   6  #  184 ptn_d in bed9_st2 >|< ptn_e in bed10_st2
+  16   5   0   0   0  #  185 north in bed9_st2 is External
+  16   6   3  32   4  #  186 ptn_e in bed9_st2 >|< ptn_b in cirArea_St2
+  16   7   3  48   8  #  187 ceiling in bed9_st2 >|< floor in bed9_st3
+  16   8   3   4   7  #  188 floor in bed9_st2 >|< Base-8 in cell_office
+  16   9   0   0   0  #  189 win_frame in bed9_st2 is External
+  16  10   0   0   0  #  190 win_glz in bed9_st2 is External
+  17   1   3  28   7  #  191 ptn_a in bed10_st2 >|< ptn_e in bath9-10
+  17   2   3  28   2  #  192 ptn_b in bed10_st2 >|< ptn_b in bath9-10
+  17   3   3  32  31  #  193 ptn_c in bed10_st2 >|< ptn_cd in cirArea_St2
+  17   4   3  18   6  #  194 ptn_d in bed10_st2 >|< ptn_e in bed11_st2
+  17   5   0   0   0  #  195 north in bed10_st2 is External
+  17   6   3  16   4  #  196 ptn_e in bed10_st2 >|< ptn_d in bed9_st2
+  17   7   3  49   8  #  197 ceiling in bed10_st2 >|< floor in bed10_st3
+  17   8   3   4   8  #  198 floor in bed10_st2 >|< Base-10 in cell_office
+  17   9   0   0   0  #  199 win_frame in bed10_st2 is External
+  17  10   0   0   0  #  200 win_glz in bed10_st2 is External
+  18   1   3  32  32  #  201 ptn_a in bed11_st2 >|< ptn_ce in cirArea_St2
+  18   2   3  29   3  #  202 ptn_b in bed11_st2 >|< ptn_c in bath11-12
+  18   3   3  29   6  #  203 ptn_c in bed11_st2 >|< ptn_d in bath11-12
+  18   4   3  19   6  #  204 ptn_d in bed11_st2 >|< ptn_e in bed12_st2
+  18   5   0   0   0  #  205 north in bed11_st2 is External
+  18   6   3  17   4  #  206 ptn_e in bed11_st2 >|< ptn_d in bed10_st2
+  18   7   3  50   8  #  207 ceiling in bed11_st2 >|< floor in bed11_st3
+  18   8   3   1  17  #  208 floor in bed11_st2 >|< Base-14 in eating_area
+  18   9   0   0   0  #  209 win_frame in bed11_st2 is External
+  18  10   0   0   0  #  210 win_glz in bed11_st2 is External
+  19   1   3  29   7  #  211 ptn_a in bed12_st2 >|< ptn_e in bath11-12
+  19   2   3  29   2  #  212 ptn_b in bed12_st2 >|< ptn_b in bath11-12
+  19   3   3  32  34  #  213 ptn_c in bed12_st2 >|< ptn_cg in cirArea_St2
+  19   4   3  20   6  #  214 ptn_d in bed12_st2 >|< ptn_e in bed13_st2
+  19   5   0   0   0  #  215 north in bed12_st2 is External
+  19   6   3  18   4  #  216 ptn_e in bed12_st2 >|< ptn_d in bed11_st2
+  19   7   3  51   8  #  217 ceiling in bed12_st2 >|< floor in bed12_st3
+  19   8   3   1  18  #  218 floor in bed12_st2 >|< Base-15 in eating_area
+  19   9   0   0   0  #  219 win_frame in bed12_st2 is External
+  19  10   0   0   0  #  220 win_glz in bed12_st2 is External
+  20   1   3  32  35  #  221 ptn_a in bed13_st2 >|< ptn_ch in cirArea_St2
+  20   2   3  30   3  #  222 ptn_b in bed13_st2 >|< ptn_c in bath13-14
+  20   3   3  30   6  #  223 ptn_c in bed13_st2 >|< ptn_d in bath13-14
+  20   4   3  21   6  #  224 ptn_d in bed13_st2 >|< ptn_e in bed14_st2
+  20   5   0   0   0  #  225 north in bed13_st2 is External
+  20   6   3  19   4  #  226 ptn_e in bed13_st2 >|< ptn_d in bed12_st2
+  20   7   3  52   8  #  227 ceiling in bed13_st2 >|< floor in bed13_st3
+  20   8   3   1  20  #  228 floor in bed13_st2 >|< Base-17 in eating_area
+  20   9   0   0   0  #  229 win_frame in bed13_st2 is External
+  20  10   0   0   0  #  230 win_glz in bed13_st2 is External
+  21   1   3  30   7  #  231 ptn_a in bed14_st2 >|< ptn_e in bath13-14
+  21   2   3  30   2  #  232 ptn_b in bed14_st2 >|< ptn_b in bath13-14
+  21   3   3  32  37  #  233 ptn_c in bed14_st2 >|< ptn_cj in cirArea_St2
+  21   4   3  22   6  #  234 ptn_d in bed14_st2 >|< ptn_e in bed15_st2
+  21   5   0   0   0  #  235 north in bed14_st2 is External
+  21   6   3  20   4  #  236 ptn_e in bed14_st2 >|< ptn_d in bed13_st2
+  21   7   3  53   8  #  237 ceiling in bed14_st2 >|< floor in bed14_st3
+  21   8   3   1  21  #  238 floor in bed14_st2 >|< Base17b in eating_area
+  21   9   0   0   0  #  239 win_frame in bed14_st2 is External
+  21  10   0   0   0  #  240 win_glz in bed14_st2 is External
+  22   1   3  32  38  #  241 ptn_a in bed15_st2 >|< ptn_ck in cirArea_St2
+  22   2   3  31   3  #  242 ptn_b in bed15_st2 >|< ptn_c in bath15-16
+  22   3   3  31   6  #  243 ptn_c in bed15_st2 >|< ptn_d in bath15-16
+  22   4   3  23   6  #  244 ptn_d in bed15_st2 >|< ptn_d in bed16_st2
+  22   5   0   0   0  #  245 north in bed15_st2 is External
+  22   6   3  21   4  #  246 ptn_e in bed15_st2 >|< ptn_d in bed14_st2
+  22   7   3  54   8  #  247 ceiling in bed15_st2 >|< floor in bed15_st3
+  22   8   3   3   8  #  248 floor in bed15_st2 >|< Base-8 in store_area
+  22   9   0   0   0  #  249 win_frame in bed15_st2 is External
+  22  10   0   0   0  #  250 win_glz in bed15_st2 is External
+  23   1   3  31   7  #  251 ptn_a in bed16_st2 >|< ptn_e in bath15-16
+  23   2   3  31   2  #  252 ptn_b in bed16_st2 >|< ptn_b in bath15-16
+  23   3   3  32  40  #  253 ptn_c in bed16_st2 >|< ptn_cn in cirArea_St2
+  23   4   0   0   0  #  254 east in bed16_st2 is External
+  23   5   0   0   0  #  255 north in bed16_st2 is External
+  23   6   3  22   4  #  256 ptn_d in bed16_st2 >|< ptn_d in bed15_st2
+  23   7   3  55   8  #  257 ceiling in bed16_st2 >|< floor in bed16_st3
+  23   8   3   3   9  #  258 floor in bed16_st2 >|< Base-9 in store_area
+  23   9   0   0   0  #  259 win1_frame in bed16_st2 is External
+  23  10   0   0   0  #  260 win2_frame in bed16_st2 is External
+  23  11   0   0   0  #  261 win1_glz in bed16_st2 is External
+  23  12   0   0   0  #  262 win2_glz in bed16_st2 is External
+  24   1   3   9   4  #  263 ptn_a in bath1-2 >|< ptn_c in bed2_st2
+  24   2   3  32  18  #  264 ptn_b in bath1-2 >|< ptn_bb in cirArea_St2
+  24   3   3   8   4  #  265 ptn_c in bath1-2 >|< ptn_c in bed1_st2
+  24   4   3  33   5  #  266 ceiling in bath1-2 >|< floor in bath12_st3
+  24   5   3   6  16  #  267 floor in bath1-2 >|< Base-6 in circ_area
+  24   6   3   8   3  #  268 ptn_e in bath1-2 >|< ptn_b in bed1_st2
+  24   7   3   9   5  #  269 ptn_f in bath1-2 >|< ptn_d in bed2_st2
+  25   1   3  11   4  #  270 ptn_a in bath3-4 >|< ptn_c in bed4_st2
+  25   2   3  32  21  #  271 ptn_b in bath3-4 >|< ptn_be in cirArea_St2
+  25   3   3  10   4  #  272 ptn_c in bath3-4 >|< ptn_c in bed3_st2
+  25   4   3  34   5  #  273 ceiling in bath3-4 >|< floor_ in bath34_st3
+  25   5   3   1  13  #  274 floor in bath3-4 >|< Base-10 in eating_area
+  25   6   3  10   3  #  275 ptn_d in bath3-4 >|< ptn_b in bed3_st2
+  25   7   3  11   5  #  276 ptn_e in bath3-4 >|< ptn_d in bed4_st2
+  26   1   3  13   4  #  277 ptn_a in bath5-6 >|< ptn_c in bed6_st2
+  26   2   3  32  24  #  278 ptn_b in bath5-6 >|< ptn_bh in cirArea_St2
+  26   3   3  12   4  #  279 ptn_c in bath5-6 >|< ptn_c in bed5_st2
+  26   4   3  35   5  #  280 ceiling in bath5-6 >|< floor in bath56_st3
+  26   5   3   1  16  #  281 floor in bath5-6 >|< Base13b in eating_area
+  26   6   3  12   3  #  282 ptn_d in bath5-6 >|< ptn_b in bed5_st2
+  26   7   3  13   5  #  283 ptn_e in bath5-6 >|< ptn_d in bed6_st2
+  27   1   3  15   4  #  284 ptn_a in bath7-8 >|< ptn_b in bed8_st2
+  27   2   3  32  27  #  285 ptn_b in bath7-8 >|< ptn_bk in cirArea_St2
+  27   3   3  14   4  #  286 ptn_c in bath7-8 >|< ptn_c in bed7_st2
+  27   4   3  36   5  #  287 ceiling in bath7-8 >|< floor in bath78_st3
+  27   5   3   2  11  #  288 floor in bath7-8 >|< Base-10 in food_area
+  27   6   3  14   3  #  289 ptn_d in bath7-8 >|< ptn_b in bed7_st2
+  27   7   3  15   5  #  290 ptn_e in bath7-8 >|< ptn_c in bed8_st2
+  28   1   3  32  30  #  291 ptn_a in bath9-10 >|< ptn_cc in cirArea_St2
+  28   2   3  17   2  #  292 ptn_b in bath9-10 >|< ptn_b in bed10_st2
+  28   3   3  16   2  #  293 ptn_c in bath9-10 >|< ptn_b in bed9_st2
+  28   4   3  37   5  #  294 ceiling in bath9-10 >|< floor in bath9-10St3
+  28   5   3   4   9  #  295 floor in bath9-10 >|< Base-11 in cell_office
+  28   6   3  16   3  #  296 ptn_d in bath9-10 >|< ptn_c in bed9_st2
+  28   7   3  17   1  #  297 ptn_e in bath9-10 >|< ptn_a in bed10_st2
+  29   1   3  32  33  #  298 ptn_a in bath11-12 >|< ptn_cf in cirArea_St2
+  29   2   3  19   2  #  299 ptn_b in bath11-12 >|< ptn_b in bed12_st2
+  29   3   3  18   2  #  300 ptn_c in bath11-12 >|< ptn_b in bed11_st2
+  29   4   3  38   5  #  301 ceiling in bath11-12 >|< floor in bath11-12S3
+  29   5   3   1  19  #  302 floor in bath11-12 >|< Base-16 in eating_area
+  29   6   3  18   3  #  303 ptn_d in bath11-12 >|< ptn_c in bed11_st2
+  29   7   3  19   1  #  304 ptn_e in bath11-12 >|< ptn_a in bed12_st2
+  30   1   3  32  36  #  305 ptn_a in bath13-14 >|< ptn_ci in cirArea_St2
+  30   2   3  21   2  #  306 ptn_b in bath13-14 >|< ptn_b in bed14_st2
+  30   3   3  20   2  #  307 ptn_c in bath13-14 >|< ptn_b in bed13_st2
+  30   4   3  39   5  #  308 ceiling in bath13-14 >|< floor in bath13-14S3
+  30   5   3   1  22  #  309 floor in bath13-14 >|< Base-19 in eating_area
+  30   6   3  20   3  #  310 ptn_d in bath13-14 >|< ptn_c in bed13_st2
+  30   7   3  21   1  #  311 ptn_e in bath13-14 >|< ptn_a in bed14_st2
+  31   1   3  32  39  #  312 ptn_a in bath15-16 >|< ptn_cm in cirArea_St2
+  31   2   3  23   2  #  313 ptn_b in bath15-16 >|< ptn_b in bed16_st2
+  31   3   3  22   2  #  314 ptn_c in bath15-16 >|< ptn_b in bed15_st2
+  31   4   3  40   5  #  315 ceiling in bath15-16 >|< floor in bath15-16S3
+  31   5   3   3  10  #  316 floor in bath15-16 >|< Base-10 in store_area
+  31   6   3  22   3  #  317 ptn_d in bath15-16 >|< ptn_c in bed15_st2
+  31   7   3  23   1  #  318 ptn_e in bath15-16 >|< ptn_a in bed16_st2
+  32   1   0   0   0  #  319 south in cirArea_St2 is External
+  32   2   3   8   6  #  320 ptn_a in cirArea_St2 >|< ptn_e in bed1_st2
+  32   3   0   0   0  #  321 east in cirArea_St2 is External
+  32   4   3  16   6  #  322 ptn_b in cirArea_St2 >|< ptn_e in bed9_st2
+  32   5   0   0   0  #  323 north in cirArea_St2 is External
+  32   6   3   7   2  #  324 ptn_c in cirArea_St2 >|< ptn_b in intVoid_st2
+  32   7   3   7   1  #  325 ptn_d in cirArea_St2 >|< ptn_a in intVoid_st2
+  32   8   0   0   0  #  326 west in cirArea_St2 is External
+  32   9   3  56  10  #  327 ceil_a in cirArea_St2 >|< floor_a in cirArea_st3
+  32  10   3   6  13  #  328 floor_a in cirArea_St2 >|< Base-12 in circ_area
+  32  11   0   0   0  #  329 win1_frame in cirArea_St2 is External
+  32  12   0   0   0  #  330 winw_frame in cirArea_St2 is External
+  32  13   0   0   0  #  331 winn_frame in cirArea_St2 is External
+  32  14   0   0   0  #  332 wine_frame in cirArea_St2 is External
+  32  15   3  56  16  #  333 ceil_b in cirArea_St2 >|< floor_b in cirArea_st3
+  32  16   3   1  10  #  334 floor_b in cirArea_St2 >|< Base-13 in eating_area
+  32  17   3   8   5  #  335 ptn_ba in cirArea_St2 >|< ptn_d in bed1_st2
+  32  18   3  24   2  #  336 ptn_bb in cirArea_St2 >|< ptn_b in bath1-2
+  32  19   3   9   3  #  337 ptn_bc in cirArea_St2 >|< ptn_b in bed2_st2
+  32  20   3  10   5  #  338 ptn_bd in cirArea_St2 >|< ptn_d in bed3_st2
+  32  21   3  25   2  #  339 ptn_be in cirArea_St2 >|< ptn_b in bath3-4
+  32  22   3  11   3  #  340 ptn_bf in cirArea_St2 >|< ptn_b in bed4_st2
+  32  23   3  12   5  #  341 ptn_bg in cirArea_St2 >|< ptn_d in bed5_st2
+  32  24   3  26   2  #  342 ptn_bh in cirArea_St2 >|< ptn_b in bath5-6
+  32  25   3  13   3  #  343 ptn_bi in cirArea_St2 >|< ptn_b in bed6_st2
+  32  26   3  14   5  #  344 ptn_bj in cirArea_St2 >|< ptn_d in bed7_st2
+  32  27   3  27   2  #  345 ptn_bk in cirArea_St2 >|< ptn_b in bath7-8
+  32  28   3  15   3  #  346 ptn_bm in cirArea_St2 >|< ptn_a in bed8_st2
+  32  29   3  16   1  #  347 ptn_ca in cirArea_St2 >|< ptn_a in bed9_st2
+  32  30   3  28   1  #  348 ptn_cc in cirArea_St2 >|< ptn_a in bath9-10
+  32  31   3  17   3  #  349 ptn_cd in cirArea_St2 >|< ptn_c in bed10_st2
+  32  32   3  18   1  #  350 ptn_ce in cirArea_St2 >|< ptn_a in bed11_st2
+  32  33   3  29   1  #  351 ptn_cf in cirArea_St2 >|< ptn_a in bath11-12
+  32  34   3  19   3  #  352 ptn_cg in cirArea_St2 >|< ptn_c in bed12_st2
+  32  35   3  20   1  #  353 ptn_ch in cirArea_St2 >|< ptn_a in bed13_st2
+  32  36   3  30   1  #  354 ptn_ci in cirArea_St2 >|< ptn_a in bath13-14
+  32  37   3  21   3  #  355 ptn_cj in cirArea_St2 >|< ptn_c in bed14_st2
+  32  38   3  22   1  #  356 ptn_ck in cirArea_St2 >|< ptn_a in bed15_st2
+  32  39   3  31   1  #  357 ptn_cm in cirArea_St2 >|< ptn_a in bath15-16
+  32  40   3  23   3  #  358 ptn_cn in cirArea_St2 >|< ptn_c in bed16_st2
+  32  41   3   2   8  #  359 floor_c in cirArea_St2 >|< Base-14 in food_area
+  32  42   3  56  41  #  360 ceil_c in cirArea_St2 >|< floor_c in cirArea_st3
+  32  43   0   0   0  #  361 win1_glz in cirArea_St2 is External
+  32  44   0   0   0  #  362 winw_glz in cirArea_St2 is External
+  32  45   0   0   0  #  363 winn_glz in cirArea_St2 is External
+  32  46   0   0   0  #  364 wine_glz in cirArea_St2 is External
+  33   1   3  43   4  #  365 ptn_a in bath12_st3 >|< ptn_c in bed2_st3
+  33   2   3  56  18  #  366 ptn_b in bath12_st3 >|< ptn_ab in cirArea_st3
+  33   3   3  42   4  #  367 ptn_c in bath12_st3 >|< ptn_c in bed1_st3
+  33   4   0   0   0  #  368 ceiling in bath12_st3 is External
+  33   5   3  24   4  #  369 floor in bath12_st3 >|< ceiling in bath1-2
+  33   6   3  42   3  #  370 ptn_d in bath12_st3 >|< ptn_b in bed1_st3
+  33   7   3  43   5  #  371 ptn_e in bath12_st3 >|< ptn_d in bed2_st3
+  33   8   0   0   0  #  372 RL_frame in bath12_st3 is External
+  33   9   0   0   0  #  373 RL_glz in bath12_st3 is External
+  34   1   3  57   4  #  374 ptn_a in bath34_st3 >|< ptn_c in bed4_st3
+  34   2   3  56  21  #  375 ptn_b in bath34_st3 >|< ptn_ae in cirArea_st3
+  34   3   3  44   4  #  376 ptn_c in bath34_st3 >|< ptn_c in bed3_st3
+  34   4   0   0   0  #  377 ceiling in bath34_st3 is External
+  34   5   3  25   4  #  378 floor_ in bath34_st3 >|< ceiling in bath3-4
+  34   6   3  44   3  #  379 ptn_d in bath34_st3 >|< ptn_b in bed3_st3
+  34   7   3  57   5  #  380 ptn_e in bath34_st3 >|< ptn_e in bed4_st3
+  34   8   0   0   0  #  381 RL_frame in bath34_st3 is External
+  34   9   0   0   0  #  382 RL_glz in bath34_st3 is External
+  35   1   3  45   4  #  383 ptn_a in bath56_st3 >|< ptn_c in bed6_st3
+  35   2   3  56  24  #  384 ptn_b in bath56_st3 >|< ptn_ah in cirArea_st3
+  35   3   3  58   4  #  385 ptn_c in bath56_st3 >|< ptn_c in bed5_st3
+  35   4   0   0   0  #  386 ceiling in bath56_st3 is External
+  35   5   3  26   4  #  387 floor in bath56_st3 >|< ceiling in bath5-6
+  35   6   3  58   3  #  388 ptn_d in bath56_st3 >|< ptn_b in bed5_st3
+  35   7   3  45   5  #  389 ptn_e in bath56_st3 >|< ptn_d in bed6_st3
+  35   8   0   0   0  #  390 RL_frame in bath56_st3 is External
+  35   9   0   0   0  #  391 RL_glz in bath56_st3 is External
+  36   1   3  47   4  #  392 ptn_a in bath78_st3 >|< ptn_b in bed8_st3
+  36   2   3  56  27  #  393 ptn_b in bath78_st3 >|< ptn_ak in cirArea_st3
+  36   3   3  46   4  #  394 ptn_c in bath78_st3 >|< ptn_c in bed7_st3
+  36   4   0   0   0  #  395 ceiling in bath78_st3 is External
+  36   5   3  27   4  #  396 floor in bath78_st3 >|< ceiling in bath7-8
+  36   6   3  46   3  #  397 ptn_d in bath78_st3 >|< ptn_b in bed7_st3
+  36   7   3  47   5  #  398 ptn_e in bath78_st3 >|< ptn_c in bed8_st3
+  36   8   0   0   0  #  399 RL_frame in bath78_st3 is External
+  36   9   0   0   0  #  400 RL_glz in bath78_st3 is External
+  37   1   3  56  30  #  401 ptn_a in bath9-10St3 >|< ptn_bb in cirArea_st3
+  37   2   3  49   2  #  402 ptn_b in bath9-10St3 >|< ptn_b in bed10_st3
+  37   3   3  48   2  #  403 ptn_c in bath9-10St3 >|< ptn_b in bed9_st3
+  37   4   0   0   0  #  404 ceiling in bath9-10St3 is External
+  37   5   3  28   4  #  405 floor in bath9-10St3 >|< ceiling in bath9-10
+  37   6   3  48   3  #  406 ptn_d in bath9-10St3 >|< ptn_c in bed9_st3
+  37   7   3  49   1  #  407 ptn_e in bath9-10St3 >|< ptn_a in bed10_st3
+  37   8   0   0   0  #  408 RL_frame in bath9-10St3 is External
+  37   9   0   0   0  #  409 RL_glz in bath9-10St3 is External
+  38   1   3  56  33  #  410 ptn_a in bath11-12S3 >|< ptn_be in cirArea_st3
+  38   2   3  51   2  #  411 ptn_b in bath11-12S3 >|< ptn_b in bed12_st3
+  38   3   3  50   2  #  412 ptn_c in bath11-12S3 >|< ptn_b in bed11_st3
+  38   4   0   0   0  #  413 ceiling in bath11-12S3 is External
+  38   5   3  29   4  #  414 floor in bath11-12S3 >|< ceiling in bath11-12
+  38   6   3  50   3  #  415 ptn_d in bath11-12S3 >|< ptn_c in bed11_st3
+  38   7   3  51   1  #  416 ptn_e in bath11-12S3 >|< ptn_a in bed12_st3
+  38   8   0   0   0  #  417 RL_frame in bath11-12S3 is External
+  38   9   0   0   0  #  418 RL_glz in bath11-12S3 is External
+  39   1   3  56  36  #  419 ptn_a in bath13-14S3 >|< ptn_bh in cirArea_st3
+  39   2   3  53   2  #  420 ptn_b in bath13-14S3 >|< ptn_b in bed14_st3
+  39   3   3  52   2  #  421 ptn_c in bath13-14S3 >|< ptn_b in bed13_st3
+  39   4   0   0   0  #  422 ceiling in bath13-14S3 is External
+  39   5   3  30   4  #  423 floor in bath13-14S3 >|< ceiling in bath13-14
+  39   6   3  52   3  #  424 ptn_d in bath13-14S3 >|< ptn_c in bed13_st3
+  39   7   3  53   1  #  425 ptn_e in bath13-14S3 >|< ptn_a in bed14_st3
+  39   8   0   0   0  #  426 RL_frame in bath13-14S3 is External
+  39   9   0   0   0  #  427 RL_glz in bath13-14S3 is External
+  40   1   3  56  39  #  428 ptn_a in bath15-16S3 >|< ptn_bn in cirArea_st3
+  40   2   3  55   2  #  429 ptn_b in bath15-16S3 >|< ptn_b in bed16_st3
+  40   3   3  54   2  #  430 ptn_c in bath15-16S3 >|< ptn_b in bed15_st3
+  40   4   0   0   0  #  431 ceiling in bath15-16S3 is External
+  40   5   3  31   4  #  432 floor in bath15-16S3 >|< ceiling in bath15-16
+  40   6   3  54   3  #  433 ptn_d in bath15-16S3 >|< ptn_c in bed15_st3
+  40   7   3  55   1  #  434 ptn_e in bath15-16S3 >|< ptn_a in bed16_st3
+  40   8   0   0   0  #  435 RL_frame in bath15-16S3 is External
+  40   9   0   0   0  #  436 RL_glz in bath15-16S3 is External
+  41   1   3  56   7  #  437 ptn_a in intVoid_st3 >|< ptn_d in cirArea_st3
+  41   2   3  56   6  #  438 ptn_b in intVoid_st3 >|< ptn_c in cirArea_st3
+  41   3   0   0   0  #  439 north in intVoid_st3 is External
+  41   4   0   0   0  #  440 west in intVoid_st3 is External
+  41   5   0   0   0  #  441 ceiling in intVoid_st3 is External
+  41   6   3   7   5  #  442 floor in intVoid_st3 >|< ceiling in intVoid_st2
+  41   7   0   0   0  #  443 winn_frame in intVoid_st3 is External
+  41   8   0   0   0  #  444 winw_frame in intVoid_st3 is External
+  41   9   0   0   0  #  445 RL_frame in intVoid_st3 is External
+  41  10   0   0   0  #  446 winn_glz in intVoid_st3 is External
+  41  11   0   0   0  #  447 winw_glz in intVoid_st3 is External
+  41  12   0   0   0  #  448 RL_glz in intVoid_st3 is External
+  42   1   0   0   0  #  449 south in bed1_st3 is External
+  42   2   3  43   6  #  450 ptn_a in bed1_st3 >|< ptn_e in bed2_st3
+  42   3   3  33   6  #  451 ptn_b in bed1_st3 >|< ptn_d in bath12_st3
+  42   4   3  33   3  #  452 ptn_c in bed1_st3 >|< ptn_c in bath12_st3
+  42   5   3  56  17  #  453 ptn_d in bed1_st3 >|< ptn_aa in cirArea_st3
+  42   6   3  56   2  #  454 ptn_e in bed1_st3 >|< ptn_a in cirArea_st3
+  42   7   0   0   0  #  455 ceiling in bed1_st3 is External
+  42   8   3   8   7  #  456 floor in bed1_st3 >|< ceiling in bed1_st2
+  42   9   0   0   0  #  457 win_frame in bed1_st3 is External
+  42  10   0   0   0  #  458 RL_frame in bed1_st3 is External
+  42  11   0   0   0  #  459 win_glz in bed1_st3 is External
+  42  12   0   0   0  #  460 RL_glz in bed1_st3 is External
+  43   1   0   0   0  #  461 south in bed2_st3 is External
+  43   2   3  44   6  #  462 ptn_a in bed2_st3 >|< ptn_e in bed3_st3
+  43   3   3  56  19  #  463 ptn_b in bed2_st3 >|< ptn_ac in cirArea_st3
+  43   4   3  33   1  #  464 ptn_c in bed2_st3 >|< ptn_a in bath12_st3
+  43   5   3  33   7  #  465 ptn_d in bed2_st3 >|< ptn_e in bath12_st3
+  43   6   3  42   2  #  466 ptn_e in bed2_st3 >|< ptn_a in bed1_st3
+  43   7   0   0   0  #  467 ceiling in bed2_st3 is External
+  43   8   3   9   7  #  468 floor in bed2_st3 >|< ceiling in bed2_st2
+  43   9   0   0   0  #  469 win_frame in bed2_st3 is External
+  43  10   0   0   0  #  470 RL_frame in bed2_st3 is External
+  43  11   0   0   0  #  471 win_glz in bed2_st3 is External
+  43  12   0   0   0  #  472 RL_glz in bed2_st3 is External
+  44   1   0   0   0  #  473 south in bed3_st3 is External
+  44   2   3  57   6  #  474 ptn_a in bed3_st3 >|< ptn_d in bed4_st3
+  44   3   3  34   6  #  475 ptn_b in bed3_st3 >|< ptn_d in bath34_st3
+  44   4   3  34   3  #  476 ptn_c in bed3_st3 >|< ptn_c in bath34_st3
+  44   5   3  56  20  #  477 ptn_d in bed3_st3 >|< ptn_ad in cirArea_st3
+  44   6   3  43   2  #  478 ptn_e in bed3_st3 >|< ptn_a in bed2_st3
+  44   7   0   0   0  #  479 ceiling in bed3_st3 is External
+  44   8   3  10   7  #  480 floor in bed3_st3 >|< ceiling in bed3_st2
+  44   9   0   0   0  #  481 win_frame in bed3_st3 is External
+  44  10   0   0   0  #  482 RL_frame in bed3_st3 is External
+  44  11   0   0   0  #  483 win_glz in bed3_st3 is External
+  44  12   0   0   0  #  484 RL_glz in bed3_st3 is External
+  45   1   0   0   0  #  485 south in bed6_st3 is External
+  45   2   3  46   6  #  486 ptn_a in bed6_st3 >|< ptn_e in bed7_st3
+  45   3   3  56  25  #  487 ptn_b in bed6_st3 >|< ptn_ai in cirArea_st3
+  45   4   3  35   1  #  488 ptn_c in bed6_st3 >|< ptn_a in bath56_st3
+  45   5   3  35   7  #  489 ptn_d in bed6_st3 >|< ptn_e in bath56_st3
+  45   6   3  58   2  #  490 ptn_e in bed6_st3 >|< ptn_a in bed5_st3
+  45   7   0   0   0  #  491 ceiling in bed6_st3 is External
+  45   8   3  13   7  #  492 floor in bed6_st3 >|< ceiling in bed6_st2
+  45   9   0   0   0  #  493 win_frame in bed6_st3 is External
+  45  10   0   0   0  #  494 RL_frame in bed6_st3 is External
+  45  11   0   0   0  #  495 win_glz in bed6_st3 is External
+  45  12   0   0   0  #  496 RL_glz in bed6_st3 is External
+  46   1   0   0   0  #  497 south in bed7_st3 is External
+  46   2   3  47   6  #  498 ptn_a in bed7_st3 >|< ptn_d in bed8_st3
+  46   3   3  36   6  #  499 ptn_b in bed7_st3 >|< ptn_d in bath78_st3
+  46   4   3  36   3  #  500 ptn_c in bed7_st3 >|< ptn_c in bath78_st3
+  46   5   3  56  26  #  501 ptn_d in bed7_st3 >|< ptn_aj in cirArea_st3
+  46   6   3  45   2  #  502 ptn_e in bed7_st3 >|< ptn_a in bed6_st3
+  46   7   0   0   0  #  503 ceiling in bed7_st3 is External
+  46   8   3  14   7  #  504 floor in bed7_st3 >|< ceiling in bed7_st2
+  46   9   0   0   0  #  505 win_frame in bed7_st3 is External
+  46  10   0   0   0  #  506 RL_frame in bed7_st3 is External
+  46  11   0   0   0  #  507 win_glz in bed7_st3 is External
+  46  12   0   0   0  #  508 RL_glz in bed7_st3 is External
+  47   1   0   0   0  #  509 south in bed8_st3 is External
+  47   2   0   0   0  #  510 east in bed8_st3 is External
+  47   3   3  56  28  #  511 ptn_a in bed8_st3 >|< ptn_am in cirArea_st3
+  47   4   3  36   1  #  512 ptn_b in bed8_st3 >|< ptn_a in bath78_st3
+  47   5   3  36   7  #  513 ptn_c in bed8_st3 >|< ptn_e in bath78_st3
+  47   6   3  46   2  #  514 ptn_d in bed8_st3 >|< ptn_a in bed7_st3
+  47   7   0   0   0  #  515 ceiling in bed8_st3 is External
+  47   8   3  15   7  #  516 floor in bed8_st3 >|< ceiling in bed8_st2
+  47   9   0   0   0  #  517 wins_frame in bed8_st3 is External
+  47  10   0   0   0  #  518 wine_frame in bed8_st3 is External
+  47  11   0   0   0  #  519 RL_frame in bed8_st3 is External
+  47  12   0   0   0  #  520 wins_glz in bed8_st3 is External
+  47  13   0   0   0  #  521 wine_glz in bed8_st3 is External
+  47  14   0   0   0  #  522 RL_glz in bed8_st3 is External
+  48   1   3  56  29  #  523 ptn_a in bed9_st3 >|< ptn_ba in cirArea_st3
+  48   2   3  37   3  #  524 ptn_b in bed9_st3 >|< ptn_c in bath9-10St3
+  48   3   3  37   6  #  525 ptn_c in bed9_st3 >|< ptn_d in bath9-10St3
+  48   4   3  49   6  #  526 ptn_d in bed9_st3 >|< ptn_e in bed10_st3
+  48   5   0   0   0  #  527 north in bed9_st3 is External
+  48   6   3  56   4  #  528 ptn_e in bed9_st3 >|< ptn_b in cirArea_st3
+  48   7   0   0   0  #  529 ceiling in bed9_st3 is External
+  48   8   3  16   7  #  530 floor in bed9_st3 >|< ceiling in bed9_st2
+  48   9   0   0   0  #  531 win_frame in bed9_st3 is External
+  48  10   0   0   0  #  532 RL_frame in bed9_st3 is External
+  48  11   0   0   0  #  533 win_glz in bed9_st3 is External
+  48  12   0   0   0  #  534 RL_glz in bed9_st3 is External
+  49   1   3  37   7  #  535 ptn_a in bed10_st3 >|< ptn_e in bath9-10St3
+  49   2   3  37   2  #  536 ptn_b in bed10_st3 >|< ptn_b in bath9-10St3
+  49   3   3  56  31  #  537 ptn_c in bed10_st3 >|< ptn_bc in cirArea_st3
+  49   4   3  50   6  #  538 ptn_d in bed10_st3 >|< ptn_e in bed11_st3
+  49   5   0   0   0  #  539 north in bed10_st3 is External
+  49   6   3  48   4  #  540 ptn_e in bed10_st3 >|< ptn_d in bed9_st3
+  49   7   0   0   0  #  541 ceiling in bed10_st3 is External
+  49   8   3  17   7  #  542 floor in bed10_st3 >|< ceiling in bed10_st2
+  49   9   0   0   0  #  543 win_frame in bed10_st3 is External
+  49  10   0   0   0  #  544 RL_frame in bed10_st3 is External
+  49  11   0   0   0  #  545 win_glz in bed10_st3 is External
+  49  12   0   0   0  #  546 RL_glz in bed10_st3 is External
+  50   1   3  56  32  #  547 ptn_a in bed11_st3 >|< ptn_bd in cirArea_st3
+  50   2   3  38   3  #  548 ptn_b in bed11_st3 >|< ptn_c in bath11-12S3
+  50   3   3  38   6  #  549 ptn_c in bed11_st3 >|< ptn_d in bath11-12S3
+  50   4   3  51   6  #  550 ptn_d in bed11_st3 >|< ptn_e in bed12_st3
+  50   5   0   0   0  #  551 north in bed11_st3 is External
+  50   6   3  49   4  #  552 ptn_e in bed11_st3 >|< ptn_d in bed10_st3
+  50   7   0   0   0  #  553 ceiling in bed11_st3 is External
+  50   8   3  18   7  #  554 floor in bed11_st3 >|< ceiling in bed11_st2
+  50   9   0   0   0  #  555 win_frame in bed11_st3 is External
+  50  10   0   0   0  #  556 RL_frame in bed11_st3 is External
+  50  11   0   0   0  #  557 win_glz in bed11_st3 is External
+  50  12   0   0   0  #  558 RL_glz in bed11_st3 is External
+  51   1   3  38   7  #  559 ptn_a in bed12_st3 >|< ptn_e in bath11-12S3
+  51   2   3  38   2  #  560 ptn_b in bed12_st3 >|< ptn_b in bath11-12S3
+  51   3   3  56  34  #  561 ptn_c in bed12_st3 >|< ptn_bf in cirArea_st3
+  51   4   3  52   6  #  562 ptn_d in bed12_st3 >|< ptn_e in bed13_st3
+  51   5   0   0   0  #  563 north in bed12_st3 is External
+  51   6   3  50   4  #  564 ptn_e in bed12_st3 >|< ptn_d in bed11_st3
+  51   7   0   0   0  #  565 ceiling in bed12_st3 is External
+  51   8   3  19   7  #  566 floor in bed12_st3 >|< ceiling in bed12_st2
+  51   9   0   0   0  #  567 win_frame in bed12_st3 is External
+  51  10   0   0   0  #  568 RL_frame in bed12_st3 is External
+  51  11   0   0   0  #  569 win_glz in bed12_st3 is External
+  51  12   0   0   0  #  570 RL_glz in bed12_st3 is External
+  52   1   3  56  35  #  571 ptn_a in bed13_st3 >|< ptn_bg in cirArea_st3
+  52   2   3  39   3  #  572 ptn_b in bed13_st3 >|< ptn_c in bath13-14S3
+  52   3   3  39   6  #  573 ptn_c in bed13_st3 >|< ptn_d in bath13-14S3
+  52   4   3  53   6  #  574 ptn_d in bed13_st3 >|< ptn_e in bed14_st3
+  52   5   0   0   0  #  575 north in bed13_st3 is External
+  52   6   3  51   4  #  576 ptn_e in bed13_st3 >|< ptn_d in bed12_st3
+  52   7   0   0   0  #  577 ceiling in bed13_st3 is External
+  52   8   3  20   7  #  578 floor in bed13_st3 >|< ceiling in bed13_st2
+  52   9   0   0   0  #  579 win_frame in bed13_st3 is External
+  52  10   0   0   0  #  580 RL_frame in bed13_st3 is External
+  52  11   0   0   0  #  581 win_glz in bed13_st3 is External
+  52  12   0   0   0  #  582 RL_glz in bed13_st3 is External
+  53   1   3  39   7  #  583 ptn_a in bed14_st3 >|< ptn_e in bath13-14S3
+  53   2   3  39   2  #  584 ptn_b in bed14_st3 >|< ptn_b in bath13-14S3
+  53   3   3  56  37  #  585 ptn_c in bed14_st3 >|< ptn_bk in cirArea_st3
+  53   4   3  54   6  #  586 ptn_d in bed14_st3 >|< ptn_e in bed15_st3
+  53   5   0   0   0  #  587 north in bed14_st3 is External
+  53   6   3  52   4  #  588 ptn_e in bed14_st3 >|< ptn_d in bed13_st3
+  53   7   0   0   0  #  589 ceiling in bed14_st3 is External
+  53   8   3  21   7  #  590 floor in bed14_st3 >|< ceiling in bed14_st2
+  53   9   0   0   0  #  591 win_frame in bed14_st3 is External
+  53  10   0   0   0  #  592 RL_frame in bed14_st3 is External
+  53  11   0   0   0  #  593 win_glz in bed14_st3 is External
+  53  12   0   0   0  #  594 RL_glz in bed14_st3 is External
+  54   1   3  56  38  #  595 ptn_a in bed15_st3 >|< ptn_bm in cirArea_st3
+  54   2   3  40   3  #  596 ptn_b in bed15_st3 >|< ptn_c in bath15-16S3
+  54   3   3  40   6  #  597 ptn_c in bed15_st3 >|< ptn_d in bath15-16S3
+  54   4   3  55   6  #  598 ptn_d in bed15_st3 >|< ptn_d in bed16_st3
+  54   5   0   0   0  #  599 north in bed15_st3 is External
+  54   6   3  53   4  #  600 ptn_e in bed15_st3 >|< ptn_d in bed14_st3
+  54   7   0   0   0  #  601 ceiling in bed15_st3 is External
+  54   8   3  22   7  #  602 floor in bed15_st3 >|< ceiling in bed15_st2
+  54   9   0   0   0  #  603 win_frame in bed15_st3 is External
+  54  10   0   0   0  #  604 RL_frame in bed15_st3 is External
+  54  11   0   0   0  #  605 win_glz in bed15_st3 is External
+  54  12   0   0   0  #  606 RL_glz in bed15_st3 is External
+  55   1   3  40   7  #  607 ptn_a in bed16_st3 >|< ptn_e in bath15-16S3
+  55   2   3  40   2  #  608 ptn_b in bed16_st3 >|< ptn_b in bath15-16S3
+  55   3   3  56  40  #  609 ptn_c in bed16_st3 >|< ptn_bo in cirArea_st3
+  55   4   0   0   0  #  610 east in bed16_st3 is External
+  55   5   0   0   0  #  611 north in bed16_st3 is External
+  55   6   3  54   4  #  612 ptn_d in bed16_st3 >|< ptn_d in bed15_st3
+  55   7   0   0   0  #  613 ceiling in bed16_st3 is External
+  55   8   3  23   7  #  614 floor in bed16_st3 >|< ceiling in bed16_st2
+  55   9   0   0   0  #  615 winn_frame in bed16_st3 is External
+  55  10   0   0   0  #  616 wine_frame in bed16_st3 is External
+  55  11   0   0   0  #  617 RL_frame in bed16_st3 is External
+  55  12   0   0   0  #  618 winn_glz in bed16_st3 is External
+  55  13   0   0   0  #  619 wine_glz in bed16_st3 is External
+  55  14   0   0   0  #  620 RL_glz in bed16_st3 is External
+  56   1   0   0   0  #  621 south in cirArea_st3 is External
+  56   2   3  42   6  #  622 ptn_a in cirArea_st3 >|< ptn_e in bed1_st3
+  56   3   0   0   0  #  623 east in cirArea_st3 is External
+  56   4   3  48   6  #  624 ptn_b in cirArea_st3 >|< ptn_e in bed9_st3
+  56   5   0   0   0  #  625 north in cirArea_st3 is External
+  56   6   3  41   2  #  626 ptn_c in cirArea_st3 >|< ptn_b in intVoid_st3
+  56   7   3  41   1  #  627 ptn_d in cirArea_st3 >|< ptn_a in intVoid_st3
+  56   8   0   0   0  #  628 west in cirArea_st3 is External
+  56   9   0   0   0  #  629 ceil_a in cirArea_st3 is External
+  56  10   3  32   9  #  630 floor_a in cirArea_st3 >|< ceil_a in cirArea_St2
+  56  11   0   0   0  #  631 wins_frame in cirArea_st3 is External
+  56  12   0   0   0  #  632 winw_frame in cirArea_st3 is External
+  56  13   0   0   0  #  633 winn_frame in cirArea_st3 is External
+  56  14   0   0   0  #  634 wine_frame in cirArea_st3 is External
+  56  15   0   0   0  #  635 ceil_b in cirArea_st3 is External
+  56  16   3  32  15  #  636 floor_b in cirArea_st3 >|< ceil_b in cirArea_St2
+  56  17   3  42   5  #  637 ptn_aa in cirArea_st3 >|< ptn_d in bed1_st3
+  56  18   3  33   2  #  638 ptn_ab in cirArea_st3 >|< ptn_b in bath12_st3
+  56  19   3  43   3  #  639 ptn_ac in cirArea_st3 >|< ptn_b in bed2_st3
+  56  20   3  44   5  #  640 ptn_ad in cirArea_st3 >|< ptn_d in bed3_st3
+  56  21   3  34   2  #  641 ptn_ae in cirArea_st3 >|< ptn_b in bath34_st3
+  56  22   3  57   3  #  642 ptn_af in cirArea_st3 >|< ptn_b in bed4_st3
+  56  23   3  58   5  #  643 ptn_ag in cirArea_st3 >|< ptn_d in bed5_st3
+  56  24   3  35   2  #  644 ptn_ah in cirArea_st3 >|< ptn_b in bath56_st3
+  56  25   3  45   3  #  645 ptn_ai in cirArea_st3 >|< ptn_b in bed6_st3
+  56  26   3  46   5  #  646 ptn_aj in cirArea_st3 >|< ptn_d in bed7_st3
+  56  27   3  36   2  #  647 ptn_ak in cirArea_st3 >|< ptn_b in bath78_st3
+  56  28   3  47   3  #  648 ptn_am in cirArea_st3 >|< ptn_a in bed8_st3
+  56  29   3  48   1  #  649 ptn_ba in cirArea_st3 >|< ptn_a in bed9_st3
+  56  30   3  37   1  #  650 ptn_bb in cirArea_st3 >|< ptn_a in bath9-10St3
+  56  31   3  49   3  #  651 ptn_bc in cirArea_st3 >|< ptn_c in bed10_st3
+  56  32   3  50   1  #  652 ptn_bd in cirArea_st3 >|< ptn_a in bed11_st3
+  56  33   3  38   1  #  653 ptn_be in cirArea_st3 >|< ptn_a in bath11-12S3
+  56  34   3  51   3  #  654 ptn_bf in cirArea_st3 >|< ptn_c in bed12_st3
+  56  35   3  52   1  #  655 ptn_bg in cirArea_st3 >|< ptn_a in bed13_st3
+  56  36   3  39   1  #  656 ptn_bh in cirArea_st3 >|< ptn_a in bath13-14S3
+  56  37   3  53   3  #  657 ptn_bk in cirArea_st3 >|< ptn_c in bed14_st3
+  56  38   3  54   1  #  658 ptn_bm in cirArea_st3 >|< ptn_a in bed15_st3
+  56  39   3  40   1  #  659 ptn_bn in cirArea_st3 >|< ptn_a in bath15-16S3
+  56  40   3  55   3  #  660 ptn_bo in cirArea_st3 >|< ptn_c in bed16_st3
+  56  41   3  32  42  #  661 floor_c in cirArea_st3 >|< ceil_c in cirArea_St2
+  56  42   0   0   0  #  662 ceil_c in cirArea_st3 is External
+  56  43   0   0   0  #  663 ceil_d in cirArea_st3 is External
+  56  44   0   0   0  #  664 ceil_e in cirArea_st3 is External
+  56  45   0   0   0  #  665 RLa_frame in cirArea_st3 is External
+  56  46   0   0   0  #  666 RLb_frame in cirArea_st3 is External
+  56  47   0   0   0  #  667 RLc_frame in cirArea_st3 is External
+  56  48   0   0   0  #  668 RLe_frame in cirArea_st3 is External
+  56  49   0   0   0  #  669 RLd_frame in cirArea_st3 is External
+  56  50   0   0   0  #  670 wins_glz in cirArea_st3 is External
+  56  51   0   0   0  #  671 winw_glz in cirArea_st3 is External
+  56  52   0   0   0  #  672 winn_glz in cirArea_st3 is External
+  56  53   0   0   0  #  673 wine_glz in cirArea_st3 is External
+  56  54   0   0   0  #  674 RLa_glz in cirArea_st3 is External
+  56  55   0   0   0  #  675 RLb_glz in cirArea_st3 is External
+  56  56   0   0   0  #  676 RLc_glz in cirArea_st3 is External
+  56  57   0   0   0  #  677 RLe_glz in cirArea_st3 is External
+  56  58   0   0   0  #  678 RLd_glz in cirArea_st3 is External
+  57   1   0   0   0  #  679 south in bed4_st3 is External
+  57   2   3  58   6  #  680 ptn_a in bed4_st3 >|< ptn_e in bed5_st3
+  57   3   3  56  22  #  681 ptn_b in bed4_st3 >|< ptn_af in cirArea_st3
+  57   4   3  34   1  #  682 ptn_c in bed4_st3 >|< ptn_a in bath34_st3
+  57   5   3  34   7  #  683 ptn_e in bed4_st3 >|< ptn_e in bath34_st3
+  57   6   3  44   2  #  684 ptn_d in bed4_st3 >|< ptn_a in bed3_st3
+  57   7   0   0   0  #  685 ceiling in bed4_st3 is External
+  57   8   3  11   7  #  686 floor in bed4_st3 >|< ceiling in bed4_st2
+  57   9   0   0   0  #  687 win_frame in bed4_st3 is External
+  57  10   0   0   0  #  688 RL_frame in bed4_st3 is External
+  57  11   0   0   0  #  689 win_glz in bed4_st3 is External
+  57  12   0   0   0  #  690 RL_glz in bed4_st3 is External
+  58   1   0   0   0  #  691 south in bed5_st3 is External
+  58   2   3  45   6  #  692 ptn_a in bed5_st3 >|< ptn_e in bed6_st3
+  58   3   3  35   6  #  693 ptn_b in bed5_st3 >|< ptn_d in bath56_st3
+  58   4   3  35   3  #  694 ptn_c in bed5_st3 >|< ptn_c in bath56_st3
+  58   5   3  56  23  #  695 ptn_d in bed5_st3 >|< ptn_ag in cirArea_st3
+  58   6   3  57   2  #  696 ptn_e in bed5_st3 >|< ptn_a in bed4_st3
+  58   7   0   0   0  #  697 ceiling in bed5_st3 is External
+  58   8   3  12   7  #  698 floor in bed5_st3 >|< ceiling in bed5_st2
+  58   9   0   0   0  #  699 win_frame in bed5_st3 is External
+  58  10   0   0   0  #  700 RL_frame_ in bed5_st3 is External
+  58  11   0   0   0  #  701 win_glz in bed5_st3 is External
+  58  12   0   0   0  #  702 RL_glz in bed5_st3 is External

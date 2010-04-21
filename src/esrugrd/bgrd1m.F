@@ -37,6 +37,7 @@ C *********************************************************************
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -204,7 +205,7 @@ C Show the constructions menu.
           WRITE(MSG1,'(A30,A28,A12))')" Enter the number of moisture ",
      &    "nodes/layer in the surface: ",SSNAME(icc)
           CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-          CALL CHITMS(TXT,NCFF)
+          NCFF = iCountWords(TXT)
           IF(NCFF.NE.NE)THEN
             CALL USRMSG(' The number of data enetered should be',
      &      ' equal to number of layers in the surface !','W')
@@ -302,6 +303,7 @@ C distribution menu after performing the request.
 C *********************************************************************
       SUBROUTINE HYGRIC(IZ)
 #include "building.h"
+      integer iCountWords
 
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
@@ -401,7 +403,7 @@ C Enter moisture permeability.
         WRITE(MSG1,'(A))')
      &  " Enter the moisture permeability data for the selected layer"
         CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-        CALL CHITMS(TXT,NCFF)
+        NCFF = iCountWords(TXT)
         IF(NCFF.NE.4)THEN
           CALL USRMSG(' ',
      &    ' one index and three coefficents are expected !','W')
@@ -419,7 +421,7 @@ C Enter moisture capacity.
         WRITE(MSG1,'(A))')
      &  " Enter the moisture capacity data for the selected layer"
         CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-        CALL CHITMS(TXT,NCFF)
+        NCFF = iCountWords(TXT)
         IF(NCFF.NE.4)THEN
           CALL USRMSG(' ',
      &    ' one index and three coefficents are expected !','W')
@@ -437,7 +439,7 @@ C Enter thermal vapour diffusion.
         WRITE(MSG1,'(A))')
      &  " Enter the moisture capacity data for the selected layer"
         CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-        CALL CHITMS(TXT,NCFF)
+        NCFF = iCountWords(TXT)
         IF(NCFF.NE.2)THEN
           CALL USRMSG(' ',
      &    ' one index and one coefficent are expected !','W')

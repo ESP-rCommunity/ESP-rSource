@@ -930,13 +930,16 @@ C Print address for building and client. If there is a UK NCM
 C description then list that out instead.
         if(siteinfo.eq.2)then
           if(ISBEM.ge.1)then
-
+            if(LASBEM(1:4).eq.'UNKN')then
+              continue
+            else
 C Re-read sbem db and then the descriptive file.
-            call sbempr(ier)
-            call rsbem
-            call lstncm('p',itu)
-            call edisp(itu,'  ')          
-            call lstncm('e',itu)
+              call sbempr(ier)
+              call rsbem
+              call lstncm('p',itu)
+              call edisp(itu,'  ')          
+              call lstncm('e',itu)
+            endif
             call edisp(itu,' ')
             write(outs,'(2a)')'Simulationist name: ',certifname 
             call edisp(itu,outs)     
@@ -949,16 +952,20 @@ C Re-read sbem db and then the descriptive file.
             write(outs,'(2a)')'Simulationist postcode: ',certPC  
             call edisp(itu,outs)
             call edisp(itu,'  ')          
-            call lstncm('b',itu)
-            call edisp(itu,'  ')          
-            call lstncm('s',itu)
-            call edisp(itu,'  ')          
-            call lstncm('d',itu)
-            call edisp(itu,'  ')          
-            call lstncm('o',itu)
-            call edisp(itu,'  ')          
-            call lstncm('l',itu)
-            call edisp(itu,'  ') 
+            if(LASBEM(1:4).eq.'UNKN')then
+              continue
+            else
+              call lstncm('b',itu)
+              call edisp(itu,'  ')          
+              call lstncm('s',itu)
+              call edisp(itu,'  ')          
+              call lstncm('d',itu)
+              call edisp(itu,'  ')          
+              call lstncm('o',itu)
+              call edisp(itu,'  ')          
+              call lstncm('l',itu)
+              call edisp(itu,'  ')
+            endif 
           else
             write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
             call edisp(itu,outs)

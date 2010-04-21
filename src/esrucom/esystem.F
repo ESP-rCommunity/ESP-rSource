@@ -573,6 +573,7 @@ C Note: escdef must come after scan of .esprc file.
       LOPTDB=DOPTDB
       LPRFDB=DPRFDB
       LPCDB =DPCDB
+      LSBEM =DSBEM  ! assign default SBEM db
       MCMPDBFL=DMCMPDBFL
 
 C Clear the model common blocks.
@@ -590,6 +591,7 @@ C Variable will be reset if 'slr_half_hr' included in .cfg
 C Initialise NCM data read flags
       IRNCMD=0
       IRNCMF=0
+      LASBEM='UNKNOWN'  ! assume no UK NCM description
 
 C Initialize HVAC flag to indicate no HVAC models active. This
 C will be reset if `*hvac' included in .cfg.
@@ -877,6 +879,8 @@ C so LSTRIPC and LOUTSTR are used.
       K=0
       CALL EGETW(LOUTSTR,K,WORD,'W','db names',IFLAG)
       if(WORD(1:4).eq.'*prm')then
+        CALL EGETRM(LOUTSTR,K,LFMAT,'W','material db',IER)
+      elseif(WORD(1:4).eq.'*mat')then
         CALL EGETRM(LOUTSTR,K,LFMAT,'W','material db',IER)
       elseif(WORD(1:4).eq.'*mlc')then
         CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
@@ -1569,7 +1573,7 @@ C Radiance scene file.
         CALL EGETRM(LOUTSTR,K,lradcf,'W','radiance scene file',IER)
       elseif(WORD(1:4).eq.'*ncm')then
 
-C SBEM project specific file
+C SBEM project specific NCM description file.
         CALL EGETW(LOUTSTR,K,LASBEM,'W','SBEM file',IER)
         ISBEM=1
         IRNCMF=1
@@ -1833,7 +1837,7 @@ C Annual IPV report depreciated in favour of sipvres.
       elseif(WORD(1:7).eq.'*B-NAME')then
 
 C Next tokens relate to building address.
-        CALL EGETRM(LOUTSTR,K,pjname,'W','project complience name',IER)
+        CALL EGETRM(LOUTSTR,K,pjname,'W','project name',IER)
         goto 44
       elseif(WORD(1:10).eq.'*B-ADDRESS')then
         CALL EGETRM(LOUTSTR,K,baddress,'W','building address',IER)
@@ -3379,7 +3383,7 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
+            ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
@@ -3395,7 +3399,7 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathapres=1  ! local folder for pressure database
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
+            ipathsbem=1
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
@@ -3423,7 +3427,7 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
+            ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
