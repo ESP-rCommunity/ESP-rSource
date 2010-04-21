@@ -100,7 +100,10 @@ C Menu call back loop start point.
       INO=-3
 
 C Loop through the items until the page to be displayed. M is the 
-C current menu line index. Build up text strings for the menu. 
+C current menu line index. Build up text strings for the menu.
+
+C << if we move to hundreds of profiles then I3 needs to be I4 >>
+
     3 M=MHEAD
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -140,29 +143,30 @@ C If a long list include page facility text.
       H(9)= ' '
       H(10)=' for each profile - number of events.'
       H(11)=' '
-      H(12)=' for each event - start and finish hours'
-      H(13)='                  percentage of first magnitude '
-      H(14)='                  percentage of second magnitude '
+      H(12)=' for each event - start and finish time'
+      H(13)='                  percentage of first (sensible) value'
+      H(14)='                  percentage of second (latent) value'
       H(15)=' '
-      H(16)='If you edit data in the database the file will be'
-      H(17)='updated and an ASCII file will be created.'
+      H(16)='If you edit data in the database the ASCII file will be'
+      H(17)='updated. Consider using a model specific file if you'
+      H(18)='need custom profiles.'
 
       CALL EMENU(' Event profiles',ITEM,MVERT,INO)
       IF(INO.EQ.MVERT)THEN
         return
       ELSEIF(INO.EQ.(MVERT-1))THEN
-        CALL PHELPD('event profiles',17,'-',0,0,IER)
+        CALL PHELPD('event profiles',18,'-',0,0,IER)
       ELSEIF(INO.EQ.(MVERT-2))THEN
 
 C List contents of database.
         WRITE(outs,345) NPDBITEMS
-  345   FORMAT(' There are ',I4,' profiles in this database')
+  345   FORMAT('There are ',I4,' profiles in this database')
         call edisp(iuout,outs)
-        call edisp(iuout,' their order and description now follow:')
+        call edisp(iuout,'their order and description now follow:')
         call edisp(iuout,' ')
-        call edisp(iuout,' Profile|events|description')
+        call edisp(iuout,'Profile|events|description')
         DO 158 I=1,NPDBITEMS
-          WRITE(outs,'(I7,I7,3X,A40)')I,NCG(I),PDBDESC(I)
+          WRITE(outs,'(I7,I7,2X,A40)')I,NCG(I),PDBDESC(I)
           call edisp(iuout,outs)
   158   CONTINUE
         call tstamp('>','PRO: list database contents')
@@ -299,14 +303,15 @@ C existing profile. Asciupdate is set to true if the profile has
 C been edited so that the calling routine will know to write out
 C a fresh ASCII version file.
 
+C The timing of profiles assumes that the end of one event coincides
+C with the start of the next event. Currently timings are in hours
+C but this will change to real numbers in the future.
+
 C << there is a name clash for IGS1 and ICGF1 with
 C << the common block P3
 
 C << introduce concept of profiles with multiple day types as well
 C << as multiple casual gain types
-
-C << also consider that periods can be defined as reals and for
-C << only the start time to be held in the file
 
       SUBROUTINE  EDPROF(ITM,NFLAG,asciupdate,IER)
 #include "epara.h"
@@ -413,19 +418,19 @@ C current menu line index. Build up text strings for the menu.
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          WRITE(ITEM(M),303)KEY,L,ICGS1(ITM,L),ICGF1(ITM,L),
+          WRITE(ITEM(M),303)KEY,L,ICGS1(ITM,L),
      &      CGS1(ITM,L),CGL1(ITM,L)
-  303     FORMAT(A1,I4,I6,I4,F10.1,F7.1)
+  303     FORMAT(A1,I4,I6,F10.2,F9.2)
         ENDIF
    10 CONTINUE
 
 C << number of day types to be added and the description extended
 C << add logic depending on the type of profile
 
-      write(ITEM(1),'(A,A20)') 'a profile: ',PDBDESC(ITM)(1:20)
-      write(ITEM(2),'(A,I3)')'  nb. of periods: ',NCG(ITM)
+      write(ITEM(1),'(2A)')  'a profile: ',PDBDESC(ITM)(1:20)
+      write(ITEM(2),'(A,I3)')'  number of periods: ',NCG(ITM)
       ITEM(3)=               '  ______________________________'
-      ITEM(4)=               '  event|from-to |sensible|latent'         
+      ITEM(4)=               '  event|start|sensible%|latent% '         
 
 C Number of actual items displayed.
       MVERT=M+MCTL
@@ -456,12 +461,12 @@ C Display information about the profile.
         call edisp(iuout,outs)
         call edisp(iuout,' ')
         call edisp(iuout,
-     &  '           From      To         First        Second')
+     &  'Period  From    First     Second')
         call edisp(iuout,
-     &  '           Hour      Hour       Value        Value ')
+     &  '        Hour      %          %  ')
         DO 291 I = 1,NCG(ITM)
-          WRITE(outs,5150)  I,ICGS1(ITM,I),ICGF1(ITM,I),CGS1(ITM,I),
-     &      CGL1(ITM,I)
+          WRITE(outs,5151)  I,ICGS1(ITM,I),CGS1(ITM,I),CGL1(ITM,I)
+5151      FORMAT(I4,I7,F10.2,F10.2)
           call edisp(iuout,outs)
 291     CONTINUE
       endif
@@ -537,13 +542,12 @@ C List current profile.
         call edisp(iuout,outs)
         call edisp(iuout,' ')
         call edisp(iuout,
-     &  '          Start     Finish      First        Second')
+     &  'Period  From    First     Second')
         call edisp(iuout,
-     &  '           Hour      Hour       Value        Value ')
+     &  '        Hour      %          %  ')
         DO 290 I = 1,NCG(ITM)
-          WRITE(outs,5150)  I,ICGS1(ITM,I),ICGF1(ITM,I),CGS1(ITM,I),
+          WRITE(outs,5151)  I,ICGS1(ITM,I),CGS1(ITM,I),
      &      CGL1(ITM,I)
-5150      FORMAT(3X,I3,4X,I4,6X,I4,7X,F7.2,6X,F7.2)
           call edisp(iuout,outs)
 290     CONTINUE
       ELSEIF(INO.EQ.(MVERT-4))THEN
@@ -590,7 +594,7 @@ C Set notification of need to shift next period start to false
       shiftnext=.false.
 
   10  IER=0
-      WRITE(outs,'(A,I4,A,A)') ' Event  - ',IFOC,' in ',PDBDESC(IPR)
+      WRITE(outs,'(A,I2,A,A)') ' Event - ',IFOC,' in ',PDBDESC(IPR)
       call edisp(iuout,' ')
       call edisp(iuout,outs)
 
@@ -601,6 +605,10 @@ C Set notification of need to shift next period start to false
       CALL EASKI(IES,outs,' start hour : ',
      &    0,'F',23,'F',0,'start',IERI,3)
       if(ieri.eq.-3) return
+
+C Checks that need to be made on the start time: a) is it between
+C the start times of the previous and the next period, b) is it
+C not exactly the same as another start time.
 
       if(IFOC.gt.1.and.IES.lt.ICGF1(IPR,IFOC-1))then
         call usrmsg('The start time overlaps previous event...',
@@ -761,8 +769,6 @@ C Free both file units.
 
 C ***************** TRIPROCOM 
 C TRIPROCOM reads data supplied from an ASCII profiles db into common.
-C Use the array NO set to zero to indicate that the source file was
-C an ASCII version.
       SUBROUTINE TRIPROCOM(IFA,LLASCI,IER)
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -1039,7 +1045,8 @@ C TROPROCOM creates an ASCII profiles db from common blocks.
 C << the ASCII file should have a header with a version number as well
 C << as a date stamp a block of documentation and categories
 C << and a type indicator for each profile. Legacy profiles are ?
-C << a subset of activities profiles.
+C << a subset of activities profiles.  Use standard delimeter code
+C << to pack the output.
       
       integer lnblnk  ! function definition
       CHARACTER*(*) LLASCI   ! ascii file name
@@ -1155,10 +1162,8 @@ C Print header
         VAL2(I)=0.
    60 CONTINUE
 
-c Assign hourly values of each event.
+c Assign hourly values of each event (from its start to finish time).
       DO 20 I=1,NCG(IPRO)
-
-c Period of each event.
         DO 30 J=ICGS1(IPRO,I),ICGF1(IPRO,I)
           J1=J+1
           VAL1(J1)=CGS1(IPRO,I)
