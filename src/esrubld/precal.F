@@ -590,8 +590,8 @@ C Assign the power consumption evenly over the three phases for a 3-phase load.
           else
             NPERSN=INT(FLOORA(ICOMP)/CMGS(IDAY,I))
           endif
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*CONC(IDAY,I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=NPERSN*95.0*RADC(IDAY,I)
+          CGSENC(ICOMP,IDAY,ITYP,IPER)=NPERSN*70.1*CONC(IDAY,I)
+          CGSENR(ICOMP,IDAY,ITYP,IPER)=NPERSN*70.1*RADC(IDAY,I)
           CGLAT(ICOMP,IDAY,ITYP,IPER)=NPERSN*45.0
         else
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1

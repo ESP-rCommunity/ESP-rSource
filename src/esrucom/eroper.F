@@ -2326,11 +2326,11 @@ C calculate apparent power and reactive power.
                 else
                   NPERSN(IP,ITYP)=INT(FLOOR/CMGS(idty,I))
                 endif
-                CMGSA(IP,ITYP)=CMGSA(IP,ITYP) + NPERSN(IP,ITYP)*95.0
+                CMGSA(IP,ITYP)=CMGSA(IP,ITYP) + NPERSN(IP,ITYP)*70.1
                 CMGLA(IP,ITYP)=CMGLA(IP,ITYP) + NPERSN(IP,ITYP)*45.0
-                RADCA(IP,ITYP)=RADCA(IP,ITYP) + NPERSN(IP,ITYP)*95.0*
+                RADCA(IP,ITYP)=RADCA(IP,ITYP) + NPERSN(IP,ITYP)*70.1*
      &            RADC(IDTY,I)
-                CONCA(IP,ITYP)=CONCA(IP,ITYP) + NPERSN(IP,ITYP)*95.0*
+                CONCA(IP,ITYP)=CONCA(IP,ITYP) + NPERSN(IP,ITYP)*70.1*
      &            CONC(IDTY,I)
                 if(CMGSA(IP,ITYP).gt.0.0)then
                   RADFAC(IP,ITYP)= RADCA(IP,ITYP)/CMGSA(IP,ITYP)
@@ -2715,7 +2715,8 @@ C Read operations file for this zone
           ENDIF
 
 C Initialise the air flows and casual gains to zero for new day type
-          NAC(NBDAYTYPE)=0
+          NAC(NBDAYTYPE)=3
+          if (NAC(NBDAYTYPE-1).le.0) NAC(NBDAYTYPE-1)=1
           DO 200 I=NAC(NBDAYTYPE-1),MA
             IACS(NBDAYTYPE,I)=0
             IACF(NBDAYTYPE,I)=0
