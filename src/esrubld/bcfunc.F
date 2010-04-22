@@ -5638,12 +5638,18 @@ C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
 #include "tdf2.h"
 #include "control.h"
 #include "sbem.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/btime/btimep,btimef
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       common/dllerr/dllsubr,dllmesg
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
+     &             DFLP,DFLF,HFLP,HFLF
 
 C TDF commons.
 C Index for each potential temporal db entry type 0=not used, 2=tabular data.
@@ -5660,7 +5666,7 @@ C associated DSM testing models)
       COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
       COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
-      character dllsubr*12,dllmesg*124,outs*124
+      character dllsubr*12,dllmesg*124,outs*124,cmsg*12
       logical dll,near
       DIMENSION VAL(MTABC+2)
       integer COLUMNSETP ! column from control 23
@@ -5670,6 +5676,13 @@ C Check to see if running in dll mode.
 
 C Fatal error test.
       IF(BMISCD(ICF,IDTYP,IPER,1).LT.2.)GOTO 99
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL23')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
 C Determine sensed temperature.
       CALL CFVAR(TCTL,IER)
@@ -5683,6 +5696,7 @@ C QCM = max cooling capacity (W)
 C QCN = min cooling capacity (W)
 C HSP = heating set point temp. (deg.C)
 C CSP = cooling set point temp. (deg.C)
+      cmsg=' '
       QHM=999999.0
       QHN=0.0
       QCM=-999999.0
@@ -5692,6 +5706,8 @@ C CSP = cooling set point temp. (deg.C)
 
 C Turn cooling off if no UK NCM cooling generator is linked to this zone
 C If there is no system associated with the zone then set QCM to zero.
+C If this is the reference model then cooling will be present regardless
+C of the type of space conditioning system. This is done later on 
       IHLZP=IHLZ(IiCOMP)  ! set up pointer
       NEAR=.TRUE.
       if(ihlzp.ne.0) CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
@@ -5699,46 +5715,100 @@ C If there is no system associated with the zone then set QCM to zero.
 
 C Read setpoints from tdf here (CSP and HSP)
 C "COLUMNSETP" is an integer specifying the column within the
-C returned temporal item data array VAL. The RCTDFB always
-C returns only the data for one single temporal item.
+C returned temporal item data array VAL. 
+
+C Each activity has 5 data items. Counting the timestamp as
+C column 1 then the first activity will have heating setpoint
+C at column 5 and the cooling setpoint at column 6 and the
+c second activity will have its heating at column 10 and
+C cooling setpoint at column 11.  RCTDFBALL gets all of the
+C columns into VAL. But decrement COLUMNSETP by one to exclude
+C the initial time column.
       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
       if(IACTIV(ICF).ne.0)then
         itdi=IACTIV(ICF)
       elseif(IHTCLSETP(ICF).ne.0)then
         itdi=IHTCLSETP(ICF) 
-      endif   
-      IFOC=itdi
-      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-      HSP=VAL(COLUMNSETP)
+      endif
+
+C There is only a requirement to scan this timestep once to get
+C both the heating and cooling setpoints.
+      CALL RCTDFBALL(itrc,btimef,VAL,ISD,IER)
+      if(IACTIV(ICF).ne.0)then
+        HSP=VAL(COLUMNSETP-1)
+      elseif(IHTCLSETP(ICF).ne.0)then
+        HSP=VAL(COLUMNSETP)
+      endif
+
+C Now get the column for cooling.
       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
-      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-      CSP=VAL(COLUMNSETP)
+      if(IACTIV(ICF).ne.0)then
+        CSP=VAL(COLUMNSETP-1)
+        cmsg=' via column'
+      elseif(IHTCLSETP(ICF).ne.0)then
+        CSP=VAL(COLUMNSETP)
+        cmsg=' via column'
+      endif
         
 C If UK NCM reference building (or stripped with DSM testing flag equal to 2)
 C then cooling set point is always 27degC
       if(INOTI.EQ.2.OR.(INOTI.eq.4.AND.iDsmTestingFlag.eq.2))then
         CSP=27.0
+        cmsg=' via test'
+        QCM=-999999.0
       endif
 
 C If notional model or DSM testing then set cooling set point to 1degC
-C more than heating to compensate for overheating (5ach not implemented)
-C When commenting the lines below also comment two common blocks at
-C the begining of this subroutine.
-      if(INOTI.eq.1.or.iDsmTestingFlag.eq.1)then
+C more than static heating setpoint (found in the header of the temporal
+C file) to compensate for overheating (5ach not implemented). The value
+C in the header is based on information in SBEM.db1 which has been edited
+C to reflect the highest heating setpoint in the activities timestep
+C data. (the original static heating setpoint in SBEM.db1 was for use
+C only in iSbem.
+
+      if(INOTI.eq.1.or.iDsmTestingFlag.ge.1)then
         iitdi=IACTIV(IICOMP)
         if(iNatVentilatedFlag.eq.1)then
-          CSP=TMAR(iitdi,IATDF(iitdi,15))+1.!HSP+1.
-          QCM=-999999.0
+
+          HSPTest=TMAR(iitdi,IATDF(iitdi,15)) ! static high HSP
+          CSP=HSPTest+1.0   ! the official NCM logic
+          cmsg=' stat hsp+1'
+
+C Test commented out, use highest heating setpoint for the activity.
+C          if(HSPTest.ge.HSP)then
+C            CSP=HSPTest+1.0
+C            cmsg=' stat hsp+1'
+C          else
+C            CSP=HSP+1.0
+C            cmsg=' step hsp+1'
+C          endif
+
+C Test commented out. 
+C          if(CSP.lt.21.0)then
+C            CSP=21.0
+C            cmsg=' step hsp++'
+C          endif
+
+C Set up maximum cooling to equivalent of 5 air changes
+          QCM=-1.*0.333*5.*vol(iicomp)*(tfa(iicomp)-TFLWF)
+
+C If ambient is hotter than interior no cooling can be achieved
+          if(QCM.gt.0.)QCM=0.
         endif
       endif
-      
-C Debug. << there should be a trace code added! >>
-C       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
-C     &   ' value ',tctl,' for ctl loop ',icf,
-C     &   ' hsp ',hsp,' csp ',csp,' col csp ',COLUMNSETP
-C      IF(INOTI.EQ.2)write(6,*)'simulating UK NCM reference building'
 
-      IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
+      IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)then
+        IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &     ITRACE(41).NE.0) THEN
+          write(itu,'(a,f8.3,a,i3,a,f7.2,a,i3,a,f7.2,a,f7.2,2a,i3)')
+     &      'tdf ctl data @',btimef,' is item',itdi,
+     &      ' value ',tctl,' for ctl loop ',icf,
+     &      ' hsp ',hsp,' csp ',csp,cmsg,' column of csp ',COLUMNSETP
+          write(itu,*)'VAL is ',(val(i),i=1,24)
+          write(itu,*)'tctl ',tctl,' is in the deadband.'
+        ENDIF
+        RETURN
+      endif
 
 C Since sensed temperature is not within range, attempt to control
 C THIS zone's temperature.
@@ -5779,6 +5849,23 @@ C Is this available ?
     5 Q=QCM
     2 TFUT=(BB3-BB2*Q)/BB1
       QFUT=Q
+
+C Trace output format depending on whether VAV or CAV active.
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) THEN
+        write(itu,'(a,f8.3,a,i3,a,f7.2,a,i3,a,f6.2,a,f6.2,2a,i3,a,
+     &    f8.0)')
+     &    'tdf ctl data @',btimef,' is item',itdi,
+     &    ' value ',tctl,' for ctl loop ',icf,
+     &    ' hsp ',hsp,' csp ',csp,cmsg,' column of csp ',COLUMNSETP,
+     &    ' cooling cap ',QCM
+        write(itu,*)'VAL is ',(val(i),i=1,24)
+        write(itu,*)'Qfut is ',QFUT,' TFUT is ',TFUT
+        IF(INOTI.EQ.2)write(itu,*)'simulating UK NCM reference building'
+
+        call edisp(itu,' Leaving subroutine BCL23')
+      END IF
+
       return
    99 write(outs,'(a)')' BCL23: data incomplete.'
       if(dll)then

@@ -509,6 +509,7 @@ C Manual inclusion of a parameter from building.h
 C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -577,7 +578,7 @@ C      write(6,*) outstr(1:lnblnk(outstr))
 
 C Instanciate typper common block variables ia1wins,ia1winf,ia2wins,ia2winf 
         call egetrm(outstr,K,pstring,'W','winter typ',IER)
-        CALL CHITMS(pstring,ni)
+        ni = iCountWords(pstring)
         if(ni.eq.4)then
 
 C Only has the start and end day of early winter so create a default later winter.
@@ -617,7 +618,7 @@ C Has start and end day of both winters.
 
 C Instanciate typper common block variables ia1sprs,ia1sprf,ia2sprs,ia2sprf 
         call egetrm(outstr,K,pstring,'W','spring typ',IER)
-        CALL CHITMS(pstring,ni)
+        ni = iCountWords(pstring)
         if(ni.eq.4)then
 
 C Only has the start and end day of spring so create a default autumn.
@@ -657,7 +658,7 @@ C Has start and end day and typical day of spring and autumn.
 
 C Instanciate typper common block variables iasums & iasumf
         call egetrm(outstr,K,pstring,'W','summer typ',IER)
-        CALL CHITMS(pstring,ni)
+        ni = iCountWords(pstring)
         K=0
         CALL EGETWI(pstring,K,ID1,1,31,'F','day',IER)
         CALL EGETWI(pstring,K,IM1,1,12,'F','month',IER)
@@ -671,7 +672,7 @@ C Instanciate typper common block variables iasums & iasumf
 C Read winter season - two periods e.g. nov-dec & jan-feb
 C common block typsea is1wins,is1winf,is2wins,is2winf
         call egetrm(outstr,K,pstring,'W','winter sea',IER)
-        CALL CHITMS(pstring,ni)
+        ni = iCountWords(pstring)
         K=0
         CALL EGETWI(pstring,K,ID1,1,31,'F','day',IER)
         CALL EGETWI(pstring,K,IM1,1,12,'F','month',IER)
@@ -691,7 +692,7 @@ C common block typsea is1wins,is1winf,is2wins,is2winf
 C Read transition season - two periods e.g. mar-may & sep-oct
 C common block typsea is1sprs,is1sprf,is2sprs,is2sprf
         call egetrm(outstr,K,pstring,'W','trans sea',IER)
-        CALL CHITMS(pstring,ni)
+        ni = iCountWords(pstring)
         K=0
         CALL EGETWI(pstring,K,ID1,1,31,'F','day',IER)
         CALL EGETWI(pstring,K,IM1,1,12,'F','month',IER)
@@ -710,7 +711,7 @@ C common block typsea is1sprs,is1sprf,is2sprs,is2sprf
 
 C Read summer season - e.g. jun-aug (common block typsea is1sums,is1sumf).
         call egetrm(outstr,K,pstring,'W','summer sea',IER)
-        CALL CHITMS(pstring,ni)
+        ni = iCountWords(pstring)
         K=0
         CALL EGETWI(pstring,K,ID1,1,31,'F','day',IER)
         CALL EGETWI(pstring,K,IM1,1,12,'F','month',IER)

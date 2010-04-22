@@ -1,0 +1,45 @@
+#!/bin/csh
+# SYNOPSIS
+# This script does a global (all source related to each module)
+# syntax check of each of the ESP-r module. Linux version.
+
+# It is intended to be used during and ESP-r Install after
+# all of the executables have been created but prior to
+# the option to clean up the source folders.
+# The script invokes forchk with options that allow for a
+# range of coding issues to be identified and places these
+# in a file xx.chk (it backs up prior xx.chk).
+
+# YOU MAY NEED TO EDIT the script to supply the location for
+# the fckcnf file that is used by the forchk tool.
+
+# For eserubps and esruprj a file all_source.F is created because
+# of the number of files is more than forchk can handle.
+
+# The script also shows the last 40 lines of the report
+# as it progresses thru each module (this is the summary
+# section that may help you to spot whether there are new
+# errors.
+
+# This script is for Linux computers and expects that
+# forchk is installed in /usr/esru/bin and that the environment
+# variable FCKCNF has been set (typically to /usr/local/lib/forcheck/esp-r.cnf)
+
+echo "all_fckX11 assumes forchk V13 is in /usr/local/bin"
+echo "usage example: first cd to esp-r directory level, then"
+echo "usage example: all_fckX11"
+echo currently working on $PWD
+
+foreach i (esruaco esrub2e esrubps esruc2e esruclm esrucnv esrudfs esrudbm \
+  esrue2r esrueco esrugrd esruish esrumfs esrumld esrumrt esrunet esrupdb \
+  esruprj esrures esruvew )
+ if ( -d $i ) then
+   echo looking at $i
+   cd $i
+   if ( -f xx.chk ) mv xx.chk xx.chk-
+   /usr/local/bin/forchk  -I ../include *.F ../lib/esru_ask.F ../lib/esru_blk.F ../lib/esru_lib.F ../lib/esru_libNonGTK.F > xx.chk
+   echo "looking at xx.chk"
+   tail -40 xx.chk | more
+   cd ..
+ endif
+end

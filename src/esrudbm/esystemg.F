@@ -2785,7 +2785,7 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
+            ipathsbem=0  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
@@ -2829,27 +2829,27 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
+            ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif
 
 C Debug.
-C      write(6,*) file
-C      if(topic(1:3).eq.'opt')then
+      write(6,*) file
+      if(topic(1:3).eq.'opt')then
 C        write(6,*) loptdb
 C        write(6,*) 'findwhichdbpath ipath is ',ipathoptdb
-C      elseif(topic(1:3).eq.'pdb')then
+      elseif(topic(1:3).eq.'pdb')then
 C        write(6,*) LPCDB
 C        write(6,*) 'findwhichdbpath ipath is ',ipathpcdb
-C      elseif(topic(1:3).eq.'prs')then
+      elseif(topic(1:3).eq.'prs')then
 C        write(6,*) lapres
 C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
-C      elseif(topic(1:3).eq.'sbm')then
-C        write(6,*) lsbem
-C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
-C      endif
+      elseif(topic(1:3).eq.'sbm')then
+        write(6,*) lsbem
+        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
+      endif
 
       return
       end

@@ -571,6 +571,7 @@ C Note: escdef must come after scan of .esprc file.
       write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
       write(LPCDB,'(a)')  DPCDB(1:lnblnk(DPCDB))
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
+      LSBEM =DSBEM  ! assign default SBEM db
 
 C Clear the model common blocks.
       call clrprb
@@ -1871,7 +1872,7 @@ C Annual IPV report depreciated in favour of sipvres.
       elseif(WORD(1:7).eq.'*B-NAME')then
 
 C Next tokens relate to building address.
-        CALL EGETRM(LOUTSTR,K,pjname,'W','project complience name',IER)
+        CALL EGETRM(LOUTSTR,K,pjname,'W','project name',IER)
         goto 44
       elseif(WORD(1:10).eq.'*B-ADDRESS')then
         CALL EGETRM(LOUTSTR,K,baddress,'W','building address',IER)
@@ -3455,7 +3456,7 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
+            ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'prs')then
             ipathmat=0
@@ -3483,7 +3484,7 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathapres=1  ! local folder for pressure database
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
+            ipathsbem=1
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mat')then
             ipathmat=1  ! local folder for materials database
@@ -3535,7 +3536,7 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathapres=0
             write(lapres,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'sbm')then
-            ipathsbem=1  ! local folder for UK SBEM database
+            ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mat')then
             ipathmat=0

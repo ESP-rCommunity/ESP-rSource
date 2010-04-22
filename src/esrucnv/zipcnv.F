@@ -38,6 +38,7 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       
@@ -144,7 +145,7 @@ C second is the zone name, if more items then not a proper name.
   80  CONTINUE
       read(ioin,'(A)',end=44,err=900) tmp
       OUTSTR=tmp(1:LNBLNK(tmp))
-      CALL CHITMS(OUTSTR,ND)
+      ND = iCountWords(OUTSTR)
 
 C Debug.
 C      write(6,*)' ',outstr(1:40)

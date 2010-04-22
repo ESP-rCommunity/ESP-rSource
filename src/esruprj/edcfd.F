@@ -3435,6 +3435,8 @@ C PIKCELS controls the editing of the cells defining a boundary region.
       SUBROUTINE PIKCELS(BTYPE,BNAME,Ii,If,Ji,Jf,Ki,Kf,IFACE,IER)
 
 #include "cfd.h"
+      integer iCountWords
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/grdmax/NTCX,NTCY,NTCZ
@@ -3605,7 +3607,7 @@ C Ask for cells.
       h(5)='If in doubt, review the cell coordinates which listed'
       h(6)='in the text feedback area.'
       call EASKS(s30,'Boundary cells?',t30,30,dflt,'bndry cells',IER,6)
-      call CHITMS(s30,NITMS)
+      NITMS = iCountWords(s30)
       if (NITMS.ne.6) goto 10
 
 C Read six cell locations.
@@ -3749,6 +3751,7 @@ C gridding generation.
       SUBROUTINE TOPBOT(ICOMP,act,IER)
 #include "building.h"
 #include "prj3dv.h"
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -3867,7 +3870,7 @@ C This write assumes not-very-complex zones and surfaces.
      &      '  ',72,' ','associated vertices',IIER,8)
         endif
       endif
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       K=0
       DO 94 J=1,NV
         CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)
@@ -3930,7 +3933,7 @@ C This write statement assumes not-very-complex zones and polygons.
      &      '  ',72,' ','associated vertices',IIER,8)
         endif
       endif
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       K=0
       DO 95 J=1,NV
         CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)

@@ -46,6 +46,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -104,7 +105,7 @@ C ITEMS is menu for site/context items.
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
       character act*1,GTNAME*15
-      character D64*64  ! default string for editing
+      character D64*64,D20*20  ! default string for editing
       character ipvact*3  ! to denote whether in cfd file or external
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
@@ -425,7 +426,7 @@ C---- Simple or advanced models: ask for monthly values
           CALL EASKS(HOLD,' ',
      &      'January thro June ground reflectance (no snow)?',
      &      72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jan-jun',IER,7)
-          CALL CHITMS(HOLD,NV)
+          NV = iCountWords(HOLD)
           IF (NV.NE.6) GOTO 83
           K=0
           DO 84 J=1,6
@@ -439,7 +440,7 @@ C---- Simple or advanced models: ask for monthly values
           CALL EASKS(HOLD,' ',
      &      'July thro December ground reflectance (no snow)?',
      &       72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jul-dec',IER,7)
-          CALL CHITMS(HOLD,NV)
+          NV = iCountWords(HOLD)
           IF (NV.NE.6) GOTO 85
           K=0
           DO 86 J=7,12
@@ -468,7 +469,7 @@ C     with snow on the ground
             CALL EASKS(HOLD,' ',
      &        'Number of days in January thro June with snow?',
      &        72,'0 0 0 0 0 0','days with snow jan-jun',IER,2)
-            CALL CHITMS(HOLD,NV)
+            NV = iCountWords(HOLD)
             IF (NV.NE.6) GOTO 87
             K=0
             DO 88 J=1,6
@@ -482,7 +483,7 @@ C     with snow on the ground
             CALL EASKS(HOLD,' ',
      &        'Number of days in July thro December with snow?',
      &        72,'0 0 0 0 0 0 ','days with snow jul-dec',IER,3)
-            CALL CHITMS(HOLD,NV)
+            NV = iCountWords(HOLD)
             IF (NV.NE.6) GOTO 89
             K=0
             DO 90 J=7,12
@@ -637,8 +638,8 @@ C The address of the model (same data fields as entered in the ncm file.
         if(OK)then
           H(1)='Input a succinct description of the project name here.'
           write(D64,'(a)') 'notional model not named'
-          CALL EASKS(pjname,'Code complience project name?',
-     &      '(<64 characters)',64,D64,'project name',IER,1)
+          CALL EASKS(pjname,'Code compliance project name?',
+     &      '(20 characters maximum)',20,D20,'project name',IER,1)
           H(1)='Input first line of building address here'
           write(D64,'(a)') 'address not provided'
           CALL EASKS(baddress,'building address?','(<64 characters)',
@@ -814,7 +815,7 @@ C        call edisp(iuout,outs)
         H(1)='Temperatures are typically defined at a 1.5m depth.'
         CALL EASKS(HOLD,' ','Temperatures, January- thro June?',
      &      72,' ','gr prof jan-jun',IER,1)
-        CALL CHITMS(HOLD,NV)
+        NV = iCountWords(HOLD)
         if(NV.ne.6)goto 93
         K=0
         DO 94 J=1,6
@@ -827,7 +828,7 @@ C        call edisp(iuout,outs)
         H(1)='Temperatures are typically defined at a 1.5m depth.'
         CALL EASKS(HOLD,' ','Temperatures, July thro December?',
      &      72,' ','gr prof jan-jun',IER,1)
-        CALL CHITMS(HOLD,NV)
+        NV = iCountWords(HOLD)
         if(NV.ne.6)goto 95
         K=0
         DO 96 J=7,12
@@ -3481,6 +3482,7 @@ C EDDGTP Sets up ground temperature profiles
       SUBROUTINE EDDGTP(modsit)
 #include "building.h"
 #include "site.h"
+      integer iCountWords
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
@@ -3556,7 +3558,7 @@ C Ground temperature profiles....
       H(1)='Temperatures are typically at 1.5m depth.'
       CALL EASKS(HOLD,' Temperatures January-June:',' ',72,' ',
      &    'gr prof jan-jun',IER,1)
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       CALL EDISP(IUOUT,' Ground temperature profiles of ')
       CALL EDISP(IUOUT,HOLD)
       CALL EDISP(IUOUT,'will be used for January thro June.')
@@ -3572,7 +3574,7 @@ C Ground temperature profiles....
       H(1)='Temperatures are typically at 1.5m depth.'
       CALL EASKS(HOLD,' Temperatures July-December:',' ',72,' ',
      &    'gr prof jul-dec',IER,1)
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       CALL EDISP(IUOUT,' Ground temperature profiles of ')
       CALL EDISP(IUOUT,HOLD)
       CALL EDISP(IUOUT,'will be used for July thro December.')

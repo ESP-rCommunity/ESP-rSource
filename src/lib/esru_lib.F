@@ -38,7 +38,6 @@ C           to which of the choices has been chosen.
 C  EASKXORGTKF: Generic file edit/browse for X11 or GTK using easkf calls.
 C  iCountWords: Counts the number of space/tab/comma-separated
 C           words in a string.
-C  CHITMS, CHITMS400, LCHITMS: Legacy interfaces to iCountWords.
 
 C  isadll:  Checks if module is being used as a dll (silent running).
 C  isunix:  Checks if machine type is Unix or NT.
@@ -119,9 +118,6 @@ C  STRIPC: Strips comments from a ASCII file str (124 char) & returns data.
 C  LSTRIPC: Strips comments from a ASCII file str (248 char) & returns data.
 C  STRIPC400 strips comments from a ASCII file (400 char long) string and returns the data.
 C  STRIPC1K strips comments from a ASCII file (1000 char long) string and returns the data.
-C  CHITMS: Checks a character string & returns the number of data items.
-C  LCHITMS Checks a (248) character string (A), returning the number of data
-C  CHITMS400: Checks a (400) character string & returns the number of data items.
 C  CHARCH: Routine to check a string for a specific number of data items.
 C  NOYES:  INTEGER FUNCTION to read the answer Y,y,1,N,n,0 to a question.
 C  IFIRST: Function returning ASCII value for 1st char in a string ISTR.
@@ -7021,39 +7017,3 @@ C.........was blank, comma or tab, increment word coumt
       return
       end function iCountWords
 
-C ********************* CHITMS, LCHITMS, CHITMS400
-C These are legacy interfaces to iCountWords. They return
-C the number of words (IW) for a string A.
-
-      subroutine CHITMS(a,iw)
-      implicit none
-      integer iw
-      character*(*) a
-      integer iCountWords
-
-      iw = iCountWords(a)
-
-      return
-      end subroutine CHITMS
-
-      subroutine LCHITMS(a,iw)
-      implicit none
-      integer iw
-      character*(*) a
-      integer iCountWords
-
-      iw = iCountWords(a)
-
-      return
-      end subroutine LCHITMS
-
-      subroutine CHITMS400(a,iw)
-      implicit none
-      integer iw
-      character*(*) a
-      integer iCountWords
-
-      iw = iCountWords(a)
-
-      return
-      end subroutine CHITMS400

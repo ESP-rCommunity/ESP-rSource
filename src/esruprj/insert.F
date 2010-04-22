@@ -51,6 +51,7 @@ C << what about including common zndata in this manipulation? >>
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -1090,7 +1091,7 @@ C the individual vertex numbers from the list.
           CALL EASKS(HOLD,
      &     ' Give vertices (order anticlockwise viewed from outside)',
      &     '  ',72,' ','associated vertices',IER,5)
-          CALL CHITMS(HOLD,NV)
+          NV = iCountWords(HOLD)
           K=0
           DO 94 J=1,NV
             CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)
@@ -1109,7 +1110,7 @@ C present editing of vertices with the option for mouse.
               WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
-              CALL CHITMS(t248,NV)
+              NV = iCountWords(t248)
               K=0
               DO 943 J=1,NV
                 CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IER)
@@ -1161,7 +1162,7 @@ C User has specified clicking from mouse so just do that.
               WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
-              CALL CHITMS(t248,NV)
+              NV = iCountWords(t248)
               K=0
               DO 945 J=1,NV
                 CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IER)
@@ -1177,7 +1178,7 @@ C string. Fill the string first with spaces (MSYS should like this approach
             write(t248,'(4a)') hold64,hold64,hold64,'                 '
             CALL EASKS248(t248,'Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,8)
-            CALL CHITMS(t248,NV)
+            NV = iCountWords(t248)
             K=0
             DO 944 J=1,NV
               CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IER)

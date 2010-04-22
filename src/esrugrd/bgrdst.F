@@ -656,6 +656,7 @@ C EDTMSH allows editing mesh widths.
 C *********************************************************************
       SUBROUTINE EDTMSH(NDim,LDim,DimName)
 #include "building.h"
+      integer iCountWords
 
       DIMENSION LDim(MLEV)
 
@@ -677,7 +678,7 @@ C *********************************************************************
         WRITE(StrVal,'(10(1X,I6))')(LDim(J),J=IStart,IEnd)
   20    CALL EASKS(StrVal,Promp,' ',72,' ','mesh widths',IER,0)
         CALL USRMSG(' ',' ','-')
-        CALL CHITMS(StrVal,NInp)
+        NInp = iCountWords(StrVal)
         NExpct=IEnd-IStart+1
         IF(NInp.NE.NExpct)THEN
           WRITE(Msg,'(A,I3,A)')'You should enter ',NExpct,' values.'
@@ -700,6 +701,7 @@ C DVDMSH allows dividing mesh widths.
 C *********************************************************************
       SUBROUTINE DVDMSH(NDim,LDim,IndDim)
 #include "building.h"
+      integer iCountWords
 
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
       COMMON/GRSD52/IMRowS(MMTR),IMRowE(MMTR)
@@ -753,7 +755,7 @@ C *********************************************************************
             WRITE(StrVal,'(10(1X,I6))')(NewL,J=1,NDiv)
    70       CALL EASKS(StrVal,Promp,' ',72,' ','mesh widths',IER,0)
             CALL USRMSG(' ',' ','-')
-            CALL CHITMS(StrVal,NInp)
+            NInp = iCountWords(StrVal)
             IF(NInp.NE.NDiv)THEN
               WRITE(Msg,'(A,I3,A)')'You should enter ',NDiv,' values.'
               CALL USRMSG(' ',Msg,'W')
@@ -1122,6 +1124,7 @@ C MTRINP allows editing and adding material geometries.
 C *********************************************************************
       SUBROUTINE MTRINP(I)
 #include "building.h"
+      integer iCountWords
 
       common/pophelp/h(60)
 
@@ -1145,7 +1148,7 @@ C *********************************************************************
      &                         IMLayS(I),IMRowE(I),IMColE(I),IMLayE(I)
   10  CALL EASKS(StrVal,Promp,' ',72,' ','material geometry',IER,6)
       CALL USRMSG(' ',' ','-')
-      CALL CHITMS(StrVal,NInp)
+      NInp = iCountWords(StrVal)
       NExpct=8
       IF(NInp.NE.NExpct)THEN
         WRITE(Msg,'(A,I1,A)')'You should enter ',NExpct,' values.'
@@ -1380,6 +1383,7 @@ C BNDINP allows editing and adding boundary geometries.
 C *********************************************************************
       SUBROUTINE BNDINP(I)
 #include "building.h"
+      integer iCountWords
 
       common/pophelp/h(60)
 
@@ -1403,7 +1407,7 @@ C *********************************************************************
       H(6)=' '
   10  CALL EASKS(StrVal,Promp,' ',72,' ','boundary box',IER,6)
       CALL USRMSG(' ',' ','-')
-      CALL CHITMS(StrVal,NInp)
+      NInp = iCountWords(StrVal)
       NExpct=8
       IF(NInp.NE.NExpct)THEN
         WRITE(Msg,'(A,I1,A)')'You should enter ',NExpct,' values.'
@@ -1572,6 +1576,7 @@ C FHDSTM controls the drawing of the free hand sketch for the cross
 C section of a given gridding level.
 C *********************************************************************
       SUBROUTINE FHDSTM(ICalc)
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
@@ -1595,7 +1600,7 @@ C Draw the cross section based on the required view dimension and level.
       WRITE(StrVal,'(A4)')'3  4'
   10  CALL EASKS(StrVal,Promp,' ',14,' ','View Indices',IER,4)
       CALL USRMSG(' ',' ','-')
-      CALL CHITMS(StrVal,NInp)
+      NInp = iCountWords(StrVal)
       NExpct=2
       IF(NInp.NE.NExpct)THEN
         WRITE(Msg,'(A,I1,A)')'You should enter ',NExpct,' values.'

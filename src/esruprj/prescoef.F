@@ -1767,6 +1767,8 @@ C EDPCST allows changes of the name of a pressure coefficient
 C set or the values of the pressure coefficients.
       SUBROUTINE EDPCST(IER,moddb,IFOC)
 #include "net_flow.h"
+      integer iCountWords
+
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/OUTIN/IUOUT,IUIN
       common/MFLDOC/DEPRE(MPRD)
@@ -1808,7 +1810,7 @@ C First eight pressure coeficients ...
       IF(IER.NE.0)GOTO 35
 
 C Check whether number of returned number is 8, if so extract data.
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       if(NV.ne.8)goto 35
       K=0
       DO 36 jt=1,8
@@ -1827,7 +1829,7 @@ C Second eight pressure coeficients ...
       IF(IER.NE.0)GOTO 351
 
 C Check whether number of returned numbers is 8, if so, extract data.
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       if(NV.ne.8)goto 351
       K=0
       DO 361 jt=9,16

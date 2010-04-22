@@ -39,6 +39,7 @@ C MENUGM displays the ground modelling menu.
 C *********************************************************************
       SUBROUTINE MENUGM(IDRW1)
 #include "building.h"
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -128,7 +129,7 @@ C Define X - gridding.
      &    '(m) for intervals (',IFRST,') to (',(IFRST+5),').'
         h(1)='Data related to X gridding. '
         CALL EASKS(VALUES,MSG,' ',72,' ',' gridding intervals ',IER,1)
-        CALL CHITMS(VALUES,NDX)
+        NDX = iCountWords(VALUES)
         IF(NDX.GT.6)THEN
           CALL USRMSG(' ',
      &             ' only six intervals are allowed at a time.','W')
@@ -168,7 +169,7 @@ C Define Y - gridding.
      &    '(m) for intervals (',IFRST,') to (',(IFRST+5),').'
         h(1)='Data related to Y gridding. '
         CALL EASKS(VALUES,MSG,' ',72,' ',' gridding intervals ',IER,1)
-        CALL CHITMS(VALUES,NDY)
+        NDY = iCountWords(VALUES)
         IF(NDY.GT.6)THEN
           CALL USRMSG(' ',
      &             ' only six intervals are allowed at a time.','W')
@@ -208,7 +209,7 @@ C Define Z - gridding.
      &    '(m) for intervals (',IFRST,') to (',(IFRST+5),').'
         h(1)='Data related to Z gridding. '
         CALL EASKS(VALUES,MSG,' ',72,' ',' gridding intervals ',IER,1)
-        CALL CHITMS(VALUES,NDZ)
+        NDZ = iCountWords(VALUES)
         IF(NDZ.GT.6)THEN
           CALL USRMSG(' ',
      &             ' only six intervals are allowed at a time.','W')
@@ -279,7 +280,7 @@ C reference. Use elistmat to select via materials array.
      &                      ' (left, down, right, and up)'
         h(1)='4 numbers are required. '
         CALL EASKS(LMTS,MSG,' ',32,' ',' rectangle limits ',IER,1)
-        CALL CHITMS(LMTS,NUM)
+        NUM = iCountWords(LMTS)
         IF(NUM.NE.4)THEN
           CALL USRMSG(' ','four integers should be entered.','W')
           GOTO 10
@@ -378,6 +379,7 @@ C *********************************************************************
       SUBROUTINE GNDBND(IDRW1)
 #include "building.h"
 #include "epara.h"
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -485,7 +487,7 @@ C Edit item identified by KEYIND.
         VALUES=' '
         h(1)='<<to be completed>> '
         CALL EASKS(VALUES,MSG,' ',72,' ',' boundary type ',IER,1)
-        CALL CHITMS(VALUES,NUM)
+        NUM = iCountWords(VALUES)
         IF(NUM.NE.3)THEN
           CALL USRMSG(' ','three integers should be entered.','W')
           GOTO 10
@@ -528,7 +530,7 @@ C Add new boundary type.
      &                   'boundary type number (',NMBR,').'
         VALUES=' '
         CALL EASKS(VALUES,MSG,' ',72,' ',' boundary type ',IER,20)
-        CALL CHITMS(VALUES,NUM)
+        NUM = iCountWords(VALUES)
         IF(NUM.NE.3)THEN
           CALL USRMSG(' ','three integers should be entered.','W')
           GOTO 10
@@ -636,7 +638,7 @@ C Define a boundary surface.
           VALUES=' '
           h(1)='4 numbers are required. '
           CALL EASKS(VALUES,MSG,' ',72,' ',' boundary borders ',IER,1)
-          CALL CHITMS(VALUES,NUM)
+          NUM = iCountWords(VALUES)
           IF(NUM.NE.5)THEN
             CALL USRMSG(' ','five integers should be entered.','W')
             GOTO 10

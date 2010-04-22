@@ -386,7 +386,7 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
    else
     # Add XML include files to include paths
     xml_libs_found="yes"
-    LIBXML2_INCLUDE="-I/usr/include -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/local/include/libxslt"
+    LIBXML2_INCLUDE="-I/usr/include -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/usr/include/libxslt -I/local/include/libxslt"
 
     # xml support may optionally include support for xslt & exslt. Check
     # that libraries are available
