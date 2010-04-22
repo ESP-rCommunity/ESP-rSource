@@ -2029,6 +2029,7 @@ C Method checks for minimally linked vertices.
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -2414,7 +2415,7 @@ C the individual vertex numbers from the list.
      &        '  ',72,' ','associated vertices',IIER,8)
           endif
         endif
-        CALL CHITMS(HOLD,NV)
+        NV = iCountWords(HOLD)
         K=0
         DO 94 J=1,NV
           CALL EGETWI(HOLD,K,JV,1,NGTV,'W','vertex list',IER)
@@ -2447,6 +2448,7 @@ C IER=1 problem.
 #include "prj3dv.h"
 #include "esprdbfile.h"
 #include "material.h"
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -3115,7 +3117,7 @@ C Incrementally write out vertex information (within 72 chars).
   42    continue
         write(outs,'(2a)') ' Associated vertices for ',gsname(ifoc)
   43    CALL EASKS(HOLD,outs,'  ',72,' ','associated vertices',IIER,8)
-        CALL CHITMS(hold,NV)
+        NV = iCountWords(HOLD)
 
 C Debug.
 C        write(6,*) 'found nv ',NV

@@ -54,6 +54,7 @@ C espriou.h provides currentfile, defdbfl exemfl.
 #include "net_flow.h"
 #include "prj3dv.h"
 #include "ipvdata.h"
+#include "sbem.h"
 C Radiance RCF file.
 #include "e2r_common.h"
       PARAMETER (MSTMC=20)
@@ -269,6 +270,7 @@ C Set folder separator (fs) to \ or / as required.
       GTGEOM='UNKNOWN'
       LUALF='UNKNOWN'
       lipvdatf='UNKNOWN'
+      LASBEM='UNKNOWN'  ! assume no UK NCM description
       nipvassmt=0  ! to signal initially no IPV defined
       dmdsdesc='no dispersed demands notes (yet)'
       bdmds='UNKNOWN'

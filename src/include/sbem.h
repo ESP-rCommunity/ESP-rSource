@@ -43,9 +43,16 @@ C Integers
       INTEGER IBRUKLF   ! BRUKL HVAC-SFP index number (specific fan power)
       INTEGER IBTYPNDX  ! Building type index number
       INTEGER IBTYP     ! this matches the index value in NCM guide table 4
+
+C Following variables are used for inferring air changes per hour
+C from air permeability values using CIBSE data
+      INTEGER ICIBSESTOR ! Number of storeys
+      INTEGER ICIBSEAREA ! Floor area per storey
+
       COMMON/SBEM01/IBRUKLH(MFT,MPT,MHT),ISYSAPP(MPT,MHT),
      & IATYPNDX(MAC,MBT),IBRUKLC(MHC,MHT),IBRUKLW(MDW,MWS),
-     & IBRUKLF(MHT),IBTYPNDX(MBT),IBTYP
+     & IBRUKLF(MHT),IBTYPNDX(MBT),IBTYP,ICIBSESTOR(8,4),
+     & ICIBSEAREA(8,4)
 
 C Strings
       CHARACTER*42 FUELNAME ! Name of fuel used
@@ -62,9 +69,17 @@ C Strings
       CHARACTER*48 ATYPNAME ! Activity type name
       CHARACTER*70 TLIGHT   ! Lighting type name
       CHARACTER*42 SCLMTNM  ! Climate location/file name
+
+C Following variables are used for inferring air changes per hour
+C from air permeability values using CIBSE data
+      CHARACTER*14 CIBSEBLDN ! CIBSE table building name
+      CHARACTER*34 CIBSEBLDD ! CIBSE table building description
+      CHARACTER*54 CIBSESTR1 ! concatenation of above two
+
       COMMON/SBEM02/FUELNAME(MFT),SYSNAME(MPT),HSYSNAME(MHT),BLDSS(MSS),
      & DHWGEN(MDW),BTYPNAME(MBT),SBTYP(MSBT),BLDREG(MREG),BLDSTG(MSTG),
-     & ATYPNAME(MAC),TLIGHT(MILS),SCLMTNM(MCLM),TEMPZS(MPT)
+     & ATYPNAME(MAC),TLIGHT(MILS),SCLMTNM(MCLM),TEMPZS(MPT),
+     & CIBSEBLDN(8),CIBSEBLDD(8),CIBSESTR1(8)
 
 C Real numbers
       REAL FUELCO2  ! CO2 emission rating for fuel
@@ -82,9 +97,15 @@ C Real numbers
       REAL SLRINSO  ! Solar insolation at various inclinations/orientations
       REAL SAWS     ! sum of cubes of hourly wind speed data 
       REAL AAWS     ! Average annual wind speed
+
+C Following variable is used for inferring air changes per hour
+C from air permeability values using CIBSE data. The array is sized by number of
+C tables in CIBSE guide by number of permeability values given in the same table
+      REAL CIBSEACH ! air change per hour value
+
       COMMON/SBEM03/FUELCO2(MFT),SYSEFFC(MCS,MHT),DHWEFF(MDW,2),
      & SYSEFF(MPT),BLDIF(MSS),BLDLZC(MSS),PDRL(MILS,2),VERSBEM,SFPDEF,
-     & SLRINSO(MCLM,56),SAWS(MCLM),AAWS(MCLM)
+     & SLRINSO(MCLM,56),SAWS(MCLM),AAWS(MCLM),CIBSEACH(8,4,5)
 
 C Integers
       INTEGER IBRUKH    ! BRUKL number of HVAC system (model specific 
@@ -107,6 +128,14 @@ C Integers
                         ! 1 if DHW storage system but no circulation loop are present
                         ! 2 if DHW storage system and circulation loop are present
       INTEGER ILIGHTUSER ! flag for user defined lighting wattage
+      INTEGER IVENT     ! Ventilation strategy for this system 
+                        ! 0 = natural
+                        ! 1 = centralised balanced mech vent system (notional SFP=2W/l/s)
+                        ! 2 = zonal supply system with remote fan (notional SFP=1.2)
+                        ! 3 = zonal extract system with remote fan (notional SFP=0.8)
+                        ! 10+IVENT = local ventilation only units (notional SFP=0.5) present
+                        ! Default value 0. See NCM modelling guide 2008 version 
+                        ! tables 7 and 12 for more details 
       INTEGER ISBEM     ! a value of 1 signals that isbem data exists
       INTEGER IBUSERTYP ! this matches the list of buildings in isbem.
       INTEGER IBSS      ! building service strategy
@@ -146,7 +175,8 @@ C Integers
       COMMON/SBEM04/IBRUKH(MNS),IBRUKC(MNS),IBRUKW(MNS),IBRUKF(MNS),
      &IHGEF(MNS),ICGEF(MNS),IFTYP(MNS),IHLZ(MNS),IDHWS(MNS),IDHFL(MNS),
      &INCMSYS(MNS),IDHWLZ(MNS),IACTYTYP(MNS),ILITYP(MNS),IDHWSS(MNS),
-     &ILIGHTUSER(MNS),ISBEM,IBUSERTYP,IBSS,IRGG,ISTG,ISBT,NCMSYS,INOTI,
+     &ILIGHTUSER(MNS),IVENT(MNS),
+     &ISBEM,IBUSERTYP,IBSS,IRGG,ISTG,ISBT,NCMSYS,INOTI,
      &NDHWSYS,theactivityindex(MNS),NREN,NRENTYPE(MREN),
      &Y_inspect,M_inspect,D_inspect,S_Yinsur,S_Minsur,S_Dinsur,E_Yinsur,
      &E_Minsur,E_Dinsur,pi_limit
@@ -157,7 +187,7 @@ C Strings
       CHARACTER*72 LASBEM       ! SBEM project specific file name (*.ncm)
       CHARACTER*3  SBREF        ! Scottish Accredited Construction Details followed (yes/no)
       CHARACTER*3  APCHK        ! Compliance of air permeabilty to be checked (yes/no)
-      CHARACTER*64 PJNAME       ! Project name
+      CHARACTER*20 PJNAME       ! Project name
       CHARACTER*64 BADDRESS     ! Building address
       CHARACTER*64 BCITY        ! Building in which city?
       CHARACTER*64 OWNERNAME    ! Owner name
@@ -457,13 +487,20 @@ C Activities global list
       REAL display_lighting        ! lighting display W/m2
       REAL Hmainsetpoint,Cmainsetpoint  
       REAL fNotionalLighting
-      REAL fTypicalLighting      
+      REAL fTypicalLighting
+      REAL fMonthEstSysHrs       ! for each month assumed hours of env sys use
+                                 ! 13th value is annual assumed hours of env systems use      
+      REAL nonzerohours          ! hours of year with non-zero occupancy/lights/equipemt
+      REAL atleastonehour        ! days which have (at least some) occupancy/lights/equipment
+      REAL casualfracsum         ! summation of the hourly occupant/lighting/equipment fractions
       common/actglob/bld_order_index(MACL),occupant_dens(MACL),
      &  metabolic_rate(MACL),fresh_air(MACL),lighting_lux(MACL),
      &  equip_gain(MACL),dhw_litres(MACL),latent_ocup_percent(MACL),
      &  latent_equip_percent(MACL),display_lighting(MACL),
      &  Hmainsetpoint(MACL),Cmainsetpoint(MACL),fNotionalLighting(MACL),
-     &  fTypicalLighting(MACL)
+     &  fTypicalLighting(MACL),fMonthEstSysHrs(MACL,13),
+     &  nonzerohours(MACL,3),atleastonehour(MACL,3),
+     &  casualfracsum(MACL,3) 
                 
 C Reals not in common
 C      REAL TyERE    ! total annual energy for typical building

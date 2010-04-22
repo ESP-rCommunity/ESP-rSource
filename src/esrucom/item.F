@@ -596,12 +596,14 @@ C ******* EXGMAT
 C Extract text alternatives from gmat in the string array salt.
       subroutine exgmat(ia,SALT,ier)
 #include "tdf2.h"
+      integer iCountWords
+
       COMMON/TDFG2/GMAT(MGAT)
       DIMENSION SALT(6)
       CHARACTER GMAT*52,line*52,SALT*16
 
       write(line,'(a52)') GMAT(IA)
-      CALL CHITMS(line,n)
+      n = iCountWords(line)  ! get nb of tokens in the line of text
       salt(1)=' '
       salt(2)=' '
       salt(3)=' '

@@ -805,10 +805,15 @@ C and used by various facilities.
       WRITE(IFCFG,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'
 
-C If SBEM compliance checking is active write name of NCM file.
+C If SBEM compliance checking is active write name of NCM file if
+C it is something other than UNKNOWN.
       IF(ISBEM.EQ.1)THEN
+        if(LASBEM(1:4).eq.'UNKN')then
+          continue
+        else
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',
      &    LASBEM(1:lnblnk(LASBEM))
+        endif
       ENDIF
       IF(INOTI.EQ.1)THEN
         WRITE(OUTS,'(2A)')'*not # UK NCM notional model (10% thermal',

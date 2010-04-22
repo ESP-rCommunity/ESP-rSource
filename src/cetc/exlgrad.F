@@ -43,14 +43,14 @@ C  iExtLongRadFlag  flag indicating whether a ground profile has been entered
 C                   or edited. .iExtLgRadFlag=1 indicates yes; 0 indicates no.
 C  eGrdTp           user input ground temperature profile (array).
 C
-C This subroutine uses the ESP-r subroutines EDISP, EASKAB, EASKS, CHITMS
+C This subroutine uses the ESP-r subroutines EDISP, EASKAB, EASKS, iCountWords
 C and EGETWR. A description of what each of these subroutines does is 
 C provided below.
 C
-C  The subroutine EDISP is in the /lib/esru directory. EDISP sends text
+C  The subroutine EDISP is in the src/lib/ directory. EDISP sends text
 C  to scrolling display
 C
-C  The subroutine EASKAB is in the /lib/esru directory. EASKAB is a 
+C  The subroutine EASKAB is in the src/lib/ directory. EASKAB is a 
 C  generic choice facilty returning 1 or 2 according to which of the
 C  options has been chosen.
 C  EASKAB(MSG1, MSG2, AOPT,BOPT,IWHICH,NHELP)
@@ -65,14 +65,13 @@ C  ISTRW is the length of the string returned. DSTR is a string to
 C  use as default. ERMSG is a string placed at the top of the selection
 C  menu. IER is error state (0 okay). NHELP is number of help lines.
 C  H() is the help array.
-C  EASKS subroutine is in the /lib/esru directory.
+C  EASKS subroutine is in the src/lib/ directory.
 C
-C  CHITMS checks a character string and returns the number of items
+C  iCountWords checks a character string and returns the number of items
 C  separated by ' ', tab or ','.
-C  CHITMS(A,IW). A is the character string, IW is the number of items.
-C  CHITMS is in the /lib/esru directory
+C  iCountWords is in the src/lib/ directory
 C
-C  EGETWR is found in the /lib/esru directory.
+C  EGETWR is found in the src/lib/ directory.
 C  EGETWR(STRING,K,RV,RMN,RMX,RACT,MSG,IER)
 C  EGETWR gets first word after position K from the STRING of
 C  characters and converts it into a real number RV. 
@@ -85,6 +84,7 @@ C  Words may be separated by blanks, tabs or commas.
 
        
        IMPLICIT NONE
+       integer iCountWords
 
         CHARACTER*72   h             
         CHARACTER*124  OUTS
@@ -152,7 +152,7 @@ C Ask for first 6 temperatures
            CALL EASKS(hold,' Temperatures January-June:',' ',72,
      &            '7.28   6.50   6.56   7.33   9.06   11.39 ',
      &            'gr prof jan-jun',ier,1)
-           CALL CHITMS(hold,numVal)
+           numVal = iCountWords(hold)
            IF(numVal.NE.6) goto 10
            k=0
 
@@ -174,7 +174,7 @@ C Ask for remaining 6 temperatures.
            CALL EASKS(hold,' Temperatures July-December:',' ',72,
      &             '13.50   14.33   14.11   11.72   10.72   8.67  ',
      &             'gr prof jul-dec',ier,1)
-           CALL CHITMS(hold,numVal)
+           numVal = iCountWords(hold)
 
            IF(numVal.NE.6)goto 20
            k=0

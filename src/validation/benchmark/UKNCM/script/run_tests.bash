@@ -54,15 +54,15 @@ echo 'Simulations complete.'
 ./write_report.bash
 
 echo 'Remove results scratch (fort) files [y/n] ? n'
-#read A
-A=y
+read A
+# A=y
 if [ $A = "y" ]; then
   rm -rf *det* *sum*
 fi
 
 echo 'Remove stripped, notional etc. model files [y/n] ? n'
-#read A
-A=y
+read A
+# A=y
 if [ $A = "y" ]; then
   for i in 1 2 3 4 5 6 7 8 9 10
   do
@@ -71,11 +71,15 @@ if [ $A = "y" ]; then
 fi
 
 # Delete dummy results files for models not simulated if any
-for i in 1 2 3 4 5 6 7 8 9 10
-do
+echo 'Remove dummy results files [y/n] ? n'
+read A
+if [ $A = "y" ]; then
+  for i in 1 2 3 4 5 6 7 8 9 10
+  do
   if [ $N = $i ] || [ $N = 0 ];then
     dummy=0
   else
     rm -rf res_det.$i res_sum.$i res_98.$i
   fi
-done
+  done
+fi

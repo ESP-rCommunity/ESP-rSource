@@ -21,52 +21,7 @@ C Boston, MA 02111-1307 USA.
 C RADCTL.F contains routines to control the creation of radiance files 
 C and the control the visulaisation process depending on the value of 
 C SCENEPURP. Contains:
-C  CHITMSL - a copy of CHITMS but for longer strings (300 characters).
 C  RADPAR - check and update render options.
-
-
-C ********************* CHITMSL *********************
-C CHITMSL checks a character string (A), returning the number of data
-C items (IW) separated by ' ' tab or ','.  Note to keep from 
-C overwriting the string passed, deal with a copy.
-C CHITMSL is similar to CHITMS but allows checking of longer strings and
-C is particularly useful for Radiance.
-      SUBROUTINE CHITMSL(A,IW)
-      
-      integer lnblnk  ! function definition
-      CHARACTER*(*) A
-      CHARACTER B*254,C*1
-
-
-      ISLENG=LNBLNK(A)
-      if (ISLENG.lt.254) ISLENG=ISLENG+1
-
-      WRITE(B,'(A)') A(1:ISLENG)
-
-C Loop through B and convert all ',' and 'tabs' to blanks.
-      DO 100 I=1,LNBLNK(B)+1
-        C=B(I:I)
-        IF(C.EQ.','.OR.ICHAR(C).EQ.9) B(I:I)=' '
-  100 CONTINUE
-
-C Loop through B and see how many 'words'.
-      K=0
-      IW=0
-  102 IW=IW+1
-
-C Start by skipping blanks before the word.
-   10 K=K+1
-      C=B(K:K)
-      IF(C.EQ.' ') GOTO 10
-
-C Loop character by character until separator is found.
-   20 K=K+1
-      C=B(K:K)
-      IF(K.GE.LNBLNK(B))RETURN
-      IF(C.EQ.' ') GOTO 102
-      GOTO 20
- 
-      END
 
 C ********************* RADPAR *********************
 C RADPAR - check and update render options.
@@ -76,6 +31,7 @@ C If VAL is < 0 then return current setting otherwise set par=VAL.
 #include "e2r_common.h"
 
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype
@@ -116,7 +72,7 @@ C      xms=-1.
       
 
 C Check for defined items - if found then decode.
-      call CHITMSL(crenrp,IW)
+      IW = iCountWords(crenrp)
       K=0
  10   if (IW.gt.1) then
         call EGETW(crenrp,K,flag,'W','radiance parameter',IER)

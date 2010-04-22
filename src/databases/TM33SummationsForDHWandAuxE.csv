@@ -1,0 +1,492 @@
+"ACTIVITY","NAME",Hours of DHW use in a year.
+ 1,"Cellular office",68.25
+ 2,"Open plan office",107.25
+ 3,"Storage area",0
+ 4,"Circulation area (corridors and stairways) - non public",0
+ 5,"Toilet",0
+ 6,"Tea making",0
+ 7,"Meeting room",18.52
+ 8,"Food preparation area",109.14
+ 9,"Eating/drinking area",1981.58
+ 10,"Sales area - general",17.56
+ 11,"Sales area - chilled",17.56
+ 12,"Storage area - chilled",0
+ 13,"Display area",0
+ 14,"Plant room",0
+ 15,"Workshop - small scale",71.34
+ 17,"Cellular office",68.25
+ 18,"Open plan office",107.25
+ 19,"Storage area",0
+ 20,"Circulation area (corridors and stairways)",0
+ 21,"Toilet",0
+ 22,"Tea making",0
+ 23,"Storage area - chilled",0
+ 24,"Plant room",0
+ 25,"Workshop - small scale",71.34
+ 27,"High density IT work space",205.13
+ 28,"IT equipment",0
+ 29,"Cellular office",39.69
+ 30,"Open plan office",62.37
+ 31,"Storage area",0
+ 32,"Circulation area (corridors and stairways)",0
+ 33,"Toilet",0
+ 34,"Tea making",0
+ 35,"Reception",5.67
+ 36,"Meeting room",11.34
+ 37,"Dry sports hall",0
+ 38,"Changing facilities",4590
+ 39,"Swimming pool",0
+ 40,"Food preparation area",62.37
+ 42,"Eating/drinking area",1134
+ 43,"Plant room",0
+ 44,"Bathroom",0
+ 45,"Bedroom",2357.41
+ 46,"Cellular office",34.87
+ 47,"Open plan office",54.8
+ 48,"Storage area",0
+ 49,"Circulation area (corridors and stairways)",0
+ 50,"Toilet",0
+ 51,"Tea making",0
+ 52,"Reception",4.65
+ 53,"Meeting room",11.19
+ 54,"Dry sports hall",0
+ 55,"Changing facilities",9243.75
+ 56,"Swimming pool",0
+ 57,"Food preparation area",65.01
+ 58,"Hall/lecture theatre/assembly area",26.68
+ 59,"Laboratory",53.75
+ 60,"Waiting room",46.5
+ 61,"Consulting room",32.55
+ 62,"Eating/drinking area",1215.6
+ 64,"Performance area (stage)",0
+ 65,"Plant room",0
+ 66,"Workshop - small scale",34.21
+ 68,"High density IT work space",93
+ 69,"IT equipment",0
+ 70,"Cellular office",53.13
+ 71,"Cellular office",39.69
+ 72,"Cellular office",53.13
+ 73,"Cellular office",54.15
+ 76,"Cellular office",76.65
+ 77,"Cellular office",75.21
+ 78,"Cellular office",76.14
+ 79,"Cellular office",55.58
+ 80,"Cellular office",75.28
+ 81,"Cellular office",75.64
+ 82,"Cellular office",53.13
+ 83,"Cellular office",53.13
+ 84,"Cellular office",58.53
+ 85,"Cellular office",75.68
+ 86,"Cellular office",53.13
+ 87,"Cellular office",76.65
+ 88,"Cellular office",74.97
+ 89,"Cellular office",53.13
+ 90,"Cellular office",55.38
+ 91,"Cellular office",53.13
+ 92,"Open plan office",83.49
+ 93,"Open plan office",62.37
+ 94,"Open plan office",83.49
+ 95,"Open plan office",85.09
+ 96,"Offices",83.49
+ 97,"Open plan office",120.45
+ 98,"Open plan office",118.19
+ 99,"Open plan office",119.65
+ 100,"Open plan office",87.35
+ 101,"Open plan office",118.3
+ 102,"Open plan office",118.87
+ 103,"Open plan office",83.49
+ 104,"Open plan office",83.49
+ 105,"Open plan office",91.97
+ 106,"Open plan office",118.93
+ 107,"Open plan office",83.49
+ 108,"Open plan office",120.45
+ 109,"Open plan office",117.81
+ 110,"Open plan office",83.49
+ 111,"Open plan office",87.03
+ 112,"Open plan office",83.49
+ 113,"Storage area",0
+ 114,"Storage area",0
+ 115,"Storage area",0
+ 116,"Storage area",0
+ 117,"Storage area",0
+ 118,"Storage area",0
+ 119,"Storage area",0
+ 120,"Storage area",0
+ 121,"Storage area",0
+ 122,"Storage area",0
+ 123,"Storage area",0
+ 124,"Storage area",0
+ 386,"Common room/staff room/lounge",0
+ 387,"Common room/staff room/lounge",56.7
+ 388,"Common room/staff room/lounge",0
+ 389,"Common room/staff room/lounge",0
+ 390,"Laundry",14530.98
+ 391,"Cellular office",74.97
+ 392,"Common room/staff room/lounge",56.7
+ 393,"Common room/staff room/lounge",0
+ 394,"Common room/staff room/lounge",0
+ 395,"Common room/staff room/lounge",0
+ 396,"Common room/staff room/lounge",0
+ 397,"Common room/staff room/lounge",0
+ 398,"Domestic Toilet",191.62
+ 399,"Domestic Bedroom",194.86
+ 400,"Domestic Bathroom",184.97
+401,"Domestic Dining room",216.77
+402,"Domestic Kitchen",216.77
+403,"Domestic Lounge",215.98
+ 404,"Domestic Circulation",170.4
+ 405,"Common room/staff room/lounge",0
+ 406,"Common room/staff room/lounge",0
+ 407,"Changing facilities",10644.62
+ 408,"Plant room",0
+ 409,"Changing facilities",7590
+ 410,"Common room/staff room/lounge",0
+ 411,"Check in area",317.13
+ 412,"Baggage Reclaim area",337.63
+ 413,"Sales area - chilled",14.6
+ 414,"Storage area - chilled",0
+ 415,"High density IT work space",219
+ 416,"Common room/staff room/lounge",0
+ 125,"Storage area",0
+ 126,"Storage area",0
+ 127,"Storage area",0
+ 128,"Storage area",0
+ 129,"Storage area",0
+ 130,"Storage area",0
+ 131,"Storage area",0
+ 132,"Storage area",0
+ 133,"Storage area",0
+ 134,"Circulation area (corridors and stairways)",0
+ 135,"Circulation area (corridors and stairways)",0
+ 136,"Circulation area (corridors and stairways)",0
+ 137,"Circulation area (corridors and stairways)",0
+ 138,"Circulation area (corridors and stairways) - non-public/restricted",0
+ 139,"Circulation area (corridors and stairways)",0
+ 140,"Circulation area (corridors and stairways)",0
+ 141,"Circulation area (corridors and stairways)",0
+ 142,"Circulation area (corridors and stairways)",0
+ 143,"Circulation area (corridors and stairways)",0
+ 144,"Circulation area (corridors and stairways)",0
+ 145,"Circulation area (corridors and stairways)",0
+ 146,"Circulation area (corridors and stairways) - non public",0
+ 147,"Circulation area (corridors and stairways)",0
+ 148,"Circulation area (corridors and stairways)",0
+ 149,"Circulation area (corridors and stairways)",0
+ 150,"Circulation area (corridors and stairways) - non public",0
+ 151,"Circulation area (corridors and stairways)",0
+ 152,"Circulation area (corridors and stairways)",0
+ 153,"Circulation area (corridors and stairways)",0
+ 154,"Circulation area (corridors and stairways)",0
+ 155,"Toilet",0
+ 156,"Toilet",0
+ 157,"Toilet",0
+ 158,"Toilet",0
+ 159,"Toilet",0
+ 160,"Toilet",0
+ 161,"Toilet",0
+ 162,"Toilet",0
+ 163,"Toilet",0
+ 164,"Toilet",0
+ 165,"Toilet",0
+ 166,"Toilet",0
+ 167,"Toilet",0
+ 168,"Toilet",0
+ 169,"Toilet",0
+ 170,"Toilet",0
+ 171,"Toilet",0
+ 172,"Toilet",0
+ 173,"Toilet",0
+ 174,"Toilet",0
+ 175,"Toilet",0
+ 176,"Tea making",0
+ 177,"Tea making",0
+ 178,"Tea making",0
+ 179,"Tea making",0
+ 180,"Tea making",0
+ 181,"Tea making",0
+ 182,"Tea making",0
+ 183,"Tea making",0
+ 184,"Tea making",0
+ 186,"Tea making",0
+ 187,"Tea making",0
+ 188,"Tea making",0
+ 189,"Tea making",0
+ 190,"Tea making",0
+ 191,"Tea making",0
+ 192,"Tea making",0
+ 193,"Tea making",0
+ 194,"Tea making",0
+ 195,"Tea making",0
+ 196,"Tea making",0
+ 197,"Tea making",0
+ 198,"Reception",7.59
+ 199,"Reception",5.67
+ 200,"Reception",7.59
+ 201,"Reception",7.59
+ 202,"Reception",10.8
+ 203,"Reception",10.95
+ 204,"Reception",10.95
+ 205,"Reception",10.91
+ 206,"Reception",10.83
+ 207,"Reception",7.59
+ 208,"Reception",7.59
+ 209,"Reception",7.59
+ 210,"Reception",10.83
+ 211,"Reception",7.59
+ 212,"Reception",10.95
+ 213,"Reception",10.71
+ 214,"Reception",7.59
+ 215,"Reception",7.59
+ 216,"Meeting room",15.18
+ 217,"Meeting room",11.34
+ 218,"Meeting room",15.18
+ 219,"Meeting room",15.18
+ 220,"Meeting room",15.18
+ 221,"Meeting room",21.42
+ 222,"Meeting room",15.18
+ 223,"Meeting room",15.18
+ 224,"Meeting room",15.18
+ 225,"Meeting room",15.18
+ 226,"Meeting room",21.69
+ 227,"Meeting room",15.18
+ 228,"Meeting room",17.87
+ 229,"Meeting room",21.42
+ 230,"Meeting room",15.18
+ 231,"Dry sports hall",0
+ 232,"Dry sports hall",0
+ 233,"Dry sports hall",0
+ 234,"Dry sports hall",0
+ 235,"Dry sports hall",0
+ 236,"Dry sports hall",0
+ 237,"Dry sports hall",0
+ 238,"Changing facilities",7578.43
+ 239,"Changing facilities",83.49
+ 240,"Changing facilities",10433.08
+ 241,"Changing facilities",45324.71
+ 242,"Changing facilities",10950
+ 243,"Changing facilities",10950
+ 244,"Changing facilities",10828.15
+ 245,"Swimming pool",0
+ 246,"Hydrotherapy pool hall",0
+ 247,"Swimming pool",0
+ 248,"Swimming pool",0
+ 249,"Food preparation area",62.37
+ 250,"Food preparation area",120.45
+ 251,"Food preparation area",120.45
+ 252,"Food preparation area",120.45
+ 253,"Food preparation area",120.45
+ 254,"Food preparation area",120.45
+ 255,"Food preparation area",119.7
+ 256,"Food preparation area",119.16
+ 257,"Food preparation area",83.49
+ 258,"Food preparation area",83.49
+ 259,"Food preparation area",119.01
+ 260,"Food preparation area",83.49
+ 261,"Food preparation area",117.81
+ 262,"Food preparation area",83.49
+ 263,"Hall/lecture theatre/assembly area",28.35
+ 264,"Hall/lecture theatre/assembly area",37.95
+ 267,"Hall/lecture theatre/assembly area",37.95
+ 268,"Hall/lecture theatre/assembly area",37.95
+ 269,"Hall/lecture theatre/assembly area",54.75
+ 272,"Hall/lecture theatre/assembly area",37.95
+ 273,"Hall/lecture theatre/assembly area",37.95
+ 274,"Dry sports hall",0
+ 275,"Hall/lecture theatre/assembly area",37.95
+ 282,"Laboratory",0
+ 283,"Laboratory",83.49
+ 284,"Laboratory",83.49
+ 285,"Laboratory",83.49
+ 286,"Waiting room",75.9
+ 287,"Waiting room",74.9
+ 288,"Waiting room",75.9
+ 289,"Waiting room",107.1
+ 290,"Waiting room",109.5
+ 291,"Waiting room",109.5
+ 292,"Consulting room",53.13
+ 293,"Consulting/treatment areas",53.13
+ 294,"Consulting room",53.13
+ 295,"Consulting room",74.97
+ 296,"Operating theatre",329.61
+ 297,"Patient accommodation (wards)",1693.6
+ 298,"Bathroom",0
+ 299,"Bathroom",0
+ 300,"Bathroom",0
+ 302,"Bathroom",0
+ 303,"Bathroom",0
+ 304,"Bedroom",2920
+ 305,"Bedroom",2920
+ 306,"Bedroom",2990.97
+ 308,"Eating/drinking area",1134
+ 309,"Eating/drinking area",2190
+ 310,"Eating/drinking area",2190
+ 311,"Eating/drinking area",2190
+ 312,"Eating/drinking area",2190
+ 313,"Eating/drinking area",2190
+ 314,"Eating/drinking area",2190
+ 315,"Eating/drinking area",2176.29
+ 316,"Eating/drinking area",2159.45
+ 317,"Eating/drinking area",1518
+ 318,"Eating/drinking area",1518
+ 319,"Eating/drinking area",2190
+ 320,"Eating/drinking area",2190
+ 321,"Eating/drinking area",1518
+ 322,"Eating/drinking area",2190
+ 323,"Eating/drinking area",2142
+ 324,"Eating/drinking area",1518
+ 325,"Sales area - general",14.39
+ 326,"Sales area - general",10.12
+ 327,"Sales area - general",14.6
+ 328,"Storage area - chilled",0
+ 329,"Storage area - chilled",0
+ 330,"Display area",0
+ 331,"Display area",0
+ 332,"Display area",0
+ 333,"Display area",0
+ 334,"Display area",0
+ 335,"Performance area (stage)",0
+ 336,"Performance area (stage)",0
+ 337,"Performance area (stage)",0
+ 338,"Plant room",0
+ 339,"Plant room",0
+ 340,"Plant room",0
+ 341,"Plant room",0
+ 342,"Plant room",0
+ 343,"Plant room",0
+ 344,"Plant room",0
+ 345,"Plant room",0
+ 346,"Plant room",0
+ 347,"Plant room",0
+ 348,"Plant room",0
+ 349,"Plant room",0
+ 350,"Plant room",0
+ 351,"Plant room",0
+ 352,"Plant room",0
+ 353,"Plant room",0
+ 354,"Plant room",0
+ 355,"Plant room",0
+ 356,"Plant room",0
+ 357,"Plant room",0
+ 358,"Workshop - small scale",53.13
+ 359,"Workshop - small scale",74.97
+ 360,"Workshop - small scale",53.13
+ 361,"Workshop - small scale",74.97
+ 367,"Cell (police/prison)",1825
+ 368,"Cell (police/prison)",0
+ 369,"High density IT work space",179.98
+ 370,"IT equipment",0
+ 371,"IT equipment",0
+ 373,"Meeting room",15.18
+ 374,"Workshop - small scale",53.13
+ 376,"Laundry",0
+ 377,"Common room/staff room/lounge",0
+ 378,"Common room/staff room/lounge",0
+ 379,"Storage area",0
+ 380,"Laundry",0
+ 381,"Laundry",0
+ 382,"Laundry",0
+ 383,"Laundry",0
+ 384,"Laundry",14440
+ 385,"Common room/staff room/lounge",0
+ 417,"Security check area",337.63
+ 418,"Industrial process area",13.72
+ 419,"IT equipment",0
+ 420,"IT equipment",0
+ 421,"IT equipment",0
+ 422,"IT equipment",0
+ 423,"Warehouse storage - chilled",5.43
+ 424,"Warehouse storage - chilled",5.06
+ 425,"Warehouse storage - chilled",6.38
+ 426,"Workshop - small scale",39.69
+ 427,"Workshop - small scale",76.65
+ 428,"Workshop - small scale",76.65
+ 429,"Workshop - small scale",57.61
+ 430,"Warehouse storage",6.38
+ 431,"Warehouse storage",5.06
+ 432,"Public circulation areas",270.11
+ 433,"Warehouse storage",5.43
+ 434,"Public circulation areas",27.87
+ 438,"Cell (police/prison)",0
+ 439,"Bedroom",2920
+ 440,"Cellular office",70.77
+ 441,"Open plan office",111.21
+ 442,"Storage area",0
+ 443,"Circulation area (corridors and stairways)",0
+ 444,"Toilet",0
+ 445,"Meeting room",20.1
+ 446,"Tea making",0
+ 447,"Common room/staff room/lounge",0
+ 448,"Plant room",0
+ 449,"Warehouse sales area - general",8.05
+ 450,"Warehouse sales area - chilled",8.05
+ 451,"Storage area - chilled",0
+ 452,"Display area",0
+ 453,"Meeting room",18.59
+ 454,"Fitness suite/gym",0
+ 455,"Fitness suite/gym",0
+ 456,"Fitness suite/gym",0
+ 457,"Fitness suite/gym",0
+ 458,"Fitness suite/gym",0
+ 459,"Fitness suite/gym",0
+ 460,"Fitness suite/gym",0
+ 461,"Fitness Studio",0
+ 462,"Fitness Studio",0
+ 463,"Food preparation area",105.93
+ 464,"Eating/drinking area",1974
+ 465,"Reception",9.49
+ 466,"Changing facilities",10253.23
+ 467,"Changing facilities",10216.67
+ 468,"Changing facilities",10230
+ 469,"Changing facilities",7590
+ 470,"High density IT work space",151.8
+ 471,"Sales area - electrical",17.56
+ 472,"Public circulation areas",28.28
+473,"Cell (police/prison)",8.05  - mismatch but given to warehouse
+ 474,"Public circulation areas",27.03
+ 475,"Public circulation areas",21.9
+ 476,"Storage area - chilled",0
+ 477,"Workshop - small scale",74.97
+ 478,"Ice rink",28.62
+ 479,"Workshop - small scale",71.86
+ 480,"High density IT work space",93
+ 481,"Classroom",37.95
+ 482,"Classroom",226.8
+ 483,"Classroom",226.8
+ 484,"Classroom",27.99
+ 485,"Common room/staff room/lounge",0
+ 486,"Hall/lecture theatre/assembly area",54.03
+ 487,"Hall/lecture theatre/assembly area",54.03
+ 488,"Hall/lecture theatre/assembly area",37.95
+ 489,"Eating/drinking area",2515.33
+ 490,"Food preparation area",141.01
+ 491,"Storage area - cold room (<0degC)",0
+ 492,"Storage area - cold room (<0degC)",0
+ 493,"Storage area - cold room (<0degC)",0
+ 494,"Storage area - cold room (<0degC)",0
+ 495,"Storage area - cold room (<0degC)",0
+ 496,"Storage area - cold room (<0degC)",0
+ 497,"Storage area - cold room (<0degC)",0
+ 498,"Storage area - cold room (<0degC)",0
+ 499,"Classroom",37.95
+ 500,"Intensive care/high dependency",1693.6
+ 501,"Diagnostic Imaging",152.13
+ 502,"Ward offices",120.45
+ 503,"Ward common room/staff room/lounge",0
+ 504,"A&E consulting/treatment/work areas",76.65
+ 505,"Physiotherapy Studio",0
+ 506,"Food preparation area",120.45
+ 514,"Speculative office space",75.9
+ 515,"Speculative retail space",17.56
+ 516,"Speculative retail space",14.6
+ 517,"Speculative industrial space",15.96
+ 518,"Speculative industrial space",13.57
+ 519,"Speculative industrial space",12.65
+ 520,"Post Mortem Facility",329.61
+ 521,"Public circulation areas",28.28
+ 522,"Industrial process area",13.72
+ 523,"Patient accommodation (Day)",503.11
+526,"Common circulation areas",0  - not found
+ 527,"Data Centre",0
+ 528,"IT equipment",0
+ 529,"High density IT work space",584
+ 530,"Food preparation area",285.92

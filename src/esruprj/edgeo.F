@@ -119,6 +119,8 @@ C prec17 common is described in geometry.h.
       character TOSMLCN*32  ! to remember other side mlc name
       character TOOTF*32    ! to remember other side OTF
       character TOOPT*32    ! to remember other side optics
+      character use1*8,use2*8 ! return strings from selectuse
+      character guesstype*24  ! for multi selection of surface use
 
       logical MODGEO,bound,attribok,zbzero,close,bndry,nameok,XST
       logical showother,updoth,firstin,unixok
@@ -858,15 +860,19 @@ C zone. Trap option of multiple surface attribution.
         if(IS.lt.0)then
 
 C Remind user of current surface boundary attributes.
-
-C << extend logic to also allow setting of 'use' attributes >>
-
           call tstamp('>','PRJ: enter global surface attribution')
           context=.true.
           if(ITRC.gt.1)CALL SURINFO(ICOMP,iuout,context)
-          CALL EASKABCD(' ','Surface attribution:',
-     &      'name',
-     &      'composition','boundary condition','cancel',IRT,2)
+          h(1)='You can apply an attribute to several surfaces or'
+          h(2)='edit several surface names. For composition you will'
+          h(3)='be asked to select a construction and then a list of'
+          h(4)='surfaces to apply this to. Boundary conditions are'
+          h(5)='set in the same way as are the USES of surfaces (to'
+          h(6)='assist with code compliance).'
+          CALL EASKATOG('Surface attribution: ',' ',
+     &    'name','composition','boundary condition','usage',
+     &    'cancel',' ',' ',IRT,6)
+
           if(IRT.eq.2)then
             CALL EPKMLC(ISEL,'Select one of the constructions',
      &        'or exit.',IER)
@@ -1005,6 +1011,12 @@ C profile has not been defined.
               endif
             endif
           elseif(IRT.eq.4)then
+
+C Select surface use.
+            guesstype='any_type'
+            call selectuse(guesstype,use1,use2)
+
+          elseif(IRT.eq.5)then
             goto 3
           endif
 
@@ -1021,6 +1033,9 @@ C Present list of surfaces and allow user to select up to all of them.
             elseif(IRT.eq.3)then
               WRITE(ITEMSS(I),'(A,2x,A)')SSNAME(ioc10),
      &          SSOTHER(ioc10,1)(1:15)
+            elseif(IRT.eq.4)then
+              WRITE(ITEMSS(I),'(A,2x,3A)')SSNAME(ioc10),
+     &          SSUSE(ioc10,1)(1:6),' ',SSUSE(ioc10,2)(1:6)
             endif
    10     CONTINUE
           if(IRT.eq.1)then
@@ -1038,6 +1053,11 @@ C Present list of surfaces and allow user to select up to all of them.
             H(2)='is to be defined.'
             CALL EPICKS(INPICK,IVALS,' ',' ',32,NSUR,ITEMSS,
      &          'Surface name    facing',IER,2)
+          elseif(IRT.eq.4)then
+            H(1)='Select the surfaces for which a specific USE will be'
+            H(2)='associated e.g. DOOR VEHICLE, FRAME FACADE.'
+            CALL EPICKS(INPICK,IVALS,' ',' ',32,NSUR,ITEMSS,
+     &          'Surface name    use',IER,2)
           endif
           do 11 i=1,inpick
             iss = ivals(i)
@@ -1309,6 +1329,14 @@ C Reset to represent UNKNOWN
               ENDIF
               call warnmod(ICOMP,'sat')
               MODGEO=.TRUE.
+            elseif(IRT.eq.4)then
+
+C Update surface USE attributes for relevant zone surface and connection.
+              SUSE(ISS,1)=USE1
+              SSUSE(ioc,1)=USE1
+              SUSE(ISS,2)=USE2
+              SSUSE(ioc,2)=USE2
+
             endif
   11      continue
 
@@ -4011,7 +4039,14 @@ C Set local working variables.
       ic=icon
 
 C Set use type to a subset of all usage if UK NCM model
-      IF(ISBEM.EQ.1)GUESSTYPE='notional'
+C This superceeds the value of guesstype that was set in 
+C the calling code so inform the user.
+      if(ISBEM.EQ.1)then
+        if(guesstype(1:8).ne.'notional')then
+          call edisp(iuout,'Switching to UK notional surface uses.')
+        endif
+        GUESSTYPE='notional'
+      endif
 
 C Tell the user the current use of the surface.   
       write(outs,'(6a)') 'The current use/semantic of surface ',
@@ -4051,6 +4086,12 @@ C Help for the various choices.
       h(26)='will not be resized to meet code requirements but '
       h(27)='other surfaces marked WINDOW ORDINARY will. '
       h(28)=' '
+      h(29)='Models which are intended for UK code compliance checking'
+      h(30)='are restricted to a limited set of surface use tags: '
+      h(31)='DOOR PERSONEL, DOOR ENTRANCE, DOOR VEHICLE, WALL, '
+      h(32)='WINDOW NORMAL, WINDOW DISPLAY, WINDOW SKYLIGHT,'
+      h(33)='WINDOW FRAME, ROOF PITCHED (>20deg slope),'
+      h(34)='ROOF FLAT (0deg-20deg slope).'
       if(guesstype(1:8).eq.'any_type'.or.guesstype(1:2).eq.'- ')then
 
 C Setup array of menu strings.
@@ -4080,7 +4121,7 @@ C Setup array of menu strings.
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,23,useopt,'surface USAGE options',IER,28)
+     &         32,23,useopt,'surface USAGE options',IER,34)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
 
@@ -4145,11 +4186,11 @@ C Setup array of menu strings.
         useopt(8) ='WINDOW DISPLAY '
         useopt(9) ='WINDOW SKYLIGHT'
         useopt(10)='WINDOW FRAME'
-        useopt(11)='somthing else'
+        useopt(11)='something else'
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,11,useopt,'surface USAGE options',IER,28)
+     &         32,11,useopt,'surface USAGE options',IER,34)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
         if(IOS.eq.1)then
@@ -4192,7 +4233,7 @@ C Setup array of menu strings.
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,10,useopt,'surface USAGE options',IER,28)
+     &         32,10,useopt,'surface USAGE options',IER,34)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
 
@@ -4238,7 +4279,7 @@ C Setup array of menu strings.
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,14,useopt,'surface USAGE options',IER,28)
+     &         32,14,useopt,'surface USAGE options',IER,34)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
 
@@ -4287,7 +4328,7 @@ C Setup array of menu strings.
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,10,useopt,'surface USAGE options',IER,28)
+     &         32,10,useopt,'surface USAGE options',IER,34)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
 
@@ -4325,7 +4366,7 @@ C Setup array of menu strings.
 
         IX=1
         CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
-     &         32,7,useopt,'surface USAGE options',IER,28)
+     &         32,7,useopt,'surface USAGE options',IER,34)
         IOS=iuseopt(1)
         if(IOS.eq.0) return
 
@@ -4611,6 +4652,413 @@ C Do not need second tag if generating notional model
         SSUSE(IC,1)='- '
         SUSE(IS,2)='- '
         SSUSE(IC,2)='- '
+      endif
+
+      return
+      end
+
+
+C ************* SELECTUSE
+C Sekectuse gets two strings for surface use based on context.
+C   guesstype (char 24) provides the context so that a likely
+C     subset of choices can be presented.
+      subroutine selectuse(guesstype,use1,use2)
+#include "building.h"
+#include "sbem.h"
+
+C Parameters
+      character guesstype*24  ! for context of surface uses
+      character use1*8        ! general use type
+      character use2*8        ! details of use
+
+      COMMON/OUTIN/IUOUT,IUIN
+      common/pophelp/h(60)
+      CHARACTER H*72
+
+      dimension iuseopt(32)
+      character*32 useopt(23)
+
+C Set use type to a subset of all usage if UK NCM model
+C This superceeds the value of guesstype that was set in 
+C the calling code so inform the user.
+      if(ISBEM.EQ.1)then
+        if(guesstype(1:8).ne.'notional')then
+          call edisp(iuout,'Switching to UK notional surface uses.')
+        endif
+        GUESSTYPE='notional'
+      endif
+
+C Help for the various choices.
+      h(1)='For QA and code compliance purposes as well as to'
+      h(2)='help auto-generate air flow networks ESP-r allows'
+      h(3)='you to attach SEMANTIC tags to surfaces in a zone.'
+      h(4)=' '
+      h(5)='There are a number of types of tags e.g. DOOR, '
+      h(6)='FICT (fictitious construction), FLOOR, FRAME (around'
+      h(7)='a window or door), FURNIture (surfaces representing'
+      h(8)='internal mass), GRILL/SMOKEVNT (surfaces representing'
+      h(9)='specific location of forced air flow), ROOF, STRUC'
+      h(10)='(column or beam), WALL/FLOOR (part of the facade), '
+      h(11)='and either PARTN or `-` to represent other surfaces.'
+      h(12)=' '
+      h(13)='There are, of course, more than one kind of DOOR and '
+      h(14)='WINDOW so a second specifier is included. For some '
+      h(15)='objects you will also be asked for indicators of air'
+      h(16)='flow e.g. CLOSED/UNDERCUT/OPEN/BIDIR as qualifiers'
+      h(17)='which specify where air might flow. NOTE: flow'
+      h(18)='inference is not yet implemented. When implemented'
+      h(19)='a zone operation file might detect a mismatch in '
+      h(20)='infiltration if there were cracks or openings noted'
+      h(21)='for surfaces. When implmented such key words could'
+      h(22)='help to auto-generate mass flow networks. '
+      h(23)=' '
+      h(24)='For building code complience you will want to set '
+      h(25)='appropriate qualifiers e.g. a WINDOW DISPLAY surface'
+      h(26)='will not be resized to meet code requirements but '
+      h(27)='other surfaces marked WINDOW ORDINARY will. '
+      h(28)=' '
+      h(29)='Models which are intended for UK code compliance checking'
+      h(30)='are restricted to a limited set of surface use tags: '
+      h(31)='DOOR PERSONEL, DOOR ENTRANCE, DOOR VEHICLE, WALL, '
+      h(32)='WINDOW NORMAL, WINDOW DISPLAY, WINDOW SKYLIGHT,'
+      h(33)='WINDOW FRAME, ROOF PITCHED (>20deg slope),'
+      h(34)='ROOF FLAT (0deg-20deg slope).'
+      if(guesstype(1:8).eq.'any_type'.or.guesstype(1:2).eq.'- ')then
+
+C Setup array of menu strings.
+        useopt(1) ='DOOR NORMAL (not code complient)'
+        useopt(2) ='DOOR PERSONEL (code complient)  '
+        useopt(3) ='DOOR ENTRANCE (high useage)     '
+        useopt(4) ='DOOR VEHICLE (large access)     '
+        useopt(5) ='FICTitious (not code complient) '
+        useopt(6) ='FLOOR EXTGRND (extr or ground)  '
+        useopt(7) ='FLOOR OTHER (not code complient)'
+        useopt(8) ='FRAME FACADE (code complient)   '
+        useopt(9) ='FRAME OTHER (not code complient)'
+        useopt(10)='FURNI - (mass within zone)      '
+        useopt(11)='GRILL SOURCE (conduit outlet)   '
+        useopt(12)='GRILL EXTRACT (conduit inlet)   '
+        useopt(13)='PARTN - (inside wall/ceil/floor)'
+        useopt(14)='ROOF PITCHED (>20deg slope)     '
+        useopt(15)='ROOF FLAT (0deg-20deg slope)    '
+        useopt(16)='SMOKEVNT (in roof or wall)      '
+        useopt(17)='STRUCture - (mass within zone)  '
+        useopt(18)='WALL - (part of the facade)     '
+        useopt(19)='WINDOW  (facade code complient) '
+        useopt(20)='WINDOW DISPLAY (code complient) '
+        useopt(21)='WINDOW skylight (code complient)'
+        useopt(22)='WINDOW OTHER (not code complnt) '
+        useopt(23)='-   -  (somthing else)          '
+
+        IX=1
+        CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
+     &         32,23,useopt,'surface USAGE options',IER,34)
+        IOS=iuseopt(1)
+        if(IOS.eq.0) return
+
+        if(IOS.eq.1)then
+          iuopt=1
+        elseif(IOS.eq.2)then
+          iuopt=2
+        elseif(IOS.eq.3)then
+          iuopt=3
+        elseif(IOS.eq.4)then
+          iuopt=4
+        elseif(IOS.eq.5)then
+          iuopt=5
+        elseif(IOS.eq.6)then
+          iuopt=6
+        elseif(IOS.eq.7)then
+          iuopt=7
+        elseif(IOS.eq.8)then
+          iuopt=8
+        elseif(IOS.eq.9)then
+          iuopt=9
+        elseif(IOS.eq.10)then
+          iuopt=10
+        elseif(IOS.eq.11)then
+          iuopt=11
+        elseif(IOS.eq.12)then
+          iuopt=12
+        elseif(IOS.eq.13)then
+          iuopt=13
+        elseif(IOS.eq.14)then
+          iuopt=14
+        elseif(IOS.eq.15)then
+          iuopt=15
+        elseif(IOS.eq.16)then
+          iuopt=16
+        elseif(IOS.eq.17)then
+          iuopt=17
+        elseif(IOS.eq.18)then
+          iuopt=18
+        elseif(IOS.eq.19)then
+          iuopt=19
+        elseif(IOS.eq.20)then
+          iuopt=20
+        elseif(IOS.eq.21)then
+          iuopt=21
+        elseif(IOS.eq.22)then
+          iuopt=22
+        elseif(IOS.eq.23)then
+          iuopt=23
+        endif
+
+      elseif(guesstype(1:8).eq.'notional')then
+
+C Setup array of menu strings.
+        useopt(1) ='DOOR PERSONEL'
+        useopt(2) ='DOOR ENTRANCE'
+        useopt(3) ='DOOR VEHICLE'
+        useopt(4) ='ROOF PITCHED (>20deg slope)     '
+        useopt(5) ='ROOF FLAT (0deg-20deg slope)    '
+        useopt(6) ='WALL'
+        useopt(7) ='WINDOW NORMAL'
+        useopt(8) ='WINDOW DISPLAY '
+        useopt(9) ='WINDOW SKYLIGHT'
+        useopt(10)='WINDOW FRAME'
+        useopt(11)='something else'
+
+        IX=1
+        CALL EPICKS(IX,iuseopt,' ','Surface USAGE attributes:',
+     &         32,11,useopt,'surface USAGE options',IER,34)
+        IOS=iuseopt(1)
+        if(IOS.eq.0) return
+        if(IOS.eq.1)then
+          iuopt=2
+        elseif(IOS.eq.2)then
+          iuopt=3
+        elseif(IOS.eq.3)then
+          iuopt=4
+        elseif(IOS.eq.4)then
+          iuopt=14
+        elseif(IOS.eq.5)then
+          iuopt=15
+        elseif(IOS.eq.6)then
+          iuopt=18
+        elseif(IOS.eq.7)then
+          iuopt=19
+        elseif(IOS.eq.8)then
+          iuopt=20
+        elseif(IOS.eq.9)then
+          iuopt=21
+        elseif(IOS.eq.10)then
+          iuopt=8
+        elseif(IOS.eq.11)then
+          iuopt=23
+        endif
+
+      endif
+
+C Edit door variants.
+      if(iuopt.eq.1)then
+        USE1='DOOR'
+      elseif(iuopt.eq.2)then
+        USE1='P-DOOR'
+      elseif(iuopt.eq.3)then
+        USE1='H-DOOR'
+      elseif(iuopt.eq.4)then
+        USE1='V-DOOR'
+      endif
+
+C Do not need second tag if generating notional model
+      if(guesstype(1:8).eq.'notional')goto 55
+      if(iuopt.eq.1.or.iuopt.eq.2.or.iuopt.eq.3.or.iuopt.eq.4)then
+        h(1)='Closed signals to other parts of ESP-r that air '
+        h(2)='is not likely to pass and neither the scheduled '
+        h(3)='air flow or the flow network definitions should '
+        h(4)='pay further attention to this door. '
+        h(5)=' '
+        h(6)='Undercut signals that air might pass via a crack '
+        h(7)='component (if network) or that there might be a'
+        h(8)='small scheduled flow. '
+        h(9)=' '
+        h(10)='Open - other facilities should confirm the'
+        h(11)='flow with whatever is on the other side. Control'
+        h(12)='might be applied (to vary the opening area) '
+        h(13)=' '
+        h(14)='Bidirectional - other facilities should confirm'
+        h(15)='the details of two way flow. Control might be'
+        h(16)='applied to the width of the opening. '
+        h(17)=' '
+        h(18)='Cancel does what it says. '
+        CALL EASKATOG(' ','DOOR air leakage:',
+     &    'closed','undercut','open','bidirectional',
+     &    'cancel',' ',' ',IRT,18)
+        if(IRT.eq.1)then
+          USE2='CLOSED'
+        elseif(IRT.eq.2)then
+          USE2='UNDERCUT'
+        elseif(IRT.eq.3)then
+          USE2='OPEN'
+        elseif(IRT.eq.4)then
+          USE2='BIDIR'
+        elseif(IRT.eq.5)then
+          continue
+        endif
+      endif
+ 55   if(iuopt.eq.5)then
+        USE1='FICT'
+
+        h(1)='Closed signals to other parts of ESP-r that air '
+        h(2)='is not likely to pass and neither the scheduled '
+        h(3)='air flow or the flow network definitions should '
+        h(4)='pay further attention to this door. '
+        h(5)=' '
+        h(6)='Crack signals that air might pass via a crack '
+        h(7)='component (if network) or that there might be a'
+        h(8)='small scheduled flow. '
+        h(9)=' '
+        h(10)='Open - other facilities should confirm the'
+        h(11)='flow with whatever is on the other side. Control'
+        h(12)='might be applied (to vary the opening area) '
+        h(13)=' '
+        h(14)='Bidirectional - other facilities should confirm'
+        h(15)='the details of two way flow. Control might be'
+        h(16)='applied to the width of the opening. '
+        h(17)=' '
+        h(18)='Cancel does what it says. '
+        CALL EASKATOG(' ','FICT surface air leakage:',
+     &    'closed','crack','open','bidirectional',
+     &    'cancel',' ',' ',IRT,18)
+        if(IRT.eq.1)then
+          USE2='CLOSED'
+        elseif(IRT.eq.2)then
+          USE2='CRACK'
+        elseif(IRT.eq.3)then
+          USE2='OPEN'
+        elseif(IRT.eq.4)then
+          USE2='BIDIR'
+        elseif(IRT.eq.5)then
+          continue
+        endif
+      endif
+      if(iuopt.eq.6)then
+        USE1='FLOOR'
+        USE2='EXTGRND'
+      elseif(iuopt.eq.7)then
+        USE1='FLOOR'
+        USE2='- '
+      endif
+
+      if(iuopt.eq.8)then
+        USE1='F-FRAME'
+      elseif(iuopt.eq.9)then
+        USE1='FRAME'
+      endif
+      if(iuopt.eq.8.or.iuopt.eq.9)then
+        h(1)='Closed signals to other parts of ESP-r that air '
+        h(2)='is not likely to pass and neither the scheduled '
+        h(3)='air flow or the flow network definitions should '
+        h(4)='pay further attention to this door. '
+        h(5)=' '
+        h(6)='Crack signals that air might pass via a crack '
+        h(7)='component (if network) or that there might be a'
+        h(8)='small scheduled flow. '
+        h(9)=' '
+        h(10)='Vent - other facilities should confirm the'
+        h(11)='flow with whatever is on the other side. Control'
+        h(12)='might be applied (to vary the opening area) '
+        h(13)=' '
+        h(14)='Cancel does what it says. '
+        CALL EASKATOG(' ','FRAME surface air leakage:',
+     &    'closed','crack','vent','cancel',
+     &    ' ',' ',' ',IRT,14)
+        if(IRT.eq.1)then
+          USE2='CLOSED'
+        elseif(IRT.eq.2)then
+          USE2='CRACK'
+        elseif(IRT.eq.3)then
+          USE2='OPEN'
+        elseif(IRT.eq.4)then
+          continue
+        endif
+      endif
+
+      if(iuopt.eq.10)then
+        USE1='FURNI'
+        USE2='- '
+      elseif(iuopt.eq.11)then
+        USE1='GRILL'
+        USE2='SOURCE'
+      elseif(iuopt.eq.12)then
+        USE1='GRILL'
+        USE2='EXTRACT'
+      elseif(iuopt.eq.13)then
+        USE1='PARTN'
+        USE2='- '
+      elseif(iuopt.eq.14)then
+        USE1='ROOF'
+        USE2='PITCHED'
+      elseif(iuopt.eq.15)then
+        USE1='ROOF'
+        USE2='FLAT'
+      elseif(iuopt.eq.16)then
+        USE1='SMOKEVNT'
+        USE2='- '
+      elseif(iuopt.eq.17)then
+        USE1='STRUC'
+        USE2='- '
+      elseif(iuopt.eq.18)then
+        USE1='WALL'
+        USE2='- '
+      endif
+
+      if(iuopt.eq.19)then
+        USE1='C-WINDOW'
+      elseif(iuopt.eq.20)then
+        USE1='D-WINDOW'
+      elseif(iuopt.eq.21)then
+        USE1='S-WINDOW'
+      elseif(iuopt.eq.22)then
+        USE1='WINDOW'
+      elseif(iuopt.eq.23)then
+        USE1='-'
+      endif
+
+C Do not need second tag if generating notional model
+      if(guesstype(1:8).eq.'notional')goto 56
+      if(iuopt.eq.19.or.iuopt.eq.20.or.iuopt.eq.21.or.iuopt.eq.22)then
+        h(1)='Closed signals to other parts of ESP-r that air '
+        h(2)='is not likely to pass and neither the scheduled '
+        h(3)='air flow or the flow network definitions should '
+        h(4)='pay further attention to this door. '
+        h(5)=' '
+        h(6)='Crack signals that air might pass via a crack '
+        h(7)='component (if network) or that there might be a'
+        h(8)='small scheduled flow. '
+        h(9)=' '
+        h(10)='Open - other facilities should confirm the'
+        h(11)='flow with whatever is on the other side. Control'
+        h(12)='might be applied (to vary the opening area) '
+        h(13)=' '
+        h(14)='Sash - implies an upper and lower opening. '
+        h(15)=' '
+        h(16)='Bidirectional - other facilities should confirm'
+        h(17)='the details of two way flow. Control might be'
+        h(18)='applied to the width of the opening. '
+        h(19)=' '
+        h(20)='Cancel does what it says. '
+        CALL EASKATOG(' ','WINDOW surface air leakage:',
+     &    'closed','crack','open','sash ','bidirectional',
+     &    'cancel',' ',IRT,20)
+        if(IRT.eq.1)then
+          USE2='CLOSED'
+        elseif(IRT.eq.2)then
+          USE2='CRACK'
+        elseif(IRT.eq.3)then
+          USE2='OPEN'
+        elseif(IRT.eq.4)then
+          USE2='SASH'
+        elseif(IRT.eq.5)then
+          USE2='BIDIR'
+        elseif(IRT.eq.6)then
+          continue
+        endif
+      endif
+56    if(iuopt.eq.23)then
+        USE1='- '
+        USE2='- '
       endif
 
       return
@@ -5861,6 +6309,7 @@ C Make use of VERINFO to display the current vertex surface connections.
 #include "material.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -6961,7 +7410,7 @@ C surface.
         WRITE(t248,'(24I4)')(JVN(IFOC,j),J=1,nv)
         CALL EASKS248(t248,' Associated vertices (type the indices)?',
      &    ' ',72,' 1  2  3  4  ','associated vertices',IIER,8)
-        CALL CHITMS(t248,NV)
+        NV = iCountWords(t248)
         K=0
         DO 94 J=1,NV
 
