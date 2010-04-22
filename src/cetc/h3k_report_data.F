@@ -3898,6 +3898,9 @@ C Connections: fixed input data
       integer     ITPCON ! - number of linking fluid flow component
       integer     NDSCNN ! - connection level component supplementary node numbers
 
+      COMMON/mfctl/ctlpos(MCNN)
+      real ctlpos
+
 C Output data
       COMMON/MFLRES/FLW1(MCNN),FLW2(MCNN),PRES(MNOD),
      &              RESID(MNOD),SAFLW(MNOD)
@@ -3922,6 +3925,8 @@ C.....Local variables
       character*128 H3K_rep_NAME ! XML leaf name
 
       integer i_neg, i_CompType,i_CompIndex
+      integer lnConnName  ! flow connection name length
+      integer lnNodeName  ! flow node name length
 
       real area,rhon,PI ! component area and fluid density at node, PI
       
@@ -3979,10 +3984,11 @@ C........Build node name
      &        'mfn/',fluid(1:LNBLNK(fluid)),'/',
      &        NDNAM(ii)(1:LNBLNK(NDNAM(ii)))
 
+         lnNodeName=LNBLNK(Node_Name)
 C.........output node data
       ! total mass flow entering a node *******************************
          write(H3K_rep_NAME,'(A,A)')
-     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              Node_Name(1:lnNodeName),
      &              '/flowrate'
 
          call add_to_xml_reporting (
@@ -3993,7 +3999,7 @@ C.........output node data
 
        ! total volume flow entering a node *******************************
          write(H3K_rep_NAME,'(A,A)')
-     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              Node_Name(1:lnNodeName),
      &              '/volflowrate'
 
          call add_to_xml_reporting (
@@ -4004,7 +4010,7 @@ C.........output node data
 
        ! node temperature from flow network *******************************
          write(H3K_rep_NAME,'(A,A)')
-     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              Node_Name(1:lnNodeName),
      &              '/temp'
 
          call add_to_xml_reporting (
@@ -4016,7 +4022,7 @@ C.........output node data
 	! contaminant concentration from flow network *******************************
        do jj=1,NCONTM
          write(H3K_rep_NAME,'(A,A,A)')
-     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              Node_Name(1:lnNodeName),
      &              '/conc/',
      &              CONTMNAM(jj)(1:LNBLNK(CONTMNAM(jj)))
 
@@ -4027,15 +4033,15 @@ C.........output node data
      &              'mfn node contaminant concentration' )
        enddo
 
-C........Build connection name
 C........Only use positive side of connections
 
-C.........Loop through all interconnections in a flow network
+C........Loop through all interconnections of the current node 'ii'
          do jj = 1,NCNN
 
             if (NODPS(jj) .eq. ii) THEN ! only look for positive side conn. of cur. node
                i_neg = NODNE(jj) ! the node on the other side of the conn.
 
+C              Build connection name
                write(Connect_Name, '(A,A,A,A,A,A,A,A,A)')
      &             'mfn/',fluid(1:LNBLNK(fluid)),'/',
      &             NDNAM(ii)(1:LNBLNK(NDNAM(ii))),'->',
@@ -4043,9 +4049,11 @@ C.........Loop through all interconnections in a flow network
      &             ' (via ',
      &             CMNAM(ITPCON(jj))(1:LNBLNK(CMNAM(ITPCON(jj)))),')'
 
+              lnConnName=LNBLNK(Connect_Name)
+
 	! pressure drop between nodes of connection ***********************
               write(H3K_rep_NAME,'(A,A)')
-     &             Connect_Name(1:LNBLNK(Connect_Name)),
+     &             Connect_Name(1:lnConnName),
      &             '/Dp'
 
                call add_to_xml_reporting (
@@ -4056,7 +4064,7 @@ C.........Loop through all interconnections in a flow network
 
         ! flow through connection ****************************************
                write(H3K_rep_NAME,'(A,A)')
-     &             Connect_Name(1:LNBLNK(Connect_Name)),
+     &             Connect_Name(1:lnConnName),
      &             '/flow'
 
                call add_to_xml_reporting (
@@ -4065,7 +4073,18 @@ C.........Loop through all interconnections in a flow network
      &             'units', '(kg/s)',
      &             'mfn connection flow rate' )
 
-              ! velocity at connection *********************************
+        ! connection control setting ****************************************
+               write(H3K_rep_NAME,'(A,A)')
+     &             Connect_Name(1:lnConnName),
+     &             '/ctlpos'
+
+               call add_to_xml_reporting (
+     &             ctlpos(jj),
+     &             H3K_rep_NAME,
+     &             'units', '(-)',
+     &             'mfn connection control position' )
+
+	          ! velocity at connection *********************************
               ! The following code is taken from mfget.F, lines 1266 ff., (moved type 460
               ! to "no velocity" and added type 211 to "no velocity")
               ! Find the related component type and reject those
@@ -4120,7 +4139,7 @@ C.........Loop through all interconnections in a flow network
 
         ! Finally, write to H3K reporting
                   write(H3K_rep_NAME,'(A,A)')
-     &               Connect_Name(1:LNBLNK(Connect_Name)),
+     &               Connect_Name(1:lnConnName),
      &               '/veloc'
 
                   call add_to_xml_reporting (
@@ -4141,7 +4160,7 @@ C.........if contaminants are defined output these as well
 
 C.........output contaminant concentration
          write(H3K_rep_NAME,'(A,A,A)')
-     &              Node_Name(1:LNBLNK(Node_Name)),
+     &              Node_Name(1:lnNodeName),
      &              '/',CONTMNAM(ICONTM)
 
          call add_to_xml_reporting (
