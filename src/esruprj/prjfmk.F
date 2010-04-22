@@ -5238,11 +5238,15 @@ C Scan each days gains and calculate maximum gain.
         CGNL=0.
         do 20 J=1,NCAS(IDAY)
           if (I.gt.ICGS(IDAY,J).and.I.le.ICGF(IDAY,J)) then
-            if ((ICGT(IDAY,J).eq.-1).and.(CMGS(IDAY,J).gt.0.0)) then
-
+            if (ICGT(IDAY,J).eq.-1) then
+              if (CMGS(IDAY,J).gt.0.0) then
 C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*70.1
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*45.
+               CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*70.1
+               CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*45.
+              else
+               CGNS=0.0
+               CGNL=0.0
+              endif
             elseif (ICGT(IDAY,J).lt.-1) then
               CGNS=CGNS+CMGS(IDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(IDAY,J)*ZBASEA(ICOMP)
@@ -5259,9 +5263,14 @@ C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
         CGNL=0.
         do 22 J=1,NCAS(JDAY)
           if (I.gt.ICGS(JDAY,J).and.I.le.ICGF(JDAY,J)) then
-            if ((ICGT(JDAY,J).eq.-1).and.(CMGS(JDAY,J).gt.0.0)) then
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*70.1
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*45.
+            if (ICGT(IDAY,J).eq.-1) then
+              if (CMGS(IDAY,J).gt.0.0) then
+               CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*70.1
+               CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*45.
+              else
+               CGNS=0.0
+               CGNL=0.0
+              endif
             elseif (ICGT(JDAY,J).lt.-1) then
               CGNS=CGNS+CMGS(JDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(JDAY,J)*ZBASEA(ICOMP)
@@ -5278,9 +5287,14 @@ C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
         CGNL=0.
         do 24 J=1,NCAS(KDAY)
           if (I.gt.ICGS(KDAY,J).and.I.le.ICGF(KDAY,J)) then
-            if ((ICGT(KDAY,J).eq.-1).and.(CMGS(KDAY,J).gt.0.0)) then
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*70.1
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*45.
+            if (ICGT(IDAY,J).eq.-1) then
+              if (CMGS(IDAY,J).gt.0.0) then
+               CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*70.1
+               CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*45.
+              else
+               CGNS=0.0
+               CGNL=0.0
+              endif
             elseif (ICGT(KDAY,J).lt.-1) then
               CGNS=CGNS+CMGS(KDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(KDAY,J)*ZBASEA(ICOMP)
@@ -5369,11 +5383,16 @@ C first day type requested
       do 60 IP=1,NCAS(IDAY)
         ICG=iabs(ICGT(IDAY,IP))
         do 65 IHR=ICGS(IDAY,IP),ICGF(IDAY,IP)-1
-          if ((ICGT(IDAY,IP).eq.-1).and.(CMGS(IDAY,J).gt.0.0)) then
+          if (ICGT(IDAY,J).eq.-1) then
+            if (CMGS(IDAY,J).gt.0.0) then
 
 C For case of m2/person CMGL is zero so use CMGS to get CGNL
-            CGNS=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*70.1
-            CGNL=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*45.
+              CGNS=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*70.1
+              CGNL=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*45.
+            else
+              CGNS=0.0
+              CGNL=0.0
+            endif
           elseif (ICGT(IDAY,IP).lt.-1) then
             CGNS=CMGS(IDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(IDAY,IP)*ZBASEA(ICOMP)
@@ -5437,9 +5456,14 @@ C second day type requested
       do 160 IP=1,NCAS(JDAY)
         ICG=iabs(ICGT(JDAY,IP))
         do 165 IHR=ICGS(JDAY,IP),ICGF(JDAY,IP)-1
-          if ((ICGT(JDAY,IP).eq.-1).and.(CMGS(JDAY,J).gt.0.0)) then
-            CGNS=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*70.1
-            CGNL=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*45.
+          if (ICGT(IDAY,J).eq.-1) then
+            if (CMGS(IDAY,J).gt.0.0) then
+              CGNS=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*70.1
+              CGNL=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*45.
+            else
+              CGNS=0.0
+              CGNL=0.0
+            endif
           elseif (ICGT(JDAY,IP).lt.-1) then
             CGNS=CMGS(JDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(JDAY,IP)*ZBASEA(ICOMP)
@@ -5503,9 +5527,14 @@ C third day type requested
       do 260 IP=1,NCAS(KDAY)
         ICG=iabs(ICGT(KDAY,IP))
         do 265 IHR=ICGS(KDAY,IP),ICGF(KDAY,IP)-1
-          if ((ICGT(KDAY,IP).eq.-1).and.(CMGS(KDAY,J).gt.0.0)) then
-            CGNS=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*70.1
-            CGNL=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*45.
+          if (ICGT(IDAY,J).eq.-1) then
+            if (CMGS(IDAY,J).gt.0.0) then
+              CGNS=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*70.1
+              CGNL=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*45.
+            else
+              CGNS=0.0
+              CGNL=0.0
+            endif
           elseif (ICGT(KDAY,IP).lt.-1) then
             CGNS=CMGS(KDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(KDAY,IP)*ZBASEA(ICOMP)

@@ -2322,7 +2322,8 @@ C calculate apparent power and reactive power.
               elseif (ICGT(IDTY,I).eq.-1) then
                 call eclose(CMGS(IDTY,I),0.00,0.001,close)
                 if (close) then
-                  NPERSN(IP,ITYP)=1
+c if -1 and "m2/person" is zero, the intention is most likely "no occupancy"!
+                  NPERSN(IP,ITYP)=0
                 else
                   NPERSN(IP,ITYP)=INT(FLOOR/CMGS(idty,I))
                 endif

@@ -586,7 +586,8 @@ C Assign the power consumption evenly over the three phases for a 3-phase load.
           TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF(IDAY,I)
           call eclose(CMGS(IDAY,I),0.00,0.001,close)
           if (close) then
-            NPERSN=1
+c if -1 and "m2/person" is zero, the intention is most likely "no occupancy"!
+            NPERSN=0
           else
             NPERSN=INT(FLOORA(ICOMP)/CMGS(IDAY,I))
           endif
