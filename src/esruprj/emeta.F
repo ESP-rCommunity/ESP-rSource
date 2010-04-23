@@ -100,8 +100,7 @@ C Passed in parameters.
       integer lnw   ! length of weather string.
       integer lnwg   ! length of weather ground string.
       integer igrfile ! unit number of ground file
-      DIMENSION GVA(12)
-      character inpxmlfl*248 !to write out the input.xml file
+      character inpxmlfl*144 !to write out the input.xml file
       
       IER=0
 
@@ -383,9 +382,8 @@ C Also write the xml input file if there is a metric defined in the flat file
             fs = char(92)
           endif
 
-C Write the XML input file
-          write(inpxmlfl,'(3a)') mpath(1:lnblnk(mpath)),fs,
-     &    'cfg/input.xml'
+C Write the XML input file in the same location as the cfg file.
+          write(inpxmlfl,'(a)') 'input.xml'
           iuf=ifil+2
           call efopseq(iuf,inpxmlfl,3,ier)
           write(iuf,'(a)',iostat=ios) 
@@ -450,7 +448,6 @@ C IER=0 OK.
      &  usefile,IER)
 #include "building.h"
 #include "model.h"
-#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -1219,7 +1216,7 @@ C and act on the information within the file.
 C espriou.h provides currentfile.
 #include "control.h"
 #include "seasons.h"
-C seasons.h provides typper and typsea
+C seasons.h required prior to ipvdata.h
 #include "ipvdata.h"
       
       integer lnblnk  ! function definition
@@ -1244,18 +1241,11 @@ C SNFNAM - *72 Name of the file containing hourly snow depth information
 
 C Obstruction blocks via geometry.h.
 
-      common/rpath/path
-      character*72 path,odir    ! where are folders
-
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
 
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
-      character spfdescr*8
-      common/spfldes/spfdescr(MSPS)
-      common/spflper/isstday(MSPS),isstmon(MSPS),isfnday(MSPS),
-     &               isfnmon(MSPS)
 
 C IPV description via ipvdata.h.
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -1296,9 +1286,8 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       character word248*248
 
       character act*1  ! action requested.
-      character ipvact*1 ! action for clearipvdat
       character simact*6 ! action for creating assessments.
-      character subpath*72
+      character*72 odir    ! where are folders
 
 C At the head of the file is a title and a description
 C modeltitle (char 72) and modeldocblock (char 248) from model.h which can be
@@ -1313,7 +1302,7 @@ C For passing to silentmodel.
 C Same as local variable actions which is passed back to calling code.
       character silentreturndirec*8
 
-      logical dll,unixok,XST,ok
+      logical dll,unixok
       real valx,valy,valz      ! local variable for extrude co-ords.
 
 C Paremeters passed to:silentzone
@@ -1327,7 +1316,6 @@ C Paremeters passed to:silentzone
 
 C Site related local variables.
       logical havesite       ! true if tokens included
-      logical havesnowdays     ! true if days with snow defined
       character hourlysnowfile*72  ! same as SNFNAM
       character lworking*144  ! for processing database file names
       logical havehourlysnowfile   ! true if set
@@ -1371,19 +1359,6 @@ C first list any files with .cfg in name.
       odir=' '
       call usrdir(odir)
 
-C If subpath is less than 72 char with odir + path use that
-C otherwise just use path.
-C Debug...
-      subpath=' '
-      lnodir=lnblnk(odir)
-      lnpath=lnblnk(path)
-      if(lnodir+lnpath+1.le.72)then
-        write(subpath,'(3a)') odir(1:lnodir),fs,
-     &  path(1:lnpath)
-      else
-        write(subpath,'(a)') path(1:lnpath)
-      endif
-
 C Clear the sz array structures. The logic is to scan all of the
 C zone details and then process the zones after *end is detected
 C in the file.
@@ -1403,7 +1378,6 @@ C in the file.
         groundview=0.0
         buildingview=0.0
         havesite=.false.
-        havesnowdays=.false.
         havehourlysnowfile=.false.
         havegroundtempsets=.false.
         groundtempsets=0
@@ -2029,7 +2003,6 @@ C Number of days with snow on the ground (if ground refl model 2)
           CALL EGETWI(OUTSTR,K,dayswithsnow(I),0,31,'W',
      &      'days with snow in each month',IER)
   442   CONTINUE
-        havesnowdays=.true.
         goto 43
       elseif(WORD(1:8).eq.'*nbwalls')then
 
@@ -2676,8 +2649,6 @@ C seasons.h provides typper and typsea
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
-      COMMON/PREC8/SLAT,SLON
-
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
@@ -2726,11 +2697,10 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       integer IFCFG
                
-      CHARACTER OUTSTR*248,outs*124,outsd*124
+      CHARACTER outs*124,outsd*124
       character dstmp*24
 
       character act*1      ! action requested.
-      character ipvact*1   ! action for clearipvdat
 C      character simact*6  ! action for creating assessments.
       character subpath*72 ! not yet used
 
@@ -2744,7 +2714,7 @@ C the contents of the file via model.h.
 C For passing to silentmodel.
       character actions*8,root*24,mpath*72,folder*12
 
-      logical dll,unixok,XST
+      logical dll,unixok
 
 C Paremeters passed to:silentzone
       character szuse*8,usefile*32  ! usage pattern directives
@@ -2815,10 +2785,10 @@ C      write(6,*) 'path is ',path
         write(subpath,'(a)') path(1:lnpath)
       endif
 
-C Debug.
-C      write(outs,'(2a)') 'configuration files in ',
-C     &  subpath(1:lnblnk(subpath))
-C      call edisp(iuout,outs)
+C Indicate progress.
+      write(outs,'(2a)') 'configuration files in ',
+     &  subpath(1:lnblnk(subpath))
+      call edisp(iuout,outs)
 
 C Instanciate the sz array structures. The logic is to scan all of the
 C zone details and then write into the file.
@@ -3314,176 +3284,6 @@ C Mark the end of model information.
 C Now close meta file.
   99  CALL ERPFREE(ifilg,ios)
       RETURN
-
-
-C Data structures which have not yet been sorted.
-C      elseif(WORD(1:6).eq.'*usage')then
-
-C After *usage the next token is 'pattern' (tag indicating that
-C an operations file in the training/pattern folder to use to
-C get infiltration and casual gains). Note usefile is only
-C 32 char buffer because other source code knowns the path
-C to the training/pattern folder.
-C        CALL EGETW(OUTSTR,K,use(1),'W','pattern',IFLAG)
-C        if(use(1)(1:7).eq.'pattern')then
-C          szuse(nsz,1) = use(1)
-C          CALL EGETW(OUTSTR,K,use(2),'W','pattern infil',IFLAG)
-C          szuse(nsz,2) = use(2)
-C          CALL EGETW(OUTSTR,K,use(3),'W','pattern casual',IFLAG)
-C          szuse(nsz,3) = use(3)
-C          CALL EGETRM(OUTSTR,K,WORD,'W','pattern file',IER)
-C          write(usefile(nsz),'(a)') WORD(1:lnblnk(WORD))
-C        else
-C          call usrmsg('Usage 2nd parameter not recognised',' ','W')
-C        endif
-C      elseif(WORD(1:12).eq.'*assessments')then
-
-C Get tags related to assessments: after the tag *assessments the
-C following choices are possible:
-C   `annual` (no further tokens)
-C   `single` followed typically by `user` followed by pairs of julian dates
-C   `winter` followed by `typical_week` or `season` or 'fortnight'
-C   `spring` followed by `typical_week` or `season` or 'fortnight'
-C   `summer` followed by `typical_week` or `season` or 'fortnight'
-C   `autumn` followed by `typical_week` or `season` or 'fortnight'
-C   `three_season` followed by `typical_week` `forthnight` `user` or `season` 
-C   `five_season` followed by `typical_week` `forthnight` `user` or `season` 
-C        CALL EGETW(OUTSTR,K,WORD,'W','*assessment tags',IER)
-C        if(WORD(1:7).eq.'Default'.or.WORD(1:7).eq.'default')then
-C          nipvassmt=1
-C          simsavelevel=-1   ! signal to ipv2simpar to use defaults
-C          simact='i1d   '
-C        elseif(WORD(1:6).eq.'Annual'.or.WORD(1:6).eq.'annual')then
-C          nipvassmt=1
-C          simact='ias   '
-C        elseif(WORD(1:6).eq.'Single'.or.WORD(1:6).eq.'single')then
-C          CALL EGETW(OUTSTR,K,WORD,'W','Single tags',IER)
-C          if(WORD(1:4).eq.'User'.or.
-C     &       WORD(1:4).eq.'user')then
-C            CALL EGETWI(OUTSTR,K,iday1,1,365,'W','start julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday2,1,365,'W','end julian',IER)
-C          endif
-C          nipvassmt=1
-C          simact='i1d   '
-C        elseif(WORD(1:6).eq.'Winter'.or.WORD(1:6).eq.'winter')then
-C          CALL EGETW(OUTSTR,K,WORD,'W','Winter tags',IER)
-C          if(WORD(1:12).eq.'Typical_week'.or.
-C     &       WORD(1:12).eq.'typical_week')then
-C            simact='icwint'
-C          elseif(WORD(1:9).eq.'Fortnight'.or.
-C     &           WORD(1:9).eq.'fortnight')then
-C            simact='icwinf'
-C          elseif(WORD(1:9).eq.'Season'.or.
-C     &           WORD(1:9).eq.'season')then
-C            simact='icwins'
-C          endif
-C          nipvassmt=1
-C        elseif(WORD(1:6).eq.'Spring'.or.WORD(1:6).eq.'spring')then
-C          CALL EGETW(OUTSTR,K,WORD,'W','Spring tags',IER)
-C          if(WORD(1:12).eq.'Typical_week'.or.
-C     &       WORD(1:12).eq.'typical_week')then
-C            simact='icsprt'
-C          elseif(WORD(1:9).eq.'Fortnight'.or.
-C     &           WORD(1:9).eq.'fortnight')then
-C            simact='icsprf'
-C          elseif(WORD(1:9).eq.'Season'.or.
-C     &           WORD(1:9).eq.'season')then
-C            simact='icsprs'
-C          endif
-C          nipvassmt=1
-C        elseif(WORD(1:6).eq.'Summer'.or.WORD(1:6).eq.'summer')then
-C          CALL EGETW(OUTSTR,K,WORD,'W','Summer tags',IER)
-C          if(WORD(1:12).eq.'Typical_week'.or.
-C     &       WORD(1:12).eq.'typical_week')then
-C            simact='icsumt'
-C          elseif(WORD(1:9).eq.'Fortnight'.or.
-C     &           WORD(1:9).eq.'fortnight')then
-C            simact='icsumf'
-C          elseif(WORD(1:9).eq.'Season'.or.
-C     &           WORD(1:9).eq.'season')then
-C            simact='icsums'
-C          endif
-C          nipvassmt=1
-C        elseif(WORD(1:6).eq.'Autumn'.or.WORD(1:6).eq.'autumn')then
-C          CALL EGETW(OUTSTR,K,WORD,'W','Autumn tags',IER)
-C          if(WORD(1:12).eq.'Typical_week'.or.
-C     &       WORD(1:12).eq.'typical_week')then
-C            simact='icautt'
-C          elseif(WORD(1:9).eq.'Fortnight'.or.
-C     &           WORD(1:9).eq.'fortnight')then
-C            simact='icautf'
-C          elseif(WORD(1:9).eq.'Season'.or.
-C     &           WORD(1:9).eq.'season')then
-C            simact='icauts'
-C          endif
-C          nipvassmt=1
-C        elseif(WORD(1:12).eq.'Three_season'.or.
-C     &         WORD(1:12).eq.'three_season')then
-C          CALL EGETW(OUTSTR,K,WORD,'W','three_season tags',IER)
-C          if(WORD(1:12).eq.'Typical_week'.or.
-C     &       WORD(1:12).eq.'typical_week')then
-C            simact='i3t   '
-C          elseif(WORD(1:4).eq.'User'.or.WORD(1:4).eq.'user')then
-C            CALL EGETWI(OUTSTR,K,iday1,1,365,'W','start julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday2,1,365,'W','end julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday3,1,365,'W','start julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday4,1,365,'W','end julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday5,1,365,'W','start julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday6,1,365,'W','end julian',IER)
-C            simact='i3u   '
-C          elseif(WORD(1:9).eq.'season'.or.
-C     &           WORD(1:9).eq.'season')then
-C            simact='i3s   '
-C          endif
-C          nipvassmt=3
-C        elseif(WORD(1:11).eq.'Five_season'.or.
-C     &         WORD(1:11).eq.'five_season')then
-C          CALL EGETW(OUTSTR,K,WORD,'W','five_season tags',IER)
-C          if(WORD(1:12).eq.'Typical_week'.or.
-C     &       WORD(1:12).eq.'typical_week')then
-C            simact='i5t   '
-C          elseif(WORD(1:4).eq.'User'.or.WORD(1:4).eq.'user')then
-C            CALL EGETWI(OUTSTR,K,iday1,1,365,'W','start julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday2,1,365,'W','end julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday3,1,365,'W','start julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday4,1,365,'W','end julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday5,1,365,'W','start julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday6,1,365,'W','end julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday7,1,365,'W','start julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday8,1,365,'W','end julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday9,1,365,'W','start julian',IER)
-C            CALL EGETWI(OUTSTR,K,iday10,1,365,'W','end julian',IER)
-C            simact='i5u   '
-C          elseif(WORD(1:9).eq.'season'.or.
-C     &           WORD(1:9).eq.'season')then
-C            simact='i5s   '
-C          endif
-C          nipvassmt=5
-C        else
-C          nipvassmt=0
-C          simact='i1d   '
-C        endif
-C        write(6,*) 'the value of simact is ',simact
-C        goto 43
-C      elseif(WORD(1:4).eq.'*ipv')then
-C        goto 43
-C      elseif(WORD(1:10).eq.'*start_xml')then  
-C        inumXMLmetrics=0
-C        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'read metrics',IER)  
-C        K=0
-C        CALL EGETW(OUTSTR,K,WORD248,'W','xml data',IER)
-C        do while(WORD248(1:8).ne.'*end_xml')                           
-C          inumXMLmetrics=1+inumXMLmetrics        
-C          XMLMETRICS(inumXMLmetrics)=WORD248
-C          CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'read metrics',IER)  
-C          K=0
-C          CALL EGETW(OUTSTR,K,WORD248,'W','xml data',IER)            
-C        end do
-C        if(WORD(1:8).eq.'*end_xml'.or.WORD248(1:8).eq.'*end_xml')then
-C          goto 43
-C        endif       
-C        goto 43
-C      endif
 
 C Error messages.
    13 if(IOS.eq.2)then

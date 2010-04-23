@@ -41,7 +41,7 @@ C the tags in the file are in a specific order.
 
 C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
-      CHARACTER OUTSTR*124,LOUTSTR*1000,fs*1,OUTSTR2*124
+      CHARACTER OUTSTR*124,LOUTSTR*1000,fs*1
       CHARACTER*42 WORD,FUELNAM
       CHARACTER SYSNAM*60
       CHARACTER*48 ACTNAME
