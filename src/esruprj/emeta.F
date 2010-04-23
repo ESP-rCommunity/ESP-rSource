@@ -2531,6 +2531,10 @@ C Add in site information if tokens were included.
   128   continue
       endif
 
+C Just to be sure re-scan the MLC database so that the string
+C array DESC is filled.
+      call opendb(ier)
+
 C << location for further system level data >>                       
 
 C If there are no zones and no *start_zone found return.
