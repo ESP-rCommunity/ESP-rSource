@@ -26,7 +26,7 @@ Edited by Dr. Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 15 April 2010
+Version of 20 April 2010
 .sp 2
 .SH
 Introduction
@@ -525,6 +525,62 @@ tag and the second is a relative path to the relevant folder.
 When the project manager of ESP-r exports an existing model 
 these lines are added to ensure that the equivalent folder 
 structure is recovered. 
+
+.SH
+Database related data
+.LP
+ESP-r models have associated databases.  If the meta file contains
+no directives then the current default databases are assumed to
+be used. There are directives that identify materials, constructions,
+optics, pressure distributions, event profiles and miscel components.
+The tags used identify whether the file is local to the model, located
+via an explicit path or held in the standard ESP-r databases folder.
+.LP
+Databases that exist outside of the model, for example in a users
+folder such as /home/fred/databases or in the standard ESP-r distribtion
+such as /usr/esru/esp-r/databases or C:\\Esru\\esp-r\\databases will be
+scanned in as the model is created. If databases are located
+within the model folder structure then it cannot be assumed that
+they will be available as ESP-r parses the META file and creates
+the folders.  This can lead to unknown constructions and an inability
+to create the zone construction files. However, newer *surface
+entries can hold the name of the surface optical attribute as well as
+the construction attribute and it is possible to build more of
+the model zone files.
+.LP
+Examples are shown below:
+.MBL
+
+  *mat ../dbs/hotel.materialdb  # materials database
+  *mlc ../dbs/hotel.constrdb    # constructions database
+  *opt ../dbs/hotel.opticdb     # optical db
+  *prs ../dbs/hotel.pressuredb  # pressure coef db
+  *evn /home/fred/databases/profiles.db1 # event profiles db
+  *mscldb /home/fred/databases/mscomp.db1 # miscel components db
+  *pdb /usr/esru/esp-r/databases/plantc.db1 # plant template db
+
+or
+  *stdmat material.db3.a # standard materials database
+  *stdmlc multicon.db3   # standard constructions database
+  *stdopt optics.db2     # standard optical db
+  *stdprs pressc.db1     # standard pressure coef db
+  *stdevn profiles.db2.a # standard event profiles db
+  *stdpdb plantc.db1     # plant template db
+
+.ES
+.LP
+The *mat entry (for example) is followed by ../dbs is a relative path 
+from the model configuration 
+file. The *mscldb entry is an example of an absolute path. These tags are
+also used in the model configuration file.
+.LP
+The *stdmat entry (for example) is followed by a file name (but no path). 
+ESP-r executables have a compiled-in assumption as to where standard 
+databases are located and
+a *stdmat *stdmlc *stdopt *stdprs *stdevn or *stdpdb tag tells ESP-r to pre-pend 
+the path to the supplied file name. This allows META files and the models 
+they contain to be less sensitive to where ESP-r is installed and where
+models are held.
 .SH
 Site related data
 .MBL
