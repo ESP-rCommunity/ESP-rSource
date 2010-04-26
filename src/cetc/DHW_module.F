@@ -298,7 +298,7 @@ C Takes the fEnergy in tank and converts it to a temperature using E = SPHeatWat
 
 c *********************************************************************
 c FUNCTION fDHW_DrawsForEachTank
-c Returns Temperature of Water in Tank at start of time step..
+c Empty function.
 c Created by: Phylroy A. Lopez
 c Initial Creation Date:  March 23th 2001
 c Copyright 2000: NRCan Buildings Group
@@ -1279,6 +1279,7 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       include "dhw_parameters.h"
       include "dhw_common.h"
       include "ground_temp_mains_common.h" 
+      include "drain_water_HR.h"
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1289,11 +1290,17 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       INTEGER   iTankNumber
       logical   bInStartUp
       
+     
+      common/pctstp/ntstpp
+      integer ntstpp            ! number of plant timesteps / building timestep      
+                           
+      
+      
 C Variables used to model showers and drain-water heat recovery.      
       integer iSystem
       real fShowerFraction 
       real fHotWaterTempC   ! Temperature of hot water supplied to shower
-      real fColdWaterTempC  ! Temperature of cold water supplied to shower
+      real fColdWaterTempC  ! Cold water from ground/mains
       logical bShowerActive ! Flag indicating if a shower will be taken
                             !   on this timestep 
       real fAdjustedHotDrawL ! Estimated cold water draw (L)
@@ -1302,6 +1309,37 @@ C Variables used to model showers and drain-water heat recovery.
       real fShowerTSFraction  ! Fraction of timestep for which shower is 
                             ! active. 
 
+      real fHXDrainSideFlowLPM,  ! Flow rates through DWRH (LPM) 
+     &     fHXSupplySideFlowLPM      
+      
+      real fHXDrainSideTempInletC, ! Drain water inlet and outlet temps (oC)
+     &     fHXDrainSideTempOutletC
+     
+     
+      real fHXSupplySideTempInletC ! Inlet temperature of make-up water in 
+                                   ! DWRH (oC)
+                                   
+      real fHXSupplySideTempOutletC  ! Outlet temperature of make-up 
+                                     ! water in dwhr  (oC)
+                                  
+      real fShowerColdWaterTempInitC  ! Temperature of cold water supplied
+      real fShowerColdWaterTempFinalC !   to shower at start and end of 
+                                      !   iteration (oC)
+                                  
+                                  
+      real fTSDurationS     ! Duration of timestep (seconds)                      
+      
+      logical bDone         ! flag for iteration loop.
+
+      integer iNumPltSteps  ! # of plant timesteps per building timestep 
+
+      real fHotFlowRateLPM   ! DWRH flow rates, in litres per minute 
+      real fColdFlowRateLPM  
+      
+      real fEstEffectiveness ! DWHR estimated effectiveness (-)
+      real fEstNTU           ! DWRH estimated # of heat transfer units (-)
+      real fEstHeatRecovery  ! DWHR estimated heat recovery (W)
+      
 C.....References 
       real fCurrentHour                            
                             
@@ -1317,30 +1355,127 @@ c Check if in startup period via function bInStartup.
       print*, '------------ dhw model START --------------'
       
       fWaterDraw = fDHW_WaterDraw() 
-      print*, ' fn hour:        ', fCurrentHour() 
       print*, ' water draw:     ', fWaterDraw
+      print*, ' Avg W Ti:       ', fDHW_AverageWaterTemp()
       
-C.....ideal DHW model onl      
+C.....ideal DHW model only supports a single DHWR model. 
       iSystem = 1
-      fHotWaterTempC = 60.
-      fColdWaterTempC = 12.
+      
+C.....Compute duration of each timestep (seconds)
+C      
+C     duration = 1 hour / ( # building steps/hour * 
+C                           # plant steps / building step ) 
+C
+
+C.....(number of plant timesteps might be zero if plant domain is not 
+C.....defined)
+
+      iNumPltSteps = max( 1, ntstpp )
+      
+      fTSDurationS = 3600. / float ( ntstep * iNumPltSteps )  ! (s)      
+      
+C.....Get initial hot and cold water temperatures.       
+      
+C.....Temperature of water at drain.      
+      fHXDrainSideTempInletC = fDrainWaterTempC(iSystem)
+      
+      
+      ! Update this to use data from Moore model!
+      fColdWaterTempC = fDHW_ColdMainTemp(iMonth)
+      fHXSupplySideTempInletC = fColdWaterTempC
+      
+      
+      ! Initial guess at temperature of water supplied to shower 
+      fShowerColdWaterTempFinalC = fColdWaterTempC 
+      
+      ! Temperature of water leaving hot water system
+      fHotWaterTempC = fDHW_AverageWaterTemp()
+      
+C.....Determine if showers are active this timestep.       
       call ShowerScheduler(iSystem,
-     &                     fWaterDraw,
-     &                     fHotWaterTempC,
-     &                     fColdWaterTempC,
      &                     bShowerActive,     
-     &                     fAdjustedHotDrawL,
-     &                     fShowerHotDrawL,
-     &                     fShowerColdDrawL,
-     &                     fShowerTSFraction
+     &                     fShowerTSFraction,
+     &                     fTSDurationS
      &                    )
+     
+C.....Flag for iteration.      
+      bDone = .false.
+      
+      ShowerFlowLoop: do while ( .not. bDone ) 
+
+C.......Use most recent values for iteration.       
+        fShowerColdWaterTempInitC = fShowerColdWaterTempFinalC
+     
+C.......Adjust flow rate for showers.     
+        call ShowerDrawAdjustment(iSystem,  
+     &                             fTSDurationS,      
+     &                             fWaterDraw,
+     &                             fHotWaterTempC,
+     &                             fShowerColdWaterTempInitC,
+     &                             bShowerActive,     
+     &                             fAdjustedHotDrawL,
+     &                             fShowerHotDrawL,
+     &                             fShowerColdDrawL,
+     &                             fShowerTSFraction
+     &                            )
+     
+
+        ShowerActive: if ( .not. bShowerActive ) then 
+        
+          bDone = .true. 
+          
+        else 
+C.........Compute flow rates on the drain and supply sides of the 
+C.........shower HX's. Drain water side:
+          fHXDrainSideFlowLPM = 
+     &      ( fShowerHotDrawL + fShowerColdDrawL ) / 
+     &           ( fTSDurationS * fShowerTSFraction * 60. )
+        
+C.........Supply side: Dependends on flow arrangements    
+          if ( iDwhrConfiguation(iSystem) == iEqualFlow ) then 
+        
+C...........Equal flow: All water passes through DWRH 
+            fHXSupplySideFlowLPM = fHXDrainSideFlowLPM 
+          
+          else 
+C...........Unequal flow: only HWT make-up passes through DWHR
+            fHXSupplySideFlowLPM = fShowerHotDrawL / 
+     &           ( fTSDurationS * fShowerTSFraction * 60. )
+          
+          endif 
+        
+C.........Call DWHR Heat recovery calculation             
+          call DWHR_Predict_Outlet_Temp( iSystem,
+     &                                   fHXDrainSideTempInletC,
+     &                                   fHXSupplySideTempInletC,
+     &                                   fHXDrainSideFlowLPM,
+     &                                   fHXSupplySideFlowLPM,
+     &                                   fHXDrainSideTempOutletC,
+     &                                   fHXSupplySideTempOutletC,
+     &                                   fEstEffectiveness,
+     &                                   fEstNTU,
+     &                                   fEstHeatRecovery
+     &                                  )
+        
+          if ( iDwhrConfiguation(iSystem) == iEqualFlow ) 
+     &       fShowerColdWaterTempFinalC = fHXSupplySideTempOutletC
+        
+          print*, '  ........1 TInit:  ',fShowerColdWaterTempInitC 
+          print*, '  ........2 TFinal: ',fShowerColdWaterTempInitC 
+          
+          if ( abs(   fShowerColdWaterTempFinalC
+     &          - fShowerColdWaterTempInitC  ) < 0.05 ) bDone = .true.
+       
+        endif ShowerActive
+     
+       
+      enddo ShowerFlowLoop
+      
+     
      
       print*, ' shower status:  ', bShowerActive
       print*, ' adjusted draw:  ', fAdjustedHotDrawL
-      
-      ShowerActive: if ( bShowerActive ) then 
-      
-      endif ShowerActive
+
       
 C Code to schedule showers goes here...      
       
@@ -1353,7 +1488,7 @@ c This function will calulate exactly how much load the
 C current tank can support. (This procedure is an empty 
 C placeholder --- perhaps created as a stub for multi
 C tank support?)
-      CALL fDHW_DrawsForEachTank()
+C      CALL fDHW_DrawsForEachTank()
 
 c This determines the air temperature of the room in which the Hot 
 C water tank is located. At present, there's no apparent connection 
@@ -1376,7 +1511,7 @@ C Report data to h3kreports, site-utilities facility
 C Transport drain-water data, if needed.
       call DWHRDrawTSTransport()      
       
-      
+      print*, ' Avg W Tf:       ', fDHW_AverageWaterTemp()
       print*, '------------ dhw model END ----------------'
       
       RETURN

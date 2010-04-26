@@ -441,7 +441,7 @@ C.......Extract rated efficiency (%) token
           fDwhrRatedEfficiency(iSystem) = fCtoR_err(
      &         cValues(iSystem,iToken)(1:72),
      &         'DWHR Rated efficiency',
-     &         bError )
+     &         bError ) / 100.
 
           if (bError) then
             write(cMsg, '(A,A,I2)')
@@ -1100,7 +1100,8 @@ C.....ESP-r references
 C-----------------------------------------------------------------------
 C     
 C-----------------------------------------------------------------------      
-
+      print*, ' FLOWS: ', fHotFlowRateLPM, fColdFlowRateLPM
+      print*, ' TEMPS: ', fHotInletTempC, fColdInletTempC
 C.....Convert rated efficiency into corresponding rated NTU.
 C     
 C     NTUr = EFFr / ( 1 - EFFr ) 
@@ -1121,7 +1122,7 @@ C.................................................................
 C.....Convert flow rates to litres-per-second
 
       fHotFlowRateLPS  = fHotFlowRateLPM  / 60.
-      fColdFlowRateLPS = fColdFlowRateLPS / 60.
+      fColdFlowRateLPS = fColdFlowRateLPM / 60.
       
 C.....Make an initial estimate of heat recovery, outlet temperatures 
 C.....using rated effectivenss. 
@@ -1133,7 +1134,7 @@ C.....Initial estimate of hot and cold Cp: based on inlet temperature
 C.....Initial estimate of hot and cold desnity: based on inlet temperature
       fHotDensity_KGpM3  = densit ( 2, fHotInletTempC  )    ! (kg/m3)
       fColdDensity_KGpM3 = densit ( 2, fColdInletTempC )    ! (kg/m3)
-
+      print*, '  -> densities: ', fHotDensity_KGpM3, fColdDensity_KGpM3
 C.....Heat capacity flow rates:
 C
 C     C = Cp * ( V / 1000 ) * rho   
@@ -1169,7 +1170,7 @@ C............................................................
       fEstHeatRecovery =   fDwhrRatedEfficiency(iSystem) 
      &                   * fMinAvgC_WpoC 
      &                   * ( fHotInletTempC - fColdInletTempC )
-     
+      print*, '  ->fEstHeatRecovery:  ', fEstHeatRecovery
 C.....Using that parameter, estimate hot and cold outlet temperatures
 C
 C                     Q
@@ -1195,14 +1196,19 @@ C     Using these estimates, start a iterative search to determine
 C     actual effectiveness, heat transfer and outlet temperatures. 
 C-----------------------------------------------------------------------
       bTempsConverged = .false. 
-
+      print*, 'DWHR calc loop: '
+     
       TempSearchLoop: do while ( .not. bTempsConverged )
+      
+        
+        
       
 C.......Save most recently computed outlet temperatures as estimates 
 C.......for comparison to determine if loop has converged. 
         fEstColdOutletTempC = fColdOutletTempC
         fEstHotOutletTempC  = fHotOutletTempC
-      
+        print*, '  ->fEstColdOutletTempC:  ',  fEstColdOutletTempC
+        print*, '  ->fEstHotOutletTempC :  ',  fEstHotOutletTempC
 C.......Refine estimates of hot and cold desnity: based on inlet and 
 C.......outlet temperatures 
         fHotDensity_KGpM3  =   0.5 * densit ( 2, fHotInletTempC  )
@@ -1210,7 +1216,6 @@ C.......outlet temperatures
      
         fColdDensity_KGpM3 =   0.5 * densit ( 2, fColdInletTempC  )
      &                       + 0.5 * densit ( 2, fColdOutletTempC ) ! (kg/m3)      
-      
 C.......Refine estimates of hot and cold heat capacity using both inlet 
 C.......and outlet temperatures       
         fHotAvgCp_JpKGoC  =   0.5 * SHtFld ( 3, fHotInletTempC   )
@@ -1334,7 +1339,7 @@ C              Q       = heat transfer (W, negative for hot-side)
 C              C       = stream's heat capacity flow rate (W/oC)
 C.......................................................................
         fHotOutletTempC = fHotInletTempC 
-     &                      + fEstHeatRecovery / fHotAvgC_WpoC
+     &                      - fEstHeatRecovery / fHotAvgC_WpoC
        
         fColdOutletTempC = fColdInletTempC 
      &                      + fEstHeatRecovery / fColdAvgC_WpoC
@@ -1342,11 +1347,18 @@ C.......................................................................
 C     Now contrast these with the pervious estimates, and deem the 
 C     solution to have converged if they agree to within .05 oC.
 C.......................................................................   
+        print*, '   ......Cold     ', fColdOutletTempC
+        print*, '   ......Cold EST ', fEstColdOutletTempC
+        print*, '   ......Hot      ', fHotOutletTempC
+        print*, '   ......Hot EST  ', fEstHotOutletTempC
+        print*, '   ......Q        ', fEstHeatRecovery
+        print*, '   -----------------------------------------'
+        STOP
         fMaxTempError = max ( 
      &            abs( fColdOutletTempC - fEstColdOutletTempC ),
      &            abs( fHotOutletTempC - fEstHotOutletTempC )    )
-     
-        if ( fMaxTempError > 0.05 ) bTempsConverged = .true. 
+        
+        if ( fMaxTempError < 0.05 ) bTempsConverged = .true. 
         
       enddo TempSearchLoop
       
@@ -1532,14 +1544,9 @@ C    This routine...
 C
 C-----------------------------------------------------------------------
       subroutine ShowerScheduler(iSystem,                 
-     &                           fTotalDrawL,
-     &                           fHotWaterTempC,
-     &                           fColdWaterTempC,
      &                           bShowerActive,     
-     &                           fAdjustedHotDrawL,
-     &                           fShowerHotDrawL,
-     &                           fShowerColdDrawL,
-     &                           fShowerTSFraction
+     &                           fShowerTSFraction,
+     &                           fTSDurationS
      &                          )
 
       implicit none 
@@ -1550,45 +1557,18 @@ C.....Inputs/outputs
       integer iSystem        ! Integer flag indicating which system 
                              !   is under consideration      
                              
-      real fTotalDrawL       ! Total volumetric draw (litres) from 
-                             ! dwh load model 
-                             
-      real fHotWaterTempC    ! Temperature of hot water supplied by 
-                             !   dhw system       
-                             
-      real fColdWaterTempC   ! Temperature of cold water flowing into 
-                             !   shower (after DWHR, if any)
-      
+     
       logical bShowerActive  ! Flag indicating if shower is in use
       
-      real fAdjustedHotDrawL  ! Adjusted hot water draw without showers 
-                              !   (litres)       
-                             
-      real fShowerHotDrawL ! Corresponding cold water draw (litres)                             
-                             
-      real fShowerColdDrawL ! Corresponding cold water draw (litres)
       
       real fShowerTSFraction  ! Fraction of current TS that shower is 
                               !   in use 
  
-C.....ESP-r commons 
-      common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      integer isd1              ! not used in current context
-      integer ism1              ! not used in current context
-      integer isd2              ! not used in current context           
-      integer ism2              ! not used in current context
-      integer isds              ! not used in current context
-      integer isdf              ! not used in current context 
-      integer ntstep            ! number of building steps/hour
-      
-      common/pctstp/ntstpp
-      integer ntstpp            ! number of plant timesteps / building timestep      
-                                    
+              
                               
 C.....Local variables
 
       integer iShower        ! indicies of shower being simulated.
-      integer iNumActiveSh
           
       real fThisShowerTSfrac ! Fraction of timestep that an individual 
                              !   shower overlaps 
@@ -1640,45 +1620,16 @@ C.....Local variables
                             
       real fTSDurationS     ! Duration of a timestep (seconds)
       
-      integer iNumPltSteps  ! Number of plant time steps.
-                            
 C.....References: 
       real fCurrentHour      ! Function returning the current hour as 
                              !    a float (0->23.999...)
                              
-      real densit            ! Function returning density of a fluid 
-                             !    kg/m3
                              
-      real shtfld            ! Function returing the specific heat of a 
-                             !    fluid (J/kg oC) 
-
-                             
-C-----------------------------------------------------------------------
-C     Apply any deficits from last TS to determine net availaible water
-C     draw. Note: this result can be negative. We'll handle negative
-C     values later.
-C-----------------------------------------------------------------------                             
-      
-      
-      fNetDrawThisTSL = fTotalDrawL - fTSDeficitP(iSystem)
-      
 C-----------------------------------------------------------------------
 C     Check if shower is active: is current hour within start and end 
 C     time for showers?
 C-----------------------------------------------------------------------      
 
-C.....Compute duration of each timestep (seconds)
-C      
-C     duration = 1 hour / ( # building steps/hour * 
-C                           # plant steps / building step ) 
-C
-
-C.....(number of plant timesteps might be zero if plant domain is not 
-C.....defined)
-
-      iNumPltSteps = max( 1, ntstpp )
-      
-      fTSDurationS = 3600. / float ( ntstep * iNumPltSteps )  ! (s)
 
 C.....Start and end of the timestep, in hours
 
@@ -1686,8 +1637,7 @@ C.....Start and end of the timestep, in hours
       fTSStart = fTSEnd - fTSDurationS / 3600. ! (h)
 
       print*, '   -> TS start - end:        [',fTSStart,'-',fTSEnd,'h]' 
-      print*, '   -> fTSDeficitP(isystem): ', fTSDeficitP(iSystem)
-      print*, '   -> fNetDrawThisTSL:      ',  fNetDrawThisTSL
+
       
 C.....Initialize fraction of timestep for which showers are active to zero
       fShowerTSFraction = 0. 
@@ -1732,6 +1682,111 @@ C.....flag shower as inactive
       
       endif 
       
+      return 
+      end subroutine ShowerScheduler
+
+C------------ ShowerScheduler ------------------------------------------
+C  ABSTRACT:
+C
+C    This routine...
+C
+C-----------------------------------------------------------------------
+      subroutine ShowerDrawAdjustment(iSystem,    
+     &                           fTSDurationS, 
+     &                           fTotalDrawL,
+     &                           fHotWaterTempC,
+     &                           fColdWaterTempC,
+     &                           bShowerActive,     
+     &                           fAdjustedHotDrawL,
+     &                           fShowerHotDrawL,
+     &                           fShowerColdDrawL,
+     &                           fShowerTSFraction
+     &                          )
+
+      implicit none 
+      include "drain_water_HR.h"
+      
+C.....Inputs/outputs 
+                             
+      integer iSystem        ! Integer flag indicating which system 
+                             !   is under consideration      
+                             
+      real fTotalDrawL       ! Total volumetric draw (litres) from 
+                             ! dwh load model 
+                             
+      real fHotWaterTempC    ! Temperature of hot water supplied by 
+                             !   dhw system       
+                             
+      real fColdWaterTempC   ! Temperature of cold water flowing into 
+                             !   shower (after DWHR, if any)
+      
+      logical bShowerActive  ! Flag indicating if shower is in use
+      
+      real fAdjustedHotDrawL  ! Adjusted hot water draw without showers 
+                              !   (litres)       
+                             
+      real fShowerHotDrawL ! Corresponding cold water draw (litres)                             
+                             
+      real fShowerColdDrawL ! Corresponding cold water draw (litres)
+      
+      real fShowerTSFraction  ! Fraction of current TS that shower is 
+                              !   in use 
+       
+
+C.....Local variables
+      
+      real fNetDrawThisTSL   ! Variable containing the net water draw 
+                             !   after deficits from previous timesteps 
+                             !   have been applied. 
+
+
+                             
+C      real fHour             ! Current hour of the day.  
+
+      real fDailyShowerDrawL ! Volume of water used each day in 
+                                 !   showers (L)      
+
+
+      real fAvgShowerDrawLPS  ! Average volume of water used in showers
+                              !   in showers. (LPS) during period. 
+                              
+      real fTSShowerDrawL     ! Average volume of water used each TS
+                              !   in showers (L)
+                              
+      real fHotFlowRateKGpS,  ! Hot and cold flow rates for water 
+     &     fColdFlowRateKGpS  !   supplied to shower (kg/s)
+
+      real fHotFlowRateLPS,  ! Hot and cold flow rates for water 
+     &     fColdFlowRateLPS  !   supplied to shower (l/s)     
+ 
+      real fShowerMassFlowKGpS ! mass flow of mixed water in shower (kg/s)
+      
+                             
+      real fShowerCpHot,    ! Specific heat hot and cold water entering 
+     &     fShowerCpCold,   !   shower faucet, and mixed water leaving 
+     &     fShowerCpMixed   !   shower faucet (J/kg oC)
+    
+                            
+                            
+      real fTSDurationS     ! Duration of a timestep (seconds)
+      
+      integer iNumPltSteps  ! Number of plant time steps.
+                            
+C.....References
+      real densit            ! Function returning density of a fluid 
+                             !    kg/m3
+                             
+      real shtfld            ! Function returing the specific heat of a 
+                             !    fluid (J/kg oC) 
+       
+C-----------------------------------------------------------------------
+C     Apply deficit from last timestep to this draw. This value might 
+C     be negative. If so, we'll carry the deficit forward to the next
+C     timestep at the end of this routine. 
+C-----------------------------------------------------------------------       
+      fNetDrawThisTSL = fTotalDrawL - fTSDeficitP(iSystem)  ! (L)
+      print*, '   -> fTSDeficitP(isystem): ', fTSDeficitP(iSystem)
+      print*, '   -> fNetDrawThisTSL:      ',  fNetDrawThisTSL
 C-----------------------------------------------------------------------
 C     If shower is active, adjust daily water draw to reflect 
 C     hot water usage. 
@@ -1817,13 +1872,17 @@ C     Volume (l)  = flow-rate (l/s) * time step duration (s)
 C                                   * fraction of timestep for shower 
 C
 C-----------------------------------------------------------------------
-      fTSShowerDrawL = fHotFlowRateLPS * fTSDurationS 
-     &                                 * fShowerTSFraction
+      fShowerHotDrawL = fHotFlowRateLPS * fTSDurationS 
+     &                                  * fShowerTSFraction
+     
+      fShowerColdDrawL = fColdFlowRateLPS * fTSDurationS 
+     &                                    * fShowerTSFraction
+     
       print*, '   -> fTSShowerDrawL:       ', fTSShowerDrawL
 C.....Subtract shower water usage from total. If result is less than 
 C.....zero, compute      
 
-      fAdjustedHotDrawL = fNetDrawThisTSL - fTSShowerDrawL
+      fAdjustedHotDrawL = fNetDrawThisTSL - fShowerHotDrawL
         
       HotWaterDeficit: if ( fAdjustedHotDrawL < 0. ) then 
         
@@ -1833,15 +1892,17 @@ C.....zero, compute
       endif HotWaterDeficit
 
 C-----------------------------------------------------------------------
-C     Now, schedule showers, and compute resulting flow rates, 
-C     delivery temperatures. First, determine how many timesteps 
-C     a shower takes:
+C     Compute volumes of hot and cold water used in shower
 C-----------------------------------------------------------------------
+
+
       print*, '   -> fAdjustedHotDrawL:   ', fAdjustedHotDrawL
+      print*, '   -> fShowerHotDrawL:     ', fShowerHotDrawL
+      print*, '   -> fSHowerColdDrawL:    ', fShowerColdDrawL
       print*, '   -> fTSDeficitF(iSystem):', fTSDeficitF(iSystem)
       
       
       
       
       return 
-      end subroutine ShowerScheduler
+      end subroutine ShowerDrawAdjustment
