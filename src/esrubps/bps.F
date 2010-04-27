@@ -309,6 +309,7 @@ C Variables used to configure h3kreports
       logical rep_xmlstatus
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer ier
 
 C (possibly) Enable floating point exception error handling on
 C gnu 3.X compilers
@@ -943,6 +944,7 @@ C Cast back to LCLIM.
         write(LCLIM,'(a)') llclmdb(1:llt)
         call tstamp('>','SIM: change climate')
         call tstamp('>',LCLIM)
+        ier=0
         call EFOPRAN(ICLIM,LCLIM,144,0,IER)
         IF(ier.eq.0)THEN
           IREC=366
@@ -1149,6 +1151,7 @@ C the model.
           lnts=lnblnk(LTDF)
           if(LTDF(lnts-15:lnts).eq.'.temporalscratch')then
             call usrmsg('Deleting scratch file...',LTDF,'P')
+            ier=0
             call EFOPRAN(iutdf,LTDF,ITWPR,1,IER)
             CALL EFDELET(iutdf,ISTAT)
             call usrmsg('Deleting scratch file...done.',LTDF,'P')
@@ -1159,6 +1162,7 @@ C Delete all the 3D temporary files.
         IF(BLDG3D)THEN
           DO 60 ICOMP=1,NCOMP
             IF(ZONE3D(ICOMP))THEN
+              ier=0
               CALL EFOPRAN(ITF3,L3DNDD(ICOMP),4,3,IER)
               CALL EFDELET(ITF3,ISTAT)
               CALL EFOPRAN(ITF3,L3DTLW(ICOMP),5,3,IER)
@@ -1169,6 +1173,7 @@ C Delete all the 3D temporary files.
    60     CONTINUE
         ENDIF
         IF(GRND3D)THEN
+          ier=0
           CALL EFOPRAN(ITF3,LGDNDD,3,3,IER)
           CALL EFDELET(ITF3,ISTAT)
         ENDIF

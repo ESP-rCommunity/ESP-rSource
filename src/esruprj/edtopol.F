@@ -2983,7 +2983,9 @@ C IDST tool commands.
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       logical updatecon,QUIET,concat,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
-#ifdef OSX
+      integer ier
+
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild
@@ -3308,6 +3310,7 @@ C << only do this for the actual number of sets >>
         idf=ifil+1
         nzrl = MZRL
         CALL ERPFREE(idf,ISTAT)
+        ier=0
         call EFOPRAN(idf,sblres(1),nzrl,1,IER)
         CALL EFDELET(idf,ISTAT)
         CALL ERPFREE(idf,ISTAT)

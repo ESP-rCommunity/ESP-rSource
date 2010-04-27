@@ -65,6 +65,8 @@ C *********************************************************************
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDTAQ,LGDNDD
       CHARACTER MSG*82,L3DTMP*72,H*72,FLTYP*25,LTMP*72,path*72
 
+      integer ier
+
       ZNP1=0.
       ZNF1=0.
       L3DTMP=' '
@@ -77,7 +79,9 @@ C Skip the 1D zones.
         L3DNDD(ICOMP)=' '
         L3DTLW(ICOMP)=' '
         L3DLWV(ICOMP)=' '
+        ier=0
         CALL EFOPRAN(ICVS,L3DCVS(ICOMP),5,1,IER)
+        ier=0
         CALL EFOPRAN(ICNC,L3DCNC(ICOMP),7,1,IER)
         IF(PATH.EQ.'./'.OR.PATH.EQ.' ')THEN
           WRITE(MSG,'(2A,I2,A)')'Do you want the associated 3D files ',
@@ -95,6 +99,7 @@ C Create the nodes distribution file.
         LTMP=L3DNDD(ICOMP)
         CALL FLNAME(ICOMP,LTMP,FLTYP,'.NDD',0,IER)
         L3DNDD(ICOMP)=LTMP
+        ier=0
         CALL EFOPRAN(INDD,L3DNDD(ICOMP),4,4,IER)
         IF(IER.LT.0)then
           call edisp(iuout,'Error openning nodes distribution file.')
@@ -151,6 +156,7 @@ C Read next record in the control volumes file.
         LTMP=L3DTLW(ICOMP)
         CALL FLNAME(ICOMP,LTMP,FLTYP,'.TLW',0,IER)
         L3DTLW(ICOMP)=LTMP
+        ier=0
         CALL EFOPRAN(ITLW,L3DTLW(ICOMP),5,4,IER)
         IF(IER.LT.0)then
           call edisp(iuout,'Error while openning total longwave file.')
@@ -164,6 +170,7 @@ C Open the 3D temporary file.
         H(2)='     This file will be automatically deleted.'
         FLTYP='3D temporary'
         CALL FLNAME(ICOMP,L3DTMP,FLTYP,'_TMP',2,IER)
+        ier=0
         CALL EFOPRAN(ITF3,L3DTMP,3,4,IER)
         DO 40 IS=1,NCONST(ICOMP)
           ASURFO(ICOMP,IS)=0.
@@ -261,6 +268,7 @@ C Create the longwave file from the total longwave file.
         LTMP=L3DLWV(ICOMP)
         CALL FLNAME(ICOMP,LTMP,FLTYP,'.LWV',0,IER)
         L3DLWV(ICOMP)=LTMP
+        ier=0
         CALL EFOPRAN(ILWV,L3DLWV(ICOMP),4,4,IER)
         IF(IER.LT.0)STOP ' error while openning longwave file.'
         ITND2=0
@@ -299,6 +307,7 @@ C Create the longwave file from the total longwave file.
         CALL ERPFREE(ICNC,ISTAT)
 
 C Open the temperature and energy file.
+        ier=0
         CALL EFOPRAN(ITAQ,L3DTAQ(ICOMP),2,1,IER)
 
 C Check that the number of records is at least more than the number of 
@@ -311,6 +320,7 @@ C Determine the number of nodes in the 3D ground model.
       IF(GRND3D)THEN
         NNODTG=0
         LGDNDD=' '
+        ier=0
         CALL EFOPRAN(ICVS,LGDCVS,3,1,IER)
         IC=0
   500   IC=IC+1
@@ -320,11 +330,13 @@ C Determine the number of nodes in the 3D ground model.
           GOTO 500
         ENDIF
         CALL ERPFREE(ICVS,ISTAT)
+        ier=0
         CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
         FLTYP='nodes distribution'
         LTMP=LGDNDD
         CALL FLNAME(-1,LTMP,FLTYP,'.NDD',0,IER)
         LGDNDD=LTMP
+        ier=0
         CALL EFOPRAN(INDD,LGDNDD,3,4,IER)
         IR=0
         IC=1
@@ -356,6 +368,7 @@ C Check if the number of nodes in 3D ground model is acceptable.
         IF(NNODTG.GE.MNOD3)STOP ' number of nodes in ground is large.'
 
 C Open the temperature and energy file and check the number of records.
+        ier=0
         CALL EFOPRAN(ITAQ,LGDTAQ,2,1,IER)
         READ(ITAQ,REC=NNODTG+1,ERR=15)DMM,DMM
         CALL ERPFREE(ITAQ,ISTAT)
@@ -399,11 +412,13 @@ C *********************************************************************
       CHARACTER COPYFL*124,NTERM*1,FLTYP*25
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DTMP,H
       logical unixok
+      integer ier
 
       CALL USRMSG(' ','Re-ordering in process. Please wait !','-')
       L3DTMP=' '
       NTERM=CHAR(0)
       INDC=INDD
+      ier=0
       CALL EFOPRAN(INDC,L3DNDC(IZ),3,1,IER)
 
 C Re-order the nodes (reduce the fill ins).
@@ -479,6 +494,7 @@ C Re-order the connections file.
      &    ' ',L3DTMP(1:lnblnk(L3DTMP)),NTERM
       endif
       call runit(COPYFL,'-')
+      ier=0
       CALL EFOPRAN(ITF3,L3DTMP,7,1,IER)
       IC=0
   100 IC=IC+1
@@ -496,6 +512,7 @@ C Re-order the connections file.
      &      ' ',L3DTMP(1:lnblnk(L3DTMP)),NTERM
         endif
         call runit(COPYFL,'-')
+        ier=0
         CALL EFOPRAN(ITF3,L3DTMP,5,1,IER)
         IC=0
         GOTO 110
@@ -522,6 +539,7 @@ C Re-order the control volumes file.
      &      ' ',L3DTMP(1:lnblnk(L3DTMP)),NTERM
         endif
         call runit(COPYFL,'-')
+        ier=0
         CALL EFOPRAN(ITF3,L3DTMP,3,1,IER)
         IC=0
         GOTO 130
@@ -540,6 +558,7 @@ C Re-order the nodes file.
         WRITE(COPYFL,'(4A,A1)')'cp ',L3DTAQ(IZ)(1:lnblnk(L3DTAQ(IZ))),
      &                   ' ',L3DTMP(1:lnblnk(L3DTMP)),NTERM
         call runit(COPYFL,'-')
+        ier=0
         CALL EFOPRAN(ITF3,L3DTMP,2,1,IER)
         CALL EFOPRAN(ITAQ,L3DTAQ(IZ),2,1,IER)
         IC=0

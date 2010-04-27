@@ -110,6 +110,7 @@ C Passed in parameters.
       integer iyeart    ! for local editing
       integer lnmp,lncr,lnod ! for with of mpath, cfgroot, odir strings
       character tcname*248   ! for editing image notes
+      character WORDS(12)*32,testw*32
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -176,12 +177,16 @@ C User did not cancel so instantiate data for new model.
 C At some point switch from default version 3 to v4.
       icfgv=4   ! alter this to 4 when working correctly
       INDCFG=0
-      sitelat=55.9
-      SLAT=55.9
-      sitelongdif=-4.1
-      SLON=-4.1
-      siteexposureindex=1
-      groundrefl=0.2
+      if(act(1:2).eq.'sn'.or.act(1:2).eq.'sw')then
+        continue  ! META file will already have set sitelat etc.
+      else
+        sitelat=55.9
+        SLAT=55.9
+        sitelongdif=-4.1
+        SLON=-4.1
+        siteexposureindex=1
+        groundrefl=0.2
+      endif
       NCOMP=0
       noimg=0
       LPNF='UNKNOWN'
@@ -333,23 +338,73 @@ C Create the folder mpath and inside that the standard folders.
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'ctl'
+
+C Check that the control folder path is standard.
+          call GETTOKENS(ctlpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'ctl'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'ctl'
+            write(ctlpth,'(3a)')'..',fs,'ctl'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'zones'
+
+C Check that the zones folder path is standard or was not yet defined.
+          call GETTOKENS(zonepth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'zones'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'zones'
+            write(zonepth,'(3a)')'..',fs,'zones'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'nets'
+
+C Check that the nets folder path is standard.
+          call GETTOKENS(netpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'nets'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'nets'
+            write(netpth,'(3a)')'..',fs,'nets'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'images'
+
+C Check that the images folder path is standard.
+          call GETTOKENS(imgpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'images'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'images'
+            write(imgpth,'(3a)')'..',fs,'images'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'doc'
+
+C Check that the doc folder path is standard.
+          call GETTOKENS(docpth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'doc'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'doc'
+            write(docpth,'(3a)')'..',fs,'doc'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
@@ -357,19 +412,23 @@ C Create the folder mpath and inside that the standard folders.
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'dbs'
+
+C Check that the dbs folder path is standard.
+          call GETTOKENS(dbspth,IW,WORDS)
+          lnw=lnblnk(WORDS(IW))
+          testw=WORDS(IW)
+          if(testw(1:lnw).eq.'dbs'.or.testw(lnw:lnw).eq.'.')then
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'dbs'
+            write(dbspth,'(3a)')'..',fs,'dbs'
+          else
+            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+          endif
           call usrmsg('Creating folder:',doit,'-')
           call runit(doit,'-')
           call pausems(400)
 
-          write(zonepth,'(3a)')'..',fs,'zones'
-          write(netpth,'(3a)')'..',fs,'nets'
-          write(ctlpth,'(3a)')'..',fs,'ctl'
-          write(imgpth,'(3a)')'..',fs,'images'
           write(radpth,'(3a)')'..',fs,'rad'
-          write(docpth,'(3a)')'..',fs,'doc'
           write(tmppth,'(3a)')'..',fs,'tmp'
-          write(dbspth,'(3a)')'..',fs,'dbs'
 
 C Re-establish pwd and then project folders.
           write(path,'(4a)')mpath(1:lnblnk(mpath)),fs,'cfg',fs
@@ -1385,6 +1444,12 @@ C CFD
       character sfile*72,snpfile*72,fs*1
       logical modcfg,XST,unixok
 
+#ifdef OSI
+      integer impx,impy,iwe
+#else
+      integer*8 impx,impy,iwe
+#endif
+
 C Note L is a temporary file and D is used for defaul file names.
       modcfg=.FALSE.
       newgeo=.false.  ! assume older format geometry.
@@ -1554,7 +1619,10 @@ C Help text for this menu.
 
       WRITE(head,'(A,A)') 'Files for ',ZN
   2   if(MMOD.EQ.8)then
-        CALL VWMENU(head,ITEMS,MITEM,0,0,IW,irpx,irpy,INO)
+        impx=0
+        impy=0
+        iwe=iw
+        CALL VWMENU(head,ITEMS,MITEM,impx,impy,IWE,irpx,irpy,INO)
       else
         CALL EMENU(head,ITEMS,MITEM,INO)
       endif

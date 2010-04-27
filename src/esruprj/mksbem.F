@@ -72,6 +72,7 @@ C MMGFUN controls all UK NCM related tasks
 #include "model.h"
 #include "site.h"
 #include "ipvdata.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
       
@@ -153,9 +154,6 @@ C MMGFUN controls all UK NCM related tasks
       COMMON/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER IPCONV
       REAL pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
-
-      COMMON/BL1/dmdsdesc,bdmds
-      CHARACTER dmdsdesc*248,bdmds*72
 
       COMMON/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
      &              sbh,pad,wvpe
@@ -3981,13 +3979,15 @@ C Set flag for cfg file that this is a notional model
 
 C Assign standard databases containing UK NCM materials and constructions
 C These files are UK_notional.constrdb, material.db3.a and optics.db2
-C and the standard plant template. 
+
+C << consider using ipathmul and ipathmat and ipathoptdb here >>
+ 
       WRITE(LFMAT,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &FS,'databases',FS,'material.db3.a'
+     &  FS,'databases',FS,'material.db3.a'
       WRITE(LFMUL,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &FS,'databases',FS,'UK_notional.constrdb'
+     &  FS,'databases',FS,'UK_notional.constrdb'
       WRITE(LOPTDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &FS,'databases',FS,'optics.db2'
+     &  FS,'databases',FS,'optics.db2'
       WRITE(LPCDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
      &FS,'databases',FS,'plantc.db1'
 
@@ -5013,7 +5013,7 @@ C building as described in SBEM - EPBD documents
       CHARACTER AUT*12,DOIT*248,LONGTFILE*144,LONGTFILEDOS*144
       character OUTS*248,TMODE*8
       LOGICAL CONCAT,UNIXOK
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild

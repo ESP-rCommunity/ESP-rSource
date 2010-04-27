@@ -7,7 +7,7 @@ C PUT CHARACTER ICH AT (X, Y) IN SCALED UNITS IF ON SCREEN
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       character a*1
-#ifdef OSX
+#ifdef OSI
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
 #else

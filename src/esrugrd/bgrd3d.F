@@ -61,6 +61,7 @@ C *********************************************************************
 
       CHARACTER ITEM(15)*26,SZN*15,H*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
+      integer ier
 
       SZN=' '
       IZ=0
@@ -274,21 +275,25 @@ C Delete the associated 3D file.
         IF(ZONE3D(IZ))THEN
           CALL FINDFIL(L3DCVS(IZ),XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,L3DCVS(IZ),5,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
           CALL FINDFIL(L3DCNC(IZ),XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,L3DCNC(IZ),7,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
           CALL FINDFIL(L3DNDC(IZ),XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,L3DNDC(IZ),3,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
           CALL FINDFIL(L3DTAQ(IZ),XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,L3DTAQ(IZ),2,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF

@@ -531,7 +531,7 @@ if((theDisp = XOpenDisplay(NULL))==NULL) {
 t0=(char *) getenv("EFONT_0");
 /* fprintf(stderr,"t0 is %s \n",t0); */
 if ((t0 == NULL) || (t0  == "") || (strncmp(t0,"    ",4) == 0)) {
-  strcpy(font_0,"6x12");
+  strncpy(font_0,"6x12",4);
 } else {
   strcpy(font_0,getenv("EFONT_0"));
 }
@@ -540,7 +540,7 @@ if((fst_0 = XLoadQueryFont(theDisp,font_0)) == NULL) {
   exit(1);
 }
 if (((t0=(char *) getenv("EFONT_1"))== NULL) || ((t0=(char *) getenv("EFONT_1"))== "")) {
-  strcpy(font_1,"6x13");
+  strncpy(font_1,"6x13",4);
 } else {
   strcpy(font_1,getenv("EFONT_1"));
 }
@@ -549,7 +549,7 @@ if((fst_1 = XLoadQueryFont(theDisp,font_1)) == NULL) {
   exit(1);
 }
 if (((t0=(char *) getenv("EFONT_2"))== NULL) || ((t0=(char *) getenv("EFONT_2"))== "")) {
-  strcpy(font_2,"8x13");
+  strncpy(font_2,"8x13",4);
 } else {
   strcpy(font_2,getenv("EFONT_2"));
 }
@@ -558,7 +558,7 @@ if((fst_2 = XLoadQueryFont(theDisp,font_2)) == NULL) {
   exit(1);
 }
 if (((t0=(char *) getenv("EFONT_3"))== NULL) || ((t0=(char *) getenv("EFONT_3"))== "")) {
-  strcpy(font_3,"9x15");
+  strncpy(font_3,"9x15",4);
 } else {
   strcpy(font_3,getenv("EFONT_3"));
 }
@@ -567,19 +567,19 @@ if((fst_3 = XLoadQueryFont(theDisp,font_3)) == NULL) {
   exit(1);
 }
 /* a few variable width fonts, if fail drop back to fixed width */
-strcpy(font_4,"-*-lucida-medium-r-*-*-10-*-*-*-*-*-*-*");
+strncpy(font_4,"-*-lucida-medium-r-*-*-10-*-*-*-*-*-*-*",39);
 if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_4);
-  strcpy(font_4,"6x12");
+  strncpy(font_4,"6x12",4);
   if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
     fprintf(stderr,"2nd choice font %s has not been found so quitting.\n",font_4);
     exit(1);
   }
 }
-strcpy(font_5,"-*-lucida-medium-r-*-*-12-*-*-*-*-*-*-*");
+strncpy(font_5,"-*-lucida-medium-r-*-*-12-*-*-*-*-*-*-*",39);
 if((fst_5 = XLoadQueryFont(theDisp,font_5)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_5);
-  strcpy(font_5,"6x13");
+  strncpy(font_5,"6x13",4);
   if((fst_5 = XLoadQueryFont(theDisp,font_5)) == NULL) {
     fprintf(stderr,"2nd choice font %s has not been found so quitting.\n",font_5);
     exit(1);
@@ -805,27 +805,27 @@ xsh.y = START_ULY;
 
 /* initial clear of help display list */
   for ( i = 0; i < HELP_LIST_LEN-1; i++ ) {
-    strcpy(help_list[i],
-      "                                                                         ");
+    strncpy(help_list[i],
+      "                                                                        ",72);
   }
 /* initial clear of edisp lines list */
   for ( i = 0; i < EDISP_LIST_LEN-1; i++ ) {
-    strcpy(edisp_list[i],
-    "                                                                                   ");
+    strncpy(edisp_list[i],
+    "                                                                                   ",82);
   }
 /* initial clear of menu lines list and item type string */
   for ( i = 0; i < MENU_LIST_LEN-1; i++ ) {
-    strcpy(m_list[i],
-    "                                                                                   ");
+    strncpy(m_list[i],
+    "                                                                                   ",82);
   }
-  strcpy(mtype_list,"                                           ");
+  strncpy(mtype_list,"                                        ",40);
 
 /* initial clear of proforma editing and display lists */
   for ( i = 0; i < PROFMA_LEN-1; i++ ) {
-    strcpy(edit_list[i],
-      "                                                                         ");
-    strcpy(display_list[i],
-    "                                                                                   ");
+    strncpy(edit_list[i],
+      "                                                                        ",72);
+    strncpy(display_list[i],
+    "                                                                                   ",82);
   }
 
 /* clear event stack of initial visibility and configure events */
@@ -1536,7 +1536,7 @@ void winfnt_(n)
   if( font_index == 0 ) {
     t0=(char *) getenv("EFONT_0");
     if ((t0 == NULL) || (t0  == "") || (strncmp(t0,"    ",4) == 0)) {
-      strcpy(font_0,"6x12");
+      strncpy(font_0,"6x12",4); font_0[4]='\0';
     } else {
       strcpy(font_0,getenv("EFONT_0"));
     }
@@ -1594,7 +1594,7 @@ XFontStruct  *tfst;
   if( *n == 0 ) {
     t0=(char *) getenv("EFONT_0");
     if ((t0 == NULL) || (t0  == "") || (strncmp(t0,"    ",4) == 0)) {
-      strcpy(font_0,"6x12");
+      strncpy(font_0,"6x12",4);  font_0[4]='\0';
     } else {
       strcpy(font_0,getenv("EFONT_0"));
     }
@@ -1618,7 +1618,7 @@ XFontStruct  *tfst;
   if (vfw < f_width && vfw > 1 ) tf_width = vfw;
   *nlines = (int) ((disp.b_bottom - disp.b_top) / (tf_height+1));
   *cw = ((disp.b_right - disp.b_left) / tf_width)-2;
-  fprintf(stderr,"current font info: fh %d fw %d vfw %d nlines %d characters %d \n",
+  fprintf(stderr,"current font info: fh %d fw %d vfw %d nlines %ld characters %ld \n",
     tf_height,tf_width,vfw,*nlines,*cw);
 
   return;
@@ -3873,7 +3873,7 @@ void askdialog_(sstr,id,iq,f_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strncpy(sbuf,"                                                                                                ",96);
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -4031,7 +4031,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4060,7 +4060,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strncpy(sbuf,"                                                                                                ",96);
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -4207,7 +4207,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4236,7 +4236,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strncpy(sbuf,"                                                                                               ",96);
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -4384,7 +4384,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4412,7 +4412,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strncpy(sbuf,"                                                                                              ",96);
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -5237,14 +5237,11 @@ void egdisp_(msg,line,len)
   if(edisp_index < EDISP_LIST_LEN-1) {
     edisp_index++;
     strncpy(edisp_list[edisp_index],msg,len);	/* copy to static array */
-    //strcpy(edisp_list[edisp_index],msg2);   /* alternate method for null-term. strings */
   } else {
     for ( i = 0; i < EDISP_LIST_LEN-1; i++ ) {
       strncpy(edisp_list[i],edisp_list[i+1],124);	/* shift array up */
-      //strcpy(edisp_list[i],edisp_list[i+1]);  /* alternate method for null-term. strings */
     }
     strncpy(edisp_list[EDISP_LIST_LEN-1],msg,len);   /* copy to static array */
-    //strcpy(edisp_list[EDISP_LIST_LEN-1],msg2);/*alternate method for null-term. strings */
   }
   scroll_index = edisp_index;		/* force scroll bar to bottom, so new line is visible */
   disptext();
@@ -7131,7 +7128,7 @@ int		len_title;
              XSetForeground(theDisp,theGC, fg); XSetBackground(theDisp,theGC, bg);
              Timer(300);
              xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */
-             *ino = (long int) i +1;  /* compensate for c starting at zero */
+             *ino = (long int) i + (long int) 1;  /* compensate for c starting at zero */
              *uresp = (long int) 0;
    	     break;
            }
@@ -7523,7 +7520,7 @@ point*/
                   break;
               }
             }else{
-              fprintf(stderr," menu: display grid %d snap %d \n",grid_oo,snap);
+              fprintf(stderr," menu: display grid %ld snap %ld \n",grid_oo,snap);
               if(igrid>0&&isnap>0){
               epopup_("Display control",netgm2menuca,&iugx,&iugy,&choice);
               }else if(igrid>0&&isnap<1){
@@ -7955,7 +7952,7 @@ void refreshenv_()
       displ_l=disp_lines;
       dialogue_l=dialogue_lines;
       opengdisp_(&menu_char,&displ_l,&dialogue_l,&gdw,&gdh);
-      strcpy(blank,"  ");
+      strncpy(blank,"  ",2);
       msgbox_(blank,blank,strlen(blank),strlen(blank));      /* clear dialogue box  */
    }
    if(dbx1_avail == 1) {                       /* if graphic feedback clear it */
@@ -8307,7 +8304,7 @@ void curmodule_(fcmodule,len_fcmodule)
   int  l_fcmodule;	/* local length */
 
 /* use the same logic as in curproject_ */
-  strcpy(cappl,"   ");
+  strncpy(cappl,"   ",3);
   f_to_c_l(fcmodule,&len_fcmodule,&l_fcmodule); strncpy(cappl,fcmodule,(unsigned int)l_fcmodule);	/* copy to static */
   cappl[l_fcmodule] = '\0';
 }
@@ -8678,7 +8675,7 @@ int iwth = *impcwth;	/* character width of proforma */
 /* Edit function: use sbuf for editing, copy current edit string to it */
             c_edit = list2edit[i];
             if (xboxinside(edit_box[c_edit],x,y)){
-              strcpy(sbuf,"                                                                                  ");
+              strncpy(sbuf,"                                                                                  ",82);
               strncpy(sbuf,edit_list[c_edit],(unsigned int)lt2[c_edit]);
 /* debug fprintf(stderr,"i %d cur_ed %d lt2 %d swidth %l\n",i,c_edit,lt2[c_edit],swidth[c_edit]); */
 
@@ -8792,8 +8789,8 @@ int iwth = *impcwth;	/* character width of proforma */
 /* user has clicked on ok button or a call back function so: */
 /* get edited text back into the original fortran array */
   ipos = 0;
-  strcpy(locsstr,
-  "                                                                         ");
+  strncpy(locsstr,
+  "                                                                         ",72);
   for(num = 0; num < locnstr; num++) {	/* for each edit string...  */
     strncpy(&locsstr[ipos],edit_list[num],(unsigned int)lensstr);	/* copy to local array */
     ipos=ipos+lensstr;

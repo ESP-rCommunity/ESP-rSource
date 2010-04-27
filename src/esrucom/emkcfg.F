@@ -52,6 +52,7 @@ C ICLIM,LCLIM (for climate file)
 #include "ipvdata.h"
 #include "seasons.h"
       PARAMETER (MSTMC=20,MSGAL=40)
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -148,9 +149,6 @@ C Primary energy and emissions conversions.
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-
-C Project demands (lifts/fans/DHW).
-      COMMON/BL1/dmdsdesc,bdmds
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -272,7 +270,7 @@ C If 0 then the calculation includes diffuse shading.
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      CHARACTER dmdsdesc*248,bdmds*72,outs*124
+      CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,ltmp*72,louts*144
       character bidirfile*72,bidirname*12
@@ -506,10 +504,25 @@ C Begin writing the file with version number in the header.
 
 C Write databases related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* DATABASES'
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prm  ',
+
+C Material database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mat  ',
      &      LFMAT(1:lnblnk(LFMAT))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
+      elseif(ipathmat.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmat  ',
+     &      LFMAT(1:lnblnk(LFMAT))
+      endif
+
+C MLC database has the option of two different syntax.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
      &      LFMUL(1:lnblnk(LFMUL))
+      elseif(ipathmul.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmlc  ',
+     &      LFMUL(1:lnblnk(LFMUL))
+      endif
 
 C Optical database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
@@ -530,17 +543,26 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdprs  ',
      &      LAPRES(1:lnblnk(LAPRES))
       endif
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
+      elseif(ipathprodb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdevn  ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+      endif
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
-
+      elseif(ipathmsc.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmscldb  ',
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+      endif
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
-      IF(groundreflmodel.NE.1) WRITE(IFCFG,803) '*gref ',
+      IF(groundreflmodel.GT.1) WRITE(IFCFG,803) '*gref ',
      &   groundreflmodel,(groundreflmonth(I),I=1,12),snowgroundrefl
   803 FORMAT(A,I1,13(1X,F5.3))
 

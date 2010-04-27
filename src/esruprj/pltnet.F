@@ -1259,6 +1259,7 @@ C Common for screen control.
       character lltmp*144  ! to re-create plant database file name with path
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer istat
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1327,6 +1328,7 @@ C same opening logic as in eddb.F and moplnt.F
            write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &       lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
          endif
+         istat=0
 	 call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
 
 C Check for error on openening.

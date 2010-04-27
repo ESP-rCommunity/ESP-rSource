@@ -7,8 +7,8 @@ C Re-compile all control-related modules if this file is altered.
       PARAMETER (MNONID=2)
       INTEGER MCDT ! Max. day types
       PARAMETER (MCDT=10)
-      INTEGER MCF ! Max. control loops 
-      PARAMETER (MCF=28)
+      INTEGER MCF ! Max. control loops (allow one per zone)
+      PARAMETER (MCF=72)
       INTEGER MCDP ! Max. periods per day
       PARAMETER (MCDP=8)
       INTEGER MISCC ! Max. miscellaneous data items

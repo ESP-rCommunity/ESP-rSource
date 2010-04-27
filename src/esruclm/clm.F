@@ -258,6 +258,7 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
+      blank='  '
       call edisp(IUOUT,blank)
       CALL ESPrVersion("summary",cAppName,IUOUT)
       write(outs,'(2a)')
@@ -1079,6 +1080,7 @@ C displaying the following data.
           continue
         endif
       ENDIF
+      blank='  '
 
 C Determine day to be displayed.
     5 call edisp(iuout,blank)
