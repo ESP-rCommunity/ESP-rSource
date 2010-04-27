@@ -47,7 +47,6 @@ C    4-mould information
       subroutine mycorecv(irecov,imld)
 
 #include "mould.h"
-#include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
@@ -65,20 +64,18 @@ C    4-mould information
       common/mglook/GROT(MLOOK,MOULD),GRORH(MLOOK,MOULD)
       common/mglook2/GROW(MLOOK,MOULD)
 
-C The mycotoxin database.
-C << this should become part of model cfg file >>
       common/mdbase/mdbnam
       common/iopnmld/iopmld
 
       common/pophelp/h(60)
       COMMON/FILEP/IFIL
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
       dimension item(mould+5)
       real maxrh,minrh,maxt,mint
       character outs*124, head*32, item*42, mdbnam*72, outstr*124
       character mldnam*48,h*72,grow*1,str*1,KEY*1
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
+      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
 C Open the mould database.
       if(iopmld.eq.0) then
@@ -266,7 +263,7 @@ C ****************** mycograph *****************************
       CHARACTER*29 ITEM(6)
       CHARACTER H*72,mldnam*48
       logical greyok
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
@@ -471,7 +468,7 @@ C subroutine curvedraw
       common/FILEP/IFIL
 
       character outs*124, mdbnam*72 ,mldnam*48
-#ifdef OSI
+#ifdef OSX
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
 #else

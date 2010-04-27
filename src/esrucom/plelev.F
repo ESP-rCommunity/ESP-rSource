@@ -58,7 +58,7 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
 
       CHARACTER sstr*90,blabel*4,direc*1
       character tz*13
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
 #else

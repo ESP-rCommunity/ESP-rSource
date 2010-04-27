@@ -40,7 +40,7 @@ C of lines to include in the text portion of the display.
       character PERST1*14,PERST2*44,PERST3*44
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -134,7 +134,7 @@ C Display heading for climate graph.
       integer onright ! number of right axis
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext

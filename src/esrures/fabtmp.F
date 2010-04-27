@@ -359,7 +359,7 @@ C temperature graphical output.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale
@@ -413,7 +413,7 @@ C If act = i then initial display, if act = s then single step display.
       character SSPARENT*12
       character act*1
       integer lml   ! string length for construction name.
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -534,7 +534,7 @@ C IPRZ is material db ref for each layer.
       DIMENSION XVAL1(MZS)
       character act*1,ETEXT*94,TDESCR*5,DS*7,DS1*10,CSTR*25,TCSTR*25
       character ZN*12
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
 #else

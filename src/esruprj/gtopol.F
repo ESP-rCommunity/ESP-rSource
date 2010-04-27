@@ -58,7 +58,7 @@ C ****** GTOPOL
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER H*72,outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -417,7 +417,7 @@ C IER=0 OK, IER=1 problem.
       DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3),COG3(3)
       CHARACTER VERT*35,KEY*1,H*72,HOLD*32,GTGEOM*72
       character outs*124,headv*48,GMLCN*12,GSNAME*6
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy
 #else
       integer*8 iix,iiy
@@ -1382,7 +1382,7 @@ C IER=0 OK, IER=1 problem.
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy,ixd,iyd
 #else
       integer*8 iix,iiy,ixd,iyd
@@ -2048,7 +2048,7 @@ C Method checks for minimally linked vertices.
       CHARACTER GMLCN*12,GSNAME*6
       CHARACTER H*72,ACTION*1,HOLD*72,outs*124,SN*6,SN2*6
       character holds*36,SNAME1*6,SNAMED*6,SMLCN1*12
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy,ixd,iyd
 #else
       integer*8 iix,iiy,ixd,iyd
@@ -2481,7 +2481,7 @@ C IER=1 problem.
       CHARACTER VERT*35,KEY*1,HOLD*72,H*72,SN*6
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
-#ifdef OSI
+#ifdef OSX
       integer iupdown,isym,iix,iiy    ! passed to etplot
 #else
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot
@@ -3221,7 +3221,7 @@ C ****** Routine to update-draw ground during triangulation.
 
       character*(*) msg
       character outs*72
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iix,iiy    ! passed to etplot
 #else
@@ -3334,7 +3334,7 @@ C output: triangle list
       CHARACTER GMLCN*12,GSNAME*6,msg*32,outs*124,h*72
       LOGICAL LVERT(MGTV), INPOLY
       logical MODIFY,MODLEN,MODBND,OK,dok
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale

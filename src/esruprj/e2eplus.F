@@ -140,7 +140,6 @@ C surface can be resolved into a quad).
       DIMENSION COORD(MV,3)
       real loadcasp,ver  ! file version passed to subroutine
       integer iver    ! file version as integer
-      integer ier
       character optndx*12,nameiprndx*25,OPT*12,com*1,sim*1
       character act*1,layname*25
       character T25*25,T25a*25,t12a*12
@@ -439,7 +438,6 @@ C Interpret location from climate file location name, but use
 C the configuration file data for lat and long.
       WRITE(ioout,'(a)',iostat=ios,err=2) ' '
       WRITE(ioout,'(2a)',iostat=ios,err=2) 'Location',com
-      ier=0
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
       if(ier.eq.0)then
         IREC=367

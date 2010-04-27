@@ -438,7 +438,7 @@ C Use espriou.h for climatelist file name and defdbfl.
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       common/deflt4/dinstpath
 
 C Construction defaults:
@@ -473,7 +473,7 @@ C cdintglz (char*32) internal glazing/window
 
       CHARACTER OUTSTR*124,WORD*20,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
-      character*72 DECMPDBFL,DICONDBFL
+      character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character dinstpath*48,di*48
       logical unixok,dll
 #include "espinstalldir.h"

@@ -55,7 +55,7 @@ C Passed parameters.
       LOGICAL MODIFY,MODLEN,MODBND
 
       character ETEXT*82
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -290,7 +290,7 @@ C Local arrays.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       logical newgeo  ! to use for testing if new/old geometry file.
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy,iixlast,iiylast
 #else
       integer*8 iix,iiy,iixlast,iiylast
@@ -469,7 +469,7 @@ C Local arrays.
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy,iixlast,iiylast,iid2
 #else
       integer*8 iix,iiy,iixlast,iiylast,iid2
@@ -606,7 +606,7 @@ C Local arrays.
       CHARACTER GMLCN*12, GSNAME*6,stemp*7
 
 C Local variables to pass to edline.
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid2
 #else
       integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid2
@@ -756,7 +756,7 @@ C Explicit local variables
       logical close,greyok
 
 C Local variables to pass to edline.
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy,iix1,iiy1
 #else
       integer*8 iix,iiy,iix1,iiy1

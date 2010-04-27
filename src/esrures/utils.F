@@ -665,7 +665,7 @@ C a different colour for each name.
       character word*24
       logical unixok
       
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy
 #else
       integer*8 iix,iiy

@@ -176,7 +176,7 @@ C to the fabric temperature or condensation information.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       integer lml   ! string length for construction name.
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -713,7 +713,7 @@ C condensation graphical output.
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
       character outs*124
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale
@@ -763,7 +763,7 @@ C IPRZ is primitive db ref for each layer.
      &            PMAX,PMIN,xsc,ysc,Xadd,Yadd
 
       character CSTR*25,TCSTR*25,ZN*12
-#ifdef OSI
+#ifdef OSX
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2

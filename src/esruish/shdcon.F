@@ -57,7 +57,6 @@ C geometry.h provides commons G0 and G2.
       character act*1,paction*16,h*72
       logical ok,dok
       logical newgeo  ! Used to test for new/old geometry file.
-      integer ier
 
 C Day of average solar declination in each month.
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
@@ -145,7 +144,6 @@ C simulation, append 'Jan' or 'Feb' to the end of the base name to
 C identify them. Close any previous file on iunit and open a new one.
          tbase=ltrns(1:lnblnk(ltrns))//month(mon)
          irecw=ms+5
-         ier=0
          call efopran(iunit,tbase,irecw,3,ier)
 
 C Write the first record of the zone transitional shading file.

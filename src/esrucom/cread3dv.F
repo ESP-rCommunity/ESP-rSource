@@ -81,7 +81,7 @@ C NZJVN : topology of vertices associated with each connection (via geometry.h).
       CHARACTER MLCN*12,t13*13
 
 C Local variables to pass to edline and axiscale.
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
       integer ixxc

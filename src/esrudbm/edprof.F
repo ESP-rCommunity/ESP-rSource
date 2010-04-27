@@ -350,7 +350,7 @@ C      DIMENSION VAL1(1440),VAL2(1440)
       character DayT*8,Patr*8,ETEXT*72
       character ittag*12,itmenu*32
       logical vclose1,vclose2
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot

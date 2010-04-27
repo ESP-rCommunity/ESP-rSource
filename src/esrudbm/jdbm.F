@@ -113,13 +113,6 @@ C      character curfile*72
       character docpth*24,tmppth*24,dbspth*24
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-      integer ier
-
-#ifdef OSI
-      integer impx,impy,iw
-#else
-      integer*8 impx,impy,iw
-#endif
 
       call ezero
       call curmodule('dbm ')
@@ -488,11 +481,7 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
       call askabout('dbm ',1)
 
       if(MMOD.eq.8)then
-        impx=0
-        impy=0
-        iw=iwe
-        CALL VWMENU('Database manager',ITEM,mitm,impx,impy,IW,
-     &    irpx,irpy,INO)
+        CALL VWMENU(' Database manager',ITEM,mitm,0,0,IWE,irpx,irpy,INO)
       else
         CALL EMENU(' Database manager',ITEM,mitm,INO)
       endif
@@ -626,7 +615,6 @@ C Create new database (minimal).
 C If sucessful scan, the open the database on ibfil for subsequent tasks.
             CALL ERPFREE(IBFIL,IOS)
             idbw=idbwidth(idbhash)
-            ier=0
             call EFOPRAN(IBFIL,LGENDB,idbw,1,IER)
             if(browse)then
               call EDSELCAT(ibfil,idbhash,itm,icl,'-',IER)
@@ -999,7 +987,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       character tfile*72,act*12,dba*12,db*12,fs*1
       character LAGENDB*72,LTMP*72,afil*72,LBGENDB*72
       logical unixok
-      integer ier
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1058,7 +1045,6 @@ C legacy ascii version (iter=4).
 C Is binary format, scan into common blocks.
             call SCANDB(igendbf(idp),gendbfn(idp),db,idp,IER)
             CALL ERPFREE(igendbf(idp),IOS)
-            ier=0
             call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
 C << ? is the next line necessary? >>
             LAGENDB=gendbfn(idp)
@@ -1112,7 +1098,6 @@ C            write(6,*) 'asci generic asci needing conversion'
               if(ier.eq.0)then
                 CALL ERPFREE(igendbf(idp),IOS)
                 idbw=idbwidth(idp)
-                ier=0
                 call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
                 gendbok(idp)=.true.
               endif
@@ -1172,7 +1157,6 @@ C Create a matching ascii version of the generic db.
             if(ier.eq.0)then
               gendbfn(idp)=LBGENDB
               CALL ERPFREE(igendbf(idp),IOS)
-              ier=0
               call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
               gendbok(idp)=.true.
             endif
@@ -1207,7 +1191,6 @@ C binary to legacy ASCII and then import that to generic format.
 C Use standard esp-r common flow for legacy materials db.
               LFMAT=gendbfn(idp)
               IFMAT=IFIL+2
-              ier=0
               call EFOPRAN(IFMAT,LFMAT,40,1,IER)
               if(ier.ne.0)then
                 call usrmsg('unable to open legacy binary materials db',
@@ -1257,7 +1240,6 @@ C Create a matching ascii version of the generic db.
             if(ier.eq.0)then
               gendbfn(idp)=LBGENDB
               CALL ERPFREE(igendbf(idp),IOS)
-              ier=0
               call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
               gendbok(idp)=.true.
             endif
@@ -1327,7 +1309,6 @@ C legacy ascii version (iter=4).
 C Is binary format, scan into common blocks.
           call SCANDB(igendbf(idp),gendbfn(idp),db,idp,IER)
           CALL ERPFREE(igendbf(idp),IOS)
-          ier=0
           call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
 C << ? is the next line necessary? >>
           LAGENDB=gendbfn(idp)
@@ -1377,7 +1358,6 @@ C scan the ASCII file.
             if(ier.eq.0)then
               CALL ERPFREE(igendbf(idp),IOS)
               idbw=idbwidth(idp)
-              ier=0
               call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
               gendbok(idp)=.true.
             endif
@@ -1437,7 +1417,6 @@ C Create a matching ascii version of the generic db.
           if(ier.eq.0)then
             gendbfn(idp)=LBGENDB
             CALL ERPFREE(igendbf(idp),IOS)
-            ier=0
             call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
             gendbok(idp)=.true.
           endif
@@ -1472,7 +1451,6 @@ C binary to legacy ASCII and then import that to generic format.
 C Use standard esp-r common flow for legacy materials db.
             LFMAT=gendbfn(idp)
             IFMAT=IFIL+2
-            ier=0
             call EFOPRAN(IFMAT,LFMAT,40,1,IER)
             if(ier.ne.0)then
               call usrmsg('unable to open legacy binary materials db',
@@ -1522,7 +1500,6 @@ C Create a matching ascii version of the generic db.
           if(ier.eq.0)then
             gendbfn(idp)=LBGENDB
             CALL ERPFREE(igendbf(idp),IOS)
-            ier=0
             call EFOPRAN(igendbf(idp),gendbfn(idp),idbw,1,IER)
             gendbok(idp)=.true.
           endif
@@ -1770,7 +1747,6 @@ C      common/gendb/LGENDB
       character dinstpath*48,path*72,dirpath*48
       logical unixok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
-      integer ier
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -2224,7 +2200,6 @@ C generic format ASCII (LAGENDB) and binary (LGENDB).
 C Use standard esp-r common code for legacy materials db.
             LFMAT=gendbfn(idbhash)
             IFMAT=IFIL+2
-            ier=0
             call EFOPRAN(IFMAT,LFMAT,40,1,IER)
             if(ier.ne.0)then
               call usrmsg('unable to open legacy binary materials db',
@@ -2406,7 +2381,6 @@ C to file options.
 C Offer browsing/editing for the selected db.
   42  CALL ERPFREE(IBFIL,IOS)
       idbw=idbwidth(idbhash)
-      ier=0
       call EFOPRAN(IBFIL,gendbfn(idbhash),idbw,1,IER)
       if(ier.eq.0)then
         if(browse)then

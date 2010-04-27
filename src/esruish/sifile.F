@@ -89,7 +89,6 @@ C  ifstat = 5  error writing record 4 of file
       character outs*124,paction*16,fname*72
       logical xst
       integer lnf   ! length of the file name
-      integer ier
 
 C Close any file already open then assign a new file.
       ifilsi=ifil+3
@@ -106,7 +105,6 @@ C Close any file already open then assign a new file.
       if(nzsur(icomp).gt.24)maxrec=nzsur(icomp)
       call findfil(fname,xst)
       if(xst)then
-        ier=0
         call efopran(ifilsi,fname,maxrec,1,ier)
         if(ier.ne.0)then
           call edisp(iuout,
@@ -122,7 +120,6 @@ C try again at maxrec=24 and then at ms words wide.
         if(inext.le.3.or.ns.ne.nzsur(icomp))then
           call erpfree(ifilsi,istat)
           maxrec=24
-          ier=0
           call efopran(ifilsi,fname,maxrec,1,ier)
           if(ier.ne.0)then
             call edisp(iuout,
@@ -134,7 +131,6 @@ C try again at maxrec=24 and then at ms words wide.
           if(inext.le.3.or.ns.ne.nzsur(icomp))then
             call erpfree(ifilsi,istat)
             maxrec=ms
-            ier=0
             call efopran(ifilsi,fname,maxrec,1,ier)
             if(ier.ne.0)then
               call edisp(iuout,
@@ -150,7 +146,6 @@ C try again at maxrec=24 and then at ms words wide.
 
 C If new file, fill records 1 and 4 with zeros so that dbt will be
 C interpreted later as empty.
-        ier=0
         call efopran(ifilsi,fname,maxrec,3,ier)
         do 10 i=1,maxrec
           if(i.gt.12)then

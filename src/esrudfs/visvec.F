@@ -42,7 +42,7 @@ C MAKS2D - draw 2d slices on screen.
       COMMON/arpoly/XS(7),ZS(7),bXmin,bXmax,bZmin,bZmax
 
       character souts*48,name*12,scale*10,title*30
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,ibx,iby,ixsl,iysl    ! passed to etplot
       integer iid1,iid2,iid3,iid4

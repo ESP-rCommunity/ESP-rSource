@@ -638,7 +638,7 @@ C ilabs is string arry for layer insert/delet selection.
       CHARACTER KEY*1,T12*12,ilabs*43
       CHARACTER GS*52,ETEXT*72,GTEXT*72,temp*16
       logical edited
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iigr,iigr2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
@@ -1207,7 +1207,7 @@ C Loop until start of "Optical Properties" section.
         iwversion=4
         if(outstr(1:9).eq.'Glazings:')then
           K=9
-          CALL EGETWI(outstr,K,nl,0,12,'F','layers',IER)
+          CALL EGETWI(outstr,K,nl,0,10,'F','layers',IER)
         elseif(outstr(1:9).eq.'Uvalue  :')then
           K=9
           CALL EGETWR(outstr,K,UVALED,-10.,9.99,'W','uval',IER)
@@ -1223,7 +1223,7 @@ C A newer format file.
         iwversion=5
         if(outstr(1:9).eq.'Glazings:')then
           K=9
-          CALL EGETWI(outstr,K,nl,0,12,'F','layers',IER)
+          CALL EGETWI(outstr,K,nl,0,10,'F','layers',IER)
         elseif(outstr(1:9).eq.'Uvalue  :')then
           K=9
           CALL EGETWR(outstr,K,UVALED,-10.,9.99,'W','uval',IER)

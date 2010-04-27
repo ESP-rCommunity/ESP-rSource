@@ -153,7 +153,7 @@ C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 C LSBEM (for SBEM database)
-C MCMPDBFL (Misc components)
+C MCMPDBFL (Special materials/Misc components)
 C default file names for databases
 
 #include "net_flow.h"
@@ -172,7 +172,6 @@ C espriou.h provides currentfile and defdbfl.
 #include "CFC_common.h"
 #include "ipvdata.h"
 #include "seasons.h"
-#include "schedule.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -247,8 +246,8 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
 
 C Defaults for some of the obscure files.
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
+      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
 C Temporal definition commons.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
@@ -368,6 +367,9 @@ C Uncertainty analysis common.
 
 C IPV data is from ipvdata.h.
       common/IPVF/lipvdatf
+
+C Dispersed demands (lifts/fans/DHW).
+      COMMON/BL1/dmdsdesc,bdmds
 
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
@@ -519,6 +521,7 @@ C Simulation parameters
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
+      CHARACTER dmdsdesc*248,bdmds*72
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
@@ -563,15 +566,15 @@ C Scan the defaults file and then set file common blocks.
 C Make temporary use of file unit IUF.
 C Note: escdef must come after scan of .esprc file.
       call escdef(IUF,IER)
-      write(LCLIM,'(a)') DCLIM(1:lnblnk(DCLIM))
-      write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
-      write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
-      write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
-      write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
-      write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
-      write(LPCDB,'(a)')  DPCDB(1:lnblnk(DPCDB))
-      write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
+      LCLIM=DCLIM
+      LAPRES=DAPRES
+      LFMAT=DFCON
+      LFMUL=DFMUL
+      LOPTDB=DOPTDB
+      LPRFDB=DPRFDB
+      LPCDB =DPCDB
       LSBEM =DSBEM  ! assign default SBEM db
+      MCMPDBFL=DMCMPDBFL
 
 C Clear the model common blocks.
       call clrprb
@@ -876,30 +879,11 @@ C so LSTRIPC and LOUTSTR are used.
       K=0
       CALL EGETW(LOUTSTR,K,WORD,'W','db names',IFLAG)
       if(WORD(1:4).eq.'*prm')then
-        CALL EGETRM(LOUTSTR,K,lworking,'W','material db',IER)
-
-C Process the file name following *prm and depending on its path
-C set the LFMAT common block string via call to findwhichdbpath.
-        call findwhichdbpath('mat',lworking,ier)
-      elseif(WORD(1:4).eq.'*mat')then
-        CALL EGETRM(LOUTSTR,K,lworking,'W','material db',IER)
-
-C Process the file name following *mat and depending on its path
-C set the LFMAT common block string via call to findwhichdbpath.
-        call findwhichdbpath('mat',lworking,ier)
-      elseif(WORD(1:7).eq.'*stdmat')then
         CALL EGETRM(LOUTSTR,K,LFMAT,'W','material db',IER)
-        ipathmat=2  ! standard folder for material database
-
+      elseif(WORD(1:4).eq.'*mat')then
+        CALL EGETRM(LOUTSTR,K,LFMAT,'W','material db',IER)
       elseif(WORD(1:4).eq.'*mlc')then
-        CALL EGETRM(LOUTSTR,K,lworking,'W','multilayer db',IER)
-
-C Process the file name following *mlc and depending on its path
-C set the LFMUL common block string via call to findwhichdbpath.
-        call findwhichdbpath('mul',lworking,ier)
-      elseif(WORD(1:7).eq.'*stdmlc')then
         CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
-        ipathmul=2  ! standard folder for MLC database
       elseif(WORD(1:4).eq.'*opt')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','optical db',IER)
 
@@ -919,15 +903,7 @@ C set the lapres common block string via call to findwhichdbpath.
         ipathapres=2  ! standard folder for pressure coef database
         CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
       elseif(WORD(1:4).eq.'*evn')then
-        CALL EGETRM(LOUTSTR,K,lworking,'W','profiles db',IER)
-
-C Process the file name following *evn and depending on its path
-C set the LPRFDB common block string via call to findwhichdbpath.
-        call findwhichdbpath('evn',lworking,ier)
-      elseif(WORD(1:7).eq.'*stdevn')then
-        CALL EGETRM(LOUTSTR,K,LPRFDB,'W','profile db',IER)
-        ipathprodb=2  ! standard folder for profiles database
-
+        CALL EGETRM(LOUTSTR,K,LPRFDB,'W','profiles db',IER)
       elseif(WORD(1:4).eq.'*clm')then
 
 C << to be done - introduce *stdclm to signal standard location >>
@@ -947,16 +923,7 @@ C climate database has been defined.
       elseif(WORD(1:7).eq.'*mscldb')then
 
 C special materials and misc component database
-        CALL EGETRM(LOUTSTR,K,lworking,'W','misc comp db',IER)
-
-C Process the file name following *mscldb and depending on its path
-C set the MCMPDBFL common block string via call to findwhichdbpath.
-        call findwhichdbpath('msc',lworking,ier)
-      elseif(WORD(1:10).eq.'*stdmscldb')then
-
-C special materials and misc component database
         CALL EGETRM(LOUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
-        ipathmsc=2  ! standard folder for misc comp db
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','plant comp db',IER)
 
@@ -1701,7 +1668,6 @@ C Scan the first record of this file.
               CALL ERPFREE(IUTDF,ISTAT)
               NWPR=MTABC
               ITWPR=NWPR+1
-              ier=0
               call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
               IREC=1
               READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103)HDR,NWPR
@@ -1723,7 +1689,6 @@ C Scan the first record of this file.
             CALL ERPFREE(IUTDF,ISTAT)
             NWPR=MTABC
             ITWPR=NWPR+1
-            ier=0
             call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
             IREC=1
             READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=102)HDR,NWPR
@@ -2081,7 +2046,7 @@ C Number of building zones.
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'no of zones',IER)
       IF(IER.NE.0)goto 1
       K=0
-      CALL EGETWI(OUTSTR,K,NCOMP,0,MCOM,'W','zones',IER)
+      CALL EGETWI(OUTSTR,K,NCOMP,1,MCOM,'W','zones',IER)
       IF(IER.NE.0) GOTO 1
 
 C Reporting.
@@ -2283,10 +2248,6 @@ C in then proceed to check zone names.
           else
             goto 142
           endif
-        elseif(WORD(1:4).eq.'*cnn')then
-
-C If there were zero zones then the next line might be *cnn.
-          goto 23  ! jump to code block that processes *cnn
         else
           call usrmsg('Unknown config tag ',WORD,'W')
         endif
@@ -2522,10 +2483,7 @@ C Include SHOCC zone file name in the report.
 C Read in the building connectivity information.
       CALL STRIPC(IUC,OUTSTR,0,ND,1,'no of connections',IER)
       IF(IER.NE.0)goto 1
-
-C Jump to 23 if the building type model does no have any zones
-C so the subsequent line might be *cnn.
-  23  if(OUTSTR(1:4).eq.'*cnn')then
+      if(OUTSTR(1:4).eq.'*cnn')then
         cnnok=.true.
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','connections tag',IER)
@@ -2546,20 +2504,15 @@ C so the subsequent line might be *cnn.
           CALL EGETWI(OUTSTR,K,NCON,3,MCON,'W','no connex',IER)
           IF(IER.NE.0) GOTO 1
         else
-          if(NCOMP.eq.0)then
-            continue   ! if there are no zones then cnn file does not need to exist
-            goto 6     ! close the cfg file
+          CALL USRMSG('Connections file not found!',LCNN,'W')
+          if(dll)then
+            dllsubr='ersys'
+            dllmesg='Connections file does not exist!'
+            ier=2
+            return
           else
-            CALL USRMSG('Connections file not found!',LCNN,'W')
-            if(dll)then
-              dllsubr='ersys'
-              dllmesg='Connections file does not exist!'
-              ier=2
-              return
-            else
-              IER=1
-              RETURN
-            endif
+            IER=1
+            RETURN
           endif
         endif
       else
@@ -3364,9 +3317,7 @@ C see if the path is local or absolute or standard database folder.
 C Depending on which database (the parameter topic) the
 C common block file string and whichdbpath variable is updated.
 C topic =  'opt' for optics, 'pdb' for plant component templates
-C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
-C       =  'mat' for materials database, 'evn' for profiles database
-C       =  'mul' for MLC database, 'msc' for miscellaneous components
+C       =  'prs' for pressure coef, 'sbm' for UK SBEM database.
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3404,18 +3355,6 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=1  ! local folder for materials database
-            write(LFMAT,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=1  ! local folder for profiles database
-            write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=1  ! local folder for MLC database
-            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=1  ! local folder for miscel comp database
-            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -3432,18 +3371,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=2
             write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=2
-            write(LFMAT,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=2
-            write(LPRFDB,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=2
-            write(LFMUL,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=2
-            write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3458,18 +3385,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'prs')then
-            ipathmat=0
-            write(LFMAT,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=0
-            write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=0
-            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=0
-            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -3486,18 +3401,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=1  ! local folder for materials database
-            write(LFMAT,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=1  ! local folder for profiles database
-            write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=1  ! local folder for MLC database
-            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=1  ! local folder for miscel comp database
-            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3512,18 +3415,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=2
             write(lsbem,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=2
-            write(LFMAT,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=2
-            write(LPRFDB,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=2
-            write(LFMUL,'(a)') file(lndbp+2:lnwkg) ! without path
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=2
-            write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3538,18 +3429,6 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mat')then
-            ipathmat=0
-            write(LFMAT,'(a)') file(1:lnwkg)  ! assign directly
-          elseif(topic(1:3).eq.'evn')then
-            ipathprodb=0
-            write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'mul')then
-            ipathmul=0
-            write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'msc')then
-            ipathmsc=0
-            write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif
@@ -3568,18 +3447,6 @@ C        write(6,*) 'findwhichdbpath ipath is ',ipathapres
 C      elseif(topic(1:3).eq.'sbm')then
 C        write(6,*) lsbem
 C        write(6,*) 'findwhichdbpath ipath is ',ipathsbem
-C      elseif(topic(1:3).eq.'mat')then
-C        write(6,*) LFMAT
-C        write(6,*) 'findwhichdbpath ipath is ',ipathmat
-C      elseif(topic(1:3).eq.'evn')then
-C        write(6,*) LPRFDB
-C        write(6,*) 'findwhichdbpath ipath is ',ipathprodb
-C      elseif(topic(1:3).eq.'mul')then
-C        write(6,*) LFMUL
-C        write(6,*) 'findwhichdbpath ipath is ',ipathmul
-C      elseif(topic(1:3).eq.'msc')then
-C        write(6,*) MCMPDBFL
-C        write(6,*) 'findwhichdbpath ipath is ',ipathmsc
 C      endif
 
       return

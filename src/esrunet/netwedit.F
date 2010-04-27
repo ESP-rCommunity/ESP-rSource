@@ -75,12 +75,6 @@ C Return up to 6 real valus from external subroutine.
       LOGICAL ISEL,CSEL,close,isexavail
       logical closect,closewt,closeft
 
-#ifdef OSI
-      integer impx,impy,iwe
-#else
-      integer*8 impx,impy,iwe
-#endif
-
 C Clear local storage arrays.
       icn=icnpick
       ISEL(ICN)=.TRUE.
@@ -216,10 +210,7 @@ C Find width of menu.
 
 C Make menu only as wide as it needs to be.
       if(MMOD.eq.8)then
-        impx=0
-        impy=0
-        iwe=ilwa
-        CALL VWMENU('Component data',IECDATE,NECDATA,impx,impy,iwe,
+        CALL VWMENU('Component data',IECDATE,NECDATA,0,0,ilwa,
      &    irpx,irpy,ICOUT1)
       else
         CALL EMENU('Component data',IECDATE,NECDATA,ICOUT1)
@@ -732,13 +723,6 @@ C WORDSS and WORDSE are arrays of string tokens from each NWICHNIS.
       character VSTR*12,VNPSTR*12,ISTR*12,INPSTR*12,key*1
       CHARACTER IECDATE*40,t32*32,lasttag*12
 
-#ifdef OSI
-      integer impx,impy,iwe
-#else
-      integer*8 impx,impy,iwe
-#endif
-
-
       J=imatch
       CSEL(J)=.TRUE.
       CALL NETWDRW
@@ -917,11 +901,8 @@ C Find width of menu.
 
 C Make menu only as wide as it needs to be.
       if(MMOD.eq.8)then
-        impx=0
-        impy=0
-        iwe=ilwa
-        CALL VWMENU('Connection attributes',IECDATE,NECDATA,impx,impy,
-     &    iwe,irpx,irpy,ICOUT1)
+        CALL VWMENU('Connection attributes',IECDATE,NECDATA,0,0,
+     &    ilwa,irpx,irpy,ICOUT1)
       else
         CALL EMENU('Connection attributes',IECDATE,NECDATA,ICOUT1)
       endif
@@ -1093,12 +1074,6 @@ C Return up to 5 real valus from external subroutine.
 
       LOGICAL ISEL,CSEL,MATCH,close,isexavail,ok,dok
       logical closect,closewt,closeft,closev,closex,closey,closez
-
-#ifdef OSI
-      integer impx,impy,iwe
-#else
-      integer*8 impx,impy,iwe
-#endif
 
       if(INWKTYP.eq.1.or.INWKTYP.eq.3.or.INWKTYP.eq.6)then
         CALL USRMSG('Click on the component to edit',' ','-')
@@ -1340,11 +1315,8 @@ C If a long list include page facility text.
 
 C Make menu only as wide as it needs to be.
             if(MMOD.eq.8)then
-              impx=0
-              impy=0
-              iwe=iw
-              CALL VWMENU('Icon attributes',IECDATEs,NECDATAs,
-     &          impx,impy,iwe,irpx,irpy,ICOUT2)
+              CALL VWMENU('Icon attributes',IECDATEs,NECDATAs,0,0,iw,
+     &          irpx,irpy,ICOUT2)
             else
               CALL EMENU('Icon attributes',IECDATEs,NECDATAs,ICOUT2)
             endif
@@ -1810,12 +1782,6 @@ C WORDSS and WORDSE are arrays of string tokens from each NWICHNIS.
       CHARACTER CATSI*12,IECDATE*34,CATIES*32,
      &IECDATEs*49,DATCATIE*12,TAGCATIE*12,t32*32
 
-#ifdef OSI
-      integer impx,impy,iwe
-#else
-      integer*8 impx,impy,iwe
-#endif
-
 C Let the user select the connection to be edited (click on a 
 C way-point).
       IPX=IX
@@ -2095,11 +2061,8 @@ C If a long list include page facility text.
 
 C Make menu only as wide as it needs to be.
             if(MMOD.eq.8)then
-              impx=0
-              impy=0
-              iwe=iw
               CALL VWMENU('Connection attributes',IECDATEs,NECDATAs,
-     &          impx,impy,iwe,irpx,irpy,ICOUT2)
+     &          0,0,iw,irpx,irpy,ICOUT2)
             else
               CALL EMENU('Connection attributes',IECDATEs,NECDATAs,
      &          ICOUT2)

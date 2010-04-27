@@ -165,7 +165,6 @@ C *********************************************************************
       CHARACTER*72 AFLCVS,BFLCVS,AFLCNC,BFLCNC
       CHARACTER*72 AFLNDC,BFLNDC,AFLTAQ,BFLTAQ
       CHARACTER H*72,ITEM(11)*41,MSG*72,FLTMP*65
-      integer ier
 
       IF(IZ.EQ.-1)THEN
         BFLCVS=LGDCVS
@@ -216,11 +215,9 @@ C Binary --> ASCII  ( control volumes ).
      &     ' ',72,' ','binary file',IER,2)
         IU1=IFIL+1
         IF(IZ.EQ.-1)THEN
-          ier=0
           CALL EFOPRAN(IU1,BFLCVS,3,1,IER)
           IF(IER.NE.0)GOTO 10
         ELSE
-          ier=0
           CALL EFOPRAN(IU1,BFLCVS,5,1,IER)
           IF(IER.NE.0)GOTO 10
         ENDIF
@@ -275,7 +272,6 @@ C ASCII  --> Binary ( control volumes ).
      &     ' ',72,' ','binary file',IER,2)
         IU2=IFIL+2
         IF(IZ.EQ.-1)THEN
-          ier=0
           CALL EFOPRAN(IU2,BFLCVS,3,4,IER)
           IF(IER.NE.0)GOTO 10
           CALL USRMSG(' ',' ','-')
@@ -300,7 +296,6 @@ C ASCII  --> Binary ( control volumes ).
           WRITE(IU2,REC=NCV,ERR=1)ND,VOLM,DNHC
           GOTO 40
         ELSE
-          ier=0
           CALL EFOPRAN(IU2,BFLCVS,5,4,IER)
           IF(IER.NE.0)GOTO 10
           CALL USRMSG(' ',' ','-')
@@ -333,7 +328,6 @@ C Binary --> ASCII  ( connection file ).
         CALL EASKS(BFLCNC,'the connection file (Binary-version) ?',
      &     ' ',72,' ','binary file',IER,2)
         IU1=IFIL+1
-        ier=0
         CALL EFOPRAN(IU1,BFLCNC,7,1,IER)
         IF(IER.NE.0)GOTO 10
         H(1)='   Enter the name of the ASCII connection file.'
@@ -373,7 +367,6 @@ C ASCII  --> Binary ( connection file ).
         CALL EASKS(BFLCNC,'the connection file (Binary-version) ?',
      &     ' ',72,' ','binary file',IER,2)
         IU2=IFIL+2
-        ier=0
         CALL EFOPRAN(IU2,BFLCNC,7,4,IER)
         IF(IER.NE.0)GOTO 10
         READ(IU1,*)
@@ -401,7 +394,6 @@ C Binary --> ASCII  ( nodes temperature ).
         CALL EASKS(BFLTAQ,'the temperature file (Binary-version) ?',
      &        ' ',72,' ','binary file',IER,2)
         IU1=IFIL+1
-        ier=0
         CALL EFOPRAN(IU1,BFLTAQ,2,1,IER)
         IF(IER.NE.0)GOTO 10
         H(1)='  Enter the name of the ASCII nodes temperature file.'
@@ -438,7 +430,6 @@ C ASCII  --> Binary ( nodes temperature ).
         CALL EASKS(BFLTAQ,'the temperature file (Binary-version) ?',
      &       ' ',72,' ','binary file',IER,2)
         IU2=IFIL+2
-        ier=0
         CALL EFOPRAN(IU2,BFLTAQ,3,4,IER)
         IF(IER.NE.0)GOTO 10
         READ(IU1,*)
@@ -468,7 +459,6 @@ C Binary --> ASCII  ( nodes coordinates ).
         CALL EASKS(BFLNDC,'the coordinates file (Binary-version) ?',
      &        ' ',72,' ','binary file',IER,2)
         IU1=IFIL+1
-        ier=0
         CALL EFOPRAN(IU1,BFLNDC,3,1,IER)
         IF(IER.NE.0)GOTO 10
         H(1)='  Enter the name of the ASCII nodes coordinates file.'
@@ -505,7 +495,6 @@ C ASCII  --> Binary ( nodes coordinates ).
         CALL EASKS(BFLNDC,'the coordinates file (Binary-version) ?',
      &       ' ',72,' ','binary file',IER,2)
         IU2=IFIL+2
-        ier=0
         CALL EFOPRAN(IU2,BFLNDC,3,4,IER)
         IF(IER.NE.0)GOTO 10
         READ(IU1,*)

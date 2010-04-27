@@ -10,13 +10,9 @@ C on the parameter act (3 char) ='ipv' or ='cfg'
       integer lnblnk  ! function definition
 
       character file*72,tab*1
-      character outs*124,outsd*124,outsn*124,louts*248
+      character outs*124,outsd*124,outsn*124
       character dstmp*24
       character act*3   ! indicate which file destination
-      integer list
-      dimension list(72)  ! zone lists currently limited to 72 max.
-                          ! edit if MCOM changes
-      integer loutlen,itrunc,ipos  ! used with ailist call
 
 C      tab=CHAR(9)
       tab=','
@@ -131,20 +127,12 @@ C Write number of metrics followed for data for each.
             WRITE(ifu,'(4A)',IOSTAT=IOS,ERR=1003)
      &        outsd(1:lnblnk(outsd)),tab,metrglbl(ijj)(1:lng)
           endif
-
-C Copy izmg to single array list and then write via ailist call.
           if(nzmg(ijj).gt.0)then
-            do 829 ijjj=1,nzmg(ijj)
-              list(ijjj)=izmg(ijj,ijjj)
- 829        continue
-            itrunc=1
-            ipos=1
-            do while (itrunc.ne.0)
-              call ailist(ipos,nzmg(ijj),list,72,'C',louts,loutlen,
-     &          itrunc)
-              write(ifu,'(1x,a)',IOSTAT=ios,ERR=1003) louts(1:loutlen)
-              ipos=itrunc+1
-            end do
+            WRITE(outs,*,IOSTAT=IOS,ERR=1003)
+     &        (izmg(ijj,L),L=1,nzmg(ijj))
+            call SDELIM(outs,outsd,'C',IW)
+            WRITE(ifu,'(2x,A)',IOSTAT=IOS,ERR=1003)
+     &        outsd(1:lnblnk(outsd))
           endif
   28    continue
       endif
@@ -171,20 +159,12 @@ C Write set of energy (demand/capacity) associated data.
             call SDELIM(outsn,outsd,'C',IW)
             WRITE(ifu,'(A)',IOSTAT=IOS,ERR=1003)outsd(1:lnblnk(outsd))
           endif
-
-C Copy izedg into list and the write out via ailist call.
           if(nzedg(ij).gt.0)then
-            do 830 ijj=1,nzedg(ij)
-              list(ijj)=izedg(ij,ijj)
- 830        continue
-            itrunc=1
-            ipos=1
-            do while (itrunc.ne.0)
-              call ailist(ipos,nzedg(ij),list,72,'C',louts,loutlen,
-     &          itrunc)
-              write(ifu,'(1x,a)',IOSTAT=ios,ERR=1003) louts(1:loutlen)
-              ipos=itrunc+1
-            end do
+            WRITE(outsn,*,IOSTAT=IOS,ERR=1003)
+     &        (izedg(ij,L),L=1,nzedg(ij))
+            call SDELIM(outsn,outsd,'C',IW)
+            WRITE(ifu,'(2x,A)',IOSTAT=IOS,ERR=1003)
+     &        outsd(1:lnblnk(outsd))
           endif
   43    continue
       endif
@@ -346,9 +326,6 @@ C on the parameter act (3 char) ='ipv' or ='cfg'.
       character OUTSTR*124,LOUTSTR*248
       character dstmp*24
       character act*3   ! indicate which file destination
-      integer list
-      dimension list(72)  ! zone lists currently limited to 72 max.
-                          ! edit if MCOM changes
 
 C Open any existing file by this name.
       if(act(1:3).eq.'ipv')then
@@ -529,13 +506,14 @@ C 4 also read in the group name for the zones associated with the metric.
         endif
         CALL EGETP(OUTSTR,K,metrglbl(imset),'W','metric 20 descr',IER)
 
-C Read in the associated zones (on multiple lines is needed).
+C Read in the associated zones.
         if(nzmg(imset).gt.0)then
-          CALL EGETWIA(ifu,list,nzmg(imset),1,72,'W',
-     &      'IPV metrics associated zones',IER)
-          DO 118 KV=1,nzmg(imset)
-            izmg(imset,KV)=list(KV)
-  118     CONTINUE
+          CALL STRIPC(ifu,OUTSTR,99,ND,1,'list of zones',IER)
+          K=0
+          do 142 ij=1,nzmg(imset)
+            CALL EGETWI(OUTSTR,K,izmg(imset,ij),0,MCOM,'W','zone lst',
+     &        IER)
+  142     continue
         endif
 
 C One of the sets of energy (demand/capacity) associated data.
@@ -551,14 +529,13 @@ C One of the sets of energy (demand/capacity) associated data.
         CALL EGETWR(OUTSTR,K,edgflr(iset),1.,9999.,'W','enrg flr',IER)
         CALL EGETWR(OUTSTR,K,edgsca(iset),0.,99.,'W','enrg wtg',IER)
         CALL EGETRM(OUTSTR,K,zedsdoc(iset),'W','enrg descr',IER)
-
-C Fill izedg array via call to egetwia returning list.
         if(nzedg(iset).gt.0)then
-          CALL EGETWIA(ifu,list,nzedg(iset),1,MCOM,'W',
-     &      'IPV dmds associated zones',IER)
-          DO 119 KV=1,nzedg(iset)
-            izedg(iset,KV)=list(KV)
-  119     CONTINUE
+          CALL STRIPC(ifu,OUTSTR,99,ND,1,'list of zones',IER)
+          K=0
+          do 143 ij=1,nzedg(iset)
+            CALL EGETWI(OUTSTR,K,izedg(iset,ij),0,MCOM,'W','zone lst',
+     &        IER)
+  143     continue
         endif
 
 C Non-specific demands toggles for inclusion.
@@ -600,14 +577,12 @@ C seasons.h provides typper and typsea
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C See ipvdata.h and ripvdat for IPV common block information.
-      integer list
-      dimension list(72)  ! zone lists currently limited to 72 max.
-                          ! edit if MCOM changes
+
+      dimension list(32)  ! zone lists currently limited to 32 max.
 
       character outs*124
       character act*1
-      character descr*7,descrst*10,descrfn*10
-      character zdescr*248   ! sized to hold 72 zone names
+      character descr*7,descrst*10,descrfn*10,zdescr*248
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
 
       if(act.eq.'a')then
@@ -806,8 +781,8 @@ C List current metrics and demand sets.
             do 829 ijj=1,nzmg(ij)
               list(ijj)=izmg(ij,ijj)
  829        continue
-            call znarlist(inlist,list,72,zdescr,length,ier)
-            call edisp248(itru,zdescr,100)
+            call znarlist(inlist,list,32,zdescr,length,ier)
+            call edisp248(itru,zdescr,80)
  269      continue
         else
           call edisp(itru,'No metrics have been defined.')
@@ -828,8 +803,8 @@ C List current demand sets..
             do 828 ijj=1,nzedg(ij)
               list(ijj)=izedg(ij,ijj)
  828        continue
-            call znarlist(inlist,list,72,zdescr,length,ier)
-            call edisp248(itru,zdescr,100)
+            call znarlist(inlist,list,32,zdescr,length,ier)
+            call edisp248(itru,zdescr,80)
  268      continue
         else
           call edisp(itru,'No demand sets have been defined.')

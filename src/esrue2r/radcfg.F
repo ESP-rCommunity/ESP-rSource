@@ -1141,7 +1141,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       integer lnrp  ! length of run path
 
       LOGICAL MODIFY,MODLEN,MODBND
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy,iid1,iid2
 #else
       integer*8 iix,iiy,iid1,iid2

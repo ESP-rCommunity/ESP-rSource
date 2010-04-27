@@ -68,7 +68,7 @@ C
       COMMON/FILEP/IFIL
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
       dimension idomain(MNWKTYP),nbcat(MNWKTYP),
      &  cattag(MNWKTYP,MICNCAT),catmenu(MNWKTYP,MICNCAT),
@@ -85,7 +85,7 @@ C
       character icontag*12,iconmenu*40
       character dtagatr*12,dmenuatr*32,datrib*12
       character dgtagatr*12,dgmenuatr*32,dgatrib*12
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
+      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
       LOGICAL OK,DOK,CONT
 

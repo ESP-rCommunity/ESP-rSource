@@ -265,11 +265,12 @@ C For reading in of bi-directional data.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
-      CHARACTER OUTSTR*124,LCFGF*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,louts*248,h*72,spsname*8,L144*144
-      CHARACTER outs248*248,LTDF*72,LTDFA*72,LCMDFL*144
+      CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
+      CHARACTER outs*124,louts*248,h*72,spsname*8,L144*144,fs*1
+      CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
+      DIMENSION ICLN(30)  ! for checking material db categories
 
 C HVAC AIM-2
       character hvacfile*72,LAIM2*72
@@ -301,10 +302,6 @@ C Status of multi-year climate database
       logical bMY_clm_err 
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
-      character lworking*144,fs*1
-
-      integer IClmErr  ! the error state for climate file opening
-      integer ier
 
 C Reset error indicator and check if running as a dll.
       ier1=0
@@ -486,7 +483,6 @@ C with lltmp because the standard database path might be pre-pended.
      &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
         endif
         write(currentfile,'(a)') lltmp(1:lnblnk(lltmp))
-        ier=0
         call EFOPRAN(ipcdb,lltmp,20,1,IER)
         call mzpmxt(ipcdb)
 
@@ -521,7 +517,6 @@ C Report specified start-up period.
       IF(GRND3D)THEN
 
 C Specify ground simulation start-up period.
-        ier=0
         CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
         READ(ICNC,REC=1,IOSTAT=ISTAT,ERR=7)ITCNSTG
         CALL ERPFREE(ICNC,ISTAT)
@@ -555,23 +550,9 @@ C Free plant components database if opened.
 
 C If materials db not yet defined has not yet been opened do so.
 C Use the unit IFMAT=IFIL+5 for this via common condb.
-
-C << this logic could be updated to use MATFROMBIN as in ascii_mat.F >>
-
       IF(.NOT.MATDBOK)THEN
   55    write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
-
-        if(ipathmat.eq.0.or.ipathmat.eq.1)then
-          ier=0
-          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        elseif(ipathmat.eq.2)then
-          ier=0
-          lndbp=lnblnk(standarddbpath)
-          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &      LFMAT(1:lnblnk(LFMAT))
-          call EFOPRAN(IFMAT,lworking,40,1,IER)
-        endif
-
+        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)then
 C Database was not found, or file could not be read.
           if(dll)then
@@ -579,24 +560,21 @@ C Database was not found, or file could not be read.
             dllmesg='Problem opening materials database.'
             ier=2
             return
-
 C In interactive mode, prompt user for new database.
           elseif ( .not. autook ) then
-
             IER=0
             H(1)='The material db holds the thermophysical'
             H(2)='properties for aluminium, brick, earth, tile, etc.'
-            write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
-  56        CALL EASKS(lltmp,' Material database? ',
-     &        ' ',144,DFCON,'materials db file name',IER,2)
-            if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-              write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
+            ltmp=LFMAT
+  56        CALL EASKS(ltmp,' Material database? ',
+     &        ' ',72,DFCON,'materials db file name',IER,2)
+            if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+              LFMAT=ltmp
               goto 55
             else
               goto 56
             endif
           else
-
 C In silent running mode, notify user and terminate simulation.
             call UsrMsg('Materials database could not be found',
      &                  ' ', 'F')
@@ -606,7 +584,8 @@ C In silent running mode, notify user and terminate simulation.
 C Also check to see if the file has correct info (using pattern of
 C code from esruprj/eddb.F subroutine opendb.
           IREC=601
-          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1006)NCLASS
+          READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1006)NCLASS,
+     &      (ICLN(I),I=1,30)
           if(NCLASS.LE.0)then
             goto 1006   ! no classifications so try alternatives
           else
@@ -616,27 +595,10 @@ C code from esruprj/eddb.F subroutine opendb.
           endif
  1006     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
           write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
-
-          if(ipathmat.eq.0.or.ipathmat.eq.1)then
-            call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-          elseif(ipathmat.eq.2)then
-            lndbp=lnblnk(standarddbpath)
-            write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &        LFMAT(1:lnblnk(LFMAT))
-            call rascimat(IFMAT,lworking,IER)  ! try current ascii format
-          endif
-
+          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
-            if(ipathmat.eq.0.or.ipathmat.eq.1)then
-              call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-            elseif(ipathmat.eq.2)then
-              lndbp=lnblnk(standarddbpath)
-              write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &          LFMAT(1:lnblnk(LFMAT))
-              call rlegacymat(IFMAT,lworking,ier)  ! try older ascii format
-            endif
-
+            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
             if(ier.ne.0)then
               if(dll)then
                 dllsubr='mzinpt'
@@ -665,16 +627,9 @@ C data may be accessed by control and reporting facilities.
 C Use file unit IAPROB to read db.
  139  IFMUL=IAPROB
       CALL ERPFREE(IFMUL,ISTAT)
-      if(ipathmul.eq.0.or.ipathmul.eq.1)then
-        lworking=lfmul  ! use as is
-      elseif(ipathmul.eq.2)then
-        lndbp=lnblnk(standarddbpath)
-        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
-      endif
-      call FINDFIL(lworking,XST)
+      call FINDFIL(LFMUL,XST)
       if(.NOT.XST)then
-        write(outs248,'(2A)') ' Could not find construction database ',
+        write(outs,'(A,A)') ' Could not find construction database ',
      &    LFMUL(1:lnblnk(LFMUL))
         call isadll(dll)
         if(dll)then
@@ -683,7 +638,7 @@ C Use file unit IAPROB to read db.
           ier=2
           return
         else
-          call lusrmsg(outs248,' ','W')
+          call usrmsg(outs,' ','W')
         endif
       else
         write(currentfile,'(a)') lfmul(1:lnblnk(lfmul))
@@ -696,7 +651,6 @@ C Use file unit IAPROB to read db.
             ier=2
             return
           else
-
 C Note: the databases are not actually referenced by bps. This is a non-
 C       critical error --- warn user and clear error flag
             call usrmsg(outs,' ','W')
@@ -749,7 +703,6 @@ C Collect & process single-year climate file
 C Note: the climate file uses a different error flag than
 C the global model definition, as it can be specified separately.
          write(currentfile,'(a)') lclim(1:lnblnk(lclim))
-         IClmErr=0   ! clear error state before call
          call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
          IF(iClmErr.eq.0)THEN
             IREC=366

@@ -175,7 +175,7 @@ C since not all compilers use the same default.
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       character*12 statev(3)
       logical colok
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
 #else

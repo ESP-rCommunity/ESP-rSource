@@ -1759,7 +1759,7 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
@@ -1936,7 +1936,7 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
@@ -2115,7 +2115,7 @@ C *********************************************************************
       COMMON/GRSD110/IndSN(MGRID)
 
       CHARACTER Label*2,Title*17
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2

@@ -59,7 +59,7 @@ C exportcad: controls model export facilities.
       character longtfile*144,longtfiledos*144
       character brw*8   ! to signal model is being browsed
       logical oke
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild
 #else
@@ -889,12 +889,6 @@ C Strings for dos version of rootp and upath and a double quote.
       character useraction*8
       logical XST,unixok
 
-#ifdef OSI
-      integer impx,impy,iwe
-#else
-      integer*8 impx,impy,iwe
-#endif
-
 C Make up a double quote and file separator for xcopy.
       useraction ='-'
       call isunix(unixok)
@@ -989,11 +983,8 @@ C Help text for this menu.
       h(12)='word syntax as explained in the exemplars file.'
 
       if(MMOD.EQ.8)then
-        impx=0
-        impy=0
-        iwe=iw
-        CALL VWMENU('Exemplar Categories',gitem,NCOG,
-     &    impx,impy,iwe,irpx,irpy,ICOG)
+        CALL VWMENU('Exemplar Categories',gitem,NCOG,0,0,IW,irpx,
+     &               irpy,ICOG)
       else
         CALL EMENU('Exemplar Categories',gitem,NCOG,ICOG)
       endif
@@ -1110,9 +1101,7 @@ C Help text for this menu.
       endif
 
       if(MMOD.EQ.8)then
-        impx=0
-        impy=0
-        CALL VWMENU(head,mitem,NCO,impx,impy,IWE,irpx,irpy,ICO)
+        CALL VWMENU(head,mitem,NCO,0,0,IWE,irpx,irpy,ICO)
       else
         CALL EMENU(head,mitem,NCO,ICO)
       endif
@@ -1132,10 +1121,8 @@ C Help @ db file level.
       ELSEIF(ICO.EQ.(NCO-2))THEN
         icod=0
         if(MMOD.EQ.8)then
-          impx=0
-          impy=0
-          CALL VWMENU('Select exemplar...',mitem,NCO,impx,impy,IWE,
-     &      irpx,irpy,icod)
+          CALL VWMENU('Select exemplar...',mitem,NCO,0,0,IWE,irpx,irpy,
+     &      icod)
         else
           CALL EMENU('Select exemplar...',mitem,NCO,icod)
         endif
@@ -1514,7 +1501,6 @@ C LPCDB/IPCDB (for plant template database)
 C LPRFDB,IPRODB (for event profile database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
-#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -1531,6 +1517,7 @@ C ICLIM,LCLIM (for climate file)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       common/LOG/LPRJLG
       common/radcfg/LRADCF
+      COMMON/BL1/dmdsdesc,bdmds
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/TDFFT/LTDF,ltdfa
@@ -1596,9 +1583,8 @@ C The string buffer doit is only used within ifdef code.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,LTMPFL*72
       character LF*72,LFL*144
-      CHARACTER spflnam*72,entflnam*72
-      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
-      character LLASCI*144
+      CHARACTER dmdsdesc*248,bdmds*72,spflnam*72,entflnam*72
+      CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LASCI
       character hvacfile*72,LAIM2*72,LBSIMP*72
 
       logical browse,XST,unixok
@@ -1832,9 +1818,9 @@ C Build up a list of the current files used in the model.
      &  LCNN(1:lnblnk(LCNN))
       do 41 i=1,7
         if(i.eq.1)then
-          LFL=LFMAT
+          LF=LFMAT
         elseif(i.eq.2)then
-          LFL=LFMUL
+          LF=LFMUL
         elseif(i.eq.3)then
           LFL=LOPTDB
         elseif(i.eq.4)then
@@ -1846,16 +1832,23 @@ C Build up a list of the current files used in the model.
         elseif(i.eq.7)then
           LFL=LPCDB
         endif
-        if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
-        endif
+        if(i.eq.3.or.i.eq.4.or.i.eq.5.or.i.eq.6.or.i.eq.7)then
+          if(LFL(1:9).ne.'/usr/esru'.and.LFL(1:4).ne.'UNKN')then
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
+          endif
+        else
+          if(LF(1:9).ne.'/usr/esru'.and.LF(1:4).ne.'UNKN')then
+            call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
 
-C Place to write out ascii materials db if a local file exists.
-        if(i.eq.1)then
-          IUF=IFIL+2
-          write(LLASCI,'(2a)') LFL(1:lnblnk(LFL)),'.a'
-          CALL MKAPRC(LLASCI,IUF,IER)
-          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LLASCI)
+C Place to write out ascii version of constructions db if a local
+C file exists.
+            if(i.eq.1)then
+              IUF=IFIL+2
+              write(LASCI,'(2a)') LF(1:lnblnk(LF)),'.a'
+              CALL MKAPRC(LASCI,IUF,IER)
+              call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LASCI)
+            endif
+          endif
         endif
   41  continue
 

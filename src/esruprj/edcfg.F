@@ -97,7 +97,7 @@ C Uncertainty.
       COMMON/NWKVEW/SCALF,VIEWCEN(3),VIEWLIM(6),IVIEW
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
       COMMON/ICONDBNAM/ICONDBFL      
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       COMMON/NWKTYP/INWKTYP,vergnf
       COMMON/NWKGRDL/GON,SON
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -138,11 +138,11 @@ C Uncertainty.
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       character SSPARENT*12,CONTMNAM*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character*72 DFCFD,DECMPDBFL,DICONDBFL
+      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
 #else
@@ -168,7 +168,7 @@ C are active.
       if(indcfg.ge.2)nets=nets+1
       if(iairn.ge.1)nets=nets+1
       if(ientxist.gt.0)nets=nets+1
-
+      ictl=0
       ictl=ncf+ncl+ncc+ngf+nof
       IER=0
       WRITE(ITEMS(1),'(A,A)') ' cfg file: ',LCFGF(1:22)
@@ -1213,13 +1213,6 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Descriptive label for a zone load or casual gain types.
@@ -1259,22 +1252,20 @@ C Flag noting whether casual gain periods are currently sorted.
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
       character jsparent*12,jsuse*8
       character doit*248,tmode*8,DSFIL*72,ZN*12
-      character outs*124,outs248*248,cfgroot*24
+      character outs*124,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character HOLD*32,zd*64
-      character lworking*144
       CHARACTER ETEXT*82
       character sfile*72,snpfile*72,fs*1,lodlabel*6
       CHARACTER LAPROB*72
-
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer itru,ier  ! type for passed parameters
       real val,x1,y1    ! type for passed parameters
       integer inpic     ! type for passed parameters
       integer iuf       ! file unit type
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild
 #else
@@ -1293,7 +1284,6 @@ C Set folder separator (fs) to \ or / as required.
 
 C Begin with high level menu.
       IUF=IFIL+2
-      OKOB=.false.  ! set before if else 
     3 INO=-3
       IER=0
       WRITE(ITEMS(1),'(A,I3,A)') ' .... Zones ....(',NCOMP,' defined)'
@@ -1775,8 +1765,6 @@ C Act on the skip transform request.
             ZBFLG(NCOMP)=0.
             okzt=.true.
           endif
-
-C Record rotation information in rotateit array.
           dok=.false.
           h(1)='If you want to rotate the zone from its initial'
           h(2)='position now is a good time to do this if the '
@@ -1790,8 +1778,7 @@ C Record rotation information in rotateit array.
      &        -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
             if(VAL.LT.-.01.OR.VAL.GT..01)then
 
-C Rotation choices. Clear pending rotateit, update prior rotateit.
-             rotateit(ncomp,1)=VAL
+C Rotation choices.
              H(1)='The default rotation is about vertex 1 of the'
              H(2)='zone with a positive angle denoting anticlockwise.'
              H(3)='You may change this to rotate the zone about the'
@@ -1803,27 +1790,11 @@ C Rotation choices. Clear pending rotateit, update prior rotateit.
               if(IRT.eq.1)then
                 x1=X(1)
                 y1=Y(1)
-                rotateit(ncomp,2)=x1
-                rotateit(ncomp,3)=y1
                 CALL ESCROT(VAL,x1,y1)
-                rotateit(ncomp,4)=rotateit(ncomp,1)   ! shift the pending rotation
-                rotateit(ncomp,5)=rotateit(ncomp,2)   ! and the origin of the zone
-                rotateit(ncomp,6)=rotateit(ncomp,3)
-                rotateit(ncomp,1)=0.0
-                rotateit(ncomp,2)=0.0
-                rotateit(ncomp,3)=0.0
               elseif(IRT.EQ.2)THEN
                 x1=0.
                 y1=0.
-                rotateit(ncomp,2)=x1
-                rotateit(ncomp,3)=y1
                 CALL ESCROT(VAL,x1,y1)
-                rotateit(ncomp,4)=rotateit(ncomp,1)   ! shift the pending rotation
-                rotateit(ncomp,5)=rotateit(ncomp,2)   ! and the origin of the zone
-                rotateit(ncomp,6)=rotateit(ncomp,3)
-                rotateit(ncomp,1)=0.0
-                rotateit(ncomp,2)=0.0
-                rotateit(ncomp,3)=0.0
               elseif(IRT.EQ.3)THEN
                 H(1)='Point is in the site coordinate system.'
                 x1=0.
@@ -1832,20 +1803,8 @@ C Rotation choices. Clear pending rotateit, update prior rotateit.
                 y1=0.
                 CALL EASKR(y1,' ',' Y point (metres) ? ',
      &            0.0,'-',0.0,'-',0.0,'y point',IER,1)
-                rotateit(ncomp,2)=x1
-                rotateit(ncomp,3)=y1
                 CALL ESCROT(VAL,x1,y1)
-                rotateit(ncomp,4)=rotateit(ncomp,1)   ! shift the pending rotation
-                rotateit(ncomp,5)=rotateit(ncomp,2)   ! and the origin of the zone
-                rotateit(ncomp,6)=rotateit(ncomp,3)
-                rotateit(ncomp,1)=0.0
-                rotateit(ncomp,2)=0.0
-                rotateit(ncomp,3)=0.0
                 call usrmsg(' ',' ','-')
-              elseif(IRT.EQ.4)THEN
-                rotateit(ncomp,1)=0.0
-                rotateit(ncomp,2)=0.0
-                rotateit(ncomp,3)=0.0
               endif
               ZBFLG(NCOMP)=0.
             endif
@@ -1901,18 +1860,6 @@ C the new geometry file. Retain similar and adiabatic connections if found.
           NCON=ICCC
           call zgupdate(0,ncomp,ier)
 
-C Find co-planer surfaces and edges of similar materials.
-          call suredgeadj(itrc,'-',ncomp,ier)
-
-C Update the global coordinates for this zones surfaces so that
-C the subsequent wireframe image can be drawn and the bounds of
-C the zone can be calculated.
-          DO 41 J=1,NZTV(ncomp)
-            VCOORD(ncomp,J,1)=X(J)
-            VCOORD(ncomp,J,2)=Y(J)
-            VCOORD(ncomp,J,3)=Z(J)
-   41     CONTINUE
-
 C Now it is ok to write out the copied zone.
           call eclose(gversion(NCOMP),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -1920,10 +1867,10 @@ C Now it is ok to write out the copied zone.
             newgeo = .true.
           endif
           if(newgeo)then
-            iuf=ifil+2
+	    iuf=ifil+2
             call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
           else
-            iuf=ifil+2
+	    iuf=ifil+2
             call emkgeo(iuf,LGEOM(NCOMP),NCOMP,3,IER)
           endif
           IF(IER.EQ.1)THEN
@@ -1981,7 +1928,7 @@ C If geometry file can hold obstructions save them there
 C otherwise write out write out zone obstruction file.
             call eclose(gversion(ncomp),1.1,0.01,newgeo)
             if(newgeo)then
-              iuf=ifil+2
+	      iuf=ifil+2
               call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
               IOBS(NCOMP)=2    ! reset to signal obs in geom file
               ZOBS(NCOMP)='  '
@@ -2165,20 +2112,6 @@ C Also update lodlabel commons before writing out.
      &         ' ',72,'new.opr','operations file',IER,2)
             IF(DFILE.NE.' ')THEN
               LPROJ(NCOMP)=DFILE
-              ip3ver(ncomp)=ip3ver(ic)     ! set copied to same version
-              oprdesc(ncomp)=oprdesc(ic)   ! use same description
-              ventdesc(ncomp)=ventdesc(ic) ! use same vent description
-              ctlstr(ncomp,1)=ctlstr(ic,1) ! use same control descriptions
-              ctlstr(ncomp,2)=ctlstr(ic,2)
-              ctlstr(ncomp,3)=ctlstr(ic,3)
-              ITCTL(ncomp)=ITCTL(ic)        ! copy infil and vent controls
-              TLO(ncomp)=TLO(ic); TUP(ncomp)=TUP(ic); THI(ncomp)=THI(ic)
-              ACIL(ncomp)=ACIL(ic); ACVL(ncomp)=ACVL(ic)
-              IVL(ncomp)=IVL(ic); TAL(ncomp)=TAL(ic)
-              ACIU(ncomp)=ACIU(ic); ACVU(ncomp)=ACVU(ic)
-              IVU(ncomp)=IVU(ic); TAU(ncomp)=TAU(ic)
-              ACIH(ncomp)=ACIH(ic); ACVH(ncomp)=ACVH(ic)
-              IVH(ncomp)=IVH(ic); TAH(ncomp)=TAH(ic)
               lodlabel(ncomp,1)=lodlabel(ic,1)
               lodlabel(ncomp,2)=lodlabel(ic,2)
               lodlabel(ncomp,3)=lodlabel(ic,3)
@@ -2470,22 +2403,15 @@ C Zone construction files. Prior to working with the zones rescan
 C the construction database (occassionally the initial item in this
 C database gets its name corrupted requiring a re-scan).
         CALL ERPFREE(IFMUL,ISTAT)
-        if(ipathmul.eq.0.or.ipathmul.eq.1)then
-          lworking=lfmul  ! use as is
-        elseif(ipathmul.eq.2)then
-          lndbp=lnblnk(standarddbpath)
-          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
-        endif
-        call FINDFIL(lworking,XST)
+        call FINDFIL(LFMUL,XST)
         if(XST)then
           CALL ERMLDB(0,IUOUT,IER)
         else
 
 C Could not find Constructions db at this time, report to user.
-          write(outs248,'(3a)') 'Constructions db ',
+          write(outs,'(3a)') 'Constructions db ',
      &       LFMUL(1:lnblnk(LFMUL)),' not found!'
-          call edisp248(iuout,outs248,100)
+          call edisp(iuout,outs)
           call edisp(iuout,' ')
         endif
 
@@ -3337,7 +3263,7 @@ C Passed parameters for pregist.
 
       integer igraphiclib  ! external definition
       integer numberofzones ! to pass to updwire rather than ncomp
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -3378,7 +3304,7 @@ C Also scan utility files if they exist.
         H(15)='permission. Other example models are available'
         H(16)='via the `exemplars` option.'
 
-        LTMP=' '    ! reset return string
+	LTMP=' '    ! reset return string
         CALL EASKXORGTKF(LCMDFL,
      &    'System configuration file?',' ',
      &    DFCFG,LTMP,'config file name',IER,16)
@@ -4049,7 +3975,7 @@ C      common/OUTIN/IUOUT,IUIN
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,longtfile*124
       character brw*8   ! to signal model is being browsed
-#ifdef OSI
+#ifdef OSX
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild
@@ -4425,10 +4351,6 @@ C   izlistnb (integer) is the number of selected zones
 C   izlist is the array holding selected zone indicies to rotate
 C   silent (logical) if true then do not ask user about rotations
 C      of obstruction data.
-
-C Also apply rotation directives to rotateit array so that later the
-C user can un-do this action.
-
       subroutine globalrotate(val,x1,y1,izlistnb,izlist,silent,itru,ier)
 
       implicit none
@@ -4465,7 +4387,7 @@ C user can un-do this action.
       character ZN*12,h*72
       character outs*124
       logical DOK,OK
-      integer itrc,iuf,iicomp,ij,iz
+      integer itrc,iuf,iicomp,ij,iz,i
       integer ibe   ! loop for faces of obstruction
       real A,pi,XR,YR,XXX,YYY,CA,SA
        
@@ -4486,13 +4408,6 @@ C user can un-do this action.
           endif
           CALL ESCROT(VAL,x1,y1)
           ZBFLG(IICOMP)=0.
-
-C Remember user directive for future un-do.
-          rotateit(iicomp,1)=0.0
-          rotateit(iicomp,2)=0.0
-          rotateit(iicomp,3)=0.0
-          rotateit(iicomp,4)=val
-          rotateit(iicomp,5)=x1; rotateit(iicomp,6)=y1
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iicomp) =1.1
             newgeo = .true.

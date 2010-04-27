@@ -180,7 +180,7 @@ C For reading in of bi-directional data.
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
       CHARACTER outs*124,h*72,spsname*8,L144*144,longtmp*144
-      CHARACTER outs*248,LTDF*72,LTDFA*72,LCMDFL*144
+      CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
       DIMENSION ICLN(30)  ! for checking material db categories
@@ -191,22 +191,11 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
-      logical dll,closemat1,closemat2,unixok
-      character lworking*144,fs*1
-
-      integer ier
+      logical dll,closemat1,closemat2
 
 C Reset error indicator and check if running as a dll.
       ier1=0
       call isadll(dll)
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
 
 C Initialize the system variables.
       GAM=0.5
@@ -408,7 +397,6 @@ C If IREP=1 then use default.
       IF(GRND3D)THEN
 
 C Specify ground simulation start-up period.
-        ier=0
         CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
         READ(ICNC,REC=1,IOSTAT=ISTAT,ERR=7)ITCNSTG
         CALL ERPFREE(ICNC,ISTAT)
@@ -439,23 +427,8 @@ C Specify ground simulation start-up period.
 
 C If materials db not yet defined or has not yet been opened do so.
 C Use the unit IFMAT=IFIL+5 for this via common condb.
-
-C << this logic could be updated to use MATFROMBIN as in ascii_mat.F >>
-
       IF(.NOT.MATDBOK)THEN
-  55    write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
-
-        if(ipathmat.eq.0.or.ipathmat.eq.1)then
-          ier=0
-          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        elseif(ipathmat.eq.2)then
-          ier=0
-          lndbp=lnblnk(standarddbpath)
-          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &      LFMAT(1:lnblnk(LFMAT))
-          call EFOPRAN(IFMAT,lworking,40,1,IER)
-        endif
-
+  55    call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         if(ier.ne.0)then
           if(dll)then
             dllsubr='mzinpt'
@@ -463,15 +436,14 @@ C << this logic could be updated to use MATFROMBIN as in ascii_mat.F >>
             ier=2
             return
           else
-
             IER=0
             H(1)='The material db holds the thermophysical'
             H(2)='properties for aluminium, brick, earth, tile, etc.'
-            write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
-  56        CALL EASKS(lltmp,' Material database? ',
-     &        ' ',144,DFCON,'material db file name',IER,2)
-            if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-              write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
+            ltmp=LFMAT
+  56        CALL EASKS(ltmp,' Material database? ',
+     &        ' ',72,DFCON,'material db file name',IER,2)
+            if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+              LFMAT=ltmp
               goto 55
             else
               goto 56
@@ -492,27 +464,10 @@ C code from esruprj/eddb.F subroutine opendb.
             goto 139  !  a binary file found so carry on.
           endif
  1006     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
-
-          if(ipathmat.eq.0.or.ipathmat.eq.1)then
-            call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-          elseif(ipathmat.eq.2)then
-            lndbp=lnblnk(standarddbpath)
-            write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &        LFMAT(1:lnblnk(LFMAT))
-            call rascimat(IFMAT,lworking,IER)  ! try current ascii format
-          endif
+          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
           if(ier.eq.-2)then
             ier=0
-            if(ipathmat.eq.0.or.ipathmat.eq.1)then
-              call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-            elseif(ipathmat.eq.2)then
-              lndbp=lnblnk(standarddbpath)
-              write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &          LFMAT(1:lnblnk(LFMAT))
-              call rlegacymat(IFMAT,lworking,ier)  ! try older ascii format
-            endif
-
+            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
             if(ier.ne.0)then
               if(dll)then
                 dllsubr='mzinpt'
@@ -541,16 +496,9 @@ C data may be accessed by control and reporting facilities.
 C Use file unit IAPROB to read db.
  139  IFMUL=IAPROB
       CALL ERPFREE(IFMUL,ISTAT)
-      if(ipathmul.eq.0.or.ipathmul.eq.1)then
-        lworking=lfmul  ! use as is
-      elseif(ipathmul.eq.2)then
-        lndbp=lnblnk(standarddbpath)
-        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
-      endif
-      call FINDFIL(lworking,XST)
+      call FINDFIL(LFMUL,XST)
       if(.NOT.XST)then
-        write(outs248,'(2A)') ' Could not find construction database ',
+        write(outs,'(A,A)') ' Could not find construction database ',
      &    LFMUL(1:lnblnk(LFMUL))
         call isadll(dll)
         if(dll)then
@@ -559,7 +507,7 @@ C Use file unit IAPROB to read db.
           ier=2
           return
         else
-          call lusrmsg(outs248,' ','W')
+          call usrmsg(outs,' ','W')
         endif
       else
         CALL ERMLDB(0,iuout,IER)
@@ -639,8 +587,6 @@ C but if using GTK then we need the full length to avoid truncation.
 
         endif
       endif
-
-      ier=0
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
       IF(ier.eq.0)THEN
         IREC=366

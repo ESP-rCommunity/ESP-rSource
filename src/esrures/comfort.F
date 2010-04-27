@@ -75,7 +75,7 @@ C Pre calculated data (filtered).
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
 
-#ifdef OSI
+#ifdef OSX
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild

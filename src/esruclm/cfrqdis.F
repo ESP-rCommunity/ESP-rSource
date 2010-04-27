@@ -43,7 +43,7 @@ C of the user-specified time-dependant variable.
       logical graph_ok,ok,dok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -393,7 +393,7 @@ C 'HISDRW' draws a histogram of the frequency distribution
       COMMON/FREQS1/ICBIN(MF),ITOTAL
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale

@@ -50,7 +50,7 @@ C Parameters for eline calls.
       CHARACTER PERST1*14,PERST2*44,PERST3*44      
       DIMENSION IFSYM(MBITS)
       logical colok
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iid1,iid2,iilastx,iilasty,iix,iiy

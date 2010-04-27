@@ -562,7 +562,6 @@ C *********************************************************************
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,H,LTMP
 
       DIMENSION XCRD(MGV),ZCRD(MGV)
-      integer ier
 
 C If materials database not opened warn the user.
       call eclose(matver,1.1,0.001,closemat1)
@@ -589,7 +588,6 @@ C Open the control volumes file.
       LTMP=L3DCVS(IZ)
       CALL FLNAME(IZ,LTMP,FLTYP,'.cvs',3,IER)
       L3DCVS(IZ)=LTMP
-      ier=0
       CALL EFOPRAN(ICVS,L3DCVS(IZ),5,4,IER)
       IF(IER.NE.0)RETURN
 
@@ -599,7 +597,6 @@ C Open the connections file.
       LTMP=L3DCNC(IZ)
       CALL FLNAME(IZ,LTMP,FLTYP,'.cnc',3,IER)
       L3DCNC(IZ)=LTMP
-      ier=0
       CALL EFOPRAN(ICNC,L3DCNC(IZ),7,4,IER)
       IF(IER.NE.0)RETURN
 
@@ -610,7 +607,6 @@ C numbers of the control volumes represented by each node).
       LTMP=L3DNDC(IZ)
       CALL FLNAME(IZ,LTMP,FLTYP,'.ndc',3,IER)
       L3DNDC(IZ)=LTMP
-      ier=0
       CALL EFOPRAN(INDC,L3DNDC(IZ),3,4,IER)
       IF(IER.NE.0)RETURN
 
@@ -620,7 +616,6 @@ C Create a binary file for saving the nodes initial temperatures.
       LTMP=L3DTAQ(IZ)
       CALL FLNAME(IZ,LTMP,FLTYP,'.taq',3,IER)
       L3DTAQ(IZ)=LTMP
-      ier=0
       CALL EFOPRAN(ITAQ,L3DTAQ(IZ),2,4,IER)
       IF(IER.NE.0)RETURN
 

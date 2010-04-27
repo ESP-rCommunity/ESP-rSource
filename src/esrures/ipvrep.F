@@ -37,7 +37,6 @@ C Write IPV report based on description held in common.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "ipvdata.h"
-#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -51,6 +50,7 @@ C Write IPV report based on description held in common.
       COMMON/C1/NCOMP,NCON
       COMMON/CLMDT1/CLMLOC
       COMMON/ZONPIK/NZ,NZNO(MCOM)
+      COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/CFGV/icfgv
@@ -95,7 +95,7 @@ C Pre calculated data (filtered).
       character outsl*248,outlsd*248,outlsc*248
       character xfile*144,tg*1,delim*1,H*72,ITEM*18,lipvdatf*72
       character SLABEL*32,GLABEL*20,SUFFIX*8,paction*16
-      CHARACTER ltmp*72,LJTIME*8
+      CHARACTER dmdsdesc*248,bdmds*72,ltmp*72,LJTIME*8
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       CHARACTER selres*72,CLMLOC*30
       character descr*7,descrst*10,descrfn*10,dstmp*24,sq*1
@@ -1915,7 +1915,6 @@ C Write IPV report based on description held in common.
       subroutine mkannrep(iier)
 #include "building.h"
 #include "ipvdata.h"
-#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -1925,6 +1924,7 @@ C Write IPV report based on description held in common.
       common/pophelp/h(60)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
+      COMMON/BL1/dmdsdesc,bdmds
 
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
@@ -1939,6 +1939,7 @@ C Write IPV report based on description held in common.
       dimension WLC(MSPS),WFC(MSPS),WSPC(MSPS),WDHWC(MSPS),WPVC(MSPS)
       character outs*124,outsd*124,outsn*124
       character xfile*144,tg*1,delim*1,h*72,tab*1,OUTSTR*124,sq*1
+      CHARACTER dmdsdesc*248,bdmds*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
 

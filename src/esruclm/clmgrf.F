@@ -40,7 +40,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       LOGICAL mxmn
       integer onleft  ! number of left axis
       integer onright ! number of right axis
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale
@@ -421,7 +421,7 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       integer onleft  ! number of left axis
       integer onright ! number of right axis
       integer months
-#ifdef OSI
+#ifdef OSX
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -649,7 +649,7 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       logical colok
       integer onleft  ! number of left axis
       integer onright ! number of right axis
-#ifdef OSI
+#ifdef OSX
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -777,7 +777,7 @@ C acthor (1 char) '-' standard, 'd' day, 'w' week.
       character acthor*1
 
 C Local variables to pass to edline and axiscale.
-#ifdef OSI
+#ifdef OSX
       integer iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
 #else
       integer*8 iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
@@ -1023,7 +1023,7 @@ C   is negative draw only the past value.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
 #else

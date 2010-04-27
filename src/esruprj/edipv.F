@@ -288,7 +288,6 @@ C espriou.h for climatelist file name.
 #include "seasons.h"
 C seasons.h provides typper and typsea
 #include "ipvdata.h"
-#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -306,6 +305,9 @@ C IPV description.
       common/IPVF/lipvdatf
       common/CFGV/icfgv
 
+C Description of distributed demands and file name.
+      COMMON/BL1/dmdsdesc,bdmds
+
 C Simulation parameter sets.
 C      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
@@ -319,6 +321,7 @@ C ITMM is menu for metric sets.
       character lipvdatf*72,outs*124
       CHARACTER DS*7,DS1*10
       character*72 LTMP,LCFGF
+      CHARACTER dmdsdesc*248,bdmds*72
       character cfgroot*24,t40*40,t72*72,t248*248
       character descr*7,descrst*10,descrfn*10
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7

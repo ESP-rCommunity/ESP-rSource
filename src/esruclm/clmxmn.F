@@ -37,8 +37,8 @@ C IP = 6  - EXTERNAL RELATIVE HUMIDITY HELD IN IX(5,MT).
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       COMMON/CLMDAT/IDY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
-     &           CDIR(MT),CHUM(MT)
-#ifdef OSI
+     A           CDIR(MT),CHUM(MT)
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale

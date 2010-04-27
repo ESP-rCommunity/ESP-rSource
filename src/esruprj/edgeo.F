@@ -1514,8 +1514,6 @@ C Produce help text for the menu.
           goto 77
         elseif(INOR.EQ.2.or.INOR.eq.3.or.INOR.eq.4.or.INOR.eq.5)then
 
-C Remember what the user requested in prior rotateit structure and
-C clear the pending rotateit structure.
           VAL=0.
           CALL EASKR(VAL,' ','Rotation (+ = anticlockwise)?',
      &      -359.0,'W',359.0,'W',0.0,'rotation',IER,2)
@@ -1524,12 +1522,6 @@ C clear the pending rotateit structure.
               x1=x(1)     ! get position of vertex 1.
               y1=y(1)
               CALL ESCROT(VAL,x1,y1)
-              rotateit(icomp,1)=0.0
-              rotateit(icomp,2)=0.0
-              rotateit(icomp,3)=0.0
-              rotateit(icomp,4)=VAL
-              rotateit(icomp,5)=x1
-              rotateit(icomp,6)=y1
             elseif(INOR.eq.3)then
               inpick=1
               call EPKVERT(INPICK,IVLST,'Rotation Point',
@@ -1538,12 +1530,6 @@ C clear the pending rotateit structure.
                 ivc=IVLST(1)
                 x1=x(ivc)     ! get position of this vertex.
                 y1=y(ivc)
-                rotateit(icomp,1)=0.0
-                rotateit(icomp,2)=0.0
-                rotateit(icomp,3)=0.0
-                rotateit(icomp,4)=VAL
-                rotateit(icomp,5)=x1
-                rotateit(icomp,6)=y1
               else
                 goto 77
               endif
@@ -1552,12 +1538,6 @@ C clear the pending rotateit structure.
               x1=0.         ! site origin is X=0. Y=0.
               y1=0.
               CALL ESCROT(VAL,x1,y1)
-              rotateit(icomp,1)=0.0
-              rotateit(icomp,2)=0.0
-              rotateit(icomp,3)=0.0
-              rotateit(icomp,4)=VAL
-              rotateit(icomp,5)=x1
-              rotateit(icomp,6)=y1
             elseif(INOR.eq.5)then
               x1=0.
               CALL EASKR(x1,' ','X-coord?',
@@ -1566,12 +1546,6 @@ C clear the pending rotateit structure.
               CALL EASKR(y1,' ',' Y-coord?',
      &          0.0,'-',0.0,'-',0.0,'y point',IER,58)
               CALL ESCROT(VAL,x1,y1)
-              rotateit(icomp,1)=0.0
-              rotateit(icomp,2)=0.0
-              rotateit(icomp,3)=0.0
-              rotateit(icomp,4)=VAL
-              rotateit(icomp,5)=x1
-              rotateit(icomp,6)=y1
             endif
           else
             goto 77
@@ -5119,7 +5093,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       character outs*124,headv*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy
 #else
       integer*8 iix,iiy
@@ -5287,22 +5261,15 @@ C Show the new point on the current wireframe.
               CALL EASKABC(outs,' ','new vertex',
      &          'new vertex after editing','cancel',INVT,1)
               if(INVT.eq.1)then
-
-C Update the global coordinates for this zones surfaces so that
-C the subsequent wireframe image can be drawn and the bounds of
-C the zone can be calculated.
                 NTV=NTV+1
                 NZTV(icomp)=NTV
                 x(ntv)=x3
                 y(ntv)=y3
                 z(ntv)=z3
-                VCOORD(ICOMP,ntv,1)=x3
-                VCOORD(ICOMP,ntv,2)=y3
-                VCOORD(ICOMP,ntv,3)=z3
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
-                WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
+                WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
                 H(1)='The vertex coordinates should be in metres.'
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
@@ -5312,9 +5279,6 @@ C the zone can be calculated.
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
                 CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
                 if(ier.ne.0)goto 443
-                VCOORD(ICOMP,ntv,1)=x3
-                VCOORD(ICOMP,ntv,2)=y3
-                VCOORD(ICOMP,ntv,3)=z3
               elseif(INVT.eq.3)then
                 continue
               endif
@@ -5324,7 +5288,7 @@ C the zone can be calculated.
               MODGEO=.TRUE.
               MODIFY=.TRUE.
               MODBND=.TRUE.
-              ZBFLG(ICOMP)=0.  ! force recalculation of bounds
+              ZBFLG(ICOMP)=0.
               call usrmsg(' ',' ','-')
               CALL INLNST(1)
               nzg=1
@@ -5493,13 +5457,10 @@ C Show the new point on the current wireframe.
                 x(ntv)=x3
                 y(ntv)=y3
                 z(ntv)=z3
-                VCOORD(ICOMP,ntv,1)=x3
-                VCOORD(ICOMP,ntv,2)=y3
-                VCOORD(ICOMP,ntv,3)=z3
               elseif(INVT.eq.2)then
                 NTV=NTV+1
                 NZTV(icomp)=NTV
-                WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
+                WRITE(HOLD,'(1x,3f10.5,a)')x3,y3,z3,'  '
                 H(1)='The vertex coordinates should be in metres.'
                 H(2)='It is not advisable for Z to be negative.'
                 write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
@@ -5509,9 +5470,6 @@ C Show the new point on the current wireframe.
                 CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
                 CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
                 if(ier.ne.0)goto 543
-                VCOORD(ICOMP,ntv,1)=x3
-                VCOORD(ICOMP,ntv,2)=y3
-                VCOORD(ICOMP,ntv,3)=z3
               elseif(INVT.eq.3)then
                 continue
               endif
@@ -5688,13 +5646,10 @@ C Ask if it should be added.
                     x(ntv)=x3
                     y(ntv)=y3
                     z(ntv)=z3
-                    VCOORD(ICOMP,ntv,1)=x3
-                    VCOORD(ICOMP,ntv,2)=y3
-                    VCOORD(ICOMP,ntv,3)=z3
                   elseif(INVT.eq.2)then
                     NTV=NTV+1
                     NZTV(icomp)=NTV
-                    WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
+                    WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
                     H(1)='The vertex coordinates should be in metres. '
                     H(2)='It is not advisable for Z to be negative.'
                     write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z(m):'
@@ -5705,9 +5660,6 @@ C Ask if it should be added.
                     CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
                     CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
                     if(ier.ne.0)goto 136
-                    VCOORD(ICOMP,ntv,1)=x3
-                    VCOORD(ICOMP,ntv,2)=y3
-                    VCOORD(ICOMP,ntv,3)=z3
                   elseif(INVT.eq.3)then
                     goto 147
                   endif
@@ -6077,7 +6029,7 @@ C Show the new point on the current wireframe.
             if(OK)then
               x(IWHICH1)=x3
               y(IWHICH1)=y3
-              z(IWHICH1)=z3 ! place to update vcoord?
+              z(IWHICH1)=z3
             endif
             MODGEO=.TRUE.
             MODIFY=.TRUE.
@@ -6109,13 +6061,10 @@ C be a new vertex and update the wireframe.
               x(ntv)=x3
               y(ntv)=y3
               z(ntv)=z3
-              VCOORD(ICOMP,ntv,1)=x3
-              VCOORD(ICOMP,ntv,2)=y3
-              VCOORD(ICOMP,ntv,3)=z3
             elseif(INVT.eq.2)then
               NTV=NTV+1
               NZTV(icomp)=NTV
-              WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
+              WRITE(HOLD,'(3f10.5,a)')x3,y3,z3,'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')' Vertex (',ntv,') X Y Z (m):'
@@ -6125,9 +6074,6 @@ C be a new vertex and update the wireframe.
               CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
               CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
               if(ier.ne.0)goto 43
-              VCOORD(ICOMP,ntv,1)=x3
-              VCOORD(ICOMP,ntv,2)=y3
-              VCOORD(ICOMP,ntv,3)=z3
             elseif(INVT.eq.3)then
               goto 3
             endif
@@ -6288,7 +6234,7 @@ C Select (possibly via mouse) and then edit.
               ifoc=IVLST(ij)
 
 C Present vertex coords for editing then parse data from HOLD.
-              WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
+              WRITE(HOLD,'(3f10.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
               H(1)='The vertex coordinates should be in metres. '
               H(2)='It is not advisable for Z to be negative.'
               write(outs,'(a,i2,a)')
@@ -6323,7 +6269,7 @@ C Edit vertex identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
 
 C Present vertex coords for editing then parse data from HOLD.
-        WRITE(HOLD,'(3f11.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
+        WRITE(HOLD,'(3f10.5,a)')X(IFOC),Y(IFOC),Z(IFOC),'  '
         H(1)='The vertex coordinates should be in metres. '
         H(2)='It is not advisable for Z to be negative.'
         write(outs,'(a,i2,a)')' Vertex (',ifoc,') X  Y  Z (in metres):'
@@ -6414,7 +6360,7 @@ C Strings for surface attributes to pass to insrec.
       character rsparent*12
       real XO1,ZO1  ! to prevent name clash in geometry.h
       
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy
 #else
       integer*8 iix,iiy
@@ -7183,9 +7129,6 @@ C Add the transformed points to the zone (later check for unique).
                 X(NTV)=XT(ix)
                 Y(NTV)=YT(ix)
                 Z(NTV)=ZT(ix)
-                VCOORD(ICOMP,ntv,1)=XT(ix)
-                VCOORD(ICOMP,ntv,2)=YT(ix)
-                VCOORD(ICOMP,ntv,3)=ZT(ix)
                 XMN=AMIN1(XMN,X(NTV))
                 YMN=AMIN1(YMN,Y(NTV))
                 ZMN=AMIN1(ZMN,Z(NTV))
@@ -7534,7 +7477,7 @@ C IER=0 OK, IER=1 problem.
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy,ixd,iyd
 #else
       integer*8 iix,iiy,ixd,iyd
@@ -8085,18 +8028,9 @@ C If only 3 items on first line read another OUTSTR and try to continue.
         CALL EGETWR(OUTSTR,K,DY1,0.,0.,'-','width',IER)
         CALL EGETWR(OUTSTR,K,DZ1,0.,0.,'-','height',IER)
         CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rotation angle',IER)
-        rotateit(icomp,1)=ARX
-        rotateit(icomp,2)=XO1
-        rotateit(icomp,3)=YO1
 
 C Now convert to a gen description.
         CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,ARX)
-        rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! shift the pending rotation
-        rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
-        rotateit(ICOMP,6)=rotateit(ICOMP,3)
-        rotateit(ICOMP,1)=0.0
-        rotateit(ICOMP,2)=0.0
-        rotateit(ICOMP,3)=0.0
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
         CTYPE(icomp)='GEN '
@@ -8112,7 +8046,6 @@ C Zone is of type REG.
         CALL EGETWR(OUTSTR,K,Z1X,0.,1000.,'W','floor height',IER)
         CALL EGETWR(OUTSTR,K,Z2X,Z1X,1000.,'F','ceiling ht',IER)
         CALL EGETWR(OUTSTR,K,ARX,-360.,360.,'W','rot angle',IER)
-        rotateit(icomp,1)=ARX
 
 C Read base vertex data.
         DO 60 IW=1,NW
@@ -8128,15 +8061,7 @@ C Now convert to GEN body type and place into in common block.
         IF(ARX.LT.-.01.OR.ARX.GT..01)then
           x1=X(1)
           y1=Y(1)
-          rotateit(icomp,2)=x1
-          rotateit(icomp,3)=y1
           CALL ESCROT(ARX,x1,y1)
-          rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! shift the pending rotation
-          rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
-          rotateit(ICOMP,6)=rotateit(ICOMP,3)
-          rotateit(ICOMP,1)=0.0
-          rotateit(ICOMP,2)=0.0
-          rotateit(ICOMP,3)=0.0
         endif
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
@@ -8196,19 +8121,11 @@ C Now proceed to read vertices on one or more lines.
           ENDIF
    10   CONTINUE
 
-C Rotate if required.  Shift pending rotate to prior rotate.
+C Rotate if required.
         if(ARX.LT.-.01.OR.ARX.GT..01)then
           x1=X(1)
           y1=Y(1)
-          rotateit(ICOMP,1)=x1
-          rotateit(ICOMP,2)=y1
           CALL ESCROT(ARX,x1,y1)
-          rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! remmeber the pending rotation
-          rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
-          rotateit(ICOMP,6)=rotateit(ICOMP,3)
-          rotateit(ICOMP,1)=0.0
-          rotateit(ICOMP,2)=0.0
-          rotateit(ICOMP,3)=0.0
         endif
       ELSE
         write(outs,'(2a)') ' Geometry shape type illegal in ',

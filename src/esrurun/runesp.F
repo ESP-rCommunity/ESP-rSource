@@ -52,7 +52,6 @@ C ************************************************************
 #include "espriou.h"
 #include "esprdbfile.h"
 #include "material.h"
-#include "schedule.h"
       PARAMETER (MSTMC=20)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -105,6 +104,7 @@ C Uncertainty.
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
+      COMMON/BL1/dmdsdesc,bdmds
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       
       CHARACTER INTER*144,INF*144
@@ -122,6 +122,7 @@ C Uncertainty.
       character*72 LCFGF,LPRJLG
       character LCTLF*72,ctldoc*248,lradcf*72,LTDFA*72
       character LTDF*72,LAPROB*72 
+      CHARACTER dmdsdesc*248,bdmds*72
       character bidirfile*72,bidirname*12
       LOGICAL unixok,concat
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -255,11 +256,11 @@ C databases may make use of this unit temporarily).
 
 C Multi-layer constructions db on channel IFIL+3.
       IFMUL=IFIL+3
-      write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
+      LFMUL=DFMUL
 
 C Materials db on channel IFIL+4.
       IFMAT=IFIL+4
-      write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
+      LFMAT=DFCON
 
 C System configuration file on channel IFIL+5. 
       IFCFG=IFIL+5
@@ -371,14 +372,12 @@ C parse_oc reads the contents of the input file (LFILE) and generates
 C silentread data structures.
 C parent action: 'create_silent' or 'create_model' or 'create_run_model'
       subroutine parse_oc(LFILE,parentaction,ier)
-      integer MSZ   ! number of META zones array sizes, edit to
-                    ! match MCOM in building.h
-      PARAMETER (MSZ=72) 
+      integer MSZ   ! number of silent zones array sizes
+      PARAMETER (MSZ=10) 
 #include "building.h"
 #include "model.h"
 #include "espriou.h"
 #include "esprdbfile.h"
-#include "geometry.h"
 C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -390,11 +389,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
-
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
@@ -425,7 +419,6 @@ C weather (32 char) the weather file name (no path included)
       character subpath*72
       character parentaction*16 ! action passed from calling code
       character action*8       ! to pass to silentmodel
-      character simact*6       ! to pass to silentmodel
       character longtfile*144,longtfiledos*144
 
 C Local string values.
@@ -435,13 +428,37 @@ C Local string values.
 C Documentation (modeltitle) comes from model.h
 
 C Paremeters passed to:silentzone
+      character name*12   ! name given to the zone
+      dimension name(MSZ)
+      character shape*8   ! box or extrude
+      dimension shape(MSZ)
       character use*8,szuse*8,usefile*32  ! usage pattern directives
       dimension use(3),szuse(MSZ,3),usefile(MSZ)
 
+C Stings associated with internal mass. 1=surface name, 2=construction, 3=optics
+      character textmass*32 
+      dimension textmass(4,3)
+
+      integer nbwalls(MSZ)     ! nb of vertical walls
+      integer nbedges(MS)      ! nb of edges per surface in poly shaped zone
+      integer isznbedges(MSZ,MS) ! nb of edges per surface in poly shaped zone
+      integer list(MS,24)      ! indices of coords making up edges of each surface
+      integer iszlist(MSZ,MS,24) ! indices of coords making up edges of each surface
+      integer nbglz(MSZ)       ! nb of windows
+      integer nbdoor(MSZ)      ! nb of doors
+      integer nbcord(MSZ)      ! nb of coordinates (for extruded or poly shape)
+      real rotateit(MSZ)        ! angle of rotation
+      real origin(3),szorigin(MSZ,3)      ! values dependant on shape
+      real datamass(4,7)  ! origin and size and orientations of mass (4 per zone)
+      real size(3),szsize(MSZ,3)        ! values dependant on shape
+      real coords(MS,3)
+      real hasglaze(MS),szhasglaze(MSZ,MS)   ! percentage of glazing in each surface of intial shape
+      real hasdoor(MS),szhasdoor(MSZ,MS)    ! width of door in each surface of the initial shape
       character hasconstr*32,szhasconstr*32
       dimension hasconstr(MS),szhasconstr(MSZ,MS)  ! construction to use for each surface
-      character hasoptic*32,szhasoptic*32
-      dimension hasoptic(MS),szhasoptic(MSZ,MS)  ! optics to use for each surface
+      character hasname*12,szhasname*12
+      dimension hasname(MS),szhasname(MSZ,MS)  ! name to use for each surface
+      integer boundarytype(MS,3),szboundarytype(MSZ,MS,3)
 
 C Array of percent window area in the parent surfaces
       real glzpercent(5)
@@ -465,8 +482,6 @@ C Data related to locating a ground temperature file.
       integer igrfile ! unit number of ground file
       integer lsn    ! length of currentfile
 
-      integer metaver  ! one for 1.1 and two for 1.2
-
       IER=0
 
 C Get the current folder and display options to the user.
@@ -486,7 +501,6 @@ C Debug.
 C      write(6,*) 'usrdir is ',odir
 
 C Set logicals for locations of windows.
-      metaver =2  ! initial assumption
       glzin1 = .false.
       glzin2 = .false.
       glzin3 = .false.
@@ -503,66 +517,54 @@ C Set logicals for locations of windows.
       subpath=' '
       haveground=.false.
 
-C For each of the possible ESP-r zones, clear values.
-      do 41 iz=1,MCOM
-        nztv(iz) = 0
-        zname(iz) = ' '
-        shape(iz) = ' '
-        nbwalls(iz) = 0
-        rotateit(iz,1) = 0.0
-        rotateit(iz,2) = 0.0
-        rotateit(iz,3) = 0.0
-        rotateit(iz,4) = 0.0
-        rotateit(iz,5) = 0.0
-        rotateit(iz,6) = 0.0
-        zorigin(iz,1) = 0.0
-        zorigin(iz,2) = 0.0
-        zorigin(iz,3) = 0.0
-        zsize(iz,1) = 0.0
-        zsize(iz,2) = 0.0
-        zsize(iz,3) = 0.0
-        znbglz(iz) = 0
-        znbdoor(iz) = 0
-        do 39 isu=1,MS
-          sname(iz,isu)=' '
-          zboundarytype(iz,isu,1)=0
-          zboundarytype(iz,isu,2)=0
-          zboundarytype(iz,isu,3)=0
-          zhasglaze(iz,isu)=0.0
-          zhasdoor(iz,isu)=0.0
-          isznbedges(iz,isu)=0
-          do 54 ivu=1,MV
-            iszlist(iz,isu,ivu)=0
-  54      continue
-  39    continue
-
-C Clear data for internal mass (not currently used).
-        do 158 imu=1,4
-          zdatamass(iz,imu,1)=0.0
-          zdatamass(iz,imu,2)=0.0
-          zdatamass(iz,imu,3)=0.0
-          zdatamass(iz,imu,4)=0.0
-          zdatamass(iz,imu,5)=0.0
-          zdatamass(iz,imu,6)=0.0
-          zdatamass(iz,imu,7)=0.0
-          ztextmass(iz,imu,1)=' '
-          ztextmass(iz,imu,2)=' '
-          ztextmass(iz,imu,3)=' '
- 158    continue
-  41  continue
-
-C Clear the msz array structures.
+C Clear the sz array structures.
       weather=' '
       do 40 iz=1,MSZ
+        name(iz) = ' '
+        shape(iz) = ' '
         szuse(iz,1) = ' '
         szuse(iz,2) = ' '
         szuse(iz,3) = ' '
         usefile(iz) = ' '
+        nbwalls(iz) = 0
+        nbglz(iz) = 0
+        nbdoor(iz) = 0
+        nbcord(iz) = 0
+        rotateit(iz) = 0
+        szorigin(iz,1) = 0.0
+        szorigin(iz,2) = 0.0
+        szorigin(iz,3) = 0.0
+        szsize(iz,1) = 0.0
+        szsize(iz,2) = 0.0
+        szsize(iz,3) = 0.0
         do 52 isu=1,MS
+          isznbedges(iz,isu)=0
+          do 54 ivu=1,MV
+            iszlist(iz,isu,ivu)=0
+  54      continue
+          szhasglaze(iz,isu)=0.0
+          szhasdoor(iz,isu)=0.0
           szhasconstr(iz,isu)=' '
-          szhasoptic(iz,isu)=' '
+          szhasname(iz,isu)=' '
+          szboundarytype(iz,isu,1)=0
+          szboundarytype(iz,isu,2)=0
+          szboundarytype(iz,isu,3)=0
   52    continue
   40  continue
+
+C Clear data for internal mass (not currently used).
+      do 158 imu=1,4
+        datamass(imu,1)=0.0
+        datamass(imu,2)=0.0
+        datamass(imu,3)=0.0
+        datamass(imu,4)=0.0
+        datamass(imu,5)=0.0
+        datamass(imu,6)=0.0
+        datamass(imu,7)=0.0
+        textmass(imu,1)=' '
+        textmass(imu,2)=' '
+        textmass(imu,3)=' '
+ 158  continue
 
       NS=0     ! temporary array for counting surfaces.
       nsz=1
@@ -660,32 +662,20 @@ C Try where-the-input-file is.
         endif
         goto 43
       elseif(WORD(1:7).eq.'*length')then
-        CALL EGETWR(OUTSTR,K,val1,0.,0.,'-','box length',IER)
-        zsize(nsz,1)=val1
+        CALL EGETWR(OUTSTR,K,size(1),0.,0.,'-','box length',IER)
+        szsize(nsz,1)=size(1)
         goto 43
       elseif(WORD(1:6).eq.'*width')then
-        CALL EGETWR(OUTSTR,K,val1,0.,0.,'-','box width',IER)
-        zsize(nsz,2)=val1
+        CALL EGETWR(OUTSTR,K,size(2),0.,0.,'-','box width',IER)
+        szsize(nsz,2)=size(2)
         goto 43
       elseif(WORD(1:7).eq.'*heigth'.or.WORD(1:7).eq.'*height')then
-        CALL EGETWR(OUTSTR,K,val1,0.,0.,'-','box height',IER)
-        zsize(nsz,3)=val1
+        CALL EGETWR(OUTSTR,K,size(3),0.,0.,'-','box height',IER)
+        szsize(nsz,3)=size(3)
         goto 43
-      elseif(WORD(1:9).eq.'*rotate')then
+      elseif(WORD(1:9).eq.'*rotation')then
         CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation angle',IER)
-        rotateit(nsz,1)=rot
-        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation X',IER)
-        rotateit(nsz,2)=rot
-        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','rotation Y',IER)
-        rotateit(nsz,3)=rot
-        goto 43
-      elseif(WORD(1:16).eq.'*previous_rotate')then
-        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','prior rotation angle',IER)
-        rotateit(nsz,4)=rot
-        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','prior rotation X',IER)
-        rotateit(nsz,5)=rot
-        CALL EGETWR(OUTSTR,K,rot,0.,0.,'-','prior rotation Y',IER)
-        rotateit(nsz,6)=rot
+        rotateit(nsz)=rot
         goto 43
       elseif(WORD(1:10).eq.'*Roof type'.or.
      &       WORD(1:10).eq.'*roof type')then
@@ -696,7 +686,7 @@ C Try where-the-input-file is.
 C A window on the North is the 3rd surface in the zone
         CALL EGETWR(OUTSTR,K,glzpercent(3),0.,0.,'-','glz surf 1',IER)
         glzin3 = .true.
-        zhasglaze(nsz,3)=glzpercent(3)
+        szhasglaze(nsz,3)=glzpercent(3)
         goto 43
       elseif(WORD(1:10).eq.'*Window(S)'.or.
      &       WORD(1:10).eq.'*window(s)')then
@@ -704,7 +694,7 @@ C A window on the North is the 3rd surface in the zone
 C A window on the (South 1st surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(1),0.,0.,'-','glz surf 1',IER)
         glzin1 = .true.
-        zhasglaze(nsz,1)=glzpercent(1)
+        szhasglaze(nsz,1)=glzpercent(1)
         goto 43
       elseif(WORD(1:10).eq.'*Window(E)'.or.
      &       WORD(1:10).eq.'*window(e)')then
@@ -712,7 +702,7 @@ C A window on the (South 1st surface) of the box.
 C A window on the (East 2nd surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(2),0.,0.,'-','glz surf 2',IER)
         glzin2 = .true.
-        zhasglaze(nsz,2)=glzpercent(2)
+        szhasglaze(nsz,2)=glzpercent(2)
         goto 43
       elseif(WORD(1:10).eq.'*Window(W)'.or.
      &       WORD(1:10).eq.'*window(w)')then
@@ -720,7 +710,7 @@ C A window on the (East 2nd surface) of the box.
 C A window on the (West 4th surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(4),0.,0.,'-','glz surf 2',IER)
         glzin4 = .true.
-        zhasglaze(nsz,4)=glzpercent(4)
+        szhasglaze(nsz,4)=glzpercent(4)
         goto 43
       elseif(WORD(1:10).eq.'*Window(R)'.or.
      &       WORD(1:10).eq.'*window(r)')then
@@ -728,7 +718,7 @@ C A window on the (West 4th surface) of the box.
 C A window on the (Roof 5th surface) of the box.
         CALL EGETWR(OUTSTR,K,glzpercent(5),0.,0.,'-','glz surf 2',IER)
         glzin5 = .true.
-        zhasglaze(nsz,5)=glzpercent(5)
+        szhasglaze(nsz,5)=glzpercent(5)
         goto 43
       elseif(WORD(1:5).eq.'*Roof'.or.WORD(1:5).eq.'*roof')then
         CALL EGETP(OUTSTR,K,roofconstr,'W','roof construction',IER)
@@ -829,10 +819,13 @@ C Always create a single folder. Fill in default menu and doc.
       write(modeltitle,'(a)') 'auto generation of warehouse'
 
 C Place the origin of the model at the site origin.
-      zorigin(nsz,1)=0.0
-      zorigin(nsz,2)=0.0
-      zorigin(nsz,3)=0.0
-      znbdoor(nsz)=0
+      origin(1)=0.0
+      origin(2)=0.0
+      origin(3)=0.0
+      szorigin(nsz,1)=origin(1)
+      szorigin(nsz,2)=origin(2)
+      szorigin(nsz,3)=origin(3)
+      nbdoor(nsz)=0
 
 C If a standard pattern of operations can be used assign standard
 C uses parameters. In this case file is written manually so lease
@@ -843,62 +836,51 @@ C      write(szuse(nsz,3),'(a)') 'allcas'
 C      write(usefile(nsz),'(a)') 'warehouse.opr'
 
 C Set the name of the new zone.
-      write(zname(nsz),'(a)') 'the_space'
+      write(name(nsz),'(a)') 'the_space'
 
 C Assign the intial box surface name and construction attributes.
-      write(sname(nsz,1),'(a)') 'front'
+      write(szhasname(nsz,1),'(a)') 'front'
       write(szhasconstr(nsz,1),'(a)') wallconstr
-      write(szhasoptic(nsz,1),'(a)') 'OPAQUE'
-      write(sname(nsz,2),'(a)') 'right'
+      write(szhasname(nsz,2),'(a)') 'right'
       write(szhasconstr(nsz,2),'(a)') wallconstr
-      write(szhasoptic(nsz,2),'(a)') 'OPAQUE'
-      write(sname(nsz,3),'(a)') 'back'
+      write(szhasname(nsz,3),'(a)') 'back'
       write(szhasconstr(nsz,3),'(a)') wallconstr
-      write(szhasoptic(nsz,3),'(a)') 'OPAQUE'
-      write(sname(nsz,4),'(a)') 'left'
+      write(szhasname(nsz,4),'(a)') 'left'
       write(szhasconstr(nsz,4),'(a)') wallconstr
-      write(szhasoptic(nsz,4),'(a)') 'OPAQUE'
-      write(sname(nsz,5),'(a)') 'roof'
+      write(szhasname(nsz,5),'(a)') 'roof'
       write(szhasconstr(nsz,5),'(a)') roofconstr
-      write(szhasoptic(nsz,5),'(a)') 'OPAQUE'
-      write(sname(nsz,6),'(a)') 'floor'
+      write(szhasname(nsz,6),'(a)') 'floor'
       write(szhasconstr(nsz,6),'(a)') floorconstr
-      write(szhasoptic(nsz,6),'(a)') 'OPAQUE'
 
 C Determine how many surfaces in the model.
       write(shape(nsz),'(a)') 'box '
       nbwalls(nsz)=4
       NS=6
       if(glzin1)then
-        znbglz(nsz)=znbglz(nsz)+1
+        nbglz(nsz)=nbglz(nsz)+1
         NS = NS + 1
-        write(sname(nsz,NS),'(a)') 'glz_front'
+        write(szhasname(nsz,NS),'(a)') 'glz_front'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
-        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
       if(glzin2)then
         NS = NS + 1
-        write(sname(nsz,NS),'(a)') 'glz_right'
+        write(szhasname(nsz,NS),'(a)') 'glz_right'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
-        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
       if(glzin3)then
         NS = NS + 1
-        write(sname(nsz,NS),'(a)') 'glz_back'
+        write(szhasname(nsz,NS),'(a)') 'glz_back'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
-        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
       if(glzin4)then
         NS = NS + 1
-        write(sname(nsz,NS),'(a)') 'glz_left'
+        write(szhasname(nsz,NS),'(a)') 'glz_left'
         write(szhasconstr(nsz,NS),'(a)') windowconstr
-        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
       if(glzin5)then
         NS = NS + 1
-        write(sname(nsz,NS),'(a)') 'skylight'
+        write(szhasname(nsz,NS),'(a)') 'skylight'
         write(szhasconstr(nsz,NS),'(a)') skylightconstr
-        write(szhasoptic(nsz,NS),'(a)') 'TRAN'
       endif
 
 C For the surfaces other than ground set to outside. If there was
@@ -907,18 +889,18 @@ C in that file.
       do 70 isurf=1,NS
         if(isurf.eq.6)then
           if(.NOT.haveground)then
-            zboundarytype(nsz,isurf,1)=4
-            zboundarytype(nsz,isurf,2)=1
-            zboundarytype(nsz,isurf,3)=0
+            szboundarytype(nsz,isurf,1)=4
+            szboundarytype(nsz,isurf,2)=1
+            szboundarytype(nsz,isurf,3)=0
           else
-            zboundarytype(nsz,isurf,1)=4
-            zboundarytype(nsz,isurf,2)=0
-            zboundarytype(nsz,isurf,3)=1
+            szboundarytype(nsz,isurf,1)=4
+            szboundarytype(nsz,isurf,2)=0
+            szboundarytype(nsz,isurf,3)=1
           endif
         else
-          zboundarytype(nsz,isurf,1)=0
-          zboundarytype(nsz,isurf,2)=0
-          zboundarytype(nsz,isurf,3)=0
+          szboundarytype(nsz,isurf,1)=0
+          szboundarytype(nsz,isurf,2)=0
+          szboundarytype(nsz,isurf,3)=0
         endif
   70  continue
   
@@ -932,46 +914,61 @@ C folder /tmp/box/cfg if mpath is /tmp/box. If 'within' and
 C single folder then no folder is created.
       if(parentaction(1:13).eq.'create_silent')then
         action='new'
-        simact='------'
-        call silentmodel(action,root,mpath,folder,weather,simact,ier)
+        call silentmodel(action,root,mpath,folder,weather,ier)
       elseif(parentaction(1:12).eq.'create_model')then
         action='within'
-        simact='------'
-        call silentmodel(action,root,mnpath,folder,weather,simact,ier)
+        call silentmodel(action,root,mnpath,folder,weather,ier)
       elseif(parentaction(1:16).eq.'create_run_model')then
         action='new'
-        simact='------'
-        call silentmodel(action,root,mpath,folder,weather,simact,ier)
+        call silentmodel(action,root,mpath,folder,weather,ier)
       endif
 
 C Generate the zone and zone files.
       icomp=1
       isz=1
+      origin(1)=szorigin(isz,1)
+      origin(2)=szorigin(isz,2)
+      origin(3)=szorigin(isz,3)
+      size(1)=szsize(isz,1)
+      size(2)=szsize(isz,2)
+      size(3)=szsize(isz,3)
       use(1)= szuse(isz,1)
       use(2)= szuse(isz,2)
       use(3)= szuse(isz,3)
-      znbmass(isz) = 0   ! current mass not supported
+      nbmass = 0   ! current mass not supported
 
 C Fill surface arrays.
       do 49 isu=1,MS
+        nbedges(isu)=isznbedges(iz,isu)
+        do 57 ivu=1,MV
+          list(isu,ivu)=iszlist(iz,isu,ivu)
+  57    continue
+        hasglaze(isu)=szhasglaze(isz,isu)
+        hasdoor(isu)=szhasdoor(isz,isu)
         hasconstr(isu)=szhasconstr(isz,isu)
-        hasoptic(isu)=szhasoptic(isz,isu)
+        hasname(isu)=szhasname(isz,isu)
+        boundarytype(isu,1)=szboundarytype(isz,isu,1)
+        boundarytype(isu,2)=szboundarytype(isz,isu,2)
+        boundarytype(isu,3)=szboundarytype(isz,isu,3)
   49  continue
 
-      write(outs,'(2a)') 'Processing ',zname(isz)
+      write(outs,'(2a)') 'Processing ',name(isz)
       call edisp(iuout,outs)
-      call silentzone(ICOMP,metaver,hasconstr,hasoptic,use,
-     &  usefile(isz),IER)
+      call silentzone(ICOMP,name(isz),shape(isz),nbwalls(isz),
+     &    nbmass,nbedges,nbcord(isz),list,origin,size,
+     &    coords,rotateit(isz),nbglz(isz),hasglaze,
+     &    nbdoor(isz),hasdoor,hasname,hasconstr,
+     &    boundarytype,datamass,textmass,use,usefile(isz),IER)
 
 C Overwrite the initial zone operation file with the correct
 C density information.
-      call setschedule(isz,zname(isz),densityof)
+      call setschedule(isz,name(isz),densityof)
 
 C Create a standard control file if runtype is 1.
       if(runtype.eq.1)then
         call  setcontrol(setpoints)
       endif
-      write(outs,'(3a)') 'Processing ',zname(isz),' done.'
+      write(outs,'(3a)') 'Processing ',name(isz),' done.'
       call edisp(iuout,outs)
 
 C Set values of simulation parameter set for an annual simulation.

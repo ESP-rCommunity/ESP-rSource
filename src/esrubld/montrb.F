@@ -200,7 +200,7 @@ C since not all compilers use the same default.
       character etext*82, clabel*20,nterm*1,tab*1
       logical colok
 
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline

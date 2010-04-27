@@ -54,6 +54,9 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
+      common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
+     &             dbspth
+      common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
       dimension IVALB(MB)
       CHARACTER*33 VERT(35)
@@ -62,9 +65,12 @@ C LPRFDB,IPRODB (for event profile database)
       character SSPARENT*12
       CHARACTER KEY*1,H*72,HOLD*24
       character blkroot*8,mat*12,tbn*12
-      character holds*36
+      character holds*36,SFIL*72,DSFIL*72,ZN*12
+      character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
+      character docpth*24,tmppth*24,dbspth*24
       character outs*124
-      LOGICAL MODIFY,MODLEN,MODBND,modcfg,unixok
+      LOGICAL MODIFY,MODLEN,MODBND,modcfg
+      LOGICAL comold,tmcold,vwfold,ishold,unixok,cfcold
       logical newgeo  ! to use for testing if new/old geometry file.
       logical silent  ! to signal quiet dependency resolution
       integer llbm,llbn  ! for length of block material and name
@@ -107,6 +113,7 @@ C Check for obstructions. If file exists ask user to confirm
 C it or dereference it. If it does not exist ask user for
 C a name and or whether it should be ignored.
         IUF=IPRODB
+        write(zn,'(A)') zname(ICOMP)
         IF(IOBS(ICOMP).EQ.1)THEN
           silent=.false.
           CALL ECROBS(ITRC,ITRU,IUF,ICOMP,silent,IER)
@@ -144,7 +151,7 @@ C the model will not have been changed so just return.
 
 
 C Initial rotation values.
-      ANG=0.
+   90 ANG=0.
       x1=0.
       y1=0.
 
@@ -179,10 +186,7 @@ C as a list for copy and delete use.
         ENDIF
    10 CONTINUE
 
-C Present a list of the existing blocks and options. If we reached
-C this point with zero gridding then assign a default value.
-      if(NOX(icomp).eq.0) NOX(icomp)=20
-      if(NOZ(icomp).eq.0) NOZ(icomp)=20
+C Present a list of the existing blocks and options.
       WRITE(VERT(1),'(A,2I3)')  'a Surface X&Z grid:',NOX(icomp),
      &  NOZ(icomp)
       WRITE(VERT(2),'(A,I3)')   '  No. obstr blocks:',nbobs(icomp)
@@ -202,7 +206,7 @@ C If a long list include page facility text.
       VERT(M+2)  ='* add/delete/copy obstruction '
       VERT(M+3)  ='~ rotate/transfrm obstructions'
       VERT(M+4)  ='@ create window reveal        '
-      VERT(M+5)  ='> shading & insol directives  '
+      VERT(M+5)  ='> shading & insolation        '
       VERT(M+6)  ='! list obstruction details    '
       VERT(M+7)  ='? help                        '
       VERT(M+8)  ='- exit this menu              '
@@ -242,10 +246,9 @@ C Help text for this menu.
       H(7)='can be set to a multi-layer construction for use in'
       H(8)='visualisation studies. '
       H(9)=' '
-      H(10)='After defining obstructions select the shading and'
-      H(11)='insolation directives menu option from where you'
-      H(12)='can also ask for a shading & insolation calculations'
-      H(13)='to be run.'
+      H(10)='After defining obstructions you should re-check the'
+      H(11)='shading and insolation directives for this zone (found'
+      H(12)='in the `solar dist. & calc directives` menu item.'
 
 C Now display the menu.
       CALL EMENU('Obstructions',VERT,MVERT,IVERT)
@@ -257,7 +260,7 @@ C Now display the menu.
 
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
-        CALL PHELPD('obstr menu',13,'-',0,0,IER)
+        CALL PHELPD('obstr menu',12,'-',0,0,IER)
 
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
@@ -301,10 +304,48 @@ C List details of obstructions.
 
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
-C Take user to menu of setup directives and option to start shading analysis.
-         CALL EPMENSV
-         call EDINSUL(ICOMP,IER)
-         CALL EPMENRC
+C Allow user to start shading analysis or at least mark preferences.
+         H(1)='Having defined obstructions, you must run a separate'
+         H(2)='analysis to predice temporal distirbution patterns.'
+         CALL EASKABC('Shading & insolation analysis options: ',' ',
+     &    'do now','do later','cancel',IW,2)
+         if(IW.eq.1.or.IW.eq.2)then
+           if(ISI(ICOMP).eq.0)then
+             if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
+               WRITE(SFIL,'(2a)')ZN(1:lnblnk(ZN)),'.shd'
+             else
+               WRITE(SFIL,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
+     &           ZN(1:lnblnk(ZN)),'.shd'
+             endif
+             DSFIL = 'new.shd'
+             H(1)='The shading/ insulation database holds time '
+             H(2)='varying external surface shading and internal'
+             H(3)='surface insolation.'
+             CALL EASKS(SFIL,' New zone shading/ insulation database?',
+     &        ' ',72,DSFIL,'shd/ins db',IER,3)
+             if(SFIL(1:2).ne.'  ')then
+               LSHAD(ICOMP)=SFIL
+               ISI(ICOMP)=1
+               call tstamp('>','PRJ: adding shading to configuration')
+               CALL EMKCFG('-',IER)
+             endif
+           endif
+         endif
+         if(IW.eq.1)then
+
+C Get logical name of terminal type, expand problem name
+C to include the path and create a string to drive ish.
+           call tstamp('>','PRJ: start shading')
+
+C If existing db out of date the perform recalculation otherwise
+C start interactive session.
+           if(ishold)then
+             call comissionish(icomp,'sra',ier)
+           else
+             call comissionish(icomp,'in ',ier)
+           endif
+           ishold=.false.
+         endif
 
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 

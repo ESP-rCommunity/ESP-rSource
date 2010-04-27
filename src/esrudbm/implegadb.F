@@ -86,7 +86,6 @@ C providing paramaters MGDB,MGCL,MGIT
 C Logical noting whether it was possible to open legacy material
 C database to get IR and solar properties.
       logical scanmat
-      integer ier
 
 C Initialise variables.
       call clrgdbc(idbh)
@@ -121,7 +120,6 @@ C Initialise variables.
 C The binary file will be overwritten.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
-      ier=0
       call EFOPRAN(IFB,BFIL,idbw,4,IER)
       if(ier.ne.0)then
         call edisp(iuout,'error opening binary file')
@@ -153,7 +151,6 @@ C values for the inside and outside solar and IR.
       IF(LTMP.EQ.' ')GOTO 29
       IFMAT=IFIL
       call ERPFREE(IFMAT,IOS)
-      ier=0
       call EFOPRAN(IFMAT,LTMP,40,1,IER)
       if(ier.ne.0)then
         othir=0.90
@@ -427,7 +424,6 @@ C IFB as the binary channel.
       character dstmp*24,T12*12,D12*12,lcatype*1
       character acoutag*12,colormtag*12,lcatag*12
       real misc1,misc2
-      integer ier
 
 C Initialise variables.
       call clrgdbc(idbh)
@@ -464,7 +460,6 @@ C Clear database level help and classes.
 C The binary file will be overwritten.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
-      ier=0
       call EFOPRAN(IFB,BFIL,idbw,4,IER)
       if(ier.ne.0)then
         call edisp(iuout,'error opening binary file')
@@ -768,7 +763,6 @@ C IFB as the binary channel.
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
       character dstmp*24,setn*40
-      integer ier
 
 C Initialise variables.
       call clrgdbc(idbh)
@@ -797,7 +791,6 @@ C Initialise variables.
 C The binary file will be overwritten.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
-      ier=0
       call EFOPRAN(IFB,BFIL,idbw,4,IER)
       if(ier.ne.0)then
         call edisp(iuout,'error opening binary file')
@@ -950,13 +943,6 @@ C not actually used.
  
       subroutine improfl(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
-#include "profile.h"
-
-C << introduce concept of profiles with multiple day types as well
-C << as multiple casual gain types
-
-C << also consider that periods can be defined as reals and only
-C << the start of period held
       
       integer lnblnk  ! function definition
 
@@ -979,7 +965,11 @@ C << the start of period held
       common/gendb8c/nbitusc(MGIT),nbitdat(MGIT),
      &               nbitrep(MGIT),ibitusc(MGIT)
 
-C Event profiles common blocks via profile.h.
+C Event profiles common blocks.
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
+     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
+      CHARACTER PDBDESC*40
 
       dimension DayT(72),ST(72),FN(72),A(72),B(72),C(72)
       dimension Patr(72)
@@ -993,7 +983,6 @@ C Event profiles common blocks via profile.h.
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
       character dstmp*24,DayT*8,Patr*8
-      integer ier
 
 C Initialise variables.
       call clrgdbc(idbh)
@@ -1021,7 +1010,6 @@ C Initialise variables.
 C The binary file will be overwritten.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
-      ier=0
       call EFOPRAN(IFB,BFIL,idbw,4,IER)
       if(ier.ne.0)then
         call edisp(iuout,'error opening binary file')
@@ -1187,11 +1175,9 @@ C current contents of binary file.
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72,LASCI*72
-      integer ier
 
 C Open the binary materials database (in clase it was closed elsewhere).
       CALL ERPFREE(IFMAT,ISTAT)
-      ier=0
       call EFOPRAN(IFMAT,LFMAT,40,1,IER)
       if(ier.ne.0)return
       MATDBOK=.TRUE.
@@ -1249,15 +1235,16 @@ C NOTE LASCI is 72 char. This is called only by esrudbm.
       SUBROUTINE TROPRO(IFA,LASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
-#include "profile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER LASCI*72
+      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
+      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
+     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
+      CHARACTER PDBDESC*40,LASCI*72
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
-      integer ier
 
       IER =0
 

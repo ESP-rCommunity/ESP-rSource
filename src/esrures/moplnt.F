@@ -1476,7 +1476,7 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       integer YAXSET, ADDLIN
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSI
+#ifdef OSX
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
 #else

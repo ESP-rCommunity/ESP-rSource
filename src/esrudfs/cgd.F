@@ -334,7 +334,7 @@ C xax       - text for horiz axis.
       dimension NCEL(MNREG,MNZ),plaw(MNREG,MNZ)
       dimension NRG(4,MNZ),REG(MNREG,MNZ)
       dimension xgrd(MCEL1D)
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
@@ -434,7 +434,7 @@ C xax,yax   - text for horiz and vert axis.
       character title*30,xax*10,yax*1
 
       dimension xgrd(MCEL1D),ygrd(MCEL1D)
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
@@ -528,7 +528,7 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
 
       logical greyok
       character gact*3,zact*3
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iixs,iiys,iix,iiy,iixlast,iiylast
 #else
@@ -779,7 +779,7 @@ C VSB3D - draws the solid boundaries - highlighting the chosen one.
      &              ITCtype(MNSBZ,MNZ),icTREF(MNSBZ,MNZ)
 
       character LLOCAT*1,outs*124,temp*4
-#ifdef OSI
+#ifdef OSX
       integer iixs,iiys,iix,iiy
 #else
       integer*8 iixs,iiys,iix,iiy
@@ -1038,7 +1038,7 @@ C VAO3D - draws the air openings - highlighting the chosen one.
      &             IWOPEN(MCFND,MNZ),ICFDCN(MCFND,MNZ),ICNACT(MCFND,MNZ)
 
       character LLOCAT*1,outs*124,temp*4
-#ifdef OSI
+#ifdef OSX
       integer iixs,iiys,iix,iiy
 #else
       integer*8 iixs,iiys,iix,iiy

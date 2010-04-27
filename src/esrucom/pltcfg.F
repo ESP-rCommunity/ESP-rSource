@@ -187,7 +187,6 @@ C containing NMISC.
       INTEGER   id_trnsysCMP  !trnsys component number
       integer lnpcdb ! length of file name
       integer lndbp   ! for length of standard database path
-      integer ier
       logical unixok
 
 C Set folder separator (fs) to \ or / as required.
@@ -237,7 +236,6 @@ C Open plant components database on IUNIT1. IRECLN is width of plantdb
 C -> but don't open the database if save-level 0 or 5 are specified!
       lnpcdb=lnblnk(lltmp)
       IRECLN=20
-      ier=0
       call EFOPRAN(IUNIT1,LLTMP,IRECLN,1,IER)   
       IF(IER.ne.0) GOTO 950
 

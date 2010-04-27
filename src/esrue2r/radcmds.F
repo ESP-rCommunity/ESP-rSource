@@ -146,7 +146,7 @@ C Now call Radiance with command stored in variable 'outs'.
       endif
 
 C Create inside and outside files, first open databases.
-      call module_opendb(ier)
+      call opendb(ier)
       ftr=0.92
       fict=.false.
       call mkriofil(ftr,fict,'s',IER)
@@ -1032,7 +1032,7 @@ C Assumes that the path to the image is given.
       integer lnrp  ! length of run path
       
       dimension UGRV(72),UGRANG(72)
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iix1,iiy1,iix2,iiy2
 #else

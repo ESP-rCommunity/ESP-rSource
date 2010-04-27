@@ -380,7 +380,7 @@ C should calculate pressure coefficients.
       DIMENSION VP(3),EP(3),EQN(4),TMAT(4,4),RMAT(4,4)
       real DX1,DZ1  ! to avoid name clash in geometry.h
       
-#ifdef OSI
+#ifdef OSX
       integer iix,iiy
 #else
       integer*8 iix,iiy
@@ -841,7 +841,7 @@ C default file names for databases
       dimension xl(MPCP),zl(MPCP),ior(MPCP),isut(5),inum(5)
       logical ok,dok
       integer iglib  ! are we running X11 or GTK
-#ifdef OSI
+#ifdef OSX
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild

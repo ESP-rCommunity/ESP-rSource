@@ -146,7 +146,6 @@ C espriou.h provides currentfile and defdbfl.
 #include "sbem.h"
 #include "roam.h"
 #include "ipvdata.h"
-#include "schedule.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -321,6 +320,9 @@ C Uncertainty analysis common.
 C IPV description come from ipvdata.h.
       common/IPVF/lipvdatf
 
+C Dispersed demands (lifts/fans/DHW).
+      COMMON/BL1/dmdsdesc,bdmds
+
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
@@ -461,6 +463,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
+      CHARACTER dmdsdesc*248,bdmds*72
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
@@ -485,7 +488,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
-      integer ier
       logical unixok  ! to check for database path file separators
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
@@ -522,9 +524,9 @@ C Clear the model common blocks.
       call clrprb
 
       LUALF='UNKNOWN'
-      write(MCMPDBFL,'(a)') 'UNKNOWN'
-      write(bidirfile,'(a)') 'UNKNOWN'
-      write(CALENAME,'(a)') 'UNKNOWN'
+      MCMPDBFL='UNKNOWN'
+      bidirfile='UNKNOWN'
+      CALENAME='UNKNOWN'
       if(iutdf.eq.0)IUTDF=IFIL+7  ! set if not already done so.
 
 C Set flag indicating that solar radiation data is hour-centered (default)
@@ -839,8 +841,6 @@ C so LSTRIPC and LOUTSTR are used.
       elseif(WORD(1:4).eq.'*pro'.or.WORD(1:4).eq.'*evn')then
         CALL EGETRM(OUTSTR,K,gendbfn(11),'W','profiles db',IER)
       elseif(WORD(1:7).eq.'*mscldb')then
-
-C << add in ipathmsc >>
         CALL EGETRM(LOUTSTR,K,MCMPDBFL,'W','misc comp db',IER)
       elseif(WORD(1:4).eq.'*pdb')then
         CALL EGETRM(OUTSTR,K,gendbfn(12),'W','plant comp db',IER)
@@ -1242,7 +1242,6 @@ C Scan the first record of this file.
               CALL ERPFREE(IUTDF,ISTAT)
               NWPR=MTABC
               ITWPR=NWPR+1
-              ier=0
               call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
               IREC=1
               READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103)HDR,NWPR
@@ -1264,7 +1263,6 @@ C Scan the first record of this file.
             CALL ERPFREE(IUTDF,ISTAT)
             NWPR=MTABC
             ITWPR=NWPR+1
-            ier=0
             call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
             IREC=1
             READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=102)HDR,NWPR

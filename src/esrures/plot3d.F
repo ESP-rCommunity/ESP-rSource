@@ -631,7 +631,7 @@ C series data ie. timesteps-vs-day-vs-data.
       logical close,zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSI
+#ifdef OSX
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,iposi     ! passed to viewtext
 #else
@@ -1030,7 +1030,7 @@ C Draw the frame (context of the surface plot).
 
       DIMENSION  VERTEX(16),MASK(2000),ARRAY(100),IVER(12)
       dimension  zdat(100)
-#ifdef OSI
+#ifdef OSX
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -1186,7 +1186,7 @@ C ******************** PLOT3E ********************
       REAL XLT(2),YLT(2),COEFF(5)
       logical close
       DIMENSION  XDATA(100),YDATA(100),ZDATA(100),MASK(2000),VERTEX(16)
-#ifdef OSI
+#ifdef OSX
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -1595,7 +1595,7 @@ C FLARROW Draw flat arrows. ie a 2D representation of a 3D figure.
       PARAMETER ( MOVE=0,DRAW=1,NOMARK=0 )
 
       REAL XYZARW(6,3),XYZ(10,3),COEFF(5)
-#ifdef OSI
+#ifdef OSX
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
