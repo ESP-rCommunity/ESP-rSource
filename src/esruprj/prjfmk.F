@@ -4318,57 +4318,58 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
       h(5)=' Watts per object - gain/object and number of objects are'
       h(6)='  required (an object could be a person or computer).'
       h(7)=' Square meters per object - will use the floor area of the'
-      h(8)='  zone to calculate the total gain.'
-      h(9)=' '
-      h(10)='ESP-r asks for fixed sensible and latent values. The'
-      h(11)='values for occupants are really a function of the current'
-      h(12)='zone temperature (CIBSE Concise Handbook Table 6.1)'
-      h(13)='If possible pick a value for the likely temperature rnage.'
-      h(14)='For an adult and average mix '
-      h(15)='                   Tot 15C sen lat 20C sen lat 24C sen lat'
-      h(16)='Seated inactive    115     100  15     90  25      75  40'
-      h(17)='       avg mix     100      87  13     78  22      65  35'
-      h(18)='Seated light work  140     110  30    100  40      80  60'
-      h(19)='       avg mix     126      99  27     90  36      72  54'
-      h(20)='Seated office work 140     110  30    100  40      80  60'
-      h(21)='       avg mix     130     102  28     93  37      74  56'
-      h(22)='Standing light work 160    120  40    110  50      85  75'
-      h(23)='       avg mix      141    106  35     97  44      75  66'
-      h(24)='Light factory work 235     150  85    130 105     100 135'
-      h(25)='       avg mix     209     133  76    116  93      89 121'
-      h(26)='Medium factory work 265    160 105    140 125     105 160'
-      h(27)='       avg mix      249    150  99    132 117      99 150'
-      h(28)='Heavy factory work 440     220 220    190 250     135 305'
-      h(29)='       avg mix     440     220 220    190 250     135 305'
-      h(30)=' '
+      h(8)='  zone to calculate the total gain. For the particular'
+      h(9)='  case of an occupant there is an assumption that each'
+      h(10)=' person is 95W sensible and 45W latent.'
+      h(11)=' '
+      h(12)='ESP-r asks for fixed sensible and latent values. The'
+      h(13)='values for occupants are really a function of the current'
+      h(14)='zone temperature (CIBSE Concise Handbook Table 6.1)'
+      h(15)='If possible pick a value for the likely temperature rnage.'
+      h(16)='For an adult and average mix '
+      h(17)='                   Tot 15C sen lat 20C sen lat 24C sen lat'
+      h(18)='Seated inactive    115     100  15     90  25      75  40'
+      h(19)='       avg mix     100      87  13     78  22      65  35'
+      h(20)='Seated light work  140     110  30    100  40      80  60'
+      h(21)='       avg mix     126      99  27     90  36      72  54'
+      h(22)='Seated office work 140     110  30    100  40      80  60'
+      h(23)='       avg mix     130     102  28     93  37      74  56'
+      h(24)='Standing light work 160    120  40    110  50      85  75'
+      h(25)='       avg mix      141    106  35     97  44      75  66'
+      h(26)='Light factory work 235     150  85    130 105     100 135'
+      h(27)='       avg mix     209     133  76    116  93      89 121'
+      h(28)='Medium factory work 265    160 105    140 125     105 160'
+      h(29)='       avg mix      249    150  99    132 117      99 150'
+      h(30)='Heavy factory work 440     220 220    190 250     135 305'
+      h(31)='       avg mix     440     220 220    190 250     135 305'
+      h(32)=' '
       IGU=1
       CALL EASKABCD('Gain to be specified as: (see help)',' ','Watts',
      &     'Watts per square meter','Watts per object',
-     &     'Square meters per object',IGU,30)
+     &     'Square meters per object',IGU,32)
 
-C Common portion of help message.
-      h(3)=' '
-      h(4)='ESP-r asks for fixed sensible and latent values. The'
-      h(5)='values for occupants are really a function of the current'
-      h(6)='zone temperature (CIBSE Concise Handbook Table 6.1)'
-      h(7)='If possible pick a value for the likely temperature rnage.'
-      h(8)='For an adult and average mix '
-      h(9)='               Total W 15C sen lat 20C sen lat 24C sen lat'
-      h(10)='Seated inactive   115     100  15     90  25      75  40'
-      h(11)='       avg mix    100      87  13     78  22      65  35'
-      h(12)='Seated light work 140     110  30    100  40      80  60'
-      h(13)='       avg mix    126      99  27     90  36      72  54'
-      h(14)='Seated office work 140    110  30    100  40      80  60'
-      h(15)='       avg mix     130    102  28     93  37      74  56'
-      h(16)='Standing light work 160   120  40    110  50      85  75'
-      h(17)='       avg mix      141   106  35     97  44      75  66'
-      h(18)='Light factory work 235    150  85    130 105     100 135'
-      h(19)='       avg mix     209    133  76    116  93      89 121'
-      h(20)='Medium factory work 265   160 105    140 125     105 160'
-      h(21)='       avg mix      249   150  99    132 117      99 150'
-      h(22)='Heavy factory work 440    220 220    190 250     135 305'
-      h(23)='       avg mix     440    220 220    190 250     135 305'
-      h(24)=' '
+C Common portion of help message for detailed dialogs.
+      h(4)=' '
+      h(5)='ESP-r asks for fixed sensible and latent values. The'
+      h(6)='values for occupants are really a function of the current'
+      h(7)='zone temperature (CIBSE Concise Handbook Table 6.1)'
+      h(8)='If possible pick a value for the likely temperature rnage.'
+      h(9)='For an adult and average mix '
+      h(10)='              Total W 15C sen lat 20C sen lat 24C sen lat'
+      h(11)='Seated inactive   115     100  15     90  25      75  40'
+      h(12)='       avg mix    100      87  13     78  22      65  35'
+      h(13)='Seated light work 140     110  30    100  40      80  60'
+      h(14)='       avg mix    126      99  27     90  36      72  54'
+      h(15)='Seated office work 140    110  30    100  40      80  60'
+      h(16)='       avg mix     130    102  28     93  37      74  56'
+      h(17)='Standing light work 160   120  40    110  50      85  75'
+      h(18)='       avg mix      141   106  35     97  44      75  66'
+      h(19)='Light factory work 235    150  85    130 105     100 135'
+      h(20)='       avg mix     209    133  76    116  93      89 121'
+      h(21)='Medium factory work 265   160 105    140 125     105 160'
+      h(22)='       avg mix      249   150  99    132 117      99 150'
+      h(23)='Heavy factory work 440    220 220    190 250     135 305'
+      h(24)='       avg mix     440    220 220    190 250     135 305'
       if (IGU.eq.1) then
 
 C Gain as W - require gain only.
@@ -4379,6 +4380,7 @@ C Gain as W - require gain only.
         endif
         h(1)='Supply the sensible and latent gain in Watts.'
         h(2)=' '
+        h(3)=' '
         call EASKS(HOLD,'Sensible and latent gain (W):',
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
         if(ier.eq.-3) goto 10  ! user canceled
@@ -4399,6 +4401,7 @@ C Gain as W/m^2 - require gain per square meter.
         endif
  30     h(1)='Supply the sensible and latent gain in Watts/m^2.'
         h(2)=' '
+        h(3)=' '
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
         if(ier.eq.-3) goto 10  ! user canceled
@@ -4414,6 +4417,9 @@ C Gain as W/m^2 - require gain per square meter.
           CMGSX=XSEN
           CMGLX=XLATGN
         endif
+        write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts are now ',CMGSX,
+     &    ' & latent Watts ',CMGLX
+        call edisp(iuout,outs)
       elseif (IGU.eq.3) then
 
 C Gain as W/object - require no of objects and gain per object. If
@@ -4421,7 +4427,8 @@ C user cancels go back to initial question.
 C << an actual cancel option not yet implemented >>
         NOBJ=1
  40     h(1)='The number of objects for the current gain type is '
-        h(2)='required. For example the number of people or computers.'
+        h(2)='required. For example the number of computers.'
+        h(3)=' '
         CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
      &    0,'W',100,'W',1,'no. objects',IERI,24)
         if(ieri.eq.0)then
@@ -4435,6 +4442,7 @@ C << an actual cancel option not yet implemented >>
         write (HOLD,'(2f8.1,a)') CMGSX/real(NOBJ),CMGLX/real(NOBJ),'  '
         h(1)='Supply the sensible and latent gain in Watts.'
         h(2)=' '
+        h(3)=' '
         call EASKS(HOLD,'Object sensible and latent gain (W):',
      &          ' ',24,'  0.   0. ','casual gn info',IER,24)
         K=0
@@ -4445,6 +4453,9 @@ C << an actual cancel option not yet implemented >>
         if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
         CMGSX=XSEN*real(NOBJ)
         CMGLX=XLATGN*real(NOBJ)
+        write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts are now ',CMGSX,
+     &    ' & latent Watts ',CMGLX
+        call edisp(iuout,outs)
       elseif (IGU.eq.4) then
 
 C Gain as m^2/object - floor area of an object and gain per object.
@@ -4457,20 +4468,30 @@ C If user cancels go back to initial question.
         endif
         XFLA=FLA
         h(1)='The floor area per object for the current gain type is '
-        h(2)='required. For example the area per person.'
+        h(2)='required. For example the area per person assuming that'
+        h(3)='for people the sensible is 95W and latent is 45W. '
         call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
      &    0.1,'F',100.0,'W',1.0,'area per object',IERI,24)
         if(IERI.eq.0)then
           FLA=XFLA
           if (iabs(ICGTX).eq.1) then
+
+C If dealing with occupants treat this as a special case which assumes
+C that each person is 95W sensible and 45W latent.
             ICGTX=-1
-            CMGSX=FLA
+            CMGSX=FLA  ! Set sensible to the m^2 per person entered
             CMGLX=0.   ! Why is CMGLX set to zero?
+            VS=(ZBASEA(ICOMP)/CMGSX)*95.  ! find sensible watts
+            VL=(ZBASEA(ICOMP)/CMGSX)*45.  ! find latent watts
+            write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts now ',VS,
+     &        ' & latent Watts ',VL
+            call edisp(iuout,outs)
           else
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
             h(1)='Supply the sensible and latent gain in Watts/object.'
             h(2)=' '
+            h(3)=' '
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
             K=0
@@ -4480,6 +4501,9 @@ C If user cancels go back to initial question.
             if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
             CMGSX=XSEN*zb/FLA
             CMGLX=XLATGN*zb/FLA
+            write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts now ',CMGSX,
+     &        ' & latent Watts ',CMGLX
+            call edisp(iuout,outs)
           endif
         elseif(ieri.eq.-3)then
           goto 10
@@ -5248,9 +5272,11 @@ C Scan each days gains and calculate maximum gain.
           if (I.gt.ICGS(IDAY,J).and.I.le.ICGF(IDAY,J)) then
             if (ICGT(IDAY,J).eq.-1) then
 
-C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*95.
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*45.
+C For case of m2/person CMGL1()J remains zero so use cmgs1(J) which
+C is the m^2 per person instead. Base graphed value on fractional 
+C persons per m^2.
+              CGNS=CGNS+(ZBASEA(ICOMP)/CMGS(IDAY,J))*95.
+              CGNL=CGNL+(ZBASEA(ICOMP)/CMGS(IDAY,J))*45.
             elseif (ICGT(IDAY,J).lt.-1) then
               CGNS=CGNS+CMGS(IDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(IDAY,J)*ZBASEA(ICOMP)

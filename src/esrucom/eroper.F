@@ -2118,10 +2118,12 @@ C CONCA total conv casual W for the zone at each hour (all day types)
 C RADFAC implied radiant fraction RADCA/CMGSA
 C CONFAC implied convective fraction CONCA/CMGSA
 C ICGTYP the casual gain type (remembering negative index).
-C NPERSN keeps track of the original number of people/m2.
+C PERSN keeps track of the original number of people/m2.
+      real CMGSA,CMGLA,RADCA,CONCA,RADFAC,CONFAC,PERSN
+      integer ICGTYP,LNCAS
       dimension CMGSA(MC,7),CMGLA(MC,7),RADCA(MC,7)
       dimension CONCA(MC,7),RADFAC(MC,7),CONFAC(MC,7)
-      dimension ICGTYP(MC,7),NPERSN(MC,7),LNCAS(MDTY)
+      dimension ICGTYP(MC,7),PERSN(MC,7),LNCAS(MDTY)
 
 C Logical for testing whether there is any difference in casual gains.
       logical bCMGSA,bCMGLA,bRADCA,bCONCA,bRADFAC,bCONFAC
@@ -2186,7 +2188,7 @@ C the call to checkcascount.
               endif
             endif
  609      CONTINUE
-          NPERSN(IP,IG)=0
+          PERSN(IP,IG)=0.0
           pfA(IP,IG)=0.0
           ipfA(IP,IG)=0
           pwrA(IP,IG)=0.0
@@ -2245,15 +2247,15 @@ C calculate apparent power and reactive power.
               elseif (ICGT(IDTY,I).eq.-1) then
                 call eclose(CMGS(IDTY,I),0.00,0.001,close)
                 if (close) then
-                  NPERSN(IP,ITYP)=1
+                  PERSN(IP,ITYP)=1.0
                 else
-                  NPERSN(IP,ITYP)=INT(FLOOR/CMGS(idty,I))
+                  PERSN(IP,ITYP)=FLOOR/CMGS(idty,I)
                 endif
-                CMGSA(IP,ITYP)=CMGSA(IP,ITYP) + NPERSN(IP,ITYP)*95.0
-                CMGLA(IP,ITYP)=CMGLA(IP,ITYP) + NPERSN(IP,ITYP)*45.0
-                RADCA(IP,ITYP)=RADCA(IP,ITYP) + NPERSN(IP,ITYP)*95.0*
+                CMGSA(IP,ITYP)=CMGSA(IP,ITYP) + PERSN(IP,ITYP)*95.0
+                CMGLA(IP,ITYP)=CMGLA(IP,ITYP) + PERSN(IP,ITYP)*45.0
+                RADCA(IP,ITYP)=RADCA(IP,ITYP) + PERSN(IP,ITYP)*95.0*
      &            RADC(IDTY,I)
-                CONCA(IP,ITYP)=CONCA(IP,ITYP) + NPERSN(IP,ITYP)*95.0*
+                CONCA(IP,ITYP)=CONCA(IP,ITYP) + PERSN(IP,ITYP)*95.0*
      &            CONC(IDTY,I)
                 if(CMGSA(IP,ITYP).gt.0.0)then
                   RADFAC(IP,ITYP)= RADCA(IP,ITYP)/CMGSA(IP,ITYP)
@@ -2356,12 +2358,12 @@ C a final period for the current casual gain type.
 
 C Adjust for area based, for m2 per person just divide floor area by
 C the number of persons to get back to the original CMGSA. For the
-C case of mixed absolute and per unit area npersn might be zero so
+C case of mixed absolute and per unit area persn might be zero so
 C trap for this case and set CMGSA to zero.
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
-                if(NPERSN(IP,ITYP).gt.0)then
-                  CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
+                if(PERSN(IP,ITYP).gt.0.0)then
+                  CMGSA(IP,ITYP) = FLOOR/PERSN(IP,ITYP)
                   CMGLA(IP,ITYP) = 0.0
                 else
                   CMGSA(IP,ITYP) = 0.0
