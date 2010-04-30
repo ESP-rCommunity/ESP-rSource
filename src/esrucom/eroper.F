@@ -1697,55 +1697,60 @@ C Descriptive label for a zone load or casual gain types.
         call edisp(itru,outs)
         if(NCAS(IDTY).eq.0)return
         if(IELF(ICOMP).EQ.1)then
-          write(outs,'(a,a)')'Day Gain Type   Period Sensible  ',
+          write(outs,'(a,a)')'Day Gain Type    Period Sensible  ',
      &    'Latent  Radiant  Convec p.f +/-  Power Voltage Phase'
           call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  labl   Hours  Magn.(W)  ',
+          write(outs,'(a,a)')'    No.  label   Hours  Magn.(W)  ',
      &    'Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)'
           call edisp(itru,outs)
         else  
-          write(outs,'(a,a)')'Day Gain Type     Period Sensible  ',
+          write(outs,'(a,a)')'Day Gain Type      Period Sensible  ',
      &    'Latent     Radiant    Convec'
           call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  labl     Hours  Magn.(W)  ',
+          write(outs,'(a,a)')'    No.  label     Hours  Magn.(W)  ',
      &    'Magn. (W)  Frac       Frac'
           call edisp(itru,outs)
         endif
-      IF(NCAS(IDTY).GT.0)THEN
-        IF(IELF(ICOMP).EQ.1) THEN
-          DO 1269 I=1,NCAS(IDTY)
-            if(ICGT(IDTY,I).gt.0)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
-            elseif(ICGT(IDTY,I).eq.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'m2p'
-            elseif(ICGT(IDTY,I).lt.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'Wm2'
-            endif
-            WRITE(outs,5361)'Wkd',I,llbl,ICGS(IDTY,I),' -',
-     &      ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &      CONC(IDTY,I),PF(IDTY,I),
-     &      IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
-5361        FORMAT(a,I3,1x,A9,I3,a,I3,F8.1,F8.1,F9.1,F9.1,
-     &      1x,F7.2,I3,F7.1,F7.1,I3)
-            call edisp(itru,outs)
-1269      CONTINUE
-        ELSE
-          DO 1270 I=1,NCAS(IDTY)
-            if(ICGT(IDTY,I).gt.0)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
-            elseif(ICGT(IDTY,I).eq.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'m2p'
-            elseif(ICGT(IDTY,I).lt.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'Wm2'
-            endif
-            WRITE(outs,5362)'Wkd',I,llbl,ICGS(IDTY,I),' -',
-     &      ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &      CONC(IDTY,I)
-5362        FORMAT(a,I3,1x,A9,I3,a,I3,F9.1,F9.1,F11.2,F11.2)
-            call edisp(itru,outs)
-1270      CONTINUE
+
+        IF(NCAS(IDTY).GT.0)THEN
+          IF(IELF(ICOMP).EQ.1) THEN
+            DO 1269 I=1,NCAS(IDTY)
+              if(ICGT(IDTY,I).gt.0)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
+              elseif(ICGT(IDTY,I).eq.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'm2p'
+              elseif(ICGT(IDTY,I).lt.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'Wm2'
+              endif
+              WRITE(outs,5361) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+     &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
+     &        CONC(IDTY,I),PF(IDTY,I),
+     &        IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+5361          FORMAT(a,I3,1x,A9,I3,a,I2,F8.1,F8.1,F9.1,F9.1,
+     &          1x,F7.2,I3,F7.1,F7.1,I3)
+              call edisp(itru,outs)
+1269        CONTINUE
+          ELSE
+            DO 1270 I=1,NCAS(IDTY)
+              if(ICGT(IDTY,I).gt.0)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
+              elseif(ICGT(IDTY,I).eq.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'm2p'
+              elseif(ICGT(IDTY,I).lt.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'Wm2'
+              endif
+              WRITE(outs,5362) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+     &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
+     &        CONC(IDTY,I)
+5362          FORMAT(a,I3,1x,A9,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
+              call edisp(itru,outs)
+1270        CONTINUE
+          ENDIF
         ENDIF
-      ENDIF
  600  CONTINUE
       RETURN
       END
