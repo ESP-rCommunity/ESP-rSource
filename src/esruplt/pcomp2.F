@@ -233,7 +233,7 @@ C.....Get component name
 C.....Format string as: 'plant/NAME/misc_data'
 
        WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
+     &     'plt/',
      &     hold_name(1:lnblnk(hold_name)),
      &     '/misc_data'
 
@@ -1092,7 +1092,7 @@ C Pass power consumption to Site Utilities facility
 C Report power consumption
          call add_to_xml_reporting(
      &          ABS(E),
-     &          'plant/' // pcname(ipcomp)(1:iPltNameLen(ipcomp))
+     &          'plt/' // pcname(ipcomp)(1:iPltNameLen(ipcomp))
      &              //'/misc_data/energy_input',
      &          'units','(W)',
      &          'WCH pump: Energy input')

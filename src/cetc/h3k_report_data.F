@@ -2461,8 +2461,11 @@ C.....ESP-r commons
       common/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR) ! ? (unused)
       integer NPCDAT, IPOFS1, IPOFS2
 
-      common/pcnam/pcname(mpcom)        ! Plant component names
-      character*15, pcname
+C Strings describing plant components.
+      common/pcddsc/pcdesc(maxpc),npref(mpcom)   ! Plant component description and reference number (e.g. "63" for Slab-on-grade)
+      common/pcnam/pcname(mpcom)                 ! Plant component names 
+      integer npref
+      character pcdesc*80,pcname*15
 
       common/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)   ! Plant present state variables
       real CSVF, CSVP
@@ -2474,6 +2477,11 @@ C.....ESP-r commons
      &  ICONDX(MPCOM,MNODEC,MPCONC) ! index of connections
       integer icondx, icontp
       real convar
+
+C..... (Additional) results data from plant components
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),NAPDAT(MPCOM)
+      REAL QDATA,PCAOUT
+      INTEGER napdat
 
 C.....Local variables
       integer ii,jj,kk          ! counters
@@ -2515,12 +2523,38 @@ C.....Named constants
 C.....Loop through all components in plant network
       do ii = 1, npcomp
 
-C........Build base name
+C........Build base name plt/<component_name>
          char_temp = pcname(ii)
          iLength = lnblnk(char_temp)
          iLength_tmp = iLength
          write(Base_Name, '(A,A)')
      &        'plt/',char_temp(1:iLength)
+
+C === output (additional) node data
+
+        if (npref(ii).eq.63) then
+           write(H3K_rep_NAME,'(A,A)')
+     &           Base_Name(1:iLength+4),
+     &           '/Qboiler'
+           call add_to_xml_reporting (
+     &          PCAOUT(ii,3),
+     &          H3K_rep_NAME,
+     &          'units', '(W)',
+     &          'Plant component node heat injection' )
+        endif ! check for radiant_slab_on_grade
+
+        if (npref(ii).eq.50) then
+           write(H3K_rep_NAME,'(A,A)')
+     &           Base_Name(1:iLength+4),
+     &           '/Qboiler'
+           call add_to_xml_reporting (
+     &          PCAOUT(ii,1),
+     &          H3K_rep_NAME,
+     &          'units', '(W)',
+     &          'Plant component node heat injection' )
+        endif ! check for WCH calorifier
+
+C === end output of node data
 
 C........Loop through nodes (NPCDAT(i,8)
          do jj = 1, NPCDAT(ii,8)
