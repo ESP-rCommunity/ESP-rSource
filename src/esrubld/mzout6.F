@@ -41,7 +41,6 @@ C ----------------------------------------------------------------
       integer lnblnk  ! function definition
       
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/SHOUT/ICOUT
       COMMON/FILEP/IFIL   
       COMMON/SAVE0/TVMEM(MCOM,4,2),ZTU(MCOM),ZTL(MCOM),ZPH(MCOM),
      &   ZPC(MCOM),TZPH(MCOM),TZPC(MCOM),TZPHM(MCOM,12),TZPCM(MCOM,12)
@@ -159,7 +158,7 @@ C Convert TO kWh and divide by floor area
   221 CONTINUE       
         
 c Save option is six.
-   16 SHTG=0.0
+      SHTG=0.0
       SCLG=0.0
       VA=-1000.0
       VB=1000.0
@@ -688,12 +687,12 @@ C Auxiliary energy total
   220 continue
 
 C Close output file after writing.
-   17 CALL ERPFREE(IWU,ISTAT)
-      goto 11
+      CALL ERPFREE(IWU,ISTAT)
+      return
 
 c Output for save options 1,2 and 3.
     2 CALL edisp(iuout,' Results analysis is done via module res.')
-   11 RETURN
+      RETURN
       END
 
 c ******************** NCMDHW ********************
@@ -722,7 +721,7 @@ C contributions from renewable energy resources
       real Tot_kWh_DHW_ann_energy
       REAL DHWDEMAND,DISTRIBLOSS,TZONEA,SOLARC,DAILYDHWDEMAND,DAYMNT
       REAL STORAGEVOL,STORAGEVOL5,STORAGELOSS,XLOOPLEN,CIRCLOSS
-      REAL PUMPPOWER,SECPUMPE
+      REAL PUMPPOWER,SECPUMPE   ! secpumpe is not yet used
       REAL SECLOSS
       real  total_floor_area  ! to record total floor area
 
@@ -734,6 +733,8 @@ C contributions from renewable energy resources
 
 C Fill DHW demand variables
       total_floor_area=0.0  ! to record total floor area
+      Tot_MJ_DHW_ann_energy=0.0
+      Tot_kWh_DHW_ann_energy=0.0
       do 741 I=1,NCOMP
 
 C Avoid cases of dividing by 0
@@ -770,10 +771,11 @@ C Initialise
         TZONEA=0.0       ! total serviced area
 
 C Get contribution from associated solar thermal collectors
+C << this calculation is not complete >>
         DO 101 IREN=1,NREN
           IF(NRENTYPE(IREN).EQ.1)THEN ! If this renewable sys is solar thermal
-            IF(RENDATA(IREN,1).EQ.IDHWSYS)THEN ! If this sys is linked to this DHW system
-C<<            SOLARC(IDHWSYS)=SOLARC(IDHWSYS)+!Contribution from this solar thermal collector
+            IF(int(RENDATA(IREN,1)).EQ.IDHWSYS)THEN ! If this sys is linked to this DHW system
+C<<            SOLARC(IDHWSYS)=SOLARC(IDHWSYS)+     ! Contribution from this solar thermal collector
             ENDIF
           ENDIF
  101    CONTINUE

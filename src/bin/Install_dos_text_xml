@@ -1563,6 +1563,23 @@ echo " Installing ESP-r system. This may take some time."
   echo "C      The following fortran variable assignments are "           >> ${SRCdir}/include/build_info.h
   echo "C      digested by procedure ESPrVersion() in esrucom/Startup.F"  >> ${SRCdir}/include/build_info.h
   echo "       "                                                          >> ${SRCdir}/include/build_info.h
+  echo "       logical  bRelease,bVersioned,bModified"                    >> ${SRCdir}/include/build_info.h
+  echo "       character cBuilder*32       ! User who compiled system"    >> ${SRCdir}/include/build_info.h
+  echo "       character cArchitecture*32  ! Machine archictecture"       >> ${SRCdir}/include/build_info.h
+  echo "       character cOperSystem*32    ! Operating system"            >> ${SRCdir}/include/build_info.h
+  echo "       character cOSversion*32     ! OS flavour/version"          >> ${SRCdir}/include/build_info.h
+  echo "       character cHost*256         ! Host name"                   >> ${SRCdir}/include/build_info.h
+  echo "       character cRelease_Num*8    ! Release version"             >> ${SRCdir}/include/build_info.h
+  echo "       character cSource*32        ! Repository version"          >> ${SRCdir}/include/build_info.h
+  echo "       character cBranch*48        ! Branch name"                 >> ${SRCdir}/include/build_info.h
+  echo "       character cRevision*32      ! Revision number"             >> ${SRCdir}/include/build_info.h
+  echo "       character cState*32         ! Flag for repository state."  >> ${SRCdir}/include/build_info.h 
+  echo "       character cCC*32            ! Flags for compilers."        >> ${SRCdir}/include/build_info.h 
+  echo "       character cFC*32            ! fortran"                     >> ${SRCdir}/include/build_info.h
+  echo "       character cCPL*32           ! C++"                         >> ${SRCdir}/include/build_info.h 
+  echo "       character cXML_support*32   ! Compile-time options"        >> ${SRCdir}/include/build_info.h
+  echo "       character cXlibrary*32      ! where which"                 >> ${SRCdir}/include/build_info.h
+  echo "       "                                                          >> ${SRCdir}/include/build_info.h
   echo "       cBuilder          = \"${USER}\" "                          >> ${SRCdir}/include/build_info.h 
   echo "       cHost             = \"${host}\""                           >> ${SRCdir}/include/build_info.h
 #  echo "       cDate             = \"${time}\""                           >> ${SRCdir}/include/build_info.h     
