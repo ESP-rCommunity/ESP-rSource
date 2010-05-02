@@ -1249,19 +1249,19 @@ C set beam-diffuse eq. 0
        elseif(itype.eq.2)then   ! currently only slat-type blinds are considered 
        
 C If shade is retracted set solar transmittance to 1 and skip to next layer
-        if(i_shd(icomp,icfctp).eq.0)then
-            SolTFbb(icomp,isurf,icfctp,i)=0.999
-            SolRFbd(icomp,isurf,icfctp,i)=0.001
-            SolTFbd(icomp,isurf,icfctp,i)=0.001
-            SolTFdd(icomp,isurf,icfctp,i)=0.999
-            SolRFdd(icomp,isurf,icfctp,i)=0.001
-            SolTBbb(icomp,isurf,icfctp,i)=0.999
-            SolRBbd(icomp,isurf,icfctp,i)=0.001
-            SolTBbd(icomp,isurf,icfctp,i)=0.001
-            SolTBdd(icomp,isurf,icfctp,i)=0.999
-            SolRBdd(icomp,isurf,icfctp,i)=0.001
-            goto 100
-        endif
+c        if(i_shd(icomp,icfctp).eq.0)then
+c            SolTFbb(icomp,isurf,icfctp,i)=0.999
+c            SolRFbd(icomp,isurf,icfctp,i)=0.001
+c            SolTFbd(icomp,isurf,icfctp,i)=0.001
+c            SolTFdd(icomp,isurf,icfctp,i)=0.999
+c            SolRFdd(icomp,isurf,icfctp,i)=0.001
+c            SolTBbb(icomp,isurf,icfctp,i)=0.999
+c            SolRBbd(icomp,isurf,icfctp,i)=0.001
+c            SolTBbd(icomp,isurf,icfctp,i)=0.001
+c            SolTBdd(icomp,isurf,icfctp,i)=0.999
+c            SolRBdd(icomp,isurf,icfctp,i)=0.001
+c            goto 100
+c        endif
         
         if (i_shd(icomp,icfctp) .eq.0) then ! blind is retracted, treat as air layer ...
           SolTFbb(icomp,isurf,icfctp,i)=0.99999999
