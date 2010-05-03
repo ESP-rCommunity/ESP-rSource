@@ -24,7 +24,7 @@ C******************************* BATTERY_COMMON *******************************
 C Created by: Patrice Pinel
 C Initial Creation Date: MARCH, 2005
 C Modified by: Maria Mottillo
-C Modified by: Neil Saldanha January 2010 to include Li-on battery parameters
+
 
 C This common declares all the general variables required for the battery model
 C These variables describe the state of the battery at the end of a time step
@@ -46,11 +46,7 @@ C-------------------------------------------------------------------------------
      & mandChargePhaseIncrease,
      & timeSinceLastFullCharge,
      & nPreviousTS,
-     & batDemandP,
-     & loVoltLion,
-     & hiVoltLion,
-     & loTempLion,
-     & hiTempLion
+     & batDemandP
 
 C---------------------------------------------------------------------------------
 C Declaration of variable type and definition
@@ -117,19 +113,3 @@ C    Gas constant
       REAL gas_constant
       PARAMETER (gas_constant = 8.314)
 
-C-------------------------------------------------------------------------------
-C Li-on battery management flags added by Neil Saldanha, 1 = True, 0 = False
-C-------------------------------------------------------------------------------
-      INTEGER loVoltLion, hiVoltLion, loTempLion, hiTempLion
-      
-C Battery type signatures
-C Lead acid
-      INTEGER pba
-      PARAMETER (pba = 17)
-C Vanadium redox
-      INTEGER vrb
-      PARAMETER (vrb = 21)
-C Lithium-ion
-      INTEGER lion
-      PARAMETER (lion = 22)
-      

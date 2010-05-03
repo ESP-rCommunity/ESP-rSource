@@ -219,18 +219,14 @@ C---------------------------------------------------------------------------
       nTimeStep = NSINC
       dtTStep = TIMSEC / 3600.           ! convert to hour
 
-      IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
+      IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
          iZoneIndex = INT(powcdat(IPWC,47))
          activeBatLifeControl = INT(POWCDAT(IPWC,55))     ! Get info on active battery life control
-         
-      ELSEIF(POWCOMID(IPWC) .EQ. vrb) THEN   ! VRB
+      ELSEIF(POWCOMID(IPWC) .EQ. 21) THEN   ! VRB
 C     The zone information is not required for the current stage since the thermal aspect of VRB
 C     is not considered. It is put here for the reference of future improvement.
          iZoneIndex = INT(powcdat(IPWC,26))
 
-      ELSEIF(POWCOMID(IPWC) .EQ. lion) THEN !Lithium-ion battery
-         iZoneIndex = INT(powcdat(IPWC,72))
-         
 C-----Add support for other battery types
 C     ELSEIF (POWCOMID(IPWC) .EQ.??) THEN
       ENDIF
@@ -244,6 +240,7 @@ C************** Initialisation
 C See if the time step has been changed and, if so, do the proper initialisation
       IF (nTimeStep .GT. nPreviousTS) THEN
 C First time step -> initialise all parameters at the beginning of the simulation
+C        write(*,*) 'timestep' , (nTimeStep)
         IF(nTimeStep .EQ. 1) THEN
           Call InitSimulation(IPWC,batTIni,batDODIni)
 C Following time steps -> Initialise parameters to their final value at the previous time step
@@ -253,7 +250,9 @@ C Following time steps -> Initialise parameters to their final value at the prev
         ENDIF     ! 1st time step
       ENDIF     ! nTimeStep
 
+C      write(*,*) 'demand' , (batDemandP)
 C************** Get mode (charge/discharge)
+
       IF (mandChargeCycle .NE. 1) THEN      ! Normal operation, the battery mode is determined 
                                             ! by the controller based upon the overall power balance
         IF (batDemandP .EQ. 0. ) THEN
@@ -283,15 +282,10 @@ C       batMode is an index indicating the mode of operating (e.g. charging).
 C       dtTStep is the duration of the simulation time-step (hours)
         maxCBatCharge = MaxCurrent(IPWC,batTIni,batDODIni,0,dtTStep)
         maxCBatDischarge = MaxCurrent(IPWC,batTIni,batDODIni,1,dtTStep)
-       
         maxPBatCharge = PowForCur(IPWC,batTIni,batDODIni,0,dtTStep,
      &                             maxCBatCharge)
         maxPBatDischarge = PowForCur(IPWC,batTIni,batDODIni,1,dtTStep,
      &                             maxCBatDischarge)
-        write(99,*) 'max Charge' , maxCBatCharge
-        write(99,*) 'max Discharge' , maxCBatDischarge 
-C        write(99,*) 'max PCharge' , maxPBatCharge
-C        write(99,*) 'max PDischarge' , maxPBatDischarge      
       ELSE       ! Mandatory charge cycle
 C     If the battery is performing a mandatory charge cycle, the controller's leadership in 
 C     assigning the load to the battery is carefully overruled. The specific action depends
@@ -351,9 +345,9 @@ C-------solution that should be replaced with a more generalized approach in the
       IF(batMode .EQ. 1 .OR. batMode .EQ. 2 ) THEN  ! Discharge or idle
          maxCBat = maxCBatDischarge
          maxPBat = maxPBatDischarge
-C      ! First, try to see if putting the load on the battery will result in a thermal emergency
-         batLoad = MIN(batDemandP, maxPBat) !<------ I (Neil) don't know if this line is necessary***
-         IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
+      ! First, try to see if putting the load on the battery will result in a thermal emergency
+         batLoad = MIN(batDemandP, maxPBat)
+         IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
            CALL DoDischarge(IPWC,batTIni,zoneT,batDODIni,dtTStep,
      &                    maxCBat,maxPBat,batLoad,pBat,pHeaters,
      &                    batVolt,batTFin,batDODFin,batCurFin,
@@ -365,19 +359,11 @@ C    Evaluate the battery life fraction used in this timestep
            CALL BatteryLife(IPWC,dtTStep,batMode,batCurFin,
      &            batTFin,batDODFin) 
 
-         ELSEIF( POWCOMID(IPWC) .EQ. vrb) THEN      ! VRB
+         ELSEIF( POWCOMID(IPWC) .EQ. 21) THEN      ! VRB
            CALL DoDischarge_VRB(IPWC,batTIni,zoneT,batDODIni,dtTStep,
      &               maxCBat,maxPBat,batLoad,pBat,pHeaters,pParasitic,
      &               batVolt,batTFin,batDODFin,batCurFin, pIntHeatFin)
      
-C    Evaluate the portion of the load that can be met
-           pBatSystem = pBat - pHeaters - pParasitic        
-         ELSEIF( POWCOMID(IPWC) .EQ. lion) THEN      ! Li-on
-           CALL Lion_BMS(IPWC,batTIni,zoneT,batDODIni,dtTStep,batMode,
-     &               maxCBat,maxPBat,batLoad,pBat,pHeaters,pParasitic,
-     &               batVolt,batTFin,batDODFin,batCurFin, pIntHeatFin,
-     &               hiVoltLion,loVoltLion,hiTempLion,loTempLion,
-     &               gas_constant)     
 C    Evaluate the portion of the load that can be met
            pBatSystem = pBat - pHeaters - pParasitic
          ENDIF
@@ -389,7 +375,7 @@ C    Evaluate the total power balance of the system
          maxCBat = maxCBatCharge
          maxPBat = maxPBatCharge
 
-         IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
+         IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
            CALL DoCharge(IPWC,batTIni,zoneT,batDODIni,dtTStep,
      &                 maxCBat,maxPBat,batLoad,pBat,pHeaters,
      &                 batVolt,batTFin,batDODFin,batCurFin,
@@ -401,19 +387,11 @@ C    Evaluate the battery life fraction used in this timestep
            CALL BatteryLife(IPWC,dtTStep,batMode,batCurFin,
      &            batTFin,batDODFin) 
 
-         ELSEIF( POWCOMID(IPWC) .EQ. vrb) THEN      ! VRB
+         ELSEIF( POWCOMID(IPWC) .EQ. 21) THEN      ! VRB
            CALL DoCharge_VRB(IPWC,batTIni,zoneT,batDODIni,dtTStep,
      &               maxCBat,maxPBat,batLoad,pBat,pHeaters,pParasitic,
      &               batVolt,batTFin,batDODFin,batCurFin, pIntHeatFin)
-           pBatSystem = pBat + pHeaters + pParasitic
-     
-         ELSEIF( POWCOMID(IPWC) .EQ. lion) THEN      ! Li-on
-           CALL Lion_BMS(IPWC,batTIni,zoneT,batDODIni,dtTStep,batMode,
-     &               maxCBat,maxPBat,batLoad,pBat,pHeaters,pParasitic,
-     &               batVolt,batTFin,batDODFin,batCurFin, pIntHeatFin,
-     &               hiVoltLion,loVoltLion,hiTempLion,loTempLion,
-     &               gas_constant)
-     
+
 C    Evaluate the portion of the load that can be met
            pBatSystem = pBat + pHeaters + pParasitic
          ENDIF
@@ -430,7 +408,8 @@ C Save variables that are required by control sensors.
       iPow_Time_Row_Count(IPWC) = 2                         ! # of additional data
       fPow_Time_Row_Future(IPWC,1) = (1. - batDODFin)*100.  ! battery SOC, %
       fPow_Time_Row_Future(IPWC,2) = batTFin                ! battery temperature
-      
+
+
 C power returned/taken to meet the demand 
       IF ( batMode .EQ. 1 .OR. batMode .EQ. 2 ) THEN  ! discharge
           ppowoc(ipwc) = pBatSystem                   ! generation is +ve
@@ -439,7 +418,15 @@ C power returned/taken to meet the demand
       ENDIF
       qpowoc(ipwc) = 0.                               ! reactive power
 
-
+C addition by Neil Saldanha to switch current and power reported in XML 
+C to negative in a charge situation to follow convention   
+      IF ( batMode .EQ. 0 ) THEN ! charge
+        batCurFin = -1. * batCurFin
+        pBatSystem = -1. * pBatSystem
+        batPowBal = -1. * batPowBal
+      ENDIF
+     
+     
 C-------------------------------------------------------
 C XML output
 C-------------------------------------------------------
@@ -842,11 +829,10 @@ C-------------------------------------------------------------------------
 C       INTEGER iii                  ! for debugging only
 
 C ************** Initialisation
+       batTempInit = POWCDAT(IPWC,9)
+       batDODInit = POWCDAT(IPWC,10)
 
-         
-       IF( POWCOMID(IPWC) .EQ. pba ) THEN      ! Lead-acid battery       
-         batTempInit = POWCDAT(IPWC,9)
-         batDODInit = POWCDAT(IPWC,10)
+       IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
          lifeUseFactor = 0
          batLifeUsed = 0.
          cumBatLifeUsed = 0.
@@ -854,19 +840,6 @@ C ************** Initialisation
          mandChargePhase = 0
          mandChargePhaseIncrease = 0
          timeSinceLastFullCharge = 0.
-         
-       ELSEIF ( POWCOMID(IPWC) .EQ. vrb ) THEN  ! vrb
-         batTempInit = POWCDAT(IPWC,9)
-         batDODInit = POWCDAT(IPWC,10)
-                
-       ELSEIF ( POWCOMID(IPWC) .EQ. lion ) THEN  ! Li-on
-         batTempInit = POWCDAT(IPWC,9)
-         batDODInit = POWCDAT(IPWC,10)
-         mandChargeCycle = 0 ! This is to get by a road block set by the lead acid later
-         loVoltLion = 0 ! These are flags initially set to zero to check that Li-on battery is within
-         hiVoltLion = 0 ! safe limits
-         loTempLion = 0
-         hiTempLion = 0         
        ENDIF
 
 C   For debugging only:
@@ -941,10 +914,13 @@ C-------------------------------------------------------------------------
 C Initialise values at the beginning of the time step to their value at the end of the previous one
       batTInit = batTFinal
       DODInit = DODFinal
+      
+C      write(*,*) 'temp in initTimstep' , (batTFinal)
+C      write(*,*) 'maxtemp in initTimstep' , (POWCDAT(IPWC,16))
 
 C Update battery life parameters, decide upon starting / ending mandatory charge phase, 
 C set flag indicating battery is being abused.
-      IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
+      IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
 C       Add battery life used during previous time step to the total battery life used
         cumBatLifeUsed = cumBatLifeUsed + batLifeUsed
 
@@ -1006,24 +982,7 @@ C             Compare time elapsed since last full charge to mandatory charge in
             ENDIF     ! timeSinceLastFullCharge
           ENDIF     ! batDODFin
         ENDIF     ! active battery life control 
-        
-        
-      ELSEIF ( POWCOMID(IPWC) .EQ. lion) THEN            ! Li-on check to see if battery is in safe limits 
-        IF (batTFinal .GT. POWCDAT(IPWC,16))    THEN     ! Battery is too hot for safe operation
-          hiTempLion = 1
-                                                         ! Set high temp flag on
-        ELSEIF (batTFinal .LT. POWCDAT(IPWC,17)) THEN    ! Battery is too cold for safe operation
-          loTempLion = 1                                 ! Set low temp flag on
-        ENDIF      
-        
-        IF (DODFinal .LT. POWCDAT(IPWC,15))  THEN        ! Battery is overcharged for safe operation
-          hiVoltLion = 1                                 ! Set overvoltage flag on
-        ELSEIF (DODFinal .GT. POWCDAT(IPWC,14)) THEN     ! Battery is undercharged for safe operation
-          loVoltLion = 1
-C          write(99,*) 'lo volt flag set'                                 ! Set undervoltage flag on
-        ENDIF  
-      
-      ENDIF     ! Lead-acid battery and lithium ion
+      ENDIF     ! Lead-acid battery
       RETURN
       END
 
@@ -1334,8 +1293,7 @@ c
 C - This subroutine returns the maximal current the battery can charge/discharge with
 C   without crossing the voltage limits
 C - The temperature at the begining of the time step is used to evaluate properties ->
-C   the problem is decoupled as far as temperatures are concerned except for the lion 
-C   algorithm
+C   the problem is decoupled as far as temperatures are concerned
 C
 C This routine is called from various points of the program
 C 
@@ -1353,7 +1311,6 @@ C -IPWC: power-only component index number
       REAL FUNCTION MaxCurrent(IPWC,batTemp,DODInit,batMode,dtTStep)
       IMPLICIT NONE
 #include "power.h"
-#include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -1388,7 +1345,6 @@ C Battery Parameters (technology and configuration)
 C Declaration of functions used
       REAL BatteryRInt,FreeVoltage,FinalDOD
       REAL RInt_VRB, OCV_VRB, FinalDOD_VRB
-      REAL RInt_Lion, OCV_Lion, FinalDOD_Lion
 
 C Local variables
       REAL relaxFact    ! Relaxation factor for iteration loop (to reduce oscillations)
@@ -1427,10 +1383,9 @@ C     Initialise curents to zero
 C************** Calculation
       ! initialise the dummy current to the value of the current at the last iteration
 610   dumCurrent = batCurrent
-C      WRITE(*,*) 'numIter' , numIter
-C      WRITE(*,*) 'dumcurrent' , dumCurrent
 
-      IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
+
+      IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
 C      The position 48, 49 is temporarily set here, needs to be changed once the
 C      input parameters are finalized.
          upperBoundDOD = POWCDAT(IPWC,48)
@@ -1442,7 +1397,7 @@ C      input parameters are finalized.
          RIntEnd = BatteryRInt(IPWC,batTemp,DODEnd,batCurrent,batMode)
          RIntAvg = BatteryRInt(IPWC,batTemp,(DODInit+DODEnd)/2.0,
      &             batCurrent,batMode)
-      ELSEIF(POWCOMID(IPWC) .EQ. vrb) THEN   ! VRB
+      ELSEIF(POWCOMID(IPWC) .EQ. 21) THEN   ! VRB
          upperBoundDOD = POWCDAT(IPWC,14)
          lowerBoundDOD = POWCDAT(IPWC,15)
          DODEnd = FinalDOD_VRB(IPWC,DODInit,batMode,dtTStep,
@@ -1453,22 +1408,6 @@ C      input parameters are finalized.
          RIntEnd = RInt_VRB(IPWC,batTemp,DODEnd,batCurrent,batMode)
          RIntAvg = RInt_VRB(IPWC,batTemp,(DODInit+DODEnd)/2.0,
      &             batCurrent,batMode)
-      ELSEIF ( POWCOMID(IPWC) .EQ. lion) THEN  !Lion
-         upperBoundDOD = POWCDAT(IPWC,14)
-         lowerBoundDOD = POWCDAT(IPWC,15)
-         DODEnd = FinalDOD_Lion(IPWC,batTemp,DODInit,batMode,dtTStep,
-     &             batCurrent)
-         FreeVEnd = OCV_Lion(IPWC,DODEnd,batTemp)
-         FreeVAvg = OCV_Lion(IPWC,(DODInit+DODEnd)/2.0,batTemp)                           
-         RIntEnd = RInt_Lion(IPWC, DODEnd,batMode)
-         RIntAvg = RInt_Lion(IPWC,(DODInit+DODEnd)/2.0,batMode)
-         
-C         WRITE(*,*) 'FreeVEnd' , FreeVEnd
-C         WRITE(*,*) 'FreeVAvg' , FreeVAvg
-C         WRITE(*,*) 'RIntEnd' , RIntEnd
-C         WRITE(*,*) 'RIntAvg' , RIntAvg
-C         WRITE(*,*) 'DODEnd' , DODEnd
-      
       ENDIF
 
 
@@ -1543,8 +1482,6 @@ C
 C Created by: Patrice Pinel
 C Initial Creation Date: March, 2005
 C
-C Modified by Neil Saldanha January 2010
-C
 C - This subroutine returns the power the battery charges/discharges with
 C   corresponding to a given current
 C - The temperature at the begining of the time step is used to evaluate properties ->
@@ -1595,8 +1532,7 @@ C PARAMETERS FROM SIGNATURE
 C Declaration of functions used
       REAL FreeVoltage,FinalDOD,BatteryRInt
       REAL OCV_VRB, FinalDOD_VRB, RInt_VRB
-      REAL RInt_Lion, OCV_Lion, FinalDOD_Lion
-      
+
 C Battery Parameters (technology and configuration)
       REAL batMaxVoltCh    ! Maximum manufacturer charging voltage of a battery cell (V)
       REAL batMinVolt      ! Minimum manufacturer voltage of a battery cell (100% DOD) (V)
@@ -1614,24 +1550,19 @@ C     Voltages are multiplied by the number of units connected in series
 
 C************** Calculation
 
-      IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
+      IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
          DODAvg = FinalDOD(IPWC,batTemp,DODInit,batMode,
      &                    dtTStep/2.0,batCur)
          E0Avg = FreeVoltage(IPWC,DODAvg)
          RintAvg = BatteryRInt(IPWC,batTemp,DODAvg,batCur,batMode)
-      ELSEIF(POWCOMID(IPWC) .EQ. vrb) THEN   ! VRB
+      ELSEIF(POWCOMID(IPWC) .EQ. 21) THEN   ! VRB
          DODAvg = FinalDOD_VRB(IPWC,DODInit,batMode,
      &                    dtTStep/2.0,batCur)
          E0Avg = OCV_VRB(IPWC,DODAvg,batCur,batMode)
          RintAvg = RInt_VRB(IPWC,batTemp,DODAvg,batCur,batMode)
-      ELSEIF ( POWCOMID(IPWC) .EQ. lion) THEN  !Lion
-         DODAvg = FinalDOD_Lion(IPWC,batTemp,DODInit,batMode,
-     &                    dtTStep/2.0,batCur)
-         E0Avg = OCV_Lion(IPWC,DODAvg,batTemp)
-         RintAvg = RInt_Lion(IPWC,DODAvg,batMode)   
       ENDIF
-     
-       
+
+
 C     Patrice's original code
 C     V=E0-RI      
 C      VAvg = E0Avg-batCur*RintAvg
@@ -1697,7 +1628,6 @@ C *********************************************************************
      &                        batPow)
       IMPLICIT NONE
 #include "power.h"
-#include "BATTERY.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER iuout          !- write unit number
@@ -1724,7 +1654,6 @@ C PARAMETERS FROM SIGNATURE
 C Declaration of functions used
       REAL BatteryRInt, FreeVoltage, FinalDOD
       REAL OCV_VRB, RInt_VRB, FinalDOD_VRB
-      REAL OCV_lion, RInt_lion, FinalDOD_lion
 
 C Local variables
       REAL DODAvg       ! Average DOD during time step (DODInit+DODEnd)/2
@@ -1754,30 +1683,19 @@ C initialise the dummy current to the value of the current at the last iteration
 
 
 
-      IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
+      IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
          DODAvg = FinalDOD(IPWC,batTemp,DODInit,batMode,dtTStep/2.0,
      &                  batCurrent)
          RIntAvg = BatteryRInt(IPWC,batTemp,DODAvg,batCurrent,batMode)
          E0Avg = FreeVoltage(IPWC,DODAvg)
-      ELSEIF(POWCOMID(IPWC) .EQ. vrb) THEN   ! VRB
+      ELSEIF(POWCOMID(IPWC) .EQ. 21) THEN   ! VRB
          DODAvg = FinalDOD_VRB(IPWC,DODInit,batMode,
      &                  dtTStep/2.0, batCurrent)
          RIntAvg = RInt_VRB(IPWC,batTemp,DODAvg,batCurrent,batMode)
          E0Avg = OCV_VRB(IPWC, DODAvg, batCurrent, batMode)
-      ELSEIF(POWCOMID(IPWC) .EQ. lion) THEN   ! Li-on
-         DODAvg = FinalDOD_Lion(IPWC,batTemp,DODInit,batMode,
-     &                    dtTStep/2.0,batCurrent)
-         RintAvg = RInt_Lion(IPWC,DODAvg,batMode) 
-         E0Avg = OCV_Lion(IPWC,DODAvg,batTemp)
-
       ENDIF
 
-      write(99,*) 'dod', (DODAvg)
-      write(99,*) 'R', (RintAvg)
-      write(99,*) 'volt', (E0Avg)
-      write(99,*) 'batMode', (batMode)
-      write(99,*) 'batPow', (batPow)      
-      
+
       IF (batMode .EQ. 0) THEN   ! charge
          batCurrent=(-E0Avg+(E0Avg**2+4*batPow*RIntAvg)**0.5)/2./RIntAvg
       ELSE  ! Discharge
@@ -1833,7 +1751,6 @@ C *********************************************************************
      &                           batCur)
       IMPLICIT NONE
 #include "power.h"
-#include "BATTERY.h"
 
 C Common holding the power-only component description read from the electric
 C network input file.
@@ -1856,25 +1773,20 @@ C PARAMETERS FROM SIGNATURE
 C Declaration of functions used
       REAL BatteryRInt,FinalDOD
       REAL RInt_VRB, FinalDOD_VRB
-      REAL RInt_Lion, FinalDOD_Lion
-      
+
 C Local variables
       REAL DODAvg    ! Average DOD during time step (DODInit+DODEnd)/2
       REAL RIntAvg   ! Internal resistance corresponding to DODAvg (Ohm)
 
 C************** Calculation
-      IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
+      IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
           DODAvg = FinalDOD(IPWC,batTemp,DODInit,batMode,
      &                     dtTStep/2.0,batCur)
           RIntAvg = BatteryRInt(IPWC,batTemp,DODAvg,batCur,batMode)
-      ELSEIF(POWCOMID(IPWC) .EQ. vrb) THEN   ! VRB
+      ELSEIF(POWCOMID(IPWC) .EQ. 21) THEN   ! VRB
           DODAvg = FinalDOD_VRB(IPWC,DODInit,batMode,
      &                     dtTStep/2.0,batCur)
           RIntAvg = RInt_VRB(IPWC,batTemp,DODAvg,batCur,batMode)
-      ELSEIF(POWCOMID(IPWC) .EQ. lion) THEN   ! Li-on
-         DODAvg = FinalDOD_Lion(IPWC,batTemp,DODInit,batMode,
-     &                    dtTStep/2.0,batCur)
-         RintAvg = RInt_Lion(IPWC,DODAvg,batMode)          
       ENDIF
 
 
@@ -2047,7 +1959,6 @@ C *********************************************************************
       REAL Function AvgVolt(IPWC,batTemp,DODInit,batMode,dtTStep,batCur)
       IMPLICIT NONE
 #include "power.h"
-#include "BATTERY.h"
 
 C Common holding the power-only component description read from the electric
 C network input file.
@@ -2070,7 +1981,7 @@ C PARAMETERS FROM SIGNATURE
 C Declaration of functions used
       REAL FinalDOD,FreeVoltage,BatteryRInt
       REAL FinalDOD_VRB, OCV_VRB, RInt_VRB
-      REAL FinalDOD_Lion, OCV_Lion, RInt_Lion
+
 C Local variables
       REAL DODAvg       ! Average DOD during time step (DODInit+DODEnd)/2
       REAL E0Avg        ! Free voltage corresponding to the average conditions
@@ -2078,22 +1989,18 @@ C Local variables
 
 C************** Calculation
 
-      IF( POWCOMID(IPWC) .EQ. pba) THEN      ! Lead-acid battery
+      IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
           DODAvg=FinalDOD(IPWC,batTemp,DODInit,batMode,
      &                   dtTStep/2.0,batCur)
           E0Avg = FreeVoltage(IPWC,DODAvg)
           RIntAvg = BatteryRInt(IPWC,batTemp,DODAvg,batCur,batMode)
-      ELSEIF(POWCOMID(IPWC) .EQ. vrb) THEN   ! VRB
+      ELSEIF(POWCOMID(IPWC) .EQ. 21) THEN   ! VRB
           DODAvg=FinalDOD_VRB(IPWC,DODInit,batMode,
      &                   dtTStep/2.0,batCur)
           E0Avg = OCV_VRB(IPWC,DODAvg,batCur, batMode)
           RIntAvg = RInt_VRB(IPWC,batTemp,DODAvg,batCur,batMode)
-      ELSEIF ( POWCOMID(IPWC) .EQ. lion) THEN  !Lion
-          DODAvg = FinalDOD_Lion(IPWC,batTemp,DODInit,batMode,
-     &                            dtTStep/2.0,batCur)
-          E0Avg = OCV_Lion(IPWC,DODAvg,batTemp)
-          RintAvg = RInt_Lion(IPWC,DODAvg,batMode)   
       ENDIF
+
 
       IF (batMode .EQ. 0) THEN   !Charge
       ! Observed voltage is higher than free voltage
@@ -3774,1027 +3681,8 @@ C     The temperature is not tracked in the current stage, so it is set as the i
 
       END
 
-C**************************************************************************
-C 50 FinalDOD_Lion
-C**************************************************************************
-C
-C Initial Creation Date: January, 2010 by Neil Saldanha
-C
-C - This subroutine returns average depth of discharge during a constant current discharge step
-C
-C INPUTS:
-C -DODIni: The battery's initial depth of discharge
-C -batMode: 0 for charge, 1 for discharge
-C -dtTStep: Duration of the time step (hour)
-C -batCur: The power demanded/offered to the battery (W)
-C -IPWC: Identity of the plant component associated with the model
-C 
-C OUTPUTS:
-C -returns the DOD at the end of the time step
-C
-C *********************************************************************
-      REAL Function FinalDOD_Lion(IPWC,batTemp,DODIni,batMode,dtTStep,
-     &                            batCur)
-      IMPLICIT NONE
 
-      
-C PARAMETERS FROM SIGNATURE
-      REAL batTemp,DODIni,dtTStep,batCur
-      INTEGER batMode,IPWC
 
-C Declaration of functions used
-      REAL BatteryCap_Lion
-C************** Calculation
-      IF(batMode .EQ. 0) THEN   !Charge
-        FinalDOD_Lion = DODIni - batCur*dtTStep/
-     &                  BatteryCap_Lion(IPWC,batTemp,batCur)
-      ELSE  !Discharge
-        FinalDOD_Lion = DODIni + batCur*dtTStep/
-     &                  BatteryCap_Lion(IPWC,batTemp,batCur)
-      ENDIF
-      END
-
-C**************************************************************************
-C 51 BatteryCap_Lion
-C**************************************************************************
-C
-C Initial Creation Date: January, 2010 by Neil Saldanha
-C
-C - This subroutine returns the capacity of the battery
-C   as a function of its temperature, current
-C   and the number of battery cells connected in parallel and in series
-C
-C This routine is called from various points of the program
-C 
-C INPUTS:
-C -batteryTemp: The battery's temperature (oC)
-C -IPWC: Power-only component index number
-C -batCur: The rate of charge/discharge (Amps)
-C
-C OUTPUTS:
-C -returns the battery's capacity (Ah)
-C
-C *********************************************************************
-      REAL FUNCTION BatteryCap_Lion(IPWC,batTemp,batCur)
-      IMPLICIT NONE
-#include "power.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER iuout          !- write unit number
-      INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
-
-C PARAMETERS FROM SIGNATURE
-      REAL batTemp, batCur
-      INTEGER IPWC
-
-C Battery parameters
-      REAL cellCapRef
-      INTEGER nParal
-      
-C Coefficients for the capacity equation
-      REAL alpha, beta
-
-C Declaration of functions used
-      REAL temp_factor_lion
-      REAL rate_factor_lion
-      
-C************** Initialisation
-
-      cellCapRef = POWCDAT(IPWC,3)
-      nParal = int(POWCDAT(IPWC,1))
-
-C************** Calculations
-
-C     Determine temperature (beta) and current (alpha) factors to scale reference capacity by
-
-      beta = temp_factor_lion(IPWC,batTemp)
-      
-      alpha = rate_factor_lion(IPWC,batCur)
-
-C     Capacity of the battery is the capacity of one cell times the number of cells in parallel      
-C
-      BatteryCap_Lion = beta*alpha*cellCapRef*nParal
-      
-
-C     Make sure no negative value is returned
-      IF (BatteryCap_Lion .LE. 0.0) THEN
-        WRITE(IUOUT,*) 'Warning Battery Model: Negative or ',
-     &                 'Nul capacity in function BatteryCap_Lion'
-        BatteryCap_Lion = 0.01
-      ENDIF
-      
-      END
-
-C**************************************************************************
-C 52 temp_factor_lion
-C**************************************************************************
-C
-C Initial Creation Date: January, 2010 by Neil Saldanha
-C
-C - This subroutine returns temperature factor that
-C   the battery capacity must scale by for the present
-C   battery temperature
-C
-C This routine is called from various points of the program
-C 
-C INPUTS:
-C -batteryTemp: The battery's temperature (oC)
-C
-C OUTPUTS:
-C -returns the temperature factor (beta)
-C
-C *********************************************************************
-      REAL FUNCTION temp_factor_lion(IPWC,batTemp)
-      IMPLICIT NONE
-#include "power.h"
-#include "BATTERY.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER iuout          !- write unit number
-      INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
-
-C PARAMETERS FROM SIGNATURE
-      REAL batTemp
-      INTEGER IPWC
-
-C Temperature factors
-      REAL beta_1, beta_2, beta_3, beta_4, beta_5,
-     &     beta_6, beta_7, beta_8, t_1, t_2, t_3,
-     &     t_4, t_5, t_6, t_7, t_8
-
-
-C************** Initialisation
-
-C These are the temperature correction factors and the 
-C corresponding temperatures discussed in Neil Saldanha's thesis
-
-      t_1 = POWCDAT(IPWC,46)
-      beta_1 = POWCDAT(IPWC,47)
-      t_2 = POWCDAT(IPWC,49)
-      beta_2 = POWCDAT(IPWC,51)
-      t_3 = POWCDAT(IPWC,52)
-      beta_3 = POWCDAT(IPWC,53)
-      t_4 = POWCDAT(IPWC,55)
-      beta_4 = POWCDAT(IPWC,56)
-      t_5 = POWCDAT(IPWC,58)
-      beta_5 = POWCDAT(IPWC,59)
-      t_6 = POWCDAT(IPWC,61)
-      beta_6 = POWCDAT(IPWC,62)
-      t_7 = POWCDAT(IPWC,64)
-      beta_7 = POWCDAT(IPWC,65)
-      t_8 = POWCDAT(IPWC,67)
-      beta_8 = POWCDAT(IPWC,68)
-
-      
-C************** Calculations
-
-C     Linear interpolate to find temp factor based on present battery temperature
-      IF (batTemp .LE. t_1) THEN ! battery is colder than lowest battery discharge temp
-        temp_factor_lion = beta_1
-        
-      ELSEIF (batTemp .GE. t_1 .AND. batTemp .LE. t_2) THEN !between is between t_1 and t_2
-        temp_factor_lion = (beta_2-beta_1)/(t_2-t_1)*batTemp + 
-     &                     (beta_1-(beta_2-beta_1)/(t_2-t_1)*t_1)
-     
-      ELSEIF (batTemp .GE. t_2 .AND. batTemp .LE. t_3) THEN !between is between t_2 and t_3
-        temp_factor_lion = (beta_3-beta_2)/(t_3-t_2)*batTemp + 
-     &                     (beta_2-(beta_3-beta_2)/(t_3-t_2)*t_2)
-
-      ELSEIF (batTemp .GE. t_3 .AND. batTemp .LE. t_4) THEN !between is between t_3 and t_4
-        temp_factor_lion = (beta_4-beta_3)/(t_4-t_3)*batTemp + 
-     &                     (beta_3-(beta_4-beta_3)/(t_4-t_3)*t_3)
-
-      ELSEIF (batTemp .GE. t_4 .AND. batTemp .LE. t_5) THEN !between is between t_4 and t_5
-        temp_factor_lion = (beta_5-beta_4)/(t_5-t_4)*batTemp + 
-     &                     (beta_4-(beta_5-beta_4)/(t_5-t_4)*t_4)
-
-      ELSEIF (batTemp .GE. t_5 .AND. batTemp .LE. t_6) THEN !between is between t_5 and t_6
-        temp_factor_lion = (beta_6-beta_5)/(t_6-t_5)*batTemp + 
-     &                     (beta_5-(beta_6-beta_5)/(t_6-t_5)*t_5)
-
-      ELSEIF (batTemp .GE. t_6 .AND. batTemp .LE. t_7) THEN !between is between t_6 and t_7
-        temp_factor_lion = (beta_7-beta_6)/(t_7-t_6)*batTemp + 
-     &                     (beta_6-(beta_7-beta_6)/(t_7-t_6)*t_6)
-     
-      ELSEIF (batTemp .GE. t_7 .AND. batTemp .LE. t_8) THEN !between is between t_7 and t_8
-        temp_factor_lion = (beta_8-beta_7)/(t_8-t_7)*batTemp + 
-     &                     (beta_7-(beta_8-beta_7)/(t_8-t_7)*t_7)     
-
-      ELSEIF (batTemp .GE. t_8) THEN ! battery is hotter than highest battery discharge temp
-        temp_factor_lion = beta_8
-                  
-      ELSE ! really shouldn't happen
-        WRITE(IUOUT,*) 'Warning Battery Model: odd temperature ',
-     &                 'factor in function temp_factor_lion'
-        temp_factor_lion = 1.
-      ENDIF
-      
-      END
-      
-      
-C**************************************************************************
-C 53 rate_factor_lion
-C**************************************************************************
-C
-C Initial Creation Date: January, 2010 by Neil Saldanha
-C
-C - This subroutine returns current factor that
-C   the battery capacity must scale by for the present
-C   battery temperature
-C
-C This routine is called from various points of the program
-C 
-C INPUTS:
-C -batCur: The battery's current(oC)
-C
-C OUTPUTS:
-C -returns the current factor (alpha)
-C
-C *********************************************************************
-      REAL FUNCTION rate_factor_lion(IPWC,batCur)
-      IMPLICIT NONE
-#include "power.h"
-#include "BATTERY.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER iuout          !- write unit number
-      INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
-
-C PARAMETERS FROM SIGNATURE
-      REAL batCur
-      INTEGER IPWC
-
-
-C************** Initialisation
-
-C Current factors
-      REAL alpha_1, alpha_2, alpha_3, alpha_4, alpha_5,
-     &     alpha_6, alpha_7, alpha_8, i_1, i_2, i_3,
-     &     i_4, i_5, i_6, i_7, i_8
-
-
-C These are the rate correction factors and the 
-C corresponding rates discussed in Neil Saldanha's thesis
-
-      i_1 = POWCDAT(IPWC,30)
-      alpha_1 = POWCDAT(IPWC,31)
-      i_2 = POWCDAT(IPWC,32)
-      alpha_2 = POWCDAT(IPWC,33)
-      i_3 = POWCDAT(IPWC,34)
-      alpha_3 = POWCDAT(IPWC,35)
-      i_4 = POWCDAT(IPWC,36)
-      alpha_4 = POWCDAT(IPWC,37)
-      i_5 = POWCDAT(IPWC,38)
-      alpha_5 = POWCDAT(IPWC,39)  
-      i_6 = POWCDAT(IPWC,40)
-      alpha_6 = POWCDAT(IPWC,41)
-      i_7 = POWCDAT(IPWC,42)
-      alpha_7 = POWCDAT(IPWC,43)
-      i_8 = POWCDAT(IPWC,44)
-      alpha_8 = POWCDAT(IPWC,45)
-
-      
-C************** Calculations
-
-C     Linear interpolate to find temp factor based on present battery temperature
-      IF (batCur .LE. i_1) THEN ! battery is colder than lowest battery discharge temp
-        rate_factor_lion = alpha_1
-        
-      ELSEIF (batCur .GE. i_1 .AND. batCur .LE. i_2) THEN !between is between i_1 and i_2
-        rate_factor_lion = (alpha_2-alpha_1)/(i_2-i_1)*batCur + 
-     &                     (alpha_1-(alpha_2-alpha_1)/(i_2-i_1)*i_1)
-     
-      ELSEIF (batCur .GE. i_2 .AND. batCur .LE. i_3) THEN !between is between i_2 and i_3
-        rate_factor_lion = (alpha_3-alpha_2)/(i_3-i_2)*batCur + 
-     &                     (alpha_2-(alpha_3-alpha_2)/(i_3-i_2)*i_2)
-
-      ELSEIF (batCur .GE. i_3 .AND. batCur .LE. i_4) THEN !between is between i_3 and i_4
-        rate_factor_lion = (alpha_4-alpha_3)/(i_4-i_3)*batCur + 
-     &                     (alpha_3-(alpha_4-alpha_3)/(i_4-i_3)*i_3)
-
-      ELSEIF (batCur .GE. i_4 .AND. batCur .LE. i_5) THEN !between is between i_4 and i_5
-        rate_factor_lion = (alpha_5-alpha_4)/(i_5-i_4)*batCur + 
-     &                     (alpha_4-(alpha_5-alpha_4)/(i_5-i_4)*i_4)
-
-      ELSEIF (batCur .GE. i_5 .AND. batCur .LE. i_6) THEN !between is between i_5 and i_6
-        rate_factor_lion = (alpha_6-alpha_5)/(i_6-i_5)*batCur + 
-     &                     (alpha_5-(alpha_6-alpha_5)/(i_6-i_5)*i_5)
-
-      ELSEIF (batCur .GE. i_6 .AND. batCur .LE. i_7) THEN !between is between i_6 and i_7
-        rate_factor_lion = (alpha_7-alpha_6)/(i_7-i_6)*batCur + 
-     &                     (alpha_6-(alpha_7-alpha_6)/(i_7-i_6)*i_6)
-     
-      ELSEIF (batCur .GE. i_7 .AND. batCur .LE. i_8) THEN !between is between i_7 and i_8
-        rate_factor_lion = (alpha_8-alpha_7)/(i_8-i_7)*batCur + 
-     &                     (alpha_7-(alpha_8-alpha_7)/(i_8-i_7)*i_7)     
-
-      ELSEIF (batCur .GE. i_8) THEN ! battery is hotter than highest battery discharge temp
-        rate_factor_lion = alpha_8
-                  
-      ELSE ! really shouldn't happen
-        WRITE(IUOUT,*) 'Warning Battery Model: odd current ',
-     &                 'factor in function rate_factor_lion'
-        rate_factor_lion = 1.
-      ENDIF
-      
-      END
-      
-
-C**************************************************************************
-C 54 OCV_Lion
-C**************************************************************************
-C
-C Created by: Neil Saldanha, January 2010
-C
-C - This subroutine returns the free voltage of the battery
-C   as a function of its depth of discharge
-C
-C This routine is called from various points of the program
-C 
-C INPUTS:
-C -batDOD: The battery's depth of discharge
-C -IPWC: Power-only component index
-C 
-C OUTPUTS:
-C -returns the battery's free voltage
-C
-C *********************************************************************
-      REAL FUNCTION OCV_Lion(IPWC,batDOD,batTemp)
-      IMPLICIT NONE
-#include "BATTERY.h"
-#include "power.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER iuout          !- write unit number
-      INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
-
-C Common holding NSINC (no of building time step increments) for debugging only
-       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-       INTEGER IHRP            !-hour of present time-step
-       INTEGER IHRF            !-hour of future time-step
-       INTEGER IDYP            !-year day number of present day
-       INTEGER IDYF            !-year day number of future day
-       INTEGER IDWP            !-day of the week of present day
-       INTEGER IDWF            !-day of the week of future day
-       INTEGER NSINC           !-number of building-side time increments
-                               !-since start of simulation
-       INTEGER ITS             !-current building time-step within
-                               !-current hour
-
-C PARAMETERS FROM SIGNATURE
-      REAL batDOD, batTemp
-      INTEGER IPWC
-
-C Declarations of function used
-      REAL voltage_offset_temp
-      
-C Local variables
-      REAL deltaVforT
-      
-C Coefficients for the freeVoltage equation
-      REAL E5, E4, E3, E2, E1,E0
-      INTEGER nSerie ! number of battery cells connected in series
-
-C Battery Parameters (technology and configuration)
-      REAL batMaxVolt      ! Maximum manufacturer voltage of a battery cell (0% DOD) (V)
-      REAL batMinVolt      ! Minimum manufacturer voltage of a battery cell (100% DOD) (V)
-      
-C************** Initialisation
-
-C These will be changed for the proper references once the "ACEP_BATTERY.h" will be replaced with the
-C proper node in the electrical network
-      E5 = POWCDAT(IPWC,18)
-      E4 = POWCDAT(IPWC,19)
-      E3 = POWCDAT(IPWC,20)
-      E2 = POWCDAT(IPWC,21)
-      E1 = POWCDAT(IPWC,22)
-      E0 = POWCDAT(IPWC,23)
-      
-      nSerie = int(POWCDAT(IPWC,2))
-
-C     Voltages are multiplied by the number of units connected in series
-      batMaxVolt = POWCDAT(IPWC,5) * float(nSerie)
-      batMinVolt = POWCDAT(IPWC,6) * float(nSerie)
-
-C ************** Calculations
-
-     
-C************** Temperature offset
-C This takes into account temperature's affect on voltage
-C as discussed by Gao(2002) and in Neil Saldanha's thesis.
-C It only affect the lion model but should be looked at for 
-C others
-
-      deltaVforT = voltage_offset_temp(IPWC,batTemp)
-
-
-C     Free voltage of the battery is the free voltage of a cell time the number of cells in series
-      OCV_Lion = ((E5*batDOD**5. + E4*batDOD**4. + E3*batDOD**3. +
-     &               E2*batDOD**2. + E1*batDOD + E0) + deltaVforT)
-     &               *float(nSerie)
-
-C     Make sure value is within boundaries
-C     This check is partly bypassed if the lead-acid battery is performing a mandatory
-C     charge cycle, because then the voltage is expected to surpass the batMaxVolt
-      IF ((OCV_Lion - deltaVforT*float(nSerie)) .GT. batMaxVolt) THEN
-        WRITE(IUOUT,*) 'Warning Battery Model: Free voltage above ',
-     &                  ' max in function OCV_Lion', (NSINC)
-C        WRITE(*,*) 'OCV_Lion' , (OCV_Lion)
-C        WRITE(*,*) 'BatDOD' , (batDOD)
-C        WRITE(*,*) 'batMaxVolt' , (batMaxVolt)
-        OCV_Lion = batMaxVolt
-
-      ELSEIF((OCV_Lion - deltaVforT*float(nSerie)) .LT. batMinVolt) THEN
-        WRITE(IUOUT,*) 'Warning Battery Model: Free voltage below ',
-     &                 'min in function OCV_Lion', (NSINC)
-C        WRITE(99,*) 'OCV_Lion' , (OCV_Lion)
-C        WRITE(99,*) 'BatDOD' , (batDOD)
-C        WRITE(99,*) 'batMinVolt' , (batMinVolt)
-        OCV_Lion = batMinVolt
-      ENDIF
-
-      END      
-
-C**************************************************************************
-C 55 RInt_Lion
-C**************************************************************************
-C
-C Created by: Neil Saldanha, January 2010
-C
-C - This subroutine returns the internal resistance of the battery
-C   as a function of its temperature, the current, the depth of discharge
-C   and the number of battery cells connected in parallel and in series
-C
-C This routine is called from various points of the program
-C 
-C INPUTS:
-C -batTemp: The battery's temperature (oC)
-C -batDOD: The battery's depth of discharge
-C -batI: The battery's current
-C -BatMode: 0 for charge, 1 for discharge
-C -IPWC: Power-only component index number
-C 
-C OUTPUTS:
-C -returns the battery's internal resistance (Ohm)
-C
-C *********************************************************************
-      REAL FUNCTION RInt_Lion(IPWC,batDOD,batMode)
-      IMPLICIT NONE
-#include "power.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER iuout          !- write unit number
-      INTEGER iuin           !- read unit number
-
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
-
-C PARAMETERS FROM SIGNATURE
-      REAL batDOD
-      INTEGER batMode,IPWC
-
-C Battery parameters
-      INTEGER nParal,nSerie ! number of battery cells connected in series and parallel
-C Coefficients for the capacity equation
-      REAL R5,R4,R3,R2,R1,R0,cellCapRef
-
-C************** Initialisation
-
-      IF(batMode .EQ. 0) THEN   ! charge mode -> use charge coefficients
-         R5 = POWCDAT(IPWC,24)
-         R4 = POWCDAT(IPWC,25)
-         R3 = POWCDAT(IPWC,26)
-         R2 = POWCDAT(IPWC,27)
-         R1 = POWCDAT(IPWC,28)
-         R0 = POWCDAT(IPWC,29)
-         
-      ELSE   ! discharge mode -> use discharge coefficient
-         R5 = POWCDAT(IPWC,24)
-         R4 = POWCDAT(IPWC,25)
-         R3 = POWCDAT(IPWC,26)
-         R2 = POWCDAT(IPWC,27)
-         R1 = POWCDAT(IPWC,28)
-         R0 = POWCDAT(IPWC,29)
-      ENDIF
-      nSerie = int(POWCDAT(IPWC,2))
-      nParal = int(POWCDAT(IPWC,1))
-      cellCapRef = POWCDAT(IPWC,3)
-
-C************** Calculation
-      !current for only one cell -> /nParal
-      IF (nParal .GT. 0.0 .AND. cellCapRef .GT. 0.0) THEN
-         RInt_Lion = FLOAT(nSerie)/FLOAT(nParal)*
-     &   (R5*batDOD**5. + R4*batDOD**4. + R3*batDOD**3. +
-     &    R2*batDOD**2. + R1*batDOD + R0)
-      ELSE
-         WRITE(IUOUT,*) 'Error Battery Model: zero Parallel ',
-     &                  'connections or reference battery ', 
-     &                  'capacity defined '
-      ENDIF
-
-C Make sure no negative value is returned
-      IF (RInt_Lion .LE. 0.0) THEN
-         WRITE(IUOUT,*) 'Warning Battery Model: Negative or Nul ',
-     &                  ' resistance in routine BatteryRInt'
-         RInt_Lion = 0.01
-      ENDIF
-
-      END
-
-
-C**************************************************************************
-C voltage_offset_temp
-C**************************************************************************
-C
-C Created By Neil Saldanha January 2010
-C
-C - This subroutine 
-C
-C INPUTS:
-C batTemp: battery temperature
-C 
-C OUTPUTS:
-C voltage_offset_temp: voltage offset due to temperature
-c *********************************************************************
-      REAL FUNCTION voltage_offset_temp(IPWC,batTemp)
-      
-      IMPLICIT NONE
-#include "power.h"
-#include "BATTERY.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER iuout          !- write unit number
-      INTEGER iuin           !- read unit number
-      
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
-
-C PARAMETERS FROM SIGNATURE
-      REAL batTemp
-      INTEGER IPWC
-
-C Temperature factors
-      REAL offset_1, offset_2, offset_3, offset_4, offset_5,
-     &     offset_6, offset_7, offset_8, t_1, t_2, t_3,
-     &     t_4, t_5, t_6, t_7, t_8
-
-
-C************** Initialisation
-
-C These are the voltage offset correction factors and the 
-C corresponding temperatures discussed in Neil Saldanha's thesis
-
-      t_1 = POWCDAT(IPWC,46)
-      offset_1 = POWCDAT(IPWC,48)
-      t_2 = POWCDAT(IPWC,49)
-      offset_2 = POWCDAT(IPWC,51)
-      t_3 = POWCDAT(IPWC,52)
-      offset_3 = POWCDAT(IPWC,54)
-      t_4 = POWCDAT(IPWC,55)
-      offset_4 = POWCDAT(IPWC,57)
-      t_5 = POWCDAT(IPWC,58)
-      offset_5 = POWCDAT(IPWC,60)
-      t_6 = POWCDAT(IPWC,61)
-      offset_6 = POWCDAT(IPWC,63)
-      t_7 = POWCDAT(IPWC,64)
-      offset_7 = POWCDAT(IPWC,66)
-      t_8 = POWCDAT(IPWC,67)
-      offset_8 = POWCDAT(IPWC,69)
-
-      
-C************** Calculations
-
-C     Linear interpolate to find voltage offset factor based on present battery temperature
-      IF (batTemp .LE. t_1) THEN ! battery is colder than lowest battery discharge temp
-        voltage_offset_temp = offset_1
-        
-      ELSEIF (batTemp .GE. t_1 .AND. batTemp .LE. t_2) THEN !between is between t_1 and t_2
-        voltage_offset_temp = (offset_2-offset_1)/(t_2-t_1)*batTemp + 
-     &                     (offset_1-(offset_2-offset_1)/(t_2-t_1)*t_1)
-     
-      ELSEIF (batTemp .GE. t_2 .AND. batTemp .LE. t_3) THEN !between is between t_2 and t_3
-        voltage_offset_temp = (offset_3-offset_2)/(t_3-t_2)*batTemp + 
-     &                     (offset_2-(offset_3-offset_2)/(t_3-t_2)*t_2)
-
-      ELSEIF (batTemp .GE. t_3 .AND. batTemp .LE. t_4) THEN !between is between t_3 and t_4
-        voltage_offset_temp = (offset_4-offset_3)/(t_4-t_3)*batTemp + 
-     &                     (offset_3-(offset_4-offset_3)/(t_4-t_3)*t_3)
-
-      ELSEIF (batTemp .GE. t_4 .AND. batTemp .LE. t_5) THEN !between is between t_4 and t_5
-        voltage_offset_temp = (offset_5-offset_4)/(t_5-t_4)*batTemp + 
-     &                     (offset_4-(offset_5-offset_4)/(t_5-t_4)*t_4)
-
-      ELSEIF (batTemp .GE. t_5 .AND. batTemp .LE. t_6) THEN !between is between t_5 and t_6
-        voltage_offset_temp = (offset_6-offset_5)/(t_6-t_5)*batTemp + 
-     &                     (offset_5-(offset_6-offset_5)/(t_6-t_5)*t_5)
-
-      ELSEIF (batTemp .GE. t_6 .AND. batTemp .LE. t_7) THEN !between is between t_6 and t_7
-        voltage_offset_temp = (offset_7-offset_6)/(t_7-t_6)*batTemp + 
-     &                     (offset_6-(offset_7-offset_6)/(t_7-t_6)*t_6)
-     
-      ELSEIF (batTemp .GE. t_7 .AND. batTemp .LE. t_8) THEN !between is between t_7 and t_8
-        voltage_offset_temp = (offset_8-offset_7)/(t_8-t_7)*batTemp + 
-     &                     (offset_7-(offset_8-offset_7)/(t_8-t_7)*t_7)     
-
-      ELSEIF (batTemp .GE. t_8) THEN ! battery is hotter than highest battery discharge temp
-        voltage_offset_temp = offset_8
-                  
-      ELSE ! really shouldn't happen
-        WRITE(IUOUT,*) 'Warning Battery Model: odd voltage offset ',
-     &                 'factor in function voltage_offset_temp'
-        voltage_offset_temp = 0.
-      ENDIF
-      
-       
-            
-      END
-      
-C**************************************************************************
-C Lion_BMS
-C**************************************************************************
-C
-C Created By Neil Saldanha January 2010
-C
-C - This subroutine 
-C
-C INPUTS:
-C -IPWC: Power-only component index number
-C -batTIni: The battery's initial temperature (oC)
-C -zoneT: Zone ambient temperature (oC) 
-C -DODIni: The battery's initial depth of discharge
-C -dtTStep: Duration of the time step (hour)
-C -batMode: 0 for charge, 1 for discharge
-C -maxC: The maximum curent that can flow through the battery (Amp)
-C -maxP: The maximum power that can flow through the battery (W)
-C -pLoad: The offer (what can be used) (W)
-C 
-C OUTPUTS:
-C -pParasitic: The power to run the circuitry (W)
-C -pHeaters: The power to the heaters (W)
-C -pBat: The actual power used by the battery (W)
-C -batVolt: Battery average voltage corresponding to these loads (V)
-C -batTFin: Battery temperature at the end of the time step (oC)
-C -batDODFin: Battery DOD at the end of the time step (%)
-C -batCur: Battery current (A)
-C -pIntHeat: Heat generated by the current flowing in the internal resistance of the battery
-C
-c *********************************************************************
-      SUBROUTINE Lion_BMS(IPWC,batTIni,zoneT,DODIni,dtTStep,batMode,
-     &                    maxC,maxP,pLoad,pBat,pHeaters,pParasitic,
-     &                    batVolt,batTFin,batDODFin,batCur,pIntHeat,
-     &                    hiVoltLion,loVoltLion,hiTempLion,loTempLion,
-     &                    gas_constant)     
-      IMPLICIT NONE
-#include "power.h"
-
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER iuout          !- write unit number
-      INTEGER iuin           !- read unit number
-      
-C Common holding the power-only component description read from the electric
-C network input file.
-      COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
-     &POWCOMPHTYP(MPOWCOM),POWCONEN(MPOWCOM,MPHAS),
-     &NPOWCDAT(MPOWCOM),NPOWCDATS(MPOWCOM),POWCDAT(MPOWCOM,MPWDAT)
-      integer npowcom        !- number of power-only components
-      integer powcomno       !- the power-only component reference number
-      integer powcomid       !- power-only component database id number
-      integer powcomphtyp    !- power-only component phase type
-      integer powconen       !- nodes connected to the power-only component
-      integer npowcdat       !- number of data items associated with the power-only component
-      integer npowcdats      !- number of string data items associated with the power-only component
-      real    powcdat        !- power-only component numerical data item
-
-C PARAMETERS FROM SIGNATURE (see routine comments for description)
-      REAL batTIni,zoneT,DODIni,dtTStep,maxC,maxP,pLoad,pBat,pHeaters,
-     &     pParasitic, batVolt,batTFin,batDODFin,batCur,pIntHeat     
-      INTEGER IPWC, batMode
-      INTEGER hiVoltLion,loVoltLion,hiTempLion,loTempLion
-
-C Declaration of functions used
-      REAL FinalDOD_Lion, CurForPow, AvgVolt, InternalHeat, RInt_Lion,
-     &     BatteryCap_Lion, PowForCur, MaxCurrent
-
-C Battery Parameters (technology and configuration)
-      INTEGER nParal, nSerie,    !Number of battery cells connected in paralel and in series
-     &        batMode_or,        !original batMode
-     &        iteration,         !iterations
-     &        max_iteration      !max iteration
-     
-C Local variables
-      REAL availpower,      ! Available power from the battery (W)
-     &     self_discharge,  ! self discharge of battery in amps
-     &     ko,              ! self discharge constant in amps 
-     &     E_as,            ! activation energy
-     &     heatersRes,      ! Heater resistance in ohms
-     &     hA,              ! heat loss factor W/oC
-     &     mCp,             ! thermal mass  
-     &     gas_constant,    ! gas constant (8.314..)
-     &     needed_power,    ! charge/discharge needed to bring battery back into safe limits
-     &     dummy,           ! dummy variable for iterations
-     &     relax,           ! relaxation factor
-     &     pLoad_or,        ! original load offered
-     &     neededHeat,
-     &     maxPheaters
-
-C************** Initialisation
-      nParal = int(POWCDAT(IPWC,1))
-      nSerie = int(POWCDAT(IPWC,2))         
-	  pParasitic = (POWCDAT(IPWC,70))
-	  ko = (POWCDAT(IPWC,70))          
-	  E_as = (POWCDAT(IPWC,71)) 
-	  heatersRes = POWCDAT(IPWC,13)/(float(nParal)+float(nSerie)) !Should that be plus or time series & parrallel?
-      hA = POWCDAT(IPWC,12)*(float(nParal)+float(nSerie)) 
-      mCp = POWCDAT(IPWC,11)*(float(nParal)+float(nSerie))       
-
-C Initial heater electric draw in W, this will change if the low temp flag is on
-      pHeaters = 0.
-
-C Same with self discharge (changes only if battery is in idle)
-      self_discharge = 0.   
-
-C Store the original battery mode and load for reference
-      batMode_or = batMode
-      pLoad_or = pLoad
-
-C Set a relaxation factor & iterations
-      relax = 0.1
-      iteration = 0
-      max_iteration = 100
- 	       
-      IF (hiVoltLion .EQ. 1) THEN      ! Over voltage flag is on, battery needs to discharge
-C evaluate how much the battery would have to dump over the next time step to bring into 
-C safe limits
-        batMode = 1  
-        dummy = 0.
-        batCur = 100. !initial high guess
-        
-        DO WHILE (abs(batCur-dummy) .GT. relax .AND. iteration 
-     &        .LT. max_iteration )
-          dummy = batCur
-          
-C         The needed energy in watts to return to safe points          
-          needed_power = (POWCDAT(IPWC,15)-DODIni)                 !delta DOD
-     &        *BatteryCap_Lion(IPWC,batTIni,batCur)                !battery capacity
-     &        *AvgVolt(IPWC,batTIni,DODIni,batMode,dtTStep,batCur) !voltage
-     &        /dtTStep                                             !time step
-          batCur = CurForPow(IPWC,batTIni,DODIni,batMode,dtTStep,
-     &             needed_power)
-          iteration = iteration + 1
-        END DO
-        
-        pLoad = needed_power
-        
-        IF (iteration .EQ. max_iteration) THEN
-          WRITE(IUOUT,*) 'Warning Battery Model: Troublesome',
-     &                   'Convergeance in Lion_BMS hiVoltage flag'
-        ENDIF    
-      
-        IF (batMode_or .NE. 1) THEN ! Originally in charge or idle mode, cant happen
-                                    ! ONCE AGAIN THIS DUMP WOULD NEED TO BE TO THE GRID 
-                                    ! to bring into safe limits
-
-C         Re-evaluate the max current and power that you could discharge now that you changed modes                                                                        
-          maxC = MaxCurrent(IPWC,batTIni,DODIni,batMode,dtTStep)
-          maxP = PowForCur(IPWC,batTIni,DODIni,batMode,dtTStep,
-     &                             maxC)
-                                 
-        ELSE ! Battery in discharge or idle determine how much excess power the batt needs to dump
-          
-          IF (pLoad_or .GE. pLoad) THEN ! What can be offered exceeds what needs to be dumped
-            pLoad = pLoad_or !assign load back to original because it is enough to safely return battery
-                      
-          ELSE ! What can be offered doesn't exceed and some will dump to the grid        
-          
-          ENDIF
-        
-        ENDIF                                   
-        
-        
-      ELSEIF (loVoltLion .EQ. 1) THEN  ! Under voltage flag is on, battery needs to charge
-C evaluate how much the battery would have to dump over the next time step to bring into 
-C safe limits
-        batMode = 0  
-        dummy = 0.
-        batCur = 100.
-        
-        DO WHILE (abs(batCur-dummy) .GT. relax .AND. iteration 
-     &        .LT. max_iteration )
-          dummy = batCur
-          needed_power = (DODIni-POWCDAT(IPWC,14))                 !delta DOD
-     &        *BatteryCap_Lion(IPWC,batTIni,batCur)                !battery capacity
-     &        *AvgVolt(IPWC,batTIni,DODIni,batMode,dtTStep,batCur) !voltage
-     &        /dtTStep                                             !time step
-          batCur = CurForPow(IPWC,
-     &             batTIni,DODIni,batMode,dtTStep,needed_power)
-          iteration = iteration + 1
-        END DO
-        
-        pLoad = needed_power
-        
-        IF (iteration .EQ. max_iteration) THEN
-          WRITE(IUOUT,*) 'Warning Battery Model: Troublesome',
-     &                   'Convergeance in Lion_BMS loVoltage flag'               
-        ENDIF    
-
-        IF (batMode_or .NE. 0) THEN ! discharge or idle, can't happen
-                                 ! figure out charge needed over next time step 
-                                 ! HOW DO I SPECIFY GRID/COGEN (ie. can i force a charge?)
-                                 ! to bring into safe limits
-
-C         Re-evaluate the max current and power that you could discharge now that you changed modes                                                                        
-          maxC = MaxCurrent(IPWC,batTIni,DODIni,batMode,dtTStep)
-          maxP = PowForCur(IPWC,batTIni,DODIni,batMode,dtTStep,
-     &                             maxC)
-
-                                 
-        ELSE ! Battery in charge or idle determine how much excess power the batt needs to charge
-        
-          IF (pLoad_or .GE. pLoad) THEN ! What can be offered exceeds what needs to be dumped
-            pLoad = pLoad_or !assign load back to original because it is enough to safely return battery              
-                  
-          ELSE ! What can be offered doesn't exceed and some will dump to the grid
-          
-          ENDIF        
-        
-        ENDIF
-
-                  
-      ELSEIF (hiTempLion .EQ. 1) THEN      ! Over temp flag is on, battery needs to idle
-        batMode = 2
-        pLoad = 0.
-        self_discharge = max(ko*exponent(-E_as/(gas_constant*batTIni))
-     &                   *(1-DODIni),0.)
-
-     
-      ELSEIF (loTempLion .EQ. 1) THEN  ! Under temp flag is on, battery needs heat
-C figure out heat needed from battery to bring back into safe limits
-        
-        dummy = 0.
-        batCur = 100.
-        
-        DO WHILE (abs(batCur-dummy) .GT. relax .OR. iteration 
-     &        .LT. max_iteration )
-          dummy = batCur
-          neededHeat = (POWCDAT(IPWC,17)-batTIni)*mCp/dtTStep + 
-     &                hA*(batTIni-zoneT) - 
-     &                RInt_Lion(IPWC,DODIni,batMode)*batCur**2.
-          batCur = CurForPow(IPWC,batTIni,
-     &             DODIni,batMode,dtTStep,neededHeat)
-          iteration = iteration + 1
-        END DO
-        
-        IF (iteration .EQ. max_iteration) THEN
-          WRITE(IUOUT,*) 'Warning Battery Model: Troublesome',
-     &                   'Convergeance in Lion_BMS loTemp flag'
-
-        ENDIF
-        
-        !YOU NEED A DODAVG HERE              |
-        maxPheaters = AvgVolt(IPWC,batTIni,DODIni,batMode,dtTStep,maxC)**2./
-     &                heatersRes !maximum heat that can be drawn from battery
-
-        pHeaters = min(neededHeat,maxPheaters) !needed heat can't exceed maximum
-        
-        pLoad = max((pLoad - pHeaters),0.) ! this is what's left for the battery
-        
-      ELSE ! Normal operation
-            
-        IF (batMode .EQ. 2) THEN  ! Idle, get self discharge
-          self_discharge = max(ko*exponent(-E_as/(gas_constant*batTIni))
-     &                     *(1-DODIni),0.)
-                
-        ELSEIF (batMode .EQ. 1) THEN ! Discharge
-      
-        ELSEIF (batMode .EQ. 0) THEN ! Charge
-        
-        ENDIF 
-
-      ENDIF
-      
-      IF (batMode .EQ. 1) THEN !Charge satisfie load + heaters + parasitic
-        pBat = MIN((pLoad-pHeaters-pParasitic),maxP)
-        
-      ELSE !Discharge ***CAN YOU COME BACK TO THIS??***
-        pBat = MIN((pLoad+pHeaters+pParasitic),maxP)
-      
-      ENDIF
-            
-            
-C     Evaluate the load on the battery
-      batCur = CurForPow(IPWC,batTIni,DODIni,batMode,dtTStep,pBat)
-     &         + self_discharge
-      
-      batVolt = AvgVolt(IPWC,batTIni,DODIni,batMode,dtTStep,batCur)
-
-      pIntHeat = InternalHeat(IPWC,batTIni,DODIni,batMode,dtTStep,
-     &          batCur)
-      
-
-C     Get battery's final state      **NEED TO CHANGE DODIni to DODavg for BOTH NEIL - Nevermind i think this should work**
-
-C      IF (batMode .EQ. 0) THEN !The only reason this if is here is to change the current to a positive value in charge
-        batDODFin = FinalDOD_Lion(IPWC,batTIni,DODIni,batMode,dtTStep,
-     &            batCur)
-
-C      ELSE
-C        batDODFin = FinalDOD_Lion(IPWC,batTIni,DODIni,batMode,dtTStep,
-C     &            batCur)
-           
-C      ENDIF
-      
-      write(*,*) 'effin DOD' , (batDODFin) 
-      write(*,*) 'current' , (batCur)
-      write(*,*) 'voltage' , (batVolt)  
-
-      batTFin = batTIni*exp(-hA*dtTStep/mCp) + (zoneT + 
-     &    (RInt_Lion(IPWC,(DODIni+batDODFin)/2.,batMode)
-     &    *batCur**2. + pHeaters)/hA)*(1. - exp(-hA/mCp*dtTStep))
-      
-           
-C**To keep the battery at 25 Celcius for debugging     
-C      batTFin = 25.
-          
-      END
-            
 C**************************************************************************
 C 99 List of input parameters lead acid battery model
 C**************************************************************************
@@ -4898,103 +3786,3 @@ C   POWCDAT(IPWC,56): Mandatory charge interval (days)
 C   POWCDAT(IPWC,57): Maximum duration mandatory charge cycle (hours)
 
 
-
-
-
-
-C****************************************************				
-C List of inut parameters for lithium ion battery model (IPWC = 22)				
-C****************************************************				
-C---------------------------				
-C Lithium ion battery parameters				
-C---------------------------				
-C POWCDAT (IPWC,1):	 nParal			Number of cells connected in parrallel
-C POWCDAT (IPWC,2):	 nSeries		Number of cells connected in series
-C POWCDAT (IPWC,3):	 cellCapRef		reference capacity for a unit cell (Amp h)
-C POWCDAT (IPWC,4):	 tempRef		battery reference operating temperature
-C POWCDAT (IPWC,5):	 maxVolt	 	DOD=0 (V) of a single cell
-C POWCDAT (IPWC,6):	 minVolt	 	DOD=100% (V) of a single cell
-C POWCDAT (IPWC,7):	 currentMax		Maximum charge/discharge current of one cell(Amps)
-C POWCDAT (IPWC,8):	 voltMax		Maximum charge/discharge voltage of one cell(V)
-C POWCDAT (IPWC,9):	 batTempInit	initial battery temperature  (°C) 
-C POWCDAT (IPWC,10): batinitDOD		initial depth of discharge (probably zero for a charged battery)
-C POWCDAT (IPWC,11): thermalMass	thermal mass of a single cell -mass*Cp (J/Â°C)
-C POWCDAT (IPWC,12): heatLossFact	heat loss factor h*A (W/Â°C)
-C POWCDAT (IPWC,13): heatersRes	 	resistance of the heaters (Ohm)
-C POWCDAT (IPWC,14): upperBoundDOD	maximum DOD of battery (in percentage... probably 0.8)
-C POWCDAT (IPWC,15): lowerBoundDOD	minimum DOD of battery (in percentage... probably 0)
-C POWCDAT (IPWC,16): tempMax		Maximum battery temperature (°C)
-C POWCDAT (IPWC,17): tempMin		Minimum battery temperature (°C)
-C---------------------------				
-C OCV voltage as a function of DOD of a single cell Vocv(DOD) = E5*DOD^5 + E4*DOD^4 + E3*DOD^3 + E2*DOD^2 + E1*DOD + E0				
-C---------------------------				
-C POWCDAT (IPWC,18): E5	
-C POWCDAT (IPWC,19): E4	
-C POWCDAT (IPWC,20): E3	
-C POWCDAT (IPWC,21): E2	
-C POWCDAT (IPWC,22): E1	
-C POWCDAT (IPWC,23): E0	
-C---------------------------				
-C Rint as a function of DOD at REFERENCE CURRENT of a single cell Rint(DOD) = Rint5*DOD^5 +  Rint4*DOD^4 + Rint3*DOD^3 + Rint2*DOD^2 + Rint1*DOD + Rint0				
-C This is determined by polyfitting the difference between the OCV and Vref divided 				
-C by the reference current using the OCV DOD scale (see Neil Saldanha's thesis for more info)				
-C---------------------------				
-C POWCDAT (IPWC,24):	Rint5	
-C POWCDAT (IPWC,25):	Rint4	
-C POWCDAT (IPWC,26):	Rint3	
-C POWCDAT (IPWC,27):	Rint2	
-C POWCDAT (IPWC,28):	Rint1	
-C POWCDAT (IPWC,29):	Rint0	
-C---------------------------				
-C current factors and alphas relative to OCV as described by Gao (2002) and in Neil Saldanha's master thesis				
-C---------------------------				
-C POWCDAT (IPWC,30):	c1	The first current discharged at (Amps)
-C POWCDAT (IPWC,31):	alpha1	The alpha required to discharge/charge at first rate
-C POWCDAT (IPWC,32):	c2	The second current discharged at (Amps)
-C POWCDAT (IPWC,33):	alpha2	The alpha required to discharge/charge at second rate
-C POWCDAT (IPWC,34):	c3	The third current discharged at (Amps) 
-C POWCDAT (IPWC,35):	alpha3	The alpha required to discharge/charge at third rate 
-C POWCDAT (IPWC,36):	c4	The fourth current discharged at (Amps) THIS SHOULD ALSO BE YOUR REFERENCE CURRENT
-C POWCDAT (IPWC,37):	alpha4	The alpha required to discharge/charge at fourth rate THIS SHOULD ALSO BE YOUR REFERENCE CURRENT
-C POWCDAT (IPWC,38):	c5	The fifth current discharged at (Amps)
-C POWCDAT (IPWC,39):	alpha5	The alpha required to discharge/charge at fifth rate
-C POWCDAT (IPWC,40):	c6	The sixth current discharged at (Amps)
-C POWCDAT (IPWC,41):	alpha6	The alpha required to discharge/charge at sixth rate
-C POWCDAT (IPWC,42):	c7	The seventh current discharged at (Amps)
-C POWCDAT (IPWC,43):	alpha7	The alpha required to discharge/charge at seventh rate
-C POWCDAT (IPWC,44):	c8	The eighth current discharged at (Amps)
-C POWCDAT (IPWC,45):	alpha8	The alpha required to discharge/charge at eighth rate
-C---------------------------				
-C temperature factors, betas and offsets relative to OCV as described by Gao (2002) and in Neil Saldanha's master thesis				
-C---------------------------				
-C POWCDAT (IPWC,46):	t1	The first temperature discharged/charged at in Celsius
-C POWCDAT (IPWC,47):	beta1	The beta required to discharge/charge at the first temperature
-C POWCDAT (IPWC,48):	offset1	The voltage offset required to discharge/charge at the first temperature (V)
-C POWCDAT (IPWC,49):	t2	The second temperature discharged/charged at in Celsius
-C POWCDAT (IPWC,50):	beta2	The beta required to discharge/charge at the second temperature
-C POWCDAT (IPWC,51):	offset2	The voltage offset required to discharge/charge at the second temperature (V)
-C POWCDAT (IPWC,52):	t3	The third temperature discharged/charged at in Celsius
-C POWCDAT (IPWC,53):	beta3	The beta required to discharge/charge at the third temperature
-C POWCDAT (IPWC,54):	offset3	The voltage offset required to discharge/charge at the third temperature (V)
-C POWCDAT (IPWC,55):	t4	The fourth temperature discharged/charged at in Celsius THIS SHOULD ALSO BE YOUR REFERENCE TEMPERATURE
-C POWCDAT (IPWC,56):	beta4	The beta required to discharge/charge at the fourth temperature THIS SHOULD ALSO BE YOUR REFERENCE TEMPERATURE
-C POWCDAT (IPWC,57):	offset4	The voltage offset required to discharge/charge at the fourth temperature (V) THIS SHOULD ALSO BE YOUR REFERENCE TEMPERATURE
-C POWCDAT (IPWC,58):	t5	The fifth temperature discharged/charged at in Celsius
-C POWCDAT (IPWC,59):	beta5	The beta required to discharge/charge at the fifth temperature
-C POWCDAT (IPWC,60):	offset5	The voltage offset required to discharge/charge at the fifth temperature (V)
-C POWCDAT (IPWC,61):	t6	The sixth temperature discharged/charged at in Celsius
-C POWCDAT (IPWC,62):	beta6	The beta required to discharge/charge at the sixth temperature
-C POWCDAT (IPWC,63):	offset6	The voltage offset required to discharge/charge at the sixth temperature (V)
-C POWCDAT (IPWC,64):	t7	The seventh temperature discharged/charged at in Celsius
-C POWCDAT (IPWC,65):	beta7	The beta required to discharge/charge at the seventh temperature
-C POWCDAT (IPWC,66):	offset7	The voltage offset required to discharge/charge at the seventh temperature (V)
-C POWCDAT (IPWC,67):	t8	The eighth temperature discharged/charged at in Celsius
-C POWCDAT (IPWC,68):	beta8	The beta required to discharge/charge at the eighth temperature
-C POWCDAT (IPWC,69):	offset8	The voltage offset required to discharge/charge at the eighth temperature (V)
-C---------------------------				
-C Extra parameters				
-C---------------------------				
-C POWCDAT (IPWC,70):	k_o	self discharge constant in amps (keep zero if unknown or for zero self discharge)
-C POWCDAT (IPWC,71):	E_as	Activation energy for self-discharge in kJ.kmol-1 (keep zero if unknown  or for zero self discharge)
-C POWCDAT (IPWC,72):	iZoneIndex	The index of the zone where the battery is located (-)
-C POWCDAT (IPWC,73):	pParasitic	The power required to run the li-on BMS circuitry (W)
