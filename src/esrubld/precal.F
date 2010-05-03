@@ -482,7 +482,7 @@ C Floor area is required, if trace level is verbose echo the base area.
       else
         FLOORA(ICOMP)=SNA(ICOMP,NSUR)
       ENDIF
-      
+
 C Zero derived gains.
       do 110 ID=1,MDTY
         do 120 IG=1,MGTY
@@ -587,13 +587,14 @@ C Assign the power consumption evenly over the three phases for a 3-phase load.
           call eclose(CMGS(IDAY,I),0.00,0.001,close)
           if (close) then
 c if -1 and "m2/person" is zero, the intention is most likely "no occupancy"!
-            NPERSN=0
+            dNPERSN=0.0
           else
-            NPERSN=INT(FLOORA(ICOMP)/CMGS(IDAY,I))
+c            NPERSN=INT(FLOORA(ICOMP)/CMGS(IDAY,I))
+            dNPERSN=FLOORA(ICOMP)/CMGS(IDAY,I)
           endif
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=NPERSN*70.1*CONC(IDAY,I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=NPERSN*70.1*RADC(IDAY,I)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=NPERSN*45.0
+          CGSENC(ICOMP,IDAY,ITYP,IPER)=dNPERSN*70.1*CONC(IDAY,I)
+          CGSENR(ICOMP,IDAY,ITYP,IPER)=dNPERSN*70.1*RADC(IDAY,I)
+          CGLAT(ICOMP,IDAY,ITYP,IPER)=dNPERSN*45.0
         else
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
           IPER=NCGPER(ICOMP,IDAY,ITYP)
