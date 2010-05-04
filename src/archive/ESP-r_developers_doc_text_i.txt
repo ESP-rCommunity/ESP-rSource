@@ -19,7 +19,7 @@ Edited by Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 8 December 2009
+Version of 4 May 2010
 .sp 2
 .SH
 Introduction
@@ -172,7 +172,7 @@ access the repository from any location and who can know
 within minutes the latest changes.  This virtual
 development environment is made possible because
 the ESP-r repository is held on an externally hosted
-environment with a domain owned by the community (esp-r.net). 
+environment with a domain (espr.svn.cvsdude.com). 
 .LP
 The transition from a machine named sigma to a virtual
 development community with more than 60 branches and
@@ -500,7 +500,7 @@ identifies Fortran 90 specific code from Fortran 77 code. And
 .LP
 associates particular blocks of code with the GCC version 4 compiler. And
 .ML
-#ifdef OSX
+#ifdef OSI
       integer impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
 #else
       integer*8 impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
@@ -3635,9 +3635,14 @@ fails remove the jwh_for_merge folder and extract the tar file.
   svn commit
 .ES
 .LP
-The merge command can take up to an hour to complete its task and it
-may not provide any feedback while it is doing this.  At the end of the
-process commit the merge.
+Depending on network speed this kind of merge command can take several 
+hours to complete and often there is little or no feedback
+while svn is processing the command. If there are network faults the process may
+abort and essentially what you need to do is remove the local sandbox
+and restore from the before-merge tar file and try again. It is unlikely
+that there will be conflicts (if so they will need to be resolved and
+documented). At the end of the process commit the merge with an
+explanitory note.
 .LP
 The next steps are to merge back in the separate commits that were
 pending. Hopefully you would have been taking notes as the development
@@ -3648,8 +3653,10 @@ a particular branch (from revision 4320 to revision 4340) - the command would be
 svn log -v -r 4320:4340 https://espr.svn.cvsdude.com/esp-r/branches/Jon_Hand > 4340a.txt
 .ES
 .LP
-The following are an extract from notes that were included as the pending
-commits were merged back into the branch.
+Double check the revision numbers prior to giving each of the merge-back
+commands. Again it can be helpful to make a tar file of the sandbox
+at the start of the process. The following are an extract from notes 
+taken as the pending commits were merged back into the branch.
 .ML
 Re-establish earlier code:
 svn merge -r 4126:4127 https://espr.svn.cvsdude.com/esp-r/branches/Jon_Hand
@@ -3676,11 +3683,16 @@ svn resolved visvec.F
 .LP
 Note that there were a number of ranges of commits that were
 required.  After each merge it was noted whether the merge was
-clean or the nature of the conflict.  The commands svn resolved
+clean or the nature of the conflict.  The command 'svn resolved'
 are necessary after you have corrected the conflict to inform
 svn of the changes. Such notes may seem pedantic, however, they
 become your record of actions so that you do not later attempt
 to merge the same changes a second time.
+.LP
+To clarify whether merges have worked some developers do a visual
+comparison between the code and an un-touched source code sandbox
+(hence the recommendation to checkout a fresh source code sandbox
+so that earlier sandboxes are available for comparison).
 .LP
 Remember, good practice is for the development community to update 
 their own branches as soon as practical with changes in the 
@@ -3818,14 +3830,7 @@ end
 The automatic syntax checks which are
 run after a commit is made have access to a summary of the
 differences between the current syntax check and the prior
-syntax check as in Figure 6.
-.sp
-.ML
-         << figure to be added >>
-
-.ES
-.ce
-Figure 6 reported syntax differences
+syntax check.
 .LP
 Other errors are only detected at run-time.  Part of the
 automatic test sequence runs a series of more than one hundred 
@@ -4021,7 +4026,7 @@ code header (also known as include) files.
 The following command will download ESP-r's source code from the ESP-r Central repository to
 the current working directory of your local computer:
 .ML
-  svn checkout  https://esp-r.net/espr/esp-r/trunk/
+  svn checkout  https://espr.svn.cvsdude.com/esp-r/trunk/
 .ES
 With this working directory, you will be able to compile ESP-r on your
 own computer. Though you will also be able to alter the source code,
@@ -4030,7 +4035,7 @@ The \fItrunk\fR is the official release that is updated a few times
 per year. If you want the latest version you would use an alternative
 checkout command:
 .ML
-  svn checkout  https://esp-r.net/espr/esp-r/development_branch/
+  svn checkout  https://espr.svn.cvsdude.com/esp-r/branches/development_branch/
 .ES
 .LP
 If you're contemplating modifying ESP-r, are strongly encouraged to
@@ -4264,7 +4269,7 @@ Determine the most recent revision (i.e. the highest number) on the development_
   ---------------------- (OUTPUT) ----------------------------------------
   Path: development_branch
   URL: https://espr.svn.cvsdude.com/esp-r/branches/development_branch
-  Repository Root: https://esp-r.net/espr/esp-r
+  Repository Root: https://espr.svn.cvsdude.com/esp-r
   Repository UUID: 7d53e970-de11-0410-8a54-3d01b9da36cf
   Revision: 385
   Node Kind: directory
