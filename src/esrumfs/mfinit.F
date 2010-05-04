@@ -60,6 +60,7 @@ C Defaults.
       logical XST,OK,DOK
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer ier
 
 C Initiates filling of valid fluid flow component type arrays
       CALL MFCDAT
@@ -196,6 +197,7 @@ C Assign climate file and read year number.
      &    96,DCLIM,'climate file',IER,3)
       endif
       CALL ERPFREE(IFCLM,ISTAT)
+      ier=0
       call EFOPRAN(IFCLM,lltmp,144,1,IER)
       IF(ier.eq.0)THEN
         READ(IFCLM,REC=366,ERR=999) IRY

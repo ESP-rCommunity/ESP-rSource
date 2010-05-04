@@ -132,6 +132,7 @@ C This is the main network management routine.
 #include "gnetwk.h"
 #include "building.h"
 #include "espriou.h"
+#include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
@@ -151,13 +152,9 @@ C Graphics and ESP-r default commons
 
 C Path to problem and command line file (if any).
       COMMON/RPATH/PATH
-      COMMON/UHOME/UPATH
 
 C Legacy flow file commons.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-
-C Defaults.
-      COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Icon commons
       COMMON/NWKICN/NNICN,ICONTP(MICN),XYZICON(MICN,3),NICONATR(MICN),
@@ -185,7 +182,7 @@ C Grid commons
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
       COMMON/NWKTYP/INWKTYP,vergnf
       COMMON/ICONDBNAM/ICONDBFL
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
 C Icon rotation angle and grid common blocks.
       COMMON/IROT/ROTA
@@ -221,8 +218,7 @@ C Name of current application
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       CHARACTER*34 ITEM(26)
-      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-      CHARACTER INF*144,H*72,PATH*72,UPATH*72
+      CHARACTER INF*144,H*72,PATH*72
       CHARACTER FS*1,STR*72,outs*124,outstr*124
       LOGICAL UNIXOK,OK,DOK,CLOSEM,CLOSEX,isexavail
       dimension IVAL(MNWKTYP)
@@ -231,7 +227,7 @@ C Name of current application
       character dgtagatr*12,dgmenuatr*32,dgatrib*12
       character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
       CHARACTER*72 LAPROB*72
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -989,7 +985,7 @@ C Grid commons
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12,OUTS1*26
       LOGICAL GON,SON,greyok
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
@@ -2111,7 +2107,7 @@ C      REAL ENV,PARA,CPARA,SUB_MATRIX_A,SUB_MATRIX_B
 C      REAL MATRIX_A,MATRIX_B
 
       LOGICAL ISEL,CSEL,INBOUND,CLOSE
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
       integer iix1,iiy1,iix2,iiy2  ! passed to edline
 #else
@@ -2896,6 +2892,11 @@ C CATIES is menu entry for each data field
       CHARACTER CATSI*12,IECDATE*34,CATIES*32,
      &IECDATEs*49,DATCATIE*12,TAGCATIE*12,t32*32
 
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
 C Clear the menu structures.
       NCATI=0
@@ -3075,8 +3076,10 @@ C If a long list include page facility text.
 
 C Make menu only as wide as it needs to be.
         if(MMOD.eq.8)then
+          impx=0
+          impy=0
           CALL VWMENU('Global attributes',IECDATEs,NECDATAs,
-     &      0,0,iw,irpx,irpy,ICOUT2)
+     &      impx,impy,iw,irpx,irpy,ICOUT2)
         else
           CALL EMENU('Global attributes',IECDATEs,NECDATAs,
      &      ICOUT2)

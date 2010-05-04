@@ -453,7 +453,7 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer nbofhelp   ! how many help lines to display for different menu types.
 
       logical SLIST,NLIST,MRTLIST,OKL,dok,ok
-#ifdef OSX
+#ifdef OSI
       integer iid1,iid2
 #else
       integer*8 iid1,iid2

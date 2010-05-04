@@ -34,12 +34,12 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    gint lnblankstr;     /* for the blank string */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
-   char blankstr[90];
+   char blankstr[96];
    
    *ier=0;	/* Reset value of ier flag */
 
 /* create a string full of blanks for use in clearing reply_local */
-   strcpy(blankstr,"                                                                                         ");
+   strcpy(blankstr,"                                                                                               ");
    lnblankstr=lenrep-1;
 
    f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
@@ -141,12 +141,12 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
    gint lnblankstr;		/* for the blank string */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
-   char blankstr[90];
+   char blankstr[96];
 
    *ier=0;	/* Reset value of ier flag */
 
 /* create a string full of blanks for use in clearing reply_local */
-   strcpy(blankstr,"                                                                                         ");
+   strcpy(blankstr,"                                                                                               ");
    lnblankstr=lenrep-1;
 
    f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
@@ -256,12 +256,12 @@ void askdialogcncl_(char *q1, char *reply, char *cncl, long int *ier, int lenq1,
    gint lnblankstr;		/* for the blank string */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
-   char blankstr[90];
+   char blankstr[96];
 
    *ier=0;	/* Reset value of ier flag */
 
 /* create a string full of blanks for use in clearing reply_local */
-   strcpy(blankstr,"                                                                                         ");
+   strcpy(blankstr,"                                                                                               ");
    lnblankstr=lenrep-1;
 
    f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
@@ -366,12 +366,12 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
    gint lnblankstr;     /* for the blank string */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
-   char blankstr[90];
+   char blankstr[96];
 
    *ier=0;	/* Reset value of ier flag */
 
 /* create a string full of blanks for use in clearing reply_local */
-   strcpy(blankstr,"                                                                                         ");
+   strcpy(blankstr,"                                                                                               ");
    lnblankstr=lenrep-1;
 
    f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */

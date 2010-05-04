@@ -98,6 +98,8 @@ C Active domain common.
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical CFDOK,concat
 
+      integer ier
+
 C Check and see if in a remote folder.
 
 C Debug.
@@ -166,6 +168,7 @@ C the user will be asked to confirm the results file name (and path)
 C If remote path then use EFOPRAN otherwise FPRAND.
       RFILE=LTMP
       if(iw.eq.1)then
+        ier=0
         call EFOPRAN(IUNIT,RFILE,nzrl,3,IER)
         if(ier.ne.0)goto 4
       else
@@ -304,6 +307,7 @@ C user before overwriting. In case of specifying a non-relative
 C file path name use FPOPEN.
         IMFRES=IFIL+4
         if(iw.eq.1)then
+          ier=0
           CALL EFOPRAN(IMFRES,LAFRES,NMRL,3,IER)
           if(ier.ne.0)goto 9
         else
@@ -371,6 +375,7 @@ C the user will be asked to confirm the results file name (and path)
 
 C If remote path then use EFOPRAN otherwise FPRAND.
       if(iw.eq.1)then
+        ier=0
         call EFOPRAN(IUNIT,PFILE,nprl,3,IER)
         if(ier.ne.0)goto 103
       else
@@ -545,6 +550,7 @@ C file path name use FPRAND.
         IELFIL=IFIL+MADFIL
         IELIBW=MELIBW
         if(iw.eq.1)then
+          ier=0
           CALL EFOPRAN(IELFIL,ERESLIB,IELIBW,3,IER)
           if(ier.ne.0)goto 11
         else
@@ -601,6 +607,7 @@ C Open the CFD results file on ICFLIB, if it exists check with
 C user before overwriting. In case of specifying a non-relative
 C file path name use FPOPEN.
         if(iw.eq.1)then
+          ier=0
           call EFOPRAN(ICFLIB,CFRESF,MCEL1D,3,IER)
           if(ier.ne.0)GOTO 591
         else

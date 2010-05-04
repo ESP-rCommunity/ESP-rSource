@@ -344,6 +344,9 @@ C If there were no errors in reading header line then read another.
         RETURN
       endif
 
+      I=0   ! set to something outside the if else structure
+      INICNN=0
+
 C Icons description section of gnf file.
   21  CALL STRIPC(INUNIT,OUTSTR,99,ND,0,'gnf icon lines',IER)
       IF(IER.NE.0) CONT=.FALSE. 
@@ -1637,7 +1640,7 @@ C Icon rotation angle
 
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
       CHARACTER NWICNM*12,NWKTYPSTR*12,NWICNHIS*40,NWICNLBL*4
@@ -1645,7 +1648,7 @@ C Selected entity (component and connection) common
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
       LOGICAL GON,SON,ISEL,CSEL
 
 C Initialise the location of the icons

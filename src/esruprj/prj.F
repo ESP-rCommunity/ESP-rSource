@@ -55,6 +55,7 @@ C espriou.h provides currentfile, defdbfl exemfl.
 #include "prj3dv.h"
 #include "ipvdata.h"
 #include "sbem.h"
+#include "schedule.h"
       PARAMETER (MSTMC=20)
       
       integer lnblnk  ! function definition
@@ -110,19 +111,8 @@ C Indicator of possible focus zone.
 C Redirected text/graphics parameters.
       common/exporttgi/ixopen,ixloc,ixunit
 
-C Defaults for some of the obscure files.
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
-
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-
-C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
@@ -158,8 +148,6 @@ C IDST tool commands
       common/idstb/nidst
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
 
-C Dispersed demands notes and file name.
-      COMMON/BL1/dmdsdesc,bdmds
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       COMMON/Vld20/Vldtng
 
@@ -178,7 +166,8 @@ C Name of current application
       character*72 LCFGF,H,LPRJLG
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
-      character outs*124,outstr*124,outs248*248
+      character outs*124,outstr*124
+C      character outs248*248
       character path*72,upath*72,cfgroot*24,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
@@ -191,7 +180,7 @@ C Name of current application
       character docpth*24,tmppth*24,dbspth*24
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
-      CHARACTER dmdsdesc*248,bdmds*72,cpth*48,cmdn*48,topt*72
+      CHARACTER cpth*48,cmdn*48,topt*72
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
       CHARACTER dinstpath*48,dirpath*48
       character useraction*8  ! returned from exemplar access call.
@@ -209,7 +198,7 @@ C Returned parameters from silentread.
       integer numberofzones ! to pass to updwire rather than ncomp
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -505,15 +494,15 @@ C databases may make use of this unit temporarily).
       ICLIM=IFIL
       LCLIM=DCLIM
 
-      LAPRES=DAPRES
+      write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
 
 C Multi-layer constructions db on channel IFIL+3.
       IFMUL=IFIL+3
-      LFMUL=DFMUL
+      write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
 C Materials db on channel IFIL+4.
       IFMAT=IFIL+4
-      LFMAT=DFCON
+      write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
 C System configuration file on channel IFIL+5. 
       IFCFG=IFIL+5
@@ -522,23 +511,23 @@ C System configuration file on channel IFIL+5.
 
 C Mass flow network, profiles and optical dbs on channel IFIL+6. 
       IOPTDB=IFIL+6
-      LOPTDB=DOPTDB
+      write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
 
       IPRODB=IFIL+6
 
 C Temporal information on channel IFIL+7.
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
-      LTDF='UNKNOWN'
-      LTDFA='UNKNOWN'
+      write(LTDF,'(a)') 'UNKNOWN'
+      write(LTDFA,'(a)') 'UNKNOWN'
       ITDFLG=0
 
-      LPRFDB=DPRFDB
+      write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
 
-      LPCDB=DPCDB
+      write(LPCDB,'(a)') DPCDB(1:lnblnk(DPCDB))
 
 C Special materials/miscel component database.
-      MCMPDBFL=DMCMPDBFL
+      write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
 
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
@@ -1509,7 +1498,7 @@ C dd is character array for selecting simulation parameter sets.
       logical tmcok,shdok
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild
@@ -2495,7 +2484,7 @@ C the first array index is base and 2nd is variant, 3rd diff
       dimension anu_tot_m2(3),anu_tot_bld(3)
       dimension anu_ht_cap_m2(3),anu_ht_cap_bld(3)
       dimension anu_cl_cap_m2(3),anu_cl_cap_bld(3)
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild
@@ -4442,16 +4431,25 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
       character ipvaction*3  ! to signal external ipv file
+      character lworking*144,fs*1
       integer irootlen,iapelin  ! string buffer lengths
       LOGICAL XST,OK,DOK,modsit,moddb,QUIET,docnn,silent,donegeo
       logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical updatetitle ! if true the edit IPV titles.
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild
 #endif
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       M=ILM
       call isunix(unixok)
@@ -5212,8 +5210,16 @@ C Check if geometry file has already been updated.
         endif
       ELSEIF(M.EQ.10)THEN
 
-C material database variant
-        LFMULEN=LNBLNK(LFMUL)
+C Construction database variant. Depending on location expand path to file.
+C << probably should only allow a variant if a local database >>
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          lworking=LFMUL
+        elseif(ipathmul.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMUL(1:lnblnk(LFMUL))
+        endif
+        LFMULEN=LNBLNK(lworking)
         IF(LFMUL(LFMULEN:LFMULEN).EQ.'1')THEN
           EXT='.db1'
         ELSEIF(LFMUL(LFMULEN:LFMULEN).EQ.'2')THEN
@@ -5226,28 +5232,36 @@ C material database variant
           EXT='.dbs'
         endif
 
-C << probably should be limited to project databases >>
+C Find last token in lworking and return in msg2.
         call isunix(unixok)
-        call fdroot(LFMUL,msg1,MSG2)
+        call fdroot(lworking,msg1,MSG2)
         WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
         CALL FNCNGR(NNAME,APE,EXT,NNAME)
         if(unixok)then
-          WRITE(DOIT,'(4A)')'cp ',LFMUL(1:LNBLNK(LFMUL)),' ',
+          WRITE(DOIT,'(4A)')'cp ',lworking(1:LNBLNK(lworking)),' ',
      &       NNAME(1:LNBLNK(NNAME))
         else
-          WRITE(DOIT,'(4A)')'copy /y ',LFMUL(1:LNBLNK(LFMUL)),' ',
+          WRITE(DOIT,'(4A)')'copy /y ',lworking(1:LNBLNK(lworking)),' ',
      &       NNAME(1:LNBLNK(NNAME))
         endif
-        LFMUL=NNAME
+        write(LFMUL,'(a)') NNAME(1:lnblnk(NNAME))  ! truncation risk
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,'Copying database via ...')
         CALL EDISP(IUOUT,DOIT)
         CALL RUNIT(DOIT,'-')
-        call edisp(iuout,' Updating model for materials changes...')
+        call edisp(iuout,' Updating model for construction changes...')
         CALL EDISP(IUOUT,' ')
 
-C also make automatically constructions database variant
-        LFMATEN=LNBLNK(LFMAT)
+C Also make automatically materials database variant
+C << probably should only allow a variant if a local database >>
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          lworking=LFMAT
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+        endif
+        LFMATEN=LNBLNK(lworking)
         IF(LFMAT(LFMATEN:LFMATEN).EQ.'1')THEN
           EXT='.db1'
         ELSEIF(LFMAT(LFMATEN:LFMATEN).EQ.'2')THEN
@@ -5260,11 +5274,11 @@ C also make automatically constructions database variant
           EXT='.dbs'
         endif
 
-C << probably should be limited to project databases >>
+C Find last token in lworking and return in msg2.
         call isunix(unixok)
-        call fdroot(LFMAT,msg1,MSG2)
+        call fdroot(lworking,msg1,MSG2)
         WRITE(NNAME,'(2a)')DBSPTH(1:LNBLNK(DBSPTH)),MSG2
-        CALL FNCNGR(NNAME,APE,EXT,NNAME)
+        CALL FNCNGR(NNAME,APE,EXT,NNAME)  ! ?? why call this
         if(unixok)then
           WRITE(DOIT,'(4A)')'cp ',LFMAT(1:LNBLNK(LFMAT)),' ',
      &       NNAME(1:LNBLNK(NNAME))
@@ -5272,7 +5286,7 @@ C << probably should be limited to project databases >>
           WRITE(DOIT,'(4A)')'copy /y ',LFMAT(1:LNBLNK(LFMAT)),' ',
      &       NNAME(1:LNBLNK(NNAME))
         endif
-        LFMAT=NNAME
+        write(LFMAT,'(a)') NNAME(1:lnblnk(NNAME))
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,'Copying database via ...')
         CALL EDISP(IUOUT,DOIT)

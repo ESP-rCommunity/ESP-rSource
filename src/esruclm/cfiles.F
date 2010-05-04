@@ -18,6 +18,18 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C MKBCLM: Allows a period of climatic data in a suitable ASCII file
+C         to be transferred to a binary climate file.
+C MKACLM: Allows any period of climatic data in binary climate file to
+C         be transferred to an ASCII file.
+C MKOREANCLM: Allows a period of climatic data in a suitable ASCII file
+C         (KOREAN) to be transferred to a binary climate file.
+C CFILIN: Takes a climate file name from a browse list, command
+C         line or default and intialise it or open.
+C CLMPUT: Writes one day's climate data to the current climate file.
+C EPWTOBCLM: Allows a period of climatic data from EPW format ASCII file
+C         to be transferred to a binary climate file.
+
 C 'MKBCLM' Allows a period of climatic data in a suitable ASCII file
 C to be transferred to a binary climate file.  The ASCII file should 
 C contain the following values for each hour:
@@ -658,7 +670,7 @@ C Close ASCIIfile.
       end
 
 C ----------- CFILIN 
-C Subroutine to take a climate file name from a browse list, command
+C CFILIN takes a climate file name from a browse list, command
 C line or default and intialise it or open a zero length file if
 C a new one is requested.
 C silent is a logical toggle: true keeps user interactions to a minimum.
@@ -948,7 +960,7 @@ C New climate file
       END
 
 C ---------- CLMPUT 
-C Write one day's climate data to the current climate file.
+C CLMPUT Writes one day's climate data to the current climate file.
       SUBROUTINE CLMPUT(IDAY)
       PARAMETER (MT=24)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1030,7 +1042,7 @@ C   period start month/day <integer/integer>, period finish month/day <integer/i
 C Data line fields are as follows:
 C (1) year <integer>, (2) month <integer>, (3) day <integer>, 
 C (4) hour <integer>, (5) minute <integer>,
-C (6) data source and uncertainty flags <string 44 characgers long>,
+C (6) data source and uncertainty flags <string 44-50 characgers long>,
 C (7) dry bulb temp C <real>, (8) dew point temp C <real>, (9) RH% <real>,
 C (10) atmospheric pressure Pa <real>, (11) extraterrestrial horizontal rad Wh/m2 <real>,
 C (12) extraterrestrial direct normal radiation Wh/m2 <real>,
@@ -1045,6 +1057,9 @@ C (26) cloud ceiling metres <real>, (27) present weather observation <integer>,
 C (28) present weather codes <integer>, (29) mm of precipitable water <real>,
 C (30) aerosol optical depth <thousandths>,
 C (31) cm of snow depth <integer>, (32) days since last snowfall <integer>.
+C (33) Albedo
+C (34) Liquid precipitation
+C (35) Liquid precipitation rate
 
 C The data fields which can slot into the current esp-r file format are:
 C (16) diffuse horiz radiation Wh/m2: cast to integer IDIF,
@@ -1092,7 +1107,7 @@ C Comment lines.
       common/CLMCOM/clmcomment(2)
       dimension ICLMEPW(12,31,24,6)
 
-      CHARACTER CLMLOC*30,WORD*24,uncert*44
+      CHARACTER CLMLOC*30,WORD*24,uncert*50
       CHARACTER LASCI*72,outs*124,OUTSTR*248
       character dcline*248
 
@@ -1144,7 +1159,7 @@ C Open the ASCII file for reading.
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
 C Read a line of text from the file, if end of file process data.
-  42  CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'line 1',IER)
+  42  CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'epw data line',IER)
       if(ier.ne.0)goto 43
       if(OUTSTR(1:8).eq.'LOCATION')then
 
@@ -1278,7 +1293,7 @@ C        write(6,*)idayfn,imonfn,IDF
 C Data line fields are as follows:
 C (1) year <integer>, (2) month <integer>, (3) day <integer>, 
 C (4) hour <integer>, (5) minute <integer>,
-C (6) data source and uncertainty flags <string 44 characgers long>,
+C (6) data source and uncertainty flags <string 44-50 characgers long>,
 C (7) dry bulb temp C <real>, (8) dew point temp C <real>, (9) RH% <real>,
 C (10) atmospheric pressure Pa <real>, (11) extraterrestrial horizontal rad Wh/m2 <real>,
 C (12) extraterrestrial direct normal radiation Wh/m2 <real>,
@@ -1293,6 +1308,9 @@ C (26) cloud ceiling metres <real>, (27) present weather observation <integer>,
 C (28) present weather codes <integer>, (29) mm of precipitable water <real>,
 C (30) aerosol optical depth <thousandths>,
 C (31) cm of snow depth <integer>, (32) days since last snowfall <integer>.
+C (33) Albedo < real >
+C (34) Liquid precipitation depth mm < real >
+C (35) Liquid precipitation rate mm/hr < real >
 
 C Loop through days. If first line then set the year.
         irecloop=irecloop+1
@@ -1302,7 +1320,7 @@ C Loop through days. If first line then set the year.
         CALL EGETWI(OUTSTR,K,lmonth,1,12,'W','line month',IER)
         CALL EGETWI(OUTSTR,K,lday,1,31,'W','line day',IER)
         CALL EGETWI(OUTSTR,K,lhour,1,24,'W','line hour',IER)
-        CALL EGETWI(OUTSTR,K,lminute,1,60,'W','line minute',IER)
+        CALL EGETWI(OUTSTR,K,lminute,0,60,'W','line minute',IER)
         CALL EGETP(OUTSTR,K,uncert,'W','uncertency flags',IER)
         CALL EGETWR(OUTSTR,K,ambdbt ,0.0,0.0,'-','amb db T',IER)
         ITMP=nint(10.0*ambdbt)
@@ -1349,6 +1367,8 @@ C use it.
         CALL EGETWR(OUTSTR,K,cmsnow,0.0,0.0,'-','cm of snow depth',IER)
         CALL EGETWI(OUTSTR,K,idaysnow,0,0,'-',
      &     'days since last snowfall',IER)
+
+C << update for albedo, percipitation depth and percipitation rate >>
 
 C Need to place current data into array structure prior to writing
 C out data to the binary file. Since going from integer ESP units
