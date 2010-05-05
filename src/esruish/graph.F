@@ -54,7 +54,7 @@ C Parameter
       logical ok,dok
       integer icc,is,nv   ! local variables for connextion and vertices
       
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale
@@ -209,7 +209,7 @@ C Draws the elevation of the target surface.
       character*72 etext*72,month*3
       character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
      &          ssparent*12,ssuse*8
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ipos,iupdown,isym     ! passed to etplot
 #else
@@ -269,7 +269,7 @@ C Parameters
 
       common/grid11/xop(mox,moz),zop(mox,moz)
 
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,iid1,iid2
 #else
       integer*8 iix,iiy,iid1,iid2
@@ -343,7 +343,7 @@ C Draws a Mercator sun path diagram.
       character etext*72,blab*3,month*3
       dimension month(12)
       logical above
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! passed to axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer ipos,iupdown,isym    ! passed to etplot

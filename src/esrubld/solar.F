@@ -3230,6 +3230,7 @@ C Shading file record width found in mzshin.
       DIMENSION ISS(12),ISADD(12)
       character outs*124,h*72
       logical OK,dok
+      integer ier
 
 c Determine current month number.
       CALL EDAYR(IYRD,ID,IM)
@@ -3249,6 +3250,7 @@ c turn.
       
 c Assign shading file for zone 'I'.
         LS=LSHAD(I)
+        ier=0
         call EFOPRAN(IUNIT,LS,maxrec(i),1,IER)
         IF(ier.ne.0)goto 1000
         IREC=1

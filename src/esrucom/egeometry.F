@@ -358,6 +358,9 @@ C Zone is of type REC, look for 7 items on one or two lines.
         CALL EGETWR(loutstr,K,XO1,0.,0.,'-','rec X origin',IER)
         CALL EGETWR(loutstr,K,YO1,0.,0.,'-','rec Y origin',IER)
         CALL EGETWR(loutstr,K,ZO1,0.,0.,'-','rec Z origin',IER)
+        zorigin(icomp,1)=XO1
+        zorigin(icomp,2)=YO1
+        zorigin(icomp,3)=ZO1
 
 C If only 3 items on first line read another loutstr and try to continue.
         IF(ND.EQ.3) THEN
@@ -368,13 +371,27 @@ C If only 3 items on first line read another loutstr and try to continue.
         CALL EGETWR(loutstr,K,DX1,0.,0.,'-','length',IER)
         CALL EGETWR(loutstr,K,DY1,0.,0.,'-','width',IER)
         CALL EGETWR(loutstr,K,DZ1,0.,0.,'-','height',IER)
+        zsize(icomp,1)=DX1
+        zsize(icomp,2)=DY1
+        zsize(icomp,3)=DZ1
         CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rotation angle',IER)
+        rotateit(ICOMP,1)=AR1   ! remember the pending rotation
+        rotateit(ICOMP,2)=XO1   ! and the origin of the zone
+        rotateit(ICOMP,3)=YO1
+        nbwalls(ICOMP)=4        ! there are 4 walls in box
 
-C Now convert to a gen description.
+C Now convert to a gen description. After this move the rotateit from
+C pending to previous.
         CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,AR1)
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
         CTYPE(icomp)='GEN '
+        rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! shift the pending rotation
+        rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
+        rotateit(ICOMP,6)=rotateit(ICOMP,3)
+        rotateit(ICOMP,1)=0.0
+        rotateit(ICOMP,2)=0.0
+        rotateit(ICOMP,3)=0.0
 
 C Zone is of type REG.
       ELSEIF(CTYPE(icomp)(1:3).EQ.'REG')THEN
@@ -382,9 +399,17 @@ C Zone is of type REG.
         IF(IER.NE.0)goto 1001
         K=0
         CALL EGETWI(loutstr,K,NW,3,MS-2,'W','no of walls',IER)
+        nbwalls(ICOMP)=NW
         CALL EGETWR(loutstr,K,Z1,0.,1000.,'W','floor height',IER)
         CALL EGETWR(loutstr,K,Z2,Z1,1000.,'F','ceiling ht',IER)
+        zorigin(icomp,1)=Z1
+        zorigin(icomp,2)=Z2
+        zorigin(icomp,3)=0.0
+        zsize(icomp,1)=0.0
+        zsize(icomp,2)=0.0
+        zsize(icomp,3)=0.0
         CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rot angle',IER)
+        rotateit(ICOMP,1)=AR1   ! remmeber the pending rotation
 
 C Read base vertex data.
         DO 60 IW=1,NW
@@ -394,6 +419,8 @@ C Read base vertex data.
           CALL EGETWR(loutstr,K,XX(IW),0.,0.,'-','Base X',IER)
           CALL EGETWR(loutstr,K,YY(IW),0.,0.,'-','Base Y',IER)
    60   CONTINUE
+        rotateit(ICOMP,2)=XX(1)   ! and the origin of the zone
+        rotateit(ICOMP,3)=YY(1)
 
 C Now convert to GEN body type and place into in common block.
         CALL EREGC(NW,Z1,Z2,XX,YY)
@@ -401,6 +428,12 @@ C Now convert to GEN body type and place into in common block.
           x1=X(1)
           y1=Y(1)
           CALL ESCROT(AR1,x1,y1)
+          rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! shift the pending rotation
+          rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
+          rotateit(ICOMP,6)=rotateit(ICOMP,3)
+          rotateit(ICOMP,1)=0.0
+          rotateit(ICOMP,2)=0.0
+          rotateit(ICOMP,3)=0.0
         endif
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
@@ -412,15 +445,36 @@ C Zone is of type GEN.
      &       '# of verticies, surfices, rotation angle',IER)
         IF(IER.NE.0)goto 1001
         K=0
+
 C Read verticies        
         CALL EGETWI(loutstr,K,NTV,4,MTV,'F','# of vertices',IER)
+
 C Read surfaces
 C (Shouldn't four planar surfaces be required to fully-bound a zone?)
         CALL EGETWI(loutstr,K,NSUR,3,MS,'F','# of surfaces',IER)
+        nbwalls(ICOMP)=NSUR   ! remember so can work with META
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
-C Read rotation angle. Does this input work?
+        zorigin(icomp,1)=0.0
+        zorigin(icomp,2)=0.0
+        zorigin(icomp,3)=0.0
+        zsize(icomp,1)=0.0
+        zsize(icomp,2)=0.0
+        zsize(icomp,3)=0.0
+
+C Read rotation angle.  If there are enough items on the line also
+C look for the rotation point.
         CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rotation angle',IER)
+        rotateit(icomp,1)=AR1   ! remember pending rotation angle
+        if(ND.gt.3)then
+          CALL EGETWR(loutstr,K,AR1,0.,0.,'-','rotation point X',IER)
+          rotateit(icomp,2)=AR1
+          CALL EGETWR(loutstr,K,AR1,0.,0.,'-','rotation point Y',IER)
+          rotateit(icomp,3)=AR1
+        else
+          rotateit(icomp,2)=0.0  ! assume site origin to rotate around
+          rotateit(icomp,3)=0.0
+        endif
 
 C Read each vertex data line, strip any comments, see if 3 items and
 C place in X(),Y(),Z().
@@ -460,14 +514,22 @@ C Now proceed to read vertices on one or more lines.
           ENDIF
    10   CONTINUE
 
-C Rotate if required.
+C Rotate if required. then shift pending to prior rotateit
         if(AR1.LT.-.01.OR.AR1.GT..01)then
           x1=X(1)
           y1=Y(1)
           CALL ESCROT(AR1,x1,y1)
+          rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! remmeber the pending rotation
+          rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
+          rotateit(ICOMP,6)=rotateit(ICOMP,3)
+          rotateit(ICOMP,1)=0.0
+          rotateit(ICOMP,2)=0.0
+          rotateit(ICOMP,3)=0.0
         endif
-C Unrecognized keyword.      
+      
       ELSE
+
+C Unrecognized keyword.      
         write(outs,'(2a)') ' Geometry shape type illegal in ',
      &    LGEOMF(1:lnblnk(LGEOMF))
         if(dll)then
@@ -1031,8 +1093,9 @@ C Clear dummy array.
       newgeo=.false.  ! assume older format geometry.
 
 C Since GEN coords are nominally in site coordinates there is no need
-C to have any rotation.
-      AR=0.0
+C to have any rotation (only the newer version geometry file saves both
+C the rotation angle and the point of rotation.
+      AR=rotateit(icomp,1)
 
 C Open any existing file by this name (ask user for confirmation to
 C over-write) or create a new file.
@@ -1224,7 +1287,9 @@ C       an associated ordered list of the vertex numbers in an
 C       anticlockwise order which comprise each surface and the
 C       rotation angle from the site X-axis to east (anticlockwise
 C       +ve).
- 
+
+C Also now can include a token to remember users prior rotateit request.
+
       SUBROUTINE GEOREAD(IUNIT,LGEOMF,ICOMP,IR,ITRU,IER)
 #include "building.h"
 #include "model.h"
@@ -1487,6 +1552,12 @@ C is short, but will be extended to 248 char.
         IF(IER.NE.0) goto 1002
         write(zdesc(ICOMP),'(a)') LOUTSTR(1:64)
         lnzdesc(ICOMP)=lnblnk(zdesc(ICOMP))  ! update the length of this string.
+        zorigin(icomp,1)=0.0   ! clear the zorigin and zsize arrays
+        zorigin(icomp,2)=0.0
+        zorigin(icomp,3)=0.0
+        zsize(icomp,1)=0.0
+        zsize(icomp,2)=0.0
+        zsize(icomp,3)=0.0
 
 C Next look for *vertex lines, incrementing the value of NTV
 C as each of these lines is scanned. If the tag is *edges then
@@ -1515,6 +1586,37 @@ C End of file sensed, however this is not an error at this point.
           else
             call edisp(iuout,
      &        'Exceeded number of vertices. Skipping input line.')
+          endif
+          goto 62
+        elseif(WORD(1:7).eq.'*rotate')then
+
+C Optional tag to hold pending request to rotate the zone.
+          CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','rotation angle',IER)
+          rotateit(ICOMP,1)=AR1   ! remember the requested rotation
+          if(ND.gt.2)then
+            CALL EGETWR(loutstr,K,AR1,0.,0.,'-','rotation point X',IER)
+            rotateit(icomp,2)=AR1
+            CALL EGETWR(loutstr,K,AR1,0.,0.,'-','rotation point Y',IER)
+            rotateit(icomp,3)=AR1
+          else
+            rotateit(icomp,2)=0.0  ! assume site origin to rotate around
+            rotateit(icomp,3)=0.0
+          endif
+          goto 62
+        elseif(WORD(1:16).eq.'*previous_rotate')then
+
+C Optional tag to hold most recent request to rotate the zone (in
+C order to support an un-do.
+          CALL EGETWR(loutstr,K,AR1,-360.,360.,'W','prior rotation',IER)
+          rotateit(ICOMP,4)=AR1   ! remember the previous rotation
+          if(ND.gt.2)then
+            CALL EGETWR(loutstr,K,AR1,0.,0.,'-','prev rotation X',IER)
+            rotateit(icomp,5)=AR1
+            CALL EGETWR(loutstr,K,AR1,0.,0.,'-','prev rotation Y',IER)
+            rotateit(icomp,6)=AR1
+          else
+            rotateit(icomp,5)=0.0  ! assume site origin to rotate around
+            rotateit(icomp,6)=0.0
           endif
           goto 62
         elseif(WORD(1:6).eq.'*edges')then
@@ -2269,6 +2371,8 @@ C with user before overwriting.
 C If iobs()=2 then there are blocks to write out within the
 C geometry file.
 
+C If the user requested a rotation then remember it via rotateit array.
+
       SUBROUTINE GEOWRITE(IFILG,GENFIL,ICOMP,ITRU,iwf,IER)
 #include "building.h"
 #include "model.h"
@@ -2331,6 +2435,7 @@ C Obstruction blocks common GS5/GS6 is found in geometry.h.
       logical newgeo  ! to use for testing if new/old geometry file.
       logical havebrdge ! to use for thermal bridge existance.
       logical hasobstr  !  true if IOBS() is set to 1 and NB > 0
+      logical rotationknown  ! true if we need to remember a rotation
 
       IER=0
       tab=','    ! make the separator a comma.
@@ -2374,6 +2479,19 @@ C Write out the header including date stamp and documentation.
      &  '  # latest file modification '
 
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13)zdesc(ICOMP)(1:lnzdesc(ICOMP))
+
+C If rotateit array is all zero then skip. Otherwise write out the last
+C directive that the user gave.
+      call eclose3(rotateit(icomp,4),rotateit(icomp,5),
+     &  rotateit(icomp,6),0.0,0.0,0.0,0.01,rotationknown)
+      if(rotationknown)then
+        continue
+      else
+        write(ifilg,'(a,f6.2,a,f8.3,a,f8.3,a,f8.3,a)',IOSTAT=IOS,
+     &    ERR=13) '*previous_rotate ',
+     &    rotateit(icomp,4),tab,rotateit(icomp,5),tab,
+     &    rotateit(icomp,6),'  # prior rotation angle X Y'
+      endif
 
       write(ifilg,'(a)',IOSTAT=IOS,ERR=13) 
      &  '# tag, X co-ord, Y co-ord, Z co-ord'

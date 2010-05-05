@@ -702,6 +702,7 @@ c later within the simulation time-stepping.
       DIMENSION ISUM1(12),ISUM2(12),PS(24),
      &          IGC(MS),ISADD(12),ISHD(12)
       logical OK,dok
+      integer ier
 
 c Initialise shading file (unit number = IFIL+1).
       JOUT=ITC
@@ -709,6 +710,7 @@ c Initialise shading file (unit number = IFIL+1).
       LS=LSHAD(ICOMP)
       maxrec(icomp)=24
       if(NZSUR(icomp).gt.24)maxrec(icomp)=NZSUR(icomp)
+      ier=0
       call EFOPRAN(IUNIT,LS,maxrec(icomp),1,IER)
       IF(ier.ne.0)goto 1000
 
@@ -719,6 +721,7 @@ C at maxrec=24 for older files. Remember maxrec for use in solar.F.
       if(INEXT.LE.3.OR.NS.NE.NSUR)then
         CALL ERPFREE(IUNIT,ISTAT)
         maxrec(icomp)=24
+        ier=0
         call EFOPRAN(IUNIT,LS,maxrec(icomp),1,IER)
         IF(ier.ne.0)goto 1000
         IREC=2
@@ -726,6 +729,7 @@ C at maxrec=24 for older files. Remember maxrec for use in solar.F.
         if(INEXT.LE.3.OR.NS.NE.NSUR)then
           CALL ERPFREE(IUNIT,ISTAT)
           maxrec(icomp)=MS
+          ier=0
           call EFOPRAN(IUNIT,LS,maxrec(icomp),1,IER)
           IF(ier.ne.0)goto 1000
           IREC=2

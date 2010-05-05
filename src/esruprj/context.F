@@ -1357,6 +1357,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character*34 ITEMS(7)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
+      integer ier
 
 C Action to pass to tdfedit. Prior 'update' option moved into
 C esrub2e rather than invoking tdf.
@@ -1689,6 +1690,7 @@ C Scan the first record of this file.
             CALL ERPFREE(IUTDF,ISTAT)
             NWPR=MTABC
             ITWPR=NWPR+1
+            ier=0
             call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
             IREC=1
             READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103)HDR,NWPR
@@ -1717,6 +1719,7 @@ C Scan the first record of this file.
           CALL ERPFREE(IUTDF,ISTAT)
           NWPR=MTABC
           ITWPR=NWPR+1
+          ier=0
           call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
           IREC=1
           READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=102)HDR,NWPR
@@ -3125,7 +3128,7 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
       DIMENSION m1slots(42,2),m2slots(42,2)
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext

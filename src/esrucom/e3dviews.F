@@ -636,7 +636,7 @@ C and the vertex number.
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER VTEXT*4,VT*4
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,iix1,iiy1
 #else
       integer*8 iix,iiy,iix1,iiy1

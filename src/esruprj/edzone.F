@@ -1969,7 +1969,7 @@ C     = 'in '  interactive new
       character TMODE*8,outs*248,DOIT*248,CFGROOT*24
       character act*3  ! the parameter passed
       logical XST,concat,unixok
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild

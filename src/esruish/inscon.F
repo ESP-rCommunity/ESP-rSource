@@ -66,6 +66,7 @@ C                 in common.
       logical ok,dok,xst
       logical newgeo  ! Used to test for new/old geometry file.
       integer nboftmc ! equivalent of ntmc returned from findtmc
+      integer ier
 
 C Day of average solar declination in each month.
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
@@ -157,6 +158,7 @@ C Allow for number of surfaces within the zone transitional shading
 C file.
       irecw=ms+5
       if(xst)then
+         ier=0
          call efopran(iunit,tbase,irecw,1,ier)
 
 C Since this file exists, there must have been a matching

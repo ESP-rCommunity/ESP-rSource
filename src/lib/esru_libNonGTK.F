@@ -993,7 +993,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
-
+C Internal string buffer assumes that strval is less than 96 characters.
 C Example:
 C    ....
 C test getting a string.
@@ -1012,7 +1012,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,outs*124
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,outs*124
       LOGICAL OK,DOK
 
    20 WORD=' '
@@ -1310,6 +1310,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
+C Internal buffer size assumes that STRVAL is less than 96 characters.
 
 C Example:
 C    ....
@@ -1330,7 +1331,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
       LOGICAL OK,CMDACT,DOK
 
    20 IER=0
@@ -1499,6 +1500,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
+C Internal buffer size assumes that STRVAL is less than 96 characters.
 
 C Example:
 C    ....
@@ -1519,7 +1521,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
       character outstr248*248
       LOGICAL OK,CNCLACT,DOK
 
@@ -1678,7 +1680,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
-
+C Internal string buffer assumes that strval is less than 96 characters.
 C Example:
 C    ....
 C test getting a string.
@@ -1698,7 +1700,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,CMD2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
       LOGICAL OK,DOK
 
    20 IER=0
@@ -1915,6 +1917,11 @@ C will be truncated at the width ISTRW.
       character lista*74,listb*74,KEY*1,outs*124
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STALT(*)
       CHARACTER H*72,SEL*40
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
 C At this point bring up a menu with the string alternatives, assuming
 C there is more than one alternative to pick from.
@@ -2039,7 +2046,10 @@ C If a long list include page facility text.
 
 C Now display the menu (depending on the width of the strings).
       IF(MMOD.EQ.8)THEN
-        call VWMENU(SEL,LISTA,MVERT,0,0,ISTRW+4,irpx,irpy,ivert)
+        impx=0
+        impy=0
+        iw=ISTRW+4
+        call VWMENU(SEL,LISTA,MVERT,impx,impy,iw,irpx,irpy,ivert)
       ELSE
         DO 144 IJ=1,MVERT
           if((ISTRW+4).LT.74)then
@@ -2173,6 +2183,11 @@ C passed within the parameter list text.
 
       DIMENSION VERT(16)
       CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
 C Generate default help text, clear local menu string and remember
 C the incomming index.
@@ -2303,7 +2318,10 @@ C Number of actual items displayed.
 C Display the menu, if in graphic mode pass display width.
       call usrmsg(PROMPT,PROMPT2,'-')
       if(MMOD.EQ.8)then
-        call VWMENU(title,VERT,MVERT,0,0,ISTRW+2,irpx,irpy,ivert)
+        impx=0
+        impy=0
+        iw=ISTRW+2
+        call VWMENU(title,VERT,MVERT,impx,impy,iw,irpx,irpy,ivert)
       else
         CALL EMENU(title,VERT,MVERT,IVERT)
       endif
@@ -3191,7 +3209,7 @@ C To conform to Fortran -> C passing conventions on 32bit and 64bit
 C computers cast the parameters passed into ewmenu to local variables
 C of either integer or integer*8 to match the long int variables in
 C the C function evwmenu.  Do reverse cast after return from evwmenu.
-#ifdef OSX
+#ifdef OSI
       integer impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
 #else
       integer*8 impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
@@ -3208,7 +3226,7 @@ C Append a null terminator to the title string if possible.
       irpxe=irpx
       irpye=irpy
       call evwmenu (name,impxe,impye,iw,irpxe,irpye,inoe,ipflg,iuresp)
-#ifdef OSX
+#ifdef OSI
       ino=inoe  !  cast back from returned parameter
       irpx=irpxe
       irpy=irpye
@@ -3235,16 +3253,18 @@ C allows the string widths to be variable widths.
       SUBROUTINE VWMENU(name,items,nitms,impx,impy,iw,irpx,irpy,ino)
       character*(*) name, items(*)
       character itypes*40
-      integer iw,irpx,irpy
+      integer irpx,irpy
 
 C To conform to Fortran -> C passing conventions on 32bit and 64bit
 C computers cast the parameters passed into ewmenu to local variables
 C of either integer or integer*8 to match the long int variables in
 C the C function evwmenu.  Do reverse cast after return from evwmenu.
-#ifdef OSX
+#ifdef OSI
       integer impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+      integer impx,impy,iw
 #else
       integer*8 impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp  ! for use with evwmenu
+      integer*8 impx,impy,iw
 #endif
       iwe=iw    ! assign to local passed parameter
       write(itypes,9)
@@ -3256,7 +3276,7 @@ C the C function evwmenu.  Do reverse cast after return from evwmenu.
       irpxe=irpx
       irpye=irpy
       call evwmenu (name,impxe,impye,iwe,irpxe,irpye,inoe,ipflg,iuresp)
-#ifdef OSX
+#ifdef OSI
       ino=inoe  !  cast back from returned parameter
       irpx=irpxe
       irpy=irpye
@@ -4317,12 +4337,16 @@ C ITPPSW current view - perspective/plan/south/west
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data mthnam/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
-#ifdef OSX
+#ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
       integer ICPMOD          ! passed from tchild
+      integer iappr,iappt,iappb ! for use with findrtb
+      integer iapprp,iapptp,iappbp ! for local offsets
 #else
       integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
       integer*8 ICPMOD          ! passed from tchild
+      integer*8 iappr,iappt,iappb ! for use with findrtb
+      integer*8 iapprp,iapptp,iappbp ! for local offsets
 #endif
 
 C If not in graphic mode return.
@@ -4471,20 +4495,35 @@ C width of the control menu.
         call findrtb(iappr,iappt,iappb)
         head='Image Control'
         if(menuchw.lt.10)then
-          call vwmenu (head,ITEMS,MVERT,iappr-160,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-160
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         elseif(menuchw.ge.10.and.menuchw.lt.20)then
-          call vwmenu (head,ITEMS,MVERT,iappr-120,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-120
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         elseif(menuchw.ge.20.and.menuchw.lt.30)then
-          call vwmenu (head,ITEMS,MVERT,iappr-60,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-60
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         elseif(menuchw.ge.30.and.menuchw.lt.35)then
-          call vwmenu (head,ITEMS,MVERT,iappr-20,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-20
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         elseif(menuchw.ge.35)then
-          call vwmenu (head,ITEMS,MVERT,iappr-10,
-     &      iappb-50,32,irpx,irpy,IVERT)
+          iapprp=iappr-10
+          iapptp=32
+          iappbp=iappb-50
+          call vwmenu (head,ITEMS,MVERT,iapprp,
+     &      iappbp,iapptp,irpx,irpy,IVERT)
         endif
       endif
       IF(IVERT.EQ.MVERT)THEN

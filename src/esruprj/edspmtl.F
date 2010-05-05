@@ -62,6 +62,10 @@ C IER=0 OK, IER=1 problem.
       ispmfil=ifil+1
       NEW=.TRUE.
 
+C Remind the user what we know prior to asking them to confirm.
+      call edisp(iuout,'The current special materials file is...')
+      call edisp(iuout,spflnam)
+
       if(.not.ispopen)then
         dok=.false.
         h(1)='If you know of the name of an existing file click on'
@@ -81,6 +85,7 @@ C IER=0 OK, IER=1 problem.
             RETURN
           ENDIF
         ENDIF
+
 C Open or create a special materials/components file.
         deflnam='data.spm'
         lfil=spflnam

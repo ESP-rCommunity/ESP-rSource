@@ -21,109 +21,7 @@ C Boston, MA 02111-1307 USA.
 C ESRU vrml translator - .
 C Current version February 2005.
 
-C opendb: Open common databases - materials, multilayer constructions,
 C e2vrml:  Generate VRLM 2.0 world of esp-r model.
-
-
-C Extracted from opendb code in eddb.F
-C opendb Open the common databases - materials, multilayer constructions,
-C and optical db.
-      subroutine opendb(ier)
-#include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
-      
-      integer lnblnk  ! function definition
-
-      common/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      LOGICAL XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical closemat1,closemat2
-      character SOPT*12,outs*124,GDESCR*36
-      IER=0
-
-C Open currently named primitive construction db.  Note that
-C by a minor rewrite of ICLN in rec 601 we can get by with changing
-C this to 24 words wide.
-      CALL ERPFREE(IFMAT,ISTAT)
-      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
-      IF(ier.ne.0)THEN
-        write(outs,'(3a)') ' No primitive constructions db ',
-     &     LFMAT(1:lnblnk(LFMAT)),' found.'
-        call edisp(iuout,outs)
-        MATDBOK=.FALSE.
-      else
-
-C Also check to see if the file has correct info in 
-        IREC=601
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS
-        if(NCLASS.LE.0)then
-          goto 1000   ! no classifications so try alternatives
-        else
-          MATDBOK=.TRUE.
-          matver = 0.0
-          goto 139  !  a binary file found so carry on.
-        endif
- 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-        if(ier.eq.-2)then
-          ier=0
-          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-          if(ier.ne.0)then
-            call usrmsg('No readable materials database was not found',
-     &                  'or file was corrupt','W')
-            MATDBOK=.FALSE.
-          else
-            call eclose(matver,1.1,0.001,closemat1)
-            call eclose(matver,1.2,0.001,closemat2)
-            if(closemat1.or.closemat2)then
-              call edisp(iuout,' Filled material data arrays...')
-              MATDBOK=.TRUE.
-            else
-              call usrmsg(
-     &          'No readable material database was found. ',
-     &          'check other warnings for advise.','W')
-              MATDBOK=.FALSE.
-            endif
-          endif
-        endif
-      endif
-        
-C Read multilayer db information into common.
- 139  CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
-      if(XST)then
-        CALL ERMLDB(0,ITRU,IER)
-        IF(IER.NE.0)then
-          write(outs,'(3a)') ' Problem with multilayer constr db ',
-     &     LFMAT(1:lnblnk(LFMAT)),'... '
-          call edisp(iuout,outs)
-          MLDBOK=.FALSE.
-        else
-          call edisp(iuout,' Opened mlc db...')
-          MLDBOK=.TRUE.
-        endif
-      else
-        write(outs,'(3a)') ' No multilayer constructions db ',
-     &     LFMAT(1:lnblnk(LFMAT)),' found.'
-        call edisp(iuout,outs)
-      endif
-
-C Open optical database and read into common.
-      SOPT='ALL'
-      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
-      if(ier.ne.0)then
-        call usrmsg(' Optical properties db not found or there was a ',
-     &  ' problem reading it. Please check database manager ASAP.','W')
-        OPTKOK=.FALSE.
-      else
-        OPTKOK=.TRUE.
-      endif
-
-      return
-      end
 
 C ******* Translate esp data to vrlm world.
 C e2vrml takes zones/obstructions and any ground topology and
@@ -191,7 +89,7 @@ C Set character variable q to be a double quote and hc to the # character.
       hc=CHAR(35)
 
 C Open the matrial and constructions db.
-      call opendb(ier)
+      call module_opendb(ier)
 
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)

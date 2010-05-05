@@ -1163,7 +1163,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       character runpath*72,pathtype*24
       integer lnrp  ! length of run path
 
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,iid1,iid2
 #else
       integer*8 iix,iiy,iid1,iid2

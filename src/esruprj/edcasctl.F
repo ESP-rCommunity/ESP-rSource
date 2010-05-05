@@ -95,7 +95,7 @@ C TMC common block:
       CHARACTER SPARENT*12
       CHARACTER info*18,cgcdesc*64,brw*8
       INTEGER IX,IY,IZ,KSTR
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy
 #else
       integer*8 iix,iiy

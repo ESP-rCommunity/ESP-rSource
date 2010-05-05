@@ -319,9 +319,9 @@ C geometry.h provides commons G0 and G2.
       ier=0
 C      GTGEOM = 'UNKNOWN'
 
-C Open the primitive, mlc & optics db.
+C Open the materials, mlc & optics db.
       lnrp=lnblnk(runpath)
-      call opendb(ier)
+      call module_opendb(ier)
 
       icomp = nznog(1)
       izgfoc = nznog(1)

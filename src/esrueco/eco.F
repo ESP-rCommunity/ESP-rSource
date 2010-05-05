@@ -428,7 +428,7 @@ C (Re)Set all surfaces to std line width.
           CALL ADJVIEW(IER)
 
 C Open core of databases.
-          call opendb(ier)
+          call module_opendb(ier)
           if(ier.ne.0)then
             call usrmsg(
      &        'Possible problems with one or more of the',

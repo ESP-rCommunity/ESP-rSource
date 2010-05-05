@@ -34,7 +34,8 @@ C Boston, MA 02111-1307 USA.
       character outs*124
 
       do 102 i=1,MCNN
- 102    ctlpos(i)=1.0
+        ctlpos(i)=1.0
+ 102  continue
 
 C Return if no mass flow control function active
       IF(NCC.EQ.0) GOTO 999
@@ -85,7 +86,7 @@ C Check number of periods in each day and the start and finish times
       END IF
       IF(FLWTIM.GT.TPS.AND.FLWTIM.LE.TPF) GOTO 30
    22 CONTINUE
-      call edisp(iuout,' MFCNTR: cannot locate appropriate day-period')
+        call edisp(iuout,'MFCNTR: cannot locate appropriate day-period')
       call epwait
       CALL EPAGEND
       STOP
@@ -122,7 +123,6 @@ C New controllers inserted here!
         CALL EPAGEND
         STOP
       END IF
-
  100  CONTINUE
 
  999  RETURN
@@ -622,11 +622,11 @@ C ***** POSITN
 #include "building.h"
 #include "control.h"
 
-C     SIGL  - signal lower limit Sl (?)
+C SIGL  - signal lower limit Sl (whatever is sensed by ctl loop)
 C     PSIGL - relative valve position H/H100 at Sl (%)
-C     SIGU  - signal upper limit Su (?)
+C SIGU  - signal upper limit Su (whatever is sensed by ctl loop)
 C     PSIGU - relative valve position H/H100 at Su (%)
-C     DSHY  - dS to overcome valve/damper hysteresis (?)
+C DSHY  - delta sensor value to overcome valve/damper hysteresis
 
       COMMON/MFCPOS/HHH100(MCNN),HSASC(MCNN)
       COMMON/FCLSOL/ICFP,IDTYPP,IPERP
@@ -649,7 +649,6 @@ C Calculate relative valve position, incorporate hysteresis effect.
         ELSE
           HH100=PSIGL+(PSIGU-PSIGL)*(SIGNAL-(SIGL-DSHY))/(SIGU-SIGL)
         END IF
-C     ELSE IF(SIGNAL.GT.HSASC(ICFP)) THEN
       ELSE
         IF(SIGNAL.LE.SIGL) THEN
           HH100=PSIGL
@@ -662,7 +661,6 @@ C     ELSE IF(SIGNAL.GT.HSASC(ICFP)) THEN
 
 C Refresh history for H/H100 and in case of change recalculate HSASC
       call eclose(HH100,HHH100(ICFP),0.001,close)
-C      IF(HH100.NE.HHH100(ICFP)) THEN
       IF(.NOT.close) THEN
          HHH100(ICFP)=HH100
          IF(HH100.GE.PSIGU) THEN

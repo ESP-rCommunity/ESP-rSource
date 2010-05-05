@@ -30,7 +30,7 @@ C    1   DRAW(PEN DOWN)  0   MOVE(PEN UP)   <0  DASHED LINE
 #include "viewer.h"
 
       COMMON /FIL/ IFUSE, IFO
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -193,7 +193,7 @@ C ARRANGES PLOT ON TEKTRONIX SCREEN AND DOES IT
 #include "viewer.h"
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale

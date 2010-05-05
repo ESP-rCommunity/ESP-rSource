@@ -86,6 +86,8 @@ C Electrical network results library details.
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       dimension iflg(MCOM)
 
+      integer ier
+
 C Check and see if in a remote folder.
 
 C Debug.
@@ -145,6 +147,7 @@ C be asked to confirm the results file name (and path)
 C If remote path then use EFOPRAN otherwise FPRAND.
       RFILE=LTMP
       if(iw.eq.1)then
+        ier=0
         call EFOPRAN(IUNIT,RFILE,nzrl,3,IER)
         if(ier.ne.0)goto 4
       else
@@ -268,6 +271,7 @@ C user before overwriting. In case of specifying a non-relative
 C file path name use FPOPEN.
         IMFRES=IFIL+4
         if(iw.eq.1)then
+          ier=0
           CALL EFOPRAN(IMFRES,LAFRES,NMRL,3,IER)
           if(ier.ne.0)goto 9
         else
@@ -317,6 +321,7 @@ C file path name use FPRAND.
         IELFIL=IFIL+MADFIL
         IELIBW=MELIBW
         if(iw.eq.1)then
+          ier=0
           CALL EFOPRAN(IELFIL,ERESLIB,IELIBW,3,IER)
           if(ier.ne.0)goto 11
         else

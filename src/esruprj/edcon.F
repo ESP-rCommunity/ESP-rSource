@@ -90,7 +90,7 @@ C geometry.h provides commons G0/G2/c20/precz.
       logical CFCFOUND !used to determine whether CFCs exist
       character*72 CFCFILE
 
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext

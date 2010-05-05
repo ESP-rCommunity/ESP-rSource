@@ -72,6 +72,8 @@ C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "sbem.h"
 #include "ipvdata.h"
 #include "seasons.h"
+#include "schedule.h"
+
 #include "e2r_common.h"
 C provides LRADCF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -132,9 +134,6 @@ C IPV description.
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
-
-C Project demands (lifts/fans/DHW).
-      COMMON/BL1/dmdsdesc,bdmds
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -255,7 +254,7 @@ C door width and height.
       character hvacfile*72,LAIM2*72,LBSIMP*72
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
-      character dmdsdesc*248,bdmds*72
+
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
@@ -456,7 +455,19 @@ C Season data.
 C Zone level common blocks.
       do 42 IX = 1,MCOM
         do 43 IXS = 1,MS
-          SNAME(IX,IXS)=' '
+          SNAME(IX,IXS)=' '   ! clear surface name
+          zboundarytype(IX,IXS,1)=0  ! clear surface boundary
+          zboundarytype(IX,IXS,2)=0
+          zboundarytype(IX,IXS,3)=0
+          zhasglaze(ix,ixs)=0.0
+          zhasdoor(ix,ixs)=0.0
+          isznbedges(ix,ixs)=0
+          do 54 ivu=1,MV
+            iszlist(ix,ixs,ivu)=0
+            szcoords(ix,ixs,1)=0.0
+            szcoords(ix,ixs,2)=0.0
+            szcoords(ix,ixs,3)=0.0
+  54      continue
    43   continue
 
 C Clear obstructions in all zones.
@@ -488,13 +499,42 @@ C Clear SHOCC zone information as well.
 
         NZSUR(IX)=0
         NZTV(IX)=0
+        NBWALLS(IX)=0
         NCCODE(IX)=0
         NDP(IX)=3
         IDPN(IX,1)=0
         IDPN(IX,2)=0
         IDPN(IX,3)=0
         CTYPE(IX)=' '
+        shape(IX)=' '
         gversion(ix)=1.0
+        rotateit(ix,1)=0.0
+        rotateit(ix,2)=0.0
+        rotateit(ix,3)=0.0
+        rotateit(ix,4)=0.0
+        rotateit(ix,5)=0.0
+        rotateit(ix,6)=0.0
+        zorigin(ix,1)=0.0
+        zorigin(ix,2)=0.0
+        zorigin(ix,3)=0.0
+        zsize(ix,1)=0.0
+        zsize(ix,2)=0.0
+        zsize(ix,3)=0.0
+        znbglz(ix) = 0
+        znbdoor(ix) = 0
+        znbmass(ix) = 0
+        do 158 imu=1,4
+          zdatamass(ix,imu,1)=0.0
+          zdatamass(ix,imu,2)=0.0
+          zdatamass(ix,imu,3)=0.0
+          zdatamass(ix,imu,4)=0.0
+          zdatamass(ix,imu,5)=0.0
+          zdatamass(ix,imu,6)=0.0
+          zdatamass(ix,imu,7)=0.0
+          ztextmass(ix,imu,1)=' '
+          ztextmass(ix,imu,2)=' '
+          ztextmass(ix,imu,3)=' '
+  158   continue
         zdesc(IX)=' '
         lnzdesc(IX)=0
         zname(IX)=' '

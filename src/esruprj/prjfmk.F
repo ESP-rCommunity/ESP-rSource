@@ -3137,7 +3137,7 @@ C  ICOMP zone number
 
       character outs*124
       dimension TACI(24),TACV(24)
-#ifdef OSX
+#ifdef OSI
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
@@ -3974,10 +3974,17 @@ C SCASL: Import a profile from a profiles database to build casual
 C gain patterns.
       SUBROUTINE  SCASL(IN,IDAY,IER,ICOMP)
 
+C << introduce concept of profiles with multiple day types as well
+C << as multiple casual gain types
+
+C << also consider that periods can be defined as reals for later
+C << use in the zone operation file timings
+
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+#include "profile.h"
 
       common/pophelp/h(60)
 
@@ -3997,19 +4004,26 @@ C Electrical data flag and elctrical data.
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
-C Profile database commons.
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40
+C Profile database commons via profile.h.
 
       DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
       CHARACTER H*72,hold*40,lodlabel*6
       character*8 ll1,ll2,ll3
+      character lltmp*144
+      character fs*1  ! file separator
       logical OK,DOK
 
       integer IPPFT,IPPHAST  ! for local editing.
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Labels for loads.
       write(ll1,'(1x,a6,1x)') lodlabel(icomp,1)
@@ -4025,13 +4039,21 @@ C Labels for loads.
       IPPFT=0
       IPPF=0
 
-C Scan the binary event profiles database. If an error state is
+C Scan the event profiles database. If an error state is
 C returned then it might be an ASCII file, try and scan that.
-      call TRIPROBIN(IER)
+      lndbp=lnblnk(standarddbpath)
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        lltmp=LPRFDB  ! use as is
+      elseif(ipathprodb.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
+      endif
+      call TRIPROBIN(IPRODB,lltmp,IER)
       if(ier.ne.0)then
         CALL ERPFREE(IPRODB,ISTAT)
         CALL USRMSG(' opened profiles db...',' ','-')
-        call TRIPROCOM(IPRODB,LPRFDB,IER)
+        ier=0   ! reset prior to call to triprocom
+        call TRIPROCOM(IPRODB,lltmp,IER)
         if(ier.ne.0)then
           call usrmsg('Error opening the db. Please use one',
      &                'of the other options.','W')
@@ -4199,6 +4221,7 @@ C << and small power can be entered in terms of W/m2.
       ENDIF
  42   call usrmsg(' ',' ','-')
 
+C Instanciate the casual gain commons with data from the profile.
       NCAS(IDAY) = NCAS(IDAY) + NCG(INDEX)
       DO 140 I = 1,NCG(INDEX)
 	ICGS(IDAY,I+IN) = ICGS1(INDEX,I)
@@ -5204,7 +5227,7 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6, outs*124
 
-#ifdef OSX
+#ifdef OSI
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
