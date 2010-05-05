@@ -240,7 +240,6 @@ C************** Initialisation
 C See if the time step has been changed and, if so, do the proper initialisation
       IF (nTimeStep .GT. nPreviousTS) THEN
 C First time step -> initialise all parameters at the beginning of the simulation
-C        write(*,*) 'timestep' , (nTimeStep)
         IF(nTimeStep .EQ. 1) THEN
           Call InitSimulation(IPWC,batTIni,batDODIni)
 C Following time steps -> Initialise parameters to their final value at the previous time step
@@ -250,7 +249,6 @@ C Following time steps -> Initialise parameters to their final value at the prev
         ENDIF     ! 1st time step
       ENDIF     ! nTimeStep
 
-C      write(*,*) 'demand' , (batDemandP)
 C************** Get mode (charge/discharge)
 
       IF (mandChargeCycle .NE. 1) THEN      ! Normal operation, the battery mode is determined 
@@ -915,9 +913,6 @@ C Initialise values at the beginning of the time step to their value at the end 
       batTInit = batTFinal
       DODInit = DODFinal
       
-C      write(*,*) 'temp in initTimstep' , (batTFinal)
-C      write(*,*) 'maxtemp in initTimstep' , (POWCDAT(IPWC,16))
-
 C Update battery life parameters, decide upon starting / ending mandatory charge phase, 
 C set flag indicating battery is being abused.
       IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
