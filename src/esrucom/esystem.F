@@ -3254,7 +3254,7 @@ C Trap out of range IC1 and IE1 variables.
      &                   IC2(ICON),IE2(ICON)
  8983   FORMAT(I4,1X,a,' in ',a,' >|< Constant @',I3,' dC &',
      &    I4,' W rad')
-      ELSEIF(ICT(ICON).EQ.3.AND.ICF.GT.0)THEN
+	ELSEIF(ICT(ICON).EQ.3.AND.ICF.GT.0)THEN
         ICM=IZSTOCN(IC2(ICON),IE2(ICON))
         SST2=SSNAME(ICM)
         lsn2=lnblnk(SST2)
@@ -3469,7 +3469,7 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'prs')then
+          elseif(topic(1:3).eq.'mat')then
             ipathmat=0
             write(LFMAT,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'evn')then

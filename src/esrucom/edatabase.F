@@ -753,7 +753,7 @@ C     &      PNAM(1:lnam),' ',matname(imt)(1:lnblnk(matname(imt)))
 C If we got here there was no match. The value of matarrayindex remains at zero.
       lnam=lnblnk(PNAM)
       write(outs,*) 
-     &  'When scanning materials db looking for legacy index',imt
+     &  'When scanning materials db looking for legacy index',ileghope
       call edisp(iuout,outs)
       write(outs,*) 'no match found for material named ',PNAM(1:lnam)
       call edisp(iuout,outs)
