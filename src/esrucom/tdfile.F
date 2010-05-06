@@ -89,7 +89,8 @@ C For each zone a pointer to relevant temporal entry 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
       LOGICAL OPTDF,OPIMP,OPEXP,XST
 
@@ -132,14 +133,22 @@ C Search instances in temporal file to find match(s).
                   DO 77 itd4=1,NDATA
                     if(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
      &                 DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))then
-                  if(DBTASK(ITD1)(1:7).eq.'CASUALT')ICASUAL(itd3)=itd4
-                  if(DBTASK(ITD1)(1:7).eq.'CASUAL3')ICASUAL3(itd3)=itd4
-                  if(DBTASK(ITD1)(1:6).eq.'ZIVENT')IZIVENT(itd3)=itd4
-                  if(DBTASK(ITD1)(1:6).eq.'RAIRVL')IRAIRVL(itd3)=itd4
-                  if(DBTASK(ITD1)(1:6).eq.'CTLSTA')ICTLSTA(itd3)=itd4
-                  if(DBTASK(ITD1)(1:8).eq.'ACTIVITY')IACTIV(itd3)=itd4
-                  if(DBTASK(ITD1)(1:8).eq.'HTCLSETP')
-     &               IHTCLSETP(itd3)=itd4
+                      if(DBTASK(ITD1)(1:7).eq.'CASUALT')
+     &                  ICASUAL(itd3)=itd4
+                      if(DBTASK(ITD1)(1:7).eq.'CASUAL3')
+     &                  ICASUAL3(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'ZIVENT')
+     &                  IZIVENT(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'RAIRVL')
+     &                  IRAIRVL(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'CTLSTA')
+     &                  ICTLSTA(itd3)=itd4
+                      if(DBTASK(ITD1)(1:8).eq.'ACTIVITY')
+     &                  IACTIV(itd3)=itd4
+                      if(DBTASK(ITD1)(1:8).eq.'HTCLSETP')
+     &                  IHTCLSETP(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'DBTZNM')
+     &                  IDBTZNM(itd3)=itd4   ! measured zn dbT
 
 C Bidirectional data are assigned per surface
                       if(DBTASK(ITD1)(1:8).eq.'BIDIRSET')then
