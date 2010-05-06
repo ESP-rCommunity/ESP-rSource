@@ -3458,7 +3458,7 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=0
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
-          elseif(topic(1:3).eq.'prs')then
+          elseif(topic(1:3).eq.'mat')then
             ipathmat=0
             write(LFMAT,'(a)') file(1:lnwkg)  ! assign directly
           elseif(topic(1:3).eq.'evn')then
