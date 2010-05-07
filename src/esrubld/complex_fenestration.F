@@ -1709,6 +1709,8 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
      &ARF(MCOM,MS)
       integer ie
       real atp,atf,arp,arf
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer ic1,ie1,ict,ic2,ie2
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       real tfa,qfa
       COMMON/PREC1/SNA(MCOM,MS)
@@ -1719,8 +1721,8 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       real aprat,height
 
       integer nc,nn,ne,i,j,icomp,isur,icfctp,inode,nnod,itypenext
-      integer itype,nd_blnd,nd_cav,nd_glass, IER
-      real Tglass,Text,fnnod,Tavg
+      integer itype,nd_blnd,nd_cav,nd_glass,IER,ii1,ii2
+      real Tsurf,Tadj,fnnod,Tavg
       real q_gen_glass
       real b,air_cond,q_blind_airnd,q_glass_airnd
       real h_glass_blind,h_blind_room,h_glass_room
@@ -1755,55 +1757,98 @@ C LOOP THROUGH CFC LAYERS
 
 C setup tmp variables for current layer and gas gap, next and previous layer,
 C and previous gas gap for computing convection coefficient
-      itype=icfcltp(icomp,icfctp,i)
+        itype=icfcltp(icomp,icfctp,i)
 
-      if(i.le.(ne-2))then
+        if(i.le.(ne-2))then
             itypenext=icfcltp(icomp,icfctp,i+2) !next non gap layer in CFC
-      else
+        else
             itypenext=0
-      end if
+        end if
 
-      if(i.eq.1.and.itype.ge.2)then !outside blind present
-            if(itypenext.eq.1)then  !next non-gap layer is glass, OK
+        if (i.eq.1.and.itype.ge.2) then !outside blind present
+            if (itypenext.eq.1) then  !next non-gap layer is glass, OK
 
 C OUTDOOR SLAT-TYPE BLIND CONVECTION MODEL
-
-C cavity is fully vented, no convective exchange between blind and glass
-C cavity resistance is set to a very high value - essentially an open
-C circuit
-              cfcRgap(icomp,isur,i+1,2)=1000.
-
-C Determine source term for convective exchange between external glass
-C layer and outdoor air.
               nd_blnd=nndl(icomp,isur,1)
               nd_cav=nd_blnd+nndl(icomp,isur,2)
               nd_glass=nd_cav+1
-              Tglass=tfc(icomp,isur,nd_glass)
-              Text=(ATP(icomp,isur)+ATF(icomp,isur))/2.
+
+              if (IE(icomp,isur) .eq. 0) then ! the surface faces external
+C               cavity is fully vented, no convective exchange between 
+C               blind and glass cavity resistance is set to a very high 
+C               value - essentially an open circuit
+                cfcRgap(icomp,isur,i+1,2)=1000.
+                nd_surf=nd_glass
+
+Cag@07052010 else use logic from below from "inside CFC construction"
+              else ! adjacent to zone
+                if(i_shd(icomp,icfctp).eq.0)then ! blind is retracted
+                  cfcRgap(icomp,isur,i+1,2)=0.09 ! "ventilated gap" assumption
+                  nd_surf=nd_glass
+                else
+c                  call ConvVertCav()
+c                  cfcRgap(icomp,isur,i+1,2)=1.0/hc
+                  nd_surf=nd_blnd
+               endif
+              endif
+
+C Determine source term for convective exchange between external 
+C layer and adjacent air.
+              Tsurf=tfc(icomp,isur,nd_surf)
+
+              if (IE(icomp,isur) .eq. 0) then ! the surface faces external
+                Tadj=(ATP(icomp,isur)+ATF(icomp,isur))/2.
+              else ! use adjacent zone air node temperature
+C               Get the connection index.
+                II=IE(ICOMP,ISUR)
+C               Get the number of the adjacent zone.
+                II1=IC2(II)
+C               Get the number of the corresponding mlc.
+                II2=IE2(II)
+                Tadj=(TPA(ii1)+TFA(ii1))/2.
+              endif
 
               q_gen_glass=(hcof(icomp,isur)
-     &        *SNA(icomp,isur)*(Tglass-Text))*(-1.)
+     &                       *SNA(icomp,isur)*(Tsurf-Tadj))*(-1.)
               q_glass_extS(icomp,isur)=q_gen_glass/SNA(icomp,isur) !save for output
 
 C Double the external convective heat transfer coefficient (calculated in MZCONV)
 C to account for front and back surface of the outdoor blind layer.
-              if(i_shd(icomp,icfctp).eq.0)then
-                ! if shade is retracted, decouple it from thermal zone
-                hcof(icomp,isur)=0.001
-              else  
-                hcof(icomp,isur)=2.*hcof(icomp,isur)
+              if (IE(icomp,isur) .eq. 0) then ! the surface faces external
+                if(i_shd(icomp,icfctp).eq.0)then
+                  ! if shade is retracted, decouple it from thermal zone
+                  hcof(icomp,isur)=0.001
+                else
+                  hcof(icomp,isur)=2.*hcof(icomp,isur)
+                endif
+              else ! adjacent to zone
+c                hcof(icomp,isur) remains unchanged
               endif
-              
+
 C Assign source terms to external glass layer nodes
 
-C first node of external glass layer
-              inode=nd_glass
+Cag@07052010 the following block up to line 1868 certainly needs differentiation
+C            between external CFC / blind and CFC / blind adjacent to thermal zone ...
 
-C Divide source term by surface area to get [W/m^2].
+C first node of external (glass) layer
+c              inode=nd_glass
+              inode=nd_surf
+
+C Divide source term by surface area SNA() to get [W/m^2].
 C 'W' time-dependent coefficients in MZSETU require [W/m^2].
               q_gen_glass=q_gen_glass/SNA(icomp,isur)
 
-              nnod=nndl(icomp,isur,3) !no. of nodes of outermost glass layer
+              if (IE(icomp,isur) .eq. 0) then ! the surface faces external
+                nnod=nndl(icomp,isur,3) ! no. of nodes of outermost glass layer
+              else
+                if (i_shd(icomp,icfctp).eq.0) then
+                  ! if shade is retracted
+                  nnod=nndl(icomp,isur,3) ! no. of nodes of outermost glass layer
+                else
+                  nnod=nndl(icomp,isur,1) ! no. of nodes of blind
+                endif
+              endif
+
               fnnod=float(nnod)
 
               qcfc_cv(icomp,isur,inode,2)=
