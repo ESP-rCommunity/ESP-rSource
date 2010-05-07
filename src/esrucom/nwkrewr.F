@@ -41,7 +41,6 @@ C espriou.h provides currentfile.
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FILEP/IFIL
 
       COMMON/POPHELP/H(60)
 
@@ -774,9 +773,6 @@ C Grid commons
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
       COMMON/NWKTYP/INWKTYP,vergnf
 
-C Network flow commons are as follows:
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -805,7 +801,7 @@ C which have been combined into one flow icon.
 C Height difference attribute at an icon connection.
       dimension deltah(MNCNN)
 
-      CHARACTER LAPROB*72,OUTS*124,OUTSTR*124
+      CHARACTER OUTS*124,OUTSTR*124
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
       CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4,NWKTYPSTR*12
       character NWICNTXT*72,LVALCM*60
@@ -1281,7 +1277,7 @@ C Grid commons
 
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL,DFILE,LFIL
       CHARACTER NWICNM*12,NWKTYPSTR*12,NWICNHIS*40
-      CHARACTER TFILE*72,OUTS*124,tab*1,dstmp*24,ts12*12,te12*12
+      CHARACTER OUTS*124,tab*1,dstmp*24,ts12*12,te12*12
       character NWICNLBL*4,NWICNTXT*72,longtfile*144
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12

@@ -168,8 +168,8 @@ C     temp(i)           : Temperature for surface i. [C]
 
 C Initialize global common data.
       call ezero
-      call curmodule('vwf ')
-      cAppName = 'vwf'
+      call curmodule('mrt ')
+      cAppName = 'mrt'
       IUIN=5
       IUOUT=6
       LIMTTY=24

@@ -22,32 +22,9 @@ C LOCAL VARIABLES
 C declare variables describing version and build information
       character cType*16             ! Flag indicating if version/build
                                      !  info should be dumped
-      character cBuilder*32          ! User who compiled system
-      character cArchitecture*32     ! Machine archictecture
-      character cOperSystem*32       ! Operating system
-      character cOSversion*32        ! OS flavour/version
-      character cHost*256            ! Host name
-      character cDate*64             ! Build date 
-      logical   bVersioned           ! Flag indicating if repository 
-                                     !   is versioned 
-      logical bRelease               ! Logical indicating if this is 
-                                     !   a release version.
       logical bBuild_Info            ! Flag indicating if build info should 
                                      !   be dumped. 
-      logical bModified              ! Flag indicating local copy contains 
-                                     !   modifications
-      character cRelease_Num*8       ! Release version
-      character cBase*8              ! Base version
-      character cURL*256             ! Repository URL
-      character cSource*32           ! Repository version
-      character cBranch*48           ! Branch name 
-      character cRevision*32         ! Revision number 
-      character cState*32            ! Flag indicating repository state.
-      character cCC*32               ! Flags for compilers
-      character cFC*32               !
-      character cCPL*32              !
-      character cXML_support*32      ! Flags for compile-time options
-      character cXlibrary*32         !
+C      character cURL*256             ! Repository URL commented out in build_info.h
       
       character cTemp_a*124, cTemp_b*124 ! Temporary strings
       integer iLen   ! for actual string lengths
@@ -100,7 +77,7 @@ C References:
       integer lnblnk
       logical rep_xmlstatus
       
-C include dynamically-created installation information. 
+C Include dynamically-created installation information. 
 #include "build_info.h"
 
 C Store passed application name and type in arrays of known

@@ -20,8 +20,8 @@ C Boston, MA 02111-1307 USA.
 
 C **************** ARROW ****************
 C ARROW draws an arrow between two points with a directional head.
-C The arrow goes from P to Q, and the point is centered round 
-C point A. al is arrow length, aw is arrow width. 
+C The arrow goes from P to Q, and the arrow point is centered round 
+C coordinane A. al is arrow length, aw is arrow width. 
 C If act = 'r' then arrow size relative to length of line, 
 C if act = 'a' then absolute dimensions. 
 C Returns the corner points of the arrow as pixel locations in 'ipoints'.
@@ -31,10 +31,13 @@ C IDRAW=0 don't draw; =1 shaft single line thickness; =2 shaft double line thick
 #include "prj3dv.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
+      real P,Q,SNORM,PLANE,CORNER
       DIMENSION P(3),Q(3),SNORM(3),A(3),PLANE(4),CORNER(4,3)
-      DIMENSION VEC(3),VECC(3),COG1(3),COG2(3),COG3(3),ipoints(6,2)
+      real VE,VECC,COG1,COG2,COG3
+      integer ipoints
+      DIMENSION VE(3),VECC(3),COG1(3),COG2(3),COG3(3),ipoints(6,2)
       character act*1
-C     character outs*124
+C      character outs*124
       logical unixok
 
 C Local variables to pass to edline.
@@ -104,13 +107,13 @@ C zero then calculate where the chosen axis intersects.
 
 C Calculate the direction vector from A to the first corner.
       do 50 I=1,3
-        VEC(I)=CORNER(1,I)-A(I)
+        VE(I)=CORNER(1,I)-A(I)
  50   continue
 
 C Scale vector and move CORNER(1,*)
       DISTVEC=0.
       do 60 I=1,3
-        DISTVEC=DISTVEC+VEC(I)*VEC(I)
+        DISTVEC=DISTVEC+VE(I)*VE(I)
  60   continue
       DISTVEC=SQRT(DISTVEC)
       if(DISTVEC.lt.0.0001) return   ! if zero length line.
@@ -120,19 +123,19 @@ C Scale vector and move CORNER(1,*)
         SF=(aw)/DISTVEC
       endif
       do 70 I=1,3
-        CORNER(1,I)=A(I)+(VEC(I)*SF)
+        CORNER(1,I)=A(I)+(VE(I)*SF)
 
 C Corner 3 is a 180deg rotation.
-        CORNER(3,I)=A(I)-(VEC(I)*SF)
+        CORNER(3,I)=A(I)-(VE(I)*SF)
  70   continue
 
 C Calculate cross product to find corners 2 and 4.
       VECC(1)=0.0
       VECC(2)=0.0
       VECC(3)=0.0
-      VECC(1)=SNORM(2)*VEC(3)-SNORM(3)*VEC(2)
-      VECC(2)=SNORM(3)*VEC(1)-SNORM(1)*VEC(3)
-      VECC(3)=SNORM(1)*VEC(2)-SNORM(2)*VEC(1)
+      VECC(1)=SNORM(2)*VE(3)-SNORM(3)*VE(2)
+      VECC(2)=SNORM(3)*VE(1)-SNORM(1)*VE(3)
+      VECC(3)=SNORM(1)*VE(2)-SNORM(2)*VE(1)
       DISTVEC=0.
       do 61 I=1,3
         DISTVEC=DISTVEC+VECC(I)*VECC(I)
@@ -152,8 +155,10 @@ C Corner 3 is a 180deg rotation.
  71   continue
 
 C Debug.
-C      write(6,*) 'Pln eq ',Plane
-C      write(6,*) 'Axlen  & dist & SF iaxis ',AXLEN,DIST,SF,IAXIS
+C      write(outs,*) 'Pln eq ',Plane
+C      call edisp(iuout,outs)
+C      write(outs,*) 'Axlen  & dist & SF iaxis ',AXLEN,DIST,SF,IAXIS
+C      call edisp(iuout,outs)
 
 C Draw the damn thing!
       CALL VECTRN(P,TEMAT,COG2,IER)
