@@ -553,7 +553,6 @@ C.....Pad zone index to 'XX'
       cSurfaceRootName='s'
       cNodeRootName='n'
 
-
 C----------------------------------------------------------------------
 C     Check zone index. If iZone=1, re-zero running totals for
 C     entire building.
@@ -1221,7 +1220,7 @@ C.....Zone Resultant TEMPERATURE
       do 22 iSur=1,NZSUR(iZone)
          TS(iSur)=TFS(iZone,iSur)
  22   continue
-
+ 
       call MORESL(iZone,TFA(iZone),TS,YDUM,NZSUR(iZone),TRESL)
 
       call add_to_xml_reporting (
@@ -2077,7 +2076,7 @@ C.......Create base name for node values output
      &              //cSep//cNodeRootName//cNode_Chars
 
         iH3K_NameLen = 3+1+lnzname(iZone)+1+3+1+3
-        
+
 C...........MLC layer temperature 
             call add_to_xml_reporting (
      &         tfc(iZone,iSurface,iNode),

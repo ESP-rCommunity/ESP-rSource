@@ -1249,19 +1249,6 @@ C set beam-diffuse eq. 0
        elseif(itype.eq.2)then   ! currently only slat-type blinds are considered 
        
 C If shade is retracted set solar transmittance to 1 and skip to next layer
-c        if(i_shd(icomp,icfctp).eq.0)then
-c            SolTFbb(icomp,isurf,icfctp,i)=0.999
-c            SolRFbd(icomp,isurf,icfctp,i)=0.001
-c            SolTFbd(icomp,isurf,icfctp,i)=0.001
-c            SolTFdd(icomp,isurf,icfctp,i)=0.999
-c            SolRFdd(icomp,isurf,icfctp,i)=0.001
-c            SolTBbb(icomp,isurf,icfctp,i)=0.999
-c            SolRBbd(icomp,isurf,icfctp,i)=0.001
-c            SolTBbd(icomp,isurf,icfctp,i)=0.001
-c            SolTBdd(icomp,isurf,icfctp,i)=0.999
-c            SolRBdd(icomp,isurf,icfctp,i)=0.001
-c            goto 100
-c        endif
         
         if (i_shd(icomp,icfctp) .eq.0) then ! blind is retracted, treat as air layer ...
           SolTFbb(icomp,isurf,icfctp,i)=0.99999999
@@ -1711,6 +1698,8 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       real atp,atf,arp,arf
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       integer ic1,ie1,ict,ic2,ie2
+      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
+      REAL TPA, QPA
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       real tfa,qfa
       COMMON/PREC1/SNA(MCOM,MS)
@@ -1722,6 +1711,7 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
 
       integer nc,nn,ne,i,j,icomp,isur,icfctp,inode,nnod,itypenext
       integer itype,nd_blnd,nd_cav,nd_glass,IER,ii1,ii2
+      integer nd_surf,ii
       real Tsurf,Tadj,fnnod,Tavg
       real q_gen_glass
       real b,air_cond,q_blind_airnd,q_glass_airnd
@@ -1777,19 +1767,33 @@ C OUTDOOR SLAT-TYPE BLIND CONVECTION MODEL
 C               cavity is fully vented, no convective exchange between 
 C               blind and glass cavity resistance is set to a very high 
 C               value - essentially an open circuit
+C cfcRgap(,,,1) relates to present time-row, (,,,2) to future
                 cfcRgap(icomp,isur,i+1,2)=1000.
                 nd_surf=nd_glass
 
 Cag@07052010 else use logic from below from "inside CFC construction"
               else ! adjacent to zone
                 if(i_shd(icomp,icfctp).eq.0)then ! blind is retracted
+				  ! here we could also insert a fancy calculation that takes the temp. of the
+				  ! "other zone" surface into account ...
                   cfcRgap(icomp,isur,i+1,2)=0.09 ! "ventilated gap" assumption
                   nd_surf=nd_glass
                 else
-c                  call ConvVertCav()
-c                  cfcRgap(icomp,isur,i+1,2)=1.0/hc
+                  TA=tfc(icomp,isur,nd_blnd)    ! blind temperature [C]
+                  TB=tfc(icomp,isur,nd_glass)   ! glass temperature [C]
+                  lthk=THRMLI(icomp,isur,i+1,4) ! thickness of air gap layer [m]
+c                  L=((lthk*2.)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
+                  hc=0.
+
+                  CALL ConvVertCav(L,TA,TB,
+     &                             rmlr_mass(icomp,icfctp,i+1),
+     &              cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
+     &              visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
+     &              spht_A(icomp,icfctp,i+1),spht_B(icomp,icfctp,i+1),
+     &              hc)
+                  cfcRgap(icomp,isur,i+1,2)=1.0/hc
                   nd_surf=nd_blnd
-               endif
+                endif
               endif
 
 C Determine source term for convective exchange between external 
@@ -1825,13 +1829,8 @@ C to account for front and back surface of the outdoor blind layer.
 c                hcof(icomp,isur) remains unchanged
               endif
 
-C Assign source terms to external glass layer nodes
-
-Cag@07052010 the following block up to line 1868 certainly needs differentiation
-C            between external CFC / blind and CFC / blind adjacent to thermal zone ...
-
-C first node of external (glass) layer
-c              inode=nd_glass
+C Assign source terms to external layer nodes
+C first node of external layer
               inode=nd_surf
 
 C Divide source term by surface area SNA() to get [W/m^2].
@@ -1961,7 +1960,8 @@ C If shade is retracted assign appropriate resistance calculated above
        elseif(i.eq.ne.and.itype.ne.0)then !LAST LAYER
             if(itype.eq.1)then !layer is glass
                   !do nothing, coefficient supplied by ESP-r
-            elseif(itype.eq.2)then !layer is blind
+c            elseif(itype.eq.2)then !layer is blind
+            elseif ((itype.eq.2).and.(ie(icomp,isur).eq.0)) then !layer is blind and we are not looking at an "internal" CFC ...
 
             !Convection for an indoor venetian blind configuration consists of:
             !     1. convection between innermost glass and blind layer
@@ -2110,7 +2110,7 @@ C Save future terms
       END IF
 
  1001 CONTINUE
- 
+
 !if number of nodes exceeds two per layer (ie. NNDL>2) then return error msg
   300 if(IER.eq.1)then
             write(outs,'(a)')

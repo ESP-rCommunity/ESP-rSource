@@ -860,7 +860,7 @@ C.....adjacent zone
          fAdjPltHeatLoss_F = 0.0
 
       endif
-         
+
 C Set-up present coefficient .
       E(I,N3)=VCP(I,NN,1)*RGAM*TNC(I,NN-1)+
      &(1.-VCP(I,NN,1)*RGAM-VCP(I,NN,2)*RGAM*HCIP(ICOMP,I)-
@@ -897,9 +897,10 @@ C Trace...
         write(outs,*)'Resulting E(I,N3) I N3  coef: ',E(I,N3),I,N3
         call edisp(itu,outs)
       endif
-
 C Next-to-surface future coefficient.
       E(I,N4)=-VCF(I,NN,1)*GAM
+      write(*,*)'E(',i,',',j,')=',e(i,j)
+      write(*,*)'E(',i,',',N4,')=',e(i,N4)
    30 CONTINUE
 
 C Set-up air point equation coefficients.
@@ -926,7 +927,8 @@ C present term.
       ENDIF
 
 C Replace ACAP if it is a water-filled (or other fluid) zone.
-      IF(WATERZ(ICOMP))ACAP=1.0/(NTSTEP*WATCAP*1000.0*VOL(ICOMP)/3600.0)
+      IF (WATERZ(ICOMP))
+     &   ACAP=1.0/(NTSTEP*WATCAP*1000.0*VOL(ICOMP)/3600.0)
 
       DO 50 I=1,NC
 

@@ -1110,17 +1110,19 @@ C N3 relates to the present term
 C Commence forward reduction.
       n=1
       do 10 i=1,nc
-      n=n+1
-      m=n-1
-      do 20 j=n,n1
-      x1=e(j,m)
-      x2=e(i,m)
-      x3=x1/x2
-      do 30 k=m,n3
-      sub=e(i,k)*x3
-      e(j,k)=e(j,k)-sub
-   30 continue
-   20 continue
+        n=n+1
+        m=n-1
+        do 20 j=n,n1
+          x1=e(j,m)
+          x2=e(i,m)
+          x3=x1/x2
+          do 30 k=m,n3
+            sub=e(i,k)*x3
+            e(j,k)=e(j,k)-sub
+            write(*,*)'mzcms1 E(',i,',',k,')=',E(I,k)
+            write(*,*)'mzcms1 E(',j,',',k,')=',E(j,k)
+   30     continue
+   20   continue
    10 continue
 
 C Air temperature coefficient.
@@ -1849,6 +1851,7 @@ C at current time-step.
       bb3=b3
       iicomp=icomp
       tnp=b3/b1
+      write(*,*)'b1,b2,b3=',b1,',',b2,',',b3,' mzpst1_0: tnp=',tnp
       if(nsinc.gt.1)goto 1
 
 C Initialise first pass through and assume no control
@@ -2005,9 +2008,9 @@ C Assign t and q values.
       isn3=ibsn(icf,3)
       if(isn1.gt.0.and.isn2.eq.0)tfa(icomp)=tfut
       if(isn1.le.0)tfa(icomp)=tfut
-      if(isn1.ne.icomp.and.isn1.gt.0.and.isn2.gt.0)tfa(icomp)=tfut
-      if(isn1.eq.icomp.and.isn2.gt.0.and.isn3.eq.0)tfs(icomp,isn2)=tfut
-      if(isn1.eq.icomp.and.isn2.gt.0.and.isn3.gt.0)tfc(icomp,isn2,isn3)=
+	if(isn1.ne.icomp.and.isn1.gt.0.and.isn2.gt.0)tfa(icomp)=tfut
+	if(isn1.eq.icomp.and.isn2.gt.0.and.isn3.eq.0)tfs(icomp,isn2)=tfut
+	if(isn1.eq.icomp.and.isn2.gt.0.and.isn3.gt.0)tfc(icomp,isn2,isn3)=
      &tfut
       qf=qfut
       qfa(icomp)=0.
