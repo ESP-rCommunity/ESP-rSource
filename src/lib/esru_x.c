@@ -8304,7 +8304,7 @@ void curmodule_(fcmodule,len_fcmodule)
   int  l_fcmodule;	/* local length */
 
 /* use the same logic as in curproject_ */
-  strncpy(cappl,"   ",3);
+  strncpy(cappl,"    ",4);
   f_to_c_l(fcmodule,&len_fcmodule,&l_fcmodule); strncpy(cappl,fcmodule,(unsigned int)l_fcmodule);	/* copy to static */
   cappl[l_fcmodule] = '\0';
 }

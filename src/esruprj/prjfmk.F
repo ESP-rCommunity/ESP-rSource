@@ -4450,6 +4450,7 @@ C << an actual cancel option not yet implemented >>
         write (HOLD,'(2f8.1,a)') CMGSX/real(NOBJ),CMGLX/real(NOBJ),'  '
         h(1)='Supply the sensible and latent gain in Watts.'
         h(2)=' '
+        h(3)=' '
         call EASKS(HOLD,'Object sensible and latent gain (W):',
      &          ' ',24,'  0.   0. ','casual gn info',IER,24)
         K=0
@@ -4460,6 +4461,9 @@ C << an actual cancel option not yet implemented >>
         if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
         CMGSX=XSEN*real(NOBJ)
         CMGLX=XLATGN*real(NOBJ)
+        write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts are now ',CMGSX,
+     &    ' & latent Watts ',CMGLX
+        call edisp(iuout,outs)
       elseif (IGU.eq.4) then
 
 C Gain as m^2/object - floor area of an object and gain per object.
@@ -4472,20 +4476,30 @@ C If user cancels go back to initial question.
         endif
         XFLA=FLA
         h(1)='The floor area per object for the current gain type is '
-        h(2)='required. For example the area per person.'
+        h(2)='required. For example the area per person assuming that'
+        h(3)='for people the sensible is 95W and latent is 45W. '
         call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
      &    0.1,'F',100.0,'W',1.0,'area per object',IERI,24)
         if(IERI.eq.0)then
           FLA=XFLA
           if (iabs(ICGTX).eq.1) then
+
+C If dealing with occupants treat this as a special case which assumes
+C that each person is 95W sensible and 45W latent.
             ICGTX=-1
-            CMGSX=FLA
+            CMGSX=FLA  ! Set sensible to the m^2 per person entered
             CMGLX=0.   ! Why is CMGLX set to zero?
+            VS=(ZBASEA(ICOMP)/CMGSX)*95.  ! find sensible watts
+            VL=(ZBASEA(ICOMP)/CMGSX)*45.  ! find latent watts
+            write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts now ',VS,
+     &        ' & latent Watts ',VL
+            call edisp(iuout,outs)
           else
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
             h(1)='Supply the sensible and latent gain in Watts/object.'
             h(2)=' '
+            h(3)=' '
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
             K=0
@@ -4495,6 +4509,9 @@ C If user cancels go back to initial question.
             if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
             CMGSX=XSEN*zb/FLA
             CMGLX=XLATGN*zb/FLA
+            write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts now ',CMGSX,
+     &        ' & latent Watts ',CMGLX
+            call edisp(iuout,outs)
           endif
         elseif(ieri.eq.-3)then
           goto 10
@@ -5263,9 +5280,11 @@ C Scan each days gains and calculate maximum gain.
           if (I.gt.ICGS(IDAY,J).and.I.le.ICGF(IDAY,J)) then
             if (ICGT(IDAY,J).eq.-1) then
               if (CMGS(IDAY,J).gt.0.0) then
-C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
-               CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*70.1
-               CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*45.
+C For case of m2/person CMGL1()J remains zero so use cmgs1(J) which
+C is the m^2 per person instead. Base graphed value on fractional 
+C persons per m^2.
+              CGNS=CGNS+(ZBASEA(ICOMP)/CMGS(IDAY,J))*70.1
+              CGNL=CGNL+(ZBASEA(ICOMP)/CMGS(IDAY,J))*45.
               else
                CGNS=0.0
                CGNL=0.0

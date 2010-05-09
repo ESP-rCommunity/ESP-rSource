@@ -89,9 +89,10 @@ C Recover information begin edited and reset modify flag.
       END
 
 C ******************** CDRAWESP 
-C CDRAWESP loads the geometric description(s) from an ESP file,
+C CDRAWESP loads the geometric description(s) from common blocks,
 C converts into viewing coords, clips the image and draws it.
 C ier is returned as non-zero if there has been a problem.
+C This code is similar to that used in cread3dv.F subroutine drawesp.
       SUBROUTINE CDRAWESP(ier)
 #include "building.h"
 #include "geometry.h"
@@ -104,7 +105,7 @@ C Passed parameter.
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -122,12 +123,12 @@ C Passed parameter.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
 C VCOORD : X,Y & Z coordinates in model (via geometry.h).
-C NZNVER : number of vertices associated with each connection.
-C NZJVN : topology of vertices associated with each connection.
+C NZNVER : number of vertices associated with each connection (via geometry.h).
+C NZJVN : topology of vertices associated with each connection (via geometry.h).
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical close,greyok,found
+      logical greyok,found
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
@@ -137,7 +138,7 @@ C NZJVN : topology of vertices associated with each connection.
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
-      CHARACTER MLCN*12
+      CHARACTER MLCN*12,t13*13
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSI
@@ -197,16 +198,18 @@ C If site grid or ground is asked for draw now.
       IF(ITDSP.EQ.6)return
 
 C Beginning of loop to read in several ESP compatible geometry files.
+C The first task is to set iz to zero and istok to true to force the
+C code to draw the site origin symbol.
       IZ=0
       ISTOK=.TRUE.
 
   100 CONTINUE
 
 C If the origin of the site is to be shown include this in the image
-C and then go on to the normal objects in subsequent passes.
+C and then go on to the normal objects. After this point ISTOK is .FALSE.
       if(ITORG.EQ.0.and.ISTOK)then
         CALL ORIGESP
-        goto 205
+        ISTOK=.FALSE.
       elseif(ITORG.EQ.1.and.ISTOK)then
         ISTOK=.FALSE.
       endif
@@ -214,7 +217,7 @@ C and then go on to the normal objects in subsequent passes.
       IZ=IZ+1
       IF(IZ.GT.nzg)RETURN
 
-C If obstructions are to be drawn read obstruction file, transform
+C If obstructions are to be drawn read the obstruction file, transform
 C the obstruction description into a gen body and plot them out
 C before going on to the surfaces in the zone itself.
       IF(ITDSP.EQ.0.or.ITDSP.eq.5)CALL DRAWOBS(nznog(IZ),ier)
@@ -223,6 +226,7 @@ C If zone names are to be displayed place near the centre of zone.
 C For clarity use larger font and then restore font to normal size.
 C Transform the site COG coords into eyepoint and then screen coords.
 C Find the pixels required for the name and centre text.
+C Note: temp character t13 is 1 char wider than zname().
       IF(ITZNM.EQ.0)THEN
         COG1(1)=ZCOG(nznog(IZ),1)
         COG1(2)=ZCOG(nznog(IZ),2)
@@ -230,10 +234,10 @@ C Find the pixels required for the name and centre text.
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
         call u2pixel(COG3(1),COG3(2),iix,iiy)
-        write(temp,'(A)')zname(nznog(IZ))
-        call textpixwidth(temp,ipixw)
+        write(t13,'(A)')zname(nznog(IZ))
+        call textpixwidth(t13,ipixw)
         iixc = iix - (ipixw/2)
-        CALL wstxpt(iixc,iiy,temp)
+        CALL wstxpt(iixc,iiy,t13)
         call forceflush()
       ENDIF
       IF(ier.NE.0)RETURN
@@ -252,7 +256,6 @@ C label and loop back to the next body.
           CALL VERTLBL(iix,iiy,IV,ier)
           call forceflush()
   202   CONTINUE
-        ISTOK=.FALSE.
         GOTO 100
       ELSEIF(NZSUR(nznog(IZ)).GE.1.AND.NZTV(nznog(IZ)).GT.1)THEN
 
@@ -304,13 +307,15 @@ C of the vertex symbols.
       ENDIF
 
 C Continue on with any surfaces in the zone.
-  205 DO 1000 I=1,NZSUR(nznog(IZ))
+      DO 1000 I=1,NZSUR(nznog(IZ))
+
+C icc is the connection related to the current surface.
         icc=IZSTOCN(nznog(IZ),I)
 
 C If the configuration file has been read and there is a filter for
 C which surfaces should be displayed test this here. Locate the
 C connection (IC) which relates to this surface.
-        IF(CFGOK.AND.(.NOT.ISTOK))THEN
+        IF(CFGOK)THEN
           CALL SURADJ(nznog(IZ),I,IE,TMP,IZC,ISC,IC,DESCRC)
           IF(ITDSP.EQ.2.AND.IE.NE.0)GOTO 1000
           IF(ITDSP.EQ.3.AND.IE.NE.3)GOTO 1000
@@ -355,10 +360,9 @@ C If ISTAT = -1 : straddles frustrum
         iixc=0
         iiyc=0
 
-C Set line style for this surface. 
-        IF(.NOT.ISTOK)THEN
+C Set line style for this surface. linsty=2 is double width line. 
           if(ICC.ne.0)then
-            if(LINSTY(IC).eq.2)then
+          if(LINSTY(ICC).eq.2)then
               IPEN= -305
             else
               IPEN= 1
@@ -382,7 +386,7 @@ C ITHLS = 3 partial attributes
             else
               IPEN= 1
             endif
-            if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).eq.'TRAN')then
+          if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).ne.'OPAQ')then
               IPEN= -305
             else
               IPEN= 1
@@ -400,10 +404,6 @@ C Debug.
 C          write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
 C     &      ithls,ithlz,ISTOK
 
-        else
-          IPEN= 1
-        endif
-
 C Count the edges in case enhanced edge drawing required.
         iedge=0
         DO 300 J = 1,NB
@@ -416,7 +416,7 @@ C ETSMAT = Eye to Screen Matrix. First move to the beginning.
 
 C If vertex are to be labeled do it in the smallest font, then
 C move cursor to vertex and remember position.
-          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
+          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=NZJVN(icc,IP)
             CALL VERTLBL(iix,iiy,IV,ier)
           ENDIF
@@ -452,10 +452,6 @@ C with the co-planer.
                 else
                   LD=4
                   call edline(iixlast,iiylast,iix,iiy,LD)
-
-C Debug.
-C                  write(6,*) 'duplicate edge.'
-
                   found=.true.
                 endif
               endif
@@ -478,10 +474,11 @@ C unless duplicate line has already been drawn.
           endif
           iixc=iixc+iix
           iiyc=iiyc+iiy
+          call forceflush()
 
 C If vertex are to be labeled do it in the smallest font and
 C move cursor back to vertex and remember position.
-          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
+          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=NZJVN(icc,IP1)
             CALL VERTLBL(iix,iiy,IV,ier)
             iixlast=iix   ! cast for edline call
@@ -516,10 +513,6 @@ C with the co-planer.
                 else
                   LD=4
                   call edline(iixlast,iiylast,iix,iiy,LD)
-
-C Debug.
-C                  write(6,*) 'duplicate edge.'
-
                   found=.true.
                 endif
               endif
@@ -542,8 +535,8 @@ C unless duplicate line has already been drawn.
           endif
           iixc=iixc+iix
           iiyc=iiyc+iiy
-  300   CONTINUE
         call forceflush()
+  300   CONTINUE
 
 C If surface names are to be displayed place near the centre of polygon.
 C If the surface is not drawn (iixc=0 & iiyc=0) do not label it. If the
@@ -551,7 +544,7 @@ C surface has been clipped then do not label it. For clarity drop to
 C the next smaller font for the surface name and then restore font
 C to normal size.
 C Patch for cfg is to only label highlighted surfaces.
-        IF(ITSNM.EQ.0.AND.(.NOT.ISTOK))THEN
+        IF(ITSNM.EQ.0)THEN
           IF(iixc.GT.0.AND.iiyc.GT.0.AND.(NAP.EQ.NBP))THEN
             if(icc.ne.0)then
               if(LINSTY(icc).eq.2)then
@@ -591,9 +584,7 @@ C Make some concession to the size of the font.
  1000 CONTINUE
       call forceflush()
 
-C Loop back again to see if there is more after canceling site origin
-C symbol display in subsequent zones.
-      ISTOK=.FALSE.
+C Loop back again to see if there is more.
       GOTO 100
 
       END

@@ -29,9 +29,10 @@ C of G8 common block data for enhanced edge drawing. Assumes that other
 C source code manages the G7 and G8 data.
  
 C ******************** DRAWESP 
-C DRAWESP loads the geometric description(s) from an ESP file,
+C DRAWESP loads the geometric description(s) from common blocks,
 C converts into viewing coords, clips the image and draws it.
 C ier is returned as non-zero if there has been a problem.
+C This code is similar to that used in cfg3dv.F subroutine cdrawesp.
       SUBROUTINE DRAWESP(ier)
 #include "building.h"
 #include "geometry.h"
@@ -49,7 +50,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
@@ -84,11 +84,9 @@ C Local variables to pass to edline and axiscale.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
-      integer ixxc
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
-      integer*8 ixxc
 #endif
 
 C If not in graphic mode return.
@@ -101,7 +99,7 @@ C If libraries and monitor support greyscale remember this.
       endif
 
 C Save the current font and switch to a smaller font for displaying
-C surface names etc.
+C surface names etc. Iixc,iiyc keep track of surface/pixel COG.
       NAMEFT=IFS-1
 
 C The right offset for the graphic box is the character width of the
@@ -148,11 +146,10 @@ C code to draw the site origin symbol.
   100 CONTINUE
 
 C If the origin of the site is to be shown include this in the image
-C and then go on to the normal objects in subsequent passes. ORIGESP
-C fills the common block G1 with a surface representing the site origin.
+C and then go on to the normal objects. After this point ISTOK is .FALSE.
       if(ITORG.EQ.0.and.ISTOK)then
         CALL ORIGESP
-        goto 205
+        ISTOK=.FALSE.
       elseif(ITORG.EQ.1.and.ISTOK)then
         ISTOK=.FALSE.
       endif
@@ -179,11 +176,11 @@ C Note: temp character t13 is 1 char wider than zname().
         call u2pixel(COG3(1),COG3(2),iix,iiy)
         write(t13,'(A)')zname(nznog(IZ))
         call textpixwidth(t13,ipixw)
-        ixxc = iix - (ipixw/2)
-        CALL wstxpt(ixxc,iiy,t13)
+        iixc = iix - (ipixw/2)
+        CALL wstxpt(iixc,iiy,t13)
+        call forceflush()
       ENDIF
       IF(ier.NE.0)RETURN
-      call forceflush()
 
 C If there are no surfaces yet defined then draw the vertices with 
 C label and loop back to the next body.
@@ -197,9 +194,8 @@ C label and loop back to the next body.
           call u2pixel(COG3(1),COG3(2),iix,iiy)
           CALL ecirc(iix,iiy,3,1)
           CALL VERTLBL(iix,iiy,IV,ier)
-  202   CONTINUE
         call forceflush()
-        ISTOK=.FALSE.
+  202   CONTINUE
         GOTO 100
       ELSEIF(NZSUR(nznog(IZ)).GE.1.AND.NZTV(nznog(IZ)).GT.1)THEN
 
@@ -250,33 +246,16 @@ C of the vertex symbols.
         call forceflush()
       ENDIF
 
-C Continue on with any surfaces in the zone. For the case of
-C drawing the site origin set loopsurf to one rather than to
-C the normal value NZSUR(nznog(IZ)). Also need to set icc and
-C NAP for the two cases ( perhaps consider a different way to
-C do this in the future).
-  205 continue
-      if(ISTOK)then
-        loopsurf=1
-      else
-        loopsurf=NZSUR(nznog(IZ))
-      endif
-      DO 1000 I=1,loopsurf
+C Continue on with any surfaces in the zone.
+      DO 1000 I=1,NZSUR(nznog(IZ))
 
-C NAP   = Number of vertex points on surface
 C icc is the connection related to the current surface.
-        if(ISTOK)then
-          icc=1
-          NAP= 12
-        else
           icc=IZSTOCN(nznog(IZ),I)
-          NAP = NZNVER(icc)
-        endif
 
 C If the configuration file has been read and there is a filter for
 C which surfaces should be displayed test this here. Locate the
 C connection (IC) which relates to this surface.
-        IF(CFGOK.AND.(.NOT.ISTOK))THEN
+        IF(CFGOK)THEN
           CALL SURADJ(nznog(IZ),I,IE,TMP,IZC,ISC,IC,DESCRC)
           IF(ITDSP.EQ.2.AND.IE.NE.0)GOTO 1000
           IF(ITDSP.EQ.3.AND.IE.NE.3)GOTO 1000
@@ -284,31 +263,21 @@ C connection (IC) which relates to this surface.
         ENDIF
 
 C Copy polygon for Surface I into structure A for compatibility with
-C viewer format 'holes' in surfaces. For the case of site origin
-C use G1 common block variables rather than ZNDATA.
+C viewer format 'holes' in surfaces.
+C NAP   = Number of vertex points on surface
 C IANXT = Index of 'next' point
 C IAPNT = Pointer to first vertex of polygon
         IAPNT = 1
-        DO 1100 J = 1,NAP
-          if(ISTOK)then
-            K = JVN(1,J)
-            AX(J) = X(K)
-            AY(J) = Y(K)
-            AZ(J) = Z(K)
-          else
+        NAP = NZNVER(icc)
+        DO 1100 J = 1,NZNVER(icc)
             K = NZJVN(icc,J)
             AX(J) = VCOORD(nznog(IZ),K,1)
             AY(J) = VCOORD(nznog(IZ),K,2)
             AZ(J) = VCOORD(nznog(IZ),K,3)
-          endif
           IANXT(J) = J + 1
  1100   CONTINUE
 
-        if(ISTOK)then
-          IANXT(NAP) = IAPNT
-        else
           IANXT(NZNVER(icc)) = IAPNT
-        endif
 
 C-----------------------------------------------------------------------
 C Transform surface polygon to EYE co-ordinates
@@ -328,8 +297,10 @@ C If ISTAT = -1 : straddles frustrum
           CALL CUTPOL(NB,NBP,IBPNT,BX,BY,BZ,IBNXT,ISTAT)
         ENDIF
 
+        iixc=0
+        iiyc=0
+
 C Set line style for this surface. linsty=2 is double width line. 
-        IF(.NOT.ISTOK)THEN
           if(ICC.ne.0)then
             if(LINSTY(ICC).eq.2)then
               IPEN= -305
@@ -369,13 +340,9 @@ C ITHLS = 3 partial attributes
             endif
           endif
 
-C Debug...
+C Debug.
 C          write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
 C     &      ithls,ithlz,ISTOK
-
-        else
-          IPEN= 1
-        endif
 
 C Count the edges in case enhanced edge drawing required.
         iedge=0
@@ -389,7 +356,7 @@ C ETSMAT = Eye to Screen Matrix.  First move to the beginning.
 
 C If vertex are to be labeled do it in the smallest font, then
 C move cursor to vertex and remember position.
-          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
+          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=NZJVN(icc,IP)
             CALL VERTLBL(iix,iiy,IV,ier)
           ENDIF
@@ -435,7 +402,7 @@ C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
                 if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok) call winscl('i',nifgrey-3)
                 call eswline(iixlast,iiylast,iix,iiy)
                 if(greyok)call winscl('-',0)
               endif
@@ -445,11 +412,13 @@ C unless duplicate line has already been drawn.
           else
             call eswline(iixlast,iiylast,iix,iiy)
           endif
+          iixc=iixc+iix
+          iiyc=iiyc+iiy
           call forceflush()
 
 C If vertex are to be labeled do it in the smallest font and
 C move cursor back to vertex and remember position.
-          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
+          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=NZJVN(icc,IP1)
             CALL VERTLBL(iix,iiy,IV,ier)
             iixlast=iix   ! cast for edline call
@@ -504,18 +473,19 @@ C unless duplicate line has already been drawn.
           else
             call eswline(iixlast,iiylast,iix,iiy)
           endif
+          iixc=iixc+iix
+          iiyc=iiyc+iiy
           call forceflush()
   300   CONTINUE
 
 C If surface names are to be displayed place near the centre of polygon.
-C If the surface has been clipped then do not label it. For clarity drop to
+C If the surface is not drawn (iixc=0 & iiyc=0) do not label it. If the
+C surface has been clipped then do not label it. For clarity drop to
 C the next smaller font for the surface name and then restore font
 C to normal size.
-        IF(ITSNM.EQ.0.AND.(.NOT.ISTOK))THEN
-          IF(NAP.EQ.NBP)THEN
+        IF(ITSNM.EQ.0)THEN
+          IF(iixc.GT.0.AND.iiyc.GT.0.AND.(NAP.EQ.NBP))THEN
             if(icc.ne.0)then
-             IF(IFS.GT.0)CALL winfnt(NAMEFT)
-              write(stemp,'(A)')SSNAME(IC)
 
 C If surface normals to be displayed draw an arrow and
 C offset the surface name depending on orientation.
@@ -529,13 +499,22 @@ C offset the surface name depending on orientation.
                 CALL VECTRN(VN,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
                 call u2pixel(COG3(1),COG3(2),iixc,iiyc)
+                IF(IFS.GT.0)CALL winfnt(NAMEFT)
+                write(stemp,'(A)')SSNAME(IC)
                 call arrow(CG,VN,0.3,0.1,ipoints,'a',2)
-                IF(SSVFC(icc).EQ.'VERT'.or.SSVFC(icc).EQ.'CEIL'.or.
-     &             SSVFC(icc).EQ.'FLOR')THEN
+
+C Offset the surface name depending on orientation.
+                IF(SSVFC(icc).EQ.'VERT')THEN
+                  iixc=iixc+5
+                ELSEIF(SSVFC(icc).EQ.'CEIL')THEN
+                  iixc=iixc+5
+                ELSEIF(SSVFC(icc).EQ.'FLOR')THEN
                   iixc=iixc+5
                 ELSE
                   iixc=iixc+5
                 ENDIF
+
+C Make some concession to the size of the font.
                 CALL wstxpt(iixc,iiyc,stemp)
                 IF(IFS.GT.0)CALL winfnt(IFS)
               else
@@ -600,12 +579,10 @@ C Make some concession to the size of the font.
             endif
           ENDIF
         ENDIF
-        call forceflush()
  1000 CONTINUE
+      call forceflush()
 
-C Loop back again to see if there is more after canceling site origin
-C symbol display in subsequent zones.
-      ISTOK=.FALSE.
+C Loop back again to see if there is more.
       GOTO 100
 
       END

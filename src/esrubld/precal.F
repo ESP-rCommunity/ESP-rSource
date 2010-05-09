@@ -449,7 +449,7 @@ C - Alex Feb. 20 2004
      &     Coupling_gain_info(MCOM,MDTY,MC,6)
       INTEGER iNumb_Gain_coupling,index
       REAL Coupling_Gain_info
-
+      real PERSN  ! number of persons per m^2
       character outs*124
       logical close
 
@@ -580,21 +580,23 @@ C Assign the power consumption evenly over the three phases for a 3-phase load.
             endif
           endif
         elseif (ICGT(IDAY,I).eq.-1) then
+
+C This is an implied case of m^2 per person (including fractional
+C persons) which makes a fixed assumption of 95W sensible and 45W
+C latent per person. 
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
           IPER=NCGPER(ICOMP,IDAY,ITYP)
           TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS(IDAY,I)
           TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF(IDAY,I)
           call eclose(CMGS(IDAY,I),0.00,0.001,close)
           if (close) then
-c if -1 and "m2/person" is zero, the intention is most likely "no occupancy"!
-            dNPERSN=0.0
+            PERSN=0.0  ! if m^2/person was close to zero set to zero.
           else
-c            NPERSN=INT(FLOORA(ICOMP)/CMGS(IDAY,I))
-            dNPERSN=FLOORA(ICOMP)/CMGS(IDAY,I)
+            PERSN=FLOORA(ICOMP)/CMGS(IDAY,I)
           endif
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=dNPERSN*70.1*CONC(IDAY,I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=dNPERSN*70.1*RADC(IDAY,I)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=dNPERSN*45.0
+          CGSENC(ICOMP,IDAY,ITYP,IPER)=PERSN*70.1*CONC(IDAY,I)
+          CGSENR(ICOMP,IDAY,ITYP,IPER)=PERSN*70.1*RADC(IDAY,I)
+          CGLAT(ICOMP,IDAY,ITYP,IPER)=PERSN*45.0
         else
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
           IPER=NCGPER(ICOMP,IDAY,ITYP)
