@@ -52,9 +52,6 @@ C =2 with more than 3 day types
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/recver/izver,ipver,iever
 
-C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-
       CHARACTER*72 LCFGF,path
       character longtmp*144
       CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248

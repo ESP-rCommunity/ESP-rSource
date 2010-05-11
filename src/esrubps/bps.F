@@ -244,7 +244,6 @@ C Project journal on/off, unit number, cmd, file name.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/CHANNL/NOCHAN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok

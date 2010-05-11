@@ -214,8 +214,6 @@ C Path to model and command line file name.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-
 C For each timestep (assuming 10tsph frequency over a year) iknowrec
 C will be zero if not yet set and a positive number representing the record
 C to read from the temporal file if already known.

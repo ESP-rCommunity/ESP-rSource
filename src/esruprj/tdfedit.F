@@ -58,12 +58,6 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       character cfgroot*24,LCFGF*72
       common/C21/IFCFG,cfgroot,LCFGF
 
-C Common blocks unique to TDF:
-C Related to TDF ITEMS db.
-C ITDFLG is zero if no file, one if older version, two if pre-2005
-C        and three if 2005 version.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-
 C Related to TDF header.
 C NWPR  : Number of words per record in the TAB file.
 C NITDF : Total number of instances in the TDF db.

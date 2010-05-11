@@ -73,7 +73,6 @@ C Related to TDF ITEMS file.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFFLG/ITEMSTD
@@ -462,10 +461,11 @@ C the file is an asci or unsupported version).
 C If the version is 1 or 2 then details of the fields of each item
 C will be read in. If version 3 then only a limited header is expected.
       SUBROUTINE ERTDF(ITRC,IFOC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
 
@@ -721,7 +721,6 @@ C IER=0 OK, IER=1 problem.
 #include "model.h"
 #include "tdf2.h"
 
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
@@ -1084,7 +1083,6 @@ C espriou.h provides current file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
@@ -1469,10 +1467,11 @@ C ERTABU reads one timesteps info from binary TDF file.
 C ITREC is the timestep record to read. ITRC is the 
 C trace level, IER=0 OK, IER=1 problem. 
       SUBROUTINE ERTABU(ITRC,ITREC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
 
@@ -1513,10 +1512,11 @@ C ERTABUPREV reads one timesteps info from binary TDF file into TABUPREV array.
 C ITREC is the timestep record to read. ITRC is the 
 C trace level, IER=0 OK, IER=1 problem. 
       SUBROUTINE ERTABUPREV(ITRC,ITREC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
 
@@ -1557,10 +1557,11 @@ C ************* EWTABU
 C EWTABU writes one timesteps Tabular info to TDF file from the array TAB. 
 C ITREC is the record to be written.  ITRC is the trace level.
       SUBROUTINE EWTABU(ITRC,ITREC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)

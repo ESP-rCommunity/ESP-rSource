@@ -121,9 +121,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
 C Radiance RIF file.
       common/radcfg/LRADCF
 
-C Temporal definitions.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
 
@@ -1426,6 +1423,7 @@ C ********** simula
 C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "sbem.h"
 #include "ipvdata.h"
@@ -1446,7 +1444,6 @@ C to include the path and create a string to drive the modules.
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Temporal header (to get its time frequency)
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       common/CFGV/icfgv

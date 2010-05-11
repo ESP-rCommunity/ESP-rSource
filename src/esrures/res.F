@@ -116,7 +116,6 @@ C CFD commons.
 
 C Flags for generic data retrieval routines:
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
 
 C Optional title for graph and up to 5 other labels and their positions.
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)

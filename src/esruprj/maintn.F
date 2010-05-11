@@ -40,7 +40,6 @@ C IER=0 OK, IER=1 problem.
 #include "tdf2.h"
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
@@ -205,7 +204,6 @@ C IFOC, the item array index at the point where the action is to take place.
 #include "model.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
@@ -342,7 +340,6 @@ C Tabular columns are copied as required.
 #include "building.h"
 #include "model.h"
 #include "tdf2.h"
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)

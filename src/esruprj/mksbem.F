@@ -182,9 +182,6 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER IENTXIST
       CHARACTER entflnam*72
 
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      INTEGER IUTDF,ITDFLG,IUTDFA
-
       common/IPVF/lipvdatf
       CHARACTER*72 LIPVDATF
 
@@ -580,8 +577,6 @@ C ier is returned as non-zero if there was a problem.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C TDF related.
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP    
       COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)

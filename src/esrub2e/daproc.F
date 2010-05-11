@@ -737,9 +737,6 @@ C Commons
 
       COMMON/B2EI/MODELCFG,BFILE,TDFUD,RSFIL,BREPT
 
-C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-
       CHARACTER MODE*4
       CHARACTER*72 MODELCFG,BFILE,TDFUD,RSFIL,BREPT
       CHARACTER DOIT*124
@@ -783,10 +780,11 @@ C module b2e and the code which generates the file is in daproc.F
 C as routine TDFUDWR. Only the tdf module needs routine tdfupd.
 C ITRC is the trace level, IER=0 OK, IER=1 problem. 
       SUBROUTINE tdfupd(ITRC,AFIL,IAFIL,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)

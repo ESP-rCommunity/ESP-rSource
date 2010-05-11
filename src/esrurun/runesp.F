@@ -71,8 +71,6 @@ C ************************************************************
      &             dbspth
       common/radcfg/LRADCF
 
-C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       common/IPVF/lipvdatf
 
 C Path to problem and command line file (if any).

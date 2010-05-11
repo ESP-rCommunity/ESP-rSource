@@ -132,9 +132,6 @@ C Path to model and command line file name.
       COMMON/DNORGH/IRTYPE
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 

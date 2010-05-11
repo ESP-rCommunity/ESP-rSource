@@ -250,9 +250,6 @@ C Defaults for some of the obscure files.
       character*72 DFCFD,DECMPDBFL,DICONDBFL
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
-C Temporal definition commons.
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
 

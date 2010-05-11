@@ -27,6 +27,8 @@ C pertinent data to the BEMS tool.
 C *********************************** B2E ******************************
 
       PROGRAM B2E
+#include "building.h"
+#include "model.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -44,9 +46,6 @@ C *********************************** B2E ******************************
       COMMON/OUTPCH/ICOUT
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
-
-C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
 
 C Path to problem and command line file (if any).
       common/rpath/path
