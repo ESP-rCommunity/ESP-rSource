@@ -54,9 +54,8 @@ C =2 with more than 3 day types
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
-      CHARACTER*72 LCFGF,path,LTDF,LTDFA
+      CHARACTER*72 LCFGF,path
       character longtmp*144
       CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248
       character cfgroot*24,outs*124

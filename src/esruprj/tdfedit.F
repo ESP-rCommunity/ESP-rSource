@@ -29,6 +29,8 @@ C EXTRACTS: writes an ascii exchange file beginning at TIMEJD.
 C TDFUPD: updates TDF file from an exchange file.
 
       subroutine tdfedit(act,ier)
+#include "building.h"
+#include "model.h"
 #include "epara.h"
 #include "tdf2.h"
 #include "espriou.h"
@@ -61,7 +63,6 @@ C Related to TDF ITEMS db.
 C ITDFLG is zero if no file, one if older version, two if pre-2005
 C        and three if 2005 version.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
 C Related to TDF header.
 C NWPR  : Number of words per record in the TAB file.
@@ -91,7 +92,7 @@ C Logical flags for file openings.
       logical FOUND,XST,unixok,silent
 
       DIMENSION ITEM(30),ikeybk(30),itemsel(MIT),itemval(MIT)
-      CHARACTER LTDF*72,LTDFA*72,LIMP*72,LEXP*72,H*72,tdaide*72
+      CHARACTER LIMP*72,LEXP*72,H*72,tdaide*72
       character afil*72,tfile*72,TTAG*12
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,LTMPFL*72
       CHARACTER ITEM*50,itemsel*50,KEY*1,FOCUS*8,DFILE*72

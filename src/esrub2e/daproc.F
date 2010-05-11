@@ -722,10 +722,12 @@ C This routine calls tdf in update mode. There are two calling modes.
 C BEMS - updates tdf with in formation from a BEMS system
 C CLIM - updates tdf with information from a climate lookahead routine. 
 
-C << thie subroutine logic must change to reflect that tdf functionality
+C << this subroutine logic must change to reflect that tdf functionality
 C << has been moved into the project manager.
 
       SUBROUTINE TDFUPDT(MODE)
+#include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -737,10 +739,9 @@ C Commons
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
       CHARACTER MODE*4
-      CHARACTER*72 LTDF,LTDFA,MODELCFG,BFILE,TDFUD,RSFIL,BREPT
+      CHARACTER*72 MODELCFG,BFILE,TDFUD,RSFIL,BREPT
       CHARACTER DOIT*124
       character msgl2*124
     

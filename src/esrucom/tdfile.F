@@ -60,6 +60,7 @@ C  Check whether it is an ascii file or a binary file. Depending on
 C which create the scratch or ascii version.
       subroutine supplyandcheck(tfile,act,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 C Related to TDF ITEMS file.
@@ -73,7 +74,6 @@ C Related to TDF ITEMS file.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFFLG/ITEMSTD
@@ -96,7 +96,7 @@ C For each zone a pointer to relevant temporal entry 0=not used.
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
-      CHARACTER LTDF*72,LTDFA*72,tfile*72,LTMPFL*72
+      CHARACTER tfile*72,LTMPFL*72
       character FOCUS*8,msgl2*48,fs*1,act*1,outs*124
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,HDR*12
@@ -717,10 +717,11 @@ C ************* EWTDF
 C EWTDF writes an binary (scratch) TDF file from info in common blocks.
 C IER=0 OK, IER=1 problem. 
       SUBROUTINE EWTDF(IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
@@ -739,7 +740,7 @@ C IER=0 OK, IER=1 problem.
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
       LOGICAL OPTDF,OPIMP,OPEXP
 
-      CHARACTER LTDF*72,LTDFA*72,FSTR*80,HDR*12,tdaide*72
+      CHARACTER FSTR*80,HDR*12,tdaide*72
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,msgl2*48
       CHARACTER TDFDES*32,TMAT*16,tdbdate*24,tail*8
       integer ier
@@ -1073,6 +1074,8 @@ C their timestep data).
 C Note that a call with act='i' is assumed to happen after a call with
 C act='c'.
       SUBROUTINE TDFAIMPT(ITRC,AFIL,IAFIL,act,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
 C espriou.h provides current file.
@@ -1081,7 +1084,6 @@ C espriou.h provides current file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
@@ -1100,7 +1102,7 @@ C espriou.h provides current file.
       common/tdaid/tdaide(2)
       logical close,OPTDF,OPIMP,OPEXP,XST
 
-      CHARACTER*72 AFIL,tdaide,LTDF,LTDFA
+      CHARACTER*72 AFIL,tdaide
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,act*1
       CHARACTER TDFDES*32,TMAT*16,outs*124
       character outstr*248,WORD*20,TMP*4,tail*8,msgl2*86

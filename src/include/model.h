@@ -37,3 +37,9 @@ C File names for zone supplimental files.
       character ZOBS*72   ! zone obstructions file (if separate from geo file)
       common/UDESC/LVIEW(MCOM),LHCCO(MCOM),LTWIN(MCOM),
      &             LCGCIN(MCOM),ZOBS(MCOM)
+
+C Temporal definition file names.
+      character LTDF*72   ! binary scratch version of temporal file
+      character LTDFA*72  ! ascii version of temporal file (referenced in the
+                          ! model configuration file)
+      COMMON/TDFFT/LTDF,LTDFA

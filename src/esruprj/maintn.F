@@ -35,11 +35,12 @@ C ITINSRT is used to insert a new temporal item.
 C IFOC, the item array index at the point where the action is to take place. 
 C IER=0 OK, IER=1 problem.
       SUBROUTINE ITINSRT(ITRC,IFOC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
@@ -56,7 +57,7 @@ C IER=0 OK, IER=1 problem.
 
       CHARACTER OUTS*124,msgl2*48,TTAG*12
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      CHARACTER GMENUS*16,GTYPES*8,LTDF*72,LTDFA*72
+      CHARACTER GMENUS*16,GTYPES*8
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
       CHARACTER H*72
 
@@ -200,10 +201,11 @@ C ************* ITDEL ************************************************
 C ITDEL is used to delete an instance in the db.
 C IFOC, the item array index at the point where the action is to take place. 
       SUBROUTINE ITDEL(ITRC,IFOC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
@@ -217,7 +219,7 @@ C IFOC, the item array index at the point where the action is to take place.
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      CHARACTER TDFDES*32,TMAT*16,LTDF*72,LTDFA*72
+      CHARACTER TDFDES*32,TMAT*16
 
 C To delete a tabular item: compact the columns from IFOC+1 to NITDF
 
@@ -337,9 +339,10 @@ C have already been created.  The information in IFOC2 is overwritten.
 C Tabular columns are copied as required.
 
       SUBROUTINE ITCOPY(ITRC,IFOC,IFOC2,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
@@ -353,7 +356,7 @@ C Tabular columns are copied as required.
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      CHARACTER TDFDES*32,TMAT*16,msgl2*48,LTDF*72,LTDFA*72
+      CHARACTER TDFDES*32,TMAT*16,msgl2*48
 
       IER=0
       IF(IFOC.EQ.IFOC2.OR.(TTYPE(IFOC2).NE.TTYPE(IFOC)))THEN

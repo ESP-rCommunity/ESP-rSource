@@ -167,6 +167,7 @@ C                         use the inside surface node temperature
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
+#include "model.h"
 #include "site.h"
 
 C espriou.h provides current file.
@@ -214,7 +215,6 @@ C Path to model and command line file name.
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
 C For each timestep (assuming 10tsph frequency over a year) iknowrec
 C will be zero if not yet set and a positive number representing the record
@@ -267,7 +267,7 @@ C For reading in of bi-directional data.
 
       CHARACTER OUTSTR*124,LCFGF*72,MODE*4,cfgroot*24
       CHARACTER outs*124,louts*248,h*72,spsname*8,L144*144
-      CHARACTER outs248*248,LTDF*72,LTDFA*72,LCMDFL*144
+      CHARACTER outs248*248,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 

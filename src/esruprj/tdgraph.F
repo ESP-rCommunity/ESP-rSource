@@ -19,6 +19,8 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
       SUBROUTINE TMPLOT(ITRC,IFOC,IER)
+#include "building.h"
+#include "model.h"
 #include "tdf2.h"
 
 C Parameters for eline calls.
@@ -29,7 +31,6 @@ C Parameters for eline calls.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
@@ -46,7 +47,7 @@ C Parameters for eline calls.
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       CHARACTER TDFDES*32,TMAT*16,LABEL1*16,LABEL2*72
       CHARACTER temp*32,temp2*14,FOCUS*8
-      CHARACTER*72 LTDF,LTDFA,ETEXT
+      CHARACTER*72 ETEXT
       CHARACTER PERST1*14,PERST2*44,PERST3*44      
       DIMENSION IFSYM(MBITS)
       logical colok

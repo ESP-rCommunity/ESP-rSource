@@ -123,7 +123,6 @@ C Radiance RIF file.
 
 C Temporal definitions.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
@@ -172,8 +171,8 @@ C      character outs248*248
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
-      character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72,LTDFA*72
-      character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
+      character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72
+      character journcmd*20,jfile*72,tfile*72,cjfile*72
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1

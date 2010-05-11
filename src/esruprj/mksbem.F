@@ -184,8 +184,6 @@ C MMGFUN controls all UK NCM related tasks
 
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
       INTEGER IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      character LTDF*72,LTDFA*72
 
       common/IPVF/lipvdatf
       CHARACTER*72 LIPVDATF
@@ -584,7 +582,6 @@ C ier is returned as non-zero if there was a problem.
 C TDF related.
 C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP    
       COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
@@ -601,7 +598,7 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       common/cctlnm/ctldoc,lctlf 
       character ctldoc*248,LCTLF*72
 
-      character LTDF*72,LTDFA*72,D24*24
+      character D24*24
       CHARACTER DFILE*72,LIMP*72,LEXP*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       

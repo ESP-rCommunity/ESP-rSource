@@ -99,6 +99,7 @@ C laprob  - fluid flow description file
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
+#include "model.h"
 #include "site.h"
 #include "plant.h"
 #include "tdf2.h"
@@ -133,7 +134,6 @@ C Path to model and command line file name.
 
 C Temporal definition commons.
       COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
 
 C Common for electrical file 
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
@@ -180,7 +180,7 @@ C For reading in of bi-directional data.
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
       CHARACTER outs*124,h*72,spsname*8,L144*144,longtmp*144
-      CHARACTER outs*248,LTDF*72,LTDFA*72,LCMDFL*144
+      CHARACTER outs*248,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
       DIMENSION ICLN(30)  ! for checking material db categories
