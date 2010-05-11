@@ -41,6 +41,7 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
+#include "UserSimulationToggles.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -50,6 +51,7 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
 
+      COMMON/GR1D04/GAM,RGAM
       COMMON/SAVE/ISAVE
       COMMON/SAVE1/LSAVE
 
@@ -110,6 +112,10 @@ C Are uncertainties defined?
         call SENRNS(IER)
         if (IER.eq.1) return
       endif
+      
+
+C Reimpose any user-specified simulation toggles as needed 
+      if ( bUserGAM ) GAM = fUserGAM     ! User-specified-implicitness.
 
 C Run the necessary number of simulations.
       do 100, I=1,NRSIM
@@ -135,7 +141,7 @@ C Re-scan the model description files silently.
           call MZCSTR(IER)
           write (36,*) '** Edits for changes in set:',ISIM,NTSTEP
         endif
-
+        
 C MZNUMA is effectively a simulation clock.
         CALL MZNUMA
 
@@ -652,6 +658,7 @@ C Set simulation toggles.
 #include "geometry.h"
 #include "plant.h"
 #include "net_flow.h"
+#include "UserSimulationToggles.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -888,8 +895,11 @@ C Averaging on/off.
       elseif(INO.eq.2)then
 
 C Zone side equations implicitness degree.
-        CALL EASKR(GAM,' ',' Zone side equations implicitness degree: ',
+        
+        CALL EASKR(fUserGAM,
+     &         ' ',' Zone side equations implicitness degree: ',
      &         0.,'F',1.,'F',0.5,' implicitness degree',IER,0)
+        bUserGAM = .true. 
         call tstamp('>','SIM: edit implicitness degree')
       elseif(INO.eq.3)then
 
@@ -2065,7 +2075,6 @@ C If appropriate, output special features invoked.
         call edisp(icout,' Special features invoked:')
         call edisp(icout,' =========================')
       ENDIF
-
 C Zone equations implicitness degree.
       IF(ABS(GAM-0.5).GT.1.E-4)THEN
         WRITE(OUTS,'(A,F5.2)')
