@@ -899,8 +899,6 @@ C Trace...
       endif
 C Next-to-surface future coefficient.
       E(I,N4)=-VCF(I,NN,1)*GAM
-      write(*,*)'E(',i,',',j,')=',e(i,j)
-      write(*,*)'E(',i,',',N4,')=',e(i,N4)
    30 CONTINUE
 
 C Set-up air point equation coefficients.

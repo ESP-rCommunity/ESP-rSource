@@ -1290,12 +1290,10 @@ C if moisture transfer modelling is invoked.
 C Set the present heat variables equal to the future values.
                   if (ITRPAS.eq.0) CALL MZLS5(ICOMP)
 
-      write(*,*)'bmatsv_2: tfa(1)=',tfa(1),' tfa(2)=',tfa(2)
 C Call matrix handling routines depending on the location
 C of the control point node.
                   CALL MTXCTL(ICOMP)
 
-      write(*,*)'bmatsv_3: tfa(1)=',tfa(1),' tfa(2)=',tfa(2)
 C Call the zone moisture calculations controller.
                   IF(MSTRZN(ICOMP))CALL MZMSTR(ICOMP)
                 ENDIF
@@ -1342,7 +1340,6 @@ C Find number of data blocks per hour to be saved.
                 call mzls3(icomp,iday,itsmus,ndbph)
               ENDIF
 
-      write(*,*)'bmatsv_4: tfa(1)=',tfa(1),' tfa(2)=',tfa(2)
 C transport miscellaneous simulation data to reporting object
               if ( bH3K_rep_enabled() ) then
                  call H3K_transport_build_data(icomp)

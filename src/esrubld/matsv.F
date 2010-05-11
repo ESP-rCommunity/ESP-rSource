@@ -1119,8 +1119,6 @@ C Commence forward reduction.
           do 30 k=m,n3
             sub=e(i,k)*x3
             e(j,k)=e(j,k)-sub
-            write(*,*)'mzcms1 E(',i,',',k,')=',E(I,k)
-            write(*,*)'mzcms1 E(',j,',',k,')=',E(j,k)
    30     continue
    20   continue
    10 continue
@@ -1851,7 +1849,7 @@ C at current time-step.
       bb3=b3
       iicomp=icomp
       tnp=b3/b1
-      write(*,*)'b1,b2,b3=',b1,',',b2,',',b3,' mzpst1_0: tnp=',tnp
+
       if(nsinc.gt.1)goto 1
 
 C Initialise first pass through and assume no control
