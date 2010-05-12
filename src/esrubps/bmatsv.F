@@ -1069,9 +1069,9 @@ C Output current simulation increment if trace on.
 C ** DEBUG ** Write nsinc to screen
 C If uncommented, this line will write the current timestep #,
 C hour and day to the screen.
-           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
-     &                ' yr:', iMY_current_year
-           print*, "Current hour: ", fCurrentHour() 
+C           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
+C     &                ' yr:', iMY_current_year
+C           print*, "Current hour: ", fCurrentHour() 
 C           call edisp(itu,outs)
 
 
