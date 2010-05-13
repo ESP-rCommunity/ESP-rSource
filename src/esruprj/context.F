@@ -3466,8 +3466,8 @@ C Also include list of day types.
           endif
  151    continue
         call winscl('-',0)
+        call forceflush()
       endif
-      call forceflush()
       return
 
 C Errors for debug printing.
