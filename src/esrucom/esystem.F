@@ -586,11 +586,13 @@ C Note: escdef must come after scan of .esprc file.
       LPCDB =DPCDB
       MCMPDBFL=DMCMPDBFL
 
+
 C Clear the model common blocks.
       call clrprb
 
 C Initialize simulation toggle flags 
       bUserGAM = .false.       
+      bUserSolar = .false. 
       
       LUALF='UNKNOWN'
       bidirfile='UNKNOWN'
@@ -1667,6 +1669,15 @@ C Token describes building implicitness-explicitness value.
      &                           'Building solution implicitness',
      &                           bError ) 
             if ( fUserGAM < 0. .or. fUserGAM > 1. ) bError = .true. 
+            print*, 'READ: ',fUserGAM      
+C Token describes flag for solar processing
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'bld-solar-processing')) then 
+     
+             bUserSolar = .true. 
+             
+             if ( bStringsMatch(cLnWords(3),'enabled' )) iUserSolar = 0
+             if ( bStringsMatch(cLnWords(3),'disabled')) iUserSolar = 1
                           
           endif MatchKeywords
         

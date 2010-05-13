@@ -687,14 +687,29 @@ C Write initial view info if other than default.
       endif
 
 C User defined simulation toggles. 
-      if ( bUserGAM ) then 
+      UserGAM: if ( bUserGAM ) then 
       
         WRITE(IFCFG,'(A,A,f8.4)',IOSTAT=IOS,ERR=2)
      &     '*sim-toggle ', 
      &     'bld-soln-implicitness ',
      &     fUserGAM
       
-      endif 
+      endif UserGAM
+      
+      UserSolar: if ( bUserSolar ) then 
+      
+        if ( iUserSolar == 0 ) then
+          WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &     '*sim-toggle ', 
+     &     'bld-solar-processing ',
+     &     'enabled '
+        else 
+          WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
+     &     '*sim-toggle ', 
+     &     'bld-solar-processing ',
+     &     'disabled '
+        endif 
+      endif UserSolar
       
 C Write out calendar if defined
       IF(CALENAME(1:7).NE.'UNKNOWN')THEN

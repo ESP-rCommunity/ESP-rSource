@@ -50,8 +50,10 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-
+      
+      COMMON/SOLOFF/ISOLAR
       COMMON/GR1D04/GAM,RGAM
+      
       COMMON/SAVE/ISAVE
       COMMON/SAVE1/LSAVE
 
@@ -115,8 +117,9 @@ C Are uncertainties defined?
       
 
 C Reimpose any user-specified simulation toggles as needed 
-      if ( bUserGAM ) GAM = fUserGAM     ! User-specified-implicitness.
-
+      if ( bUserGAM ) GAM = fUserGAM        ! User-specified-implicitness.
+      if ( bUserSolar ) ISOLAR = iUserSolar ! User-specified-solar-processing 
+      print*, ".... ", bUserSolar, iUserSolar
 C Run the necessary number of simulations.
       do 100, I=1,NRSIM
         ISIM=I
@@ -358,6 +361,7 @@ C based on time-step evaluation; if mixed then impl/expl = 0.5
 
 C Default solar treatment, solar ON, Perez model.
       ISOLAR=0
+      iUserSolar = iSolar
       ISKYFL=3
 
 C Default mass flow simulation iteration parameters are set in MFLWSU
@@ -744,7 +748,7 @@ C Make up strings for the current set of toggles.
         ITEMG(1)=   'a Timestep averaging >> OFF             '
       endif
       WRITE(ITEMG(2),'(A,F5.2)')
-     &              'b Bldng eqns implicitness degree: ',GAM
+     &              'b Bldng eqns implicitness degree: ',fUserGAM
       if(IMPEXP.eq.1)then
         ITEMG(3)=   'c Plant equations    >> implicit        '
       elseif(IMPEXP.eq.2)then
@@ -754,9 +758,9 @@ C Make up strings for the current set of toggles.
       elseif(IMPEXP.eq.4)then
         ITEMG(3)=   'c Plant equations    >> steady state    '
       endif
-      if(ISOLAR.eq.0)then
+      if(iUserSolar.eq.0)then
         ITEMG(4)=   'd Solar calculations >> processing on   '
-      elseif(ISOLAR.eq.1)then
+      elseif(iUserSolar.eq.1)then
         ITEMG(4)=   'd Solar calculations >> processing off  '
       endif
       if(ISKYFL.eq.-1)then
@@ -943,8 +947,10 @@ C Solar ON/OFF option.
         H(2) ='zone a toggle switch on the simulator solar '
         H(3) ='processing algorithms has been installed. If '
         H(4) ='required solar processing can be switched off. '
-        CALL EASKI(ISOLAR,' ',' Solar processing  0) On,  1) Off ? ',
+        CALL EASKI(iUserSolar,' ',
+     &    ' Solar processing  0) On,  1) Off ? ',
      &    0,'F',1,'F',0,'Solar processing iq 23',IER,4)
+        bUserSolar = 1
         IF(IER.NE.0)GOTO 191
         call tstamp('>','SIM: edit solar radiation')
       elseif(INO.eq.5)then
