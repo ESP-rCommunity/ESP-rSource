@@ -1380,8 +1380,12 @@ C.....Temperature of water at drain.
       fHXDrainSideTempInletC = fDrainWaterTempC(iSystem)
       
       
-      ! Update this to use data from Moore model!
+      ! Get cold-side temperature. 
       fColdWaterTempC = fDHW_ColdMainTemp(iMonth)
+      
+      
+      
+      
       fHXSupplySideTempInletC = fColdWaterTempC
       
       

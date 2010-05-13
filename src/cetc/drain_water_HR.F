@@ -1906,3 +1906,14 @@ C-----------------------------------------------------------------------
       
       return 
       end subroutine ShowerDrawAdjustment
+
+C------------ fDHWSupplyWaterTemp --------------------------------------
+C  ABSTRACT:
+C
+C    This routine...
+C
+C-----------------------------------------------------------------------      
+      !real function fDHWSupplyWaterTemp(iMonth)
+      !implicit none 
+      
+      
