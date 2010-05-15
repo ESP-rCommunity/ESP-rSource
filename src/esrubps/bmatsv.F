@@ -112,7 +112,9 @@ C TDF commons. zrotp is the previous rotation angle for each zone.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
       common/zrotat/zrotp(mcom)
 
 C Common for thermophysical property replacement.
