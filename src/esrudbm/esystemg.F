@@ -201,12 +201,6 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
 
 C Temporal definition commons.
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-
-C ITEMSTD: Number of temporal items associated/used in this model.
-      COMMON/TDFFLG/ITEMSTD
-
 C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with

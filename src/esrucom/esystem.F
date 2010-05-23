@@ -250,12 +250,6 @@ C Defaults for some of the obscure files.
       character*72 DFCFD,DECMPDBFL,DICONDBFL
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-
-C ITEMSTD: Number of temporal items associated/used in this model.
-      COMMON/TDFFLG/ITEMSTD
-
 C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with

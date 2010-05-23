@@ -107,7 +107,6 @@ C Monitor commons.
      &               ymin,ymax
 
 C TDF commons. zrotp is the previous rotation angle for each zone.
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,

@@ -785,10 +785,7 @@ C ITRC is the trace level, IER=0 OK, IER=1 problem.
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
-      common/tdset/itdyear,itdbdoy,itdedoy
       logical FOUND,CLOSE,CLOSET,foundit
 
       CHARACTER AFIL*72,FOCUS*8,tail*8

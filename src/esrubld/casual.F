@@ -161,11 +161,6 @@ C Adaptive comfort commons
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-
 C Using the TOTOCCUP as a shortcut for the total occupant gains
 C that are taken from the activities temporal data
       REAL QTOTOCCUP,QOCCCASC,QOCCCASR,QOCCLATN,QTOTEQUIP,QEQUIPCASC

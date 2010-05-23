@@ -5665,11 +5665,9 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
      &       IDBTZNM(MCOM)
 
-C These two commons relate to setting cooling on if temperature exceeds
+C These common TDFREL relate to setting cooling on if temperature exceeds
 C the heating set point by 1degC for the UKNCM notional model (and
 C associated DSM testing models)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
       character dllsubr*12,dllmesg*124,outs*124,cmsg*12
       logical dll,near

@@ -1329,11 +1329,7 @@ C temporal data to be associated with a model.
      &          SUSE(MS,2),SPARENT(MS)
      
 C TDF related.
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
-      common/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
@@ -1347,7 +1343,6 @@ C TDF related.
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
       character*72 DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
-      character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       character OUTSTR*124,HDR*12
       character*34 ITEMS(7)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8

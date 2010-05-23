@@ -130,7 +130,6 @@ C Structured mesh.
       COMMON/GRSD101/LGrdSt
 
 C Temporal definition commons.
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Primary energy and emissions conversions.

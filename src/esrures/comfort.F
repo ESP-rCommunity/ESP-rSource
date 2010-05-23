@@ -781,10 +781,6 @@ C Temporal db commons.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X2a_QTOTOCCUP
       REAL X2c_QTOTEQUIP
 C.........END: USED FOR ACTIVITY TDF DATA.....................

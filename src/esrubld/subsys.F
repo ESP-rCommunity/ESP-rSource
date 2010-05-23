@@ -1127,10 +1127,6 @@ C                 external temperature (for use in MZLS3).
      &             IVH(MCOM),TAH(MCOM)
 
 C TDF commons.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
@@ -2207,13 +2203,6 @@ C typical building based on rules in the UK NCM guide (v4d March 2008)
       logical closeto0
       integer itdi,icomp
 
-C TDFREL are ranges allowed for real fields in the instance.
-C TMIN,TMAX: Acceptable minimum and maximum for range checking.
-C TMAR : real attributes to be passed to outside code.
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      real TMAR,TMIN,TMAX
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      integer ITDFTR,IATDF,ITCOL
       common/btime/btimep,btimef
       real btimep,btimef
       real VAL

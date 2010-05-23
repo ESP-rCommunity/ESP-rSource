@@ -86,9 +86,6 @@ C FOCUS is the generic type string, IFOC is the instance array.
 C In the case of FOCUS='ALL' IFOC is not used. 
       SUBROUTINE GENDAT(FOCUS,IFOC,FOUND,IER)
 #include "tdf2.h"
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
 C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
@@ -566,11 +563,11 @@ C            NHELP,NBITS,NSTATIC,NGMAT,NGMAR,NGMAI,GERR
 C        GMH='2,2,8,1,7,2,-999.0'
           K=0
           CALL EGETWI(GMH,K,NHELP,0,MHEL,'F','help',IER)
-          CALL EGETWI(GMH,K,NTBITS(IFOC),1,MBITS,'F','bits',IER)
-          CALL EGETWI(GMH,K,NTSTAT(IFOC),0,MGAR,'F','nstat',IER)
-          CALL EGETWI(GMH,K,NTMAT(IFOC),0,MGAT,'F','tx fld',IER)
-          CALL EGETWI(GMH,K,NTMAR(IFOC),0,MGAR,'F','rl fld',IER)
-          CALL EGETWI(GMH,K,NTMAI(IFOC),0,MGAI,'F','in fld',IER)
+          CALL EGETWI(GMH,K,NTBITS(IFOC),1,MBITS,'F','total bits',IER)
+          CALL EGETWI(GMH,K,NTSTAT(IFOC),0,MGAR,'F','nb of stat',IER)
+          CALL EGETWI(GMH,K,NTMAT(IFOC),0,MGAT,'F','nb tex flds',IER)
+          CALL EGETWI(GMH,K,NTMAR(IFOC),0,MGAR,'F','nb real flds',IER)
+          CALL EGETWI(GMH,K,NTMAI(IFOC),0,MGAI,'F','nb int flds',IER)
 
 C Loop through the field definitions (in GMF) to get patterns.
 C IEFLDS is the total number of fields in this instance.

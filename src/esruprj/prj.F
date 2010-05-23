@@ -1427,6 +1427,7 @@ C simula commissions technical assessments and analysis.
 #include "esprdbfile.h"
 #include "sbem.h"
 #include "ipvdata.h"
+#include "tdf2.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       
@@ -1444,8 +1445,6 @@ C to include the path and create a string to drive the modules.
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Temporal header (to get its time frequency)
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
       common/CFGV/icfgv
       common/IPVF/lipvdatf
 

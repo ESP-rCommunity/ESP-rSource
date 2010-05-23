@@ -69,10 +69,6 @@ C Temporal db commons.
 
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X1a_QTOTOCCUP,X2a_QTOTOCCUP
       REAL X1c_QTOTEQUIP,X2c_QTOTEQUIP
 C.........END: USED FOR ACTIVITY TDF DATA.....................
@@ -450,10 +446,6 @@ C Temporal db commons.
 
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X1a_QTOTOCCUP,X2a_QTOTOCCUP
       REAL X1c_QTOTEQUIP,X2c_QTOTEQUIP
 
@@ -840,10 +832,6 @@ C Temporal db commons.
      &       IDBTZNM(MCOM)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X1a_QTOTOCCUP,X2a_QTOTOCCUP
       REAL X1c_QTOTEQUIP,X2c_QTOTEQUIP
 C.........END: USED FOR ACTIVITY TDF DATA.....................
@@ -1466,10 +1454,6 @@ C Temporal db commons.
      &       IDBTZNM(MCOM)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
       REAL X2a_QTOTOCCUP
       REAL X2c_QTOTEQUIP
 C.........END: USED FOR ACTIVITY TDF DATA.....................

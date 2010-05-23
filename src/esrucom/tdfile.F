@@ -73,11 +73,7 @@ C Related to TDF ITEMS file.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
 C Need to loop for number of surfaces for bidirectional and vertical solar radiation data
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -90,15 +86,15 @@ C For each zone a pointer to relevant temporal entry 0=not used.
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
      &       IDBTZNM(MCOM)
-      COMMON/FOPEN/OPTDF,OPIMP,OPEXP
-      LOGICAL OPTDF,OPIMP,OPEXP,XST
+      COMMON/TDFOPEN/OPTDF
+      LOGICAL OPTDF,XST
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       CHARACTER tfile*72,LTMPFL*72
       character FOCUS*8,msgl2*48,fs*1,act*1,outs*124
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,HDR*12
+      CHARACTER HDR*12
       logical unixok,FOUND
       integer ier
 
@@ -466,49 +462,14 @@ C will be read in. If version 3 then only a limited header is expected.
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-
-C Related to each instance.
-C TAG  : 12 char unique itentity for the item, outside code may reference.
-C TTYPE: 8 char generic type tag for type of processing and information.
-C TMENU: 32 char descriptive text for use in selection menus.
-C TAIDE: 36 char Aide memoire, especially useful with similar items.
-C TDFIH is the text for each field. 3+1+1+5+10+1
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-
-C TDFLD holds information related to each field in one item, this equates
-C closely with TDFG5.
-C ITCOL : For tabular information, the column in the scratch file for each
-C         period field.
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-
-C TDFTEX is the chosen alternative text parameter for text fields in
-C the instance.
-C TMAT : 16 char text attributes - zone, sensor, control names.
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
-
-C TDFREL are ranges allowed for real fields in the instance.
-C TMIN,TMAX: Acceptable minimum and maximum for range checking.
-C TMAR : real attributes to be passed to outside code.
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
 
 C Pointer to start of each item header in TDF file.
       COMMON/HDAT/IHREC(MIT)
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
-      common/TDFHD/tdbdate
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      CHARACTER TDFDES*32,TMAT*16,WORD*8,tdbdate*24
+      CHARACTER WORD*8
+      character tdbdate*24  ! date stamp for temporal scratch file
       CHARACTER FSTR*80,HDR*12,OUTS*124,tdaide*72,msgl2*48
 
 C Assume that the file is already opened before calling this routine.
@@ -721,27 +682,16 @@ C IER=0 OK, IER=1 problem.
 #include "model.h"
 #include "tdf2.h"
 
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
       COMMON/HDAT/IHREC(MIT)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
-      common/TDFHD/tdbdate
-      COMMON/FOPEN/OPTDF,OPIMP,OPEXP
-      LOGICAL OPTDF,OPIMP,OPEXP
+      COMMON/TDFOPEN/OPTDF
+      LOGICAL OPTDF
 
       CHARACTER FSTR*80,HDR*12,tdaide*72
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,msgl2*48
-      CHARACTER TDFDES*32,TMAT*16,tdbdate*24,tail*8
+      CHARACTER msgl2*48
+      CHARACTER tdbdate*24  ! data stamp for temporal scratch file
+      character tail*8
       integer ier
 
 C Write out to version 3 format. This assumes that the binary
@@ -882,24 +832,13 @@ C   If nuwpr+iadcols > nwpr then a modified nwpr is written out.
       
       integer lnblnk  ! function definition
 
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
       COMMON/HDAT/IHREC(MIT)
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
       common/TDFADDC/iadcols,deftabu(9)
 
       CHARACTER AFIL*72,FSTR*80,HDR*12,tdaide*72
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,delim*1
-      CHARACTER TDFDES*32,TMAT*16,tab*1,msgl2*72,louts*124
+      CHARACTER delim*1
+      CHARACTER tab*1,msgl2*72,louts*124
 
       tab=','
       HDR  ='ASCIITDF3'
@@ -1083,26 +1022,15 @@ C espriou.h provides current file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FOPEN/OPTDF,OPIMP,OPEXP
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+      COMMON/TDFOPEN/OPTDF
       COMMON/HDAT/IHREC(MIT)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
-      common/tdset/itdyear,itdbdoy,itdedoy
       common/tdaid/tdaide(2)
-      logical close,OPTDF,OPIMP,OPEXP,XST
+      logical close,OPTDF,XST
 
       CHARACTER*72 AFIL,tdaide
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,act*1
-      CHARACTER TDFDES*32,TMAT*16,outs*124
+      CHARACTER act*1
+      CHARACTER outs*124
       character outstr*248,WORD*20,TMP*4,tail*8,msgl2*86
       integer ier
 
@@ -1472,8 +1400,6 @@ C trace level, IER=0 OK, IER=1 problem.
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
 
 C Single timestep of TABULAR data and temporary storage TABT.
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
@@ -1517,8 +1443,6 @@ C trace level, IER=0 OK, IER=1 problem.
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
 
 C Single timestep of TABULAR data and temporary storage TABUPREV.
       COMMON/TDATPREV/TABUPREV(MTABC)
@@ -1562,8 +1486,6 @@ C ITREC is the record to be written.  ITRC is the trace level.
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       CHARACTER msgl2*48
 
@@ -1600,8 +1522,6 @@ C to alter the number of columns check the value of iadcols.
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
       common/TDFADDC/iadcols,deftabu(9)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       CHARACTER delim*1,msgl2*48,louts*248,outs*124
