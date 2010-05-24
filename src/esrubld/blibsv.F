@@ -781,7 +781,7 @@ C Temporal db commons.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
 
 
 C Local variables for casual gains.

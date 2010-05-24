@@ -1435,7 +1435,7 @@ C and present a different interface depending on file type.
       H(32)=' VERTSOL -Vertical solar radiation data for a facade'
       H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
       H(34)=' DBTZNM  - measured zone db temperature'
-      H(35)=' '
+      H(35)=' SURTM   - measured surface temperature'
       H(36)=' '
       H(37)='manage associations - you can add and delete associations'
       H(38)='  that have been previously defined. Note this does not'
@@ -2344,6 +2344,21 @@ C Measured db T (probably associated with a zone).
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL' 
+          elseif(TTYPE(it)(1:5).eq.'SURTM')then
+
+C Measured surface T (associated with a zone and up to 6 surfaces).
+            IC=-1
+ 355        izdef=0
+            call askzone(ic,izdef,'Related zone for measured surf T?',
+     &        'Related zone','-',
+     &        'Measured surface T within which zone?',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 355
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            call easksur(IC,ISUR,'-',
+     &        'Select surface associated with measured temperature',
+     &        ' ',IER)
+            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 355
+            write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12) 
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            

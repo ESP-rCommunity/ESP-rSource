@@ -57,7 +57,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
 
       DIMENSION X1(6),X2(6)
 
@@ -169,7 +169,7 @@ C For each zone a pointer to relevant temporal db entry 0=not used.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
 
 
 C Treatment of solar radiation data in the climate file.

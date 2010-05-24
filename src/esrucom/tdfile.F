@@ -85,7 +85,7 @@ C For each zone a pointer to relevant temporal entry 0=not used.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
       COMMON/TDFOPEN/OPTDF
       LOGICAL OPTDF,XST
 
@@ -163,6 +163,16 @@ C Vertical solar radiation data are assigned per surface
                             IVERSOL(itd3,IS)=itd4
                           endif
  975                    continue
+                      endif
+
+C Measured surface temperature data are assigned per surface
+                      if(DBTASK(ITD1)(1:5).eq.'SURTM')then
+                        DO 976 IS=1,NZSUR(itd3)
+                          if(DBSN(itd1)(1:12).eq.
+     &                       sname(itd3,IS)(1:12))then
+                            ISURTMEAS(itd3,IS)=itd4
+                          endif
+ 976                    continue
                       endif
                     endif
   77              continue
@@ -744,12 +754,18 @@ C Record which points to the beginning of each item header.
       msgl2='scratch record 4 '
       WRITE(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=102)(IHREC(K),K=1,NWPR)
 
-C For each item read its attributes.3+2+4+9+1+1
+C For each item read its attributes.3+2+8+9+1+1
       if(NDATA.eq.0) goto 11
       DO 10 I=1,NDATA
         IREC=IREC+1
         IHREC(I)=IREC
         msgl2='scratch item tag & type '
+
+C Debug
+        write(6,*) rec,ndata,i,' ',tag(i)
+        write(6,*) ttype(i),' ',tmenu(i)
+        write(6,*) taide(i)
+        write(6,*) ntstat(i),ntbits(i)
         WRITE(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103)TAG(I),TTYPE(I),
      &    TMENU(I),TAIDE(I),NTSTAT(I),NTBITS(I)
 
@@ -811,8 +827,7 @@ C Binary file read errors.
  102  CALL USRMSG(' could not write TDF header record 1',msgl2,'W')
       IER=1
       goto 99
- 103  msgl2='  '
-      CALL USRMSG(' could not write TDF instance record ',msgl2,'W')
+ 103  CALL USRMSG(' could not write TDF instance record ',msgl2,'W')
       IER=1
       goto 99
 
@@ -1345,25 +1360,26 @@ C width.
       endif
 
 C Use logic for minimal width opening of the scratch file.
+C Longest item its attributes take up 3+2+8+9+1+1 words (24).
 
 C Debug.
 C      write(6,*) 'a nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
 C     &  ' ndata',ndata
 
       if(nuwpr.eq.1)then
-        ITWPR= 20
+        ITWPR= 24
         NWPR= ITWPR-1
-      elseif(nuwpr.gt.1.and.nuwpr.lt.20)then
-        ITWPR= 20
+      elseif(nuwpr.gt.1.and.nuwpr.lt.24)then
+        ITWPR= 24
         NWPR= ITWPR-1
-      elseif(nuwpr.ge.20)then
+      elseif(nuwpr.ge.24)then
         ITWPR=NUWPR+1
         NWPR= ITWPR-1
       endif
 
 C Debug.
-C      write(6,*) 'b nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
-C     &  ' ndata',ndata
+      write(6,*) 'b nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
+     &  ' ndata',ndata
 
       ier=0
       call EFOPRAN(iutdf,LTDF,ITWPR,3,IER)

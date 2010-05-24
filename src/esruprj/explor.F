@@ -80,7 +80,7 @@ C IALT is the number of text alternatives available for a text field.
                         
       DIMENSION SALT(6),IVAL(6),IPD(34)
       CHARACTER KEY*1,SALT*16,H*72
-      CHARACTER PROMP*32,MSG*32,head*40
+      CHARACTER PROMP*32,MSG*32,head*52
       CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
       CHARACTER GMF*32,MGMA*32,TTAG*12,TTAIDE*36
       CHARACTER IPD*64,CSTR*54,DESCR*7,DESCR1*10,TPROMP*42
@@ -303,7 +303,7 @@ C Help text for this menu.
       H(8)='Use the page option to jump to other periods.'
 
       INODA=-2
-      write(head,'(a,a,2x,a)') '  Tabular: ',TMENU(IFOC),TTYPE(IFOC)
+      write(head,'(a,a,2x,a)') ' Tabular: ',TMENU(IFOC),TTYPE(IFOC)
       if(MMOD.ge.8)then
         iw=LEN(IPD(1))
         write(itypes,9)

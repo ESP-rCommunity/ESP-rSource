@@ -28,8 +28,8 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(23),GMENUS(23)
-      DIMENSION ISGGT(26),IVAL(26)
+      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
+      DIMENSION ISGGT(27),IVAL(27)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
       CHARACTER KEY*1,ISGGT*30,FOCUS*8,h*72
@@ -91,7 +91,7 @@ C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(23),GMENUS(23)
+      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -123,7 +123,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=23
+      NITEMS=24
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data:  '
       GTYPES(2) ='CASUALT'
@@ -168,8 +168,10 @@ C Pick up the arrays used for displaying current generic items.
       GMENUS(21)='Vertical solar:'     
       GTYPES(22)='HTCLSETP'
       GMENUS(22)='H&C set points:'     
-      GTYPES(23)='DBZNM'
+      GTYPES(23)='DBTZNM'
       GMENUS(23)='Msr Dry Bulb T:'
+      GTYPES(24)='SURTM'
+      GMENUS(24)='Msr surface T: '
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -542,6 +544,20 @@ C Measured zone air temperature: one data item.
         GDHDRT(3)='Meas Zn DB temperature:'
         GMF(1)='REAL,1,0.0,-49.0,49.0'
         MGMA(1)='Meas Zn DB temperature (C): '
+        FOUND=.TRUE.
+        
+      ELSEIF(FOCUS(1:5).EQ.'SURTM')THEN
+
+C Measured surface temperature: one data item.
+        GAIDE   ='Measured surface temp '
+        GHELP(1)='Zone surf temperature deg C. This type used for'
+        GHELP(2)='measurements and to display.'
+        GMH='2,1,0,0,1,0,-999.0'
+        GDHDRT(1)='   time  | meas surface'
+        GDHDRT(2)='   of day| temperature '
+        GDHDRT(3)='Meas Surf temperature:'
+        GMF(1)='REAL,1,0.0,-49.0,49.0'
+        MGMA(1)='Meas surf temperature (C): '
         FOUND=.TRUE.
 
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN

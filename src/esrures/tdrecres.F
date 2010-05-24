@@ -132,17 +132,19 @@ C Reporting.
 C ******************** MOMEASURED ********************
 
 C MOMEASURED sets up data from temporal file for measured
-C zone db temperatures and (?). This is done by recovering the
-C and interpolating as required. Returns requested value
-C in GVAL.
+C zone db temperatures, surface temperatures and (?). 
+C This is done by recovering the and interpolating as required. 
+C Returns requested value in GVAL.
 
-      subroutine momeasured(iday,izone)
+      subroutine momeasured(focus,iday,izone,isurf)
 #include "building.h"
 #include "tdf2.h"
 
 C Parameters
+      character focus*8  ! key word for the focus
       integer iday  ! the current day
       integer izone ! the associated zone
+      integer isurf ! the associated surface
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -156,7 +158,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
 
 
       DIMENSION VAL(MBITS+2)
@@ -167,7 +169,11 @@ C      CHARACTER OUTS*124   ! uncomment if debug needed
 C Check to see if there is a temporal measured data
 C entry for this zone.
       found = .false.
-      if(IDBTZNM(izone).ne.0)found = .true.
+      if(focus(1:5).eq.'DBZNM')then
+        if(IDBTZNM(izone).ne.0)found = .true.
+      elseif(focus(1:5).eq.'SURTM')then
+        if(ISURTMEAS(izone,isurf).ne.0)found = .true.
+      endif
       if(found)then
 
 C For TDF db purposes the time is equivalent to btimef in bmatsv.f.
@@ -187,7 +193,11 @@ C TFL is is the last timestep of the previous day.
             TP = TF - (1./Y2)
 
 C Get value of the temporal item.
-            itdi=IDBTZNM(izone)
+            if(focus(1:5).eq.'DBZNM')then
+              itdi=IDBTZNM(izone)
+            elseif(focus(1:5).eq.'SURTM')then
+              itdi=ISURTMEAS(izone,isurf)
+            endif
             IFOC=itdi
             if(ij.eq.1)then
               CALL RCTDFR(0,IDAY,IJ,TP,VAL,ISD,IFOC,IER)

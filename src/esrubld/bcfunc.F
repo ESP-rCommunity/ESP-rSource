@@ -386,7 +386,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
 
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
@@ -621,7 +621,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
 
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MTABC+2)
@@ -5663,7 +5663,7 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
 
 C These common TDFREL relate to setting cooling on if temperature exceeds
 C the heating set point by 1degC for the UKNCM notional model (and
