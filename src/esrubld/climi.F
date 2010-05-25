@@ -51,14 +51,6 @@ C different from RATIO if half-hour centred solar data is used.
 C TDF commons.
       COMMON/DNORGH/IRTYPE
 
-C For each zone a pointer to relevant temporal db entry type 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
-
       DIMENSION X1(6),X2(6)
 
 C Diffuse horizontal radiation.
@@ -160,17 +152,6 @@ C time step.
       COMMON/TS1/NF(MSCH),IFL(MSCH,MCVT1),FD(MSCH,MCVT1),ITSCF1,
      &           NMAX1(MSCH)
       COMMON/CLMFLG/ICLMFL
-
-C TDF commons.
-
-C For each zone a pointer to relevant temporal db entry 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
-
 
 C Treatment of solar radiation data in the climate file.
 C ESP-r operates on hourly-centred data. That is, the solar

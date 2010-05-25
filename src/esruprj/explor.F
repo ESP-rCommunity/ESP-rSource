@@ -61,6 +61,7 @@ C The common blocks ??? are updated by this routine.
 C ITRU is the unit number for user output, IER=0 OK, IER=1 problem.
 C IALT is the number of text alternatives available for a text field.
       SUBROUTINE EDTITEM(ITRC,IFOC,IER)
+#include "building.h"
 #include "tdf2.h"
 #include "epara.h"
       
@@ -891,6 +892,7 @@ C Set up to allow user to specify the association between one of more
 C columns in an import file and fields in a tabular instance.
 C IPS is the timestep to insert data at.
       SUBROUTINE EDIMPT(ITRC,IFOC,IPS,IER)
+#include "building.h"
 #include "tdf2.h"
       
       COMMON/FILEP/IFIL
@@ -1255,6 +1257,7 @@ C  EDSTATICIMPT:  Edits data importation specification for the static values.
 C thew tdf entities. Set up to allow user to specify which item should be read
 C from a file and to which static value it matches.
       SUBROUTINE EDSTATICIMPT(IFOC,IER)
+#include "building.h"
 #include "tdf2.h"
       
       COMMON/FILEP/IFIL

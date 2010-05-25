@@ -85,6 +85,7 @@ C ITRU is the unit number for user output, IER=0 OK, IER=1 problem.
 C FOCUS is the generic type string, IFOC is the instance array.
 C In the case of FOCUS='ALL' IFOC is not used. 
       SUBROUTINE GENDAT(FOCUS,IFOC,FOUND,IER)
+#include "building.h"
 #include "tdf2.h"
 
 C Related to generic items. See __ for details.
@@ -624,6 +625,7 @@ C Strip from typical string.  GMF(?)='TEXT,4,1
 C ******* EXGMAT
 C Extract text alternatives from gmat in the string array salt.
       subroutine exgmat(ia,SALT,ier)
+#include "building.h"
 #include "tdf2.h"
       integer iCountWords
 

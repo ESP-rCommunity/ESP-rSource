@@ -1126,14 +1126,6 @@ C                 external temperature (for use in MZLS3).
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
 
-C TDF commons.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
-
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
      
@@ -2221,19 +2213,6 @@ C Auxiliary energy:
       integer i_countsteps
       integer numbStartTimesteps  !total number of start-up timesteps
       integer numTotTimstps !total number of timesteps including the start-up days
-
-C Temporal db commons.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
-     
-      integer IALLCLM,ICASUAL,IZIVENT,IRAIRVL,ISETPTT,ICTLSTA,ISKYLUX
-      integer IDBTEXT,IWINDVL,IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL
-      integer IOBJVEL,IOBJDIR,ISKYTMP,IGLOVRT,ICASUAL3,IACTIV,IBIDIRS
-      integer IVERSOL,IHTCLSETP,IDBTZNM,ISURTMEAS
 
 C Common to count for the number of timesteps that systems are in operatrion
 C Used to calculate an NCM Auxiliary energy (post-processed in save level 6)

@@ -91,3 +91,42 @@ C TDFINIT are range allowed for integer fields
       integer itmar  ! integer attributes to be passed to code
       integer itmin,itmax ! acceptable minimum and maximum for range checking
       COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
+
+C For each kind of temporal database item a zero indicates the item is
+C not used, a non-zero value points to the index of the item in the
+C temporal file. Some variables are an array(mcom) form in which case
+C a zero indicates that that particular zone is not associated and
+C a non-zero indicates the index of the item. For example icasual(3)=6
+C says that the 3rd zone in the model uses a casual gains item which
+C is the 6th item in the temporal file.
+      integer IALLCLM  ! if non-zero a item holding all climate data used
+      integer ICASUAL  ! if non-zero lumped casual gains are used 
+      integer IZIVENT  ! if non-zero ventilation & infiltration used
+      integer IRAIRVL  ! if non-zero room air velocity (not yet used)
+      integer ISETPTT  ! if non-zero single set point temperature used
+      integer ICTLSTA  ! if non-zero control state (not yet used)
+      integer ISKYLUX  ! if non-zero measured sky lux (not yet used)
+      integer IDBTEXT  ! if non-zero ambient dry bulb (climate) used
+      integer IWINDVL  ! if non-zero ambient wind velocity (climate) used
+      integer IWINDDR  ! if non-zero ambient wind direction (climate) used
+      integer IRELHUM  ! if non-zero ambient relative humidity used
+      integer IDIFHSL  ! if non-zero ambient diffuse solar used
+      integer IDIRSOL  ! if non-zero ambient direct solar used
+      integer IGLOHSL  ! if non-zero ambient global horiz solar used
+      integer IOBJVEL  ! if non-zero model has velocity ( )
+      integer IOBJDIR  ! if non-zero model has direction ( )
+      integer ISKYTMP  ! if non-zero measured sky temperature (not yet used)
+      integer IGLOVRT  ! if non-zero vertical global solar is used
+      integer ICASUAL3 ! if non-zero separate casual gains are used
+      integer IACTIV   ! if non-zero a zone activity pattern is used
+      integer IBIDIRS  ! if non-zero bidirectional data available
+      integer IVERSOL  ! if non-zero surface vertical global solar used
+      integer IHTCLSETP ! if non-zero heating and cooling setpoints used
+      integer IDBTZNM  ! if non-zero measured room db T available for viewing
+      integer ISURTMEAS ! if non-zero measured surface T available for viewing
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)

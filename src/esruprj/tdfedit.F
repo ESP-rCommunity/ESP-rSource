@@ -753,6 +753,7 @@ C Not one of the legal menu choices.
 C ************** CLRTABC
 C CLRTABC clears temporal commons TDFFH, tdset, tdaid,GDPER.
       SUBROUTINE CLRTABC
+#include "building.h"
 #include "tdf2.h"
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
@@ -789,6 +790,7 @@ C ********************* glbset
 C glbset: Global questions about TDF file. Foc is the topic.
 C If foc='init' do initial setup. 
       subroutine glbset(foc)
+#include "building.h"
 #include "tdf2.h"
 
       COMMON/TRC/ITRC
@@ -891,6 +893,7 @@ C of data beginning at TIMEJD. ITRC is the trace level,
 C IER=0 OK, IER=1 problem. 
 C This facility supports the esp-r module b2e. 
       SUBROUTINE extracts(ITRC,AFIL,IAFIL,TIMEJD,incr,IER)
+#include "building.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN

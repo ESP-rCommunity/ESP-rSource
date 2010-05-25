@@ -78,14 +78,7 @@ C Related to TDF ITEMS file.
 C Need to loop for number of surfaces for bidirectional and vertical solar radiation data
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)   
-        
-C For each zone a pointer to relevant temporal entry 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
+
       COMMON/TDFOPEN/OPTDF
       LOGICAL OPTDF,XST
 
@@ -838,6 +831,7 @@ C   additional columns of default data will be written. If iadcols is
 C   negative then fewer columns will be written.
 C   If nuwpr+iadcols > nwpr then a modified nwpr is written out.
       SUBROUTINE EWTDFA(ITRC,AFIL,IAFIL,iiadcols,IER)
+#include "building.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
@@ -1530,6 +1524,7 @@ C Note: only writes out the number of columns of data that are
 C actually used in the file. However, if ewtaba is being called
 C to alter the number of columns check the value of iadcols.
       SUBROUTINE EWTABA(ITREC,RDOTY,iafil,IER)
+#include "building.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1583,6 +1578,7 @@ C TAB file write errors.
 C ************* CLRTAB 
 C CLRTAB clears the current working tabular timestep data.
       SUBROUTINE CLRTAB
+#include "building.h"
 #include "tdf2.h"
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
@@ -1597,6 +1593,7 @@ C For current timestep item clear tabular array.
 C ************* CLRTABPREV 
 C CLRTABPREV clears the previous records working tabular timestep data.
       SUBROUTINE CLRTABPREV
+#include "building.h"
 #include "tdf2.h"
       COMMON/TDATPREV/TABUPREV(MTABC)
 

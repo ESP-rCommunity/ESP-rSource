@@ -402,6 +402,7 @@ C ************* REFSHG ******************************************
 C REFSHG Refresh instance with generic attributes (placement, 
 C help, indices, default values).
       SUBROUTINE REFSHG(IFOC,IER)
+#include "building.h"
 #include "tdf2.h"
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
       COMMON/TDFG5/GMF(MBITS),MGMA(MBITS)
