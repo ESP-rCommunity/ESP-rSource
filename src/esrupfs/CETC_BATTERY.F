@@ -416,7 +416,14 @@ C power returned/taken to meet the demand
       ENDIF
       qpowoc(ipwc) = 0.                               ! reactive power
 
-
+C Current and power draw reported should be negative when the battery is being charged.
+      IF ( batMode .EQ. 0 ) THEN ! charge
+        batCurFin = -1. * batCurFin
+        pBatSystem = -1. * pBatSystem
+        batPowBal = -1. * batPowBal
+      ENDIF
+     
+     
 C-------------------------------------------------------
 C XML output
 C-------------------------------------------------------
@@ -904,7 +911,7 @@ C-------------------------------------------------------------------------
 C Initialise values at the beginning of the time step to their value at the end of the previous one
       batTInit = batTFinal
       DODInit = DODFinal
-
+      
 C Update battery life parameters, decide upon starting / ending mandatory charge phase, 
 C set flag indicating battery is being abused.
       IF( POWCOMID(IPWC) .EQ. 17) THEN      ! Lead-acid battery
