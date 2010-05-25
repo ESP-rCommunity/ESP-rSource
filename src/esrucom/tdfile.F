@@ -761,11 +761,6 @@ C For each item read its attributes.3+2+8+9+1+1
         IHREC(I)=IREC
         msgl2='scratch item tag & type '
 
-C Debug
-        write(6,*) rec,ndata,i,' ',tag(i)
-        write(6,*) ttype(i),' ',tmenu(i)
-        write(6,*) taide(i)
-        write(6,*) ntstat(i),ntbits(i)
         WRITE(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103)TAG(I),TTYPE(I),
      &    TMENU(I),TAIDE(I),NTSTAT(I),NTBITS(I)
 

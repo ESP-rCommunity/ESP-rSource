@@ -4240,7 +4240,7 @@ C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
 C IGETNO(KGET,1) = 80 Zone measured db temperature
         CALL MOMEASURED('DBZNM   ',IDAY,IGETNO(KGET,2),0)
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
-      elseif(IGETNO(KGET,1).eq.80)then
+      elseif(IGETNO(KGET,1).eq.81)then
 
 C IGETNO(KGET,1) = 81 Surface measured db temperature
         CALL MOMEASURED('SURTM   ',IDAY,IGETNO(KGET,2),IGETNO(KGET,3))
