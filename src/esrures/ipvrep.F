@@ -726,7 +726,7 @@ C First write diversified total. The IGET number is fixed at 70.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)') '*data ',DMAX(1)*1000.0,
+        write(outs,'(a,7F12.1)') '*data ',DMAX(1)*1000.0,
      &    abs(DMIN(2)*1000.0),DMAX(3),DMAX(4),DMAX(5),DMAX(6),DMAX(7)
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -745,7 +745,7 @@ C Write diffuse total. The IGET number is fixed at 70.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)')'*data ',XMSUM(1)*1000.0,
+        write(outs,'(a,7F12.1)')'*data ',XMSUM(1)*1000.0,
      &    abs(XMINSUM(2)*1000.0),XMSUM(3),XMSUM(4),XMSUM(5),XMSUM(6),
      &    XMSUM(7)
         call eddisp(itru,outs)
@@ -766,7 +766,7 @@ C Write maximum in any one zone. The IGET number is fixed at 70.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)')'*data ',XMAX(1)*1000.0,
+        write(outs,'(a,7F12.1)')'*data ',XMAX(1)*1000.0,
      &    abs(XMIN(2)*1000.0),XMAX(3),XMAX(4),XMAX(5),XMAX(6),XMAX(7)
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -787,7 +787,7 @@ C Note: the diversified minimums are reports.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)')'*data ',DMIN(1)*1000.0,
+        write(outs,'(a,7F12.1)')'*data ',DMIN(1)*1000.0,
      &    abs(DMAX(2)*1000.0),DMIN(3),DMIN(4),DMIN(5),DMIN(6),DMIN(7)
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -807,7 +807,7 @@ C The IGET number is fixed at 70.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)')'*data ',THE,abs(TCE),tuclight,tlight,
+        write(outs,'(a,7F13.2)')'*data ',THE,abs(TCE),tuclight,tlight,
      &    tpumps,tsmlpw,tdhw
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -882,7 +882,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water',tab,'PV'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,6F12.3)') '*data ',ddmax(2),' 0.000',
+          write(outs,'(a,F12.1,a,6F12.1)') '*data ',ddmax(2),' 0.000',
      &      ddmax(4),ddmax(5),ddmax(6),ddmax(3),ddmax(7),pvmax
           call eddisp(itru,outs)
         else
@@ -893,7 +893,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,5F12.3)') '*data ',ddmax(2),' 0.000',
+          write(outs,'(a,F12.1,a,5F12.1)') '*data ',ddmax(2),' 0.000',
      &      ddmax(4),ddmax(5),ddmax(6),ddmax(3),ddmax(7)
           call eddisp(itru,outs)
         endif
@@ -915,7 +915,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water',tab,'PV'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,5F12.3,a)') '*data ',ddmin(2),' 0.000',
+          write(outs,'(a,F12.1,a,5F12.1,a)') '*data ',ddmin(2),' 0.000',
      &      ddmin(4),ddmin(5),ddmin(6),ddmin(3),ddmin(7),' 0.000'
           call eddisp(itru,outs)
         else
@@ -926,7 +926,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,5F12.3)') '*data ',ddmin(2),' 0.000',
+          write(outs,'(a,F12.1,a,5F12.1)') '*data ',ddmin(2),' 0.000',
      &      ddmin(4),ddmin(5),ddmin(6),ddmin(3),ddmin(7)
           call eddisp(itru,outs)
         endif
@@ -947,7 +947,7 @@ C The IGET number is fixed at 71.
      &    'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,F12.3,a,5F12.3)') '*data ',dave(2),' 0.000',
+        write(outs,'(a,F12.1,a,5F12.1)') '*data ',dave(2),' 0.000',
      &    dave(4),dave(5),dave(6),dave(3),dave(7)
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -977,7 +977,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water',tab,'PV'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,6F12.3)') '*data ',dtot(2),' 0.000',
+          write(outs,'(a,F13.2,a,6F13.2)') '*data ',dtot(2),' 0.000',
      &      dtot(4),dtot(5),dtot(6),dtot(3),dtot(7),totpv
           call eddisp(itru,outs)
         else
@@ -988,7 +988,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,5F12.3)') '*data ',dtot(2),' 0.000',
+          write(outs,'(a,F13.2,a,5F13.2)') '*data ',dtot(2),' 0.000',
      &      dtot(4),dtot(5),dtot(6),dtot(3),dtot(7)
           call eddisp(itru,outs)
         endif
@@ -2309,7 +2309,7 @@ C IGET = 74 IPV maximum power capacity (kW)
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.1)') '*data ',HC,CC,CL,FC,SPC,DHWC,PVC
+        write(outs,'(a,7F13.2)') '*data ',HC,CC,CL,FC,SPC,DHWC,PVC
         call eddisp(itru,outs)
       else
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
@@ -2318,7 +2318,7 @@ C IGET = 74 IPV maximum power capacity (kW)
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,6F12.1)') '*data ',HC,CC,CL,FC,SPC,DHWC
+        write(outs,'(a,6F13.2)') '*data ',HC,CC,CL,FC,SPC,DHWC
         call eddisp(itru,outs)
       endif
       call edisp(itru,'*end_report')
