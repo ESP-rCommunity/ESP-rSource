@@ -89,6 +89,14 @@ C.....Common variables
       integer isdf              ! not used in current context 
       integer ntstep            ! number of building steps/hour      
       
+C Common saving coupled zones/surfaces
+      common/Zone_Couplings/ bCoupled_Zone (MCOM,MS),
+     &                       iCoupled_Zone (MCOM,MS),
+     &                       iCoupled_Surf (MCOM,MS)
+
+      logical bCoupled_Zone
+      integer iCoupled_Surf, iCoupled_Zone      
+      
 C TPA(MCOM),           ! - present zone air point temperature (oC)
 C QPA(MCOM)            ! - zone air point heat injection (W)
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
@@ -193,7 +201,7 @@ C.....Zone boundary conditions
       integer IE                ! Indicates type of connection for zone
                                 !   surfaces
       real ARF                  ! Future time-row radiation from
-                                !   an external surface.
+                                !   on the other side of internal surface
       real ATP,ATF,ARP          ! Not used in current context
 
 C.....Named constants for decoding IE common;
@@ -388,8 +396,9 @@ C                                           ! per m2 of floor area
  !     real fZoneHeatLossAboveGrade
  !     real fZoneHeatGainBelowGrade
  !     real fZoneHeatGainAboveGrade
- !     real fZoneInfiltrationLoad          ! Infiltration load 
- !     real fZoneVentilationLoad           ! Ventilation load
+ 
+      real fZoneInfiltrationLoad          ! Infiltration load 
+      real fZoneVentilationLoad           ! Ventilation load
  
       real fZoneInternalGains             ! Internal gains
       real fZoneUsefulInternalGains       ! Useful internal gains
@@ -526,7 +535,12 @@ C.....Air loads (W)
       save fSUMSurfaceFluxOpaque, fSUMSurfaceFluxTransparent,
      &     fSUMSurfaceFluxTotal
      
-
+C----------------------------------------------------------------------
+C     Temporary variable used to adjust outdoor temperature, used to 
+C     account for ESP-r's method of 'normalizing' ventilation heat 
+C     conduction term to the outside air temperature
+C----------------------------------------------------------------------     
+      real fTempTransform                     ! oC
 C----------------------------------------------------------------------
 C     Criteria to determine if solar gains are useful, or not;
 C----------------------------------------------------------------------
@@ -540,6 +554,13 @@ C----------------------------------------------------------------------
       parameter ( bWindowsOpen      = .false. )
       parameter ( fSwingTemperature = 5.0     )
 
+C----------------------------------------------------------------------
+C     Named constants
+C----------------------------------------------------------------------      
+      real fpSmall 
+      parameter ( fpSmall = 1.0E-015 )  ! Set to the same value used 
+                                        ! in MCVENT to ensure computed 
+                                        ! ventilation rates match. 
 
 C----------------------------------------------------------------------
 C     References
@@ -659,9 +680,14 @@ C
 C         Load = equivlent conductivity * temperature difference
 C
 C-----------------------------------------------------------------------
-!      fZoneInfiltrationLoad = cvif * ( tfa(iZone) - tf )
-!      fZoneVentilationLoad  = cvvf * ( tfa(iZone) - tf )
 
+      fZoneInfiltrationLoad = cvif * ( tfa(iZone) - tf )
+      
+    
+      fTempTransform = TF
+      if ( abs(fTempTransform) .lt. fpSmall ) fTempTransform = 1.    
+      fZoneVentilationLoad = cvvf * tfa(iZone) - cvvfm * fTempTransform 
+      
 !        INF_is_zone_heated:
 !     &  if ( bZoneHeated(iZone) .and. bZoneCooled(iZone) ) then
 !
@@ -800,16 +826,69 @@ C.........Compute flux
 !     &                             TFc( iZone, iSurface, iLayer     )
 !     &                            )
      
-          fSurface_Ext_Flux =   ( - 1.0 ) 
-     &                        * (   qconve(iZone,iSurface,iFuture)
-     &                            + qlwrde(iZone,iSurface,iFuture)
-     &                            + qlwrbd(iZone,iSurface,iFuture)
-     &                            + qlwrsk(iZone,iSurface,iFuture)
-     &                           )
+C-----------------------------------------------------------------------
+C       Determine the boundary condition for the surface; check
+C       value of IE common block.
+C-----------------------------------------------------------------------
+       
+!        print*, '->', iZone, iSurface, IE(iZone,iSurface)
+        surf_BCs: select case ( IE (iZone, iSurface ) )
+       
+          case ( iBCExternal )
+
+C...........Above-grade heat loss
+            fSurface_Ext_Flux =   ( - 1.0 ) 
+     &                          * (   qconve(iZone,iSurface,iFuture)
+     &                              + qlwrde(iZone,iSurface,iFuture)
+     &                              + qlwrbd(iZone,iSurface,iFuture)
+     &                              + qlwrsk(iZone,iSurface,iFuture)
+     &                             )
+            
+            iSurfType = iSurfOrient( iZone, iSurface )
+          
+          case ( iBCInternalSame )
+            
+        
+
+
+          case ( iBCAdiabatic )
+
+C...........Surface has zero heat transfer
+            iSurfType = iSurfOrient( iZone, iSurface )
+            fSurface_Ext_Flux = 0.0
+            
+          case ( iBCGround, iBCBASESIMP )
+
+            iSurfType = iSurfFoundation
+
+          case ( iBCCEN13917 )
+
+            iSurfType = iSurfOrient( iZone, iSurface )
+
+          case default
+
+            fSurface_Ext_Flux = fSurfArea * 
+     &                      (  ARF(iZone, iSurface) 
+     &                       + hcof(iZone,iSurface) 
+     &                            * ( ATF(iZone,iSurface) - tfa(iZone) )
+     &                       )
+!            print*, '>', iZone, iSurface, hcif(iZone, iSurface), 
+!     &                                    hcof(iZone, iSurface)
+!     &                   , ARF(iZone,iSurface), ATF(iZone,iSurface)
+     
+            
+            iSurfType = iSurfOrient( iZone, iSurface )
+            iSurfType = iSurfOrient( iZone, iSurface )
+
+          end select surf_BCs     
      
           fSurface_Int_Flux =   qconvi(iZone,iSurface,2)
      &                        + qlwrdi(iZone,iSurface,2)          
      
+     
+          print*, ' Z:', iZone, ' S:', iSurface, 
+     &       ' IE:', IE(iZone,iSurface),
+     &       ' INT:',fSurface_Int_Flux, ' EXT:', fSurface_Ext_Flux
      
 C.........Compute rate of change in zone energy storage;
           
@@ -925,81 +1004,7 @@ C.........Account for solar absorbed in glazing
             
           endif IsWindow      
      
-C-----------------------------------------------------------------------
-C       Determine the boundary condition for the surface; check
-C       value of IE common block.
-C-----------------------------------------------------------------------
-        surf_BCs: select case ( IE (iZone, iSurface ) )
 
-       
-          case ( iBCExternal )
-
-C...........Above-grade heat loss
-
-
-C...........Append above grade heat loss to running total
-            fZoneHeatFluxAboveGrade = fZoneHeatFluxAboveGrade +
-     &                                fSurface_Ext_Flux
-
-            if ( itmcfl( iZone, iSurface ) == 0 ) then
-C.............Read surface type from iSurfOreint array
-              iSurfType = iSurfOrient( iZone, iSurface )
-            else
-C.............Surface is transparent
-              iSurfType = iSurfWindow
-            endif
-
-          case ( iBCInternalConst, iBCInternalSame )
-
-C...........Flux to known conditions
-!            call add_to_xml_reporting (
-!     &          fSurface_Ext_Flux,
-!     &          H3K_rep_NAME(1:27) // '/heat_flux/to_specified_BCs/net',
-!     &          'units', '(W)',
-!     &          'Heat loss to specified boundary conditions' )
-!
-            iSurfType = iSurfOrient( iZone, iSurface )
-
-          case ( iBCAdiabatic )
-
-C...........Surface has zero heat transfer
-            iSurfType = iSurfOrient( iZone, iSurface )
-
-          case ( iBCGround, iBCBASESIMP )
-
-C...........Below-grade heat loss
-!            call add_to_xml_reporting (
-!     &          fSurface_Ext_Flux,
-!     &          H3K_rep_NAME(1:27) // '/heat_flux/below_grade/net' ,
-!     &          'units', '(W)',
-!     &          'Heat transfer through building envelope '
-!     &          //'(below-grade)' )
-
-            iSurfType = iSurfFoundation
-
-          case ( iBCCEN13917 )
-
-C...........Heat transfer to CEN partition
-!            call add_to_xml_reporting (
-!     &          fSurface_Ext_Flux,
-!     &          H3K_rep_NAME(1:27) // '/heat_flux/CEN_partition/net' ,
-!     &          'units', '(W)',
-!     &          'Heat transfer through CEN 13917 partition' )
-!
-            iSurfType = iSurfOrient( iZone, iSurface )
-
-          case default
-C...........Internal partition
-!            call add_to_xml_reporting (
-!     &          fSurface_Ext_Flux,
-!     &          H3K_rep_NAME(1:27) // '/heat_flux/above_grade/net' ,
-!     &          'units', '(W)',
-!     &          'Heat transfer through building envelope '
-!     &          //'(above-grade)' )
-
-            iSurfType = iSurfOrient( iZone, iSurface )
-
-        end select surf_BCs
 
 
         
@@ -1218,9 +1223,12 @@ C=======================================================================
 C     Compute energy balance for zone 
 C=======================================================================                
       fZoneEnergyBalance =   Q_Zone 
+     &                     + fZoneInternalGains
      &                     + fZoneSurfOpaqExtAbsorb
      &                     + fZoneSurfOpaqIntAbsorb
      &                     + fZoneSurfGlazingAbsorb
+     &                     - fZoneInfiltrationLoad
+     &                     - fZoneVentilationLoad
      &                     - fZoneSurfFluxExtTotal
      &                     - fZoneSurfStorageTotal
                        
@@ -1278,7 +1286,24 @@ C.....ZONE HEAT INJECTION / EXTRACTION
      &         'units', '(W)',
      &         'Zone net heat extraction ' )
      
+      call add_to_xml_reporting (
+     &         fZoneInternalGains,
+     &          H3K_rep_NAME(1:16)//'/internal_gains/total',
+     &         'units', '(W)',
+     &         'Zone internal gains (W) ' )     
 
+      call add_to_xml_reporting (
+     &         fZoneInfiltrationLoad,
+     &          H3K_rep_NAME(1:16)//'/infiltration/load',
+     &         'units', '(W)',
+     &         'Zone infiltration (W) ' )     
+
+      call add_to_xml_reporting (
+     &         fZoneVentilationLoad,
+     &          H3K_rep_NAME(1:16)//'/ventilation/load',
+     &         'units', '(W)',
+     &         'Zone ventilation (W) ' )      
+     
       call add_to_xml_reporting (
      &         fZoneEnergyBalance,
      &         H3K_rep_NAME(1:16)//'/energy_balance',
