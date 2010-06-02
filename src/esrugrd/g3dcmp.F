@@ -67,6 +67,7 @@ C *********************************************************************
       SUBROUTINE GRDSRF(IZ,IDRW1,IDRW2)
 #include "building.h"
 #include "geometry.h"
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -205,7 +206,7 @@ C Add horrizontal gridding line.
         WRITE(CORDNT,'(1X,2F9.2)')XVALU,ZVALU
         CALL EASKS(CORDNT,' ','Define the x- and z- coordinates:',
      &                            24,' ',' coordinates ',IER,4)
-        CALL CHITMS(CORDNT,NCRD)
+        NCRD = iCountWords(CORDNT)
         IF(NCRD.EQ.2)THEN
           K=0
           CALL EGETWR(CORDNT,K,XVALU,XMIN+1.E-2,XMAX-1.E-2,
@@ -224,7 +225,7 @@ C  Add vertical gridding line.
         WRITE(CORDNT,'(1X,2F9.2)')XVALU,ZVALU
         CALL EASKS(CORDNT,' ','Define the x- and z- coordinates:',
      &                            24,' ',' coordinates ',IER,0)
-        CALL CHITMS(CORDNT,NCRD)
+        NCRD = iCountWords(CORDNT)
         IF(NCRD.EQ.2)THEN
           K=0
           CALL EGETWR(CORDNT,K,XVALU,XMIN+1.E-2,XMAX-1.E-2,
@@ -294,7 +295,7 @@ C *********************************************************************
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
@@ -685,7 +686,7 @@ C *********************************************************************
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -769,7 +770,7 @@ C *********************************************************************
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
       COMMON/GR3D04/ILINE(MS,MLS,2),ILINB(MS,MLBS,2)
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -942,6 +943,7 @@ C *********************************************************************
       SUBROUTINE GRDEDG(IZ,IDRW1,IDRW2)
 #include "building.h"
 #include "geometry.h"
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -1085,7 +1087,7 @@ C Define edge gridding in the local z-direction.
         WRITE(DISCR,'(1X,10F7.3)')(DZE(IEG,J),J=1,NDZ)
         CALL EASKS(DISCR,LINDSC,' ',72,' ',
      &             ' gridding intervals ',IER,2)
-        CALL CHITMS(DISCR,NDZ)
+        NDZ = iCountWords(DISCR)
         K=0
         TDZ=0.
         DO 50 I=1,NDZ
@@ -1201,7 +1203,7 @@ C *********************************************************************
 
       DIMENSION XEDG(8),YEDG(8),ZEDG(8)
       DIMENSION XS(8),YS(8),ZS(8)
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
 #else
@@ -1347,6 +1349,7 @@ C *********************************************************************
       SUBROUTINE CONEDG(IZ,IEG)
 #include "building.h"
 #include "geometry.h"
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1433,7 +1436,7 @@ C Define X - gridding.
         WRITE(DISCR,'(1X,10F9.3)')(DXE(IEG,J),J=1,NDX)
         CALL EASKS(DISCR,'Define the X - gridding intervals (m).',
      &             ' ',72,' ',' gridding intervals ',IER,2)
-        CALL CHITMS(DISCR,NDX)
+        NDX = iCountWords(DISCR)
         IF(NDX.GT.MZE)THEN
           CALL USRMSG(' ',' maximum allowable divisions exceeded.','W')
           GOTO 10
@@ -1475,7 +1478,7 @@ C Define Y - gridding.
         WRITE(DISCR,'(1X,10F9.3)')(DYE(IEG,J),J=1,NDY)
         CALL EASKS(DISCR,'Define the Y - gridding intervals (m).',
      &             ' ',72,' ',' gridding intervals ',IER,2)
-        CALL CHITMS(DISCR,NDY)
+        NDY = iCountWords(DISCR)
         IF(NDY.GT.MZE)THEN
           CALL USRMSG(' ',
      &              ' maximum allowable divisions exceeded.','W')
@@ -1546,7 +1549,7 @@ C reference. Use elistmat to select via materials array.
         H(4)=' is the x-axis, and each gridding line is one unit.'
         H(5)=' '
         CALL EASKS(LMTS,PROPS,' ',32,' ',' rectangle limits ',IER,5)
-        CALL CHITMS(LMTS,NDZ)
+        NDZ = iCountWords(LMTS)
         K=0
         DO 60 L=2,5
           CALL EGETWI(LMTS,K,IUDLR(L),1,100,'F',
@@ -1641,7 +1644,7 @@ C *********************************************************************
       CHARACTER LABELN*3,LABELS*16
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
@@ -1955,6 +1958,7 @@ C *********************************************************************
       SUBROUTINE GRDCRN(IZ,IDRW1,IDRW2)
 #include "building.h"
 #include "geometry.h"
+      integer iCountWords
 
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -2102,7 +2106,7 @@ C Define edge gridding in the local z-direction.
         CALL EASKS(DISCR,'Define the Z - gridding intervals (m).',
      &             ' ',72,' ',' gridding intervals ',IER,2)
         CALL USRMSG(' ',' ','-')
-        CALL CHITMS(DISCR,NDZ)
+        NDZ = iCountWords(DISCR)
         IF(NDZ.GT.MZE)THEN
           CALL USRMSG(' ',' maximum allowable divisions exceeded.','W')
           GOTO 10
@@ -2228,7 +2232,7 @@ C *********************************************************************
 
       DIMENSION XCRN(8),YCRN(8),ZCRN(8)
       DIMENSION XS(8),YS(8),ZS(8)
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy    ! passed to etplot
 #else
@@ -2368,6 +2372,7 @@ C *********************************************************************
       SUBROUTINE CONCRN(IZ,ICR)
 #include "building.h"
 #include "geometry.h"
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -2462,7 +2467,7 @@ C Define X - gridding.
         CALL EASKS(DISCR,'Define the X - gridding intervals (m).',
      &             ' ',72,' ',' gridding intervals ',IER,2)
         CALL USRMSG(' ',' ','-')
-        CALL CHITMS(DISCR,NDX)
+        NDX = iCountWords(DISCR)
         IF(NDX.GT.MZE)THEN
           CALL USRMSG(' ',' maximum allowable divisions exceeded.','W')
           GOTO 10
@@ -2507,7 +2512,7 @@ C Define Y - gridding.
         CALL EASKS(DISCR,'Define the X - gridding intervals (m).',
      &             ' ',72,' ',' gridding intervals ',IER,2)
         CALL USRMSG(' ',' ','-')
-        CALL CHITMS(DISCR,NDY)
+        NDY = iCountWords(DISCR)
         IF(NDY.GT.MZE)THEN
           CALL USRMSG(' ',
      &              ' maximum allowable divisions exceeded.','W')
@@ -2579,7 +2584,7 @@ C reference. Use elistmat to select via materials array.
         H(5)=' '
         CALL EASKS(LMTS,PROPS,' ',32,' ',' rectangle limits ',IER,5)
         CALL USRMSG(' ',' ','-')
-        CALL CHITMS(LMTS,NDZ)
+        NDZ = iCountWords(LMTS)
         K=0
         DO 60 L=2,5
           CALL EGETWI(LMTS,K,IUDLR(L),1,100,'F',
@@ -2664,7 +2669,7 @@ C *********************************************************************
       CHARACTER LABELN*3,LABELS*16
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2

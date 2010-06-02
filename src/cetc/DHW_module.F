@@ -183,7 +183,6 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 #include "dhw_common.h"
 #include "ground_temp_mains_common.h"
 
-
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       INTEGER   ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its           
       REAL   fNormalizedDailyWaterDraw 
@@ -298,7 +297,7 @@ C Takes the fEnergy in tank and converts it to a temperature using E = SPHeatWat
 
 c *********************************************************************
 c FUNCTION fDHW_DrawsForEachTank
-c Empty function.
+c Returns Temperature of Water in Tank at start of time step..
 c Created by: Phylroy A. Lopez
 c Initial Creation Date:  March 23th 2001
 c Copyright 2000: NRCan Buildings Group
@@ -528,7 +527,7 @@ c Formula
       CASE (Elec_Instantaneous)
        fEnergy = fDHW_EnergyInputWater()
      &            +fDHW_EnergyInputWater()
-     &            *(1.0-fDOEEF)/fDOEEF
+     &            *(1-FDOEEF)/fDOEEF
       CASE DEFAULT 
        fEnergy = fDHW_EnergyInputWater()
 
@@ -622,7 +621,7 @@ c H2KDHW.F Line 857
      &                   ( fDHW_ColdMainTemp(iMonth) - 10. ) -
      &                 0.83 * ( fNumOfOccupants - 3.5 ) )
      &                 / fSecondsINDAY
-     &                 * fSecondsInHour/float(iNTSTEP)
+     &                 * fSecondsInHour/iNTSTEP
      &                 * 1e6   ! MJ to Joules
      
 
@@ -657,7 +656,7 @@ c H2kDHW.F line 755
      &            + 0.1
      &            *( fDHW_AverageWaterTemp() - 60.0)
      &            + 0.5*( fNumOfOccupants / 3.5 - 1.0 )) / fSECONDSINDAY
-     &            * fSecondsInHour/float(iNTStep)
+     &            * fSecondsInHour/iNTStep 
      &            *1e6 !MJ to Joules
      
       END
@@ -718,7 +717,7 @@ C      REAL   fAlpha
       CASE (Instantaneous_pilot)
         fAlpha = 0.708805
         fDHW_DOEEFTank = (1.-fAlpha)
-     &                 *(1.-fDOEEF*(1. + fPilot))
+     &                 *(1.-fDOEEF*(1 + fPilot))
              
       CASE (Induced_draft_fan)
         fAlpha = 0.489625
@@ -748,12 +747,12 @@ C      REAL   fAlpha
       CASE (Oil_Conventional_tank)
         fAlpha = 0.468284
         fDHW_DOEEFTank = (1.-fAlpha)
-     &                 *(1.-fDOEEF*(1. + fPilot))
+     &                 *(1.-fDOEEF*(1 + fPilot))
              
       CASE (Oil_Tankless)
         fAlpha = 1.000000
         fDHW_DOEEFTank = (1.-fAlpha)
-     &                 *(1.-fDOEEF*(1. + fPilot))
+     &                 *(1.-fDOEEF*(1 + fPilot))
              
       CASE (Wood_Fireplace)
         fDHW_DOEEFTank = 1.-fDOEEF
@@ -917,11 +916,10 @@ c This determines if the water draw is greater than the tank.
 
 c If the water draw is less than the tank size then set it to zero   
       IF (fWaterDrawGreaterThanTank .lt. 0.0) then
-          fWaterDrawGreaterThanTank = 0.0
+          fWaterDrawGreaterThanTank = 0
       END IF
        
-      
-      
+
 c Checks to see if it is still in the dead band.
       IF (fDHW_StartTemp()
      &    .ge.
@@ -1135,8 +1133,6 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 #include "dhw_common.h"
 #include "ground_temp_mains_common.h" 
 
-      include "drain_water_HR.h"
-
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/C21/IFCFG,cfgroot,LCFGF
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
@@ -1153,7 +1149,6 @@ C Check to see if DHW is required.
         RETURN
       ENDIF
       
-
       iNTSTEP = ntstep
 
       fRoomTemp = 20.0
@@ -1203,9 +1198,8 @@ c This water draw curve was taken from the CSA f379.1-88 Solar Domestic Hot Wate
           fWaterDrawCurveHourly(24) = 11.
 
           fWaterDrawCurveTotal = 239.0
-    
+
       endif check_DHW_draws_in_file
-      
       RETURN
       END
       
@@ -1275,11 +1269,10 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
 !Variables Used From Module
 
       IMPLICIT NONE
-      include "building.h"
-      include "dhw_parameters.h"
-      include "dhw_common.h"
-      include "ground_temp_mains_common.h" 
-      include "drain_water_HR.h"
+#include "building.h"
+#include "dhw_parameters.h"
+#include "dhw_common.h"
+#include "ground_temp_mains_common.h" 
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
@@ -1289,60 +1282,7 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
       INTEGER   ISSNY
       INTEGER   iTankNumber
       logical   bInStartUp
-      
-     
-      common/pctstp/ntstpp
-      integer ntstpp            ! number of plant timesteps / building timestep      
-                           
-      
-      
-C Variables used to model showers and drain-water heat recovery.      
-      integer iSystem
-      real fShowerFraction 
-      real fHotWaterTempC   ! Temperature of hot water supplied to shower
-      real fColdWaterTempC  ! Cold water from ground/mains
-      logical bShowerActive ! Flag indicating if a shower will be taken
-                            !   on this timestep 
-      real fAdjustedHotDrawL ! Estimated cold water draw (L)
-      real fShowerHotDrawL  ! Estimated shower hot water draw (L)
-      real fShowerColdDrawL ! Estimated shower cold water draw (L)
-      real fShowerTSFraction  ! Fraction of timestep for which shower is 
-                            ! active. 
 
-      real fHXDrainSideFlowLPM,  ! Flow rates through DWRH (LPM) 
-     &     fHXSupplySideFlowLPM      
-      
-      real fHXDrainSideTempInletC, ! Drain water inlet and outlet temps (oC)
-     &     fHXDrainSideTempOutletC
-     
-     
-      real fHXSupplySideTempInletC ! Inlet temperature of make-up water in 
-                                   ! DWRH (oC)
-                                   
-      real fHXSupplySideTempOutletC  ! Outlet temperature of make-up 
-                                     ! water in dwhr  (oC)
-                                  
-      real fShowerColdWaterTempInitC  ! Temperature of cold water supplied
-      real fShowerColdWaterTempFinalC !   to shower at start and end of 
-                                      !   iteration (oC)
-                                  
-                                  
-      real fTSDurationS     ! Duration of timestep (seconds)                      
-      
-      logical bDone         ! flag for iteration loop.
-
-      integer iNumPltSteps  ! # of plant timesteps per building timestep 
-
-      real fHotFlowRateLPM   ! DWRH flow rates, in litres per minute 
-      real fColdFlowRateLPM  
-      
-      real fEstEffectiveness ! DWHR estimated effectiveness (-)
-      real fEstNTU           ! DWRH estimated # of heat transfer units (-)
-      real fEstHeatRecovery  ! DWHR estimated heat recovery (W)
-      
-C.....References 
-      real fCurrentHour                            
-                            
 c If flag is set for no DHW sim then return
       IF (iDHW_Flag.ne.1) then
         RETURN
@@ -1352,172 +1292,33 @@ c Check if in startup period via function bInStartup.
       if (bInStartup())then
         return
       endif
-      print*, '------------ dhw model START --------------'
-      
+C        bInStartUp=.true.
+C        IF((ISSNY.EQ.1.AND.IDYP.EQ.365.AND.IHRP.EQ.24.AND.ISDS.EQ.1)
+C     &    .OR.(ISSNY.EQ.0.AND.(IDYP.GE.ISDS.OR.
+C     &        (IDYP.EQ.ISDS-1.AND.IHRP.EQ.24))))bInStartUp=.false.
+
+C If still in start up return.
+C       IF (bInStartUp) then
+C         RETURN
+C       ENDIF
+
       fWaterDraw = fDHW_WaterDraw() 
-      print*, ' water draw:     ', fWaterDraw
-      print*, ' Avg W Ti:       ', fDHW_AverageWaterTemp()
-      
-C.....ideal DHW model only supports a single DHWR model. 
-      iSystem = 1
-      
-C.....Compute duration of each timestep (seconds)
-C      
-C     duration = 1 hour / ( # building steps/hour * 
-C                           # plant steps / building step ) 
-C
 
-C.....(number of plant timesteps might be zero if plant domain is not 
-C.....defined)
+c This function will calulate exactly how much load the current tank can support. 
+      CALL fDHW_DrawsForEachTank()
 
-      iNumPltSteps = max( 1, ntstpp )
-      
-      fTSDurationS = 3600. / float ( ntstep * iNumPltSteps )  ! (s)      
-      
-C.....Get initial hot and cold water temperatures.       
-      
-C.....Temperature of water at drain.      
-      fHXDrainSideTempInletC = fDrainWaterTempC(iSystem)
-      
-      
-      ! Get cold-side temperature. 
-      fColdWaterTempC = fDHW_ColdMainTemp(iMonth)
-      
-      
-      
-      
-      fHXSupplySideTempInletC = fColdWaterTempC
-      
-      
-      ! Initial guess at temperature of water supplied to shower 
-      fShowerColdWaterTempFinalC = fColdWaterTempC 
-      
-      ! Temperature of water leaving hot water system
-      fHotWaterTempC = fDHW_AverageWaterTemp()
-      
-C.....Determine if showers are active this timestep.       
-      call ShowerScheduler(iSystem,
-     &                     bShowerActive,     
-     &                     fShowerTSFraction,
-     &                     fTSDurationS
-     &                    )
-     
-C.....Flag for iteration.      
-      bDone = .false.
-      
-      ShowerFlowLoop: do while ( .not. bDone ) 
-
-C.......Use most recent values for iteration.       
-        fShowerColdWaterTempInitC = fShowerColdWaterTempFinalC
-     
-C.......Adjust flow rate for showers.     
-        call ShowerDrawAdjustment(iSystem,  
-     &                             fTSDurationS,      
-     &                             fWaterDraw,
-     &                             fHotWaterTempC,
-     &                             fShowerColdWaterTempInitC,
-     &                             bShowerActive,     
-     &                             fAdjustedHotDrawL,
-     &                             fShowerHotDrawL,
-     &                             fShowerColdDrawL,
-     &                             fShowerTSFraction
-     &                            )
-     
-
-        ShowerActive: if ( .not. bShowerActive ) then 
-        
-          bDone = .true. 
-          
-        else 
-C.........Compute flow rates on the drain and supply sides of the 
-C.........shower HX's. Drain water side:
-          fHXDrainSideFlowLPM = 
-     &      ( fShowerHotDrawL + fShowerColdDrawL ) / 
-     &           ( fTSDurationS * fShowerTSFraction * 60. )
-        
-C.........Supply side: Dependends on flow arrangements    
-          if ( iDwhrConfiguation(iSystem) == iEqualFlow ) then 
-        
-C...........Equal flow: All water passes through DWRH 
-            fHXSupplySideFlowLPM = fHXDrainSideFlowLPM 
-          
-          else 
-C...........Unequal flow: only HWT make-up passes through DWHR
-            fHXSupplySideFlowLPM = fShowerHotDrawL / 
-     &           ( fTSDurationS * fShowerTSFraction * 60. )
-          
-          endif 
-        
-C.........Call DWHR Heat recovery calculation             
-          call DWHR_Predict_Outlet_Temp( iSystem,
-     &                                   fHXDrainSideTempInletC,
-     &                                   fHXSupplySideTempInletC,
-     &                                   fHXDrainSideFlowLPM,
-     &                                   fHXSupplySideFlowLPM,
-     &                                   fHXDrainSideTempOutletC,
-     &                                   fHXSupplySideTempOutletC,
-     &                                   fEstEffectiveness,
-     &                                   fEstNTU,
-     &                                   fEstHeatRecovery
-     &                                  )
-        
-          if ( iDwhrConfiguation(iSystem) == iEqualFlow ) 
-     &       fShowerColdWaterTempFinalC = fHXSupplySideTempOutletC
-        
-          print*, '  ........1 TInit:  ',fShowerColdWaterTempInitC 
-          print*, '  ........2 TFinal: ',fShowerColdWaterTempInitC 
-          
-          if ( abs(   fShowerColdWaterTempFinalC
-     &          - fShowerColdWaterTempInitC  ) < 0.05 ) bDone = .true.
-       
-        endif ShowerActive
-     
-       
-      enddo ShowerFlowLoop
-      
-     
-     
-      print*, ' shower status:  ', bShowerActive
-      print*, ' adjusted draw:  ', fAdjustedHotDrawL
-
-      
-C Code to schedule showers goes here...      
-      
-C Fraction of draw used in showers (hard-coded for now)
-      fShowerFraction = 0.5 
-      
-      
-      
-c This function will calulate exactly how much load the 
-C current tank can support. (This procedure is an empty 
-C placeholder --- perhaps created as a stub for multi
-C tank support?)
-C      CALL fDHW_DrawsForEachTank()
-
-c This determines the air temperature of the room in which the Hot 
-C water tank is located. At present, there's no apparent connection 
-C to the ESP-r thermal model, and this routine merely hard-codes 
-C it to 20 oC.
+c This determines the air temperature of the room in which the Hot water tank is located
       CALL DHW_Update()
-      
-c This routine calulates the energy use and sum the values for 
-C monthly analysis. The bulk of the DWH model is called from 
-C this supervisory routine.  
+
+c This routine calulates the energy use and sum the values for monthly analysis. 
       CALL DHW_StoreMonthlyValues()
 
-c This will carry the standy tank losses and the tank teperatures to 
-C the next timestep.
+c This will carry the standy tank losses and the tank teperatures to the next timestep.
       CALL DHW_CarryToNextStep()
 
 C Report data to h3kreports, site-utilities facility
       call H3KReportDHWModule()
 
-C Transport drain-water data, if needed.
-      call DWHRDrawTSTransport()      
-      
-      print*, ' Avg W Tf:       ', fDHW_AverageWaterTemp()
-      print*, '------------ dhw model END ----------------'
-      
       RETURN
       END
       
@@ -1884,10 +1685,7 @@ C Error handling.
       
 c *******************************************************************
 c SUBROUTINE DHW_StoreMonthlyValues
-c While it sounds like a data storage routine, DHW_StoreMonthlyValues
-c is actually a supervisory routine that controls the DWH model's energy
-C consumption calculations. 
-c
+c Initialize Variables (Hard coded for present).
 c Created by: Phylroy A. Lopez
 c Initial Creation Date:  March 23th 2001
 c Copyright 2000: NRCan Buildings Group
@@ -2029,8 +1827,8 @@ c----56--1---------2---------3---------4---------5---------6---------7---------8
         fSumTotalEnergyYear = fSumTotalEnergyYear 
      &           + fSumTotalEnergy(iMonth)/1e6 
 
-        ENDDO
-      ENDDO
+        END DO
+      END DO
       write(outs,'(a30)')' '
       call edisp(IWU,outs)   
       WRITE (outs,'(a20,1x,I10)')'#Number of Tanks',iNumberOfTanks

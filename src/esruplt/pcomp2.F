@@ -46,6 +46,7 @@ C                           (up to 10 connections)
 C  CMP39C   1 node (ISV=20) WCH pump (mass flow control)
 C  CMP42C   2 node (ISV=20) WCH modulating boiler
 C  CMP44C   2 node (ISV=20) WCH exponent model radiator
+C  CMP45C   1 node (ISV=20) Air source heat pump connection to WCH
 C  CMP50C   1 node (ISV=29) WCH thermostatic radiator valve
 C  CMP51C   1 node (ISV=29)     mechanical room thermostat
 C  CMP90C   2 node (ISV>19)     air & water temperature source
@@ -5488,6 +5489,563 @@ C Trace output
 
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP44C'
+
+      RETURN
+      END
+
+C ******************** CMP45C ********************
+C CMP45C generates for plant component IPCOMP with plant db code 450 ie.
+C 1 node (ISV=20) WCH air-source heat pump feeding a hydronic heating system.
+C the matrix equation coefficients COUT (in order: self-coupling, cross-
+C coupling, and present-time coefficients) for energy balance (ISTATS=1),
+C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
+
+C     ADATA: 1 Mass of component (solids+liquid) (kg)
+C            2 Mass weighted average specific heat node (J/kgK)
+C            3 UA modulus for component (W/K)
+
+C     BDATA: 1 COP model [1 - fixed COP 2 - modified Carnot efficiency; 3- f(dT) 4 - polynomial]
+C            2 Model coef a0
+C            3 Model coef a1
+C            4 Model coef a2
+C	     5 Model coef a3
+C            6 Device power draw (kW) model [1 - fixed 2- polynomial]
+C            7 Model coef b0
+C            8 Model coef b1 
+C            9 Model coef b2
+C           10 Model coef b3
+C           11 Compressor pf (-)
+C           12 Pump rating (W)
+C           13 Pump pf (-)
+C           14 Flowrate at rated pump power (l/s)
+C           15 Fan power (W)
+C           16 Fan pf (-)
+C           17 Controller power (W)
+C           18 Controller pf (-)
+C           19 Tout max (degC)
+C           20 Tin max (degC)
+C           21 Defrost cycle trigger ambient temp (degC)
+C           22 Defrost cycle time calc (1-user def 2-f(RH))
+C           23 Defrost cycle  calc coefficient b1/fixed defrost cycle  time  (-)
+C           24 Defrost cycle  calc coefficient b2 (-)
+C           25 Defrost cycle  lockout time (mins)
+C           26 Min defrost time (mins)
+C           26 Max defrost time (mins)
+C           27 Temp compensation on/off (-)
+C           28 Nominal water return temperature (Deg C)
+C           29 Nominal water return deadband (Deg C)
+C           30 Ambient temperature for temp compensation start [Deg C]
+C           31 Ambient temperature for temp compensation end [Deg C]
+C           32 Temp compensation gradient [deg C return/deg C ambient] (degCr/degCa)
+
+
+C     CDATA: 1 Call for heat [0 or 1] (-)
+
+C Node 1 represents the condenser heat exchanger and couples to the hydronic heating circuit. 
+C The device has an internal pump and so an explicit pump model is not needed in system 
+C models containing this component. This particular device model is suitable for ON/OFF type control
+C and will require modification if PID-type control is to be applied. The model internally controls the 
+C water outlet temperature and ambient temperature compensation can be applied [linear model]
+
+      SUBROUTINE CMP45C(IPCOMP,COUT,ISTATS)
+
+      implicit none
+#include "plant.h"
+#include "building.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+
+      COMMON/ITERINDEX/ITERNU !plant iteration number
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/Pctime/TIMSEC
+      COMMON/PCTC/TC(MPCOM)
+
+      COMMON/PCEQU/IMPEXP,RATIMP
+
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+
+      COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+      COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
+      COMMON/PCVAR/PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE),
+     &             PCNTMF(MPCOM),
+     &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
+     &             PCNTMP(MPCOM)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
+      common/pcnam/pcname(mpcom)
+
+      COMMON/CLIMIP/QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP,VFP,DPP,DFP,HPP,HFP
+
+      COMMON/ASHPvar1/CompMass,AveSpHt,UAMod,CarEffMod,COPa0,COPa1,
+     &COPa2,COPa3,Compa0,Compa1,Compa2,Compa3,
+     &CompressPf,PumpRating,PumpPf,RatedFlow,
+     &FanRating,FanPf,CtlRating,CtlPf,ToutMax,TinMax,DefrostT,
+     &DefrostTime,Defrostb0,Defrostb1,DefrostLockout,DefrostMinTime,
+     &DefrostMaxTime,NomRetT,NomRetTDeadB,TempCompS,TempCompE,
+     &TempCompc0,DefrostDur,DefrostLockDur
+
+      COMMON/ASHPvar2/COPModel,CompModel,DefrostCalc,AmbientTempComp,
+     &DeviceONOFFp,DeviceONOFF
+
+      COMMON/ASHPvar3/CallforHeat,InDeadB,DefrostLock,InDefrost
+
+      REAL SMALL
+      PARAMETER (SMALL=1.0E-20)
+      
+      LOGICAL CallforHeat,InDeadB,DefrostLock,InDefrost
+
+      INTEGER COPModel,CompModel,DefrostCalc,AmbientTempComp,
+     &DeviceONOFFp,DeviceONOFF
+
+      REAL CompMass,AveSpHt,UAMod,CarEffMod,COPa0,COPa1,
+     &COPa2,COPa3,Compa0,Compa1,Compa2,Compa3,CompressPf,
+     &PumpRating,PumpPf,RatedFlow,FanRating,FanPf,CtlRating,CtlPf,
+     &ToutMax,TinMax,DefrostTime,DefrostT,Defrostb0,Defrostb1,
+     &DefrostLockout,DefrostMinTime,DefrostMaxTime,NomRetT,NomRetTDeadB,
+     &TempCompS,TempCompE,TempCompc0,DefrostDur,DefrostLockDur
+
+      REAL DefrostStat,CompPower,CompressPower,COP,CtlPower,DeviceFlow,
+     &FanPower,HeatOutput,PumpPower,ReturnSP,ReturnSPH,ReturnSPL,RHamb,
+     &TotApparentPower,TotReacPower,TotRealPower
+
+      INTEGER lnblnk
+      REAL SHTFLD
+ 
+      INTEGER IUOUT,IUIN,ITC,ICNT,ITCF,ITRACE,IZNTRC,ITU,ITERNU,
+     &IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS,IMPEXP
+      INTEGER NPCDAT,IPOFS1,IPOFS2,ICON1,INOD1,napdat,
+     &IPCOMP,ISTATS,I,ICONDX,ICONTP,IX1,NCI,NITMS,NPCOMP
+
+      REAL TIMSEC,TC,RATIMP,CSVF,CSVP,PCTF,PCRF,PUAF,PCQF,PCNTMF,
+     &PCTP,PCRP,PUAP,PCQP,PCNTMP,CONVAR,QFPP,QFFP,TPP,TFP,QDPP,QDFP,VPP
+      REAL VFP,DPP,DFP,HPP,HFP,Tamb,ReturnT,Td,Ta,TL,TH,ALPHA,CM,C1,
+     &TmpDev
+
+      REAL COUT(MPCOE),QDATA,PCAOUT,CDATA
+      
+      LOGICAL CLOSE,CLOSEA
+
+      CHARACTER OUTS*248,PCNAME*15,CHAR_TEMP*128
+      
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Entering subroutine CMP45C'
+
+C **NB** Variable Assignment and initilalisation in CMP40S
+
+C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
+      ICON1=ICONDX(IPCOMP,1,1)
+      INOD1=NPCDAT(IPCOMP,9)         
+
+      call eclose(PCNTMF(IPCOMP),-99.00,0.001,closea)
+      IF(closea) UAMod=0.
+
+C Read ambient temperature
+      Tamb=TFP
+
+C Set initial operation mode based on CDATA. 
+      IF(CDATA(IPCOMP,1).GT.0.0) THEN 
+        CallForHeat=.true.
+
+C Pump circulates while there is a call for heat.
+        PumpPower=PumpRating
+        DeviceFlow=RatedFlow
+      ELSE
+        CallforHeat=.false.
+        DeviceFlow=0. 
+        PumpPower=0. 
+      ENDIF
+
+
+C Calculate the return water temperature set point if temperature compensation is active.
+      ReturnSP=NomRetT !default return temperature
+      ReturnSPL=ReturnSP-0.5*(NomRetTDeadB)
+      ReturnSPH=ReturnSP+0.5*(NomRetTDeadB)
+      IF(ReturnSP.GT.TinMax) ReturnSP=TinMax
+
+      IF(AmbientTempComp.GT.0)THEN
+
+        IF(Tamb.GE.TempCompS.AND.Tamb.LT.TempCompE)THEN
+          ReturnSP=((Tamb-TempCompS)*TempCompc0)+NomRetT
+          ReturnSPL=ReturnSP-0.5*(NomRetTDeadB)
+          ReturnSPH=ReturnSP+0.5*(NomRetTDeadB)
+
+C Case where Tamb > Temp compensation saturation point
+        ELSEIF(Tamb.GE.TempCompE)THEN
+          ReturnSP=((TempCompE-TempCompS)*TempCompc0)+NomRetT
+          ReturnSPL=ReturnSP-0.5*(NomRetTDeadB)
+          ReturnSPH=ReturnSP+0.5*(NomRetTDeadB)
+        ENDIF
+        IF(ReturnSP.GT.TinMax)THEN 
+          ReturnSP=TinMax
+          ReturnSPH=ReturnSP
+        ENDIF
+      ENDIF
+
+C Determine whether machine should be on or off based on return water temperature. 
+      ReturnT=CONVAR(ICON1,1)
+      DeviceONOFFp=DeviceONOFF
+      IF(CallforHeat)THEN
+
+C Check to see if the device is in the dead band.
+        IF(ReturnT.GE.ReturnSPL.AND.ReturnT.LE.ReturnSPH)THEN
+          InDeadB=.true.
+        ELSE
+          InDeadB=.false.
+        ENDIF
+
+C Evaluate the device status.
+        IF(ReturnT.GT.ReturnSPH)THEN 
+          DeviceONOFF=0
+        ELSEIF(ReturnT.LT.ReturnSPL)THEN
+          DeviceONOFF=1
+        ELSEIF(DeviceONOFFp.EQ.1.AND.InDeadB)THEN
+          DeviceONOFF=1
+        ELSEIF(DeviceONOFFp.EQ.0.AND.InDeadB)THEN
+          DeviceONOFF=0
+        ENDIF
+      ELSE
+        DeviceONOFF=0
+      ENDIF
+
+C Establish the device COP 
+      IF(DeviceONOFF.GT.0)THEN
+
+C Determine the defrost status of the device (do only once per timestep so check
+C iteration number.
+        IF(DefrostCalc.GT.0)THEN
+
+          IF(.NOT.InDefrost)THEN
+C Update the defrost time.
+            IF(DefrostCalc.eq.1)THEN
+              DefrostTime=Defrostb0 
+            ELSE
+              RHamb=HFP
+C Calculate defrost time to the nearest minute.
+              DefrostTime=float(nint(Defrostb0+Defrostb1*RHamb))
+            ENDIF
+
+C Impose limits on defrost time
+            IF(DefrostTime.GT.DefrostMaxTime)
+     &DefrostTime=DefrostMaxTime
+            IF(DefrostTime.LT.DefrostMinTime)
+     &DefrostTime=DefrostMinTime
+
+C Issue warning about timestep length if it is longer than the Defrost time. 
+            IF(DefrostTime.LT.TIMSEC/60.)THEN
+              WRITE(OUTS,'(a,f7.4,a,f7.4,a)')
+     &'ASHP Warning: time step ',TIMSEC/60.,' > defrost cycle time',
+     &DefrostTime,' reduce the time step to avoid problems.' 
+              CALL EDISP(IUOUT,OUTS)
+            ENDIF
+          ENDIF
+
+C Set defrost state.
+          IF(Tamb.LE.DefrostT)THEN
+            IF(.NOT.InDefrost)THEN
+              IF(.NOT.DefrostLock)THEN
+                InDefrost=.TRUE.
+                DefrostDur=0.0
+              ENDIF
+            ENDIF
+          ELSE
+            InDefrost=.FALSE.
+            DefrostLock=.FALSE.
+          ENDIF
+
+C Increment timers
+          IF(InDefrost.and.ITERNU.eq.1) 
+     &DefrostDur=DefrostDur+0.5*timsec/60.
+
+          IF(DefrostLock.and.ITERNU.eq.1) 
+     &DefrostLockDur=DefrostLockDur+0.5*timsec/60.
+
+C Update state for next ts
+          IF(DefrostDur.GT.DefrostTime)THEN
+            InDefrost=.false.
+            DefrostDur=0.0
+            DefrostLock=.true.
+            DefrostLockDur=0.0
+          ENDIF
+
+          IF(DefrostLockDur.GT.DefrostLockout)THEN
+            DefrostLock=.false.
+            DefrostLockDur=0.0            
+          ENDIF
+
+        ENDIF !end of defrost code.
+C --------------------------
+
+C Calculate the TOTAL device power draw (W)
+        IF(CompModel.eq.1)THEN
+          CompPower=1000.*(Compa0) !fixed power consumption
+        ELSEIF(CompModel.eq.2)THEN
+          Td=ReturnT
+          Ta=Tamb
+          CompPower=1000.*(Compa0+(Compa1*Ta)+(Compa2*Td))
+        ENDIF
+        if(CompPower.LT.0.0)CompPower=0.0
+
+        FanPower=FanRating
+
+C Calculate the COP based on the user-specified method.
+        IF(COPModel.EQ.1)THEN
+          COP=COPa0 !fixed COP
+        ELSEIF(COPModel.EQ.2)THEN
+          TL=Tamb+273.15
+          TH=ReturnT+273.15
+          COP=CarEffMod*((1-(TL/TH))**(-1)) !modified carnot COP
+        ELSEIF(COPModel.EQ.3)THEN !quadratic based on Td-Ta
+          TL=Tamb
+          TH=ReturnT
+          COP=COPa0+(COPa1*(TH-TL))+(COPa2*(TH-TL)**2.)
+        ELSEIF(COPModel.EQ.4)THEN
+          COP=COPa0+COPa1*Tamb+COPa2*Tamb**2.+COPa3*Tamb**3. !cubic polymonial COP based on ambient T
+        ELSE
+          WRITE(OUTS,'(a)')'Error in ASHP, COP model #'
+          CALL EDISP(IUOUT,OUTS)
+        ENDIF
+
+C Set limits on calculated values of COP
+        IF(COP.LT.0.0) COP=0.0
+        IF(COP.GT.12.0) COP=12.0
+
+        IF(InDefrost)THEN
+          HeatOutput=0.0
+        ELSE
+          HeatOutput=COP*CompPower
+          IF(HeatOutput.LT.0) THEN
+            write(*,*) "Error: heat output < 0! ",HeatOutput, COP, 
+     &CompPower
+            STOP
+          ENDIF
+        ENDIF
+      ELSE
+
+C Device is 'off' set parameters accordingly (assume controller is still operating).
+        
+        CompPower=0.
+        HeatOutput=0.
+        FanPower=0.
+        COP=0.
+        InDefrost=.false.
+        DefrostLock=.false.
+
+
+      ENDIF
+
+C Generate coefficients for energy balance equation
+      IF(ISTATS.EQ.1) THEN 
+
+C Establish the nodal thermal capacities.
+        CM=CompMass*AveSpHt
+
+C node 1 water
+        C1=DeviceFlow*SHTFLD(3,CONVAR(ICON1,1))
+		
+C Establish heat loss modulus
+        CALL ECLOSE(PCNTMF(IPCOMP),99.,0.0001,CLOSE)
+        IF(CLOSE) UAMod=0.0
+
+C Calculate the electrical demand of the device assumung the controller is ON.
+        CtlPower=CtlRating
+        TotRealPower=CompPower+CtlPower
+
+c Calculate the compressor power draw.
+        CompressPower=CompPower-(PumpPower+FanPower+CtlPower)
+        IF(CompressPower.LT.0.0)CompressPower=0.0
+C	TotRealPower=CompPower+PumpPower+CtlPower+FanPower
+
+        TotReacPower=(((CompressPower/CompressPf)**2)
+     &-(CompressPower**2))**0.5
+     &+(((PumpPower/PumpPf)**2)-(PumpPower**2))**0.5
+     &+(((CtlPower/CtlPf)**2)-(CtlPower**2))**0.5
+     &+(((FanPower/FanPf)**2)-(FanPower**2))**0.5
+
+        TotApparentPower=((TotRealPower**2)+(TotReacPower*2))**0.5
+ 
+C Calculate current component time-constant TC
+        TC(IPCOMP)=CM/AMAX1(SMALL,(C1+UAMod))
+
+C Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
+        IF(IMPEXP.EQ.1) THEN
+           ALPHA=1.
+        ELSE IF(IMPEXP.EQ.2) THEN
+           ALPHA=RATIMP
+        ELSE IF(IMPEXP.EQ.3) THEN
+          IF(TIMSEC.GT.0.63*TC(IPCOMP)) THEN
+             ALPHA=1.
+          ELSE
+             ALPHA=RATIMP
+          END IF
+        ELSE IF(IMPEXP.EQ.4) THEN
+            CM=0.
+            ALPHA=1.
+        END IF
+
+C Establish matrix equation self- and cross-coupling coefficients.
+        COUT(1)=ALPHA*(-C1-UAMod)-CM/TIMSEC
+C Matrix cross coupling coefficients.
+        COUT(2)=ALPHA*C1
+C Establish the present and known coefficient i.e. RHS
+        COUT(3)=((1.-ALPHA)*(PCRP(ICON1)+PUAP(INOD1))-CM/TIMSEC)
+     &          *CSVP(INOD1,1)
+     &          +(1.-ALPHA)*(-PCRP(ICON1))*PCTP(ICON1)
+     &          -ALPHA*UAMod*PCNTMF(IPCOMP)
+     &          -ALPHA*HeatOutput
+     &          -(1.-ALPHA)*PCQP(INOD1)
+     &          -(1.-ALPHA)*PUAP(INOD1)*PCNTMP(IPCOMP)
+     
+C Store "environment" variables future values
+         PCTF(ICON1)=CONVAR(ICON1,1)
+         PCRF(ICON1)=C1
+         PCQF(INOD1)=HeatOutput
+         PUAF(INOD1)=UAMod
+	 
+C Addition output for results analysis.
+         NAPDAT(IPCOMP)=9
+         PCAOUT(IPCOMP,1)=HeatOutput
+	 PCAOUT(IPCOMP,2)=COP
+         PCAOUT(IPCOMP,3)=Tamb
+	 PCAOUT(IPCOMP,4)=DeviceONOFF
+         PCAOUT(IPCOMP,5)=ReturnSP
+         PCAOUT(IPCOMP,6)=TotRealPower
+         PCAOUT(IPCOMP,7)=TotReacPower
+         PCAOUT(IPCOMP,8)=TotApparentPower
+         if(Indefrost)then
+           PCAOUT(IPCOMP,9)=1.0
+         elseif(DefrostLock)then
+           PCAOUT(IPCOMP,9)=-1.0
+         else
+           PCAOUT(IPCOMP,9)=0.0
+         endif
+C---------------------------------------------------------------------------------
+C Make select results available in XML and CVS output.
+C---------------------------------------------------------------------------------
+
+        write(char_temp,'(A,A,A,A)') 'plant/',
+     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
+     &        '/Heat_Out'
+        call add_to_xml_reporting(HeatOutput, char_temp, 'units', '(W)',
+     &        'ASHP: Heat Output' )
+        write(char_temp,'(A,A,A,A)') 'plant/',
+     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
+     &        '/COP'
+        call add_to_xml_reporting( COP, char_temp, 'units', '(-)',
+     &        'ASHP: COP' )
+        write(char_temp,'(A,A,A,A)') 'plant/',
+     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
+     &        '/Tambient'
+        call add_to_xml_reporting(Tamb, char_temp, 'units',
+     &        '(degC)',
+     &        'ASHP: Ambient Temp' )
+        write(char_temp,'(A,A,A,A)') 'plant/',
+     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
+     &        '/DeviceONOFF'
+              tmpdev=float(DeviceONOFF)
+        call add_to_xml_reporting(tmpdev, char_temp, 'units',
+     &        '(-)','ASHP: ON-OFF status' )
+        write(char_temp,'(A,A,A,A)') 'plant/',
+     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
+     &        '/Return T SP'
+        call add_to_xml_reporting(ReturnSP, char_temp, 'units',
+     &        '(degC)',
+     &        'ASHP: Return Temp Set Pt.' )
+        write(char_temp,'(A,A,A,A)') 'plant/',
+     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
+     &        '/Real Power'
+        call add_to_xml_reporting(TotRealPower, char_temp, 'units',
+     &        '(W)',
+     &        'ASHP: Real Power Demand' )
+        write(char_temp,'(A,A,A,A)') 'plant/',
+     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
+     &        '/Reac. Power'
+        call add_to_xml_reporting(TotReacPower, char_temp, 'units',
+     &        '(VAr)',
+     &        'ASHP: Reactive Power Demand' )
+        write(char_temp,'(A,A,A,A)') 'plant/',
+     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
+     &        '/Appar. Power'
+        call add_to_xml_reporting(TotApparentPower, char_temp, 'units',
+     &        '(VA)',
+     &        'ASHP: Apparent Power Demand' )
+        DefrostStat=PCAOUT(IPCOMP,9)
+        call add_to_xml_reporting(DefrostStat, char_temp, 'units',
+     &        '(-)',
+     &        'ASHP: Defrost Status 0-off, 1-on, -1-lockout' )
+
+	 	 
+C 1st phase mass (ie. "water") balance coefficients
+      ELSE IF(ISTATS.EQ.2) THEN
+         COUT(1)=1.
+         COUT(2)=0.
+         COUT(3)=DeviceFlow
+
+C 2nd phase mass (ie. "vapour") balance coefficients
+      ELSE IF(ISTATS.EQ.3) THEN
+         COUT(1)=1.
+         COUT(2)=0.
+         COUT(3)=0.
+      END IF
+
+
+C Trace.
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) THEN
+         WRITE(ITU,*) ' Component      ',IPCOMP,':'
+         WRITE(ITU,*) ' 1 node (ISV=20) Air Source Heat Pump'
+         WRITE(ITU,*) ' Matrix node(s) ',INOD1
+         WRITE(ITU,*) ' Connection(s)  ',ICON1
+         IF(ISTATS.EQ.1) THEN
+            WRITE(ITU,*) ' CM      = ',CM,' (J/K)'
+            WRITE(ITU,*) ' C1      = ',C1,' (W/Ks)'
+            WRITE(ITU,*) ' Flow      = ',DeviceFlow,' (l/s)'
+            WRITE(ITU,*) ' TC      = ',TC(IPCOMP),' (s)'
+            WRITE(ITU,*) ' ALPHA   = ',ALPHA,' (-)'
+            WRITE(ITU,*) ' UAMod   = ',UAMod,' (W/K)' 
+            WRITE(ITU,*) ' Tamb    = ',Tamb,' (C)'
+            WRITE(ITU,*) ' ReturnT = ',ReturnT,' (C)'
+            WRITE(ITU,*) ' ReturnSP        = ',ReturnSP,' (C)'
+            WRITE(ITU,*) ' ReturnSPH       = ',ReturnSPH,' (C)'
+            WRITE(ITU,*) ' ReturnSPL       = ',ReturnSPL,' (C)'
+            WRITE(ITU,*) ' InDeadB         = ',InDeadB,' (-)'
+            WRITE(ITU,*) ' CallforHeat     = ',CallforHeat,' (-)'
+            WRITE(ITU,*) ' DeviceONOFF     = ',DeviceONOFF,' (-)'
+            WRITE(ITU,*) ' DeviceONOFFp    = ',DeviceONOFFp,' (-)'
+            WRITE(ITU,*) ' COP             = ',COP,' (-)'
+            WRITE(ITU,*) ' AmbientTempComp = ',AmbientTempComp,' (C)'
+            WRITE(ITU,*) ' TempCompS       = ',TempCompS,' (C)'
+            WRITE(ITU,*) ' TempCompE       = ',TempCompE,' (C)'
+            WRITE(ITU,*) ' DefrostCalc     = ',DefrostCalc,' (-)'
+            WRITE(ITU,*) ' AmbientRH       = ',RHamb,' (%)'
+            WRITE(ITU,*) ' DefrostTime     = ',DefrostTime,' (mins)'
+            WRITE(ITU,*) ' DefrostDur      = ',DefrostDur,' (-)'
+            WRITE(ITU,*) ' InDefrost       = ',Indefrost,' (-)'
+            WRITE(ITU,*) ' DefrostLock     = ',DefrostLock,' (-)'
+            WRITE(ITU,*) ' DefrostLockout  = ',DefrostLockout,' (mins)'
+            WRITE(ITU,*) ' DefrostLockDur  = ',DefrostLockDur,' (mins)'
+            WRITE(ITU,*) ' HeatOutput   = ',HeatOutput,' (W)'
+            WRITE(ITU,*) ' CompPower    = ',CompPower,' (W)' 
+            WRITE(ITU,*) ' FanPower     = ',FanPower,' (W)'
+            WRITE(ITU,*) ' PumpPower    = ',PumpPower,' (W)'
+            WRITE(ITU,*) ' CtlPower     = ',CtlPower,' (W)'                 
+         END IF
+         WRITE(ITU,*) ' Matrix coefficients for ISTATS = ',ISTATS
+         NITMS=6
+         WRITE(ITU,*) (COUT(I),I=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/4)*4
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(37).NE.0) WRITE(ITU,*) ' Leaving subroutine CMP45C'
 
       RETURN
       END

@@ -177,6 +177,7 @@ C     NSIGFIG=3
       IMFS=1
       IFDAY=2
       IFTIME=0
+      IOPTDB=IFIL+6
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
       matver=0.0   ! initial assumption of binary materials database
@@ -358,6 +359,7 @@ C Make temporary use of file unit ixunit.
       else
         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
+      IUOUT=6  ! and make sure iuout is not zero
       call scesprc(esprc,ixunit,0,IIER)
 
 C If there is a journal active set up to add to the journal. First
@@ -427,11 +429,11 @@ C unit ifil+6 for output file.
 
 C Assume primitive constructions input from IFIL+3.
       IFMAT=IFIL+3
-      LFMAT=DFCON
+      write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
 C Assume multilayer input from IFIL+9.
       IFMUL=IFIL+9
-      LFMUL=DFMUL
+      write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
 C Initialise results library.
       CALL MORFIL(iftype)

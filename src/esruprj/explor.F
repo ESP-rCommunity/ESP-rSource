@@ -102,7 +102,7 @@ C IALT is the number of text alternatives available for a text field.
       character*35 ITEMS(9)      
       CHARACTER DFILE*72,tfile*72,LIMP*72,LEXP*72
       CHARACTER OUTSTR*124
-#ifdef OSX
+#ifdef OSI
       integer impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
 #else
       integer*8 impxe,impye,iw,imw,irpxe,irpye,inoe,ipflge,iuresp  ! for use with evwmenu and updmenu
@@ -329,7 +329,7 @@ C Help text for this menu.
         ipflge=ipflg
         call evwmenu(head,impxe,impye,imw,irpxe,irpye,inoe,ipflge,
      &    iuresp)
-#ifdef OSX
+#ifdef OSI
         INODA=inoe  !  cast back from returned parameter
 #else
         INODA=int(inoe)  !  cast back to integer from returned parameter
@@ -489,7 +489,7 @@ C Define the beginning and ending dates for the TDF display.
               ipflge=ipflg
               call evwmenu(head,impxe,impye,imw,irpxe,irpye,inoe,
      &          ipflge,iuresp)
-#ifdef OSX
+#ifdef OSI
               INODA=inoe  !  cast back from returned parameter
 #else
               INODA=int(inoe)  !  cast back to integer from returned parameter
@@ -842,6 +842,7 @@ C IFTIME 0 gives '10h30', 1 gives '10.50', 2 gives '0.4375'
       SUBROUTINE STRTIM(WORD,IFTIME,NTS,DTIME,HTIME,ITPER,IER)
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       CHARACTER USRT*10,WORD*10
       LOGICAL CLOSE
@@ -852,7 +853,7 @@ C IFTIME 0 gives '10h30', 1 gives '10.50', 2 gives '0.4375'
 C Looking for either a '12h00' input or '12 00' input, if one word 
 C detected strip out the 'h' or 'H' and then parse the hours & minutes.
         USRT=WORD
-        CALL CHITMS(USRT,IW)
+        IW = iCountWords(USRT)
         IF(IW.EQ.1)THEN
           DO 12 I=1,lnblnk(USRT)
             IF(USRT(I:I).EQ.'h'.OR.USRT(I:I).EQ.'h')USRT(I:I)=' '

@@ -1697,55 +1697,60 @@ C Descriptive label for a zone load or casual gain types.
         call edisp(itru,outs)
         if(NCAS(IDTY).eq.0)return
         if(IELF(ICOMP).EQ.1)then
-          write(outs,'(a,a)')'Day Gain Type   Period Sensible  ',
+          write(outs,'(a,a)')'Day Gain Type    Period Sensible  ',
      &    'Latent  Radiant  Convec p.f +/-  Power Voltage Phase'
           call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  labl   Hours  Magn.(W)  ',
+          write(outs,'(a,a)')'    No.  label   Hours  Magn.(W)  ',
      &    'Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)'
           call edisp(itru,outs)
         else  
-          write(outs,'(a,a)')'Day Gain Type     Period Sensible  ',
+          write(outs,'(a,a)')'Day Gain Type      Period Sensible  ',
      &    'Latent     Radiant    Convec'
           call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  labl     Hours  Magn.(W)  ',
+          write(outs,'(a,a)')'    No.  label     Hours  Magn.(W)  ',
      &    'Magn. (W)  Frac       Frac'
           call edisp(itru,outs)
         endif
-      IF(NCAS(IDTY).GT.0)THEN
-        IF(IELF(ICOMP).EQ.1) THEN
-          DO 1269 I=1,NCAS(IDTY)
-            if(ICGT(IDTY,I).gt.0)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
-            elseif(ICGT(IDTY,I).eq.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'m2p'
-            elseif(ICGT(IDTY,I).lt.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'Wm2'
-            endif
-            WRITE(outs,5361)'Wkd',I,llbl,ICGS(IDTY,I),' -',
-     &      ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &      CONC(IDTY,I),PF(IDTY,I),
-     &      IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
-5361        FORMAT(a,I3,1x,A9,I3,a,I3,F8.1,F8.1,F9.1,F9.1,
-     &      1x,F7.2,I3,F7.1,F7.1,I3)
-            call edisp(itru,outs)
-1269      CONTINUE
-        ELSE
-          DO 1270 I=1,NCAS(IDTY)
-            if(ICGT(IDTY,I).gt.0)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
-            elseif(ICGT(IDTY,I).eq.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'m2p'
-            elseif(ICGT(IDTY,I).lt.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'Wm2'
-            endif
-            WRITE(outs,5362)'Wkd',I,llbl,ICGS(IDTY,I),' -',
-     &      ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &      CONC(IDTY,I)
-5362        FORMAT(a,I3,1x,A9,I3,a,I3,F9.1,F9.1,F11.2,F11.2)
-            call edisp(itru,outs)
-1270      CONTINUE
+
+        IF(NCAS(IDTY).GT.0)THEN
+          IF(IELF(ICOMP).EQ.1) THEN
+            DO 1269 I=1,NCAS(IDTY)
+              if(ICGT(IDTY,I).gt.0)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
+              elseif(ICGT(IDTY,I).eq.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'm2p'
+              elseif(ICGT(IDTY,I).lt.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'Wm2'
+              endif
+              WRITE(outs,5361) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+     &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
+     &        CONC(IDTY,I),PF(IDTY,I),
+     &        IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+5361          FORMAT(a,I3,1x,A9,I3,a,I2,F8.1,F8.1,F9.1,F9.1,
+     &          1x,F7.2,I3,F7.1,F7.1,I3)
+              call edisp(itru,outs)
+1269        CONTINUE
+          ELSE
+            DO 1270 I=1,NCAS(IDTY)
+              if(ICGT(IDTY,I).gt.0)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
+              elseif(ICGT(IDTY,I).eq.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'm2p'
+              elseif(ICGT(IDTY,I).lt.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'Wm2'
+              endif
+              WRITE(outs,5362) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+     &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
+     &        CONC(IDTY,I)
+5362          FORMAT(a,I3,1x,A9,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
+              call edisp(itru,outs)
+1270        CONTINUE
+          ENDIF
         ENDIF
-      ENDIF
  600  CONTINUE
       RETURN
       END
@@ -2118,10 +2123,12 @@ C CONCA total conv casual W for the zone at each hour (all day types)
 C RADFAC implied radiant fraction RADCA/CMGSA
 C CONFAC implied convective fraction CONCA/CMGSA
 C ICGTYP the casual gain type (remembering negative index).
-C NPERSN keeps track of the original number of people/m2.
+C PERSN keeps track of the original number of people/m2.
+      real CMGSA,CMGLA,RADCA,CONCA,RADFAC,CONFAC,PERSN
+      integer ICGTYP,LNCAS
       dimension CMGSA(MC,7),CMGLA(MC,7),RADCA(MC,7)
       dimension CONCA(MC,7),RADFAC(MC,7),CONFAC(MC,7)
-      dimension ICGTYP(MC,7),NPERSN(MC,7),LNCAS(MDTY)
+      dimension ICGTYP(MC,7),PERSN(MC,7),LNCAS(MDTY)
 
 C Logical for testing whether there is any difference in casual gains.
       logical bCMGSA,bCMGLA,bRADCA,bCONCA,bRADFAC,bCONFAC
@@ -2186,7 +2193,7 @@ C the call to checkcascount.
               endif
             endif
  609      CONTINUE
-          NPERSN(IP,IG)=0
+          PERSN(IP,IG)=0.0
           pfA(IP,IG)=0.0
           ipfA(IP,IG)=0
           pwrA(IP,IG)=0.0
@@ -2245,15 +2252,15 @@ C calculate apparent power and reactive power.
               elseif (ICGT(IDTY,I).eq.-1) then
                 call eclose(CMGS(IDTY,I),0.00,0.001,close)
                 if (close) then
-                  NPERSN(IP,ITYP)=1
+                  PERSN(IP,ITYP)=1.0
                 else
-                  NPERSN(IP,ITYP)=INT(FLOOR/CMGS(idty,I))
+                  PERSN(IP,ITYP)=FLOOR/CMGS(idty,I)
                 endif
-                CMGSA(IP,ITYP)=CMGSA(IP,ITYP) + NPERSN(IP,ITYP)*95.0
-                CMGLA(IP,ITYP)=CMGLA(IP,ITYP) + NPERSN(IP,ITYP)*45.0
-                RADCA(IP,ITYP)=RADCA(IP,ITYP) + NPERSN(IP,ITYP)*95.0*
+                CMGSA(IP,ITYP)=CMGSA(IP,ITYP) + PERSN(IP,ITYP)*95.0
+                CMGLA(IP,ITYP)=CMGLA(IP,ITYP) + PERSN(IP,ITYP)*45.0
+                RADCA(IP,ITYP)=RADCA(IP,ITYP) + PERSN(IP,ITYP)*95.0*
      &            RADC(IDTY,I)
-                CONCA(IP,ITYP)=CONCA(IP,ITYP) + NPERSN(IP,ITYP)*95.0*
+                CONCA(IP,ITYP)=CONCA(IP,ITYP) + PERSN(IP,ITYP)*95.0*
      &            CONC(IDTY,I)
                 if(CMGSA(IP,ITYP).gt.0.0)then
                   RADFAC(IP,ITYP)= RADCA(IP,ITYP)/CMGSA(IP,ITYP)
@@ -2356,12 +2363,12 @@ C a final period for the current casual gain type.
 
 C Adjust for area based, for m2 per person just divide floor area by
 C the number of persons to get back to the original CMGSA. For the
-C case of mixed absolute and per unit area npersn might be zero so
+C case of mixed absolute and per unit area persn might be zero so
 C trap for this case and set CMGSA to zero.
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
-                if(NPERSN(IP,ITYP).gt.0)then
-                  CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
+                if(PERSN(IP,ITYP).gt.0.0)then
+                  CMGSA(IP,ITYP) = FLOOR/PERSN(IP,ITYP)
                   CMGLA(IP,ITYP) = 0.0
                 else
                   CMGSA(IP,ITYP) = 0.0

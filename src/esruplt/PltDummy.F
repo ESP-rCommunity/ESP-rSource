@@ -33,21 +33,3 @@ C-----------------------------------------------------------------------
 
       return
       end
-C.......................................................................      
-      real function densit(iDummy1, fDummy2)
-      implicit none 
-      
-      integer iDummy1
-      real fDummy2
-      
-      return 
-      end function densit 
-C.......................................................................      
-      real function shtfld(iDummy1, fDummy2)
-      implicit none 
-      
-      integer iDummy1
-      real fDummy2
-      
-      return 
-      end function shtfld

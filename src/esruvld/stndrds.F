@@ -51,6 +51,12 @@ C gh() is array of help entries.
       character H*72,separ*42
       logical XST
 
+#ifdef OSI
+      integer impx,impy,iwe
+#else
+      integer*8 impx,impy,iwe
+#endif
+
 C vldfl is set in startup.F
       currentfile='  '
       XST=.false.
@@ -161,7 +167,11 @@ C Help @ validation list file level.
  
 C If in graphics mode use a variable width menu.
       if(MMOD.EQ.8)then
-        CALL VWMENU('Validation Sets',gitem,NCOG,0,0,IW,irpx,irpy,ICOG)
+        impx=0
+        impy=0
+        iwe=iw
+        CALL VWMENU('Validation Sets',gitem,NCOG,impx,impy,iwe,
+     &     irpx,irpy,ICOG)
       else
         CALL EMENU('Validation Sets',gitem,NCOG,ICOG)
       endif

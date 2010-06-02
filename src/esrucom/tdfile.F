@@ -89,7 +89,8 @@ C For each zone a pointer to relevant temporal entry 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
       LOGICAL OPTDF,OPIMP,OPEXP,XST
 
@@ -100,6 +101,7 @@ C For each zone a pointer to relevant temporal entry 0=not used.
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,HDR*12
       logical unixok,FOUND
+      integer ier
 
 C First check if tfile is an ascii temporal file.
       IER=0
@@ -131,14 +133,22 @@ C Search instances in temporal file to find match(s).
                   DO 77 itd4=1,NDATA
                     if(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
      &                 DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))then
-                  if(DBTASK(ITD1)(1:7).eq.'CASUALT')ICASUAL(itd3)=itd4
-                  if(DBTASK(ITD1)(1:7).eq.'CASUAL3')ICASUAL3(itd3)=itd4
-                  if(DBTASK(ITD1)(1:6).eq.'ZIVENT')IZIVENT(itd3)=itd4
-                  if(DBTASK(ITD1)(1:6).eq.'RAIRVL')IRAIRVL(itd3)=itd4
-                  if(DBTASK(ITD1)(1:6).eq.'CTLSTA')ICTLSTA(itd3)=itd4
-                  if(DBTASK(ITD1)(1:8).eq.'ACTIVITY')IACTIV(itd3)=itd4
-                  if(DBTASK(ITD1)(1:8).eq.'HTCLSETP')
-     &               IHTCLSETP(itd3)=itd4
+                      if(DBTASK(ITD1)(1:7).eq.'CASUALT')
+     &                  ICASUAL(itd3)=itd4
+                      if(DBTASK(ITD1)(1:7).eq.'CASUAL3')
+     &                  ICASUAL3(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'ZIVENT')
+     &                  IZIVENT(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'RAIRVL')
+     &                  IRAIRVL(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'CTLSTA')
+     &                  ICTLSTA(itd3)=itd4
+                      if(DBTASK(ITD1)(1:8).eq.'ACTIVITY')
+     &                  IACTIV(itd3)=itd4
+                      if(DBTASK(ITD1)(1:8).eq.'HTCLSETP')
+     &                  IHTCLSETP(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'DBTZNM')
+     &                  IDBTZNM(itd3)=itd4   ! measured zn dbT
 
 C Bidirectional data are assigned per surface
                       if(DBTASK(ITD1)(1:8).eq.'BIDIRSET')then
@@ -347,6 +357,7 @@ C Otherwise convert to asci file by first reading in the binary file.
 C Initially set file width to one more than maximum number of columns.
         NWPR=MTABC
         ITWPR=NWPR+1
+        ier=0
         call EFOPRAN(iutdf,tfile,ITWPR,1,IER)
         IF(ier.ne.0)THEN
           WRITE(OUTS,'(2A)')'Problem opening ',tfile(1:lnblnk(tfile))
@@ -364,6 +375,7 @@ C Test if this is the proper record width via seeing what NWPR is.
           else
             close(iutdf)
             ITWPR=NWPR+1
+            ier=0
             call EFOPRAN(IUTDF,tfile,ITWPR,3,IER)
             IF(ier.ne.0)THEN
               WRITE(OUTS,'(A,A)')' problem opening ',
@@ -730,6 +742,7 @@ C IER=0 OK, IER=1 problem.
       CHARACTER LTDF*72,LTDFA*72,FSTR*80,HDR*12,tdaide*72
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,msgl2*48
       CHARACTER TDFDES*32,TMAT*16,tdbdate*24,tail*8
+      integer ier
 
 C Write out to version 3 format. This assumes that the binary
 C file will be used as a scratch file for the tdf module as
@@ -744,6 +757,7 @@ C If not already opened free unit and check if file exists.
       IF(.NOT.OPTDF)THEN
         CALL ERPFREE(IUTDF,ISTAT)
         ITWPR=NWPR+1
+        ier=0
         call EFOPRAN(IUTDF,LTDF,ITWPR,3,IER)
         IF(ier.ne.0)THEN
           msgl2=' error creating BINARY TDF file.'
@@ -1090,6 +1104,7 @@ C espriou.h provides current file.
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,act*1
       CHARACTER TDFDES*32,TMAT*16,outs*124
       character outstr*248,WORD*20,TMP*4,tail*8,msgl2*86
+      integer ier
 
 C If not already opened free unit and check if file exists.
       IER=0
@@ -1396,6 +1411,7 @@ C calling efdelet. Then open new scratch file with the minimal
 C width.
         WRITE(OUTS,'(A,A)')' Deleting existing ',LTDF(1:lnblnk(LTDF))       
         CALL EDISP(IUOUT,OUTS)
+        ier=0
         call EFOPRAN(iutdf,LTDF,ITWPR,1,IER)
         CALL EFDELET(iutdf,ISTAT)
       endif
@@ -1421,6 +1437,7 @@ C Debug.
 C      write(6,*) 'b nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
 C     &  ' ndata',ndata
 
+      ier=0
       call EFOPRAN(iutdf,LTDF,ITWPR,3,IER)
       WRITE(OUTS,'(A,A)')' Opened new ',LTDF(1:lnblnk(LTDF))       
       CALL EDISP(IUOUT,OUTS)

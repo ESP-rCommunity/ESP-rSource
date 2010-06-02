@@ -41,7 +41,6 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
-#include "UserSimulationToggles.h"
 
       common/outin/iuout,iuin
       common/filep/ifil
@@ -50,10 +49,7 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-      
-      COMMON/SOLOFF/ISOLAR
-      COMMON/GR1D04/GAM,RGAM
-      
+
       COMMON/SAVE/ISAVE
       COMMON/SAVE1/LSAVE
 
@@ -114,12 +110,7 @@ C Are uncertainties defined?
         call SENRNS(IER)
         if (IER.eq.1) return
       endif
-      
 
-C Reimpose any user-specified simulation toggles as needed 
-      if ( bUserGAM ) GAM = fUserGAM        ! User-specified-implicitness.
-      if ( bUserSolar ) ISOLAR = iUserSolar ! User-specified-solar-processing 
-      print*, ".... ", bUserSolar, iUserSolar
 C Run the necessary number of simulations.
       do 100, I=1,NRSIM
         ISIM=I
@@ -144,7 +135,7 @@ C Re-scan the model description files silently.
           call MZCSTR(IER)
           write (36,*) '** Edits for changes in set:',ISIM,NTSTEP
         endif
-        
+
 C MZNUMA is effectively a simulation clock.
         CALL MZNUMA
 
@@ -361,7 +352,6 @@ C based on time-step evaluation; if mixed then impl/expl = 0.5
 
 C Default solar treatment, solar ON, Perez model.
       ISOLAR=0
-      iUserSolar = iSolar
       ISKYFL=3
 
 C Default mass flow simulation iteration parameters are set in MFLWSU
@@ -662,7 +652,6 @@ C Set simulation toggles.
 #include "geometry.h"
 #include "plant.h"
 #include "net_flow.h"
-#include "UserSimulationToggles.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -748,7 +737,7 @@ C Make up strings for the current set of toggles.
         ITEMG(1)=   'a Timestep averaging >> OFF             '
       endif
       WRITE(ITEMG(2),'(A,F5.2)')
-     &              'b Bldng eqns implicitness degree: ',fUserGAM
+     &              'b Bldng eqns implicitness degree: ',GAM
       if(IMPEXP.eq.1)then
         ITEMG(3)=   'c Plant equations    >> implicit        '
       elseif(IMPEXP.eq.2)then
@@ -758,9 +747,9 @@ C Make up strings for the current set of toggles.
       elseif(IMPEXP.eq.4)then
         ITEMG(3)=   'c Plant equations    >> steady state    '
       endif
-      if(iUserSolar.eq.0)then
+      if(ISOLAR.eq.0)then
         ITEMG(4)=   'd Solar calculations >> processing on   '
-      elseif(iUserSolar.eq.1)then
+      elseif(ISOLAR.eq.1)then
         ITEMG(4)=   'd Solar calculations >> processing off  '
       endif
       if(ISKYFL.eq.-1)then
@@ -899,11 +888,8 @@ C Averaging on/off.
       elseif(INO.eq.2)then
 
 C Zone side equations implicitness degree.
-        
-        CALL EASKR(fUserGAM,
-     &         ' ',' Zone side equations implicitness degree: ',
+        CALL EASKR(GAM,' ',' Zone side equations implicitness degree: ',
      &         0.,'F',1.,'F',0.5,' implicitness degree',IER,0)
-        bUserGAM = .true. 
         call tstamp('>','SIM: edit implicitness degree')
       elseif(INO.eq.3)then
 
@@ -947,10 +933,8 @@ C Solar ON/OFF option.
         H(2) ='zone a toggle switch on the simulator solar '
         H(3) ='processing algorithms has been installed. If '
         H(4) ='required solar processing can be switched off. '
-        CALL EASKI(iUserSolar,' ',
-     &    ' Solar processing  0) On,  1) Off ? ',
+        CALL EASKI(ISOLAR,' ',' Solar processing  0) On,  1) Off ? ',
      &    0,'F',1,'F',0,'Solar processing iq 23',IER,4)
-        bUserSolar = 1
         IF(IER.NE.0)GOTO 191
         call tstamp('>','SIM: edit solar radiation')
       elseif(INO.eq.5)then
@@ -2081,6 +2065,7 @@ C If appropriate, output special features invoked.
         call edisp(icout,' Special features invoked:')
         call edisp(icout,' =========================')
       ENDIF
+
 C Zone equations implicitness degree.
       IF(ABS(GAM-0.5).GT.1.E-4)THEN
         WRITE(OUTS,'(A,F5.2)')

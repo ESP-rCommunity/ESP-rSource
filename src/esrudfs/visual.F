@@ -39,6 +39,7 @@ C VISOUT - define the parameters for the visualization of results.
 #include "building.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -420,7 +421,7 @@ C Customise arrows.
           call EASKS(t24,
      &      'Scale factors: Shaft len; Shaft thK; Head len; Head thk',
      &                  '  ',24,' 1.0 1.0 1.0 1.0','scale factrs',IER,2)
-          call CHITMS(t24,ISC)
+          ISC = iCountWords(t24)
           if (ISC.ne.4) goto 203
           K=0
           call EGETWR(t24,K,SIL,0.,0.,'-','shaft length',IER)
@@ -544,6 +545,7 @@ C imgtyp  Output image type.
 #include "cfd.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/ICFNOD/ICFD,ICP
       common/pophelp/h(60)
@@ -633,7 +635,7 @@ C Set scale (should scan res lib in future)
             t24='30.0 0.0'
  203        call EASKS(t24,'  ',
      &         'max and min values:',24,'30.0 0.0','scale',IER,0)
-            call CHITMS(t24,ISC)
+            ISC = iCountWords(t24)
             if (ISC.ne.2) goto 203
             K=0
             call EGETWR(t24,K,SCmax,0.,0.,'-','maximum',IER)

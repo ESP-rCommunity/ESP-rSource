@@ -71,7 +71,7 @@ C will have been defined prior to calling edmrt.
       character docpth*24,tmppth*24,dbspth*24,act*1
       character longtfile*144,longtfiledos*144
       integer icni,icnj  ! connection numbers for pair of surfaces.
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
 #else
@@ -638,7 +638,7 @@ C EDMRTS: Edit details of a MRT sensor block.
       CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30
       character H*72,ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext

@@ -32,7 +32,7 @@ C PLNBX:  Checks a polygon against a clipping plane.
 C CUTPOL: Cuts a polygon within a viewing frustrum.
 C VERTLBL: Displays a vertex label based on the coordinates passed and
 C          the vertex number.
-C ORIGESP: Returns a surface/body indicating the site origin.
+C ORIGESP: Draws arrows indicating the site origin.
 C SITE2D:  Returns the 2D viewing coords of the current site extremes
 C          found in common block RAY5.
 C BNDOBJ:  Does range checking on objects to be displayed.
@@ -636,7 +636,7 @@ C and the vertex number.
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER VTEXT*4,VT*4
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,iix1,iiy1
 #else
       integer*8 iix,iiy,iix1,iiy1
@@ -664,45 +664,58 @@ C If vertices are to be labeled do it in the smallest font.
 
 
 C-----ORIGESP -----------------------------------------------------------
-C ORIGESP returns a surface/body indicating the site origin. It is 1 
-C metre in each direction. Note: this does not reset any of the other
-C zone geometry common blocks or the connection based common blocks.
+C ORIGESP uses arrows to indicate the site origin.  It should only be
+C called after the model bounds and viewpoint information has been 
+C defined. Draw arrows slightly off from the axis because of the method
+C used in subroutine arrow.  If the display supports colours then draw
+C the arrows in a medium grey.
       SUBROUTINE ORIGESP
 #include "building.h"
+      COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+      real P,Q
+      integer ipoints
+      DIMENSION P(3),Q(3),ipoints(6,2)
+      real al,aw  ! arrow length and width
+      real shaft  ! length of arrow based on zone bounds
+      real diag   ! diagonal across the site
+      logical greyok
 
-      NSUR=1
-      NVER(1)=12
-      NTV=12
-      X(1)=-0.1
-      X(2)=0.8
-      X(3)=0.8
-      X(4)=1.0
-      X(5)=0.8
-      X(6)=0.8
-      X(7)=0.1
-      X(8)=0.1
-      X(9)=0.2
-      X(10)=0.0
-      X(11)=-0.2
-      X(12)=-0.1
-      Y(1)=-0.1
-      Y(2)=-0.1
-      Y(3)=-0.2
-      Y(4)=0.0
-      Y(5)=0.2
-      Y(6)=0.1
-      Y(7)=0.1
-      Y(8)=0.8
-      Y(9)=0.8
-      Y(10)=1.0
-      Y(11)=0.8
-      Y(12)=0.8
-      DO 10 I=1,12
-        Z(I)=0.0
-        JVN(1,I)=I
-   10 CONTINUE
+      diag = XMX-XMN
+      if(diag.lt.20.0)then
+        shaft=1.0; al=0.3; aw=0.15
+      elseif(diag.ge.20.0.and.diag.lt.100.0)then
+        shaft=2.0; al=0.4; aw=0.2
+      else
+        shaft=3.0; al=0.6; aw=0.3
+      endif
+
+C If libraries and monitor support greyscale remember this.
+      greyok=.false.
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
+
+C Make up coordinates for arrow along X axis.
+      if(greyok)call winscl('i',nifgrey-3)
+      P(1)=0.1; P(2)=0.0; P(3)=-0.1
+      Q(1)=shaft; Q(2)=0.0; Q(3)=-0.1
+      call arrow(P,Q,al,aw,ipoints,'a',2)
+      call forceflush()
+
+C Make up coordinates for arrow along Y axis.
+      P(1)=-0.1; P(2)=0.1; P(3)=-0.1
+      Q(1)=-0.1; Q(2)=shaft; Q(3)=-0.1
+      call arrow(P,Q,al,aw,ipoints,'a',2)
+      call forceflush()
+
+C Make up coordinate for arrow along Z axis.
+      P(1)=-0.1; P(2)=-0.1; P(3)=0.1
+      Q(1)=-0.1; Q(2)=-0.1; Q(3)=shaft
+      call arrow(P,Q,al,aw,ipoints,'a',2)
+      call forceflush()
+      if(greyok)call winscl('-',0)
 
       RETURN
       END
@@ -824,14 +837,13 @@ C Point to loop back to.
   100 CONTINUE
       if(ITORG.EQ.0.AND.ISTOK)then
 
-C If site origin has been included then check its bounds as well.
-        CALL ORIGESP
+C If site origin has been included then include its bounds as well.
         XMN=AMIN1(XMN,-0.2)
         YMN=AMIN1(YMN,-0.2)
         ZMN=AMIN1(ZMN,0.0)
         XMX=AMAX1(XMX,1.0)
         YMX=AMAX1(YMX,1.0)
-        ZMX=AMAX1(ZMX,0.0)
+        ZMX=AMAX1(ZMX,1.0)
       else
 
 C Process selected zones.

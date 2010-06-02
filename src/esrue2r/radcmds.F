@@ -146,7 +146,7 @@ C Now call Radiance with command stored in variable 'outs'.
       endif
 
 C Create inside and outside files, first open databases.
-      call opendb(ier)
+      call module_opendb(ier)
       ftr=0.92
       fict=.false.
       call mkriofil(ftr,fict,'s',IER)
@@ -1032,7 +1032,7 @@ C Assumes that the path to the image is given.
       integer lnrp  ! length of run path
       
       dimension UGRV(72),UGRANG(72)
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iix1,iiy1,iix2,iiy2
 #else
@@ -1164,6 +1164,7 @@ C getglr recovers view information and runs glare calculation.
 #include "building.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       common/expath/runpath,pathtype
@@ -1198,7 +1199,7 @@ C glare angle (set minimum angle to 90 degrees).
         if ((angv/2.).gt.glang) glang=angv/2.
       else
         K=0
-        call CHITMS(vewcmds(ipckvew),ITMS)
+        ITMS = iCountWords(vewcmds(ipckvew))
         do 2112 IX=1,(ITMS-1)
           CALL EGETW(vewcmds(ipckvew),K,word,'-','view data',IFLAG)
           if (word(1:3).eq.'-vh'.or.word(1:3).eq.'-vv') then

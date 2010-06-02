@@ -183,7 +183,7 @@ C espriou.h provides currentfile.
 
 C Parameters
       integer IFA         ! ascii file unit number
-      character LASCI*72  ! ascii file name
+      character LASCI*144  ! ascii file name
       integer IER         ! error return where zero is ok, 
                           ! ier=-1 file not found, ier=-2 no classes
 
@@ -396,7 +396,7 @@ C ASCII file LASCI opened on unit IFA.
 
 C Parameters
       integer IFA         ! ascii file unit number
-      character LASCI*72  ! ascii file name
+      character LASCI*144  ! ascii file name
       integer IER         ! error return where zero is ok
 
       character tab*1,outs*248,outsd*248
@@ -569,7 +569,7 @@ C current ASCII material database LASCI opened on unit IFA.
 
 C Parameters
       integer IFA         ! ascii file unit number
-      character LASCI*72  ! ascii file name
+      character LASCI*144  ! ascii file name
       integer IER         ! error return where zero is ok and -2 signals
                           ! that the expected header was not found
 
@@ -933,10 +933,35 @@ C Parameters
       real val
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72
+      character lworking*144,fs*1
+      logical unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Open the binary materials database (in clase it was closed elsewhere).
       CALL ERPFREE(IFMAT,ISTAT)
-      call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use eforan. If in
+C the standard location then create lworking which has path
+C prepended.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        ier=0
+        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+      elseif(ipathmat.eq.2)then
+        ier=0
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+        call EFOPRAN(IFMAT,lworking,40,1,IER)
+      endif
+
       if(ier.ne.0)then
         CALL ERPFREE(IFMAT,ISTAT)  ! free unit if we failed
         ier=-1
@@ -1168,9 +1193,17 @@ C Parameters
 
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical closemat1,closemat2
-      character outs*124
+      character outs*248
+      character lworking*144,fs*1
+      logical unixok
 
-      IER=0
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can
@@ -1196,7 +1229,7 @@ C carry on using the materials common blocks for subsequent access.
         origmatwasbin=.false.  ! the material file was not binary
         write(outs,'(3a)') ' Materials db ',
      &    LFMAT(1:lnblnk(LFMAT)),' not found!'
-        call edisp(iuout,outs)
+        call edisp248(iuout,outs,100)
         call edisp(iuout,' ')
         MATDBOK=.FALSE.
         ier=0  ! clear error state before continuing
@@ -1205,10 +1238,25 @@ C carry on using the materials common blocks for subsequent access.
 
 C Check for ascii versions of the materials database.
  1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
-      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+      elseif(ipathmat.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+        call rascimat(IFMAT,lworking,IER)  ! try current ascii format
+      endif
       if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
         ier=0
-        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+          call rlegacymat(IFMAT,lworking,ier)  ! try older ascii format
+        endif
+
         if(ier.ne.0)then
           call usrmsg('No readable materials database was not found',
      &                'or file was corrupt','W')

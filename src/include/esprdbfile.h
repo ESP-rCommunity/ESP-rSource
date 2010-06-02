@@ -36,9 +36,11 @@ C Standard path to corporate databases (based on Install data)
 C Array of integers indicating whether database is defined via
 C an absolute path (zero), local path (one), standard path (2)
       common/whichdbpath/ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
-     &                   ipathmat,ipathmul,ipathclim,ipathsbem
+     &                   ipathmat,ipathmul,ipathclim,ipathsbem,
+     &                   ipathmsc
       integer ipathapres,ipathoptdb,ipathpcdb,ipathprodb,
-     &                   ipathmat,ipathmul,ipathclim,ipathsbem
+     &                   ipathmat,ipathmul,ipathclim,ipathsbem,
+     &                   ipathmsc
 
 C Array of integers representing file unit numbers of databases
       integer iapres  ! file unit of wind pressure coef database
@@ -71,28 +73,32 @@ C LPRFDB - (144 char) event profile database file name
       COMMON/PRODB/LPRFDB
       character LPRFDB*144
 
-C LFMAT - (72 char) materials db file name
-C LFMUL - (72 char) constructions db file name
+C LFMAT - (144 char) materials db file name
+C LFMUL - (144 char) constructions db file name
       common/CONDB/LFMAT,LFMUL
-      character LFMAT*72,LFMUL*72
+      character LFMAT*144,LFMUL*144
 
 C LCLIM - (144 char) climate file name associated with the model
       COMMON/C22/LCLIM
       character LCLIM*144
 
-C Special materials/Misc components database.
-      CHARACTER MCMPDBFL*72
+C Misc components database MCMPDBFL (144 char).
+      CHARACTER MCMPDBFL*144
       COMMON/MCMPDBNAM/MCMPDBFL
 
-C Default file names for databases (72 char):
-C DCLIM - default climate, DAPRES - default pressure coef
-C DFCON - default materials, DFMUL - default constructions
+C Default file names for databases:
+C DCLIM - default climate, DAPRES - default pressure coef (144 char)
+C DFCON - default materials (144 char), DFMUL - default constructions (144 char)
 C DOPTDB - default optics (144 char), DPRFDB - default events (144 char)
-C DPCDB - default plant components, DSBEM - default UK SBEM
-      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,DSBEM
-      character*72 DFCON,DFMUL
+C DPCDB - default plant components (144 char), DSBEM - default UK SBEM (144 char)
+C DMCMPDBFL - default mscel components (144 char),
+C dmdbnam - default mycotoxin db
+      COMMON/DEFLT1/DCLIM,DAPRES,DFCON,DFMUL,DOPTDB,DPRFDB,DPCDB,DSBEM,
+     &  DMCMPDBFL,dmdbnam
+      character DFMUL*144
       character DOPTDB*144,DPRFDB*144,DAPRES*144,DPCDB*144
-      character DSBEM*144,DCLIM*144
+      character DSBEM*144,DCLIM*144,DFCON*144,DMCMPDBFL*144
+      character dmdbnam*72
 
 C LSBEM - (144 char) SBEM building type and systems db file name
       COMMON/SBEM00/LSBEM

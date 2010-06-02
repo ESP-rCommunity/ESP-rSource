@@ -26,7 +26,7 @@ Edited by Dr. Jon W. Hand
 Energy Systems Research Unit
 of the University of Strathclyde
 
-Version of 8 October 2009
+Version of 20 April 2010
 .sp 2
 .SH
 Introduction
@@ -320,6 +320,14 @@ the file contents each of the tokens will be explained.
 *menu,Creates three zone model in /tmp/poly3
 *doc,Model of a box and roof and triangual room within distributed folders to be created in /tmp/poly3 and then set site to use data from uk_oban climate file.
 *action,new,poly,distributed,/tmp/poly3
+*zonpth ../zones # path to zones
+*netpth ../nets # path to networks
+*ctlpth ../ctl # path to controls
+*radpth ../rad # path to radiance files
+*imgpth ../images # path to project images
+*tmppth ../tmp # path to project scratch folder
+*docpth ../doc # path to project documents
+*dbspth ../dbs # path to local databases
 *weather_station,uk_oban
 *site_loc,45.320,0.000,0.0,6 # latitude, long diff, time zone
 *site_exp,1,28.0,38.0,34  # site expoure views to sky ground buildings
@@ -335,7 +343,8 @@ the file contents each of the tokens will be explained.
 *shape,box
 *origin,0.0,0.0,0.0  # origin of zone
 *size,20.0,10.0,5.0  # length width height (m)
-*rotate,0.0          # rotation
+*rotate,0.0,0.0,0.0     # pending rotation angle X Y
+*previous_rotate,10.0,0.0,1.0  # prior rotation angle X Y
 *glaze,1,1,20.0         # how many, index of parent and percent
 *door,1,1,2.5    # how many, index of parent and width of door
 *surface,front,extern_wall,0,0,0
@@ -366,7 +375,7 @@ the file contents each of the tokens will be explained.
 *cord,5.0,10.0,6.0
 *origin,0.0,3.0,0.0  # base and topsilent and ignored
 *size,0.0,0.0,0.0    # not used for extrude shape.
-*rotate,0.0          # rotation
+*previous_rotate,10.0,0.0,1.0  # prior rotation angle X Y
 *surface,base,susp_ceil,3,1,5
 *list,4,1,4,3,2
 *surface,front,extern_wall,0,0,0
@@ -400,7 +409,7 @@ the file contents each of the tokens will be explained.
 *cord,2.5,19.0
 *origin,0.0,3.0,0.0  # base and top and ignored
 *size,0.0,0.0,0.0    # not used for extrude shape.
-*rotate,0.0          # rotation
+*previous_rotate,10.0,0.0,1.0  # prior rotation angle X Y
 *glaze,1,1,20.0         # how many, index of parent and percent
 *door,1,2,1.5    # how many, index of parent and width of door
 *surface,front,extern_wall,0,0,0
@@ -464,6 +473,9 @@ the file.
 .LP
 the *doc line is followed by a block of text (up to 248 char) 
 on one line which provides a summary of the model.
+
+.SH
+Model folder related data
 .MBL
 
   *action,new,poly,distributed,/tmp/poly3
@@ -487,6 +499,88 @@ single - all the model files are in one folder.
 .LP
 The 5th token is the absolute path to the location of the model.  In 
 the above case the model files will be /tmp/poly3/cfg /tmp/poly3/zones etc.
+.MBL
+
+   *zonpth ../zones # path to zones
+   *netpth ../nets # path to networks
+   *ctlpth ../ctl # path to controls
+   *radpth ../rad # path to radiance files
+   *imgpth ../images # path to project images
+   *tmppth ../tmp # path to project scratch folder
+   *docpth ../doc # path to project documents
+   *dbspth ../dbs # path to local databases
+.ES
+.LP
+There are an optional set of tokens which define the folder layout
+of the ESP-r model derived from the META file. For the case where
+the 4th token of the *action line is distributed the standard
+ESP-r folder structure is created e.g. ../zones ../nets ../ctl 
+if no directives are given. If a bespoke folder structure is
+required, for example to place local databases in ../databases
+instead of ../dbs then a *dbspth line would be added.
+.LP
+In each case there are two tokens on the line. The first is the
+tag and the second is a relative path to the relevant folder.
+.LP
+When the project manager of ESP-r exports an existing model 
+these lines are added to ensure that the equivalent folder 
+structure is recovered. 
+
+.SH
+Database related data
+.LP
+ESP-r models have associated databases.  If the meta file contains
+no directives then the current default databases are assumed to
+be used. There are directives that identify materials, constructions,
+optics, pressure distributions, event profiles and miscel components.
+The tags used identify whether the file is local to the model, located
+via an explicit path or held in the standard ESP-r databases folder.
+.LP
+Databases that exist outside of the model, for example in a users
+folder such as /home/fred/databases or in the standard ESP-r distribtion
+such as /usr/esru/esp-r/databases or C:\\Esru\\esp-r\\databases will be
+scanned in as the model is created. If databases are located
+within the model folder structure then it cannot be assumed that
+they will be available as ESP-r parses the META file and creates
+the folders.  This can lead to unknown constructions and an inability
+to create the zone construction files. However, newer *surface
+entries can hold the name of the surface optical attribute as well as
+the construction attribute and it is possible to build more of
+the model zone files.
+.LP
+Examples are shown below:
+.MBL
+
+  *mat ../dbs/hotel.materialdb  # materials database
+  *mlc ../dbs/hotel.constrdb    # constructions database
+  *opt ../dbs/hotel.opticdb     # optical db
+  *prs ../dbs/hotel.pressuredb  # pressure coef db
+  *evn /home/fred/databases/profiles.db1 # event profiles db
+  *mscldb /home/fred/databases/mscomp.db1 # miscel components db
+  *pdb /usr/esru/esp-r/databases/plantc.db1 # plant template db
+
+or
+  *stdmat material.db3.a # standard materials database
+  *stdmlc multicon.db3   # standard constructions database
+  *stdopt optics.db2     # standard optical db
+  *stdprs pressc.db1     # standard pressure coef db
+  *stdevn profiles.db2.a # standard event profiles db
+  *stdpdb plantc.db1     # plant template db
+
+.ES
+.LP
+The *mat entry (for example) is followed by ../dbs is a relative path 
+from the model configuration 
+file. The *mscldb entry is an example of an absolute path. These tags are
+also used in the model configuration file.
+.LP
+The *stdmat entry (for example) is followed by a file name (but no path). 
+ESP-r executables have a compiled-in assumption as to where standard 
+databases are located and
+a *stdmat *stdmlc *stdopt *stdprs *stdevn or *stdpdb tag tells ESP-r to pre-pend 
+the path to the supplied file name. This allows META files and the models 
+they contain to be less sensitive to where ESP-r is installed and where
+models are held.
 .SH
 Site related data
 .MBL
@@ -727,7 +821,8 @@ a zone which is defined as a \fBbox shape\fR.
   *shape,box
   *origin,0.0,0.0,0.0  # origin of zone
   *size,20.0,10.0,5.0  # length width height (m)
-  *rotate,0.0          # rotation
+  *rotate,0.0,0.0,0.0  # pending rotation angle X Y
+  *previous_rotate,10.0,0.0,1.0  # prior rotation angle X Y
   . . .
 .ES
 .LP
@@ -744,13 +839,17 @@ the north axis if there is no rotation, 3rd is the height (m).
 If a *size line is encountered for other shape types the data 
 is ignored.
 .LP
-A *rotate line can happen anywhere within the *start_zone 
-and *end_zone tags. It has one real data which is the degrees 
+A *rotate or *previous_rotate line can happen anywhere within the *start_zone 
+and *end_zone tags. It has three real data which are the degrees 
 (positive is anti-clockwise) of rotation to be applied to the 
-zone.  A *rotate token is optional for \fBbox\fR and \fBextrude\fR shape
-types. If it is not found no rotation will be applied. Currently
-a shape type \fBpoly\fR does not expect and does not act on a
-*rotate directive.
+zone followed by the X and Y coordinate to rotate around.  
+A *rotate or *previous_rotate token is optional for \fBbox\fR and \fBextrude\fR and
+\fBpoly\fR shape types.
+.LP
+A *rotate tag signals a pending operation while the *previous_rotate
+tag records the users prior request for rotation (for a possible
+un-do command). Third party application can use the *rotate tag
+to apply transforms to an initial set of coordinates.
 .SH
 Use of extrude shape type
 .LP
@@ -1316,6 +1415,36 @@ currently not attributed in an exported META file.
 *end
 
 .ES
+.sp 2
+.SH
+Revisions
+.LP
+The following is a summary of changes made to the META file format. This
+section is work-in-progress.
+.LP
+March 2010 - added *zonpth, *netpth, *ctlpth, *radpth, *imgpth,
+*tmppth, *docpth and *dbspth tokens to support custom model folder
+naming. Relax 10 zone limit on model complexity.
+.LP
+February 2010 - added *previous_rotate token to record prior rotation requests
+and modified the *rotate token to include the X and Y of the point for 
+zone rotation.
+.LP
+December 2009 updated documentation about META file.
+.LP
+September 2009 - modified the *site token to *site_loc and *site_exp tokens,
+removed the *action,cont option to simplify the code and allowed longer
+text block after the *menu token.
+.LP
+September 2009 - added dual rotation shading obstruction descriptions *obs3.
+.LP
+August 2009 - added directives for shading and insolation calculations.
+.LP
+June 2009 - added directives for the day-type callendar equivalent to that
+used in the ESP-r configuration file.
+.LP
+March 2009 - added facility to export a META file from an existing ESP-r
+model in the prj module.
 
 
 

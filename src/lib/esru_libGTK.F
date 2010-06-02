@@ -114,7 +114,7 @@ C     &             1,'F',MCOM,'W',1,'zone number',IER,2)
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*10,STR1*10,STR2*10,H*72
       CHARACTER ask*10,OUTSTR*124,DSTR*124,dh*72,outs*124
       character prompt*144
-      LOGICAL OK,DOK
+      LOGICAL OK,DOK,unixok
       integer ivalold
 
       IER=0
@@ -241,8 +241,11 @@ C of help supplied and then provide the prompt again.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing integer value.
           CALL INTSTR(IVAL,STR2,IW2,IER)
-          WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
-   55     FORMAT('The existing value (',a,') will be used.')
+          call isunix(unixok)
+          if(unixok)then
+            WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
+   55       FORMAT('The existing value (',a,') will be used.')
+          endif
           RETURN
         ENDIF
 
@@ -366,7 +369,7 @@ C    ...
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*16,STR2*16,H*72
       CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72,outs*124
       character prompt*144
-      LOGICAL OK,close,DOK
+      LOGICAL OK,close,DOK,unixok
 
 C If RVAL is outwith range for failure then set to default.
       if(MINACT.EQ.'F'.and.RVAL.LT.RMIN)RVAL=DEFLT
@@ -498,8 +501,11 @@ C help supplied and then provide the prompt again.
 C A carriage return or line feed encountered, assume user wishes to
 C use prior/existing real value.
           CALL REL16STR(RVAL,STR2,IW2,IER)
-          WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
-   55     FORMAT('The existing value (',a,') will be used.')
+          call isunix(unixok)
+          if(unixok)then
+            WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
+   55       FORMAT('The existing value (',a,') will be used.')
+          endif
           RETURN
         ENDIF
 
@@ -621,7 +627,7 @@ C by the user.
       CHARACTER MINACT*1,MAXACT*1,A*1,WORD*16,STR1*10,STR2*10,H*72
       CHARACTER ask*16,OUTSTR*124,DSTR*124,dh*72,outs*124
       character prompt*144
-      LOGICAL OK,close,DOK
+      LOGICAL OK,close,DOK,unixok
 
       IER=0
 
@@ -755,8 +761,11 @@ C help supplied and then provide the prompt again.
 C A carriage return or line feed encountered, assume user wishes to
 C use prior/existing real value.
           CALL EXPSTR(RVAL,STR2,IW2,IER)
-          WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
-   55     FORMAT(' The existing value (',a,') will be used.')
+          call isunix(unixok)
+          if(unixok)then
+            WRITE(IUOUT,55,iostat=ios,err=1)STR2(1:IW2)
+   55       FORMAT(' The existing value (',a,') will be used.')
+          endif
           RETURN
         ENDIF
       ENDIF
@@ -861,7 +870,7 @@ C DSTR is a string to use as a default.
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,FILEN,DSTR
       CHARACTER WORD144*144,A*1,LASTS*144,OUTSTR*124,dh*72,outs*124
       character prompt*144
-      LOGICAL OK,DOK
+      LOGICAL OK,DOK,unixok
 
    20 IER=0
 
@@ -952,7 +961,8 @@ C        ENDIF
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
             if(last.lt.144)then
               write(FILEN,'(a)',iostat=ios,err=3) LASTS(1:last)
             else
@@ -1093,7 +1103,7 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
-
+C Internal string buffer assumes that strval is less than 96 characters.
 C Example:
 C    ....
 C test getting a string.
@@ -1112,9 +1122,9 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*92,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,outs*124
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,outs*124
       character prompt*144
-      LOGICAL OK,DOK
+      LOGICAL OK,DOK,unixok
       integer last    ! last blank (or one) in the string.
 
    20 WORD=' '
@@ -1206,7 +1216,8 @@ C A cancel answer detected, set ier to -3 and return.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS.NE.' ')THEN
-            WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
             STRVAL=LASTS(1:last)
             RETURN
           ELSE
@@ -1267,8 +1278,11 @@ C requested.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  '.or.last.ge.1)then
-            WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
-   55       FORMAT(' The existing string (',a,') will be used.')
+            call isunix(unixok)
+            if(unixok)then
+              WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
+   55         FORMAT(' The existing string (',a,') will be used.')
+            endif
             STRVAL=LASTS(1:last)
             RETURN
           ELSE
@@ -1327,7 +1341,7 @@ C DSTR is a string to use as a default.
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STRVAL,DSTR
       CHARACTER H*72,t72*72,t72a*72,t72b*72,t72c*72
       character outstr*248,word*248,prompt*144,LASTS*248,outs*124
-      LOGICAL next,OK,DOK
+      LOGICAL next,OK,DOK,unixok
 
    20 IER=0
       WORD=' '
@@ -1420,8 +1434,11 @@ C A cancel answer detected, set ier to -3 and return.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS.NE.' ')THEN
-            WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
-   55       FORMAT(' The existing string (',a,') will be used.')
+            call isunix(unixok)
+            if(unixok)then
+              WRITE(IUOUT,55,iostat=ios,err=1)LASTS(1:last)
+   55         FORMAT(' The existing string (',a,') will be used.')
+            endif
             STRVAL=LASTS(1:last)
             RETURN
           ELSE
@@ -1575,7 +1592,7 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,ERMSG,STRVAL,DSTR
       CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,prompt*144
-      LOGICAL OK,CMDACT,DOK
+      LOGICAL OK,CMDACT,DOK,unixok
 
    20 IER=0
       CMDACT=.FALSE.
@@ -1656,7 +1673,8 @@ C A cancel answer detected, set ier to -3 and return.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
             IF(LASTS(1:2).NE.'  ')THEN
-              WRITE(IUOUT,55)LASTS(1:last)
+              call isunix(unixok)
+              if(unixok) WRITE(IUOUT,55)LASTS(1:last)
               STRVAL=LASTS(1:last)
               CMDACT=.TRUE.
               RETURN
@@ -1673,7 +1691,8 @@ C Must have input a character string.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55)LASTS(1:last)
             STRVAL=LASTS(1:last)
             CMDACT=.FALSE.
             RETURN
@@ -1730,8 +1749,11 @@ C requested.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55)LASTS(1:last)
-   55       FORMAT(' The existing string (',a,') will be used.')
+            call isunix(unixok)
+            if(unixok)then
+              WRITE(IUOUT,55)LASTS(1:last)
+   55         FORMAT(' The existing string (',a,') will be used.')
+            endif
             STRVAL=LASTS(1:last)
             RETURN
           ELSE
@@ -1766,7 +1788,8 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
-
+C Assumption is that STRVAL will be up to 96 char wide. This
+C should be generalized.
       SUBROUTINE EASKSCNCL(STRVAL,PROMP1,PROMP2,CNCL,CNCLACT,ISTRW,
      &  DSTR,ERMSG,IER,NHELP)
 
@@ -1776,9 +1799,9 @@ C DSTR is a string to use as a default.
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CNCL,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72
       character outstr248*248,prompt*144
-      LOGICAL OK,CNCLACT,DOK
+      LOGICAL OK,CNCLACT,DOK,unixok
 
    20 IER=0
       CNCLACT=.FALSE.
@@ -1860,7 +1883,8 @@ C leading blanks from string returned.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55)LASTS(1:last)
             STRVAL=LASTS(1:last)
             CNCLACT=.FALSE.
             RETURN
@@ -1917,8 +1941,11 @@ C requested.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55)LASTS(1:last)
-   55       FORMAT(' The existing string (',a,') will be used.')
+            call isunix(unixok)
+            if(unixok)then
+              WRITE(IUOUT,55)LASTS(1:last)
+   55         FORMAT(' The existing string (',a,') will be used.')
+            endif
             STRVAL=LASTS(1:last)
             RETURN
           ELSE
@@ -1954,6 +1981,8 @@ C NHELP is the number of help lines and H() is the array
 C of text strings to be printed out if '?','H','h' is typed
 C by the user.
 C DSTR is a string to use as a default.
+C Assumption is that STRVAL will be up to 96 char wide. This
+C should be generalized.
 
 C Example:
 C    ....
@@ -1974,8 +2003,8 @@ C        CALL USRMSG(' ',' selected string is:'//XNAME,'-')
 
       dimension dh(60)
       CHARACTER*(*) PROMP1,PROMP2,CMD,CMD2,ERMSG,STRVAL,DSTR
-      CHARACTER WORD*72,H*72,A*1,LASTS*72,OUTSTR*124,dh*72,prompt*144
-      LOGICAL OK,DOK
+      CHARACTER WORD*96,H*72,A*1,LASTS*96,OUTSTR*124,dh*72,prompt*144
+      LOGICAL OK,DOK,unixok
 
    20 IER=0
       ICACT=0
@@ -2055,7 +2084,8 @@ C A cancel answer detected, set ier to -3 and return.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
             IF(LASTS(1:2).NE.'  ')THEN
-              WRITE(IUOUT,55)LASTS(1:last)
+              call isunix(unixok)
+              if(unixok) WRITE(IUOUT,55)LASTS(1:last)
               STRVAL=LASTS(1:last)
               ICACT=1
               RETURN
@@ -2072,7 +2102,8 @@ C Must have input a character string.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
             IF(LASTS(1:2).NE.'  ')THEN
-              WRITE(IUOUT,55)LASTS(1:last)
+              call isunix(unixok)
+              if(unixok) WRITE(IUOUT,55)LASTS(1:last)
               STRVAL=LASTS(1:last)
               ICACT=2
               RETURN
@@ -2089,7 +2120,8 @@ C Must have input a character string.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55)LASTS(1:last)
+            call isunix(unixok)
+            if(unixok) WRITE(IUOUT,55)LASTS(1:last)
             STRVAL=LASTS(1:last)
             ICACT=0
             RETURN
@@ -2146,8 +2178,11 @@ C requested.
 C A blank, carriage return or line feed encountered, assume user
 C wishes to use prior/existing string.
           IF(LASTS(1:2).NE.'  ')THEN
-            WRITE(IUOUT,55)LASTS(1:last)
-   55       FORMAT(' The existing string (',a,') will be used.')
+            call isunix(unixok)
+            if(unixok)then
+              WRITE(IUOUT,55)LASTS(1:last)
+   55         FORMAT(' The existing string (',a,') will be used.')
+            endif
             STRVAL=LASTS(1:last)
             RETURN
           ELSE
@@ -3420,8 +3455,6 @@ C MMOD=-1 Text: never wait, page with blank line.
         IF(IEND.EQ.0)THEN
           IF(IPAG.EQ.1)THEN
             WRITE(IUOUT,'(a)') '  '
-C            WRITE(IUOUT,300)
-C 300        FORMAT(/,' ',72('-'),/)
           ENDIF
           LIMIT=LIMTTY
           RETURN
@@ -4865,7 +4898,7 @@ C      character tmode*8,longtfile*72
 
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
-#ifdef OSX
+#ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
 #else
       integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
@@ -5030,7 +5063,7 @@ C ITPPSW current view - perspective/plan/south/west
 
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
-#ifdef OSX
+#ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
 #else
       integer*8 ivt2,ivt3,ivt4  ! for use with viewtext

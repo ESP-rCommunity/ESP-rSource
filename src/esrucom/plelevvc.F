@@ -58,7 +58,7 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
 
       CHARACTER sstr*90,blabel*4,direc*1
       character tz*13
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2,iix,iiy
@@ -221,51 +221,65 @@ C by each of the edge points.
           iupdown=0
           isym=0
           icc=IZSTOCN(newfoc,i)
-          j=NZJVN(icc,1)
-          if(direc.eq.'P')then
-            call etplot(VCOORD(newfoc,j,1),VCOORD(newfoc,j,2),
-     &        iupdown,isym)
-          elseif(direc.eq.'S')then
-            call etplot(VCOORD(newfoc,j,1),VCOORD(newfoc,j,3),
-     &        iupdown,isym)
-          elseif(direc.eq.'E')then
-            call etplot(VCOORD(newfoc,j,2),VCOORD(newfoc,j,3),
-     &        iupdown,isym)
+          if(icc.gt.0)then
+            j=NZJVN(icc,1)
+            if(j.gt.0)then
+              if(direc.eq.'P')then
+                call etplot(VCOORD(newfoc,j,1),VCOORD(newfoc,j,2),
+     &            iupdown,isym)
+              elseif(direc.eq.'S')then
+                call etplot(VCOORD(newfoc,j,1),VCOORD(newfoc,j,3),
+     &            iupdown,isym)
+              elseif(direc.eq.'E')then
+                call etplot(VCOORD(newfoc,j,2),VCOORD(newfoc,j,3),
+     &            iupdown,isym)
+              endif
+              call forceflush()
+            else
+              call usrmsg('Model may be unstable. Tried to draw an',
+     &          'unknown surface edge.','P')
+            endif
+          else
+            call usrmsg('Model may be unstable. Tried to draw an',
+     &        'unknown surface.','P')
           endif
-          call forceflush()
 
 	  k=NZNVER(icc)
           do 50 l=2,k
             iupdown=-302
             isym=0
             m=NZJVN(icc,l)
-            if(direc.eq.'P')then
-              call etplot(VCOORD(newfoc,m,1),VCOORD(newfoc,m,2),
-     &          iupdown,isym)
-            elseif(direc.eq.'S')then
-              call etplot(VCOORD(newfoc,m,1),VCOORD(newfoc,m,3),
-     &          iupdown,isym)
-            elseif(direc.eq.'E')then
-              call etplot(VCOORD(newfoc,m,2),VCOORD(newfoc,m,3),
-     &          iupdown,isym)
+            if(m.gt.0)then
+              if(direc.eq.'P')then
+                call etplot(VCOORD(newfoc,m,1),VCOORD(newfoc,m,2),
+     &            iupdown,isym)
+              elseif(direc.eq.'S')then
+                call etplot(VCOORD(newfoc,m,1),VCOORD(newfoc,m,3),
+     &            iupdown,isym)
+              elseif(direc.eq.'E')then
+                call etplot(VCOORD(newfoc,m,2),VCOORD(newfoc,m,3),
+     &            iupdown,isym)
+              endif
+              call forceflush()
             endif
-            call forceflush()
    50     continue
 
 C Back to the initial point of the surface.
           iupdown=-302
           isym=0
-          if(direc.eq.'P')then
-            call etplot(VCOORD(newfoc,j,1),VCOORD(newfoc,j,2),
-     &        iupdown,isym)
-          elseif(direc.eq.'S')then
-            call etplot(VCOORD(newfoc,j,1),VCOORD(newfoc,j,3),
-     &        iupdown,isym)
-          elseif(direc.eq.'E')then
-            call etplot(VCOORD(newfoc,j,2),VCOORD(newfoc,j,3),
-     &        iupdown,isym)
+          if(j.gt.0)then
+            if(direc.eq.'P')then
+              call etplot(VCOORD(newfoc,j,1),VCOORD(newfoc,j,2),
+     &          iupdown,isym)
+            elseif(direc.eq.'S')then
+              call etplot(VCOORD(newfoc,j,1),VCOORD(newfoc,j,3),
+     &          iupdown,isym)
+            elseif(direc.eq.'E')then
+              call etplot(VCOORD(newfoc,j,2),VCOORD(newfoc,j,3),
+     &          iupdown,isym)
+            endif
+            call forceflush()
           endif
-          call forceflush()
    40   continue
         call forceflush()
 

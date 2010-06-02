@@ -24,39 +24,17 @@ C ******************** ERBDMD
 C Similar prjdmds.F except do not bother to set idmdinc.
 C ERBDMD reads project level demand profiles for fans, pumps, DHW etc.
 
-C Common block variables are:
-C dmdsdesc      - dispersed demands notes (248 char)
-
-C Support for up to 10 calendar day types
-C NBCAS() number of gains on each day type.
-C IBCGS(),IBCGF() - start and finish hours of each demand
-C CBMGS(),CBMGL() - sensible and latent magnitude (in Watts) of each demand
-C BRADC(),BCONC(), - radiant and convective portions of each demand
-C IBCGT() - type of gain for each day type and period
-C           1. Occup, 2. Lighting, 3. Small power, 4. Fans, 
-C           5. Pumps, 6. Lifts, 7. DHW
-C           -1. Occup w/m2, -2. Lighting w/m2, -3. Sml power w/m2,
-C           -4 Fan per w/m2, -5. Pumps per w/m2  -6. Lifts w/m^2,
-C           -7. DHW w/m^2
-C Maximum number of demands/day       MC=20
-
       SUBROUTINE ERBDMD(ITRC,IUO,IER)
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
-
-C Descriptive label for a zone load or casual gain types.
-      common/bloadlabel/blodlabel(7)
-      common/b3ver/idmdver
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -65,11 +43,10 @@ C Calendar commons.
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER dmdsdesc*248,outstr*124,bdmds*72,loutstr*248
+      CHARACTER outstr*124,loutstr*248
       character dllsubr*12,dllmesg*124,WORD*20,outs*124,outs2*124
       character calename*32,calentag*12,calendayname*32
       character dstmp*24
-      CHARACTER*6 blodlabel
       logical dll
       integer lsn
 
@@ -269,23 +246,15 @@ C from common block data.
       SUBROUTINE BDMDINF(ITRU,ier)
 
 #include "building.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
-
-      COMMON/BL1/dmdsdesc,bdmds
-
-C Descriptive label for a zone load or casual gain types.
-      common/bloadlabel/blodlabel(7)
-
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
 
-      CHARACTER dmdsdesc*248,outs*124,bdmds*72
-      CHARACTER*6 blodlabel
+      CHARACTER outs*124
       character calename*32,calentag*12,calendayname*32
 
       call edisp(itru,' ')
@@ -511,13 +480,12 @@ C of each period will have to be shifted in the calling routine.
       SUBROUTINE DMDTYP(IDAY,ITSTEP,hddt1,hddt2,hddt3,hddt4,hddt5,
      &  hddt6,hddt7)
 #include "building.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
 C Demands for weekdays/saturdays/sundays.
       COMMON/BL2/dmdfla(7)
-      COMMON/BL3data/NBCAS(10),IBCGS(10,MC),IBCGF(10,MC),CBMGS(10,MC),
-     &  CBMGL(10,MC),BRADC(10,MC),BCONC(10,MC),IBCGT(10,MC)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME

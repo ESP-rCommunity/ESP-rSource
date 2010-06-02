@@ -388,7 +388,9 @@ C Tdf common block to allow using vertical solar radiation data
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
       DIMENSION VAL(MBITS+2)            
       real sumDirDiff !the sum of the direct and diffuse components for use in tdf (vertical solar)
 
@@ -3225,6 +3227,7 @@ C Shading file record width found in mzshin.
       DIMENSION ISS(12),ISADD(12)
       character outs*124,h*72
       logical OK,dok
+      integer ier
 
 c Determine current month number.
       CALL EDAYR(IYRD,ID,IM)
@@ -3244,6 +3247,7 @@ c turn.
       
 c Assign shading file for zone 'I'.
         LS=LSHAD(I)
+        ier=0
         call EFOPRAN(IUNIT,LS,maxrec(i),1,IER)
         IF(ier.ne.0)goto 1000
         IREC=1
@@ -3775,7 +3779,9 @@ C Tdf common block to allow using different bidirectional datasets
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
       COMMON/trc/itrc ! needed to recover tdf data
 
       COMMON/OPTDAT/NSGALFL(MSTMC),NGNTL(MSTMC),

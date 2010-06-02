@@ -134,3 +134,87 @@ C Reporting.
 
       RETURN
       END
+
+C ******************** MOMEASURED ********************
+
+C MOMEASURED sets up data from temporal file for measured
+C zone db temperatures and (?). This is done by recovering the
+C and interpolating as required. Returns requested value
+C in GVAL.
+
+      subroutine momeasured(iday,izone)
+#include "building.h"
+#include "tdf2.h"
+
+C Parameters
+      integer iday  ! the current day
+      integer izone ! the associated zone
+
+      COMMON/OUTIN/IUOUT,IUIN
+
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
+      COMMON/AVRAGE/IDAVER
+
+C For each zone a pointer to relevant temporal db entry type 0=not used.
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
+
+      DIMENSION VAL(MBITS+2)
+C      CHARACTER OUTS*124   ! uncomment if debug needed
+      LOGICAL found
+
+
+C Check to see if there is a temporal measured data
+C entry for this zone.
+      found = .false.
+      if(IDBTZNM(izone).ne.0)found = .true.
+      if(found)then
+
+C For TDF db purposes the time is equivalent to btimef in bmatsv.f.
+C The past timestep C is TF = TF - 1./real(NTS). 
+C TFL is is the last timestep of the previous day.
+        IJ=0
+        DO 10 I=1,24
+          I1=I-1
+          T1=FLOAT(I1)
+          DO 20 J=1,NTS
+            IJ=IJ+1
+            Y1=FLOAT(J)
+            Y2=FLOAT(NTS)
+            T=T1+Y1/Y2
+            IF(IDAVER.EQ.0)T=T-(1.0/(Y2*2.0))
+            TF = real(IJ)/Y2 
+            TP = TF - (1./Y2)
+
+C Get value of the temporal item.
+            itdi=IDBTZNM(izone)
+            IFOC=itdi
+            if(ij.eq.1)then
+              CALL RCTDFR(0,IDAY,IJ,TP,VAL,ISD,IFOC,IER)
+            else
+              CALL RCTDFR(0,IDAY,IJ-1,TP,VAL,ISD,IFOC,IER)
+            endif
+            X1a=VAL(ISD)
+            CALL RCTDFR(0,IDAY,IJ,TF,VAL,ISD,IFOC,IER)
+            X2a=VAL(ISD)
+            GVAL(IJ)=X1a+(((T-TP)*(X2a-X1a))/(TF-TP))
+
+C Debug...
+            call DATIME(IJ,TIME)
+C          WRITE(OUTS,'(A,I3,4F6.2,I4,F8.2)') 'IJ T TP TF ID Va ',
+C     &      IJ,T,TP,TF,TIME,IDAY,GVAL(IJ)
+C            CALL EDISP(IUOUT,OUTS)
+   20     CONTINUE
+   10   CONTINUE
+      else
+        call edisp(iuout,'No measured data for this zone')
+      endif
+
+      RETURN
+      END

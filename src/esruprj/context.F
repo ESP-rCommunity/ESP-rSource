@@ -46,6 +46,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
@@ -104,7 +105,7 @@ C ITEMS is menu for site/context items.
       character lipvdatf*72,H*72,outs*124,ltmp*72
       character cfgroot*24,LCFGF*72
       character act*1,GTNAME*15
-      character D64*64  ! default string for editing
+      character D64*64,D20*20  ! default string for editing
       character ipvact*3  ! to denote whether in cfd file or external
 
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
@@ -425,7 +426,7 @@ C---- Simple or advanced models: ask for monthly values
           CALL EASKS(HOLD,' ',
      &      'January thro June ground reflectance (no snow)?',
      &      72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jan-jun',IER,7)
-          CALL CHITMS(HOLD,NV)
+          NV = iCountWords(HOLD)
           IF (NV.NE.6) GOTO 83
           K=0
           DO 84 J=1,6
@@ -439,7 +440,7 @@ C---- Simple or advanced models: ask for monthly values
           CALL EASKS(HOLD,' ',
      &      'July thro December ground reflectance (no snow)?',
      &       72,'0.2 0.2 0.2 0.2 0.2 0.2','gr albedo jul-dec',IER,7)
-          CALL CHITMS(HOLD,NV)
+          NV = iCountWords(HOLD)
           IF (NV.NE.6) GOTO 85
           K=0
           DO 86 J=7,12
@@ -468,7 +469,7 @@ C     with snow on the ground
             CALL EASKS(HOLD,' ',
      &        'Number of days in January thro June with snow?',
      &        72,'0 0 0 0 0 0','days with snow jan-jun',IER,2)
-            CALL CHITMS(HOLD,NV)
+            NV = iCountWords(HOLD)
             IF (NV.NE.6) GOTO 87
             K=0
             DO 88 J=1,6
@@ -482,7 +483,7 @@ C     with snow on the ground
             CALL EASKS(HOLD,' ',
      &        'Number of days in July thro December with snow?',
      &        72,'0 0 0 0 0 0 ','days with snow jul-dec',IER,3)
-            CALL CHITMS(HOLD,NV)
+            NV = iCountWords(HOLD)
             IF (NV.NE.6) GOTO 89
             K=0
             DO 90 J=7,12
@@ -637,8 +638,8 @@ C The address of the model (same data fields as entered in the ncm file.
         if(OK)then
           H(1)='Input a succinct description of the project name here.'
           write(D64,'(a)') 'notional model not named'
-          CALL EASKS(pjname,'Code complience project name?',
-     &      '(<64 characters)',64,D64,'project name',IER,1)
+          CALL EASKS(pjname,'Code compliance project name?',
+     &      '(20 characters maximum)',20,D20,'project name',IER,1)
           H(1)='Input first line of building address here'
           write(D64,'(a)') 'address not provided'
           CALL EASKS(baddress,'building address?','(<64 characters)',
@@ -814,7 +815,7 @@ C        call edisp(iuout,outs)
         H(1)='Temperatures are typically defined at a 1.5m depth.'
         CALL EASKS(HOLD,' ','Temperatures, January- thro June?',
      &      72,' ','gr prof jan-jun',IER,1)
-        CALL CHITMS(HOLD,NV)
+        NV = iCountWords(HOLD)
         if(NV.ne.6)goto 93
         K=0
         DO 94 J=1,6
@@ -827,7 +828,7 @@ C        call edisp(iuout,outs)
         H(1)='Temperatures are typically defined at a 1.5m depth.'
         CALL EASKS(HOLD,' ','Temperatures, July thro December?',
      &      72,' ','gr prof jan-jun',IER,1)
-        CALL CHITMS(HOLD,NV)
+        NV = iCountWords(HOLD)
         if(NV.ne.6)goto 95
         K=0
         DO 96 J=7,12
@@ -1353,6 +1354,7 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character*34 ITEMS(7)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
+      integer ier
 
 C Action to pass to tdfedit. Prior 'update' option moved into
 C esrub2e rather than invoking tdf.
@@ -1439,30 +1441,32 @@ C and present a different interface depending on file type.
       H(31)=' BIDIRSET -Bidirectional datasets (e.g. slat angles)'
       H(32)=' VERTSOL -Vertical solar radiation data for a facade'
       H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
-      H(34)='manage associations - you can add and delete associations'
-      H(35)='  that have been previously defined. Note this does not'
-      H(36)='  alter the contents of the temporal file.'
-      H(37)=' '
-      H(38)='dereference temporal file - this removes current links'
-      H(39)='  between the model and entities in the temporal file.'
-      H(40)='  It does not remove the temporal file.'
-      H(41)=' '
-      H(42)='create file - you supply a file name, if it exists it'
-      H(43)='  is scanned otherwise a minimal file is created.'
+      H(34)=' DBTZNM  - measured zone db temperature'
+      H(35)=' '
+      H(36)=' '
+      H(37)='manage associations - you can add and delete associations'
+      H(38)='  that have been previously defined. Note this does not'
+      H(39)='  alter the contents of the temporal file.'
+      H(40)=' '
+      H(41)='dereference temporal file - this removes current links'
+      H(42)='  between the model and entities in the temporal file.'
+      H(43)='  It does not remove the temporal file.'
       H(44)=' '
-      H(45)='edit/list - contents of the current file are presented'
-      H(46)='  and if you have permission you can alter its contents.'
+      H(45)='create file - you supply a file name, if it exists it'
+      H(46)='  is scanned otherwise a minimal file is created.'
       H(47)=' '
-      H(48)='General instructions for setting up a temporal file:'
-      H(49)='a) Decide the period of the data (start and end dates)'
-      H(50)='   as well as frequency (1stph to 60 tsph).'
-      H(51)='b) If data is to be imported from a file with columns'
-      H(52)='   of data take a note of which columns are required.'
-      H(53)='c) Plan the names of the temporal entities you will be'
-      H(54)='   be creating as well as which zones or controls in '
-      H(55)='   the model are going to be associates with the'
-      H(56)='   entities in the temporal file.'
-      H(57)=' '
+      H(48)='edit/list - contents of the current file are presented'
+      H(49)='  and if you have permission you can alter its contents.'
+      H(50)=' '
+      H(51)='General instructions for setting up a temporal file:'
+      H(52)='a) Decide the period of the data (start and end dates)'
+      H(53)='   as well as frequency (1stph to 60 tsph).'
+      H(54)='b) If data is to be imported from a file with columns'
+      H(55)='   of data take a note of which columns are required.'
+      H(56)='c) Plan the names of the temporal entities you will be'
+      H(57)='   be creating as well as which zones or controls in '
+      H(58)='   the model are going to be associates with the'
+      H(59)='   entities in the temporal file.'
 
 C Begin with high level menu.
     3 IER=0
@@ -1475,9 +1479,8 @@ C Begin with high level menu.
      &   'are in browse mode no changes may be made to the model.','W')
           return
         endif
-        H(58)='At the current time there are no temporal definitions;'
-        H(59)='you must create them before you can use them.'
-        nbhelp=59
+        H(60)='At the current time there are no temporal definitions;'
+        nbhelp=60
         WRITE(ITEMS(1),'(A)')'a create temporal entities file'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
         WRITE(ITEMS(3),'(A)')'c not applicable '
@@ -1502,9 +1505,7 @@ C Begin with high level menu.
      &    '`own` the model in order to update it.','W')
           return
         endif
-        H(58)='An outdated file format is associated with the'
-        H(59)='model. Update this by selecting the edit option or '
-        H(60)='(dereferences the temporal definitions from your model).'
+        H(60)='An outdated file format is associated with the model.'
         nbhelp=60
         WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
         WRITE(ITEMS(2),'(A)')'b select temporal file '
@@ -1525,9 +1526,8 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.2)then
         if(browse)then
-          H(58)='You may view the temporal data associated with the'
-          H(59)='model by selecting the view entities option.'
-          nbhelp=59
+          H(60)='You may view the temporal data via view option.'
+          nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1546,9 +1546,7 @@ C Begin with high level menu.
             goto 3
           endif
         else
-          H(58)='An outdated file format is associated with the model.'
-          H(59)='Update this by selecting the edit entities or option'
-          H(60)='(derefence the temporal derfinition from your model).'
+          H(60)='An outdated file format is associated with the model.'
           nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
           WRITE(ITEMS(2),'(A)')'b select temporal file '
@@ -1570,9 +1568,8 @@ C Begin with high level menu.
         endif
       elseif(iabs(itdflg).eq.3)then
         if(browse)then
-          H(58)='You can view the temporal data associated with the'
-          H(59)='model via selecting the view entities option.'
-          nbhelp=59
+          H(60)='You can view the temporal data via view opton.'
+          nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view temporal entities'
           WRITE(ITEMS(2),'(A)')'b not applicable'
           WRITE(ITEMS(3),'(A)')'c list associations'
@@ -1591,8 +1588,8 @@ C Begin with high level menu.
             goto 3
           endif
         else
-          H(57)='Temporal definitions are available for editing/use.'
-          nbhelp=57
+          H(60)='Temporal definitions are available for editing/use.'
+          nbhelp=60
           WRITE(ITEMS(1),'(A)')'a view/edit temporal entities'
           WRITE(ITEMS(2),'(A)')'b select temporal file '
           WRITE(ITEMS(3),'(A)')'c dereference temporal file'
@@ -1685,6 +1682,7 @@ C Scan the first record of this file.
             CALL ERPFREE(IUTDF,ISTAT)
             NWPR=MTABC
             ITWPR=NWPR+1
+            ier=0
             call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
             IREC=1
             READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=103)HDR,NWPR
@@ -1713,6 +1711,7 @@ C Scan the first record of this file.
           CALL ERPFREE(IUTDF,ISTAT)
           NWPR=MTABC
           ITWPR=NWPR+1
+          ier=0
           call EFOPRAN(iutdf,LTDFA,ITWPR,1,IER)
           IREC=1
           READ(IUTDF,REC=IREC,IOSTAT=ISTAT,ERR=102)HDR,NWPR
@@ -1770,7 +1769,7 @@ C List associations.
      &           '  |entity name |type    |with   zone &     surface ')
             do 28, l=1,ITEMSTD
               WRITE(outs,29)l,DBTAG(L),DBTASK(L),DBZN(L),DBSN(L)
-   29         FORMAT(i2,1X,A12,1X,A8,5X,A16,A16)
+   29         FORMAT(i2,1X,A,1X,A,5X,A,A)
               call edisp(iuout,outs)
   28        continue
             call edisp(iuout,' ')
@@ -1826,7 +1825,7 @@ C Befor management option list current db items and then associations.
         DO 10 L=1,NITDF
           M=M+1
           WRITE(outs,14)M,TAG(L),TTYPE(L),TMENU(L)
-   14     FORMAT(i2,1X,A12,1X,A8,1X,A16)
+   14     FORMAT(i2,1X,A,1X,A,1X,A)
           call edisp(iuout,outs)
    10   CONTINUE
         if(ITEMSTD.gt.0)then
@@ -2342,6 +2341,16 @@ C Depending on the type of data, ask for associated surface
      &           'Select surface to apply vertical solar data',' ',IER)
             IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 353
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12)
+          elseif(TTYPE(it)(1:6).eq.'DBTZNM')then
+
+C Measured db T (probably associated with a zone).
+            IC=-1
+ 354        izdef=0
+            call askzone(ic,izdef,' Related zone for measured db T?',
+     &      'Related zone','-','Measured db T for which zone?',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            DBSN(ITE)='ALL' 
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            
@@ -3110,7 +3119,7 @@ C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
 C  x  x  x  x  x  x  x     x  x  x  x  x  x  x
       DIMENSION m1slots(42,2),m2slots(42,2)
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -3459,8 +3468,8 @@ C Also include list of day types.
           endif
  151    continue
         call winscl('-',0)
+        call forceflush()
       endif
-      call forceflush()
       return
 
 C Errors for debug printing.
@@ -3478,6 +3487,7 @@ C EDDGTP Sets up ground temperature profiles
       SUBROUTINE EDDGTP(modsit)
 #include "building.h"
 #include "site.h"
+      integer iCountWords
 
       common/pophelp/h(60)
       common/OUTIN/IUOUT,IUIN
@@ -3553,7 +3563,7 @@ C Ground temperature profiles....
       H(1)='Temperatures are typically at 1.5m depth.'
       CALL EASKS(HOLD,' Temperatures January-June:',' ',72,' ',
      &    'gr prof jan-jun',IER,1)
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       CALL EDISP(IUOUT,' Ground temperature profiles of ')
       CALL EDISP(IUOUT,HOLD)
       CALL EDISP(IUOUT,'will be used for January thro June.')
@@ -3569,7 +3579,7 @@ C Ground temperature profiles....
       H(1)='Temperatures are typically at 1.5m depth.'
       CALL EASKS(HOLD,' Temperatures July-December:',' ',72,' ',
      &    'gr prof jul-dec',IER,1)
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       CALL EDISP(IUOUT,' Ground temperature profiles of ')
       CALL EDISP(IUOUT,HOLD)
       CALL EDISP(IUOUT,'will be used for July thro December.')

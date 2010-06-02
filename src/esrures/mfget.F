@@ -165,7 +165,7 @@ C air flow reporting.
       integer lcname  ! length of contaminate string
 
       logical CLIST,NLIST,CNLST,CRLST,OKL,dok,CTLST
-#ifdef OSX
+#ifdef OSI
       integer iid1,iid2
 #else
       integer*8 iid1,iid2

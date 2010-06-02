@@ -310,6 +310,7 @@ C MCFDM - define the parameters for the visualization of results.
 #include "building.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -713,7 +714,7 @@ C Customise arrows.
           call EASKS(t24,
      &      'Scale factors: Shaft len; Shaft thK; Head len; Head thk',
      &                  '  ',24,' 1.0 1.0 1.0 1.0','scale factrs',IER,2)
-          call CHITMS(t24,ISC)
+          ISC = iCountWords(t24)
           if (ISC.ne.4) goto 203
           K=0
           call EGETWR(t24,K,SIL,0.,0.,'-','shaft length',IER)

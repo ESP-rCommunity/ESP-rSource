@@ -56,7 +56,7 @@ C component status, act = 'u' for user supplied points.
       CHARACTER ETEXT*124,PDESCR*60,SDESCR*44
       logical ok,dok,ask,unixok
       
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -573,7 +573,7 @@ C#include "building.h"
 
       CHARACTER PUTS*15,outs*124
       logical colok
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
 #else
       integer*8 iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
@@ -874,7 +874,7 @@ C enthmaxy enthalpy y axis maximum
       CHARACTER puts*12
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot

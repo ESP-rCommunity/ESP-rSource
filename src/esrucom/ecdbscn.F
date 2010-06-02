@@ -35,7 +35,8 @@ C        the routine.
 
       SUBROUTINE ECDBSCAN(TYPE,MODE,SSTR,VAR,SPMISC,NIT,IER)
 
-# include "building.h" 
+#include "building.h" 
+#include "esprdbfile.h"
 #include "power.h" 
       
       integer lnblnk  ! function definition
@@ -44,14 +45,14 @@ C        the routine.
       COMMON/FILEP/IFIL
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
       DIMENSION SSTR(90),VAR(MPWDAT),SPMISC(MPWDAT)
 
       CHARACTER*124 OUTSTR
       CHARACTER ECMPDBFL*72,SSTR*72,ltmp*72,h*72,DFILE*72
-      CHARACTER DIVR1*6,DIVR2*6,DIVR3*6,outs*124
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      CHARACTER DIVR1*6,DIVR2*6,DIVR3*6
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
       REAL VAR,SPMISC
       INTEGER MODE,TYPE
       LOGICAL OK,dok
@@ -76,6 +77,9 @@ C << this should be in the defaults file >>
       ENDIF
 
 C Assign field dividers based on the call type.
+      DIVR1='    '
+      DIVR2='    '
+      DIVR3='    '
       IF(TYPE.EQ.1) THEN
         write(DIVR1,'(a)')'*SPMDB'
         write(DIVR2,'(a)')'*SPECM'

@@ -27,6 +27,8 @@ C allow choice.  Chgdb flagged true if an mod made to db during session.
 C << adapted to use material arrays but still need options for editing 
 C << the other data types
 
+C << adapt to 144 char strings for LFMAT >>
+
       SUBROUTINE ELISTCMOD(iwhich,chgdb,ACTION,IER)
 #include "building.h"
 #include "esprdbfile.h"
@@ -53,7 +55,7 @@ C Parameters
       DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
       integer iwhicharray
       dimension iwhicharray(60)
-      CHARACTER ACTION*1,CLSSEL*36,ltmp*72,CLSDES*30,H*72
+      CHARACTER ACTION*1,CLSSEL*36,lltmp*144,CLSDES*30,H*72
       CHARACTER KEY*1,PDBM*64,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
 
@@ -342,14 +344,14 @@ C Remember the array index that goes with the menu position (m).
             chgdb=.true.
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
             CALL ERPFREE(IAF,ISTAT)    ! in case unit is still open
-            ltmp=' '
+            lltmp=' '
             if(origmatwasbin)then
-              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+              write(lltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
             else
-              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+              write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
             endif
-C            call delfiledosorunix(ltmp,ider)
-            CALL mkascimat(IAF,ltmp,IER)
+C            call delfiledosorunix(lltmp,ider)
+            CALL mkascimat(IAF,lltmp,IER)
             MODDB=.FALSE.
           ENDIF
           GOTO 4
@@ -406,14 +408,14 @@ C reset flag to show db is current with local arrays.
             chgdb=.true.
             call erpfree(ifmat,istat)  ! in case it is still open
             call erpfree(iaf,istat)  ! in case it is still open
-            ltmp=' '
+            lltmp=' '
             if(origmatwasbin)then
-              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+              write(lltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
             else
-              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+              write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
             endif
-C            call delfiledosorunix(ltmp,ider)
-            CALL mkascimat(IAF,ltmp,IER)
+C            call delfiledosorunix(lltmp,ider)
+            CALL mkascimat(IAF,lltmp,IER)
             MODDB=.FALSE.
           ENDIF
         ELSEIF(INO.EQ.NITMS-3)THEN
@@ -703,137 +705,6 @@ C and then resetn MODDB and chgdb if mod is true.
       goto 40
 
       END
-
-C ********** opendb (based on code from eddb.F)
-
-C Open materials constructions, multi-layer constructions and
-C optical properties databases. In the case of materials, first
-C assume it is a binary file, check its contents and if a problem
-C then scan new ascii format and if that does not work try the
-C older ascii materials file to fill the materials data arrays.
-C If sucessful the material common blocks will be filled and
-C closemat1 or closemat2 will be set.
-
-      subroutine opendb(ier)
-#include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
-      
-      integer lnblnk  ! function definition
-
-      common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical closemat1,closemat2
-      character SOPT*12,outs*124,GDESCR*36
-
-      IER=0
-
-C Scan the binary file data into materials commons and if this was
-C sucessful and matver was set to 1.1 in matformbin then we can
-C carry on using the materials common blocks for subsequent access.
-      call MATFROMBIN(IER)  ! fill materials common blocks
-      if(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-          goto 139  !  commons filled carry on.
-        else
-          MATDBOK=.TRUE.
-          matver = 0.0
-          goto 139  !  a binary file found so carry on.
-        endif
-      elseif(ier.eq.-2.or.ier.eq.-3)then
-        ier=0  ! clear error state prior to rascimat call
-        goto 1000
-      elseif(ier.eq.-1)then
-        write(outs,'(3a)') ' Materials db ',
-     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MATDBOK=.FALSE.
-        ier=0  ! clear error state before continuing
-        goto 139  !  try the other databases.
-      endif
-
-C Check for ascii versions of the materials database.
- 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
-      call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
-        ier=0
-        call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-        if(ier.ne.0)then
-          call usrmsg('No readable materials database was not found',
-     &                'or file was corrupt','W')
-          MATDBOK=.FALSE.
-        else
-          call eclose(matver,1.1,0.001,closemat1)
-          call eclose(matver,1.2,0.001,closemat2)
-          if(closemat1.or.closemat2)then
-            MATDBOK=.TRUE.
-          else
-            call usrmsg(
-     &        'No readable Materials database was found!',
-     &        ' ','W')
-            MATDBOK=.FALSE.
-          endif
-        endif
-      elseif(ier.eq.0)then
-        call eclose(matver,1.1,0.001,closemat1)
-        call eclose(matver,1.2,0.001,closemat2)
-        if(closemat1.or.closemat2)then
-          MATDBOK=.TRUE.
-        endif
-      endif
-
-        
-C Read multilayer db information into common.
- 139  CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
-      if(XST)then
-        CALL ERMLDB(0,IUOUT,IER)
-        IF(IER.eq.1)then
-          write(outs,'(3a)') 
-     &    ' Problems with materials used by Constructions db',
-     &     LFMAT(1:lnblnk(LFMAT)),'!'
-          call edisp(iuout,outs)
-          call edisp(iuout,' ')
-          MLDBOK=.FALSE.
-        ELSEIF(IER.eq.2)then
-
-          call edisp(iuout,
-     &      'There were many undefined materials in the constructions')
-          call edisp(iuout,'please check your model.')
-        else
-
-C Scan was ok so set mldbok to true.
-          MLDBOK=.TRUE.
-        endif
-      else
-
-C Could not find Constructions db at this time, report to user.
-        write(outs,'(3a)') 'Constructions db ',
-     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
-        call edisp(iuout,outs)
-        call edisp(iuout,' ')
-        MLDBOK=.FALSE.
-      endif
-
-C Open Ooptical Properties db and read into common.
-      SOPT='ALL'
-      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
-      if(ier.ne.0)then
-        call usrmsg('Optical Properties db not found or',
-     &              'there was a problem reading it!','W')
-        OPTKOK=.FALSE.
-      else
-        OPTKOK=.TRUE.
-      endif
-
-      return
-      end
 
 C********************* Zoneslist (copy of MOZDFN from resdef.F) ****
 C Display Zones list and wait for INIPIC item selected

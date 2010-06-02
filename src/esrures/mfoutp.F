@@ -110,7 +110,7 @@ C Simulator parameters.
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2
 #else
@@ -1231,7 +1231,7 @@ C to graphical result display of network flows.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext

@@ -29,6 +29,8 @@ C  ERPCDB:  Reads one element from a binary materials db.
 C  EMKAMLD: Creates an ascii composite constr db based on common MLC.
 C  EROPTDB: Returns optical properties for TMC.
 C  EDWINO:  Allow user to select a glazing type by name.
+C  module_opendb: open materials constructions, multi-layer constructions and
+C           optical properties databases (for utility applications).
 
 C ************* ERMLDB
 C Given file name and unit number, read  an ASCII composite 
@@ -53,10 +55,14 @@ C espriou.h provides currentfile.
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,layermatch
 
       logical closemat1,closemat2,close4
+      logical unixok
 
-      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
+      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124,outs248*248
       CHARACTER RSTR*124
       CHARACTER WORD*20,MLCN*12,OTF*4,OPT*12,MLCSYM*12
+      character lworking*144,fs*1
+
+      integer ier
 
 C Note that the text which follows the thickness of the layer
 C is extracted from the materials database and should not
@@ -68,20 +74,54 @@ C Keep track of how many times materials db read fails.
       closemat1=.false.  ! assume binary materils until proven otherwise
       closemat2=.false.
 
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
 C If materials database not opened it should have been opened
 C prior to this call and matdbok would be false if it
 C had been previously opened and failed.
       IF(.NOT.MATDBOK)THEN
         IER=0
-        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-        IF(ier.ne.0)THEN
-          write(outs,'(3a)') ' No materials db ',
-     &      LFMAT(1:lnblnk(LFMAT)),' found!'
-          call edisp(iuout,outs)
-          MATDBOK=.FALSE.
-          ier=2    ! set error state so calling code will look for ascii version.
-          return
-        else
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use efopseq. If in
+C the standard location then create lworking which has path
+C prepended.
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          ier=0
+          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+          if(ier.ne.0)then
+            write(outs248,'(3a)') ' No materials db ',
+     &        LFMAT(1:lnblnk(LFMAT)),' found!'
+            call edisp248(iuout,outs248,100)
+            MATDBOK=.FALSE.
+            ier=2    ! set error state so calling code will look for ascii version.
+            return
+          endif
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+
+C Debug.
+C          write(6,*) 'working materials ',lworking
+          ier=0
+          call EFOPRAN(IFMAT,lworking,40,1,IER)
+          if(ier.ne.0)then
+            write(outs,'(3a)') ' No materials db ',
+     &        lworking(1:lnblnk(lworking)),' found!'
+            call edisp(iuout,outs)
+            MATDBOK=.FALSE.
+            ier=2    ! set error state so calling code will look for ascii version.
+            return
+          endif
+        endif
+        IF(ier.eq.0)THEN
 
 C Also check to see if the file has correct info in 
           IREC=601
@@ -142,11 +182,22 @@ C is true then the material arrays could be problematic.
         return
       endif
 
-C Free unit and check if composite file exists.
+C Free unit and check if composite file exists.  Setup lworking for the
+C MLC database expanded name to be used later.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=LFMUL
+        write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
+        CALL EFOPSEQ(IFMUL,LFMUL,1,IER)
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMUL(1:lnblnk(LFMUL))
+        write(currentfile,'(a)') lworking(1:lnblnk(lworking))
+        CALL EFOPSEQ(IFMUL,lworking,1,IER)
+      endif
       IER=0
-      CALL EFOPSEQ(IFMUL,LFMUL,1,IER)
+
       IF(IER.NE.0)RETURN
-      write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
 
 C Read the number of items in the multi-layer database, followed by
 C the number of layers & construction name.
@@ -702,7 +753,7 @@ C     &      PNAM(1:lnam),' ',matname(imt)(1:lnblnk(matname(imt)))
 C If we got here there was no match. The value of matarrayindex remains at zero.
       lnam=lnblnk(PNAM)
       write(outs,*) 
-     &  'When scanning materials db looking for legacy index',imt
+     &  'When scanning materials db looking for legacy index',ileghope
       call edisp(iuout,outs)
       write(outs,*) 'no match found for material named ',PNAM(1:lnam)
       call edisp(iuout,outs)
@@ -1231,15 +1282,26 @@ C Parameters
 
       DIMENSION PNAM(ME)
       CHARACTER NAM*72,PNAM*72
+      character lworking*144,fs*1
+      integer lndbp   ! for length of standard database path
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Assume that data on composites is in common MLC.
       IF(.NOT.MLDBOK)THEN
-        CALL USRMSG(' no information to put in ',LFMUL,'W')
+        CALL LUSRMSG(' no information to put in ',LFMUL,'W')
         IER=1
         RETURN
       ENDIF
       IF(NMLC.GT.MMLC)THEN
-        CALL USRMSG(' too many items to put in ',LFMUL,'W')
+        CALL LUSRMSG(' too many items to put in ',LFMUL,'W')
         IER=1
         RETURN
       ENDIF
@@ -1257,7 +1319,14 @@ C Check version of material database.
       endif
 
 C The ASCII file will be overwritten if it exists.
-      CALL EFOPSEQ(IFMUL,LFMUL,4,IER)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        CALL EFOPSEQ(IFMUL,LFMUL,4,IER)
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMUL(1:lnblnk(LFMUL))
+        CALL EFOPSEQ(IFMUL,lworking,4,IER)
+      endif
       
 C Write out a file header.
       WRITE(IFMUL,30)LFMUL(1:lnblnk(LFMUL)),LFMAT(1:lnblnk(LFMAT))
@@ -1636,5 +1705,102 @@ C Strip out the initial part of the string.
 
       RETURN
       END
+
+
+C **** version of opendb for ESP-r modules that can assume consistent model ******
+
+C module_opendb: open materials constructions, multi-layer constructions and
+C optical properties databases. In the case of materials, first
+C assume it is a binary file, check its contents and if a problem
+C then scan new ascii format and if that does not work try the
+C older ascii materials file to fill the materials data arrays.
+C If sucessful the material common blocks will be filled and
+C closemat1 or closemat2 will be set.
+
+      subroutine module_opendb(ier)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+      
+      integer lnblnk  ! function definition
+
+      common/OUTIN/IUOUT,IUIN
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
+      character SOPT*12,outs248*248,GDESCR*36
+      character lworking*144,fs*1   ! for use with expanded paths
+      integer lndbp   ! for length of standard database path
+      logical unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Scan the binary file data into materials commons and if this was
+C sucessful and matver was set to 1.1 in matformbin then we can
+C carry on using the materials common blocks for subsequent access.
+      call scananymat(ier)
+      call eclose(matver,1.1,0.001,closemat1)
+      call eclose(matver,1.2,0.001,closemat2)
+        
+C Read multilayer db information into common after checking
+C that the file exists.
+      CALL ERPFREE(IFMUL,ISTAT)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=lfmul  ! use as is
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+      endif
+      call FINDFIL(lworking,XST)
+      if(XST)then
+        CALL ERMLDB(0,IUOUT,IER)
+        IF(IER.eq.1)then
+          write(outs248,'(3a)') 
+     &    ' Problems with materials used by Constructions db',
+     &     LFMAT(1:lnblnk(LFMAT)),'!'
+          call edisp248(iuout,outs248,100)
+          call edisp(iuout,' ')
+          MLDBOK=.FALSE.
+        ELSEIF(IER.eq.2)then
+
+          call edisp(iuout,
+     &      'There were many undefined materials in the constructions')
+          call edisp(iuout,'please check your model.')
+        else
+
+C Scan was ok so set mldbok to true.
+          MLDBOK=.TRUE.
+        endif
+      else
+
+C Could not find Constructions db at this time, report to user.
+        write(outs248,'(3a)') 'Constructions db ',
+     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
+        call edisp248(iuout,outs248,100)
+        call edisp(iuout,' ')
+        MLDBOK=.FALSE.
+      endif
+
+C Open Ooptical Properties db and read into common.
+      SOPT='ALL'
+      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
+      if(ier.ne.0)then
+        call usrmsg('Optical Properties db not found or',
+     &              'there was a problem reading it!','W')
+        OPTKOK=.FALSE.
+      else
+        OPTKOK=.TRUE.
+      endif
+
+      return
+      end
 
 

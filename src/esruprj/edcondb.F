@@ -58,11 +58,21 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
       integer iwhicharray   ! for each item in menu point back to array
       dimension iwhicharray(60)
-      character ACTION*1,CLSSEL*36,ltmp*72,CLSDES*32,H*72
+      character ACTION*1,CLSSEL*36,lltmp*144,CLSDES*32,H*72
       CHARACTER KEY*1,PDBM*68,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
+      character lworking*144,fs*1
       logical closemat1,closemat2
       logical mod   ! to signal whether an item has been altered.
+      logical unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Assume no changes to db amd user has not entered password.
       MODDB=.FALSE.
@@ -151,8 +161,13 @@ C If user canceled the listing the reset unit to iuout and loop back.
         elseif(irpt.eq.3)then
           goto 40
         endif
-        call edisp(itu,'In the materials database: ')
-        call edisp(itu, LFMAT)
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          call edisp(itu,'In the materials database: ')
+          call edisp(itu, LFMAT)
+        elseif(ipathmat.eq.2)then
+          call edisp(itu,'In the standard materials database: ')
+          call edisp(itu, LFMAT)
+        endif
         call edisp(itu,' ')
         do 42 list=1,INPIC
           IC=ICLSSEL(list)
@@ -355,19 +370,42 @@ C at the end.
             chgdb=.true.   ! pass back signal to update
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
             CALL ERPFREE(IAF,ISTAT)    ! in case unit is still open
-            ltmp=' '
-            if(origmatwasbin)then
-              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-            else
-              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use lltmp directly. If in
+C the standard location then create lworking which has path
+C prepended.
+            if(ipathmat.eq.0.or.ipathmat.eq.1)then
+              lltmp=' '
+              if(origmatwasbin)then
+                write(lltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+              else
+                write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+              endif
+C              call delfiledosorunix(lltmp,ider)
+              CALL mkascimat(IAF,lltmp,IER)
+            elseif(ipathmat.eq.2)then
+              lndbp=lnblnk(standarddbpath)
+              if(origmatwasbin)then
+                write(lworking,'(4a)') standarddbpath(1:lndbp),fs,
+     &            LFMAT(1:lnblnk(LFMAT)),'.a'
+              else
+                write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &            LFMAT(1:lnblnk(LFMAT))
+              endif
+C Debug.
+              write(6,*) 'working materials ',lworking
+              CALL mkascimat(IAF,lworking,IER)
             endif
-C            call delfiledosorunix(ltmp,ider)
-            CALL mkascimat(IAF,ltmp,IER)
 
 C Having read in binary and saved to ASCII the latter is now the model
 C material database.
             if(origmatwasbin)then
-              LFMAT=ltmp
+              if(ipathmat.eq.0.or.ipathmat.eq.1)then
+                write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
+              elseif(ipathmat.eq.2)then
+                write(LFMAT,'(a)') lworking(1:lnblnk(lworking))
+              endif
               origmatwasbin=.false.
             endif
             MODDB=.FALSE.
@@ -416,19 +454,31 @@ C a new file via mkascimat.
             chgdb=.true.
             call erpfree(ifmat,istat)  ! in case it is still open
             call erpfree(iaf,istat)  ! in case it is still open
-            ltmp=' '
-            if(origmatwasbin)then
-              write(ltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-            else
-              write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+
+            lltmp=' '
+            if(ipathmat.eq.0.or.ipathmat.eq.1)then
+              if(origmatwasbin)then
+                write(lltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+              else
+                write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+              endif
+C              call delfiledosorunix(lltmp,ider)
+              CALL mkascimat(IAF,lltmp,IER)
+            elseif(ipathmat.eq.2)then
+              lndbp=lnblnk(standarddbpath)
+              write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &          LFMAT(1:lnblnk(LFMAT))
+              CALL mkascimat(IAF,lworking,IER)
             endif
-C            call delfiledosorunix(ltmp,ider)
-            CALL mkascimat(IAF,ltmp,IER)
 
 C Having read in binary and saved to ASCII the latter is now the model
 C material database.
             if(origmatwasbin)then
-              LFMAT=ltmp
+              if(ipathmat.eq.0.or.ipathmat.eq.1)then
+                write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
+              elseif(ipathmat.eq.2)then
+                write(LFMAT,'(a)') lworking(1:lnblnk(lworking))
+              endif
               origmatwasbin=.false.
             endif
 
@@ -1317,15 +1367,25 @@ C If this parameter is changed also change it in subroutine GVALUE
 
       LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO
       logical moddb,chgdb,layermatch,closemat1,closemat2
+      logical unixok
 
       CHARACTER H*72,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*144,tg*1,delim*1,outs*124
       character NAM*72,NAM99*72,LAYD*124
+      character lworking*144,fs*1
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
       REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       IER=0
       ISEL=0
@@ -1482,8 +1542,18 @@ C If user canceled the listing the reset unit to iuout and loop back.
             goto 3
           endif
         endif
-        call edisp(itu,'In the MLC database: ')
-        call edisp(itu, LFMUL)
+
+C Based on ipathmul generate text string.
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          call edisp(itu,'In the MLC database: ')
+          lworking=LFMUL
+        elseif(ipathmul.eq.2)then
+          call edisp(itu,'In the standard MLC database: ')
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMUL(1:lnblnk(LFMUL))
+        endif
+        call edisp(itu,lworking)
         call edisp(itu,' ')
         do 45 IM=1,NMLC
           if(irpt.eq.1)then
@@ -1972,7 +2042,8 @@ C Material properties.
       logical chdb,showother,layermatch,layermatcha,modgeo
       logical closemat1,closemat2
 
-      DIMENSION MLED(21),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
+C Note: size of MLED supports a dozen layers in a construction.
+      DIMENSION MLED(26),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LTMP
       CHARACTER NAM*72,H*72,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,LAYD*124
@@ -2088,7 +2159,7 @@ C And if matarrayindex is zero then reset dbcon and NAM.
 C If g or h air gap and version 1.2 then assign DRAIR
           if(matarrayindex.eq.0)then
             continue
-	  elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+          elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &       matopaq(matarrayindex)(1:1).eq.'h')then
             if(closemat2)then
               DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
@@ -2359,7 +2430,15 @@ C Check is layers no longer match.
             call edisp(iuout,'This will be reconciled when exiting.')
           endif
         ELSEIF(IW.EQ.2.or.IW.eq.3)THEN
+
+C Although the data structure can support ME layers the interface is
+C currently limited to 12 layers.
           IF(LAYERS(IFOC).LT.ME)THEN
+            if(LAYERS(IFOC).GE.12)then
+              call edisp(iuout,
+     &          'Sorry, can only edit up to 12 layers.')
+              goto 3
+            endif
             if(iw.eq.3)then
 
 C If inserting internal layer, shift inner layers before editing.
@@ -2428,13 +2507,13 @@ C Take the legacy index and assign it to this layer.
 C Make up LAYDESC and PNAM as combination of matnam and matdoc based on
 C the newly selected material. This is necessary so that other
 C code can recover the details of a -99 item.
-	    if(matarrayindex.gt.0)then
+            if(matarrayindex.gt.0)then
               lnam=lnblnk(matname(matarrayindex))
               lfordoc = 72 - (lnam +4)    ! space left for doc
               write(LAYDESC(IFOC,ILN),'(3a)') 
      &          matname(matarrayindex)(1:lnam),' : ',
      &          matdoc(matarrayindex)(1:lfordoc)
-              write(PNAM(IFOC),'(3a)')
+              write(PNAM(ILN),'(3a)')
      &          matname(matarrayindex)(1:lnam),' : ',
      &          matdoc(matarrayindex)(1:lfordoc)
               IPRMAT(IFOC,ILN)=matarrayindex  ! update array index for this layer as well
@@ -2483,9 +2562,9 @@ C If a standard air layer then ask for gap resistance.
 
 C Recover the stipulated air gap resistance if we have a GAP
 C type of [g] or [h].
-	      if(matarrayindex.gt.0)then
+              if(matarrayindex.gt.0)then
                 guessthick=matdbthick(matarrayindex)
-	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+                if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
                   if(closemat2)then
                     DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
@@ -2501,7 +2580,7 @@ C Not an air gap so set DRAIR to something and set default thickness.
               DRAIR(IFOC,ILN,1)=0.17
               DRAIR(IFOC,ILN,2)=0.17
               DRAIR(IFOC,ILN,3)=0.17
-	      if(matarrayindex.gt.0)then
+              if(matarrayindex.gt.0)then
                 guessthick=matdbthick(matarrayindex)
               endif
             ENDIF
@@ -2840,7 +2919,7 @@ C menu display.
           write(LAYDESC(IFOC,ILED-8),'(3a)') 
      &      matname(matarrayindex)(1:lnam),' : ',
      &      matdoc(matarrayindex)(1:lfordoc)
-          write(PNAM(IFOC),'(3a)')
+          write(PNAM(ILED-8),'(3a)')
      &      matname(matarrayindex)(1:lnam),' : ',
      &      matdoc(matarrayindex)(1:lfordoc)
           IPRMAT(IFOC,ILED-8)=matarrayindex ! update array index for this layer
@@ -2892,7 +2971,7 @@ C Find the typical thickness and if [g] or [h] gap resistance.
             write(outs,'(a,f6.1,a)') 
      &        'Material selected has a thickness of ',guessthick,'mm.'
             call edisp(iuout,outs)
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
@@ -2912,7 +2991,7 @@ C material is a [g] or [h] and might have air gap values.
           write(outs,'(a,f6.1,a)') 
      &      'Material selected has a thickness of ',guessthick,'mm.'
           call edisp(iuout,outs)
-	  if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &       matopaq(matarrayindex)(1:1).eq.'h')then
             if(closemat2)then
               DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
@@ -2954,14 +3033,37 @@ C convert pass back ier as -2.
       real val
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124
+      character lworking*144,fs*1
+      logical unixok
 
 C Parameters
       integer ifa  ! file unit
-      character LASCI*72 ! ascii file to scan
-       integer ier ! error state
+      character LASCI*144 ! ascii file to scan
+      integer ier ! error state
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C The binary file will be overwritten.
-      call EFOPRAN(IFMAT,LFMAT,40,4,IER)
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use eforan. If in
+C the standard location then create lworking which has path
+C prepended.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        ier=0
+        call EFOPRAN(IFMAT,LFMAT,40,4,IER)
+      elseif(ipathmat.eq.2)then
+        ier=0
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+        call EFOPRAN(IFMAT,lworking,40,4,IER)
+      endif
       if(ier.ne.0)return
 
 C Open the ASCII file for reading.
@@ -3039,24 +3141,52 @@ C File errors.
 
 C ************* MKAPRC 
 C MKAPRC: Creates an ascii materials db based on the
-C current contents of binary file.
+C current contents of binary materials db.
       SUBROUTINE MKAPRC(LASCI,IFA,IER)
 #include "esprdbfile.h"
       integer lnblnk  ! function definition
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       integer icln
+      integer ier
       real val
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72
+      character lworking*144,fs*1
+      logical unixok
 
 C Parameters
       integer IFA  ! file unit
-      character LASCI*72  ! file name
+      character LASCI*144  ! file name
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Open the binary materials database (in clase it was closed elsewhere).
+
+C Check the value of whichdbpath variable to see what to do with
+C this file. If local or absolute path then use efopseq. If in
+C the standard location then create lworking which has path
+C prepended.
       CALL ERPFREE(IFMAT,ISTAT)
-      call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        ier=0
+        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+      elseif(ipathmat.eq.2)then
+        ier=0
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+
+C Debug.
+        write(6,*) 'working materials ',lworking
+        call EFOPRAN(IFMAT,lworking,40,1,IER)
+      endif
       if(ier.ne.0)return
       MATDBOK=.TRUE.
 

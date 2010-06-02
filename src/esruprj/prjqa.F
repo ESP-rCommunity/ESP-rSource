@@ -50,6 +50,7 @@ C espriou.h provides currentfile.
 #include "sbem.h"
 #include "ipvdata.h"
 #include "seasons.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -116,9 +117,6 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-C Demands notes and file name.
-      COMMON/BL1/dmdsdesc,bdmds
-
 C Project log file.
       common/LOG/LPRJLG
 
@@ -182,7 +180,6 @@ C Remember if each zone is fully attributed.
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16
-      CHARACTER dmdsdesc*248,bdmds*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
@@ -930,13 +927,16 @@ C Print address for building and client. If there is a UK NCM
 C description then list that out instead.
         if(siteinfo.eq.2)then
           if(ISBEM.ge.1)then
-
+            if(LASBEM(1:4).eq.'UNKN')then
+              continue
+            else
 C Re-read sbem db and then the descriptive file.
-            call sbempr(ier)
-            call rsbem
-            call lstncm('p',itu)
-            call edisp(itu,'  ')          
-            call lstncm('e',itu)
+              call sbempr(ier)
+              call rsbem
+              call lstncm('p',itu)
+              call edisp(itu,'  ')          
+              call lstncm('e',itu)
+            endif
             call edisp(itu,' ')
             write(outs,'(2a)')'Simulationist name: ',certifname 
             call edisp(itu,outs)     
@@ -949,16 +949,20 @@ C Re-read sbem db and then the descriptive file.
             write(outs,'(2a)')'Simulationist postcode: ',certPC  
             call edisp(itu,outs)
             call edisp(itu,'  ')          
-            call lstncm('b',itu)
-            call edisp(itu,'  ')          
-            call lstncm('s',itu)
-            call edisp(itu,'  ')          
-            call lstncm('d',itu)
-            call edisp(itu,'  ')          
-            call lstncm('o',itu)
-            call edisp(itu,'  ')          
-            call lstncm('l',itu)
-            call edisp(itu,'  ') 
+            if(LASBEM(1:4).eq.'UNKN')then
+              continue
+            else
+              call lstncm('b',itu)
+              call edisp(itu,'  ')          
+              call lstncm('s',itu)
+              call edisp(itu,'  ')          
+              call lstncm('d',itu)
+              call edisp(itu,'  ')          
+              call lstncm('o',itu)
+              call edisp(itu,'  ')          
+              call lstncm('l',itu)
+              call edisp(itu,'  ')
+            endif 
           else
             write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
             call edisp(itu,outs)
@@ -1214,24 +1218,65 @@ C Databases associated with the model.
       if(databaseinfo.gt.0)then
         call edisp(itu,' ')
         call edisp(itu,'Databases associated with the model: ')
-        WRITE(outs248,'(2A)')' pressure distributions : ',
-     &    LAPRES(1:lnblnk(LAPRES))
-        call edisp248(itu,outs248,100)
-        WRITE(outs,'(2A)')' materials              : ',
-     &    LFMAT(1:lnblnk(LFMAT))
-        call edisp(itu,outs)
-        WRITE(outs,'(2A)')' constructions          : ',
-     &    LFMUL(1:lnblnk(LFMUL))
-        call edisp(itu,outs)
-        WRITE(outs,'(2A)')' plant components       : ',
-     &    LPCDB(1:lnblnk(LPCDB))
-        call edisp(itu,outs)
-        WRITE(outs,'(2A)')' event profiles         : ',
-     &    LPRFDB(1:lnblnk(LPRFDB))
-        call edisp(itu,outs)
-        WRITE(outs248,'(2A)')' optical properties     : ',
-     &    LOPTDB(1:lnblnk(LOPTDB))
-        call edisp248(itu,outs248,100)   
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
+          WRITE(outs248,'(2A)')' pressure distributions : ',
+     &      LAPRES(1:lnblnk(LAPRES))
+          call edisp248(itu,outs248,100)
+        elseif(ipathapres.eq.2)then
+          WRITE(outs248,'(2A)')' standard pressure distr: ',
+     &      LAPRES(1:lnblnk(LAPRES))
+          call edisp248(itu,outs248,100)
+        endif
+
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          WRITE(outs248,'(2A)')' materials              : ',
+     &      LFMAT(1:lnblnk(LFMAT))
+          call edisp248(itu,outs248,100)
+        elseif(ipathmat.eq.2)then
+          WRITE(outs248,'(2A)')' standard materials     : ',
+     &      LFMAT(1:lnblnk(LFMAT))
+          call edisp248(itu,outs248,100)
+        endif
+
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          WRITE(outs248,'(2A)')' constructions          : ',
+     &      LFMUL(1:lnblnk(LFMUL))
+          call edisp248(itu,outs,100)
+        elseif(ipathmul.eq.2)then
+          WRITE(outs248,'(2A)')' standard constructions : ',
+     &      LFMUL(1:lnblnk(LFMUL))
+          call edisp248(itu,outs,100)
+        endif
+
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          WRITE(outs248,'(2A)')' plant components       : ',
+     &      LPCDB(1:lnblnk(LPCDB))
+          call edisp248(itu,outs248,100)
+        elseif(ipathpcdb.eq.2)then
+          WRITE(outs248,'(2A)')' standard plant comp    : ',
+     &      LPCDB(1:lnblnk(LPCDB))
+          call edisp248(itu,outs248,100)
+        endif
+
+        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+          WRITE(outs248,'(2A)')' event profiles         : ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+          call edisp248(itu,outs248,100)
+        elseif(ipathprodb.eq.2)then
+          WRITE(outs248,'(2A)')' standard event profiles: ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+          call edisp248(itu,outs248,100)
+        endif
+
+        if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+          WRITE(outs248,'(2A)')' optical properties     : ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+          call edisp248(itu,outs248,100)   
+        elseif(ipathoptdb.eq.2)then
+          WRITE(outs248,'(2A)')' standard optical prop  : ',
+     &      LOPTDB(1:lnblnk(LOPTDB))
+          call edisp248(itu,outs248,100)
+        endif 
       endif
 
 C Control in the model

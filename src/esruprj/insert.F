@@ -51,6 +51,7 @@ C << what about including common zndata in this manipulation? >>
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -105,7 +106,7 @@ C << what about including common zndata in this manipulation? >>
       character HOLD*72,hold64*64,holds*36,t248*248
       character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
       integer*8 iix,iiy,ixd,iyd
@@ -361,6 +362,10 @@ C G5 contents into the surface below. The G6 commons were done already.
    65   NSUR=NSUR-1
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
+
+C Until we know whether the deleted surface was in the initial
+C description it is difficult to know whether to update the value
+C of nbwalls() as well. 
 
 C If the deleted surface was a child then it should also be possible
 C to remove the vertices of the child from the parent surface. Loop
@@ -882,6 +887,9 @@ C add a new vertex to the end of the zone list.
               X(NTV)=X1(ix)
               Y(NTV)=Y1(ix)
               Z(NTV)=Z1(ix)
+              VCOORD(ICOMP,ntv,1)=X1(ix)
+              VCOORD(ICOMP,ntv,2)=Y1(ix)
+              VCOORD(ICOMP,ntv,3)=Z1(ix)
               XMN=AMIN1(XMN,X(NTV))
               YMN=AMIN1(YMN,Y(NTV))
               ZMN=AMIN1(ZMN,Z(NTV))
@@ -1083,7 +1091,7 @@ C the individual vertex numbers from the list.
           CALL EASKS(HOLD,
      &     ' Give vertices (order anticlockwise viewed from outside)',
      &     '  ',72,' ','associated vertices',IER,5)
-          CALL CHITMS(HOLD,NV)
+          NV = iCountWords(HOLD)
           K=0
           DO 94 J=1,NV
             CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)
@@ -1102,7 +1110,7 @@ C present editing of vertices with the option for mouse.
               WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
-              CALL CHITMS(t248,NV)
+              NV = iCountWords(t248)
               K=0
               DO 943 J=1,NV
                 CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IER)
@@ -1154,7 +1162,7 @@ C User has specified clicking from mouse so just do that.
               WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
-              CALL CHITMS(t248,NV)
+              NV = iCountWords(t248)
               K=0
               DO 945 J=1,NV
                 CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IER)
@@ -1170,7 +1178,7 @@ C string. Fill the string first with spaces (MSYS should like this approach
             write(t248,'(4a)') hold64,hold64,hold64,'                 '
             CALL EASKS248(t248,'Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,8)
-            CALL CHITMS(t248,NV)
+            NV = iCountWords(t248)
             K=0
             DO 944 J=1,NV
               CALL EGETWI(t248,K,JV,1,NTV,'W','vertex list',IER)
@@ -1261,7 +1269,7 @@ C   for new position, IER is -3 user aborted action.
       DIMENSION  SBBOX(3,2)
       LOGICAL MODIFY,MODLEN,MODBND
       logical newgeo  ! to use for testing if new/old geometry file.
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -1438,6 +1446,9 @@ C its future position via `one connection past the current last
         Y(NTV+J)=YYW(J)
         Z(NTV+J)=ZZW(J)
         JVN(NSUR,J)=NTV+J
+        VCOORD(ICOMP,ntv+J,1)=XXW(J)
+        VCOORD(ICOMP,ntv+J,2)=YYW(J)
+        VCOORD(ICOMP,ntv+J,3)=ZZW(J)
   251 CONTINUE
 
 C Remember the reverse order of vertices for matching surface.
@@ -1501,6 +1512,9 @@ C Update the data for the matching surface.
           Y(NTV+J)=YYM(J)
           Z(NTV+J)=ZZM(J)
           JVN(NSUR,J)=JVNM(J)  ! user the reversed order list.
+          VCOORD(ICOMP,ntv+J,1)=XXM(J)
+          VCOORD(ICOMP,ntv+J,2)=YYM(J)
+          VCOORD(ICOMP,ntv+J,3)=ZZM(J)
   252   CONTINUE
 
 C If SN is less than 12 characters add an _
@@ -1570,7 +1584,7 @@ C   pass back in ier.
       logical ok,dok,matchver
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
-      CHARACTER H*72,OUTSTR*124,ACTION*1,HOLD*32,outs*124
+      CHARACTER H*72,OUTSTR*124,ACTION*1,HOLD*36,outs*124
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       integer iier  ! local variable for use in can't delete
@@ -1648,12 +1662,12 @@ C vertex.
           if(I.eq.1)then
             HOLD = ' 0.000  0.000  0.000    '
           else
-            WRITE(HOLD,'(3f9.3,a)')X1(I-1),Y1(I-1),Z1(I-1),'  '
+            WRITE(HOLD,'(3f11.5,a)')X1(I-1),Y1(I-1),Z1(I-1),'  '
           endif
           H(1)='The vertex coordinates should be in metres. '
           H(2)='It is not advisable for Z to be negative.'
           CALL EASKS(HOLD,' Vertex  X  Y  Z (in metres): ',
-     &     '  ',32,' 0. 0. 0. ','vertex coord',IER,2)
+     &     '  ',36,' 0. 0. 0. ','vertex coord',IER,2)
           K=0
           CALL EGETWR(HOLD,K,X1(I),-999.9,999.9,'W','Xcoord',IER)
           CALL EGETWR(HOLD,K,Y1(I),-999.9,999.9,'W','Ycoord',IER)
@@ -1676,7 +1690,7 @@ C otherwise continue.
   144       continue
 
 C If an existing vertex is close then skip to next, otherwise
-C add a new vertex to the end of the zone list.
+C add a new vertex to the end of the zone list and update vcoord.
   145       if(found)then
               continue
             else
@@ -1685,6 +1699,9 @@ C add a new vertex to the end of the zone list.
               X(NTV)=X1(ix)
               Y(NTV)=Y1(ix)
               Z(NTV)=Z1(ix)
+              VCOORD(ICOMP,ntv,1)=X1(ix)
+              VCOORD(ICOMP,ntv,2)=Y1(ix)
+              VCOORD(ICOMP,ntv,3)=Z1(ix)
 
 C For a unique vertex also test to see if it is close (+-0.003m) to
 C one of the existing lines. Also check the last edge in the surface.
@@ -1762,14 +1779,14 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
 C Copy vertex index and then increment NTV and present vertex coords 
 C then parse into new vertex.
         call tstamp('>','PRJ: copy vertex')
-        WRITE(HOLD,'(3f9.3,a)')X(NUM),Y(NUM),Z(NUM),'  '
+        WRITE(HOLD,'(3f11.5,a)')X(NUM),Y(NUM),Z(NUM),'  '
         H(1)='The vertex coordinates should be in metres. '
         H(2)='Exact duplicate vertices should be avoided.'
         H(3)='It is not advisable for Z to be negative.'
         write(outs,'(a,i2,a,i2,a)')'Copied Vertex (',NUM,
      &    ' old; current index ',NTV+1,')'
         CALL EASKS(HOLD,outs,' X  Y  Z (in metres): ',
-     &    32,' 0. 0. 0. ','vertex coord',IER,3)
+     &    36,' 0. 0. 0. ','vertex coord',IER,3)
         K=0
         CALL EGETWR(HOLD,K,X1(1),-999.9,999.9,'W','X coord',IER)
         CALL EGETWR(HOLD,K,Y1(1),-999.9,999.9,'W','Y coord',IER)
@@ -1791,7 +1808,7 @@ C a repeat of an existing vertex, otherwise continue.
   244     continue
 
 C If an existing vertex is close then skip to next, otherwise
-C add a new vertex to the end of the zone list.
+C add a new vertex to the end of the zone list and update vcoord.
   245     if(found)then
             continue
           else
@@ -1800,6 +1817,9 @@ C add a new vertex to the end of the zone list.
             X(NTV)=X1(1)
             Y(NTV)=Y1(1)
             Z(NTV)=Z1(1)
+            VCOORD(ICOMP,ntv,1)=X1(1)
+            VCOORD(ICOMP,ntv,2)=Y1(1)
+            VCOORD(ICOMP,ntv,3)=Z1(1)
 
 C For a unique vertex also test to see if it is close (+-0.003m) to
 C one of the existing lines. Also check the last edge in the surface.
@@ -1911,7 +1931,7 @@ C << could this be done with G6 and with ??
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
       logical bounded,hilight
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
 #else
       integer*8 iupdown,isym    ! passed to etplot
@@ -2096,7 +2116,7 @@ C door width and height.
       character SSPARENT*12,T14*14
       character guesstype*24  ! for context of surface addition
 
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
 #else
@@ -2279,7 +2299,7 @@ C edited to a thick line if currently in graphics mode.
         write(hold,'(4f8.3,a)') XO1,ZO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Z offset, Width, Height: (see help)',
-     &    ' ',36,' 0.1 0.1 1.0 1.0','Xoff Zoff width height',IER,9)
+     &    ' ',36,' 0.2 0.8 1.0 1.0','Xoff Zoff width height',IER,9)
         K=0
         CALL EGETWR(HOLD,K,XO1,0.0,99.,'W','X offset',IER)
         CALL EGETWR(HOLD,K,ZO1,0.0,99.,'W','Z offset',IER)
@@ -2412,6 +2432,9 @@ C surface in the zone`. ICONO is the connection for the parent surface.
         Y(NTV+J)=YA(J)
         Z(NTV+J)=ZA(J)
         JVN(NSUR,J)=NTV+J
+        VCOORD(ICOMP,ntv+J,1)=XA(J)
+        VCOORD(ICOMP,ntv+J,2)=YA(J)
+        VCOORD(ICOMP,ntv+J,3)=ZA(J)
   151 CONTINUE
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then
         write(SN,'(a)') rsname(1:12)

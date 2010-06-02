@@ -1,0 +1,25 @@
+Notes on pattern files *_kor.opr
+
+These files are based on data from Korean government supported research 
+which was entitled 'The Study of the Development of Energy Performance 
+Assessment Method and Policy in Buildings', published in Jan. 2007.
+
+In the research, supervising institution was KICT (Korea Institute of 
+Construction Technology), and entrusted institution was KIER (Korean 
+Institute of Energy Research), and etc. Research code is 2005-E-BD04-P-02
+
+The infiltration data was from minimum ambient air flow which is needed 
+from hygienic perspective. (15 m3/(h*m2)). And in order to use ACH unit, 
+we assume the height of the room as 2.3 m and that brings 6.5 ACH.
+
+In some of the pattern files casual gains in the operation are the sum 
+of casual gain of occupants and that of equipment. That's way ratio of 
+convective is 80%. And they were put as casual gain of equipment in 
+esp-r since casual gain of occupants uses W unit, not W/m2.
+So we divide daily casual gain occurance (Wh/(m2*d)) by running time 
+(e.g. 24 hrs a day). 9.7 is correct.
+ 
+Some room types also assume that if there is no occupancy that there is
+no required amount of ambient air flow and most of the time there is 
+no heat source,  they may set casual gain and infiltration as 0.
+ 

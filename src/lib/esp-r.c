@@ -364,7 +364,7 @@ void esru_ask_disp ( void)
    char buf[5];
    long int initialit;
    initialit = 0;
-   strcpy(buf,cappl);	/* copy global text variable for current application to buf */
+   strncpy(buf,cappl,4);	/* copy global text variable for current application to buf */
    askabout_(buf,&initialit);
 }
 

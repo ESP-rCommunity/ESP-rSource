@@ -78,6 +78,7 @@ C Name of current application
       character mfsdsc*68,ltpcmp*60 
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer ier
 
 C Initialise output device, assume minimal trace, and a smallish
 C display.  If passed zero size and offsets use default, if size
@@ -242,6 +243,7 @@ C Find the path and local file name, if exists open otherwise fill.
 
 C Existing file, so check header.
 C IRECLN= from plantdb.h file.
+        ier=0
         call EFOPRAN(IFIL,LTMP,IRECLN,1,IER)
         if(ier.ne.0)goto 100
 
@@ -281,6 +283,7 @@ C Recover item code numbers.
       else
 
 C New file.
+        ier=0
         call EFOPRAN(IFIL,LTMP,IRECLN,3,IER)
         CALL PCUPDT (0)
         imod=1

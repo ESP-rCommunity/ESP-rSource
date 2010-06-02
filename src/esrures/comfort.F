@@ -75,7 +75,7 @@ C Pre calculated data (filtered).
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
 
-#ifdef OSX
+#ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
       integer*8 ICPMOD     ! passed from tchild
@@ -775,7 +775,9 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................

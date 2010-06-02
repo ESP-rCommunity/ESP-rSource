@@ -250,6 +250,11 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "   $ ./Install -d ~/esru"
   echo " "
+  echo " For MSWindows environment using the following "
+  echo " command ensures databases are also copied"
+  echo " "
+  echo "   $ ./Install -d c:/Esru "
+  echo " "
   echo " It is also possible to build esp-r executables "
   echo " individually, by specifying the name(s) of the "
   echo " desired program(s), eg:"
@@ -380,7 +385,7 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
    else
     # Add XML include files to include paths
     xml_libs_found="yes"
-    LIBXML2_INCLUDE="-I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/local/include/xslt"
+    LIBXML2_INCLUDE="-I/usr/include -I/usr/include/libxml2 -I/usr/local/include/libxml2 -I/usr/include/libxslt -I/local/include/libxslt"
 
     # xml support may optionally include support for xslt & exslt. Check
     # that libraries are available
@@ -720,9 +725,6 @@ else
   fi 
 fi
 
-
-
-
 #---------------------------------------------------------
 # Prepend approprate grapics library to target list
 #---------------------------------------------------------- 
@@ -1015,7 +1017,7 @@ case $platform in
    sun)        fDefType="-DSUN";;
    linux)      fDefType="-DLIN";;
    cygwin)     fDefType="-DCYGW";;
-   mac)        fDefType="-DOSX -DLIN";;
+   mac)        fDefType="-DOSX -DOSI -DLIN";;
    mingw)      fDefType="-DMINGW";;
 esac
 
@@ -1522,6 +1524,23 @@ echo " Installing ESP-r system. This may take some time."
   echo "C      The following fortran variable assignments are "           >> ${SRCdir}/include/build_info.h
   echo "C      digested by procedure ESPrVersion() in esrucom/Startup.F"  >> ${SRCdir}/include/build_info.h
   echo "       "                                                          >> ${SRCdir}/include/build_info.h
+  echo "       logical  bRelease,bVersioned,bModified"                    >> ${SRCdir}/include/build_info.h
+  echo "       character cBuilder*32       ! User who compiled system"    >> ${SRCdir}/include/build_info.h
+  echo "       character cArchitecture*32  ! Machine archictecture"       >> ${SRCdir}/include/build_info.h
+  echo "       character cOperSystem*32    ! Operating system"            >> ${SRCdir}/include/build_info.h
+  echo "       character cOSversion*32     ! OS flavour/version"          >> ${SRCdir}/include/build_info.h
+  echo "       character cHost*256         ! Host name"                   >> ${SRCdir}/include/build_info.h
+  echo "       character cRelease_Num*8    ! Release version"             >> ${SRCdir}/include/build_info.h
+  echo "       character cSource*32        ! Repository version"          >> ${SRCdir}/include/build_info.h
+  echo "       character cBranch*48        ! Branch name"                 >> ${SRCdir}/include/build_info.h
+  echo "       character cRevision*32      ! Revision number"             >> ${SRCdir}/include/build_info.h
+  echo "       character cState*32         ! Flag for repository state."  >> ${SRCdir}/include/build_info.h 
+  echo "       character cCC*32            ! Flags for compilers."        >> ${SRCdir}/include/build_info.h 
+  echo "       character cFC*32            ! fortran"                     >> ${SRCdir}/include/build_info.h
+  echo "       character cCPL*32           ! C++"                         >> ${SRCdir}/include/build_info.h 
+  echo "       character cXML_support*32   ! Compile-time options"        >> ${SRCdir}/include/build_info.h
+  echo "       character cXlibrary*32      ! where which"                 >> ${SRCdir}/include/build_info.h
+  echo "       "                                                          >> ${SRCdir}/include/build_info.h
   echo "       cBuilder          = \"${USER}\" "                          >> ${SRCdir}/include/build_info.h 
   echo "       cHost             = \"${host}\""                           >> ${SRCdir}/include/build_info.h
 #  echo "       cDate             = \"${time}\""                           >> ${SRCdir}/include/build_info.h     
@@ -1754,7 +1773,7 @@ if [ "${LinkDB}" = "yes" ]; then
   echo "*clm ${DBInstDir}/climate/clm67" >> ${ESPdir}/default
   echo "*prs ${DBInstDir}/databases/pressc.db1" >> ${ESPdir}/default
   echo "*prm ${DBInstDir}/databases/material.db3.a" >> ${ESPdir}/default
-  echo "*mlc ${DBInstDir}/databases/multicon.db2" >> ${ESPdir}/default
+  echo "*mlc ${DBInstDir}/databases/multicon.db3" >> ${ESPdir}/default
   echo "*opt ${DBInstDir}/databases/optics.db2" >> ${ESPdir}/default
   echo "*evn ${DBInstDir}/databases/profiles.db2.a" >> ${ESPdir}/default
   echo "*pdb ${DBInstDir}/databases/plantc.db1" >> ${ESPdir}/default

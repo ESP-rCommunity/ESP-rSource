@@ -55,6 +55,7 @@ C IER=0 indicates no error.
 #include "building.h"
 #include "geometry.h"
 #include "cfd.h"
+#include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
@@ -66,7 +67,7 @@ C IER=0 indicates no error.
       common/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
@@ -81,7 +82,7 @@ C IER=0 indicates no error.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER*72 TITLE,CFTRFL,LPHI
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
 
 C Note: to make this more general, we need to have prj set the value of ICFD.
 C ICFD=1 for the first CFD domain in the building, 2 for the second CFD domain, etc.
@@ -3434,6 +3435,8 @@ C PIKCELS controls the editing of the cells defining a boundary region.
       SUBROUTINE PIKCELS(BTYPE,BNAME,Ii,If,Ji,Jf,Ki,Kf,IFACE,IER)
 
 #include "cfd.h"
+      integer iCountWords
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/grdmax/NTCX,NTCY,NTCZ
@@ -3604,7 +3607,7 @@ C Ask for cells.
       h(5)='If in doubt, review the cell coordinates which listed'
       h(6)='in the text feedback area.'
       call EASKS(s30,'Boundary cells?',t30,30,dflt,'bndry cells',IER,6)
-      call CHITMS(s30,NITMS)
+      NITMS = iCountWords(s30)
       if (NITMS.ne.6) goto 10
 
 C Read six cell locations.
@@ -3748,6 +3751,7 @@ C gridding generation.
       SUBROUTINE TOPBOT(ICOMP,act,IER)
 #include "building.h"
 #include "prj3dv.h"
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -3767,7 +3771,7 @@ C Curvilinear boundary vertex numbers.
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
 
       CHARACTER act*1,H*72,HOLD*72,outs*124
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
       integer*8 iix,iiy,ixd,iyd
@@ -3866,7 +3870,7 @@ C This write assumes not-very-complex zones and surfaces.
      &      '  ',72,' ','associated vertices',IIER,8)
         endif
       endif
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       K=0
       DO 94 J=1,NV
         CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)
@@ -3929,7 +3933,7 @@ C This write statement assumes not-very-complex zones and polygons.
      &      '  ',72,' ','associated vertices',IIER,8)
         endif
       endif
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       K=0
       DO 95 J=1,NV
         CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)

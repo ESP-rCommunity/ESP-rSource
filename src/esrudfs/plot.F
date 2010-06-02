@@ -51,7 +51,7 @@ C Stores all MFRP monitoring values, maximum and minimum values.
 
       CHARACTER title*124,LRES(4)*24,LMON(4)*24,LINE(4)*5
       DIMENSION ILINE(4),CRES(4),CMON(4)
-#ifdef OSX
+#ifdef OSI
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot

@@ -112,7 +112,9 @@ C TDF commons. zrotp is the previous rotation angle for each zone.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
       common/zrotat/zrotp(mcom)
 
 C Common for thermophysical property replacement.
@@ -318,7 +320,7 @@ C water
 
       logical autook
       logical newgeo  ! to use for testing if new/old geometry file.
-
+      integer ier,IClmErr
 
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
@@ -326,6 +328,9 @@ C SUN F90 has spotty support for cpu_time intrinsic
 C Store start time for reporting simulationd duration
       call cpu_time(sec_a)
 #endif
+
+      ier=0       ! set prior to use
+      IClmErr=0
 
 C*h3koutput* Initialize data variables
       call H3KSTORE_ZERO_DATA
@@ -613,6 +618,7 @@ C Perform the start up period for 3D ground model if invoked.
       IF(GRND3D.AND.ITCNSTG.GT.0)THEN
         WDARDO=.FALSE.
         GRNDSP=.TRUE.
+        ier=0
         CALL EFOPRAN(ICVS,LGDCVS,3,1,IER)
         CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
         CALL EFOPRAN(INDD,LGDNDD,3,1,IER)
@@ -654,9 +660,6 @@ C Remember the 'start value' of the unix system clock.
       iltime=istime
 
 123   continue
-
-C Initialize time-row variables for DWHR model. 
-      call DWHRDrawInitialize()
 
 C At startup, SHOCC is initially out of sync with ESP-r time
 C (i.e. ESP-r new day starts at 1., while SHOCC starts at 0.)
@@ -831,7 +834,8 @@ C Close old file, if necessary.
      &         call ERpFree( iClim , istat )
             endif 
 
-C Open new file.   
+C Open new file.
+            ier=0   
             call EfOpRan(iClim,cMY_clm_file_names(iMY_current_yr_index),
      &                144,0,IER)
 
@@ -874,6 +878,7 @@ C Close old file, if necessary.
             endif
 
 C Open new file.
+           ier=0
            call EfOpRan(iClim,cMY_clm_file_names(iMY_future_yr_index),
      &                144,0,IER)
 
@@ -1071,7 +1076,6 @@ C If uncommented, this line will write the current timestep #,
 C hour and day to the screen.
 C           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
 C     &                ' yr:', iMY_current_year
-C           print*, "Current hour: ", fCurrentHour() 
 C           call edisp(itu,outs)
 
 
@@ -1159,6 +1163,7 @@ C Define the degree of zone model (1D or 3D).
                 INDX3=3
 
 C For 3D zone model, open the associated files.
+                ier=0
                 CALL EFOPRAN(ICVS,L3DCVS(ICOMP),5,1,IER)
                 CALL EFOPRAN(ICNC,L3DCNC(ICOMP),7,1,IER)
                 CALL EFOPRAN(INDD,L3DNDD(ICOMP),4,1,IER)
@@ -1371,6 +1376,7 @@ C Transport climate data to reporting object
 
 C Perform ground simulation for the current time step
             IF(GRND3D)THEN
+              ier=0
               CALL EFOPRAN(ICVS,LGDCVS,3,1,IER)
               CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
               CALL EFOPRAN(INDD,LGDNDD,3,1,IER)
@@ -1400,8 +1406,7 @@ C For type 6 time-step controller, possibly 'rewind' simulation,
 C Reset h3k zone control action flags
 
             call h3kReports_reset_zone_flags()
-            
-     
+
 C Building side now complete.
             if(indcfg.eq.1)goto 77
 
@@ -1602,6 +1607,9 @@ C.....H3Kreports.(UPDATE).start.................
 C.....Timestep is now complete; call reporting
 C.....object update function to process and
 C.....store logged data
+C.....
+C.....Any changes to this code should be made within
+C.....the H3Kreports demarcaration comments
 
 C.....Check to see present time is close to midnight
             if (ihrp.eq.24) then

@@ -8,7 +8,7 @@
 echo "use is: link_to_esru_dev [path to $HOME/esru_dev/esp-r/bin]"
 set where=$HOME/esru_dev/esp-r/bin
 set wheredot=$HOME/esru_dev/esp-r
-foreach i ( bps clm dfs e2r ecnv grd ish mld espvwf pdb pro prj res viewer )
+foreach i ( bps clm dfs e2r ecnv grd ish mld espvwf pdb prj res viewer )
 if ( -f $where/$i )then
   if ( -f $HOME/bin/$i ) rm -f $HOME/bin/$i
   ln -s $where/$i $HOME/bin/$i

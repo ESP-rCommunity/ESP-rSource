@@ -75,7 +75,7 @@ C Passed parameter.
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
       CHARACTER MLCN*12,t13*13
       logical newgeo  ! to use for testing if new/old geometry file.
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
@@ -147,10 +147,10 @@ C Beginning of loop to read in several ESP compatible geometry files.
   100 CONTINUE
 
 C If the origin of the site is to be shown include this in the image
-C and then go on to the normal objects in subsequent passes.
+C and then go on to the normal objects. After this point ISTOK is .FALSE.
       if(ITORG.EQ.0.and.ISTOK)then
         CALL ORIGESP
-        goto 205
+        ISTOK=.FALSE.
       elseif(ITORG.EQ.1.and.ISTOK)then
         ISTOK=.FALSE.
       endif
@@ -210,7 +210,6 @@ C label and loop back to the next body.
           CALL VERTLBL(iix,iiy,IV,ier)
   202   CONTINUE
         call forceflush()
-        ISTOK=.FALSE.
         GOTO 100
       ELSEIF(NSUR.GE.1.AND.NTV.GT.1)THEN
 
@@ -261,8 +260,8 @@ C of the vertex symbols.
       ENDIF
 
 C Continue on with any surfaces in the zone. If zone is zero then
-C we are drawing grid
-  205 DO 1000 I=1,NSUR
+C we are drawing grid.
+      DO 1000 I=1,NSUR
         if(iz.ne.0)then
           icc=IZSTOCN(nznog(IZ),I)
         else
@@ -272,7 +271,7 @@ C we are drawing grid
 C If the configuration file has been read and there is a filter for
 C which surfaces should be displayed test this here. Locate the
 C connection (IC) which relates to this surface if a real zone.
-        IF(CFGOK.AND.(.NOT.ISTOK))THEN
+        IF(CFGOK)THEN
           if(iz.ne.0)then
             CALL SURADJ(nznog(IZ),I,IE,TMP,IZC,ISC,IC,DESCRC)
             IF(ITDSP.EQ.2.AND.IE.NE.0)GOTO 1000
@@ -317,65 +316,60 @@ C If ISTAT = -1 : straddles frustrum
         ENDIF
 
 C Set line style for this surface. linsty=2 is double width line. 
-        IF(.NOT.ISTOK)THEN
-          if(ICC.ne.0)then
-            if(LINSTY(ICC).eq.2)then
+        if(ICC.ne.0)then
+          if(LINSTY(ICC).eq.2)then
+            IPEN= -305
+          else
+            IPEN= 1
+          endif
+        else
+          IPEN= 1
+        endif
+
+C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
+C ITHLS = 3 partial attributes
+        if(ITHLS.eq.1.and.ITHLZ.gt.0)then
+          WRITE(MLCN,'(A12)')DESC(ITHLZ)(1:12)
+          if(ICC.gt.0)then
+            if(MLCN(1:12).eq.SSMLCN(ICC)(1:12))then
               IPEN= -305
             else
               IPEN= 1
             endif
           else
-            IPEN= 1
+            IPEN=1
           endif
-
-C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
-C ITHLS = 3 partial attributes
-          if(ITHLS.eq.1.and.ITHLZ.gt.0)then
-            WRITE(MLCN,'(A12)')DESC(ITHLZ)(1:12)
-            if(ICC.gt.0)then
-              if(MLCN(1:12).eq.SSMLCN(ICC)(1:12))then
-                IPEN= -305
-              else
-                IPEN= 1
-              endif
+        elseif(ITHLS.eq.2)then
+          if(ICC.gt.0)then
+            if(ITHLZ.eq.1.and.SSOTF(ICC)(1:4).eq.'OPAQ')then
+              IPEN= -305
             else
-              IPEN=1
+              IPEN= 1
             endif
-          elseif(ITHLS.eq.2)then
-            if(ICC.gt.0)then
-              if(ITHLZ.eq.1.and.SSOTF(ICC)(1:4).eq.'OPAQ')then
-                IPEN= -305
-              else
-                IPEN= 1
-              endif
-              if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).eq.'TRAN')then
-                IPEN= -305
-              else
-                IPEN= 1
-              endif
+            if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).eq.'TRAN')then
+              IPEN= -305
             else
-              IPEN=1
+              IPEN= 1
             endif
-          elseif(ITHLS.eq.3)then
-            if(ICC.gt.0)then
-              if(SSMLCN(ICC)(1:3).eq.'UNK'.or.
-     &           SSOTHER(ICC,1)(1:3).eq.'UNK')then
-                IPEN= -305
-              else
-                IPEN= 1
-              endif
-            else
-              IPEN=1
-            endif
+          else
+            IPEN=1
           endif
+        elseif(ITHLS.eq.3)then
+          if(ICC.gt.0)then
+            if(SSMLCN(ICC)(1:3).eq.'UNK'.or.
+     &         SSOTHER(ICC,1)(1:3).eq.'UNK')then
+              IPEN= -305
+            else
+              IPEN= 1
+            endif
+          else
+            IPEN=1
+          endif
+        endif
 
 C Debug...
-C          write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
-C     &      ithls,ithlz,ISTOK
-
-        else
-          IPEN= 1
-        endif
+C        write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
+C     &    ithls,ithlz,ISTOK
 
 C Count the edges in case enhanced edge drawing required.
         iedge=0
@@ -389,7 +383,7 @@ C ETSMAT = Eye to Screen Matrix.  First move to the beginning.
 
 C If vertex are to be labeled do it in the smallest font, then
 C move cursor to vertex and remember position.
-          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
+          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=JVN(I,IP)
             CALL VERTLBL(iix,iiy,IV,ier)
           ENDIF
@@ -451,7 +445,7 @@ C unless duplicate line has already been drawn.
 
 C If vertex are to be labeled do it in the smallest font and
 C move cursor back to vertex and remember position.
-          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP.AND.(.NOT.ISTOK))THEN
+          IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=JVN(I,IP1)
             CALL VERTLBL(iix,iiy,IV,ier)
             iixlast=iix   ! cast for edline call
@@ -515,7 +509,7 @@ C If surface names are to be displayed place near the centre of polygon.
 C If the surface has been clipped then do not label it. For clarity drop to
 C the next smaller font for the surface name and then restore font
 C to normal size.
-        IF(ITSNM.EQ.0.AND.(.NOT.ISTOK))THEN
+        IF(ITSNM.EQ.0)THEN
           IF(NAP.EQ.NBP)THEN
             if(icc.ne.0)then
              IF(IFS.GT.0)CALL winfnt(NAMEFT)
@@ -607,9 +601,7 @@ C Make some concession to the size of the font.
         call forceflush()
  1000 CONTINUE
 
-C Loop back again to see if there is more after canceling site origin
-C symbol display in subsequent zones.
-      ISTOK=.FALSE.
+C Loop back again to see if there is more.
       GOTO 100
 
       END

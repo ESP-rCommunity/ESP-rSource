@@ -135,6 +135,8 @@ C which the heat pipe connects.
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
 
+      integer ier
+
       SML3=1.E-8
 
 C The augmented zone matrix configuration is as follows:
@@ -225,6 +227,7 @@ C Present term (second node).
 
 C For connections with nodes in the 3D ground model.
         ELSEIF(IZNC.EQ.-1.AND.GRND3D)THEN
+          ier=0
           CALL EFOPRAN(ITF3,LGDTAQ,3,3,IER)
           READ(ITF3,REC=ND2,IOSTAT=ISTAT,ERR=6)T3P2,T3F2
           CALL ERPFREE(ITF3,ISTAT)
@@ -236,6 +239,7 @@ C Present term (first node).
 
 C For connections with nodes within other zones in the building.
         ELSEIF(ZONE3D(IZNC))THEN
+          ier=0
           CALL EFOPRAN(ITF3,L3DTAQ(IZNC),3,3,IER)
           READ(ITF3,REC=ND2,IOSTAT=ISTAT,ERR=6)T3P2,T3F2
           CALL ERPFREE(ITF3,ISTAT)
@@ -363,6 +367,7 @@ C Update the related coefficients.
           TERMF=HCIF(IZNI,ISFI)*A1*GAM
 
 C Read the 2nd zone's air node temperature.
+          ier=0
           CALL EFOPRAN(ITF3,L3DTAQ(IZNI),3,3,IER)
           READ(ITF3,REC=IAIR2,IOSTAT=ISTAT,ERR=6)T3PA2,T3FA2
           CALL ERPFREE(ITF3,ISTAT)

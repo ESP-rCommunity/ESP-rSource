@@ -41,7 +41,6 @@ C ----------------------------------------------------------------
       integer lnblnk  ! function definition
       
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/SHOUT/ICOUT
       COMMON/FILEP/IFIL   
       COMMON/SAVE0/TVMEM(MCOM,4,2),ZTU(MCOM),ZTL(MCOM),ZPH(MCOM),
      &   ZPC(MCOM),TZPH(MCOM),TZPC(MCOM),TZPHM(MCOM,12),TZPCM(MCOM,12)
@@ -82,7 +81,7 @@ C Common to calculate ncm lighting energy calculation for results output
       dimension fReportMonthlyLighting(12,MCOM)
       
 C Auxiliary energy:
-      common/ncmAuxilEnergy/zonAuxil(MCOM),m2zonAuxil(MCOM),
+      common/ncmAuxilEnergy/zonAuxil(12,MCOM),m2zonAuxil(12,MCOM),
      &      fmonthAuxil_ncm_Energy(12,MCOM)
       real zonAuxil,m2zonAuxil,fmonthAuxil_ncm_Energy
       real fReportMonthlyAuxil
@@ -127,27 +126,31 @@ C Variables related to Auxiliary energy for UK NCM calculations:
       real fZoneMonthlyHoursOperation
       dimension fZoneMonthlyHoursOperation(12,MCOM)   
          
-C Test save option selected.
-C [for NRCan]      tab=','
-        tab=','
+C Check if save option 6 has been selected.
+      tab=','
       IF(LSAVE.NE.6)goto 2
-      IF(ICOUT.EQ.99) THEN
-         IWU=IUOUT
-      ELSE
-         IWU=ICOUT
-      ENDIF
+
+C Set  automatic file name and is saved in the models folder:
+      IWU=IFIL+1
+      write(LTMP,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.txt'
+      CALL EFOPSEQ(IWU,LTMP,3,IER)
+      IF(IER.LT.0) return
+
       DO 221 I=1,NCOMP
 
 C Avoid cases of dividing by 0
         call eclose(ZBASEA(I),0.0,0.0001,closea)
         if(closea)then
           write(min,'(a,I3)') 'Base area seems to be 0 for zone: ',I
+          call edisp(IWU,min)               
           write(min,'(a)') 'Check the model and try again'
+          call edisp(IWU,min)               
           return       
         else
           continue
         endif
-C << CONVERT TO kWh and divide by floor area
+
+C Convert TO kWh and divide by floor area
         DO 222 IMNTH=1,12
           TZPHM(I,IMNTH)=TZPHM(I,IMNTH)/((1000.0*NTSTEP)*ZBASEA(I))
           TZPCM(I,IMNTH)=TZPCM(I,IMNTH)/((1000.0*NTSTEP)*ZBASEA(I))       
@@ -155,7 +158,7 @@ C << CONVERT TO kWh and divide by floor area
   221 CONTINUE       
         
 c Save option is six.
-   16 SHTG=0.0
+      SHTG=0.0
       SCLG=0.0
       VA=-1000.0
       VB=1000.0
@@ -242,7 +245,9 @@ C Avoid cases of dividing by 0
           call eclose(ZBASEA(I),0.0,0.0001,closea)
           if(closea)then
             write(min,'(a,I3)') 'Base area seems to be 0 for zone: ',I
+            call edisp(IWU,min)               
             write(min,'(a)') 'Check the model and try again'
+            call edisp(IWU,min)               
             return       
           else
             continue
@@ -251,7 +256,7 @@ C Avoid cases of dividing by 0
 
 C DHW in MJ:
           MJ_DHW_ann_energy(I)=
-     &        365.*dhw_litres(iactvalue)*ZBASEA(I)*(4.18/1000.)*50.
+     &        dhw_litres(iactvalue)*ZBASEA(I)*(4.18/1000.)*50.
           Tot_MJ_DHW_ann_energy=
      &        MJ_DHW_ann_energy(I)+Tot_MJ_DHW_ann_energy
 
@@ -391,21 +396,21 @@ C in the estimation of the auxiliary energy
           if(inoti.eq.1.or.inoti.eq.2.or.inoti.eq.3.or.
      &    (inoti.eq.4.and.iDsmTestingFlag.gt.0))then
 
+C Get hours of operation from SBEM.db1 data
+            fZoneHoursOperation(I)=fMonthEstSysHrs(iactvalue,13)
+
 C UK NCM Notional or reference building:          
 C Auxiliary energy consumption for NCM calculation method.
 C Dividing by 1000 to convert to kWh
 C Calculate the total for the building
-            AuxResNcm_kWh=AuxResNcm_kWh+(zonAuxil(I)/1000.0*NTSTEP)
-C             m2_AuxResNcm_kWh=m2_AuxResNcm_kWh+
-C      &                    (m2zonAuxil(I)/(1000.0*NTSTEP))
-
 C Write out the values per zone for auxiliary energy
 C m2zonAuxil is the required auxiliary energy per m2
 C Converted to kWh/m^2 here as: m2kWhZAuxil
-            m2kWhZAuxil(I)=m2zonAuxil(I)/(1000.0*NTSTEP)   
             do 4 im=1,12
+              m2kWhZAuxil(I)=m2zonAuxil(im,I)/1000.0+m2kWhZAuxil(I)
+              AuxResNcm_kWh=AuxResNcm_kWh+(zonAuxil(im,I)/1000.0)
               fReportMonthlyAuxil(im,I)=
-     &          fmonthAuxil_ncm_Energy(im,I)/(1000.0*NTSTEP)
+     &          fmonthAuxil_ncm_Energy(im,I)/(1000.0)
               if(im.lt.10)then
                 write(min,'(5a,i1,2a,f12.3)') 
      &            LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
@@ -646,8 +651,8 @@ C Auxiliary energy total
         call edisp(IWU,min)  
 
         write(min,'(6a,f12.3)') 
-     &   LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
-     &   tab,'MC12',tab,TZPCM(I,12)
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'MC12',tab,TZPCM(I,12)
 
         call edisp(IWU,min)      
         Total_zone_H(I)=0.0
@@ -663,8 +668,8 @@ C Auxiliary energy total
 
         ZoneHL_kWh=Total_zone_H(I)*ZBASEA(I) 
         write(min,'(6a,f12.3)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
-     &      tab,'integrZAHforFloorArea',tab,ZoneHL_kWh
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'integrZAHforFloorArea',tab,ZoneHL_kWh
      
         call edisp(IWU,min)                     
 
@@ -674,30 +679,20 @@ C Auxiliary energy total
      
         ZoneCL_kWh=Total_zone_C(I)*ZBASEA(I)      
         write(min,'(6a,f12.3)') 
-     &      LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
-     &      tab,'integrZACforFloorArea',tab,ZoneCL_kWh
+     &    LCFGF(1:icfgNameLen),tab,zname(I)(1:lnzname(I)),
+     &    tab,'integrZACforFloorArea',tab,ZoneCL_kWh
      
         call edisp(IWU,min)  
   
   220 continue
 
 C Close output file after writing.
-      IF(IWU.NE.ICOUT)goto 17
-
-   14 IWU=IFIL+1
-
-C This added to get automatic names and is saved in the models folder:
-      write(LTMP,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.txt'
-      CALL EFOPSEQ(IWU,LTMP,3,IER)
-      IF(IER.LT.0)GOTO 14
-      goto 16
-
-   17 CALL ERPFREE(IWU,ISTAT)
-      goto 11
+      CALL ERPFREE(IWU,ISTAT)
+      return
 
 c Output for save options 1,2 and 3.
     2 CALL edisp(iuout,' Results analysis is done via module res.')
-   11 RETURN
+      RETURN
       END
 
 c ******************** NCMDHW ********************
@@ -726,7 +721,7 @@ C contributions from renewable energy resources
       real Tot_kWh_DHW_ann_energy
       REAL DHWDEMAND,DISTRIBLOSS,TZONEA,SOLARC,DAILYDHWDEMAND,DAYMNT
       REAL STORAGEVOL,STORAGEVOL5,STORAGELOSS,XLOOPLEN,CIRCLOSS
-      REAL PUMPPOWER,SECPUMPE
+      REAL PUMPPOWER,SECPUMPE   ! secpumpe is not yet used
       REAL SECLOSS
       real  total_floor_area  ! to record total floor area
 
@@ -738,6 +733,8 @@ C contributions from renewable energy resources
 
 C Fill DHW demand variables
       total_floor_area=0.0  ! to record total floor area
+      Tot_MJ_DHW_ann_energy=0.0
+      Tot_kWh_DHW_ann_energy=0.0
       do 741 I=1,NCOMP
 
 C Avoid cases of dividing by 0
@@ -755,7 +752,7 @@ C Avoid cases of dividing by 0
 
 C DHW in MJ:
         MJ_DHW_ann_energy(I)=
-     &      365.*dhw_litres(iactvalue)*ZBASEA(I)*(4.18/1000.)*50.
+     &      dhw_litres(iactvalue)*ZBASEA(I)*(4.18/1000.)*50.
         Tot_MJ_DHW_ann_energy=
      &      MJ_DHW_ann_energy(I)+Tot_MJ_DHW_ann_energy
 
@@ -774,10 +771,11 @@ C Initialise
         TZONEA=0.0       ! total serviced area
 
 C Get contribution from associated solar thermal collectors
+C << this calculation is not complete >>
         DO 101 IREN=1,NREN
           IF(NRENTYPE(IREN).EQ.1)THEN ! If this renewable sys is solar thermal
-            IF(RENDATA(IREN,1).EQ.IDHWSYS)THEN ! If this sys is linked to this DHW system
-C<<            SOLARC(IDHWSYS)=SOLARC(IDHWSYS)+!Contribution from this solar thermal collector
+            IF(int(RENDATA(IREN,1)).EQ.IDHWSYS)THEN ! If this sys is linked to this DHW system
+C<<            SOLARC(IDHWSYS)=SOLARC(IDHWSYS)+     ! Contribution from this solar thermal collector
             ENDIF
           ENDIF
  101    CONTINUE
