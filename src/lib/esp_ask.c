@@ -24,10 +24,14 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    reply is the reply but has the current value from the fortran side
    ier tracks if the default (-2) or cancel buttons (-3) have been selected (requires
      a suitable actions on the fortran side).
+   lenq1 is passed from fortran as the length of the question
+   lenrep is passed from fortran as the length of the answer text (which might be
+     a blank or a word or phrase
 */
 {
    GtkWidget *askbox, *entry, *label;
-   gchar *reply_local, *question_local;
+   gchar *reply_local;     /* local string for the users reply */
+   gchar *question_local;  /* local string for the prompt */
    gint result;
    int no_valid_event;
    int lnq1,lnrep;	/* for non-blank lengths */
@@ -66,7 +70,7 @@ void askdialog_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
 
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
-   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
+/*    gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
    gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
