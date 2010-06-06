@@ -189,6 +189,24 @@ class TReportsManager
   bool Write_to_db_file(int var_index, double val, long step);
   double Read_from_db_file(int var_index, long step);
      
+  /**
+   * Save meta data passed from add_to_xml_reporting call 
+   */
+  void SaveMetaItems(char* sMetaName,
+                        char* sMetaValue,
+                        char* sDescription,
+                        int sMetaNameLength,
+                        int sMetaValueLength,
+                        int sDescriptionLength);
+
+// meta data save variables passed by add_to_xml_reporting
+  char* sMetaName_sv;
+  char* sMetaValue_sv;
+  char* sDescription_sv;
+  int 	sMetaNameLength_sv;
+  int 	sMetaValueLength_sv;
+  int 	sDescriptionLength_sv;
+
   /** Private methods: */
  private:
   /**
@@ -266,6 +284,8 @@ class TReportsManager
   std::vector<std::string> m_summary_nodes;
   // list of xsl styles sheet to be applied..in order.. 
   std::vector<std::string> m_stylesheet_list;
+  // dummy list to be used with the DUMPALLDATA flag
+  std::vector<std::string> m_dummy_list;
 
   // Stylesheets and transform files:
   map<std::string,std::string> m_StyleSheets;
