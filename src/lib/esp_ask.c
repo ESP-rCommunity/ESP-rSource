@@ -136,8 +136,8 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
 */
 {
    GtkWidget *askbox, *entry, *label;
-   gchar *reply_local;
-   gchar *question_local;
+   gchar *reply_local;     /* local string for the users reply */
+   gchar *question_local;  /* local string for the prompt */
    gchar *cmd_local;
    gint result;
    int no_valid_event;
@@ -181,7 +181,7 @@ void askdialogcmd_(char *q1, char *reply, char *cmd, long int *ier, int lenq1, i
 
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
-   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
+/*   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
    gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
@@ -251,8 +251,8 @@ void askdialogcncl_(char *q1, char *reply, char *cncl, long int *ier, int lenq1,
 */
 {
    GtkWidget *askbox, *entry, *label;
-   gchar *reply_local;
-   gchar *question_local;
+   gchar *reply_local;     /* local string for the users reply */
+   gchar *question_local;  /* local string for the prompt */
    gchar *cncl_local;
    gint result;
    int no_valid_event;
@@ -295,7 +295,7 @@ void askdialogcncl_(char *q1, char *reply, char *cncl, long int *ier, int lenq1,
 
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
-   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
+/*   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
    gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
@@ -318,6 +318,7 @@ void askdialogcncl_(char *q1, char *reply, char *cncl, long int *ier, int lenq1,
      switch (result) {
        case GTK_RESPONSE_OK:
        /* Terminate this string properly for return to fortran via strcpy. */
+         reply_local = g_strndup(blankstr, (gsize) lnblankstr);  /* fill result with blanks first */
          reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,lnblankstr);
          strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
          /* g_print ("askdialogcncl reply is now %s",reply);   debug */
@@ -360,8 +361,8 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
 */
 {
    GtkWidget *askbox, *entry, *label;
-   gchar *reply_local;
-   gchar *question_local;
+   gchar *reply_local;     /* local string for the users reply */
+   gchar *question_local;  /* local string for the prompt */
    gchar *cmd1_local;
    gchar *cmd2_local;
    gint result;
@@ -411,7 +412,7 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
 
    /* Define entry box properties */
    gtk_label_set_line_wrap(GTK_LABEL (label), TRUE);
-   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	/* editing box allows up to lenrep max characters */
+/*   gtk_entry_set_max_length (GTK_ENTRY (entry), lenrep);	editing box allows up to lenrep max characters */
    gtk_entry_set_text (GTK_ENTRY (entry), reply_local);
    gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
    gtk_dialog_set_default_response (GTK_DIALOG (askbox), GTK_RESPONSE_OK);
@@ -434,6 +435,7 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
        case GTK_RESPONSE_OK:
        /* Terminate this string properly for return to fortran via strcpy. */
          reply_local = g_strndup(blankstr, (gsize) lnblankstr);  /* fill result with blanks first */
+         reply_local = gtk_editable_get_chars(GTK_EDITABLE (entry),0,lnblankstr);
          strcpy(reply,reply_local);  /* copy from gstring to string return buffer */
          /* g_print ("askdialog2cmd reply is now %s",reply);   debug */
          g_free (reply_local);
@@ -479,10 +481,11 @@ void askdialog2cmd_(char *q1, char *reply, char *cmd1, char *cmd2, long int *ier
 */
 
 void askreal_(char *q1, float *reply,long int *ier, int lenq1)
-/* q1 and q2 strings form the questioon being posed to the user
-   reply is the reply but has the current value from the fortran side
+/* q1 is the question being posed to the user
+   reply is the reply but has the current real value from the fortran side
    ier tracks if the default (-2 or cancel buttons (-3) have been selected (requires
      suitable actions on the fortran side).
+   lenq1 is passed from fortran as the length of the question
 */
 {
    GtkWidget *askbox, *entry, *label, *spinner;
@@ -577,10 +580,11 @@ void askreal_(char *q1, float *reply,long int *ier, int lenq1)
 */
 
 void askint_(char *q1, long int *reply,long int *ier, int lenq1)
-/* q1 and q2 strings form the question being posed to the user
-   reply is the reply but has the current value from the fortran side
+/* q1 is the question being posed to the user
+   reply is the reply but has the current integer value from the fortran side
    ier tracks if the default (-2) or cancel buttons (-3) have been selected (requires
      suitable actions on the fortran side).
+   lenq1 is passed from fortran as the length of the question
 */
 {
    GtkWidget *askbox, *entry, *label, *spinner;
@@ -676,6 +680,9 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    reply is the reply but has the current value from the fortran side
    ier tracks if the default (-2) or cancel (-3) buttons have been selected (requires
      a suitable actions on the fortran side).
+   lenq1 is passed from fortran as the length of the question
+   lenrep is passed from fortran as the length of the answer text (which might be
+     a blank or a word or phrase
 */
 {
    GtkTextBuffer *buffer;
@@ -683,19 +690,30 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    GtkTextIter end;
    GtkTextMark *end_mark;
    GtkWidget *askbox, *entry, *label;
-   gchar *reply_local;
-   gchar *question_local;
+   gchar *reply_local;     /* local string for the users reply */
+   gchar *question_local;  /* local string for the prompt */
    gint result;
    gint menu_pix_hi;
    gint menu_pix_wd;
    int no_valid_event;
-   int lnq1;	/* for non-blank length */
+   int lnq1,lnrep;	/* for non-blank length */
    long int ibx,iby,more;	/* set default position of help */
    long int ipflg,iuresp;	/* response from pop-up help */
 
    *ier=0;	/* Reset value of ier flag */
+   
+/* This function does not use the blankstr pattern for clearing the string
+   to be edited. It starts reply_local with a the actual text size which
+   seems to help the word warp to work properly.
+*/
+   f_to_c_l(reply,&lenrep,&lnrep);  /* find actual length of the string to be edited. */
 
-   reply_local = g_strndup(reply, (gsize) lenrep);
+   if (lnrep <= 2 ) {
+     strcpy ( reply_local, "  "); /* if starting with blank do this to help warp */
+   } else {
+     reply_local = g_strndup(reply, (gsize) lnrep); /* only fill reply_local with actual text */
+   }
+
 /* find out actual length of each prompt and then total length with a space between. */
    lnq1 = 0;
    f_to_c_l(q1,&lenq1,&lnq1);
@@ -715,6 +733,7 @@ void askdialog248_(char *q1, char *reply,long int *ier, int lenq1, int lenrep)
    label = gtk_label_new (question_local);
    entry = gtk_text_view_new ();  /* create a multi-line text editing area */
    gtk_text_view_set_wrap_mode ( GTK_TEXT_VIEW (entry), GTK_WRAP_WORD );       /* warp the words */
+   gtk_text_view_set_cursor_visible ( GTK_TEXT_VIEW (entry), TRUE );       /* show insertion point */
    buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (entry));  /* create a text buffer */
    gtk_text_buffer_get_end_iter (buffer, &end);                /* mark the end of the text buffer */
    end_mark = gtk_text_buffer_create_mark (buffer, NULL, &end, FALSE);
