@@ -3887,10 +3887,7 @@ C G9 holds information on children of a surface.
 
       common/FILEP/IFIL
 
-C Where ESP-r was installed (as recorded when it was compiled).
-      common/deflt4/dinstpath
-
-      CHARACTER*1 ACT,fs
+      CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension 
       character APE*6    ! up to 6 characters in variant name
       CHARACTER SSPARENT*12,SPARENT*12
@@ -3898,7 +3895,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,NNAME*72,H*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
-      character dinstpath*48,SN*12
+      character SN*12
       CHARACTER SNAME*12,SOTF*32,SMLCN*32,SVFC*4,SOTHER*24,SUSE*8
       CHARACTER*12 XJCCU,XKCCU
 
@@ -3914,20 +3911,11 @@ C irmw keeps track of up to 90 surfaces in each zone which can be deleted
       DIMENSION XVDAREA(MCON) ! Vehicle door area in surface
       DIMENSION XDWAREA(MCON) ! Display window area in surface
       DIMENSION XNWAREA(MCON) ! Normal window area in surface
-      logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
 C      logical closeelv ! true if surface is close to vertical
       LOGICAL MODIFY,MODLEN,MODBND,QUIET,XST,NEAR
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
 
 C Initialise variables
       SN=' '
@@ -3967,22 +3955,17 @@ C Set flag for cfg file that this is a notional model
 
 C Assign standard databases containing UK NCM materials and constructions
 C These files are UK_notional.constrdb, material.db3.a and optics.db2
-
-C << consider using ipathmul and ipathmat and ipathoptdb here >>
- 
-      WRITE(LFMAT,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &  FS,'databases',FS,'material.db3.a'
-      WRITE(LFMUL,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &  FS,'databases',FS,'UK_notional.constrdb'
-      WRITE(LOPTDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &  FS,'databases',FS,'optics.db2'
-      WRITE(LPCDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &FS,'databases',FS,'plantc.db1'
-
-C Reset path flags so that standard location is not appended (again) to
-C standard database locations
-      ipathoptdb=1
-      ipathpcdb=1
+C As they will be in the standard database folder use the *std...
+      ipathmat=2
+      WRITE(LFMAT,'(A)') 'material.db3.a'
+      ipathmul=2
+      WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
+      ipathoptdb=2
+      WRITE(LOPTDB,'(A)') 'optics.db2'
+      ipathpcdb=2
+      WRITE(LPCDB,'(A)') 'plantc.db1'
+      ipathsbem=2
+      WRITE(LSBEM,'(a)') 'SBEM.db1'
       call opendb(ier)
 
 C Loop through each zone in the model and first scan in the zone
@@ -5107,6 +5090,9 @@ C IMODE = 4 -> Typical model
       COMMON/FILEP/IFIL
       INTEGER IFIL
 
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER IUOUT,IUIN
+
       common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
 
@@ -5117,7 +5103,7 @@ C IMODE = 4 -> Typical model
       INTEGER IUR,ND,ISTAT,K,LTW2,ICDHW,IER,IMODE,
      & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp
       CHARACTER LTXTF*72,OUTSTR*248,WORD1*72,WORD2*24,WORD3*24,
-     & LASTZONE*12,TWOL*2
+     & LASTZONE*12,TWOL*2,outs*124
       LOGICAL EOF,Getmonth,cl
       REAL VALZ,tbasea,Heating_efficiency,Cooling_efficiency,
      & DHW_efficiency,total_Heat_S,total_Cool_S,total_DHW_S,total_Light,
@@ -5149,8 +5135,11 @@ C Get text file name and initialise variables
       CALL EFOPSEQ(IUR,LTXTF,1,IER)
       if(ier.eq.0)THEN
         write(currentfile,'(a)') LTXTF(1:lnblnk(LTXTF))
-      ELSE ! WARNING MESSAGE HERE
-      eNDIF
+      ELSE ! warn if file could not be opened
+        write(outs,'(2a)') 'could not open ',ltxtf(1:72)
+        call edisp(iuout,outs)
+        write(currentfile,'(a)') LTXTF(1:lnblnk(LTXTF))
+      ENDIF
 
       EOF=.FALSE.
       LASTZONE=ZNAME(NCOMP)
