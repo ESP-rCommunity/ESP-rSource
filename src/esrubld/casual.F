@@ -1251,13 +1251,17 @@ C where South is 0 degree and azimuth is measured + towards west:
 C Loop through all TMC in the zone and determine blind and
 C shuter control status. 
 C If IBOFOT()=1, then blind/shutter is ON.
-            NC=NCONST(ICOMP)
+            NC=NCONST(ICOMP) ! number of constructions in current zone
             IBLIND = 0
             RATIO = 0.0
             DO 31 I=1,NC
               IF(ITMCFL(ICOMP,I).GT.0)THEN
                 IF(IBOFOT(ICOMP,I).GT.0)THEN
-                  IBLIND = NBPONT(ICOMP,I) !  keep track of >which< control period we are in ...
+                ! To date, only one IBLIND value is possible (DBILLA). So, if there is more than one TMC
+                ! with control in the current zone, use highest blind setting - high means "more closed". 
+                ! This is a conservative approach in regard to lighting heat gains 
+                ! (the heat gains will be estimated high)				
+                  IBLIND = max(IBLIND,NBPONT(ICOMP,I))
                   RATIO = 1.0
                 ENDIF
               ENDIF
@@ -1450,7 +1454,7 @@ c          write (77,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
      &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
 
 C Debug.
-C              write(6,'(3a,i3,3a)')'e2r -file ',
+C              write(*,'(3a,i3,3a)')'e2r -file ',
 C     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
 C     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
 
