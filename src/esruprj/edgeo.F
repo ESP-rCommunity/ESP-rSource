@@ -5466,8 +5466,8 @@ C Present distance, azimuth and elevation then parse data from HOLD.
               x3 = XYDIS*SIN(RYAZI)
               y3 = XYDIS*COS(RYAZI)
             ENDIF
-            write(outs,'(a,3f10.4)') ' Vertex @ X,Y,Z:',x3+X(IWHICH),
-     &        y3+Y(IWHICH),z3+Z(IWHICH)
+            write(outs,'(a,3f10.4)') 'Vertex calculated @ X,Y,Z:',
+     &        x3+X(IWHICH),y3+Y(IWHICH),z3+Z(IWHICH)
             call edisp(itru,outs)
             x3=x3+X(IWHICH)
             y3=y3+Y(IWHICH)
@@ -5569,17 +5569,21 @@ C Angle between two lines.
         elseif(ino.eq.5)then
 
 C Intersection line and plane.
+
+C << add option for picking surface in another zone >>
           inpick=2
           CALL EPMENSV
-          call EPKVERT(INPICK,IVLST,'Define Line',
+          call EPKVERT(INPICK,IVLST,'Define the line',
      &      'Select two vertices.',' ',14,ier)
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
             iwhich2=IVLST(2)
             IS=1
+            CALL EPMENSV
             CALL EASKSUR(ICOMP,IS,'-','Select surface to intersect.',
      &         ' ',IER)
+            CALL EPMENRC
             N = NVER(IS)
             DO 150 J = 1,N
               XX(J) = X(JVN(IS,J))
@@ -5589,7 +5593,8 @@ C Intersection line and plane.
             call PLEQN(XX,YY,ZZ,N,VP,EQN,IERR)
             CALL VECPLN(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),
      &        X(IWHICH2),Y(IWHICH2),Z(IWHICH2),EQN, x3,y3,z3, IERR)
-            write(outs,'(a,3f10.4)') ' Vertex X,Y,Z:',x3,y3,z3
+            write(outs,'(a,3f10.4)') 'Vertex at intersection X,Y,Z:',
+     &        x3,y3,z3
             call edisp(itru,outs)
             call edisp(itru,' ')
 
@@ -5602,6 +5607,10 @@ C Show the new point on the current wireframe.
             call u2pixel(COG3(1),COG3(2),iix,iiy)
             call ecirc(iix,iiy,3,1)
             call forceflush()
+
+C Checking if it should be added into the list of vertices or
+C inserted in another surface is done in code near line 6100.
+
           endif
         elseif(ino.eq.6)then
 
@@ -6144,6 +6153,9 @@ C be a new vertex and update the wireframe.
             nznog(1)=ICOMP
             izgfoc=ICOMP
             CALL ADJVIEW(IER)
+
+C << TO ADD checking if should be inserted into an existing surface list >>
+
             goto 92
           endif
         endif
