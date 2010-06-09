@@ -2659,9 +2659,10 @@ C Otherwise take the suggested values (gains) for the specified
 C lighting type
           elseif(ILIGHTUSER(IZ).eq.0)then
             if(ILITYP(IZ).gt.0)then
-              write(outs,'(4A,I4)') 'default_type ',
-     &          'Zone ',zname(iz),' is linked to lighting type ',
-     &          ILITYP(IZ),TLIGHT(ILITYP(IZ))
+              write(outs,'(4A)') 'default_type ',
+     &          'Zone ',zname(iz),' is linked to lighting type '
+              call edisp(itu,outs)
+              write(outs,'(I4,A)')ILITYP(IZ),TLIGHT(ILITYP(IZ))
             else
               write(outs,'(3A)') 'Zone ',zname(iz)(1:lnb),
      &         ' is linked to lighting type  0 (undefined type)'
