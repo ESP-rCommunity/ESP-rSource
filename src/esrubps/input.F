@@ -320,6 +320,7 @@ C Set folder separator (fs) to \ or / as required.
 
 C Initialize the system variables.
       GAM=0.5
+      fUserGAM = GAM
       BLDG3D=.FALSE.
       GRND3D=.FALSE.
       MSTROK=.FALSE.
