@@ -950,7 +950,7 @@ C Solar ON/OFF option.
         CALL EASKI(iUserSolar,' ',
      &    ' Solar processing  0) On,  1) Off ? ',
      &    0,'F',1,'F',0,'Solar processing iq 23',IER,4)
-        bUserSolar = 1
+        bUserSolar = .true.
         IF(IER.NE.0)GOTO 191
         call tstamp('>','SIM: edit solar radiation')
       elseif(INO.eq.5)then
