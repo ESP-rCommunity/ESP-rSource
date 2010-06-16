@@ -497,8 +497,8 @@ C Simulation parameters
       character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,NODID*12,CXSTR*78,ZN*12
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
+      CHARACTER WORD*20,NODID*12,CXSTR*78
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character WORD2*20,msgl2*48
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72
@@ -2316,78 +2316,17 @@ C Warn user about old utility file.
    20   CONTINUE
       endif
 
-C Geometry file, get or derive the zone name via reading the first
-C line. Make temporary use of file unit IUF. 
+C Geometry file, get or derive the zone name via reading the file.
+C Make temporary use of file unit IUF. 
  142  do 22 ICOMP=1,NCOMP
         zname(ICOMP)='UNKNOWN'
         call FINDFIL(LGEOM(ICOMP),XST)
 
-C Quick read, if version 1.1 or newer then the file must be
-C fully read to find the number of surfaces in the zone.
         IF(XST)THEN
           write(currentfile,'(a)') LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP)))
           CALL ERPFREE(IUF,ios)
-          CALL EFOPSEQ(IUF,LGEOM(ICOMP),1,IER)
-          IF(IER.NE.0)goto 1
-          CALL STRIPC(IUF,OUTSTR,99,ND,1,'geom 1st',IER)
-          if(OUTSTR(1:13).eq.'*Geometry 1.1')then
-            K=13
-            CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-            write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-            zname(ICOMP)=' '
-            CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-            ZN=WORD(1:12)
-            call st2name(ZN,zname(ICOMP))
-            lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
-            CALL ERPFREE(IUF,ios)
-            call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
-            gversion(icomp) = 1.1   ! set the version number.
-            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
-          else
-
-C Quick read, get the zone name and the number of surfaces if the
-C file version is prior to version 1.1.
-            K=0
-            IF(ND.EQ.1)THEN
-              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-              zname(ICOMP)=' '
-              lnzname(ICOMP)=0
-              zdesc(ICOMP)=' '
-              lnzdesc(ICOMP)=0
-            ELSEIF(ND.EQ.2)THEN
-              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-              CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-              ZN=WORD(1:12)
-              call st2name(ZN,zname(ICOMP))
-              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
-              zdesc(ICOMP)=' '
-              lnzdesc(ICOMP)=0
-            ELSEIF(ND.gt.2)THEN
-              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-              CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-              ZN=WORD(1:12)
-              call st2name(ZN,zname(ICOMP))
-              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
-              call egetrm(outstr,K,phrase,'W','Z description',IER)
-              ZDESC(ICOMP)=phrase
-              lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
-            ENDIF
-            CALL STRIPC(IUF,OUTSTR,99,ND,1,'NTV NSUR AR',IER)
-            K=0
-            CALL EGETWI(OUTSTR,K,NTV,4,MTV,'F','no verts',IER)
-            CALL EGETWI(OUTSTR,K,NSUR,3,MS,'F','no surfs',IER)
-            NZSUR(ICOMP)=NSUR
-            NZTV(ICOMP)=NTV
-            IF(IFLAG.NE.0)GOTO 1
-
-C Close geometry file and set version number.
-            gversion(icomp) = 1.0   ! set the version number.
-            CALL ERPFREE(IUF,ISTAT)
-            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
-          endif
+          call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+          write(currentfile,'(a)') FILE(1:lnblnk(FILE))
         ELSE
           ZNAME(ICOMP)='UNKNOWN'
           write(outs,'(a)')LGEOM(ICOMP)
