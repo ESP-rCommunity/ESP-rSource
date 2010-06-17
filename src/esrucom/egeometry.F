@@ -4365,8 +4365,8 @@ C G9 holds information on children of a surface.
 
       DIMENSION IDVN(MV),nTbchild(MCON)
       DIMENSION ICOMVER(MS)  ! icomver is the number of vertices in common
-      dimension idupv(MS,5)    ! duplicate vertex indices
-      dimension iduplist(MS,5) ! position in list
+      dimension idupv(MS,6)    ! duplicate vertex indices
+      dimension iduplist(MS,6) ! position in list
       LOGICAL PARENT,closeazi,closeelv
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
@@ -4381,7 +4381,7 @@ C Initialise various variables
       do 10 isur=1,NZSUR(ICOMP)
         icc=IZSTOCN(icomp,isur)
         ssparent(icc)='-'
-        do 20 i=1,5
+        do 20 i=1,6
           idupv(isur,i)=0     ! clear duplicate vertex index
           iduplist(isur,i)=0  ! clear duplicate position
  20     continue
