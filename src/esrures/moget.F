@@ -3459,7 +3459,6 @@ C =2 with more than 3 day types
       
       character outs*124,CSTR*25
       dimension CQ(MTS),GC(MTS)
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.
@@ -3469,7 +3468,6 @@ C =2 with more than 3 day types
       real otherc,otherr,otherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
 
-      newgeo=.false.  ! assume older format geometry.
       if(IGETNO(KGET,1).eq.1)then
 
 C IGETNO(KGET,1) =  1 Zone temperature
@@ -3847,12 +3845,8 @@ C area to 1.
 C Read in the zone geometry, construction data, zone operational data,
 C and casual gain control file. << Work towards not reading zone files >>
         IUNIT=IFIL+1
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,0,IUOUT,IER)
-        else
-          call egomin(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
-        endif
+        call georead(IUNIT,LGEOM(IZ),IZ,0,IUOUT,IER)
+
         CALL ECONST(LTHRM(IZ),IUNIT,IZ,0,IUOUT,IER)
 
 C If izver is 4 or greater then assume direct read of data, otherwise

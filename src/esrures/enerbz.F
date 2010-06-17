@@ -53,7 +53,6 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
-      logical newgeo  ! to use for testing if new/old geometry file.
       
       character outs*124,xfile*144,tg*1,delim*1,lodlabel*6
 
@@ -61,16 +60,9 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       CHARACTER*26 LABELS(17)
       CHARACTER*9 TITLE1(17)
 
-      newgeo=.false.  ! assume older format geometry.
-
 C Read in the geometry file to refresh surface attributes.
       iunit=ifil+1
-      call eclose(gversion(izone),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(iunit,LGEOM(IZONE),IZONE,0,iuout,ier)
-      else
-        call egomin(iunit,LGEOM(IZONE),IZONE,0,0,iuout,ier)
-      endif
+      call georead(iunit,LGEOM(IZONE),IZONE,0,iuout,ier)
       idwins=0
 
 C Generate the labels for the interface and report.
