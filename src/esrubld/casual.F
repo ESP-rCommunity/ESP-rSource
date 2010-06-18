@@ -913,13 +913,11 @@ C Illuminance database.
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
       logical bInStartup
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Definition of sun altitude for daylight coefficient method:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
       iunit=ifil+1
-      newgeo=.false.  ! assume older format geometry.
 
 C Trace output ?
       IFT=1
@@ -945,12 +943,7 @@ C If esp pre-processor or user defined df then read in geometry data.
         IF((IDFST(ICOMP,iu).EQ.1).or.(IDFST(ICOMP,iu).eq.2))nog=.true.
   1   continue
       if(nog)then
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(iunit,lgeom(icomp),icomp,0,itu,ier)
-        else
-          call egomin(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
-        endif
+        call georead(iunit,lgeom(icomp),icomp,0,itu,ier)
       endif
 
 C Assume casual gains untouched and establish solar data for correct

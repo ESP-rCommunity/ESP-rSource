@@ -363,7 +363,6 @@ C should calculate pressure coefficients.
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION VERT(35),COMPS(MPCP),IVAL(MPCP)
       CHARACTER VERT*75,KEY*1,H*72,DESCRC*25
@@ -388,7 +387,6 @@ C should calculate pressure coefficients.
 
 C Initialise facade coordinates menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
-      newgeo=.false.  ! assume older format geometry.
       IUM=IFIL+7
  92   MHEAD=1
       MCTL=7
@@ -581,12 +579,7 @@ C Add/generate coordinates.
 C Manual input of cordinates. 
           CALL EASKGEOF('Select a zone for coords:',CFGOK,IC,'-',IER)
           IUF=IFIL+1
-          call eclose(gversion(IC),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IUF,LGEOM(IC),IC,1,iuout,IER)
-          else
-            call egomin(IUF,LGEOM(IC),IC,1,0,iuout,IER)
-          endif
+          call georead(IUF,LGEOM(IC),IC,1,iuout,IER)
           nzg=1
           nznog(1)=IC
           izgfoc=IC
@@ -709,12 +702,7 @@ C Ask whether user wants to define another point.
 C Open geometry file for surface property check. 
           IUF=IFIL+1
           do 46 IZU=1,NCOMP
-            call eclose(gversion(IZU),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IUF,LGEOM(IZU),IZU,1,iuout,IER)
-            else
-              call egomin(IUF,LGEOM(IZU),IZU,1,0,iuout,IER)
-            endif
+            call georead(IUF,LGEOM(IZU),IZU,1,iuout,IER)
 
 C  Check whether zone has external transparent surface(s)
             do 42 IZW=1,NZSUR(izu)

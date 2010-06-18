@@ -66,13 +66,10 @@ C geometry.h provides commons G0/G2/precz.
       character docpth*24,tmppth*24,dbspth*24
       character OUTSTR*124,outs*124
       logical OK,dok,MODIFY,MODLEN,MODBND,modcfg,XST,clkok,browse
-      logical newgeo  ! to use for testing if new/old geometry file.
-
 
 C Before presenting hc regime, make up a suitable file name
 C in case it is useful.
       modcfg=.false.
-      newgeo=.false.  ! assume older format geometry.
       IHCFP=0
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(HFILE,'(A,A4)')zname(ICOMP)(1:lnzname(ICOMP)),'.htc'
@@ -248,12 +245,7 @@ C and jump back if hc facility entered in error.
   43  if(modcfg)CALL EMKCFG('-',IER)
 
 C Display the reference zone.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,iuout,IER)
-      else
-        call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
-      endif
+      call georead(IUF,LGEOM(ICOMP),ICOMP,0,iuout,IER)
       MODIFY=.TRUE.
       MODBND=.TRUE.
 

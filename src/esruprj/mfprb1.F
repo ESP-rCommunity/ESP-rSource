@@ -716,11 +716,9 @@ C LAPRES,IAPRES (for window pressure databases)
       CHARACTER LAPROB*72,t72*72,t144*144
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CALL USRMSG(' ','Input/edit node data: ','-')
 
-      newgeo=.false.  ! assume older format geometry.
       IFNOD=INOD
 C Add/Edit a node to the network. 
       IF(MOD.EQ.'A'.OR.MOD.EQ.'E')THEN
@@ -984,12 +982,7 @@ C (Re)Set all surfaces to standard line width.
           if(IZ.eq.0) goto 20
 
 C General image option flags.
-          call eclose(gversion(IZ),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,0,ITRU,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,ITRU,IER)
-          endif
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,ITRU,IER)
           MODIFY=.TRUE.
           MODBND=.TRUE.
           CALL INLNST(1)
@@ -1844,10 +1837,8 @@ C Fluid flow model file: edit or input wind speed reduction factor
 
       CHARACTER outs*124,H*72
       LOGICAL OK,dok,MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Warn if current wind reduction factor is zero
-      newgeo=.false.  ! assume older format geometry.
       H(1)='Edit / input local wind speed reduction factor'
       H(2)=' -------------------------------------------- '
       H(3)='which is the ratio of local wind speed at roof'
@@ -1899,12 +1890,7 @@ C Allow the user to select the roof of the building
       if(IZ.eq.0) goto 11
 
       itrc=0
-      call eclose(gversion(IZ),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
-      else
-        call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
-      endif
+      call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
 
 C General image option flags.
 C << might want to save current values for later recovery >>

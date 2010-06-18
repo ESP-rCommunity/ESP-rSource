@@ -1089,22 +1089,15 @@ C Parameters
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       logical dup,first
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78
 
-      newgeo=.false.  ! assume older format geometry.
       IPROB=0
       ICC=0
       prob=.false.
       first=.false.
       do 287 IZ=1,NCOMP
-        call eclose(gversion(iz),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
-        else
-          CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
-        endif
+        call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
         nzsur(iz)=nsur
         do 288 IS=1,NSUR
           ICC=ICC+1

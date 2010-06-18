@@ -4669,13 +4669,12 @@ C SSURVN is point 1 unit vectpr off of surface COG along the normal.
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
-      LOGICAL OK,dok,newgeo
+      LOGICAL OK,dok
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,h*72,outs*124
 
       integer lng     ! length of geometry file name
       integer itrct   ! temporary trace level
-      newgeo=.false.  ! assume older geometry format
 
 C Assuming this routine is called in order: read in the geometry file
 C using georead or egomin and pass across into the appropriate array.
@@ -4686,12 +4685,7 @@ C using georead or egomin and pass across into the appropriate array.
           write(outs,'(2a)') ' Reading : ',LGEOM(ICOMP)(1:lng)
           CALL USRMSG(' ',outs,'-')
         endif
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
-        else
-          call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,iuout,ier)
-        endif
+        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
         IF(IER.NE.0)THEN
           dok=.true.
           h(1)='When scanning the zone geometry file to build up'

@@ -310,7 +310,6 @@ C water
       logical itank_flag
 
       logical autook
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer ier,IClmErr
 
 C SUN F90 has spotty support for cpu_time intrinsic
@@ -334,9 +333,6 @@ C is complete.
 C Trace output.
       if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
      &   itrace(40).ne.0) call edisp(itu,' entering subroutine mznuma')
-
-      newgeo=.false.  ! assume older format geometry.
-
 
 C If computational time-step less than one hour
 C modify coefficients computed in MZCOE1.
@@ -1188,13 +1184,7 @@ C                 if(itrc.gt.1)then
                     CALL EDISP(IUOUT,outs)
 C                 endif
                   igu=ifil+1
-                  call eclose(gversion(icomp),1.1,0.01,newgeo)
-                  if(newgeo)then
-                    call georead(igu,LGEOM(icomp),icomp,1,iuout,IER)
-                  else
-                    call egomin(igu,LGEOM(icomp),icomp,1,itrc,iuout,
-     &                IER)
-                  endif
+                  call georead(igu,LGEOM(icomp),icomp,1,iuout,IER)
                   call escrot(OBROT,0.,0.)
 
 C Recalculate time invariant zone data.

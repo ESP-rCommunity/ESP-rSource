@@ -683,11 +683,7 @@ C Existing ESP-r geom file.
 C Scan geometry file and update control and connections.
 C Try reading in the geometry to fill in the data below.
         call eclose(gversion(IC),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
-        endif
+        call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
         IF(IER.NE.0)THEN
           dok=.true.
           h(1)='While scanning the geometry file a problem was'
@@ -1375,12 +1371,7 @@ C the values of ICT, IE2 and IC2.
       do 25 IX=1,NCOMP
         if(IX.ne.IW2)then
           changed=.FALSE.
-          call eclose(gversion(IX),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LGEOM(IX),IX,1,iuout,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IX),IX,1,0,iuout,IER)
-          endif
+          call georead(IFIL+1,LGEOM(IX),IX,1,iuout,IER)
           do 28 ISX=1,NSUR
             ioc=IZSTOCN(ix,isx)
 
@@ -1479,12 +1470,7 @@ C Reread selected zone data then remove each of the surfaces
 C in reverse order (adjusting the connections as required).
       write(outs,'(2A)') ' removing surfaces in ',zname(IW2)
       call usrmsg('  ',outs,'-')
-      call eclose(gversion(IW2),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IFIL+1,LGEOM(IW2),IW2,1,iuout,IER)
-      else
-        call egomin(IFIL+1,LGEOM(IW2),IW2,1,0,iuout,IER)
-      endif
+      call georead(IFIL+1,LGEOM(IW2),IW2,1,iuout,IER)
       IX=NSUR+1
   35  CONTINUE
       IX=IX-1
@@ -1665,12 +1651,7 @@ C commons via reading in related files.
       write(outs,'(A)') ' rebuilding model... '
       call usrmsg('  ',outs,'-')
       do 48 ir=1,NCOMP
-        call eclose(gversion(ir),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(ir),ir,1,IUOUT,IER)
-        else
-          call egomin(IFIL+1,LGEOM(ir),ir,1,0,IUOUT,IER)
-        endif
+        call georead(IFIL+1,LGEOM(ir),ir,1,IUOUT,IER)
         XST=.false.
         call FINDFIL(LPROJ(ir),XST)
         IF(XST)THEN

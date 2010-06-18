@@ -828,7 +828,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       real uavtotal   
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72,lfil*72,H*72
@@ -847,7 +846,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       call isadll(dll)
 
 C Zone-by-zone. Use IUNIT for geometry file.
-      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       NNDS=0
       MNDS=0
@@ -895,12 +893,7 @@ C translate the casual gains.
           call PROCESSOLDCAS(IZ,itrc,itu,IER)
         endif
 
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,ITU,IER)
-        else
-          call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
-        endif
+        call georead(IUNIT,LGEOM(IZ),IZ,1,ITU,IER)
         if(ier.eq.1)then
           write(outs,'(a,i2,a)') 
      &        'Error reading geometry file for zone ',IZ,'.'
@@ -1560,22 +1553,15 @@ C Parameters
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       logical dup,first
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78
 
-      newgeo=.false.  ! assume older format geometry.
       IPROB=0
       ICC=0
       prob=.false.
       first=.false.
       do 287 IZ=1,NCOMP
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
-        endif
+        call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
         nzsur(iz)=nsur
         do 288 IS=1,NSUR
           ICC=ICC+1

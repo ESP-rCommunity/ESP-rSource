@@ -5114,7 +5114,7 @@ C if 0 for a wetted surface 1 for a swiming pool.
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 #include "control.h"
 
       COMMON/TC/ITC,ICNT
@@ -5139,7 +5139,6 @@ C Evaporation common block for use in MZVAPC.
       common/evapsur/vapsur(mcom)
 
       CHARACTER OUTS*124
-      logical newgeo  ! to use for testing if new/old geometry file.
       logical unixok
 
 C Fatal error test.
@@ -5150,7 +5149,6 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL20')
 
-      newgeo=.false.  ! assume older format geometry.
       QFUT=0.
       TFUT=TNP
 
@@ -5209,12 +5207,7 @@ C Use zone moisture content (xi), x at saturation to evaluate Ev.
         cw=4180.
 
 C Read in surface details and calculate the area weighted radiant temperature. 
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(ifil+1,lgeom(icomp),icomp,0,itu,ier)
-        else
-          call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
-        endif
+        call georead(ifil+1,lgeom(icomp),icomp,0,itu,ier)
         tsurf=0.
         do 20 isurf=1,nsur
           if(isurf.ne.isur)then
@@ -6110,7 +6103,7 @@ C ICALL = 2 signals call from solar with request for alternative props.
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -6153,7 +6146,6 @@ C Material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -6165,7 +6157,6 @@ C << of 3 surface to change will have to be increased!        >>
       logical itpmod, close, usealt, CHANGED
       
       iunit=ifil+1
-      newgeo=.false.  ! assume older format geometry.
       
 C Debug...
 C      write(6,*) 'BCL 99 ',btimef
@@ -6260,12 +6251,7 @@ C Reset properties by reading in zone descriptor files.
 C Debug.
 C        write(6,*)'Resetting tp properties at btimef ',btimef
 
-        call eclose(gversion(ICMP),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
-        else
-          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
-        endif
+        call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
         itpmod(ICMP)=.false.
       elseif ((.not.itpmod(ICMP)).and.usealt) then
@@ -6274,12 +6260,7 @@ C        write(6,*)'Resetting tp properties at btimef ',btimef
 C Change to alternate properties (up to three constructions).
 C Read in the thermophysical properties for this zone 
 C (needed in subroutine mzcoe1).
-        call eclose(gversion(ICMP),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
-        else
-          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
-        endif
+        call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
 
 C Get replacement properties for up to 3 constructions from 

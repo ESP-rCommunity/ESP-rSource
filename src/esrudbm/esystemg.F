@@ -473,7 +473,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character LWndSupp*72
       character HDR*12
       character ipvact*3  ! to singnal internal or external IPV file
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
       integer ier
@@ -483,8 +482,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       dimension IRVC(mcon),IRCC(365)
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
-
-      newgeo=.false.  ! assume older format geometry.
 
 C Check if running in dll mode.
       call isadll(dll)
