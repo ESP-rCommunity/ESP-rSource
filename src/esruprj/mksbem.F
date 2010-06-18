@@ -659,6 +659,10 @@ C For tdf to call arlist:
       integer IPASS !to ask for a password
       REAL val_converted
        
+C Set file name (copied from MMGFUN) and flag
+      CFGROOT_O = CFGROOT
+      ISBEM=1
+
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -870,7 +874,7 @@ C Make high level menu asking for different parts of UK NCM
       ITEMX(7) = 'Link separate DHW systems and zones '
       ITEMX(8) = 'Link standard activities and zones '
       ITEMX(9) = 'Link lighting systems and zones'
-      ITEMX(10)= 'Renewables information'
+      ITEMX(10)= 'Renewables information (optional)'
       ITEMX(11)= 'HVAC controls for EPC recommendations (optional)'
       ITEMX(12)= 'Advanced (only for DSM testing)'
       ITEMX(13)= 'Display current NCM information '
@@ -886,6 +890,9 @@ C file and return with iuact set to zero.
         call mksbem
 C        call mksbem2
         iuact = 0
+        call emkcfg('-',IER)
+        WRITE (OUTS,'(2A)')'Writing configuration file ',LCFGF
+        CALL EDISP(IUOUT,OUTS)
         return
 
       ELSEIF(KSTR(1).EQ.1)THEN
@@ -936,7 +943,7 @@ C Define DHW systems
 C Add new DHW system
           IF(JC.EQ.1)THEN
             NDHWSYS=NDHWSYS+1
-            DHWNAME(NDHWSYS)=' default DHW generator '
+            DHWNAME(NDHWSYS)=' new DHW generator '
             CALL EASKS(DHWNAME(NDHWSYS),'DHW system name',
      &        '(<30 characters)',30,D64,'DHW sys name',IER,1)
             IY=1
@@ -947,7 +954,7 @@ C Add new DHW system
             IDHWS(NDHWSYS)=KSYS(1)
             CALL EASKABC('Was the DHW generator built before 1998',
      &        ' ','yes','no','Do not know',IW,2)
-            IF(IW.EQ.1)THEN
+            IF(IW.EQ.1.or.iw.eq.3)THEN
               HWEF(NDHWSYS)=DHWEFF(MDW,1)
             ELSE
               HWEF(NDHWSYS)=DHWEFF(MDW,2)
@@ -983,54 +990,63 @@ C Hold same fuel type indices as found for heating/cooling HVAC systems
             ENDIF
             IDHFL(NDHWSYS)=JSTR(1)
 
-C Add storage and loop information
-            IDHWSS(IDHWSYS)=0
-            CALL EASKABC('Is there a water storage system',
-     &      ' ','yes','no','Do not know',IDL,2)
-            IF(IDL.EQ.1)THEN
-              IDHWSS(IDHWSYS)=1
-              CALL EASKABC('Which of the following do you know',
-     &        '(Choose volume if you know both) ',
-     &        'Storage volume (lit)','Storage losses (MJ/month)',
-     &        'Do not know either',IDM,2)
-              DHWSPD(IDHWSYS,1)=0.0
-              DHWSPD(IDHWSYS,2)=0.0
-              DHWSPD(IDHWSYS,3)=0.0
-              DHWSPD(IDHWSYS,4)=0.0
-              DHWSPD(IDHWSYS,5)=0.0
-              IF(IDM.EQ.1)THEN
-                CALL EASKR(DHWSPD(IDHWSYS,1),
-     &          'Enter system volume (litres)',' ',
-     &          0.,'F',1000.,'-',100.,'DHW capacity ',IER,2)
-              ELSEIF(IDM.EQ.2)THEN
-                CALL EASKR(DHWSPD(IDHWSYS,2),
-     &          'Enter system losses (MJ/month)',' ',
-     &          0.,'F',1000000.,'-',10000.,'DHW capacity ',IER,2)
-              ENDIF
-              CALL EASKABC('Is there a water circulation loop',
-     &        ' ','yes','no','Do not know',IDN,2)
-              IF(IDN.EQ.1)THEN
-                IDHWSS(IDHWSYS)=2
-                CALL EASKAB('Do you know circulation losses (W/m)',
-     &          ' ','yes','no',IDO,2)
-                IF(IDO.EQ.1)THEN
-                  CALL EASKR(DHWSPD(IDHWSYS,3),
-     &            'Enter circulation losses (W/m)',' ',
-     &            0.,'F',10.,'-',50.,'DHW circ loss',IER,2)
+C Add storage and loop information (only if not instantaneous heater)
+            IF(IDHWS(NDHWSYS).EQ.3.OR.IDHWS(NDHWSYS).EQ.4)THEN
+              IDHWSS(NDHWSYS)=0
+              DHWSPD(NDHWSYS,1)=0.0
+              DHWSPD(NDHWSYS,2)=0.0
+              DHWSPD(NDHWSYS,3)=0.0
+              DHWSPD(NDHWSYS,4)=0.0
+              DHWSPD(NDHWSYS,5)=0.0
+            ELSE
+              IDHWSS(NDHWSYS)=0
+              CALL EASKABC('Is there a water storage system',
+     &        ' ','yes','no','Do not know',IDL,2)
+              IF(IDL.EQ.1)THEN
+                IDHWSS(NDHWSYS)=1
+                CALL EASKABC('Which of the following do you know',
+     &          '(Choose volume if you know both) ',
+     &          'Storage volume (lit)','Storage losses (MJ/month)',
+     &          'Do not know either',IDM,2)
+                DHWSPD(NDHWSYS,1)=0.0
+                DHWSPD(NDHWSYS,2)=0.0
+                DHWSPD(NDHWSYS,3)=0.0
+                DHWSPD(NDHWSYS,4)=0.0
+                DHWSPD(NDHWSYS,5)=0.0
+                IF(IDM.EQ.1)THEN
+                  CALL EASKR(DHWSPD(NDHWSYS,1),
+     &            'Enter system volume (litres)',' ',
+     &            0.,'F',1000.,'-',100.,'DHW capacity ',IER,2)
+                ELSEIF(IDM.EQ.2)THEN
+                  CALL EASKR(DHWSPD(NDHWSYS,2),
+     &            'Enter system losses (MJ/month)',' ',
+     &            0.,'F',1000000.,'-',10000.,'DHW capacity ',IER,2)
                 ENDIF
-                CALL EASKAB('Do you know pump power (kW)',
-     &          ' ','yes','no',IDP,2)
-                IF(IDP.EQ.1)THEN
-                  CALL EASKR(DHWSPD(IDHWSYS,4),
-     &            'Enter pump power (kW)',' ',
-     &            0.,'F',10.,'-',10.,'DHW pump power ',IER,2)
-                ENDIF
-                CALL EASKAB('Do you know loop length (m)',
-     &          ' ','yes','no',IDQ,2)
-                IF(IDQ.EQ.1)THEN
-                  CALL EASKR(DHWSPD(IDHWSYS,5),
-     &            'Enter loop length (m)',' ',
-     &            0.,'F',10000.,'-',1000.,'DHW loop length ',IER,2)
+                CALL EASKABC('Is there a water circulation loop',
+     &          ' ','yes','no','Do not know',IDN,2)
+                IF(IDN.EQ.1)THEN
+                  IDHWSS(NDHWSYS)=2
+                  CALL EASKAB('Do you know circulation losses (W/m)',
+     &            ' ','yes','no',IDO,2)
+                  IF(IDO.EQ.1)THEN
+                    CALL EASKR(DHWSPD(NDHWSYS,3),
+     &              'Enter circulation losses (W/m)',' ',
+     &              0.,'F',10.,'-',50.,'DHW circ loss',IER,2)
+                  ENDIF
+                  CALL EASKAB('Do you know pump power (kW)',
+     &            ' ','yes','no',IDP,2)
+                  IF(IDP.EQ.1)THEN
+                    CALL EASKR(DHWSPD(NDHWSYS,4),
+     &              'Enter pump power (kW)',' ',
+     &              0.,'F',10.,'-',10.,'DHW pump power ',IER,2)
+                  ENDIF
+                  CALL EASKAB('Do you know loop length (m)',
+     &            ' ','yes','no',IDQ,2)
+                  IF(IDQ.EQ.1)THEN
+                    CALL EASKR(DHWSPD(NDHWSYS,5),
+     &              'Enter loop length (m)',' ',
+     &              0.,'F',10000.,'-',1000.,'DHW loop length ',IER,2)
+                  ENDIF
                 ENDIF
               ENDIF
             ENDIF
@@ -3718,8 +3734,13 @@ C values are approximations
         ELSE                       ! nominal permeability value of 20
           ICIBSE3=1
         ENDIF
-        ACH(IZ)=CIBSEACH(ICIBSE1,ICIBSE2,ICIBSE3)
-        call usrmsg('Appropriate air change rates selected',' ','W')
+        do 2331 icomp=1,ncomp
+          ach(icomp)=CIBSEACH(ICIBSE1,ICIBSE2,ICIBSE3)
+          write(outs,'(A,F6.4,2A)')'Air change rate of ',ACH(1),
+     &    ' ac/h selected from CIBSE Guide A tables for zone ',
+     &    zname(icomp)
+          call edisp(iuout,outs)
+ 2331   continue
       ELSE
 
 C Approximate zone infiltration based on volume unless
