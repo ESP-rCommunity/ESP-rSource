@@ -1702,26 +1702,6 @@ C Assign nodal absorptions to CFC layer nodes
 
           end if
 
-C=======================ag-start
-C-----------------PROCESS FOR TYPE 3 SURFACE CFC  --- ag@08052010 !!
-C                 ------------------------------
-C Set TD, TFF for a type 3 surface (internal surface with adjacent zone).
-          IF(IE(ICOMP,I).GT.0) THEN
-		    write(*,*)'solar.F, type 3 surface cfc found'
-            TD=DIRT(ICOMP,I)*SNA(ICOMP,I)
-            tdtrace(i)=td
-            TFF=DIFT(ICOMP,I)*SNA(ICOMP,I)
-            tfftrace(i)=tff
-
-            QZNTOT=QZNTOT+TD+TFF
-            q1adjz(2)=q1adjz(2)+td+tff
-
-            DIRT(ICOMP,I)=0.0
-            DIFT(ICOMP,I)=0.0
-            AIRT(ICOMP,I)=0.0
-          ENDIF
-C=======================ag-end
-
          end if
 
 C------------PROCESS INTERNAL SURFACES
@@ -1839,9 +1819,7 @@ C A) OPAQUE SURFACE
                 q2wall(2)=q2wall(2)+x1*PAREA*AI(ICOMP,KS)
 
 C B) CFC SURFACE (external only) - run solar_multilayer with inside diffuse source and adjust abosrptances
-c              elseif(icfcfl(icomp,ks).gt.0.and.ie(icomp,ks).eq.0)then
-              elseif(icfcfl(icomp,ks).gt.0)then
-           write(*,*)'solar.F internal cfc surface (line 1841) found'
+              elseif(icfcfl(icomp,ks).gt.0.and.ie(icomp,ks).eq.0)then
                 icfctp=icfcfl(icomp,ks)
 
                 temp1=0.
@@ -1923,9 +1901,7 @@ C OPAQUE SURFACE
                 q2wall(2)=q2wall(2)+x2*SNA(ICOMP,K)*AI(ICOMP,K)
 
 C CFC SURFACE (external only) - run solar_multilayer with inside diffuse source and adjust absorbed fluxes
-c              elseif(icfcfl(icomp,k).gt.0.and.ie(icomp,k).eq.0)then
-              elseif(icfcfl(icomp,k).gt.0)then
-           write(*,*)'solar.F internal cfc surface (line 1926) found'
+              elseif(icfcfl(icomp,k).gt.0.and.ie(icomp,k).eq.0)then
                 icfctp=icfcfl(icomp,k)
 
                 temp1=0.
@@ -2014,8 +1990,7 @@ C OPAQUE SURFACE
             q2wall(2)=q2wall(2)+RDIFR*SNA(ICOMP,i)*AI(ICOMP,i)
 
 C CFC SURFACE (external only) - run solar_multilayer with inside diffuse source and adjust abosrptances
-c          ELSEIF(icfcfl(icomp,i).gt.0.and.ie(icomp,i).eq.0)then
-          ELSEIF(icfcfl(icomp,i).gt.0)then
+          ELSEIF(icfcfl(icomp,i).gt.0.and.ie(icomp,i).eq.0)then
              icfctp=icfcfl(icomp,i)
 
              temp1=0.

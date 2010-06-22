@@ -697,7 +697,7 @@ C folder (the other files can stay where they are).
             call edisp(iuout,outs)
             KEEP=.false.
           endif
-        else
+        else ! not unixok
 	  
 C User owns the model. Only copy the lradcf file back to the cfg
 C folder (the other files can stay where they are).

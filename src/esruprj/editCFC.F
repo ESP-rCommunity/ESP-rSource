@@ -126,17 +126,17 @@ C 1. scan G6 common and check that CFCs are VERT and EXTERIOR
         icn1=izstocn(icomp,is)
         IF (SSOTF(icn1)(1:4).eq.'CFC ') then
 c           if(SSVFC(icn1)(1:4).eq.'VERT'.and.
-c           if(
-c     &           SSOTHER(icn1,1)(1:5).eq.'EXTER')then
+           if(
+     &          SSOTHER(icn1,1)(1:5).eq.'EXTER')then
 				ncfccount=ncfccount+1   !count CFCs in zone
 				con_name(is)=SSMLCN(icn1)
 
 C 2.  scan constructions layers and check that there are air gaps
 C between each glazing/shading layer
-				igap=0
-				do 15 ie=2,ne(is),2
-				  igap=igap+1
-				  if (ie.ne.IPAIRG(IS,igap)) then
+                igap=0
+                do 15 ie=2,ne(is),2
+                  igap=igap+1
+                  if (ie.ne.IPAIRG(IS,igap)) then
                     CALL USRMSG(
      &             ' CFCs must have alternating solid and gas',
      &             ' gap layers. Check constructions and try again.',
@@ -146,13 +146,13 @@ C between each glazing/shading layer
 				  endif
  15             continue
 
-c            else
-c                  CALL USRMSG(
-c     &            ' CFC must be VERT and EXTERIOR',
-c     &            ' please update geometry and try again.','W')
-c                  IER=1
-c                  return
-c            end if
+            else
+                  CALL USRMSG(
+     &            ' CFC must be (VERT) and EXTERIOR',
+     &            ' please update geometry and try again.','W')
+                  IER=1
+                  return
+            end if
         ELSE
             con_name(is)=' '
         END IF

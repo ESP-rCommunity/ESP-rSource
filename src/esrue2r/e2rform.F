@@ -327,7 +327,7 @@ C Open the materials, mlc & optics db.
       izgfoc = nznog(1)
 
 C Fictitious transmission threshhold.
-      ftr=0.92
+      ftr=0.999
 
 10    INO = -4
       ITEM(1) =       ' Toggles ...                   '
