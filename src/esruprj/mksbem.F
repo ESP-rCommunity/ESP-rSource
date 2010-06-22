@@ -671,6 +671,10 @@ C For tdf to call arlist:
       integer IPASS !to ask for a password
       REAL val_converted
        
+C Set file name (copied from MMGFUN) and flag
+      CFGROOT_O = CFGROOT
+      ISBEM=1
+
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -882,7 +886,7 @@ C Make high level menu asking for different parts of UK NCM
       ITEMX(7) = 'Link separate DHW systems and zones '
       ITEMX(8) = 'Link standard activities and zones '
       ITEMX(9) = 'Link lighting systems and zones'
-      ITEMX(10)= 'Renewables information'
+      ITEMX(10)= 'Renewables information (optional)'
       ITEMX(11)= 'HVAC controls for EPC recommendations (optional)'
       ITEMX(12)= 'Advanced (only for DSM testing)'
       ITEMX(13)= 'Display current NCM information '
@@ -898,6 +902,9 @@ C file and return with iuact set to zero.
         call mksbem
 C        call mksbem2
         iuact = 0
+        call emkcfg('-',IER)
+        WRITE (OUTS,'(2A)')'Writing configuration file ',LCFGF
+        CALL EDISP(IUOUT,OUTS)
         return
 
       ELSEIF(KSTR(1).EQ.1)THEN
@@ -948,7 +955,7 @@ C Define DHW systems
 C Add new DHW system
           IF(JC.EQ.1)THEN
             NDHWSYS=NDHWSYS+1
-            DHWNAME(NDHWSYS)=' default DHW generator '
+            DHWNAME(NDHWSYS)=' new DHW generator '
             CALL EASKS(DHWNAME(NDHWSYS),'DHW system name',
      &        '(<30 characters)',30,D64,'DHW sys name',IER,1)
             IY=1
@@ -959,7 +966,7 @@ C Add new DHW system
             IDHWS(NDHWSYS)=KSYS(1)
             CALL EASKABC('Was the DHW generator built before 1998',
      &        ' ','yes','no','Do not know',IW,2)
-            IF(IW.EQ.1)THEN
+            IF(IW.EQ.1.or.iw.eq.3)THEN
               HWEF(NDHWSYS)=DHWEFF(MDW,1)
             ELSE
               HWEF(NDHWSYS)=DHWEFF(MDW,2)
@@ -995,54 +1002,63 @@ C Hold same fuel type indices as found for heating/cooling HVAC systems
             ENDIF
             IDHFL(NDHWSYS)=JSTR(1)
 
-C Add storage and loop information
-            IDHWSS(IDHWSYS)=0
-            CALL EASKABC('Is there a water storage system',
-     &      ' ','yes','no','Do not know',IDL,2)
-            IF(IDL.EQ.1)THEN
-              IDHWSS(IDHWSYS)=1
-              CALL EASKABC('Which of the following do you know',
-     &        '(Choose volume if you know both) ',
-     &        'Storage volume (lit)','Storage losses (MJ/month)',
-     &        'Do not know either',IDM,2)
-              DHWSPD(IDHWSYS,1)=0.0
-              DHWSPD(IDHWSYS,2)=0.0
-              DHWSPD(IDHWSYS,3)=0.0
-              DHWSPD(IDHWSYS,4)=0.0
-              DHWSPD(IDHWSYS,5)=0.0
-              IF(IDM.EQ.1)THEN
-                CALL EASKR(DHWSPD(IDHWSYS,1),
-     &          'Enter system volume (litres)',' ',
-     &          0.,'F',1000.,'-',100.,'DHW capacity ',IER,2)
-              ELSEIF(IDM.EQ.2)THEN
-                CALL EASKR(DHWSPD(IDHWSYS,2),
-     &          'Enter system losses (MJ/month)',' ',
-     &          0.,'F',1000000.,'-',10000.,'DHW capacity ',IER,2)
-              ENDIF
-              CALL EASKABC('Is there a water circulation loop',
-     &        ' ','yes','no','Do not know',IDN,2)
-              IF(IDN.EQ.1)THEN
-                IDHWSS(IDHWSYS)=2
-                CALL EASKAB('Do you know circulation losses (W/m)',
-     &          ' ','yes','no',IDO,2)
-                IF(IDO.EQ.1)THEN
-                  CALL EASKR(DHWSPD(IDHWSYS,3),
-     &            'Enter circulation losses (W/m)',' ',
-     &            0.,'F',10.,'-',50.,'DHW circ loss',IER,2)
+C Add storage and loop information (only if not instantaneous heater)
+            IF(IDHWS(NDHWSYS).EQ.3.OR.IDHWS(NDHWSYS).EQ.4)THEN
+              IDHWSS(NDHWSYS)=0
+              DHWSPD(NDHWSYS,1)=0.0
+              DHWSPD(NDHWSYS,2)=0.0
+              DHWSPD(NDHWSYS,3)=0.0
+              DHWSPD(NDHWSYS,4)=0.0
+              DHWSPD(NDHWSYS,5)=0.0
+            ELSE
+              IDHWSS(NDHWSYS)=0
+              CALL EASKABC('Is there a water storage system',
+     &        ' ','yes','no','Do not know',IDL,2)
+              IF(IDL.EQ.1)THEN
+                IDHWSS(NDHWSYS)=1
+                CALL EASKABC('Which of the following do you know',
+     &          '(Choose volume if you know both) ',
+     &          'Storage volume (lit)','Storage losses (MJ/month)',
+     &          'Do not know either',IDM,2)
+                DHWSPD(NDHWSYS,1)=0.0
+                DHWSPD(NDHWSYS,2)=0.0
+                DHWSPD(NDHWSYS,3)=0.0
+                DHWSPD(NDHWSYS,4)=0.0
+                DHWSPD(NDHWSYS,5)=0.0
+                IF(IDM.EQ.1)THEN
+                  CALL EASKR(DHWSPD(NDHWSYS,1),
+     &            'Enter system volume (litres)',' ',
+     &            0.,'F',1000.,'-',100.,'DHW capacity ',IER,2)
+                ELSEIF(IDM.EQ.2)THEN
+                  CALL EASKR(DHWSPD(NDHWSYS,2),
+     &            'Enter system losses (MJ/month)',' ',
+     &            0.,'F',1000000.,'-',10000.,'DHW capacity ',IER,2)
                 ENDIF
-                CALL EASKAB('Do you know pump power (kW)',
-     &          ' ','yes','no',IDP,2)
-                IF(IDP.EQ.1)THEN
-                  CALL EASKR(DHWSPD(IDHWSYS,4),
-     &            'Enter pump power (kW)',' ',
-     &            0.,'F',10.,'-',10.,'DHW pump power ',IER,2)
-                ENDIF
-                CALL EASKAB('Do you know loop length (m)',
-     &          ' ','yes','no',IDQ,2)
-                IF(IDQ.EQ.1)THEN
-                  CALL EASKR(DHWSPD(IDHWSYS,5),
-     &            'Enter loop length (m)',' ',
-     &            0.,'F',10000.,'-',1000.,'DHW loop length ',IER,2)
+                CALL EASKABC('Is there a water circulation loop',
+     &          ' ','yes','no','Do not know',IDN,2)
+                IF(IDN.EQ.1)THEN
+                  IDHWSS(NDHWSYS)=2
+                  CALL EASKAB('Do you know circulation losses (W/m)',
+     &            ' ','yes','no',IDO,2)
+                  IF(IDO.EQ.1)THEN
+                    CALL EASKR(DHWSPD(NDHWSYS,3),
+     &              'Enter circulation losses (W/m)',' ',
+     &              0.,'F',10.,'-',50.,'DHW circ loss',IER,2)
+                  ENDIF
+                  CALL EASKAB('Do you know pump power (kW)',
+     &            ' ','yes','no',IDP,2)
+                  IF(IDP.EQ.1)THEN
+                    CALL EASKR(DHWSPD(NDHWSYS,4),
+     &              'Enter pump power (kW)',' ',
+     &              0.,'F',10.,'-',10.,'DHW pump power ',IER,2)
+                  ENDIF
+                  CALL EASKAB('Do you know loop length (m)',
+     &            ' ','yes','no',IDQ,2)
+                  IF(IDQ.EQ.1)THEN
+                    CALL EASKR(DHWSPD(NDHWSYS,5),
+     &              'Enter loop length (m)',' ',
+     &              0.,'F',10000.,'-',1000.,'DHW loop length ',IER,2)
+                  ENDIF
                 ENDIF
               ENDIF
             ENDIF
@@ -2671,9 +2687,10 @@ C Otherwise take the suggested values (gains) for the specified
 C lighting type
           elseif(ILIGHTUSER(IZ).eq.0)then
             if(ILITYP(IZ).gt.0)then
-              write(outs,'(4A,I4)') 'default_type ',
-     &          'Zone ',zname(iz),' is linked to lighting type ',
-     &          ILITYP(IZ),TLIGHT(ILITYP(IZ))
+              write(outs,'(4A)') 'default_type ',
+     &          'Zone ',zname(iz),' is linked to lighting type '
+              call edisp(itu,outs)
+              write(outs,'(I4,A)')ILITYP(IZ),TLIGHT(ILITYP(IZ))
             else
               write(outs,'(3A)') 'Zone ',zname(iz)(1:lnb),
      &         ' is linked to lighting type  0 (undefined type)'
@@ -3153,7 +3170,7 @@ C EDSBMBLD edits the building contact definition within the UK NCM file.
       common/pophelp/h(60)
       character h*72
       DIMENSION ITEMS(33)
-      character HEAD*30,ITEMS*50,D64*64,D20*20
+      character HEAD*30,ITEMS*50,D64*64,D20*20,outs*124
       integer INO
             
 C Enter building, owner and verifier information      
@@ -3213,102 +3230,142 @@ C Produce help text for the menu.
         CALL PHELPD(HEAD,6,'-',0,0,IER)
       ELSEIF(INO.EQ.1)THEN
   
-C Building/owner/certifier data description
+C Building project description. Echo after edit.
         H(1)='Input a succinct description of the project name here.'
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
      &    20,D20,'project name',IER,1)
         call tstamp('>','PRJ: edited project name')
+        write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.3)THEN
   
-C Building/owner/certifier data description
+C Building address. Echo after edit.
         H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
      &    64,D64,'build address',IER,1)
         call tstamp('>','PRJ: edited project address')
+        write(outs,'(2a)')'Building address: ',
+     &    baddress(1:lnblnk(baddress))
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.5)THEN
   
-C Building/owner/certifier data description
+C Building city name. Echo after edit.
         H(1)='Input the names of the town/city of the building.'
         CALL EASKS(bcity,'building city?','(<64 characters)',
      &    64,D64,'city building',IER,1)
         call tstamp('>','PRJ: edited project city')
+        write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity)) 
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.7)THEN
   
-C Building/owner/certifier data description
+C Building post code. Echo after edit.
         H(1)='Input for: building post code'
         CALL EASKS(buildingPC,'building post code?',
      &    '(<64 characters)',64,D64,'building PC',IER,1)
         call tstamp('>','PRJ: edited project post code')
+        write(outs,'(2a)')'Building Postcode: ',
+     &    buildingPC(1:lnblnk(buildingPC))  
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.9)THEN
 
-C Building/owner/certifier data description
+C Building owner name. Echo after edit.
         H(1)='Input a succinct description of the owner name here'
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
      &    64,D64,'owner name',IER,1)
         call tstamp('>','PRJ: edited project owner name')
+        write(outs,'(2a)')'Building owner name: ',
+     &    ownername(1:lnblnk(ownername))
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.11)THEN
   
-C Building/owner/certifier data description
+C Building owner phone number.
         H(1)='telephone number of the owner'
         CALL EASKS(ownertel,'Phone of owner?','(<64 characters)',
      &    64,D64,'owner tel',IER,1)
         call tstamp('>','PRJ: edited project owner phone')
+        write(outs,'(2a)')'Building owner telephone: ',
+     &    ownertel(1:lnblnk(ownertel))
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.13)THEN
   
-C Building/owner/certifier data description
+C Building owner address.
         H(1)='Street address of the owner'
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
      &    64,D64,'owner address',IER,1)
         call tstamp('>','PRJ: edited project owner address')
+        write(outs,'(2a)')'Building owner address: ',
+     &    owneraddr(1:lnblnk(owneraddr)) 
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.15)THEN
   
-C Building/owner/certifier data description
+C Building owner city.
         H(1)='City (where the owner is located)'
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
      &    64,D64,'owner city',IER,1)
         call tstamp('>','PRJ: edited project owner city')
+        write(outs,'(2a)')'Building owner city: ',
+     &    ownercity(1:lnblnk(ownercity)) 
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.17)THEN
   
-C Building/owner/certifier data description
+C Building owner postcode.
         H(1)='Post code (where the owner is located)'
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
      &    64,D64,'owner post code',IER,1)
         call tstamp('>','PRJ: edited project owner postcode')
+        write(outs,'(2a)')'Building owner Postcode: ',
+     &    ownerPC(1:lnblnk(ownerPC))
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.19)THEN
   
-C Building/owner/certifier data description
+C Building certifier name.
         H(1)='certifier name'
         CALL EASKS(certifname,'Name of certifier?','(<64 characters)',
      &    64,D64,'certifier name',IER,1)
         call tstamp('>','PRJ: edited project certifier')
+        write(outs,'(2a)')'Certifier name: ',
+     &    certifname(1:lnblnk(certifname)) 
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.21)THEN 
       
-C Building/owner/certifier data description
+C Building certifier phone number.
         H(1)='certifier telephone number'
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
      &    64,D64,'certifier tel',IER,1)
         call tstamp('>','PRJ: edited project certifier phone')
+        write(outs,'(2a)')'Certifier telephone: ',
+     &    certTel(1:lnblnk(certTel)) 
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.23)THEN 
       
-C Building/owner/certifier data description
+C Building certifier address.
         H(1)='certifier street address'
         CALL EASKS(certaddress,'Address of certifier?',
      &    '(<64 characters)',64,D64,'certifier address',IER,1)
         call tstamp('>','PRJ: edited project cert address')
+        write(outs,'(2a)')'Certifier address: ',
+     &    certaddress(1:lnblnk(certaddress))   
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.25)THEN 
       
-C Building/owner/certifier data description
+C Building certifier city.
         H(1)='Name of city of the certifier.'
         CALL EASKS(certcity,'City of certifier?','(<64 characters)',
      &    64,D64,'certifier city',IER,1)
         call tstamp('>','PRJ: edited project certifier city')
+        write(outs,'(2a)')'Certifier city: ',
+     &    certcity(1:lnblnk(certcity))  
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.27)THEN 
       
-C Building/owner/certifier data description
+C Building certifier postcode.
         H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
      &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
         call tstamp('>','PRJ: edited project cert post code')
+        write(outs,'(2a)')'Certifier postcode: ',
+     &    certPC(1:lnblnk(certPC))  
+        call edisp(iuout,outs)
       ELSEIF(INO.EQ.29)THEN 
 
 C Enter all information
@@ -3354,6 +3411,7 @@ C Enter all information
         H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
      &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
+        call lstncm('p',iuout)
       ELSEIF(INO.EQ.31)THEN 
 
 C Display information
@@ -3377,13 +3435,17 @@ C EDSBMASSOR edits the assessor contact definition within the UK NCM file.
       common/pophelp/h(60)
       character h*72
       DIMENSION ITEMS(33)
-      character HEAD*30,ITEMS*50,D64*64
+      character HEAD*30,ITEMS*50,D64*64,outs*124
       integer INO
 
+C List current state of the energy assessor data.
+      call lstncm('e',iuout)
+
 C Enter energy assessor and additional building information      
-  55  CALL EDISP(IUOUT,
+      CALL EDISP(IUOUT,
      &  'Enter Energy Assessor and additional building details')
-      INO=-1
+
+  55  INO=-1
       ITEMS(1)  = 'a Unique Property Reference Number (UPRN): '
       write(ITEMS(2),'(2A)') '  ',UPRN(1:48)
       ITEMS(3)  = 'b Inspection date: '
@@ -3447,9 +3509,12 @@ C (it may be a mix of letters and numbers).
         CALL EASKS(UPRN,'UPR Number ?','(<64 characters)',
      &    64,D64,'UPR Number',IER,2)
         call tstamp('>','PRJ: edited UPRN')
+        write(outs,'(2a)') 'Unique Property Reference Number (UPRN): ',
+     &    UPRN(1:lnblnk(UPRN))
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.3)THEN
 
-C Month and day of month of inspection
+C Month and day of month of inspection.
         H(1)='Input the month and the day of the month of the '
         H(2)='inspection. Applicable only for England, '
         H(3)='Wales & Northern Ireland.'
@@ -3458,19 +3523,27 @@ C Month and day of month of inspection
         CALL EASKI(M_inspect,' ','Month of inspection?',
      &    1,'W',12,'W',1,'month',IERI,3)     
 
-C Year for which the energy assessor inspected the building
+C Year for which the energy assessor inspected the building.
         H(1)='Input the year of the inspection. Applicable '
         H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKI(Y_inspect,' ','Year of inspection?',
      &    1900,'W',2080,'W',2009,'year',IERI,2)
         call tstamp('>','PRJ: edited date of inspection')
+        write(outs,'(A,I2,A,I2,A,I4)') 'Inspection date: ',
+     &    D_inspect,'  ',M_inspect,'  ',Y_inspect
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.5)THEN
   
 C Accreditation scheme
-        H(1)='Input certifier/energy assessor accreditation scheme'
+        H(1)='Input certifier/energy assessor accreditation scheme.'
+        H(2)='Applicable only for England, Wales & Northern Ireland.'
+        H(3)='This is the scheme name from CIBSE or BRE. '
         CALL EASKS(Accr_Scheme,'Accreditation scheme ?',
-     &    '(<64 characters)',64,D64,'accreditation scheme',IER,1)
+     &    '(<64 characters)',64,D64,'accreditation scheme',IER,3)
         call tstamp('>','PRJ: edited accreditation scheme')
+        write(outs,'(2a)') 'Accreditation Scheme (E,W and NI only): ',
+     &    Accr_Scheme(1:lnblnk(Accr_Scheme)) 
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.7)THEN
 
 C Assessor registration number
@@ -3486,6 +3559,10 @@ C Assessor registration number
      &    '(<64 characters)',64,D64,'assessor number',IER,1)
         call tstamp('>','PRJ: edited assessor registration number')
         D64='<this item has not been described>'
+        write(outs,'(2a)') 
+     &    'Assessor registration number (E,W and NI only):',
+     &     assessRegNumber(1:lnblnk(assessRegNumber))
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.9)THEN
   
 C Employer or trading name of energy assessor
@@ -3495,6 +3572,10 @@ C Employer or trading name of energy assessor
         CALL EASKS(empl_Trading_name,'Employer/trading name ?',
      &    '(<64 characters)',64,D64,'trading name',IER,3)
         call tstamp('>','PRJ: edited employer/traing name')
+        write(outs,'(2a)') 
+     &    'Employer/trading name of energy assessor: ',
+     &    empl_Trading_name(1:lnblnk(empl_Trading_name))
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.11)THEN
   
 C Employer/trading address of energy assessor
@@ -3504,6 +3585,10 @@ C Employer/trading address of energy assessor
         CALL EASKS(addr_empl_Trading,'Employer/trading address ?',
      &    '(<64 characters)',64,D64,'owner address',IER,3)
         call tstamp('>','PRJ: edited employer/trading address')
+        write(outs,'(2a)') 
+     &    'Employer/trading name of energy assessor: ',
+     &    empl_Trading_name(1:lnblnk(empl_Trading_name))
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.13)THEN
   
 C Related party disclosure
@@ -3513,6 +3598,9 @@ C Related party disclosure
         CALL EASKS(party_disclosure,'Party disclosure ?',
      &    '(<64 characters)',64,D64,'owner city',IER,3)
         call tstamp('>','PRJ: edited party disclosure')
+        write(outs,'(2a)') 'Related party disclosure: ',
+     &    party_disclosure(1:lnblnk(party_disclosure))
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.15)THEN
   
 C Qualifications of the energy assessor (3 choices)
@@ -3530,6 +3618,9 @@ C Qualifications of the energy assessor (3 choices)
           write(qualifications_assessor,'(A)') 'NOS5'   
         endif
         call tstamp('>','PRJ: edited qualifications')
+        write(outs,'(2a)') 'Qualifications of energy assessor:',
+     &    qualifications_assessor(1:lnblnk(qualifications_assessor))
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.17)THEN
   
 C Name of the energy assessor's insurance company
@@ -3538,6 +3629,9 @@ C Name of the energy assessor's insurance company
         CALL EASKS(insurer_Company,'Name of insurance company ?',
      &    '(<64 characters)',64,D64,'insurance company',IER,2)
         call tstamp('>','PRJ: edited insurer company name')
+        write(outs,'(2a)') 'Insurance company: ',
+     &    insurer_Company(1:lnblnk(insurer_Company))
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.19)THEN 
   
 C The energy assessor's insurance policy number
@@ -3546,6 +3640,9 @@ C The energy assessor's insurance policy number
         CALL EASKS(policyNumberInsurance,'Policy number ?',
      &    '(<64 characters)',64,D64,'policy number',IER,2)
         call tstamp('>','PRJ: edited insurance policy number')
+        write(outs,'(2a)') 'Insurance policy number: ',
+     &    policyNumberInsurance(1:lnblnk(policyNumberInsurance))
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.21)THEN 
       
 C Insurance policy start date 
@@ -3559,6 +3656,9 @@ C Insurance policy start date
         CALL EASKI(S_Yinsur,' ','Insurance start (year)?',
      &    1900,'W',2080,'W',2009,'year',IERI,3)
         call tstamp('>','PRJ: edited start date of insurance')
+        write(outs,'(A,I2,A,I2,A,I4)') 'Insurance policy start date: ',
+     &    S_Dinsur,'  ',S_Minsur,'  ',S_Yinsur
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.23)THEN 
       
 C Insurance policy expiry date - year
@@ -3572,6 +3672,9 @@ C Insurance policy expiry date - year
         CALL EASKI(E_Yinsur,' ','Insurance expiry (year)?',
      &    1900,'W',2080,'W',2010,'year',IERI,3)
         call tstamp('>','PRJ: edited expiry date of insurance')
+        write(outs,'(A,I2,A,I2,A,I4)')'Insurance policy expiry date: ',
+     &    E_Dinsur,'  ',E_Minsur,'  ',E_Yinsur
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.25)THEN 
 
 C Insurance policy cover limit
@@ -3581,15 +3684,21 @@ C Insurance policy cover limit
         CALL EASKI(pi_limit,' ','Insurance cover limit?',
      &    1,'W',999999999,'W',500000,'cover limit',IERI,3)
         call tstamp('>','PRJ: edited insurance cover limit')                    
+        write(outs,'(A,I9)') 'Insurance policy cover limit: ',
+     &    pi_limit
+        call edisp(iuout,outs)          
       ELSEIF(INO.EQ.27)THEN 
 
 C Define the complexity level
-        H(1)='Complexity level of the project.'
-        H(2)='Applicable only for England, Wales & '          
-        H(3)='Northern Ireland. There are 4 choices: '
-        H(4)='Undefined, Level 3, Level 4 and Level 5'
+        H(1)='Complexity level of the project. Applicable only for'
+        H(2)='England, Wales & Northern Ireland.'          
+        H(3)='There are 4 choices: '
+        H(4)=' Undefined - no opinion (yet)'
+        H(5)=' Level 3 less than 100kW heating & less than 12kW cooling'
+        H(6)=' Level 4 more than 100kW heating & 12kW cooling'
+        H(7)=' Level 5 building cannot be done via sBEM.'
         CALL EASKABCD(' ','Complexity level ?',
-     &    'Undefined','Level 3','Level 4','Level 5',IW,4)
+     &    'Undefined','Level 3','Level 4','Level 5',IW,7)
         if(IW.eq.1)then
           write(pjLevComplexity,'(A)') 'Undefined'
         elseif(IW.eq.2)then
@@ -3600,6 +3709,9 @@ C Define the complexity level
           write(pjLevComplexity,'(A)') 'Level 5'   
         endif
         call tstamp('>','PRJ: edited complexity level')
+        write(outs,'(2a)') 'Complexity level of the project: ',
+     &    pjLevComplexity(1:lnblnk(pjLevComplexity))
+        call edisp(iuout,outs)
       ENDIF
       IF(INO.NE.nitms)GOTO 55
       return
@@ -3631,7 +3743,10 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
       integer INO
       logical NEAR
       real Air_infilt
-      
+
+C Echo the current state of regulations.
+      call lstncm('b',iuout)
+   
 C Enter building regulations to be used. Clear array signaling
 c individual editing of infiltration.
       do 230 IZ=1,NCOMP
@@ -3729,8 +3844,13 @@ C values are approximations
         ELSE                       ! nominal permeability value of 20
           ICIBSE3=1
         ENDIF
-        ACH(IZ)=CIBSEACH(ICIBSE1,ICIBSE2,ICIBSE3)
-        call usrmsg('Appropriate air change rates selected',' ','W')
+        do 2331 icomp=1,ncomp
+          ach(icomp)=CIBSEACH(ICIBSE1,ICIBSE2,ICIBSE3)
+          write(outs,'(A,F6.4,2A)')'Air change rate of ',ACH(1),
+     &    ' ac/h selected from CIBSE Guide A tables for zone ',
+     &    zname(icomp)
+          call edisp(iuout,outs)
+ 2331   continue
       ELSE
 
 C Approximate zone infiltration based on volume unless
@@ -3749,6 +3869,9 @@ C the user already edited the value.
           endif
  231    continue
       ENDIF
+
+C Echo back the current state of building regs.
+      call lstncm('b',iuout)
          
 C Enter air changes per hour for every zone as air leakage
 C This will be added to the ventilation rates taken from the tdf (as
@@ -3899,10 +4022,7 @@ C G9 holds information on children of a surface.
 
       common/FILEP/IFIL
 
-C Where ESP-r was installed (as recorded when it was compiled).
-      common/deflt4/dinstpath
-
-      CHARACTER*1 ACT,fs
+      CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension 
       character APE*6    ! up to 6 characters in variant name
       CHARACTER SSPARENT*12,SPARENT*12
@@ -3910,7 +4030,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,NNAME*72,H*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
-      character dinstpath*48,SN*12
+      character SN*12
       CHARACTER SNAME*12,SOTF*32,SMLCN*32,SVFC*4,SOTHER*24,SUSE*8
       CHARACTER*12 XJCCU,XKCCU
 
@@ -3926,20 +4046,11 @@ C irmw keeps track of up to 90 surfaces in each zone which can be deleted
       DIMENSION XVDAREA(MCON) ! Vehicle door area in surface
       DIMENSION XDWAREA(MCON) ! Display window area in surface
       DIMENSION XNWAREA(MCON) ! Normal window area in surface
-      logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
 C      logical closeelv ! true if surface is close to vertical
       LOGICAL MODIFY,MODLEN,MODBND,QUIET,XST,NEAR
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
 
 C Initialise variables
       SN=' '
@@ -3979,22 +4090,17 @@ C Set flag for cfg file that this is a notional model
 
 C Assign standard databases containing UK NCM materials and constructions
 C These files are UK_notional.constrdb, material.db3.a and optics.db2
-
-C << consider using ipathmul and ipathmat and ipathoptdb here >>
- 
-      WRITE(LFMAT,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &  FS,'databases',FS,'material.db3.a'
-      WRITE(LFMUL,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &  FS,'databases',FS,'UK_notional.constrdb'
-      WRITE(LOPTDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &  FS,'databases',FS,'optics.db2'
-      WRITE(LPCDB,'(5A)')DINSTPATH(1:LNBLNK(DINSTPATH)),
-     &FS,'databases',FS,'plantc.db1'
-
-C Reset path flags so that standard location is not appended (again) to
-C standard database locations
-      ipathoptdb=1
-      ipathpcdb=1
+C As they will be in the standard database folder use the *std...
+      ipathmat=2
+      WRITE(LFMAT,'(A)') 'material.db3.a'
+      ipathmul=2
+      WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
+      ipathoptdb=2
+      WRITE(LOPTDB,'(A)') 'optics.db2'
+      ipathpcdb=2
+      WRITE(LPCDB,'(A)') 'plantc.db1'
+      ipathsbem=2
+      WRITE(LSBEM,'(a)') 'SBEM.db1'
       call opendb(ier)
 
 C Loop through each zone in the model and first scan in the zone
@@ -5119,6 +5225,9 @@ C IMODE = 4 -> Typical model
       COMMON/FILEP/IFIL
       INTEGER IFIL
 
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER IUOUT,IUIN
+
       common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
 
@@ -5129,7 +5238,7 @@ C IMODE = 4 -> Typical model
       INTEGER IUR,ND,ISTAT,K,LTW2,ICDHW,IER,IMODE,
      & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp
       CHARACTER LTXTF*72,OUTSTR*248,WORD1*72,WORD2*24,WORD3*24,
-     & LASTZONE*12,TWOL*2
+     & LASTZONE*12,TWOL*2,outs*124
       LOGICAL EOF,Getmonth,cl
       REAL VALZ,tbasea,Heating_efficiency,Cooling_efficiency,
      & DHW_efficiency,total_Heat_S,total_Cool_S,total_DHW_S,total_Light,
@@ -5161,8 +5270,11 @@ C Get text file name and initialise variables
       CALL EFOPSEQ(IUR,LTXTF,1,IER)
       if(ier.eq.0)THEN
         write(currentfile,'(a)') LTXTF(1:lnblnk(LTXTF))
-      ELSE ! WARNING MESSAGE HERE
-      eNDIF
+      ELSE ! warn if file could not be opened
+        write(outs,'(2a)') 'could not open ',ltxtf(1:72)
+        call edisp(iuout,outs)
+        write(currentfile,'(a)') LTXTF(1:lnblnk(LTXTF))
+      ENDIF
 
       EOF=.FALSE.
       LASTZONE=ZNAME(NCOMP)

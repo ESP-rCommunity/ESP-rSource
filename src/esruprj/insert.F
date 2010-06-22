@@ -2192,12 +2192,6 @@ C edited to a thick line if currently in graphics mode.
         goto 72
       endif
 
-C Remind use of parent surface length and height (bounding box).
-      CALL SURLEHI(IS,XYMAX,ZMAX)
-      Write(outs,'(a,f7.3,a,f6.3,a)') 'Parent surface width = ',
-     &  XYMAX,' m, and height = ',ZMAX,' m.'
-      call edisp(itru,outs)
-
 C Insert within surface or at bottom edge (as in a door).
       H(1)='When adding a rectangular opening (e.g. a window or'
       H(2)='door) to a surface you specify its position within'
@@ -2253,7 +2247,7 @@ C vertices in this surface +6 are < MV.
           RETURN
         ENDIF
         XO1=0.1
-        ZO1=0.
+        ZO1=0.0
         XW=defdoorwidth
         ZH=defdoorheight
         guesstype='door_grill_frame'
@@ -2287,64 +2281,119 @@ C edited to a thick line if currently in graphics mode.
       endif
 
   43  if(IRT.eq.1)then
+
+C Report parent surface length and height (bounding box).
+        CALL SURLEHI(IS,XYMAX,ZMAX)
+        Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
+     &    XYMAX,' m, surface height = ',ZMAX,' m (bounding box).'
+        call edisp(itru,outs)
+
+C Warn if offsets or size are small.
         H(1)='The X offset is the distance from the lower left '
-        H(2)='corner of the parent surface (looking at the  '
+        H(2)='corner of the parent surface (looking at the'
         H(3)='outside face) to the left side of the new surface.'
-        H(4)=' '
-        H(5)='The Z offset is the distance from the bottom  '
-        H(6)='edge of the parent surface (looking at the '
-        H(7)='outside face) to the bottom of the new surface.'
-        H(8)=' '
-        H(9)='The opening width and height are in metres. '
+        H(4)='The X offset should be at least 20mm. '
+        H(5)=' '
+        H(6)='The Z offset is the distance from the bottom  '
+        H(7)='edge of the parent surface (looking at the '
+        H(8)='outside face) to the bottom of the new surface.'
+        H(9)='The Z offset should be at least 20mm.'
+        H(10)=' '
+        H(11)='The opening width and height are in metres. The'
+        H(12)='opening dimensions should be at least 100mm. '
         write(hold,'(4f8.3,a)') XO1,ZO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Z offset, Width, Height: (see help)',
-     &    ' ',36,' 0.2 0.8 1.0 1.0','Xoff Zoff width height',IER,9)
+     &    ' ',36,' 0.2 0.8 1.0 1.0','Xoff Zoff width height',IER,12)
         K=0
-        CALL EGETWR(HOLD,K,XO1,0.0,99.,'W','X offset',IER)
-        CALL EGETWR(HOLD,K,ZO1,0.0,99.,'W','Z offset',IER)
-        CALL EGETWR(HOLD,K,XW,0.0,99.,'W','width',IER)
-        CALL EGETWR(HOLD,K,ZH,0.0,99.,'W','height',IER)
+        CALL EGETWR(HOLD,K,XO1,0.025,99.0,'F','X offset',IER)
+        CALL EGETWR(HOLD,K,ZO1,0.025,99.0,'F','Z offset',IER)
+        CALL EGETWR(HOLD,K,XW,0.1,99.0,'F','width',IER)
+        CALL EGETWR(HOLD,K,ZH,0.1,99.0,'F','height',IER)
+
+C Test if the opening is going to be bigger than the bounding box.
+        if((XW+XO1).ge.XYMAX)then
+          call edisp(iuout,
+     &      'Width of new opening is bigger than bounding box!')
+          goto 43
+        elseif((ZH+ZO1).ge.ZMAX)then
+          call edisp(iuout,
+     &      'Height of new opening is bigger than bounding box!')
+          goto 43
+        endif
       elseif (IRT.eq.2)then
+
+C Report parent surface length and height (bounding box).
+        CALL SURLEHI(IS,XYMAX,ZMAX)
+        Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
+     &    XYMAX,' m, surface height = ',ZMAX,' m (bounding box).'
+        call edisp(itru,outs)
+
+C Warn if offsets or size are small.
         H(1)='The X offset is the distance from the left edge'
         H(2)='of the parent surface (looking at the outside '
-        H(3)='face) to the left side of the new surface. '
-        H(4)=' '
-        H(5)='The opening width and height are in metres. '
+        H(3)='face) to the left side of the new surface. It should'
+        H(4)='be at least 25mm (the edge generation will not be '
+        H(5)='correct with a zero offset)! '
+        H(6)=' '
+        H(7)='The opening width and height are in metres. The'
+        H(8)='door dimensions should be at least 100mm.'
         write(hold,'(3f8.3,a)') XO1,XW,ZH,'  '
         CALL EASKS(hold,
      &    'Insert: X offset, Width, Height (m): (see help)',
-     &    ' ',36,' 0.1 0.8 2.1','Xoff Zoff width height',IER,5)
+     &    ' ',36,' 0.1 0.8 2.1','Xoff Zoff width height',IER,8)
         K=0
-        CALL EGETWR(HOLD,K,XO1,0.0,99.,'W','X offset',IER)
-        CALL EGETWR(HOLD,K,XW,0.0,99.,'W','width',IER)
-        CALL EGETWR(HOLD,K,ZH,0.0,99.,'W','height',IER)
-      elseif (IRT.eq.3)then
+        CALL EGETWR(HOLD,K,XO1,0.025,99.,'F','X offset',IER)
+        CALL EGETWR(HOLD,K,XW,0.1,99.0,'F','width',IER)
+        CALL EGETWR(HOLD,K,ZH,0.1,99.0,'F','height',IER)
 
-C Ask for percentage.
-        hold=' '
-        H(1)='Define the surface area of the opening as a percentage'
-        H(2)='value of the parent surface (e.g. 40%).'
-        H(3)='The new surface will be located in the centre of the'
-        H(4)='parent surface.'
-        CALL EASKR(PERC,'Percentage of parent surface.',
-     &    ' ',0.,'F',99.,'F',15.0,'parent percentage',IER,4)
+C Test if the opening is going to be bigger than the bounding box.
+        if((XW+XO1).ge.XYMAX)then
+          call edisp(iuout,
+     &      'Width of new opening is bigger than bounding box!')
+          goto 43
+        elseif(ZH.ge.ZMAX)then
+          call edisp(iuout,
+     &      'Height of new opening is bigger than bounding box!')
+          goto 43
+        endif
+        if((XO1).lt.0.05)then
+          call edisp(iuout,
+     &      'Offset is to close to parent left vertical edge!')
+          goto 43
+        endif
+      elseif (IRT.eq.3)then
 
 C Determine parent surface length and height (bounding box).
         CALL SURLEHI(IS,XYMAX,ZMAX)
         Write(outs,'(a,f6.3,a,f6.3,a)') 'Parent surface width = ',
-     &    XYMAX,' m, surface height = ',ZMAX,' m.'
+     &    XYMAX,' m, surface height = ',ZMAX,' m (bounding box).'
         call edisp(itru,outs)
 
+C Ask for percentage between 5 and 95%.
+        hold=' '
+        H(1)='Define the surface area of the opening as a percentage'
+        H(2)='value of the parent surface (e.g. 40%).'
+        H(3)='The new surface will be located in the centre of the'
+        H(4)='parent surface. For best results choose a percentage'
+        H(5)='between 5 and 95.'
+        H(6)=' '
+        H(7)='The logic assumes that the parent surface is rectangular'
+        H(8)='and may result in strange shapes if it is not. '
+        CALL EASKR(PERC,'Percentage of parent surface.',
+     &    ' ',5.,'F',95.,'F',15.0,'parent percentage',IER,8)
+
 C Determine opening width, height, X offset and z offset.
-C << NOTE: this logic assumes a rectangular parent surface >>
-C << and the area will not be correct for other surface shapes. >>
+C NOTE: this logic assumes a rectangular parent surface
+C and the area will not be correct for other surface shapes.
         XW=(XYMAX*SQRT(PERC))/10
         ZH=(ZMAX*SQRT(PERC))/10
         XO1=((XYMAX-XW)/2)
         ZO1=((ZMAX-ZH)/2)
         guesstype='window_grill_frame'
       endif
+
+C If error state non-zero then jump back.
       if(ier.ne.0)goto 43
 
 C Transform existing surface into into site coordinates in the

@@ -143,77 +143,11 @@ C               the surface index in SOTHER(3) and the key word ANOTHER is
 C               put in SOTHER(1).
 C   SOTHER(i,1) = ANOTHER then SOTHER(2) is zone index and SOTHER(3) is
 C               the surface index in that zone (e.g. as IC2 and IE2).
-C SUSE (8 char * 2) is the usage of the surface as follows (note this is
-C    likely to be a temporary variable and will be depreciated in favour
-C    of SSUSE:
 
-C    Surfaces which function as opaque portions of a facade are
-C    marked as `WALL`. If they are vertical they will be composed
-C    of a code complient construction. If they are not vertical
-C    e.g. within 20 degree of vertical they could be composed of
-C    a code-complent roofing material. The 2nd array index is not
-C    used.
-
-C    The first array index for the case of doors is as follows:
-C    `DOOR` marks a normal door (inside or outside) which might be
-C       altered to conform to building regulations.
-C    'P-DOOR' marks a door for personel egress (e.g. a fire door) which
-C       has specific code requirments
-C    'H-DOOR' marks an entrance or other high-usage door.
-C    'V-DOOR' marks a door used for vehicle access
-C    The 2nd array index for the case of doors indicates the users
-C    preference for treating air movement and the allowed tags are:
-C    CLOSED UNDERCUT  OPEN  BIDIR
-
-C    Thie first array index for a frame associated with a door or window:
-C    `FRAME` marks a frame associated with an inside door or glazing,
-C    'F-FRAME' marks a frame within the facade which might need to be
-C       of a paricular area or construction for code compliance.
-C    The 2nd array index for frames is CLOSED CRACK OPEN
-
-C    The first array index for a glazing:
-C    'C-WINDOW' is a code complient window (e.g.construction or size)
-C    'D-WINDOW' is a display window which is not typically resized to
-C       meet code compliance
-C   .'S-WINDOW' is a code complient skylight (e.g.construction or size) 
-C    'WINDOW' any other window inside or exterior
-C    The 2nd array index for frames is CLOSED CRACK OPEN SASH BIDIR
-
-C    The first array index for a surface which the user wishes to 
-C    mark as an air supply or extract is 'GRILL':
-C    The 2nd array index for grills is SOURCE EXTRACT
-
-C    A suface which represents a fire smoke vent location is marked
-C    with 'SMOKEVNT' and the 2nd array index is un-used. For code
-C    complience such surfaces would be converted to the relevant
-C    wall or roof construction.
-
-C    The opaque portion of roofs are maked as 'ROOF' and the 2nd
-C    array index is 'FLAT' (0-20 degree incline) or 'PITCHED'. Note
-C    that a wall which is not vertical may be converted to a roof
-C    construction type.
-
-C    Surfaces which `are-not-there` e.g. fictitious are marked 'FICT'
-C    and the 2nd array index can be: CLOSED CRACK OPEN BIDIREC
-
-C    Surfaces which represent internal or ground-contact floors are
-C    marked with 'FLOOR' and the 2nd index is 'EXTGRND' or '- ' to
-C    signal ground connection or internal.  A raised floor above a
-C    ground connected crawl-space is ambiguious.
-
-C    Surfaces which represent internal mass are marked 'FURNI' and
-C    the 2nd array index is un-used.
-
-C    Surface which are used as internal partitions are marked 'PARTN'
-C    and the 2nd array index is un-used.
-
-C    Interior surfaces can be marked as 'STRUC' for structural elements
-C    such as beams and columns and the 2nd array index is un-used.
-
-C    otherwise  -,-  is the initial state for newly created surfaces
-C    and surfaces which the user has not yet expressed an opinion. This
-C    can also be used for internal surfaces which may not be of concern
-C    within building code complence assessments.
+C SUSE (8 char * 2) is the usage of the surface. This concept is not
+C supported in the older versions of geometry file and a  -,-  the
+C initial state for newly created surfaces and surfaces which the user
+C has not yet expressed an opinion is assumed.
 
 C SPARENT(MS) (12 char) the name of the parent surface or '-'
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -1353,6 +1287,74 @@ C               the surface index in that zone (e.g. as IC2 and IE2).
 C SUSE (8 char * 2) is the usage of the surface.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
+
+C    Surfaces which function as opaque portions of a facade are
+C    marked as `WALL`. If they are vertical they will be composed
+C    of a code complient construction. If they are not vertical
+C    e.g. within 20 degree of vertical they could be composed of
+C    a code-complent roofing material. The 2nd array index is not
+C    used.
+
+C    The first array index for the case of doors is as follows:
+C    `DOOR` marks a normal door (inside or outside) which might be
+C       altered to conform to building regulations.
+C    'P-DOOR' marks a door for personel egress (e.g. a fire door) which
+C       has specific code requirments
+C    'H-DOOR' marks an entrance or other high-usage door.
+C    'V-DOOR' marks a door used for vehicle access
+C    The 2nd array index for the case of doors indicates the users
+C    preference for treating air movement and the allowed tags are:
+C    CLOSED UNDERCUT  OPEN  BIDIR
+
+C    Thie first array index for a frame associated with a door or window:
+C    `FRAME` marks a frame associated with an inside door or glazing,
+C    'F-FRAME' marks a frame within the facade which might need to be
+C       of a paricular area or construction for code compliance.
+C    The 2nd array index for frames is CLOSED CRACK OPEN
+
+C    The first array index for a glazing:
+C    'C-WINDOW' is a code complient window (e.g.construction or size)
+C    'D-WINDOW' is a display window which is not typically resized to
+C       meet code compliance
+C   .'S-WINDOW' is a code complient skylight (e.g.construction or size) 
+C    'WINDOW' any other window inside or exterior
+C    The 2nd array index for frames is CLOSED CRACK OPEN SASH BIDIR
+
+C    The first array index for a surface which the user wishes to 
+C    mark as an air supply or extract is 'GRILL':
+C    The 2nd array index for grills is SOURCE EXTRACT
+
+C    A suface which represents a fire smoke vent location is marked
+C    with 'SMOKEVNT' and the 2nd array index is un-used. For code
+C    complience such surfaces would be converted to the relevant
+C    wall or roof construction.
+
+C    The opaque portion of roofs are maked as 'ROOF' and the 2nd
+C    array index is 'FLAT' (0-20 degree incline) or 'PITCHED'. Note
+C    that a wall which is not vertical may be converted to a roof
+C    construction type.
+
+C    Surfaces which `are-not-there` e.g. fictitious are marked 'FICT'
+C    and the 2nd array index can be: CLOSED CRACK OPEN BIDIREC
+
+C    Surfaces which represent internal or ground-contact floors are
+C    marked with 'FLOOR' and the 2nd index is 'EXTGRND' or '- ' to
+C    signal ground connection or internal.  A raised floor above a
+C    ground connected crawl-space is ambiguious.
+
+C    Surfaces which represent internal mass are marked 'FURNI' and
+C    the 2nd array index is un-used.
+
+C    Surface which are used as internal partitions are marked 'PARTN'
+C    and the 2nd array index is un-used.
+
+C    Interior surfaces can be marked as 'STRUC' for structural elements
+C    such as beams and columns and the 2nd array index is un-used.
+
+C    otherwise  -,-  is the initial state for newly created surfaces
+C    and surfaces which the user has not yet expressed an opinion. This
+C    can also be used for internal surfaces which may not be of concern
+C    within building code complence assessments.
 
 C The connections based variant of G5 which can be instanciated
 C if the common block C24 has been filled.
@@ -4365,8 +4367,8 @@ C G9 holds information on children of a surface.
 
       DIMENSION IDVN(MV),nTbchild(MCON)
       DIMENSION ICOMVER(MS)  ! icomver is the number of vertices in common
-      dimension idupv(MS,5)    ! duplicate vertex indices
-      dimension iduplist(MS,5) ! position in list
+      dimension idupv(MS,6)    ! duplicate vertex indices
+      dimension iduplist(MS,6) ! position in list
       LOGICAL PARENT,closeazi,closeelv
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
@@ -4381,7 +4383,7 @@ C Initialise various variables
       do 10 isur=1,NZSUR(ICOMP)
         icc=IZSTOCN(icomp,isur)
         ssparent(icc)='-'
-        do 20 i=1,5
+        do 20 i=1,6
           idupv(isur,i)=0     ! clear duplicate vertex index
           iduplist(isur,i)=0  ! clear duplicate position
  20     continue

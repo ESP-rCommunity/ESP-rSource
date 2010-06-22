@@ -5119,6 +5119,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       character outs*124,headv*48
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
+      logical anotherone  ! to signal that another point will be requested
 #ifdef OSI
       integer iix,iiy
 #else
@@ -5132,6 +5133,10 @@ C Initial values for vertex at angle facility.
       x3=0.0
       y3=0.0
       z3=0.0
+      anotherone=.false.
+      iwhich=0
+      iwhich1=0
+      iwhich2=0
 
 C Initialise zone vertex menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -5205,6 +5210,8 @@ C List help text for the vertex menu.
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
         CALL VERINFO(ITRU)
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
+
+C Vertex transforms (start).
         H(1)='*--x-* Vertex on a line: finds one or more points'
         H(2)='along a line (defined by specifying two vertices).'
         H(3)=' '
@@ -5239,173 +5246,63 @@ C List help text for the vertex menu.
      &   'g distance from vertex to a line',
      &   'h align vertex with a line','i find close vertices',
      &   'j move vertices along a line','k do nothing',' ',ino,idno,24)
-        if(ino.eq.0.or.ino.eq.11)then
+
+C Based on users selection or jump back point for 'do another one'.
+ 243     if(ino.eq.0.or.ino.eq.11)then
           continue
         elseif(ino.eq.1)then
 
 C Vertices along a line between two verts.
-          inpick=2
-          CALL EPMENSV
-          call EPKVERT(INPICK,IVLST,'Define Line',
-     &      'Select two vertices to define line.',' ',16,ier)
-          CALL EPMENRC
-  72      if(inpick.eq.2)then
-            iwhich1=IVLST(1)
-            iwhich2=IVLST(2)
-            tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
-     &        Y(IWHICH2),Z(IWHICH2))
-            write(outs,'(a,i2,a,i2,a,f9.4)') ' Distance between v ',
-     &        IWHICH1,' & v ',IWHICH2,' =',tdis
-            call edisp(itru,outs)
+          if(anotherone)then
+            inpick=2
+          else
+            inpick=2
+            CALL EPMENSV
+            call EPKVERT(INPICK,IVLST,'Define Line',
+     &        'Select two vertices to define line.',' ',16,ier)
+            CALL EPMENRC
+            if(inpick.eq.2)then
+              iwhich1=IVLST(1)
+              iwhich2=IVLST(2)
+            else
+              goto 3
+            endif
+          endif
 
-            H(1)='Distance along the line in metres.'
-            CALL EASKR(vdis,' ','Distance along line?',0.001,
-     &        'F',99.999,'W',0.1,'dist along line',IER,1)
+C Find distance and report.
+          tdis= crowxyz(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),X(IWHICH2),
+     &      Y(IWHICH2),Z(IWHICH2))
+          write(outs,'(a,i2,a,i2,a,f9.4)') ' Distance between v ',
+     &      IWHICH1,' & v ',IWHICH2,' =',tdis
+          call edisp(itru,outs)
+
+          H(1)='Distance along the line in metres.'
+          CALL EASKR(vdis,' ','Distance along line?',0.001,
+     &      'F',99.999,'W',0.1,'dist along line',IER,1)
 
 C Use ratio calculation.
-            r2 = tdis - vdis
-            r1 = vdis
-            x3 = ((r2 * X(IWHICH1)) + (r1 * X(IWHICH2)))/tdis
-            y3 = ((r2 * Y(IWHICH1)) + (r1 * Y(IWHICH2)))/tdis
-            z3 = ((r2 * Z(IWHICH1)) + (r1 * Z(IWHICH2)))/tdis
+          r2 = tdis - vdis
+          r1 = vdis
+          x3 = ((r2 * X(IWHICH1)) + (r1 * X(IWHICH2)))/tdis
+          y3 = ((r2 * Y(IWHICH1)) + (r1 * Y(IWHICH2)))/tdis
+          z3 = ((r2 * Z(IWHICH1)) + (r1 * Z(IWHICH2)))/tdis
   
-            write(outs,'(a,3f10.4)') ' Vertex is at X,Y,Z:',x3,y3,z3
-            call edisp(itru,outs)
+          write(outs,'(a,3f10.4)') ' Vertex is at X,Y,Z:',x3,y3,z3
+          call edisp(itru,outs)
 
 C Show the new point on the current wireframe.
-            COG1(1)=x3
-            COG1(2)=y3
-            COG1(3)=z3
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            call ecirc(iix,iiy,3,1)
-            call forceflush()
-            if(NTV.lt.MTV)then
-              h(1)='This can become a new vertex. '
-              write(outs,'(a,i2,a)') 'Make this (',NTV+1,') a:'
-              CALL EASKABC(outs,' ','new vertex',
-     &          'new vertex after editing','cancel',INVT,1)
-              if(INVT.eq.1)then
+          COG1(1)=x3
+          COG1(2)=y3
+          COG1(3)=z3
+          CALL VECTRN(COG1,TEMAT,COG2,IER)
+          CALL VECTRN(COG2,ETSMAT,COG3,IER)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          call ecirc(iix,iiy,3,1)
+          call forceflush()
 
-C Update the global coordinates for this zones surfaces so that
-C the subsequent wireframe image can be drawn and the bounds of
-C the zone can be calculated.
-                NTV=NTV+1
-                NZTV(icomp)=NTV
-                x(ntv)=x3
-                y(ntv)=y3
-                z(ntv)=z3
-                VCOORD(ICOMP,ntv,1)=x3
-                VCOORD(ICOMP,ntv,2)=y3
-                VCOORD(ICOMP,ntv,3)=z3
-              elseif(INVT.eq.2)then
-                NTV=NTV+1
-                NZTV(icomp)=NTV
-                WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
-                H(1)='The vertex coordinates should be in metres.'
-                H(2)='It is not advisable for Z to be negative.'
-                write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
- 443            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0.','vtx co',IER,2)
-                K=0
-                CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
-                CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
-                CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
-                if(ier.ne.0)goto 443
-                VCOORD(ICOMP,ntv,1)=x3
-                VCOORD(ICOMP,ntv,2)=y3
-                VCOORD(ICOMP,ntv,3)=z3
-              elseif(INVT.eq.3)then
-                continue
-              endif
-              ILEN=NTV
-              IPACT=CREATE
-              CALL EKPAGE(IPACT)
-              MODGEO=.TRUE.
-              MODIFY=.TRUE.
-              MODBND=.TRUE.
-              ZBFLG(ICOMP)=0.  ! force recalculation of bounds
-              call usrmsg(' ',' ','-')
-              CALL INLNST(1)
-              nzg=1
-              nznog(1)=ICOMP
-              izgfoc=ICOMP
-              CALL ADJVIEW(IER)
+C Checking if it should be added into the list of vertices or
+C inserted in another surface is done in code near line 5580.
 
-C Check to see if this new vertex should be included in any existing edges.
-C << example of checking if should be inserted in another surface >>
-              if(invt.eq.1.or.invt.eq.2)then
-                iwhich3=NTV
-                do 246 ivj=1,NSUR
-                  icc=izstocn(icomp,ivj)
-                  ivjlimit=NVER(ivj)
-                  do 247 ivjj=1,ivjlimit
-                    if(ivjj.eq.ivjlimit)then
-                      iwhich1=JVN(ivj,ivjj)
-                      iwhich2=JVN(ivj,1)
-                    else
-                      iwhich1=JVN(ivj,ivjj)
-                      iwhich2=JVN(ivj,ivjj+1)
-                    endif
-
-C Report length of line. Use method of Ward/Radiance in fvect.c
-                    call pointtoline(iwhich3,iwhich1,iwhich2,offset,
-     &                matchver)
-                    if(.NOT.matchver) goto 247
-                    if(offset.lt.0.004)then
-                      write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
-     &                  'New vertex ',iwhich3,' @',X(NTV),Y(NTV),
-     &                  Z(NTV),' is close (',offset,') to edge ',
-     &                  IWHICH1,' &',IWHICH2,' of surface ',
-     &                  SSNAME(icc)
-                      call edisp(itru,outs)
-
-C If current surface (ivj) can take another vertex expand the
-C list. Logic works by looping down (from one more than the current
-C number of vertices associated with this surface) shifting
-C JVN indices up one until at the current edge (ivjj) and then
-C inserting the new vertex index.
-                      if(NVER(ivj)+1.le.MV)then
-                        dok=.true.
-                        h(1)='The new vertex is within 3mm of an'
-                        h(2)='edge of another surface. Probably the'
-                        h(3)='vertex should also be included in that'
-                        h(4)='other surface so the rules about'
-                        h(5)='matching edges are followed. '
-                        call askok(' ','Insert this vertex?',
-     &                             ok,dok,5)
-                      else
-                        ok=.false.
-                      endif
-                      if(ok)then
-                        NVER(ivj)=NVER(ivj)+1
-                        IXV=NVER(ivj)+1
-  148                   continue
-                        IXV=IXV-1
-                        JVN(ivj,IXV)=JVN(ivj,IXV-1)
-                        IF(IXV.GT.ivjj+1)GOTO 148
-                        JVN(ivj,ivjj+1)=iwhich3
-
-C Debug...
-C                       write(6,'(a,30i3)') 'now jvn is ',
-C     &                  (JVN(ivj,ii),ii=1,NVER(ivj))
-
-C Surface (ivj) vertex list has been updated. Go on to next surface.
-                        goto 246 
-                      endif
-                    endif
-  247             continue
-  246           continue
-              endif
-            endif
-            dok=.false.
-            h(1)='If you have several vertices along one line you '
-            h(2)='can click ok to continue defining them. '
-            call askok('Another vertex along the line? ',' ',ok,dok,2)
-            if(ok)goto 72
-          else
-            goto 3
-          endif
         elseif(ino.eq.2)then
 
 C Distance between two vertices.
@@ -5432,115 +5329,70 @@ C Distance between two vertices.
             izgfoc=ICOMP
             CALL ADJVIEW(IER)
           endif
+
         elseif(ino.eq.3)then
-          inpick=1
-          CALL EPMENSV
-          call EPKVERT(INPICK,IVLST,'Origin',
-     &      'Select origin vertex.',' ',14,ier)
-          CALL EPMENRC
-  73      if(inpick.eq.1)then
-            iwhich=IVLST(1)
+
+C Vertex at distance and angle from another.
+          if(anotherone)then
+            inpick=1
+          else
+            inpick=1
+            CALL EPMENSV
+            call EPKVERT(INPICK,IVLST,'Origin',
+     &        'Select origin vertex.',' ',14,ier)
+            CALL EPMENRC
+            if(inpick.eq.1)then
+              iwhich=IVLST(1)
+            else
+              goto 3
+            endif
+          endif
 
 C Present distance, azimuth and elevation then parse data from HOLD.
-            write(hold,'(f10.4,f9.3,f8.3,a)') V1,AZ,EL,'   '
-            H(1)='Distance is in metres, azimuth assumes North = 0,'
-            H(2)='+ degrees clockwise, elevation of 90 is vertical.'
- 342        CALL EASKS(HOLD,
+          write(hold,'(f10.4,f9.3,f8.3,a)') V1,AZ,EL,'   '
+          H(1)='Distance is in metres, azimuth assumes North = 0,'
+          H(2)='+ degrees clockwise, elevation of 90 is vertical.'
+ 342      CALL EASKS(HOLD,
      &      'Distance, azimuth an elevation?',
      &      ' ',36,' 1.0  0.0  0.0 ','dist azim elev',IER,2)
-            K=0
-            CALL EGETWR(HOLD,K,V1,-999.9,999.9,'W','dist',IER)
-            CALL EGETWR(HOLD,K,AZ,-359.9,359.9,'W','azim',IER)
-            CALL EGETWR(HOLD,K,EL,-90.0,90.0,'W','elev',IER)
-            if(ier.ne.0)goto 342
-            PI = 4.0 * ATAN(1.0)
-            RAD = PI/180.
-            RYAZI = AZ*RAD
-            RSALT = EL*RAD
-            z3 = V1*SIN(RSALT)
-            XYDIS = V1*COS(RSALT)
-            IF (XYDIS .LT. 1E-6)THEN
-              x3 = 0.
-              y3 = 0.
-            ELSE
-              x3 = XYDIS*SIN(RYAZI)
-              y3 = XYDIS*COS(RYAZI)
-            ENDIF
-            write(outs,'(a,3f10.4)') ' Vertex @ X,Y,Z:',x3+X(IWHICH),
-     &        y3+Y(IWHICH),z3+Z(IWHICH)
-            call edisp(itru,outs)
-            x3=x3+X(IWHICH)
-            y3=y3+Y(IWHICH)
-            z3=z3+Z(IWHICH)
+          K=0
+          CALL EGETWR(HOLD,K,V1,-999.9,999.9,'W','dist',IER)
+          CALL EGETWR(HOLD,K,AZ,-359.9,359.9,'W','azim',IER)
+          CALL EGETWR(HOLD,K,EL,-90.0,90.0,'W','elev',IER)
+          if(ier.ne.0)goto 342
+          PI = 4.0 * ATAN(1.0)
+          RAD = PI/180.
+          RYAZI = AZ*RAD
+          RSALT = EL*RAD
+          z3 = V1*SIN(RSALT)
+          XYDIS = V1*COS(RSALT)
+          IF (XYDIS .LT. 1E-6)THEN
+            x3 = 0.
+            y3 = 0.
+          ELSE
+            x3 = XYDIS*SIN(RYAZI)
+            y3 = XYDIS*COS(RYAZI)
+          ENDIF
+          write(outs,'(a,3f10.4)') 'Vertex calculated @ X,Y,Z:',
+     &      x3+X(IWHICH),y3+Y(IWHICH),z3+Z(IWHICH)
+          call edisp(itru,outs)
+          x3=x3+X(IWHICH)
+          y3=y3+Y(IWHICH)
+          z3=z3+Z(IWHICH)
 
 C Show the new point on the current wireframe.
-            COG1(1)=x3
-            COG1(2)=y3
-            COG1(3)=z3
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            call ecirc(iix,iiy,3,1)
-            call forceflush()
-            if(NTV.lt.MTV)then
-              h(1)='This can become a new vertex. '
-              write(outs,'(a,i2,a)') 'Make this (',NTV+1,') a:'
-              CALL EASKABC(outs,' ','new vertex',
-     &          'new vertex after editing','cancel',INVT,1)
-              if(INVT.eq.1)then
-                NTV=NTV+1
-                NZTV(icomp)=NTV
-                x(ntv)=x3
-                y(ntv)=y3
-                z(ntv)=z3
-                VCOORD(ICOMP,ntv,1)=x3
-                VCOORD(ICOMP,ntv,2)=y3
-                VCOORD(ICOMP,ntv,3)=z3
-              elseif(INVT.eq.2)then
-                NTV=NTV+1
-                NZTV(icomp)=NTV
-                WRITE(HOLD,'(3f11.5,a)')x3,y3,z3,'  '
-                H(1)='The vertex coordinates should be in metres.'
-                H(2)='It is not advisable for Z to be negative.'
-                write(outs,'(a,i2,a)')' Vertex (',ntv,') X  Y  Z (m):'
- 543            CALL EASKS(HOLD,outs,' ',36,' 0. 0. 0. ','vtx co',IER,2)
-                K=0
-                CALL EGETWR(HOLD,K,X(ntv),-999.,999.,'W','X cd',IER)
-                CALL EGETWR(HOLD,K,Y(ntv),-999.,999.,'W','Y cd',IER)
-                CALL EGETWR(HOLD,K,Z(ntv),-9.9,999.9,'W','Z cd',IER)
-                if(ier.ne.0)goto 543
-                VCOORD(ICOMP,ntv,1)=x3
-                VCOORD(ICOMP,ntv,2)=y3
-                VCOORD(ICOMP,ntv,3)=z3
-              elseif(INVT.eq.3)then
-                continue
-              endif
-              ILEN=NTV
-              IPACT=CREATE
-              CALL EKPAGE(IPACT)
-              MODGEO=.TRUE.
-              MODIFY=.TRUE.
-              MODBND=.TRUE.
-              ZBFLG(ICOMP)=0.
-              call usrmsg(' ',' ','-')
-              CALL INLNST(1)
-              nzg=1
-              nznog(1)=ICOMP
-              izgfoc=ICOMP
-              CALL ADJVIEW(IER)
-            endif
-            dok=.false.
-            h(1)='If you have several vertices to create, you'
-            h(2)='can click ok and continue defining them.'
-            call askok(' ','Another vertex from this origin?',ok,dok,2)
-            if(ok)goto 73
-          endif
-          MODIFY=.true.
-          CALL INLNST(1)
-          nzg=1
-          nznog(1)=ICOMP
-          izgfoc=ICOMP
-          CALL ADJVIEW(IER)
+          COG1(1)=x3
+          COG1(2)=y3
+          COG1(3)=z3
+          CALL VECTRN(COG1,TEMAT,COG2,IER)
+          CALL VECTRN(COG2,ETSMAT,COG3,IER)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          call ecirc(iix,iiy,3,1)
+          call forceflush()
+
+C Checking if it should be added into the list of vertices or
+C inserted in another surface is done in code near line 5580.
+
         elseif(ino.eq.4)then
 
 C Angle between two lines.
@@ -5566,20 +5418,25 @@ C Angle between two lines.
           nznog(1)=ICOMP
           izgfoc=ICOMP
           CALL ADJVIEW(IER)
+
         elseif(ino.eq.5)then
 
 C Intersection line and plane.
+
+C << add option for picking surface in another zone >>
           inpick=2
           CALL EPMENSV
-          call EPKVERT(INPICK,IVLST,'Define Line',
+          call EPKVERT(INPICK,IVLST,'Define the line',
      &      'Select two vertices.',' ',14,ier)
           CALL EPMENRC
           if(inpick.eq.2)then
             iwhich1=IVLST(1)
             iwhich2=IVLST(2)
             IS=1
+            CALL EPMENSV
             CALL EASKSUR(ICOMP,IS,'-','Select surface to intersect.',
      &         ' ',IER)
+            CALL EPMENRC
             N = NVER(IS)
             DO 150 J = 1,N
               XX(J) = X(JVN(IS,J))
@@ -5589,7 +5446,8 @@ C Intersection line and plane.
             call PLEQN(XX,YY,ZZ,N,VP,EQN,IERR)
             CALL VECPLN(X(IWHICH1),Y(IWHICH1),Z(IWHICH1),
      &        X(IWHICH2),Y(IWHICH2),Z(IWHICH2),EQN, x3,y3,z3, IERR)
-            write(outs,'(a,3f10.4)') ' Vertex X,Y,Z:',x3,y3,z3
+            write(outs,'(a,3f10.4)') 'Vertex at intersection X,Y,Z:',
+     &        x3,y3,z3
             call edisp(itru,outs)
             call edisp(itru,' ')
 
@@ -5602,7 +5460,12 @@ C Show the new point on the current wireframe.
             call u2pixel(COG3(1),COG3(2),iix,iiy)
             call ecirc(iix,iiy,3,1)
             call forceflush()
+
+C Checking if it should be added into the list of vertices or
+C inserted in another surface is done in code near line 5580.
+
           endif
+
         elseif(ino.eq.6)then
 
 C Intersection LINES and a plane. As for insersection surface.
@@ -5847,6 +5710,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
           nznog(1)=ICOMP
           izgfoc=ICOMP
           CALL ADJVIEW(IER)
+
         elseif(ino.eq.8)then
 
 C Bring a point off a line into alignment. Begin by checking the
@@ -5977,6 +5841,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
   346         continue
             endif
           endif
+
         elseif(ino.eq.9)then
         
 C Find close vertices.
@@ -6026,6 +5891,7 @@ C Find close vertices.
           else
             continue
           endif
+
         elseif(ino.eq.10)then
 
 C Move an existing vertex along an existing line.
@@ -6096,8 +5962,9 @@ C Show the new point on the current wireframe.
         call usrmsg(' ',' ','-')
 
 C If possible to add another vertex ask if calculated point should
-C be a new vertex and update the wireframe.
-        if(ino.eq.5)then
+C be a new vertex and update the wireframe. This logic will be 
+C applied to the 'a' 'c' and 'f' options.
+        if(ino.eq.1.or.ino.eq.3.or.ino.eq.5)then
           if(NTV.lt.MTV)then
             h(1)='This can become a new vertex. '
             write(outs,'(a,i2,a)') 'Make vertex ',NTV+1,' a:'
@@ -6144,9 +6011,122 @@ C be a new vertex and update the wireframe.
             nznog(1)=ICOMP
             izgfoc=ICOMP
             CALL ADJVIEW(IER)
-            goto 92
-          endif
-        endif
+
+C Check to see if this new vertex should be included in any existing edges.
+            if(invt.eq.1.or.invt.eq.2)then
+              iwhich3=NTV
+              do 246 ivj=1,NSUR
+                icc=izstocn(icomp,ivj)
+                ivjlimit=NVER(ivj)
+                do 247 ivjj=1,ivjlimit
+                  if(ivjj.eq.ivjlimit)then
+                    iwhich1=JVN(ivj,ivjj)
+                    iwhich2=JVN(ivj,1)
+                  else
+                    iwhich1=JVN(ivj,ivjj)
+                    iwhich2=JVN(ivj,ivjj+1)
+                  endif
+
+C Report length of line. Use method of Ward/Radiance in fvect.c
+                  call pointtoline(iwhich3,iwhich1,iwhich2,offset,
+     &              matchver)
+                  if(.NOT.matchver) goto 247
+                  if(offset.lt.0.004)then
+                    write(outs,'(a,i2,a,3f8.3,a,f6.4,a,i3,a,i3,2a)')
+     &                'New vertex ',iwhich3,' @',X(NTV),Y(NTV),
+     &                Z(NTV),' is close (',offset,') to edge ',
+     &                IWHICH1,' &',IWHICH2,' of surface ',
+     &                SSNAME(icc)
+                    call edisp(itru,outs)
+
+C If current surface (ivj) can take another vertex expand the
+C list. Logic works by looping down (from one more than the current
+C number of vertices associated with this surface) shifting
+C JVN indices up one until at the current edge (ivjj) and then
+C inserting the new vertex index.
+                    if(NVER(ivj)+1.le.MV)then
+                      dok=.true.
+                      h(1)='The new vertex is within 3mm of an'
+                      h(2)='edge of another surface. Probably the'
+                      h(3)='vertex should also be included in that'
+                      h(4)='other surface so the rules about'
+                      h(5)='matching edges are followed. '
+                      call askok(' ','Insert this vertex?',ok,dok,5)
+                    else
+                      ok=.false.
+                    endif
+                    if(ok)then
+                      NVER(ivj)=NVER(ivj)+1
+                      IXV=NVER(ivj)+1
+  148                 continue
+                      IXV=IXV-1
+                      JVN(ivj,IXV)=JVN(ivj,IXV-1)
+                      IF(IXV.GT.ivjj+1)GOTO 148
+                      JVN(ivj,ivjj+1)=iwhich3
+
+C Debug...
+C                     write(6,'(a,30i3)') 'now jvn is ',
+C     &                 (JVN(ivj,ii),ii=1,NVER(ivj))
+
+C Surface (ivj) vertex list has been updated. Go on to next surface.
+                      goto 246 
+                    endif
+                  endif
+  247           continue
+  246         continue
+
+C See if another one is required.
+              if(ino.eq.1)then
+                dok=.false.
+                h(1)='If you have several vertices along one line you'
+                h(2)='can click ok to continue defining them.'
+                call askok('Another vertex along the line? ',' ',
+     &            ok,dok,2)
+                if(ok)then
+                  anotherone=.true.
+                  goto 243
+                else
+                  anotherone=.false.
+                endif
+              elseif(ino.eq.3)then
+                dok=.false.
+                h(1)='If you have several vertices from this origin'
+                h(2)='you can click ok to continue defining them.'
+                call askok('Another vertex from this origin? ',
+     &            ' ',ok,dok,2)
+                if(ok)then
+                  anotherone=.true.
+                  goto 243
+                else
+                  anotherone=.false.
+                endif
+              elseif(ino.eq.5)then
+                dok=.false.
+                h(1)='If you have several vertices along one line you'
+                h(2)='can click ok to continue defining them.'
+                call askok('Another intersection of line and plane? ',
+     &            ' ',ok,dok,2)
+                if(ok)then
+                  anotherone=.true.
+                  goto 243
+                else
+                  anotherone=.false.
+                endif
+              endif
+
+C Tidy up the wireframe image.
+              MODIFY=.true.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              goto 92
+            endif
+          endif  ! of NTV less than MTV
+        endif    ! of the check whether it should be edited or added
+        goto 92
+
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Alter vertex list by deleting/ copy / replicate / editing.
