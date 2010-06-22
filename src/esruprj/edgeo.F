@@ -1034,8 +1034,9 @@ C Present list of surfaces and allow user to select up to all of them.
               WRITE(ITEMSS(I),'(A,2x,A)')SSNAME(ioc10),
      &          SSOTHER(ioc10,1)(1:15)
             elseif(IRT.eq.4)then
-              WRITE(ITEMSS(I),'(A,2x,3A)')SSNAME(ioc10),
-     &          SSUSE(ioc10,1)(1:6),' ',SSUSE(ioc10,2)(1:6)
+              WRITE(ITEMSS(I),'(7A)')SSNAME(ioc10),' ',
+     &          SSOTHER(ioc10,1)(1:6),' ',SSUSE(ioc10,1)(1:5),' ',
+     &          SSUSE(ioc10,2)(1:5)
             endif
    10     CONTINUE
           if(IRT.eq.1)then
@@ -4433,7 +4434,11 @@ C Edit door variants.
       endif
 
 C Do not need second tag if generating notional model
-      if(guesstype(1:8).eq.'notional')goto 55
+      if(guesstype(1:8).eq.'notional')then
+        SUSE(IS,2)='-'
+        SSUSE(IC,2)='-'
+        goto 55
+      endif
       if(iuopt.eq.1.or.iuopt.eq.2.or.iuopt.eq.3.or.iuopt.eq.4)then
         h(1)='Closed signals to other parts of ESP-r that air '
         h(2)='is not likely to pass and neither the scheduled '
@@ -4629,7 +4634,11 @@ C Do not need second tag if generating notional model
       endif
 
 C Do not need second tag if generating notional model
-      if(guesstype(1:8).eq.'notional')goto 56
+      if(guesstype(1:8).eq.'notional')then
+        SUSE(IS,2)='-'
+        SSUSE(IC,2)='-'
+        goto 56
+      endif
       if(iuopt.eq.19.or.iuopt.eq.20.or.iuopt.eq.21.or.iuopt.eq.22)then
         h(1)='Closed signals to other parts of ESP-r that air '
         h(2)='is not likely to pass and neither the scheduled '

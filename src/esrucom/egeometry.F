@@ -1418,6 +1418,7 @@ C GS7/GS8 are defined in geometry.h
       logical havec24
       integer nbo   ! local value of nbobs
       integer lsn   ! length of currentfile
+      integer lno   ! length of optics name
       real VX,VY,VZ ! local values for XOB YOB ZOB
 
 C Set initial values.
@@ -1798,7 +1799,8 @@ C the constructions database.
                   OPT='OPAQUE'
                 endif
 		if(WORD(1:lnblnk(WORD)).ne.OPT(1:lnblnk(OPT)))then
-		  write(outs,*) 'Optics in geo file ',WORD,
+                  lno=lnblnk(word)
+		  write(outs,*) 'Optics in geo file ',WORD(1:lno),
      &              ' does not match optics of the MLC ',OPT
                   call edisp(iuout,outs)
                 endif

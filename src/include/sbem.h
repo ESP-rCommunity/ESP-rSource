@@ -362,14 +362,18 @@ C are local variables in mksbem.F subroutine BERTER.
       
       CHARACTER*72 LCFGF_O      ! Original cfg file name
       CHARACTER*24 CFGROOT_O    ! original cfg root name
+      CHARACTER*24 CFGROOT_S    ! stripped cfg root name
+      CHARACTER*24 CFGROOT_N    ! notional cfg root name
+      CHARACTER*24 CFGROOT_R    ! referemce cfg root name
+      CHARACTER*24 CFGROOT_T    ! typical cfg root name
       CHARACTER*72 LGEOM_O      ! Original geometry file names
       CHARACTER*72 LCFGF_S      ! Stripped cfg file name
       CHARACTER*72 LCFGF_N      ! Notional cfg file name
       CHARACTER*72 LCFGF_R      ! Reference cfg file name
       CHARACTER*72 LCFGF_T      ! Typical cfg file name
       CHARACTER*72 LSNAM_O      ! Original model title
-      COMMON/SBEM09/LCFGF_O,CFGROOT_O,LGEOM_O(MNS),LCFGF_S,LCFGF_N,
-     & LCFGF_R,LCFGF_T,LSNAM_O
+      COMMON/SBEM09/LCFGF_O,CFGROOT_O,CFGROOT_S,CFGROOT_N,CFGROOT_R,
+     & CFGROOT_T,LGEOM_O(MNS),LCFGF_S,LCFGF_N,LCFGF_R,LCFGF_T,LSNAM_O
 
       INTEGER NAR    ! Building asset rating
       INTEGER MHF    ! Main heating fuel index in stripped model
