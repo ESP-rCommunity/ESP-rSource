@@ -3330,7 +3330,7 @@ C Defaults.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
-      CHARACTER dinstpath*48,dirpath*48
+      CHARACTER dinstpath*48,dirpath*72
 
 C Passed parameters for pregist.
       character root*24,mpath*72,folder*12,menu*72
@@ -3401,11 +3401,11 @@ C      write(6,*) ' path is ',path(1:lnblnk(path))
 C If requested, find the path and local file name.
       if(ckpath)then
         if(unixok)then
-          write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
-     &      fs,'training'
+          write(dirpath,'(3a)') 
+     &      dinstpath(1:lnblnk(dinstpath)),fs,'training'
         else
-          write(dirpath,'(3a)') dinstpath(1:lnblnk(dinstpath)),
-     &      fs,'training'
+          write(dirpath,'(3a)') 
+     &      dinstpath(1:lnblnk(dinstpath)),fs,'training'
         endif
         ldirpath=lnblnk(dirpath)
         call fdroot(LCMDFL,path,LCFGF)

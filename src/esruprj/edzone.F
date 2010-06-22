@@ -62,6 +62,7 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/CFGV/icfgv
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -96,7 +97,14 @@ C If browsing then user cannot create a new zone.
      &    'mode, you must `own` the model!','W')
         return
       endif
+ 
+C If newer model cfg file ensure version 1.1 geometry file created. 
+      if(icfgv.lt.4)then
       newgeo=.false.  ! assume older format geometry.
+      else
+        newgeo=.true.   ! set to newer format
+        gversion(icomp)=1.1
+      endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -608,8 +616,9 @@ C Set folder separator (fs) to \ or / as required.
 C Input dimensions.
       if(INZOPT.eq.1)then
 
-C Provide scratch description and the
-C default assumptions for other zone files.
+C Provide scratch description and the default assumptions for
+C other zone files. If the cfg file is version 4 or newer then
+C set to create version 1.1 zone geometry files.
         CALL SCRZONE(IC,IER)
         CALL EDZONE(ITRC,IC,IER)
         ZBFLG(IC)=0

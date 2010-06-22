@@ -45,7 +45,7 @@ sub execute($);
 sub summarize_forcheck($);
 sub parse_forcheck($);
 sub fatalerror($);
-sub buildESPr($$$$);
+sub buildESPr($$$$$);
 sub passfail($);
 #--------------------------
 
@@ -652,7 +652,7 @@ if ( $test_forcheck ){
 
     # Build X11 debugging version.
     if ( ! $debug_forcheck ) {
-      buildESPr($build_args{"$key"},"default","debug","onebyone");
+      buildESPr("default", $build_args{"$key"},"default","debug","onebyone");
     }
     stream_out(" Done\n");
     
@@ -1014,7 +1014,7 @@ if ($test_builds){
   stream_out("\nBuilding X11 version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");  
-  %build_result = buildESPr($build_args{"test"},"X11","clean","onebyone");
+  %build_result = buildESPr("default", $build_args{"test"},"X11","clean","onebyone");
   if (  $build_result{"fail"}  ) { $X11_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -1023,7 +1023,7 @@ if ($test_builds){
   stream_out("\nBuilding GTK version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");
-  %build_result = buildESPr($build_args{"test"},"GTK","clean","onebyone");
+  %build_result = buildESPr("default", $build_args{"test"},"GTK","clean","onebyone");
   if (  $build_result{"fail"}  ) { $GTK_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -1032,7 +1032,7 @@ if ($test_builds){
   stream_out("\nBuilding noX version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");
-  %build_result = buildESPr($build_args{"test"},"noX","clean","onebyone");  
+  %build_result = buildESPr("default", $build_args{"test"},"noX","clean","onebyone");  
   if (  $build_result{"fail"}  ) { $noX_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -1055,23 +1055,26 @@ if ( $test_regression ) {
     stream_out("\nBuilding $key ($revision) version of ESP-r for use with tester.pl...");
     chdir ("$TestFolder/$src_dirs{$key}/src/");
 
+    #destination directory for 'test' or 'reference' builds
+    my $build_path = "$TestFolder/esp-r_$key";
+    execute("mkdir $build_path");    
+    
     if ( $debug_forcheck || $test_callgrind ) {
       # Quick rebuild for debugging, OR retain object files
       # for call-grind. 
-      buildESPr($build_args{"$key"},"default","debug","together");
+      buildESPr($build_path, $build_args{"$key"},"default","debug","together");
     }else{
       # Comprehensive rebuild 
       execute("make clean");
-      buildESPr($build_args{"$key"},"default","clean","together");
+      buildESPr($build_path, $build_args{"$key"},"default","clean","together");
     }
-    execute("mv $TestFolder/esp-r $TestFolder/esp-r_$key");
     stream_out(" Done\n");
   }
   
   # Now run test suite, using test version of tester.pl
   stream_out("Running regression test...");
-  my $ref_esp = "$TestFolder/esp-r_reference/bin/";
-  my $test_esp = "$TestFolder/esp-r_test/bin/";
+  my $ref_esp = "$TestFolder/esp-r_reference/esp-r/bin";
+  my $test_esp = "$TestFolder/esp-r_test/esp-r/bin";
 
   my ($test_suite_dir, $call_grind_arg);
 
@@ -1106,8 +1109,8 @@ if ( $test_regression ) {
   
   execute ("$path/tester.pl "
            ."$ref_esp/bps $test_esp/bps "
-           ."-d $TestFolder/esp-r_test --no_data --no_h3k "
-           ."--ref_loc $ref_esp --test_loc $test_esp "
+           ."-d $TestFolder/esp-r_test/esp-r --no_data --no_h3k "
+           ." --ref_loc $ref_esp --test_loc $test_esp "
            ."-p $test_suite_dir $call_grind_arg $gVerboseArg $save_arg" );
 
   
@@ -1252,9 +1255,13 @@ sub passfail($){
 #   - $build=onebyone causes each esp-r binary to be built 
 #     individually, and the resulting target tested for completeness.
 #-------------------------------------------------------------------
-sub buildESPr($$$$){
+sub buildESPr($$$$$){
   
-  my($extra_args, $xLibs,$state,$build) =@_;
+  my($build_path, $extra_args, $xLibs, $state, $build) =@_;
+
+  if($build_path eq 'default'){
+     $build_path = $TestFolder;
+  }
   
   # Test if 'configure' script exists.
   my $autotools = 0;
@@ -1284,7 +1291,7 @@ sub buildESPr($$$$){
   }
   
   # Empty target folder 
-  execute("rm -fr $TestFolder/esp-r");
+  execute("rm -fr $build_path/esp-r");
   
   # Status buffers 
      
@@ -1301,7 +1308,7 @@ sub buildESPr($$$$){
 
   }else{
     
-    $bin_dest = "$TestFolder/esp-r/bin/";
+    $bin_dest = "$build_path/esp-r/bin/";
   
   }
   
@@ -1351,7 +1358,7 @@ sub buildESPr($$$$){
       execute ( "rm -fr $TestFolder/esp-r/bin");
       execute ( "cp -fr $TestFolder/bin  $TestFolder/esp-r/bin");
     }else{
-      execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_training --force $extra_args");
+      execute("./Install -d $build_path --xml --silent $xLibs $Debug_flag --no_training --force $extra_args");
     }
   }
   
