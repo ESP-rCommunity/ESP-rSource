@@ -4578,7 +4578,7 @@ C CFC venetian blind slat angle
 
 C CFC ON/OFF flag
         call add_to_xml_reporting (
-     &         int(i_shd(icomp,icfctp)),
+     &         real(i_shd(icomp,icfctp)),
      &         H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc_vb/on-off',
      &         'units', '(-)',
      &         'Venetian type blind ON/OFF flag' )
@@ -4632,13 +4632,13 @@ C CFC beam and diffuse transmission for light
             call add_to_xml_reporting (
      &           transBB_V(icomp,i),
      &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transBB_V',
-     &           'units', '(W/m2)',
+     &           'units', '(-)',
      &           'CFC direct beam transmission, light' )
      
             call add_to_xml_reporting (
      &           transD_V(icomp,i),
      &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transD_V',
-     &           'units', '(W/m2)',
+     &           'units', '(-)',
      &           'CFC diffuse transmission, light' )
 
 
