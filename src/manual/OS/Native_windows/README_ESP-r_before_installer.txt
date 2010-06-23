@@ -2,7 +2,7 @@ What is in this installer...
 
 This installer will place a native Windows version of ESP-r in a standard location (C:\Esru) on your PC.  You should have power user privileges when you run setup.  
 
-The setup places ESP-r in a folder C:\Esru (created if it does not exist). Setup also creates a C:\GTK for the graphic libraries. 
+The setup places ESP-r in a folder C:\Esru (created if it does not exist). 
 
 Setup attempts to update the system 'path' environment variables so that the various ESP-r modules can be found.
 
@@ -10,6 +10,8 @@ The following folders will be created:
 C:\Esru
         - esp-r
           - bin (ESP-r executables)
+		  - bin_graphic (graphic version of ESP-r)
+		  - bin_text (dos command line version of ESP-r)
           - climate (climate files from various locations)
           - databases (corporate databases)
           - electric_loads (measured electrical data)
@@ -19,9 +21,11 @@ C:\Esru
           - validation (models used in validation work)
           - xsl (support for XML reporting)
                     
+The bin folder initially is populated with the graphic version of ESP-r. If you want to use the text based version (for automation) then copy the *.exe files in bin_text into bin.
+
 A note about the ESP-r model files - use WordPad to edit (NOT Word or NotePad). 
  
-A text editor gvim62.exe is compatible with ESP-r which you might find useful if you are likely to want to move models from Windows to Linux or OSX machines.
+The text editors gvim62.exe or notepad++ are compatible with ESP-r which you might find useful if you are likely to want to move models from Windows to Linux or OSX machines.
 
 Basic machine requirements:
 
