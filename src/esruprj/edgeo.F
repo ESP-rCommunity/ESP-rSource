@@ -448,14 +448,8 @@ C used for a partition (and db does not have a linked MLC - inform the user.
      &              'Updating `other side` composition of ',
      &              SN(1:lnblnk(SN)),'...'
                   call edisp(iuout,outs)
-                  call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
-                  if(newgeo)then
-                    call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,
-     &                iuout,IER)
-                  else
-                    call egomin(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,0,
-     &                iuout,IER)
-                  endif
+                  call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,
+     &              iuout,IER)
 
 C Assign new MLC name to the icoth surface as well as SSOTF with the
 C optical properties returned from parsemlcdesc.
@@ -1191,14 +1185,8 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                       call usrmsg(
      &                ' Updating other side construction (remember to',
      &                ' update the other side construction file).','P')
-                      call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
-                      if(newgeo)then
-                        call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                    0,iuout,IER)
-                      else
-                        call egomin(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
-     &                    0,0,iuout,IER)
-                      endif
+                      call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),
+     &                  0,iuout,IER)
 
 C Assign new MLC name to the icoth surface.
                       SSMLCN(icoth)=TOSMLCN
@@ -1783,12 +1771,7 @@ C other zone.
             CALL ADJVIEW(IER)
             MODIFY=.TRUE.
             MODBND=.TRUE.
-            call eclose(gversion(IZ),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
-            else
-              call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
-            endif
+            call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
             inpick=1
             call EPKVERT(INPICK,IVLST,'Other Zone Vertex',
      &        'Select vertex in other zone.',' ',58,ier)
@@ -1800,24 +1783,14 @@ C other zone.
             else
 
 C User aborted so scan the intial zone prior to returning.
-              call eclose(gversion(icomp),1.1,0.01,newgeo)
-              if(newgeo)then
-                call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
-              else
-                call egomin(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
-              endif
+              call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
               MODBND=.TRUE.
               MODIFY=.TRUE.
               goto 77
             endif
 
 C Re-establish the initial zone geometry.
-            call eclose(gversion(icomp),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
-            else
-              call egomin(IFIL+1,LGEOM(icomp),icomp,0,0,iuout,IER)
-            endif
+            call georead(IFIL+1,LGEOM(icomp),icomp,0,iuout,IER)
             VALX=x2-x1
             VALY=y2-y1
             VALZ=z2-z1

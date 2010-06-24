@@ -2728,17 +2728,12 @@ C << than G1 common blocks then there is no need to scan the
 C << geometry file before writing it out. 
         if(ncomp.gt.0)then
           do 96 iz=1,ncomp
-            call eclose(gversion(iz),1.1,0.01,newgeo)
             write(zn,'(A)') zname(IZ)
             write(outs,'(3a)') ' Checking: ',zn(1:lnblnk(zn)),
      &         ' attributes...'
             CALL USRMSG(' ',outs,'-')
             LTMP=LGEOM(IZ)
-            if(newgeo)then
-              call georead(IUF,LTMP,IZ,1,iuout,IER)
-            else
-              call egomin(IUF,LTMP,IZ,1,0,iuout,IER)
-            endif
+            call georead(IUF,LTMP,IZ,1,iuout,IER)
 
    93       FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
      &        'geometry| multilayer  |environment')

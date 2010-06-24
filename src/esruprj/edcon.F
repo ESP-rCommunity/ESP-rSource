@@ -138,12 +138,7 @@ C Set existance of a zone construction file to false.
       if(itrc.gt.1) CALL USRMSG(' ',outs,'-')
 
 C Read in the related geometry file into common.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-      else
-        call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-      endif
+      call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
       IF(IER.NE.0)THEN
         CALL USRMSG(' ',' Problem detected in geometry... ','W')
         RETURN

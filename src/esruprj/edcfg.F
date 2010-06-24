@@ -716,12 +716,7 @@ C lowest and highest point and cog of surface.
      &      ' # connection, description, area, azimuth, elevation, ',
      &      ' Z Min/COG/Max'
           DO 930 IZ = 1,NCOMP
-            call eclose(gversion(IZ),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
-            else
-              call egomin(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
-            endif
+            call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
             DO 931 IS = 1,NSUR
               szlow= 1000.0
               szcog= 0.0
