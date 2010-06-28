@@ -1884,6 +1884,7 @@ C Reporting:
 
         nn=nCFCctldaytypes(ii)
         if(nn.eq.0)nn=3
+c        if(nn.eq.0)nn=nbdaytype
         do 720 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)

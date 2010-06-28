@@ -4606,7 +4606,7 @@ C     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
      &           psazi,
      &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/psazi',
      &           'units', '(°)',
-     &           'Solar azimuth angle rel. to CFS surf' )
+     &           'Solar azimuth angle rel. to CFC surf' )
 
             call add_to_xml_reporting (
      &           pselv,
@@ -4614,7 +4614,18 @@ C     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
      &           'units', '(°)',
      &           'Solar elevation angle rel. to CFC surf' )
 
-     
+            call add_to_xml_reporting (
+     &           sazi,
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/sazi',
+     &           'units', '(°)',
+     &           'Solar azimuth angle' )
+
+            call add_to_xml_reporting (
+     &           salt,
+     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/salt',
+     &           'units', '(°)',
+     &           'Solar elevation angle' )
+
 C CFC beam and diffuse transmission
             call add_to_xml_reporting (
      &           transBB_S(icomp,i),
