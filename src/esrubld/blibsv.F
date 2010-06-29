@@ -774,6 +774,8 @@ C radiant and latent W for future and present in each zone.
      &  ctlperocupl(MCOM,2),ctlperlightc(MCOM,2),ctlperlightr(MCOM,2),
      &  ctlperlightl(MCOM,2),ctlperequipc(MCOM,2),ctlperequipr(MCOM,2),
      &  ctlperequipl(MCOM,2) 
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365) 
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY 
 
 C Temporal db commons.
       COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
@@ -861,6 +863,14 @@ C weekday saturday or sunday.
       else
         iweekdayweekend=1
       endif
+
+C If more calendar day types are defined choose from ICALENDAR day types 
+      IF(NBDAYTYPE.gt.3)THEN ! 
+        IDAY=IDYP 
+        IF(IHRF.EQ.1)IDAY=IDYP+1 
+        IF(IDAY.GT.365)IDAY=IDAY-365 
+        iweekdayweekend=ICALENDER(IDAY) 
+      ENDIF 
 
 C Use data from one of three sources.
       if(ICASUAL(icomp).ne.0)then
