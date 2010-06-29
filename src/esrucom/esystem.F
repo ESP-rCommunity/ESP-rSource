@@ -532,6 +532,7 @@ C Simulation parameters
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
+      integer itru    ! unit for output
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
@@ -542,6 +543,7 @@ C Simulation parameters
 
 C Check if running in dll mode.
       call isadll(dll)
+      itru=iuout   ! set trace unit to use in subroutine calls
 
 C Initalizing starting point for parsing simulation presets (*sps)
       iSet_start = 1
@@ -832,7 +834,7 @@ C Range checking.
       ENDIF
 
 C Reporting.
-      IF(ITRC.GE.1.AND.ITRC.LT.4)CALL SITEINFO(iuout)
+      IF(ITRC.GE.1.AND.ITRC.LT.4)CALL SITEINFO(itru)
 
 C If initial configuration format (without database sections then
 C skip to building/plant section.
@@ -843,7 +845,7 @@ C If '* CONFIGURATION' found then read in the databases.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'* DATABASES',IER)
         if(IER.NE.0)return
         if(OUTSTR(1:7).ne.'* DATAB')then
-          call edisp(iuout,' Did not find `* DATABASES` ')
+          call edisp(itru,' Did not find `* DATABASES` ')
           ier=1
           return
         endif
@@ -1026,6 +1028,7 @@ c bSHOCCed true and then check and see if the file exists.
           write(outs,'(3a)') 'SHOCC project library file ',
      &      SHOCCshlFile(1:lnblnk(SHOCCshlFile)),
      &      ' was referenced but not found.'
+          call edisp(iuout,outs)
         endif
 
       elseif(WORD(1:5).eq.'*hvac')then
@@ -2325,7 +2328,7 @@ C Make temporary use of file unit IUF.
         IF(XST)THEN
           write(currentfile,'(a)') LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP)))
           CALL ERPFREE(IUF,ios)
-          call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+          call georead(iuf,LGEOM(ICOMP),ICOMP,1,itru,ier)
           write(currentfile,'(a)') FILE(1:lnblnk(FILE))
         ELSE
           ZNAME(ICOMP)='UNKNOWN'
@@ -2573,13 +2576,13 @@ C If MODE='ALL ' we also want to fill obstruction data structures
 C but there is a case where a version 1.1 geometry file might
 C not yet include obstruction blocks that were in legacy zone
 C obstructions files. If this is the case then scan them.
-            call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+            call georead(iuf,LGEOM(ICOMP),ICOMP,1,itru,ier)
             if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
               if(iobs(icomp).eq.1)then
                 call FINDFIL(ZOBS(ICOMP),XST)
                 if(XST)then
                   CALL ERPFREE(IUF,ISTAT)
-                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
+                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,itru,IER)
                 endif
               elseif(iobs(icomp).eq.2)then
                 continue
@@ -2589,13 +2592,13 @@ C obstructions files. If this is the case then scan them.
 	    
 C If MODE='ALL ' also scan obstruction blocks from zone
 C obstruction file if older model.
-            call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
+            call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,itru,ier)
             if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
               if(iobs(icomp).eq.1)then
                 call FINDFIL(ZOBS(ICOMP),XST)
                 if(XST)then
                   CALL ERPFREE(IUF,ISTAT)
-                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
+                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,itru,IER)
                 endif
               elseif(iobs(icomp).eq.2)then
                 continue
@@ -2605,8 +2608,10 @@ C obstruction file if older model.
           DO 243 IS=1,NZSUR(ICOMP)
             icc=IZSTOCN(icomp,is)
             if(icc.eq.0)then
-              write(iuout,*)'zero icc associated with zn ',icomp,
-     &          ' & sur',is
+              write(outs,'(a,i3,a,i3)')
+     &          'zero icc associated with zone ',
+     &          icomp,' & surface',is
+              call edisp(itru,outs)
               goto 243
             endif
  243      continue
@@ -2639,11 +2644,11 @@ C Instanciate the vcoord and nzjvn nzvner arrays.
 C Trace geometry related information. Because not all zones will have
 c beeen read in do not include the extended surface `context`.
           if(ITRC.ne.0.and.ITRC.lt.4)then
-            call ZINFOREP(iuout,icomp)
+            call ZINFOREP(itru,icomp)
             context=.false.
-            CALL SURINFO(ICOMP,iuout,context)
-            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(iuout)
-            CALL INSINFO(ICOMP,iuout)
+            CALL SURINFO(ICOMP,itru,context)
+            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(itru)
+            CALL INSINFO(ICOMP,itru)
           endif
         endif
  242  continue
