@@ -387,6 +387,10 @@ C Check if the model is sufficiently attributed for NCM purposes.
         call edisp(iuout,'Model geometry is overly complex. Correct')
         call edisp(iuout,'this and try again.')
         return
+      elseif(ier.eq.5)then
+        call edisp(iuout,'Some UK NCM descriptions missing. Go to')
+        call edisp(iuout,'model context menu and complete.')
+        return
       endif
 
 C Offer choice to generate stripped model and running assessments.
@@ -400,52 +404,102 @@ C Offer choice to generate stripped model and running assessments.
       H(8) ='additional information or return to the model context'
       H(9) ='or zone geometry menus. '
       H(10)=' '
-      H(11)='1. Generate notional model (with standard constructions'
-      H(12)='m  and glazing areas. '
-      H(13)=' '
-      H(14)='2. If this is sucessful you can generate the remaining'
-      H(15)='   model variants and an energy performance certificate'
-      H(16)='   EPC and/or generate BRUKL specific information.'
-      H(17)=' '
-      H(18)='3. If you have not given full UK NCM details and want'
-      H(19)='   to come back to it at a later time choose exit NCM.'
-      H(20)='   To make additions open the original model (not the'
-      H(21)='   stripped model which has now been generated).'
+      H(11)='1. Generate models (with standard constructions'
+      H(12)='   and glazing areas) and usage patterns, run '
+      H(13)='   assessments and generate EPC.'
+      H(14)=' '
+      H(15)='2. If you did not have time to run the assessments in'
+      H(16)='   step one you can use the model variants and run the'
+      H(17)='   assessments for the energy performance certificate'
+      H(18)='   EPC and/or generate BRUKL specific information.'
+      H(19)=' '
+      H(20)='3. Scan existing results from assessments and re-generate'
+      H(21)='   the NCM file (for testing purposes).'
       H(22)=' '
-      H(23)='4. Scan existing save 6 files and re-generate the'
-      H(24)='NCM file (e.g. if done on a compute server).'
-      H(25)=' '
-      H(26)='If you plan on using existing models and or existing'
-      H(27)='assessments check that you have loaded your ORIGINAL'
-      H(28)='model prior to asking for assessments or reports. '
+      H(23)='If you plan on using existing models and or existing'
+      H(24)='assessments check that you have loaded your ORIGINAL'
+      H(25)='model prior to asking for assessments or reports.'
+      H(26)=' '
+      H(27)='If you are running your assessments on a Linux or OSX or'
+      H(28)='under the Cygwin emulation environment you will have to'
+      H(29)='transfer the BRUKL.inp and EPCGen.inp files to a Windows'
+      H(30)='computer to complete the final step. '
+      H(31)=' '
+      H(32)='Remember to make backup copies of your models!'
       CALL EASKABCD('Options (see help): ',' ',
-     &  'generate notional model','generate remaining models and EPC',
-     &  'use existing runs','exit NCM facility',iecmoption,28)
+     &  'generate models & make EPC','run assessments & make EPC',
+     &  'use existing runs & make EPC','exit NCM',iecmoption,32)
       if(iecmoption.eq.1)then
 
-C Generate notional model.
+C Generate all the model variants and run assessments and generate EPC.
         iuact = 1 ! signal generation of notional requested
         call emknotional(iuact,ier)
-        goto 42
+        call edisp(iuout,'Initial pass completed...')
 
-      elseif(iecmoption.eq.2)then
-
-C Generate remaining models and EPC.
         iuact = 2
         CFGROOT = CFGROOT_O ! re-establish the initial root name
         CALL EMKSBM(iier)   ! generate Notional model
         if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
+        call edisp(iuout,'Notional model completed...')
         CALL EMKREF  ! Reference model
+        call edisp(iuout,'Reference model completed...')
         CALL EMKTYP  ! Typical model
+        call edisp(iuout,'Typical model completed...')
 
-        H(1)='You are using existing UK NCM stripped, notional,'
+C Ask user if they want to run the assessments.
+        H(1)='You are using new UK NCM stripped, notional,'
         H(2)='reference and typical models. In order to generate'
         H(3)='EPC and BRUKL (UK building regulations) specific'
         H(4)='information annual simulations for all these models'
         H(5)='need to run and may take some time. You may choose not'
         H(6)='to run simulations at this time and run these at a'
-        H(7)='later time.'
-        CALL ASKOK('Run NCM simulations (see help)',' ',OK,dok,7)
+        H(7)='later time (via the 2nd option).'
+        CALL ASKOK(
+     &    'Run NCM simulations based on these models (see help)',
+     &    ' ',OK,dok,7)
+
+C Run simulation and recover information from save level 6 results file
+        if(ok)then
+          CALL SIMRUN(2) ! Notional model
+          CALL SIMRUN(1) ! Stripped model
+
+C To save time in formal NCM testing comment out the next two lines.
+          CALL SIMRUN(3) ! Reference model
+          CALL SIMRUN(4) ! Typical model
+
+C Generate BER and TER - if doing DSM testing the call is made from 
+C RSL6TF
+          IF(iDsmTestingFlag.LE.0.OR.iDsmTestingFlag.GE.3)then
+            CALL BERTER(IER)
+          ENDIF
+
+C Generate BRUKL information
+          CALL NCMCAL(IER)
+
+C Generate EPC information
+          CALL EPCCAL(IER)
+        endif
+        goto 42
+
+      elseif(iecmoption.eq.2)then
+
+C Use existing models and run assessments and generate EPC.
+        iuact = 2
+C        CFGROOT = CFGROOT_O ! re-establish the initial root name
+C        CALL EMKSBM(iier)   ! generate Notional model
+C        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
+C        CALL EMKREF  ! Reference model
+C        CALL EMKTYP  ! Typical model
+
+        H(1)='You are using existing UK NCM stripped, notional,'
+        H(2)='reference and typical models. In order to generate'
+        H(3)='EPC and BRUKL (UK building regulations) specific'
+        H(4)='information annual simulations for all these models'
+        H(5)='need to run and may take some time. If you picked this'
+        H(6)='choice in error just say no.'
+        CALL ASKOK(
+     &    'Run NCM simulations based on existing models (see help)',
+     &    ' ',OK,dok,6)
 
 C Run simulation and recover information from save level 6 results file
         if(ok)then
@@ -481,8 +535,9 @@ C set first to make sure AER is filled.
         H(3)='In order to generate EPC and BRUKL (UK building'
         H(4)='regulations) data will be re-scanned. FOR TESTING'
         H(5)='PURPOSES.'
-        CALL ASKOK('Re-scan prior assessments (see help)',' ',OK,
-     &    dok,5)
+        CALL ASKOK(
+     &    'Re-scan prior assessments to generate EPC (see help)',' ',
+     &    ok,dok,5)
         if(ok)then
           LCFGF=LCFGF_N
           CALL RSL6TF(2)
@@ -560,7 +615,6 @@ C #include "espriou.h"
       DIMENSION KSTR(10),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
       DIMENSION ITEMZ(MREN+5),LSTR(10)
       character cfgroot*24,LCFGF*72,NNAME*72
-      character msgl2*48
       character outs*124,h*72
       character ITEMS*50,D64*64,ITEMX*50,ITEMH*70
       CHARACTER HSYSNM*70,TMPSTR*64
@@ -618,10 +672,10 @@ C Remember zone specific files
 
       call isunix(unixok)
 
-      H(1) = 'You have chose to perform UK NCM based calculations to '
-      H(2) = 'generate Energy Performance Certificate EPC '
-      H(3) = 'Make sure that the original model follows the following '
-      H(4) = 'assumptions: '
+      H(1) = 'You have chose to configure you model for UK NCM based'
+      H(2) = 'calculations to generate Energy Performance Certificate'
+      H(3) = '(EPC_ Make sure that the original model follows the'
+      H(4) = 'following assumptions: '
       H(5) = '1. Exterior surfaces that have other surfaces within them'
       H(6) = '   are called parents. Parents may have more surfaces '  
       H(7) = '   within them. Only a three tier hierarchy is allowed '
@@ -650,34 +704,35 @@ C Remember zone specific files
       H(30)= '   - if facing another room = FRAME or DOOR'
       H(31) = '  '
       H(32)= '3. Exterior surfaces should   | |                      '
-      H(33)= '   not have obtuse interior   | |  obtuse interior     '
-      H(34)= '   angles (e.g. an L shaped   | | /   angle here       '
-      H(35)= '   polygon is obtuse angled   | |/_____                '
-      H(36)= '   at the right angled bend)  |________                '
+      H(33)= '   avoid extreme L shapes.    | |  obtuse interior     '
+      H(34)= '   Surfaces with lots of      | | /   angle here       '
+      H(35)= '   edges can cause problems.  | |/_____                '
+      H(36)= '   (e.g. ceiling of passage)  |________                '
       H(37) = '  '
       H(38)= '4. Only one child surface is allowed per parent, if more '
       H(39)= '   child surfaces are required divide a parent into two '
       H(40)= '   surfaces and make one child in each.'
-      H(41)= 'When generating the notional model all areas for parents'
-      H(42)= '& children that are not glazed are conserved. Additional'
-      H(43)= 'glazing is added to all exterior surfaces as per UK NCM. '
-      H(44)= '* if parent surface is not wall/roof no glazing is added'
-      H(45)= '(This is exceptional and is discouraged)'
-      H(46)= 'In order to calculate the required glazed area, gross  '
-      H(47)= 'parent area is used (e.g. if a wall has a door in it then'
-      H(48)= 'the glazed area is some % of (wall area + door area))'
-      H(49)= ' '
-      H(50)= 'If glazing area in original is more than required for  '
-      H(51)= 'notional then the same area is retained in notional model'
-      H(52)= ' '
-      H(53)= '5. If you have not attributed some use (eg door) to zone'
-      H(54)= '   surfaces then do so before defining a notional model.'
-      H(55)= ' '
-      H(56)= 'For interior surfaces it is assumed that all vertical '
-      H(57)= 'surfaces are walls. Horizontal interior surfaces are '
-      H(58)= 'internal roofs/ceilings. '
+      H(41)= ' '
+      H(42)= 'When generating the notional model all areas for parents'
+      H(43)= '& children that are not glazed are conserved. Additional'
+      H(44)= 'glazing is added to all exterior surfaces as per UK NCM. '
+      H(45)= '* if parent surface is not wall/roof no glazing is added'
+      H(46)= '(This is exceptional and is discouraged)'
+      H(47)= 'In order to calculate the required glazed area, gross  '
+      H(48)= 'parent area is used (e.g. if a wall has a door in it then'
+      H(49)= 'the glazed area is some % of (wall area + door area))'
+      H(50)= ' '
+      H(51)= 'If glazing area in original is more than required for  '
+      H(52)= 'notional then the same area is retained in notional model'
+      H(53)= ' '
+      H(54)= '5. If you have not attributed some use (eg door) to zone'
+      H(55)= '   surfaces then do so before defining a notional model.'
+      H(56)= ' '
+      H(57)= 'For interior surfaces it is assumed that all vertical '
+      H(58)= 'surfaces are walls. Horizontal interior surfaces are '
+      H(59)= 'internal roofs/ceilings. '
       
-      CALL PHELPD('SBEM Assumptions',58,'-',0,0,IER)
+      CALL PHELPD('SBEM Assumptions',59,'-',0,0,IER)
       dok=.false.
       CALL ASKOK('Continue with UK NCM setup/calculations?',
      &  ' ',OK,dok,58)
@@ -732,6 +787,9 @@ C Check if the model is sufficiently attributed for NCM purposes.
           call edisp(iuout,'Model geometry is overly complex. Correct')
           call edisp(iuout,'this and try again.')
           return
+        elseif(ier.eq.5)then
+          call edisp(iuout,'Some UK NCM items need to be updated in')
+          call edisp(iuout,'this menu.')
         endif
       ELSE
 
@@ -755,6 +813,9 @@ C Check if the model is sufficiently attributed for NCM purposes.
           call edisp(iuout,'this and try again.')
           WRITE(LASBEM,'(a)') '  '   ! clear ncm file name       
           return
+        elseif(ier.eq.5)then
+          call edisp(iuout,'Some UK NCM items need to be updated in')
+          call edisp(iuout,'this menu.')
         endif
 
 C Ask about building, owner and certifier detail. Note that
@@ -2614,6 +2675,7 @@ C Produce help text for the menu.
       ELSEIF(INO.EQ.1)THEN
   
 C Building project description. Echo after edit.
+        D20='Project un-named'
         H(1)='Input a succinct description of the project name here.'
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
      &    20,D20,'project name',IER,1)
@@ -2623,6 +2685,7 @@ C Building project description. Echo after edit.
       ELSEIF(INO.EQ.3)THEN
   
 C Building address. Echo after edit.
+        D64='No site selected.'
         H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
      &    64,D64,'build address',IER,1)
@@ -2633,6 +2696,7 @@ C Building address. Echo after edit.
       ELSEIF(INO.EQ.5)THEN
   
 C Building city name. Echo after edit.
+        D64='No site selected.'
         H(1)='Input the names of the town/city of the building.'
         CALL EASKS(bcity,'building city?','(<64 characters)',
      &    64,D64,'city building',IER,1)
@@ -2642,6 +2706,7 @@ C Building city name. Echo after edit.
       ELSEIF(INO.EQ.7)THEN
   
 C Building post code. Echo after edit.
+        D64='No site selected.'
         H(1)='Input for: building post code'
         CALL EASKS(buildingPC,'building post code?',
      &    '(<64 characters)',64,D64,'building PC',IER,1)
@@ -2652,6 +2717,7 @@ C Building post code. Echo after edit.
       ELSEIF(INO.EQ.9)THEN
 
 C Building owner name. Echo after edit.
+        D64='Owner name withheld'
         H(1)='Input a succinct description of the owner name here'
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
      &    64,D64,'owner name',IER,1)
@@ -2662,6 +2728,7 @@ C Building owner name. Echo after edit.
       ELSEIF(INO.EQ.11)THEN
   
 C Building owner phone number.
+        D64='Owner phone withheld'
         H(1)='telephone number of the owner'
         CALL EASKS(ownertel,'Phone of owner?','(<64 characters)',
      &    64,D64,'owner tel',IER,1)
@@ -2672,6 +2739,7 @@ C Building owner phone number.
       ELSEIF(INO.EQ.13)THEN
   
 C Building owner address.
+        D64='Owner address withheld.'
         H(1)='Street address of the owner'
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
      &    64,D64,'owner address',IER,1)
@@ -2682,6 +2750,7 @@ C Building owner address.
       ELSEIF(INO.EQ.15)THEN
   
 C Building owner city.
+        D64='Owner city withheld.'
         H(1)='City (where the owner is located)'
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
      &    64,D64,'owner city',IER,1)
@@ -2692,6 +2761,7 @@ C Building owner city.
       ELSEIF(INO.EQ.17)THEN
   
 C Building owner postcode.
+        D64='Owner postcode withheld.'
         H(1)='Post code (where the owner is located)'
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
      &    64,D64,'owner post code',IER,1)
@@ -2702,6 +2772,7 @@ C Building owner postcode.
       ELSEIF(INO.EQ.19)THEN
   
 C Building certifier name.
+        D64='Certifier name withheld.'
         H(1)='certifier name'
         CALL EASKS(certifname,'Name of certifier?','(<64 characters)',
      &    64,D64,'certifier name',IER,1)
@@ -2712,6 +2783,7 @@ C Building certifier name.
       ELSEIF(INO.EQ.21)THEN 
       
 C Building certifier phone number.
+        D64='Certifier phone number withheld.'
         H(1)='certifier telephone number'
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
      &    64,D64,'certifier tel',IER,1)
@@ -2722,6 +2794,7 @@ C Building certifier phone number.
       ELSEIF(INO.EQ.23)THEN 
       
 C Building certifier address.
+        D64='Certifier address withheld.'
         H(1)='certifier street address'
         CALL EASKS(certaddress,'Address of certifier?',
      &    '(<64 characters)',64,D64,'certifier address',IER,1)
@@ -2732,6 +2805,7 @@ C Building certifier address.
       ELSEIF(INO.EQ.25)THEN 
       
 C Building certifier city.
+        D64='Certifier city withheld.'
         H(1)='Name of city of the certifier.'
         CALL EASKS(certcity,'City of certifier?','(<64 characters)',
      &    64,D64,'certifier city',IER,1)
@@ -2742,6 +2816,7 @@ C Building certifier city.
       ELSEIF(INO.EQ.27)THEN 
       
 C Building certifier postcode.
+        D64='Certifier postcode withheld.'
         H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
      &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
@@ -2752,45 +2827,59 @@ C Building certifier postcode.
       ELSEIF(INO.EQ.29)THEN 
 
 C Enter all information
+        D20='Project un-named'
         H(1)='Input a succinct description of the project name here.'
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
      &    20,D20,'project name',IER,1)
+        D64='No site selected.'
         H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
      &    64,D64,'build address',IER,1)
+        D64='No site selected.'
         H(1)='Input the names of the town/city of the building.'
         CALL EASKS(bcity,'building city?','(<64 characters)',
      &    64,D64,'city building',IER,1)
+        D64='No site selected.'
         H(1)='Input for: building post code'
         CALL EASKS(buildingPC,'building post code?',
      &    '(<64 characters)',64,D64,'building PC',IER,1)
+        D64='Owner name withheld'
         H(1)='Input a succinct description of the owner name here'
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
      &    64,D64,'owner name',IER,1)
+        D64='Owner phone withheld'
         H(1)='telephone number of the owner'
         CALL EASKS(ownertel,'Telephone of owner?','(<64 characters)',
      &    64,D64,'owner tel',IER,1)
+        D64='Owner address withheld.'
         H(1)='Street address of the owner'
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
      &    64,D64,'owner address',IER,1)
+        D64='Owner city withheld.'
         H(1)='City (where the owner is located)'
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
      &    64,D64,'owner city',IER,1)
+        D64='Owner postcode withheld.'
         H(1)='Post code (where the owner is located)'
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
      &    64,D64,'owner post code',IER,1)
+        D64='Certifier name withheld.'
         H(1)='certifier name'
         CALL EASKS(certifname,'Name of certifier?',
      &    '(<64 characters)',64,D64,'certifier name',IER,1)
+        D64='Certifier phone number withheld.'
         H(1)='certifier telephone number'
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
      &    64,D64,'certifier tel',IER,1)
+        D64='Certifier address withheld.'
         H(1)='Certifier street address'
         CALL EASKS(certaddress,'Address of certifier?',
      &    '(<64 characters)',64,D64,'certifier address',IER,1)
+        D64='Certifier city withheld.'
         H(1)='Name of city of the certifier.'
         CALL EASKS(certcity,'City of certifier ?','(<64 characters)',
      &    64,D64,'certifier city',IER,1)
+        D64='Certifier postcode withheld.'
         H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
      &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
@@ -2887,10 +2976,11 @@ C Produce help text for the menu.
 C Unique Property Reference Number (UPRN)
 C Leave it as a string because it is not certain if this is always an integer
 C (it may be a mix of letters and numbers). 
+        D64='000000000000'
         H(1)='Input the Unique Property Reference Number (UPRN) here.'
         H(2)='Applicable only for England, Wales & Northern Ireland.'
-        CALL EASKS(UPRN,'UPR Number ?','(<64 characters)',
-     &    64,D64,'UPR Number',IER,2)
+        CALL EASKS(UPRN,'Unique Property Reference Number (UPRN)?',
+     &    '(<64 characters)',64,D64,'UPR Number',IER,2)
         call tstamp('>','PRJ: edited UPRN')
         write(outs,'(2a)') 'Unique Property Reference Number (UPRN): ',
      &    UPRN(1:lnblnk(UPRN))
@@ -2930,16 +3020,13 @@ C Accreditation scheme
       ELSEIF(INO.EQ.7)THEN
 
 C Assessor registration number
-        H(1)='Input assessor registration number'
+        H(1)='The assessor registration number should be in the'
+        H(2)='form of CCCCNNNNNN where C is character and N is a'
+        H(3)='number such as ABCD123456.'
         D64='ABCD123456'
-        call EDISP(IUOUT,' ')
-        call EDISP(IUOUT,'Input assessor registration number')
-        call EDISP(IUOUT,'It should be of the form CCCCNNNNNN')
-        call EDISP(IUOUT,'where C is an alphabet and N is a number.')
-        call EDISP(IUOUT,
-     &  'Otherwise EPC Generation program will complain ')
-        CALL EASKS(assessRegNumber,'Assessor number ?',
-     &    '(<64 characters)',64,D64,'assessor number',IER,1)
+        CALL EASKS(assessRegNumber,
+     &    'Assessor regisration number (see help)?',
+     &    '(e.g. ABCD123456)',64,D64,'assessor number',IER,3)
         call tstamp('>','PRJ: edited assessor registration number')
         D64='<this item has not been described>'
         write(outs,'(2a)') 
@@ -2949,6 +3036,7 @@ C Assessor registration number
       ELSEIF(INO.EQ.9)THEN
   
 C Employer or trading name of energy assessor
+        D64='Not a registered company.'
         H(1)='The employer or the trading name of the energy'
         H(2)='assessor. Applicable only for England, '          
         H(3)='Wales & Northern Ireland.'
@@ -2962,6 +3050,7 @@ C Employer or trading name of energy assessor
       ELSEIF(INO.EQ.11)THEN
   
 C Employer/trading address of energy assessor
+        D64='PO box in Basingstoke.'
         H(1)='The employer or the trading address of the energy'
         H(2)='assessor. Applicable only for England, '          
         H(3)='Wales & Northern Ireland.'
@@ -2975,6 +3064,7 @@ C Employer/trading address of energy assessor
       ELSEIF(INO.EQ.13)THEN
   
 C Related party disclosure
+        D64='No related party.'
         H(1)='Any related party disclosure by the energy'
         H(2)='assessor. Applicable only for England, '          
         H(3)='Wales & Northern Ireland.'
@@ -3007,6 +3097,7 @@ C Qualifications of the energy assessor (3 choices)
       ELSEIF(INO.EQ.17)THEN
   
 C Name of the energy assessor's insurance company
+        D64='Not insured.'
         H(1)='Name of the insurance company. Applicable '          
         H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKS(insurer_Company,'Name of insurance company ?',
@@ -3018,6 +3109,7 @@ C Name of the energy assessor's insurance company
       ELSEIF(INO.EQ.19)THEN 
   
 C The energy assessor's insurance policy number
+        D64='Not insured.'
         H(1)='Enter insurance policy number. Applicable '          
         H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKS(policyNumberInsurance,'Policy number ?',
@@ -4741,7 +4833,7 @@ C Add surfaces attribution parameters
               SSOTF(ICON)='dispGlz_not' ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
               SSUSE(ICON,1)='D-WINDOW'    ! USE
-              SSUSE(ICON,2)='CLOSED'
+              SSUSE(ICON,2)='-'
 
 C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
@@ -4821,7 +4913,7 @@ C Add surfaces attribution parameters
               SSVFC(ICON)=SSVFC(ICC)
               SSUSE(ICON,1)='C-WINDOW'    ! USE
               IF(SNM(1:4).EQ.'ROOF')SSUSE(ICON,1)='S-WINDOW'
-              SSUSE(ICON,2)='CLOSED'
+              SSUSE(ICON,2)='-'
 
 C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
@@ -4889,7 +4981,7 @@ C Add surfaces attribution parameters
               SSOTF(ICON)='OPAQUE' ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
               SSUSE(ICON,1)='F-FRAME'    ! USE
-              SSUSE(ICON,2)='CLOSED'
+              SSUSE(ICON,2)='-'
 
 C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
@@ -7288,7 +7380,7 @@ C It finally generate BRUKL input document and other SBEM reports.
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character fs*1, col*1
+      character fs*1, col*1 
       character BATCHFL*72
        
 C Build variable (These should eventually be placed in build_info.h)
@@ -7317,9 +7409,15 @@ C      character cURL*256             ! Repository URL commented out in build_in
       real zhvacarea !temporary passing activity index to hvac 
       dimension zhvacarea(MNS,MCOM)
       real b_alpha
-      CHARACTER*12 WALL_MAX_N,FLOR_MAX_N,ROOF_MAX_N,WNRF_MAX_N,
-     &P_DR_MAX_N,V_DR_MAX_N,H_DR_MAX_N
+
+C Names of surfaces associated with highest U value.
+      character WALL_MAX_N*12,FLOR_MAX_N*12,ROOF_MAX_N*12,WNRF_MAX_N*12
+      character P_DR_MAX_N*12,V_DR_MAX_N*12,H_DR_MAX_N*12
       logical flagoverheating
+
+C Counters for components of buildings.
+      integer N_WALL,N_FLOR,N_ROOF,N_WNRF,N_P_DR,N_V_DR
+      integer N_H_DR,I_WALL,I_FLOR,I_ROOF,I_WNRF,I_P_DR,I_V_DR,I_H_DR
 
 C build_info is generated by the Install script.
 #include "build_info.h"
@@ -7557,7 +7655,13 @@ c              EXP_COND=EXP_COND+SSNA(ICC)*UVU
               EXP_AREA=EXP_AREA+SSNA(ICC)
 c              EXP_COND=EXP_COND+SSNA(ICC)*UVH
             ELSEIF(TMPSTR2(1:8).EQ.'C-WINDOW')THEN
-              ! No checks on windows are made
+              IF(WNRF_MAX_U.LT.UVH)THEN
+                WNRF_MAX_U=UVH
+                WNRF_MAX_N=SSNAME(ICC)
+                I_WNRF=1
+              ENDIF
+              WNRF_AVG_U=WNRF_AVG_U+UVH
+              N_WNRF=N_WNRF+1
               EXP_AREA=EXP_AREA+SSNA(ICC)            
             ELSEIF(TMPSTR2(1:8).EQ.'D-WINDOW')THEN
               ! No checks on display window are made
@@ -7651,7 +7755,7 @@ C write out information for roofs
      &  ROOF_AVG_U
       WRITE(IUF,'(a,f6.3)',iostat=ios)  '  ROOF-U-MAX         = ',
      &  ROOF_MAX_U
-      if(I_ROOF.gt.0.0)then
+      if(I_ROOF.gt.0)then
         WRITE(IUF,'(2a)',iostat=ios)    '  ROOF-MAX           = ',
      &    ROOF_MAX_N
       else     
@@ -7664,7 +7768,7 @@ C write out information for windows and rooflights
      &  WNRF_AVG_U
       WRITE(IUF,'(a,f6.3)',iostat=ios)  '  WINROOF-U-MAX      = ',
      &  WNRF_MAX_U
-      if(I_WNRF.gt.0.0)then
+      if(I_WNRF.gt.0)then
         WRITE(IUF,'(2a)',iostat=ios)    '  WINROOF-MAX        = ',
      &    WNRF_MAX_N
       else     
@@ -7677,7 +7781,7 @@ C write out information for personnel doors
      &  P_DR_AVG_U
       WRITE(IUF,'(a,f6.3)',iostat=ios)  '  P-DOOR-U-MAX       = ',
      &  P_DR_MAX_U
-      if(I_P_DR.gt.0.0)then
+      if(I_P_DR.gt.0)then
         WRITE(IUF,'(2a)',iostat=ios)    '  P-DOOR-MAX         = ',
      &    P_DR_MAX_N
       else     
@@ -8418,7 +8522,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character fs*1, col*1
+      character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
       integer mpof, ibrowse
       LOGICAL UNIXOK
@@ -8746,9 +8850,8 @@ C << This is left commented for future use >>
 C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' EA-KEY           = ',
 C     &  ' ""'
 
-C Need to loop for the systems and write the
-C fuel for the system that covers the largest area?
-C << TO BE DONE  - hardwired to LPG for now>>
+C Loop for the systems and write the
+C fuel for the system that covers the largest area.
       fBerMainFuel=0.
       do 161 IHF=1,MFT
         if(BERF(IHF).gt.fBerMainFuel)then
@@ -13154,6 +13257,7 @@ C Determine the path of current model
      &    ibrowse)
         fs = char(92)
         col = char(58)
+        quote = char(34)
 
 C Generate an ini file for use with EPCgen.exe (v3.4b)
 C Three lines in the file - 1st line includes the path
@@ -13187,10 +13291,11 @@ C option. Also copy EPCgen.log from  C:\Esru\esp-r\bin to model cfg folder)
         ENDIF
         WRITE(IUF,'(6A)',IOSTAT=IOS,ERR=3) 'cd C',col,fs,'Esru',fs,
      &    'UKNCMbin'
-        WRITE(IUF,'(3A)',IOSTAT=IOS,ERR=3) 'EPCgen.exe /I ',
-     &    lpath(1:lnblnk(lpath)),EPCINIFL(1:lnblnk(EPCINIFL))
-        WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) 'copy EPCgen.log ',
-     &    lpath(1:lnblnk(lpath))
+        WRITE(IUF,'(5A)',IOSTAT=IOS,ERR=3) 'EPCgen.exe /I ',
+     &    quote,lpath(1:lnblnk(lpath)),
+     &    EPCINIFL(1:lnblnk(EPCINIFL)),quote
+        WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3) 'copy EPCgen.log ',
+     &    quote,lpath(1:lnblnk(lpath)),quote
         CALL ERPFREE(IUF,ISTAT)
         
 C Run batch file to call EPCgen.exe
@@ -13393,12 +13498,14 @@ C Subroutine okforncm scans the current model to find out if it is
 C sufficiently attributed for use with the UK NCM method. 
 C Parameters:
 C   ier = 0 if ok, ier = 1 if problem during scan, ier = 2 model
-C      has older cfg version, ier=3 zone geometry is older version.
+C      has older cfg version, ier=3 zone geometry is older version,
+C      ier=4 geometry overly complex, ier=5 missing NCM description.
 C   act = '-' work silently, 'w' print warnings.
       subroutine okforncm(act,ier)
 #include "building.h"
 #include "geometry.h"
 #include "model.h"
+#include "sbem.h"
       
       integer lnblnk  ! function definition
 
@@ -13441,6 +13548,15 @@ C The version of the cfg file must be 4 or greater.
         call usrmsg(
      &    'Model configuration file is an older format. Go to pre-',
      &    'ferences menu & update it and attribute surfaces.','W')
+        return
+      endif
+
+C If UK NCM model complexity is undefined.
+      if(pjLevComplexity(1:9).eq.'Undefined')then
+        ier=5
+        call usrmsg(
+     &    'Project complexity has not been defined. Go back to',
+     &    'model context and add this definition.','W')
         return
       endif
 
