@@ -41,7 +41,6 @@ C espriou.h provides currentfile.
 
 C Graphics and ESP-r default commons
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/FILEP/IFIL
 
       COMMON/POPHELP/H(60)
 
@@ -343,6 +342,9 @@ C If there were no errors in reading header line then read another.
         CLOSE(INUNIT)
         RETURN
       endif
+
+      I=0   ! set to something outside the if else structure
+      INICNN=0
 
 C Icons description section of gnf file.
   21  CALL STRIPC(INUNIT,OUTSTR,99,ND,0,'gnf icon lines',IER)
@@ -771,9 +773,6 @@ C Grid commons
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
       COMMON/NWKTYP/INWKTYP,vergnf
 
-C Network flow commons are as follows:
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
-
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -802,7 +801,7 @@ C which have been combined into one flow icon.
 C Height difference attribute at an icon connection.
       dimension deltah(MNCNN)
 
-      CHARACTER LAPROB*72,OUTS*124,OUTSTR*124
+      CHARACTER OUTS*124,OUTSTR*124
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
       CHARACTER NWICNM*12,NWICNHIS*40,NWICNLBL*4,NWKTYPSTR*12
       character NWICNTXT*72,LVALCM*60
@@ -1084,7 +1083,7 @@ C flow connection.
         endif
   43  continue
 
-C Debug...
+C Debug.
 C      write(6,*) (deltah(j),j=1,20)
 
 C Now revisit each icon connection, identify component end and the
@@ -1103,9 +1102,11 @@ C This icon connection starts with a component and thus it cannot
 C be the start of a flow connection. Skip on to the next icheck
             itest=ICNS(icheck)
             iotest=ICNE(icheck)
-C debug...
-             write(6,*) 'Skipping ',icheck,' icon connection begins ',
-     &         'with an icon component ',itest
+
+C Debug.
+C             write(6,*) 'Skipping ',icheck,' icon connection begins ',
+C     &         'with an icon component ',itest
+
              goto 144
           endif
 
@@ -1276,7 +1277,7 @@ C Grid commons
 
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL,DFILE,LFIL
       CHARACTER NWICNM*12,NWKTYPSTR*12,NWICNHIS*40
-      CHARACTER TFILE*72,OUTS*124,tab*1,dstmp*24,ts12*12,te12*12
+      CHARACTER OUTS*124,tab*1,dstmp*24,ts12*12,te12*12
       character NWICNLBL*4,NWICNTXT*72,longtfile*144
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
@@ -1471,7 +1472,7 @@ C Write out attributes with minimal white space.
         write(INUNIT,'(a)',iostat=ios,err=1) '*End_attribute'
         write(INUNIT,'(2a,F8.4,a,F8.4,a,F8.4,a)',iostat=ios,err=1) 
      &    '*Where',tab,XYZICON(I,1),tab,XYZICON(I,2),tab,XYZICON(I,3),
-     #    ' # Icon position XYZ:'
+     &    ' # Icon position XYZ:'
         DO 12 J=1,NIVC(I) 
           WRITE(INUNIT,'(2a,F8.4,a,F8.4,a,F8.4,a)',iostat=ios,err=1) 
      &      '*Vertex',tab,VCICON(I,J,1),tab,VCICON(I,J,2),tab,
@@ -1635,7 +1636,7 @@ C Icon rotation angle
 
 C Selected entity (component and connection) common
       COMMON/NWKSEL/ISEL(MICN),CSEL(MNCNN)
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
       CHARACTER NWICNM*12,NWKTYPSTR*12,NWICNHIS*40,NWICNLBL*4
@@ -1643,7 +1644,7 @@ C Selected entity (component and connection) common
       character ATRTAG*12,ATRMENU*32,ATRICN*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
       character ddgtagatr*12,ddgmenuatr*32,ddgatrib*12
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
       LOGICAL GON,SON,ISEL,CSEL
 
 C Initialise the location of the icons

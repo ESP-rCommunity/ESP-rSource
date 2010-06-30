@@ -33,9 +33,11 @@ C MENU1D generates the 1D moisture node distribution menu.
 C *********************************************************************
       SUBROUTINE MENU1M(IDRW1,IDRW2,ITRC)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -50,10 +52,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/MOIST02/LMOIST(MCOM)
@@ -67,7 +65,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       CHARACTER*12 ZONENM
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      character outs*124,outsd*124,outs72*72,OTHSTR*30
       CHARACTER*72 LMOIST,H,TXT,MSG1,LTMP
 
       DIMENSION IVALZ(MCOM),IVALS(MS)
@@ -142,7 +139,7 @@ C Show the zone selection menu.
           IZ=IZ2
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+            call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
           else
             call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
           endif
@@ -208,7 +205,7 @@ C Show the constructions menu.
           WRITE(MSG1,'(A30,A28,A12))')" Enter the number of moisture ",
      &    "nodes/layer in the surface: ",SSNAME(icc)
           CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-          CALL CHITMS(TXT,NCFF)
+          NCFF = iCountWords(TXT)
           IF(NCFF.NE.NE)THEN
             CALL USRMSG(' The number of data enetered should be',
      &      ' equal to number of layers in the surface !','W')
@@ -306,6 +303,7 @@ C distribution menu after performing the request.
 C *********************************************************************
       SUBROUTINE HYGRIC(IZ)
 #include "building.h"
+      integer iCountWords
 
       common/pophelp/h(60)
       COMMON/HELP/IHELPM
@@ -405,7 +403,7 @@ C Enter moisture permeability.
         WRITE(MSG1,'(A))')
      &  " Enter the moisture permeability data for the selected layer"
         CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-        CALL CHITMS(TXT,NCFF)
+        NCFF = iCountWords(TXT)
         IF(NCFF.NE.4)THEN
           CALL USRMSG(' ',
      &    ' one index and three coefficents are expected !','W')
@@ -423,7 +421,7 @@ C Enter moisture capacity.
         WRITE(MSG1,'(A))')
      &  " Enter the moisture capacity data for the selected layer"
         CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-        CALL CHITMS(TXT,NCFF)
+        NCFF = iCountWords(TXT)
         IF(NCFF.NE.4)THEN
           CALL USRMSG(' ',
      &    ' one index and three coefficents are expected !','W')
@@ -441,7 +439,7 @@ C Enter thermal vapour diffusion.
         WRITE(MSG1,'(A))')
      &  " Enter the moisture capacity data for the selected layer"
         CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
-        CALL CHITMS(TXT,NCFF)
+        NCFF = iCountWords(TXT)
         IF(NCFF.NE.2)THEN
           CALL USRMSG(' ',
      &    ' one index and one coefficent are expected !','W')

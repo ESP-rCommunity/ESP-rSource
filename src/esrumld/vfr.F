@@ -42,7 +42,7 @@ C writes the recovered data to array GOTDAT
       CHARACTER FILENM*72,OUTSTR*124,OUTSTR2*124,txt*30,H*72
       character outs*124
       integer ncomp
-#ifdef OSX
+#ifdef OSI
       integer ipos,isize      ! for use with etlabel
 #else
       integer*8 ipos,isize      ! for use with etlabel
@@ -217,7 +217,7 @@ C Check the point is within bounds
       GOTO 10
 
    92 continue
-      write(6,*) 'problem rewinding moisture results file.'
+      call edisp(iuout,'problem rewinding moisture results file.')
       return
 
       END

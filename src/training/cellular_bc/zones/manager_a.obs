@@ -9,5 +9,5 @@
     0.000   -0.700    3.100    3.000    0.020    0.200    0.000  ob4      NONE         # block  4
     0.000   -0.900    3.100    3.000    0.020    0.200    0.000  ob5      NONE         # block  5
     0.000   -1.100    3.100    3.000    0.020    0.200    0.000  ob6      NONE         # block  6
-# grid opq X  opq Z  win X  win Z
-    20    20    10    10
+# grid opq X  opq Z
+    20    20

@@ -97,6 +97,7 @@ C Category tag string, menu entry, data stamp, doc string(s).
       character dbnote*72,c8*8,c20*20,outs*124,LW*4
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
+      integer ier
 
       data izero/24*0/
 
@@ -176,6 +177,7 @@ C Depending on the db type set the number of fields.
 C Open the binary file and write the header.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
+      ier=0
       call EFOPRAN(IFB,BFIL,idbw,3,IER)
 C      c20='*ESP-r binary db    '
       c20='*ESP-r binary db 2  '
@@ -228,8 +230,10 @@ C write srcnote into next record.
           IREC=IREC+1
           WRITE(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,srcchr(inbsrc),
      &      srcnote(inbsrc)
-C Debug...
-          WRITE(6,*)irec,c8,srcchr(inbsrc),srcnote(inbsrc)
+
+C Debug.
+C          WRITE(6,*)irec,c8,srcchr(inbsrc),srcnote(inbsrc)
+
         endif
         LW='*SOU'
       elseif(WORD(1:3).eq.'*DD')then
@@ -362,8 +366,11 @@ C for each item.
             LW='*ID '
             goto 5
           else
-            write(6,*) 'more than one item doc line for item ',iit,' ',
-     &        ittag(iit),' ',itmenu(iit)
+
+C Debug.
+C            write(6,*) 'more than one item doc line for item ',iit,' ',
+C     &        ittag(iit),' ',itmenu(iit)
+
             LW='*ID '
             goto 5
           endif
@@ -409,10 +416,12 @@ C Dump out item header and data.
           IREC=IREC+1
           itcat(iit)=icl
           nbitdat(iit)=inbitdat
-C debug...
-          write(6,*) 'inbitdat nbitdat ',inbitdat,nbitdat(iit)
-          write(6,*) 'nbitdat nbitrep nbitusc ibitusc ',nbitdat(iit),
-     &      nbitrep(iit),nbitusc(iit),ibitusc(iit)
+
+C Debug.
+C          write(6,*) 'inbitdat nbitdat ',inbitdat,nbitdat(iit)
+C          write(6,*) 'nbitdat nbitrep nbitusc ibitusc ',nbitdat(iit),
+C     &      nbitrep(iit),nbitusc(iit),ibitusc(iit)
+
           nbitrep(iit)=inbitrep
           irsit(iit)=IREC
           if(idbver(idbh).eq.1)then
@@ -462,8 +471,10 @@ C dump out the last items data.
           IREC=IREC+1
           itcat(iit)=icl
           nbitdat(iit)=inbitdat
-C debug...
-          write(6,*) 'inbitdat nbitdat ',inbitdat,nbitdat(iit)
+
+C Debug.
+C          write(6,*) 'inbitdat nbitdat ',inbitdat,nbitdat(iit)
+
           nbitrep(iit)=inbitrep
           irsit(iit)=IREC
           if(idbver(idbh).eq.1)then
@@ -1146,6 +1157,7 @@ C changing its length).
       character bk248*248
       character errmsg*48
       logical bkdocok,ok,dok
+      integer ier
 
 C Setup a tab character.
 C      tab=CHAR(9)
@@ -1154,6 +1166,7 @@ C      tab=CHAR(9)
 C Open the binary file and read the header.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
+      ier=0
       call EFOPRAN(IFB,BFIL,idbw,1,IER)
 
       errmsg='reading how many tags menus units etc.'
@@ -1368,7 +1381,10 @@ C use calls to RCVITEM and PRSMLC rather than reading from db.
            if(bkdocok.and.(bkdoctyp(1:2).eq.'IL').and.
      &       (indexbk.eq.iit))then
              call RCVITEM(idbh,class,item,iclr,iitr)
-             write(6,*) idbh,class,item,iclr,iitr,icl,iit
+
+C Debug.
+C             write(6,*) idbh,class,item,iclr,iitr,icl,iit
+
            else
              if(idbver(idbh).eq.1)then
                READ(IFB,REC=IREC,IOSTAT=IOS,ERR=1)ittag(iit),
@@ -1552,6 +1568,7 @@ C First remove any existing temporary ascii file.
         call usrmsg('Reconfiguring database...done.',' ','-')
         CALL ERPFREE(IFB,IOS)
         idbw=idbwidth(idbh)
+        ier=0
         call EFOPRAN(IFB,LFB,idbw,1,IER)
       else
         call usrmsg('Problem reconfiguring database.',
@@ -1573,11 +1590,13 @@ C ier=3 if legacy file.
 
       character dbtype*12,dbmenu*32,c20*20,outs*124,LGENDB*72
       character reqdbtype*12,OUTSTR*124
+      integer ier
 
 C Open the binary file and read the header.
       reqdbtype=dbtype
       CALL ERPFREE(IFB,IOS)
       iwidth=24
+      ier=0
       call EFOPRAN(IFB,LGENDB,iwidth,1,IER)
       if(ier.ne.0)then
         ier=1
@@ -1832,10 +1851,12 @@ C and current items then lengths of each list.
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
       character errmsg*48
+      integer ier
 
 C Open the binary file and read the header if not already done so.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
+      ier=0
       call EFOPRAN(IFB,LGENDB,idbw,1,IER)
       if(ier.ne.0)return
 
@@ -1898,7 +1919,10 @@ C Units and Sources.
      &      unitstr(inbu),unitnote(inbu)
   4     continue
       else
-        write(6,*) 'In db ',idbh,' found ',nbunit(idbh),' units.'
+
+C Debug.
+C        write(6,*) 'In db ',idbh,' found ',nbunit(idbh),' units.'
+
       endif
       if(nbsrc(idbh).gt.0.and.nbsrc(idbh).le.24)then
         errmsg='reading source char source note.'
@@ -1911,7 +1935,10 @@ C Read next record for srcnote.
      &      srcnote(inbsrc)
   5     continue
       else
-        write(6,*) 'In db ',idbh,' found ',nbsrc(idbh),' sources.'
+
+C Debug.
+C        write(6,*) 'In db ',idbh,' found ',nbsrc(idbh),' sources.'
+
       endif
 
 C Db and attribute help records.
@@ -1923,7 +1950,10 @@ C Db and attribute help records.
           read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)c8,dbdoc(i)
   51    continue
       else
-        write(6,*) 'In db ',idbh,' found ',nbdbdoc(idbh),' doc lines.'
+
+C Debug.
+C        write(6,*) 'In db ',idbh,' found ',nbdbdoc(idbh),' doc lines.'
+
       endif
 
 C Read start record of each category.
@@ -1948,9 +1978,10 @@ C Skip to first category record and read cat data.
         read(IFB,REC=IREC,IOSTAT=IOS,ERR=1)cattag(icl),cattype(icl),
      &    catmenu(icl),nbcatdoc(icl),nbcatit(icl),catdate(icl)
 
-C Debug...
-        write(6,*)'scan ',cattag(icl),
-     &      catmenu(icl),nbcatdoc(icl),nbcatit(icl)
+C Debug.
+C        write(6,*)'scan ',cattag(icl),
+C     &      catmenu(icl),nbcatdoc(icl),nbcatit(icl)
+
         errmsg='reading category documentation.'
         do 52 i=1,nbcatdoc(icl)
           IREC=IREC+1
@@ -2163,6 +2194,7 @@ C Generic db commons:
       character ituntstr*42,itsrcstr*1,itcnfstr*42,srcchr*4,srcnote*248
       character unitchr*4,unitstr*12,unitnote*72
       logical match
+      integer ier
 
 C Setup a tab character.
       if(delim.eq.'-')then
@@ -2178,6 +2210,7 @@ C Setup a tab character.
 C Open the binary file and use scandbhd to read the header.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
+      ier=0
       call EFOPRAN(IFB,BFIL,idbw,1,IER)
       call scandbhd(IFB,idbh,ier)
 

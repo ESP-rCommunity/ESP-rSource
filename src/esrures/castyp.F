@@ -64,7 +64,9 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C TDFINT are ranges allowed for integer fields in the instance.
@@ -443,7 +445,9 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C TDFINT are ranges allowed for integer fields in the instance.
@@ -832,7 +836,8 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C TDFINT are ranges allowed for integer fields in the instance.
@@ -1198,6 +1203,7 @@ C will be corrected in the revised results library.
       SUBROUTINE CASTYP(IZ,IDAY,ITSTEP,UCCT1,UCCT2,UCCT3,
      &                  UCCRT1,UCCRT2,UCCRT3,ICC)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -1212,8 +1218,6 @@ C will be corrected in the revised results library.
       COMMON/CGCIN3/ICGCS(MCOM),ICGCF(MCOM),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -1458,7 +1462,8 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
 C TDFINT are ranges allowed for integer fields in the instance.

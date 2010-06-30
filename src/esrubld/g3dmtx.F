@@ -135,6 +135,8 @@ C which the heat pipe connects.
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
 
+      integer ier
+
       SML3=1.E-8
 
 C The augmented zone matrix configuration is as follows:
@@ -225,6 +227,7 @@ C Present term (second node).
 
 C For connections with nodes in the 3D ground model.
         ELSEIF(IZNC.EQ.-1.AND.GRND3D)THEN
+          ier=0
           CALL EFOPRAN(ITF3,LGDTAQ,3,3,IER)
           READ(ITF3,REC=ND2,IOSTAT=ISTAT,ERR=6)T3P2,T3F2
           CALL ERPFREE(ITF3,ISTAT)
@@ -236,6 +239,7 @@ C Present term (first node).
 
 C For connections with nodes within other zones in the building.
         ELSEIF(ZONE3D(IZNC))THEN
+          ier=0
           CALL EFOPRAN(ITF3,L3DTAQ(IZNC),3,3,IER)
           READ(ITF3,REC=ND2,IOSTAT=ISTAT,ERR=6)T3P2,T3F2
           CALL ERPFREE(ITF3,ISTAT)
@@ -363,6 +367,7 @@ C Update the related coefficients.
           TERMF=HCIF(IZNI,ISFI)*A1*GAM
 
 C Read the 2nd zone's air node temperature.
+          ier=0
           CALL EFOPRAN(ITF3,L3DTAQ(IZNI),3,3,IER)
           READ(ITF3,REC=IAIR2,IOSTAT=ISTAT,ERR=6)T3PA2,T3FA2
           CALL ERPFREE(ITF3,ISTAT)
@@ -869,10 +874,15 @@ C *********************************************************************
 
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/btime/btimep,btimef
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
 
       common/cctl/icascf(mcom)
 
       common/pstflg/icflg1(mcf),icflg2(mcf)
+
+      integer ICF,IDTYP,IPER,IICOMP
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
       common/tpmodx/iperx,idtypx
 
@@ -911,22 +921,15 @@ C Test for control.
         IDAY=IDYP
       ENDIF
       N=NBCDT(ICF)
+      NIN=0
       IF(N.EQ.0)THEN
-        IF(IDWP.EQ.6)THEN
-          IDTYP=2
-        ELSEIF(IDWP.EQ.7)THEN
-          IDTYP=3
-        ELSE
-          IDTYP=1
-        ENDIF
-      IF(IDAY.LE.IBCDV(ICF,IDTYP,2).AND.IDAY.GE.
-     &     IBCDV(ICF,IDTYP,1))GOTO 4
-      ELSE
-        DO 20 I=1,N
-          IDTYP=I
-          IF(IDAY.LE.IBCDV(ICF,I,2).AND.IDAY.GE.IBCDV(ICF,I,1))GOTO 4
-   20   CONTINUE
+        NIN=-1*NBDAYTYPE
+        N=NBDAYTYPE
       ENDIF
+      DO 20 I=1,N
+        IDTYP=I
+        IF(IDAY.LE.IBCDV(ICF,I,2).AND.IDAY.GE.IBCDV(ICF,I,1))GOTO 4
+   20 CONTINUE
 
 C Error!
       IF(ICFLG1(ICF).NE.1)THEN
@@ -950,7 +953,8 @@ C Error!
       RETURN
 
 C Commence control solution.
-    4 IF(BTIMEF.GT.24.)BTIMEF=BTIMEF-24.
+    4 if(nin.le.-1.or.n.lt.1)idtyp=icalender(iday)
+      IF(BTIMEF.GT.24.)BTIMEF=BTIMEF-24.
       N=NBCDP(ICF,IDTYP)
       DO 30 I=1,N
         IPER=I
@@ -982,22 +986,12 @@ C Error!
 C Set up day type and period for nested control loop.    
    11 IF(IBSN(ICF,4).NE.0)THEN
         JCF=IBSN(ICF,4)
-        IF(NBCDT(JCF).EQ.0)THEN
-          IF(IDWP.EQ.6)THEN
-            IDTYPX=2
-          ELSEIF(IDWP.EQ.7)THEN
-            IDTYPX=3
-          ELSE
-            IDTYPX=1
-          ENDIF
-          IF(IDAY.LE.IBCDV(JCF,IDTYPX,2).OR.
-     &       IDAY.GE.IBCDV(JCF,IDTYPX,1))GOTO 72
-        ELSE
-          DO 71 I=1,NBCDT(JCF)
-            IDTYPX=I
-            IF(IDAY.LE.IBCDV(ICF,I,2).AND.IDAY.GE.IBCDV(ICF,I,1))GOTO 72
-   71     CONTINUE
-        ENDIF
+        NDT=NBCDT(JCF)
+        IF(NDT.EQ.0)NDT=NBDAYTYPE
+        DO 71 I=1,NDT
+          IDTYPX=I
+          IF(IDAY.LE.IBCDV(ICF,I,2).AND.IDAY.GE.IBCDV(ICF,I,1))GOTO 72
+   71   CONTINUE
         write(outs,'(A,I3,A)')' Warning: Control function',jcf,
      &                        ' is being referenced'
         call edisp(iuout,outs)

@@ -19,12 +19,11 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C ********************************************************************
-C This file is under development by
-C     BARTOSZ LOMANOWSKI
-C     University of Waterloo, Mechanical Engineering
-C     Advanced Glazing System Laboratory
+C This file contains subroutines relating to the complex fenestration
+C construction (CFC).
 C
-C     Latest changes: February 24, 2009
+C Created by: Bart Lomanowski
+C Initial Creation Date: April 2007
 C
 C Main Reference:
 C     Lomanowski, B.A. (2008) 'Implementation of Window Shading Models
@@ -53,11 +52,11 @@ C      VB_SOL6
 C      SETCoef
 C      TDMAsol
 C      profile_angle
-C      CFC_shading_control
 C      set_HR_to_zero
 C      set_QELW_to_zero
 C      CFCoutput
-
+C      CFC_control
+C      get_incident_solrad
 
 C ********************************************************************
 C                   --fenestration_controller--
@@ -80,17 +79,19 @@ C ********************************************************************
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      common/ts4/itsitr(msch),itrpas
 
       integer nconst,nelts,ngaps,npgap
       integer nnds,nndz,nndc,nndl
       real ei,ee,ai,ae
       integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      integer itsitr,itrpas
 
 C local variables to hold solar optical and longwave properties 
 C of each layer in CFC
-      real tmp_lwRF,tmp_lwRB,tmp_lwT !slat longwave properties
+      real tmp_lwEF,tmp_lwEB,tmp_lwT !slat longwave properties
       real tmp_vb_w, tmp_vb_s,tmp_vb_phi !venetian blind descriptors
-      real eff_lwR,eff_lwT !effective longwave properties
+      real eff_lwE,eff_lwT !effective longwave properties
 
       integer icomp,i,j,isur,nc,ne,icfctp,ncfc_elmnt
       integer nn
@@ -117,8 +118,8 @@ C geometry only)
             if(icfcltp(icomp,icfctp,j).eq.2)then   !layer is venetian blind
 
 C assign longwave slat properties from commons
-            tmp_lwRF=rlwRF_sv(icomp,icfctp,j)
-            tmp_lwRB=rlwRB_sv(icomp,icfctp,j)
+            tmp_lwEF=rlwEF_sv(icomp,icfctp,j)
+            tmp_lwEB=rlwEB_sv(icomp,icfctp,j)
             tmp_lwT =rlwT_sv(icomp,icfctp,j)
 
 C assign blind descriptors from commons
@@ -129,20 +130,27 @@ C assign blind descriptors from commons
 C Determine effective longwave properties for FRONT layer surface (facing
 C the outdoors)
             call vb_eff_diff_properties(tmp_vb_w,tmp_vb_s,tmp_vb_phi,
-     &           tmp_lwRF,tmp_lwRB,tmp_lwT,eff_lwR,eff_lwT)
+     &           tmp_lwEF,tmp_lwEB,tmp_lwT,eff_lwE,eff_lwT)
 
 C Save effective properties (front reflectance and transmittance) into 
 C common variables
-            rlwRF(icomp,icfctp,j)=eff_lwR
+            rlwEF(icomp,icfctp,j)=eff_lwE
             rlwT(icomp,icfctp,j)=eff_lwT
 
 C Determine effective longwave properties for BACK layer surface (facing
 C the indoors) by setting negative slat angle
             call vb_eff_diff_properties(tmp_vb_w,tmp_vb_s,tmp_vb_phi*
-     &         (-1.0),tmp_lwRF,tmp_lwRB,tmp_lwT,eff_lwR,eff_lwT)
+     &         (-1.0),tmp_lwEF,tmp_lwEB,tmp_lwT,eff_lwE,eff_lwT)
 
 C Save efective back reflectance into common variable
-            rlwRB(icomp,icfctp,j)=eff_lwR
+            rlwEB(icomp,icfctp,j)=eff_lwE
+            
+C If shade is retracted, set longwave transmittance to 1.             
+            if(i_shd(icomp,icfctp).eq.0)then
+                  rlwEF(icomp,icfctp,j)=0.001
+                  rlwEB(icomp,icfctp,j)=0.001
+                  rlwT(icomp,icfctp,j)=0.999
+            endif
 
             end if
   20        continue
@@ -165,10 +173,8 @@ C           subroutine qlwCFC.
                   icfctp=icfcfl(icomp,i)
                   ncfc_elmnt=ncfc_el(icomp,icfctp)
 
-                  ei(icomp,i)=1.-rlwRB(icomp,icfctp,ncfc_elmnt)
-     &                          -rlwT(icomp,icfctp,ncfc_elmnt)
-                  ee(icomp,i)=1.-rlwRF(icomp,icfctp,1)
-     &                          -rlwT(icomp,icfctp,1)
+                  ei(icomp,i)=rlwEB(icomp,icfctp,ncfc_elmnt)
+                  ee(icomp,i)=rlwEF(icomp,icfctp,1)
             end if
 
 
@@ -182,16 +188,24 @@ C time-row.
       do 32 i=1,nc
         nn=nndc(icomp,i)
         do 31 j=1,nn
-         qcfc_lw(icomp,i,j,1)=qcfc_lwF(icomp,i,j)   !future term from previous timestep
+        
+         if(itrpas.eq.0)then
+           qcfc_lw(icomp,i,j,1)=qcfc_lwF(icomp,i,j)   !future term from previous timestep
+           qcfc_lwP(icomp,i,j) =qcfc_lwF(icomp,i,j)
+         else
+           qcfc_lw(icomp,i,j,1)=qcfc_lwP(icomp,i,j)   !if iterating use values from first iteration
+           qcfc_lw(icomp,i,j,2)=qcfc_lwF(icomp,i,j)
+         endif
+         
          if(NSINC.eq.1)qcfc_lw(icomp,i,j,1)=0.
-         qcfc_lw(icomp,i,j,2)=0.
+         if(itrpas.eq.0)qcfc_lw(icomp,i,j,2)=0.
  31     continue
  32   continue
 
 C If CFC surface, calculate longwave exchanges
       do 1000 isur=1,nc
         if(icfcfl(icomp,isur).ge.1)then
-          call qlwCFC(icomp,isur)
+          if(itrpas.eq.0)call qlwCFC(icomp,isur)
         end if
  1000 continue
 
@@ -212,9 +226,16 @@ C time-row.
       do 35 i=1,nc
         nn=nndc(icomp,i)
         do 36 j=1,nn
-         qcfc_cv(icomp,i,j,1)=qcfc_cvF(icomp,i,j)   !future term from previous timestep
+         if(itrpas.eq.0)then
+           qcfc_cv(icomp,i,j,1)=qcfc_cvF(icomp,i,j)   !future term from previous timestep
+           qcfc_cvP(icomp,i,j) =qcfc_cvF(icomp,i,j)
+         else
+           qcfc_cv(icomp,i,j,1)=qcfc_cvP(icomp,i,j)   !if iterating use values from first iteration
+           qcfc_cv(icomp,i,j,2)=qcfc_cvF(icomp,i,j)
+         endif
+         
          if(NSINC.eq.1)qcfc_cv(icomp,i,j,1)=0.
-         qcfc_cv(icomp,i,j,2)=0.
+         if(itrpas.eq.0)qcfc_cv(icomp,i,j,2)=0.
  36     continue
  35   continue
 
@@ -227,13 +248,20 @@ C Iterate through each multi-layer construction.
             ne=nelts(icomp,isur)
             do 38 i=1,ne
 C Set present time-row gap resistance values for initial time-step.
-            if(NSINC.EQ.1) then !if timestep counter =1 
-                  cfcRgap(icomp,isur,i,1)=1.0
-            else
-                  cfcRgap(icomp,isur,i,1)=cfcRgapF(icomp,isur,i)
+             if(NSINC.EQ.1) then !if timestep counter =1 
+               cfcRgap(icomp,isur,i,1)=1.0
+             else
 
-            endif
-            cfcRgap(icomp,isur,i,2)=1.0
+               if(itrpas.eq.0)then
+                 cfcRgap(icomp,isur,i,1)=cfcRgapF(icomp,isur,i)   !future term from previous timestep
+                 cfcRgapP(icomp,isur,i) =cfcRgapF(icomp,isur,i)
+               else
+                 cfcRgap(icomp,isur,i,1)=cfcRgapP(icomp,isur,i)   !if iterating use values from first iteration
+                 cfcRgap(icomp,isur,i,2)=cfcRgapF(icomp,isur,i)
+               endif
+              
+             endif
+             if(itrpas.eq.0)cfcRgap(icomp,isur,i,2)=1.0
  38         continue
 !           TESTING: set gap resistances to constant here.
 !           cfcRgap(icomp,7,2,2)=1.79
@@ -242,16 +270,25 @@ C Set present time-row gap resistance values for initial time-step.
 
 C Set present time-row convective source term values for initial 
 C time-step.
-          if(NSINC.EQ.1) then !if timestep counter =1 
+      if(NSINC.EQ.1) then !if timestep counter =1 
             q_airndConv_to_cfc(icomp,1)=0.
-          else
-            q_airndConv_to_cfc(icomp,1)=q_airndConv_to_cfcF(icomp)
-          endif
-          q_airndConv_to_cfc(icomp,2)=0.
+      else
+          
+            if(itrpas.eq.0)then
+              q_airndConv_to_cfc(icomp,1)=q_airndConv_to_cfcF(icomp)    !future term from previous timestep
+              q_airndConv_to_cfcP(icomp) =q_airndConv_to_cfcF(icomp)
+            else
+              q_airndConv_to_cfc(icomp,1)=q_airndConv_to_cfcP(icomp)    !if iterating use values from first iteration
+              q_airndConv_to_cfc(icomp,2)=q_airndConv_to_cfcF(icomp)
+            endif
+            
+      endif
+          
+      if(itrpas.eq.0)q_airndConv_to_cfc(icomp,2)=0.
 
 
 C Calculate convective gap resistances and source terms
-      call cfc_convection(icomp)
+      if(itrpas.eq.0)call cfc_convection(icomp)
 
 
 C Prepare for next time step
@@ -296,10 +333,10 @@ C ********************************************************************
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
       integer nconst,nelts,ngaps,npgap
-      COMMON/MOIST81/TNC(MS,MN),QNcnst
-      real tnc,qncnst
-      COMMON/MOIST82/TNS(MS),QNsrf
-      real tns,qnsrf
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      real TFS,QFS
       COMMON/PREC1/SNA(MCOM,MS)
       real sna
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -461,16 +498,16 @@ C assign nodal temperatures and convert to kelvin
       nn=nndc(icomp,isurf)
       do 30 i=1,nn
 C            if(i.lt.nn)then
-            tnd(i)=tnc(isurf,i)+273.15
+            tnd(i)=tfc(icomp,isurf,i)+273.15
 C            else
-C            tsrf=tns(isurf)+273.15
+C            tsrf=tfs(icomp,isurf)+273.15
 C            end if
   30  continue
 
 C assign emittance to front and back surfaces of cfc type itp
       do 60 n=1,ne,2
-            epsf(n)=1.-rlwRF(icomp,icfctp,n)-rlwT(icomp,icfctp,n)
-            epsb(n)=1.-rlwRB(icomp,icfctp,n)-rlwT(icomp,icfctp,n)
+            epsf(n)=rlwEF(icomp,icfctp,n)
+            epsb(n)=rlwEB(icomp,icfctp,n)
   60  continue
 
 C STEP 3a:
@@ -533,7 +570,7 @@ C          to test against the above equation
 
 C Add up longwave exchange fluxes to determine layer source terms
       do 90 j=1,nCFCPart,2
-            qlwtot(j)=0
+            qlwtot(j)=0.
             do 100 k=j,nCFCPart,2
                   qlwtot(j)=qlwtot(j)+q(j,k)
   100       continue
@@ -558,11 +595,11 @@ C PRIMARY FORM OF THE EQUATION
 !           qZnsur(j,k)=
 !      &    (epsf(j)*sigma*(tnd(j*2)**4)*FSfZn(icomp,isurf,j,k)
 !      &    *EI(icomp,k)-
-!      &    EI(icomp,k)*sigma*((tns(k)+273.15)**4)*
+!      &    EI(icomp,k)*sigma*((tfs(icomp,k)+273.15)**4)*
 !      &    FSfZn(icomp,isurf,j,k)*epsf(j)+
 !      &    epsb(j)*sigma*(tnd(j*2)**4)*FSbZn(icomp,isurf,j,k)
 !      &    *EI(icomp,k)-
-!      &    EI(icomp,k)*sigma*((tns(k)+273.15)**4)*
+!      &    EI(icomp,k)*sigma*((tfs(icomp,k)+273.15)**4)*
 !      &    FSbZn(icomp,isurf,j,k)*epsb(j))*
 !      &    -1.0*SNA(icomp,k)
 
@@ -571,7 +608,7 @@ C SIMPLIFIED VERSION OF EQUATION ABOVE. THE TWO EQUATIONS ARE EQUAL.
      &    (epsf(j)*FSfZn(icomp,isurf,j,k)*EI(icomp,k)+
      &    epsb(j)*FSbZn(icomp,isurf,j,k)*EI(icomp,k))*
      &    (SNA(icomp,k)*(-1.0))*sigma*
-     &    ((tnd(j*2)**4)-((tns(k)+273.15)**4))
+     &    ((tnd(j*2)**4)-((tfs(icomp,k)+273.15)**4))
 
 
 C DETERMINE RADIANT HEAT TRANSFER COEFF. FOR INDICES OF MERIT 
@@ -580,8 +617,8 @@ C REPORTING.(CURRENTLY NOT USED)
      &    (epsf(j)*FSfZn(icomp,isurf,j,k)*EI(icomp,k)+
      &    epsb(j)*FSbZn(icomp,isurf,j,k)*EI(icomp,k))*
      &    (SNA(icomp,k)/SNA(icomp,isurf))*sigma*
-     &    ((tnd(j*2)**2)+((tns(k)+273.15)**2))*
-     &    (tnd(j*2)+(tns(k)+273.15))
+     &    ((tnd(j*2)**2)+((tfs(icomp,k)+273.15)**2))*
+     &    (tnd(j*2)+(tfs(icomp,k)+273.15))
 
          else 
           qZnsur(j,k)=0.
@@ -702,7 +739,9 @@ C Otherwise assign heat injection to only the inside surface node
 C for non CFC surfaces.
         icfctp=icfcfl(icomp,i)
 
-        IF(icfctp.gt.0.and.icfcltp(icomp,icfctp,ne).ge.2)then
+        IF(icfctp.gt.0)then
+         if(icfcltp(icomp,icfctp,ne).ge.2)then
+
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
      &                            qZnsurTot(i)/(fnnod*2.)
           do 230 j=nn-1,nn-nnod+1,-1
@@ -712,7 +751,12 @@ C for non CFC surfaces.
   230     continue
           inode=inode-1
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
-     &                            qZnsurTot(i)/(fnnod*2)
+     &                            qZnsurTot(i)/(fnnod*2.)
+         else
+          qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
+     &                            qZnsurTot(i)
+         endif
+
         ELSE
           qcfc_lw(icomp,i,inode,2)=qcfc_lw(icomp,i,inode,2)+
      &                            qZnsurTot(i)
@@ -789,19 +833,24 @@ C reflectances and trasmittances
             if(i.eq.1)then
 C include LW exchange with environment if iDiaOut=1
                   if(iDiaOut.eq.1)then
-                        B(indx,indx-1)=-rlwRF(icomp,icfctp,i)
+                        B(indx,indx-1)=-(1.-rlwEF(icomp,icfctp,i)-
+     &                                 rlwT(icomp,icfctp,i))
                         B(indx+1,indx-1)=-rlwT(icomp,icfctp,i)
                   endif
                   B(indx,indx+2)=-rlwT(icomp,icfctp,i)
-                  B(indx+1,indx+2)=-rlwRB(icomp,icfctp,i)
+                  B(indx+1,indx+2)=-(1.-rlwEB(icomp,icfctp,i)-
+     &                             rlwT(icomp,icfctp,i))
             elseif(i.eq.nCFCPart-1)then
-                  B(indx,indx-1)=-rlwRF(icomp,icfctp,i)
+                  B(indx,indx-1)=-(1.-rlwEF(icomp,icfctp,i)-
+     &                           rlwT(icomp,icfctp,i))
                   B(indx+1,indx-1)=-rlwT(icomp,icfctp,i)
             else
-                  B(indx,indx-1)=-rlwRF(icomp,icfctp,i)
+                  B(indx,indx-1)=-(1.-rlwEF(icomp,icfctp,i)-
+     &                           rlwT(icomp,icfctp,i))
                   B(indx,indx+2)=-rlwT(icomp,icfctp,i)
                   B(indx+1,indx-1)=-rlwT(icomp,icfctp,i)
-                  B(indx+1,indx+2)=-rlwRB(icomp,icfctp,i)
+                  B(indx+1,indx+2)=-(1.-rlwEB(icomp,icfctp,i)-
+     &                             rlwT(icomp,icfctp,i))
             end if
   30  continue
 
@@ -814,10 +863,11 @@ C Fill in the rest of matrix for zone surfaces interaction with indoor blind
                   icol=nExtPart+nCFCPart+j
 
                         if(i.eq.1)then
-                          B(irow-1,icol)=rlwRB(icomp,icfctp,irow-2)
-     &                    *CFB(icomp,isurf,j)*(-1.)
+                          B(irow-1,icol)=(1.-rlwEB(icomp,icfctp,irow-2)-
+     &                                   rlwT(icomp,icfctp,irow-2))
+     &                                   *CFB(icomp,isurf,j)*(-1.)
                           B(irow-2,icol)=rlwT(icomp,icfctp,irow-2)
-     &                    *CFB(icomp,isurf,j)*(-1.)
+     &                                   *CFB(icomp,isurf,j)*(-1.)
                         end if
 
                         if(i.ne.isurf)then
@@ -959,7 +1009,7 @@ C Calculate exchange factor for intra-constructional CFC layers.
                       FSbb(icomp,isurf,i-1,j+1)=0.
                     end if
                   elseif(i.eq.j.and.j.eq.nCFCPart)then
-                    FSbb(icomp,isurf,i-1,j-1)=0
+                    FSbb(icomp,isurf,i-1,j-1)=0.
                   elseif(i.ne.j.and.j.ne.nCFCPart)then
                     FSbf(icomp,isurf,i-1,j+1)=JsolB(indxj)
                     FSbb(icomp,isurf,i-1,j+1)=JsolB(indxj+3)
@@ -1103,19 +1153,18 @@ C index.
 C Calculate beam OFF-NORMAL incidence transmittance and reflectance for
 C reference glass based on extinction coefficient and refractive index 
 C using Snell's law, Fresnel equations.
-	THETA2 = ASIN((SIN(THETA1))/N2)
-	TAU_A = EXP(-1.0*KL/COS(THETA2))
-	RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
-	RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
-	TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
+	    THETA2 = ASIN((SIN(THETA1))/N2)
+	    TAU_A = EXP(-1.0*KL/COS(THETA2))
+	    RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
+	    RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
+	    TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
-	TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
+	    TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
      &            (1.0-(RPARL*RPARL*TAU_A*TAU_A))
-	RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
-	RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
-	TclearON = (TAUPERP+TAUPARL)/2.0
-	RclearON = (RHOPERP+RHOPARL)/2.0
-
+	    RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
+	    RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
+	    TclearON = (TAUPERP+TAUPARL)/2.0
+	    RclearON = (RHOPERP+RHOPARL)/2.0
         END IF
 
 C Calculate glazing layer beam OFF-NORMAL front and back transmittance
@@ -1135,18 +1184,18 @@ C Calculate DIFFUSE-DIFFUSE incidence transmittance and reflectance
 C for glass template based on extinction coefficient and refractive
 C index.
         THETA1=51.*r
-	THETA2 = ASIN((SIN(THETA1))/N2)
-	TAU_A = EXP(-1.0*KL/COS(THETA2))
-	RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
-	RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
-	TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
+	  THETA2 = ASIN((SIN(THETA1))/N2)
+	  TAU_A = EXP(-1.0*KL/COS(THETA2))
+	  RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2
+	  RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2
+	  TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
-	TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
+	  TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
      &            (1.0-(RPARL*RPARL*TAU_A*TAU_A))
-	RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
-	RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
-	TclearON = (TAUPERP+TAUPARL)/2.0
-	RclearON = (RHOPERP+RHOPARL)/2.0
+	  RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
+	  RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
+	  TclearON = (TAUPERP+TAUPARL)/2.0
+	  RclearON = (RHOPERP+RHOPARL)/2.0
 
 C calculate diffuse-diffuse for given glass layer
         SolTFdd(icomp,isurf,icfctp,i)=
@@ -1171,7 +1220,22 @@ C set beam-diffuse eq. 0
 !         VisRBbd(icomp,isurf,icfctp,i)=0.0
 
        elseif(itype.eq.2)then   ! currently only slat-type blinds are considered 
-
+       
+C If shade is retracted set solar transmittance to 1 and skip to next layer
+        if(i_shd(icomp,icfctp).eq.0)then
+            SolTFbb(icomp,isurf,icfctp,i)=0.999
+            SolRFbd(icomp,isurf,icfctp,i)=0.001
+            SolTFbd(icomp,isurf,icfctp,i)=0.001
+            SolTFdd(icomp,isurf,icfctp,i)=0.999
+            SolRFdd(icomp,isurf,icfctp,i)=0.001
+            SolTBbb(icomp,isurf,icfctp,i)=0.999
+            SolRBbd(icomp,isurf,icfctp,i)=0.001
+            SolTBbd(icomp,isurf,icfctp,i)=0.001
+            SolTBdd(icomp,isurf,icfctp,i)=0.999
+            SolRBdd(icomp,isurf,icfctp,i)=0.001
+            goto 100
+        endif
+        
 C set beam-beam reflectances to zero
         SolRFbb(icomp,isurf,icfctp,i)=0.0
         SolRBbb(icomp,isurf,icfctp,i)=0.0
@@ -1285,19 +1349,19 @@ C calculate back effective diffuse properties adn assign to commons
             SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
 
         end if
-
+        
        elseif(itype.eq.0)then
 C set gas gap properties to 0 except for bb and dd transmission, set to 1. 
-        SolTFbb(icomp,isurf,icfctp,i)=0.99999999
-        SolTBbb(icomp,isurf,icfctp,i)=0.99999999
+        SolTFbb(icomp,isurf,icfctp,i)=0.999
+        SolTBbb(icomp,isurf,icfctp,i)=0.999
         SolRFbb(icomp,isurf,icfctp,i)=0.0
         SolRBbb(icomp,isurf,icfctp,i)=0.0
         SolTFbd(icomp,isurf,icfctp,i)=0.0
         SolTBbd(icomp,isurf,icfctp,i)=0.0
         SolRFbd(icomp,isurf,icfctp,i)=0.0
         SolRBbd(icomp,isurf,icfctp,i)=0.0
-        SolTFdd(icomp,isurf,icfctp,i)=0.99999999
-        SolTBdd(icomp,isurf,icfctp,i)=0.99999999
+        SolTFdd(icomp,isurf,icfctp,i)=0.999
+        SolTBdd(icomp,isurf,icfctp,i)=0.999
         SolRFdd(icomp,isurf,icfctp,i)=0.0
         SolRBdd(icomp,isurf,icfctp,i)=0.0
 
@@ -1411,7 +1475,7 @@ C Assign optical properties for each layer from commons to temp arrays
       ENDDO
       i=n-2
       xx=2*i
-      ae(xx)=0
+      ae(xx)=0.
       bp(xx)=-(rbbd(1)*BB(2*i)+tfbd(1)*(GBM))
       i=n-1
       xx=2*i-1
@@ -1497,8 +1561,10 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       real hcip,hcif,hcop,hcof
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       real thrmli
-      COMMON/MOIST81/TNC(MS,MN),QNcnst
-      real tnc,qncnst
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
+c      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+c      real TFS,QFS
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
       integer nnds,nndz,nndc,nndl
       COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),ARP(MCOM,MS),
@@ -1526,6 +1592,7 @@ C      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       real w,phi_rad,pi,L,lthk
       real nstar,TA,TB,hc
       real diff
+      real Rgap_shd_retracted
 	  
       CHARACTER outs*124
 
@@ -1573,7 +1640,7 @@ C layer and outdoor air.
               nd_blnd=nndl(icomp,isur,1)
               nd_cav=nd_blnd+nndl(icomp,isur,2)
               nd_glass=nd_cav+1
-              Tglass=tnc(isur,nd_glass)
+              Tglass=tfc(icomp,isur,nd_glass)
               Text=(ATP(icomp,isur)+ATF(icomp,isur))/2.
 
               q_gen_glass=(hcof(icomp,isur)
@@ -1582,9 +1649,13 @@ C layer and outdoor air.
 
 C Double the external convective heat transfer coefficient (calculated in MZCONV)
 C to account for front and back surface of the outdoor blind layer.
-              hcof(icomp,isur)=2.*hcof(icomp,isur)
-              hcop(icomp,isur)=2.*hcop(icomp,isur)
-
+              if(i_shd(icomp,icfctp).eq.0)then
+                ! if shade is retracted, decouple it from thermal zone
+                hcof(icomp,isur)=0.001
+              else  
+                hcof(icomp,isur)=2.*hcof(icomp,isur)
+              endif
+              
 C Assign source terms to external glass layer nodes
 
 C first node of external glass layer
@@ -1626,24 +1697,35 @@ C outside blind layer is now processed, including first gap from outside
       elseif(i.lt.ne.and.itype.ne.0) then !if layer type is not a gap and if not last layer
 
 C define the two cavity surface temperatures
-        TA=tnc(isur,i*2+1)           !temperature of boundary node of current element and next gas gap [C]
-        TB=tnc(isur,(i+1)*2+1)       !temperature of boundary node of next layer [C]
+        TA=tfc(icomp,isur,i*2+1)           !temperature of boundary node of current element and next gas gap [C]
+        TB=tfc(icomp,isur,(i+1)*2+1)       !temperature of boundary node of next layer [C]
         lthk=THRMLI(icomp,isur,i+1,4) !thickness of gas gap layer [m]
 
             if(itype.eq.1)then !layer is glass
 
               if(itypenext.eq.2)then !next layer is slat-type blind
                 if(i+2.eq.ne)goto 200 !skip if next layer is last layer
-                L=((lthk*2)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
+                L=((lthk*2.)-(nstar*(w/1000.)*cos(phi_rad)))/2.0 !modified slat width
                 hc=0.
 
+C If shade is retracted determine gap thickness between glass layers
+                if(i_shd(icomp,icfctp).eq.0)then
+                  TB=tfc(icomp,isur,(i+3)*2+1)
+                  L=THRMLI(icomp,isur,i+1,4)+THRMLI(icomp,isur,i+3,4)
+                endif
+                
                 CALL ConvVertCav(L,TA,TB,rmlr_mass(icomp,icfctp,i+1),
      &          cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
      &          spht_A(icomp,icfctp,i+1),spht_B(icomp,icfctp,i+1),hc)
 
-                cfcRgap(icomp,isur,i+1,2)=1./hc
-
+                if(i_shd(icomp,icfctp).eq.0)then
+                  Rgap_shd_retracted=1./(hc*2.)
+                  cfcRgap(icomp,isur,i+1,2)=Rgap_shd_retracted
+                else
+                  cfcRgap(icomp,isur,i+1,2)=1./hc
+                endif
+                
               elseif(itypenext.eq.1)then    !next layer is glass, use cavity correlation
                 L=lthk
                 hc=0.
@@ -1678,7 +1760,14 @@ C define the two cavity surface temperatures
      &          cond_A(icomp,icfctp,i+1),cond_B(icomp,icfctp,i+1),
      &          visc_A(icomp,icfctp,i+1),visc_B(icomp,icfctp,i+1),
      &          spht_A(icomp,icfctp,i+1),spht_B(icomp,icfctp,i+1),hc)
-                cfcRgap(icomp,isur,i+1,2)=1./hc
+
+C If shade is retracted assign appropriate resistance calculated above
+                if(i_shd(icomp,icfctp).eq.0)then
+                  cfcRgap(icomp,isur,i+1,2)=Rgap_shd_retracted
+                else
+                  cfcRgap(icomp,isur,i+1,2)=1./hc
+                endif
+                
               else
                !do nothing
               end if
@@ -1707,13 +1796,17 @@ C define the two cavity surface temperatures
             !   to the room air.
 
             !2. Apply Simple Conduction between glass and blind
-              Tavg=(tnc(isur,ne*2)+tnc(isur,(ne-2)*2))/2.  !T for properties calc
+              Tavg=(tfc(icomp,isur,ne*2)+tfc(icomp,isur,(ne-2)*2))/2.  !T for properties calc
               !innermost cavity layer thickness corrected for effective slat width(m)
               b=thrmli(icomp,isur,ne-1,4)+ 
      &            ((w/1000.)-(nstar*(w/1000.)*cos(phi_rad)))   
               air_cond=0.02538+((Tavg-290.)/10.)*(0.02614-0.02538) !conductiviy of air(W/m.K)
               h_glass_blind=air_cond/b
               cfcRgap(icomp,isur,i-1,2)=1./h_glass_blind
+
+            ! If shade is retracted decouple the shade and interior glass surface
+              if(i_shd(icomp,icfctp).eq.0)
+     &         cfcRgap(icomp,isur,i-1,2)=1000.
 
             !3. Determine convection from glass and blind to room air.
 
@@ -1725,16 +1818,22 @@ C define the two cavity surface temperatures
             !  accounts for slat angles which pump air through the cavity to the 
             !  room air, thus increasing the convective heat transfer.
               f_phi=1.0 + 0.2 * abs(sin(2.0 * phi_rad)) !slat angle penalty function
-              h_blind_room=
+              
+              if(i_shd(icomp,icfctp).eq.0)then
+            ! If shade is retracted, set convective heat transfer coefficients
+            ! from blind to room to very small value (large resistance)
+            ! to remove influence of the blind on the zone air temperature. 
+                h_blind_room=0.001
+                hcif(icomp,isur)=0.001
+              else
+                h_blind_room=
      &            hcif(icomp,isur)*(1.0-exp(-4.6*b/0.1))*f_phi
-
-            ! Modify HCIF with slat angle penalty function
-              hcif(icomp,isur)=
-     &            hcif(icomp,isur)*f_phi
-
+                hcif(icomp,isur)=hcif(icomp,isur)*f_phi
+              endif
+              
             ! Determine source term for blind layer
               q_blind_airnd=h_blind_room
-     &            *SNA(icomp,isur)*(tfa(icomp)-tnc(isur,ne*2))
+     &            *SNA(icomp,isur)*(tfa(icomp)-tfc(icomp,isur,ne*2))
 
             !Save for output and XML
               h_blind_roomS(icomp,isur)=h_blind_room
@@ -1745,7 +1844,7 @@ C define the two cavity surface temperatures
             !as well as ICOR, the correlation chosen after interrogating the 
             !surface. 
             !---------Set air & surface temperatures and temperature difference.
-              DT=ABS(tfa(icomp)-tnc(isur,((ne-2)*2)+1))
+              DT=ABS(tfa(icomp)-tfc(icomp,isur,((ne-2)*2)+1))
             !---------Calculate the HTC using one of the empirical correlations.
               ICOR = ICORI(ICOMP,ISUR)
               HGT = HEIGHT(ICOMP,ISUR)
@@ -1753,9 +1852,13 @@ C define the two cavity surface temperatures
               CALL HTBUOY(HC,ICOR,ICOMP,ISUR,DT,HGT,ARHY)
               h_glass_room=HC*(1.0-exp(-4.6*b/0.1))
 
+C If shade is retracted use the adjusted heat transfer coefficient for interior
+C glass surface
+              if(i_shd(icomp,icfctp).eq.0)h_glass_room=HC
+              
 C Determine source term for interior glass surface node
               q_glass_airnd=h_glass_room
-     &        *SNA(icomp,isur)*(tfa(icomp)-tnc(isur,(ne-2)*2))
+     &        *SNA(icomp,isur)*(tfa(icomp)-tfc(icomp,isur,(ne-2)*2))
 
             !Save for output
               h_glass_roomS(icomp,isur)=h_glass_room
@@ -1767,7 +1870,7 @@ C to be subtracted from air node)
               q_airndConv_to_cfc(icomp,2)=
      &        q_airndConv_to_cfc(icomp,2)
      &        +(q_blind_airnd+q_glass_airnd)*(-1.)
-
+   
 C Assign heat injection terms to slat blind and glass layers
 
 C BLIND
@@ -1903,7 +2006,7 @@ C Calculate Rayleigh number
       Ra=ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
 
 C Calculate Nusselt number (Shewen, Hollands and Raithby 1996)
-      Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000/Ra)**1.4))**(2))
+      Nu=SQRT(1.+((0.0665*Ra**(0.33333))/(1.+(9000./Ra)**1.4))**(2))
 
 C Calculate convective heat transfer coefficient.
       hc=Nu*k/L     !(W/m^2.K)
@@ -3114,18 +3217,18 @@ C ********************************************************************
       DIMENSION tb(me),tf(me),rb(me),rf(me)
       REAL Ir
 
-      aw(1)=0
+      aw(1)=0.
       ap(1)=0.00001
-      ae(1)=1
-      bp(1)=0
-      aw(2)=1
+      ae(1)=1.
+      bp(1)=0.
+      aw(2)=1.
       IF (rb(n-2).LT.0.0001) THEN
             ap(2)=0.00001
       ELSE
             ap(2)=rb(n-2)
       ENDIF
       ae(2)=-tf(n-2)
-      bp(2)=0
+      bp(2)=0.
       DO i=2,n-2,1
             xx=2*i-1
             aw(xx)=-tb(n-i)
@@ -3134,10 +3237,10 @@ C ********************************************************************
             ELSE
                   ap(xx)=rf(n-i)
             ENDIF
-            ae(xx)=1
-            bp(xx)=0
+            ae(xx)=1.
+            bp(xx)=0.
             xx=2*i
-            aw(xx)=1
+            aw(xx)=1.
             IF (rb(n-i-1).LT.0.0001) THEN
                   ap(xx)=0.00001
             ELSE
@@ -3147,7 +3250,7 @@ C ********************************************************************
             bp(xx)=0.
       ENDDO
       xx=2*(n-2)
-      ae(xx)=0
+      ae(xx)=0.
       bp(xx)=-(tf(1))*Ir
       RETURN
       END
@@ -3183,8 +3286,8 @@ C ********************************************************************
 
       m=2*n-4
       DO i=1,m,1
-            alpha(i)=0
-            beta(i)=0
+            alpha(i)=0.
+            beta(i)=0.
       ENDDO
       alpha(1)=ae(1)/ap(1)
       beta(1)=bp(1)/ap(1)
@@ -3286,11 +3389,13 @@ C loop through zone surfaces
             icfctp=icfcfl(icomp,i) ! cfc type index
 
 C if cfc is detected AND indoor slat blind is present
-                  if(icfctp.gt.0.and.icfcltp(icomp,icfctp,ne).ge.2)then
+                  if(icfctp.gt.0)then
+                    if(icfcltp(icomp,icfctp,ne).ge.2)then
                       do 110 j=1,nc
                          HRF(i,j)=0.0
                          HRF(j,i)=0.0
  110                  continue
+                    endif
                   end if
  100  continue
 
@@ -3352,11 +3457,11 @@ C loop through zone surfaces
             icfctp=icfcfl(icomp,i)  !CFC type index
 
 C if cfc is detected AND indoor slat blind is present
-                 if(icfctp.gt.0.and.icfcltp(icomp,icfctp,1).ge.2)then
+                 if(icfctp.gt.0)then
 
-                        QELWF(I)=0.
+                   if(icfcltp(icomp,icfctp,1).ge.2)QELWF(I)=0.
 
-                  end if
+                 end if
  100  continue
 
 C Save future time-row values for use as present
@@ -3367,93 +3472,6 @@ C values at next time-step.
 
       return
       end
-
-
-C ********************************************************************
-C                         --CFC_shading_control--
-C
-C **UNDER CONSTRUCTION**
-C
-C Facility for implementing shading control at the single time-step 
-C level. 
-C
-C Currently control of a slat-type blind slat angle is possible by 
-C calculating a NEW slat angle at each time-step for a prescribed
-C condition. 
-C
-C Currently, the default control sets the slat angle to a constant 
-C by setting 
-C
-C           vb_phiNew()=vb_phiOld()
-C
-C where
-C vb_phiNew = current time-step slat angle
-C vb_phiOld = previous time-step slat angle
-C
-C ********************************************************************
-      subroutine CFC_shading_control(icomp,icfctp)
-      IMPLICIT NONE
-#include "building.h"
-#include "CFC_common.h"
-      COMMON/OUTIN/IUOUT,IUIN
-      integer iuout,iuin
-C      COMMON/SUNPOS/SAZI,SALT,ISUNUP
-C      real sazi,salt
-C      integer isunup
-C      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
-C      real tfa,qfa
-C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-C      real qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
-C      COMMON/BTIME/BTIMEP,BTIMEF
-C      real btimep,btimef
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
-C      common/CFCsolarS/RadIncDirS(mcom,ms),RadIncDifS(mcom,ms),
-C     &      transBB_S(mcom,ms),transD_S(mcom,ms),refl_S(mcom,ms),
-C     &      issur_self_shd(mcom,ms), proang_s(mcom,mcfc,ms),
-C     &      qtmca_ext(mcom,ms,mn)
-C      real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
-C      real issur_self_shd,proang_s,qtmca_ext
-
-      integer icomp,icfctp!,isur,is_shd
-C      real proang,tfa_old
-      CHARACTER outs*124
-
-C if first timestep, set New angle to value read from *.cfc file
-      if(NSINC.eq.1)then
-            vb_phiOld(icomp,icfctp)=vb_phi(icomp,icfctp)
-            vb_phiNew(icomp,icfctp)=vb_phi(icomp,icfctp)
-      else
-C set Old slat angle equal to New slat angle (from
-C previous timestep)
-            vb_phiOld(icomp,icfctp)=vb_phiNew(icomp,icfctp)
-      end if
-
-
-C -------------------------------------------------------------------
-C DEFAULT CONTROL SETTING: NEW=OLD
-
-      vb_phiNew(icomp,icfctp)=vb_phiOld(icomp,icfctp)
-
-
-c -------------------------------------------------------------------
-C Check that new slat angle is within correct range:
-C     -90 (deg.) < vb_phiNew < 90 (deg.)
-      if(vb_phiNew(icomp,icfctp).lt.-89.9.or.vb_phiNew(icomp,icfctp)
-     &      .gt.89.9)then
-C send warning error message and overwrite angle to 89.9 deg
-          write(outs,'(a,a,i2,a,a)')
-     &      'WARNING: Calculated slat angle for CFC',
-     &      ' type ',icfctp, ' is out of range.'
-          CALL EDISP(IUOUT,outs)
-          write(outs,'(a)')'        Setting slat angle to 89.9 deg. '
-          CALL EDISP(IUOUT,outs)
-          vb_phiNew(icomp,icfctp)=89.9
-      end if
-
-      return
-      end
-
 
 C ********************************************************************
 C                         --CFC_output--
@@ -3493,10 +3511,10 @@ C ********************************************************************
       COMMON/CONCOE/HCIP(MCOM,MS),HCIF(MCOM,MS),HCOP(MCOM,MS),
      &              HCOF(MCOM,MS)
       real hcip,hcif,hcop,hcof
-      COMMON/MOIST81/TNC(MS,MN),QNcnst
-      real tnc,qncnst
-      COMMON/MOIST82/TNS(MS),QNsrf
-      real tns,qnsrf
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      real TFS,QFS
       COMMON/COE32J/QTMCA(MS,MN,2)
       real qtmca
 
@@ -3508,7 +3526,8 @@ C ********************************************************************
      &      issur_self_shd(mcom,ms),proang_s(mcom,mcfc,ms),
      &      qtmca_ext(mcom,ms,mn)
       real RadIncDirS,RadIncDifS,transBB_S,transD_S,refl_S
-      real issur_self_shd,proang_s,qtmca_ext
+      real proang_s,qtmca_ext
+      integer issur_self_shd
 
       integer i,j,k,l,nn,nc,ne,icfctp,icomp,ivblayr
 
@@ -3544,7 +3563,7 @@ C**************** Ambient, Solar and CFC descriptors *****************
      &'     layer |SolRFbb|SolRBbb|SolTFbb|SolTBbb',
      &'|SolRFbd|SolRBbd|SolTFbd|SolTBbd',
      &'|SolRFdd|SolRBdd|SolTFdd|SolTBdd',
-     &'| rholf | rholb | taul  |'
+     &'| Emisf | Emisb | taul  |'
 
  9993     format(4x,A48,A32,A31,A26)
 
@@ -3557,7 +3576,7 @@ C**************** Ambient, Solar and CFC descriptors *****************
      &SolTBbd(icomp,i,icfctp,k),SolRFdd(icomp,i,icfctp,k),
      &SolRBdd(icomp,i,icfctp,k),SolTFdd(icomp,i,icfctp,k),
      &SolTBdd(icomp,i,icfctp,k),
-     &rlwRF(icomp,icfctp,k),rlwRB(icomp,icfctp,k),
+     &rlwEF(icomp,icfctp,k),rlwEB(icomp,icfctp,k),
      &rlwT(icomp,icfctp,k)
  9994       format(6x, I12,1x,15F8.3)
  12   continue
@@ -3595,7 +3614,7 @@ C**************** CFC Convection/LW exchange*************************
  9997     format(6x,I10,3x,5F9.3,I7,3f9.3,A8)
 
       write(98,9998)
-     &'     layer |tnc(o) |tnc(m) |tnc(i) |CFCRgap',
+     &'     layer |tfc(o) |tfc(m) |tfc(i) |CFCRgap',
      &'|Q_lw(o)|Q_lw(m)|Q_lw(i)|',
      &'|QextVB_g_env| h_vb_room  |h_glass_room|',
      &'|QintVB_b_rm | QintVB_g_rm|',
@@ -3608,38 +3627,42 @@ C**************** CFC Convection/LW exchange*************************
       if((icfcltp(icomp,icfctp,l).lt.2.and.l.lt.ne)
      &.or.(icfcltp(icomp,icfctp,l).eq.2.and.l.gt.1.and.l.lt.ne))then
 
-      write(98,9999)l,tnc(i,(l*2)-1),tnc(i,l*2),tnc(i,(l*2)+1),
+      write(98,9999)l,tfc(icomp,i,(l*2)-1),tfc(icomp,i,l*2),
+     & tfc(icomp,i,(l*2)+1),
      &cfcRgap(icomp,i,l,2),qcfc_lw(icomp,i,(l*2)-1,2),
-     &qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0,0,
-     &0,0,0,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
+     &qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0.,0.,
+     &0.,0.,0.,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
      &qcfc_cv(icomp,i,(l*2)+1,2)
 
       !outdoor blind
       elseif(icfcltp(icomp,icfctp,l).eq.2.and.l.eq.1)then
 
-      write(98,9999)l,tnc(i,(l*2)-1),tnc(i,l*2),tnc(i,(l*2)+1),
+      write(98,9999)l,tfc(icomp,i,(l*2)-1),tfc(icomp,i,l*2),
+     & tfc(icomp,i,(l*2)+1),
      &cfcRgap(icomp,i,l,2),qcfc_lw(icomp,i,(l*2)-1,2),
      &qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),
-     &q_glass_extS(icomp,i),0,
-     &0,0,0,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
+     &q_glass_extS(icomp,i),0.,
+     &0.,0.,0.,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
      &qcfc_cv(icomp,i,(l*2)+1,2)
 
       !indoor blind
       elseif(l.eq.ne)then
 
          if(icfcltp(icomp,icfctp,l).eq.2)then
-         write(98,9999)l,tnc(i,(l*2)-1),tnc(i,l*2),tns(i),
+         write(98,9999)l,tfc(icomp,i,(l*2)-1),tfc(icomp,i,l*2),
+     &    tfs(icomp,i),
      &   cfcRgap(icomp,i,l,2),qcfc_lw(icomp,i,(l*2)-1,2),
-     &   qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0,
+     &   qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0.,
      &   h_blind_roomS(icomp,i),h_glass_roomS(icomp,i),
      &   q_blind_airndS(icomp,i),q_glass_airndS(icomp,i),
      &   qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
      &   qcfc_cv(icomp,i,(l*2)+1,2)
          else
-         write(98,9999)l,tnc(i,(l*2)-1),tnc(i,l*2),tns(i),
+         write(98,9999)l,tfc(icomp,i,(l*2)-1),tfc(icomp,i,l*2),
+     &    tfs(icomp,i),
      &   cfcRgap(icomp,i,l,2),qcfc_lw(icomp,i,(l*2)-1,2),
-     &   qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0,0,
-     &   0,0,0,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
+     &   qcfc_lw(icomp,i,l*2,2),qcfc_lw(icomp,i,(l*2)+1,2),0.,0.,
+     &   0.,0.,0.,qcfc_cv(icomp,i,(l*2)-1,2),qcfc_cv(icomp,i,l*2,2),
      &   qcfc_cv(icomp,i,(l*2)+1,2)
          end if
 
@@ -3706,4 +3729,529 @@ C********************************************************************
 
       return
       end
+
+C ********************************************************************
+C                         --CFC_control--
+C
+C Created by: Bart Lomanowski
+C Initial Creation Date: April 2009
+C
+C This subroutine carries out time-step control of CFCs based on
+C control data stored in COMMON/CFCCTL. It first collects information
+C on sensor/actuator/control type and carries out basic setpoint 
+C control for the specified CFC type. 
+C
+C ********************************************************************
+      subroutine CFC_control()
+      IMPLICIT NONE
+#include "building.h"
+#include "control.h"
+#include "CFC_common.h"
+      COMMON/OUTIN/IUOUT,IUIN
+      integer iuout,iuin
+
+      common/c1/ncomp,ncon
+      integer ncomp,ncon
+      
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      real tfa,qfa
+      COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      real TFC,QFC
+      COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
+      real TFS,QFS
+      
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      real qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
+      
+      COMMON/BTIME/BTIMEP,BTIMEF
+      real btimep,btimef
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+      
+      COMMON/ADJC/IE(MCOM,MS),ATP(MCOM,MS),ATF(MCOM,MS),
+     &ARP(MCOM,MS),ARF(MCOM,MS)
+      integer IE
+      real ATP,ATF,ARP,ARF
+
+      CHARACTER outs*124
+      
+C Working variables to temporarily store slat angle for daytype and hour
+C      real vb_phiX
+C      dimension vb_phiX(mcom,mcfc,mdty,MT)
+C      real slat_angleX
  
+      integer i,j,k           ! do loop indices
+      integer ictlfun         ! control function index
+      integer nctldaytypes    ! number of control day types
+      integer iday            ! current day
+      integer idaytype        ! day type
+      integer idayofweek      ! day of week (1 to 7)
+      integer nperiods        ! number of periods in control daytype
+      integer iperiod         ! control period
+      integer icomp           ! zone index
+      integer icfctp          ! CFC type index
+      integer iact1, iact2, iact3   ! actuator details
+      integer isen1, isen2, isen3   ! sensor details
+      integer ictype                ! control type
+      integer ischedule_shdstateONorOFF
+      real shdONsetpoint
+      real shdOFFsetpoint
+      real shdONslatPOSITION
+      real shdOFFslatPOSITION
+      real schedule_slat_angle
+      real temp                     ! temperature [C] control parameter - can be dbt, dbt/mrt, sol-air
+      real solrad                   ! solar radiation [W/m2] control parameter - can be diff hor, dir norm, total incident on surface
+      real tmrt                     ! mrt temperature [C]
+      real solrad_dir               ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
+      real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
+      character msgout*124
+      
+C Prior to initiating control logic, set the default slat angle and 
+C shading state for the next time step in all zones and all CFC types
+C containing a shade layer.    
+        do 30 i = 1, ncomp
+         if(icfc(i).eq.1)then
+          do 31 j = 1, ncfc(i)
+            do 32 k = 1, ncfc_el(i,j)
+              if(icfcltp(i,j,k).eq.2)then
+                vb_phiNew(i,j) = vb_phi_SV(i,j)
+                i_shd(i,j)     = i_shd_SV(i,j)
+                if(NSINC.eq.1)then
+                  vb_phiNew(i,j) = vb_phi(i,j)  !if first timestep, use initial slat angle from *.cfc input file
+                  i_shd(i,j) = 1                !if first timestep, initialize shading flag to ON
+                endif
+              endif
+  32        continue
+  31      continue   
+         endif
+  30    continue
+      
+      
+C -------------------------------------------------------------------
+C Control the zone complex fenestration shading process according
+C to the sensor location of the associated control function. 
+      iday = idyp
+      idayofweek = idwp
+      
+      if(ihrp.eq.24)then
+        iday = idyf
+        idayofweek = idwf
+      endif
+      
+C Loop through each complex fenestration control function 
+
+      IF (nCFCctlloops.gt.0)THEN
+        do 10 i = 1, nCFCctlloops
+          ictlfun = i
+          nctldaytypes = nCFCctldaytypes(i)
+          
+C Determine if period validy dates of daytypes in current 
+C control loop are valid for current calendar day
+          
+          ! for weekday, saturday and sunday daytypes
+          IF(nctldaytypes.eq.0)THEN
+            if(idayofweek.eq.6)then
+              idaytype = 2
+            elseif(idayofweek.eq.7)then
+              idaytype = 3
+            else
+              idaytype = 1
+            endif
+            if(iday.le.iCFCctldatevalid(i,idaytype,2).and.iday
+     &      .ge.iCFCctldatevalid(i,idaytype,1))goto 11                    
+          ELSE
+            ! Loop through each daytype until a valid daytype is found
+            do 20 j = 1, nctldaytypes
+              idaytype = j
+              if(iday.le.iCFCctldatevalid(i,j,2).and.iday
+     &               .ge.iCFCctldatevalid(i,j,1))goto 11
+  20        continue
+          ENDIF
+
+C If we are here then no control for control loop i. Skip to end of loop and 
+C continue with next control period.  
+          goto 10
+      
+C Commence control solution      
+  11      if(btimef.gt.24.)btimef = btimef - 24.  
+            nperiods = nCFCdayctlperiods(ictlfun,idaytype)
+      
+          do 40 k = 1, nperiods
+            iperiod = k
+            if(k.eq.nperiods)then
+              if(btimef.gt.
+     &          CFCctlperiodstart(ictlfun,idaytype,nperiods))
+     &          goto 12
+              else
+                if(btimef.le.
+     &           CFCctlperiodstart(ictlfun,idaytype,k+1))goto 12
+              endif   
+  40      continue    
+ 
+C If we are here then no control for control function i. Skip to end of loop
+C and continue with next control period.   
+          goto 10
+ 
+C Now we have found a valid daytype and period. Apply appropriate control law. 
+C <<Currently only basic control is avaialble so no need to call separate routine>>
+
+C -------------------------------------------------------------------
+C Determine actuator type and copy control data to working variables
+C -------------------------------------------------------------------
+
+  12      iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule
+          iact2 = iCFCactuator(ictlfun,2)           ! zone index
+          iact3 = iCFCactuator(ictlfun,3)           ! CFC type
+
+C Actuator controls shade ON/OFF state (ie. shade layer deployed/retracted)      
+          if(iact1.eq.0)then
+            shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
+            shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)      
+C Actuator controls slat angle of slat-type shade layer
+          elseif(iact1.eq.1)then
+            shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
+            shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)
+            shdONslatPOSITION = 
+     &            CFCmiscdata(ictlfun,idaytype,iperiod,4)
+            shdOFFslatPOSITION = 
+     &            CFCmiscdata(ictlfun,idaytype,iperiod,5) 
+C Schedule
+          elseif(iact1.eq.2)then
+            ischedule_shdstateONorOFF = 
+     &      INT(CFCmiscdata(ictlfun,idaytype,iperiod,2))
+            schedule_slat_angle = 
+     &            CFCmiscdata(ictlfun,idaytype,iperiod,3)
+          endif
+
+C -------------------------------------------------------------------
+C Set shade ON/OFF state or slat angle based on sensor and control
+C type data
+C -------------------------------------------------------------------
+
+          isen1 = iCFCsensor(ictlfun,1)
+          isen2 = iCFCsensor(ictlfun,2)
+          isen3 = iCFCsensor(ictlfun,3)
+          ictype = iCFCctltype(ictlfun,idaytype,iperiod)
+
+C Determine appropriate temperature parameter to use
+          IF(ictype.eq.1.or.ictype.eq.2)then        ! senses temperature
+      
+            if(isen1.eq.-3.and.isen2.eq.0)then      ! ambient temperature
+              temp = TF
+            elseif(isen1.eq.-3.and.isen2.eq.1)then  ! sol-air temperature
+              !temp = SOLAIR(TF,QFF,QDF)            ! **THIS FUNCTION DOES NOT CURRENTLY WORK**
+            elseif(isen1.eq.-2)then                 ! mix of dry bulb and mean radiant temp.
+              call MZMIXT(isen2,tmrt,temp)          ! **NOT SURE IF THIS WORKS**
+            elseif(isen1.gt.0)then                  ! temperature in zone corresponding to isen1
+              if(isen2.eq.0)then
+              
+                temp = tfa(isen1)
+            
+              elseif(isen2.gt.0)then
+              
+                if(isen3.eq.0)then
+                  temp = tfs(isen1,isen2)
+                elseif(isen3.gt.0)then
+                  temp = tfc(isen1,isen2,isen3)
+                endif
+            
+              endif
+            endif
+
+C Perform actual control of shade ON/OFF and slat angle here
+            if(temp.gt.shdONsetpoint)then
+              if(iact1.eq.0)then                              ! actuate shade ON/OFF
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              elseif(iact1.eq.1)then                          ! actuate slat angle
+                vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              endif
+            elseif(temp.lt.shdOFFsetpoint)then
+              if(iact1.eq.0)then                              ! actuate shade ON/OFF
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 0                    ! shade state OFF
+              elseif(iact1.eq.1)then                          ! actuate slat angle
+                vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state OFF     
+              endif
+            endif
+        
+          ELSEIF(ictype.eq.3.or.ictype.eq.4)then    ! senses solar radiation
+
+C Determine appropriate solar radiation parameter to use
+            if(isen1.eq.-3.and.isen2.eq.4)then      ! senses diff. horizontal solar radiation
+              solrad = QFF
+            elseif(isen1.eq.-3.and.isen2.eq.5)then  ! senses direct normal solar radiation
+              solrad = QDF
+            elseif(isen1.eq.-4)then                 ! senses total radiation incident on surface
+            
+C Check that ext. rad sensor is on external surface
+              if(IE(isen2,isen3).eq.0)then
+                call get_incident_solrad(isen2,isen3,
+     &                         solrad_dir,solrad_diff)
+                solrad = solrad_dir + solrad_diff   ! total radiation incident on surface
+              else
+                write(msgout,'(A,i3)')
+     &               'In CFC control function: ', ictlfun
+                call USRMSG(msgout,
+     &          'Surface incident radiation sensor must be external.'
+     &          ,'W')
+C-----------Kill simulation     
+                stop    
+              endif
+          
+            endif
+
+C Perform actual control of shade ON/OFF and slat angle here
+            if(solrad.gt.shdONsetpoint)then
+              if(iact1.eq.0)then
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              elseif(iact1.eq.1)then
+                vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              endif
+            elseif(solrad.lt.shdOFFsetpoint)then
+              if(iact1.eq.0)then
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 0                    ! shade state OFF
+              elseif(iact1.eq.1)then
+                vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON     
+              endif
+            endif
+
+          ELSEIF(ictype.eq.5)then                   ! senses wind speed, actuates shade ON/OFF
+      
+            if(isen1.eq.-3.and.isen2.eq.2)then
+C Perform actual control of shade ON/OFF and slat angle here
+              if(VF.gt.shdONsetpoint)then
+                if(iact1.eq.0)then
+                  vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON
+                elseif(iact1.eq.1)then
+                  vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON
+                endif
+              elseif(VF.lt.shdOFFsetpoint)then
+                if(iact1.eq.0)then
+                  vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                  i_shd(iact2,iact3)     = 0                    ! shade state OFF
+                elseif(iact1.eq.1)then
+                  vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state OFF     
+                endif
+              endif        
+            endif
+        
+          ELSEIF(ictype.eq.6)then                   ! senses wind direction, actuates shade ON/OFF
+      
+            if(isen1.eq.-3.and.isen2.eq.3)then
+C Perform actual control of shade ON/OFF and slat angle here
+              if(DF.gt.shdONsetpoint)then
+                if(iact1.eq.0)then
+                  vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON
+                elseif(iact1.eq.1)then
+                  vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON
+                endif
+              elseif(DF.lt.shdOFFsetpoint)then
+                if(iact1.eq.0)then
+                  vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                  i_shd(iact2,iact3)     = 0                    ! shade state OFF
+                elseif(iact1.eq.1)then
+                  vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                  i_shd(iact2,iact3)     = 1                    ! shade state ON     
+                endif
+              endif  
+            endif
+        
+          ELSEIF(ictype.eq.7)then                   ! no sensor, schedule only
+            i_shd(iact2,iact3) = ischedule_shdstateONorOFF
+            vb_phiNew(iact2,iact3) = schedule_slat_angle
+          ENDIF    
+
+C Check that new slat angle is within correct range:
+C     -90 (deg.) < vb_phiNew < 90 (deg.)
+          icomp=iact2     ! zone index
+          icfctp=iact3    ! CFC type
+
+          if(vb_phiNew(icomp,icfctp).lt.-89.9.or.vb_phiNew(icomp,icfctp)
+     &      .gt.89.9)then
+C send warning error message and overwrite angle to 89.9 deg
+            write(outs,'(a,a,i2,a,i2,a)')
+     &        'WARNING: Calculated slat angle for CFC',
+     &        ' type ',icfctp, 'in zone ',icomp, ' is out of range.'
+            CALL EDISP(IUOUT,outs)
+            write(outs,'(a)')'        Setting slat angle to 89.9 deg. '
+            CALL EDISP(IUOUT,outs)
+            vb_phiNew(icomp,icfctp)=89.9
+          end if
+      
+  10    continue  
+  
+      ELSE
+        goto 9999
+      ENDIF
+      
+C Save slat angle and shade state for use in future time-step.    
+ 9999 do 33 i = 1, ncomp
+         if(icfc(i).eq.1)then
+          do 34 j = 1, ncfc(i)
+            do 35 k = 1, ncfc_el(i,j)
+              if(icfcltp(i,j,k).eq.2)then
+                vb_phi_SV(i,j) = vb_phiNew(i,j)
+                i_shd_SV(i,j)     = i_shd(i,j)
+              endif
+  35        continue
+  34      continue   
+         endif
+  33    continue
+  
+      return
+      end
+
+C ********************************************************************
+C                      --get_incident_solrad--
+C
+C Created by: Bart Lomanowski
+C Initial Creation Date: May 2009
+C
+C Calculates direct and diffuse components of solar radiation incident
+C on an external surface (including shading from obstructions).
+C
+C ********************************************************************
+      subroutine get_incident_solrad(icomp,isur,solrad_dir, solrad_diff)
+#include "building.h"    
+      
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
+      real SAZI, SALT
+      integer ISUNUP
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      COMMON/OUTIN/IUOUT,IUIN
+      integer iuout,iuin
+      COMMON/SHAD2/ISHD(MCOM),IGCS(MCOM,MS),PO(MCOM,MS,MT),
+     & POF(MCOM,MS,MT),IGCI(MCOM,MS),insst(mcom,mgt,mt,misur),
+     & pinsst(mcom,mgt,mt,misur)
+      integer ISHD, IGCS, IGCI, insst
+      real PO,POF,pinsst
+      
+      real QD, QF       ! future row solar intensity values
+      real CAI          ! cosine of angle of incidence
+      real ANGI         ! angle of incidence
+      real PSAZI2       ! solar minus surface normal azimuths
+      real PSELV2       ! solar minus surface normal elevations
+      real SRADDO       ! direct solar radiation incident on isur (not corrected for shading)
+      real SRADF        ! diffuse solar radiation incident on isur (not corrected for shading)
+      real skydif       ! sky diffuse component (currently not used here)
+      real grddif       ! ground diffuse component (currently not used here)
+      real POO
+      real POFF
+      
+      real solrad_dir   ! RETURN: direct solar radiation incident on isur and corrected for shading
+      real solrad_diff  ! RETURN: diffuse solar radiation incident on isur and corrected for shading
+
+      character outs*124
+            
+      integer IND1, IND2, IANGBI1, IANGBI2      ! dummy, not used
+      integer ians      ! surface self shading flag, 1=self-shaded, 0=not self-shaded
+          
+      QD = 0.0
+      QF = 0.0
+      CAI = 0.0
+      ANGI = 0.0
+      PSAZI2 = 0.0
+      PSELV2 = 0.0
+      SRADDO = 0.0
+      SRADF = 0.0
+      skydif = 0.0
+      grddif = 0.0
+      POO = 0.0
+      POFF = 0.0
+      solrad_dir = 0.0
+      solrad_diff = 0.0
+      
+C -------------------------------------------------------------------
+C First determine the solar angles at this time.
+C -------------------------------------------------------------------
+      CALL MZSANG
+      
+C -------------------------------------------------------------------
+C IF sun not up, set incident solar rad to zero and jump to end of 
+C routine.
+C -------------------------------------------------------------------
+      if (ISUNUP.EQ.0) then
+        solrad_dir = 0.0
+        solrad_diff = 0.0
+        goto 1000
+      endif
+
+C -------------------------------------------------------------------
+C Establish future row solar intensity values: QD & QF.
+C -------------------------------------------------------------------
+      CALL MZSINT(icomp,QD,QF)
+
+
+C -------------------------------------------------------------------
+C Is surface facing away from the sun so that it can only
+C receive diffuse component. IANS=1; yes, self-shaded.
+C -------------------------------------------------------------------
+      ians=0
+      CALL MZSFSH(icomp,isur,ians)
+
+C -------------------------------------------------------------------
+C Calculate the angle of incidence between the sun and surface ISRF,
+C ANGI; COS of ANGI, CAI;  for this external construction.
+C -------------------------------------------------------------------
+      IF(ians.NE.1)THEN
+        CALL MZSCAI(icomp,isur,CAI,ANGI,IND1,IND2,PSAZI2,PSELV2,
+     &              IANGBI1,IANGBI2)
+         IF(ANGI.LT.0..OR.ANGI.GT.90.)THEN
+           write(outs,999)ANGI
+ 999       format(' MZSLGN error: incidence angle = ',F10.3,'.')
+           call edisp(iuout,outs)
+           goto 1000
+           ENDIF
+      ELSE
+
+C Set default, otherwise undefined.
+        CAI=0.
+        ANGI=90.
+      ENDIF
+
+C -------------------------------------------------------------------
+C Calculate direct (SRADDO) and diffuse (SRADF) on surface isur.
+C -------------------------------------------------------------------
+      CALL MZSRAD(icomp,isur,QD,QF,CAI,SRADDO,SRADF,
+     &         SKYDIF,GRDDIF)
+
+C Surface is self-shaded; no direct radiation.
+      IF(IANS.EQ.1)SRADDO=0.
+          
+C Replace calculated values by measured values from tdf file (leave
+C this alone for now)
+
+C -------------------------------------------------------------------
+C Now we have the external radiation on each surface. Apply shading
+C factor generated by ish, if shading database exists.
+C -------------------------------------------------------------------
+      IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
+          POO=0.0
+          POFF=0.0
+      ELSE
+          POO=PO(ICOMP,isur,IHRF)
+          POFF=POF(ICOMP,isur,IHRF)
+      ENDIF     
+
+C -------------------------------------------------------------------
+C Calculate RETURN values 
+C -------------------------------------------------------------------
+      solrad_dir = SRADDO*(1.-POO)
+      solrad_diff = SRADF*(1.-POFF)
+
+ 1000 return
+      end
+      

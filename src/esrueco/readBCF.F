@@ -60,16 +60,18 @@ C   IEXP = 99 check number of items and return in ITEMS
       SUBROUTINE STRIPCB(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       CHARACTER*124 tmp,STRING,OUTSTR,MSG1
       CHARACTER*(*) MSG
+      logical unixok
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
       IER=0
     8 READ(INPCH,10,ERR=101,END=102)STRING
    10 FORMAT(A124)
-      tmp=STRING(:LNBLNK(STRING))
+      tmp=STRING(1:LNBLNK(STRING))
 
 C Take the string and check for a #, discarding any text which follows.
       iloc = INDEX(tmp,'#')
@@ -83,11 +85,11 @@ C Take the string and check for a #, discarding any text which follows.
 
 C Find out the number of separate words/string groupings.
       if(IEXP.eq.99)then
-        CALL CHITMSB(OUTSTR,ITEMS)
+        ITEMS = iCountWords(OUTSTR)
       elseif(IEXP.eq.0)then
         ITEMS=0
       elseif(IEXP.gt.0)then
-        CALL CHITMSB(OUTSTR,ITEMS)
+        ITEMS = iCountWords(OUTSTR)
         if(IEXP.ne.ITEMS)then
           WRITE(tmp,'(A,I3,A,A,A)')' Looking for ',IEXP,' items (',
      &       MSG(1:lnblnk(MSG)),') in...'
@@ -112,41 +114,13 @@ C Find out the number of separate words/string groupings.
         CALL USRMSG(' ',tmp,'-')
       ENDIF
       goto 4
- 1    write(6,*) 'STRIPCB: error writing warning re: ',OUTSTR
+
+C Trap for I/O error.
+ 1    call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      write(6,*) 'STRIPCB: error writing warning re: ',OUTSTR
       RETURN
       END
-
-
-C ********************* CHITMSB
-C CHITMS checks a character string (A), returning the number of data
-C items (IW) separated by ','.  Note to keep from 
-C overwriting the string passed, deal with a copy.
-      SUBROUTINE CHITMSB(A,IW)
-      
-      integer lnblnk  ! function definition
-      CHARACTER*(*) A
-      CHARACTER B*124,C*1
-
-      lastcc = MIN0(LNBLNK(A),123)
-      WRITE(B,'(A)',ERR=1) A(1:lastcc+1)
-C Loop through B and see how many 'words'.
-      K=0
-      IW=0
-  102 IW=IW+1
-C Start by skipping blanks before the word.
-   10 K=K+1
-      C=B(K:K)
-      IF(C.EQ.',') GOTO 10
-C Loop character by character until separator is found.
-   20 K=K+1
-      C=B(K:K)
-      IF(K.GE.LNBLNK(B))RETURN
-      IF(C.EQ.',') GOTO 102
-      GOTO 20
- 1    write(6,*) 'CHITMS: error in internal write: ',A
-      RETURN
-      END
-
 
 
 C ******************** SCNBCF ******************************
@@ -351,17 +325,13 @@ C ic Inetger: dummy variable use to skip "None" in list (transports, etc.)
 #include "building.h"
 #include "LCA.h"
 #include "acoustic.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C21/IFCFG,cfgroot,LCFGF
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/EVGENS/BCFName,System,BCFVer
       COMMON/EVGENL/BCFOK

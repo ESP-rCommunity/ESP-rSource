@@ -28,7 +28,7 @@ C of lines to include in the text portion of the display.
       common/appw/iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -40,7 +40,7 @@ C of lines to include in the text portion of the display.
       character PERST1*14,PERST2*44,PERST3*44
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -120,7 +120,7 @@ C Display heading for climate graph.
       common/appw/iappw,iappx,iappy
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -134,7 +134,7 @@ C Display heading for climate graph.
       integer onright ! number of right axis
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext

@@ -110,10 +110,12 @@ C Simulator parameters.
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
-#ifdef OSX
+#ifdef OSI
       integer iupdown,isym    ! passed to etplot
+      integer iid1,iid2
 #else
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iid1,iid2
 #endif
 
 C If the network flow file has not yet been opened request information.
@@ -121,8 +123,9 @@ C If the network flow file has not yet been opened request information.
         continue
       else
 
-C Debug...
+C Debug.
 C        write(6,*) 'iairn,lafres ',iairn,lafres
+
         if(iairn.ge.1)then
 
 C If there was a flow network defined ask for the flow results file.
@@ -480,7 +483,7 @@ C Empty bins of hits.
 C Write graph head and set up axis positions and draw.
         call MOMFGHED
         call AXISPOS
-        call AXISDRW(TSTART-1.0,TFINSH,ALABEL,'-')
+        call AXISDRW(TSTART,TFINSH,ALABEL,'-')
       endif
 
 C Recover and plot data. If listing to file or text feedback then
@@ -645,7 +648,10 @@ C Assume fully occupied.
                 endif
  410          continue
               call eddisp(itru,louts)
+
+C Debug.
 C             write(6,*)TIME,(FLOWVALS(IXY),IXY=1,NMFGET)
+
               goto 10
             endif
 
@@ -918,8 +924,8 @@ C Finally label lines, matching zone line colour if used.
               call winscl('z',ICM)
             endif
           endif
-          call u2pixel(TIMEold(I),Yold(I),ixs,iys)
-          call wstxpt(ixs,iys,t20)
+          call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
+          call wstxpt(iid1,iid2,t20)
           if(colok)call winscl('-',0)
           call forceflush()
  200    continue
@@ -928,7 +934,8 @@ C If there are optional user defined labels draw them.
         if(ngrlbl.gt.0)then
           do 201 ijj=1,ngrlbl
             t24=grlbl(ijj)
-            call wstxpt(lblpx(ijj),lblpy(ijj),t24)
+            iid1=lblpx(ijj); iid2=lblpy(ijj);
+            call wstxpt(iid1,iid2,t24)
  201      continue
         endif
       elseif (MENUTYPE.eq.5) then
@@ -999,7 +1006,10 @@ C Create string description for time of minimum occurrance.
           write (outs,'(a,1x,2(f7.2,2x,a12,1x),2f9.2)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
-C          write (6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
+C Debug.
+C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
  220    continue
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')
@@ -1038,7 +1048,10 @@ C Create string description for time of minimum occurrance.
           write (outs,'(a,1x,2(f7.2,2x,a12,1x),2f9.2)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
-C          write (6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
+C Debug.
+C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
  230    continue
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')
@@ -1115,6 +1128,7 @@ C (absolute value of INODE).
       SUBROUTINE ASKMFCON(INODE,NNPK,ICPK)
 #include "net_flow.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1126,6 +1140,8 @@ C (absolute value of INODE).
 
       CHARACTER H*72,VRT(MCNN)*43
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
+      character outs*124
+      logical unixok
 
 C Set up array of menu strings.
       NITMS=0
@@ -1170,12 +1186,19 @@ C Act silently.
  40     continue
       endif
 
-C Debug...
+C Give feedback to user on selected entities.
+      call isunix(unixok)
+      call edisp(iuout,'Selected flow entities are:')
+      call edisp(iuout,' node         node         component')
       do 30 I=1,NNPK
         IP=NODPS(ICPK(I))
         IN=NODNE(ICPK(I))
         IC=ITPCON(ICPK(I))
-        write(6,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
+        if(unixok)then
+	  write(outs,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
+     &      CMNAM(IC)
+          call edisp(iuout,outs)
+        endif
  30   continue
 
       return
@@ -1208,7 +1231,7 @@ C to graphical result display of network flows.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext

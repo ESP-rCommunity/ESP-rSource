@@ -58,7 +58,8 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
 
       DIMENSION X1(6),X2(6)
 
@@ -171,7 +172,9 @@ C For each zone a pointer to relevant temporal db entry 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
 
 C Treatment of solar radiation data in the climate file.
 C ESP-r operates on hourly-centred data. That is, the solar
@@ -287,7 +290,10 @@ C If the last timestep of the day then get profile for the next day.
           X2B(5)=VAL(ISD+4)
           X2B(6)=VAL(ISD+5)
         ENDIF
+
+C Debug.
 C        write(6,*)'tdf clm data recovered @',btimef,' is ',X2B
+
       endif
 
 C Diffuse horizontal radiation. If to be superseded by data from

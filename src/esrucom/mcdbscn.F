@@ -36,52 +36,71 @@ C        the routine.
 
 #include "building.h" 
 #include "power.h" 
+#include "esprdbfile.h" 
       
       integer lnblnk  ! function definition
 
-      COMMON/MCMPDBNAM/MCMPDBFL
       COMMON/FILEP/IFIL
       COMMON/POPHELP/H(60)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
 
+C Note string buffer array supports up to 90 lines of text
+C for a component.
       DIMENSION SSTR(90),VAR(MPWDAT),SPMISC(MPWDAT)
 
-      CHARACTER OUTSTR*124,VSTR*40
-      CHARACTER MCMPDBFL*72,SSTR*72,ltmp*72,h*72,DFILE*72
+      CHARACTER OUTSTR*124
+      CHARACTER SSTR*72,h*72
       CHARACTER DIVR1*6,DIVR2*6,DIVR3*6
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character lworking*144,fs*1
       REAL VAR,SPMISC
       INTEGER MODE,TYPE
-      LOGICAL OK,dok
+      LOGICAL OK,dok,unixok
 
       IER=0
-      ltmp='  '
       OK=.FALSE.
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Clear strings outside of the if else structure
+      write(DIVR1,'(a)')'      '
+      write(DIVR2,'(a)')'      '
+      write(DIVR3,'(a)')'      '
       
-C Open the miscellaneous components database file 
+C Open the miscellaneous components database file based on the
+C name held in the model cfg file and as setup by the database
+C management facility. 
  2    IF(MCMPDBFL(1:3).EQ.'UNK'.or.MCMPDBFL(1:2).EQ.'  ') THEN
 
-C Hard coded default data base at the moment, later add to default data
-C base list.
-        MCMPDBFL=DMCMPDBFL
-        DFILE=DMCMPDBFL
-        h(1)='<< help to be added >>  '
-        ltmp=MCMPDBFL
         IF(TYPE.EQ.1)THEN
-          VSTR='Special materials database filename?'
+          h(5)='The special materials database filename is typically'
+          h(6)='the default that comes with ESP-r. If you want to'
+          h(7)='create your own or modify entries then you should'
+          h(8)='work with a model-specific file. '
         ELSEIF(TYPE.EQ.2)THEN
-          VSTR='Electrical components database filename?'
+          h(5)='The electrical components database is ?? '
+          h(6)=' - help text to be written - '
+          h(7)=' '
+          h(8)=' '
         ELSEIF(TYPE.EQ.3)THEN
-          VSTR='Power-only components database filename?'
+          h(5)='Power components database is ?? '
+          h(6)=' - help text to be written - '
+          h(7)=' '
+          h(8)=' '
         ELSEIF(TYPE.EQ.4)THEN
+          h(5)=' '
+          h(6)=' - help text to be written - '
+          h(7)=' '
+          h(8)=' '
+        ELSE
 
 C Add other types here ...
-          VSTR=' '
-        ELSE
         ENDIF
-        CALL EASKS(ltmp,VSTR,' ',72,DFILE,'ecomp dbnam',IER,1)
-        if(LTMP(1:2).ne.'  '.and.LTMP(1:4).ne.'UNKN') MCMPDBFL=ltmp
       ENDIF
 
 C Assign field dividers based on the call type.
@@ -102,21 +121,33 @@ C Assign field dividers based on the call type.
         RETURN
       ENDIF
       IMCFIL=IFIL+1
-      CALL EFOPSEQ(IMCFIL,MCMPDBFL,1,IER)
+
+C Open the mscel components database based on value of ipathmsc.
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        CALL EFOPSEQ(IMCFIL,MCMPDBFL,1,IER)
+      elseif(ipathmsc.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    MCMPDBFL(1:lnblnk(MCMPDBFL))
+        CALL EFOPSEQ(IMCFIL,lworking,1,IER)
+      endif
+
+C If a problem update help text (ensure no string buffer overflow).
       IF(IER.NE.0) THEN
         h(1)='Could not find the miscellaneous components database.'
         h(2)='Check the standard location of'
-        write(h(3),'(2a)') DMCMPDBFL,'.'
+        write(h(3),'(2a)') DMCMPDBFL(1:68),'.'
+        h(4)=' '
         dok=.true.
         CALL ASKOK(
      &    'Could not find the miscellaneous components database.',
-     &    'Try again?',OK,dok,3)
+     &    'Try again?',OK,dok,8)
         IF(.NOT.OK) THEN 
           IER=1
           CALL ERPFREE(IMCFIL,ISTAT)
           RETURN
         ELSE
-          MCMPDBFL='UNKNOWN'
+          write(MCMPDBFL,'(a)') 'UNKNOWN'
           GOTO 2
         ENDIF
       ENDIF

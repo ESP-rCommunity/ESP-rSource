@@ -90,19 +90,18 @@ C ************* SELPER
 C SELPER: Menu for period selection - user defined, monthly, typical
 C week or season (scanned from climatelist file).
       subroutine selper(ier)
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+
+#include "seasons.h"
+C seasons.h provides typper and typsea
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
-      COMMON/CLMDT0/CLAT,CLONG
-
-C Typical periods win1|trn1|sum|trn2|win2 with start & finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       common/pophelp/h(60)
       COMMON/PERPER/PERST2
       dimension pmenu(29)
@@ -306,6 +305,9 @@ C returns IDS and IDF based on the current settings of IFDAY.
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       common/pophelp/h(60)
       CHARACTER H*72,hold*24
+      
+      integer ier  ! for error state
+      integer ifday  ! indicates the format for days.
 
       IER=0
       H(1)='The output time defines the day, month and '
@@ -380,6 +382,8 @@ C << the text block from within clm!
 #include "esprdbfile.h"
 #include "espriou.h"
 C espriou.h provides currentfile, cdblfil.
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -395,15 +399,14 @@ C      common/appw/iappw,iappx,iappy
 
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
-C Typical periods and season definitions.
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
@@ -415,8 +418,7 @@ C ITM is main item editing menu.
       character NMTHNM(12)*3,DAYNAM(7)*3
       character descr*7,descrst*10,descrfn*10,descrstn*10
       character descrstp*10,h*72
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72,DFILE*72,outs*124,louts*248
+      character DFILE*72,outs*124,louts*248
       character DESCRX*7,DESCR1X*10,DESCR1*10,hold*40
       CHARACTER CLMLOC*30,t32*32,d32*32,t72*72,d72*72
       character llasci*144,llitem*144,longtfile*144,longtfiledos*144
@@ -557,9 +559,11 @@ C If use already aksed for graph and date has change draw again.
           igwh=igb-igt
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
+
 C Debug.
 C          write(6,*)'xx igl igr igt igb igw igwh',
 C     &      igl,igr,igt,igb,igw,igwh
+
           mxmn=.TRUE.
           CALL CLMDRW(IPICK,mxmn,onleft,onright,'s')
           havedrawn = .true.
@@ -649,7 +653,10 @@ C Installed location of climate file. If GTK then use file browser.
         H(1)='This is the `installed` location of the climate file.'
         h(2)='(remember to copy new climate files to this folder)'
         write(llasci,'(a)') lclim(1:lnblnk(lclim))
+
+C Debug.
 C        write(6,*) llasci
+
   290   llt=lnblnk(llasci)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
@@ -673,7 +680,7 @@ C        write(6,*) llasci
         IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 290
 
 C Cast back to 72 char name.
-        llt=MIN0(lnblnk(llasci),72)
+        llt=lnblnk(llasci)
         write(clmldbfile,'(a)') LLASCI(1:llt)
       elseif(INO.eq.4)then
 
@@ -1395,9 +1402,11 @@ C axis are required and then directly call CLMDRW
           igwh=igb-igt
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
+
 C Debug.
 C          write(6,*)'xx igl igr igt igb igw igwh',
 C     &      igl,igr,igt,igb,igw,igwh
+
           mxmn=.TRUE.
           CALL CLMDRW(IPICK,mxmn,onleft,onright,'s')
           havedrawn = .true.
@@ -1418,22 +1427,32 @@ C Write an item for climatelist file to previously opened file on unit
 C iuf, return ier=0 if ok. This item can either
 C be as a fragment to be included in the climatelist file by
 C the user or as part of an item management facility.
+
+C << consider how to make this a common code for use in writing
+C << to configuration file as well as climatelist and climate block
+
       subroutine mkitemclimatelist(iuf,ier)
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+      
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
-C Typical periods and season definitions.
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
       COMMON/CLMDT1/CLMLOC
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72,tab*1
+      character tab*1
       CHARACTER CLMLOC*30
+      character descr*7,descrst*10,descrfn*10  ! for season dates
+      character descrst1*10,descrfn1*10        ! for 2nd season dates
 
       tab=CHAR(9) 
      
@@ -1455,28 +1474,58 @@ C with default information.
       call edayr(is1winf,id2,im2)
       call edayr(is2wins,id3,im3)
       call edayr(is2winf,id4,im4)
-      write(iuf,'(a,8i3)')'*winter_s',id1,im1,id2,im2,id3,im3,id4,im4
+      call stdate(iyear,is1wins,descr,descrst)
+      call stdate(iyear,is1winf,descr,descrfn)
+      call stdate(iyear,is2wins,descr,descrst1)
+      call stdate(iyear,is2winf,descr,descrfn1)
+      write(iuf,'(a,8i3,8a)')'*winter_s',id1,im1,id2,im2,id3,im3,
+     &  id4,im4,' # seasons ',descrst,'--',descrfn,' & ',descrst1,
+     &    '--',descrfn1
       call edayr(is1sprs,id1,im1)
       call edayr(is1sprf,id2,im2)
       call edayr(is2sprs,id3,im3)
       call edayr(is2sprf,id4,im4)
-      write(iuf,'(a,8i3)')'*spring_s',id1,im1,id2,im2,id3,im3,id4,im4
+      call stdate(iyear,is1sprs,descr,descrst)
+      call stdate(iyear,is1sprf,descr,descrfn)
+      call stdate(iyear,is2sprs,descr,descrst1)
+      call stdate(iyear,is2sprf,descr,descrfn1)
+      write(iuf,'(a,8i3,8a)')'*spring_s',id1,im1,id2,im2,id3,im3,
+     &  id4,im4,' # seasons ',descrst,'--',descrfn,' & ',descrst1,
+     &  '--',descrfn1
       call edayr(is1sums,id1,im1)
       call edayr(is1sumf,id2,im2)
-      write(iuf,'(a,4i3)')'*summer_s',id1,im1,id2,im2
+      call stdate(iyear,is1sums,descr,descrst)
+      call stdate(iyear,is1sumf,descr,descrfn)
+      write(iuf,'(a,4i3,4a)')'*summer_s',id1,im1,id2,im2,
+     &  ' # summer season ',descrst,'--',descrfn
       call edayr(ia1wins,id1,im1)
       call edayr(ia1winf,id2,im2)
       call edayr(ia2wins,id3,im3)
       call edayr(ia2winf,id4,im4)
-      write(iuf,'(a,8i3)')'*winter_t',id1,im1,id2,im2,id3,im3,id4,im4
+      call stdate(iyear,ia1wins,descr,descrst)
+      call stdate(iyear,ia1winf,descr,descrfn)
+      call stdate(iyear,ia2wins,descr,descrst1)
+      call stdate(iyear,ia2winf,descr,descrfn1)
+      write(iuf,'(a,8i3,8a)')'*winter_t',id1,im1,id2,im2,id3,im3,
+     &  id4,im4,' # typical ',descrst,'--',descrfn,' & ',descrst1,
+     &  '--',descrfn1
       call edayr(ia1sprs,id1,im1)
       call edayr(ia1sprf,id2,im2)
       call edayr(ia2sprs,id3,im3)
       call edayr(ia2sprf,id4,im4)
-      write(iuf,'(a,8i3)')'*spring_t',id1,im1,id2,im2,id3,im3,id4,im4
+      call stdate(iyear,ia1sprs,descr,descrst)
+      call stdate(iyear,ia1sprf,descr,descrfn)
+      call stdate(iyear,ia2sprs,descr,descrst1)
+      call stdate(iyear,ia2sprf,descr,descrfn1)
+      write(iuf,'(a,8i3,8a)')'*spring_t',id1,im1,id2,im2,id3,im3,
+     &  id4,im4,' # typical ',descrst,'--',descrfn,' & ',descrst1,
+     &  '--',descrfn1
       call edayr(iasums,id1,im1)
       call edayr(iasumf,id2,im2)
-      write(iuf,'(a,4i3)')'*summer_t',id1,im1,id2,im2
+      call stdate(iyear,iasums,descr,descrst)
+      call stdate(iyear,iasumf,descr,descrfn)
+      write(iuf,'(a,4i3,4a)')'*summer_t',id1,im1,id2,im2,
+     &  ' # typical summer ',descrst,'--',descrfn
       write(iuf,'(a)')'*help_start'
       if(nbclmlhelp.eq.0)then
         write(iuf,'(a)')' Supporting text has yet to be entered.'
@@ -1494,45 +1543,22 @@ C ******* DDRADSUM *******
 C DDRADSUM looks for typical week in each season based on closest
 C degree days and radiation patterns. If act = `?` then user is
 C asked to confirm whether the best-fit week is to be used in the
-C climatelist.
+C climatelist.  It calls clmddscan to do most of the work.
       SUBROUTINE DDRADSUM(act)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
+#include "seasons.h"
+C seasons.h provides typper, typsea, sea* variables
 
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/CLMDT0/CLAT,CLONG
-      COMMON/RADTYP/IDNGH
       common/exporttgi/ixopen,ixloc,ixunit
 
-      COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
-     &              CDIR(MT),CHUM(MT)
 
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
+      character H*72,outs*124
+      character act*1
 
-C dm* are the degree-day and day-ratio multipliers between the
-C typical periods and the whole season for heating (DD), cooling (DD),
-C lights (ratio), small power (ratio), fans (ratio), domestic hot
-C water (ratio). For nipvassmt=1 these are initially set to 1.0.
-C This information is potentially used to support IPV calculations.
-      common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
-     &             dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
-
-      character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
-      character DESCR*7,DESCR1*10,title*40,hold*32,act*1
-      DIMENSION ALT(24),AZI(24),GHSUM(MSPS),DAYGLOB(MSPS)
-      dimension seacddwk(MSPS),seahddtot(MSPS),seacddtot(MSPS)
-      dimension seahddwk(MSPS)
-      logical ok,dok
+      real HBT,CBT   ! local base temperatures for heating and cooling DD calcs
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
@@ -1540,19 +1566,28 @@ C This information is potentially used to support IPV calculations.
         return
       endif
 
-C Initial weightings for heading dd, cooling dd, solar radiation.
+C Initial weightings for heating dd, cooling dd, solar radiation (from seasons.h).
       hddw=1.0
       cddw=1.0
       radw=1.0
 
       H(1)='Degree day calculations are derived from a specific '
       H(2)='base temperature (deg C). '
-      HBT=17.
+      if(hddbaset.lt.0.1)then
+        hddbaset=17.0
+      endif
+      HBT=hddbaset
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
      &           -10.,'W',40.,'W',17.0,'DD heating base temp',IER,2)
-      CBT=21.
+      hddbaset=HBT
+
+      if(cddbaset.lt.0.1)then
+        cddbaset=21.0
+      endif
+      CBT=cddbaset
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
      &           -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,2)
+      cddbaset=CBT
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -1561,510 +1596,17 @@ C If output to file alter the edisp unit number.
         call usrmsg(' Output being directed to file... ',' ','-')
       endif
 
-C Reset text feedback.
+C Reset text feedback and write out beginning of report.
       CALL CHEAD(30)
-      DNM=0.
-      HRM=0.
-      UPMC=0.
-      HRMC=0.
-
-      WRITE(outs,12)HBT,CBT
+      WRITE(outs,12) hddbaset,cddbaset
   12  FORMAT(' Degree day analysis: heating base at',F6.1,' & cooling',
      &       F6.1,' Deg C')
       call edisp(itru,outs)
       call edisp(itru,'  ')
-
-C INITIALISE PARAMETERS FOR WHOLE PERIOD
-      DNI=0
-      HRTOT=0.
-      UPIC=0
-      HRTOTC=0.
-
-C Loop through each seasonal period.
-      do 42 k=1,5
-        GHSUM(k)=0.
-        DAYGLOB(k)=0.
-        seahddwk(k)=0.
-        seacddwk(k)=0.
-        seahddtot(k)=0.
-        seacddtot(k)=0.
-        dmheat(k)=1.0
-        dmcool(k)=1.0
-        dmlight(k)=1.0
-        dmsmlpw(k)=1.0
-        dmfan(k)=1.0
-        dmdhw(k)=1.0
-        if(k.eq.1)then
-          title='Winter (early year) season '
-          DNI=0
-          HRTOT=0.
-          UPIC=0
-          HRTOTC=0.
-          IDSS=is1wins
-          IDSF=is1winf
-        elseif(k.eq.2)then
-          title='Spring season '
-          IDSS=is1sprs
-          IDSF=is1sprf
-        elseif(k.eq.3)then
-          title='Summer season '
-          IDSS=is1sums
-          IDSF=is1sumf
-        elseif(k.eq.4)then
-          title='Autumn season '
-          IDSS=is2sprs
-          IDSF=is2sprf
-        elseif(k.eq.5)then
-          title='Winter (late year) season '
-          IDSS=is2wins
-          IDSF=is2winf
-        endif
-        CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
-     &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
-
-C For each day read climate data, set parameters and analyse.
-        DO 10 I=IDSS,IDSF
-          IDD=I
-          CALL CLMGET(IDD)
-          CALL AZALT(IDD,1,CLONG,CLAT,ALT,AZI)
-          DNJ=0
-          UPJC=0.
-          DAYL=24.0
-          DO 20 J=1,24
-            IF(ALT(J).LT.0.001)THEN
-              DIRH=0.
-            else
-              IF(IDNGH.EQ.0)THEN
-                DIRH=CDNR(J)*ESIND(ALT(J))
-              ELSE
-                DIRH=CDNR(J)-CDIF(J)
-              ENDIF
-              GHSUM(k)=(GHSUM(k)+DIRH+CDIF(J))
-            endif
-
-            TT=CTMP(J)
-            IF(TT.GT.HBT)then
-            else
-
-C T below heating BASE,SAVE DEG-HRS IN DNJ
-              DNJ=DNJ+(HBT-TT)
-            endif
-            IF(TT.GT.CBT)then
-
-C T above cooling BASE ,SAVE DEG-HRS IN UPJC
-              UPJC=UPJC+(TT-CBT)
-            endif
-   20     CONTINUE
-          XDN=DNJ/24
-          XUPC=UPJC/24
-
-C Update seasonal parameters and go to the next day.
-          DNM=DNM+DNJ
-          HRM=HRM+DAYL
-          UPMC=UPMC+UPJC
-          HRMC=HRMC+DAYL
-   10   CONTINUE
-
-C Compute parameters (total & average degree days) for this season.
-        XHR=24.0/HRM
-        XHRC=24.0/HRMC
-        XDN=DNM/24
-        XUPC=UPMC/24
-        YDN=XHR*XDN
-        seahddwk(k)=YDN*7.
-        YUPC=XHRC*XUPC
-        seacddwk(k)=YUPC*7.
-
-C Number of days in season is IDSF-IDSS+1. DAYGLOB is daily mean
-C global horizontal solar for season.
-        DAYGLOB(k)=(GHSUM(k)/(IDSF-IDSS+1))/1000.
-
-C Report on the current season.
-        WRITE(outs,'(3a)')title(1:lnblnk(title)),' ',PERST2
-        call eddisp(itru,outs)
-        WRITE(outs,'(a,F8.2,a,F8.2,a,F9.2)')' Heat DD avg/day   ',YDN,
-     &    '  Cool DD avg/day  ',YUPC,'  Rad avg/day ',DAYGLOB(k)
-        call eddisp(itru,outs)
-        WRITE(outs,'(a,F8.2,a,F8.2,a,F9.2)')' Heat DD avg/week  ',
-     &    seahddwk(k),'  Cool DD avg/week ',seacddwk(k),
-     &    '  Rad avg/week',DAYGLOB(k)*7.
-        call eddisp(itru,outs)
-        WRITE(outs,'(a,F8.2,a,F8.2,a,F9.2)')' Season heat DD    ',XDN,
-     &     '  Season cool DD   ',XUPC,'  Rad total   ',GHSUM(k)/1000.
-        call eddisp(itru,outs)
-        seahddtot(k)=XDN
-        seacddtot(k)=XUPC
-
-C UPDATE WHOLE PERIOD
-        HRTOT=HRTOT+HRM
-        DNI=DNI+DNM
-        DNM=0.
-        HRM=0.
-        HRTOTC=HRTOTC+HRMC
-        UPIC=UPIC+UPMC
-        UPMC=0.
-        HRMC=0.
-  42  continue
-
-C Loop through each week in each season and check against the
-C calculated average data.
-C Loop through each seasonal period.
-      h(1)='Typical weeks are found by scanning the climate data'
-      h(2)='for a week in each season which has the least deviation'
-      h(3)='in heating degree days (DD), cooling degree days, and'
-      h(4)='solar radiation. '
-      h(5)=' '
-      h(6)='It reports the parameters it uses to determine the'
-      h(7)='best fit as well as several ratios between the best'
-      h(8)='week and the season (ratio of julian days, ratio of'
-      h(9)='heating degree days and ratio of cooling degree days'
-      h(10)='all of which are parameters required for generating'
-      h(11)='an integrated performance view (IPV).'
-      call easkab('Options:',' ','search for typical weeks',
-     &  'continue',iok,11)
-      if(iok.eq.2)return
-
-C Allow user to define weightings.
-      H(1)='Weightings for heating degree days, cooling degree days'
-      H(2)='and solar radiation can be given. The default is equal'
-      H(3)='weightings for each.'
-      write(hold,'(3f6.3)') hddw,cddw,radw
- 143  CALL EASKS(HOLD,'Weightings for HDD CDD Solar:',' ',32,
-     &  ' 1.0 1.0 1.0 ','weightings for hdd cdd solar',IER,3)
-      K=0
-      CALL EGETWR(HOLD,K,hddw,0.0,1.0,'W','hdd weight',IER)
-      CALL EGETWR(HOLD,K,cddw,0.0,1.0,'W','cdd weight',IER)
-      CALL EGETWR(HOLD,K,radw,0.0,1.0,'W','solar weight',IER)
-      if(ier.ne.0)goto 143
-      IWK=0
-      do 43 k=1,5
-        if(k.eq.1)then
-          call edisp(itru,'Winter (early year) season.')
-          IDSS=is1wins
-          IDSF=is1winf
-        elseif(k.eq.2)then
-          call edisp(itru,'Spring season.')
-          IDSS=is1sprs
-          IDSF=is1sprf
-        elseif(k.eq.3)then
-          call edisp(itru,'Summer season.')
-          IDSS=is1sums
-          IDSF=is1sumf
-        elseif(k.eq.4)then
-          call edisp(itru,'Autumn season.')
-          IDSS=is2sprs
-          IDSF=is2sprf
-        elseif(k.eq.5)then
-          call edisp(itru,'Winter (late year) season.')
-          IDSS=is2wins
-          IDSF=is2winf
-        endif
-        iwkbest=0
-        iwkbstrt=0
-        wkdiff=3.
-        GHSUMW=0.
-        CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
-     &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
-        WRITE(outs,'(a)')PERST2
-        call edisp(itru,outs)
-        if(itru.ne.iuout)call edisp(iuout,outs)
-
-C For each day read climate data, set parameters and analyse.
-C Find day of week for start of the period. IWK is week number, IDSOW
-C is the julian day at the start of the week.
-        CALL EDAYR(IDSS,IDAYN,IMTHN)
-        CALL EWEEKD(IDAYN,IMTHN,IYEAR,IXDWK)
-        IDSOW=IDSS
-        ix=0
-
-C For each day read climate data, set parameters and analyse.
-        DO 11 I=IDSS,IDSF
-          IDD=I
-          ix=ix+1
-          CALL CLMGET(IDD)
-          CALL AZALT(IDD,1,CLONG,CLAT,ALT,AZI)
-          DNJ=0
-          UPJC=0
-          DO 21 J=1,24
-            IF(ALT(J).LT.0.001)THEN
-              DIRH=0.
-            else
-              IF(IDNGH.EQ.0)THEN
-                DIRH=CDNR(J)*ESIND(ALT(J))
-              ELSE
-                DIRH=CDNR(J)-CDIF(J)
-              ENDIF
-              GHSUMW=(GHSUMW+DIRH+CDIF(J))
-            endif
-
-            TT=CTMP(J)
-            IF(TT.GT.HBT)then
-            else
-
-C T below heating BASE,SAVE DEG-HRS IN DNJ
-              DNJ=DNJ+(HBT-TT)
-            endif
-            IF(TT.GT.CBT)then
-
-C T above cooling BASE ,SAVE DEG-HRS IN UPJC
-              UPJC=UPJC+(TT-CBT)
-            endif
-   21     CONTINUE
-
-C Convert day to D,M
-          II=I
-          CALL EDAYR(II,IDD,IMM)
-          CALL EWEEKD(IDD,IMM,IYEAR,IDWK)
-
-C Prepare for output, check if week complete. << IDS ? >>
-          IF(II.eq.IDSS)GO TO 41
-          IF(IDWK.ne.IXDWK)GO TO 41
-          iwk=iwk+1
-
-C Compute parameters (total & average degree days) for this week.
-          XHR=24.0/HRM
-          XHRC=24.0/HRMC
-          XDN=DNM/24
-          XUPC=UPMC/24
-          call stdate(iyear,IDSOW,DESCR,DESCR1)
-          YDN=XHR*XDN
-          YUPC=XHRC*XUPC
-          WRITE(outs,'(a,i2,3a,2F8.2,a,F8.3)')' Week:',iwk,
-     &      ' starting ',DESCR1,' DD total/week  ',XDN,XUPC,
-     &      '  Rad total/week ',GHSUMW/1000.
-          call edisp(itru,outs)
-          if(itru.ne.iuout)call edisp(iuout,outs)
-
-C Deal with radiation.
-          if(seahddwk(k).gt.0.001)then
-            PARM1=ABS(XDN-seahddwk(k))/seahddwk(k)
-          else
-            PARM1=0.
-          endif
-          if(seacddwk(k).gt.0.001)then
-            PARM2=ABS(XUPC-seacddwk(k))/seacddwk(k)
-          else
-            PARM2=0.
-          endif
-          PARM3=ABS((GHSUMW/1000.)-(DAYGLOB(k)*7.))/(DAYGLOB(k)*7.)
-          PARMTOT=(PARM1*hddw)+(PARM2*cddw)+(PARM3*radw)
-          WRITE(outs,'(a,3F9.3,a,F9.3)')' Params (heat|cool|solar)',
-     &      PARM1,PARM2,PARM3,' Params total ',PARMTOT
-          call edisp(itru,outs)
-          if(PARMTOT.lt.wkdiff)then
-            wkdiff=PARMTOT
-            iwkbest=iwk
-            iwkbstrt=IDSOW
-            wkheatdd=XDN
-            wkcooldd=XUPC
-          endif
-
-C Reset weekly total global horizontal.
-          GHSUMW=0.
-
-C Update whole period.
-          IDSOW=II
-          HRTOT=HRTOT+HRM
-          DNI=DNI+DNM
-          DNM=0.
-          HRM=0.
-          HRTOTC=HRTOTC+HRMC
-          UPIC=UPIC+UPMC
-          UPMC=0.
-          HRMC=0.
-
-C CONVERT TO DEG-DAYS PER DAY
-  41      CONTINUE
-          XDN=DNJ/24
-          XUPC=UPJC/24
-
-C UPDATE PARAMETERS FOR THIS week
-          DNM=DNM+DNJ
-          HRM=HRM+DAYL
-          UPMC=UPMC+UPJC
-          HRMC=HRMC+DAYL
-
-C AND GO TO NEXT DAY
-   11   CONTINUE
-
-C NOW LAST week, compute parameters for last week
-        XHR=24.0/HRM
-        XHRC=24.0/HRMC
-        XDN=DNM/24
-        XUPC=UPMC/24
-        iwk=iwk+1
-        call stdate(iyear,IDSOW,DESCR,DESCR1)
-        YDN=XHR*XDN
-        YUPC=XHRC*XUPC
-        WRITE(outs,'(a,i2,3a,2F8.2,a,F8.3)')' Week:',iwk,
-     &    ' starting ',DESCR1,' DD total/week  ',XDN,XUPC,
-     &    '  Rad total/week ',GHSUMW/1000.
-        call edisp(itru,outs)
-        if(itru.ne.iuout)call edisp(iuout,outs)
-
-C Deal with radition here for last week of season.
-        if(seahddwk(k).gt.0.001)then
-          PARM1=ABS(XDN-seahddwk(k))/seahddwk(k)
-        else
-          PARM1=0.
-        endif
-        if(seacddwk(k).gt.0.001)then
-          PARM2=ABS(XUPC-seacddwk(k))/seacddwk(k)
-        else
-          PARM2=0.
-        endif
-        PARM3=ABS((GHSUMW/1000.)-(DAYGLOB(k)*7.))/(DAYGLOB(k)*7.)
-        PARMTOT=(PARM1*hddw)+(PARM2*cddw)+(PARM3*radw)
-        WRITE(outs,'(a,3F9.3,a,F9.3)')' Params (heat|cool|solar)',
-     &    PARM1,PARM2,PARM3,' Params total ',PARMTOT
-        call edisp(itru,outs)
-        if(PARMTOT.lt.wkdiff)then
-          wkdiff=PARMTOT
-          iwkbest=iwk
-          iwkbstrt=IDSOW
-          wkheatdd=XDN
-          wkcooldd=XUPC
-        endif
-        call stdate(iyear,iwkbstrt,DESCR,DESCR1)
-        WRITE(outs,'(a,i3,3a,F6.2)')' Best week is nb ',iwkbest,' ',
-     &    DESCR1,' with minimum weighted difference of ',wkdiff
-        call edisp(itru,outs)
-        if(itru.ne.iuout)call edisp(iuout,outs)
-
-C Convert from julian day of the start of the assessment to the end
-C of the assessment to number of days in period and get ratio with
-C the number of days in the season.
-        ijulst=iwkbstrt
-        ijulfn=iwkbstrt+6
-
-C Ratio of seasonal totoal heating and cooling degree days and the
-C best assessment week heating and cooling degree days.
-        if(wkheatdd.gt.0.01)then
-          hddratio=seahddtot(k)/wkheatdd
-        else
-          hddratio=1.0
-        endif
-        if(wkcooldd.gt.0.01)then
-          cddratio=seacddtot(k)/wkcooldd
-        else
-          cddratio=1.0
-        endif
-        if(k.eq.1)then
-          dayratio=((is1winf-is1wins)+1)/((ijulfn-ijulst)+1)
-          write(outs,'(a,F6.3)') 
-     &      'early winter ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'early winter ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
-          call edisp(iuout,outs)
-          if(act.eq.'?')then
-            dok=.true.
-            h(1)='Unless you have better information, say yes. '
-            call askok('Use best-fit week for the 1st winter season',
-     &       'typical assessment period in the climatelist?',ok,dok,1)
-            if(ok)then
-              ia1wins = iwkbstrt
-              ia1winf = iwkbstrt+6
-            endif
-          endif
-        elseif(k.eq.2)then
-          dayratio=((is1sprf-is1sprs)+1)/((ijulfn-ijulst)+1)
-C Debug...
-          write(outs,'(a,F6.3)') 
-     &      'spring ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'spring ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
-          call edisp(iuout,outs)
-          if(act.eq.'?')then
-            dok=.true.
-            h(1)='Unless you have better information, say yes. '
-            call askok('Use best-fit week for the spring season',
-     &       'typical assessment period in the climatelist?',ok,dok,1)
-            if(ok)then
-              ia1sprs = iwkbstrt
-              ia1sprf = iwkbstrt+6
-            endif
-          endif
-        elseif(k.eq.3)then
-          dayratio=((is1sumf-is1sums)+1)/((ijulfn-ijulst)+1)
-          write(outs,'(a,F6.3)') 
-     &      'summer ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'summer ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
-          call edisp(iuout,outs)
-          if(act.eq.'?')then
-            dok=.true.
-            h(1)='Unless you have better information, say yes. '
-            call askok('Use best-fit week for the summer season',
-     &       'typical assessment period in the climatelist?',ok,dok,1)
-            if(ok)then
-              iasums = iwkbstrt
-              iasumf = iwkbstrt+6
-            endif
-          endif
-        elseif(k.eq.4)then
-          dayratio=((is2sprf-is2sprs)+1)/((ijulfn-ijulst)+1)
-          write(outs,'(a,F6.3)') 
-     &      'autumn ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'autumn ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
-          call edisp(iuout,outs)
-          if(act.eq.'?')then
-            dok=.true.
-            h(1)='Unless you have better information, say yes. '
-            call askok('Use best-fit week for the autumn season',
-     &       'typical assessment period in the climatelist?',ok,dok,1)
-            if(ok)then
-              ia2sprs = iwkbstrt
-              ia2sprf = iwkbstrt+6
-            endif
-          endif
-        elseif(k.eq.5)then
-          dayratio=((is2winf-is2wins)+1)/((ijulfn-ijulst)+1)
-          write(outs,'(a,F6.3)') 
-     &      'late winter ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'late winter ratio of season/assessment heat DD: ',
-     &      hddratio,' & cool DD:',cddratio
-          call edisp(iuout,outs)
-          if(act.eq.'?')then
-            dok=.true.
-            h(1)='Unless you have better information, say yes. '
-            call askok('Use best-fit week for the 2nd winter season',
-     &       'typical assessment period in the climatelist?',ok,dok,1)
-            if(ok)then
-              ia2wins = iwkbstrt
-              ia2winf = iwkbstrt+6
-            endif
-          endif
-        endif
-
-C For the current season set degree day or day ratios.
-        dmheat(k)=hddratio
-        dmcool(k)=cddratio
-        dmlight(k)=dayratio
-        dmsmlpw(k)=dayratio
-        dmfan(k)=dayratio
-        dmdhw(k)=dayratio
-        if(act.eq.'?')then
-          continue
-        else
-          h(1)='You might wish to record this information before going'
-          h(2)='to the next season.'
-          call easkab('Options:',' ','look at next season','continue',
-     &      iok,2)
-          if(iok.eq.2)return
-        endif
-        ix=1
- 43   continue
+      
+C Loop through the climate file and calculate data.
+      itrc=2
+      call clmddscan(itrc,itru,'?','c',5,iyear)
 
       RETURN
       END

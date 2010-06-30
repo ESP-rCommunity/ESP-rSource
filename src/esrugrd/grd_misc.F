@@ -57,12 +57,11 @@ c           surface respectively
 
       SUBROUTINE MZMISC(ICOMP)
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-      COMMON/C4/XLAT,XLON
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -77,8 +76,8 @@ c           surface respectively
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
       character outs*124
 
-      SLAT=XLAT
-      SLON=XLON
+      SLAT=sitelat
+      SLON=sitelongdif
       NCONST(ICOMP)=NSUR
       DO 20 I=1,NSUR
         NELTS(ICOMP,I)=NE(I)
@@ -156,17 +155,19 @@ c Trace output ?
 C *************** MESH ***********************
 C 'MESH' Computes the centre point X & Z coordinate of each rectangular
 C grid square of a mesh superimposed on the opaque surface in question.
-      SUBROUTINE MESH(IS)
+C (equivalent to subroutine in esruish/miscel.F)
+      SUBROUTINE MESH(IZONE,IS)
 #include "building.h"
+#include "geometry.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
       COMMON/GRID3/OGRIDA(MS)
-      CHARACTER BLKNAME*8,BLKMAT*12,outs*124,h*72
+      CHARACTER outs*124,h*72
       logical OK,dok
 
 C Find max and min X & Z values for this surface.
@@ -187,13 +188,13 @@ C Mesh length and height is given by:
       DZMESH=ZMAX-ZMIN
 
 C Establish grid interval for this surface.
-      DIVX=DXMESH/NOX
-      DIVZ=DZMESH/NOZ
+      DIVX=DXMESH/NOX(IZONE)
+      DIVZ=DZMESH/NOZ(IZONE)
       OGRIDA(IS)=DIVX*DIVZ
 
 C Compute X & Z values for centre point of each grid square.
-      DO 20 I=1,NOX
-        DO 30 J=1,NOZ
+      DO 20 I=1,NOX(IZONE)
+        DO 30 J=1,NOZ(IZONE)
           XOP(I,J)=DIVX/2.+(I-1)*DIVX
           ZOP(I,J)=DIVZ/2.+(J-1)*DIVZ
    30   CONTINUE
@@ -216,8 +217,8 @@ C Trace if verbose level.
      &' Opaque surface grid centre coordinates for surface ',I2,':')
       call edisp(iuout,outs)
       call edisp(iuout,' NOX|NOZ|     X   |    Z')
-      DO 9996 I=1,NOX
-        DO 9995 J=1,NOZ
+      DO 9996 I=1,NOX(IZONE)
+        DO 9995 J=1,NOZ(IZONE)
           WRITE(outs,9994)I,J,XOP(I,J),ZOP(I,J)
  9994     FORMAT(I3,',',I3,2F10.2)
           call edisp(iuout,outs)
@@ -242,7 +243,7 @@ C FACDRW draws the elevation of the surface.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       DIMENSION MTHNAM(12)
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
 #else

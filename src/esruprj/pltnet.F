@@ -347,7 +347,10 @@ C OTHER CONNECTIONS
  
 C Check which containment this component is associated with.
         icfound = 0
-        write(6,*) 'a ipcc ',ipcc
+
+C Debug.
+C        write(6,*) 'a ipcc ',ipcc
+
         do 99 i=1,ncont
          if(ipcomp.eq.ipcc(i)) then
 
@@ -365,7 +368,9 @@ C to be compacted as well.
            ipcc(i)=ipcc(i)-1
          endif 
 99      continue
-        write(6,*) 'b ipcc ',ipcc
+
+C Debug.
+C        write(6,*) 'b ipcc ',ipcc
 
 C If icfound non-zero then compact the list of containments.
         IF(icfound.GT.0) THEN          
@@ -390,19 +395,27 @@ C If icfound non-zero then compact the list of containments.
 C Before deleting a component search for references to subsequent
 C components and decrement their value so they will point to the
 C correct component index after the list is compacted.
-        write(6,*) 'c ipc1 ',ipc1
-        write(6,*) 'c ipc2 ',ipc2
+
+C Debug.
+C        write(6,*) 'c ipc1 ',ipc1
+C        write(6,*) 'c ipc2 ',ipc2
+
         DO 103 I=1,NPCON
           if(IPC1(i).gt.IPCOMP) IPC1(i)=IPC1(i)-1
           if(IPC2(i).gt.IPCOMP) IPC2(i)=IPC2(i)-1
   103   continue
-        write(6,*) 'd ipc1 ',ipc1
-        write(6,*) 'd ipc2 ',ipc2
+
+C Debug.
+C        write(6,*) 'd ipc1 ',ipc1
+C        write(6,*) 'd ipc2 ',ipc2
 
 C DELETE COMPONENT BY INCREMENTING ARRAY AND SETTING FINAL ARRAY 
 C ELEMENTS TO ZERO
 C CHECK THAT CHOSEN COMPONENT IS NOT THE FINAL ARRAY ELEMENT
-        write(6,*) 'e pcname ',pcname
+
+C Debug.
+C        write(6,*) 'e pcname ',pcname
+
         IF(IPCOMP.LT.NPCOMP.AND.IPCOMP.GT.0) then 
           DO 101 I=IPCOMP,(NPCOMP-1)
             PCNAME(I)=PCNAME(I+1)
@@ -453,7 +466,10 @@ C SET FINAL ARRAY ELEMENT TO ZERO
     
 C REDUCE NO OF PLANT COMPONENTS BY ONE
         NPCOMP=NPCOMP-1
-        write(6,*) 'f pcname ',pcname
+
+C Debug.
+C        write(6,*) 'f pcname ',pcname
+
         RETURN
        END
 
@@ -1243,6 +1259,7 @@ C Common for screen control.
       character lltmp*144  ! to re-create plant database file name with path
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer istat
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1311,6 +1328,7 @@ C same opening logic as in eddb.F and moplnt.F
            write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &       lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
          endif
+         istat=0
 	 call EFOPRAN(ipcdb,lltmp,irecln,1,istat)
 
 C Check for error on openening.

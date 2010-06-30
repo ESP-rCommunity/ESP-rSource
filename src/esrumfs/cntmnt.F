@@ -25,9 +25,8 @@ C MSOLVD same as JSOLVD in mfmach.F
 C CTSASM calculates source and sink strengths
 
 C ******************** MZCONT ********************
-C Calculates contaminant concentrations per zone if .afn is not present
-C or for each air point node representing a zone if .afn is present
-C << contaminant modelling from operations file still to be done
+C Calculates contaminant concentrations 
+C for each air point node representing a zone
 C Global variables are defined in ctread.F 
 C Various local variables used in contaminant modelling:
 C ZMCPAM   = Contaminant mass vector ((Q))
@@ -40,7 +39,6 @@ C AFLOWM   = Airmass flow matrix with reaction rate coefficients ((K))
 #include "net_flow.h"
 
       COMMON/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
@@ -59,7 +57,7 @@ C AFLOWM   = Airmass flow matrix with reaction rate coefficients ((K))
       COMMON/CONTM6/CNCNI(MCONTM,MNOD)
       COMMON/CONTM7/PRECON(MPRODI)
 
-      CHARACTER LAPROB*72,CNTMFIL*72
+      CHARACTER CNTMFIL*72
       CHARACTER CONTMNAM*12,CNTMDESC*124
       DOUBLE PRECISION FLW1,FLW2,PRES,RESID,SAFLW
       REAL DEN,AFLOWM,CNCAJAM,ZMCPAM
@@ -76,12 +74,6 @@ C per building side timestep NTSTEP
       KOUNTER=NTSTEPC/NTSTEP
       IF(KOUNTER.LE.1)KOUNTER=1
       DO 999 IKOUNTER=1,KOUNTER
-
-C If airflow network has not been defined goto 551
-      IF(IAIRN.LE.0) GOTO 551
-
-C If this is not the first ICOMP then jump
-c      IF(ICOMP.NE.1) GOTO 554
 
 C Define density and weightage factor Gamma 
 C A factor of 0.0 corresponds to standard explicit solution, 0.5 to
@@ -296,11 +288,8 @@ C concentrations (if any) back to zero
         ENDIF  
  7903 CONTINUE
 
- 551  GOTO 554
-C << code that handles situations when airflow network has not been defined
-C to go here
-
- 554  CONTINUE
+C Write contaminant concentrations to array dimensioned by node and
+C contaminant
       CALL PRERES
  999  CONTINUE
       RETURN
@@ -410,12 +399,15 @@ C RCMGL  = Rate of contaminant mass gained/lost from each source/sink
 
 C Simulation time commons
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Operations file commons
       common/CASGNS/NCGPER(MCOM,MDTY,MGTY),TCGS(MCOM,MDTY,MGTY,MGPER),
      &        CGSENC(MCOM,MDTY,MGTY,MGPER),CGSENR(MCOM,MDTY,MGTY,MGPER),
      &        CGLAT(MCOM,MDTY,MGTY,MGPER),CGCTL(MCOM,2,MGTY)
+
+C Calendar commons
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
 C Mass flow and Contaminant commons
       COMMON/MFLOW1/NNOD,NCMP,NCNN
@@ -543,11 +535,7 @@ C at -23, 0, 15, 27 and 78.4 Celsius
 
 C Special case of CO2 mass taken from operations file                      
 C First get day type
-                      CALL EDAYR(IDYP,IDAYOFM,IMONTH)
-                      CALL EWEEKD(IDAYOFM,IMONTH,IYEAR,IDYTP)
-                      IF(IDYTP.LE.5)IDYTP=1
-                      IF(IDYTP.EQ.6)IDYTP=2
-                      IF(IDYTP.EQ.7)IDYTP=3
+                      IDYTP=icalender(IDYP)
 
 C Get zone represented by this airflow node
                       DO 576 IZN=1,MCOM
@@ -560,8 +548,7 @@ C Assume casual gain type 1 is occupancy
                       DO 577 IGNO=1,NCGPER(ICOMP,IDYTP,IGTYP)
                         IF(IHRP.GE.TCGS(ICOMP,IDYTP,IGTYP,IGNO).AND.
      &                     IHRP.LE.TCGS(ICOMP,IDYTP,IGTYP,IGNO+1))THEN
-                          POW=POW                            +
-     &                        CGSENC(ICOMP,IDYTP,IGTYP,IGNO) +
+                          POW=CGSENC(ICOMP,IDYTP,IGTYP,IGNO) +
      &                        CGSENR(ICOMP,IDYTP,IGTYP,IGNO) +
      &                        CGLAT(ICOMP,IDYTP,IGTYP,IGNO) 
                         ENDIF

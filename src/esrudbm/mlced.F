@@ -273,7 +273,6 @@ C Now loop through the layers and copy the contents of layers >
 C IWHICH into the next lower one.
           CALL EMENU('Layer to remove',PELM,MPLEM,IWR)
           IWHICH=IWR-15
-          write(6,*) ' request to remove layer ',iwhich
           write(outs,'(A,A)')' Remove ',laydesc(IWHICH)(1:18)
           dok=.false.
           h(1)='Pause in case you made a mistake... '

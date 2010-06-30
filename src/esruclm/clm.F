@@ -26,6 +26,13 @@ C climatic data sets compatible with ESP-r.
       program clm
 #include "esprdbfile.h"
 #include "espriou.h"
+
+C Manual inclusion of a parameter from building.h
+      parameter (MSPS=10)
+      parameter (MIPVA=MSPS)
+      
+#include "seasons.h"
+C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
@@ -44,7 +51,9 @@ C climatic data sets compatible with ESP-r.
       COMMON/INPER/INIT
       COMMON/OUTPCH/ICOUT
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
@@ -53,8 +62,6 @@ C climatic data sets compatible with ESP-r.
 C Indicator of possible command line action to take and the
 C file associated with this action.
       common/ract/paction,pascif
-
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Path to problem and command line file (if any).
       common/rpath/path
@@ -68,16 +75,9 @@ C Redirected text/graphics parameters.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
 
-C Typical assessment periods win1|trn1|sum|trn2|win2 with start & finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
 C Climate list common.
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
       common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
       common/clmlnum/nbclmlhelp
 
@@ -96,8 +96,7 @@ C Name of current application
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
       character cfgroot*24,LCFGF*72
-      character clmlnam*32,clmlaid*72,clmldbfile*72,clmlavail*10
-      character clmlhelp*72
+      character blank*2   ! string for edisp of blank line
       LOGICAL OK,DOK,unixok,there,silent
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -127,6 +126,7 @@ C Initial assumptions. Pass module name to C code structure.
       KDS=1
       KDF=24
       IYEAR=2000
+      ICYEAR=2000
       cfgroot='  '
       LCFGF='  '
 
@@ -258,13 +258,14 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
-      call edisp(IUOUT,' ')
+      blank='  '
+      call edisp(IUOUT,blank)
       CALL ESPrVersion("summary",cAppName,IUOUT)
       write(outs,'(2a)')
      & ' Systems Research Unit, University of',
      & ' Strathclyde, Glasgow, Scotland.'
       call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
+      call edisp(IUOUT,blank)
 
 
 C Find the user's home folder then get user's custom settings.
@@ -351,7 +352,10 @@ C Import climate data from ASCII file.
           call tstamp('>','Finished climate module conversion ASCI2BIN')
           write(outs248,'(5a)')'Climate_conversion',tab,
      &      pascif(1:lnblnk(pascif)),tab,LCMDFL(1:lnblnk(LCMDFL))
-          write(6,*)outs248(1:lnblnk(outs248))
+
+C Debug.
+C          write(6,*)outs248(1:lnblnk(outs248))
+
           CALL EPAGEND
           STOP
         elseif(paction(1:8).eq.'bin2asci')then
@@ -370,7 +374,10 @@ C Write out this data to an asci file.
           call tstamp('>','Finished climate module conversion BIN2ASCI')
           write(outs248,'(5a)')'Climate_conversion',tab,
      &      LCMDFL(1:lnblnk(LCMDFL)),tab,pascif(1:lnblnk(pascif))
-          write(6,*)outs248(1:lnblnk(outs248))
+
+C Debug,
+C          write(6,*)outs248(1:lnblnk(outs248))
+
           CALL EPAGEND
           STOP
         elseif(paction(1:7).eq.'epw2bin')then
@@ -388,7 +395,10 @@ C Import climate data from EPW file.
           call tstamp('>','Finished climate module conversion EPW2BIN')
           write(outs248,'(5a)')'Climate_conversion',tab,
      &      pascif(1:lnblnk(pascif)),tab,LCMDFL(1:lnblnk(LCMDFL))
-          write(6,*)outs248(1:lnblnk(outs248))
+
+C Debug.
+C          write(6,*)outs248(1:lnblnk(outs248))
+
           CALL EPAGEND
           STOP
         else
@@ -396,9 +406,9 @@ C Import climate data from EPW file.
 C In interactive mode so do splash-screen and then read
 C in the climate file name via list
 C selection, editing or accepting the LCMDFL.
-          call edisp(IUOUT,' ')
+          call edisp(IUOUT,blank)
           CALL ESPrVersion("summary",cAppName,IUOUT)
-          call edisp(IUOUT,' ')
+          call edisp(IUOUT,blank)
           paction='INTERACTIVE'
           silent=.false.
           CALL CFILIN(silent)
@@ -408,9 +418,9 @@ C selection, editing or accepting the LCMDFL.
 C In interactive mode so do splash-screen and then read
 C in the climate file name via list
 C selection, editing or accepting the LCMDFL.
-        call edisp(IUOUT,' ')
+        call edisp(IUOUT,blank)
         CALL ESPrVersion("summary",cAppName,IUOUT)
-        call edisp(IUOUT,' ')
+        call edisp(IUOUT,blank)
         paction='INTERACTIVE'
         silent=.false.
         CALL CFILIN(silent)
@@ -479,7 +489,10 @@ C Present the opening display and control menu.
         call usrmsg(' Closing clmate module...',' ','P')
         write(outs248,'(3a)')'Climate_selected',tab,
      &    LCMDFL(1:lnblnk(LCMDFL))
-        write(6,*)outs248(1:lnblnk(outs248))
+
+C Debug.
+C        write(6,*)outs248(1:lnblnk(outs248))
+
         call tstamp('>','Finished climate module')
         CALL EPAGEND
         STOP
@@ -622,6 +635,7 @@ C Change radiation type.
         IRTYP=0
         IF(IRADT.EQ.2)IRTYP=123
         IDNGH=IRTYP
+        ICDNGH=IRTYP
         IREC=366
         READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR
         WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR,IRTYP
@@ -865,8 +879,8 @@ C Cast back to 72 char name and do the conversion.
           h(4)='Usually you want to update the site information.'
           CALL ASKOK(' ','Update the site info as well?',OK,dok,4)
           silent=.false.
-          WRITE(outs,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
-          CALL EDISP(IUOUT,outs)
+          WRITE(outs248,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
+          CALL EDISP248(IUOUT,outs248,100)
           if(ok)then
             CALL MKBCLM(iuout,1,LASCI,IUNIT,IDS,IDF,silent,IER)
           else
@@ -874,7 +888,7 @@ C Cast back to 72 char name and do the conversion.
           endif
           call tstamp('>','CLM: import climate data')
           CALL EDISP(IUOUT,'Modified climate file saved')
-          CALL EDISP(IUOUT,' ')
+          CALL EDISP(IUOUT,blank)
         elseif(IICT.eq.3)then
 
 C Import climate data from Korean Met Office XXXH.dat ASCII file
@@ -960,14 +974,12 @@ C Toggle trace level.
       ELSEIF(INO.EQ.19)THEN
 
 C Feedback channel. Suggest an initial name for the export file.
-C Currently LCLIM is only 72 characters but once it is 144 char
-C then the 130 logic can be added into the 2nd write statement.
         if(ixopen.eq.0)then
           llt=lnblnk(LCLIM)
           if(llt.lt.130)then
             write(xfile,'(2a)') LCLIM(1:llt),'.report'
           else
-            write(xfile,'(2a)') LCLIM(1:72),'.report'
+            write(xfile,'(2a)') LCLIM(1:130),'.report'
           endif
         endif
         call ctlexp(xfile,ixopen,ixloc,ixunit,'T','Data',IER)
@@ -1034,9 +1046,12 @@ C hour in any specified day.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
 
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
-     A              CDIR(MT),CHUM(MT)
+     &              CDIR(MT),CHUM(MT)
       character outs*124,xfile*144,tg*1,delim*1,h*72
+      character blank*2  ! for edisp of blank line
       logical ok,dok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -1065,9 +1080,10 @@ C displaying the following data.
           continue
         endif
       ENDIF
+      blank='  '
 
 C Determine day to be displayed.
-    5 call edisp(iuout,' ')
+    5 call edisp(iuout,blank)
       call edisp(iuout,' Day to be displayed...')
       IDD=ID1
       IMM=IM1
@@ -1090,7 +1106,7 @@ C Output all values in tabular form.
          WRITE(outs,6)IDD,IMM
     6    FORMAT('           Period: Day',I3,' of month',I3)
          call edisp(itru,outs)
-         call edisp(itru,' ')
+         call edisp(itru,blank)
          WRITE(outs,61)
    61    FORMAT(' Hr d.b. temp. dr.n. rad. df.h. rad.',
      &          ' wd. vel. wd. dir. rel. h.')
@@ -1099,7 +1115,7 @@ C Output all values in tabular form.
    62    FORMAT(6X,'deg.C',6X,'W/m2 ',6X,'W/m2 ',6X,'m/s',
      &          4X,'deg.f.n.',3X,'pct')
          call edisp(itru,outs)
-         call edisp(itru,' ')
+         call edisp(itru,blank)
       ELSEIF(IDNGH.EQ.123)THEN
          WRITE(outs,63)IDD,IMM
    63    FORMAT('           Period: Day',I3,' of month',I3)
@@ -1112,7 +1128,7 @@ C Output all values in tabular form.
    65    FORMAT(6X,'deg.C',6X,'w/m2 ',6X,'w/m2 ',6X,'m/s',
      &          4X,'deg.f.n.',3X,'pct')
          call edisp(itru,outs)
-         call edisp(itru,' ')
+         call edisp(itru,blank)
       ENDIF
       DO 10 I=1,24
       C1=CDIF(I)
@@ -1217,7 +1233,7 @@ C Clear common blocks for a new climate file.
       SUBROUTINE clrclm
 
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
 
@@ -1233,6 +1249,7 @@ C Clear common blocks for a new climate file.
       IDS=1
       IDF=365
       IYEAR=2000
+      ICYEAR=2000
       CLAT=50.
       CLONG=0.
 
@@ -1257,8 +1274,10 @@ C IER=0 OK, IER=1 problem.
 C BTIM and PETIM are in terms of decimal fractions of a day.
       SUBROUTINE PERSTR(IYEAR,IBDOY,IBTIM,IEDOY,IETIM,NTSPH,
      &           IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
+      COMMON/OUTIN/IUOUT,IUIN
       CHARACTER T1H*5, T1D*5, T2H*5, T2D*5
       CHARACTER PERST1*14,PERST2*40,PERST3*40,DS*7,DS1*10,DE*7,DE1*10
+      character outs*124
 
       IER=0
 
@@ -1311,7 +1330,11 @@ C Generate view period string based on IBDOY,IEDOY,BTIM,ETIM
         ENDIF
       ENDIF
       RETURN
-  10  write(6,*) 'EPERSTR: error writing warning or strings.'
+
+C Error trapped from I/O above.
+  10  write(outs,*) 'EPERSTR: error writing warning or strings.'
+      call edisp(iuout,outs)
+
       END
 
 
@@ -1361,7 +1384,7 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
       logical cfgok
       ier=0
       return
@@ -1377,8 +1400,7 @@ C calls in esru_lib.F
       return
       end
 
-      SUBROUTINE PLELEV(IUF,direc,ier)
+      SUBROUTINE PLELEV(direc)
       CHARACTER direc*1
-      ier=0
       return
       end

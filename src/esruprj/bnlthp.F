@@ -74,6 +74,7 @@ C
 C **************************************************************
       SUBROUTINE THMENU(ITRC)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/precz.
 #include "geometry.h"
@@ -85,10 +86,6 @@ C geometry.h provides commons G0/G2/precz.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -120,7 +117,7 @@ C Read the complete building thermal and geometical data.
       DO 5 ICOMP=1,NCOMP
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
         endif
@@ -442,6 +439,7 @@ C is called by THMENU .
 C ****************************************************************
       SUBROUTINE THRMEQ(ITHF)
 #include "building.h"
+      integer iCountWords
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
@@ -523,7 +521,7 @@ C Add a new equation manually
   101   FORMAT(I2,2(1X,F7.2))
         WRITE(EQNMSG,*)' Enter the property type and temperature range.'
         CALL EASKS(EQNTXT,EQNMSG,' ',72,' ','thermal data',IER,12)
-        CALL CHITMS(EQNTXT,NCFF)
+        NCFF = iCountWords(EQNTXT)
         IF(NCFF.NE.3)THEN
           CALL USRMSG(' ',
      &    ' Please enter an integer and two real numbers!','W')
@@ -538,7 +536,7 @@ C Add a new equation manually
   102   FORMAT(F8.3,4(1X,F8.5,1X,F6.2))
         WRITE(EQNMSG,*)' Coefficient value?'
         CALL EASKS(EQNTXT,EQNMSG,' ',72,' ',' data ',IER,13)
-        CALL CHITMS(EQNTXT,NCFF)
+        NCFF = iCountWords(EQNTXT)
         IF(NCFF.NE.9)THEN
           CALL USRMSG(' ',' Please enter 9 values!','W')
           DO 110 I12=1,12

@@ -28,8 +28,8 @@ this is a variant of the base case for testing an air based P+I controller. Air 
     0    2   0.000  # ctl type, law (free floating), start @
       0.  # No. of data items
     0    5   7.000  # ctl type, law (basic proportional), start @
-     9.  # No. of data items
-  1.000 1000.000 0.000 20.000 2.000 1000.000 0.000 25.000 2.000 600.000
+      9.  # No. of data items
+  1.000 1000.000 0.000 20.000 2.000 1000.000 0.000 25.000 2.000
     0    2  19.000  # ctl type, law (free floating), start @
       0.  # No. of data items
 * Control function

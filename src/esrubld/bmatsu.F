@@ -392,19 +392,7 @@ C by MZSETU.
 
       SUBROUTINE MZCOE3(ICOMP)
 #include "building.h"
-#include "CFC_common.h"
       COMMON/GR3D150/INDX3,DTIME
-      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
-     &NPGAP(MCOM,MS,MGP)
-
-C Control CFC properties here before solar/thermal processing.
-      nc=nconst(icomp)
-      do 10 i=1,nc
-            icfctp=icfcfl(icomp,i)
-            if(icfctp.gt.0)then
-                  call CFC_shading_control(icomp,icfctp)
-            end if
- 10   continue
 
       CALL MZSOLR(ICOMP)
       CALL MZELWE(ICOMP)
@@ -536,7 +524,9 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       real psi,lngth,losspercent,totheatloss,thbrpercent
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
+      real uavtotal   
+      
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 

@@ -1,12 +1,12 @@
 *connections  for 610
-*Date Wed Feb 15 16:17:09 2006
+*Date Wed Oct 14 21:58:36 2009
       9   # number of connections
-   1   1   0   0   0  #   1  South_Wall in 610 is External
-   1   2   0   0   0  #   2  South_Wall2 in 610 is External
-   1   3   0   0   0  #   3  East_Wall in 610 is External
-   1   4   0   0   0  #   4  North_Wall in 610 is External
-   1   5   0   0   0  #   5  West_Wall in 610 is External
-   1   6   0   0   0  #   6  Window in 610 is External
-   1   7   0   0   0  #   7  Window2 in 610 is External
-   1   8   0   0   0  #   8  Roof in 610 is External
-   1   9   4   0   1  #   9  Floor in 610 >|< user def ground profile 1
+   1   1   0   0   0  #    1 South_Wall in 610 is External
+   1   2   0   0   0  #    2 South_Wall2 in 610 is External
+   1   3   0   0   0  #    3 East_Wall in 610 is External
+   1   4   0   0   0  #    4 North_Wall in 610 is External
+   1   5   0   0   0  #    5 West_Wall in 610 is External
+   1   6   0   0   0  #    6 Window in 610 is External
+   1   7   0   0   0  #    7 Window2 in 610 is External
+   1   8   0   0   0  #    8 Roof in 610 is External
+   1   9   4   0   1  #    9 Floor in 610 >|< user def ground profile 1

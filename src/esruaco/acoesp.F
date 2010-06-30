@@ -18,8 +18,6 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C  Opendb: Open materials constructions, multi-layer constructions and
-C          optical db.
 C  Zoneslist : Display Zones list and wait for INIPIC item selected
 C  ZNLIST :    Takes the current selected zones and builds a descriptive
 C              string to be used in headers.
@@ -27,120 +25,6 @@ C  ZoneDisp :  Displays zone based information
 C  CompoList : Display Composites list and wait for INIPIC item selected
 C  DispTRev :  Display the reverberation time
 C  PLOTTrev : Plot the reverberation time curve
-
-
-C ********** opendb (copy of code from eddb.F)
-C Open materials, constructions, multi-layer constructions and
-C optical properties databases.
-      subroutine opendb(ier)
-#include "esprdbfile.h"
-      
-      integer lnblnk  ! function definition
-
-      common/OUTIN/IUOUT,IUIN
-      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      logical    XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,close
-      DIMENSION ICLN(30)
-
-      character SOPT*12,outs*124,GDESCR*36
-
-      IER=0
-
-C Open currently named materials database.  Note that
-C by a minor rewrite of ICLN in rec 601 we can get by with changing
-C this to 24 words wide.
-      CALL ERPFREE(IFMAT,ISTAT)
-      call EFOPRAN(IFMAT,LFMAT,40,0,IER)
-      IF(ier.ne.0)THEN
-        write(outs,'(a,a,a)') ' No materials database ',
-     &     LFMAT(1:lnblnk(LFMAT)),' found!'
-        call edisp(iuout,outs)
-        MATDBOK=.FALSE.
-      else
-
-C Also check to see if the file has correct info in 
-        IREC=601
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,
-     &    (ICLN(I),I=1,30)
-        if(NCLASS.LE.0)then
-          goto 1000   ! no classifications so try alternatives
-        else
-          MATDBOK=.TRUE.
-          matver = 0.0
-          goto 139  !  a binary file found so carry on.
-        endif
- 1000   CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-        call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
-        if(ier.eq.-2)then
-          ier=0
-          call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
-          if(ier.ne.0)then
-            call usrmsg('No readable materials database was not found',
-     &                  'or file was corrupt','W')
-            MATDBOK=.FALSE.
-          else
-            call eclose(matver,1.1,0.001,close)
-            if(close)then
-              call edisp(iuout,' Filled material data arrays...')
-              MATDBOK=.TRUE.
-            else
-              call usrmsg(
-     &          'No readable material database was found. ',
-     &          'check other warnings for advise.','W')
-              MATDBOK=.FALSE.
-            endif
-          endif
-        elseif(ier.eq.0)then
-          call eclose(matver,1.1,0.001,close)
-          if(close)then
-            call edisp(iuout,' Filled material data arrays...')
-            MATDBOK=.TRUE.
-          endif
-        endif
-      endif
-        
-C Read multilayer db information into common.
- 139  CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
-      if(XST)then
-        CALL ERMLDB(0,IUOUT,IER)
-        IF(IER.NE.0)then
-          write(outs,'(a,a,a)') ' Problem with constr. composites db ',
-     &     LFMAT(1:lnblnk(LFMAT)),' !'
-          call edisp(iuout,outs)
-          MLDBOK=.FALSE.
-        else
-          call usrmsg(' Opened constr. composites db.',' ','p')
-          MLDBOK=.TRUE.
-        endif
-      else
-        write(outs,'(a,a,a)') ' No constr. composites db ',
-     &     LFMAT(1:lnblnk(LFMAT)),' found!'
-        call edisp(iuout,outs)
-      endif
-C Open optical database and read into common.
-      SOPT='ALL'
-      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
-      if(ier.ne.0)then
-        call usrmsg(
-     &  ' Optical properties db not found or there was a problem',
-     &  ' reading it!','W')
-        OPTKOK=.FALSE.
-      else
-        call usrmsg(' Opened optical properties db!',' ','p')
-        OPTKOK=.TRUE.
-      endif
-      return
-      end
-
 
 C********************* Zoneslist (copy of MOZDFN from resdef.F) ****
 C Display Zones list and wait for INIPIC item selected
@@ -240,6 +124,7 @@ C length : Length of zdescr
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       CHARACTER zdescr*80,outs*244,outsd*80
+      logical unixok
 
       length=0
       do 42 i=1,nzg
@@ -268,7 +153,12 @@ C length : Length of zdescr
         return
       endif
 
-      write(6,*) 'ZLIST: error writing zone names: ',outs
+C If we got to this point must have been an error
+      call isunix(unixok)
+      if(unixok)then
+        call lusrmsg('ZNLIST: error writing zone names: ',
+     &    outs,'-')
+      endif
       ierr=1
       return
       END
@@ -278,6 +168,7 @@ C ************* ZoneDisp
 C ZoneDisp - displays zone based information and allows....
       SUBROUTINE ZoneDisp(icomp)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
 #include "geometry.h"
@@ -290,10 +181,6 @@ C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
@@ -314,7 +201,7 @@ C Read geometry file for chosen zone.
       ITMP=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
       else
         call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
       endif
@@ -326,7 +213,7 @@ C Read geometry file for chosen zone.
       CALL ADJVIEW(IER)
 
 C Recover zone data (read only, no display).
-      CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+      CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
       Vol(icomp)= ZVOL
       CALL ECLOSE(ZBASEA(ICOMP),0.0,0.001,zbzero)
       FLA=0.
@@ -374,15 +261,11 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       SUBROUTINE CompoList
 #include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/pophelp/h(60)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
@@ -479,6 +362,7 @@ C          1 = textual feedback or 2 = File
       SUBROUTINE DispTRev(Mode,IOctave,ISE,Method,IAirAb, IChanel)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "acoustic.h"
 
@@ -489,10 +373,6 @@ C          1 = textual feedback or 2 = File
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -699,13 +579,13 @@ C for each surface in the zone according to the frequency band
               endif
               call eclose(gversion(nZnog(J)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
+                call georead(ITMP,LGEOM(nZnog(J)),nZnog(J),0,iuout,
      &           IER)
               else
                 call egomin(ITMP,LGEOM(nZnog(J)),nZnog(J),0,0,iuout,
      &           IER)
               endif
-              CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
             DO 400 I = 1,NSUR
               icon=IZSTOCN(nZnog(J),I)
               In = MLCIndex(SSMLCN(icon))
@@ -889,13 +769,12 @@ C Display equivalent surface for MATERIAL
               endif
               call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
-     &           IER)
+                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
               else
                 call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
      &           IER)
               endif
-              CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
             DO 200 I = 1,NSUR
               icon=IZSTOCN(nZnog(k),I)
@@ -1146,13 +1025,12 @@ C Should any way compute the equivalent area
             DO 691 k =1,NZG 
               call eclose(gversion(nZnog(k)),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
-     &           IER)
+                call georead(ITMP,LGEOM(nZnog(k)),nZnog(k),0,iuout,IER)
               else
                 call egomin(ITMP,LGEOM(nZnog(k)),nZnog(k),0,0,iuout,
      &           IER)
               endif
-              CALL ZINFO(iuout,SNA,ZOA,PAZI,PELV,ZVOL)
+              CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
               call SurfEquiCalc(nznog(k), M, IAirAb)
  691        CONTINUE
           ENDIF
@@ -1227,7 +1105,7 @@ C RESMN      - Minimum reverberation time
 
       CHARACTER title*200
       CHARACTER CalName*12,ACOName*72, LabFreq*4, TxtZone*72
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot

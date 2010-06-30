@@ -38,10 +38,12 @@ C information to be saved into a new file. ITRU unit number for user
 C output, IER=0 OK. 
       SUBROUTINE EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
 #include "epara.h"
+#include "sbem.h"      
 #include "CFC_common.h"
       
       integer lnblnk  ! function definition
@@ -54,19 +56,11 @@ C geometry.h provides commons G0/G2/c20/precz.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
       common/PRECT4/TOPTIC(MCOM,MTMC)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -82,7 +76,7 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       DIMENSION VERT(35),libcmt(MTMC)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS,CFILE
+      CHARACTER*72 CFILE
       CHARACTER*72 DFILE
       CHARACTER SFILE*72,H*72,LTMP*72
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -96,7 +90,7 @@ C geometry.h provides commons G0/G2/c20/precz.
       logical CFCFOUND !used to determine whether CFCs exist
       character*72 CFCFILE
 
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -115,6 +109,10 @@ C CFCFILE is default for CFC file
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(DFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
         WRITE(CFILE,'(2a)')zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+        IF(INOTI.EQ.1)WRITE(DFILE,'(2A)')
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_not.tmc'
+        IF(INOTI.EQ.3)WRITE(DFILE,'(2A)')
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_typ.tmc'
         WRITE(CFCFILE,'(2a)')zname(ICOMP)(1:lnblnk(zname(ICOMP))),
      &    '.cfc'
       else
@@ -122,6 +120,10 @@ C CFCFILE is default for CFC file
      &    zname(ICOMP)(1:lnzname(ICOMP)),'.tmc'
         WRITE(CFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnzname(ICOMP)),'.con'
+        IF(INOTI.EQ.1)WRITE(DFILE,'(4a)')zonepth(1:lnblnk(zonepth)),'/',
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_not.tmc'
+        IF(INOTI.EQ.3)WRITE(DFILE,'(4a)')zonepth(1:lnblnk(zonepth)),'/',
+     &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'_typ.tmc'
         WRITE(CFCFILE,'(4a)') zonepth(1:lnblnk(zonepth)),'/',
      &    zname(ICOMP)(1:lnblnk(zname(ICOMP))),'.cfc'
       endif
@@ -138,7 +140,7 @@ C Set existance of a zone construction file to false.
 C Read in the related geometry file into common.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
       else
         call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
       endif
@@ -216,7 +218,7 @@ C Construction file name not yet specified.
       call FINDFIL(LTHRM(ICOMP),XST)
       if(XST)then
         IF(QUIET) THEN 
-          CALL EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER) 
+          CALL EDZCON(ICOMP,MODGEO,MODCON,IER) 
         ELSE
           write(outs,'(3a)') 'Found an existing constructions file: ',
      &            LTHRM(ICOMP)(1:lnblnk(LTHRM(ICOMP))),'.'
@@ -234,7 +236,7 @@ C Construction file name not yet specified.
             endif
           elseif(IWA.EQ.2)then
             call tstamp('>','PRJ: scan db & rebuild zone construction')
-            CALL EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER) 
+            CALL EDZCON(ICOMP,MODGEO,MODCON,IER) 
           elseif(IWA.eq.3)then
             call tstamp('>','PRJ: abandoned rebuild zone construction')
             return
@@ -258,7 +260,7 @@ C If in quiet mode: the file should exist => error if we are here.
             goto 42
           endif
         ENDIF
-        CALL EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
+        CALL EDZCON(ICOMP,MODGEO,MODCON,IER)
       endif
       if(IER.NE.0)then
         again=.true.
@@ -267,10 +269,12 @@ C If in quiet mode: the file should exist => error if we are here.
 
 C Having done so check to see if there are any transparent surfaces.
 C If surface attribute other than OPAQUE reset ITMCFL otherwise reconcile mismatches!
+C Do not check for UK NCM notional model
       TFOUND=.FALSE.
       DO 60 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0)then
+        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0.
+     &    and.inoti.ne.1)then
           write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
           dok=.true.
           h(1)='The opaque/transparent attribute of the surface is not'
@@ -473,7 +477,7 @@ C has resized the display, redraw.
       if(MMOD.EQ.8)then
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &               iicfgz,iicfgn,iicfgc,iicfgdfn)
-        WRITE(etext,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(etext,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
         iside=1
         isize=1
         ifont=2
@@ -514,30 +518,27 @@ C Help text for this menu.
       H(31)='    are used.'
       H(32)=' e) lux level - you specify the lux level above which'
       H(33)='    the alternative optical properties are used.'
-      H(34)=' f) Phase change state - you specify the phase which'
-      H(35)='    the alternative optical properties are used.'
-      H(36)='    3 available options: solid, mixed, liquid.'
-      H(37)='    '
-      H(38)='Note that there can be up to 8 control periods during'
-      H(39)='a day and that all days within the simulation are treated'
-      H(40)='the same).'
-      H(41)=' '
-      H(42)='The alternative optical propetry set must relate to the'
-      H(43)='same number of material layers as the original set. It'
-      H(44)='is a good idea to prepare the alternative set using the'
-      H(45)='the Optical Properties db management facility prior to'
-      H(46)='using the transparent properties facility in this menu.'
+      H(34)='    '
+      H(35)='Note that there can be up to 8 control periods during'
+      H(36)='a day and that all days within the simulation are treated'
+      H(37)='the same).'
+      H(38)=' '
+      H(39)='The alternative optical propetry set must relate to the'
+      H(40)='same number of material layers as the original set. It'
+      H(41)='is a good idea to prepare the alternative set using the'
+      H(42)='the Optical Properties db management facility prior to'
+      H(43)='using the transparent properties facility in this menu.'
+      H(44)=' '
+      H(45)='Control of optical properties can be used to approximate'
+      H(46)='the closing of window blinds and shutters.'
       H(47)=' '
-      H(48)='Control of optical properties can be used to approximate'
-      H(49)='the closing of window blinds and shutters.'
-      H(50)=' '
-      H(51)='If the model has an air flow network you might also'
-      H(52)='wish to control any flow components associated with'
-      H(53)='transparent surfaces that have optical property control.'
-      H(54)='Note however that the air flow control logic is'
-      H(55)='different from optical property control logic so care'
-      H(56)='is required to ensure that they operate together as'
-      H(57)='intended.'
+      H(48)='If the model has an air flow network you might also'
+      H(49)='wish to control any flow components associated with'
+      H(50)='transparent surfaces that have optical property control.'
+      H(51)='Note however that the air flow control logic is'
+      H(52)='different from optical property control logic so care'
+      H(53)='is required to ensure that they operate together as'
+      H(54)='intended.'
 
 C Now display the menu.
       write(head,'(3a)') 'Composition of `',
@@ -568,7 +569,7 @@ C Now display the menu.
 
 C If no existing file advise user to create from info in geom file and
 C various databases.
-        CALL PHELPD('zone geom file section',57,'-',0,0,IER)
+        CALL PHELPD('zone geom file section',54,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C Save data and then return to menu.
@@ -629,7 +630,7 @@ C Produce a menu of data related to this surface.
         IS=IFOC
         CALL EPMENSV
         call tstamp('>','PRJ: enter surface construction')
-        CALL EDSCON(ITRC,ITRU,ICOMP,IS,MODGEO,MODCON,IER)
+        CALL EDSCON(ITRU,ICOMP,IS,MODGEO,MODCON,IER)
         CALL EPMENRC
       ELSE
 
@@ -663,7 +664,7 @@ C and save the system configuration file if not browsing.
       if(cfgok.and.(.NOT.browse))then
         IUF=IFIL+2
         call tstamp('>','PRJ: save zone construction')
-        CALL EMKCON(LTHRM(ICOMP),IUF,ICOMP,IUOUT,QUIET,IER)
+        CALL EMKCON(LTHRM(ICOMP),IUF,ICOMP,QUIET,IER)
         IF(IER.EQ.1)THEN
           dok=.true.
           h(1)='Check that you have permission to update the zone'
@@ -695,7 +696,7 @@ C If any of the surfaces are transparent save this info.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   61  CONTINUE
       IF(TFOUND)THEN
-        CALL MKTWIN(ITRU,IUF,ICOMP,QUIET,IER)
+        CALL MKTWIN(IUF,ICOMP,QUIET,IER)
         IF(IER.EQ.1)RETURN
         ITW(ICOMP)=1 
 
@@ -772,7 +773,7 @@ C If geometry info has changed then save it as well.
           if(newgeo)then
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
           else
-            CALL EMKGEO(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            CALL EMKGEO(IUF,LGEOM(ICOMP),ICOMP,3,IER)
           endif
           MODGEO=.FALSE.
         endif
@@ -791,13 +792,22 @@ C ************* EDSCON
 C Edit zone surface construction attributes in common block G6 and 
 C allow this to be saved. ITRU unit number for user output, IER=0 OK, 
 C IER=1 problem. Make use of construction information in common MLC.
-      SUBROUTINE EDSCON(ITRC,ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
+      SUBROUTINE EDSCON(ITRU,ICOMP,ISUR,MODGEO,MODCON,IER)
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "material.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer itru   ! unit for reporting
+      integer icomp  ! zone number
+      integer isur   ! associated surface
+      logical MODGEO ! return true if altered geometry
+      logical MODCON ! return true if altered construction
+      integer ier    ! zero is ok, one materials not available
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -806,11 +816,6 @@ C Optical and geometric properties.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/PRECT4/TOPTIC(MCOM,MTMC)
 
@@ -820,33 +825,13 @@ C Optical and geometric properties.
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      integer legmat  ! local variable for legacy index.
+C Material properties.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL MODGEO,MODCON,told,closemat
+      LOGICAL told,closemat1,closemat2
 
       DIMENSION ISD(19)
-      CHARACTER TITL*72,NAM*72,ISD*46
+      CHARACTER NAM*72,ISD*46
       CHARACTER H*72,KEY*1,HOLD*48,TOPTIC*12,optic*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
@@ -854,6 +839,19 @@ C Arrays of material properties.
 C Thermal property checking values follow.
       DATA CONCH/250./,DENCH/4000./,SHTCH/3000./,THKCH/0.5/
       told=.false.
+
+C Establish if material data arrays have been filled. If not return
+C with ier=1.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so editing',
+     &    'of surface attributes not allowed.','W')
+        ier=1
+        return
+      endif
 
 C Setup text for menu.
    12 INODA=-3
@@ -911,9 +909,26 @@ C Multilayer construction has not been defined.
  346      FORMAT(A1,I4,' --',F6.3,3F8.2)
         ELSE
           IF(IPR(ICF,IE).NE.0)THEN
-            WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &                      CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
-  46        FORMAT(A1,I3,I4,F6.3,3F8.2)
+            matarrayindex=IPRMAT(ICF,IE)   ! which legacy index
+            if(matarrayindex.ge.0)then
+	      if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h')then
+
+C Find air gap resistance for this layer.
+                DO 148 IGG=1,NAIRG(ISUR)
+                  IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
+                  WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+     &              CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
+ 148            CONTINUE
+              else
+                WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+     &            CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
+  46            FORMAT(A1,I3,I4,F6.3,3F8.2)
+              endif
+            else
+              WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
+     &          ' confused material reference'
+            endif
           ELSE
 
 C Find air gap resistance for this layer.
@@ -1047,28 +1062,42 @@ C gaps in preparation of scan.
         MODCON=.TRUE.
         NAIRG(ISUR)=0
         NE(ISUR)=LAYERS(IC)
-        call eclose(matver,1.1,0.01,closemat)
 
 C Gather information about each layer. Read in the materials db info.
         DO 223, IL=1,LAYERS(IC)
-          if(closemat)then
-            legmat=IPR(IC,IL)   ! which legacy index
-            if(legmat.ge.0)then
-              matarrayindex=mathash(legmat)  ! find matching array index
+          matarrayindex=IPRMAT(IC,IL)   ! which legacy index
+          if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              E=0.99; A=0.99
+              NAM='AIR'
+            else
               DBCON=matdbcon(matarrayindex)
               DBDEN=matdbden(matarrayindex)
               DBSHT=matdbsht(matarrayindex)
               E=matdbine(matarrayindex)
               A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
               write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
+
+C If g or h air gap and version 1.2 then assign DRAIR
+	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h')then
+              if(closemat2)then
+                DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
+                DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
+                DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
+              endif
+            endif
           else
-            CALL ERPCDB(IFMAT,IPR(IC,IL),ITRU,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
+            call edisp(iuout,
+     &        'One layer material ref is confused or duplicate name.')
+            goto 12
           endif
           IF(IER.EQ.1)RETURN
+
           CON(ISUR,IL)=DBCON
           DEN(ISUR,IL)=DBDEN
           SHT(ISUR,IL)=DBSHT
@@ -1099,6 +1128,27 @@ C assign an appropriate U value to each air gap encountered.
               ELSE
                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
               ENDIF
+            endif
+          ELSE
+            matarrayindex=IPRMAT(IC,IL)   ! which legacy index
+	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h')then
+              if(NAIRG(ISUR)+1.gt.MGP)then
+                call usrmsg(
+     &           'As defined, this composite contains more air gaps',
+     &           ' then allowed - please change your description','W')
+              else
+                NAIRG(ISUR)=NAIRG(ISUR)+1
+                IPAIRG(ISUR,NAIRG(ISUR))=IL
+                IF(SSVFC(icn1)(1:4).EQ.'VERT')THEN
+                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,1)
+                ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
+     &                 SSVFC(icn1)(1:4).EQ.'CEIL')THEN
+                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
+                ELSE
+                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
+                ENDIF
+              endif
             endif
           ENDIF
   223   CONTINUE
@@ -1193,20 +1243,22 @@ C EDZCON takes the information in the composite construction db and the
 C zone geometry file (surface attributes) and attempts to construct a
 C zone construction file with minimum intervention by the user.
 
-      SUBROUTINE EDZCON(ITRC,ICOMP,MODGEO,MODCON,IER)
+      SUBROUTINE EDZCON(ICOMP,MODGEO,MODCON,IER)
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "material.h"
+
+C Parameters
+      integer icomp  ! zone number
+      logical MODGEO ! return true if altered geometry
+      logical MODCON ! return true if altered construction
+      integer ier    ! zero is ok
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1216,35 +1268,15 @@ C zone construction file with minimum intervention by the user.
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      integer legmat  ! local variable for legacy index.
+C Material properties.
       integer matarrayindex ! the indes within matdatarray
 
-      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODGEO,MODCON
-      logical closemat
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
 
       CHARACTER outs*124,SSPARENT*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER NAM*72,TITL*72
+      CHARACTER NAM*72
 
 C Assume no window optical properties asked for.
       IER=0
@@ -1270,6 +1302,19 @@ C composite construction database.
           MLDBOK=.TRUE.
         ENDIF
       ENDIF
+
+C Establish if material data arrays have been filled. If not return
+C with ier=1.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so zone',
+     &    'construction attributes cannot be written.','W')
+        ier=1
+        return
+      endif
 
  244  DO 10 IS=1,NZSUR(icomp)
         ioc=IZSTOCN(ICOMP,is)
@@ -1309,7 +1354,6 @@ C Remember this change by saving the file.....
 
 C Reset number of layers, if at end of loop it is still 0 then
 C the material was not found and must be asked for.
-        call eclose(matver,1.1,0.01,closemat)
         NE(IS)=0
         DO 20 IC=1,NMLC
           IF(DESC(IC)(1:12).EQ.SSMLCN(ioc))THEN
@@ -1318,24 +1362,36 @@ C the material was not found and must be asked for.
 
 C Gather information about each layer. Read in the materials db info.
             DO 23, IL=1,LAYERS(IC)
-              if(closemat)then
-                legmat=IPR(IC,IL)   ! which legacy index
-                if(legmat.ge.0)then
-                  matarrayindex=mathash(legmat)  ! find matching array index
+              matarrayindex=IPRMAT(IC,IL)   ! which array index
+              if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+                if(matarrayindex.eq.0)then
+                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                  E=0.99; A=0.99
+                  NAM='AIR'
+                else
                   DBCON=matdbcon(matarrayindex)
                   DBDEN=matdbden(matarrayindex)
                   DBSHT=matdbsht(matarrayindex)
                   E=matdbine(matarrayindex)
                   A=matdbina(matarrayindex)
-                  DRV=matdbdrv(matarrayindex)
-                  write(TITL,'(a)') 'placeholder'
                   write(NAM,'(a)') matname(matarrayindex)(1:32)
                 endif
-              else
-                CALL ERPCDB(IFMAT,IPR(IC,IL),iuout,IER,DBCON,DBDEN,
-     &             DBSHT,E,A,DRV,TITL,NAM)
-                IF(IER.EQ.1)RETURN
+
+C If g or h air gap and version 1.2 then assign DRAIR
+                if(matarrayindex.eq.0)then
+                  continue
+	        elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &                 matopaq(matarrayindex)(1:1).eq.'h')then
+                  if(closemat2)then
+                    DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
+                    DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
+                    DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
+                  endif
+                endif
               endif
+
               CON(IS,IL)=DBCON
               DEN(IS,IL)=DBDEN
               SHT(IS,IL)=DBSHT
@@ -1367,6 +1423,27 @@ C assign an appropriate U value to each air gap encountered.
                     RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
                   ENDIF
                 endif
+              ELSE
+                matarrayindex=IPRMAT(IC,IL)   ! which legacy index
+	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &             matopaq(matarrayindex)(1:1).eq.'h')then
+                  if(NAIRG(IS)+1.gt.MGP)then
+                    call usrmsg(
+     &               'This construction contains more air gaps than',
+     &               'allowed - please change your description','W')
+                  else
+                    NAIRG(IS)=NAIRG(IS)+1
+                    IPAIRG(IS,NAIRG(IS))=IL
+                    IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
+                      RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
+                    ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
+     &                     SSVFC(ioc)(1:4).EQ.'CEIL')THEN
+                      RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
+                    ELSE
+                      RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
+                    ENDIF
+                  endif
+                endif
               ENDIF
    23       CONTINUE
           ENDIF
@@ -1391,7 +1468,7 @@ C currently held in common blocks.
 C LTWIN is the name of the file to be written to (any existing file
 C by this name is overwritten).  ZNAME is the zone name (12 char), ICOMP
 C is the zone number.  ITRC= trace verbose level.
-C ITRU unit number for user output, IER=0 OK, IER=1 problem.
+C IER=0 OK, IER=1 problem.
 
 C Work out where the various definitive information sources should be
 C combined to create this file.  In essence we need to read through
@@ -1399,17 +1476,21 @@ C each of the existing surfaces and find the unique optical types which
 C exist in this zone.  Then for each of these we need to write out their
 C optical properties as gathered from the optical database.  Make use of
 C the number of composite layers to build this up.
-      SUBROUTINE MKTWIN(ITRU,IFU,ICOMP,QUIET,IER)
+      SUBROUTINE MKTWIN(IFU,ICOMP,QUIET,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
 
+C Parameter
+      integer IFU   ! file unit
+      integer ICOMP ! zone number
+      logical QUIET ! if true then no dialog
+      integer IER   ! if zero then ok
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1423,10 +1504,9 @@ C the number of composite layers to build this up.
       COMMON/TMCB2/NBCTMC(MCOM,MTMC),IBCST(MCOM,MBP,MTMC),
      &             IBCFT(MCOM,MBP,MTMC),IBCSUR(MCOM,MTMC)
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
-      logical QUIET,XST
+      logical XST
 
       dimension ival(MS)
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER H*72,TOPTIC*12,louts*248
 
 C If in quiet mode then the file should exist, but if it is not a 
@@ -1523,10 +1603,6 @@ C For each of the TMC types.
             WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
      &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
      &        '  # sensing lightswitch @ actuation point'
-          elseif(NBCTT(ICOMP,K,I).eq.5)then
-            WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
-     &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
-     &        '  # sensing phase change material state'
           elseif(NBCTT(ICOMP,K,I).eq.-99)then
             WRITE(IFU,'(I4,F6.1,A)',IOSTAT=ISTAT,ERR=98)
      &        NBCTT(ICOMP,K,I),BACTPT(ICOMP,K,I),
@@ -1577,6 +1653,8 @@ C through each of the existing surfaces and finds unique optical types.
       SUBROUTINE EDTWIN(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
 #include "geometry.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -1587,12 +1665,6 @@ C through each of the existing surfaces and finds unique optical types.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -1800,8 +1872,6 @@ C Display of current information...
             msg=' sensing daylight coeff.'
           elseif(NBCTT(ICOMP,KK,I).eq.4)then
             msg=' Lightswitch2002.'
-          elseif(NBCTT(ICOMP,KK,I).eq.5)then
-            msg=' sensing state of PCM'
           elseif(NBCTT(ICOMP,KK,I).eq.-99)then
             msg=' sensing time only'
           endif
@@ -1959,94 +2029,57 @@ C For each control period get the appropriate replacement properties.
           H(24)='    which the alternative optical properties will'
           H(25)='    be used. Two alternative lux calculation'
           H(26)='    approaches are offered.'
-          H(27)=' f) Phase change state - you specify the phase which'
-          H(28)='    the alternative optical properties are used.'
-          H(29)='    3 available options: solid, mixed, liquid.'  
-          H(30)=' '
-          H(31)='Note: there can be up to 8 control periods in a'
-          H(32)='day (all days within the simulation will be treated'
-          H(33)='the same).'
-          H(34)=' '
-          H(35)='The alternative optics must correspond to the same'
-          H(36)='number of layers as the initial set. It is a good'
-          H(37)='idea to prepare the alternative properties via the'
-          H(38)='Optical Properties db management facility prior to'
-          H(39)='using the transparent properties facility here.'
-          H(40)=' '
-          H(41)='Control of optical properties can be used to'
-          H(42)='approximate closing blinds/shutters and shading'
-          H(43)='devices.'
-          H(44)=' '
-          H(45)='If the model has an air flow network you might also'
-          H(46)='think about controlling any air flow components'
-          H(47)='associated with any transparent surfaces that have'
-          H(48)='been assigned optical property control. Note however'
-          H(49)='that the air flow control logic is different from'
-          H(50)='the optical property control logic so some care and'
-          H(51)='testing is required to ensure that optical and flow'
-          H(52)='control works together.'
+          H(27)=' '
+          H(28)='Note: there can be up to 8 control periods in a'
+          H(29)='day (all days within the simulation will be treated'
+          H(30)='the same).'
+          H(31)=' '
+          H(32)='The alternative optics must correspond to the same'
+          H(33)='number of layers as the initial set. It is a good'
+          H(34)='idea to prepare the alternative properties via the'
+          H(35)='Optical Properties db management facility prior to'
+          H(36)='using the transparent properties facility here.'
+          H(37)=' '
+          H(38)='Control of optical properties can be used to'
+          H(39)='approximate closing blinds/shutters and shading'
+          H(40)='devices.'
+          H(41)=' '
+          H(42)='If the model has an air flow network you might also'
+          H(43)='think about controlling any air flow components'
+          H(44)='associated with any transparent surfaces that have'
+          H(45)='been assigned optical property control. Note however'
+          H(46)='that the air flow control logic is different from'
+          H(47)='the optical property control logic so some care and'
+          H(48)='testing is required to ensure that optical and flow'
+          H(49)='control works together.'
           if(n3.eq.-99)then
-            idno=1
-            call MENUATOL(outs,'Controlled on: (currently time)',
-     &      'a time','b incident radiation','c ambient temp.',
-     &      'd zone temp.','e lux level','f LtSwitch',
-     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
-     &       52)
+            call EASKATOG('Controlled on:','(currently time)',
+     &      'time','incident radiation','ambient temp.','zone temp.',
+     &      'lux level','LtSwitch','cancel',IRT,49)
           elseif(n3.eq.0)then
-            idno=1
-            call MENUATOL(outs,'Controlled on: (currently radiation)',
-     &      'a time','b incident radiation','c ambient temp.',
-     &      'd zone temp.','e lux level','f LtSwitch',
-     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
-     &       52)          
+            call EASKATOG('Controlled on:','(currently radiation)',
+     &      'time','incident radiation','ambient temp.','zone temp.',
+     &      'lux level','LtSwitch','cancel',IRT,49)
           elseif(n3.eq.1)then
-            idno=1
-            call MENUATOL(outs,
-     &      'Controlled on: (currently ambient temp.)',
-     &      'a time','b incident radiation','c ambient temp.',
-     &      'd zone temp.','e lux level','f LtSwitch',
-     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
-     &       52)           
+            call EASKATOG('Controlled on:','(currently ambient temp.)',
+     &      'time','incident radiation','ambient temp.','zone temp.',
+     &      'lux level','LtSwitch','cancel',IRT,49)
           elseif(n3.eq.2)then
-            idno=1
-            call MENUATOL(outs,
-     &      'Controlled on: (currently zone temp.)',
-     &      'a time','b incident radiation','c ambient temp.',
-     &      'd zone temp.','e lux level','f LtSwitch',
-     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
-     &       52)              
+            call EASKATOG('Controlled on:','(currently zone temp.)',
+     &      'time','incident radiation','ambient temp.','zone temp.',
+     &      'lux level','LtSwitch','cancel',IRT,49)
           elseif(n3.eq.3)then
-            idno=1
-            call MENUATOL(outs,
-     &      'Controlled on: (currently daylight coef)',
-     &      'a time','b incident radiation','c ambient temp.',
-     &      'd zone temp.','e lux level','f LtSwitch',
-     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
-     &       52)                 
+            call EASKATOG('Controlled on:','(currently daylight coef)',
+     &      'time','incident radiation','ambient temp.','zone temp.',
+     &      'lux level','LtSwitch','cancel',IRT,49)
           elseif(n3.eq.4)then
-            idno=1
-            call MENUATOL(outs,
-     &      'Controlled on: (currently Lightswitch)',
-     &      'a time','b incident radiation','c ambient temp.',
-     &      'd zone temp.','e lux level','f LtSwitch',
-     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
-     &       52)          
-          elseif(n3.eq.5)then
-            idno=1
-            call MENUATOL(outs,
-     &      'Controlled on: (currently state of PCM)',
-     &      'a time','b incident radiation','c ambient temp.',
-     &      'd zone temp.','e lux level','f LtSwitch',
-     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
-     &       52)            
+            call EASKATOG('Controlled on:','(currently Lightswitch)',
+     &      'time','incident radiation','ambient temp.','zone temp.',
+     &      'lux level','LtSwitch','cancel',IRT,49)
           else
-            idno=1
-            call MENUATOL(outs,
-     &      'Controlled on: (currently undefined)',
-     &      'a time','b incident radiation','c ambient temp.',
-     &      'd zone temp.','e lux level','f LtSwitch',
-     &      'g Phase Change state','h cancel',' ',' ',' ',' ',IRT,idno,
-     &       52)            
+            call EASKATOG('Controlled on:','(currently undefined)',
+     &      'time','incident radiation','ambient temp.','zone temp.',
+     &      'lux level','LtSwitch','cancel',IRT,49)
           endif
           if(irt.eq.1)then
             NBCTT(ICOMP,ICP,IT)= -99
@@ -2055,25 +2088,25 @@ C For each control period get the appropriate replacement properties.
             NBCTT(ICOMP,ICP,IT)= 0
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Radiation set point?',
-     &      0.00,'W',1000.0,'W',0.0,'radiation set point',IER,52)
+     &      0.00,'W',1000.0,'W',0.0,'radiation set point',IER,49)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.3)then
             NBCTT(ICOMP,ICP,IT)= 1
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Ambient temp. set point?',
-     &      0.00,'W',1000.0,'W',0.0,'ambient set point',IER,52)
+     &      0.00,'W',1000.0,'W',0.0,'ambient set point',IER,49)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.4)then
             NBCTT(ICOMP,ICP,IT)= 2
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Zone temp. set point',
-     &      0.00,'W',1000.0,'W',0.0,'zone set point',IER,52)
+     &      0.00,'W',1000.0,'W',0.0,'zone set point',IER,49)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.5)then
             NBCTT(ICOMP,ICP,IT)= 3
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Lux set point',
-     &      0.00,'W',1000.0,'W',0.0,'lux set point',IER,52)
+     &      0.00,'W',1000.0,'W',0.0,'lux set point',IER,49)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.6)then
 
@@ -2081,16 +2114,9 @@ C << Do not know what sort of question is to be asked here! >>
             NBCTT(ICOMP,ICP,IT)= 4
             VAL=BACTPT(ICOMP,ICP,IT)
             CALL EASKR(VAL,' ','Lightswitch lux set point?',
-     &      0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',IER,52)
+     &      0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',IER,49)
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.7)then
-            NBCTT(ICOMP,ICP,IT)= 5
-            VAL=BACTPT(ICOMP,ICP,IT)
-            CALL EASKR(VAL,' ',
-     &      'State of PCM (1.0=solid 2.0=liquid 3.0=mixed)',
-     &      1.00,'W',3.0,'W',0.0,'phase change PCM',IER,52)
-            BACTPT(ICOMP,ICP,IT)=VAL
-          elseif(irt.eq.8)then
             return
           ENDIF
           NTL=NGLAZ(IT)
@@ -2240,6 +2266,7 @@ C Loop through referenced mlc and derives the longest timeconstant.
       subroutine scntcnst(TDM,istd,TCM,ISTC)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -2250,39 +2277,27 @@ C Loop through referenced mlc and derives the longest timeconstant.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
 c ITCNST  - number of start-up days
       COMMON/PREC7/ITCNST
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
 
-      character NAM*72,TITL*72,outs*124
+      character outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character MLCN*12,SSPARENT*12
-      logical found,closemat
+      logical found,closemat1,closemat2
+
+C Establish if material data arrays have been filled. If not return
+C with ier=1.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so time',
+     &    'constant of constructions could not be established.','W')
+        return
+      endif
 
 C Loop mlc db, if some surface references it, read properties for
 C each layer and keep track of time constant.
@@ -2303,24 +2318,20 @@ c homogeneous layer.
           endif
   42    continue
   43    if(found)then
-          call eclose(matver,1.1,0.01,closemat)
           RES=0.
           CAP=0.
           DO 45 il=1,LAYERS(ic)
-            if(closemat)then
-              legmat=IPR(IC,IL)   ! which legacy index
-              if(legmat.ge.0)then
-                matarrayindex=mathash(legmat)  ! find matching array index
+            matarrayindex=IPRMAT(IC,IL)   ! which array index
+            if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+              if(matarrayindex.eq.0)then
+                DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              elseif(matarrayindex.gt.0)then
                 DBCON=matdbcon(matarrayindex)
                 DBDEN=matdbden(matarrayindex)
                 DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                DRV=matdbdrv(matarrayindex)
               endif
-            else
-              CALL ERPCDB(IFMAT,IPR(ic,il),IUOUT,IER,DBCON,DBDEN,
-     &           DBSHT,E,A,DRV,TITL,NAM)
             endif
 
 C Get properties for outer layer.

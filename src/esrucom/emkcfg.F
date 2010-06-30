@@ -29,6 +29,8 @@ C common blocks into the file and unit specified in COMMON/C21.
       SUBROUTINE EMKCFG(act,IER)
 
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "uncertainty.h"
@@ -47,7 +49,10 @@ C ICLIM,LCLIM (for climate file)
 #include "sbem.h"
 #include "roam.h"
 #include "CFC_common.h"
+#include "ipvdata.h"
+#include "seasons.h"
       PARAMETER (MSTMC=20,MSGAL=40)
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -57,23 +62,9 @@ C ICLIM,LCLIM (for climate file)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
-      COMMON/C4/XLAT,XLON
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
-      COMMON/C5R/SKYR,GRDR,BLDR
       COMMON/C6/INDCFG
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -156,17 +147,8 @@ C Primary energy and emissions conversions.
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-
-C Project demands (lifts/fans/DHW).
-      COMMON/BL1/dmdsdesc,bdmds
 
 C CPCALC description
       common/CPCALC/icpcon,ble,bwi,bhi,blox,bloy,bloz,orient,irt,ra,
@@ -175,6 +157,19 @@ C CPCALC description
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
+
+C Strings associated with one climatelist item.
+C clmlnam (char*32) is the selection list string
+C clmlaid is aide (char*72) memoire for list item
+C clmldbfile (char*144) is the climate file (with path info)
+C clmlavail (char*10) is either ONLINE or OFFLINE
+C clmlhelp (char*72) is array of help strings
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
+      common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
+
+C Numbers associated with one climatelist item.
+      common/clmlnum/nbclmlhelp
 
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
@@ -253,14 +248,18 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       common/CWEC_SOL/iSlr_half_hr_flg
       integer iSlr_half_hr_flg     
 
+C When iexcludediff_flag is 1, diffuse shading is excluded. 
+C If 0 then the calculation includes diffuse shading.      
+      integer iexcludediff_flag
+      common/excludediff/iexcludediff_flag
+
       CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
 
-      CHARACTER*72 LCFGF,LCNN
+      CHARACTER LCFGF*72
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72,LTDF*72,LTDFA*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       character lradcf*72
       CHARACTER ctldoc*248,LCTLF*72,H*72
@@ -271,14 +270,16 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      CHARACTER dmdsdesc*248,bdmds*72,outs*124
+      CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,ltmp*72,louts*144
       character bidirfile*72,bidirname*12
       character calename*32,calentag*12,calendayname*32,loutc*96
       character LWndSupp*72
       CHARACTER CNTMFIL*72,CONTMNAM*12,CNTMDESC*124
-
+      character descr*7,descrst*10,descrfn*10  ! for season dates
+      character descrst1*10,descrfn1*10        ! for 2nd season dates
+      
 C An array of mass flow nodes for writing.
       CHARACTER NDNAM*12
       character namen*12
@@ -286,6 +287,7 @@ C An array of mass flow nodes for writing.
 
       character act*1  ! a '-' is normal use, a 's' is silent
       character ipvaction*3  ! to instruct mkipv to do it within cfg file
+      character tab*1  ! a literal tab character
 
       dimension iav(60)
 
@@ -321,12 +323,13 @@ C code in edcfg to trap updates following on from other modifications).
         h(3)='created or updated after 1996 should use the V3. '
         h(4)=' '
         h(5)='The version 4 format includes within the cfg file '
-        h(6)='some data held in separate files. '
-        h(7)=' '
-        h(8)='Both V3 and V4 files can support newer format '
-        h(9)='geometry and obstruction data. '
+        h(6)='some data held in separate files and uses newer '
+        h(7)='(free format) version of zone geometry files.'
+        h(8)=' '
+        h(9)='Both V3 and V4 files can support newer format '
+        h(10)='geometry and obstruction data. '
         CALL EASKAB(' Configuration file loaded was in old format.',
-     &    ' save in:','current format','cancel',IW,9)
+     &    ' save in:','current format','cancel',IW,10)
         if(IW.EQ.2)then
           call edisp(iuout,'Configuration not being updated.')
           return
@@ -334,7 +337,7 @@ C code in edcfg to trap updates following on from other modifications).
 
 C If no model root name has been set, make from configuration file.
 C If filename > 4 char it might have a .cfg attached.
-          icfgv=3     ! if upgrading do it to this intermediate version
+          icfgv=4     ! if upgrading use version 4
           lcfgr=lnblnk(LCFGF)
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then
@@ -373,7 +376,38 @@ C Also check about connections file.
             else
               GOTO 290
             endif
+          elseif(ncon.eq.0.and.indcfg.gt.0)then
+
+C If emkcfg was called from ecnv with an initial registration model
+C that had no zones but where indcfg had already been reset to one
+C then we need to know the name of the connections file.
+            write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
           endif
+        endif
+      elseif(icfgv.ge.3)then
+
+C Also check about connections file if in interactive mode.
+        if(ncon.gt.1)then
+          if(act.eq.'-'.and.LCNN(1:4).eq.'UNKN')then
+  292       H(1)='The surface topology of the model is held'
+            H(2)='in a connections file.'
+            write(LCNN,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.cnn'
+            DCNN=LCNN
+            ltmp=LCNN
+            CALL EASKS(ltmp,' Connections file name?',' ',
+     &        72,DCNN,'system connx file name',IER,2)
+            if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+              LCNN=ltmp
+            else
+              GOTO 292
+            endif
+          endif
+        elseif(ncon.eq.0.and.indcfg.gt.0)then
+
+C If emkcfg was called from ecnv with an initial registration model
+C that had no zones but where indcfg had already been reset to one
+C then we need to know the name of the connections file.
+          write(LCNN,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.cnn'
         endif
       endif
 
@@ -457,21 +491,38 @@ C Begin writing the file with version number in the header.
      &  indxcmt(1:lnblnk(indxcmt))
   30  FORMAT('# ESRU system configuration defined by file ',/,'# ',A)
 
-      WRITE(IFCFG,800,IOSTAT=IOS,ERR=2) XLAT,XLON
+      WRITE(IFCFG,800,IOSTAT=IOS,ERR=2) sitelat,sitelongdif
  800  FORMAT(F7.3,2X,F7.3,
-     &  '   # Latitude & Longitude (diff from meridian)')
+     &  '   # Latitude & Longitude (diff from time meridian)')
 
-      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) IXPOS,GREF
+      WRITE(IFCFG,8001,IOSTAT=IOS,ERR=2) siteexposureindex,groundrefl
 8001  FORMAT(I7,2X,F6.3,'   # Site exposure & ground reflectivity')
-      IF(IXPOS.EQ.8)WRITE(IFCFG,'(3F8.3,A)',IOSTAT=IOS,ERR=2)
-     &           SKYR,GRDR,BLDR,'   # views to sky ground buildings'
+      IF(siteexposureindex.EQ.8)
+     &  WRITE(IFCFG,'(3F8.3,A)',IOSTAT=IOS,ERR=2)
+     &    skyview,groundview,buildingview,
+     &    '   # views to sky ground buildings'
 
 C Write databases related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* DATABASES'
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prm  ',
+
+C Material database has the option of two different syntax to
+C reflect whether the standard database folder is being used.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mat  ',
      &      LFMAT(1:lnblnk(LFMAT))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
+      elseif(ipathmat.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmat  ',
+     &      LFMAT(1:lnblnk(LFMAT))
+      endif
+
+C MLC database has the option of two different syntax.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mlc  ',
      &      LFMUL(1:lnblnk(LFMUL))
+      elseif(ipathmul.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmlc  ',
+     &      LFMUL(1:lnblnk(LFMUL))
+      endif
 
 C Optical database has the option of two different syntax to
 C reflect whether the standard database folder is being used.
@@ -492,29 +543,39 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdprs  ',
      &      LAPRES(1:lnblnk(LAPRES))
       endif
-C      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*prs  ',
-C     &      LAPRES(1:lnblnk(LAPRES))
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*evn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
+      elseif(ipathprodb.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdevn  ',
+     &      LPRFDB(1:lnblnk(LPRFDB))
+      endif
       WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
-
+      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+      elseif(ipathmsc.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmscldb  ',
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+      endif
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)
-      IF(ITGREF.NE.1) WRITE(IFCFG,803) '*gref ',ITGREF,
-     &      (GREF12(I),I=1,12),SREF
+      IF(groundreflmodel.GT.1) WRITE(IFCFG,803) '*gref ',
+     &   groundreflmodel,(groundreflmonth(I),I=1,12),snowgroundrefl
   803 FORMAT(A,I1,13(1X,F5.3))
 
 C Number of days with snow on the ground 
 C (if ground reflectivity model 2)
-      IF(ITGREF.EQ.2) WRITE(IFCFG,805) '*snow',(NSNOW(I),I=1,12)
+      IF(groundreflmodel.EQ.2)  
+     &  WRITE(IFCFG,805) '*snow',(dayswithsnow(I),I=1,12)
   805 FORMAT(A,12(1X,I2))
 
 C Snow depth file
 C (if ground reflectivity model 3)
-      IF(ITGREF.EQ.3) WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*sndf ',
-     &      SNFNAM(1:lnblnk(SNFNAM))
+      IF(groundreflmodel.EQ.3) WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) 
+     &  '*sndf ',SNFNAM(1:lnblnk(SNFNAM))
 
 C Multiyear climate database
       if ( bMY_climates_defined ) then 
@@ -595,6 +656,12 @@ C Solar radiation (half hour data) flag.
      &    iSlr_half_hr_flg,'  # solar timing half-hour centred'
       endif
 
+C Diffuse shading flag.
+      if(iexcludediff_flag.eq.1)then
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exlude_diff_shad  ',
+     &    iexcludediff_flag,'  # diffuse shading is excluded'
+      endif      
+      
 C SHOCC: library file.
       IF ( bSHOCCed ) then
          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*shl  ',
@@ -682,13 +749,95 @@ C Write alternative definition of weekends if not default.
         WRITE(IFCFG,'(a,2I3,a)',IOSTAT=IOS,ERR=2) '*weekend  ',
      &    idwe1,idwe2,' # alt weekend def'
       endif
+
+C If there is a seasonal definition associated with the climate
+C file (e.g. user defined or via climate list).  This block of
+C code might be a << good one to place in a separate subroutine >>
+C and used by various facilities.
+      if(ihaveseason.gt.0)then
+        tab=CHAR(9) 
+        write(IFCFG,'(a)')'*seasons'
+        write(IFCFG,'(3a)')'*name',tab,clmlnam(1:lnblnk(clmlnam))
+        write(IFCFG,'(3a)')'*aide',tab,clmlaid(1:lnblnk(clmlaid))
+        call edayr(is1wins,id1,im1)
+        call edayr(is1winf,id2,im2)
+        call edayr(is2wins,id3,im3)
+        call edayr(is2winf,id4,im4)
+        call stdate(iyear,is1wins,descr,descrst)
+        call stdate(iyear,is1winf,descr,descrfn)
+        call stdate(iyear,is2wins,descr,descrst1)
+        call stdate(iyear,is2winf,descr,descrfn1)
+        write(IFCFG,'(a,8i3,8a)')'*winter_s',id1,im1,id2,im2,id3,im3,
+     &    id4,im4,' # seasons ',descrst,'--',descrfn,' & ',descrst1,
+     &    '--',descrfn1
+        call edayr(is1sprs,id1,im1)
+        call edayr(is1sprf,id2,im2)
+        call edayr(is2sprs,id3,im3)
+        call edayr(is2sprf,id4,im4)
+        call stdate(iyear,is1sprs,descr,descrst)
+        call stdate(iyear,is1sprf,descr,descrfn)
+        call stdate(iyear,is2sprs,descr,descrst1)
+        call stdate(iyear,is2sprf,descr,descrfn1)
+        write(IFCFG,'(a,8i3,8a)')'*spring_s',id1,im1,id2,im2,id3,im3,
+     &    id4,im4,' # seasons ',descrst,'--',descrfn,' & ',descrst1,
+     &    '--',descrfn1
+        call edayr(is1sums,id1,im1)
+        call edayr(is1sumf,id2,im2)
+        call stdate(iyear,is1sums,descr,descrst)
+        call stdate(iyear,is1sumf,descr,descrfn)
+        write(IFCFG,'(a,4i3,4a)')'*summer_s',id1,im1,id2,im2,
+     &    ' # summer season ',descrst,'--',descrfn
+        call edayr(ia1wins,id1,im1)
+        call edayr(ia1winf,id2,im2)
+        call edayr(ia2wins,id3,im3)
+        call edayr(ia2winf,id4,im4)
+        call stdate(iyear,ia1wins,descr,descrst)
+        call stdate(iyear,ia1winf,descr,descrfn)
+        call stdate(iyear,ia2wins,descr,descrst1)
+        call stdate(iyear,ia2winf,descr,descrfn1)
+        write(IFCFG,'(a,8i3,8a)')'*winter_t',id1,im1,id2,im2,id3,im3,
+     &    id4,im4,' # typical ',descrst,'--',descrfn,' & ',descrst1,
+     &    '--',descrfn1
+        call edayr(ia1sprs,id1,im1)
+        call edayr(ia1sprf,id2,im2)
+        call edayr(ia2sprs,id3,im3)
+        call edayr(ia2sprf,id4,im4)
+        call stdate(iyear,ia1sprs,descr,descrst)
+        call stdate(iyear,ia1sprf,descr,descrfn)
+        call stdate(iyear,ia2sprs,descr,descrst1)
+        call stdate(iyear,ia2sprf,descr,descrfn1)
+        write(IFCFG,'(a,8i3,8a)')'*spring_t',id1,im1,id2,im2,id3,im3,
+     &    id4,im4,' # typical ',descrst,'--',descrfn,' & ',descrst1,
+     &    '--',descrfn1
+        call edayr(iasums,id1,im1)
+        call edayr(iasumf,id2,im2)
+        call stdate(iyear,iasums,descr,descrst)
+        call stdate(iyear,iasumf,descr,descrfn)
+        write(IFCFG,'(a,4i3,4a)')'*summer_t',id1,im1,id2,im2,
+     &    ' # typical summer ',descrst,'--',descrfn
+        write(IFCFG,'(a)')'*help_start'
+        if(nbclmlhelp.eq.0)then
+          write(IFCFG,'(a)')' Supporting text has yet to be entered.'
+        else
+          do 442 ij=1,nbclmlhelp
+            write(IFCFG,'(a)') clmlhelp(ij)(1:lnblnk(clmlhelp(ij)))
+ 442      continue
+        endif
+        write(IFCFG,'(a)')'*season_end'
+      endif
+
       WRITE(IFCFG,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',
      &  IYEAR,' # assessment year'
 
-C If SBEM compliance checking is active write name of NCM file.
+C If SBEM compliance checking is active write name of NCM file if
+C it is something other than UNKNOWN.
       IF(ISBEM.EQ.1)THEN
-        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',
-     &    LASBEM(1:lnblnk(LASBEM))
+        if(LASBEM(1:4).eq.'UNKN')then
+          continue
+        else
+          WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ncm  ',
+     &      LASBEM(1:lnblnk(LASBEM))
+        endif
       ENDIF
       IF(INOTI.EQ.1)THEN
         WRITE(OUTS,'(2A)')'*not # UK NCM notional model (10% thermal',
@@ -762,6 +911,7 @@ C it in the configuration file.
 C Use call mkipvdat to write into the cfg file and then clear name of
 C the external IPV file (also notify the user they can remove it).
           ipvaction='cfg'
+	  if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
           call mkipvdat(ifcfg,LCFGF,ipvaction)
           if(lnipv.eq.0)then
             continue
@@ -1036,7 +1186,8 @@ C 3D ground files.
 
 C If registration.
       if(INDCFG.EQ.0)then
-        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) LSNAM(1:lnblnk(LSNAM))
+        WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) 
+     &    modeltitle(1:lnblnk(modeltitle))
         goto 9028
       endif
 
@@ -1044,7 +1195,8 @@ C If plant only jump.
       IF(INDCFG.EQ.2)GOTO 9021
 
 C Fabric portion of description.
-      WRITE(IFCFG,5006,IOSTAT=IOS,ERR=2) LSNAM(1:lnblnk(LSNAM))
+      WRITE(IFCFG,5006,IOSTAT=IOS,ERR=2) 
+     &  modeltitle(1:lnblnk(modeltitle))
  5006 FORMAT('* Building',/,A)
 
       WRITE(IFCFG,'(I7,A)',IOSTAT=IOS,ERR=2) NCOMP,'  # no of zones'
@@ -1134,33 +1286,14 @@ C BSIMP
 
 C Write connection information.
       WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2)
-     &  '*cnn  ',LCNN(1:lnblnk(LCNN)),'  # connections '
-      CALL EFOPSEQ(IUF,LCNN,3,IER)
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=2) '*connections  for ',
-     &  cfgroot(1:lnblnk(cfgroot))
-      call dstamp(dstmp)
-      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) '*Date ',dstmp
-      WRITE(IUF,'(I7,A)',IOSTAT=IOS,ERR=2)
-     &  NCON,'   # number of connections'
-
-      DO 930 I = 1,NCON
-        CALL CONXINF(1,I,CXSTR)
-        WRITE(IUF,'(5I4,2A)',IOSTAT=IOS,ERR=2) IC1(I),IE1(I),
-     &    ICT(I),IC2(I),IE2(I),'  # ',CXSTR(1:lnblnk(CXSTR))
-
-        IF(ICT(I).NE.4.OR.IC2(I).GT.0)GOTO 930
-        if(IE2(I).GT.NGRDP)then
-           CALL edisp(iuout,
-     &      'Ground connection referenced an unknown monthly profile!')
-        endif
-  930 CONTINUE
+     &  '*cnn ',LCNN(1:lnblnk(LCNN)),'  # connections'
 
 C Re-build zone:surface to connection hash array.
-      CALL ERPFREE(IUF,IOS)
       do 43 icc = 1, NCON
         IZSTOCN(IC1(icc),IE1(icc))=icc
  43   continue
 
+C If there is more than one anchor concept write them out.
       if(NALOC.gt.0)then
         WRITE(IFCFG,'(A,i3)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
         do 44 ia=1,NALOC
@@ -1182,11 +1315,15 @@ C Write packed string of the items associated with each anchor.
         WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=3) '*End'
       endif
 
-C Write airflow model description
-      IF(IAIRN.EQ.0)WRITE(IFCFG,807,IOSTAT=IOS,ERR=2)IAIRN
-      IF(IAIRN.ge.1)WRITE(IFCFG,808,IOSTAT=IOS,ERR=2)IAIRN
-  807 FORMAT(I7,'   # no fluid flow network')
-  808 FORMAT(I7,'   # fluid flow network:  ')
+C Write airflow model indes and then its description.
+      if(IAIRN.EQ.0)then
+        WRITE(IFCFG,'(i4,a)',IOSTAT=IOS,ERR=2)IAIRN,
+     &    '   # no fluid flow network'
+      elseif(IAIRN.ge.1)then
+        WRITE(IFCFG,'(i4,a)',IOSTAT=IOS,ERR=2)IAIRN,
+     &    '   # fluid flow network:'
+      endif
+
       IF(IAIRN.ge.1)then
 
 C Make up an array of node names to write out substituting a
@@ -1211,6 +1348,7 @@ C zero where there is no association.
         end do
 
       endif
+
  9021 if(INDCFG.EQ.2.or.INDCFG.EQ.3)then
 
 C Plant network information - plant file and model name (if plant only).
@@ -1218,11 +1356,38 @@ C Plant network information - plant file and model name (if plant only).
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2)LPNF(1:lnblnk(LPNF)),
      &    '  # plant network description'
         if(INDCFG.EQ.2)then
-          WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2) lsnam(1:lnblnk(lsnam))
+          WRITE(IFCFG,'(a)',IOSTAT=IOS,ERR=2) 
+     &      modeltitle(1:lnblnk(modeltitle))
         endif
       endif
 
- 9028 CALL  ERPFREE(IFCFG,IOS)
+C This is all there is to write so close the files.
+ 9028 CALL ERPFREE(IFCFG,IOS) ! free the cfg file unit
+
+C Now write the connections file if there are any.
+      if(ncon.gt.0)then
+        CALL EFOPSEQ(IUF,LCNN,3,IER)
+        WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=2) '*connections for ',
+     &    cfgroot(1:lnblnk(cfgroot))
+        call dstamp(dstmp)
+        WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) '*Date ',dstmp
+        WRITE(IUF,'(I7,A)',IOSTAT=IOS,ERR=2)
+     &    NCON,'   # number of connections'
+
+        DO 930 I = 1,NCON
+          CALL CONXINF(1,I,CXSTR)
+          WRITE(IUF,'(5I4,2A)',IOSTAT=IOS,ERR=2) IC1(I),IE1(I),
+     &      ICT(I),IC2(I),IE2(I),'  # ',CXSTR(1:lnblnk(CXSTR))
+
+          IF(ICT(I).NE.4.OR.IC2(I).GT.0)GOTO 930
+          if(IE2(I).GT.NGRDP)then
+            CALL edisp(iuout,
+     &      'Ground connection referenced an unknown monthly profile!')
+          endif
+  930   CONTINUE
+        CALL ERPFREE(IUF,IOS)   ! free the cnn file unit
+      endif
+
       RETURN
 
 C Error messages.
@@ -1363,9 +1528,13 @@ C CEN 13791 boundary condition.
       END
 
 C ****** Scan and report current mis-matches.
-      subroutine ckcurmatch(prob,iprob,ier)
+      subroutine ckcurmatch(prob,iprob)
 #include "building.h"
 #include "geometry.h"
+
+C Parameters
+      logical prob  ! true if there is a problem
+      integer iprob ! number of mis-matches detected
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -1374,7 +1543,7 @@ C ****** Scan and report current mis-matches.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      logical prob,dup,first
+      logical dup,first
 
       CHARACTER CXSTR*78
 

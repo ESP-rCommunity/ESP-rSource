@@ -86,6 +86,7 @@ C providing paramaters MGDB,MGCL,MGIT
 C Logical noting whether it was possible to open legacy material
 C database to get IR and solar properties.
       logical scanmat
+      integer ier
 
 C Initialise variables.
       call clrgdbc(idbh)
@@ -120,6 +121,7 @@ C Initialise variables.
 C The binary file will be overwritten.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
+      ier=0
       call EFOPRAN(IFB,BFIL,idbw,4,IER)
       if(ier.ne.0)then
         call edisp(iuout,'error opening binary file')
@@ -151,6 +153,7 @@ C values for the inside and outside solar and IR.
       IF(LTMP.EQ.' ')GOTO 29
       IFMAT=IFIL
       call ERPFREE(IFMAT,IOS)
+      ier=0
       call EFOPRAN(IFMAT,LTMP,40,1,IER)
       if(ier.ne.0)then
         othir=0.90
@@ -222,6 +225,10 @@ C Match the following 4 lines to instanitm in dbmedit.F
           CALL STRIPC(IFA,OUTSTR,99,ND,1,'layer',IER)
           IF(IER.NE.0)RETURN
           K=0
+
+C << note this subroutine assumes that the model is associated
+C << with a binary version of the materials database. It must
+C << be updated to use the material array structures.
 
 C Crate tag for material and reference tag for material db entry.
 C If legacy material db was opened then scan for ir and sol values.
@@ -357,8 +364,10 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in pressc file is ',lastr(idbh),
-     &  lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in pressc file is ',lastr(idbh),
+C     &  lastr(idbh)+1
 
 C Close file before exiting.
       call ERPFREE(IFMAT,IOS)
@@ -418,6 +427,7 @@ C IFB as the binary channel.
       character dstmp*24,T12*12,D12*12,lcatype*1
       character acoutag*12,colormtag*12,lcatag*12
       real misc1,misc2
+      integer ier
 
 C Initialise variables.
       call clrgdbc(idbh)
@@ -454,6 +464,7 @@ C Clear database level help and classes.
 C The binary file will be overwritten.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
+      ier=0
       call EFOPRAN(IFB,BFIL,idbw,4,IER)
       if(ier.ne.0)then
         call edisp(iuout,'error opening binary file')
@@ -698,7 +709,9 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in gdb file is ',lastr(idbh),lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in gdb file is ',lastr(idbh),lastr(idbh)+1
 
 C Close file before exiting.
       CALL ERPFREE(IFA,IOS)
@@ -755,6 +768,7 @@ C IFB as the binary channel.
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
       character dstmp*24,setn*40
+      integer ier
 
 C Initialise variables.
       call clrgdbc(idbh)
@@ -783,6 +797,7 @@ C Initialise variables.
 C The binary file will be overwritten.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
+      ier=0
       call EFOPRAN(IFB,BFIL,idbw,4,IER)
       if(ier.ne.0)then
         call edisp(iuout,'error opening binary file')
@@ -903,8 +918,10 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in pressc file is ',lastr(idbh),
-     &  lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in pressc file is ',lastr(idbh),
+C     &  lastr(idbh)+1
 
 C Close file before exiting.
       CALL ERPFREE(IFA,IOS)
@@ -933,6 +950,13 @@ C not actually used.
  
       subroutine improfl(IFA,AFIL,IFB,BFIL,idbh,IER)
 #include "esprdbfile.h"
+#include "profile.h"
+
+C << introduce concept of profiles with multiple day types as well
+C << as multiple casual gain types
+
+C << also consider that periods can be defined as reals and only
+C << the start of period held
       
       integer lnblnk  ! function definition
 
@@ -955,11 +979,7 @@ C not actually used.
       common/gendb8c/nbitusc(MGIT),nbitdat(MGIT),
      &               nbitrep(MGIT),ibitusc(MGIT)
 
-C Event profiles common blocks.
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40
+C Event profiles common blocks via profile.h.
 
       dimension DayT(72),ST(72),FN(72),A(72),B(72),C(72)
       dimension Patr(72)
@@ -973,6 +993,7 @@ C Event profiles common blocks.
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
       character dstmp*24,DayT*8,Patr*8
+      integer ier
 
 C Initialise variables.
       call clrgdbc(idbh)
@@ -1000,6 +1021,7 @@ C Initialise variables.
 C The binary file will be overwritten.
       CALL ERPFREE(IFB,IOS)
       idbw=idbwidth(idbh)
+      ier=0
       call EFOPRAN(IFB,BFIL,idbw,4,IER)
       if(ier.ne.0)then
         call edisp(iuout,'error opening binary file')
@@ -1129,8 +1151,10 @@ C End of db, complete the headder. First update all cat and item pointers.
      &  idbwidth(idbh),nbunit(idbh),nbsrc(idbh),nbcat(idbh),
      &  nbitem(idbh),nbdbdoc(idbh),lastr(idbh)
       call tagend(IFB,idbh,ier)
-      write(6,*) 'last record in profile file is ',lastr(idbh),
-     &  lastr(idbh)+1
+
+C Debug.
+C      write(6,*) 'last record in profile file is ',lastr(idbh),
+C     &  lastr(idbh)+1
 
 C Close file before exiting.
       CALL ERPFREE(IFA,IOS)
@@ -1153,7 +1177,7 @@ C Close file before exiting.
 C ************* MKAPRC (copy from edcondb.F)
 C MKAPRC: Creates an ascii materials db based on the
 C current contents of binary file.
-      SUBROUTINE MKAPRC(ITRU,LASCI,IFA,IER)
+      SUBROUTINE MKAPRC(LASCI,IFA,IER)
 #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
@@ -1163,9 +1187,11 @@ C current contents of binary file.
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION ICLN(30),VAL(6)
       CHARACTER IDESC*72,NDESC*72,LASCI*72
+      integer ier
 
 C Open the binary materials database (in clase it was closed elsewhere).
       CALL ERPFREE(IFMAT,ISTAT)
+      ier=0
       call EFOPRAN(IFMAT,LFMAT,40,1,IER)
       if(ier.ne.0)return
       MATDBOK=.TRUE.
@@ -1223,16 +1249,15 @@ C NOTE LASCI is 72 char. This is called only by esrudbm.
       SUBROUTINE TROPRO(IFA,LASCI,IER)
 #include "esprdbfile.h"
 #include "espriou.h"
+#include "profile.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40,LASCI*72
+      CHARACTER LASCI*72
       character ermsg*48   ! for read error messages
       character outs*124   ! string buffer for messages
+      integer ier
 
       IER =0
 

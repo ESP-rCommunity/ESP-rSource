@@ -60,6 +60,7 @@ C Defaults.
       logical XST,OK,DOK
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer ier
 
 C Initiates filling of valid fluid flow component type arrays
       CALL MFCDAT
@@ -148,8 +149,6 @@ C reason IAPRES is still zero then set to 11.
      &    96,DAPRES,'pressure coef database',IER,3)
       endif
 
-C  288 CALL EASKS(LAPRES,' Wind pressure coefficients db ? ',' ',
-C     &     72,DAPRES,'pressure db',IER,4)
       IF(LLTMP.EQ.' ')GOTO 288
       LAPRES=lltmp
       CALL EFOPSEQ(IAPRES,LAPRES,1,IER)
@@ -176,16 +175,35 @@ C Assign climate file and read year number.
       H(5)='from north (clockwise), and relative humidity in '
       H(6)='percent.  It also holds latitude, longitude difference'
       H(7)='from the nearest time zone and the year represented.'
-      LTMP=LCLIM
-      CALL EASKS(LTMP,' Climate file ? ',
-     &     ' ',72,DCLIM,'climate file',IER,7)
+      lltmp=LCLIM
+      llt=lnblnk(lltmp)
+      iglib = igraphiclib()
+      if(iglib.eq.1.or.iglib.eq.3)then
+        if(llt.lt.96)then
+          CALL EASKF(lltmp,' ','Climate file?',
+     &      96,DCLIM,'climate file',IER,3)
+        elseif(llt.ge.96.and.llt.lt.124)then
+          CALL EASKF(lltmp,' ','Climate file?',
+     &      124,DCLIM,'climate file',IER,3)
+        elseif(llt.ge.124.and.llt.le.144)then
+          CALL EASKF(lltmp,' ','Climate file?',
+     &      144,DCLIM,'climate file',IER,3)
+        endif
+      elseif(iglib.eq.2)then
+        CALL EASKF(lltmp,' ','Climate file?',
+     &    144,DCLIM,'climate file',IER,3)
+      else
+        CALL EASKF(lltmp,' ','Climate file?',
+     &    96,DCLIM,'climate file',IER,3)
+      endif
       CALL ERPFREE(IFCLM,ISTAT)
-      call EFOPRAN(IFCLM,LTMP,144,1,IER)
+      ier=0
+      call EFOPRAN(IFCLM,lltmp,144,1,IER)
       IF(ier.eq.0)THEN
         READ(IFCLM,REC=366,ERR=999) IRY
-        LCLIM=LTMP
+        LCLIM=lltmp
       ELSE
-        CALL USRMSG(' Could not find ',LTMP,'W')
+        CALL LUSRMSG(' Could not find ',lltmp,'W')
         goto 40
       ENDIF
 

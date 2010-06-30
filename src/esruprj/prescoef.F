@@ -335,6 +335,7 @@ C should calculate pressure coefficients.
       SUBROUTINE EDCPFAC(IER)
 #include "epara.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "net_flow.h"
 #include "prj3dv.h"
@@ -351,10 +352,6 @@ C should calculate pressure coefficients.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -381,6 +378,13 @@ C should calculate pressure coefficients.
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV)
       DIMENSION VP(3),EP(3),EQN(4),TMAT(4,4),RMAT(4,4)
+      real DX1,DZ1  ! to avoid name clash in geometry.h
+      
+#ifdef OSI
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
 
 C Initialise facade coordinates menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -579,7 +583,7 @@ C Manual input of cordinates.
           IUF=IFIL+1
           call eclose(gversion(IC),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LGEOM(IC),IC,1,0,iuout,IER)
+            call georead(IUF,LGEOM(IC),IC,1,iuout,IER)
           else
             call egomin(IUF,LGEOM(IC),IC,1,0,iuout,IER)
           endif
@@ -618,19 +622,19 @@ C selected to a thick line.
           CALL ADJVIEW(IER)
 
 C Ask for x offset.
-          DX=1.0
+          DX1=1.0
           H(1)='The X offset is the horizontal distance from the '
           H(2)='lower left corner of the surface (looking from'
           H(3)='the outside) to the considered point.'
-          CALL EASKR(DX,' ',' X offset: ? ',
+          CALL EASKR(DX1,' ',' X offset: ? ',
      &       0.1,'-',99.9,'-',1.0,'X offset',IER,3)
 
 C Ask for z offset.
-          DZ=1.0
+          DZ1=1.0
           H(1)='The Z offset is the vertical distance from the '
           H(2)='lower left corner of the surface (looking from'
           H(3)='the outside) to the considered point.'
-          CALL EASKR(DZ,' ',' Z offset: ? ',
+          CALL EASKR(DZ1,' ',' Z offset: ? ',
      &         0.1,'-',99.9,'-',1.0,'Z offset',IER,3)
 
 C Make up XX,YY,ZZ to the transform routine.
@@ -658,16 +662,16 @@ C Transform all points in surface and find lower left corner.
             IF(X1.LT.XMIN)XMIN=X1
             IF(Y1.LT.YMIN)YMIN=Y1
  300      CONTINUE
-          XMIN=XMIN+DX
-          YMIN=YMIN+DZ
+          XMIN=XMIN+DX1
+          YMIN=YMIN+DZ1
           CALL ORTTRN(XMIN,YMIN,ZZZ,RMAT,XXDP,YYDP,ZZDP,IERR)
           COG1(1)=XXDP
           COG1(2)=YYDP
           COG1(3)=ZZDP
           CALL VECTRN(COG1,TEMAT,COG2,IER)           
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),ix,iy)
-          CALL ecirc(ix,iy,3,1)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL ecirc(iix,iiy,3,1)
           call forceflush()
           write(t28,'(3(a,F6.2))')'x=',XXDP,', y=',YYDP,', z=',ZZDP
           dok=.true.
@@ -707,7 +711,7 @@ C Open geometry file for surface property check.
           do 46 IZU=1,NCOMP
             call eclose(gversion(IZU),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IUF,LGEOM(IZU),IZU,1,0,iuout,IER)
+              call georead(IUF,LGEOM(IZU),IZU,1,iuout,IER)
             else
               call egomin(IUF,LGEOM(IZU),IZU,1,0,iuout,IER)
             endif
@@ -762,8 +766,8 @@ C Draw the point.
                 COG1(3)=zpc
                 CALL VECTRN(COG1,TEMAT,COG2,IER)
                 CALL VECTRN(COG2,ETSMAT,COG3,IER)
-                call u2pixel(COG3(1),COG3(2),ix,iy)
-                CALL ecirc(ix,iy,3,1)
+                call u2pixel(COG3(1),COG3(2),iix,iiy)
+                CALL ecirc(iix,iiy,3,1)
                 call forceflush()
 
 C Confirm whether user wants to use the coordinates 
@@ -837,6 +841,11 @@ C default file names for databases
       dimension xl(MPCP),zl(MPCP),ior(MPCP),isut(5),inum(5)
       logical ok,dok
       integer iglib  ! are we running X11 or GTK
+#ifdef OSI
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Parameters to see whether for a surface a coordinate set has been 
 C defined
@@ -1758,6 +1767,8 @@ C EDPCST allows changes of the name of a pressure coefficient
 C set or the values of the pressure coefficients.
       SUBROUTINE EDPCST(IER,moddb,IFOC)
 #include "net_flow.h"
+      integer iCountWords
+
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
       COMMON/OUTIN/IUOUT,IUIN
       common/MFLDOC/DEPRE(MPRD)
@@ -1799,7 +1810,7 @@ C First eight pressure coeficients ...
       IF(IER.NE.0)GOTO 35
 
 C Check whether number of returned number is 8, if so extract data.
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       if(NV.ne.8)goto 35
       K=0
       DO 36 jt=1,8
@@ -1818,7 +1829,7 @@ C Second eight pressure coeficients ...
       IF(IER.NE.0)GOTO 351
 
 C Check whether number of returned numbers is 8, if so, extract data.
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       if(NV.ne.8)goto 351
       K=0
       DO 361 jt=9,16
@@ -1872,7 +1883,8 @@ C prepended.
      &      lapres(1:lnblnk(lapres))
 
 C Debug.
-          write(6,*) 'working pressure coef ',lworking
+C          write(6,*) 'working pressure coef ',lworking
+
           CALL EFOPSEQ(IUM,lworking,1,IER)
         endif
       else

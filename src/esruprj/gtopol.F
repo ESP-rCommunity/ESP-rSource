@@ -28,6 +28,9 @@ C  INPOLY - Polygon point containment test.
 C ****** GTOPOL
       SUBROUTINE GTOPOL(itrc,ier)
 #include "building.h"
+#include "model.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -47,17 +50,7 @@ C ****** GTOPOL
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C6/INDCFG
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       
       CHARACTER*33 ITEMS(12)
       character*32 VERTS(MGRT)
@@ -65,7 +58,7 @@ C ****** GTOPOL
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER H*72,outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -167,7 +160,7 @@ C If ground needs drawing or updating do it here.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
         call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
-        WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(ETEXT,'(2A)')'Model: ',modeltitle(1:lnblnk(modeltitle))
         iside=1
         isize=1
         ifont=1
@@ -424,6 +417,11 @@ C IER=0 OK, IER=1 problem.
       DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3),COG3(3)
       CHARACTER VERT*35,KEY*1,H*72,HOLD*32,GTGEOM*72
       character outs*124,headv*48,GMLCN*12,GSNAME*6
+#ifdef OSI
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
 
 C Initial values for vertex at angle facility.
       V1=1.0
@@ -597,8 +595,8 @@ C Show the new point on the current wireframe.
               COG1(3)=z3
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),ix,iy)
-              call ecirc(ix,iy,3,1)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              call ecirc(iix,iiy,3,1)
               call forceflush()
             endif
             if(NGTV.lt.MGTV)then
@@ -692,9 +690,9 @@ C inserting the new vertex index.
                         IF(IXV.GT.ivjj+1)GOTO 148
                         JGVN(ivj,ivjj+1)=iwhich3
 
-C Debug...
-                       write(6,'(a,30i4)') 'now jgvn is ',
-     &                  (JGVN(ivj,ii),ii=1,NGVER(ivj))
+C Debug.
+C                       write(6,'(a,30i4)') 'now jgvn is ',
+C     &                  (JGVN(ivj,ii),ii=1,NGVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
                         goto 246 
@@ -781,8 +779,8 @@ C Show the new point on the current wireframe.
               COG1(3)=z3
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),ix,iy)
-              call ecirc(ix,iy,3,1)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              call ecirc(iix,iiy,3,1)
               call forceflush()
             endif
             if(NGTV.lt.MGTV)then
@@ -945,8 +943,8 @@ C Use ratio calculation to make an aligned point vdislsp along the line.
               COG1(3)=z3
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),ix,iy)
-              call ecirc(ix,iy,3,1)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              call ecirc(iix,iiy,3,1)
               call forceflush()
             endif
             dok=.true.
@@ -1007,9 +1005,9 @@ C inserting the new vertex index.
                       IF(IXV.GT.ivjj+1)GOTO 248
                       JGVN(ivj,ivjj+1)=iwhich3
 
-C Debug...
-                     write(6,'(a,30i4)') 'now jgvn is ',
-     &                (JGVN(ivj,ii),ii=1,NGVER(ivj))
+C Debug.
+C                     write(6,'(a,30i4)') 'now jgvn is ',
+C     &                (JGVN(ivj,ii),ii=1,NGVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
                       goto 346 
@@ -1110,8 +1108,8 @@ C Show the new point on the current wireframe.
               COG1(3)=z3
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),ix,iy)
-              call ecirc(ix,iy,3,1)
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              call ecirc(iix,iiy,3,1)
               call forceflush()
             endif
             dok=.true.
@@ -1384,6 +1382,11 @@ C IER=0 OK, IER=1 problem.
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
+#ifdef OSI
+      integer iix,iiy,ixd,iyd
+#else
+      integer*8 iix,iiy,ixd,iyd
+#endif
 
 C Initialise vertex list menu size variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -1484,9 +1487,9 @@ C hit and then loop through each of the vertices for something close.
             COG1(3)=ZGT(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            ixd=ix-ixx
-            iyd=iy-iyy
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            ixd=iix-ixx
+            iyd=iiy-iyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -1499,7 +1502,7 @@ C hit and then loop through each of the vertices for something close.
               INPICK=INPICK+1
               ijvn=ijvn+1
               IVLST(ijvn)=i
-              CALL ecirc(ix,iy,3,0)
+              CALL ecirc(iix,iiy,3,0)
               call forceflush()
               goto 46
             endif
@@ -1508,7 +1511,7 @@ C hit and then loop through each of the vertices for something close.
 
 C If there were only two points to find, check if user clicked on edge.
             if(inpick.eq.2)then
-              write(6,*) 'code for edge check in progress'
+              call edisp(iuout,'code for edge check in progress...')
             endif
             goto 46
           endif
@@ -1736,9 +1739,9 @@ C inserting the new vertex index.
                       IF(IXV.GT.ivjj+1)GOTO 148
                       JGVN(ivj,ivjj+1)=iwhich3
 
-C Debug...
-                      write(6,'(a,30i4)') 'now jgvn is ',
-     &                  (JGVN(ivj,ii),ii=1,NGVER(ivj))
+C Debug.
+C                      write(6,'(a,30i4)') 'now jgvn is ',
+C     &                  (JGVN(ivj,ii),ii=1,NGVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
                       goto 246 
@@ -2026,6 +2029,7 @@ C Method checks for minimally linked vertices.
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -2044,6 +2048,11 @@ C Method checks for minimally linked vertices.
       CHARACTER GMLCN*12,GSNAME*6
       CHARACTER H*72,ACTION*1,HOLD*72,outs*124,SN*6,SN2*6
       character holds*36,SNAME1*6,SNAMED*6,SMLCN1*12
+#ifdef OSI
+      integer iix,iiy,ixd,iyd
+#else
+      integer*8 iix,iiy,ixd,iyd
+#endif
     
       IER=0
       DOK=.false.
@@ -2293,9 +2302,9 @@ C inserting the new vertex index.
                       IF(IXV.GT.ivjj+1)GOTO 148
                       JGVN(ivj,ivjj+1)=iwhich3
 
-C Debug...
-                      write(6,'(a,30i4)') 'now jgvn is ',
-     &                  (JGVN(ivj,ii),ii=1,NGVER(ivj))
+C Debug.
+C                      write(6,'(a,30i4)') 'now jgvn is ',
+C     &                  (JGVN(ivj,ii),ii=1,NGVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
                       goto 246 
@@ -2377,9 +2386,9 @@ C the individual vertex numbers from the list.
               COG1(3)=ZGT(I)
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
-              call u2pixel(COG3(1),COG3(2),ix,iy)
-              ixd=ix-ixx
-              iyd=iy-iyy
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              ixd=iix-ixx
+              iyd=iiy-iyy
               if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
                 if(found)then
                   call edisp(iuout,'Close points...try again.')
@@ -2406,7 +2415,7 @@ C the individual vertex numbers from the list.
      &        '  ',72,' ','associated vertices',IIER,8)
           endif
         endif
-        CALL CHITMS(HOLD,NV)
+        NV = iCountWords(HOLD)
         K=0
         DO 94 J=1,NV
           CALL EGETWI(HOLD,K,JV,1,NGTV,'W','vertex list',IER)
@@ -2437,6 +2446,9 @@ C IER=1 problem.
 #include "building.h"
 #include "epara.h"
 #include "prj3dv.h"
+#include "esprdbfile.h"
+#include "material.h"
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -2448,11 +2460,6 @@ C IER=1 problem.
       COMMON/GT/GTNAME
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -2474,10 +2481,10 @@ C IER=1 problem.
       CHARACTER VERT*35,KEY*1,HOLD*72,H*72,SN*6
       character head*32,HOLDS*36,outs*124
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
-#ifdef OSX
-      integer iupdown,isym    ! passed to etplot
+#ifdef OSI
+      integer iupdown,isym,iix,iiy    ! passed to etplot
 #else
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy    ! passed to etplot
 #endif
 
 C Initialise zone surface-vertex list menu size variables based on
@@ -2718,8 +2725,8 @@ C Show these points as small circles...
             COG1(3)=ZZ(J)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            CALL ecirc(ix,iy,3,1)
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            CALL ecirc(iix,iiy,3,1)
             call forceflush()
   154     CONTINUE
         endif
@@ -3110,9 +3117,11 @@ C Incrementally write out vertex information (within 72 chars).
   42    continue
         write(outs,'(2a)') ' Associated vertices for ',gsname(ifoc)
   43    CALL EASKS(HOLD,outs,'  ',72,' ','associated vertices',IIER,8)
-        CALL CHITMS(hold,NV)
-C debug
+        NV = iCountWords(HOLD)
+
+C Debug.
 C        write(6,*) 'found nv ',NV
+
         K=0
         DO 94 J=1,NV
 
@@ -3212,12 +3221,12 @@ C ****** Routine to update-draw ground during triangulation.
 
       character*(*) msg
       character outs*72
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy    ! passed to etplot
 #endif
 
       CALL startbuffer()
@@ -3238,9 +3247,9 @@ C ****** Routine to update-draw ground during triangulation.
         COG1(3)=ZGT(IV)
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix,iy)
-        CALL ecirc(ix,iy,2,1)
-        CALL VERTLBL(ix,iy,IV,ier)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
+        CALL ecirc(iix,iiy,2,1)
+        CALL VERTLBL(iix,iiy,IV,ier)
         call forceflush()
   42  continue
       if(NGTG.eq.0)return
@@ -3325,7 +3334,7 @@ C output: triangle list
       CHARACTER GMLCN*12,GSNAME*6,msg*32,outs*124,h*72
       LOGICAL LVERT(MGTV), INPOLY
       logical MODIFY,MODLEN,MODBND,OK,dok
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale
@@ -3529,10 +3538,11 @@ C remove the triangles listed in ITSEL
           CALL RMTRI(NTSEL,ITSEL,CCR,CENT)
         ENDIF 
 
-C debug...
+C Debug.
 C        DO 334, IPL=1, NGT
 C          write(6,*)'W: triangle no. and verts ',IPL ,JGVN(IPL,1) ,
 C     &    JGVN(IPL,2) ,JGVN(IPL,3)
+
 C 334    CONTINUE
         ivx=NGTV
         isurx=NGT
@@ -3540,8 +3550,8 @@ C 334    CONTINUE
         call UGRNDR(ivx,isurx,msg,IER)
   18  CONTINUE
 
-C debug...
-      write(6,*)'D: total triangles = ',NGT,' vertices=',NGTV
+C Debug.
+C      write(6,*)'D: total triangles = ',NGT,' vertices=',NGTV
 
 C Finally pass the number of triangles back to the common block NGT
 C and give each a name and composition.
@@ -3561,7 +3571,8 @@ C Finally check to see if all the vertices have been used.
           call askok('Try again to find this vertex?',' ',ok,dok,2)
           if(ok)goto 150
         ELSE
-          write(6,*)' Vertices number has been used ',I
+          write(outs,*)' Vertices number has been used ',I
+          call edisp(iuout,outs)
         ENDIF
  111  CONTINUE
 
@@ -3595,6 +3606,7 @@ C in IVSEL().
       SUBROUTINE MKTRI(CENTER,NVERT,VLIST,CCR,CENT)
 #include "building.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
@@ -3605,6 +3617,7 @@ C in IVSEL().
 
       DIMENSION PTA(2), PTB(2), PTC(2), PTD(2)
       LOGICAL LVLIST(90)
+      character outs*124
 
       DO 10 I=1,90
         LVLIST(I)=.FALSE.
@@ -3628,7 +3641,8 @@ C in IVSEL().
           IF (ANGT.GT.LARGEANG) THEN
             LARGEANG = ANGT
             LARGEVERT = I
-      write(6,*)'Found large angle ',LARGEANG,VLIST(LARGEVERT)
+            write(outs,*)'Found large angle ',LARGEANG,VLIST(LARGEVERT)
+            call edisp(iuout,outs)
           ENDIF
         ENDIF
   20  CONTINUE
@@ -3636,7 +3650,8 @@ C in IVSEL().
       NMK=NMK+1
       VMK(NMK)=VLIST(LARGEVERT)
       ANGLE(NMK)=LARGEANG
-      write(6,*)'Ordered selected verts ',VLIST(LARGEVERT)
+      write(outs,*)'Ordered selected verts ',VLIST(LARGEVERT)
+      call edisp(iuout,outs)
   15  CONTINUE
 
 C Check to see if the triangle has no internal angles greater than
@@ -3653,13 +3668,11 @@ C make it, or less than 0deg
         ENDIF
 
         IF (ANGT.GE.180.0) THEN
-
-C debug...
-          write(6,*)'triangle has angle greater than 180degs '
+          write(outs,*)'triangle has angle greater than 180degs '
+          call edisp(iuout,outs)
         ELSEIF (angt.le.0.0) THEN
-
-C debug...
-          write(6,*)'triangle has angle less than 0degs '
+          write(outs,*)'triangle has angle less than 0degs '
+          call edisp(iuout,outs)
         ELSE
 
 C Forming new triangle => increase total number of triangles
@@ -3687,9 +3700,10 @@ C Convert vertex array first
          CENT(NGT,2)=PTD(2)
          CCR(NGT)=RAD
 
-C debug...
-          write(6,*)'++ formed new triangle ',NGT,JGVN(NGT,1),
-     & JGVN(NGT,2),JGVN(NGT,3),' @ ',CENT(NGT,1),CENT(NGT,2),CCR(NGT)
+C Debug.
+C          write(6,*)'++ formed new triangle ',NGT,JGVN(NGT,1),
+C     & JGVN(NGT,2),JGVN(NGT,3),' @ ',CENT(NGT,1),CENT(NGT,2),CCR(NGT)
+     
         ENDIF
 
   35  CONTINUE
@@ -3834,7 +3848,9 @@ C find new triangle then compare with ADJTRI
                 ENDIF
               ENDIF
               IF (SELTRI(ADJTRI,3).EQ.1) IVB=JGVN(ADJTRI,3)
-              write (6,*) 'vertices A,B,P: ',IVA,IVB,POINT
+
+C Debug.
+C              write(6,*) 'vertices A,B,P: ',IVA,IVB,POINT
 
 C Look for triangle containing vertices IVA, IVB and POINT
               DO 400, IA=1,NGT
@@ -3938,8 +3954,9 @@ C Reduce the triangle identifier by one to account for the removed
 C triangle.
       NGT = NGT - 1
 
-C debug...
-      write(6,*)'-- triangle ',TDEL(L),' removed '
+C Debug.
+C      write(6,*)'-- triangle ',TDEL(L),' removed '
+
   30  CONTINUE
       RETURN
       END
@@ -4028,7 +4045,7 @@ C the triangle.
 C Calculate the radius of the circumcenter
       RAD= SQRT((D(1)-A(1))**2+(D(2)-A(2))**2)
 
-C debug...
+C Debug.
 C      write(6,*)'J: vertex A ',A(1), A(2)
 C      write(6,*)'J: vertex B ',B(1), B(2)
 C      write(6,*)'J: vertex C ',C(1), C(2)
@@ -4104,8 +4121,9 @@ C Calculate angles (rotation from +ive x=0 clockwise).
         CALL UV2AZ(vdx,vdy,vdz,ANGC,elev)
 C Check that the angles are in the correct order. ANGB will 
 C always be larger than ANCC.
-C debug...
-C        write (6,*) 'angles >A, >B, >C: ', ANGA, ANGB, ANGC
+
+C Debug.
+C        write(6,*) 'angles >A, >B, >C: ', ANGA, ANGB, ANGC
 
         IF (ANGB.LT.ANGC) THEN
           ANGB=ANGB+360.0

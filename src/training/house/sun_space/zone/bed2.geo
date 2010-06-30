@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,bed2 # tag version, format, zone name
-*date Thu Aug 23 18:09:28 2007  # latest file modification 
+*date Fri Jul 17 11:56:36 2009  # latest file modification 
 bed2 describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,8.75100,12.59100,0.00000  #   1
@@ -28,7 +28,7 @@ bed2 describes a...
 *edges,4,13,1,5,14  #  8
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -51,3 +51,11 @@ bed2 describes a...
   7
 # 
 *base_list,1,6,     9.61 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start,10 10 # geometric blocks
+*obs,9.702,15.645,0.600,0.600,0.100,1.500,60.000,S,NONE  # block  1
+*obs,8.888,16.115,0.600,0.600,0.100,1.500,60.000,N,NONE  # block  2
+*obs,9.705,15.643,2.100,0.600,1.050,0.100,60.000,T,NONE  # block  3
+*end_block

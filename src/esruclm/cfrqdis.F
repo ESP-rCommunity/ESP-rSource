@@ -43,7 +43,7 @@ C of the user-specified time-dependant variable.
       logical graph_ok,ok,dok
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -171,6 +171,8 @@ C falls inside each bin.
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
 
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &CDIR(MT),CHUM(MT)
 
@@ -391,7 +393,7 @@ C 'HISDRW' draws a histogram of the frequency distribution
       COMMON/FREQS1/ICBIN(MF),ITOTAL
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
 #else
       integer*8 igwid,igheight  ! for use with axiscale

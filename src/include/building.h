@@ -1,5 +1,6 @@
 C ESP-r building-related definition file setting maximum
 C parameter values.
+C 72 zone 62 surface version 12.08 updated
 
 C Version: 52 zones, 62 surfaces/zone
 C          (modify via MCOM and MS respectively).
@@ -19,11 +20,11 @@ C Type declarations.
       integer MCFC
 
 C Geometry.
-      PARAMETER (MCOM=52)	!- Zones.
+      PARAMETER (MCOM=72)	!- Zones.
       PARAMETER (MS=62)		!- Surfaces/zone (set MNSBZ in cfd.h to MS).
-      PARAMETER (MCON=2000)	!- Edges/zone.
+      PARAMETER (MCON=2200)	!- Edges/zone.
       PARAMETER (MTV=200)	!- Vertices/zone.
-      PARAMETER (MV=24)		!- Vertices/surface.
+      PARAMETER (MV=42)		!- Vertices/surface.
       PARAMETER (MST=MS)	!- Used with view factors.
       PARAMETER (MSM=MS+6)	!- Used with view factors.
 

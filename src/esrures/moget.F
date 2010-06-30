@@ -179,6 +179,8 @@ C IGET = 74 IPV metric maximum power capacity (W/m^2)
 C IGET = 75 IPV metric pollutant emissions (kg/m^2/yr)
 C IGET = 76 IPV metric overall thermal comfort distribution
 
+C IGET = 80 Measured zone db T (for display only)
+
 
 C ************************ GOMSETUP ************************
 C Set default values for IGETNO array and associated plotting/ labeling arrays.
@@ -432,7 +434,8 @@ C TDF commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
 
       CHARACTER ITEM(35)*24, MTITLE*22, values*20
       CHARACTER ITEMS(18)*23
@@ -451,13 +454,20 @@ C Note: 60 is the maximum number of items associated with an anchor point.
 
       integer YAXSET, ADDLIN
       integer nbofhelp   ! how many help lines to display for different menu types.
+      integer loop       ! for do loops
+      integer IAC        ! for user selection
 
       logical SLIST,NLIST,MRTLIST,OKL,dok,ok
+#ifdef OSI
+      integer iid1,iid2
+#else
+      integer*8 iid1,iid2
+#endif
 
 C The logical variables are required so as user is asked for additional 
 C information about the choice of metric if necessary. NLIST=.true. implies 
 C SLIST=.true. which are asked for all active zones (listed in NZNO).
-      SLIST=.FALSE.
+      SLIST=.FALSE.   ! do we need to ask about surfaces
       NLIST=.FALSE.
 
 C MNGET is the maximum number of metrics allowed to be chosen from the menu.
@@ -491,10 +501,8 @@ C        MNGET=1
         MNGET=MZS-1
         NGET=1
         IGETNO(NGET,1)=61
-        IGETNO(NGET,6)=-3
-        IGETNO(NGET,7)=6
-        IGETNO(NGET,8)=4
-        IGETNO(NGET,9)=12
+        IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+        IGETNO(NGET,8)=4;  IGETNO(NGET,9)=12
         SLABEL(NGET)='Zone energy balance (kWhr)'
       elseif (MENUTYPE.eq.10) then
 
@@ -503,10 +511,8 @@ C IGET = 60 and MENUTYPE 10:  Energy demands.
         MNGET=MZS-1
         NGET=1
         IGETNO(NGET,1)=60
-        IGETNO(NGET,6)=-3
-        IGETNO(NGET,7)=6
-        IGETNO(NGET,8)=4
-        IGETNO(NGET,9)=12
+        IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+        IGETNO(NGET,8)=4;  IGETNO(NGET,9)=12
         SLABEL(NGET)='Zone energy demands (kWhrs)'
       elseif (MENUTYPE.eq.11) then
 
@@ -515,10 +521,8 @@ C IGET = 63 and MENUTYPE 11: Zone casual gains distribution.
         MNGET=MZS-1
         NGET=1
         IGETNO(NGET,1)=63
-        IGETNO(NGET,6)=-3
-        IGETNO(NGET,7)=6
-        IGETNO(NGET,8)=4
-        IGETNO(NGET,9)=12
+        IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+        IGETNO(NGET,8)=4;  IGETNO(NGET,9)=12
         SLABEL(NGET)='Casual gains distribution (kWhr)'
       elseif (MENUTYPE.eq.12) then
 
@@ -528,10 +532,8 @@ C IGET = 62 and MENUTYPE 12: Surface energy balance flux paths.
         MNGET=MZS-1
         NGET=1
         IGETNO(NGET,1)=62
-        IGETNO(NGET,6)=-3
-        IGETNO(NGET,7)=6
-        IGETNO(NGET,8)=4
-        IGETNO(NGET,9)=12
+        IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+        IGETNO(NGET,8)=4;  IGETNO(NGET,9)=12
         SLABEL(NGET)='Surface energy balance (Whrs)'
       elseif (MENUTYPE.eq.13) then
 
@@ -543,10 +545,8 @@ C IGET = 64 Monthly gains & losses. Use IGETNO(NGET,4) = 1 as 100Wh & 2 as kWh.
         NGET=1
         IGETNO(NGET,1)=64
         IGETNO(NGET,4)=IR
-        IGETNO(NGET,6)=-3
-        IGETNO(NGET,7)=6
-        IGETNO(NGET,8)=4
-        IGETNO(NGET,9)=12
+        IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+        IGETNO(NGET,8)=4;  IGETNO(NGET,9)=12
         SLABEL(NGET)='Monthly zonal gains/losses'
       elseif (MENUTYPE.eq.14) then
 
@@ -578,10 +578,8 @@ C IGETNO(NGET,4)=1 denote verbose and 0 to be summary.
           IGETNO(NGET,4)=1
         endif
         IGETNO(NGET,1)=64
-        IGETNO(NGET,6)=-3
-        IGETNO(NGET,7)=6
-        IGETNO(NGET,8)=4
-        IGETNO(NGET,9)=20
+        IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+        IGETNO(NGET,8)=4;  IGETNO(NGET,9)=20
         SLABEL(NGET)='Surface condensation'
       else
         MNGET=1
@@ -615,7 +613,7 @@ C Setup menu items.
       ITEM(17)='m Renewables/adv. comp.'
       ITEM(18)='n Network air/wtr flow '
       ITEM(19)='o CFD metrics          '
-      ITEM(20)='p IPV metrics          '
+      ITEM(20)='p Measured:temporal    '
       ITEM(21)='  ------------------   '
       if(NGET.eq.0)then
         ITEM(22)='                     '
@@ -897,10 +895,8 @@ C From the allclm type check the 1st static item value.
 
 C IGET = 2 outside temperature.
           IGETNO(NGET,1)=2
-          IGETNO(NGET,6)=-302
-          IGETNO(NGET,7)=4
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=14
+          IGETNO(NGET,6)=-302; IGETNO(NGET,7)=4
+          IGETNO(NGET,8)=1;    IGETNO(NGET,9)=14
           GLABEL(NGET)='Ambient db Tmp'
           if(IROC.eq.0)then
             SLABEL(NGET)='Ambient db temperature (degC)'
@@ -913,10 +909,8 @@ C IGET = 2 outside temperature.
 
 C IGET = 19 Direct solar. Set text based on current value of irtype.
           IGETNO(NGET,1)=19
-          IGETNO(NGET,6)=-104
-          IGETNO(NGET,7)=9
-          IGETNO(NGET,8)=3
-          IGETNO(NGET,9)=14
+          IGETNO(NGET,6)=-104; IGETNO(NGET,7)=9
+          IGETNO(NGET,8)=3;    IGETNO(NGET,9)=14
           if(irtype.eq.0)then
             GLABEL(NGET)='Direct nor solar'
             if(IROC.eq.0)then
@@ -938,10 +932,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           endif
         elseif(inoc.eq.3)then
           IGETNO(NGET,1)=20
-          IGETNO(NGET,6)=-104
-          IGETNO(NGET,7)=5
-          IGETNO(NGET,8)=3
-          IGETNO(NGET,9)=14
+          IGETNO(NGET,6)=-104; IGETNO(NGET,7)=5
+          IGETNO(NGET,8)=3;    IGETNO(NGET,9)=14
           GLABEL(NGET)='Diffuse solar'
           if(IROC.eq.0)then
             SLABEL(NGET)='Diffuse solar intensity (W/m^2)'
@@ -952,10 +944,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           endif
         elseif(inoc.eq.4)then
           IGETNO(NGET,1)=21
-          IGETNO(NGET,6)=-203
-          IGETNO(NGET,7)=6
-          IGETNO(NGET,8)=4
-          IGETNO(NGET,9)=14
+          IGETNO(NGET,6)=-203; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=4;    IGETNO(NGET,9)=14
           GLABEL(NGET)='Wind speed'
           if(IROC.eq.0)then
             SLABEL(NGET)='Wind speed (m/sec)'
@@ -966,10 +956,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           endif
         elseif(inoc.eq.5)then
           IGETNO(NGET,1)=34
-          IGETNO(NGET,6)=-203
-          IGETNO(NGET,7)=4
-          IGETNO(NGET,8)=4
-          IGETNO(NGET,9)=14
+          IGETNO(NGET,6)=-203; IGETNO(NGET,7)=4
+          IGETNO(NGET,8)=4;    IGETNO(NGET,9)=14
           GLABEL(NGET)='Wind direc'
           if(IROC.eq.0)then
             SLABEL(NGET)='Wind direction (deg)'
@@ -980,10 +968,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           endif
         elseif(inoc.eq.6)then
           IGETNO(NGET,1)=22
-          IGETNO(NGET,6)=-202
-          IGETNO(NGET,7)=7
-          IGETNO(NGET,8)=4
-          IGETNO(NGET,9)=14
+          IGETNO(NGET,6)=-202; IGETNO(NGET,7)=7
+          IGETNO(NGET,8)=4;    IGETNO(NGET,9)=14
           GLABEL(NGET)='Ambient RH'
           if(IROC.eq.0)then
             SLABEL(NGET)='Ambient RH (%)'
@@ -994,10 +980,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           endif
         elseif(inoc.eq.7)then
           IGETNO(NGET,1)=26
-          IGETNO(NGET,6)=-202
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=4
-          IGETNO(NGET,9)=10
+          IGETNO(NGET,6)=-202; IGETNO(NGET,7)=8
+          IGETNO(NGET,8)=4;    IGETNO(NGET,9)=10
           GLABEL(NGET)='Sky illum'
           if(IROC.eq.0)then
             SLABEL(NGET)='Sky illuminance (lux)'
@@ -1036,10 +1020,8 @@ C Temperatures sub-menu.
         NGET=NGET+1
         if(inoc.eq.1)then
           IGETNO(NGET,1)=1
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=6
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=12
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' db T'
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone db temperature (degC)'
@@ -1050,10 +1032,8 @@ C Temperatures sub-menu.
           endif
         elseif(inoc.eq.2)then
           IGETNO(NGET,1)=29
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=6
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=12
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' Del dbT'
           if(IROC.eq.0)then
             SLABEL(NGET)='Delta db temperature (degC)'
@@ -1068,10 +1048,8 @@ C IGET = 41 db T - another zone db T. Ask for other zone.
           call ASKZON(IZONE)
           IGETNO(NGET,3)=IZONE
           IGETNO(NGET,1)=41
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=6
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=12
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' Del znT'
           if(IROC.eq.0)then
             SLABEL(NGET)='Delta zn T - other zn T (degC)'
@@ -1084,10 +1062,8 @@ C IGET = 41 db T - another zone db T. Ask for other zone.
 
 C IGET = 3 Control point temperature. 
           IGETNO(NGET,1)=3
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=9
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=12
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=9
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' Cpt T'
           if(IROC.eq.0)then
             SLABEL(NGET)='Control pt temperature (degC)'
@@ -1100,10 +1076,8 @@ C IGET = 3 Control point temperature.
 
 C IGET = 6  Resultant temperature.
           IGETNO(NGET,1)=6
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=5
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=12
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=5
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' Res T'
           if(IROC.eq.0)then
             SLABEL(NGET)='Resultant temperature (degC)'
@@ -1117,10 +1091,8 @@ C IGET = 6  Resultant temperature.
 C IGET = 24, average MRT.
           MRTLIST=.false.
           IGETNO(NGET,1)=24
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=12
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=8
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
           SUFFIX=' MRT'
           if(IROC.eq.0)then
             SLABEL(NGET)='Mean Radiant Temperature (degC)'
@@ -1134,10 +1106,8 @@ C IGET = 24, average MRT.
 C IGET = 24, MRT at sensor.
           MRTLIST=.true.
           IGETNO(NGET,1)=24
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=20
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=8
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=20
           SUFFIX=' MRT'
           if(IROC.eq.0)then
             SLABEL(NGET)='Mean Radiant Temperature (degC)'
@@ -1150,10 +1120,8 @@ C IGET = 24, MRT at sensor.
 
 C IGET = 14  Zone dew point.
           IGETNO(NGET,1)=14
-          IGETNO(NGET,6)=-202
-          IGETNO(NGET,7)=2
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=12
+          IGETNO(NGET,6)=-202; IGETNO(NGET,7)=2
+          IGETNO(NGET,8)=1;    IGETNO(NGET,9)=12
           SUFFIX=' dew ptT'
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone dew point (degC)'
@@ -1165,10 +1133,8 @@ C IGET = 14  Zone dew point.
         elseif(inoc.eq.9)then
           slist=.true.
           IGETNO(NGET,1)=4
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=2
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=20
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=2
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=20
           SUFFIX=' InSurT'
           if(IROC.eq.0)then
             SLABEL(NGET)='Surface temp inside (degC)'
@@ -1180,10 +1146,8 @@ C IGET = 14  Zone dew point.
         elseif(inoc.eq.10)then
           slist=.true.
           IGETNO(NGET,1)=35
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=6
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=20
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=6
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=20
           SUFFIX='Dsur-dpT'
           if(IROC.eq.0)then
             SLABEL(NGET)='Delta surf T - zone dp T (degC)'
@@ -1199,10 +1163,8 @@ C IGET = 14  Zone dew point.
           endif
           slist=.true.
           IGETNO(NGET,1)=5
-          IGETNO(NGET,6)=1
-          IGETNO(NGET,7)=3
-          IGETNO(NGET,8)=1
-          IGETNO(NGET,9)=20
+          IGETNO(NGET,6)=1; IGETNO(NGET,7)=3
+          IGETNO(NGET,8)=1; IGETNO(NGET,9)=20
           SUFFIX=' ExSurT'
           if(IROC.eq.0)then
             SLABEL(NGET)='Surface temp outside (degC)'
@@ -1219,10 +1181,8 @@ C IGET = 14  Zone dew point.
             slist=.true.
             nlist=.true.
             IGETNO(NGET,1)=7
-            IGETNO(NGET,6)=1
-            IGETNO(NGET,7)=7
-            IGETNO(NGET,8)=1
-            IGETNO(NGET,9)=20
+            IGETNO(NGET,6)=1; IGETNO(NGET,7)=7
+            IGETNO(NGET,8)=1; IGETNO(NGET,9)=20
             SUFFIX=' NodeT'
             if(IROC.eq.0)then
               SLABEL(NGET)='Surface node temp (degC)'
@@ -1264,9 +1224,7 @@ C IGET = 23  Comfort, ask which index and initialise.
         IGETNO(NGET,9)=12
         if(inoc.eq.1)then
           IGETNO(NGET,3)=1
-          IGETNO(NGET,6)=-304
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=4
+          IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PMV'
           if(IROC.eq.0)then
             SLABEL(NGET)='Comfort PMV (-)'
@@ -1277,9 +1235,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           endif
         elseif(inoc.eq.2)then
           IGETNO(NGET,3)=2
-          IGETNO(NGET,6)=-304
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=4
+          IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PMV'
           if(IROC.eq.0)then
             SLABEL(NGET)='Comfort PMV (set)'
@@ -1290,9 +1246,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           endif
         elseif(inoc.eq.3)then
           IGETNO(NGET,3)=3
-          IGETNO(NGET,6)=-304
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=4
+          IGETNO(NGET,6)=-304; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PPD'
           if(IROC.eq.0)then
             SLABEL(NGET)='Comfort PPD (%)'
@@ -1303,9 +1257,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           endif
         elseif(inoc.eq.4) then
           IGETNO(NGET,1)=50
-          IGETNO(NGET,6)=-305
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=4
+          IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PPD'
           if(IROC.eq.0)then
             SLABEL(NGET)='Comfort PD head/foot (%)'
@@ -1316,9 +1268,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           endif
         elseif(inoc.eq.5) then
           IGETNO(NGET,1)=51
-          IGETNO(NGET,6)=-305
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=4
+          IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PPD'
           if(IROC.eq.0)then
             SLABEL(NGET)='Comfort PD floor (%)'
@@ -1331,9 +1281,7 @@ C IGET = 23  Comfort, ask which index and initialise.
         elseif(inoc.eq.6) then
           IGETNO(NGET,1)=52
           IGETNO(NGET,4)=5
-          IGETNO(NGET,6)=-305
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=4
+          IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           SUFFIX=' PDceil'
           if(IROC.eq.0)then
             SLABEL(NGET)='Ceiling discomf PD (%)'
@@ -1345,9 +1293,7 @@ C IGET = 23  Comfort, ask which index and initialise.
           MRTLIST=.true.
         elseif(inoc.eq.7) then
           IGETNO(NGET,1)=53
-          IGETNO(NGET,6)=-305
-          IGETNO(NGET,7)=8
-          IGETNO(NGET,8)=4
+          IGETNO(NGET,6)=-305; IGETNO(NGET,7)=8; IGETNO(NGET,8)=4
           MRTLIST=.true.
           H(1) ='The question assumes that the sensor has not been '
           H(2) ='rotated.   '
@@ -1402,9 +1348,7 @@ C          IGETNO(NGET,4)=-inoc
 C        endif
         
         NGET=NGET+1
-        IGETNO(NGET,6)=-104
-        IGETNO(NGET,8)=2
-        IGETNO(NGET,9)=12
+        IGETNO(NGET,6)=-104; IGETNO(NGET,8)=2; IGETNO(NGET,9)=12
         if(inoc.eq.1)then
 
 C IGET = 38 Solar entering zone from outside (W)
@@ -2132,8 +2076,7 @@ C Report flux/m^2.
 
 C IGET = 8   Zone-side sensible heating load.
           IGETNO(NGET,1)=8
-          IGETNO(NGET,6)=-3
-          IGETNO(NGET,7)=6
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           SUFFIX=' HeatInj'
           if(IROC.eq.0)then
             SLABEL(NGET)='Sensible heating load (kW)'
@@ -2146,8 +2089,7 @@ C IGET = 8   Zone-side sensible heating load.
 
 C IGET = 9 Zone-side sensible cooling load.
           IGETNO(NGET,1)=9
-          IGETNO(NGET,6)=-3
-          IGETNO(NGET,7)=6
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           SUFFIX=' CoolInj'
           if(IROC.eq.0)then
             SLABEL(NGET)='Sensible cooling load (kW)'
@@ -2160,8 +2102,7 @@ C IGET = 9 Zone-side sensible cooling load.
 
 C IGET = 30   Dehumidification load.
           IGETNO(NGET,1)=30
-          IGETNO(NGET,6)=-4
-          IGETNO(NGET,7)=6
+          IGETNO(NGET,6)=-4; IGETNO(NGET,7)=6
           SUFFIX=' LatExt'
           if(IROC.eq.0)then
             SLABEL(NGET)='Latent dehumidification (kW)'
@@ -2174,8 +2115,7 @@ C IGET = 30   Dehumidification load.
 
 C IGET = 31   Humidification load.
           IGETNO(NGET,1)=31
-          IGETNO(NGET,6)=-4
-          IGETNO(NGET,7)=6
+          IGETNO(NGET,6)=-4; IGETNO(NGET,7)=6
           SUFFIX=' LatInj'
           if(IROC.eq.0)then
             SLABEL(NGET)='Latent humidification (kW)'
@@ -2188,8 +2128,7 @@ C IGET = 31   Humidification load.
 
 C IGET = 10  Total sensible zone loads. 
           IGETNO(NGET,1)=10
-          IGETNO(NGET,6)=-3
-          IGETNO(NGET,7)=6
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           SUFFIX=' TotSens'
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone sensible load (kW)'
@@ -2202,8 +2141,7 @@ C IGET = 10  Total sensible zone loads.
 
 C IGET = 32  All latent zone loads.
           IGETNO(NGET,1)=32
-          IGETNO(NGET,6)=-3
-          IGETNO(NGET,7)=6
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           SUFFIX=' TotSen'
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone latent load (kW)'
@@ -2216,8 +2154,7 @@ C IGET = 32  All latent zone loads.
 
 C IGET = 33  All sensible+latent zone loads.
           IGETNO(NGET,1)=33
-          IGETNO(NGET,6)=-3
-          IGETNO(NGET,7)=6
+          IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           SUFFIX=' TotSenL'
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone sensible + latent load (kW)'
@@ -2232,10 +2169,8 @@ C IGET = 33  All sensible+latent zone loads.
 C IGET = 13  Zone RH.
         NGET=NGET+1
         IGETNO(NGET,1)=13
-        IGETNO(NGET,6)=-202
-        IGETNO(NGET,7)=4
-        IGETNO(NGET,8)=4
-        IGETNO(NGET,9)=12
+        IGETNO(NGET,6)=-202; IGETNO(NGET,7)=4
+        IGETNO(NGET,8)=4;    IGETNO(NGET,9)=12
         SUFFIX=' RH'
         if(IROC.eq.0)then
           SLABEL(NGET)='Zone relative humidity (%)'
@@ -2312,8 +2247,7 @@ C IGET = 15  Casual gains.
           IGETNO(NGET,9)=12
           if(inoc.eq.1)then
             IGETNO(NGET,3)=1   ! same as for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=12
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=12
             SUFFIX=' TotCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain (W)'
@@ -2324,8 +2258,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.2)then
             IGETNO(NGET,3)=2   ! same as for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=10
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=10
             SUFFIX=' CnvCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain convective (W)'
@@ -2336,8 +2269,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.3)then
             IGETNO(NGET,3)=3   ! same as for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=11
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=11
             SUFFIX=' RadCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain radiant (W)'
@@ -2348,8 +2280,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.4)then
             IGETNO(NGET,3)=9   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=11
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=11
             SUFFIX=' LatCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain latent (W)'
@@ -2360,8 +2291,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.5)then
             IGETNO(NGET,3)=4  ! same as for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=13
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=13
             SUFFIX=' OccCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total occupant gain (W)'
@@ -2372,8 +2302,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.6)then
             IGETNO(NGET,3)=10   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=13
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=13
             SUFFIX=' OccCnvG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Occupant convec gain (W)'
@@ -2384,8 +2313,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.7)then
             IGETNO(NGET,3)=11   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=13
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=13
             SUFFIX=' OccRadG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Occupant radiant gain (W)'
@@ -2396,8 +2324,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.8)then
             IGETNO(NGET,3)=12   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=13
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=13
             SUFFIX=' OccLatG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Occupant latent gain (W)'
@@ -2408,8 +2335,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.9)then
             IGETNO(NGET,3)=5  ! same as for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=14
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' LitCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total lighting gain (W)'
@@ -2420,8 +2346,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.10)then
             IGETNO(NGET,3)=13   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=14
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' LitCnvG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Lighting convec gain (W)'
@@ -2432,8 +2357,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.11)then
             IGETNO(NGET,3)=14   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=14
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' LitRadG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Lighting radiant gain (W)'
@@ -2444,8 +2368,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.12)then
             IGETNO(NGET,3)=15   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=14
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' LitLatG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Lighting latent gain (W)'
@@ -2456,8 +2379,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.13)then
             IGETNO(NGET,3)=6  ! same as for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=15
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' EqpCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total small power gain (W)'
@@ -2468,8 +2390,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.14)then
             IGETNO(NGET,3)=16   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=15
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' EqpCnvG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Small pwr convec gain (W)'
@@ -2480,8 +2401,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.15)then
             IGETNO(NGET,3)=17   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=15
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' EqpRadG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Small pwr radiant gain (W)'
@@ -2492,8 +2412,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.16)then
             IGETNO(NGET,3)=18   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=15
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' EqpLatG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Small pwr latent gain (W)'
@@ -2504,9 +2423,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.17)then
             IGETNO(NGET,3)=8  ! same as for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=16
-            IGETNO(NGET,8)=4
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16; IGETNO(NGET,8)=4
             SUFFIX=' CtlCasF'
             if(IROC.eq.0)then
               SLABEL(NGET)='Frac of ctld casual gain (%)'
@@ -2517,8 +2434,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.18)then
             IGETNO(NGET,3)=7  ! same as for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=16
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16
             SUFFIX=' CtlCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total controled casual gain (W)'
@@ -2529,8 +2445,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.19)then
             IGETNO(NGET,3)=19   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=16
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16
             SUFFIX=' CtlCnvG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Controlled convec gain (W)'
@@ -2541,8 +2456,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.20)then
             IGETNO(NGET,3)=20   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=16
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16
             SUFFIX=' CtlRadG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Controlled radiant gain (W)'
@@ -2553,8 +2467,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.21)then
             IGETNO(NGET,3)=21   ! not avail for izver <4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=16
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16
             SUFFIX=' CtlLatG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Controlled latent gain (W)'
@@ -2583,12 +2496,10 @@ C IGET = 15  Casual gains.
           call usrmsg('  ','  ','-')
           NGET=NGET+1
           IGETNO(NGET,1)=15
-          IGETNO(NGET,8)=2
-          IGETNO(NGET,9)=12
+          IGETNO(NGET,8)=2; IGETNO(NGET,9)=12
           if(inoc.eq.1)then
             IGETNO(NGET,3)=1
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=12
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=12
             SUFFIX=' TotCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain (W)'
@@ -2599,8 +2510,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.2)then
             IGETNO(NGET,3)=2
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=10
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=10
             SUFFIX=' CnvCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain convective (W)'
@@ -2611,8 +2521,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.3)then
             IGETNO(NGET,3)=3
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=11
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=11
             SUFFIX=' RadCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total casual gain radiant (W)'
@@ -2623,8 +2532,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.4)then
             IGETNO(NGET,3)=4
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=13
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=13
             SUFFIX=' OccCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total occupant gain (W)'
@@ -2635,8 +2543,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.5)then
             IGETNO(NGET,3)=5
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=14
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' LitCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total lighting gain (W)'
@@ -2647,8 +2554,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.6)then
             IGETNO(NGET,3)=6
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=15
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' EqpCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total small power gain (W)'
@@ -2659,8 +2565,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.7)then
             IGETNO(NGET,3)=7
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=16
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16
             SUFFIX=' CtlCasG'
             if(IROC.eq.0)then
               SLABEL(NGET)='Total controled casual gain (W)'
@@ -2671,9 +2576,7 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.8)then
             IGETNO(NGET,3)=8
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=16
-            IGETNO(NGET,8)=4
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16; IGETNO(NGET,8)=4
             SUFFIX=' CtlCasF'
             if(IROC.eq.0)then
               SLABEL(NGET)='Frac of ctld casual gain (%)'
@@ -2686,9 +2589,7 @@ C IGET = 15  Casual gains.
 
 C Test.
             IGETNO(NGET,3)=9
-            IGETNO(NGET,6)=-3
-            IGETNO(NGET,7)=16
-            IGETNO(NGET,8)=4
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16; IGETNO(NGET,8)=4
             SUFFIX=' CtlCasF'
             if(IROC.eq.0)then
               SLABEL(NGET)='Various casual gains (%)'
@@ -2715,8 +2616,7 @@ C and node logic below.
         IGETNO(NGET,9)=12
         if (jpwr.eq.1) then
           IGETNO(NGET,1)=27
-          IGETNO(NGET,6)=-4
-          IGETNO(NGET,7)=5
+          IGETNO(NGET,6)=-4; IGETNO(NGET,7)=5
           SUFFIX=' RealPwr'
           if(IROC.eq.0)then
             SLABEL(NGET)='Real power consumption (W)'
@@ -2727,8 +2627,7 @@ C and node logic below.
           endif
         elseif (jpwr.eq.2) then
           IGETNO(NGET,1)=28
-          IGETNO(NGET,6)=-4
-          IGETNO(NGET,7)=6
+          IGETNO(NGET,6)=-4; IGETNO(NGET,7)=6
           SUFFIX=' ReacPwr'
           if(IROC.eq.0)then
             SLABEL(NGET)='Reactive power consumption (W)'
@@ -2760,8 +2659,7 @@ C and node logic below.
         if (ispm.eq.1) then
           IGETNO(NGET,8)=4
           IGETNO(NGET,1)=46
-          IGETNO(NGET,6)=-4
-          IGETNO(NGET,7)=5
+          IGETNO(NGET,6)=-4; IGETNO(NGET,7)=5
           SUFFIX=' Output'
           if(IROC.eq.0)then
             SLABEL(NGET)=' Output (W)'
@@ -2773,8 +2671,7 @@ C and node logic below.
         elseif (ispm.eq.2) then
           IGETNO(NGET,8)=4
           IGETNO(NGET,1)=47
-          IGETNO(NGET,6)=-4
-          IGETNO(NGET,7)=6
+          IGETNO(NGET,6)=-4; IGETNO(NGET,7)=6
           SUFFIX=' Secndry'
           if(IROC.eq.0)then
             SLABEL(NGET)=' Misc. output (-)'
@@ -2797,9 +2694,31 @@ C CFD flow.
         goto 1
       elseif(INO.EQ.20)then
 
-C IPV metrics.
-        call edisp(iuout,'Not yet available here.')
-        goto 1
+C Measured data.
+C Measured zone db T, select associated zone.
+C << give the users clues about which zones have measured temps >>
+        do 188 loop=1,NZ
+          if(IDBTZNM(loop).ne.0)then
+            write(outs,'(2a)') 'measured T in ',
+     &        ZNAME(loop)(1:lnzname(loop))
+            call edisp(iuout,outs)
+          endif
+  188   continue
+        NGET=NGET+1
+        call ASKZON(IZONE)
+        IGETNO(NGET,1)=80
+        IGETNO(NGET,2)=IZONE
+        IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
+        IGETNO(NGET,8)=1; IGETNO(NGET,9)=12
+        SUFFIX=' db T'
+        GLABEL(NGET)='Measured db Tmp'
+        if(IROC.eq.0)then
+          SLABEL(NGET)='Measured zone db T (degC)'
+        elseif(IROC.eq.1)then
+          SLABEL(NGET)='Meas zone db T change (degC/hr)'
+        elseif(IROC.eq.-1)then
+          SLABEL(NGET)='Meas zone db T hours (degC.hr)'
+        endif
 
 C << ****** >>
       elseif(INO.EQ.22)then
@@ -3010,11 +2929,12 @@ C Toggle delimeter.
 
 C Debug...
 C        do 999 I=1,NGET
-C          write (6,*) (IGETNO(I,K),K=1,9)
-C          write (6,*) SLABEL(I)
-C          write (6,*) GLABEL(I)
-C          write (6,*) '  '
+C          write(6,*) (IGETNO(I,K),K=1,9)
+C          write(6,*) SLABEL(I)
+C          write(6,*) GLABEL(I)
+C          write(6,*) '  '
 C 999    continue
+
         if (NGET.lt.1) then
           call usrmsg('No data to list/ plot!',
      &                'Please choose a metric.','W')
@@ -3045,11 +2965,8 @@ C Add or clear labels within a graph.
      &    'edit/add labels','contine',igopt,0)
           if(igopt.eq.1)then
             igrl=0
-            grlbl(1)=' '
-            grlbl(2)=' '
-            grlbl(3)=' '
-            grlbl(4)=' '
-            grlbl(5)=' '
+            grlbl(1)=' '; grlbl(2)=' '; grlbl(3)=' '
+            grlbl(4)=' '; grlbl(5)=' '
           elseif(igopt.eq.2)then
             goto 1
           endif
@@ -3059,11 +2976,8 @@ C Add or clear labels within a graph.
           if(igopt.eq.1)then
             ngrlbl=0
             igrl=0
-            grlbl(1)=' '
-            grlbl(2)=' '
-            grlbl(3)=' '
-            grlbl(4)=' '
-            grlbl(5)=' '
+            grlbl(1)=' '; grlbl(2)=' '; grlbl(3)=' '
+            grlbl(4)=' '; grlbl(5)=' '
             goto 1
           elseif(igopt.eq.2)then
             igrl=0
@@ -3099,7 +3013,8 @@ C Find out point where text should be drawn.
         lblpx(igrl)=ix
         lblpy(igrl)=iy
         t24=grlbl(igrl)
-        call wstxpt(lblpx(igrl),lblpy(igrl),t24)
+        iid1=lblpx(igrl); iid2=lblpy(igrl);
+        call wstxpt(iid1,iid2,t24)
         dok=.false.
         h(1)='If you say yes you can add another label and if you say'
         h(2)='no you will be returned to the menu. NOTE you might need'
@@ -3135,18 +3050,18 @@ C Check at least one zone selected.
       endif
 
 C Reset local zone and surface selections, NSEL is total number selected.
-      do 5 I=1,MCON
-        IZNSEL(I)=0
-        ISFSEL(I)=0
+      do 5 loop=1,MCON
+        IZNSEL(loop)=0
+        ISFSEL(loop)=0
  5    continue
       NSEL=0
 
 C Copy data for multi zones, surfaces and nodes. In the
-C case of climate data GLABEL has already been set.
+C case of climate data or measured data GLABEL has already been set.
       if (IGETNO(NGET,1).eq.2.or.IGETNO(NGET,1).eq.19.or.
      &    IGETNO(NGET,1).eq.20.or.IGETNO(NGET,1).eq.21.or.
      &    IGETNO(NGET,1).eq.22.or.IGETNO(NGET,1).eq.26.or.
-     &    IGETNO(NGET,1).eq.34) then
+     &    IGETNO(NGET,1).eq.34.or.IGETNO(NGET,1).eq.80) then
 
 C Do nothing.
         continue
@@ -3158,6 +3073,7 @@ C user to fill in data where necessary.
         if (SLIST.and.(.not.NLIST)) then
 
 C Check if anchor points defined.
+          IAC=0
           if (NALOC.gt.0) then
             H(1)='`one at a time` presents a list of surfaces for each'
             H(2)='of the currently selected zones. '
@@ -3355,8 +3271,9 @@ C Check for duplicate information.
      &          IGETNO(J,7).eq.IGETNO(I,7).and.
      &          IGETNO(J,8).eq.IGETNO(I,8)) then
 
-C Debug...
-C              write (6,*) ' found match, NGET = ',I,J
+C Debug.
+C              write(6,*) ' found match, NGET = ',I,J
+
               do 920 K=J,(NGET-1)
                 IGETNO(K,1)=IGETNO(K+1,1)
                 IGETNO(K,2)=IGETNO(K+1,2)
@@ -3370,15 +3287,11 @@ C              write (6,*) ' found match, NGET = ',I,J
                 SLABEL(K)=SLABEL(K+1)
                 GLABEL(K)=GLABEL(K+1)
  920          continue
-              IGETNO(NGET,1)=0
-              IGETNO(NGET,2)=0
-              IGETNO(NGET,3)=0
-              IGETNO(NGET,4)=0
+              IGETNO(NGET,1)=0; IGETNO(NGET,2)=0
+              IGETNO(NGET,3)=0; IGETNO(NGET,4)=0
               IGETNO(NGET,5)=ISIM
-              IGETNO(NGET,6)=1
-              IGETNO(NGET,7)=0
-              IGETNO(NGET,8)=0
-              IGETNO(NGET,9)=0
+              IGETNO(NGET,6)=1; IGETNO(NGET,7)=0
+              IGETNO(NGET,8)=0; IGETNO(NGET,9)=0
               SLABEL(NGET)='  '
               GLABEL(NGET)='  '
               NGET=NGET-1
@@ -3398,12 +3311,12 @@ C Check that there are still picks left and not adding a line.
       if(MNGET.gt.3)call edisp(iuout,outs)
 C *** user selections have now finished ***
 
-C Debug...
+C Debug.
 C        do 9999 I=1,NGET
-C          write (6,*) (IGETNO(I,K),K=1,9)
-C          write (6,*) SLABEL(I)
-C          write (6,*) GLABEL(I)
-C          write (6,*) '  '
+C          write(6,*) (IGETNO(I,K),K=1,9)
+C          write(6,*) SLABEL(I)
+C          write(6,*) GLABEL(I)
+C          write(6,*) '  '
 C 9999   continue
 
 C Write GOGET info to tmp file.
@@ -3468,8 +3381,10 @@ C If IROC=-1 then integrate data (xx hours).
 C Should realy use previous value (if available) - assume no rate of change.
               XV=0.0
             else
-C debug...        write (6,*) 'KX:',KX,' IX:',IX,' VAL2(KX,IX):',
+
+C debug.        write(6,*) 'KX:',KX,' IX:',IX,' VAL2(KX,IX):',
 C     &               VAL2(KX,IX),' XVALOLD(KX):',XVALOLD(KX)
+
               XV=(VAL2(KX,IX)-XVALOLD(KX))*float(NTS)/float(NOUT)
             endif
             XVALOLD(KX)=VAL2(KX,IX)
@@ -3490,6 +3405,7 @@ C This recovers one day.
 
       SUBROUTINE GOGETIT(KGET,IDAY,ISTART,IEND)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "control.h"
 
@@ -3499,15 +3415,6 @@ C This recovers one day.
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RECV5/SNA(MCOM,MS)
       common/PREC18/ZTRANA(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
@@ -3526,7 +3433,6 @@ C =2 with more than 3 day types
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character outs*124,CSTR*25
       dimension CQ(MTS),GC(MTS)
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -3919,7 +3825,7 @@ C and casual gain control file. << Work towards not reading zone files >>
         IUNIT=IFIL+1
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,0,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,0,0,IUOUT,IER)
         endif
@@ -4232,8 +4138,8 @@ C IGET = 47 Renewables/advanced materials secondary output.
       elseif(IGETNO(KGET,1).eq.50)then
 
 C IGETNO(KGET,1) = 50 Local PPD: delta T head/ feet.
-        write(6,*) 
-     &        'Missing information on local air T, setting dT to zero.'
+        call edisp(iuout,
+     &    'Missing information on local air T, setting dT to zero.')
         DO  1406 J2=ISTART,IEND
           iflag=1
           dT=0.
@@ -4249,7 +4155,10 @@ C IGETNO(KGET,1) = 51 Local PPD: floor T.
         DO  1404 J2=ISTART,IEND
           iflag=2
           call DISCOMF(iflag,GVAL(J2),PPD)
-          write (6,*) '41 ',IGETNO(KGET,2),GVAL(J2),PPD
+
+C Debug.
+C          write(6,*) '41 ',IGETNO(KGET,2),GVAL(J2),PPD
+
           if (iflag.eq.-1) PPD=101.
           GC(J2)=PPD
  1404   CONTINUE
@@ -4266,7 +4175,10 @@ C IGETNO(KGET,1) = 52 Local PD: ceiling T, assume dT between air and surface.
             iflag=3
           endif
           call DISCOMF(iflag,GVAL(J2),PD)
-          write (6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
+
+C Debug.
+C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
+
           if (iflag.eq.-1) PD=101.
           GC(J2)=PD
  1306   CONTINUE
@@ -4283,11 +4195,19 @@ C IGETNO(KGET,1) = 53 Local PD: assymetric dTrad
             iflag=4
           endif
           call DISCOMF(iflag,GVAL(J2),PD)
-          write (6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
+
+C Debug.
+C          write(6,*) '42 ',IGETNO(KGET,2),GVAL(J2),PD
+
           if (iflag.eq.-1) PD=101.
           GC(J2)=PD
  1308   CONTINUE
         CALL XTVAL1(GC,ISTART,IEND,KGET)
+      elseif(IGETNO(KGET,1).eq.80)then
+
+C IGETNO(KGET,1) = 80 Zone measured db temperature
+        CALL MOMEASURED(IDAY,IGETNO(KGET,2))
+        CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       endif
 
       RETURN

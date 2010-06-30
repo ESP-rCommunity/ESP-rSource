@@ -5,11 +5,6 @@
    Timer(msec) pause_for_milliseconds
    pausems_() pause_for_milliseconds
    pauses_() pause_for_seconds
-   wwcopen_() open ww commands output file 
-   wwcclose_() Close and mark end or ww commands file
-   wwcsetstart_() indicate start of a set of drawing commands
-   wwcsetend_()	 indicate end of a set of drawing commands
-   curproject_() pass in info on the current project from fortran
    curmodule_() pass in info on the current application from fortran
    userfonts() set fonts for common display tasks
 */
@@ -22,7 +17,7 @@
 #include <sys/time.h>
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
-#include <esp-r.h>
+#include "esp-r.h"
 #include <commons.h>
 
 
@@ -214,110 +209,7 @@ void pauses_(is)
   return;
 }
 
-/* ******* f_to_c_l() confirm Fortran string length is in esru_nox.c *************** */
 
-
-/*  wwcopen_() open ww commands output file */
-void wwcopen_(name,len)
-char *name;
-int len;	/* string length from fortran */
-{
- gint ilen;
- char name2[80];
- wwc_ok = 1;   /* set flag to echo drawing commands to wwc */
-
-/* 
- * Terminate at fortran length, find actual string length
- * and then reterminate.
- */
-  ilen = 0;
-  f_to_c_l(name,&len,&ilen); strncpy(name2,name,(unsigned int)ilen); name2[ilen]='\0';
-  if ((wwc = fopen(name2,"w"))==NULL) {
-    fprintf(stderr,"could not open wwc file %s\n",name2);
-    exit(1);
-  }
-  return;
-}
-
-/* wwcclose_() Close and mark endww commands file if one has been setup */
-void wwcclose_(name,len)
-char *name;
-int len;	/* string length from fortran */
-{
- gint ilen;
- char name2[80];
-  ilen = 0;
-  f_to_c_l(name,&len,&ilen); strncpy(name2,name,(unsigned int)ilen); name2[ilen] = '\0';
-  if ( wwc_ok == 1) {
-    wwc_ok = 0;   /* reset flag to not echo drawing commands to wwc */
-    fprintf(wwc,"*end_wwc\t%s\n",name2);
-    fclose(wwc);
-  } else {
-    fprintf(stderr,"ww commands file never opened...\n");
-  }
-  return;
-}
-
-void wwcsetstart_()	/* indicate start of a set of drawing commands */
-{
- if ( wwc_ok == 1) fprintf(wwc,"*start_set\n");
-  return;
-}
-
-void wwcsetend_()		/* indicate end of a set of drawing commands */
-{
- if ( wwc_ok == 1) fprintf(wwc,"*end_set\n");
-  return;
-}
-
-/* ****** ckaccess_() finds access parameters of a file and is in esru_nox.c ********* */
-
-/* ****** getfilelist_() returns a list of files in a folder and is in esru_nox.c ********* */
-
-/* curproject_() - pass in info on the current project from fortran */
-void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
-  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth)
-  char *fcfgroot;	/* f77 project root name    */
-  char *fpath;	/* f77 project path    */
-  char *fupath;	/* f77 users path    */
-  char *fimgpth;	/* f77 relative path to images    */
-  char *fdocpth;	/* f77 relative path to documents    */
-  char *ftmppth;	/* f77 relative path to scratch folder    */
-  long int *ibrowse;	/* if = 0 then user owns, if = 1 user browsing */
-  int  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth;	/* length of strings from f77  */
-{
-  int  l_root,l_fpath,l_fupath,l_fimgpth,l_fdocpth,l_ftmppth;
-
-  l_root = l_fpath = l_fupath = l_fimgpth = l_fdocpth = l_ftmppth =0;
-  browse = (gint) *ibrowse;
-  strcpy(cfgroot,"                       ");
-  f_to_c_l(fcfgroot,&len_root,&l_root); strncpy(cfgroot,fcfgroot,(unsigned int)l_root);	/* copy to static */
-  cfgroot[l_root] = '\0';
-  strcpy(imgpth, "                       ");
-  f_to_c_l(fimgpth,&len_fimgpth,&l_fimgpth); strncpy(imgpth,fimgpth,(unsigned int)l_fimgpth);	/* copy to static */
-  imgpth[l_fimgpth] = '\0';
-  strcpy(docpth, "                       ");
-  f_to_c_l(fdocpth,&len_fdocpth,&l_fdocpth); strncpy(docpth,fdocpth,(unsigned int)l_fdocpth);	/* copy to static */
-  docpth[l_fdocpth] = '\0';
-  strcpy(tmppth, "                       ");
-  f_to_c_l(ftmppth,&len_ftmppth,&l_ftmppth); strncpy(tmppth,ftmppth,(unsigned int)l_ftmppth);	/* copy to static */
-  tmppth[l_ftmppth] = '\0';
-  strcpy(path,
-      "                                                                         ");
-  f_to_c_l(fpath,&len_fpath,&l_fpath); strncpy(path,fpath,(unsigned int)l_fpath);	/* copy to static */
-  path[l_fpath] = '\0';
-  strcpy(upath,
-      "                                                                         ");
-  f_to_c_l(fupath,&len_fupath,&l_fupath); strncpy(upath,fupath,(unsigned int)l_fupath);	/* copy to static */
-  upath[l_fupath] = '\0';
-/* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
-/* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
-/* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
-/* debug  fprintf(stderr,"path %s\n",path);  */
-/* debug  fprintf(stderr,"upath %s\n",upath);  */
-/* debug  fprintf(stderr,"browse %d\n",browse);  */
-  return;
-}
 
 /* curmodule - pass in info on the current application from fortran */
 void curmodule_(fcmodule,len_fcmodule)
@@ -327,7 +219,7 @@ void curmodule_(fcmodule,len_fcmodule)
   int  l_fcmodule;	/* local length */
 
 /* use the same logic as in curproject_ */
-  strcpy(cappl,"    ");
+  strncpy(cappl,"    ",4);
   f_to_c_l(fcmodule,&len_fcmodule,&l_fcmodule); strncpy(cappl,fcmodule,(unsigned int)l_fcmodule);	/* copy to static */
   cappl[l_fcmodule] = '\0';
 /* debug   fprintf(stderr,"the current application is %s\n",cappl); */ 

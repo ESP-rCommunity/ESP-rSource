@@ -20,44 +20,10 @@ C Boston, MA 02111-1307 USA.
 
 C MISCEL.F contains the following routines used by ish.
 
-C AREA:    Returns area for any polygon.
 C MESH:    Computes centre point X&Z coord of grid squares.
 C PICKSSUR selects surfaces for shading & insolation analysis.
 C POINT1   determine if a point is within the target surface
 C POINT2   determine if a point is within a shadow polygon.
-
-C ************* AREA 
-C Calculates the area of a surface comprising 'n' vertices
-C and coordinates 'x & y'; the calculated area is 'a'.
-
-      subroutine area(n,x,y,a)
-#include "building.h"
-
-      dimension x(mv),y(mv)
-
-      a=0
-      da=(x(2)-x(1))**2+(y(2)-y(1))**2
-      do 10 i=3,n
-         db=(x(i)-x(1))**2+(y(i)-y(1))**2
-         dc=(x(i)-x(i-1))**2+(y(i)-y(i-1))**2
-         si=(y(1)-y(i-1))*(x(i)-x(i-1))-(y(i)-y(i-1))*(x(1)-x(i-1))
-         if(si.gt.0.)si=1.
-         if(si.lt.0.)si=-1.
-         if(abs(si).lt.0.0001)goto 1
-
-C Check square root is not negative.
-         temp=2.*(da*db+db*dc+dc*da)-(da*da+db*db+dc*dc)
-         if(temp.gt.0.00001)then
-            arex=.25*sqrt(temp)
-         else
-            arex=0.0
-         endif
-         a=a+si*arex
-    1    da=db
-   10 continue
-      a=abs(a)
-      return
-      end
 
 C *************** MESH ***********************
 C Computes the centre point 'x & y' coordinates for each rectangular
@@ -65,15 +31,16 @@ C grid cell as superimposed on the target surface. Note that some of
 C these points will lie outside a non-rectangular target surface; such
 C points are later excluded.
 
-      subroutine mesh(its)
+      subroutine mesh(izone,its)
 #include "building.h"
-
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
+#include "geometry.h"
       common/g1t/xft(mv),zft(mv)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/grid3/ogrida(ms)
       common/grid11/xop(mox,moz),zop(mox,moz)
-      character blkname*8,blkmat*12
+      common/c24/izstocn(mcom,ms)
+
+C Get the current connection and number of surfaces in zone.
+      icc=izstocn(izone,its)
 
 C Derive bounding box (in 2d) for surface 'its'. First find max and min
 C x & y values for this surface by scanning each vertex.
@@ -81,7 +48,7 @@ C x & y values for this surface by scanning each vertex.
       zmax=-1.E+10
       xmin=1.E+10
       zmin=1.E+10
-      nv=nver(its)
+      nv=nznver(icc)
       do 10 i=1,nv
          xmax=amax1(xmax,xft(i))
          zmax=amax1(zmax,zft(i))
@@ -95,13 +62,13 @@ C Mesh length and height.
 
 C Establish grid interval for this surface. Ogrida is the area of
 C one grid cell.
-      divx=dxmesh/nox
-      divz=dzmesh/noz
+      divx=dxmesh/nox(izone)
+      divz=dzmesh/noz(izone)
       ogrida(its)=divx*divz
 
 C Compute x & y values for centre point of each grid cell.
-      do 20 i=1,nox
-         do 30 j=1,noz
+      do 20 i=1,nox(izone)
+         do 30 j=1,noz(izone)
             xop(i,j)=divx/2.+(i-1)*divx
             zop(i,j)=divz/2.+(j-1)*divz
    30    continue
@@ -143,11 +110,31 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &          ssparent*12,ssuse*8
       character h*72,stmp*33,act*1
 
+      integer ichoice ! temporary local variable for a call to easkab
+      integer iexcludediff_flag
+      common/excludediff/iexcludediff_flag
+
       ier=0
       if(izone.gt.ncomp.or.izone.eq.0)then
          call usrmsg(' ',' Zone number out of range! ','W')
          ier=1
          return
+      endif
+      h(1) ='In some cases (for example in specific validation tests'
+      h(2) ='or when comparing shading results with more simplified'
+      h(3) ='approaches) it may be necessary to exclude the effect'
+      h(4) ='of diffuse shading. In most cases, diffuse shading '
+      h(5) ='should be included.'      
+      iexcludediff_flag=0     
+      call easkab(' ','Diffuse shading options:',
+     &       'Exclude diffuse shading',
+     &       'Include diffuse shading (default)',ichoice,5)
+      if(ichoice.eq.1)then
+
+C Exclude diffuse shading
+         iexcludediff_flag=1
+      else
+         iexcludediff_flag=0      
       endif
 
  43   h(1) ='A shading analysis computes the temporal patterns of'
@@ -327,18 +314,22 @@ C ************* POINT1 **********************
 C Determines if a specified point is within or outwith the
 C target surface.
 
-      subroutine point1(is,xx,zz,ians)
+      subroutine point1(icomp,is,xx,zz,ians)
 #include "building.h"
+#include "geometry.h"
 
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/g1t/xft(mv),zft(mv)
+      common/c24/izstocn(mcom,ms)
 
       dimension c(2*mv+2)
 
       ians=0
 
+C Get the current connection and number of surfaces in zone.
+      icc=izstocn(icomp,is)
+
 C Determine if point xx,zz is within surface 'is'.
-      np=nver(is)
+      np=nznver(icc)
       do 10 i=1,np
          ii=2*i-1
          c(ii)=xft(i)

@@ -757,7 +757,7 @@ C Defaults.
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
 
-      character DFILE*72,LTMP*144,outs*124,T72*72
+      character DFILE*72,LTMP*144,outs*124,louts*248
       character lctlf*72,ctldoc*248,scname*12,h*72,MODE*4
       character firstbit*72,secondbit*72,path*72,LCFGF*72,cfgroot*24
       character longtmp*144
@@ -873,17 +873,26 @@ C record 32 and set this value.
       irec=32
       read(iunitp,rec=irec,iostat=istat,err=1000)iftype
       if(iftype.eq.-1) then
-        write(6,*) 'opnplt: older plant ',iftype
+
+C Debug.
+C        write(6,*) 'opnplt: older plant ',iftype
+
         IPLIB=1
       elseif(iftype.eq.-2) then
       
 C If newer plant results file we could recover the cfg file name and
 C scan it in at this point. Read the 2nd item on record 32 to get location.
-        write(6,*) 'opnplt: newer plant ',iftype
+
+C Debug.
+C        write(6,*) 'opnplt: newer plant ',iftype
+
 	IPLIB=2
         IREC=32
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000)iftype,ireccfg
-        write(6,*) 'opnplt: the jump for cfg ',ireccfg
+
+C Debug.
+C        write(6,*) 'opnplt: the jump for cfg ',ireccfg
+
         IREC=ireccfg
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         IREC=IREC+1
@@ -891,7 +900,9 @@ C scan it in at this point. Read the 2nd item on record 32 to get location.
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
 	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
-        write(6,*) longtmp
+
+C Debug.
+C        write(6,*) longtmp
       
 C Extract path from cfg file name and check that we can find it.
  289    call fdroot(longtmp,path,LCFGF)
@@ -1003,7 +1014,13 @@ C Read climate file name.
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
-        LCLIM=firstbit  ! until lclim becomes 144 char
+        lnfb=lnblnk(firstbit)
+        lnsb=lnblnk(secondbit)
+	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+
+C Debug.
+C        write(6,*) LCLIM
+
       endif
 
 C Check that this CLIMATE file can still be assigned. << convert >>
@@ -1011,18 +1028,32 @@ C Check that this CLIMATE file can still be assigned. << convert >>
       CALL FPRAND(IUNITC,ISTAT,144,1,LCLIM)
       IF(ISTAT.LT.0)then
 C Climate file not found - ask user for name.
-        write(outs,'(A,A,A)') ' Referenced climate file ',
+        write(louts,'(3A)') ' Referenced climate file ',
      &     LCLIM(1:lnblnk(LCLIM)), ' not found...'
-        call edisp(iuout,outs)
+        call edisp248(iuout,louts,100)
         call erpfree(IUNITC,istat)
         H(1)=' A climate file defines the problem boundary'
         H(2)=' condition. The one included in the results libary'
         H(3)=' was not found, type in the correct name.'
-        t72=LCLIM
-        CALL EASKS(t72,'  Climate file name ?',
-     &     '  ',72,DCLIM,'climate file name',IER,3)
-        if(t72(1:2).ne.'  '.and.t72(1:4).ne.'UNKN')then
-          LCLIM=t72
+        ltmp=LCLIM
+
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(ltmp,' ',' Climate file name ? ',
+     &      96,DCLIM,'climate file name',IER,3)
+        elseif(iglib.eq.2)then
+          CALL EASKF(ltmp,' ',' Climate file name ? ',
+     &      144,DCLIM,'climate file name',IER,3)
+        else
+          CALL EASKF(ltmp,' ',' Climate file name ? ',
+     &      96,DCLIM,'climate file name',IER,3)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+          LCLIM=ltmp
         endif
         goto 44
       endif
@@ -1042,7 +1073,10 @@ C Read plant component file name (long or short)
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         lnfb=lnblnk(firstbit)
 	write(Lpcdb,'(a)') firstbit(1:lnfb)
-        write(6,*) Lpcdb
+
+C Debug.
+C        write(6,*) Lpcdb
+
       elseif(IPLIB.eq.2)then
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
@@ -1051,21 +1085,30 @@ C Read plant component file name (long or short)
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
 	write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
-        write(6,*) Lpcdb
+
+C Debug.
+C        write(6,*) Lpcdb
+
       endif
       
 C If IPLIB is 2 then the model configuration file name will have alread
 C been scanned. Eventually this code can be commented out.
       if(IPLIB.eq.2)then
         IREC=IREC+1
-        write(6,*) ' irec at  cfg file name ',irec
+
+C Debug.
+C        write(6,*) ' irec at  cfg file name ',irec
+
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
 	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
-        write(6,*) longtmp
+
+C Debug.
+C        write(6,*) longtmp
+
         call fdroot(longtmp,path,LCFGF)
       endif
 
@@ -1073,7 +1116,7 @@ C Read control data for simulation.
       IREC=NST
       write(scname,'(a)')CTLDOC(1:12)
       READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000)
-     &   IpSD1,IpSM1,IpSD2,IpSM2,IpSDS,IpSDF,NpTS,ipsav,SCNAME,IDAVER
+     &   IpSD1,IpSM1,IpSD2,IpSM2,IpSDS,IpSDF,NpTS,ipsav,scname,IDAVER
       IREC=IREC+1
 
 C In case of no configuration control file active, skip one record
@@ -1255,6 +1298,7 @@ C data are stored in CSV?M and APCOUT arrays respectively.
       common/pcdat/ CSV1M(mnodec),CSV2M(mnodec),CSV3M(mnodec),
      &              NNODE(mpcom),nrecpc(mpcom)
       common/pcresres/ napout(mpcom),apcout(20)
+      logical unixok
 
 C Find data location in result file.
       ier=0
@@ -1300,7 +1344,9 @@ C Read additional output if any.
      &        ERR=1000)(apcout(jj),JJ=1,napout(ipc))
       return
 
- 1000 WRITE(6,'(A,I5)') ' error when reading results for comp ',ipc
+ 1000 call isunix(unixok)
+      if(unixok)WRITE(6,'(A,I5)') 
+     &  ' error when reading results for comp ',ipc
       ier=1
       END
 
@@ -1430,15 +1476,15 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       integer YAXSET, ADDLIN
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iid1,iid2    ! passed to etplot
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
 #endif
 
-      logical colok,ok,dok
+      logical colok,ok,dok,unixok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
 C Begin with the menu type=4 (performance metrics).
@@ -1641,8 +1687,9 @@ C start of the hour.
               val(jstat)=VALC
             else
               call fnddat(ii,ipc,ier)
+              call isunix(unixok)
               if(ier.ne.0)then
-                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                if(unixok)write(6,*) 'An error in fnddat ',ii,ipc,ier
                 goto 40
               endif
             endif
@@ -1722,6 +1769,7 @@ C by occupancy.
    40     continue
 
 C We have all the data for this timestep into val array.
+
 C Debug.
 C          write(6,'(F10.5,12(2x,G10.3))')
 C     &      ctime,(val(jjj),jjj=1,npget)
@@ -1773,8 +1821,9 @@ C start of the hour.
               val(jstat)=VALC
             else
               call fnddat(ii,ipc,ier)
+              call isunix(unixok)
               if(ier.ne.0)then
-                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                if(unixok)write(6,*) 'An error in fnddat ',ii,ipc,ier
                 goto 60
               endif
             endif
@@ -1838,7 +1887,8 @@ C and process the information.
   112       continue
 
 C Have averaged val array for the current hour.
-C Debug
+
+C Debug.
 C            write(6,'(f10.5,12(2x,G10.3))')
 C     &            ctime,(val(jjj),jjj=1,npget)
 
@@ -2162,8 +2212,9 @@ C start of the hour.
               val(jstat)=VALC
             else
               call fnddat(ii,ipc,ier)
+              call isunix(unixok)
               if(ier.ne.0)then
-                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                if(unixok)write(6,*) 'An error in fnddat ',ii,ipc,ier
                 goto 240
               endif
             endif
@@ -2214,6 +2265,7 @@ C it is the additional output number for the component considered.
   240     continue
 
 C We have the data for this timestep into val array.
+
 C Debug.
 C          write(6,'(F10.5,12(2x,G10.3))')
 C     &            ctime,(val(jjj),jjj=1,npget)
@@ -2347,7 +2399,10 @@ C Hours below.
 C Tidy up in preparation for the next loop.
           ctime=ctime+enterval*float(nout)
           gtime=gtime+float(nout)
+
+C Debug.
 C          write(6,*) 'incr ii ctime gtime ',ii,ctime,gtime
+
   200   continue
       else
 
@@ -2395,8 +2450,9 @@ C start of the hour.
               val(jstat)=VALC
             else
               call fnddat(ii,ipc,ier)
+              call isunix(unixok)
               if(ier.ne.0)then
-                write(6,*) 'An error in fnddat ',ii,ipc,ier
+                if(unixok)write(6,*) 'An error in fnddat ',ii,ipc,ier
                 goto 260
               endif
             endif
@@ -2456,7 +2512,8 @@ C and process the information.
   212       continue
 
 C Have averaged val array for the current hour.
-C Debug
+
+C Debug.
 C            write(6,'(f10.5,12(2x,G10.3))')
 C     &            ctime,(val(jjj),jjj=1,npget)
 
@@ -2746,8 +2803,8 @@ C Finally label lines, matching zone line colour if used.
               call winscl('z',ICM)
             endif
           endif
-          call u2pixel(TIMEold(I),Yold(I),ixs,iys)
-          call wstxpt(ixs,iys,t20)
+          call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
+          call wstxpt(iid1,iid2,t20)
           if(colok)call winscl('-',0)
           call forceflush()
  202    continue
@@ -2756,7 +2813,8 @@ C If there are optional user defined labels draw them.
         if(ngrlbl.gt.0)then
           do 201 ijj=1,ngrlbl
             t24=grlbl(ijj)
-            call wstxpt(lblpx(ijj),lblpy(ijj),t24)
+            iid1=lblpx(ijj); iid2=lblpy(ijj);
+            call wstxpt(iid1,iid2,t24)
  201      continue
         endif
       elseif (MENUTYPE.eq.5) then
@@ -2828,7 +2886,10 @@ C Create string description for time of minimum occurrance.
           write (outs,'(a,1x,2(f8.2,2x,a12,1x),2f9.2)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
-C          write (6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
+C Debug.
+C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
  221    continue
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')
@@ -2867,7 +2928,10 @@ C Create string description for time of minimum occurrance.
           write (outs,'(a,1x,2(f8.2,2x,a12,1x),2f9.2)') t20,
      &      FMAX(I),XT,FMIN(I),NT,FAVE(I),AYAB
           call eddisp(itru,outs)
-C          write (6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
+C Debug.
+C          write(6,*) FMAX(I),FMIN(I),FAVE(I),FSTD(I),IQHRS(I)
+
  230    continue
         if(iocupf.eq.1.and.iocpzone.ne.0)then
           call eddisp(itru,'(above data filtered by occupancy)')

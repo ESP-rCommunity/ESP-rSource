@@ -24,7 +24,6 @@ C      MZBCTL: control executive.
 C      MZMIXT: calculate `weighted' zone temperature.
 C      CFVAR: get sensed condition for single sensor control.
 C      CFMVAR: get sensed conditions for multi-sensor control.
-C      CFFNGR: function generator.
 C      BCL00: `weighted' temperature control.
 C      BCL01: basic control.
 C      BCL02: free float.
@@ -266,6 +265,9 @@ C prevailing at the 'future' time-row of
 C the current time step.
 
 C Tmix = CONV*Tair + RAD*Tmrt
+C This subroutine can be called from outwith a controls scenario by
+C setting ICMP to negative unity times zone number. In such a case CONV
+C is set to 0.5
 
 C  IMRTT   - Defines the position of the MRT sensor within the zone
 C            IMRTT=1 : selected surfaces associated with sensor
@@ -302,8 +304,19 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
       character outs*124
       logical close
 
-      IC=ICF
-      CONV=FLOAT(IBSN(IC,3))/100.0
+C If a negative number is passed as icmp then change icmp to positive.
+      if(icmp.lt.0)then
+        icmp=-1*icmp
+        conv=0.5
+        ic=1
+      endif
+
+C Test that ic is non-zero.
+      if(icf.ne.0)then
+        IC=ICF
+        CONV=FLOAT(IBSN(IC,3))/100.0
+      endif
+
       RAD=1.0-CONV
 
 C Fix sensor type for now.
@@ -341,7 +354,8 @@ C Compute weighted temperature.
       GOTO 7
  1000 call edisp(iuout,
      &  ' MZMIXT: zero area associated with the mrt sensor!')
-      write(outs,'(A,I3)')' Zone',ICMP
+      write(outs,'(A,2I3,2F8.2)')' Zone ',ICMP,' ic tmrt tmix ',
+     &  ic,tmrt,tmix
       call edisp(iuout,outs)
     7 RETURN
       END
@@ -371,13 +385,15 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
 
       character dllsubr*12,dllmesg*124,outs*124
-      DIMENSION VAL(MBITS+2)
+      DIMENSION VAL(MTABC+2)
       
       logical bfngn,svcfgr,dll
       
@@ -434,6 +450,9 @@ C Which is obviously not allowed in case of bld.
         endif
       ELSEIF(IBSN(ICF,1).EQ.-2)THEN
          IZ=IBSN(ICF,2)
+
+C If zone is not specified then take the current zone
+         IF(IZ.EQ.0)IZ=IICOMP
          CALL MZMIXT(IZ,TMRT,TCTL)
 
       ELSEIF(IBSN(ICF,1).EQ.-3)THEN
@@ -532,8 +551,9 @@ C Setpoint to be read from temporal file.
            CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
            TCTL=VAL(ISD)
 C Debug.
-           write(6,*)'tdf ctl data @',btimef,' is item',itdi,
-     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+C           write(6,*)'tdf ctl data @',btimef,' is item',itdi,
+C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+
          else
            write(outs,'(a)')
      &     'CFVAR: ISETPTT does not point to a valid temporal item'
@@ -600,9 +620,11 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
       common/dllerr/dllsubr,dllmesg
-      DIMENSION VAL(MBITS+2)
+      DIMENSION VAL(MTABC+2)
       character dllsubr*12,dllmesg*124,outs
       logical dll
 
@@ -697,6 +719,7 @@ C database.
 C Debug.
 C           write(6,*)'CFMVAR:tdf ctl data @',btimef,' is item',itdi,
 C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
+
           else
             write(outs,'(a)')
      &      'CFMVAR: ISETPTT does not point to a valid temporal item'
@@ -731,276 +754,6 @@ C     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
 
       RETURN
       END
-
-C ******************** CFFNGR ********************
-
-C CFFNGR is a function generator.
-
-      SUBROUTINE CFFNGR(IFNC,TCTL)
-#include "building.h"
-#include "control.h"
-
-      COMMON/BTIME/BTIMEP,BTIMEF
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      
-      COMMON/TC/ITC,ICNT
-      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-
-      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
-    
-      logical bfngn
-
-C Trace output
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(40).NE.0) THEN
-         CALL DAYCLK(IDYP,btimef,ITU)
-         WRITE(ITU,*) ' Entering subroutine CFFNGR'
-      END IF
-
-C Type 1: Step function generator.
-      if(ifnc.eq.1) then
-
-C Assign data as defined in table above.
-         start =cfgsd(icf,1)
-         finish=cfgsd(icf,2)
-         vmax  =cfgsd(icf,3)
-         vmin  =cfgsd(icf,4)
-
-C Determine function shape.
-         tctl=vmin
-         if(btimef.gt.start.and.btimef.lt.finish) tctl=vmax
-
-C Type 2: ramp function generator.
-      elseif(ifnc.eq.2) then
-
-C Assign data as defined in table above.
-         start =cfgsd(icf,1)
-         finish=cfgsd(icf,2)
-         vmax  =cfgsd(icf,3)
-         vmin  =cfgsd(icf,4)
-
-C Determine function shape.
-         tctl=vmin
-         if(btimef.gt.start.and.btimef.lt.finish) then
-
-C Calculate ratio for interpolation.
-            ratio=(vmax-vmin)/(finish-start)
-
-C Calculate value by interpolation.
-            tctl=vmax-ratio*(finish-btimef)
-         endif
-
-C Type 3: Square wave, sine series.
-      elseif(ifnc.eq.3) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-         vmean=(vmax+vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         sinsum=0.0
-         half=(tps+tpf)/2.0
-         f=1.0
-
-C Approximate series with 100 terms.
-         do 10 iterm=1, 100
-            sinsum=1.0/f * sin((pi*btimef*f*freq/half))+sinsum
-            f=f+2.0
-   10    continue
-         tctl=sinsum*(4.0*amp)/pi+vmean
-
-C Type 4: Square wave, cosine series.
-      elseif(ifnc.eq.4) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-         vmean=(vmax+vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         cossum=0.0
-         half=(tps+tpf)/2.0
-         f=1.0
-         isign=1
-
-C Approximate series with 100 terms.
-         do 20 iterm=1, 100
-            cossum=isign * 1.0/f * cos((pi*btimef*f*freq/half))+cossum
-            f=f+2.0
-            isign=isign*(-1)
-   20    continue
-         tctl=cossum*(4.0*amp)/pi+vmean
-
-C Type 5: Triangular wave.
-      elseif(ifnc.eq.5) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-         vmean=(vmax+vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         cossum=0.0
-         half=(tps+tpf)/2.0
-         f=1.0
-
-C Approximate series with 100 terms.
-         do 30 iterm=1, 100
-            cossum=1.0/(f)**2 * cos((pi*btimef*f*freq/half))+cossum
-            f=f+2.0
-   30    continue
-         tctl=cossum*(8.0*amp)/(pi)**2 +vmean
-
-C Type 6: Saw tooth wave.
-      elseif(ifnc.eq.6) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-         vmean=(vmax+vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         sinsum=0.0
-         half=(tps+tpf)/2.0
-         f=1.0
-         isign=1
-
-C Approximate series with 100 terms.
-         do 40 iterm=1, 100
-            sinsum=isign * 1.0/f * sin((pi*btimef*f*freq/half))+sinsum
-            f=f+1.0
-            isign=isign*(-1)
-   40    continue
-         tctl=sinsum*(2.0*amp)/pi +vmean
-
-C Type 7: Sine wave.
-      elseif(ifnc.eq.7) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-         shift=cfgsd(icf,4)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         half=(tps+tpf)/2.0
-         tctl=amp*(sin(pi*freq*(btimef-shift)/half)+1.0) + vmin
-
-C Type 8: Cosine wave.
-      elseif(ifnc.eq.8) then
-
-C Assign data as defined in table above.
-         vmax=cfgsd(icf,1)
-         vmin=cfgsd(icf,2)
-         freq=cfgsd(icf,3)
-         shift=cfgsd(icf,4)
-
-C Find control period start and finish hour.
-         NDAYP=NBCDP(icf,IDTYP)
-         TPS=TBCPS(icf,IDTYP,iper)
-         IF(iper.LT.NDAYP) THEN
-            TPF=TBCPS(icf,IDTYP,iper+1)
-         ELSE
-           TPF=24.
-         END IF
-
-C Find amplitude and mean value of wave.
-         amp=(vmax-vmin)/2.
-
-C Now evaluate sine series.
-         pi=4.0*atan(1.0)
-         half=(tps+tpf)/2.0
-         tctl=amp*(cos(pi*freq*(btimef-shift)/half)+1.0) + vmin
-
-C Type 9: Use sensed property tctl.
-      elseif(ifnc.eq.9) then
-         sclfac=cfgsd(icf,5)
-         offset=cfgsd(icf,6)
-         tctl=(sclfac*tctl)+offset
-      endif
-
-C Trace output
-      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(40).NE.0) then
-         write(itu,'(I5)') ' Function type is',ifnc
-         write(itu,'(F10.4)') ' btimef=',btimef
-         write(itu,'(F10.4)') ' tctl =',tctl
-         WRITE(ITU,*) ' Leaving subroutine CFFNGR'
-      endif
-      
-      return
-      end
 
 C ******************** BCL00
 
@@ -2368,6 +2121,10 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
+     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
       DIMENSION ICPL(MPCOM,2),IXTC(MPCOM,2)
 
@@ -2404,17 +2161,30 @@ C Fatal error tests
          STOP
       endif
 
-
       QFUT=0.
       TFUT=TNP
       INEX=0
+      XMDR=1.0 ! Mass diversion fraction for fluid flow to zone
 
 C Determine coupled supply plant component and node.
-
       IF(ISIND.NE.4) THEN 
         IPCMP=IFIX(BMISCD(ICF,IDTYP,IPER,2))
         IPNOD=IFIX(BMISCD(ICF,IDTYP,IPER,3))
         IN=NPCDAT(IPCMP,9)+IPNOD-1
+
+C Get the connections this node sends mass to 
+        IBLDGZ=NINT(BMISCD(ICF,IDTYP,IPER,7))
+        ICON=0
+        DO 1 IPCON=1,NPCON
+          IF(IPC2(IPCON).EQ.IN)THEN
+            IF(NINT(PCONSD(IPCON,1)).EQ.IBLDGZ)THEN
+              ICON=IPCON
+              XMDR=PCONDR(ICON)
+            ENDIF
+          ENDIF
+ 1      CONTINUE
+        IF(ICON.EQ.0)CALL EDISP(ITU,
+     &  'BCL06: Mass diversion for plant zone link not found')
       ELSEIF(ISIND.EQ.4) THEN
 
 C Set the embedded flag to zero after finding ipcmp.
@@ -2502,7 +2272,7 @@ C      from the previous time step to calculate the resulting heat injection.
 
 C Temperature, 1st and 2nd mass flow rate of plant injection node
          TMPN=CSVF(IN,1) 
-         AMFR=CSVF(IN,2)
+         AMFR=CSVF(IN,2)*xmdr
          VMFR=CSVF(IN,3)
 
 C Heat capcity of dry air & vapor:
@@ -3221,6 +2991,8 @@ C ON condition is reached.
 
       SUBROUTINE BCL10
 #include "building.h"
+#include "hvac_parameters.h"
+#include "hvac_common.h"
 #include "control.h"
 
       COMMON/TC/ITC,ICNT
@@ -3261,8 +3033,22 @@ c HSPON = heating ON set point temp. (deg.C)
 c HSPOFF = heating OFF set point temp. (deg.C)
 c CSPON = cooling ON set point temp. (deg.C)
 c CSPOFF = cooling OFF set point temp. (deg.C)
-      QHM=BMISCD(ICF,IDTYP,IPER,2)
-      QCM=-BMISCD(ICF,IDTYP,IPER,3)
+
+C If the zone associated with this control function is served by an HVAC system
+C simulated ideally, then use HVAC system capacity to update controller
+C heating/cooling capacity for time step. 
+      if(cont_fun_heat_cap(IICOMP).gt.0 ) then
+        QHM=cont_fun_heat_cap(IICOMP)
+      else
+        QHM=BMISCD(ICF,IDTYP,IPER,2)       
+      endif
+
+      if(cont_fun_cool_cap(IICOMP).gt.0.) then
+        QCM=-cont_fun_cool_cap(IICOMP)
+      else        
+        QCM=-BMISCD(ICF,IDTYP,IPER,3)
+      endif
+
       HSPON=BMISCD(ICF,IDTYP,IPER,4)
       HSPOFF=BMISCD(ICF,IDTYP,IPER,5)
       CSPON=BMISCD(ICF,IDTYP,IPER,6)
@@ -3512,7 +3298,8 @@ C pro rata temperature control.
       TEMPLO=(SCALEF*TEMPLO)+OFFSET
       TEMPAV=(SCALEF*TEMPAV)+OFFSET
       TEMPWT=(SCALEF*TEMPWT)+OFFSET
-C Debug...
+
+C Debug.
 C      write(6,*) '*OFFSET,SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT',OFFSET,
 C     & SCALEF,TEMPHI,TEMPLO,TEMPAV,TEMPWT
 
@@ -5339,6 +5126,7 @@ C if 0 for a wetted surface 1 for a swiming pool.
 
       SUBROUTINE BCL20
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -5357,12 +5145,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-
-
 C In support of ZRH calculations.
       common/concoe/hcip(mcom,ms),hcif(mcom,ms),hcop(mcom,ms),
      &              hcof(mcom,ms)
@@ -5373,6 +5155,7 @@ C Evaporation common block for use in MZVAPC.
 
       CHARACTER OUTS*124
       logical newgeo  ! to use for testing if new/old geometry file.
+      logical unixok
 
 C Fatal error test.
 c      IF((BMISCD(ICF,IDTYP,IPER,1).NE.1.0).OR.
@@ -5443,7 +5226,7 @@ C Use zone moisture content (xi), x at saturation to evaluate Ev.
 C Read in surface details and calculate the area weighted radiant temperature. 
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
+          call georead(ifil+1,lgeom(icomp),icomp,0,itu,ier)
         else
           call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
         endif
@@ -5456,7 +5239,7 @@ C Read in surface details and calculate the area weighted radiant temperature.
   20    continue
         tsurf=tsurf/atot
 
-C     Pool basin energy balance:
+C Pool basin energy balance:
         Qconv=alpha*Abas*(Tbas-TD)
         Qrad=alphar*Abas*(Tbas-Tsurf)
         Fevap=Ev
@@ -5473,7 +5256,8 @@ C rest of the building model.
       endif
 
 C Dump output
-      if(mode.eq.1)then
+      call isunix(unixok)
+      if(mode.eq.1.and.unixok)then
         write(6,*) ' Pool balance '
         write(6,*) ' t       ',IHRF,' (h)'
         write(6,*) ' Tair    ',TD,' (C)'
@@ -5857,11 +5641,19 @@ C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
 #include "building.h"
 #include "tdf2.h"
 #include "control.h"
+#include "sbem.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/btime/btimep,btimef
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       common/dllerr/dllsubr,dllmesg
+      COMMON/FVALA/TFA(MCOM),QFA(MCOM)
+      COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
+     &             DFLP,DFLF,HFLP,HFLF
 
 C TDF commons.
 C Index for each potential temporal db entry type 0=not used, 2=tabular data.
@@ -5870,18 +5662,32 @@ C For each zone a pointer to relevant temporal db entry type 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
 
-      character dllsubr*12,dllmesg*124,outs*124
-      logical dll
-      DIMENSION VAL(MBITS+2)
-      integer COLUMNSETP
-     
+C These two commons relate to setting cooling on if temperature exceeds
+C the heating set point by 1degC for the UKNCM notional model (and
+C associated DSM testing models)
+      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
+      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
+
+      character dllsubr*12,dllmesg*124,outs*124,cmsg*12
+      logical dll,near
+      DIMENSION VAL(MTABC+2)
+      integer COLUMNSETP ! column from control 23
+
 C Check to see if running in dll mode.
       call isadll(dll)
 
 C Fatal error test.
       IF(BMISCD(ICF,IDTYP,IPER,1).LT.2.)GOTO 99
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' Entering subroutine BCL23')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
 
 C Determine sensed temperature.
       CALL CFVAR(TCTL,IER)
@@ -5895,6 +5701,7 @@ C QCM = max cooling capacity (W)
 C QCN = min cooling capacity (W)
 C HSP = heating set point temp. (deg.C)
 C CSP = cooling set point temp. (deg.C)
+      cmsg=' '
       QHM=999999.0
       QHN=0.0
       QCM=-999999.0
@@ -5902,28 +5709,111 @@ C CSP = cooling set point temp. (deg.C)
       QFUT=0.0
       TFUT=TNP
 
+C Turn cooling off if no UK NCM cooling generator is linked to this zone
+C If there is no system associated with the zone then set QCM to zero.
+C If this is the reference model then cooling will be present regardless
+C of the type of space conditioning system. This is done later on 
+      IHLZP=IHLZ(IiCOMP)  ! set up pointer
+      NEAR=.TRUE.
+      if(ihlzp.ne.0) CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
+      IF(NEAR)QCM=0.0
+
 C Read setpoints from tdf here (CSP and HSP)
-C "COLUMNSETP" is an integer specifying the column where the setpoints
-C should be read from. This could be the ISD but when calling the RCTDFB it
-C seems that is always set to 2 (and it is also used in few other places as 2).
+C "COLUMNSETP" is an integer specifying the column within the
+C returned temporal item data array VAL. 
+
+C Each activity has 5 data items. Counting the timestamp as
+C column 1 then the first activity will have heating setpoint
+C at column 5 and the cooling setpoint at column 6 and the
+c second activity will have its heating at column 10 and
+C cooling setpoint at column 11.  RCTDFBALL gets all of the
+C columns into VAL. But decrement COLUMNSETP by one to exclude
+C the initial time column.
       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,2))
       if(IACTIV(ICF).ne.0)then
         itdi=IACTIV(ICF)
       elseif(IHTCLSETP(ICF).ne.0)then
         itdi=IHTCLSETP(ICF) 
-      endif   
-      IFOC=itdi
-      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-      HSP=VAL(COLUMNSETP)
+      endif
+
+C There is only a requirement to scan this timestep once to get
+C both the heating and cooling setpoints.
+      CALL RCTDFBALL(itrc,btimef,VAL,ISD,IER)
+      if(IACTIV(ICF).ne.0)then
+        HSP=VAL(COLUMNSETP-1)
+      elseif(IHTCLSETP(ICF).ne.0)then
+        HSP=VAL(COLUMNSETP)
+      endif
+
+C Now get the column for cooling.
       COLUMNSETP=nint(BMISCD(ICF,IDTYP,IPER,3))
-      CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
-      CSP=VAL(COLUMNSETP)
+      if(IACTIV(ICF).ne.0)then
+        CSP=VAL(COLUMNSETP-1)
+        cmsg=' via column'
+      elseif(IHTCLSETP(ICF).ne.0)then
+        CSP=VAL(COLUMNSETP)
+        cmsg=' via column'
+      endif
         
-C Debug.
-c       write(6,*)'tdf ctl data @',btimef,' is item',itdi,
-c     &       ' column ',isd,' value ',tctl,' for ctl loop ',icf
-      
-      IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
+C If UK NCM reference building (or stripped with DSM testing flag equal to 2)
+C then cooling set point is always 27degC
+      if(INOTI.EQ.2.OR.(INOTI.eq.4.AND.iDsmTestingFlag.eq.2))then
+        CSP=27.0
+        cmsg=' via test'
+        QCM=-999999.0
+      endif
+
+C If notional model or DSM testing then set cooling set point to 1degC
+C more than static heating setpoint (found in the header of the temporal
+C file) to compensate for overheating (5ach not implemented). The value
+C in the header is based on information in SBEM.db1 which has been edited
+C to reflect the highest heating setpoint in the activities timestep
+C data. (the original static heating setpoint in SBEM.db1 was for use
+C only in iSbem.
+
+      if(INOTI.eq.1.or.iDsmTestingFlag.ge.1)then
+        iitdi=IACTIV(IICOMP)
+        if(iNatVentilatedFlag.eq.1)then
+
+          HSPTest=TMAR(iitdi,IATDF(iitdi,15)) ! static high HSP
+          CSP=HSPTest+1.0   ! the official NCM logic
+          cmsg=' stat hsp+1'
+
+C Test commented out, use highest heating setpoint for the activity.
+C          if(HSPTest.ge.HSP)then
+C            CSP=HSPTest+1.0
+C            cmsg=' stat hsp+1'
+C          else
+C            CSP=HSP+1.0
+C            cmsg=' step hsp+1'
+C          endif
+
+C Test commented out. 
+C          if(CSP.lt.21.0)then
+C            CSP=21.0
+C            cmsg=' step hsp++'
+C          endif
+
+C Set up maximum cooling to equivalent of 5 air changes
+          QCM=-1.*0.333*5.*vol(iicomp)*(tfa(iicomp)-TFLWF)
+
+C If ambient is hotter than interior no cooling can be achieved
+          if(QCM.gt.0.)QCM=0.
+        endif
+      endif
+
+      IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)then
+        IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &     ITRACE(41).NE.0) THEN
+          write(itu,'(a,f8.3,a,i3,a,f7.2,a,i3,a,f7.2,a,f7.2,2a,i3)')
+     &      'tdf ctl data @',btimef,' is item',itdi,
+     &      ' value ',tctl,' for ctl loop ',icf,
+     &      ' hsp ',hsp,' csp ',csp,cmsg,' column of csp ',COLUMNSETP
+          write(itu,*)'VAL is ',(val(i),i=1,24)
+          write(itu,*)'tctl ',tctl,' is in the deadband.'
+        ENDIF
+        RETURN
+      endif
 
 C Since sensed temperature is not within range, attempt to control
 C THIS zone's temperature.
@@ -5964,6 +5854,23 @@ C Is this available ?
     5 Q=QCM
     2 TFUT=(BB3-BB2*Q)/BB1
       QFUT=Q
+
+C Trace output format depending on whether VAV or CAV active.
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) THEN
+        write(itu,'(a,f8.3,a,i3,a,f7.2,a,i3,a,f6.2,a,f6.2,2a,i3,a,
+     &    f8.0)')
+     &    'tdf ctl data @',btimef,' is item',itdi,
+     &    ' value ',tctl,' for ctl loop ',icf,
+     &    ' hsp ',hsp,' csp ',csp,cmsg,' column of csp ',COLUMNSETP,
+     &    ' cooling cap ',QCM
+        write(itu,*)'VAL is ',(val(i),i=1,24)
+        write(itu,*)'Qfut is ',QFUT,' TFUT is ',TFUT
+        IF(INOTI.EQ.2)write(itu,*)'simulating UK NCM reference building'
+
+        call edisp(itu,' Leaving subroutine BCL23')
+      END IF
+
       return
    99 write(outs,'(a)')' BCL23: data incomplete.'
       if(dll)then
@@ -6227,6 +6134,7 @@ C ICALL = 2 signals call from solar with request for alternative props.
 
       subroutine bcl99(ICALL)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -6234,6 +6142,7 @@ C geometry.h provides commons G0 and G2.
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
+#include "material.h"
 #include "control.h"
 
       common/outin/iuout,iuin
@@ -6244,12 +6153,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      common/mlc/nmlc,desc(mmlc),dthk(mmlc,me),ipr(mmlc,me),
-     &           layers(mmlc),drair(mmlc,me,3)
 
       common/fvala/tfa(mcom),qfa(mcom)
       common/pstsol/icf,idtyp,iper,bb1,bb2,bb3,iicomp,tnp,qfut,tfut
@@ -6264,11 +6167,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/PREC14/emarea(MCOM)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
-
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       common/trc/itrc
@@ -6278,32 +6176,12 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       common/BSCTL/ITPREP(MCOM,MTMC),ICZN,IMDB(3),IGLZ(3)
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
+C Material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      character titl*72,nam*72
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 
@@ -6317,7 +6195,7 @@ C << of 3 surface to change will have to be increased!        >>
       newgeo=.false.  ! assume older format geometry.
       
 C Debug...
-C      write (6,*) 'BCL 99 ',btimef
+C      write(6,*) 'BCL 99 ',btimef
       
 C If called from solar.F then use the data in common/BSCTL/ otherwise
 C use data in normal ctl common blocks.
@@ -6396,14 +6274,22 @@ C Update or reset properties based on above logic.
         CHANGED=.true.
 
 C Find version of materials database. If 1.1 then use material arrays.
-        call eclose(matver,1.1,0.01,closemat)
-      
+        call eclose(matver,1.1,0.01,closemat1)
+        call eclose(matver,1.2,0.01,closemat2)
+        if(closemat1.or.closemat2)then
+          continue
+        else
+          call edisp(iuout,'BCL99: Materials arrays are incomplete.')
+        endif
+	
 C Reset properties by reading in zone descriptor files.
-        write (6,*)'Resetting tp properties at btimef ',btimef
+
+C Debug.
+C        write(6,*)'Resetting tp properties at btimef ',btimef
 
         call eclose(gversion(ICMP),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         else
           call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
         endif
@@ -6417,7 +6303,7 @@ C Read in the thermophysical properties for this zone
 C (needed in subroutine mzcoe1).
         call eclose(gversion(ICMP),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
+          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         else
           call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
         endif
@@ -6441,30 +6327,28 @@ C ii represents the surface to update.
 C ic represents the mlc entry number of the new construction.
 C ic is tested for zero in solar.F
           ic = mldbp(icnsub)
-C        write (6,*) 'Updating thermophysical properties of surface ',ii
-C        write (6,*) 'with construction ',DESC(ic)' at btimef ',btimef
+
+C Debug.
+C        write(6,*) 'Updating thermophysical properties of surface ',ii
+C        write(6,*) 'with construction ',DESC(ic)' at btimef ',btimef
 
 C Put the composite db info into current surface attributes
 C common.  Gather information about each layer. Read in the
-C primitive db info. 
+C material db info. 
           ne(ii)=layers(ic)
           do 223 i=1,layers(ic)
-            if(closemat)then
+            if(closemat1.or.closemat2)then
               legmat=ipr(ic,i)   ! which legacy index
-              if(legmat.ge.0)then
+              if(legmat.gt.0)then
                 matarrayindex=mathash(legmat)  ! find matching array index
                 dbcon=matdbcon(matarrayindex)
                 dbden=matdbden(matarrayindex)
                 dbsht=matdbsht(matarrayindex)
                 E=matdbine(matarrayindex)
                 A=matdbina(matarrayindex)
-                drv=matdbdrv(matarrayindex)
-                write(titl,'(a)') 'placeholder'
-                write(nam,'(a)') matname(matarrayindex)(1:32)
               endif
             else
-              call erpcdb(ifmat,ipr(ic,i),iuout,ier,dbcon,dbden,
-     &            dbsht,e,a,drv,titl,nam)
+              ier=1  ! incomplete materials arrays so pass back ier
             endif
             if(ier.eq.1)return
             if(ipr(ic,i).ne.0)then

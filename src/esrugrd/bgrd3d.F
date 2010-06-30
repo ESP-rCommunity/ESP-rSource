@@ -40,7 +40,6 @@ C *********************************************************************
 #include "building.h"
 
       COMMON/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -62,6 +61,7 @@ C *********************************************************************
 
       CHARACTER ITEM(15)*26,SZN*15,H*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
+      integer ier
 
       SZN=' '
       IZ=0
@@ -275,21 +275,25 @@ C Delete the associated 3D file.
         IF(ZONE3D(IZ))THEN
           CALL FINDFIL(L3DCVS(IZ),XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,L3DCVS(IZ),5,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
           CALL FINDFIL(L3DCNC(IZ),XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,L3DCNC(IZ),7,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
           CALL FINDFIL(L3DNDC(IZ),XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,L3DNDC(IZ),3,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
           CALL FINDFIL(L3DTAQ(IZ),XST)
           IF(XST)THEN
+            ier=0
             CALL EFOPRAN(IUNIT,L3DTAQ(IZ),2,3,IER)
             CALL EFDELET(IUNIT,ISTAT)
           ENDIF
@@ -330,7 +334,6 @@ C DFNCMP displays the components definition menu.
 C *********************************************************************
       SUBROUTINE DFNCMP(IZ,SZN,IDRW1,IDRW2)
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
@@ -393,7 +396,6 @@ C DFNCNC displays the connections definition menu.
 C *********************************************************************
       SUBROUTINE DFNCNC(ICOMP,SZN,IDRW1,IDRW2)
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
@@ -463,7 +465,6 @@ C *********************************************************************
 #include "epara.h"
 #include "building.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -973,6 +974,7 @@ C SELZON displays the zone selection menu.
 C *********************************************************************
       SUBROUTINE SELZON(ITRC,SZN,ZONOK,IZ)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -983,10 +985,6 @@ C geometry.h provides commons G0 and G2.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
@@ -1016,7 +1014,7 @@ C Show the zone selection menu.
         SZN=zname(IZ)
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
         endif
@@ -1103,7 +1101,6 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -1441,7 +1438,6 @@ C *********************************************************************
 
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)

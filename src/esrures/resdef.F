@@ -169,7 +169,6 @@ C      call edisp248(iuout,outs248,100)
 
       CALL ERPFREE(iunit,ISTAT)
       call FINDFIL(ltmp,xst)
-C      write(6,*) 'MORFIL: exist is ',xst
       IF(XST)THEN
 
 C See if this is a plant result file.
@@ -180,11 +179,17 @@ C That is if record 32=-1 or -2.
            irec=32
            read(iunit,rec=irec,iostat=ios,err=13)iftype
            if(iftype.eq.-1) then
+
+C Debug.
 C             write(6,*) 'MORFIL: older plant ',iftype
+
              IPLIB=1
              return
            elseif(iftype.eq.-2) then
+
+C Debug.
 C             write(6,*) 'MORFIL: newer plant ',iftype
+
 	     IPLIB=2
              iftype=-1
              return
@@ -409,6 +414,8 @@ C that izver = 3 or earlier does not include explicit separate
 C casual gains data items.
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NSIM,nzrl,izver,IMET
+
+C Debug.
 C      write(6,*) 'uncertainty analysis method ',IMET
 
 C If there is more than one result-set then check to see if ISAVE=const for 
@@ -450,8 +457,10 @@ C In the case of factorial uncertainty analysis decode result set name.
               call EGETWI(TNAME,K,IC,0,0,'-','factorial state',IER)
               IFAFLG(I,IFS)=IC
  722        continue
-          endif   
-          write (6,*) (IFAFLG(I,IXXX),IXXX=1,NFA)   
+          endif
+
+C Debug.
+C          write(6,*) (IFAFLG(I,IXXX),IXXX=1,NFA)   
   
 C Read simulation start and finish days and control name.
           IREC=NST1
@@ -648,6 +657,7 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
 
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
@@ -847,8 +857,6 @@ C NCON    - total number of intra-zone connections.
 C NFP     - defines the internal plane at
 C           which solar energy is injected in the absence
 C           of internal insolation information.
-C LSNAM   - is the name of the entire system.
-C NCCODE  - zone code.
 C ZNAME   - zone name (from geometry.h).
 C NCONST  - number of multilayered constructions in
 C           each zone.
@@ -865,6 +873,7 @@ C ISTREC is the start record.
 C ier is zero if no problems and -3 if user issued a cancel.
       SUBROUTINE MOINIT(ISTREC,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 
@@ -880,10 +889,6 @@ C ier is zero if no problems and -3 if user issued a cancel.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/DNORGH/IRTYPE
@@ -901,6 +906,7 @@ C Nothing references ZGAE and ZGAI.
      &              HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/RECVBP/IBP
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       common/hcthry/ihct,icorexhct
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -913,7 +919,8 @@ C Defaults.
 
 C longtmp is the model configuration file with full path.
       CHARACTER NAME*6,longtmp*144,H*72,cfgroot*24
-      character outs*124,znpad*15,path*72,MODE*4,ltmp*72
+      character outs*124,znpad*15,path*72,MODE*4
+      character louts*248
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
@@ -930,9 +937,11 @@ C read again.
         IREC=30+2
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)NCOMP,NCON
         if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
-          write(6,*) 'WARNING: ncomp at record was dubious',NCOMP,IREC
-          write(6,*) 'this results file needs to be scanned with'
-          write(6,*) 'an older version of res.'
+          write(outs,*) 'WARNING: ncomp at record was dubious',NCOMP,
+     &       IREC
+	  call edisp(iuout,outs)
+	  call edisp(iuout,'this results file needs to be scanned')
+	  call edisp(iuout,'with an older version of res.')
         endif
       endif
       IREC=IREC+1
@@ -949,7 +958,7 @@ C read again.
   301   CONTINUE
   300 CONTINUE
       goto 4
-    3 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LSNAM
+    3 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)modeltitle
       IREC=IREC+1
       NCP=NCOMP
       IF(NCP.GT.20)NCP=20
@@ -960,6 +969,9 @@ C read again.
       IREC=IREC+1
 
 C Recover CLIMATE file name used at simulation time.
+C << if there is an error it might be because of the version
+C << of the database file
+
     4 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LCLIM
       IREC=IREC+1
 
@@ -1053,6 +1065,7 @@ C Also assing NZSUR common.
 C Debug...
 C      write(6,*) 'nconst=',nconst
 C      write(6,*) 'nzsur=',nzsur
+
       IREC=IREC+1
   202 DO 30 I=1,NCOMP
         NN=NCONST(I)
@@ -1106,13 +1119,18 @@ C to scan geometry files this line would be needed.
 C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZBASEA(I),I=1,NCOMP)
         IREC=IREC+1
-C        write (6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
+
+C Debug.
+C        write(6,*) 'FLOOR A:',IREC,(ZBASEA(I),I=1,NCOMP)
       
 C Read area of transparent surfaces connected to external boundary.
 C << this is a place where record width is tied to number of zones! >>
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(ZTRANA(I),I=1,NCOMP)
         IREC=IREC+1
-C        write (6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
+
+C Debug.
+C        write(6,*) 'TRAN A:',IREC,(ZTRANA(I),I=1,NCOMP)
+
       endif
 
 C Read surface areas in each zone.
@@ -1171,7 +1189,10 @@ C this model.
       IF(NAME.EQ.'CONFIG')THEN
         IREC=IREC+1
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1006)longtmp
+
+C Debug.
 C        write(6,*) longtmp
+
         IREC=IREC+1
       ELSE
  45     H(1)='The system configuration file name is being requested'
@@ -1215,6 +1236,17 @@ C Extract path from cfg file name and check that we can find it.
           call edisp(iuout,outs)
         ELSE
           CFGOK=.TRUE.
+
+C Open core databases (materials, constructions, optics).
+          call opendb(ier)
+          if(ier.ne.0)then
+            call usrmsg(
+     &        'Possible problems with one or more of the',
+     &        'construction and optical databases - Please check.','W')
+            ier = 0
+          else
+            call usrmsg('Databases scan (ok)',' ','P')
+          endif
         ENDIF
 
 C If izver is >=4 then the only information needed from the zone
@@ -1276,27 +1308,45 @@ C Finally check if the climate file read in above exists.
       IF(IER.LT.0)then
 
 C Climate file not found - ask user for name.
-        write(outs,'(A,A,A)') ' Referenced climate file ',
+        write(louts,'(3A)') ' Referenced climate file ',
      &     LCLIM(1:lnblnk(LCLIM)), ' not found...'
-        call edisp(iuout,outs)
+        call edisp248(iuout,louts,90)
         call erpfree(IUNITC,istat)
         H(1)=' A climate file defines the model boundary'
         H(2)=' condition. The one included in the results libary'
         H(3)=' was not found, type in the correct name.'
-        ltmp=LCLIM
-        CALL EASKS(ltmp,'  Climate file name ?',
-     &     '  ',72,DCLIM,'climate file name',IER,3)
-        if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-          LCLIM=ltmp
+        longtmp=LCLIM
+
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &      96,DCLIM,'climate file name',IER,3)
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &      144,DCLIM,'climate file name',IER,3)
+        else
+          CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &      96,DCLIM,'climate file name',IER,3)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
+          LCLIM=longtmp
         endif
         goto 44
       endif
 
 C Also recover the solar radiation flag from the climate file.
+
+C << Note this sets the year from the climate file scan!  What
+C << if the model uses a different year?  Which one is used?
+
       IRECC=366
-      READ(IUNITC,REC=IRECC,IOSTAT=ios,ERR=102)IYEAR,IRT
+      READ(IUNITC,REC=IRECC,IOSTAT=ios,ERR=102)IYEAR,ICDNGH
       IRTYPE=0
-      IF(IRT.EQ.123)IRTYPE=1
+      IF(ICDNGH.EQ.123)IRTYPE=1
 
     2 RETURN
 
@@ -1304,7 +1354,7 @@ C Also recover the solar radiation flag from the climate file.
         call usrmsg(' ',
      &    'No permission to read year from climate file.','W')
       else
-        call usrmsg(' ','Error readint year from climate file.','W')
+        call usrmsg(' ','Error reading year from climate file.','W')
       endif
       ier=-4
       goto 2
@@ -1419,3 +1469,169 @@ C ******************** MOFREE ********************
       SUBROUTINE MOFREE
       RETURN
       END
+
+C ********** opendb (based on code from eddb.F)
+
+C Open materials constructions, multi-layer constructions and
+C optical properties databases. In the case of materials, first
+C assume it is a binary file, check its contents and if a problem
+C then scan new ascii format and if that does not work try the
+C older ascii materials file to fill the materials data arrays.
+C If sucessful the material common blocks will be filled and
+C closemat1 or closemat2 will be set.
+
+      subroutine opendb(ier)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+      
+      integer lnblnk  ! function definition
+
+      common/OUTIN/IUOUT,IUIN
+      common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+      logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical closemat1,closemat2
+      character SOPT*12,outs*248,GDESCR*36
+      character lworking*144,fs*1
+      logical unixok
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C The following code follows the pattern used in ascii_mat.F scananymat
+
+C Scan the binary file data into materials commons and if this was
+C sucessful and matver was set to 1.1 in matformbin then we can
+C carry on using the materials common blocks for subsequent access.
+      call MATFROMBIN(IER)  ! fill materials common blocks
+      if(ier.eq.0)then
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
+          goto 139  !  commons filled carry on.
+        else
+          MATDBOK=.TRUE.
+          matver = 0.0
+          goto 139  !  a binary file found so carry on.
+        endif
+      elseif(ier.eq.-2.or.ier.eq.-3)then
+        ier=0  ! clear error state prior to rascimat call
+        goto 1000
+      elseif(ier.eq.-1)then
+        write(outs,'(3a)') ' Materials db ',
+     &    LFMAT(1:lnblnk(LFMAT)),' not found!'
+        call edisp248(iuout,outs,100)
+        call edisp(iuout,' ')
+        MATDBOK=.FALSE.
+        ier=0  ! clear error state before continuing
+        goto 139  !  try the other databases.
+      endif
+
+C Check for ascii versions of the materials database.
+ 1000 CALL ERPFREE(IFMAT,ISTAT)       ! if a read error look at alternatives.
+      if(ipathmat.eq.0.or.ipathmat.eq.1)then
+        call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+      elseif(ipathmat.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LFMAT(1:lnblnk(LFMAT))
+        call rascimat(IFMAT,lworking,IER)  ! try current ascii format
+      endif
+      if(ier.eq.-2.or.ier.eq.-3)then               ! expected header not found
+        ier=0
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+        elseif(ipathmat.eq.2)then
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+          call rlegacymat(IFMAT,lworking,ier)  ! try older ascii format
+        endif
+        if(ier.ne.0)then
+          call usrmsg('No readable materials database was not found',
+     &                'or file was corrupt','W')
+          MATDBOK=.FALSE.
+        else
+          call eclose(matver,1.1,0.001,closemat1)
+          call eclose(matver,1.2,0.001,closemat2)
+          if(closemat1.or.closemat2)then
+            MATDBOK=.TRUE.
+          else
+            call usrmsg(
+     &        'No readable Materials database was found!',
+     &        ' ','W')
+            MATDBOK=.FALSE.
+          endif
+        endif
+      elseif(ier.eq.0)then
+        call eclose(matver,1.1,0.001,closemat1)
+        call eclose(matver,1.2,0.001,closemat2)
+        if(closemat1.or.closemat2)then
+          MATDBOK=.TRUE.
+        endif
+      endif
+
+        
+C Read multilayer db information into common. First check that
+C it exists via lworking (expanded path).
+
+ 139  CALL ERPFREE(IFMUL,ISTAT)
+
+C Depending on location expand path to file.
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=lfmul  ! use as is
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+      endif
+      call FINDFIL(lworking,XST)
+      if(XST)then
+        CALL ERMLDB(0,IUOUT,IER)
+        IF(IER.eq.1)then
+          write(outs,'(3a)') 
+     &    ' Problems with materials used by Constructions db',
+     &     LFMAT(1:lnblnk(LFMAT)),'!'
+          call edisp248(iuout,outs,100)
+          call edisp(iuout,' ')
+          MLDBOK=.FALSE.
+        ELSEIF(IER.eq.2)then
+
+          call edisp(iuout,
+     &      'There were many undefined materials in the constructions')
+          call edisp(iuout,'please check your model.')
+        else
+
+C Scan was ok so set mldbok to true.
+          MLDBOK=.TRUE.
+        endif
+      else
+
+C Could not find Constructions db at this time, report to user.
+        write(outs,'(3a)') 'Constructions db ',
+     &     LFMUL(1:lnblnk(LFMUL)),' not found!'
+        call edisp248(iuout,outs,100)
+        call edisp(iuout,' ')
+        MLDBOK=.FALSE.
+      endif
+
+C Open Ooptical Properties db and read into common.
+      SOPT='ALL'
+      CALL EROPTDB(0,iuout,SOPT,GDESCR,IER)
+      if(ier.ne.0)then
+        call usrmsg('Optical Properties db not found or',
+     &              'there was a problem reading it!','W')
+        OPTKOK=.FALSE.
+      else
+        OPTKOK=.TRUE.
+      endif
+
+      return
+      end

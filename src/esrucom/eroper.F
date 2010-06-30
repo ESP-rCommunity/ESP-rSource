@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -126,6 +126,7 @@ C Maximum number of casual gains/day       MC=20
 
       SUBROUTINE EROPER(ITRC,ITRU,IUO,ICOMP,IER)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
@@ -139,10 +140,6 @@ C espriou.h provides currentfile.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
@@ -186,14 +183,15 @@ C Descriptive label for a zone load or casual gain types.
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER outstr*124,outs*124,lodlabel*6
+      CHARACTER outstr*124,outs*124,outs2*124,lodlabel*6
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24
       logical havehi,dll
       integer idaytype  ! incremented for each new *day entry.
       integer ijk,ireader
+      integer lsn  ! length of currentfile
       real reader
-
+      
       ijk=0
       ireader=0
       reader=0.0
@@ -443,14 +441,14 @@ C << ITCTL needs to be updated for day type and period >>
         elseif(WORD(1:7).eq.'*Period'.or.WORD(1:7).eq.'*period')then
           iperiod=iperiod+1
           CALL EGETWI(OUTSTR,K,IVS,0,24,'W','opr period start',IER)
-          CALL EGETWI(OUTSTR,K,IVF,0,24,'W','opr period finish',IER)
+          CALL EGETWI(OUTSTR,K,IVFIN,0,24,'W','opr period finish',IER)
           CALL EGETWR(OUTSTR,K,VALA,0.,2000.,'W','w infil',IER)
           CALL EGETWR(OUTSTR,K,VALB,0.,2000.,'W','w vent',IER)
           CALL EGETWI(OUTSTR,K,IVZ,0,NCOMP,'W','w vent z',IER)
           CALL EGETWR(OUTSTR,K,VALC,0.,0.,'-','w vent tmp',IER)
           NAC(idaytype)=NAC(idaytype)+1
           IACS(idaytype,iperiod)=IVS
-          IACF(idaytype,iperiod)=IVF
+          IACF(idaytype,iperiod)=IVFIN
           ACI(idaytype,iperiod)=VALA
           ACV(idaytype,iperiod)=VALB
           IPT(idaytype,iperiod)=IVZ
@@ -613,7 +611,10 @@ C Error messages.
         lodlabel(icomp,7)='NA    ' 
       goto 1235
 
- 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+ 1002 write(outs,'(3a)') 'EROPER: conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='EROPER'
         dllmesg=outs
@@ -622,6 +623,7 @@ C Error messages.
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ios)
         RETURN
@@ -768,7 +770,7 @@ C Error subroutine and error details for dll mode.
 
       CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124,lodlabelc*6
       CHARACTER*(*) FILE
-      character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
+      character dllsubr*12,dllmesg*124,WORD*20,loutstr*248,outs2*124
       character dstmp*24,H*72
       character louts*248
       character actflatfile*1  ! action requested.
@@ -1040,7 +1042,10 @@ C Error messages.
         lodlabelc(7)='NA    ' 
       goto 1235
 
- 1002 write(outs,'(3a)') 'Conversion error in...',OUTSTR(1:50),'...'
+ 1002 write(outs,'(3a)') 'ERZSCHED: conversion error in...',
+     &  OUTSTR(1:50),'...'
+      lsn=MIN0(lnblnk(currentfile),110)
+      write(outs2,'(2a)') 'in: ',currentfile(1:lsn)
       if(dll)then
         dllsubr='ERZSCHED'
         dllmesg=outs
@@ -1049,6 +1054,7 @@ C Error messages.
         return
       else
         call edisp(iuout,outs)
+        call edisp(iuout,outs2)
         IER=1
         CALL ERPFREE(IUNIT,ios)
         RETURN
@@ -1257,14 +1263,18 @@ C --------- EMKOPER
 C Write zone operation common block data to file. It is assumed
 C that this information has been checked.  OPFIL is the name of
 C the file to be written to (confirm if to be overwritten).
-C ICOMP is the zone number.
-C ITRC unit number for user output, IER=0 OK IER=1 problem.
-      SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,ITRU,IER)
+      SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,IER)
 #include "building.h"
 #include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      integer IUO         ! file unit
+      character OPFIL*72  ! zone file name
+      integer ICOMP       ! zone number
+      integer IER         ! 0 OK IER 1 problem
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
@@ -1303,10 +1313,9 @@ C Descriptive label for a zone load or casual gain.
       common/loadlabel/lodlabel(mcom,7)
       COMMON/Vld20/Vldtng
 
-      character OPFIL*72,lodlabel*6
-      character dstmp*24
+      character lodlabel*6,dstmp*24
       logical Vldtng
-
+      
       IER=0
 
 C Open any existing file by this name (ask user for confirmation to
@@ -1435,6 +1444,7 @@ C Write out the type labels to the file for future reference
       WRITE(IUO,'(a)')'# Labels for gain types '
       WRITE(IUO,'(3(1X,A6))',IOSTAT=IOS,ERR=1) 
      &  (lodlabel(icomp,I),I=1,3)
+     
       CALL ERPFREE(IUO,ISTAT)
       RETURN
 
@@ -1687,55 +1697,60 @@ C Descriptive label for a zone load or casual gain types.
         call edisp(itru,outs)
         if(NCAS(IDTY).eq.0)return
         if(IELF(ICOMP).EQ.1)then
-          write(outs,'(a,a)')'Day Gain Type   Period Sensible  ',
+          write(outs,'(a,a)')'Day Gain Type    Period Sensible  ',
      &    'Latent  Radiant  Convec p.f +/-  Power Voltage Phase'
           call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  labl   Hours  Magn.(W)  ',
+          write(outs,'(a,a)')'    No.  label   Hours  Magn.(W)  ',
      &    'Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)'
           call edisp(itru,outs)
         else  
-          write(outs,'(a,a)')'Day Gain Type     Period Sensible  ',
+          write(outs,'(a,a)')'Day Gain Type      Period Sensible  ',
      &    'Latent     Radiant    Convec'
           call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  labl     Hours  Magn.(W)  ',
+          write(outs,'(a,a)')'    No.  label     Hours  Magn.(W)  ',
      &    'Magn. (W)  Frac       Frac'
           call edisp(itru,outs)
         endif
-      IF(NCAS(IDTY).GT.0)THEN
-        IF(IELF(ICOMP).EQ.1) THEN
-          DO 1269 I=1,NCAS(IDTY)
-            if(ICGT(IDTY,I).gt.0)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
-            elseif(ICGT(IDTY,I).eq.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'m2p'
-            elseif(ICGT(IDTY,I).lt.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'Wm2'
-            endif
-            WRITE(outs,5361)'Wkd',I,llbl,ICGS(IDTY,I),' -',
-     &      ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &      CONC(IDTY,I),PF(IDTY,I),
-     &      IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
-5361        FORMAT(a,I3,1x,A9,I3,a,I3,F8.1,F8.1,F9.1,F9.1,
-     &      1x,F7.2,I3,F7.1,F7.1,I3)
-            call edisp(itru,outs)
-1269      CONTINUE
-        ELSE
-          DO 1270 I=1,NCAS(IDTY)
-            if(ICGT(IDTY,I).gt.0)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
-            elseif(ICGT(IDTY,I).eq.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'m2p'
-            elseif(ICGT(IDTY,I).lt.-1)then
-             write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),'Wm2'
-            endif
-            WRITE(outs,5362)'Wkd',I,llbl,ICGS(IDTY,I),' -',
-     &      ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
-     &      CONC(IDTY,I)
-5362        FORMAT(a,I3,1x,A9,I3,a,I3,F9.1,F9.1,F11.2,F11.2)
-            call edisp(itru,outs)
-1270      CONTINUE
+
+        IF(NCAS(IDTY).GT.0)THEN
+          IF(IELF(ICOMP).EQ.1) THEN
+            DO 1269 I=1,NCAS(IDTY)
+              if(ICGT(IDTY,I).gt.0)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
+              elseif(ICGT(IDTY,I).eq.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'm2p'
+              elseif(ICGT(IDTY,I).lt.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'Wm2'
+              endif
+              WRITE(outs,5361) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+     &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
+     &        CONC(IDTY,I),PF(IDTY,I),
+     &        IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
+5361          FORMAT(a,I3,1x,A9,I3,a,I2,F8.1,F8.1,F9.1,F9.1,
+     &          1x,F7.2,I3,F7.1,F7.1,I3)
+              call edisp(itru,outs)
+1269        CONTINUE
+          ELSE
+            DO 1270 I=1,NCAS(IDTY)
+              if(ICGT(IDTY,I).gt.0)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
+              elseif(ICGT(IDTY,I).eq.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'm2p'
+              elseif(ICGT(IDTY,I).lt.-1)then
+                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
+     &            'Wm2'
+              endif
+              WRITE(outs,5362) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+     &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
+     &        CONC(IDTY,I)
+5362          FORMAT(a,I3,1x,A9,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
+              call edisp(itru,outs)
+1270        CONTINUE
+          ENDIF
         ENDIF
-      ENDIF
  600  CONTINUE
       RETURN
       END
@@ -1744,11 +1759,11 @@ C Descriptive label for a zone load or casual gain types.
 C ************* checkcascount
 C checkcascount scans current P3 & P3TYPE commons and refreshes 
 C loadcount() & load24() in common blocks loadcnt & loadall
-C Parameters:
-C   icomp - current zone.
-C   ier - set to 1 if there was a problem
-      subroutine checkcascount(icomp,ier)
+      subroutine checkcascount(icomp)
 #include "building.h"
+
+C Parameters
+      integer icomp  ! index of the zone to scan
 
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -1797,8 +1812,9 @@ C Zero the loadcount array for the current zone.
  50     CONTINUE
  40   continue
 
-C Debug..
+C Debug.
 C      write(6,*) 'Nb of periods for occ/lt/equip for each day type'
+
       DO 600 IDTY=1,NBDAYTYPE
       if(ncas(IDTY).gt.0)then
         do 41 ij=1,ncas(IDTY)
@@ -1884,7 +1900,7 @@ C Determine if any of the casual gain types were mixed.
       endif
  600  continue
 
-C Debug..
+C Debug.
 C      write(6,*) ' daytype number ',IDTY,
 C     & ' loadcount loadm2count loadmixed'
 C      write(6,*)loadcount(ic,1,1),loadcount(ic,2,1),loadcount(ic,3,1),
@@ -1893,19 +1909,22 @@ C      write(6,*)loadm2count(ic,1,1),loadm2count(ic,2,1),
 C     &  loadm2count(ic,3,1)
 C      write(6,*)loadmixed(ic,1,1),loadmixed(ic,2,1),loadmixed(ic,3,1),
 C     &  loadmixed(ic,4,1),loadmixed(ic,5,1)
+
       return
       end
 
 C ******************* CPYCASIJ ***********************
 C CPYCASIJ Copy one casual period jx to another ix for zone icomp and 
 C daytype idaytype. 
-C    icomp - current zone.
-C    idaytype - day type to sort
-C    ix is the destination
-C    jx is the source
 
-      SUBROUTINE CPYCASIJ(icomp,idaytype,ix,jx,ier)
+      SUBROUTINE CPYCASIJ(icomp,idaytype,ix,jx)
 #include "building.h"
+
+C Parameters
+      integer icomp    ! current zone
+      integer idaytype ! day type to sort
+      integer ix       ! is the destination
+      integer jx       ! is the source
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -1943,14 +1962,18 @@ C Electrical data flag and elctrical data.
 C ******************* CPYCASIT ***********************
 C CPYCASIT Copy one casual period jx to backup variables for zone icomp 
 C and daytype idaytype. 
-C    icomp - current zone.
-C    idaytype - day type to sort
-C    jx is the source
-C    icgt,icgs,icgf,cmgs,cmgl,radc,conc,ipf,iphas,pf,pwr,bvolt
-C    are the temporary variables.
       SUBROUTINE CPYCASIT(icomp,idaytype,jx,icgtX,icgsX,icgfX,cmgsX,
-     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
+     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
 #include "building.h"
+
+C Parameters
+      integer icomp    ! current zone
+      integer idaytype ! day type to sort
+      integer jx       ! is the source
+      integer icgtX,icgsX,icgfX    ! temporary variables
+      real cmgsX,cmglX,radcX,concX ! temporary variables
+      integer ipfX,iphasX          ! temporary variables
+      real pfX,pwrX,bvoltX         ! temporary variables
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -1993,14 +2016,18 @@ C Electrical data flag and elctrical data.
 C ******************* CPYCASTI ***********************
 C CPYCASTI - Copy from backup variables to casual period jx for zone icomp 
 C and daytype idaytype. 
-C    icomp - current zone.
-C    idaytype - day type to sort
-C    jx is the destination
-C    icgt,icgs,icgf,cmgs,cmgl,radc,conc,ipf,iphas,pf,pwr,bvolt
-C    are the temporary variables.
       SUBROUTINE CPYCASTI(icomp,idaytype,jx,icgtX,icgsX,icgfX,cmgsX,
-     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
+     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
 #include "building.h"
+
+C Parameters
+      integer icomp    ! current zone
+      integer idaytype ! day type to sort
+      integer jx       ! is the source
+      integer icgtX,icgsX,icgfX    ! temporary variables
+      real cmgsX,cmglX,radcX,concX ! temporary variables
+      integer ipfX,iphasX          ! temporary variables
+      real pfX,pwrX,bvoltX         ! temporary variables
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
@@ -2096,10 +2123,12 @@ C CONCA total conv casual W for the zone at each hour (all day types)
 C RADFAC implied radiant fraction RADCA/CMGSA
 C CONFAC implied convective fraction CONCA/CMGSA
 C ICGTYP the casual gain type (remembering negative index).
-C NPERSN keeps track of the original number of people/m2.
+C PERSN keeps track of the original number of people/m2.
+      real CMGSA,CMGLA,RADCA,CONCA,RADFAC,CONFAC,PERSN
+      integer ICGTYP,LNCAS
       dimension CMGSA(MC,7),CMGLA(MC,7),RADCA(MC,7)
       dimension CONCA(MC,7),RADFAC(MC,7),CONFAC(MC,7)
-      dimension ICGTYP(MC,7),NPERSN(MC,7),LNCAS(MDTY)
+      dimension ICGTYP(MC,7),PERSN(MC,7),LNCAS(MDTY)
 
 C Logical for testing whether there is any difference in casual gains.
       logical bCMGSA,bCMGLA,bRADCA,bCONCA,bRADFAC,bCONFAC
@@ -2141,7 +2170,7 @@ C version files
 C Find how many of each casual gain type for each day type as well
 C as whether each profile needs to be absolute (casual gain type positive),
 C or based on area (casual gain type negative) or if mixed +-.
-      call checkcascount(icomp,ier)
+      call checkcascount(icomp)
       
 C Zero derived gains in the temporary array and set the type as per
 C the call to checkcascount.
@@ -2164,7 +2193,7 @@ C the call to checkcascount.
               endif
             endif
  609      CONTINUE
-          NPERSN(IP,IG)=0
+          PERSN(IP,IG)=0.0
           pfA(IP,IG)=0.0
           ipfA(IP,IG)=0
           pwrA(IP,IG)=0.0
@@ -2223,15 +2252,15 @@ C calculate apparent power and reactive power.
               elseif (ICGT(IDTY,I).eq.-1) then
                 call eclose(CMGS(IDTY,I),0.00,0.001,close)
                 if (close) then
-                  NPERSN(IP,ITYP)=1
+                  PERSN(IP,ITYP)=1.0
                 else
-                  NPERSN(IP,ITYP)=INT(FLOOR/CMGS(idty,I))
+                  PERSN(IP,ITYP)=FLOOR/CMGS(idty,I)
                 endif
-                CMGSA(IP,ITYP)=CMGSA(IP,ITYP) + NPERSN(IP,ITYP)*95.0
-                CMGLA(IP,ITYP)=CMGLA(IP,ITYP) + NPERSN(IP,ITYP)*45.0
-                RADCA(IP,ITYP)=RADCA(IP,ITYP) + NPERSN(IP,ITYP)*95.0*
+                CMGSA(IP,ITYP)=CMGSA(IP,ITYP) + PERSN(IP,ITYP)*95.0
+                CMGLA(IP,ITYP)=CMGLA(IP,ITYP) + PERSN(IP,ITYP)*45.0
+                RADCA(IP,ITYP)=RADCA(IP,ITYP) + PERSN(IP,ITYP)*95.0*
      &            RADC(IDTY,I)
-                CONCA(IP,ITYP)=CONCA(IP,ITYP) + NPERSN(IP,ITYP)*95.0*
+                CONCA(IP,ITYP)=CONCA(IP,ITYP) + PERSN(IP,ITYP)*95.0*
      &            CONC(IDTY,I)
                 if(CMGSA(IP,ITYP).gt.0.0)then
                   RADFAC(IP,ITYP)= RADCA(IP,ITYP)/CMGSA(IP,ITYP)
@@ -2334,12 +2363,12 @@ C a final period for the current casual gain type.
 
 C Adjust for area based, for m2 per person just divide floor area by
 C the number of persons to get back to the original CMGSA. For the
-C case of mixed absolute and per unit area npersn might be zero so
+C case of mixed absolute and per unit area persn might be zero so
 C trap for this case and set CMGSA to zero.
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
-                if(NPERSN(IP,ITYP).gt.0)then
-                  CMGSA(IP,ITYP) = FLOOR/NPERSN(IP,ITYP)
+                if(PERSN(IP,ITYP).gt.0.0)then
+                  CMGSA(IP,ITYP) = FLOOR/PERSN(IP,ITYP)
                   CMGLA(IP,ITYP) = 0.0
                 else
                   CMGSA(IP,ITYP) = 0.0
@@ -2405,14 +2434,16 @@ C And if there is no power at the timestep reset PF to zero.
 
 C See if any periods have been added. 
       if(LNCAS(IDT).ne.NCAS(IDT))
-     &write(outs,'(2A)')' Updated daytype: ',calentag(idt)
+     &  write(outs,'(2A)')' Updated daytype: ',calentag(idt)
       IF(IDT.LT.NBDAYTYPE)GOTO 5000
       return
 
   1   if(IOS.eq.2)then
-        write(6,*) 'PROCESSOLDCAS: permission error writing strings.'
+        call edisp(iuout,
+     &    'PROCESSOLDCAS: permission error writing strings.')
       else
-        write(6,*) 'PROCESSOLDCAS: error writing warning or strings.'
+        call edisp(iuout,
+     &    'PROCESSOLDCAS: error writing warning or strings.')
       endif
       return
       end
@@ -2492,7 +2523,7 @@ C logical problem set to true if daytype might not be sorted.
       endif
 
 C Check how many casual gains there are for each type on each day type.
-      call checkcascount(icomp,ier)
+      call checkcascount(icomp)
 
 C How many occupant/lights/small power?
       n1=loadcount(icomp,1,IDTY)
@@ -2546,16 +2577,13 @@ C UPDOPR     Updates all operations data when day types are incremented
 
       SUBROUTINE UPDOPR
 #include "building.h"
+#include "model.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/pophelp/h(60)
@@ -2651,7 +2679,7 @@ C power.
 
 C Write operations file
           ip3ver(icomp)=2
-          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
         ENDIF
  100  CONTINUE
       NBDAYTYPE=NBDAYTYPEHOLD

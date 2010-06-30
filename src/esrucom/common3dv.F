@@ -37,6 +37,7 @@ C IER=0 OK, IER=1 problem. If izgfoc is not 0
 C then it represents the zone which is currently being edited.
       SUBROUTINE ADJVIEW(IER)
 #include "building.h"
+#include "model.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -48,17 +49,13 @@ C Passed parameters.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       LOGICAL MODIFY,MODLEN,MODBND
 
       character ETEXT*82
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -101,7 +98,7 @@ C If viewpoint or bounds different then initialise viewing paramters.
         ENDIF
 
 C Remind user of which model even when looking at one zone.
-        WRITE(ETEXT,'(2A)')'Project: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(ETEXT,'(2A)')'Project: ',modeltitle(1:lnblnk(modeltitle))
         iside=1
         isize=1
         ifont=1
@@ -263,8 +260,9 @@ C clips the image and draws it.
 C IER is returned as non-zero if there is a problem.
       SUBROUTINE DRAWOBS(IFOC,ier)
 #include "building.h"
+#include "model.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0, G2, GS5, GS6.
 #include "geometry.h"
 #include "prj3dv.h"
 
@@ -278,30 +276,21 @@ C Passed parameters.
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-
+C Local arrays.
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      CHARACTER btemp*8,BLKNAME*8,BLKMAT*12
+      CHARACTER btemp*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       logical newgeo  ! to use for testing if new/old geometry file.
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,iixlast,iiylast
 #else
       integer*8 iix,iiy,iixlast,iiylast
@@ -322,17 +311,27 @@ C is 2 then re-read the version 1.1 zone geometry file.
       IF(IOBS(ifoc).EQ.0)THEN
         RETURN
       ELSEIF(IOBS(ifoc).EQ.1)THEN
-        CALL EGOMST(IUF,ZOBS(ifoc),0,0,iuout,IER)
+        CALL EGOMST(IUF,ifoc,ZOBS(ifoc),0,0,iuout,IER)
         IF(IER.NE.0)RETURN
       ELSEIF(IOBS(ifoc).EQ.2)THEN
         if(newgeo)then
-          call georead(IUF,LGEOM(ifoc),ifoc,1,ITRC,iuout,ier)
+          call georead(IUF,LGEOM(ifoc),ifoc,1,iuout,ier)
           IF(IER.NE.0)RETURN
         endif
       ENDIF
 
-      DO 301 IB=1,NB
-        CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),BANG(IB))
+      DO 301 IB=1,nbobs(ifoc)
+        if(BLOCKTYP(ifoc,IB)(1:4).eq.'obs ')then
+          CALL CNVBLK(XOB(ifoc,IB),YOB(ifoc,IB),ZOB(ifoc,IB),
+     &      DXOB(ifoc,IB),DYOB(ifoc,IB),DZOB(ifoc,IB),
+     &      BANGOB(ifoc,IB,1))
+        elseif(BLOCKTYP(ifoc,IB)(1:4).eq.'obs3')then
+          CALL CNVBLK3A(XOB(ifoc,IB),YOB(ifoc,IB),ZOB(ifoc,IB),
+     &      DXOB(ifoc,IB),DYOB(ifoc,IB),DZOB(ifoc,IB),
+     &      BANGOB(ifoc,IB,1),BANGOB(ifoc,IB,2),BANGOB(ifoc,IB,3))
+        elseif(BLOCKTYP(ifoc,IB)(1:4).eq.'obsp')then
+          call CNVBLKP(ifoc,IB) ! convert obsp type.
+        endif
 
 C If block names are to be displayed place near first vertex.
 C Transform the location into eyepoint and then screen coords.
@@ -342,10 +341,10 @@ C Transform the location into eyepoint and then screen coords.
           COG1(3)=ZB(1)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),ix,iy)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
           btemp='        '
-          write(btemp,'(a)') BLKNAME(IB)
-          CALL wstxpt(ix,iy,btemp)
+          write(btemp,'(a)') BLOCKNAME(IFOC,IB)
+          CALL wstxpt(iix,iiy,btemp)
         ENDIF
 
 C If editing an obstruction, highlight it.
@@ -399,9 +398,9 @@ C Multiply each vertex by ETSMAT (Eye to Screen Matrix) to transform
 C to screen coords. First move to the beginning point (as passed from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
+          call u2pixel(AAX,AAY,iix,iiy)
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -410,9 +409,7 @@ C If IP1 is ever negative then jump to a later point.
 
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           if(IPEN.eq.1)then
             call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
@@ -428,15 +425,13 @@ C past -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           if(IPEN.eq.1)then
             call eswline(iixlast,iiylast,iix,iiy)
           elseif(IPEN.eq.-305)then
@@ -468,13 +463,16 @@ C Passed parameter.
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
+C Local arrays.
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      integer IANXT,IBNXT
       DIMENSION  AX(MV),AY(MV),AZ(MV),IANXT(MV)
       DIMENSION  BX(MV),BY(MV),BZ(MV),IBNXT(MV)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
-#ifdef OSX
-      integer iix,iiy,iixlast,iiylast
+#ifdef OSI
+      integer iix,iiy,iixlast,iiylast,iid2
 #else
-      integer*8 iix,iiy,iixlast,iiylast
+      integer*8 iix,iiy,iixlast,iiylast,iid2
 #endif     
 
       CHARACTER temp*7,CUBN*6
@@ -494,9 +492,10 @@ C Transform the location into eyepoint and then screen coords.
         COG1(3)=ZB(1)
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix,iy)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
         write(temp,'(A)')CUBN(IB)
-        CALL wstxpt(ix,iy+8,temp)
+        iid2=iiy+8
+        CALL wstxpt(iix,iid2,temp)
 
 C Continue on with surfaces in the sensor.
 C Copy polygon for sensor surface I into structure AX AY AZ
@@ -541,9 +540,9 @@ C Multiply each vertex by ETSMAT (Eye to Screen Matrix).
 C First move to the beginning (as passed back from CUTSUR).
           IP = IABS(IBPNT)
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
+          call u2pixel(AAX,AAY,iix,iiy)
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
 
 C If IP1 is ever negative then jump to a later point.
           IP1 = IBNXT(IP)
@@ -552,9 +551,7 @@ C If IP1 is ever negative then jump to a later point.
 
  351      CONTINUE
           CALL ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
 
@@ -564,15 +561,13 @@ C past any -1 values of IBNXT, save IP1 as IPT for testing.
           IP1 = IBNXT(IP1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+1)
           if(IP1.lt.1)IP1 = IBNXT(IPT+2)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
           IF(IP1 .NE. IP) GOTO 351
 
 C Complete the polygon.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           call eswline(iixlast,iiylast,iix,iiy)
           call forceflush()
  1000   CONTINUE
@@ -601,6 +596,9 @@ C Passed parameter.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY6G/LINSTYG(MGRT)
 
+C Local arrays.
+      real AX,AY,AZ,BX,BY,BZ,SBBOX,COG1,COG2,COG3
+      integer IANXT,IBNXT
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
@@ -608,10 +606,10 @@ C Passed parameter.
       CHARACTER GMLCN*12, GSNAME*6,stemp*7
 
 C Local variables to pass to edline.
-#ifdef OSX
-      integer iix,iiy,iixlast,iiylast
+#ifdef OSI
+      integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid2
 #else
-      integer*8 iix,iiy,iixlast,iiylast
+      integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid2
 #endif     
 
 C Save the current font and switch to a smaller font for displaying
@@ -627,15 +625,15 @@ C surface names etc. Ixc,iyc keep track of surface/pixel COG.
           COG1(3)=ZGT(IV)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),ix,iy)
-          CALL ecirc(ix,iy,2,1)
-          CALL VERTLBL(ix,iy,IV,ier)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL ecirc(iix,iiy,2,1)
+          CALL VERTLBL(iix,iiy,IV,ier)
   42    continue
       endif
       if(ngt.eq.0)return
       do 43 igs = 1, NGT
-        ixc=0
-        iyc=0
+        iixc=0
+        iiyc=0
 
 C Copy polygon for Surface I into structure A for compatibility with
 C viewer format 'holes' in surfaces.
@@ -669,19 +667,17 @@ C Transform surface polygon as above.
 C Move to first point.
           IP = IABS(IBPNT)
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iixlast=ix   ! cast for edline call
-          iiylast=iy
-          ixc=ixc+ix
-          iyc=iyc+iy
+          call u2pixel(AAX,AAY,iix,iiy)
+          iixlast=iix   ! cast for edline call
+          iiylast=iiy
+          iixc=iixc+iix
+          iiyc=iiyc+iiy
 
 C Draw succeeding points until last vertex.
           IP1 = IBNXT(IP)
  451      CONTINUE
           CALL  ORTTRN(BX(IP1),BY(IP1),BZ(IP1),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
@@ -691,19 +687,17 @@ C Draw succeeding points until last vertex.
           else
             call edline(iixlast,iiylast,iix,iiy,LD)
           endif
-          ixc=ixc+ix
-          iyc=iyc+iy
+          iixc=iixc+iix
+          iiyc=iiyc+iiy
 
           IP1 = IBNXT(IP1)
-          iixlast=ix   ! cast for call to edline
-          iiylast=iy
+          iixlast=iix   ! cast for call to edline
+          iiylast=iiy
           IF(IP1 .NE. IP) GOTO 451
 
 C Complete ground surface.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
-          call u2pixel(AAX,AAY,ix,iy)
-          iix=ix
-          iiy=iy
+          call u2pixel(AAX,AAY,iix,iiy)
           if(linstyg(igs).eq.3)then
             call edline(iixlast,iiylast,iix,iiy,2)
           elseif(linstyg(igs).eq.2)then
@@ -716,16 +710,17 @@ C Complete ground surface.
           call forceflush()
 
 C If ground surface names are to be displayed place near the centre of polygon.
-C If the surface is not drawn (ixc=0 & iyc=0) do not label it.  For clarity drop to
+C If the surface is not drawn (iixc=0 & iyc=0) do not label it.  For clarity drop to
 C the next smaller font for the surface name and then restore font
 C to normal size.
           IF(ITSNM.EQ.0)THEN
-            IF(ixc.GT.0.AND.iyc.GT.0.AND.(NAP.EQ.NBP))THEN
+            IF(iixc.GT.0.AND.iiyc.GT.0.AND.(NAP.EQ.NBP))THEN
               IF(IFS.GT.0)CALL winfnt(NAMEFT)
               write(stemp,'(A)')GSNAME(igs)
-              ixc=ixc/NBP
-              iyc=iyc/NBP
-              CALL wstxpt(ixc,iyc+(3*(NAMEFT+1)),stemp)
+              iixc=iixc/NBP
+              iiyc=iiyc/NBP
+              iid2=iiyc+(3*(NAMEFT+1))
+              CALL wstxpt(iixc,iid2,stemp)
               IF(IFS.GT.0)CALL winfnt(IFS)
             endif
           endif
@@ -752,11 +747,16 @@ C Passed parameters.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
-      DIMENSION COG1(3),COG2(3),COG3(3)
+
+C Explicit local variables
+      real COG1,COG2,COG3
+      dimension COG1(3),COG2(3),COG3(3)
+      real GRIDD,XD,DD
+      real GXMN,GYMN,XINC,YINC
       logical close,greyok
 
 C Local variables to pass to edline.
-#ifdef OSX
+#ifdef OSI
       integer iix,iiy,iix1,iiy1
 #else
       integer*8 iix,iiy,iix1,iiy1
@@ -812,7 +812,7 @@ C Transform one end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix,iy)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
 
 C Transform other end of line.
         COG1(1)=XINC
@@ -820,18 +820,14 @@ C Transform other end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix1,iy1)
+        call u2pixel(COG3(1),COG3(2),iix1,iiy1)
 
 C Draw the dotted line, first take calculated pixels and
 C cast to local variable to pass to edline. Only do this if
 C the length of the line is more than one pixel.
-        if(ix.eq.ix1.and.iy.eq.iy1)then
+        if(iix.eq.iix1.and.iiy.eq.iiy1)then
           continue
         else
-          iix=ix
-          iiy=iy
-          iix1=ix1
-          iiy1=iy1
           call edline(iix,iiy,iix1,iiy1,LD)
         endif
 
@@ -855,7 +851,7 @@ C Transform one end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix,iy)
+        call u2pixel(COG3(1),COG3(2),iix,iiy)
 
 C Transform other end of line.
         COG1(1)=XMX+GRIDD
@@ -863,16 +859,12 @@ C Transform other end of line.
         COG1(3)=RH
         CALL VECTRN(COG1,TEMAT,COG2,IER)
         CALL VECTRN(COG2,ETSMAT,COG3,IER)
-        call u2pixel(COG3(1),COG3(2),ix1,iy1)
+        call u2pixel(COG3(1),COG3(2),iix1,iiy1)
 
 C Draw the dotted line after casting to local variable.
-        if(ix.eq.ix1.and.iy.eq.iy1)then
+        if(iix.eq.iix1.and.iiy.eq.iiy1)then
           continue
         else
-          iix=ix
-          iiy=iy
-          iix1=ix1
-          iiy1=iy1
           call edline(iix,iiy,iix1,iiy1,LD)
         endif
 
@@ -887,16 +879,16 @@ C Move to next grid position.
       END
 
 C ******************* EMKVIEW 
-C EMKVIEW constructs a 'viewer' format file. The trace level (ITRC) defines 
-C whether information about the zones is displayed or not. IUO is the file
-C unit number. CFGOK is passed in as .TRUE. if the user can select zones.
+C EMKVIEW constructs a 'viewer' format file. IUO is the file unit number.
+C CFGOK is passed in as .TRUE. if the user can select zones.
 C IER is returned as non-zero if there is a problem.
-      SUBROUTINE EMKVIEW(ITRC,IUO,CFGOK,IER)
+      SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 
 C Passed parameters.
-      integer ITRC,IUO,IER
+      integer IUO,IER
       logical CFGOK
       
       COMMON/OUTIN/IUOUT,IUIN
@@ -905,17 +897,8 @@ C Passed parameters.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
@@ -925,7 +908,6 @@ C      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
       CHARACTER H*72
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER GMLCN*12,GSNAME*6,outs*124
 
       IER=0
@@ -959,12 +941,16 @@ C Pass ICOMP in as a positive so that 'ALL' is included in list.
    79   CONTINUE
       ENDIF
 
+C In the future it may not be necessary to re-scan the geometry
+C files if we switch to the global coordinate data structures.
+C << task to be done >>
+
       IF(INPIC.EQ.0)GOTO 105
       DO 83 IZ=1,INPIC
         IF(IVALS(IZ).GT.0)THEN
           call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,0,iuout,IER)
+            call georead(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,iuout,IER)
           else
             call egomin(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,0,iuout,IER)
           endif
@@ -1014,38 +1000,45 @@ C should be included in image.
         if(IOBS(IZ).EQ.1)then
           write(outs,'(a,a)') ' Using: ',ZOBS(IZ)
           CALL USRMSG(' ',outs,'-')
-          CALL EGOMST(IUF,ZOBS(IZ),0,0,iuout,IER)
+          CALL EGOMST(IUF,iz,ZOBS(IZ),0,0,iuout,IER)
           IF(IER.NE.0)RETURN
         elseif(IOBS(IZ).EQ.2)THEN
           continue  ! any obstructions are in the geometry file.
         endif
-        if(NB.gt.0)then
-          DO 301 IB=1,NB
-C << conversion to using cnvblk and common GB1 to be done >>
-C            CALL CNVBLK(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
-C     &        BANG(IB))
-            CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),
-     &                 BANG(IB))
+        if(nbobs(iz).gt.0)then
+          DO 301 IB=1,nbobs(iz)
+
+C Conversion using cnvblk or cvnblk3a and common GB1.
+            if(BLOCKTYP(iz,IB)(1:4).eq.'obs ')then
+              CALL CNVBLK(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
+     &          DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB,1))
+            elseif(BLOCKTYP(iz,IB)(1:4).eq.'obs3')then
+              CALL CNVBLK3A(XOB(iz,IB),YOB(iz,IB),ZOB(iz,IB),
+     &          DXOB(iz,IB),DYOB(iz,IB),DZOB(iz,IB),BANGOB(iz,IB,1),
+     &          BANGOB(iz,IB,2),BANGOB(iz,IB,3))
+            elseif(BLOCKTYP(iz,IB)(1:4).eq.'obsp')then
+              call CNVBLKP(iz,IB) ! convert obsp type.
+            endif
 
 C Write obstruction information to the viewer file. First invert edges.
-            DO 320 J=1,NSUR
-              K=NVER(J)
+            DO 320 J=1,6
+              K=4
               DO 330 L=1,K/2
-                ITEMP=JVN(J,L)
-                JVN(J,L)=JVN(J,K+1-L)
-                JVN(J,K+1-L)=ITEMP
+                ITEMP=JVNB(J,L)
+                JVNB(J,L)=JVNB(J,K+1-L)
+                JVNB(J,K+1-L)=ITEMP
   330         CONTINUE
   320       CONTINUE
 
 C Write obstructions to output file.
             WRITE(IUO,218)zname(IVALS(IZ))
   218       FORMAT('GEN',1X,A12,' obstructions')
-            WRITE(IUO,'(2I7)')NTV,NSUR
-            DO 240 J=1,NTV
-              WRITE(IUO,'(3F8.3)')X(J),Y(J),Z(J)
+            WRITE(IUO,'(a)')'  8  6'
+            DO 240 J=1,8
+              WRITE(IUO,'(3F8.3)')XB(J),YB(J),ZB(J)
   240       CONTINUE
-            DO 250 J=1,NSUR
-              WRITE(IUO,'(2X,I3,1X,21I3)')NVER(J),(JVN(J,K),K=1,NVER(J))
+            DO 250 J=1,6
+              WRITE(IUO,'(a,21I3)') '  4 ',(JVNB(J,K),K=1,4)
   250       CONTINUE
   301     CONTINUE
         ENDIF

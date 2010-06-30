@@ -89,7 +89,8 @@ C For each zone a pointer to relevant temporal entry 0=not used.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
       COMMON/FOPEN/OPTDF,OPIMP,OPEXP
       LOGICAL OPTDF,OPIMP,OPEXP,XST
 
@@ -100,6 +101,7 @@ C For each zone a pointer to relevant temporal entry 0=not used.
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,HDR*12
       logical unixok,FOUND
+      integer ier
 
 C First check if tfile is an ascii temporal file.
       IER=0
@@ -131,14 +133,22 @@ C Search instances in temporal file to find match(s).
                   DO 77 itd4=1,NDATA
                     if(TAG(itd4)(1:lnblnk(TAG(itd4))).EQ.
      &                 DBTAG(itd1)(1:lnblnk(DBTAG(itd1))))then
-                  if(DBTASK(ITD1)(1:7).eq.'CASUALT')ICASUAL(itd3)=itd4
-                  if(DBTASK(ITD1)(1:7).eq.'CASUAL3')ICASUAL3(itd3)=itd4
-                  if(DBTASK(ITD1)(1:6).eq.'ZIVENT')IZIVENT(itd3)=itd4
-                  if(DBTASK(ITD1)(1:6).eq.'RAIRVL')IRAIRVL(itd3)=itd4
-                  if(DBTASK(ITD1)(1:6).eq.'CTLSTA')ICTLSTA(itd3)=itd4
-                  if(DBTASK(ITD1)(1:8).eq.'ACTIVITY')IACTIV(itd3)=itd4
-                  if(DBTASK(ITD1)(1:8).eq.'HTCLSETP')
-     &               IHTCLSETP(itd3)=itd4
+                      if(DBTASK(ITD1)(1:7).eq.'CASUALT')
+     &                  ICASUAL(itd3)=itd4
+                      if(DBTASK(ITD1)(1:7).eq.'CASUAL3')
+     &                  ICASUAL3(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'ZIVENT')
+     &                  IZIVENT(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'RAIRVL')
+     &                  IRAIRVL(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'CTLSTA')
+     &                  ICTLSTA(itd3)=itd4
+                      if(DBTASK(ITD1)(1:8).eq.'ACTIVITY')
+     &                  IACTIV(itd3)=itd4
+                      if(DBTASK(ITD1)(1:8).eq.'HTCLSETP')
+     &                  IHTCLSETP(itd3)=itd4
+                      if(DBTASK(ITD1)(1:6).eq.'DBTZNM')
+     &                  IDBTZNM(itd3)=itd4   ! measured zn dbT
 
 C Bidirectional data are assigned per surface
                       if(DBTASK(ITD1)(1:8).eq.'BIDIRSET')then
@@ -192,6 +202,7 @@ C            write(6,*)'ISETPTT',ISETPTT
 C            write(6,*)'ICASUAL',ICASUAL
 C            write(6,*)'ICASUAL3',ICASUAL3
 C            write(6,*)'ICTLSTA',ICTLSTA
+
           endif
         endif
 
@@ -230,7 +241,10 @@ C of a minimal width.
           CALL USRMSG('Converting temporal data...done.',msgl2,'P')
 
 C Now open the scratch file with the proper record width.
-          write(6,*) 'after converting ',nwpr,nuwpr
+
+C Debug.
+C          write(6,*) 'after converting ',nwpr,nuwpr
+
           if(act.eq.'S'.or.act.eq.'s'.or.act.eq.'R'.or.act.eq.'r')then
 
 C setup the TDFFLG2 common blocks based on TDFFLG0 commons specified
@@ -258,7 +272,8 @@ C Search instances in temporal file to find match(s).
      &             DBTAG(M)(1:lnblnk(DBTAG(M))))THEN
 
 C Debug.
-                  write(6,*) ' i tag m dbtag ',i,tag(i),m,dbtag(m)
+C                  write(6,*) ' i tag m dbtag ',i,tag(i),m,dbtag(m)
+
                   FOUND=.TRUE.
                   IFOC=I
                 ENDIF
@@ -342,6 +357,7 @@ C Otherwise convert to asci file by first reading in the binary file.
 C Initially set file width to one more than maximum number of columns.
         NWPR=MTABC
         ITWPR=NWPR+1
+        ier=0
         call EFOPRAN(iutdf,tfile,ITWPR,1,IER)
         IF(ier.ne.0)THEN
           WRITE(OUTS,'(2A)')'Problem opening ',tfile(1:lnblnk(tfile))
@@ -359,6 +375,7 @@ C Test if this is the proper record width via seeing what NWPR is.
           else
             close(iutdf)
             ITWPR=NWPR+1
+            ier=0
             call EFOPRAN(IUTDF,tfile,ITWPR,3,IER)
             IF(ier.ne.0)THEN
               WRITE(OUTS,'(A,A)')' problem opening ',
@@ -725,6 +742,7 @@ C IER=0 OK, IER=1 problem.
       CHARACTER LTDF*72,LTDFA*72,FSTR*80,HDR*12,tdaide*72
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,msgl2*48
       CHARACTER TDFDES*32,TMAT*16,tdbdate*24,tail*8
+      integer ier
 
 C Write out to version 3 format. This assumes that the binary
 C file will be used as a scratch file for the tdf module as
@@ -739,6 +757,7 @@ C If not already opened free unit and check if file exists.
       IF(.NOT.OPTDF)THEN
         CALL ERPFREE(IUTDF,ISTAT)
         ITWPR=NWPR+1
+        ier=0
         call EFOPRAN(IUTDF,LTDF,ITWPR,3,IER)
         IF(ier.ne.0)THEN
           msgl2=' error creating BINARY TDF file.'
@@ -893,7 +912,10 @@ C iadcols.
       if(iiadcols.eq.iadcols)then
         continue
       else
-        write(6,*) 'iiadcols is ',iiadcols,' iadcols is',iadcols
+
+C Debug.
+C        write(6,*) 'iiadcols is ',iiadcols,' iadcols is',iadcols
+
         if(iadcols.eq.0.and.iiadcols.ne.0) iadcols = iiadcols
       endif
 
@@ -1082,6 +1104,7 @@ C espriou.h provides current file.
       CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,act*1
       CHARACTER TDFDES*32,TMAT*16,outs*124
       character outstr*248,WORD*20,TMP*4,tail*8,msgl2*86
+      integer ier
 
 C If not already opened free unit and check if file exists.
       IER=0
@@ -1219,8 +1242,9 @@ C For each item read its attributes.
         elseif(WORD(1:7).eq.'*fields')then
           CALL EGETWI(OUTSTR,K,ifield,0,0,'-','ifield',IER)
           if(ifield.ne.(NTSTAT(I)+NTBITS(I)))then
-            write(6,*) 'mismatched ifield and ntstat ntbits ',ifield,
-     &        NTSTAT(I),NTBITS(I)
+            write(outs,*) 'mismatched ifield and ntstat ntbits ',
+     &        ifield,NTSTAT(I),NTBITS(I)
+            call edisp(iuout,outs)
           endif
 
 C For each of the fields build up text strings which will hold the data.
@@ -1324,7 +1348,10 @@ C For nuwpr items read as many lines as required.
           IRVA=nuwpr
           call EGETAGWRA(outstr,K,iafil,IRVA,TABU,0.00,1.00,'-',
      &        'raw tabular data',IER)
-          if(itrc.gt.1)write(6,*) 'at time ',TIMEJD,'tabu is ',TABU
+          if(itrc.gt.1)then
+            write(outs,*) 'at time ',TIMEJD,'tabu is ',TABU
+            call edisp(iuout,outs)
+          endif
           do 47 j=1,nwpr
             if(TABU(J).lt.TABUMN(J))TABUMN(J)=TABU(J)
             if(TABU(J).gt.TABUMX(J))TABUMX(J)=TABU(J)
@@ -1359,6 +1386,7 @@ C Now write the maximum for each column and then the last file record.
 C Debug.
 C         write(6,*)'tabumn ',TABUMN
 C         write(6,*)'tabumx ',TABUMX
+
          return
       else
         goto 34
@@ -1383,13 +1411,17 @@ C calling efdelet. Then open new scratch file with the minimal
 C width.
         WRITE(OUTS,'(A,A)')' Deleting existing ',LTDF(1:lnblnk(LTDF))       
         CALL EDISP(IUOUT,OUTS)
+        ier=0
         call EFOPRAN(iutdf,LTDF,ITWPR,1,IER)
         CALL EFDELET(iutdf,ISTAT)
       endif
 
 C Use logic for minimal width opening of the scratch file.
+
+C Debug.
 C      write(6,*) 'a nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
 C     &  ' ndata',ndata
+
       if(nuwpr.eq.1)then
         ITWPR= 20
         NWPR= ITWPR-1
@@ -1400,8 +1432,12 @@ C     &  ' ndata',ndata
         ITWPR=NUWPR+1
         NWPR= ITWPR-1
       endif
+
+C Debug.
 C      write(6,*) 'b nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
 C     &  ' ndata',ndata
+
+      ier=0
       call EFOPRAN(iutdf,LTDF,ITWPR,3,IER)
       WRITE(OUTS,'(A,A)')' Opened new ',LTDF(1:lnblnk(LTDF))       
       CALL EDISP(IUOUT,OUTS)
@@ -1470,6 +1506,51 @@ C TABU read errors.
 
       END
 
+C ************* ERTABUPREV 
+C ERTABUPREV reads one timesteps info from binary TDF file into TABUPREV array. 
+C ITREC is the timestep record to read. ITRC is the 
+C trace level, IER=0 OK, IER=1 problem. 
+      SUBROUTINE ERTABUPREV(ITRC,ITREC,IER)
+#include "tdf2.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
+     &             LSTREC,NDBSTP,NUWPR
+
+C Single timestep of TABULAR data and temporary storage TABUPREV.
+      COMMON/TDATPREV/TABUPREV(MTABC)
+
+      CHARACTER OUTS*160
+
+C Read tabular data for the given timestep and for the given
+C instance into TAB. Convert from timestep into representation of time.
+C Figure out a way not to print this heading when not needed.
+      IF(ITRC.GT.1.AND.ITREC.EQ.50)THEN
+        CALL EDISP(IUOUT,' Reading tabular timestep data...')
+        CALL EDISP(IUOUT,
+     &  '  T/S  Rec Col 1 Col 2 Col 3 Col 4 Col 5 Col 6 Col 7 Col 8..')
+      ENDIF
+      ITS=ITREC-49
+      CALL CLRTABPREV
+      READ(IUTDF,REC=ITREC,IOSTAT=ISTAT,ERR=103) (TABUPREV(J),J=1,NWPR)
+
+      IF(ITRC.GT.1)THEN
+        nss=min0(39,NWPR)
+        WRITE(iuout,'(A,2I5,40F6.1)')'< ',ITS,ITREC,
+     &    (TABUPREV(J),J=1,nss)
+      ENDIF
+
+  99  RETURN
+
+C TABU read errors.
+ 103  write(outs,'(A,I6,A,I6)')' @ record ',ITREC,' & timestep ',ITS
+      CALL USRMSG('ERTABUPREV: Problem reading tabular data ',outs,'W')
+      IER=1
+      goto 99
+
+      END
+
 C ************* EWTABU 
 C EWTABU writes one timesteps Tabular info to TDF file from the array TAB. 
 C ITREC is the record to be written.  ITRC is the trace level.
@@ -1515,15 +1596,17 @@ C to alter the number of columns check the value of iadcols.
       SUBROUTINE EWTABA(ITREC,RDOTY,iafil,IER)
 #include "tdf2.h"
 
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
      &             LSTREC,NDBSTP,NUWPR
       common/TDFADDC/iadcols,deftabu(9)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
-      CHARACTER delim*1,msgl2*48,louts*248
+      CHARACTER delim*1,msgl2*48,louts*248,outs*124
 
 C If nuwpr is zero then we have a problem.
       if(nuwpr+iadcols.eq.0)then
-        write(6,*) 'no colums to write at rec ',itrec,rdoty
+        write(outs,*) 'no colums to write at rec ',itrec,rdoty
+        call edisp(iuout,outs)
         ier=1
         return
       endif
@@ -1574,6 +1657,19 @@ C For current timestep item clear tabular array.
         TABU(I)=0.0
   10  CONTINUE
       RETURN
+      END
 
+
+C ************* CLRTABPREV 
+C CLRTABPREV clears the previous records working tabular timestep data.
+      SUBROUTINE CLRTABPREV
+#include "tdf2.h"
+      COMMON/TDATPREV/TABUPREV(MTABC)
+
+C For current timestep item clear tabular array.
+      DO 10 I=1,MTABC
+        TABUPREV(I)=0.0
+  10  CONTINUE
+      RETURN
       END
 

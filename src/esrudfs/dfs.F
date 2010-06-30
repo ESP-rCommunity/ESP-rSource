@@ -31,6 +31,7 @@ C if these are 0 then use default values.
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "material.h"
 #include "espriou.h"
 #include "prj3dv.h"
       
@@ -60,7 +61,7 @@ C Path to problem.
       common/uhome/upath
 
 C Defaults.
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
 C CFD common blocks.
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -95,13 +96,6 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
 
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
       CHARACTER*24 ITEM(10)
       CHARACTER H*72,inf*144,LCFD*72,DFCFD*72,Lflpar*72
       character path*72,upath*72,longtfile*144
@@ -109,7 +103,7 @@ C Material data arrays.
       CHARACTER*72 TITLE,CFTRFL,LPHI,RESFL,WORD
       integer islice,jslice,kslice
       CHARACTER*72 LVEC,LBIT,t72,vecfil
-      character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DECMPDBFL,DICONDBFL
 
       LOGICAL INCALU,INCALV,INCALW,INCALK,INCALD,INCALT
       LOGICAL IZEROT,IZanKE,IMITZ
@@ -119,6 +113,11 @@ C Material data arrays.
       LOGICAL areaSSO
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C Clear 'conflated only' commons.
       do 2 I=1,MCOM
@@ -841,6 +840,13 @@ C Dummy routine (needed for call back from c).
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
      
+      return
+      end
+
+C Dummy subroutine needed to compile (called from library code).
+      SUBROUTINE PLELEV(direc)
+      CHARACTER direc*1
+
       return
       end
 

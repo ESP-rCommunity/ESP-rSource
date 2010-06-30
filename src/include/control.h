@@ -7,13 +7,19 @@ C Re-compile all control-related modules if this file is altered.
       PARAMETER (MNONID=2)
       INTEGER MCDT ! Max. day types
       PARAMETER (MCDT=10)
-      INTEGER MCF ! Max. control loops 
-      PARAMETER (MCF=28)
+      INTEGER MCF ! Max. control loops (allow one per zone)
+      PARAMETER (MCF=72)
       INTEGER MCDP ! Max. periods per day
       PARAMETER (MCDP=8)
-      INTEGER MISCC ! Max. periods per day
+      INTEGER MISCC ! Max. miscellaneous data items
       PARAMETER (MISCC=41)
 
+C Domain specific control descriptions
+      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
+     &             opticdoc, CFCctldoc
+      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
+      character glctldoc*248,opticdoc*248,CFCctldoc*248     
+      
 C Domain specific commons follow, detailed explaination in econtrol.F
 C Building control
       COMMON/BCTL/NCF,IBSN(MCF,4),IBAN(MCF,3),NBCDT(MCF),
@@ -63,3 +69,17 @@ C Electrical control.
       INTEGER NECL,IESN,IEAN,NECDT,IECDV,NECDP,IECTYP,IECLAW
       REAL TECPS,EMISCD          
 
+C Complex fenestration control. Data structure of CFC control
+C is summarized variables is documented in econtrol.F
+      COMMON/CFCCTL/nCFCctlloops,iCFCsensor(MCF,4),
+     &              iCFCactuator(MCF,3),nCFCctldaytypes(MCF),
+     &              iCFCctldatevalid(MCF,MCDT,2),
+     &              nCFCdayctlperiods(MCF,MCDT),
+     &              CFCctlperiodstart(MCF,MCDT,MCDP),
+     &              iCFCctltype(MCF,MCDT,MCDP),
+     &              iCFCctllaw(MCF,MCDT,MCDP),
+     &              CFCmiscdata(MCF,MCDT,MCDP,MISCC)
+      INTEGER	nCFCctlloops, iCFCactuator, iCFCsensor, nCFCctldaytypes
+      INTEGER     iCFCctldatevalid, nCFCdayctlperiods
+      INTEGER     iCFCctltype,iCFCctllaw
+      REAL        CFCctlperiodstart,CFCmiscdata

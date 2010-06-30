@@ -270,6 +270,7 @@ C and information on the saved result set.
 
       SUBROUTINE MZSIML
 #include "building.h"
+#include "model.h"
 #include "plant.h"
 #include "net_flow.h"
 #include "monitor.h"
@@ -310,8 +311,6 @@ C Tolerance for iteration of hydrogen flow matrix
       common /montrv/mnpc,mcomp(mpcom),mcnod(mpcom),mstate,monitr,
      &               ymin,ymax
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -688,13 +687,10 @@ C Common for electrical file
       COMMON/GR1D04/GAM,RGAM
       COMMON/GRSD100/IndxSt
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
-      COMMON/PREC8/SLAT,SLON
       COMMON/AIRWAT/WATERZ(MCOM),WATCAP
       COMMON/VERSOL/ipkzon(mzs),ipksf(mzs),ivsolfil,vsol,VTSOL,vsnam
       common/filep/ifil
       COMMON/Vld30/Tinitial
-
-
 
 C Treatment of solar radiation data in weather file
 C ESP-r operates on hourly-centered data. That is, the amount of solar
@@ -1780,7 +1776,8 @@ C values have been set.
         CALL EDAY(isd1,ism1,isds)
         CALL EDAY(isd2,ism2,isdf)
 
-        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
+C Debug.
+C        write(6,*) isd1,ism1,isds,isd2,ism2,isdf
 
         IFDAY=1
         ICFDYS=ISDS
@@ -1820,6 +1817,7 @@ C prior to each simulation commencing.
 
       SUBROUTINE MZSIMH(ICON)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "control.h"
       
@@ -1833,10 +1831,6 @@ C prior to each simulation commencing.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/PREC7/ITCNST
 
       COMMON/C6/INDCFG
@@ -1889,7 +1883,7 @@ C Simulator parameters.
       CHARACTER ctldoc*248
       CHARACTER*72 LCFGF,LCTLF
       character PERST1*14,PERST2*44,PERST3*44
-      character outs*124,cfgroot*24,h*72
+      character outs*124,louts*248,cfgroot*24,h*72
 
       LOGICAL OK,dok,IGR1D,BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,INTHPS,INTHPZ,global,glbrwd
@@ -1941,21 +1935,21 @@ C Determine the number of zone days simulated.
    41 NZTS=(NCOMP*(IDAYS+ITCNST))*NTSTEP*24
 
 C Write out appropriate message.
-      write(outs,'(a,a)')  ' Climate file         : ',
+      write(louts,'(a,a)')  ' Climate file         : ',
      &  LCLIM(:lnblnk(LCLIM))
-      call edisp(icout,outs)
-      write(outs,'(a,a)')  ' Configuration file   : ',
+      call edisp248(icout,louts,100)
+      write(outs,'(a,a)')   ' Configuration file   : ',
      &  LCFGF(:lnblnk(LCFGF))
       call edisp(icout,outs)
-      write(outs,'(a,a)')  ' Configuration name   : ',
-     &  LSNAM(:lnblnk(LSNAM))
+      write(outs,'(a,a)')   ' Configuration name   : ',
+     &  modeltitle(:lnblnk(modeltitle))
       call edisp(icout,outs)
       call edisp(icout,' ')
       if(NCF.eq.0.and.NCL.eq.0)then
-        call edisp(icout,    ' Control strategy     : free-floating')
+        call edisp(icout,   ' Control strategy     : free-floating')
         call edisp(icout,' ')
       else
-        write(outs,'(a,a)')  ' Control file name    : ',
+        write(outs,'(a,a)') ' Control file name    : ',
      &    LCTLF(1:lnblnk(LCTLF))
         call edisp(icout,outs)
         call edisp(icout,' ')
@@ -2018,11 +2012,15 @@ C Derive string for simulation period.
       goto 135
    42 IF(BYTE.GT.2000.0)goto 14
       write(outs,'(a,F7.1,a)')' Zone results db size : ',BYTE,' Kbytes'
-      call edisp(icout,outs)
+      if(isave.eq.1.or.isave.eq.2.or.isave.eq.3.or.isave.eq.4)then
+        call edisp(icout,outs)
+      endif
       goto 135
    14 BYTE=BYTE/1024.0
       write(outs,'(a,F7.1,a)')' Zone results db size : ',BYTE,' Mbytes'
-      call edisp(icout,outs)
+      if(isave.eq.1.or.isave.eq.2.or.isave.eq.3.or.isave.eq.4)then
+        call edisp(icout,outs)
+      endif
 
   135 IF(INDCFG.EQ.1)goto 136
       NREC=3
@@ -2185,7 +2183,6 @@ C ICNT    - counts trace output for page numbering purposes
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
-      COMMON/PREC8/SLAT,SLON
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
@@ -2470,6 +2467,7 @@ C if itru=33 then works as a header to the trace.
 
       subroutine mzinfo(itru)
 #include "building.h"
+#include "model.h"
 #include "esprdbfile.h"
 #include "control.h"
       
@@ -2480,10 +2478,6 @@ C if itru=33 then works as a header to the trace.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/c2/lsnam,nccode(mcom),lproj(mcom),lgeom(mcom),
-     &          lshad(mcom),lthrm(mcom),indutl(mcom),lutil(mcom)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 
@@ -2492,17 +2486,18 @@ C if itru=33 then works as a header to the trace.
 
       character*72 lafres,lctlf,lcfgf,rfile
       character ctldoc*248,outs*124,PFILE*72,MSTRFILE*72,cfgroot*24
+      character louts*248
 
       dimension io(mcom)
 
       call edisp(itru,' ')
       write(outs,'(A,A)')' Results library     :  ',RFILE
       call edisp(itru,outs)
-      write(outs,'(A,A)')' Climate file        :  ',LCLIM
-      call edisp(itru,outs)
+      write(louts,'(A,A)')' Climate file        :  ',LCLIM
+      call edisp248(itru,louts,100)
       write(outs,'(A,A)')' Configuration file  :  ',LCFGF
       call edisp(itru,outs)
-      write(outs,'(A,A)')' Configuration descr :  ',LSNAM
+      write(outs,'(A,A)')' Configuration descr :  ',modeltitle
       call edisp(itru,outs)
       call edisp(itru,' ')
       IF(NCF.EQ.0.AND.NCL.EQ.0)then

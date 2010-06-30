@@ -35,7 +35,7 @@ C ************************* EMFREAD
 C EMFREAD reads a mass flow network description file.
 C Reads allow comments and most input data checks are performed.
 C It assumes that the file is already open.
-      SUBROUTINE EMFREAD(IFPRB,ITRC,IER)
+      SUBROUTINE EMFREAD(IFPRB,IER)
 
 #include "net_flow.h"
       
@@ -464,7 +464,7 @@ C Error trap on read error
       GOTO 100
 
 C File read errors.
- 1001 CALL USRMSG(' Conversion error in',OUTSTR,'W')
+ 1001 CALL USRMSG('EMFREAD: conversion error in',OUTSTR,'W')
       IER=1
       GOTO 100
       END

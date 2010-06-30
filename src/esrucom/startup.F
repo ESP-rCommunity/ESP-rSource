@@ -35,6 +35,8 @@ C  parres: allows terminal, size, results file, action and silent arguments
 C         to be passed to res
 C  parclm: allows terminal, size, input file, action and silent arguments
 C         and output (converted) file to be passed to clm
+C  parsish: allows the module ish to be passed a terminal, size, config file,
+C         zone focus and actions arguments from the invocation line.  
 C parsfza: allows a terminal, size, config file, zone focus and actions arguments
 C         to be passed to the program
 C parsprj: allows terminal, size, config file, zone focus and actions arguments
@@ -152,7 +154,7 @@ C initial values because they will not be used.
         foldexe=' '
         cadlbl='no CAD package'
         cadexe=' '
-        cadfmt='ZIP'
+        cadfmt='DXF'
         replbl='No report generator'
         repexe='UNKNOWN'
         gprcmd='UNKNOWN'
@@ -178,7 +180,7 @@ C temporary files in the users home folder.
         foldexe='xfs '
         cadlbl='CAD package'
         cadexe='xzip'
-        cadfmt='ZIP'
+        cadfmt='DXF'
         replbl='No report generator'
         repexe='UNKNOWN'
         gprcmd='UNKNOWN'
@@ -244,6 +246,7 @@ C Open the esprc file, return if not found.
 
 C Debug.
 C      write(6,*) 'lfdef is ',lfdef
+
       call FPOPEN(IFDEF,ISTAT,1,0,LFDEF)
       IF(ISTAT.LT.0)THEN
         CALL ERPFREE(IFDEF,ISTAT)
@@ -294,7 +297,7 @@ C If '*ESPRC' found then read db until '*end' found.
 C Capture rectangular area of screen via capexgf is in wwlib.c 
         CALL EGETP(OUTSTR,K,gprlbl,'W','rect area lbl',IER)
         CALL EGETP(OUTSTR,K,gprcmd,'W','rect area exe',IER)
-        write(outs,'(a,a,2x,a)')' Rectangular area grab: ',gprlbl,gprcmd
+        write(outs,'(a,a,2x,a)')' Rectangular area grab:',gprlbl,gprcmd
         if(itrc.gt.0)call edisp(iuout,outs)
         call capexgf(gprcmd)
       elseif(WORD(1:5).eq.'*gxwd')then
@@ -435,7 +438,7 @@ C Use espriou.h for climatelist file name and defdbfl.
 
 C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       common/deflt4/dinstpath
 
 C Construction defaults:
@@ -470,7 +473,7 @@ C cdintglz (char*32) internal glazing/window
 
       CHARACTER OUTSTR*124,WORD*20,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
-      character*72 DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DECMPDBFL,DICONDBFL
       character dinstpath*48,di*48
       logical unixok,dll
 #include "espinstalldir.h"
@@ -736,10 +739,11 @@ C Name of current application
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248
       integer iXavail
+      logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
-
+      IOS=0  ! initial value
       if ( iXavail() == 1 ) then 
         termtype = 8
         mode = 'graphic'
@@ -762,12 +766,9 @@ C into binary, and set default terminal type as necessary
       inf  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -818,18 +819,26 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-C        call edisp248(iuout,outs,90)
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf))
+C          call edisp248(iuout,outs,90)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parpsf: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parpsf: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)')'parpsf: permission error getting parameters.'
+        else
+          write(6,'(a)')'parpsf: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -849,10 +858,12 @@ C to be passed to the program from the invocation line.
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,infa*72,infb*72,appn*24,outs*124
+      logical unixok
 
 C NT or Unix version.
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -877,12 +888,9 @@ C into binary, and set default terminal type as necessary
       infb  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with files ',
-     &    infa(1:lnblnk(infa)),' & ',infb(1:lnblnk(infb))
-C        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -935,18 +943,26 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with files ',
-     &    infa(1:lnblnk(infa)),' & ',infb(1:lnblnk(infb))
-C        call edisp(iuout,outs)
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with files ',
+     &      infa(1:lnblnk(infa)),' & ',infb(1:lnblnk(infb))
+C          call edisp(iuout,outs)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parpsff: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parpsff: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)') 'parpsff: permission error getting parameters.'
+        else
+         write(6,'(a)') 'parpsff: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -979,8 +995,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'    will be placed in the users home')
         call edisp(iuout,'    folder. Default is no.')
         call edisp(iuout,' ')
-        call edisp(iuout,' -help :this help message. ')
-        return
       elseif(appn(1:3).eq.'clm')then
         call edisp(iuout,'The climate analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -991,11 +1005,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'   whether the user interacts')
         call edisp(iuout,'  (where file is asci input or output file)')
         call edisp(iuout,'   [-s < width, offset left & top>]')
-        call edisp(iuout,' ')
-        call edisp(iuout,'  where -mode options are:')
-        call edisp(iuout,'    text    = text mode')
-        call edisp(iuout,'    graphic = graphic mode')
-        call edisp(iuout,'    script = script mode')
         call edisp(iuout,' ')
         call edisp(iuout,'Example converting binary file to asci: ')
         call edisp(iuout,
@@ -1010,8 +1019,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,
      &    ' clm -file new.clm -act epw2bin silent current.epw')
         call edisp(iuout,' ')
-        call edisp(iuout,' -help :this help message. ')
-        return
       elseif(appn(1:3).eq.'dfs')then
         call edisp(iuout,'The stand-alone domain flow module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1039,24 +1046,22 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'       [-zone <name|index>]')
         call edisp(iuout,'       [-s < width, offset left & top>]')
         call edisp(iuout,'       [-act {recalculate|update_silent}]')
-        call edisp(iuout,'       [-act { <action> }')
         call edisp(iuout,'       [-act [recalculate|update_silent]}')
-        call edisp(iuout,'       [-act { <action> <file>]}')
+        call edisp(iuout,'       [     { <action> <file>]}')
         call edisp(iuout,'   (where action {asci2bin|bin2asci}]')
         call edisp(iuout,'   (where file is asci input or output file)')
-        call edisp(iuout,' ')
-        call edisp(iuout,'  where -mode options are:')
-        call edisp(iuout,'    text    = text mode ')
-        call edisp(iuout,'    graphic = graphic mode')
-        call edisp(iuout,'    script = script mode')
+        call edisp(iuout,'       [-act [useupdate_silent]}')
         call edisp(iuout,' ')
         call edisp(iuout,'  where -act recalculate')
         call edisp(iuout,'    interactively recalculates shading.')
         call edisp(iuout,'  where -act update_silent')
         call edisp(iuout,'    no usr interaction during recalculation.')
+        call edisp(iuout,'  where -act useupdate_silent')
+        call edisp(iuout,'    no usr interaction during recalculation')
+        call edisp(iuout,'    and any existing ascii shading file is')
+        call edisp(iuout,'    converted to a binary file otherwise a')
+        call edisp(iuout,'    full calculation is performed')
         call edisp(iuout,' ')
-        call edisp(iuout,' -help :this help message. ')
-        return
       elseif(appn(1:3).eq.'mfs')then
         call edisp(iuout,'The stand-alone network flow solver. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1112,13 +1117,6 @@ C parpsfh: Help message for parpsf.
         call edisp(iuout,'   recovery commands]')
         call edisp(iuout,'   [-s < width, offset left & top>]')
         call edisp(iuout,' ')
-        call edisp(iuout,'  where -mode options are:')
-        call edisp(iuout,'    text    = text mode')
-        call edisp(iuout,'    graphic = graphic mode')
-        call edisp(iuout,'    script = script mode')
-        call edisp(iuout,' ')
-        call edisp(iuout,' -help :this help message. ')
-        return
       elseif(appn(1:3).eq.'tdf')then
         call edisp(iuout,'The temporal database manager. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1143,7 +1141,9 @@ C parpsfh: Help message for parpsf.
       call edisp(iuout,'    graphic = graphic mode')
       call edisp(iuout,'    script = script mode')
       call edisp(iuout,' ')
-      call edisp(iuout,' -help :this help message. ')
+      call edisp(iuout,' -help: display this help message. ')
+      call edisp(iuout,' -version: display version number and quit.')
+      call edisp(iuout,' -buildinfo: display build details and quit.')
       return
       end
 
@@ -1171,10 +1171,11 @@ C Application name
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,sps*8,aut*12,actf*72,browse*4
-
+      logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1205,12 +1206,8 @@ C into binary, and set default terminal type as necessary
 
 C Get arguments from command line: if one parameter.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'and parameters ',sps(1:lnblnk(sps))
-        call edisp(iuout,outs)
+C There's nothing to parse. Do not report "Starting APP with FILE..."
+C unless -v is specified (and m>=1).
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1220,8 +1217,6 @@ C Get arguments from command line: if one parameter.
         if(argument(1:5).eq.'-help')then
           call parpsfh(appn)
           stop
-        elseif(argument(1:2).eq.'-v')then
-          iverb = 2   ! tell application to run with debug on
         elseif(argument(1:8) .eq. '-version' ) then
 C Display version information and then quit
           CALL ESPrVersion("summary",cAppName,IUOUT)
@@ -1230,6 +1225,10 @@ C Display version information and then quit
 C Display detailed build information and then quit
           CALL ESPrVersion("details",cAppName,IUOUT)
           stop
+        elseif(argument(1:2).eq.'-v')then
+          iverb = 2   ! tell application to run with debug on
+                      ! Note: this option MUST follow -version
+                      ! for both to be supported
         elseif(argument(1:5).eq.'-mode')then
           i=i+1
           call getarg(i,argument)
@@ -1278,23 +1277,31 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
         outs=' '
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        outs=' '
-        write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
-     &   ' in ',aut,' mode and ',browse,' browsing.'
-        call edisp(iuout,outs)
+        if ( iVerb == 2 ) then
+          write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf))
+          if(unixok)call edisp(iuout,outs)
+          outs=' '
+          write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
+     &     ' in ',aut,' mode and ',browse,' browsing.'
+          if(unixok)call edisp(iuout,outs)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsim: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsim: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)') 'parsim: permission error getting parameters.'
+        else
+          write(6,'(a)') 'parsim: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1316,10 +1323,11 @@ C Application name
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,actf*72,act*16,aut*12
-
+      logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1346,12 +1354,9 @@ C into binary, and set default terminal type as necessary
       actf  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
  41     i= i+1
@@ -1410,20 +1415,28 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        outs=' '
-        write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
-     &   ' in ',aut,' mode.'
-        call edisp248(iuout,outs,90)
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          outs=' '
+          write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
+     &     ' in ',aut,' mode.'
+C          call edisp248(iuout,outs,90)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parres: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parres: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)') 'parres: permission error getting parameters.'
+        else
+          write(6,'(a)') 'parres: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1446,10 +1459,12 @@ C Application name
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,ascif*72,act*16,aut*12
+      logical unixok
 
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1476,12 +1491,9 @@ C into binary, and set default terminal type as necessary
       ascif  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
  41     i= i+1
@@ -1539,25 +1551,33 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        outs=' '
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        outs=' '
-        write(outs,'(5a)') 'and action ',act(1:lnblnk(act)),
-     &   ' in ',aut,' mode.'
-        call edisp(iuout,outs)
-        write(outs,'(2a)') 'using/making file ',ascif(1:lnblnk(ascif))
-        call edisp(iuout,outs)
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          outs=' '
+          write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf))
+C          call edisp(iuout,outs)
+          outs=' '
+          write(outs,'(5a)') 'and action ',act(1:lnblnk(act)),
+     &     ' in ',aut,' mode.'
+C          call edisp(iuout,outs)
+          write(outs,'(2a)') 'using/making file ',ascif(1:lnblnk(ascif))
+C          call edisp(iuout,outs)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parclm: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parclm: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)') 'parclm: permission error getting parameters.'
+        else
+          write(6,'(a)') 'parclm: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1581,10 +1601,11 @@ C Application name
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,zone*16,act*16,ascif*72
-
+      logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1611,14 +1632,9 @@ C into binary, and set default terminal type as necessary
       ascif  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-C Debugging code.
-C        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-C     &    ' with action ',act(1:lnblnk(act))
-C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1681,19 +1697,27 @@ C If act is asci2bin or bin2asci read ascii file name
         goto 41
 
   42    continue
-C        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-C     &    ' with action ',act(1:lnblnk(act))
-C        call edisp248(iuout,outs,90)
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+     &    ' with action ',act(1:lnblnk(act))
+C         call edisp248(iuout,outs,90)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsfza: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsfza: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)') 'parsfza: permission error getting parameters.'
+        else
+         write(6,'(a)') 'parsfza: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1718,10 +1742,11 @@ C Application name
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,zone*16,act*16
       real data1,data2,data3
-
+      logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1750,14 +1775,9 @@ C into binary, and set default terminal type as necessary
       data2=0.0
       data3=0.0
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-C        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-C     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
-C     &    data2,data3
-C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1835,20 +1855,28 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-C        write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
-C     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
-C     &    data2,data3
-C        call edisp248(iuout,outs,90)
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone)),
+     &    ' with action ',act(1:lnblnk(act)),' and data ',data1,
+     &    data2,data3
+C         call edisp248(iuout,outs,90)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsfza: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsfza: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)') 'parsfza: permission error getting parameters.'
+        else
+         write(6,'(a)') 'parsfza: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1870,10 +1898,12 @@ C Application name
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24
       character outs*248,zone*16
+      logical unixok
 
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -1898,12 +1928,9 @@ C into binary, and set default terminal type as necessary
       zone = 'ALL'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-C        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-C        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -1957,18 +1984,26 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-C        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-C     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-C     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-C        call edisp248(iuout,outs,90)
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &    inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
+C         call edisp248(iuout,outs,90)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsfz: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsfz: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,'(a)') 'parsfz: permission error getting parameters.'
+        else
+          write(6,'(a)') 'parsfz: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -1990,6 +2025,7 @@ C Application name
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248
+      logical unixok
 
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -2014,12 +2050,9 @@ C into binary, and set default terminal type as necessary
       inf  = 'UNKNOWN'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -2060,10 +2093,15 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf))
-        call edisp248(iuout,outs,90)
+C         call edisp248(iuout,outs,90)
+        endif
         return
       endif
       end
@@ -2083,6 +2121,7 @@ C  Logic allows for the -file token to be optional.
       character*48 prog
       integer iargc,m
       character argument*72,mode*8,inf*144,appn*24,outs*248,act*16
+      logical unixok
 
 
 C Determine if an X graphics library (GTK or X11) was linked
@@ -2108,12 +2147,9 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -2161,10 +2197,15 @@ C Assume argument is an input file without the -file token.
         goto 41
 
   42    continue
-        write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C         call edisp248(iuout,outs,90)
+        endif
         return
       endif
       end
@@ -2190,9 +2231,11 @@ C Application name
       character argument*72,inf*144,appn*24
       character aim*12,act*72,zone*16,browse*4
       character outs*248,mode*8
+      logical unixok
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -2220,18 +2263,9 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-        write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'for focus zone ',zone(1:lnblnk(zone))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with scene purpose',aim(1:lnblnk(aim))
-        call edisp(iuout,outs)
-        write(outs,'(a,a)') 'with action ',act(1:lnblnk(act))
-        call edisp(iuout,outs)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -2294,20 +2328,28 @@ C Display detailed build information and then quit
         goto 41
 
   42    continue
-        write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' for focus zone ',zone(1:lnblnk(zone)),
      &    ' with scene purpose ',aim(1:lnblnk(aim)),
      &    ' with action ',act(1:lnblnk(act))
-        call edisp248(iuout,outs,90)
+C          call edisp248(iuout,outs,90)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parspza: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parspza: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)') 'parse2r: permission error getting parameters.'
+        else
+         write(6,'(a)') 'parse2r: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -2329,10 +2371,12 @@ C Application name
       integer iargc,m
       character argument*72,mode*8,inf*144,actf*72,appn*24
       character outs*248,act*16
+      logical unixok
 
 
 C Determine if an X graphics library (GTK or X11) was linked
 C into binary, and set default terminal type as necessary
+      IOS=0  ! initial value
 
       if ( iXavail() == 1 ) then 
         termtype = 8
@@ -2358,13 +2402,9 @@ C into binary, and set default terminal type as necessary
       act = 'NONE'
       argument = ' '
 
-C Get arguments from command line: if one parameter.
+C Get arguments from command line: if no paramters just
+C return, otherwise process parameters.
       if(m.eq.0)then
-        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
-     &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
-     &    ' applied to ',actf(1:lnblnk(actf))
-        call edisp248(iuout,outs,90)
         return
       elseif(m.ge.1)then
   41    i= i+1
@@ -2420,19 +2460,27 @@ C Display detailed build information and then quit
         endif
         goto 41
   42    continue
-        write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+
+C Only give feedback if non-DOS.
+        call isunix(unixok)
+        if(unixok)then
+          write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &    ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &    inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
      &    ' applied to ',actf(1:lnblnk(actf))
-        call edisp248(iuout,outs,90)
+C         call edisp248(iuout,outs,90)
+        endif
         return
       endif
 
 C Errors.
-   2  if(IOS.eq.2)then
-        write(6,'(a)') 'parsfact: permission error getting parameters.'
-      else
-        write(6,'(a)') 'parsfact: error extracting parameters.'
+   2  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+         write(6,'(a)')'parsfact: permission error getting parameters.'
+        else
+         write(6,'(a)')'parsfact: error extracting parameters.'
+        endif
       endif
       return
       end
@@ -2473,7 +2521,6 @@ C Get number of arguments and command name.
 
 C If one parameter.
       if(m.eq.0)then
-        write(6,'(a)') 'No arguments - ecnv aborting...'
         stop
       elseif(m.ge.1)then
   41    i= i+1
@@ -2492,7 +2539,7 @@ C If one parameter.
       call edisp(iuout,'      (ww = ww graphic commands)')
       call edisp(iuout,' -in [file]  = input file')
       call edisp(iuout,
-     &  ' -of [esp|dxf|viewer|tsbi3|xfig|vrml] = dest format')
+     &  ' -of [esp|dxf|viewer|xfig|vrml] = dest format')
       call edisp(iuout,' -out [file] = output file')
       call edisp(iuout,' -v          = verbose mode')
       call edisp(iuout,' -mm -metre  = dxf coords in mm (default)')
@@ -2501,7 +2548,7 @@ C If one parameter.
       call edisp(iuout,' ')
       call edisp(iuout,'The following combinations are supported:')
       call edisp(iuout,'  input format  output format')
-      call edisp(iuout,'  esp-r         dxf, viewer, zip, tsbi3, vrml')
+      call edisp(iuout,'  esp-r         dxf, viewer, zip, vrml')
       call edisp(iuout,'  dxf           esp-r, viewer')
       call edisp(iuout,'  zip           esp-r, viewer')
       call edisp(iuout,' ')

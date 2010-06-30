@@ -28,8 +28,6 @@ C IPV2SIMPAR: copy relevant data from IPV description to
 C             simulation parameter sets.
 C getmultip: looks for typical week in each season based on closest
 C            degree days and radiation patterns.
-C CLMGET: (duplicate of code in esruclm/cfiles.F)
-C AZALT: (duplicate of code in esruclm/clmint.F)
 
 C ************* IPVCMD
 C IPVCMD acts on command line IPV directives. Allows model to be
@@ -39,6 +37,7 @@ C altered based on information held in IPV definition.
 #include "uncertainty.h"
 #include "espriou.h"
 #include "control.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -50,19 +49,9 @@ C Path to model and command line file (if any). Browse
 C is a logical flag, .true. restricts update/save options
       common/rcmd/LCMDFL
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
       common/CFGV/icfgv
-
-C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
-C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
-C ipvastjd() are the assessment start julian dates,
-C ipvafnjd are the assessment finish julian dates and
-C nipvdispjd number of days to display in detail,
-C ipvdispjd is list of julian days (must be within the assessment period).
-C ipvadesc is a 40 char description associated with each assessment.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C IDST tool commands
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
@@ -114,7 +103,10 @@ C Check if IPV file known and fill common blocks before reading command data.
       if(OUTSTR(1:14).eq.'*IDST COMMANDS')then
 222     CALL STRIPC(IFCFG,OUTSTR,0,ND,0,'tags',IIER)
         if(iier.ne.0)then
+
+C Debug.
 C          write(6,*)'idst ',nidst
+
           goto 223
         endif
         if(OUTSTR(1:5).eq.'*note')then
@@ -184,8 +176,11 @@ C Work with temporary string and strip of .prn or .wis at end of the name.
             write(ALOC(nidst),'(a)') word(1:lnblnk(word))
           endif
           CMDLBL(nidst)='ext_window'
+
+C Debug.
 C          write(6,*) word
 C          write(6,*) nidst,ALOC(nidst)
+
         elseif(OUTSTR(1:16).eq.'*name_int_window')then
           k=17
           CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
@@ -205,8 +200,11 @@ C Work with temporary string and strip of .prn or .wis at end of the name.
             write(ALOC(nidst),'(a)') word(1:lnblnk(word))
           endif
           CMDLBL(nidst)='int_window'
+
+C Debug.
 C          write(6,*) word
 C          write(6,*) nidst,ALOC(nidst)
+
         elseif(OUTSTR(1:16).eq.'*name_atr_window')then
           k=17
           CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
@@ -226,8 +224,11 @@ C Work with temporary string and strip of .prn or .wis at end of the name.
             write(ALOC(nidst),'(a)') word(1:lnblnk(word))
           endif
           CMDLBL(nidst)='atr_window'
+
+C Debug.
 C          write(6,*) word
 C          write(6,*) nidst,ALOC(nidst)
+
         elseif(OUTSTR(1:4).eq.'*res')then
           k=4
           CALL EGETRM(OUTSTR,K,CMDRES,'W','idst report',IER)
@@ -284,6 +285,10 @@ C If act = 'i' then initialise variables.
 #include "esprdbfile.h"
 #include "espriou.h"  
 C espriou.h for climatelist file name.
+#include "seasons.h"
+C seasons.h provides typper and typsea
+#include "ipvdata.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -301,87 +306,6 @@ C IPV description.
       common/IPVF/lipvdatf
       common/CFGV/icfgv
 
-C Format of the IPV report.
-C  = 1 is human readable text, 2 is tab separated, 3 is java
-      common/IPVFORMAT/ipvform,ipvversion
-
-C ipvtitl (char 40) is the title that shows up in reports
-C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
-C ipvsynop (char 248) documents the integrated performance view
-C ipvsimu (char 6) is a short tag describing the assessments to be run
-C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
-C   season assessment with all days included.
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-
-C List of metric sets: nms is number of sets, imetget is the
-C esrures iget index for the metric selected, imetmsc holds two
-C miscelaneous indices for use by the metric, nzmg is the
-C number of zones in each set, emgflr is the total floor area in
-C each set, emgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), emgwtg is a weighting factor for the
-C metric, izmg is the list of zones in each set.
-C metrglbl is 20 char label equivalent to GLABEL in esrures
-C msdoc is 12 char identifier for each metric set.
-C metgroup is 12 char identifier for the group of zones associated
-C   with this metric.
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-
-C List of energy demand sets: neds is number of sets, idgmsc() are
-C miscel data describing set, iaggr=0 no timestep aggregate reporting
-C iaggr=1 timestep aggregate data included, nzedg is the
-C number of zones in each set, edgflr is the total floor area in
-C each set, edgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), izedg is the list of zones in each set.
-C zedsdoc is 12 char identifier for each set.
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
-
-C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
-C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
-C ipvastjd() are the assessment start julian dates,
-C ipvafnjd are the assessment finish julian dates and
-C nipvdispjd number of days to display in detail,
-C ipvdispjd is list of julian days to display (must be within an
-C   assessment period).
-C ipvadesc is a 40 char description associated with each assessment.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVSEALB/ipvadesc(MIPVA)
-
-C Season definitions (from climatelist file). 2 periods for winter
-C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
-C and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
-C Typical periods win1|trn1|sum|trn2|win2 with start,finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C ddm* are the degree-day multipliers (or user defined multipliers) between
-C the periods simulated and the whole season for heating, cooling, lights,
-C small power, fans, domestic hot water. For nipvassmt=1 these are 
-C initially set to 1.0.
-      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
-     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
-
-C dm* are the degree-day and day-ratio multipliers between the
-C typical periods and the whole season for heating (DD), cooling (DD),
-C lights (ratio), small power (ratio), fans (ratio), domestic hot
-C water (ratio). For nipvassmt=1 these are initially set to 1.0.
-C This information is potentially used to support IPV calculations.
-      common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
-     &              dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
-
-      common/IPVI/nipvimg,lipvimg(4)
-
-C Description of distributed demands and file name.
-      COMMON/BL1/dmdsdesc,bdmds
-
 C Simulation parameter sets.
 C      common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
@@ -392,15 +316,13 @@ C ITMM is menu for metric sets.
       DIMENSION ITMGET(15),ITM(31),ITMM(13),ITME(14),IVALS(MCOM)
       character ITM*48,ITMM*41,ITME*33,ITMGET*33,H*72,hold*40,hold5*50
       character act*1
-      character lipvimg*72,lipvdatf*72,outs*124
+      character lipvdatf*72,outs*124
       CHARACTER DS*7,DS1*10
       character*72 LTMP,LCFGF
-      CHARACTER dmdsdesc*248,bdmds*72
       character cfgroot*24,t40*40,t72*72,t248*248
       character descr*7,descrst*10,descrfn*10
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
-      character ipvadesc*40,t12*12,key*1
-      character zedsdoc*12,msdoc*12,metrglbl*20,metgroup*12
+      character t12*12,key*1
       character simact*6,ipvaction*3
       logical MODSIT,XST,OK
 
@@ -413,37 +335,41 @@ C is for an annual assessment.
 
 C Rescan the `climatelist` file. Check if this climate is
 C in the list. If not instanciate season and typical start and end dates.
-      INQUIRE (FILE=cdblfil,EXIST=XST)
-      if(XST)then
-        IUF=IFIL+2
-        call scancdblist(IUF,LCLIM,ok,ier)
-        if(ok)then
-          continue
-        else
+      if(ihaveseason.gt.0)then
+        continue
+      else
+        INQUIRE (FILE=cdblfil,EXIST=XST)
+        if(XST)then
+          IUF=IFIL+2
+          call scancdblist(IUF,LCLIM,ok,ier)
+          if(ok)then
+            continue
+          else
 
 C Set default early winter, spring, summer, autumn, late winter periods.
-          CALL EDAY(9,1,ia1wins)
-          CALL EDAY(15,1,ia1winf)
-          CALL EDAY(6,3,ia1sprs)
-          CALL EDAY(12,3,ia1sprf)
-          CALL EDAY(11,7,iasums)
-          CALL EDAY(17,7,iasumf)
-          CALL EDAY(2,10,ia2sprs)
-          CALL EDAY(8,10,ia2sprf)
-          CALL EDAY(20,11,ia2wins)
-          CALL EDAY(26,11,ia2winf)
+            CALL EDAY(9,1,ia1wins)
+            CALL EDAY(15,1,ia1winf)
+            CALL EDAY(6,3,ia1sprs)
+            CALL EDAY(12,3,ia1sprf)
+            CALL EDAY(11,7,iasums)
+            CALL EDAY(17,7,iasumf)
+            CALL EDAY(2,10,ia2sprs)
+            CALL EDAY(8,10,ia2sprf)
+            CALL EDAY(20,11,ia2wins)
+            CALL EDAY(26,11,ia2winf)
 
 C Default season definitions.
-          CALL EDAY(1,1,is1wins)
-          CALL EDAY(28,2,is1winf)
-          CALL EDAY(1,11,is2wins)
-          CALL EDAY(31,12,is2winf)
-          CALL EDAY(1,3,is1sprs)
-          CALL EDAY(30,4,is1sprf)
-          CALL EDAY(1,9,is2sprs)
-          CALL EDAY(31,10,is2sprf)
-          CALL EDAY(1,5,is1sums)
-          CALL EDAY(31,8,is1sumf)
+            CALL EDAY(1,1,is1wins)
+            CALL EDAY(28,2,is1winf)
+            CALL EDAY(1,11,is2wins)
+            CALL EDAY(31,12,is2winf)
+            CALL EDAY(1,3,is1sprs)
+            CALL EDAY(30,4,is1sprf)
+            CALL EDAY(1,9,is2sprs)
+            CALL EDAY(31,10,is2sprf)
+            CALL EDAY(1,5,is1sums)
+            CALL EDAY(31,8,is1sumf)
+          endif
         endif
       endif
 
@@ -1211,8 +1137,9 @@ C Domestic hot water day ratio.
         h(7)='in each season and return the ratios of days or degree'
         h(8)='days (for heating and cooling) for use in scaling short'
         h(9)='simulations to whole seasons.'
-        CALL EASKABC('Options: ',' ','scan for seasons & periods',
-     &      'scan for day/DD ratios','continue',IW,9)
+        CALL EASKABC('Options: ',' ',
+     &    'scan climatelist for seasons & periods',
+     &    'scan for day/DD ratios','continue',IW,9)
         if(IW.eq.1.or.IW.eq.2)then
 
 C Rescan climate to acquire ratios from the climatelist file.
@@ -1238,8 +1165,10 @@ C Re-scan climate seasons and periods.
           MODSIT=.true.
         elseif(IW.eq.2)then
 
-C Local (stripped) version of a subroutine from clmsyn.F
+C Local (stripped) version of a subroutine from clmper.F
           call getmultip
+
+C Loop through five (?) seasons and set dd arrays.
           do 105 ij=1,5
             ddmheat(ij)=dmheat(ij)
             ddmcool(ij)=dmcool(ij)
@@ -1805,44 +1734,18 @@ C      ='i1d' initial default period ??
 #include "building.h"
 C#include "espriou.h"  
 C espriou.h for climatelist file name.
+#include "seasons.h"
+C seasons.h provides typper and typsea
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
       common/C21/IFCFG,cfgroot,LCFGF
 
-C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
-C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
-C ipvastjd() are the assessment start julian dates,
-C ipvafnjd are the assessment finish julian dates and
-C nipvdispjd number of days to display in detail,
-C ipvdispjd is list of julian days to display (must be within an
-C   assessment period).
-C ipvadesc is a 40 char description associated with each assessment.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVSEALB/ipvadesc(MIPVA)
-
-C Season definitions (from climatelist file). 2 periods for winter
-C (i.e. nov-dec and jan-feb), transition (i.e. mar-may & sep-oct)
-C and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
-
-C Typical periods win1|trn1|sum|trn2|win2 with start,finish
-      common/typper/ia1wins,ia1winf,ia1sprs,ia1sprf,
-     &  iasums,iasumf,ia2sprs,ia2sprf,ia2wins,ia2winf
-
-C ddm* are the degree-day multipliers (or user defined multipliers) between
-C the periods simulated and the whole season for heating, cooling, lights,
-C small power, fans, domestic hot water. For nipvassmt=1 these are 
-C initially set to 1.0.
-      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
-     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
-
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-      character act*6,LCFGF*72,cfgroot*24,cr*24,ipvadesc*40
+      character act*6,LCFGF*72,cfgroot*24,cr*24
 
 C Set root name string and length.
       cr=cfgroot
@@ -2141,6 +2044,7 @@ C << add logic to allow for two extreme seasons
 
       subroutine ipv2simpar(act)
 #include "building.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
@@ -2150,10 +2054,8 @@ C << add logic to allow for two extreme seasons
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PREC7/ITCNST
 
-C IPV description.
+C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
@@ -2318,54 +2220,38 @@ C in clmsyn.F Logic includes logic that if the heating or cooling
 C derived from scaling is less than a simple time multiplier then
 C the time multiplier is used.
 
-C << update logic to accept parameters for a silent use >>
+C << If there are 5 seasons this works ok. What if the user
+C << is using 3 seasons?  Or if the user has defined their own
+C << periods for assessment e.g. a fortnight?
 
       SUBROUTINE getmultip
 #include "building.h"
 #include "esprdbfile.h"
-      
-      integer lnblnk  ! function definition
+#include "seasons.h"
+C seasons.h provides typper and typsea
+#include "ipvdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/pophelp/h(60)
-      COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/CLMDT0/CLAT,CLONG
-      COMMON/RADTYP/IDNGH
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
-      COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
-     &              CDIR(MT),CHUM(MT)
+C Redirected text/graphics parameters.
+      character xfile*144,tg*1,delim*1
+      common/exporttg/xfile,tg,delim
+      common/exporttgi/ixopen,ixloc,ixunit
 
-C Season definitions. 2 periods for winter (i.e. nov-dec and
-C jan-feb), transition (i.e. mar-may & sep-oct) and one period for summer.
-      common/typsea/is1wins,is1winf,is2wins,is2winf,is1sprs,is1sprf,
-     &              is2sprs,is2sprf,is1sums,is1sumf
+C dm* variables are from ipvdata.h.
+C sea* variables are from season.h
 
-C dm* are the degree-day and day-ratio multipliers between the
-C typical periods and the whole season for heating (DD), cooling (DD),
-C lights (ratio), small power (ratio), fans (ratio), domestic hot
-C water (ratio). For nipvassmt=1 these are initially set to 1.0.
-C This information is potentially used to support IPV calculations.
-      common/CLMDM/dmheat(MSPS),dmcool(MSPS),dmlight(MSPS),
-     &              dmsmlpw(MSPS),dmfan(MSPS),dmdhw(MSPS)
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
+      character H*72,outs*124
 
-      character H*72,outs*124,PERST1*14,PERST2*44,PERST3*44
-      character DESCR*7,DESCR1*10,title*40,hold*32
-      DIMENSION ALT(24),AZI(24),GHSUM(MIPVA),DAYGLOB(MIPVA)
-      dimension seacddwk(MSPS),seahddtot(MSPS),seacddtot(MSPS)
-      dimension seahddwk(MSPS)
+      real HBT,CBT   ! local base temperatures for heating and cooling DD calcs
 
-C For each of the seasons: wkdiff is the difference in the performance
-C parameters for the assessment period and the season, iwkbest
-C is the index of the best week, iwkbstrt is the julian day start
-C of the best week, wkheatdd is heating degree days in the seasons
-C best week and wkcooldd is the cooling degree days in the seasons
-C best week.
-      dimension wkdiff(MIPVA),iwkbest(MIPVA),iwkbstrt(MIPVA)
-      dimension wkheatdd(MIPVA),wkcooldd(MIPVA),cddratio(MIPVA)
+C For each of the seasons:
+C  cddratio is the season / assessment ratio for cooling
+C  hddratio is the season / assessment ratio for heating
+      dimension cddratio(MIPVA)
       dimension hddratio(MIPVA)
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
@@ -2374,12 +2260,15 @@ C best week.
         return
       endif
 
-C Initial weightings for heading dd, cooling dd, solar radiation.
+C Initial weightings for heating dd, cooling dd, solar radiation (from seasons.h).
       hddw=1.0
       cddw=1.0
       radw=1.0
 
-C First check if it exists: if so open, otherwise create with 0 length.
+C Set delimiter in reports to standard/literal format.
+      delim = '-'
+
+C First check if climate datase exists: if so open.
       CALL ERPFREE(ICLIM,ISTAT)
       CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
       if(ISTAT.ge.0)then
@@ -2388,484 +2277,60 @@ C First check if it exists: if so open, otherwise create with 0 length.
         call edisp(iuout,' opened climate file')
       endif
 
-C Scan the climate file for some of its details.
+C Scan the climate file for CLAT and CLONG details.
       IREC=366
-      READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR,IDNGH
-      IF(IYEAR.EQ.0)goto 1000
-      IREC=367
-      READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
+      READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
+      IF(ICYEAR.EQ.0)goto 1000
       IREC=368
       READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
 
       H(1)='Degree day calculations are derived from a specific '
       H(2)='base temperature (deg C). '
-      HBT=17.
+      if(hddbaset.lt.0.1)then
+        hddbaset=17.0
+      endif
+      HBT=hddbaset
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
      &           -10.,'W',40.,'W',17.0,'DD heating base temp',IER,2)
-      CBT=21.
+      hddbaset=HBT
+
+      if(cddbaset.lt.0.1)then
+        cddbaset=21.0
+      endif
+      CBT=cddbaset
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
      &           -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,2)
+      cddbaset=CBT
 
 C If output to file alter the edisp unit number.
       itru = iuout
+      if(ixopen.eq.1)then
+        itru = ixunit
+        call usrmsg(' Output being directed to file... ',' ','-')
+      endif
 
-C Reset text feedback.
-      DNM=0.
-      HRM=0.
-      UPMC=0.
-      HRMC=0.
-
-      WRITE(outs,12)HBT,CBT
+C Write out beginning of report.
+      WRITE(outs,12) hddbaset,cddbaset
   12  FORMAT(' Degree day analysis: heating base at',F6.1,' & cooling',
      &       F6.1,' Deg C')
       call edisp(itru,outs)
       call edisp(itru,'  ')
-
-C INITIALISE PARAMETERS FOR WHOLE PERIOD
-      DNI=0
-      HRTOT=0.
-      UPIC=0
-      HRTOTC=0.
-
-C Loop through each seasonal period.
-      do 42 k=1,MSPS
-        GHSUM(k)=0.
-        DAYGLOB(k)=0.
-        seahddwk(k)=0.
-        seacddwk(k)=0.
-        seahddtot(k)=0.
-        seacddtot(k)=0.
-        dmheat(k)=1.0
-        dmcool(k)=1.0
-        dmlight(k)=1.0
-        dmsmlpw(k)=1.0
-        dmfan(k)=1.0
-        dmdhw(k)=1.0
-        if(k.eq.1)then
-          title='Winter (early year) season '
-          DNI=0
-          HRTOT=0.
-          UPIC=0
-          HRTOTC=0.
-          IDSS=is1wins
-          IDSF=is1winf
-        elseif(k.eq.2)then
-          title='Spring season '
-          IDSS=is1sprs
-          IDSF=is1sprf
-        elseif(k.eq.3)then
-          title='Summer season '
-          IDSS=is1sums
-          IDSF=is1sumf
-        elseif(k.eq.4)then
-          title='Autumn season '
-          IDSS=is2sprs
-          IDSF=is2sprf
-        elseif(k.eq.5)then
-          title='Winter (late year) season '
-          IDSS=is2wins
-          IDSF=is2winf
-        endif
-        CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
-     &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
-
-C For each day read climate data, set parameters and analyse.
-        DO 10 I=IDSS,IDSF
-          IDD=I
-          CALL CLMGET(IDD)
-          CALL AZALT(IDD,1,CLONG,CLAT,ALT,AZI)
-          DNJ=0
-          UPJC=0.
-          DAYL=24.0
-          DO 20 J=1,24
-            IF(ALT(J).LT.0.001)THEN
-              DIRH=0.
-            else
-              IF(IDNGH.EQ.0)THEN
-                DIRH=CDNR(J)*ESIND(ALT(J))
-              ELSE
-                DIRH=CDNR(J)-CDIF(J)
-              ENDIF
-              GHSUM(k)=(GHSUM(k)+DIRH+CDIF(J))
-            endif
-
-            TT=CTMP(J)
-            IF(TT.GT.HBT)then
-            else
-
-C T below heating BASE,SAVE DEG-HRS IN DNJ
-              DNJ=DNJ+(HBT-TT)
-            endif
-            IF(TT.GT.CBT)then
-
-C T above cooling BASE ,SAVE DEG-HRS IN UPJC
-              UPJC=UPJC+(TT-CBT)
-            endif
-   20     CONTINUE
-          XDN=DNJ/24
-          XUPC=UPJC/24
-
-C Update seasonal parameters and go to the next day.
-          DNM=DNM+DNJ
-          HRM=HRM+DAYL
-          UPMC=UPMC+UPJC
-          HRMC=HRMC+DAYL
-   10   CONTINUE
-
-C Compute parameters (total & average degree days) for this season.
-        XHR=24.0/HRM
-        XHRC=24.0/HRMC
-        XDN=DNM/24
-        XUPC=UPMC/24
-        YDN=XHR*XDN
-        seahddwk(k)=YDN*7.
-        YUPC=XHRC*XUPC
-        seacddwk(k)=YUPC*7.
-
-C Number of days in season is IDSF-IDSS+1. DAYGLOB is daily mean
-C global horizontal solar for season.
-        DAYGLOB(k)=(GHSUM(k)/(IDSF-IDSS+1))/1000.
-
-C Report on the current season.
-        call eddisp(itru,' ')
-        WRITE(outs,'(3a)')title(1:lnblnk(title)),' ',PERST2
-        call eddisp(itru,outs)
-        WRITE(outs,'(a,F8.2,a,F8.2,a,F9.2)')' Heat DD avg/day   ',YDN,
-     &    '  Cool DD avg/day  ',YUPC,'  Rad avg/day ',DAYGLOB(k)
-        call eddisp(itru,outs)
-        WRITE(outs,'(a,F8.2,a,F8.2,a,F9.2)')' Heat DD avg/week  ',
-     &    seahddwk(k),'  Cool DD avg/week ',seacddwk(k),
-     &    '  Rad avg/week',DAYGLOB(k)*7.
-        call eddisp(itru,outs)
-        WRITE(outs,'(a,F8.2,a,F8.2,a,F9.2)')' Season heat DD    ',XDN,
-     &     '  Season cool DD   ',XUPC,'  Rad total   ',GHSUM(k)/1000.
-        call eddisp(itru,outs)
-        seahddtot(k)=XDN
-        seacddtot(k)=XUPC
-
-C UPDATE WHOLE PERIOD
-        HRTOT=HRTOT+HRM
-        DNI=DNI+DNM
-        DNM=0.
-        HRM=0.
-        HRTOTC=HRTOTC+HRMC
-        UPIC=UPIC+UPMC
-        UPMC=0.
-        HRMC=0.
-  42  continue
-
-C Loop through each week in each season and check against the
-C calculated average data.
-C Loop through each seasonal period.
-      h(1)='Typical weeks are found by scanning the climate data'
-      h(2)='for a week in each season which has the least deviation'
-      h(3)='in heating degree days (DD), cooling degree days, and'
-      h(4)='solar radiation. '
-      h(5)=' '
-      h(6)='It reports the parameters it uses to determine the'
-      h(7)='best fit as well as several ratios between the best'
-      h(8)='week and the season (ratio of julian days, ratio of'
-      h(9)='heating degree days and ratio of cooling degree days'
-      h(10)='all of which are parameters required for generating'
-      h(11)='an integrated performance view (IPV).'
-      call easkab('Options:',' ','search for typical weeks',
-     &  'continue',iok,11)
-      if(iok.eq.2)return
-
-C Allow user to define weightings.
-      H(1)='Weightings for heating degree days, cooling degree days'
-      H(2)='and solar radiation can be given. The default is equal'
-      H(3)='weightings for each.'
-      write(hold,'(3f6.3)') hddw,cddw,radw
- 143  CALL EASKS(HOLD,'Weightings for HDD CDD Solar:',' ',32,
-     &  ' 1.0 1.0 1.0 ','weightings for hdd cdd solar',IER,3)
-      K=0
-      CALL EGETWR(HOLD,K,hddw,0.0,1.0,'W','hdd weight',IER)
-      CALL EGETWR(HOLD,K,cddw,0.0,1.0,'W','cdd weight',IER)
-      CALL EGETWR(HOLD,K,radw,0.0,1.0,'W','solar weight',IER)
-      if(ier.ne.0)goto 143
-
-C Loop through each of the assessment periods.
-      IWK=0
-      do 43 k=1,MIPVA
-        if(k.eq.1)then
-          call edisp(itru,'Winter (early year) season.')
-          IDSS=is1wins
-          IDSF=is1winf
-        elseif(k.eq.2)then
-          call edisp(itru,'Spring season.')
-          IDSS=is1sprs
-          IDSF=is1sprf
-        elseif(k.eq.3)then
-          call edisp(itru,'Summer season.')
-          IDSS=is1sums
-          IDSF=is1sumf
-        elseif(k.eq.4)then
-          call edisp(itru,'Autumn season.')
-          IDSS=is2sprs
-          IDSF=is2sprf
-        elseif(k.eq.5)then
-          call edisp(itru,'Winter (late year) season.')
-          IDSS=is2wins
-          IDSF=is2winf
-        endif
-        iwkbest(k)=0
-        iwkbstrt(k)=0
-        wkdiff(k)=3.
-        GHSUMW=0.
-        itrc=0
-        CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
-     &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
-        WRITE(outs,'(a)')PERST2
-        call edisp(itru,outs)
-
-C For each day read climate data, set parameters and analyse.
-C Find day of week for start of the period. IWK is week number, IDSOW
-C is the julian day at the start of the week.
-        CALL EDAYR(IDSS,IDAYN,IMTHN)
-        CALL EWEEKD(IDAYN,IMTHN,IYEAR,IXDWK)
-        IDSOW=IDSS
-        ix=0
-
-C For each day read climate data, set parameters and analyse.
-        DO 11 I=IDSS,IDSF
-          IDD=I
-          ix=ix+1
-          CALL CLMGET(IDD)
-          CALL AZALT(IDD,1,CLONG,CLAT,ALT,AZI)
-          DNJ=0
-          UPJC=0
-          DO 21 J=1,24
-            IF(ALT(J).LT.0.001)THEN
-              DIRH=0.
-            else
-              IF(IDNGH.EQ.0)THEN
-                DIRH=CDNR(J)*ESIND(ALT(J))
-              ELSE
-                DIRH=CDNR(J)-CDIF(J)
-              ENDIF
-              GHSUMW=(GHSUMW+DIRH+CDIF(J))
-            endif
-
-            TT=CTMP(J)
-            IF(TT.GT.HBT)then
-            else
-
-C T below heating BASE,SAVE DEG-HRS IN DNJ
-              DNJ=DNJ+(HBT-TT)
-            endif
-            IF(TT.GT.CBT)then
-
-C T above cooling BASE ,SAVE DEG-HRS IN UPJC
-              UPJC=UPJC+(TT-CBT)
-            endif
-   21     CONTINUE
-
-C Convert day to D,M
-          II=I
-          CALL EDAYR(II,IDD,IMM)
-          CALL EWEEKD(IDD,IMM,IYEAR,IDWK)
-
-C Prepare for output, check if week complete.
-          IF(II.eq.IDSS)GO TO 41
-          IF(IDWK.ne.IXDWK)GO TO 41
-          iwk=iwk+1
-
-C Compute parameters (total & average degree days) for this week.
-          XHR=24.0/HRM
-          XHRC=24.0/HRMC
-          XDN=DNM/24
-          XUPC=UPMC/24
-          call stdate(iyear,IDSOW,DESCR,DESCR1)
-          YDN=XHR*XDN
-          YUPC=XHRC*XUPC
-
-C Deal with radiation.
-          if(seahddwk(k).gt.0.001)then
-            PARM1=ABS(XDN-seahddwk(k))/seahddwk(k)
-          else
-            PARM1=0.
-          endif
-          if(seacddwk(k).gt.0.001)then
-            PARM2=ABS(XUPC-seacddwk(k))/seacddwk(k)
-          else
-            PARM2=0.
-          endif
-          PARM3=ABS((GHSUMW/1000.)-(DAYGLOB(k)*7.))/(DAYGLOB(k)*7.)
-          PARMTOT=(PARM1*hddw)+(PARM2*cddw)+(PARM3*radw)
-          if(PARMTOT.lt.wkdiff(k))then
-            wkdiff(k)=PARMTOT
-            iwkbest(k)=iwk
-            iwkbstrt(k)=IDSOW
-            wkheatdd(k)=XDN
-            wkcooldd(k)=XUPC
-          endif
-
-C Reset weekly total global horizontal.
-          GHSUMW=0.
-
-C Update whole period.
-          IDSOW=II
-          HRTOT=HRTOT+HRM
-          DNI=DNI+DNM
-          DNM=0.
-          HRM=0.
-          HRTOTC=HRTOTC+HRMC
-          UPIC=UPIC+UPMC
-          UPMC=0.
-          HRMC=0.
-
-C CONVERT TO DEG-DAYS PER DAY
-  41      CONTINUE
-          XDN=DNJ/24
-          XUPC=UPJC/24
-
-C UPDATE PARAMETERS FOR THIS week
-          DNM=DNM+DNJ
-          HRM=HRM+DAYL
-          UPMC=UPMC+UPJC
-          HRMC=HRMC+DAYL
-
-C AND GO TO NEXT DAY
-   11   CONTINUE
-
-C NOW LAST week, compute parameters for last week
-        XHR=24.0/HRM
-        XHRC=24.0/HRMC
-        XDN=DNM/24
-        XUPC=UPMC/24
-        iwk=iwk+1
-        call stdate(iyear,IDSOW,DESCR,DESCR1)
-        YDN=XHR*XDN
-        YUPC=XHRC*XUPC
-
-C Deal with radition here for last week of season.
-        if(seahddwk(k).gt.0.001)then
-          PARM1=ABS(XDN-seahddwk(k))/seahddwk(k)
-        else
-          PARM1=0.
-        endif
-        if(seacddwk(k).gt.0.001)then
-          PARM2=ABS(XUPC-seacddwk(k))/seacddwk(k)
-        else
-          PARM2=0.
-        endif
-        PARM3=ABS((GHSUMW/1000.)-(DAYGLOB(k)*7.))/(DAYGLOB(k)*7.)
-        PARMTOT=(PARM1*hddw)+(PARM2*cddw)+(PARM3*radw)
-        WRITE(outs,'(a,3F9.3,a,F9.3)')' Params (heat|cool|solar)',
-     &    PARM1,PARM2,PARM3,' Params total ',PARMTOT
-        call edisp(itru,outs)
-        if(PARMTOT.lt.wkdiff(k))then
-          wkdiff(k)=PARMTOT
-          iwkbest(k)=iwk
-          iwkbstrt(k)=IDSOW
-          wkheatdd(k)=XDN
-          wkcooldd(k)=XUPC
-        endif
-        call stdate(iyear,iwkbstrt(k),DESCR,DESCR1)
-        WRITE(outs,'(a,i3,3a,F6.2,a,F6.2)')' Best week is nb',
-     &    iwkbest(k),' ',DESCR1,' with HDD of ',wkheatdd(k),
-     &    ' & CDD of ',wkcooldd(k)
-        call edisp(itru,outs)
-
-C Convert from julian day of the start of the assessment to the end
-C of the assessment to number of days in period and get ratio with
-C the number of days in the season.
-        ijulst=iwkbest(k)
-        ijulfn=iwkbest(k)+6
-
-C Ratio of seasonal totoal heating and cooling degree days and the
-C best assessment week heating and cooling degree days.
-        if(wkheatdd(k).gt.0.01)then
-          hddratio(k)=seahddtot(k)/wkheatdd(k)
-        else
-          hddratio(k)=1.0
-        endif
-        if(wkcooldd(k).gt.0.01)then
-          cddratio(k)=seacddtot(k)/wkcooldd(k)
-        else
-          cddratio(k)=1.0
-        endif
-        if(k.eq.1)then
-          dayratio=((is1winf-is1wins)+1)/((ijulfn-ijulst)+1)
-          write(outs,'(a,F6.3)') 
-     &      'early winter ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'early winter ratio of season/assessment heat DD: ',
-     &      hddratio(k),' & cool DD:',cddratio(k)
-          call edisp(iuout,outs)
-        elseif(k.eq.2)then
-          dayratio=((is1sprf-is1sprs)+1)/((ijulfn-ijulst)+1)
-C Debug...
-          write(outs,'(a,F6.3)') 
-     &      'spring ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'spring ratio of season/assessment heat DD: ',
-     &      hddratio(k),' & cool DD:',cddratio(k)
-          call edisp(iuout,outs)
-        elseif(k.eq.3)then
-          dayratio=((is1sumf-is1sums)+1)/((ijulfn-ijulst)+1)
-          write(outs,'(a,F6.3)') 
-     &      'summer ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'summer ratio of season/assessment heat DD: ',
-     &      hddratio(k),' & cool DD:',cddratio(k)
-          call edisp(iuout,outs)
-        elseif(k.eq.4)then
-          dayratio=((is2sprf-is2sprs)+1)/((ijulfn-ijulst)+1)
-          write(outs,'(a,F6.3)') 
-     &      'autumn ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'autumn ratio of season/assessment heat DD: ',
-     &      hddratio(k),' & cool DD:',cddratio(k)
-          call edisp(iuout,outs)
-        elseif(k.eq.5)then
-          dayratio=((is2winf-is2wins)+1)/((ijulfn-ijulst)+1)
-          write(outs,'(a,F6.3)') 
-     &      'late winter ratio of season/assessment days: ',dayratio
-          call edisp(iuout,outs)
-          write(outs,'(a,F6.3,A,F6.3)') 
-     &      'late winter ratio of season/assessment heat DD: ',
-     &      hddratio(k),' & cool DD:',cddratio(k)
-          call edisp(iuout,outs)
-        endif
-
-C For the current season set degree day or day ratios.
-        if(hddratio(k).gt.dayratio)then
-          dmheat(k)=hddratio(k)
-        else
-          dmheat(k)=dayratio
-        endif
-        if(cddratio(k).gt.dayratio)then
-          dmcool(k)=cddratio(k)
-        else
-          dmcool(k)=dayratio
-        endif
-        dmlight(k)=dayratio
-        dmsmlpw(k)=dayratio
-        dmfan(k)=dayratio
-        dmdhw(k)=dayratio
-        h(1)='You might wish to record this information before going'
-        h(2)='to the next season.'
-        if(k.eq.5)then
-          iok=1
-        else
-          call easkab('Options:',' ','look at next season','continue',
-     &      iok,2)
-        endif
-        if(iok.eq.2)return
-        ix=1
-        call edisp(iuout,' ')
- 43   continue
+      
+C Loop through the climate file and calculate data. Do not bother
+C to update the variables for typical weeks in climatelist.
+      itrc=2
+      call clmddscan(itrc,itru,'s','p',5,iyear)
 
 C If there are three assessments used in the IPV advise the user of
 C alternative ratios which combine both winters and both transition
 C seasons.
       if(nipvassmt.eq.3)then
+
+C Convert from julian day of the start of the assessment to the end
+C of the assessment to number of days in period and get ratio with
+C the number of days in the two seasons.
+        ijulst=iwkbstrt(1)
+        ijulfn=iwkbstrt(1)+6
         dayratio=(((is1winf-is1wins)+1)+((is2winf-is2wins)+1))/
      &           ((ijulfn-ijulst)+1)
 
@@ -2881,7 +2346,6 @@ C days and the best first winter assessment week degree days.
           endif
         else
           hddratio(1)=dayratio
-C          hddratio(1)=1.0
         endif
         if(wkcooldd(1).gt.0.01)then
           xx=(seacddtot(1)+seacddtot(5))/wkcooldd(1)
@@ -2892,7 +2356,6 @@ C          hddratio(1)=1.0
           endif
         else
           cddratio(1)=dayratio
-C          cddratio(1)=1.0
         endif
         write(outs,'(a,F5.2,a,F5.2,a,F5.2,a)')'is ',dayratio,' days & ',
      &    hddratio(1),' HDD & ',cddratio(1),' CDD.'
@@ -2911,6 +2374,10 @@ C          cddratio(1)=1.0
           dmfan(1)=dayratio
           dmdhw(1)=dayratio
         endif
+
+C Do the transitional seasons.
+        ijulst=iwkbstrt(2)
+        ijulfn=iwkbstrt(2)+6
         dayratio=(((is1sprf-is1sprs)+1)+((is2sprf-is2sprs)+1))/
      &           ((ijulfn-ijulst)+1)
         if(wkheatdd(2).gt.0.01)then
@@ -2922,7 +2389,6 @@ C          cddratio(1)=1.0
           endif
         else
           hddratio(2)=dayratio
-C          hddratio(2)=1.0
         endif
         if(wkcooldd(2).gt.0.01)then
           xx=(seacddtot(2)+seacddtot(4))/wkcooldd(2)
@@ -2933,7 +2399,6 @@ C          hddratio(2)=1.0
           endif
         else
           cddratio(2)=dayratio
-C          cddratio(2)=1.0
         endif
         write(outs,'(a,F5.2,a,F5.2,a,F5.2,a)')'is ',dayratio,' days & ',
      &    hddratio(2),' HDD & ',cddratio(2),' CDD.'
@@ -2961,163 +2426,3 @@ C Error message trap.
       RETURN
       END
 
-C ---------- CLMGET (duplicate of code in esruclm/cfiles.F
-C Recover one day's data from climate file into common block for use.
-      SUBROUTINE CLMGET(IDAY)
-      PARAMETER (MT=24)
-      COMMON/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
-     A              CDIR(MT),CHUM(MT)
-      COMMON/CLMVAR/VNAME(6)
-      CHARACTER*32 VNAME
-      DIMENSION ICLM(24,6)
-      character outs*124
-
-      VNAME(1)='Diffuse horiz.rad. W/m^2'
-      VNAME(2)='Dry bulb temp.     deg.C'
-      VNAME(3)='Direct normal rad. W/m^2'
-      VNAME(4)='Wind velocity        m/s'
-      VNAME(5)='Wind direction      deg.'
-      VNAME(6)='Relative humidity    pct'
-
-      IF(IDAY.EQ.NDAY)GO TO 50
-      IREC=IDAY
-      READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)((ICLM(J,K),K=1,6),
-     &J=1,24)
-      DO 40 J=1,24
-        CDIF(J)=real(ICLM(J,1))
-        CTMP(J)=0.1* real(ICLM(J,2))
-        CDNR(J)=real(ICLM(J,3))
-        CVEL(J)=0.1* real(ICLM(J,4))
-        CDIR(J)=real(ICLM(J,5))
-        CHUM(J)=real(ICLM(J,6))
-  40  CONTINUE
-      NDAY=IDAY
-
-  50  CONTINUE
-      RETURN
-
-C Error messages.
-1000  write(outs,'(A,I4)')' Problem reading record ',IREC
-      call edisp(iuout,outs)
-      call edisp(iuout,' substituting zeros for data.')
-      DO 10 J=1,24
-        CDIF(J)=0.0
-        CTMP(J)=0.0
-        CDNR(J)=0.0
-        CVEL(J)=0.0
-        CDIR(J)=0.0
-        CHUM(J)=0.0
-  10  CONTINUE
-
-      RETURN
-      END
-
-C ************ AZALT (duplicate of code in esruclm/clmint.F)
-C 'AZALT' CALCULATES THE SOLAR AZIMUTH AND THE SOLAR ALTITUDE
-C ANGLES AT EACH HOUR OF THE DAY , FOR ANY SITE.
-      SUBROUTINE AZALT(IYD,ITS,RLONGT,RLATIT,SOLALT,SOLAZI)
-      COMMON/UAZALT/INIT,GLAT,GLON
-      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-      DIMENSION SOLALT(24),SOLAZI(24)
-      logical OK,DOK,close
-      character h*72
-
-      PI = 4.0 * ATAN(1.0)
-      INIT = 0
-      GLAT = 55.9
-      GLON = -4.15
-
-C  IYD = DAY NUMBER OF THE YEAR (JAN 1=1, JAN 2=2,..., DEC 31=365)
-C  ITS = TIME SYSTEM UNDER ANALYSIS, I.e. IF LOCAL MEAN
-C        TIME (LMT), INPUT 1, IF LOCAL APPARENT TIME ,(LAT) ,INPUT 2.
-C  RLONGT = LONGITUDINAL DIFFERENCE OF THE SITE MEASURED EAST(+VE)
-C           OR WEST(-VE) OF THE REFERENCE TIME ZONE. IN BRITAIN THE
-C           REFERENCE TIME ZONE IS AT GREENWICH (0 DEG LONGITUDE). (DEG)
-C  RLATIT = LATITUDE OF SITE (NORTH +VE, SOUTH -VE) (DEGREES)
-
-C  CHECK LATITUDE AND LONGITUDE.
-      IF(INIT.EQ.1)GOTO 18
-      IF(RLATIT.GT.90.0.OR.RLATIT.LT.-90.0)goto 14
-      IF(RLONGT.GT.15.0.OR.RLONGT.LT.-15.0)goto 14
- 
-C  THE SIN AND COS OF THE LATITUDE ARE EVALUATED.
-   15 SDLAT=ESIND(RLATIT)
-      CDLAT=ECOSD(RLATIT)
-
-C  CALCULATION OF THE EQUATION OF TIME.
-      IF(ITS.EQ.2)goto 11
-      A=1.978*IYD-160.22
-      B=0.989*IYD-80.11
-      EQTIME=0.1645*ESIND(A)-0.1255*ECOSD(B)-0.025*ESIND(B)
-
-C  CALCULATION OF THE DECLINATION.
-   11 A=280.1+0.9863*IYD
-      DECLIN=23.45*ESIND(A)
-      SDDECL=ESIND(DECLIN)
-      CDDECL=ECOSD(DECLIN)
-
-C  IF LMT IS USED THEN THE LONGITUDE AND EQUATION OF TIME
-C  WILL EFFECT THE SOLAR TIME AT THE USERS SITE. A
-C  CORRECTION WILL THEREFORE BE REQUIRED.
-      DO 10 IHR=1,24
-      IF(ITS.EQ.2)GOTO 1
-      TIME=IHR+(EQTIME+(RLONGT/15.0))
-      GOTO 2
-    1 TIME=IHR
-    2 TIMCOE=15.0*(12.0-TIME)
-      CDTIME=ECOSD(TIMCOE)
-      ABSTMC=ABS(TIMCOE)
-C      SDTIME=ESIND(TIMCOE)
-      ASDTIM=ESIND(ABSTMC)
-
-C  CALCULATION OF THE SOLAR ALTITUDE.
-      ALT=SDLAT*SDDECL+CDLAT*CDDECL*CDTIME
-      SOLALT(IHR)=ASIN(ALT)*180.0/PI
-
-C  SOLAR AZIMUTH.
-      AZMUTH=(CDDECL*ASDTIM)/ECOSD(SOLALT(IHR))
-      IF(AZMUTH.LT.-1.0)AZMUTH=-1.0
-      IF(AZMUTH.GT.1.0)AZMUTH=1.0
-      SOLAZI(IHR)=ASIN(AZMUTH)*180.0/PI
-
-C  Correct the azimuthal angle for time of day and whether
-C  in north or south hemispheres.
-      X=CDTIME
-      call eclose(RLATIT,0.0,0.001,close)
-      IF(close)goto 13
-      call eclose(RLATIT,90.0,0.001,close)
-      IF(close)goto 8
-      Y=(CDLAT/SDLAT)*(SDDECL/CDDECL)
-      goto 9
-    8 Y=0.0
-      goto 9
-   13 Y=100.0*(SDDECL/CDDECL)
-    9 IF(Y-X)3,4,5
-    3 IF(RLATIT.GE.0.0)goto 6
-      goto 7
-    5 IF(RLATIT.LT.0.0)goto 6
-      goto 7
-    4 IF(TIME.LE.12.0)SOLAZI(IHR)=90.0
-      IF(TIME.GT.12.0)SOLAZI(IHR)=270.0
-      goto 10
-    6 IF(TIME.LE.12.0)SOLAZI(IHR)=180.0-SOLAZI(IHR)
-      IF(TIME.GT.12.0)SOLAZI(IHR)=180.0+SOLAZI(IHR)
-      goto 10
-    7 IF(TIME.GT.12.0)SOLAZI(IHR)=360.0-SOLAZI(IHR)
-   10 CONTINUE
-      RETURN
-
-   14 dok=.true.
-      h(1)=' Lat/Lon error in AZALT :'
-      h(2)=' default site Glasgow (55.9N, 4.15W)'
-      CALL ASKOK('Error in Latitude or longitude',
-     &  'Ok to respecify? (no will abort ESP-r)',OK,dok,2)
-      if(.NOT.OK)STOP
-   18 RLATIT=GLAT
-      RLONGT=GLON
-      INIT=1
-      goto 15
-      END

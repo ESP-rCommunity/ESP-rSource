@@ -26,13 +26,13 @@ C  mkriofil Write inside/outside materials and composition files.
 C ******* Sky calculations. *******
       SUBROUTINE SKYFORM(IER)
 #include "building.h"
+#include "site.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-      COMMON/C4/XLAT,XLON
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -87,8 +87,8 @@ C If daylight factors then set sky to CIE overcast.
       if (RIFPURP(IRIFFOC)(1:8).eq.'Day_fact') isky=1
 
 10    INO = -4
-      write(ITEM(1),'(A,F6.1)') 'a Site Latitude: ',XLAT
-      write(ITEM(2),'(A,F6.1)') 'b Longitude diff: ',XLON
+      write(ITEM(1),'(A,F6.1)') 'a Site Latitude: ',sitelat
+      write(ITEM(2),'(A,F6.1)') 'b Longitude diff: ',sitelongdif
 
       write(ITEM(3),'(A,I6)')   'c Year: ',iryear
       call STDATE(IRYEAR,irdoy,DESCR,DESCR1)
@@ -144,7 +144,7 @@ C Help text for the menu.
       CALL EMENU('  Sky description',ITEM,NITEMS,INO)
       IF(INO.EQ.1)THEN
         H(1)='The site latitude should be in degrees. '
-        CALL EASKR(XLAT,' ',' Site Latitude ? ',
+        CALL EASKR(sitelat,' ',' Site Latitude ? ',
      &           -89.0,'W',89.,'W',50.2,'latitude',IER,1)
         skydone=.false.
       elseif(INO.EQ.2)then
@@ -156,8 +156,9 @@ C Help text for the menu.
         H(6)='radiance.  Also, if a meridian other than the prime '
         H(7)='is defined in a sky file this will be reset to 0 and'
         H(8)='the longtitude difference calculated accordingly. '
-        CALL EASKR(XLON,' ',' Longitude difference from reference?',
-     &       -15.0,'W',15.0,'W',0.0,'site longitude',IER,8)
+        CALL EASKR(sitelongdif,' ',
+     &    'Longitude difference from reference time meridian?',
+     &     -15.0,'W',15.0,'W',0.0,'site longitude diff',IER,8)
         skydone=.false.
       elseif(INO.EQ.3)then
         H(1)='The year is requred to sort out days of the week. '
@@ -196,7 +197,8 @@ C Generate skydone information. Begin by creating a command line
 C which includes redirection of output to the sky definition file.
         CALL EDAYR(irdoy,IDO,IMO)
         write(outs,'(a,2i3,f6.2,a,a,f5.2,2(a,f7.1),a)')'gensky',IMO,IDO,
-     &     RTIME,skopt,' -g ',rgrfl,' -a ',XLAT,' -o ',-XLON,' -m 0.0'
+     &    RTIME,skopt,' -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
+     &    ' -m 0.0'
         CALL wrtsky(outs)
         call RRSKY(ITA2,rskyfil,ga,IER)
         if (RIFPURP(IRIFFOC)(1:8).eq.'External') then
@@ -289,6 +291,7 @@ C Translate esp data to radiance geom and materials.
 C ACT = 's' silent, ACT = 'i' interactive.
       SUBROUTINE e2rform(ACT,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0 and G2.
 #include "geometry.h"
@@ -302,15 +305,7 @@ C geometry.h provides commons G0 and G2.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/GTFIL/GTGEOM
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/rad1m/matfil,rmmfil
       common/radif/irofil,irzfil,imatfil,iglzfil
@@ -323,7 +318,6 @@ C geometry.h provides commons G0 and G2.
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(17)
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character*72 matfil,rmmfil,tfile
       character runpath*72,pathtype*24
@@ -338,20 +332,15 @@ C geometry.h provides commons G0 and G2.
       ier=0
 C      GTGEOM = 'UNKNOWN'
 
-C Open the primitive, mlc & optics db.
+C Open the materials, mlc & optics db.
       lnrp=lnblnk(runpath)
-      call opendb(ier)
+      call module_opendb(ier)
 
       icomp = nznog(1)
       izgfoc = nznog(1)
 
 C Fictitious transmission threshhold.
       ftr=0.92
-
-C Check for obstructions.
-      IF(IOBS(ICOMP).EQ.1)THEN
-        CALL EGOMST(ITA1,ZOBS(ICOMP),0,0,iuout,IER)
-      endif
 
 10    INO = -4
       ITEM(1) =       ' Toggles ...                   '
@@ -459,7 +448,7 @@ C Re-Read in the initial zone geometry file into common & restore
 C the image.
         call eclose(gversion(icomp),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+          call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
         else
           call egomin(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
         endif
@@ -555,8 +544,10 @@ C mkriofil: Write inside/outside materials and composition files.
 C If ACT='i' then interactive, ACT='s' for silent.
       SUBROUTINE mkriofil(ftr,fict,ACT,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -568,20 +559,10 @@ C If ACT='i' then interactive, ACT='s' for silent.
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C TMC data
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -592,11 +573,6 @@ C TMC data
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       common/grdisk/grdd,grcx,grcy
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       common/rad1a/aglzfil
@@ -619,49 +595,28 @@ C TMC data
       common/radabs/NABS
       common/expath/runpath,pathtype
 
-C Arrays of material properties.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      real matdbcon,matdbden,matdbsht,matdboute,matdbine
-      real matdbouta,matdbina,matdbdrv,matdbthick
-      common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
-     &  matdbcon(MGIT),matdbden(MGIT),matdbsht(MGIT),matdboute(MGIT),
-     &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
-     &  matdbthick(MGIT)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat
+      logical closemat1,closemat2
       logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ZSN(MS),iskip(MMLC),VP(3),EQN(4)
       DIMENSION SVALS(3),TVALS(3),TFORM(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character*72 matfil,rmmfil,LBSRIF,aglzfil
-      character BLKNAME*8,BLKMAT*12,ZSN*28
+      character ZSN*28
       character h*72,ZN*12,outs*124,material*12,QT*1
       character GDESCR*36,DESCRC*25
-      CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
+      CHARACTER MLCN*12,OTF*4,OPT*12
       CHARACTER GMLCN*12,GSNAME*6,ACT*1,doit*144
       character outsn*124,outsd*124, tfile*72, runpath*72,pathtype*24
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72
       integer lnrp  ! length of run path
+      integer lnbm  ! length of block material
 
       LOGICAL MODIFY,MODLEN,MODBND,OK,DOK,fict,extern,XST,similar
       logical skydone,outdone,indone,misdone,vewdone,glzdone
@@ -676,7 +631,16 @@ C Arrays of material properties.
       lnrp=lnblnk(runpath)
 
 C Find version of materials database.
-      call eclose(matver,1.1,0.01,closemat)
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so creation',
+     &    'of surface attributes not possible.','W')
+        ier=1
+        return
+      endif
 
 C Create a glazing file, default type is 'glass' with user choice 
 C to treat as 'mkillum'.
@@ -861,34 +825,21 @@ C Pick up general description of the composite.
         ENDIF
 
 C For the inside and outside layer get surface properties.
-        if(closemat)then
-          legmat=IPR(IM,1)   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
-            E=matdbine(matarrayindex)
-            AE=matdbina(matarrayindex)
-          endif
-        else
-          CALL ERPCDB(IFMAT,IPR(IM,1),iuout,IER,DBCON,DBDEN,
-     &      DBSHT,E,AE,DRV,TITL,NAM)
+        matarrayindex=IPRMAT(IM,1)   ! which array index
+        if(matarrayindex.ge.0)then
+          AE=matdbina(matarrayindex)
         endif
-        if(closemat)then
-          legmat=IPR(IM,LAYERS(IM))   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
-            E=matdbine(matarrayindex)
-            AI=matdbina(matarrayindex)
-          endif
-        else
-          CALL ERPCDB(IFMAT,IPR(IM,LAYERS(IM)),iuout,IER,DBCON,DBDEN,
-     &      DBSHT,E,AI,DRV,TITL,NAM)
+	
+        matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which legacy index
+        if(matarrayindex.ge.0)then
+          AI=matdbina(matarrayindex)
         endif
 
 C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if(OTF.EQ.'TRAN')then
+        if(OTF(1:4).NE.'OPAQ')then
           CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
           if(VTRN.gt.0.02)then
           gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))-0.9166530661)
@@ -915,7 +866,7 @@ C Check for blind shutter control.
             do 100 newfoc=1,ncomp
               call eclose(gversion(newfoc),1.1,0.01,newgeo)
               if(newgeo)then
-                call georead(ita3,LGEOM(newfoc),newfoc,1,ITRC,ITRU,IER)
+                call georead(ita3,LGEOM(newfoc),newfoc,1,ITRU,IER)
               else
                 call egomin(ita3,LGEOM(newfoc),newfoc,1,ITRC,ITRU,IER)
               endif
@@ -1101,7 +1052,7 @@ C in here.
         newfoc=nznog(mz)
 
 C Clear properties.
-        NB=0
+        nbobs(mz)=0
 
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
@@ -1109,13 +1060,13 @@ C Read in the zone geometry.
         if(ACT.eq.'i')then
           call usrmsg(' ',outs,'-')
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
           endif
         else
           if(newgeo)then
-            call georead(ITA1,LGEOM(newfoc),newfoc,1,0,IUOUT,IER)
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
           else
             call egomin(ITA1,LGEOM(newfoc),newfoc,1,0,IUOUT,IER)
           endif
@@ -1129,10 +1080,6 @@ C Read in the zone geometry.
           endif
         endif
         ZN=zname(newfoc)
-
-        IF(IOBS(newfoc).EQ.1)THEN
-          CALL EGOMST(ITA1,ZOBS(newfoc),0,0,iuout,IER)
-        endif
 
 C Display the other zone, resetting all surface lines to std.
         if(ACT.eq.'i')then
@@ -1166,7 +1113,7 @@ C Aternative glazing descriptions file.
         endif
 
 C Confirm inclusion of obstructions.
-        if(NB.ge.1)then
+        if(nbobs(newfoc).ge.1)then
           if(ACT.eq.'i')then
             write(outs,'(3a)') ' Include ',ZN(1:lnblnk(ZN)),
      &                            ' obstructions ? '
@@ -1183,23 +1130,30 @@ C Confirm inclusion of obstructions.
 
           WRITE(irofil,'(a)') '# Obstruction defs... '
           WRITE(irofil,'(a)') '  '
-          nobs=nobs+NB
-          do 43 ib=1,NB
+          nobs=nobs+nbobs(newfoc)  ! increment count of obstructions
+          do 43 ib=1,nbobs(newfoc)
 
 C Create a genbox command to match the obstruction.
-            if(BLKMAT(ib)(1:4).eq.'NONE')then
+
+C << to be done - find out syntax for blocks with multiple rotations >>
+
+            if(BLOCKMAT(newfoc,ib)(1:4).eq.'NONE')then
               WRITE(irofil,'(a,a,3f9.3,a,f9.3,a,3f9.3)')
      &          '!genbox rc_ex_unknown ',
-     &          BLKNAME(IB)(1:lnblnk(BLKNAME(IB))),
-     &          DX(ib),DY(ib),DZ(ib),' | xform -rz ',BANG(ib),
-     &          ' -t ',XO(ib),YO(ib),ZO(ib)
+     &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
+     &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
+     &          ' | xform -rz ',BANGOB(newfoc,ib,1),
+     &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
               WRITE(irofil,'(a)') ' '
             else
+              lnbm=LNBLOCKMAT(newfoc,ib)
               WRITE(irofil,'(a,a,a,a,3f9.3,a,f9.3,a,3f9.3)')
-     &          '!genbox  rc_ex_',BLKMAT(ib)(1:lnblnk(BLKMAT(ib))),
-     &          '  ',BLKNAME(IB)(1:lnblnk(BLKNAME(IB))),
-     &          DX(ib),DY(ib),DZ(ib),' | xform -rz ',BANG(ib),
-     &          ' -t ',XO(ib),YO(ib),ZO(ib)
+     &          '!genbox  rc_ex_',BLOCKMAT(newfoc,ib)(1:lnbm),
+     &          '  ',        
+     &          BLOCKNAME(newfoc,IB)(1:LNBLOCKNAME(newfoc,IB)),
+     &          DXOB(newfoc,ib),DYOB(newfoc,ib),DZOB(newfoc,ib),
+     &          ' | xform -rz ',BANGOB(newfoc,ib,1),
+     &          ' -t ',XOB(newfoc,ib),YOB(newfoc,ib),ZOB(newfoc,ib)
               WRITE(irofil,'(a)') ' '
             endif
  43       continue
@@ -1538,13 +1492,19 @@ C xform needs the file preceeded by ./   Pause briefly between
 C runit calls to allow OS to detect new file creation.
         write(doit,'(5a)') 'cd ',runpath(1:lnrp),
      &    '; xform -e ./',rofil(1:lnblnk(rofil)),' >exprofil'
+
+C Debug.
 C        write(6,*) doit
+
         call runit(doit,'-')
         call pausems(400)
         write(doit,'(7a)') 'cd ',runpath(1:lnrp),
      &    '; mv ./',rofil(1:lnblnk(rofil)),' ',
      &    rofil(1:lnblnk(rofil)),'-'
+
+C Debug.
 C        write(6,*) doit
+
         call runit(doit,'-')
         call usrmsg('expanding obstructions...done.',' ','-')
 

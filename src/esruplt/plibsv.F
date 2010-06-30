@@ -105,7 +105,9 @@ C a maximum of NPRECL items. So for more items use next
 C record(s).
 C First find required number of records.
       nrecs=npcomp/nprecl+1
-      write(6,*) nrecs,npcomp,nprecl
+
+C Debug.
+C      write(6,*) nrecs,npcomp,nprecl
 
 C Initialise first item number and number of items left
 C respectively.
@@ -132,7 +134,9 @@ C << EITHER opened at 36 records wide or we need two records
 C << to write each string
 
 C Store climate file name.
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) LCLIM(1:72)
+      write(firstbit,'(a)')LCLIM(1:72)
+      write(secondbit,'(a)')LCLIM(73:144)
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) firstbit
       IREC=IREC+1
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) secondbit
       IREC=IREC+1
@@ -156,8 +160,11 @@ C the first and 2nd halfs of the file name.
       endif
       write(firstbit,'(a)')longtfile(1:72)
       write(secondbit,'(a)')longtfile(73:144)
-      write(6,*) firstbit
-      write(6,*) secondbit
+
+C Debug.
+C      write(6,*) firstbit
+C      write(6,*) secondbit
+
       ireccfg=irec       ! we know where cfg is written
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999)firstbit
       IREC=IREC+1
@@ -167,7 +174,10 @@ C the first and 2nd halfs of the file name.
 C Set start address for current results set as well as the location of
 C the cfg file name as 2nd item on record 32.
       IRCPLP=IREC
-      write(6,*) ' start for current results set ',IRCPLP,ireccfg
+
+C Debug.
+C      write(6,*) ' start for current results set ',IRCPLP,ireccfg
+
       IREC=2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999)IRCPLP
       IREC=32
@@ -254,11 +264,17 @@ C to allow match with building library for results recovery.
      &   SCNAME(1:4).NE.'none')THEN
          IREC=IREC+1
          WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) LCTLF
-         write(6,*) 'control file written to record ',irec
+
+C Debug.
+C         write(6,*) 'control file written to record ',irec
+
          IREC=IREC+1
       ELSE
          IREC=IREC+1
-         write(6,*) 'skipped control file write at record ',irec
+
+C Debug.
+C         write(6,*) 'skipped control file write at record ',irec
+
          IREC=IREC+1     
       END IF
 
@@ -268,7 +284,9 @@ C entry to library.
       IRCPLP=IREC
       IREC=NSIM+2
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) NST,IRCPLP
-      write(6,*) ' two start records are ',nst,ircplp
+
+C Debug.
+C      write(6,*) ' two start records are ',nst,ircplp
 
   100 RETURN
 

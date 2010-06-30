@@ -1,44 +1,44 @@
 *connections  for cellular_pv
-*Date Thu Aug 25 14:52:41 2005
+*Date Fri Oct  2 08:44:02 2009
      41   # number of connections
-   1   1   3   2   1  #   1  pt_general in manager_a >|< pt_general in manager_b
-   1   2   3   3   8  #   2  part_frame in manager_a >|< part_frame in corridor
-   1   3   3   3   6  #   3  door in manager_a >|< door in corridor
-   1   4   1   0   0  #   4  pt_other in manager_a >|< Identical environment
-   1   5   1   0   0  #   5  ceiling in manager_a >|< Identical environment
-   1   6   1   0   0  #   6  floor in manager_a >|< Identical environment
-   1   7   0   0   0  #   7  spandrel in manager_a is External
-   1   8   0   0   0  #   8  frame in manager_a is External
-   1   9   0   0   0  #   9  glazing in manager_a is External
-   1  10   3   3   9  #  10  part_glaz in manager_a >|< part_glaz in corridor
-   1  11   3   3   7  #  11  ptn_corid in manager_a >|< ptn_corid in corridor
-   1  12   1   0   0  #  12  pt_other_a in manager_a >|< Identical environment
-   1  13   1   0   0  #  13  pt_other_b in manager_a >|< Identical environment
-   1  14   0   0   0  #  14  PVmod in manager_a is External
-   2   1   3   1   1  #  15  pt_general in manager_b >|< pt_general in manager_a
-   2   2   3   3  10  #  16  part_frame in manager_b >|< part_frameb in corridor
-   2   3   3   3  11  #  17  door in manager_b >|< door_b in corridor
-   2   4   1   0   0  #  18  pt_other in manager_b >|< Identical environment
-   2   5   1   0   0  #  19  ceiling in manager_b >|< Identical environment
-   2   6   1   0   0  #  20  floor in manager_b >|< Identical environment
-   2   7   0   0   0  #  21  spandrel in manager_b is External
-   2   8   0   0   0  #  22  frame in manager_b is External
-   2   9   0   0   0  #  23  glazing in manager_b is External
-   2  10   3   3  13  #  24  part_glaz in manager_b >|< part_glazb in corridor
-   2  11   3   3  12  #  25  ptn_corid in manager_b >|< ptn_coridb in corridor
-   2  12   1   0   0  #  26  pt_other_a in manager_b >|< Identical environment
-   2  13   1   0   0  #  27  pt_other_b in manager_b >|< Identical environment
-   3   1   1   0   0  #  28  right in corridor >|< Identical environment
-   3   2   1   0   0  #  29  wall in corridor >|< Identical environment
-   3   3   1   0   0  #  30  left in corridor >|< Identical environment
-   3   4   1   0   0  #  31  ceiling in corridor >|< Identical environment
-   3   5   1   0   0  #  32  floor in corridor >|< Identical environment
-   3   6   3   1   3  #  33  door in corridor >|< door in manager_a
-   3   7   3   1  11  #  34  ptn_corid in corridor >|< ptn_corid in manager_a
-   3   8   3   1   2  #  35  part_frame in corridor >|< part_frame in manager_a
-   3   9   3   1  10  #  36  part_glaz in corridor >|< part_glaz in manager_a
-   3  10   3   2   2  #  37  part_frameb in corridor >|< part_frame in manager_b
-   3  11   3   2   3  #  38  door_b in corridor >|< door in manager_b
-   3  12   3   2  11  #  39  ptn_coridb in corridor >|< ptn_corid in manager_b
-   3  13   3   2  10  #  40  part_glazb in corridor >|< part_glaz in manager_b
-   3  14   5   0   0  #  41  filler in corridor is adiabatic
+   1   1   3   2   1  #    1 pt_general in manager_a >|< pt_general in manager_b
+   1   2   3   3   8  #    2 part_frame in manager_a >|< part_frame in corridor
+   1   3   3   3   6  #    3 door in manager_a >|< door in corridor
+   1   4   1   0   0  #    4 pt_other in manager_a >|< Identical environment
+   1   5   1   0   0  #    5 ceiling in manager_a >|< Identical environment
+   1   6   1   0   0  #    6 floor in manager_a >|< Identical environment
+   1   7   0   0   0  #    7 spandrel in manager_a is External
+   1   8   0   0   0  #    8 frame in manager_a is External
+   1   9   0   0   0  #    9 glazing in manager_a is External
+   1  10   3   3   9  #   10 part_glaz in manager_a >|< part_glaz in corridor
+   1  11   3   3   7  #   11 ptn_corid in manager_a >|< ptn_corid in corridor
+   1  12   1   0   0  #   12 pt_other_a in manager_a >|< Identical environment
+   1  13   1   0   0  #   13 pt_other_b in manager_a >|< Identical environment
+   1  14   0   0   0  #   14 PVmod in manager_a is External
+   2   1   3   1   1  #   15 pt_general in manager_b >|< pt_general in manager_a
+   2   2   3   3  10  #   16 part_frame in manager_b >|< part_frameb in corridor
+   2   3   3   3  11  #   17 door in manager_b >|< door_b in corridor
+   2   4   1   0   0  #   18 pt_other in manager_b >|< Identical environment
+   2   5   1   0   0  #   19 ceiling in manager_b >|< Identical environment
+   2   6   1   0   0  #   20 floor in manager_b >|< Identical environment
+   2   7   0   0   0  #   21 spandrel in manager_b is External
+   2   8   0   0   0  #   22 frame in manager_b is External
+   2   9   0   0   0  #   23 glazing in manager_b is External
+   2  10   3   3  13  #   24 part_glaz in manager_b >|< part_glazb in corridor
+   2  11   3   3  12  #   25 ptn_corid in manager_b >|< ptn_coridb in corridor
+   2  12   1   0   0  #   26 pt_other_a in manager_b >|< Identical environment
+   2  13   1   0   0  #   27 pt_other_b in manager_b >|< Identical environment
+   3   1   1   0   0  #   28 right in corridor >|< Identical environment
+   3   2   1   0   0  #   29 wall in corridor >|< Identical environment
+   3   3   1   0   0  #   30 left in corridor >|< Identical environment
+   3   4   1   0   0  #   31 ceiling in corridor >|< Identical environment
+   3   5   1   0   0  #   32 floor in corridor >|< Identical environment
+   3   6   3   1   3  #   33 door in corridor >|< door in manager_a
+   3   7   3   1  11  #   34 ptn_corid in corridor >|< ptn_corid in manager_a
+   3   8   3   1   2  #   35 part_frame in corridor >|< part_frame in manager_a
+   3   9   3   1  10  #   36 part_glaz in corridor >|< part_glaz in manager_a
+   3  10   3   2   2  #   37 part_frameb in corridor >|< part_frame in manager_b
+   3  11   3   2   3  #   38 door_b in corridor >|< door in manager_b
+   3  12   3   2  11  #   39 ptn_coridb in corridor >|< ptn_corid in manager_b
+   3  13   3   2  10  #   40 part_glazb in corridor >|< part_glaz in manager_b
+   3  14   5   0   0  #   41 filler in corridor is adiabatic

@@ -88,12 +88,12 @@ intialisation and graphics, using ww. The routines are :-
 	refreshenv_()
                         :-  pass back window information to fortran common.
 */
-#include 	<stdio.h>
-#include 	<math.h>
+#include <stdio.h>
+#include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include	<ctype.h>
-#include	"wwcut.h"
+#include <ctype.h>
+#include "wwcut.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
@@ -219,6 +219,24 @@ static unsigned char logo_bits[] = {
    0x00, 0x00, 0x00, 0x80, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
+/* external definitions in the Fortran code */
+extern gnwkquery_();
+extern wirepk_();
+extern profgrdump_();
+extern cpwpk_();
+extern chgazi_();
+extern chgelev_();
+extern proftxdump_();
+extern nwkslctc_();
+extern gconad_();
+extern gridupdt_();
+extern nwkupdtpos_();
+extern icntfm_();
+extern cfgpk_();
+extern updview_();
+extern sleep();
+extern aux_menu();
+
 /* global data types */
 Display  *theDisp;
 Window  win;
@@ -342,12 +360,12 @@ static int m_width = 0;		/* current menu max line length */
 static int m_lines = 0;		/* current number of active menu lines */
 
 static char cappl[5];	/* f77 application name */
-static char cfgroot[25];	/* f77 project root name    */
-static char path[73];	/* f77 project path    */
-static char upath[73];	/* f77 users path    */
-static char imgpth[25];	/* f77 relative path to images    */
-static char docpth[25];	/* f77 relative path to documents    */
-static char tmppth[25];	/* f77 relative path to scratch folder    */
+/* static char cfgroot[25];	f77 project root name    */
+/* static char path[73];	f77 project path    */
+/* static char upath[73];	f77 users path    */
+/* static char imgpth[25];	f77 relative path to images    */
+/* static char docpth[25];	f77 relative path to documents    */
+/* static char tmppth[25];	f77 relative path to scratch folder    */
 static int browse;	/* if = 0 then user owns, if = 1 user browsing */
 
 /* flag for network graphics routines*/
@@ -416,9 +434,10 @@ static char *objgphcmenu[] = { "functions: rotate     ",
                         "           flip horiz  ",
                         "           close      ", 0};
 
-static int  wwc_ok = 0;   /* assume no echo of drawing commands to wwc */
-static int  wwc_macro = 0;   /* assume not in a macro drawing command (etplot) */
-FILE *wwc;
+extern int  wwc_ok;   /* assume this set in esru_util.c */
+extern int  wwc_macro;   /* assume this set in esru_util.c */
+extern FILE *wwc;
+
 char *t0;
 static char font_0[60], font_1[60], font_2[60], font_3[60], font_4[60], font_5[60];
 
@@ -512,7 +531,7 @@ if((theDisp = XOpenDisplay(NULL))==NULL) {
 t0=(char *) getenv("EFONT_0");
 /* fprintf(stderr,"t0 is %s \n",t0); */
 if ((t0 == NULL) || (t0  == "") || (strncmp(t0,"    ",4) == 0)) {
-  strcpy(font_0,"6x12");
+  strncpy(font_0,"6x12",4);
 } else {
   strcpy(font_0,getenv("EFONT_0"));
 }
@@ -521,7 +540,7 @@ if((fst_0 = XLoadQueryFont(theDisp,font_0)) == NULL) {
   exit(1);
 }
 if (((t0=(char *) getenv("EFONT_1"))== NULL) || ((t0=(char *) getenv("EFONT_1"))== "")) {
-  strcpy(font_1,"6x13");
+  strncpy(font_1,"6x13",4);
 } else {
   strcpy(font_1,getenv("EFONT_1"));
 }
@@ -530,7 +549,7 @@ if((fst_1 = XLoadQueryFont(theDisp,font_1)) == NULL) {
   exit(1);
 }
 if (((t0=(char *) getenv("EFONT_2"))== NULL) || ((t0=(char *) getenv("EFONT_2"))== "")) {
-  strcpy(font_2,"8x13");
+  strncpy(font_2,"8x13",4);
 } else {
   strcpy(font_2,getenv("EFONT_2"));
 }
@@ -539,7 +558,7 @@ if((fst_2 = XLoadQueryFont(theDisp,font_2)) == NULL) {
   exit(1);
 }
 if (((t0=(char *) getenv("EFONT_3"))== NULL) || ((t0=(char *) getenv("EFONT_3"))== "")) {
-  strcpy(font_3,"9x15");
+  strncpy(font_3,"9x15",4);
 } else {
   strcpy(font_3,getenv("EFONT_3"));
 }
@@ -548,19 +567,19 @@ if((fst_3 = XLoadQueryFont(theDisp,font_3)) == NULL) {
   exit(1);
 }
 /* a few variable width fonts, if fail drop back to fixed width */
-strcpy(font_4,"-*-lucida-medium-r-*-*-10-*-*-*-*-*-*-*");
+strncpy(font_4,"-*-lucida-medium-r-*-*-10-*-*-*-*-*-*-*",39);
 if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_4);
-  strcpy(font_4,"6x12");
+  strncpy(font_4,"6x12",4);
   if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
     fprintf(stderr,"2nd choice font %s has not been found so quitting.\n",font_4);
     exit(1);
   }
 }
-strcpy(font_5,"-*-lucida-medium-r-*-*-12-*-*-*-*-*-*-*");
+strncpy(font_5,"-*-lucida-medium-r-*-*-12-*-*-*-*-*-*-*",39);
 if((fst_5 = XLoadQueryFont(theDisp,font_5)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_5);
-  strcpy(font_5,"6x13");
+  strncpy(font_5,"6x13",4);
   if((fst_5 = XLoadQueryFont(theDisp,font_5)) == NULL) {
     fprintf(stderr,"2nd choice font %s has not been found so quitting.\n",font_5);
     exit(1);
@@ -786,27 +805,27 @@ xsh.y = START_ULY;
 
 /* initial clear of help display list */
   for ( i = 0; i < HELP_LIST_LEN-1; i++ ) {
-    strcpy(help_list[i],
-      "                                                                         ");
+    strncpy(help_list[i],
+      "                                                                        ",72);
   }
 /* initial clear of edisp lines list */
   for ( i = 0; i < EDISP_LIST_LEN-1; i++ ) {
-    strcpy(edisp_list[i],
-    "                                                                                   ");
+    strncpy(edisp_list[i],
+    "                                                                                   ",82);
   }
 /* initial clear of menu lines list and item type string */
   for ( i = 0; i < MENU_LIST_LEN-1; i++ ) {
-    strcpy(m_list[i],
-    "                                                                                   ");
+    strncpy(m_list[i],
+    "                                                                                   ",82);
   }
-  strcpy(mtype_list,"                                           ");
+  strncpy(mtype_list,"                                        ",40);
 
 /* initial clear of proforma editing and display lists */
   for ( i = 0; i < PROFMA_LEN-1; i++ ) {
-    strcpy(edit_list[i],
-      "                                                                         ");
-    strcpy(display_list[i],
-    "                                                                                   ");
+    strncpy(edit_list[i],
+      "                                                                        ",72);
+    strncpy(display_list[i],
+    "                                                                                   ",82);
   }
 
 /* clear event stack of initial visibility and configure events */
@@ -1100,41 +1119,6 @@ int *n, *ir, *ig, *ib;
   return;
 }
 
-/* ************** Confirm Fortran string length *************** */
-/*
- Since the string length automaticly passed between Fortran and C
- tends to represent the "defined" string length rather than the actual
- string length here is a bit of code to start at the "defined" end
- and work backwards to find the last non-blank character position.
-*/
-void f_to_c_l(msg,f_len,len)
-  char    *msg;         /* character string */
-  int     *f_len,*len;  /* fortran string length,
-                           found position of last non blank character */
-{
-  int lm, sl, n, found;       /* local string lengths found by test  */
-  sl = (int) strlen(msg);
-  if( sl == (int) *f_len ){
-    n = (int) *f_len;
-  } else if( sl > (int) *f_len ) {
-    n = (int) *f_len;
-  } else if( sl < (int) *f_len ) {
-    n = sl;
-  }
-  found = FALSE;
-  while(n > 0 && !found) {
-    n--;
-    if ( msg[n] != ' ') found = TRUE;
-  }
-  if (found) {
-    lm = n+1;
-  } else if (! found && n == 0) {
-    lm = 1;
-  }
-  *len = lm;
-
-} /* f_to_c_l */
-
 /*
  * copy from box to a Pixmap, assumes that the box and the Pixmap
  * are the same width & height
@@ -1427,310 +1411,6 @@ long int *itime,*lix, *liy; /* persistance, position from lower left of the 3dvi
  return;
 }
 
-/*  open ww commands output file */
-void wwcopen_(name,len)
-char *name;
-int len;	/* string length from fortran */
-{
- int ilen;
- char name2[80];
- wwc_ok = 1;   /* set flag to echo drawing commands to wwc */
-
-/*
- * Terminate at fortran length, find actual string length
- * and then reterminate.
- */
-  f_to_c_l(name,&len,&ilen); strncpy(name2,name,(unsigned int)ilen); name2[ilen]='\0';
-  if ((wwc = fopen(name2,"w"))==NULL) {
-    fprintf(stderr,"could not open wwc file %s\n",name2);
-    exit(1);
-  }
-  return;
-}
-
-/* Close and mark endww commands file if one has been setup */
-void wwcclose_(name,len)
-char *name;
-int len;	/* string length from fortran */
-{
- int ilen;
- char name2[80];
-  f_to_c_l(name,&len,&ilen); strncpy(name2,name,(unsigned int)ilen); name2[ilen] = '\0';
-  if ( wwc_ok == 1) {
-    wwc_ok = 0;   /* reset flag to not echo drawing commands to wwc */
-    fprintf(wwc,"*end_wwc\t%s\n",name2);
-    fclose(wwc);
-  } else {
-    fprintf(stderr,"ww commands file never opened...\n");
-  }
-  return;
-}
-
-void wwcsetstart_()	/* indicate start of a set of drawing commands */
-{
- if ( wwc_ok == 1) fprintf(wwc,"*start_set\n");
-  return;
-}
-
-void wwcsetend_()		/* indicate end of a set of drawing commands */
-{
- if ( wwc_ok == 1) fprintf(wwc,"*end_set\n");
-  return;
-}
-
-/* ****** ckaccess_ ********* */
-/* Given a file or folder name returns laccess = 1 if user cannot write
- * it and laccess = 0 if use can write. Also traps error state if file
- * or folder name in error/does not exist etc. Return folder=1 if the
- * name is a folder, otherwise 0.
- */
-void ckaccess_(folder,laccess,lerr,fname,len)
-char *fname;
-int len;	/* string length from fortran */
-long int *lerr,*laccess;
-long int *folder;
-{
- int ilen,i,ok;
- int iaccessu,iaccessg,iaccesso,ifolder;
- int ist_uid,ist_gid,u_uid,u_euid,g_uid,g_euid;
- char name2[80];
- struct stat st;
-
-/* Work with copy of file name. */
-  f_to_c_l(fname,&len,&ilen); strncpy(name2,fname,(unsigned int)ilen); name2[ilen] = '\0';
-/* debug fprintf(stderr,"file is %s %d %d \n",name2,ilen,len); */
-  i = stat(name2, &st);
-  iaccessu = (st.st_mode&0200); /* returns 0 if u-w */
-  iaccessg = (st.st_mode&0020); /* returns 0 if g-w */
-  iaccesso = (st.st_mode&0002); /* returns 0 if o-w */
-  ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-  if (ifolder != 0) {
-    *folder = 1;  /* name is a folder */
-  } else {
-    *folder = 0;
-  }
-  ist_uid = st.st_uid;  ist_gid = st.st_gid; /* the file or folders owner */
-  u_uid = (long) getuid();  u_euid = (long) geteuid(); /* the user id and effective user id */
-  g_uid = (long) getgid();  g_euid = (long) getegid();/* the group id and effective group id */
-
-/*
-  fprintf(stderr,"access a u g o data %d %d %d\n",iaccessu,iaccessg,iaccesso);
-  fprintf(stderr,"id data %d %d %d %d %d %d \n",ist_uid,ist_gid,u_uid,u_euid,g_uid,g_euid);
-  fprintf(stderr,"access data %d %d \n",st.st_mode,i);
-*/
-/* logic test for permissions */
-  ok = 1;   /* first assume that we can't write to it */
-  if (i != 0) {
-    fprintf(stderr,"unable to get stats on %s\n",name2);
-    *lerr = 1;
-    *folder = -1;
-    ok=1; *laccess = ok; /* error on stats better not write to it */
-    return;
-  } else {
-    *lerr = 0;
-  }
-  if ((iaccessu == 0) && (iaccessg == 0) && (iaccesso == 0)) {
-/* fprintf(stderr,"no one can write to it %d %d %d\n",iaccessu,iaccessg,iaccesso ); */
-    ok=1; *laccess = ok; return; /* no one can write to it */
-  }
-  if (iaccesso != 0 ) {
-/* fprintf(stderr,"any one can write to it %d\n",iaccesso ); */
-    ok=0; *laccess = ok; return; /* anyone can write anyway */
-  }
-  if ((ist_uid == u_uid) && iaccessu != 0 ) {
-/* fprintf(stderr,"user can write to it %d\n",iaccessu); */
-    ok=0; *laccess = ok;  return; /* ok same user and owner and can write */
-  }
-  if ((ist_uid != u_uid) && (ist_gid ==g_uid) && iaccessg != 0 ) {
-/* fprintf(stderr,"group can write to it %d\n",iaccessg); */
-    ok=0;  *laccess = ok;  return; /* ok same group and can write */
-  }
-  *laccess = ok;  /* fell through logic so return */
-/* fprintf(stderr,"fell through logic %d\n",iaccessg); */
-  return;
-}
-
-/* ********* Return list of files in a folder ********* */
-void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
-  char *folder;	/* folder name passed from fortran */
-  char *act;  /* action to take as follows:
-	`dir` get list of folders, `fil` get list of files in the folder,
-	`cfg` get list of configuration files, `ctl` get list of control files,
-	`afn` get list of air flow networks, `gnf` get list of graphic network files,
-	`res` get list of results files, `mfr` get list of mass flow results
-	`geo` get list of geometry files, `obs` obstructions file,
-	`opr` get list of operation files, `con` get list of construction files,
-        `vwf` get list of viewfactor files, `tmc` zone optics file,
-	`htc` get list of convection regime files,
-	`shd` get list of shading files, `cgc` casual gain control files,
-	`gdb` generic database, `gda` (gdba) ascii generic database
-	`dba` ascii database,
-	`dbb` binary database or climate file,
-	`xbm` X bitmaps, `gif` gif image files.
-        `ipv` IPV definition file, `rep` IPV report file
-        `qac` QA contents file, `zip` cflo3 zip (geometry) file.
-    NOTE: the size of the 1st array index in char file_list must be edited to be
-    the same as the parameter MFFOLD in include/espriou.h
- */
-
-  char *flist;	/* f77 array of returned folders or file names */
-  long int nwflist[];	/* array of character widths for each folder or file name. */
-  long int *nflist;	/* number of folders or file names */
-  int lenfolder,lenact,lenflist;	/* fortran passed lengths */
-{
-/* Local variables   */
-  int ilen,ialen,i,ic,num,ipos;       /* local indicies  */
-  struct stat st;		/* structure for file permissions */
-  struct dirent *dirt;		/* structure for directory contents */
-  DIR *dir;		/* directory structure (from dirent.h) */
-  int ifolder;		/* if nonzero then stat structure says it is a folder */
-  int foundone;		/* set to one if a file matches criteria. */
-
-/* local working string arrays */
-  char *locflist = flist;
-  char *locact = act;
-  int locnflist = *nflist;
-  static char file_list[100][73];	/* character arrays to hold folder or file names. */
-  char name2[80];	/* buffer for folder name */
-  char act2[8];	/* buffer for act */
-
-/* this function takes file or folder names generated by C calls
-   and passes them back to fortran as an array of strings. It
-   also passess back the actual width of each string so that
-   the returned string can be copied to another fortran string
-   array for proper use. As this is coded, fortran lnblnk calls
-   to the returned string *flist will report 72 char width, no matter
-   what the actual length of the string. Thus the use of nwflist[]
-*/
-/* clear the local return string array and reset nflist */
-  locnflist = 0;
-  for ( i = 0; i < 99; i++ ) {
-    nwflist[i] = (long int) 0;
-    strcpy(file_list[i],
-      "                                                                         ");
-  }
-/* Work with copy of folder name. */
-  f_to_c_l(folder,&lenfolder,&ilen); strncpy(name2,folder,(unsigned int)ilen); name2[ilen] = '\0';
-  f_to_c_l(act,&lenact,&ialen); strncpy(act2,act,(unsigned int)ialen); act2[ialen] = '\0';
-  i = stat(name2, &st);
-  ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-  if (ifolder == 0) {
-    fprintf(stderr,"folder passed %s %d %d is not a folder.\n",name2,ilen,lenfolder);
-    return;
-  }
-  if (lenact == 0) {
-    fprintf(stderr,"requested file or folder listing action was blank.\n");
-    return;
-  }
-
-/* Open the folder */
-  i = stat(name2, &st);
-  ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-  if ( ifolder != 0 ) {
-    if (NULL == (dir = opendir(name2))) {
-	fprintf(stderr, "%s: cannot read.\n", path);
-	return;
-    }
-  }
-/* Carry on getting information until all folder items have been looked at */
-    while (dirt = readdir(dir)) {
-      foundone = 0;
-/* don't bother with . and .. entries */
-      if (strcmp(".", dirt->d_name) == 0 || strcmp("..", dirt->d_name) == 0) continue;
-
-/* debug     printf("current %s\n", dirt->d_name); */
-      if(strcmp("dir",act2)== 0) { /* If request for folders only, then build this list. */
-        i = stat(dirt->d_name, &st);
-        ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-/* debug     fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder); */
-        if (ifolder != 0 ) foundone = 1;
-      } else if(strcmp("fil",act2)== 0) { /* If request for files only, then build this list. */
-        i = stat(dirt->d_name, &st);
-        ifolder = (st.st_mode&0x8000); /* returns zero if a regular file */
-/* debug     fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder); */
-        if (ifolder == 0 ) foundone = 1;
-      } else if(strcmp("cfg",act2)== 0) { /* If request for cfg files only, then build this list. */
-        if (strstr(dirt->d_name,".cfg")) foundone = 1;
-      } else if(strcmp("ctl",act2)== 0) { /* If request for control files only, then build this list. */
-        if (strstr(dirt->d_name,".ctl")) foundone = 1;
-      } else if(strcmp("afn",act2)== 0) { /* If request for flow files only, then build this list. */
-        if (strstr(dirt->d_name,".afn")) foundone = 1;
-      } else if(strcmp("gnf",act2)== 0) { /* If request for network files only, then build this list. */
-        if (strstr(dirt->d_name,".gnf")) foundone = 1;
-      } else if(strcmp("res",act2)== 0) { /* If request for results files only, then build this list. */
-        if (strstr(dirt->d_name,".res")) foundone = 1;
-      } else if(strcmp("mfr",act2)== 0) { /* If request for flow results files only, then build this list. */
-        if (strstr(dirt->d_name,".mfr")) foundone = 1;
-      } else if(strcmp("geo",act2)== 0) { /* If request for geometry files only, then build this list. */
-        if (strstr(dirt->d_name,".geo")) foundone = 1;
-      } else if(strcmp("opr",act2)== 0) { /* If request for operation files only, then build this list. */
-        if (strstr(dirt->d_name,".opr")) foundone = 1;
-      } else if(strcmp("obs",act2)== 0) { /* If request for obstrucion files only, then build this list. */
-        if (strstr(dirt->d_name,".obs")) foundone = 1;
-      } else if(strcmp("vwf",act2)== 0) { /* If request for viewfactor files only, then build this list. */
-        if (strstr(dirt->d_name,".vwf")) foundone = 1;
-      } else if(strcmp("tmc",act2)== 0) { /* If request for zone optics files only, then build this list. */
-        if (strstr(dirt->d_name,".tmc")) foundone = 1;
-      } else if(strcmp("shd",act2)== 0) { /* If request for zone shading files only, then build this list. */
-        if (strstr(dirt->d_name,".shd")) foundone = 1;
-      } else if(strcmp("cgc",act2)== 0) { /* If request for cas gain ctl files only, then build this list. */
-        if (strstr(dirt->d_name,".cgc")) foundone = 1;
-      } else if(strcmp("htc",act2)== 0) { /* If request for convection regime files only, then build this list. */
-        if (strstr(dirt->d_name,".htc")) foundone = 1;
-        if (strstr(dirt->d_name,".hcc")) foundone = 1;
-      } else if(strcmp("con",act2)== 0) { /* If request for construction files only, then build this list. */
-        if (strstr(dirt->d_name,".con")) {
-/* debug  fprintf(stderr,"%s is a zone constr file\n", dirt->d_name); */
-          foundone = 1;
-        }
-      } else if(strcmp("gdb",act2)== 0) { /* If request for generic db only, then build this list. */
-        if (strstr(dirt->d_name,".gdb")) foundone = 1;
-      } else if(strcmp("gda",act2)== 0) { /* If request for asci generic db only, then build this list. */
-        if (strstr(dirt->d_name,".gdba")) foundone = 1;
-      } else if(strcmp("dba",act2)== 0) { /* If request for asci legacy db only, then build this list. */
-        if (strstr(dirt->d_name,".dba")) foundone = 1;
-        if (strstr(dirt->d_name,".a"))   foundone = 1;
-      } else if(strcmp("xbm",act2)== 0) { /* If request for X pixmap only, then build this list. */
-        if (strstr(dirt->d_name,".xbm")) foundone = 1;
-        if (strstr(dirt->d_name,".XBM")) foundone = 1;
-      } else if(strcmp("gif",act2)== 0) { /* If request for gif images only, then build this list. */
-        if (strstr(dirt->d_name,".gif")) foundone = 1;
-        if (strstr(dirt->d_name,".GIF")) foundone = 1;
-      } else if(strcmp("ipv",act2)== 0) { /* If request for IPV definitions only, then build this list. */
-        if (strstr(dirt->d_name,".ipv")) foundone = 1;
-        if (strstr(dirt->d_name,".IPV")) foundone = 1;
-      } else if(strcmp("rep",act2)== 0) { /* If request for IPV report only, then build this list. */
-        if (strstr(dirt->d_name,".rep")) foundone = 1;
-      } else if(strcmp("qac",act2)== 0) { /* If request for QA contents only, then build this list. */
-        if (strstr(dirt->d_name,".contents")) foundone = 1;
-      } else if(strcmp("zip",act2)== 0) { /* If request for Zip or cflo3, then build this list. */
-        if (strstr(dirt->d_name,".zip")) foundone = 1;
-/* debug */  fprintf(stderr,"%s is a zip file\n", dirt->d_name);
-      }
-
-/* the terminal index should match the size of the file_list[] buffer and that
- * should match the MFFOLD parameter on the fortran side! 
- */
-      if ((foundone == 1) && (locnflist <= 99)) {	/* add d_name to the fixed string array */
-        ic = (int) strlen(dirt->d_name);
-        nwflist[locnflist] = ic;	/* remember width of d_name */
-        strcpy(file_list[locnflist],dirt->d_name);
-        locnflist = locnflist +1;
-      }
-    }
-/* get recovered folder or file names back into the original fortran array */
-    ipos = 0;
-    strcpy(locflist,
-  "                                                                         ");
-  for(num = 0; num < locnflist; num++) {	/* for each recovered string...  */
-    strncpy(&locflist[ipos],file_list[num],(unsigned int)lenflist);	/* copy to local array */
-    ipos=ipos+lenflist;
-  }
-  *flist = *locflist;	/* copy locflist back to flist */
-  *nflist = locnflist;
-  return;
-}
-
 /* ********* Write a string beginning at pixel x and y. ******* */
 void wstxpt_(x,y,buff,len)
 char *buff;
@@ -1856,7 +1536,7 @@ void winfnt_(n)
   if( font_index == 0 ) {
     t0=(char *) getenv("EFONT_0");
     if ((t0 == NULL) || (t0  == "") || (strncmp(t0,"    ",4) == 0)) {
-      strcpy(font_0,"6x12");
+      strncpy(font_0,"6x12",4); font_0[4]='\0';
     } else {
       strcpy(font_0,getenv("EFONT_0"));
     }
@@ -1914,7 +1594,7 @@ XFontStruct  *tfst;
   if( *n == 0 ) {
     t0=(char *) getenv("EFONT_0");
     if ((t0 == NULL) || (t0  == "") || (strncmp(t0,"    ",4) == 0)) {
-      strcpy(font_0,"6x12");
+      strncpy(font_0,"6x12",4);  font_0[4]='\0';
     } else {
       strcpy(font_0,getenv("EFONT_0"));
     }
@@ -1938,7 +1618,7 @@ XFontStruct  *tfst;
   if (vfw < f_width && vfw > 1 ) tf_width = vfw;
   *nlines = (int) ((disp.b_bottom - disp.b_top) / (tf_height+1));
   *cw = ((disp.b_right - disp.b_left) / tf_width)-2;
-  fprintf(stderr,"current font info: fh %d fw %d vfw %d nlines %d characters %d \n",
+  fprintf(stderr,"current font info: fh %d fw %d vfw %d nlines %ld characters %ld \n",
     tf_height,tf_width,vfw,*nlines,*cw);
 
   return;
@@ -4193,7 +3873,7 @@ void askdialog_(sstr,id,iq,f_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strncpy(sbuf,"                                                                                                ",96);
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -4351,7 +4031,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4380,7 +4060,7 @@ void askaltdialog_(sstr,alt,id,iq,f_len,a_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strncpy(sbuf,"                                                                                                ",96);
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -4527,7 +4207,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4556,7 +4236,7 @@ void askcncldialog_(sstr,cncl,id,iq,f_len,a_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strncpy(sbuf,"                                                                                               ",96);
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -4704,7 +4384,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
 {
   XEvent event;
   XWindowAttributes wa;
-  static char sbuf[124];
+  static char sbuf[144];
   int b_width;   /* b_width  pixels w/in box */
   int fitchars,offsc,x1,fitpix;  /* chars able to fit within box, chars between left of string & cursor */
   int	no_valid_event = TRUE;
@@ -4732,7 +4412,7 @@ void ask2altdialog_(sstr,alt,alt2,id,iq,f_len,a_len,b_len)
 /*
  Find actual string length and truncate when printing to fit within box.
 */
-  strcpy(sbuf,"                                                                                  ");
+  strncpy(sbuf,"                                                                                              ",96);
   saved_font = current_font;
   if (saved_font != butn_fnt) winfnt_(&butn_fnt);
   f_to_c_l(sstr,&f_len,&len); strncpy(sbuf,sstr,(unsigned int)len);
@@ -5557,14 +5237,11 @@ void egdisp_(msg,line,len)
   if(edisp_index < EDISP_LIST_LEN-1) {
     edisp_index++;
     strncpy(edisp_list[edisp_index],msg,len);	/* copy to static array */
-    //strcpy(edisp_list[edisp_index],msg2);   /* alternate method for null-term. strings */
   } else {
     for ( i = 0; i < EDISP_LIST_LEN-1; i++ ) {
       strncpy(edisp_list[i],edisp_list[i+1],124);	/* shift array up */
-      //strcpy(edisp_list[i],edisp_list[i+1]);  /* alternate method for null-term. strings */
     }
     strncpy(edisp_list[EDISP_LIST_LEN-1],msg,len);   /* copy to static array */
-    //strcpy(edisp_list[EDISP_LIST_LEN-1],msg2);/*alternate method for null-term. strings */
   }
   scroll_index = edisp_index;		/* force scroll bar to bottom, so new line is visible */
   disptext();
@@ -5746,8 +5423,8 @@ void u2pixel_(ux,uy,ix,iy)
   x=(x + x_add) * x_scale;
   y=(y + y_add) * y_scale;
 
-  *ix = x_off + (int) x;
-  *iy = y_off - (int) y;
+  *ix = (long int) x_off + (long int) x;
+  *iy = (long int) y_off - (long int) y;
   return;
 }
 
@@ -7451,7 +7128,7 @@ int		len_title;
              XSetForeground(theDisp,theGC, fg); XSetBackground(theDisp,theGC, bg);
              Timer(300);
              xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */
-             *ino = (long int) i +1;  /* compensate for c starting at zero */
+             *ino = (long int) i + (long int) 1;  /* compensate for c starting at zero */
              *uresp = (long int) 0;
    	     break;
            }
@@ -7843,7 +7520,7 @@ point*/
                   break;
               }
             }else{
-              fprintf(stderr," menu: display grid %d snap %d \n",grid_oo,snap);
+              fprintf(stderr," menu: display grid %ld snap %ld \n",grid_oo,snap);
               if(igrid>0&&isnap>0){
               epopup_("Display control",netgm2menuca,&iugx,&iugy,&choice);
               }else if(igrid>0&&isnap<1){
@@ -8275,7 +7952,7 @@ void refreshenv_()
       displ_l=disp_lines;
       dialogue_l=dialogue_lines;
       opengdisp_(&menu_char,&displ_l,&dialogue_l,&gdw,&gdh);
-      strcpy(blank,"  ");
+      strncpy(blank,"  ",2);
       msgbox_(blank,blank,strlen(blank),strlen(blank));      /* clear dialogue box  */
    }
    if(dbx1_avail == 1) {                       /* if graphic feedback clear it */
@@ -8619,50 +8296,6 @@ void findrtb_(long int* right,long int* top,long int* bottom)
   return;
 }
 
-/* curproject - pass in info on the current project from fortran */
-void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
-  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth)
-  char *fcfgroot;	/* f77 project root name    */
-  char *fpath;	/* f77 project path    */
-  char *fupath;	/* f77 users path    */
-  char *fimgpth;	/* f77 relative path to images    */
-  char *fdocpth;	/* f77 relative path to documents    */
-  char *ftmppth;	/* f77 relative path to scratch folder    */
-  long int *ibrowse;	/* if = 0 then user owns, if = 1 user browsing */
-  int  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth;	/* length of strings from f77  */
-{
-  int  l_root,l_fpath,l_fupath,l_fimgpth,l_fdocpth,l_ftmppth;
-
-  browse = *ibrowse;
-  strcpy(cfgroot,"                       ");
-  f_to_c_l(fcfgroot,&len_root,&l_root); strncpy(cfgroot,fcfgroot,(unsigned int)l_root);	/* copy to static */
-  cfgroot[l_root] = '\0';
-  strcpy(imgpth, "                       ");
-  f_to_c_l(fimgpth,&len_fimgpth,&l_fimgpth); strncpy(imgpth,fimgpth,(unsigned int)l_fimgpth);	/* copy to static */
-  imgpth[l_fimgpth] = '\0';
-  strcpy(docpth, "                       ");
-  f_to_c_l(fdocpth,&len_fdocpth,&l_fdocpth); strncpy(docpth,fdocpth,(unsigned int)l_fdocpth);	/* copy to static */
-  docpth[l_fdocpth] = '\0';
-  strcpy(tmppth, "                       ");
-  f_to_c_l(ftmppth,&len_ftmppth,&l_ftmppth); strncpy(tmppth,ftmppth,(unsigned int)l_ftmppth);	/* copy to static */
-  tmppth[l_ftmppth] = '\0';
-  strcpy(path,
-      "                                                                         ");
-  f_to_c_l(fpath,&len_fpath,&l_fpath); strncpy(path,fpath,(unsigned int)l_fpath);	/* copy to static */
-  path[l_fpath] = '\0';
-  strcpy(upath,
-      "                                                                         ");
-  f_to_c_l(fupath,&len_fupath,&l_fupath); strncpy(upath,fupath,(unsigned int)l_fupath);	/* copy to static */
-  upath[l_fupath] = '\0';
-/* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
-/* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
-/* debug  fprintf(stderr,"docpth %s\n",docpth);  */
-/* debug  fprintf(stderr,"path %s\n",path);  */
-/* debug  fprintf(stderr,"upath %s\n",upath);  */
-/* debug  fprintf(stderr,"browse %d\n",browse);  */
-  return;
-}
-
 /* curmodule - pass in info on the current application from fortran */
 void curmodule_(fcmodule,len_fcmodule)
   char *fcmodule;	/* f77 application name */
@@ -8671,7 +8304,7 @@ void curmodule_(fcmodule,len_fcmodule)
   int  l_fcmodule;	/* local length */
 
 /* use the same logic as in curproject_ */
-  strcpy(cappl,"   ");
+  strncpy(cappl,"    ",4);
   f_to_c_l(fcmodule,&len_fcmodule,&l_fcmodule); strncpy(cappl,fcmodule,(unsigned int)l_fcmodule);	/* copy to static */
   cappl[l_fcmodule] = '\0';
 }
@@ -9042,7 +8675,7 @@ int iwth = *impcwth;	/* character width of proforma */
 /* Edit function: use sbuf for editing, copy current edit string to it */
             c_edit = list2edit[i];
             if (xboxinside(edit_box[c_edit],x,y)){
-              strcpy(sbuf,"                                                                                  ");
+              strncpy(sbuf,"                                                                                  ",82);
               strncpy(sbuf,edit_list[c_edit],(unsigned int)lt2[c_edit]);
 /* debug fprintf(stderr,"i %d cur_ed %d lt2 %d swidth %l\n",i,c_edit,lt2[c_edit],swidth[c_edit]); */
 
@@ -9156,8 +8789,8 @@ int iwth = *impcwth;	/* character width of proforma */
 /* user has clicked on ok button or a call back function so: */
 /* get edited text back into the original fortran array */
   ipos = 0;
-  strcpy(locsstr,
-  "                                                                         ");
+  strncpy(locsstr,
+  "                                                                         ",72);
   for(num = 0; num < locnstr; num++) {	/* for each edit string...  */
     strncpy(&locsstr[ipos],edit_list[num],(unsigned int)lensstr);	/* copy to local array */
     ipos=ipos+lensstr;

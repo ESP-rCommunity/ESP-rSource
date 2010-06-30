@@ -203,12 +203,12 @@ C act='p' iget parameters already set.
       integer twoonrightb ! farthest if two axis on right
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iid1,iid2   ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
 #endif
 
       logical kwatts,colok
@@ -383,6 +383,7 @@ C      write(6,*) ' yaxset ',YAXSET
 C      write(6,*) ' igl igr igw igwh ',igl,igr,igw,igwh
 C      write(6,*) ' fonts ifs itfs  & imfs & iglib ',IFS,ITFS,IMFS,iglib
 C      write(6,*) ' onright ',oneonright,twoonrighta,twoonrightb
+
       if(IROC.eq.0)then
         ALABEL(1)='Temp: DegC'
 
@@ -458,7 +459,8 @@ C draw vertical axis.
           else
             call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
      &                             YSC(I),0,ilr(I),'  ')
-            call wstxpt(igx(I),igt-5,ALABEL(I))
+            iid1=igx(I); iid2=igt-5;
+            call wstxpt(iid1,iid2,ALABEL(I))
           endif
         endif
  100  continue
@@ -595,8 +597,8 @@ C If IMFS is > zero then use IMFS-1 for line label.
         if(colok)then
           if(IGETNO(I,2).gt.0)call winscl('z',IGETNO(I,2))
         endif
-        call u2pixel(TIMEold(I),Yold(I),ixs,iys)
-        call wstxpt(ixs,iys,t20)
+        call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
+        call wstxpt(iid1,iid2,t20)
         if(colok)call winscl('-',0)
         call forceflush()
  200  continue
@@ -608,7 +610,8 @@ C If there are optional user defined labels draw them.
       if(ngrlbl.gt.0)then
         do 201 ijj=1,ngrlbl
           t24=grlbl(ijj)
-          call wstxpt(lblpx(ijj),lblpy(ijj),t24)
+          iid1=lblpx(ijj); iid2=lblpy(ijj);
+          call wstxpt(iid1,iid2,t24)
  201    continue
       endif
       goto 1
@@ -653,7 +656,7 @@ C To extend logic to maximize plotting area.
       CHARACTER PDESCR*60,SDESCR*44,outsd*80,outsd1*81
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character graftitle*64,grlbl*24,t64*64
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -713,6 +716,7 @@ C using similar logic tree to mowlin.
             endif
           endif
         endif
+
 C Debug.
 C        write(6,*) ' nb of right axis is currently ',onright
 
@@ -822,7 +826,8 @@ C ****************************************************
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL,OK,dok
       character h*72
       
-      write (6,*) ' Entering MOCOPT'
+C Debug.
+C      write(6,*) ' Entering MOCOPT'
 
       CALL EDISP(IUOUT,' ') 
       h(1)='One or more of the following control parameters'     
@@ -886,7 +891,8 @@ C ****************************************************
 
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL
       
-      write (6,*) ' Entering MOCDAT'
+C Debug.
+C      write(6,*) ' Entering MOCDAT'
 
 C If routine called by mogdrw, time may be greater than 24.0;
       TIME=TME
@@ -1057,7 +1063,7 @@ C Draws the control graph(s).
       DIMENSION XVAL1(MS),XREM1(MS)
       character BLAB*13,label*8
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL,NOPLOT
-#ifdef OSX
+#ifdef OSI
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
 #else
@@ -1067,7 +1073,9 @@ C Draws the control graph(s).
 
       XREM1(1)=0.0
       XREM1(2)=0.0
-      write (6,*) ' Entering MOCGDW'
+
+C Debug.
+C      write(6,*) ' Entering MOCGDW'
 
 C Initialise the set-point/throttling-range plot flag,
       NOPLOT=.FALSE.

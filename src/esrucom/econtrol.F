@@ -48,12 +48,14 @@ C plctldoc |   and power control regimes.
 C flctldoc |
 C elctldoc |
 C opticdoc |
+C CFCctldoc|
 
 C ncf   | - Are the number of zone control functions, plant control
 C ncl   |   loops, power flow and  mass flow control functions.
 C ncc   |
 C necl  |
 C nol   |
+C nCFCctlloops |
 
 C ibsn  | - Defines the sensor node associated with any control function
 C ipsn  |   (B), control loop (P),  mass flow control function (F), power
@@ -115,6 +117,36 @@ C                                    number of any nested control function.
 C           ipsn(?,1)=-99; not active.
 C           ifsn(?,1)=-99; not active.
 C           iesn(?,1)=-9; Control is based on a bus condition
+C
+C iCFCsensor - Defines the sensor node associated with a complex fenestration
+C              control function
+C           The three locations have the following meaning:
+
+C           iCFCsensor(?,1)> 0; defines a zone where the sensor is located.
+C                         If iCFCsensor(?,2)=0 then sensor is that zone's air
+C                                            point.
+C                         If iCFCsensor(?,2)>0 and iCFCsensor(?,3)=0 then sensor is
+C                                            the surface defined by iCFCsensor(?,2).
+C                         If iCFCsensor(?,2)>0 and iCFCsensor(?,3)>0 then sensor is
+C                                        the construction node defined by
+C                                        construction iCFCsensor(?,2), node
+C                                        position iCFCsensor(?,3).
+C           iCFCsensor(?,1)= 0; sensor not used (schedule only).
+C
+C           iCFCsensor(?,1)=-1; - not active for complex fenestration control.
+C           iCFCsensor(?,1)=-2; control is on zone iCFCsensor(?,2) convective/radiant
+C                         mixed temperature in which the convective
+C                         component is given by iCFCsensor(?,3)/100.
+C           iCFCsensor(?,1)=-3; control is on outside condition where
+C                         if iCFCsensor(?,2)=0 dry bulb temperature is used.
+C                         if iCFCsensor(?,2)=1 sol-air temperature is used.
+C                         if iCFCsensor(?,2)=2 wind speed is used.
+C                         if iCFCsensor(?,2)=3 wind direction is used.
+C                         if iCFCsensor(?,2)=4 diffuse hor'l radiation is used.
+C                         if iCFCsensor(?,2)=5 direct normal radiation is used.
+C           iCFCsensor(?,1)= -4; sensing incident solar radiation on a surface where
+C                         iCFCsensor(?,2) refers to the zone and iCFCsensor(?,3) refers
+C                         to an external facing surface.
 
 C iban    - Defines the actuator node associated with any zone control
 C           function.
@@ -147,30 +179,42 @@ C         - iean(?,1)=-1; control is on a plant component
 C         - iean(?,1)=-8; control is on a building component
 C         - iean(?,1)=-9; control is on a power only component
 C
+C iCFCactuator    - Defines the actuator node associated with a complex 
+C                   fenestration control function.
+C                 iCFCactuator(?,1)=0 actuates shade layer ON/OFF
+C                                  =1 actuates slat angle of slat-type shade
+C                                  =2 actuates both shade layer ON/OFF status
+C                                   and slat angle (for schedule only)
+C                 iCFCactuator(?,2) is the zone index
+C                 iCFCactuator(?,3) is the CFC type
 
 C nbcdt | - Give the number of control day types for each domain.
 C npcdt |   The special case of 0 implies the usual 
 C nfcdt |   Weekday/Saturday/Sunday combination.
 C necdt |   
 C nocdt |   
+C nCFCctldaytypes |
 
 C ibcdv | - Give the dates of validity (in year day number format)
 C ipcdv |   for each day type.
 C ifcdv | 
 C iecdv |   
 C iocdv |   
+C iCFCctldatevalid |
 
 C nbcdp | - Give the number of distinct control periods during each
 C npcdp |   day type.   During these periods different control laws 
 C nfcdp |   can prevail.
 C necdp |
 C nocdp |
+C nCFCdayctlperiods |
 
 C tbcps | 
 C tpcps | - Give the start time for each period.
 C tfcps |
 C tecps |
 C tocps |
+C CFCctlperiodstart |
 
 C ibctyp |- Defines the controller type for each building control function
 C           for day type, and period:
@@ -231,17 +275,30 @@ C          33: direct normal solar radiation, actuates mass flow rate
 C          34: relative humidity outdoor air, actuates mass flow rate
 C iectyp | 1: Senses voltage actuates VAR
 C iectype| 2: Senses VA actuates ??
+C iCFCctltype |- Defines the controller type for each complex fenestration
+C                control function, day type, and period:
+C                0: not active for complex fenestration control.
+C                1: senses temperature, actuates shade ON/OFF
+C                2: senses temperature, actuates slat angle
+C                3: senses solar radiation, actuates shade ON/OFF
+C                4: senses solar radiation, actuates slat angle
+C                5: senses wind speed, actuates shade ON/OFF
+C                6: senses wind directions, actuates shade ON/OFF
+C                7: no sensor, schedule only
 
 C ibclaw |- Defines the control law which relates the sensor to
 C ipclaw |  the actuator.  A number of control laws are active
 C ifclaw |  and these are defined in routines BCTL, PCTL and FCTL.
 C ioclaw |
+C iCFCctllaw | - Complex fenestration control law: 1 - Basic control
+C                                                  2 - Schedule
 
 C bmiscd |- Hold data required by the control laws. ?MISCD(?,?,?,1)
 C pmiscd |  defines the total number of such items to be read.
 C fmiscd |  In the case of thermophysical properties substitution
 C emiscd |  items 3-5 are the MLC indices for each of the 3 surfaces.
 C omiscd |
+C CFCmiscdata |
 
 C iasocc   1st..n connection index for each mass flow connection 
 C          associated with a component flow control.  Use with 
@@ -268,8 +325,6 @@ C espriou.h provides currentfile.
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
       common/fctl4/iasocc(MCF,MCMP),nfsup(MCF)
       common/glbctl/global,glbrwd
       COMMON/PBYDAT/PBYFIL,NSCVP,IPS
@@ -284,14 +339,16 @@ C espriou.h provides currentfile.
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
-
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
       DIMENSION IVA(MCOM),RVA(misc)
-      CHARACTER HDG*5,ctldoc*248,LCTLF*72,OUTSTR*124,SSTR*72
+      CHARACTER HDG*5,ctldoc*248,LCTLF*72,OUTSTR*124,SSTR*96
       CHARACTER PERST1*14,PERST2*44,PERST3*44,NODID*12,
      &          WORD*20,CMPID*12,NDPOS*12,NDNEG*12
       character dllsubr*12,dllmesg*124,outs*124,t40*40
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248,LOUTSTR*248
+      character LOUTSTR*248
       logical close,pbyfil,bfngn,pcfngn,global,glbrwd,dll
 
       logical first_run_done
@@ -354,10 +411,10 @@ C in the data.
         GOTO 9
       ENDIF
 
-C Read heading * BUILDING or * PLANT or *MAS *POW  *OPTor *SYSTEM. After last 
-C item of a control function or plant loop is read it will loop back 
-C here and this may the end of the file so do not warn user and do 
-C not pass back ier.
+C Read heading * BUILDING or * PLANT or *MAS *POW  *OPT or *SYSTEM or * CFC.
+C After last item of a control function or plant loop is read it will
+C loop back here and this may the end of the file so do not warn user
+C and do not pass back ier.
   2   CALL STRIPC(IUNIT,OUTSTR,0,ND,0,'control name',IERV)
       if(IERV.eq.2)then
         GOTO 9
@@ -373,7 +430,8 @@ C not pass back ier.
      & (hdg.ne.'* mas'.and.hdg.ne.'* Mas'.and.hdg.ne.'* MAS').and.
      &(hdg.ne.'* pow'.and.hdg.ne.'* Pow'.and.hdg.ne.'* POW').and.
      &(hdg.ne.'* sys'.and.hdg.ne.'* Sys'.and.hdg.ne.'* SYS').and.
-     &(hdg.ne.'* opt'.and.hdg.ne.'* Opt'.and.hdg.ne.'* OPT'))then
+     &(hdg.ne.'* opt'.and.hdg.ne.'* Opt'.and.hdg.ne.'* OPT').and.
+     &(hdg.ne.'* cfc'.and.hdg.ne.'* Cfc'.and.hdg.ne.'* CFC'))then
 
         write(outs,'(3a)') 'Control file ',LCTLF(1:lnblnk(LCTLF)),
      &    ' unexpected end of file sensed.'
@@ -399,10 +457,12 @@ C not pass back ier.
       if(hdg.eq.'* pow'.or.hdg.eq.'* Pow'.or.hdg.eq.'* POW')iborp=5
       if(hdg.eq.'* opt'.or.hdg.eq.'* Opt'.or.hdg.eq.'* OPT')iborp=6
       if(hdg.eq.'* fuz'.or.hdg.eq.'* Fuz'.or.hdg.eq.'* FUZ')GOTO 7
+      if(hdg.eq.'* cfc'.or.hdg.eq.'* Cfc'.or.hdg.eq.'* CFC')iborp=7
       if(iborp.eq.2)goto 11
       if(iborp.eq.3)goto 12
       if(iborp.eq.5)goto 18
       if(iborp.eq.6)goto 19
+      if(iborp.eq.7)goto 21
       global=.false.
       if(iborp.eq.4)global=.true.
       if(iborp.eq.4)goto 113
@@ -522,18 +582,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(NBCDT(II).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &      ' The function day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,78)NBCDT(II)
-  78        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For building control')
+          CALL EDISP(ITRU,' the following day types have been defined')
+          DO 78 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 78       CONTINUE
         ENDIF
 
         nn=nbcdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=NBDAYTYPE
         do 20 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
@@ -595,7 +652,6 @@ C Reporting:
               IF(IER.NE.0)GOTO 99
             ENDIF
 
-
 C Set building-side function generator flag.
             if(ibsn(ii,1).eq.-6)then
                bfngn=.true.
@@ -604,7 +660,7 @@ C Set building-side function generator flag.
    30     CONTINUE
 
 C Reporting of all periods in this day type (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,0,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,0,II,JJ)
    20   CONTINUE
    10 CONTINUE
 
@@ -795,18 +851,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(npcdt(ii).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &      ' The loop day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,378)npcdt(ii)
- 378        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For plant control')
+          CALL EDISP(ITRU,' the following day types have been defined')
+          DO 378 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 378       CONTINUE
         ENDIF
 
         nn=npcdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 50 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'validity',IER)
@@ -920,7 +973,7 @@ C Set plant-side function generator flag.
    60     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,1,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,1,II,JJ)
    50   continue
    40 continue
       goto 15
@@ -1031,18 +1084,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(nfcdt(ii).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &    ' The function day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,388)nfcdt(ii)
- 388        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For mass flow network control')
+          CALL EDISP(ITRU,' The following day types have been defined')
+          DO 788 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 788       CONTINUE
         ENDIF
 
         nn=nfcdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 71 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
@@ -1125,7 +1175,7 @@ C Get date strings. For this test assume some values.
    72     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,2,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,2,II,JJ)
    71   continue
 
 C If control component active read connections.
@@ -1164,12 +1214,17 @@ C Remember connection index for this -4 associated control.
             iasocc(ii,ICCN)=ICNN
             nfsup(ii)=nsup
             if(nsup.eq.0)then
+
+C Debug.
 C              write(6,*) ' supplementary node data zeroed...'
+
               NDSCNN(ICNN,1)=0
             else
 C If supplementary node names for this component read them.
-C Debug...
+
+C Debug.
 C              write(6,*) ' supplementary node names to be read in...'
+
               do 91 isup=1,nsup
                 CALL EGETW(OUTSTR,KG,WORD,'W','suppl node',IER)
                 NODID=WORD(1:12)
@@ -1278,18 +1333,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(necdt(ii).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &        ' The day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,578)necdt(ii)
- 578        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For electrical control')
+          CALL EDISP(ITRU,' The following day types have been defined')
+          DO 578 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 578      CONTINUE
         ENDIF
 
         nn=necdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 57 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'validity',IER)
@@ -1362,7 +1414,7 @@ C Write out string describing the controller type.
    67     continue
 
 C Reporting (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,4,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,4,II,JJ)
    57   continue
    47 continue
 
@@ -1449,18 +1501,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(ngcdt(ii).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &        ' The day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,488)ngcdt(ii)
- 488        FORMAT(' There have been ',I2,' day type(s) defined.')
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For global control')
+          CALL EDISP(ITRU,' The following day types have been defined')
+          DO 478 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 478      CONTINUE
         ENDIF
 
         nn=ngcdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 89 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
@@ -1619,18 +1668,15 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
-          IF(NOCDT(II).EQ.0)THEN
-            CALL EDISP(ITRU,
-     &      ' The function day types are Weekdays, Saturdays & Sundays')
-          ELSE
-            WRITE(OUTSTR,'(a,i2,a)')' There have been ',NOCDT(II),
-     &        ' day types defined.'
-            CALL EDISP(ITRU,OUTSTR)
-          ENDIF
+          CALL EDISP(ITRU,' For global control')
+          CALL EDISP(ITRU,' The following day types have been defined')
+          DO 678 IDTY=1,NBDAYTYPE
+            call edisp(ITRU,CALENTAG(idty))
+ 678      CONTINUE
         ENDIF
 
         nn=nocdt(ii)
-        if(nn.eq.0)nn=3
+        if(nn.eq.0)nn=nbdaytype
         do 200 j=1,nn
           jj=j
           CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
@@ -1699,14 +1745,213 @@ C<<<<<<<Confirm the 0 to 1 range check >>>>>>>>>
   300     CONTINUE
 
 C Reporting of all periods in this day type (compacted data list):
-          IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ,iier)
+          IF(ITRC.GE.1)call lstcntld(itru,5,II,JJ)
   200   CONTINUE
   100 CONTINUE
 
-C Check that NCF, NCL, NCC, NOF and NGF are zero.  If so there may 
-C be more information to be read.
+C Complex fenestration control
+  
+C  Establish complex fenestration control regime notes (CFCctldoc) 
+C and number of control functions (nCFCctlloops).
+   21 CALL LSTRIPC(IUNIT,LOUTSTR,0,ND,1,
+     &      'complex fen. control notes',IER)
+      CFCctldoc=LOUTSTR
+
+      CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'no cntrl loops',IER)
+      KG=0
+      CALL EGETWI(OUTSTR,KG,nCFCctlloops,-1,MCF,'F','no loops',IER)
+      IF(IER.NE.0)GOTO 99
+
+C Reporting:
+      IF(ITRC.GE.1)THEN
+        CALL EDISP(ITRU,' ')
+        WRITE(OUTSTR,2501)nCFCctlloops
+2501    FORMAT(' Within the current model',I3,' control loops',
+     &         ' have been specified. ')
+        CALL EDISP(ITRU,OUTSTR)
+        CALL EDISP(ITRU,' The overall project control is ')
+        CALL EDISP248(ITRU,ctldoc,72)
+        CALL EDISP(ITRU,' and the complex fenestration control is')
+        CALL EDISP248(ITRU,CFCctldoc,72)
+        CALL EDISP(ITRU,' ')
+      ENDIF
+
+      if(nCFCctlloops.le.0)goto 13
+
+c For each control function.
+      DO 710 I=1,nCFCctlloops
+        II=I
+        ICF=II
+
+C Read header : * CONTROL FUNCTION.
+        CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'* CONTROL ',IER)
+        IF(IER.NE.0)GOTO 99
+        HDG=OUTSTR(1:5)
+        IF(HDG.NE.'* CON'.AND.HDG.NE.'* Con'.AND.HDG.NE.'* con')THEN
+          CALL USRMSG(' ',' * CONTROL string not found ','W')
+          GOTO 1111
+        ENDIF
+
+C Read control functions information and perform checks. If 4 items
+C then new format file, otherwise old format so set IBSN(II,4)=0.
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'sensor',IER)
+        IF(IER.NE.0)GOTO 99
+        IF(ND.GE.3)THEN
+          KG=0
+          CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 1st',IER)
+          iCFCsensor(II,1)=IVAL
+          CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 2nd ',IER)
+          iCFCsensor(II,2)=IVAL
+          CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor 3rd ',IER)
+          iCFCsensor(II,3)=IVAL
+          IF(ND.EQ.4)THEN
+            CALL EGETWI(OUTSTR,KG,IVAL,0,0,'-','sensor pnter',IER)
+            iCFCsensor(II,4)=IVAL
+          ELSE
+            iCFCsensor(II,4)=0
+          ENDIF
+          IF(IER.NE.0)GOTO 99
+
+C Range checking. TODO: VERIFY THIS FOR CFC sensors
+          if((iCFCsensor(ii,1).lt.-6.or.iCFCsensor(ii,1).gt.mcom)
+     &        .and.iCFCsensor(ii,1).ne.-99)goto 1003
+          if(abs(iCFCsensor(ii,4)).gt.mcf)goto  1002
+          if((iCFCsensor(ii,2).lt.0.or.iCFCsensor(ii,3).lt.0)
+     &        .and.iCFCsensor(ii,1).ne.-99)goto 1004
+        ENDIF
+
+C Reporting: Get a string describing the current sensor based on common.
+        IF(ITRC.GE.1)THEN
+          IIS=II
+          CALL EVCNTRL(6,IIS,1,1,'S',SSTR)
+          WRITE(OUTSTR,65)II,SSTR(1:LNBLNK(SSTR))
+          CALL EDISP(ITRU,' ')
+          CALL EDISP(ITRU,OUTSTR)
+        ENDIF
+
+        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'actuator',IER)
+        IF(IER.NE.0)GOTO 99
+        IF(ND.GE.3)THEN
+          KG=0
+          CALL EGETWI(OUTSTR,KG,IV,-3,MCOM,'F','actuator 1st',IER)
+          iCFCactuator(II,1)=IV
+          CALL EGETWI(OUTSTR,KG,IV,0,MCOM,'F','actuator 2nd',IER)
+          iCFCactuator(II,2)=IV
+          CALL EGETWI(OUTSTR,KG,IV,0,0,'-','actuator 3rd',IER)
+          iCFCactuator(II,3)=IV
+          IF(IER.NE.0)GOTO 99
+
+C Range checking.
+          if(iCFCactuator(ii,1).lt.0.or.
+     &     iCFCactuator(ii,1).gt.2)goto 1005
+          if(iCFCactuator(ii,2).le.0.or.iCFCactuator(ii,3).lt.0.or.
+     &     iCFCactuator(ii,2).gt.mcom.or.
+     &     iCFCactuator(ii,3).gt.mcfc)goto 1005
+        ENDIF
+
+C Reporting: Get a string describing the actuator based on common block.
+        IF(ITRC.GE.1)THEN
+          IIS=II
+          CALL EVCNTRL(6,IIS,1,1,'A',SSTR)
+          WRITE(OUTSTR,775)II,SSTR(1:LNBLNK(SSTR))
+ 775      FORMAT(' The actuator for function ',I2,' is ',a)
+          CALL EDISP(ITRU,OUTSTR)
+        ENDIF
+
+C Day types.
+        CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'day types',IER)
+        KG=0
+        CALL EGETWI(OUTSTR,KG,nCFCctldaytypes(II),0,MCDT,'F',
+     &              'number of control day type(s)',IER)
+        IF(IER.NE.0)GOTO 99
+
+C Reporting:
+        IF(ITRC.GE.1)THEN
+          IF(nCFCctldaytypes(II).EQ.0)THEN
+            CALL EDISP(ITRU,
+     &      ' The function day types are Weekdays, Saturdays & Sundays')
+          ELSE
+            WRITE(OUTSTR,778)nCFCctldaytypes(II)
+ 778        FORMAT(' There have been ',I2,' day type(s) defined.')
+            CALL EDISP(ITRU,OUTSTR)
+          ENDIF
+        ENDIF
+
+        nn=nCFCctldaytypes(ii)
+        if(nn.eq.0)nn=3
+        do 720 j=1,nn
+          jj=j
+          CALL STRIPC(IUNIT,OUTSTR,2,ND,1,'validity',IER)
+          IF(IER.NE.0)GOTO 99
+          KG=0
+          CALL EGETWI(OUTSTR,KG,iCFCctldatevalid(II,JJ,1),1,365,'F',
+     &              'control activation start day number',IER)
+          CALL EGETWI(OUTSTR,KG,iCFCctldatevalid(II,JJ,2),1,365,'F',
+     &              'control activation end day number',IER)
+          IF(iCFCctldatevalid(II,JJ,2).LT.
+     &     iCFCctldatevalid(II,JJ,1))THEN
+            CALL USRMSG(' ',' Start & End dates reversed.','W')
+            GOTO 2000
+          ENDIF
+
+          CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'periods',IER)
+          KG=0
+          CALL EGETWI(OUTSTR,KG,nCFCdayctlperiods(II,JJ),1,MCDP,'F',
+     &              'control periods during day',IER)
+          IF(IER.NE.0)GOTO 99
+
+          LL=nCFCdayctlperiods(II,JJ)
+          DO 730 K=1,LL
+            KK=K
+            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'control',IER)
+            IF(IER.NE.0)GOTO 99
+            KG=0
+            CALL EGETWI(OUTSTR,KG,iCFCctltype(II,JJ,KK),0,99,'W',
+     &              'controller type (1st item)',IER)
+            CALL EGETWI(OUTSTR,KG,iCFCctllaw(II,JJ,KK),0,99,'W',
+     &              'control law (2nd item)',IER)
+            CALL EGETWR(OUTSTR,KG,CFCctlperiodstart(II,JJ,KK),
+     &                   0.,24.,'F','activation time',IER)
+            IF(IER.NE.0)GOTO 99
+
+            IF(KK.EQ.1)THEN
+              call eclose(CFCctlperiodstart(II,JJ,KK),0.0,0.001,close)
+              IF(.NOT.close)THEN
+                CALL USRMSG(' ',' 1st period must begin @ 0!','W')
+                GOTO 2000
+              ENDIF
+            ELSEIF(CFCctlperiodstart(II,JJ,KK-1).GE.
+     &             CFCctlperiodstart(II,JJ,KK))THEN
+              CALL USRMSG(' ',' periods out of order','W')
+              GOTO 2000
+            ENDIF
+
+            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'data next',IER)
+            IF(IER.NE.0)GOTO 99
+            KG=0
+            CALL EGETWR(OUTSTR,KG,CFCmiscdata(II,JJ,KK,1),0.,
+     &       FLOAT(MISC),'F','number of data items for function',IER)
+            NITEMS=INT(CFCmiscdata(II,JJ,KK,1))
+
+            IF(NITEMS.GT.0)THEN
+              call egetwra(iunit,RVA,nitems,0.,0.,'-','misc items',
+     &          ierv)
+              do 742 ij=2,nitems+1
+                CFCmiscdata(II,JJ,KK,ij)=RVA(ij-1)
+ 742          continue
+              IF(IER.NE.0)GOTO 99
+            ENDIF
+  730     CONTINUE
+
+C Reporting of all periods in this day type (compacted data list):
+          IF(ITRC.GE.1)call lstcntld(itru,6,II,JJ)
+  720   CONTINUE
+  710 CONTINUE
+  
+C Check that NCF, NCL, NCC, NOF, NGF and nCFCctlloops are zero. 
+C If so there may be more information to be read.
    15 if(ncf.eq.0.or.ncl.eq.0.or.ncc.eq.0.or.ngf.eq.0.or.
-     &   nof.eq.0)goto 2
+     &   nof.eq.0.or.nCFCctlloops.eq.0)goto 2
 
 C At present there is no structure to use a user defined control
 C file - therefore set NCF=0, NCL=0, NCC=0, NGF=0, NOF=0.
@@ -1715,6 +1960,7 @@ C file - therefore set NCF=0, NCL=0, NCC=0, NGF=0, NOF=0.
       if(ncc.eq.-1)ncc=0
       if(ngf.eq.-1)ngf=0
       if(nof.eq.-1)nof=0
+      if(nCFCctlloops.eq.-1)nCFCctlloops=0
       
 C Return.
       goto 9
@@ -1858,7 +2104,8 @@ C Low level I/O error. Close file before exiting.
       END
 
 c ******************** EZCTLI ********************
-c EZCTLI: Zeroes all control data in common BCTL, CCTL, FCTL, OCTL and GCTL.
+c EZCTLI: Zeroes all control data in common BCTL, CCTL, FCTL, OCTL, GCTL
+C and CFCCTL
       SUBROUTINE EZCTLI
 #include "building.h"
 #include "net_flow.h"
@@ -1960,11 +2207,30 @@ c      COMMON/idrhctl1/rhspt(MCOM),irhct(MCOM)
   440   continue
   420 continue
 
+      nCFCctlloops=0
+      do 520 i=1,mcf
+        do 530 j=1,4
+          iCFCsensor(i,j)=0
+          if(j.eq.4)goto 530
+          iCFCactuator(i,j)=0
+  530   continue
+        nCFCctldaytypes(i)=0
+        do 540 j=1,MCDT
+          nCFCdayctlperiods(i,j)=0
+          do 550 k=1,MCDP
+            do 560 l=1,misc
+              CFCmiscdata(i,j,k,l)=0.0
+  560       continue
+  550     continue
+  540   continue
+  520 continue
+  
+  
       RETURN
       END
 
 C ******************** EVCNTRL 
-C EVCNTRL: Decodes and returns a string (72 char) describing a config
+C EVCNTRL: Decodes and returns a string (96 char) describing a config
 C control file sensors, actuator, control types, control laws.
       SUBROUTINE EVCNTRL(icfoc,II,JJ,KK,WHICH,SSTR)
 #include "building.h"
@@ -1972,6 +2238,8 @@ C control file sensors, actuator, control types, control laws.
 #include "plant.h"
 #include "net_flow.h"
 #include "control.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -1985,13 +2253,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
-
-      CHARACTER SSTR*72,SSTRB*48
+      CHARACTER SSTR*96,SSTRB*48
       CHARACTER WHICH*1,ZN*12
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,SN*12
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -2010,6 +2272,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
       if(icfoc.eq.3)goto 46     ! global control
       if(icfoc.eq.4)goto 45     ! electrical control
       if(icfoc.eq.5)goto 47     ! optical control
+      if(icfoc.eq.6)goto 48     ! complex fenestration control
   42  IF(WHICH.EQ.'S'.OR.WHICH.EQ.'s')THEN
 
 C Ideal Sensor.
@@ -2158,10 +2421,17 @@ C Flow actuator.
         SSTR='undefined actuation'
         IF(IFAN(II,1).EQ.-3)THEN
           L=IFAN(II,2)
-          WRITE(SSTR,'(A,i3,1x,5A)')'flow connection: ',
-     &      L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
-     &      NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),' via ',
-     &      CMNAM(ITPCON(L))(1:lnblnk(CMNAM(ITPCON(L))))
+          if(ITPCON(L).ne.0)then
+            WRITE(SSTR,'(A,i3,1x,5A)')'flow connection: ',
+     &        L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
+     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),' via ',
+     &        CMNAM(ITPCON(L))(1:lnblnk(CMNAM(ITPCON(L))))
+          else
+            WRITE(SSTR,'(A,i3,1x,4A)')'flow connection: ',
+     &        L,NDNAM(NODPS(L))(1:lnblnk(NDNAM(NODPS(L)))),' - ',
+     &        NDNAM(NODNE(L))(1:lnblnk(NDNAM(NODNE(L)))),
+     &        ' via unknown component.'
+          endif
         ELSEIF(IFAN(II,1).EQ.-4)THEN
           L=IFAN(II,2)
           if(L.ne.0)then
@@ -2225,7 +2495,8 @@ C Return actuator type. << check to see if any other values allowed >>
         SSTR='undefined law '
         IF(igctyp(II,JJ,KK).eq.1)SSTR= 'Global on-off controller'
         IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global capacity controller'
-        IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global schedule on controller'
+        IF(igctyp(II,JJ,KK).eq.3)SSTR= 'Global schedule on controller'
+        IF(igctyp(II,JJ,KK).eq.5)SSTR= 'Global multisensor'
       ENDIF
       RETURN
 
@@ -2268,10 +2539,67 @@ C Ideal Control law.
       ENDIF
       RETURN
 
+  48  IF(WHICH.EQ.'S'.OR.WHICH.EQ.'s')THEN
+
+C Complex fenestration sensor.
+        icsn(1)=iCFCsensor(II,1)
+        icsn(2)=iCFCsensor(II,2)
+        icsn(3)=iCFCsensor(II,3)
+        icsn(4)=iCFCsensor(II,4)
+        call decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
+
+      ELSEIF(WHICH.EQ.'A'.OR.WHICH.EQ.'a')THEN
+
+C Actuator.
+        IF(iCFCactuator(II,2).GT.0)THEN
+          write(zn,'(a)') zname(iCFCactuator(II,2))
+          if(iCFCactuator(II,3).gt.0)then
+            write(sn,'(i3)')iCFCactuator(II,3)
+          else
+            sn='-'
+          endif
+          IF(iCFCactuator(II,1).EQ.0)THEN
+            WRITE(SSTR,'(5a)')'Shading ON/OFF in CFC type',
+     &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'
+          ELSEIF(iCFCactuator(II,1).EQ.1)THEN
+            WRITE(SSTR,'(5a)')'Slat angle in CFC type',
+     &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'
+          ELSEIF(iCFCactuator(II,1).EQ.2)THEN
+            WRITE(SSTR,'(5a)')'Shade ON/OFF and slat angle(schedule)',
+     &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'     
+          ENDIF
+        ENDIF
+        
+      ELSEIF(WHICH.EQ.'T'.OR.WHICH.EQ.'t')THEN
+
+C Complex fenestration control type.
+        SSTR='undefined > complex fenestration '
+        IF(iCFCctltype(II,JJ,KK).eq.1)
+     &         SSTR= 'temp > shd ON/OFF '
+        IF(iCFCctltype(II,JJ,KK).eq.2)
+     &         SSTR= 'temp > slat angle '
+        IF(iCFCctltype(II,JJ,KK).eq.3)
+     &         SSTR= 'rad > shd ON/OFF '
+        IF(iCFCctltype(II,JJ,KK).eq.4)
+     &         SSTR= 'rad > slat angle '
+        IF(iCFCctltype(II,JJ,KK).eq.5)
+     &         SSTR= 'wnd-spd >shd ON/OFF'
+        IF(iCFCctltype(II,JJ,KK).eq.6)
+     &         SSTR= 'wnd-dir >slat angle'
+        IF(iCFCctltype(II,JJ,KK).eq.7)
+     &         SSTR= 'none > sched. '
+      ELSEIF(WHICH.EQ.'L'.OR.WHICH.EQ.'l')THEN
+
+C Complex fenestration control law.
+        SSTR='undefined law '
+        call usrmsg('should have called EVCNTRLAW',' ','W')        
+      ENDIF
+      return
+      
       END
 
 C ******************** EVCNTRLAW 
-C EVCNTRLAW: Decodes and returns two strings (72 char & 248 char) describing
+C EVCNTRLAW: Decodes and returns two strings (96 char & 248 char) describing
 C an esp-r control file control laws for zone/plant/flow/electrical.
       SUBROUTINE EVCNTRLAW(icfoc,II,JJ,KK,SSTR,message)
 #include "building.h"
@@ -2283,7 +2611,7 @@ C an esp-r control file control laws for zone/plant/flow/electrical.
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
-      CHARACTER SSTR*72,SSTRB*48,SSTR1*72,SSTRB1*48
+      CHARACTER SSTR*96,SSTRB*48,SSTR1*96,SSTRB1*48
       CHARACTER NDNAM*12
 
       dimension cm(misc)  ! for passing miscel control data
@@ -3053,7 +3381,7 @@ C Append the sensor msg to the end of lmsg and increment lx position.
 
 C Tell the user about the multi sensor data.
           call SDELIM(lmsg,message,'S',IW)
-C          call edisp248(6,message,80)
+          call edisp248(6,message,80)
 
 C Nicol Occupant resopnse model for control
         elseif(IFCLAW(II,JJ,KK).EQ.4)then
@@ -3093,8 +3421,59 @@ C than -3 allowed for sensor >>.
         SSTR='undefined law '
         IF(igctyp(II,JJ,KK).eq.1)SSTR= 'Global on-off controller'
         IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global capacity controller'
-        IF(igctyp(II,JJ,KK).eq.2)SSTR= 'Global schedule on controller'
+        IF(igctyp(II,JJ,KK).eq.3)SSTR= 'Global schedule on controller'
         lmsg='not yet coded for global controls.'
+
+C Multisensing controller
+
+        IF(igctyp(II,JJ,KK).eq.5)THEN
+          SSTR= 'Global multisensor controller'
+          DO 90 I=1,MISC
+            cm(I)=gmiscd(II,JJ,KK,I)
+ 90       CONTINUE
+          nclp=(nint(cm(1)))/3
+          LMSG='Currently sensing'
+          DO 5050 ICLP=1,NCLP
+            IF(NINT(CM(ICLP*3-1)).EQ.1)THEN
+              MSG2=' mass flow loop #'
+            ELSEIF(NINT(CM(ICLP*3-1)).EQ.2)THEN
+              MSG2=' plant loop #'
+            ENDIF
+            MSG1=' '
+            IF(ICLP.NE.NCLP.OR.ICLP.EQ.1)THEN
+              IADR=NINT(CM(ICLP*3+1))
+              IF(IADR.EQ.1)THEN
+                msg1=' AND'
+              ELSEIF(IADR.EQ.2)THEN
+                msg1=' OR'
+              ELSEIF(IADR.EQ.3)THEN
+                msg1=' acting as NOT and'
+              ELSEIF(IADR.EQ.4)THEN
+                msg1=' acting as SLAVE and'
+              ELSEIF(IADR.EQ.5)THEN
+                msg1=' acting as MAX and'
+              ELSEIF(IADR.EQ.6)THEN
+                msg1=' acting as MIN and'
+              ENDIF
+            ENDIF
+            NLPS=NINT(CM(ICLP*3))
+            LN1=LNBLNK(MSG1)
+            LN2=LNBLNK(MSG2)
+            LN=LNBLNK(LMSG)
+            WRITE(LMSG,'(3A,i4,2a)')LMSG(1:LN),MSG2(1:LN2),' ',
+     &      nlps,' ',MSG1(1:LN1)
+ 5050     CONTINUE
+	  IF(NINT(CM(NCLP*3+1)).EQ.1)THEN
+	    MSG2='Actuates massflow loop #'
+	  ELSEIF(NINT(CM(NCLP*3+1)).EQ.2)THEN
+	    MSG2='Actuates plant loop #'
+	  ENDIF
+          IALP=NINT(CM(NCLP*3+2))
+          LN=LNBLNK(LMSG)
+          LN2=LNBLNK(MSG2)
+          WRITE(LMSG,'(4A,I4)')LMSG(1:LN),'. ',MSG2(1:LN2),' ',IALP
+        ENDIF
+        call SDELIM(lmsg,message,'S',IW)
         return
       ENDIF
 
@@ -3168,21 +3547,72 @@ C Only law 2 for bidirectional data will be used at the moment (May 2008)
         call SDELIM(lmsg,message,'S',IW)
         return
       endif
+
+      if(icfoc.eq.6)then
       
+C Ideal complex fenestration control law.
+        SSTR='undefined control        '
+        IF(iCFCctllaw(II,JJ,KK).EQ.1)then
+          SSTR='basic control        '
+          msg1=' basic control:'
+          cm(1)=CFCmiscdata(II,JJ,KK,1)
+          cm(2)=CFCmiscdata(II,JJ,KK,2)
+          cm(3)=CFCmiscdata(II,JJ,KK,3)
+          cm(4)=CFCmiscdata(II,JJ,KK,4)
+          cm(5)=CFCmiscdata(II,JJ,KK,5)
+
+          if(nint(cm(1)).eq.2)then
+
+C Actuator is shading ON/OFF state.
+            write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1)') 
+     &        msg1,' [C] shade ON (close) setpoint ',cm(2),
+     &        '[C] shade OFF (open) setpoint ',cm(3)
+          elseif(nint(cm(1)).eq.4)then
+
+C Actuator is slat angle.
+            write(lmsg,'(2a,f9.1,a,f9.1,a,f9.1,a,f9.1)') 
+     &        msg1,' [C] shade ON (close) setpoint ',cm(2),
+     &        '[C] shade OFF (open) setpoint ',cm(3),
+     &        '[deg] close slat angle ',cm(4),
+     &        '[deg] open slat angle ',cm(5)
+          endif
+          call SDELIM(lmsg,message,'S',IW)
+        ELSEIF(iCFCctllaw(II,JJ,KK).EQ.2)then
+          SSTR='schedule        '
+          msg1=' schedule:'
+          cm(1)=CFCmiscdata(II,JJ,KK,1)
+          cm(2)=CFCmiscdata(II,JJ,KK,2)
+          cm(3)=CFCmiscdata(II,JJ,KK,3)
+
+          write(lmsg,'(2a,i3,a,f9.1)') 
+     &        msg1,' shade ON (1) or OFF (0) ',nint(cm(2)),
+     &        '[deg] slat angle ',cm(3)
+          call SDELIM(lmsg,message,'S',IW)
+
+        ENDIF
+      endif  
+        
       END
 
 C ******** LSTCNTLD
-C List one day type of a building/plant/flow/global/optical control. 
-      SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ,IER)
+C List one day type of a building/plant/flow/global/optical/
+C complex fenestration control. 
+      SUBROUTINE LSTCNTLD(itru,icfoc,II,JJ)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
 
+C Parameters
+      integer itru    ! unit to write error
+      integer icfoc   ! control domain to work with 
+      integer II      ! index of the control
+      integer JJ      ! index of day type
+
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
-      character outs*124,SSTR*72,TMP*72,LTMP*248
+      character outs*124,SSTR*96,TMP*96,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       character outsa*84,outsb*84,outsc*84
 
@@ -3207,12 +3637,15 @@ C List data for function II and day type JJ.
         IBD=IOCDV(II,JJ,1)
         IED=IOCDV(II,JJ,2)
         LL=NOCDP(II,JJ)
+      elseif(icfoc.eq.6)then
+        IBD=iCFCctldatevalid(II,JJ,1)
+        IED=iCFCctldatevalid(II,JJ,2)
+        LL=nCFCdayctlperiods(II,JJ)
       endif
       NTSPH=1
       CALL EPERSTR(IYEAR,IBD,1,IED,24,
-     &       NTSPH,2,0,PERST1,PERST2,PERST3,IER)
+     &       NTSPH,2,0,PERST1,PERST2,PERST3,IIER)
 
-c      call edisp(itru,' ')
       if(icfoc.eq.0)then
         nnd=nbcdt(ii)
       elseif(icfoc.eq.1)then
@@ -3223,6 +3656,8 @@ c      call edisp(itru,' ')
         nnd=ngcdt(ii)
       elseif(icfoc.eq.5)then
         nnd=nocdt(ii)
+      elseif(icfoc.eq.6)then
+        nnd=nCFCctldaytypes(ii)
       endif
       if(nnd.eq.0.and.JJ.eq.1)then
         WRITE(outs,'(3A,I2,A)')' Weekday control is valid ',
@@ -3260,6 +3695,10 @@ c      call edisp(itru,' ')
         elseif(icfoc.eq.5)then
           WRITE(outsa,83)K,TOCPS(II,JJ,K),SSTR(1:21),TMP(1:21)
           NITEMS=INT(OMISCD(II,JJ,K,1))
+        elseif(icfoc.eq.6)then
+          WRITE(outsa,83)K,CFCctlperiodstart(II,JJ,K),
+     &                   SSTR(1:21),TMP(1:21)
+          NITEMS=INT(CFCmiscdata(II,JJ,K,1))
         endif
   83    FORMAT(I4,F6.2,' ',a,' ',a)
 
@@ -3278,6 +3717,8 @@ C Print out first 9 miscellaneous data if applicable.
               write(outsb,84)(GMISCD(II,JJ,K,L),L=2,NITEMS+1)
             elseif(icfoc.eq.5)then
               write(outsb,84)(OMISCD(II,JJ,K,L),L=2,NITEMS+1)
+            elseif(icfoc.eq.6)then
+              write(outsb,84)(CFCmiscdata(II,JJ,K,L),L=2,NITEMS+1)
             endif
           else
             if(icfoc.eq.0)then
@@ -3290,6 +3731,8 @@ C Print out first 9 miscellaneous data if applicable.
               write(outsb,84)(GMISCD(II,JJ,K,L),L=2,10)
             elseif(icfoc.eq.5)then
               write(outsb,84)(OMISCD(II,JJ,K,L),L=2,10)
+            elseif(icfoc.eq.6)then
+              write(outsb,84)(CFCmiscdata(II,JJ,K,L),L=2,10)
             endif
           endif
   84      format(9F9.1)
@@ -3298,10 +3741,8 @@ C Print out first 9 miscellaneous data if applicable.
      &        outsc(1:lnblnk(outsc))
           CALL EDISP(ITRU,outs)
 
-C For zone & flow controls list out the verbose decoding of the misc items.
-          if(icfoc.eq.0)then
-            call edisp248(itru,ltmp,90)
-          elseif(icfoc.eq.2)then
+C For zone, flow and global controls list out the verbose decoding of the misc items.
+          if(icfoc.eq.0.or.icfoc.eq.2.or.icfoc.eq.3)then
             call edisp248(itru,ltmp,90)
           endif
         elseif(NITEMS.eq.0)then
@@ -3324,7 +3765,7 @@ C Decodesensor takes the 4 indices that define a sensor
 C and returns a descriptive string.
 C icfoc is the index of the control domain
 C icsn(5) is the array of indices
-C SSTR is the string (72 char) returned
+C SSTR is the string (96 char) returned
 C SSTRB is brief string (48 char) returned
       subroutine decodesensor(icfoc,icsn,SSTR,SSTRB,ier)
 #include "building.h"
@@ -3346,7 +3787,7 @@ C SSTRB is brief string (48 char) returned
 
       integer icfoc
       dimension icsn(5)
-      character sstr*72,sstrb*48
+      character sstr*96,sstrb*48
       CHARACTER ZN*12,NNAM*14,DESC*20
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
       CHARACTER sn*12
@@ -3386,11 +3827,18 @@ C Ideal Sensor.
           SSTR='senses the temperature of the current zone.'
           SSTRB='senses db T of the current zone.'
         ELSEIF(icsn(1).EQ.-2)THEN
-          write(zn,'(a)') zname(icsn(2))
-          WRITE(SSTR,'(3a)')'senses a mix of db T and MRT in ',
-     &      zn(1:lnblnk(zn)),'.'
-          WRITE(SSTRB,'(3a)')'senses mix db T & MRT in ',
-     &      zn(1:lnblnk(zn)),'.'
+          if(icsn(2).gt.0)then
+            write(zn,'(a)') zname(icsn(2))
+            WRITE(SSTR,'(3a)')'senses a mix of db T and MRT in ',
+     &        zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(3a)')'senses mix db T & MRT in ',
+     &        zn(1:lnblnk(zn)),'.'
+          else
+            WRITE(SSTR,'(2a)')'senses a mix of db T and MRT in ',
+     &        'the current zone.'
+            WRITE(SSTRB,'(2a)')'senses mix db T & MRT in ',
+     &        'the current zone.'
+          endif
         ELSEIF(icsn(1).EQ.-3)THEN
           IF(icsn(2).EQ.0)THEN
             SSTR='senses ambient dry bulb temperature.'
@@ -3700,6 +4148,93 @@ C<<<< Not sure if next line is needed
           SSTRB='senses UNKNOWN condition.'
         ENDIF
         
+      elseif(icfoc.eq.6)then
+C Complex fenestration Sensor.
+
+C Ideal Sensor.
+        IF(icsn(1).GT.0)THEN
+          write(zn,'(a)') zname(icsn(1))
+          if(icsn(2).gt.0)then
+            icc=IZSTOCN(icsn(1),icsn(2))
+            write(sn,'(a)') SSNAME(icc)
+          else
+            sn='-'
+          endif
+          IF(icsn(2).EQ.0)THEN
+            WRITE(SSTR,'(3a)') 'senses dry bulb temperature in ',
+     &        zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(3a)') 'senses dry bulb T in ',
+     &        zn(1:lnblnk(zn)),'.'
+          ELSEIF(icsn(2).GT.0.AND.icsn(3).EQ.0)THEN
+            WRITE(SSTR,'(5a)')  'senses temp at ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(5a)')  'senses T at ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+          ELSEIF(icsn(2).GT.0.AND.icsn(3).GT.0)THEN
+            WRITE(SSTR,'(5a)')'senses temp within ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+            WRITE(SSTRB,'(5a)')'senses T within ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+          ENDIF
+        ELSEIF(icsn(1).EQ.0)THEN
+          SSTR='no sensor - schedule only.'
+          SSTRB='no sensor - schedule only'
+        ELSEIF(icsn(1).EQ.-2)THEN
+          write(zn,'(a)') zname(icsn(2))
+          WRITE(SSTR,'(3a)')'senses a mix of db T and MRT in ',
+     &      zn(1:lnblnk(zn)),'.'
+          WRITE(SSTRB,'(3a)')'senses mix db T & MRT in ',
+     &      zn(1:lnblnk(zn)),'.'
+        ELSEIF(icsn(1).EQ.-3)THEN
+          IF(icsn(2).EQ.0)THEN
+            SSTR='senses ambient dry bulb temperature.'
+            SSTRB='senses ambient db T.'
+          ELSEIF(icsn(2).EQ.1)THEN
+            SSTR='senses the sol-air temperature.'
+            SSTRB='senses the sol-air T.'
+          ELSEIF(icsn(2).EQ.2)THEN
+            SSTR='senses wind speed.'
+            SSTRB='senses wind speed.'
+          ELSEIF(icsn(2).EQ.3)THEN
+            SSTR='senses wind direction.'
+            SSTRB='senses wind direction.'
+          ELSEIF(icsn(2).EQ.4)THEN
+            SSTR='senses dif hor rad.'
+            SSTRB='senses dif hor rad.'
+          ELSEIF(icsn(2).EQ.5)THEN
+            SSTR='senses dir nor rad.'
+            SSTRB='senses dir nor rad.'
+          ELSEIF(icsn(2).EQ.6)THEN
+            SSTR='senses ext rel hum.'
+            SSTRB='senses ext RH.'
+          ENDIF
+C        ELSEIF(icsn(1).EQ.-5)THEN
+C          WRITE(SSTR,65)icsn(2)
+C  65      FORMAT('reads from temporal file item.',I2)
+C          WRITE(SSTRB,66)icsn(2)
+C  66      FORMAT('reads temporal item.',I2)
+C        ELSEIF(icsn(1).EQ.-6)THEN
+C          SSTR='sensed value from function generator.'
+C          SSTRB='sensed value from func gen.'
+C        ELSEIF(icsn(1).EQ.-99)THEN
+C          SSTR=' construction substitution.'
+C          SSTRB=' MLC substitution.'
+        ELSEIF(icsn(1).EQ.-4)THEN
+          write(zn,'(a)') zname(icsn(2))
+          if(icsn(3).gt.0)then
+            icc=IZSTOCN(icsn(2),icsn(3))
+            write(sn,'(a)') SSNAME(icc)
+          else
+            sn='-'
+          endif
+          WRITE(SSTR,'(5a)')  'senses incident sol rad on ',
+     &    sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'
+          WRITE(SSTRB,'(5a)')  'senses sol rad on ',sn(1:lnblnk(sn)),
+     &        ' in ',zn(1:lnblnk(zn)),'.'
+        ELSE
+          SSTR='senses UNKNOWN condition.'
+          SSTRB='senses UNKNOWN condition.'
+        ENDIF
               
       endif
 
@@ -3719,7 +4254,6 @@ C control loops for legality.
 
       common/OUTIN/IUOUT,IUIN
       common/cctl/icascf(mcom)
-
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
@@ -3833,7 +4367,7 @@ C Senses data from a temporal file, 2nd item will temporal item.
       goto 9
 
 C Mixed temperature sensor.
-    5 if(isn2.lt.1.or.isn2.gt.ncomp)goto 1002
+    5 if(isn2.lt.0.or.isn2.gt.ncomp)goto 1002 ! if isn=0 sense current zone
       if(isn3.lt.0.or.isn3.gt.100)goto 1003
       goto 9
 
@@ -3914,7 +4448,6 @@ C Actuation on zone under consideration.
 
 C Actuation is on a zone node.
    14 if(ian1.ne.icfz)goto 1004
-   
 C To avoid classes with optical controls additional logic added. The initial code was:
 C  131 if(ian2.lt.0.or.ian2.gt.nzsur(ian1))goto 1005   
   131 if((ian2.lt.0.and.((nof.eq.0).or.(ian1.ne.-5))).or.
@@ -3923,7 +4456,8 @@ C  131 if(ian2.lt.0.or.ian2.gt.nzsur(ian1))goto 1005
       endif  
       if(ian3.lt.0)goto 1006
       if(ian2.eq.0)goto 20
-
+      if(isn2.eq.0)goto 20     ! necessary to avoid array out of bounds error in NELTS(isn1,isn2)
+      
 C If this called from simulator NELTS will have been
 C instanciated so do a further check if node is within
 C the number of layers in this construction.
@@ -3939,6 +4473,7 @@ c actuation is on a mass flow connection.
 
 c actuation is on a mass flow component.
    25 if((ian2.lt.0).or.((ian2.gt.ncnn).and.(ian2.gt.ncmp)))goto 1005
+
    20 continue
       endif         ! <- matches ' if ( nbp .gt. 0 ) then' ...
    10 continue

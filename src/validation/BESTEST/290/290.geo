@@ -1,51 +1,65 @@
-# geometry of 290 defined in: 290.geo
-GEN  290  290 describes a...  # type, name, descr
-      18       9   0.000    # vertices, surfaces, rotation angle
-#  X co-ord, Y co-ord, Z co-ord
-      0.00000     0.00000     0.00000  # vert   1
-      8.00000     0.00000     0.00000  # vert   2
-      0.00000     0.00000     2.70000  # vert   3
-      8.00000     0.00000     2.70000  # vert   4
-      0.50000     0.00000     0.20000  # vert   5
-      3.50000     0.00000     0.20000  # vert   6
-      0.50000     0.00000     2.20000  # vert   7
-      3.50000     0.00000     2.20000  # vert   8
-      4.50000     0.00000     0.20000  # vert   9
-      7.50000     0.00000     0.20000  # vert  10
-      4.50000     0.00000     2.20000  # vert  11
-      7.50000     0.00000     2.20000  # vert  12
-      0.00000     6.00000     0.00000  # vert  13
-      8.00000     6.00000     0.00000  # vert  14
-      0.00000     6.00000     2.70000  # vert  15
-      8.00000     6.00000     2.70000  # vert  16
-      4.00000     0.00000     2.70000  # vert  17
-      4.00000     0.00000     0.00000  # vert  18
-# no of vertices followed by list of associated vert
-  10,  1, 18, 17,  8,  6,  5,  7,  8, 17,  3,
-  10, 18,  2,  4, 12, 10,  9, 11, 12,  4, 17,
-   4,  2, 14, 16,  4,
-   4, 14, 13, 15, 16,
-   4, 13,  1,  3, 15,
-   4,  5,  6,  8,  7,
-   4,  9, 10, 12, 11,
-   5,  3, 17,  4, 16, 15,
-   5, 13, 14,  2, 18,  1,
-# unused index
- 0,0,0,0,0,0,0,0,0
-# surfaces indentation (m)
- 0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
-    3   0   0   0    # default insolation distribution
-# surface attributes follow: 
-# id  surface      geom  loc/  construction environment
-# no  name         type  posn  name         other side
-  1, South_Wall    OPAQ  VERT  LWextwall6   EXTERIOR       
-  2, South_Wall2   OPAQ  VERT  LWextwall6   EXTERIOR       
-  3, East_Wall     OPAQ  VERT  LWextwall6   EXTERIOR       
-  4, North_Wall    OPAQ  VERT  LWextwall6   EXTERIOR       
-  5, West_Wall     OPAQ  VERT  LWextwall6   EXTERIOR       
-  6, Window        TRAN  VERT  dg_glazing   EXTERIOR       
-  7, Window2       TRAN  VERT  dg_glazing   EXTERIOR       
-  8, Roof          OPAQ  CEIL  LWroof6      EXTERIOR       
-  9, Floor         OPAQ  FLOR  LWfloor6     GROUND         
-# base
-  9  0  0  0  0  0    48.00
+*Geometry 1.1,GEN,290 # tag version, format, zone name
+*date Wed Jul 22 16:27:35 2009  # latest file modification 
+290 describes a...
+# tag, X co-ord, Y co-ord, Z co-ord
+*vertex,0.00000,0.00000,0.00000  #   1
+*vertex,8.00000,0.00000,0.00000  #   2
+*vertex,0.00000,0.00000,2.70000  #   3
+*vertex,8.00000,0.00000,2.70000  #   4
+*vertex,0.50000,0.00000,0.20000  #   5
+*vertex,3.50000,0.00000,0.20000  #   6
+*vertex,0.50000,0.00000,2.20000  #   7
+*vertex,3.50000,0.00000,2.20000  #   8
+*vertex,4.50000,0.00000,0.20000  #   9
+*vertex,7.50000,0.00000,0.20000  #  10
+*vertex,4.50000,0.00000,2.20000  #  11
+*vertex,7.50000,0.00000,2.20000  #  12
+*vertex,0.00000,6.00000,0.00000  #  13
+*vertex,8.00000,6.00000,0.00000  #  14
+*vertex,0.00000,6.00000,2.70000  #  15
+*vertex,8.00000,6.00000,2.70000  #  16
+*vertex,4.00000,0.00000,2.70000  #  17
+*vertex,4.00000,0.00000,0.00000  #  18
+# 
+# tag, number of vertices followed by list of associated vert
+*edges,10,1,18,17,8,6,5,7,8,17,3  #  1
+*edges,10,18,2,4,12,10,9,11,12,4,17  #  2
+*edges,4,2,14,16,4  #  3
+*edges,4,14,13,15,16  #  4
+*edges,4,13,1,3,15  #  5
+*edges,4,5,6,8,7  #  6
+*edges,4,9,10,12,11  #  7
+*edges,5,3,17,4,16,15  #  8
+*edges,5,13,14,2,18,1  #  9
+# 
+# surf attributes:
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
+#  child of (surface name), useage (pair of tags) 
+#  construction name, optical name
+#  boundary condition tag followed by two data items
+*surf,South_Wall,VERT,-,-,-,LWextwall6,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,South_Wall2,VERT,-,-,-,LWextwall6,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,East_Wall,VERT,-,-,-,LWextwall6,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,North_Wall,VERT,-,-,-,LWextwall6,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,West_Wall,VERT,-,-,-,LWextwall6,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,Window,VERT,-,-,-,dg_glazing,DG_Bestest,EXTERIOR,0,0  #   6 ||< external
+*surf,Window2,VERT,-,-,-,dg_glazing,DG_Bestest,EXTERIOR,0,0  #   7 ||< external
+*surf,Roof,CEIL,-,-,-,LWroof6,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,Floor,FLOR,-,-,-,LWfloor6,OPAQUE,GROUND,00,01  #   9 ||< user def grnd profile  1
+# 
+*insol,3,0,0,0  # default insolation distribution
+# 
+# shading directives
+*shad_calc,all_applicable   8 # list of surfs
+  1  2  3  4  5  6  7  8
+# 
+*insol_calc,all_applicable   2 # insolation sources
+  6  7
+# 
+*base_list,1,9,    48.00 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start,20 20 # geometric blocks
+*obs,8.000,-0.001,2.700,8.000,1.000,0.001,180.000,B1,NONE  # block  1
+*end_block

@@ -1,6 +1,6 @@
 *Materials 1.1
-*date,Mon Jun 18 12:15:16 2007
-# materials database defined in constr.db3.a
+*date,Sat Feb 13 12:15:16 2010
+# materials database defined in material.db3.a
 *doc,ESP-r Materials based on scan of a legacy ASCII materials database constr.db3 with required materials for UK code complience. Additional infomation and documentation uses standard assumptions which should be updated as required.
 18  # number of classifications
 #  
@@ -15,10 +15,18 @@
 #  longwave tran (-) solar direct tran (-) solar reflec out (-) solar refled in (-)
 #  visable tran (-) visable reflec out (-) visable reflec in (-) colour rendering (-)
 #  
+# Gas material attributes:
+#  (first 9 items the same) [g] or [h]
+#  air gap resistance for vert horiz other
+#  [g] 2 conduction, 2 viscosity, 2 density
+#      2 prandtl, 2 specific heat
+#  [h] 4 conduction, 4 viscosity, 4 density
+#      prandtl, specific heat
+#  
 # class index |nb items|description (32 char)
-*class, 1,10,Brick
+*class, 1,11,Brick
 Category ( 1) Brick includes a range of brick types. Based on data traditionally distributed with ESP-r.
-*item,paviour brick,  1, 1,Paviour brick
+*item,Paviour brick,  1, 1,Paviour brick
 0.960,2000.000,840.000,0.930,0.930,0.700,0.700,12.000,100.0,-
 *item,breeze block,  2, 1,Breeze block
 0.440,1500.000,650.000,0.900,0.900,0.650,0.650,15.000,100.0,-
@@ -28,7 +36,7 @@ Category ( 1) Brick includes a range of brick types. Based on data traditionally
 0.960,2000.000,650.000,0.900,0.900,0.930,0.930,25.000,100.0,-
 *item,vermic insul brk,  5, 1,Vermiculite insulating brick
 0.270,700.000,840.000,0.900,0.900,0.650,0.650,12.000,100.0,-
-*item,lt brown brick,  6, 1,Light brown brick
+*item,Lt brown brick,  6, 1,Light brown brick
 0.960,2000.000,650.000,0.900,0.900,0.700,0.700,25.000,100.0,-
 *item,brick (MK),  7, 1,Brick (milton keyns)
 0.840,1700.000,800.000,0.900,0.900,0.700,0.700,25.000,100.0,-
@@ -38,6 +46,8 @@ Category ( 1) Brick includes a range of brick types. Based on data traditionally
 0.770,1700.000,940.000,0.900,0.900,0.650,0.650,12.000,25.0,-
 *item,Brick outer leaf, 10, 1,Brick (UK code)
 0.770,1700.000,1000.000,0.900,0.900,0.700,0.700,12.000,102.0,-
+*item,brick honeycomb, 11, 1,Brick extruded honeycomb from IBO PassivHaus (diffu a guess)
+0.270,800.000,1000.000,0.900,0.900,0.700,0.700,7.000,102.0,-
 # class index |nb items|description (32 char)
 *class, 2,20,Concrete
 Category ( 2) Concrete includes a mix of concrete types from heavy weight to lightweight insulating types. Based on data traditionally distributed with ESP-r.
@@ -102,10 +112,10 @@ Category ( 3) Metal has a range of metals, some are the same but are painted dif
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
 *item,mat_049, 49, 3,Lead as per CIBSE data
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
-*item,Aluminium 1.5 mm, 50, 3,Aluminium (copy of mat_043)
-210.000,2700.000,880.000,0.220,0.220,0.200,0.200,19200.000,1.5,-
+*item,steelSheedSBEM, 51, 3,Steel sheed SBEM
+60.000,7800.000,502.000,0.120,0.120,0.200,0.200,19200.000,1.0,-
 # class index |nb items|description (32 char)
-*class, 4,18,Wood
+*class, 4,21,Wood
 Category ( 4) Wood holds a range of wood types. Based on data traditionally distributed with ESP-r.
 *item,wood block, 61, 4,Block (wood)
 0.160,800.000,2093.000,0.900,0.900,0.650,0.650,11.000,25.0,-
@@ -143,8 +153,14 @@ Category ( 4) Wood holds a range of wood types. Based on data traditionally dist
 0.787,1900.000,1170.000,0.900,0.900,0.900,0.900,576.000,25.0,-
 *item,Plywood deck, 78, 4,Plywood/felt (UK code)
 0.130,500.000,1500.000,0.900,0.900,0.700,0.700,576.000,19.0,-
+*item,OSB, 79, 4,OSB wood based on the SBEM database
+0.130,650.000,1700.000,0.900,0.900,0.700,0.700,576.000,9.0,-
+*item,MDF, 80, 4,MDF based on info in IBO PassivHaus (diffusion is a guess)
+0.080,780.000,2000.000,0.900,0.900,0.700,0.700,576.000,9.0,-
+*item,parquet, 89, 4,Parquet (ready to install) from IBO PassivHaus (diffusion is a guess)
+0.170,740.000,2000.000,0.900,0.900,0.650,0.650,11.000,12.0,-
 # class index |nb items|description (32 char)
-*class, 5, 8,Stone
+*class, 5, 9,Stone
 Category ( 5) Stone includes building stone and gravels. Based on data traditionally distributed with ESP-r.
 *item,sandstone, 81, 5,Sandstone
 1.830,2200.000,712.000,0.900,0.900,0.600,0.600,29.000,200.0,-
@@ -162,8 +178,10 @@ Category ( 5) Stone includes building stone and gravels. Based on data tradition
 0.960,1800.000,1000.000,0.900,0.900,0.600,0.600,2.000,200.0,-
 *item,mat_088, 88, 5,Basalt (www.matweb.com search)
 0.800,2700.000,720.000,0.900,0.900,0.600,0.600,1960.000,200.0,-
+*item,lime cement mortar, 90, 5,lime cement mortar from IBO PassivHaus
+0.800,1800.000,1120.000,0.900,0.900,0.600,0.600,15.000,10.0,-
 # class index |nb items|description (32 char)
-*class, 6,12,Plaster
+*class, 6,14,Plaster
 Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boards. Based on data traditionally distributed with ESP-r.
 *item,dense plaster,101, 6,Dense plaster
 0.500,1300.000,1000.000,0.910,0.910,0.500,0.500,11.000,12.5,-
@@ -187,8 +205,12 @@ Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boar
 0.210,900.000,1000.000,0.910,0.910,0.260,0.260,11.000,13.0,-
 *item,Plasterboard (ceiling),111, 6,Plasterboard Gypsum (10 mm) (UK code)
 0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,9.5,-
-*item,Plasterboard (wallboard),112, 6,Plasterboard (UK code)
+*item,Plasterboard (UK code),112, 6,Plasterboard (UK code)
 0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,13.0,-
+*item,lime plaster,113, 6,lime plaster from IBO PassivHaus
+0.700,1400.000,920.000,0.910,0.910,0.700,0.700,10.000,12.0,-
+*item,lime cement plaster,114, 6,lime cement plaster from IBO PassivHaus (diffu is a guess)
+0.800,1800.000,1100.000,0.910,0.910,0.700,0.700,15.000,12.0,-
 # class index |nb items|description (32 char)
 *class, 7,12,Screeds and renders
 Category ( 7) Screeds are products typically used horizontally and renders are used on walls. Based on data traditionally distributed with ESP-r.
@@ -217,7 +239,7 @@ Category ( 7) Screeds are products typically used horizontally and renders are u
 *item,mat_132,132, 7,Rendering (8% mc) (copy of mat_127) (UK code)
 0.790,1329.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
 # class index |nb items|description (32 char)
-*class, 8,16,Tiles
+*class, 8,17,Tiles
 Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Based on data traditionally distributed with ESP-r.
 *item,clay tile,141, 8,Clay tile
 0.850,1900.000,837.000,0.900,0.900,0.600,0.600,52.000,6.0,-
@@ -251,6 +273,8 @@ Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Base
 0.060,250.000,1000.000,0.900,0.900,0.700,0.700,1000.000,15.0,o
 *item,Tiles Concrete 10 mm,156, 8,Tiles
 1.500,2100.000,1000.000,0.900,0.900,0.700,0.700,1000.000,10.0,o
+*item,EDPM rubber,157, 8,Rubber EDPM from IBO PassivHaus (diffusion is a guess)
+0.250,1200.000,1000.000,0.940,0.940,0.820,0.820,10000.000,6.0,-
 # class index |nb items|description (32 char)
 *class, 9,13,Asphalt and bitumen
 Category ( 9) Asphalt and bitumen also includes materials which use bitumen and asphalt like compositions. Based on data traditionally distributed with ESP-r.
@@ -292,7 +316,7 @@ Category (10) Asbestos is included for historic reasons, but some regions still 
 *item,asbestos insulation,184,10,Asbestos insulation
 0.160,577.000,840.000,0.900,0.900,0.600,0.600,3.000,6.0,-
 # class index |nb items|description (32 char)
-*class,11,19,Insulation materials (1)
+*class,11,21,Insulation materials (1)
 Category (11) Insulation materials (1) is an initial tranche of loose, batt and foam insulating materials. Based on data traditionally distributed with ESP-r.
 *item,fibreboard,201,11,Fibreboard
 0.060,300.000,1000.000,0.900,0.900,0.500,0.500,13.000,100.0,-
@@ -332,6 +356,10 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.070,240.000,180.000,0.900,0.900,0.500,0.500,3.000,100.0,-
 *item,Thermalite,219,11,Thermalite turbo blk
 0.110,480.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
+*item,XPS CO2 foamed,220,11,XPS extruded polystyrene foamed with Co2 from IBO PassivHaus (difusion is a guess)
+0.040,38.000,1450.000,0.900,0.900,0.300,0.300,67.000,100.0,-
+*item,celulose fiber flakes,233,11,cellulose fibre insulation flakes from IBO PassivHaus (diffusion guessed)
+0.040,35.000,1900.000,0.900,0.900,0.300,0.300,2.000,100.0,-
 # class index |nb items|description (32 char)
 *class,12,12,Carpet
 Category (12) Carpet includes both natural and synthetic carpets, some differ only in colour. Based on data traditionally distributed with ESP-r.
@@ -371,7 +399,7 @@ Category (13) Glass with additional single layer optical properties (some estima
 *item,antisun 6mm,244,13,6mm Antisun glass with placeholder single layer optics
 1.050,2500.000,750.000,0.590,0.590,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 *item,fict,245,13,fictitious material (almost not there) with matching single layer optics
-20.000,10.0000,10.0000,0.990,0.990,0.010,0.010,19200.000,6.0,t,0.000,0.999,0.001,0.001,0.999,0.001,0.001,0.000
+20.000,10.000,10.000,0.990,0.990,0.010,0.010,19200.000,6.0,t,0.000,0.999,0.001,0.001,0.999,0.001,0.001,0.000
 *item,low_e glass,246,13,6mm CF Low_e glass with placeholder single layer optics
 1.050,2500.000,750.000,0.050,0.050,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 *item,REF A CLEAR LO 6MM,247,13,optics from UK national method datase Low-e coated not tinted
@@ -387,7 +415,7 @@ Category (13) Glass with additional single layer optical properties (some estima
 Category (14) Earth includes loose materials. Also check the stone category for other gravels. Based on data traditionally distributed with ESP-r.
 *item,earth infusorial,261,14,Infusorial (9% mc)
 0.090,480.000,180.000,0.900,0.900,0.850,0.850,5.000,200.0,-
-*item,gravel,262,14,Gravel based
+*item,gravel based,262,14,Gravel based
 0.520,2050.000,184.000,0.900,0.900,0.850,0.850,2.000,200.0,-
 *item,earth std,263,14,Common_earth
 1.280,1460.000,879.000,0.900,0.900,0.850,0.850,5.000,200.0,-
@@ -402,7 +430,7 @@ Category (14) Earth includes loose materials. Also check the stone category for 
 *item,Clay underfloor 750 mm,268,14,Clay underfloor default 750 mm
 1.500,1500.000,2085.000,0.900,0.900,0.700,0.700,5.000,750.0,-
 # class index |nb items|description (32 char)
-*class,15,15,Insulation materials (2)
+*class,15,21,Insulation materials (2)
 Category (15) Insulation materials (2) is a second tranche of loose, batt and foam insulating materials. Based on data traditionally distributed with ESP-r.
 *item,glass fibre quilt,281,15,Glass Fibre Quilt
 0.040,12.000,840.000,0.900,0.900,0.650,0.650,30.000,100.0,-
@@ -434,20 +462,41 @@ Category (15) Insulation materials (2) is a second tranche of loose, batt and fo
 0.040,25.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
 *item,Min wool quilt 60 mm,295,15,Insulation (Min wool quilt default 60 mm)
 0.040,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
+*item,PUR,296,15,notional floor UK material
+0.026,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
+*item,foamed glass 105kg,297,15,foamed glass with density of 105 kg/m3 in pannels
+0.045,105.000,1000.000,0.900,0.900,0.700,0.700,19600.000,100.0,-
+*item,foamed glass chippings,298,15,foamed glass with density of 105 kg/m3 chips glass 105kg)
+0.100,105.000,1000.000,0.900,0.900,0.700,0.700,20.000,100.0,-
+*item,hemp insulation panels,299,15,hemp insulation panels with supporting fibres from IBO PassivHaus (diffusion is a guess)
+0.040,30.000,1550.000,0.900,0.900,0.700,0.700,20.000,100.0,-
+*item,lambswool felt insulation,300,15,lambswool insulation felt from IBO PassivHaus from foamed glass chippings) (diffusion is a guess)
+0.040,30.000,1500.000,0.900,0.900,0.700,0.700,20.000,100.0,-
+*item,cork insul panel,306,15,cork insulation panel from IBO PassivHaus (diffusion guessed)
+0.040,120.000,1670.000,0.900,0.900,0.700,0.700,18.000,100.0,-
 # class index |nb items|description (32 char)
-*class,16, 2,Board
+*class,16, 5,Board
 Category (16) Board is similar to plaster and wood. Based on data traditionally distributed with ESP-r.
 *item,gypsum board,301,16,Gypsum board
 0.160,800.000,1090.000,0.900,0.900,0.900,0.900,10.000,12.5,-
 *item,particle board underlay,302,16,Particle board underlayment
 0.110,640.000,1210.000,0.900,0.900,0.900,0.900,10.000,12.5,-
+*item,fibreboard 250kg,303,16,Porous wood fiberboard 250 kg/m3 from IBO PassivHaus (diffusion is a guess)
+0.050,250.000,2000.000,0.900,0.900,0.650,0.650,5.000,25.0,-
+*item,porous fibreboard 270,304,16,Porous wood fiberboard 270 kg/m3 from IBO PassivHaus (diffusion is a guess)
+0.050,270.000,2000.000,0.900,0.900,0.650,0.650,5.000,25.0,-
+*item,sound impact EPS,305,16,Sound impact EPS 11kg/m3 from IBO PassivHaus (diffusion is a guess guess)
+0.044,11.000,1500.000,0.900,0.900,0.650,0.650,20.000,5.0,-
 # class index |nb items|description (32 char)
-*class,17, 2,Sheathing
+*class,17, 3,Sheathing
 Category (17) Sheathing is similar to the wood category. It also includes a test air gap layer. Based on data traditionally distributed with ESP-r.
 *item,sheating std,321,17,regular density sheathing
 0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,100.0,-
 *item,air 12mm,322,17,place holder for testing an air material type for isbem
-0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.00008,0.00001761,0.00000005,1.232,-0.0043,0.00000,0.00000,1008.000,0.00000
+0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.000080,0.00001761,0.00000005,1.2320,-0.00430,0.000000,0.000000,1008.000,0.000000
+*item,virtual_loft_space,323,17,for notional building loft space air 12mm)
+0.130,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,39.0,-
+# class index |nb items|description (32 char)
 *class,18, 6,GAPS
 Category (18) holds the implied air material with a legacy index of zero.
 *item,air gap,  0,18,Air layer with default properties assumed for legacy treatment of air (index zero).

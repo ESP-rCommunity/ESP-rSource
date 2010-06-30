@@ -1,5 +1,5 @@
-*connections  for pid.ss
-*Date Tue Jun 26 17:16:31 2007
+*connections  for bld_pid
+*Date Tue Sep 29 17:09:11 2009
      29   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External

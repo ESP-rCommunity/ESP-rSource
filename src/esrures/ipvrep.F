@@ -33,8 +33,11 @@ C *********** ipvrep
 C Write IPV report based on description held in common.
       subroutine ipvrep(iier)
 #include "building.h"
+#include "site.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "ipvdata.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -46,10 +49,8 @@ C Write IPV report based on description held in common.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C4/XLAT,XLON
       COMMON/CLMDT1/CLMLOC
       COMMON/ZONPIK/NZ,NZNO(MCOM)
-      COMMON/BL1/dmdsdesc,bdmds
       COMMON/BL2/dmdfla(7)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/CFGV/icfgv
@@ -75,56 +76,6 @@ C ilflag = 0 tabular labels on multi-lines, ilflag = 1 on one line.
 C IPV description.
       common/IPVF/lipvdatf
 
-C ipvtitl (char 40) is the title that shows up in reports
-C ipvvers (char 40) is the version of the IPV e.g. 'case with mass walls'
-C ipvsynop (char 248) documents the integrated performance view
-C ipvsimu (char 6) is a short tag describing the assessments to be run
-C   for example 'icautf' is an autumn fortnight and 'i3s' is a three
-C   season assessment with all days included.
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-
-C List of metric sets: nms is number of sets, imetget is the
-C esrures iget index for the metric selected, imetmsc holds two
-C miscelaneous indices for use by the metric, nzmg is the
-C number of zones in each set, emgflr is the total floor area in
-C each set, emgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), emgwtg is a weighting factor for the
-C metric, izmg is the list of zones in each set.
-C metrglbl is 20 char label equivalent to GLABEL in esrures
-C msdoc is 12 char identifier for each metric set.
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-
-C List of energy demand sets: neds is number of sets, idgmsc() are
-C miscel data describing set, iaggr=0 no timestep aggregate reporting
-C iaggr=1 timestep aggregate data included, nzedg is the
-C number of zones in each set, edgflr is the total floor area in
-C each set, edgsca is a scaling factor (e.g. to scale these zones
-C towards a whole building), izedg is the list of zones in each set.
-C zedsdoc is 12 char identifier for each set.
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
-
-C nipvassmt is the number of assessments (runs) in an IPV (1=annual,
-C 3=win/trn/sum, 5=win/spr/sum/autumn/win. 
-C ipvastjd() are the assessment start julian dates,
-C ipvafnjd are the assessment finish julian dates and
-C nipvdispjd number of days to display in detail,
-C ipvdispjd is list of julian days (must be within the assessment period).
-C ipvadesc is a 40 char description associated with each assessment.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVSEALB/ipvadesc(MIPVA)
-
-      common/IPVDMD/idmdinc(7)
-
-C Format of the IPV report.
-C  = 1 is human readable text, 2 is tab separated, 3 is java
-      common/IPVFORMAT/ipvform,ipvversion
-
 C << is pvdayhr useful? >>
       common/spm55/pvdayhr(2*MTS)
       common/ract/paction
@@ -140,14 +91,12 @@ C Pre calculated data (filtered).
       dimension ITEM(13),edput(7,MTS),ddmax(7),ddmin(7),dtot(7),dave(7)
       dimension XMAX(7),XMIN(7),XAVE(7),XTOT(7),DMAX(7),DMIN(7),XMSUM(7)
       dimension XMINSUM(7)
-      character metgroup*12
       character tab*1,outs*124,LTIME*5,outsn*124,outsd*124,outsc*124
       character outsl*248,outlsd*248,outlsc*248
       character xfile*144,tg*1,delim*1,H*72,ITEM*18,lipvdatf*72
       character SLABEL*32,GLABEL*20,SUFFIX*8,paction*16
-      CHARACTER dmdsdesc*248,bdmds*72,ltmp*72,LJTIME*8
+      CHARACTER ltmp*72,LJTIME*8
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character ipvadesc*40,zedsdoc*12,msdoc*12,metrglbl*20
       CHARACTER selres*72,CLMLOC*30
       character descr*7,descrst*10,descrfn*10,dstmp*24,sq*1
       character ipvaction*3  ! to signal external IPV file
@@ -556,9 +505,9 @@ C Open the climate file and get its location name.
         CALL  ERPFREE(IUNITC,ISTAT)
         write(outs,'(a,a1,a)') '*climate',tab,CLMLOC
         call edisp(itru,outs)
-        write(outs,'(a,a1,f6.2)') '*latitude',tab,XLAT
+        write(outs,'(a,a1,f6.2)') '*latitude',tab,sitelat
         call edisp(itru,outs)
-        write(outs,'(a,a1,f6.2)') '*longitude',tab,XLON
+        write(outs,'(a,a1,f6.2)') '*longitude',tab,sitelongdif
         call edisp(itru,outs)
 
 C Write synopsis out as one long string.
@@ -777,7 +726,7 @@ C First write diversified total. The IGET number is fixed at 70.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)') '*data ',DMAX(1)*1000.0,
+        write(outs,'(a,7F12.1)') '*data ',DMAX(1)*1000.0,
      &    abs(DMIN(2)*1000.0),DMAX(3),DMAX(4),DMAX(5),DMAX(6),DMAX(7)
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -796,7 +745,7 @@ C Write diffuse total. The IGET number is fixed at 70.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)')'*data ',XMSUM(1)*1000.0,
+        write(outs,'(a,7F12.1)')'*data ',XMSUM(1)*1000.0,
      &    abs(XMINSUM(2)*1000.0),XMSUM(3),XMSUM(4),XMSUM(5),XMSUM(6),
      &    XMSUM(7)
         call eddisp(itru,outs)
@@ -817,7 +766,7 @@ C Write maximum in any one zone. The IGET number is fixed at 70.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)')'*data ',XMAX(1)*1000.0,
+        write(outs,'(a,7F12.1)')'*data ',XMAX(1)*1000.0,
      &    abs(XMIN(2)*1000.0),XMAX(3),XMAX(4),XMAX(5),XMAX(6),XMAX(7)
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -838,7 +787,7 @@ C Note: the diversified minimums are reports.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)')'*data ',DMIN(1)*1000.0,
+        write(outs,'(a,7F12.1)')'*data ',DMIN(1)*1000.0,
      &    abs(DMAX(2)*1000.0),DMIN(3),DMIN(4),DMIN(5),DMIN(6),DMIN(7)
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -858,7 +807,7 @@ C The IGET number is fixed at 70.
      &    'Lighting (ctld)',tab,'Fans',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.3)')'*data ',THE,abs(TCE),tuclight,tlight,
+        write(outs,'(a,7F13.2)')'*data ',THE,abs(TCE),tuclight,tlight,
      &    tpumps,tsmlpw,tdhw
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -933,7 +882,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water',tab,'PV'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,6F12.3)') '*data ',ddmax(2),' 0.000',
+          write(outs,'(a,F12.1,a,6F12.1)') '*data ',ddmax(2),' 0.000',
      &      ddmax(4),ddmax(5),ddmax(6),ddmax(3),ddmax(7),pvmax
           call eddisp(itru,outs)
         else
@@ -944,7 +893,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,5F12.3)') '*data ',ddmax(2),' 0.000',
+          write(outs,'(a,F12.1,a,5F12.1)') '*data ',ddmax(2),' 0.000',
      &      ddmax(4),ddmax(5),ddmax(6),ddmax(3),ddmax(7)
           call eddisp(itru,outs)
         endif
@@ -966,7 +915,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water',tab,'PV'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,5F12.3,a)') '*data ',ddmin(2),' 0.000',
+          write(outs,'(a,F12.1,a,5F12.1,a)') '*data ',ddmin(2),' 0.000',
      &      ddmin(4),ddmin(5),ddmin(6),ddmin(3),ddmin(7),' 0.000'
           call eddisp(itru,outs)
         else
@@ -977,7 +926,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,5F12.3)') '*data ',ddmin(2),' 0.000',
+          write(outs,'(a,F12.1,a,5F12.1)') '*data ',ddmin(2),' 0.000',
      &      ddmin(4),ddmin(5),ddmin(6),ddmin(3),ddmin(7)
           call eddisp(itru,outs)
         endif
@@ -998,7 +947,7 @@ C The IGET number is fixed at 71.
      &    'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &    'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,F12.3,a,5F12.3)') '*data ',dave(2),' 0.000',
+        write(outs,'(a,F12.1,a,5F12.1)') '*data ',dave(2),' 0.000',
      &    dave(4),dave(5),dave(6),dave(3),dave(7)
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -1028,7 +977,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water',tab,'PV'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,6F12.3)') '*data ',dtot(2),' 0.000',
+          write(outs,'(a,F13.2,a,6F13.2)') '*data ',dtot(2),' 0.000',
      &      dtot(4),dtot(5),dtot(6),dtot(3),dtot(7),totpv
           call eddisp(itru,outs)
         else
@@ -1039,7 +988,7 @@ C The IGET number is fixed at 71.
      &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
      &      'Hot water'
           call edisp(itru,outs)
-          write(outs,'(a,F12.3,a,5F12.3)') '*data ',dtot(2),' 0.000',
+          write(outs,'(a,F13.2,a,5F13.2)') '*data ',dtot(2),' 0.000',
      &      dtot(4),dtot(5),dtot(6),dtot(3),dtot(7)
           call eddisp(itru,outs)
         endif
@@ -1568,7 +1517,10 @@ C If PV included take the largest floor area in the dmdfla.
           if(pvok)then
             pvfla=AMAX1(pvfla,dmdfla(1),dmdfla(2),dmdfla(3),dmdfla(4),
      &            dmdfla(5),dmdfla(6),dmdfla(7))
+
+C Debug.
 C            write(6,*) 'pvfloor area is ',pvfla
+
           endif
 
 C Clear edput array.
@@ -1962,6 +1914,8 @@ C ********* mkannrep
 C Write IPV report based on description held in common.
       subroutine mkannrep(iier)
 #include "building.h"
+#include "ipvdata.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -1971,18 +1925,6 @@ C Write IPV report based on description held in common.
       common/pophelp/h(60)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      COMMON/BL1/dmdsdesc,bdmds
-
-C IPV description.
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-
-C ddm* are the degree-day multipliers (or user defined multipliers) between
-C the periods simulated and the whole season for heating, cooling, lights,
-C small power, fans, domestic hot water. For nipvassmt=1 these are 
-C initially set to 1.0.
-      common/IPVDDM/ddmheat(MIPVA),ddmcool(MIPVA),ddmlight(MIPVA),
-     &              ddmsmlpw(MIPVA),ddmfan(MIPVA),ddmdhw(MIPVA)
 
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
@@ -1990,11 +1932,6 @@ C initially set to 1.0.
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-
-C ipvform = 0 is unspecified, 1 is human readable text, 2 is tab separated,
-C           3 is java
-      common/IPVFORMAT/ipvform,ipvversion
-      common/IPVSEALB/ipvadesc(MIPVA)
       
       dimension NHW(9,MSPS)
       dimension WHD(MSPS),WCD(MSPS),WLD(MSPS),WFD(MSPS),WSPD(MSPS)
@@ -2002,10 +1939,8 @@ C           3 is java
       dimension WLC(MSPS),WFC(MSPS),WSPC(MSPS),WDHWC(MSPS),WPVC(MSPS)
       character outs*124,outsd*124,outsn*124
       character xfile*144,tg*1,delim*1,h*72,tab*1,OUTSTR*124,sq*1
-      CHARACTER dmdsdesc*248,bdmds*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
-      character ipvadesc*40
 
       logical XST,dmdsok,closea,closeb,closec,closed,closee
 
@@ -2374,7 +2309,7 @@ C IGET = 74 IPV maximum power capacity (kW)
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
         call edisp(itru,outs)
-        write(outs,'(a,7F12.1)') '*data ',HC,CC,CL,FC,SPC,DHWC,PVC
+        write(outs,'(a,7F13.2)') '*data ',HC,CC,CL,FC,SPC,DHWC,PVC
         call eddisp(itru,outs)
       else
         write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
@@ -2383,7 +2318,7 @@ C IGET = 74 IPV maximum power capacity (kW)
      &    'Heating',tab,'Cooling',tab,'Lighting',tab,
      &    'Fans',tab,'Small Power',tab,'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,6F12.1)') '*data ',HC,CC,CL,FC,SPC,DHWC
+        write(outs,'(a,6F13.2)') '*data ',HC,CC,CL,FC,SPC,DHWC
         call eddisp(itru,outs)
       endif
       call edisp(itru,'*end_report')
@@ -2427,7 +2362,7 @@ C Write emissions performance data from the intermediate file.
       tsmlpw = tsmlpw *pcnvsp
       tdhw = tdhw *pcnvhw
 
-C Debug...
+C Debug.
 C      write(6,*) 'the hce tlight tpumps tsmlpw tdhw ',the,tce,tlight,
 C     &  tpumps,tsmlpw,tdhw
 
@@ -2621,18 +2556,14 @@ C << at some point include arrays for separate reporting of pumps and lifts. >>
 #include "building.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Uncomment next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
 
-C IPV description.
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
+C IPV description via ipvdata.h.
 
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
@@ -2643,7 +2574,7 @@ C IPV description.
       dimension SPCS(MSPS,11),DHWCS(MSPS,11),PVC(MSPS,11)
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
-      character outstr*124,word*20,third*20,name*12,zedsdoc*12
+      character outstr*124,word*20,third*20,name*12
       logical dmdsok,atassment,atreports
 
 C Open intermediate report.
@@ -2791,19 +2722,14 @@ C << at some point include additional arrays for pumps and lifts >>
 
 #include "building.h"
 #include "espriou.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C For each simulation which was run and type of demand, and 
 C for one more than the possible
@@ -2813,7 +2739,7 @@ C number of demand sets (the extra is for distributed demands).
       dimension ZLUDS(MSPS,11),ZLDS(MSPS,11),FDS(MSPS,11)
       dimension SPDS(MSPS,11),DHWDS(MSPS,11),DPVD(MSPS,11)
       character outstr*124,act*1,word*20
-      character zedsdoc*12,name*12,third*20
+      character name*12,third*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
       logical dmdsok,atassment,atreports
@@ -2962,19 +2888,14 @@ C << at some point include additional arrays for pumps and lifts >>
 
 #include "building.h"
 #include "espriou.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Uncomment the next line if debugging required.
       common/OUTIN/IUOUT,IUIN
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVDEDS/zedsdoc(MIPVM)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
 
 C For each type of demand, and for one more than the possible
 C number of demand sets (the extra is for distributed demands).
@@ -2982,7 +2903,7 @@ C number of demand sets (the extra is for distributed demands).
       dimension ZLUDS(11),ZLDS(11),FDS(11)
       dimension SPDS(11),DHWDS(11),DPVD(11)
       character outstr*124,act*1,word*20
-      character zedsdoc*12,name*12,third*20
+      character name*12,third*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72
       logical dmdsok,atassment,atreports
@@ -3120,24 +3041,18 @@ C Note if Java IPV because different logic required.
       subroutine ipvgcmft(ifu,NH,ier)  
 #include "building.h"
 #include "espriou.h"
+#include "ipvdata.h"
       
       integer lnblnk  ! function definition
 
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      common/IPVMS/nms,imetget(MIPVM),imetmsc(MIPVM,2),nzmg(MIPVM),
-     &  emgflr(MIPVM),emgsca(MIPVM),emgwtg(MIPVM),izmg(MIPVM,MCOM)
-      common/IPVMDS/metrglbl(MIPVM),msdoc(MIPVM),metgroup(MIPVM)
-      common/IPVFORMAT/ipvform,ipvversion
 
       character outstr*124,word*20
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,third*20,metgroup*12
-      character msdoc*12,metrglbl*20
+      character selres*72,third*20
       dimension nh(9,5)
       logical atassment,atreports
 
@@ -3213,6 +3128,7 @@ C ************** aggreghd
 C Hourly aggregate energy demand per unit time.
       subroutine aggreghd(itru,iseas,pvok)
 #include "building.h"
+#include "ipvdata.h"
 
 C Uncomment the next line if debugging required.
 C      common/OUTIN/IUOUT,IUIN
@@ -3227,12 +3143,7 @@ C      common/OUTIN/IUOUT,IUIN
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
-C IPV description.
-      common/IPVEDS/neds,idgmsc(MIPVM,2),iaggr,nzedg(MIPVM),
-     &  edgflr(MIPVM),edgsca(MIPVM),izedg(MIPVM,MCOM)
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
-      common/IPVDMD/idmdinc(7)
+C IPV description via ipvdata.h.
 
 C << is this required? >>
       common/spm55/pvdayhr(2*MTS)
@@ -3257,7 +3168,10 @@ C Set separator as in rest of seasonal report.
       if(pvok)then
         pvfla=AMAX1(pvfla,dmdfla(1),dmdfla(2),dmdfla(3),dmdfla(4),
      &              dmdfla(5),dmdfla(6),dmdfla(7))
+
+C Debug.
 C       write(6,*) 'pvfloor area is ',pvfla
+
       endif
 
 C Set the recovery period to match seasonal report.
@@ -3791,14 +3705,18 @@ C Position pointer at the start of the relevant assessment.
         K=11
         CALL EGETWI(OUTSTR,K,id1,1,5,'W','assessment nb',IIER)
         if(id1.eq.index)then
-C Debug...
+
+C Debug.
 C          write(6,*) 'at line number ',line
+
           atassment=.true.
           return
         else
           line=line+1
-C Debug...
+
+C Debug.
 C          write(6,*) 'skipping assessment at line number ',line
+
           goto 143
         endif
       else

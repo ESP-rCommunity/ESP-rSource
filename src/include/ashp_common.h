@@ -1,7 +1,8 @@
 c Use common for heat pump input data
 C (JWH remove continuation lines based on F90 warnings)
       common/HEAT_PUMP_INPUT_DATA/
-     & iunit_function(max_sys),ss_cop(max_sys), shrr(max_sys), 
+     & iunit_function(max_sys),ss_cop(max_sys), shrr(max_sys),
+     & time_constant(max_sys),
      & itemp_control(max_sys),cutoff_temp(max_sys), 
      & ibackup_heat(max_sys),ibackup_sys_num(max_sys), 
      & icooling_type(max_sys), bfr(max_sys), isys_num_heating(max_sys),
@@ -14,7 +15,7 @@ C (JWH remove continuation lines based on F90 warnings)
      & outdoor_fan_power(max_sys)
 
 c Real variables in heat pump input data
-      REAL ss_cop,shrr,cutoff_temp,bfr,ahp,bhp,chp,dhp 
+      REAL ss_cop,time_constant,shrr,cutoff_temp,bfr,ahp,bhp,chp,dhp 
       REAL outdoor_air_flow
       REAL economizer_min_out_air_flow
       REAL economizer_ind_temp_setpoint

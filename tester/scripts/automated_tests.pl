@@ -18,7 +18,7 @@
 #   - Perl NET\:\:smtp
 #
 # This script is free software; you can redistribute it and/or modify 
-# it under the same terms as Perl itself. 
+# it under the same terms as Perl itself.
 #
 #--------------------------------------------------------------------
 # SYNOPSYS: For description, read definition of synopsys varaible, 
@@ -45,7 +45,7 @@ sub execute($);
 sub summarize_forcheck($);
 sub parse_forcheck($);
 sub fatalerror($);
-sub buildESPr($$$$);
+sub buildESPr($$$$$);
 sub passfail($);
 #--------------------------
 
@@ -75,13 +75,15 @@ my %binlist = ( "aco"   =>   "esruaco",
                 "res"   =>   "esrures",          
                 "vew"   =>   "esruvew" );         
 
+
 my %binalias = ( "vew"    =>   "viewer",
                  "mrt"    =>   "espvwf" );                          
 
 
-my @Suppress_code_list = ( "222 W" );
+my @Suppress_code_list  = ( "222 W" );
+my @Dangerous_info_list = ( "340 I" );
                           
-my $Test_base_URL="https://svn2.cvsdude.com/espr/esp-r";
+my $Test_base_URL="https://espr.svn.cvsdude.com/esp-r";
              
              
 #Mailhost to use....only available within NRCan. 
@@ -106,7 +108,7 @@ my $veryverbose = 0;
 my $test_forcheck   = 1;
 my $test_builds     = 1;
 my $test_regression = 1;
-
+my $test_callgrind  = 0;
 # Additional compilation flags
 my %build_args;
 $build_args{"reference"} ="";
@@ -119,6 +121,10 @@ my $del_dir = 1;
 my %gDescriptions;
 my %gLong_codes;
 
+my $gVerboseArg="";
+
+# Flag for pointing to reference test_suite location
+my $ref_test_suite = 0;
 
 #------------------------------------------------------------
 # Synopsys
@@ -184,12 +190,17 @@ my $synopsys= "
    --skip-forcheck, --skip-regression, --skip-builds:
        Skip portions of the QA tests
 
+   --run-callgrind: Run call-grind analysis on ESRU benchmark test case.
+
    --ref-build-args=\\\"<arg-1> <arg-2>...\\\": Use <arg-1> and <arg-2> when
        when compiling reference version.
 
    --test-build-args=\\\"<arg-1> <arg-2>...\\\": Use <arg-1> and <arg-2> when
        when compiling test version.
-       
+
+   --ref-test_suite: Use reference version test_suite instead of the 
+       default test version.       
+
    -v: 
        Verbose output; print test progress to the buffer.
        
@@ -314,7 +325,8 @@ if ( @ARGV ){
   # remove leading and trailing ;'s
   $cmd_arguements =~ s/^;//g;
   $cmd_arguements =~ s/;$//g;
-  
+
+
   # split processed arguements back into array
   my @processed_args = split /;/, $cmd_arguements;
 
@@ -367,6 +379,11 @@ if ( @ARGV ){
         if ( $arg =~/^--skip-regression/ ){ $test_regression = 0; }
         last SWITCH;
 
+      }
+
+      if ($arg =~/^--run-callgrind/ ){
+        $test_callgrind = 1;
+        last SWITCH;
       }
       
       # Destination mail
@@ -432,9 +449,21 @@ if ( @ARGV ){
         $veryverbose = 1;
         last SWITCH;
       }
+      
+      # Use reference version test_suite
+      if ( $arg =~ /^--ref-test_suite/ ){
+        $ref_test_suite = 1;
+        last SWITCH;
+      }
+
     }
   }
 }
+
+if ( $verbose ) { $gVerboseArg = "-v"; }
+if ( $veryverbose ) { $gVerboseArg = "-vv"; }
+
+
 
 # Loop through version stack, and detect type
 
@@ -506,7 +535,7 @@ my $global_fail = 0;
 
 #Find a suitable folder to do testing in:
 
-my $TestFolder_root="/tmp/.test_esp-r";
+my $TestFolder_root=$ENV{HOME}."/.tt";
 my $TestFolder=$TestFolder_root;
 my $count = 0;
 while ( -d $TestFolder ) {
@@ -514,7 +543,7 @@ while ( -d $TestFolder ) {
   $TestFolder="$TestFolder_root\_$count";
 }
 
-if ( $debug_forcheck ) { $TestFolder = "/tmp/test_debug_forcheck"; }
+if ( $debug_forcheck ) { $TestFolder = "/tmp/tdf"; }
 
 
 #Username that sends e-mail. 
@@ -589,7 +618,7 @@ if ( $test_forcheck || $test_builds || $test_regression ){
       # SVN Repository: Progress update
       stream_out("Copying $revision to $src_dirs{$key}...");
       
-      # Pull down source. Skip if source
+      # Pull down source. Skip if source exists already.
       if ( ! -d $src_dirs{$key} ){
   
         execute("cp -fr $revision $src_dirs{$key}");
@@ -602,7 +631,7 @@ if ( $test_forcheck || $test_builds || $test_regression ){
 
 #------------------------------------------------------------
 # Now prepare codes for forcheck static analysis. Unfortunately,
-# we must compile both versions to ensure that all the appropriate
+# we must compile the source code to ensure that all the appropriate
 # source files are linked into the target directories. Otherwise,
 # forcheck will not analyze the entire code base. 
 #------------------------------------------------------------
@@ -623,7 +652,7 @@ if ( $test_forcheck ){
 
     # Build X11 debugging version.
     if ( ! $debug_forcheck ) {
-      buildESPr($build_args{"$key"},"default","debug","onebyone");
+      buildESPr("default", $build_args{"$key"},"default","debug","onebyone");
     }
     stream_out(" Done\n");
     
@@ -985,7 +1014,7 @@ if ($test_builds){
   stream_out("\nBuilding X11 version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");  
-  %build_result = buildESPr($build_args{"test"},"X11","clean","onebyone");
+  %build_result = buildESPr("default", $build_args{"test"},"X11","clean","onebyone");
   if (  $build_result{"fail"}  ) { $X11_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -994,7 +1023,7 @@ if ($test_builds){
   stream_out("\nBuilding GTK version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");
-  %build_result = buildESPr($build_args{"test"},"GTK","clean","onebyone");
+  %build_result = buildESPr("default", $build_args{"test"},"GTK","clean","onebyone");
   if (  $build_result{"fail"}  ) { $GTK_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -1003,7 +1032,7 @@ if ($test_builds){
   stream_out("\nBuilding noX version of ESP-r.");
   chdir("$TestFolder/$src_dirs{\"test\"}/src");
   execute("make clean");
-  %build_result = buildESPr($build_args{"test"},"noX","clean","onebyone");  
+  %build_result = buildESPr("default", $build_args{"test"},"noX","clean","onebyone");  
   if (  $build_result{"fail"}  ) { $noX_fail = 1; }
   $results .= $build_result{"msg"};
   stream_out("Done\n");
@@ -1025,27 +1054,65 @@ if ( $test_regression ) {
   while ( my ($key, $revision ) = each  %revisions ) {
     stream_out("\nBuilding $key ($revision) version of ESP-r for use with tester.pl...");
     chdir ("$TestFolder/$src_dirs{$key}/src/");
-    if ( $debug_forcheck ) {
-      buildESPr($build_args{"$key"},"default","debug","together");
+
+    #destination directory for 'test' or 'reference' builds
+    my $build_path = "$TestFolder/esp-r_$key";
+    execute("mkdir $build_path");    
+    
+    if ( $debug_forcheck || $test_callgrind ) {
+      # Quick rebuild for debugging, OR retain object files
+      # for call-grind. 
+      buildESPr($build_path, $build_args{"$key"},"default","debug","together");
     }else{
+      # Comprehensive rebuild 
       execute("make clean");
-      buildESPr($build_args{"$key"},"default","clean","together");
+      buildESPr($build_path, $build_args{"$key"},"default","clean","together");
     }
-    execute("mv $TestFolder/esp-r $TestFolder/esp-r_$key");
     stream_out(" Done\n");
   }
   
   # Now run test suite, using test version of tester.pl
   stream_out("Running regression test...");
-  my $ref_esp = "$TestFolder/esp-r_reference/bin/";
-  my $test_esp = "$TestFolder/esp-r_test/bin/";
+  my $ref_esp = "$TestFolder/esp-r_reference/esp-r/bin";
+  my $test_esp = "$TestFolder/esp-r_test/esp-r/bin";
+
+  my ($test_suite_dir, $call_grind_arg);
+
+  if ( $test_callgrind ){
+
+    $test_suite_dir="$TestFolder/$src_dirs{\"test\"}/tester/test_suite/esru_benchmark_model/cfg/bld_basic_summer.cfg";
+    $call_grind_arg = "--run_callgrind";
+
+  }else{
+  # Disable callgrind 
+  $call_grind_arg = "";
+
+    # Use version of test suite in reference or test version, depending on
+    # user preference.
+    if ($ref_test_suite ){
+  
+        $test_suite_dir="$TestFolder/$src_dirs{\"reference\"}/tester/test_suite/";
+
+      }else{
+
+        $test_suite_dir="$TestFolder/$src_dirs{\"test\"}/tester/test_suite/";
+
+      }
+
+  }
+
+  # If user has asked to preserve the directory, tell tester.pl to
+  # save the current result set.
+  my $save_arg = $del_dir ? "" : "--save_results";
   
   chdir ("$TestFolder/$src_dirs{\"test\"}/tester/scripts");
+  
   execute ("$path/tester.pl "
            ."$ref_esp/bps $test_esp/bps "
-           ."-d $TestFolder/esp-r_test "
-           ."--ref_loc $ref_esp --test_loc $test_esp "
-           ."-p $TestFolder/$src_dirs{\"test\"}/tester/test_suite/ --save_results -v" );
+           ."-d $TestFolder/esp-r_test/esp-r --no_data --no_h3k "
+           ." --ref_loc $ref_esp --test_loc $test_esp "
+           ."-p $test_suite_dir $call_grind_arg $gVerboseArg $save_arg" );
+
   
   # Digest results
   $results .= "\n\n========= RESULTS FROM REGRESSION TEST =========\n\n";
@@ -1127,11 +1194,19 @@ if ( scalar(@addresses) > 0 ){
   
   my ($subject);
 
-  if ( $global_fail  ){
-    $subject = "ESP-r automated test: Fail  ($revisions{\"test\"}) ";
+  if ( $test_callgrind ) {
+    $subject .= "ESP-r automated call-tree test: ";
   }else{
-    $subject = "ESP-r automated test: Pass  ($revisions{\"test\"}) ";
+    $subject .= "ESP-r automated test: ";
+    if ( $global_fail  ){
+      $subject .= "Fail ";
+    }else{
+      $subject .= "Pass ";
+    }
   }
+   
+
+  $subject .=  "($revisions{\"test\"}) ";
 
   $subject =~ s/branches\///g;
   
@@ -1154,7 +1229,6 @@ close(OUTPUT_FILE);
 # Clean up
 #================================================
 
-# DEBUG
 if ( ! $debug_forcheck && $del_dir ){
   execute("rm -fr $TestFolder");
 }
@@ -1181,9 +1255,13 @@ sub passfail($){
 #   - $build=onebyone causes each esp-r binary to be built 
 #     individually, and the resulting target tested for completeness.
 #-------------------------------------------------------------------
-sub buildESPr($$$$){
+sub buildESPr($$$$$){
   
-  my($extra_args, $xLibs,$state,$build) =@_;
+  my($build_path, $extra_args, $xLibs, $state, $build) =@_;
+
+  if($build_path eq 'default'){
+     $build_path = $TestFolder;
+  }
   
   # Test if 'configure' script exists.
   my $autotools = 0;
@@ -1213,7 +1291,7 @@ sub buildESPr($$$$){
   }
   
   # Empty target folder 
-  execute("rm -fr $TestFolder/esp-r");
+  execute("rm -fr $build_path/esp-r");
   
   # Status buffers 
      
@@ -1230,7 +1308,7 @@ sub buildESPr($$$$){
 
   }else{
     
-    $bin_dest = "$TestFolder/esp-r/bin/";
+    $bin_dest = "$build_path/esp-r/bin/";
   
   }
   
@@ -1280,7 +1358,7 @@ sub buildESPr($$$$){
       execute ( "rm -fr $TestFolder/esp-r/bin");
       execute ( "cp -fr $TestFolder/bin  $TestFolder/esp-r/bin");
     }else{
-      execute("./Install -d $TestFolder --xml --silent $xLibs $Debug_flag --no_training --force $extra_args");
+      execute("./Install -d $build_path --xml --silent $xLibs $Debug_flag --no_training --force $extra_args");
     }
   }
   
@@ -1464,6 +1542,15 @@ sub parse_forcheck ($){
 
                 }
 
+                # Loop through dangerous informational tags,
+                # and upgrade any dangerous informational messages
+                # to errors. 
+                foreach my $dangerous_code ( @Dangerous_info_list ){
+
+                  if ( $code =~ /$dangerous_code/ ){ $code =~ s/I/E/g; }
+
+                }
+
                 if ( ! $suppress ){
                   # Now push message object into forcheck hash
                   $forcheck_details{"$topfile:$file\{\}$procedure\{\}$source\{\}$code"}{"count"}++;
@@ -1559,8 +1646,9 @@ sub fatalerror($){
   if ( $verbose || $veryverbose ){
     print echo_config();
   }
-  print "\ntester.pl -> Fatal error: \n";
+  print "\nautomated_testes.pl -> Fatal error: \n";
   print " >>> $err_msg \n\n";
+  execute("rm -fr $TestFolder");
   die;
 }
 #----------------------------------------------
@@ -1570,6 +1658,7 @@ sub echo_config(){
   print("Configuration:\n");
   print("  - Working directory: $TestFolder\n");
   print("  - svn_source:        $revisions{\"reference\"}, $revisions{\"test\"}\n");
+  print("  - build args:        $build_args{\"reference\"} (ref.), $build_args{\"test\"} (test)\n");
   print("  - email destination: @addresses\n");
 }
 

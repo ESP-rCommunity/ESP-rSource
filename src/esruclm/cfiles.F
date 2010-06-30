@@ -18,6 +18,18 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C MKBCLM: Allows a period of climatic data in a suitable ASCII file
+C         to be transferred to a binary climate file.
+C MKACLM: Allows any period of climatic data in binary climate file to
+C         be transferred to an ASCII file.
+C MKOREANCLM: Allows a period of climatic data in a suitable ASCII file
+C         (KOREAN) to be transferred to a binary climate file.
+C CFILIN: Takes a climate file name from a browse list, command
+C         line or default and intialise it or open.
+C CLMPUT: Writes one day's climate data to the current climate file.
+C EPWTOBCLM: Allows a period of climatic data from EPW format ASCII file
+C         to be transferred to a binary climate file.
+
 C 'MKBCLM' Allows a period of climatic data in a suitable ASCII file
 C to be transferred to a binary climate file.  The ASCII file should 
 C contain the following values for each hour:
@@ -48,7 +60,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       LOGICAL OK,DOK,silent
@@ -177,8 +189,8 @@ C Transfer this to the binary file.
 
 C Insert Climatic Year.
       IREC=366
-      IADN=IDNGH
-      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,IADN
+      ICDNGH=IDNGH
+      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,ICDNGH
       IREC=367
       WRITE(ICLIM,REC=IREC)CLMLOC
       IREC=368
@@ -232,7 +244,7 @@ C if the radiation flag set was set to GH in the binary climate file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       COMMON/CLMDT1/CLMLOC
@@ -441,7 +453,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
       common/pophelp/h(60)
       
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
       COMMON/APPRDIFF/iapprox_diff
@@ -633,8 +645,8 @@ C Transfer this to the binary file.
 
 C Insert Climatic Year.
  48   IREC=366
-      IADN=IDNGH
-      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,IADN
+      ICDNGH=IDNGH
+      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,ICDNGH
       IREC=367
       WRITE(ICLIM,REC=IREC)CLMLOC
       IREC=368
@@ -658,7 +670,7 @@ C Close ASCIIfile.
       end
 
 C ----------- CFILIN 
-C Subroutine to take a climate file name from a browse list, command
+C CFILIN takes a climate file name from a browse list, command
 C line or default and intialise it or open a zero length file if
 C a new one is requested.
 C silent is a logical toggle: true keeps user interactions to a minimum.
@@ -673,14 +685,14 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
       COMMON/INPER/INIT
       COMMON/FILEP/IFIL
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/RADTYP/IDNGH
       common/pophelp/h(60)
       common/rcmd/LCMDFL
 
-      logical XST,ok,silent
+      logical XST,ok,silent,unixok
       
 C Logical rescan = true if climatelist needs to be rescanned to
 C pick up typical periods (i.e. if climate file name typed in
@@ -688,7 +700,7 @@ C or passed into clm module).
       logical rescan
 
       CHARACTER CLMLOC*30,H*72,outs*124,tab*1,outs248*248
-      character LCMDFL*144,clmdb*72,L144*144
+      character LCMDFL*144,clmdb*144,L144*144
       tab = CHAR(9)
 
 C Get help message set.
@@ -718,8 +730,11 @@ C from a list so might as well exit the program.
       if(LCMDFL(1:7).eq.'UNKNOWN'.or.LCMDFL(1:2).eq.'  ')then
         if(silent)then
           write(outs248,'(3a)')'Climate exited because input file was',
-     &    tab,LCMDFL(1:lnblnk(LCMDFL))
-          write(6,*)outs248(1:lnblnk(outs248))
+     &      tab,LCMDFL(1:lnblnk(LCMDFL))
+          call isunix(unixok)
+          if(unixok)then  ! do not bother if DOS
+            write(6,*)outs248(1:lnblnk(outs248))
+          endif
           CALL EPAGEND
           STOP
         endif
@@ -832,7 +847,6 @@ C name with the full path.
 
 C Create file explicitly (not relative to problem configuration path).
 C First check if it exists: if so open, otherwise create with 0 length.
-C << consider if LCLIM needs to be > 72 char >>
       if(ICLIM.eq.0)then
         ICLIM=IFIL
       endif
@@ -843,27 +857,21 @@ C << consider if LCLIM needs to be > 72 char >>
         CALL FPRAND(ICLIM,ISTAT,144,3,LCMDFL)
         if(.NOT.silent)call edisp(iuout,' opened new climate file')
         llf=lnblnk(LCMDFL)
-        if(llf.le.72)then
-          write(LCLIM,'(a)') LCMDFL(1:llf)
-        else
-          write(LCLIM,'(a)') LCMDFL(1:72)
-          call edisp(iuout,'Had to truncate climate file name.')
-        endif
+        write(LCLIM,'(a)') LCMDFL(1:llf)
         RETURN
       elseif(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,1,LCMDFL)
         if(.NOT.silent)call edisp(iuout,' opened climate file')
-        if(lnblnk(LCMDFL).le.72)then
-          write(LCLIM,'(a)') LCMDFL(1:lnblnk(LCMDFL))
-        else
-          write(LCLIM,'(a)') LCMDFL(1:72)
-        endif
+        llf=lnblnk(LCMDFL)
+        write(LCLIM,'(a)') LCMDFL(1:llf)
         if(LCLIM.eq.DCLIM)call edisp(iuout,' Default climate assigned.')
       endif
 
       IREC=366
       READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR,IDNGH
+      ICYEAR=IYEAR
+      ICDNGH=IDNGH
       IF(IYEAR.EQ.0)goto 1000
       IREC=367
       READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
@@ -951,72 +959,14 @@ C New climate file
       RETURN
       END
 
-
-C ---------- CLMGET
-C Recover one day's data from climate file into common block for use.
-      SUBROUTINE CLMGET(IDAY)
-      PARAMETER (MT=24)
-      COMMON/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
-      COMMON/RADTYP/IDNGH
-      COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
-     A              CDIR(MT),CHUM(MT)
-      COMMON/CLMVAR/VNAME(6)
-
-      DIMENSION ICLM(24,6)
-      character outs*124,VNAME*32
-
-      VNAME(1)='Diffuse horiz. radiation (W/m^2)'
-      VNAME(2)='Dry bulb temperature (C)        '
-      if(IDNGH.eq.0)then
-        VNAME(3)='Direct normal radiation (W/m^2) '
-      else
-        VNAME(3)='Global horiz. radiation (W/m^2) '
-      endif
-      VNAME(4)='Wind velocity (m/s)             '
-      VNAME(5)='Wind direction (degrees)        '
-      VNAME(6)='Relative humidity (%)           '
-
-      IF(IDAY.EQ.NDAY)GO TO 50
-      IREC=IDAY
-      READ(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)((ICLM(J,K),K=1,6),
-     &J=1,24)
-      DO 40 J=1,24
-        CDIF(J)=real(ICLM(J,1))
-        CTMP(J)=0.1* real(ICLM(J,2))
-        CDNR(J)=real(ICLM(J,3))
-        CVEL(J)=0.1* real(ICLM(J,4))
-        CDIR(J)=real(ICLM(J,5))
-        CHUM(J)=real(ICLM(J,6))
-  40  CONTINUE
-      NDAY=IDAY
-
-  50  CONTINUE
-      RETURN
-
-C Error messages.
-1000  write(outs,'(A,I4)')' Problem reading record ',IREC
-      call edisp(iuout,outs)
-      call edisp(iuout,' substituting zeros for data.')
-      DO 10 J=1,24
-        CDIF(J)=0.0
-        CTMP(J)=0.0
-        CDNR(J)=0.0
-        CVEL(J)=0.0
-        CDIR(J)=0.0
-        CHUM(J)=0.0
-  10  CONTINUE
-
-      RETURN
-      END
-
-
 C ---------- CLMPUT 
-C Write one day's climate data to the current climate file.
+C CLMPUT Writes one day's climate data to the current climate file.
       SUBROUTINE CLMPUT(IDAY)
       PARAMETER (MT=24)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      A              CDIR(MT),CHUM(MT)
       DIMENSION ICLM(24,6)
@@ -1092,7 +1042,7 @@ C   period start month/day <integer/integer>, period finish month/day <integer/i
 C Data line fields are as follows:
 C (1) year <integer>, (2) month <integer>, (3) day <integer>, 
 C (4) hour <integer>, (5) minute <integer>,
-C (6) data source and uncertainty flags <string 44 characgers long>,
+C (6) data source and uncertainty flags <string 44-50 characgers long>,
 C (7) dry bulb temp C <real>, (8) dew point temp C <real>, (9) RH% <real>,
 C (10) atmospheric pressure Pa <real>, (11) extraterrestrial horizontal rad Wh/m2 <real>,
 C (12) extraterrestrial direct normal radiation Wh/m2 <real>,
@@ -1107,6 +1057,9 @@ C (26) cloud ceiling metres <real>, (27) present weather observation <integer>,
 C (28) present weather codes <integer>, (29) mm of precipitable water <real>,
 C (30) aerosol optical depth <thousandths>,
 C (31) cm of snow depth <integer>, (32) days since last snowfall <integer>.
+C (33) Albedo
+C (34) Liquid precipitation
+C (35) Liquid precipitation rate
 
 C The data fields which can slot into the current esp-r file format are:
 C (16) diffuse horiz radiation Wh/m2: cast to integer IDIF,
@@ -1136,7 +1089,10 @@ C read in.
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
+
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/RADTYP/IDNGH
 
 C String variables for location.
       common/CLMLOC1/city,provence,country,source,dayname,dpdescr
@@ -1149,12 +1105,9 @@ C Design conditions line of text.
 
 C Comment lines.
       common/CLMCOM/clmcomment(2)
-
-      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/RADTYP/IDNGH
       dimension ICLMEPW(12,31,24,6)
 
-      CHARACTER CLMLOC*30,WORD*24,uncert*44
+      CHARACTER CLMLOC*30,WORD*24,uncert*50
       CHARACTER LASCI*72,outs*124,OUTSTR*248
       character dcline*248
 
@@ -1206,7 +1159,7 @@ C Open the ASCII file for reading.
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
 C Read a line of text from the file, if end of file process data.
-  42  CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'line 1',IER)
+  42  CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'epw data line',IER)
       if(ier.ne.0)goto 43
       if(OUTSTR(1:8).eq.'LOCATION')then
 
@@ -1317,6 +1270,7 @@ C Convert to IDS.
           read(WORD(3:4),*)idaystart 
         endif
         call eday(idaystart,imonstart,IDS)
+
 C Debug...
 C        write(6,*)idaystart,imonstart,IDS
 
@@ -1331,14 +1285,15 @@ C Convert to IDF.
           read(WORD(3:4),*)idayfn 
         endif
         call eday(idayfn,imonfn,IDF)
-C Debug...
+
+C Debug.
 C        write(6,*)idayfn,imonfn,IDF
       else
 
 C Data line fields are as follows:
 C (1) year <integer>, (2) month <integer>, (3) day <integer>, 
 C (4) hour <integer>, (5) minute <integer>,
-C (6) data source and uncertainty flags <string 44 characgers long>,
+C (6) data source and uncertainty flags <string 44-50 characgers long>,
 C (7) dry bulb temp C <real>, (8) dew point temp C <real>, (9) RH% <real>,
 C (10) atmospheric pressure Pa <real>, (11) extraterrestrial horizontal rad Wh/m2 <real>,
 C (12) extraterrestrial direct normal radiation Wh/m2 <real>,
@@ -1353,6 +1308,9 @@ C (26) cloud ceiling metres <real>, (27) present weather observation <integer>,
 C (28) present weather codes <integer>, (29) mm of precipitable water <real>,
 C (30) aerosol optical depth <thousandths>,
 C (31) cm of snow depth <integer>, (32) days since last snowfall <integer>.
+C (33) Albedo < real >
+C (34) Liquid precipitation depth mm < real >
+C (35) Liquid precipitation rate mm/hr < real >
 
 C Loop through days. If first line then set the year.
         irecloop=irecloop+1
@@ -1362,7 +1320,7 @@ C Loop through days. If first line then set the year.
         CALL EGETWI(OUTSTR,K,lmonth,1,12,'W','line month',IER)
         CALL EGETWI(OUTSTR,K,lday,1,31,'W','line day',IER)
         CALL EGETWI(OUTSTR,K,lhour,1,24,'W','line hour',IER)
-        CALL EGETWI(OUTSTR,K,lminute,1,60,'W','line minute',IER)
+        CALL EGETWI(OUTSTR,K,lminute,0,60,'W','line minute',IER)
         CALL EGETP(OUTSTR,K,uncert,'W','uncertency flags',IER)
         CALL EGETWR(OUTSTR,K,ambdbt ,0.0,0.0,'-','amb db T',IER)
         ITMP=nint(10.0*ambdbt)
@@ -1410,6 +1368,8 @@ C use it.
         CALL EGETWI(OUTSTR,K,idaysnow,0,0,'-',
      &     'days since last snowfall',IER)
 
+C << update for albedo, percipitation depth and percipitation rate >>
+
 C Need to place current data into array structure prior to writing
 C out data to the binary file. Since going from integer ESP units
 C to ESP units in binary file no need to worry about truncation errors.
@@ -1441,8 +1401,8 @@ C Transfer this to the binary file.
 
 C Insert Climatic Year.
       IREC=366
-      IADN=IDNGH
-      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,IADN
+      ICDNGH=IDNGH
+      WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1001)IYEAR,ICDNGH
       IREC=367
       WRITE(ICLIM,REC=IREC)CLMLOC
       IREC=368

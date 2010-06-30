@@ -21,17 +21,25 @@ C Boston, MA 02111-1307 USA.
 C Common source in building/plant/ flow/ global/ optical control.
 
 C ******** ADDCNTL
-C Add or delete a building/plant/flow/optical control.
-      SUBROUTINE ADDCNTL(icfoc,ACT,IER)
+C Add or delete a building/plant/flow/optical/complex fenestration
+C control.
+      SUBROUTINE ADDCNTL(icfoc,ACT)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
 
-      common/pophelp/h(60)
+C Parameters
+      integer icfoc   ! control domain to work with 
+      character ACT*1 ! action to take - D or A or C
+      
+            common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
-
-      character ACT*1,outs*124,H*72
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER nbdaytype,nbcaldays,icalender,IDOV,IBDY,IEDY,IFDY
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
+      character outs*124,H*72
       dimension rper(30),rperf(30)
 
       if(ACT.eq.'D')then
@@ -44,6 +52,7 @@ C cancel option.
         if(icfoc.eq.2)limit=ncc
         if(icfoc.eq.3)limit=ngf
         if(icfoc.eq.5)limit=nof
+        if(icfoc.eq.6)limit=nCFCctlloops
         h(1)='Controls are referenced by their index. '
         h(2)='If you select cancel then you will be returned to '
         h(3)='control menu. '
@@ -251,13 +260,72 @@ C Optical.
   2         continue
   1       CONTINUE
           nof=nof-1
+        elseif(icfoc.eq.6.and.nCFCctlloops.eq.1)then
+          nCFCctlloops=nCFCctlloops-1
+        elseif(icfoc.eq.6.and.nCFCctlloops.ge.2)then
+
+C Complex fenestration. 
+          DO 1001 IDV=ID,nCFCctlloops-1
+            iCFCsensor(IDV,1)=iCFCsensor(IDV+1,1)
+            iCFCsensor(IDV,2)=iCFCsensor(IDV+1,2)
+            iCFCsensor(IDV,3)=iCFCsensor(IDV+1,3)
+            iCFCactuator(IDV,1)=iCFCactuator(IDV+1,1)
+            iCFCactuator(IDV,2)=iCFCactuator(IDV+1,2)
+            iCFCactuator(IDV,3)=iCFCactuator(IDV+1,3)
+            if(nCFCctldaytypes(IDV+1).eq.0)then
+              licc=3
+            else
+              licc=nCFCctldaytypes(IDV+1)
+            endif
+            nCFCctldaytypes(IDV)=nCFCctldaytypes(IDV+1)
+            do 1002 IDT=1,licc
+            iCFCctldatevalid(IDV,IDT,1)=iCFCctldatevalid(IDV+1,IDT,1)
+            iCFCctldatevalid(IDV,IDT,2)=iCFCctldatevalid(IDV+1,IDT,2)
+            nCFCdayctlperiods(IDV,IDT)=nCFCdayctlperiods(IDV+1,IDT)
+
+              do 1003 IDP=1,nCFCdayctlperiods(IDV,IDT)
+                CFCctlperiodstart(IDV,IDT,IDP)=
+     &          CFCctlperiodstart(IDV+1,IDT,IDP)
+                iCFCctltype(IDV,IDT,IDP)=iCFCctltype(IDV+1,IDT,IDP)
+                iCFCctllaw(IDV,IDT,IDP)=iCFCctllaw(IDV+1,IDT,IDP)
+                CFCmiscdata(IDV,IDT,IDP,1)=
+     &          CFCmiscdata(IDV+1,IDT,IDP,1)
+                imis=INT(CFCmiscdata(IDV,IDT,IDP,1))
+                do 1004 IPM=2,imis+1
+                  CFCmiscdata(IDV,IDT,IDP,IPM)=
+     &            CFCmiscdata(IDV+1,IDT,IDP,IPM)
+ 1004           continue
+ 1003         continue
+ 1002       continue
+ 1001     CONTINUE
+          nCFCctlloops=nCFCctlloops-1
         endif
       elseif(ACT.eq.'A')then
         h(1)='Control day types allows different control patterns '
-        h(2)='on different days.  '
-        h(3)='If you cancel when specifying the day types the control'
-        h(4)='loop will not be added (and please confirm the details '
-        h(5)='in case an error crept in. '
+        h(2)='on different days. Days are allotted to be weekdays, '
+        h(3)='saturdays and sundays by default. New day types (e.g.'
+        h(4)='holidays) can be defined and days linked to these new'
+        h(5)='day types via the calendar option in the Model Context'
+        h(6)='Menu. '
+        h(7)='If you choose to follow calendar day types you will have'
+        h(8)='the choice of imposing different control regimes on '
+        h(9)='different day types as default week/sat/sunday or as '
+        h(10)='defined from the calendar in the Model Context Menu. '
+        h(11)='If you choose "just one day type" then the '
+        h(12)='same control regime will be used for all day types.'
+        H(13)='If you choose "calendar day types" or "just one day'
+        H(14)='type" then these day types are assumed to be valid all '
+        h(15)='year long. '
+        H(16)='If you choose "dates of validity" you will be asked to'
+        H(17)='define periods in which control will be valid e.g.'
+        H(18)='you may have a different control for summer and winter.'
+        H(19)='Dates of validity should cover the whole year and be'
+        h(20)='continuous. If you do not intend to control during any'
+        H(21)='dates add a free floating controller.'
+        h(22)='If you cancel when specifying the day types the control'
+        h(23)='loop will not be added (and please confirm the details '
+        h(24)='in case an error crept in) '
+        IDOV=0
         if(icfoc.eq.0.and.ncf+1.gt.mcf)then
           call usrmsg('Cannot add more zone controls.',' ','W')
           return
@@ -272,6 +340,10 @@ C Optical.
           return
         elseif(icfoc.eq.5.and.ngf+1.gt.mcf)then
           call usrmsg('Cannot add more optical controls.',' ','W')
+          return
+        elseif(icfoc.eq.6.and.nCFCctlloops+1.gt.mcf)then
+          call usrmsg('Cannot add more complex fen. controls.',
+     &                ' ','W')
           return
         endif
         if(icfoc.eq.0)then
@@ -288,24 +360,28 @@ C if that is selected decrement ncf and return.
           IV=NBCDT(ncf)
           write(outs,'(a,i2,a)')
      &      ' Number of zone control day types (currently',IV,') :'
-          CALL EASKABC(outs,' ',
-     &      'weekday/Saturday/Sunday','one','other',IV,5)
+          CALL EASKABC(outs,'(see help)',
+     &      'Follow calendar day types','Just one day type',
+     &      'Dates of validity',IV,24)
           if(iv.eq.1)then
             NBCDT(ncf)=0
           elseif(iv.eq.2)then
             NBCDT(ncf)=1
           elseif(iv.eq.3)then
-            CALL EASKI(IV,'No of user defined control day types',' ',
-     &       0,'F',MCF,'-',1,'no control day types',IERI,5)
-            if(ieri.eq.-3)then
-              ncf=ncf-1
-              return
-            else
-              NBCDT(ncf)=IV
-            endif
+            IVP=3
+	    CALL EASKI(IVP,'No of user defined control periods ',
+     &      'in the whole year (see help) ',
+     &      0,'F',MCF,'-',1,'no periods of validity',IERI,24)
+	    if(ieri.eq.-3)then
+	      ncf=ncf-1
+	      return
+	    else
+	      NBCDT(ncf)=IVP
+              IDOV=1
+	    endif
           endif
           NN=NBCDT(ncf)
-          IF(NN.EQ.0)NN=3
+          IF(NN.EQ.0)NN=NBDAYTYPE
           h(1)='The default is one period in the day and a free-float'
           h(2)='control. You can specify that there will be several'
           h(3)='periods in the day and then supply details later.'
@@ -313,22 +389,36 @@ C if that is selected decrement ncf and return.
           h(5)='If you cancel when specifying periods in the day type'
           h(6)='the control loop will be removed. '
           do 87 ik=1,NN
+            IF(IDOV.EQ.1)THEN
+              IEDY=365
+              IF(IK.EQ.1)THEN
+                IBDY=1
+              ELSE
+                IBDY=IBCDV(NCF,IK-1,2)+1
+              ENDIF
+              CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
+              IBCDV(NCF,IK,1)=IBDY
+              IBCDV(NCF,IK,2)=IEDY
+            ENDIF
             IP=1
-            write(outs,'(a,i2)') 'How many periods in day type ',ik
+            write(outs,'(2a)') 
+     &      'How many periods in day type: ',calentag(ik)
             CALL EASKI(IP,outs,'(default is 1 period free floating)',
      &      1,'F',MCDP,'F',1,'ctl periods',IERI,6)
             if(ieri.eq.-3)then
               ncf=ncf-1
               return
             else
-              ibcdv(ncf,ik,1)=1
-              ibcdv(ncf,ik,2)=365
+              IF(IDOV.NE.1)THEN
+                ibcdv(ncf,ik,1)=1
+                ibcdv(ncf,ik,2)=365
+              ENDIF
               nbcdp(ncf,ik)=IP
             endif
 
 C Initialise and edit array of start times.
-            call initperr(IP,rper,rperf,'i')
-C            write(6,*) rper
+            if(ip.ne.1)call initperr(IP,rper,rperf,'i')
+
             do 784 IDP=1,IP
               if(IDP.eq.1)then
                 tbcps(ncf,ik,IDP)=0.
@@ -356,32 +446,31 @@ C              if(IDP.gt.1)tbcps(ncf,ik,IDP)=float(IDP)
           ipan(ncl,3)=0
 
 C Initial setup of day types.
-          h(1)='Control day types allows different control patterns '
-          h(2)='on different days.  '
-          h(3)='If you cancel when specifying the day types the control'
-          h(4)='loop will not be added (and please confirm the details'
-          h(5)='in case an error crept in. '
           IV=NPCDT(ncl)
           write(outs,'(a,i2,a)')
      &     ' Number of plant control day types (currently',IV,') :'
-          CALL EASKABC(outs,' ',
-     &      'weekday/Saturday/Sunday','one','other',IV,5)
+          CALL EASKABC(outs,'(see help)',
+     &      'Follow calendar day types','Just one day type',
+     &      'Dates of validity',IV,24)
           if(iv.eq.1)then
             NPCDT(ncl)=0
           elseif(iv.eq.2)then
             NPCDT(ncl)=1
           elseif(iv.eq.3)then
-            CALL EASKI(IV,'No of user defined control day types',' ',
-     &       0,'F',MCF,'-',1,'no control day types',IERI,5)
-            if(ieri.eq.-3)then
-              ncl=ncl-1
-              return
-            else
-              NPCDT(ncl)=IV
-            endif
+            IVP=3
+	    CALL EASKI(IVP,'No of user defined control periods ',
+     &      'in the whole year (see help) ',
+     &      0,'F',MCF,'-',1,'no periods of validity',IERI,24)
+	    if(ieri.eq.-3)then
+	      ncl=ncl-1
+	      return
+	    else
+	      NPCDT(ncl)=IVP
+              IDOV=1
+	    endif
           endif
           NN=NPCDT(ncl)
-          IF(NN.EQ.0)NN=3
+          IF(NN.EQ.0)NN=NBDAYTYPE
           h(1)='The default is one period in the day and a free-float'
           h(2)='control. You can specify that there will be several'
           h(3)='periods in the day and then supply details later.'
@@ -389,22 +478,36 @@ C Initial setup of day types.
           h(5)='If you cancel when specifying periods in the day type'
           h(6)='the control loop will be removed. '
           do 187 ik=1,NN
+            IF(IDOV.EQ.1)THEN
+              IEDY=365
+              IF(IK.EQ.1)THEN
+                IBDY=1
+              ELSE
+                IBDY=IPCDV(NCL,IK-1,2)+1
+              ENDIF
+              CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
+              IPCDV(NCL,IK,1)=IBDY
+              IPCDV(NCL,IK,2)=IEDY
+            ENDIF
             IP=1
-            write(outs,'(a,i2)') 'How many periods in day type ',ik
+            write(outs,'(2a)') 
+     &      'How many periods in day type: ',calentag(ik)
             CALL EASKI(IP,outs,'(default is 1 period free floating)',
      &      1,'F',mcdp,'F',1,'ctl periods',IERI,6)
             if(ieri.eq.-3)then
               ncl=ncl-1
               return
             else
-              ipcdv(ncl,ik,1)=1
-              ipcdv(ncl,ik,2)=365
+              IF(IDOV.NE.1)THEN
+                ipcdv(ncl,ik,1)=1
+                ipcdv(ncl,ik,2)=365
+              ENDIF
               npcdp(ncl,ik)=IP
             endif
 
 C Initialise and edit array of start times.
-            call initperr(IP,rper,rperf,'i')
-C            write(6,*) rper
+            if(ip.ne.1)call initperr(IP,rper,rperf,'i')
+
             do 287 IDP=1,IP
               if(IDP.eq.1)then
                 tpcps(ncl,ik,IDP)=0.
@@ -437,49 +540,62 @@ C Add a flow function.
           nfsup(ncc)=0
 
 C Initial setup of day types.
-          h(1)='Control day types allows different control patterns '
-          h(2)='on different days.  '
-          h(3)='If you cancel when specifying the day types the control'
-          h(4)='loop will not be added (and please confirm the details '
-          h(5)='in case an error crept in. '
           IV=nfcdt(ncc)
           write(outs,'(a,i2,a)')
      &      ' No. vent/hydronic control day types (currently',IV,') :'
-          CALL EASKABC(outs,' ',
-     &      'weekday/Saturday/Sunday','one','other',IV,5)
+          CALL EASKABC(outs,'(see help)',
+     &      'Follow calendar day types','Just one day type',
+     &      'Dates of validity',IV,24)
           if(iv.eq.1)then
             NFCDT(ncc)=0
           elseif(iv.eq.2)then
             NFCDT(ncc)=1
           elseif(iv.eq.3)then
-            CALL EASKI(IV,'No of user defined control day types',' ',
-     &       0,'F',MCF,'-',1,'no control day types',IERI,5)
-            if(ieri.eq.-3)then
-              ncc=ncc-1
-              return
-            else
-              NFCDT(ncc)=IV
-            endif
+            IVP=3
+	    CALL EASKI(IVP,'No of user defined control periods ',
+     &      'in the whole year (see help) ',
+     &      0,'F',MCF,'-',1,'no periods of validity',IERI,24)
+	    if(ieri.eq.-3)then
+	      ncc=ncc-1
+	      return
+	    else
+	      NFCDT(ncc)=IVP
+              IDOV=1
+	    endif
           endif
           NN=nfcdt(ncc)
-          IF(NN.EQ.0)NN=3
+          IF(NN.EQ.0)NN=NBDAYTYPE
           do 587 ik=1,NN
+            IF(IDOV.EQ.1)THEN
+              IEDY=365
+              IF(IK.EQ.1)THEN
+                IBDY=1
+              ELSE
+                IBDY=IFCDV(NCC,IK-1,2)+1
+              ENDIF
+              CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
+              IFCDV(NCC,IK,1)=IBDY
+              IFCDV(NCC,IK,2)=IEDY
+            ENDIF
             IP=1
-            write(outs,'(a,i2)') 'How many periods in day type ',ik
+            write(outs,'(2a)') 
+     &      'How many periods in day type: ',calentag(ik)
             CALL EASKI(IP,outs,'(default is 1 period free floating)',
      &      1,'F',mcdp,'F',1,'ctl periods',IERI,5)
             if(ieri.eq.-3)then
               ncc=ncc-1
               return
             else
-              ifcdv(ncc,ik,1)=1
-              ifcdv(ncc,ik,2)=365
+              IF(IDOV.NE.1)THEN
+                ifcdv(ncc,ik,1)=1
+                ifcdv(ncc,ik,2)=365
+              ENDIF
               nfcdp(ncc,ik)=IP
             endif
 
 C Initialise and edit array of start times.
-            call initperr(IP,rper,rperf,'i')
-C            write(6,*) rper
+            if(ip.ne.1)call initperr(IP,rper,rperf,'i')
+
             do 586 IDP=1,IP
               if(IDP.eq.1)then
                 tfcps(ncc,ik,IDP)=0.
@@ -509,23 +625,20 @@ C              if(IDP.gt.1)tfcps(ncc,ik,IDP)=float(IDP)
           igan(ngf,3)=0
 
 C Initial setup of day types.
-          h(1)='Control day types allows different control patterns '
-          h(2)='on different days.  '
-          h(3)='If you cancel when specifying the day types the control'
-          h(4)='loop will not be added (and please confirm the details '
-          h(5)='in case an error crept in). '
           IV=NGCDT(ngf)
-          CALL EASKI(IV,'No of control day types',
-     &      ' (Nb. 0 implies typical Weekday/Saturday/Sunday ). ',
-     &      0,'F',mcf,'-',50,'no control day types',IERI,5)
-          if(ieri.eq.-3)then
-            ngf=ngf-1
-            return
-          else
-            NGCDT(ngf)=IV
+          write(outs,'(a,i2,a)')
+     &      ' Number of global control day types (currently',IV,') :'
+          CALL EDISP(IUOUT,
+     &    ' Dates of validity are not supported for global controls')
+          CALL EASKABC(outs,'(see help)',
+     &      'Follow calendar day types','Just one day type',' ',IV,24)
+          if(iv.eq.1)then
+            NGCDT(ncc)=0
+          elseif(iv.eq.2)then
+            NGCDT(ncc)=1
           endif
           NN=NGCDT(ngf)
-          IF(NN.EQ.0)NN=3
+          IF(NN.EQ.0)NN=NBDAYTYPE
           do 687 ik=1,NN
             igcdv(ngf,ik,1)=1
             igcdv(ngf,ik,2)=365
@@ -549,24 +662,28 @@ C if that is selected decrement ncf and return.
           IV=NOCDT(nof)
           write(outs,'(a,i2,a)')
      &      ' Number of optical control day types (currently',IV,') :'
-          CALL EASKABC(outs,' ',
-     &      'weekday/Saturday/Sunday','one','other',IV,5)
+          CALL EASKABC(outs,'(see help)',
+     &      'Follow calendar day types','Just one day type',
+     &      'Dates of validity',IV,24)
           if(iv.eq.1)then
             NOCDT(nof)=0
           elseif(iv.eq.2)then
             NOCDT(nof)=1
           elseif(iv.eq.3)then
-            CALL EASKI(IV,'No of user defined control day types',' ',
-     &       0,'F',MCF,'-',1,'no control day types',IERI,5)
-            if(ieri.eq.-3)then
-              nof=nof-1
-              return
-            else
-              NOCDT(nof)=IV
-            endif
+            IVP=3
+	    CALL EASKI(IVP,'No of user defined control periods ',
+     &      'in the whole year (see help) ',
+     &      0,'F',MCF,'-',1,'no periods of validity',IERI,24)
+	    if(ieri.eq.-3)then
+	      nof=nof-1
+	      return
+	    else
+	      NOCDT(nof)=IVP
+              IDOV=1
+	    endif
           endif
           NN=NOCDT(nof)
-          IF(NN.EQ.0)NN=3
+          IF(NN.EQ.0)NN=NBDAYTYPE
           h(1)='The default is one period in the day and a free-float'
           h(2)='control. You can specify that there will be several'
           h(3)='periods in the day and then supply details later.'
@@ -574,22 +691,36 @@ C if that is selected decrement ncf and return.
           h(5)='If you cancel when specifying periods in the day type'
           h(6)='the control loop will be removed. '
           do 5 ik=1,NN
+            IF(IDOV.EQ.1)THEN
+              IEDY=365
+              IF(IK.EQ.1)THEN
+                IBDY=1
+              ELSE
+                IBDY=IOCDV(NOF,IK-1,2)+1
+              ENDIF
+              CALL EASKPER('Dates of validity:',IBDY,IEDY,IFDY,IER)
+              IOCDV(NOF,IK,1)=IBDY
+              IOCDV(NOF,IK,2)=IEDY
+            ENDIF
             IP=1
-            write(outs,'(a,i2)') 'How many periods in day type ',ik
+            write(outs,'(2a)') 
+     &      'How many periods in day type: ',calentag(ik)
             CALL EASKI(IP,outs,'(default is 1 period free floating)',
      &      1,'F',mcdp,'F',1,'ctl periods',IERI,6)
             if(ieri.eq.-3)then
               nof=nof-1
               return
             else
-              iocdv(nof,ik,1)=1
-              iocdv(nof,ik,2)=365
+              IF(IDOV.NE.1)THEN
+                iocdv(nof,ik,1)=1
+                iocdv(nof,ik,2)=365
+              ENDIF
               nocdp(nof,ik)=IP
             endif
 
 C Initialise and edit array of start times.
-            call initperr(IP,rper,rperf,'i')
-C            write(6,*) rper
+            if(ip.ne.1)call initperr(IP,rper,rperf,'i')
+
             do 6 IDP=1,IP
               if(IDP.eq.1)then
                 tocps(ncf,ik,IDP)=0.
@@ -607,6 +738,78 @@ C              if(IDP.gt.1)tbcps(ncf,ik,IDP)=float(IDP)
               omiscd(nof,ik,IDP,1)=0.
   6         continue
   5       continue
+        elseif(icfoc.eq.6)then
+          nCFCctlloops=nCFCctlloops+1
+          iCFCsensor(nCFCctlloops,1)=0
+          iCFCsensor(nCFCctlloops,2)=0
+          iCFCsensor(nCFCctlloops,3)=0
+          iCFCsensor(nCFCctlloops,4)=0
+          iCFCactuator(nCFCctlloops,1)=0
+          iCFCactuator(nCFCctlloops,2)=0
+          iCFCactuator(nCFCctlloops,3)=0
+
+C Initial setup of day types. Offer the user a cancel option and
+C if that is selected decrement nCFCctlloops and return.
+          IV=nCFCctldaytypes(nCFCctlloops)
+          write(outs,'(a,i2,a)')
+     &      ' Number of zone control day types (currently',IV,') :'
+          CALL EASKABC(outs,' ',
+     &      'weekday/Saturday/Sunday','one','other',IV,5)
+          if(iv.eq.1)then
+            nCFCctldaytypes(nCFCctlloops)=0
+          elseif(iv.eq.2)then
+            nCFCctldaytypes(nCFCctlloops)=1
+          elseif(iv.eq.3)then
+            CALL EASKI(IV,'No of user defined control day types',' ',
+     &       0,'F',MCF,'-',1,'no control day types',IERI,5)
+            if(ieri.eq.-3)then
+              nCFCctlloops=nCFCctlloops-1
+              return
+            else
+              nCFCctldaytypes(nCFCctlloops)=IV
+            endif
+          endif
+          NN=nCFCctldaytypes(nCFCctlloops)
+          IF(NN.EQ.0)NN=3
+          h(1)='The default is one period in the day and a free-float'
+          h(2)='control. You can specify that there will be several'
+          h(3)='periods in the day and then supply details later.'
+          h(4)='You can add or delete or modify periods later.'
+          h(5)='If you cancel when specifying periods in the day type'
+          h(6)='the control loop will be removed. '
+          do 6687 ik=1,NN
+            IP=1
+            write(outs,'(a,i2)') 'How many periods in day type ',ik
+            CALL EASKI(IP,outs,'(default is 1 period free floating)',
+     &      1,'F',MCDP,'F',1,'ctl periods',IERI,6)
+            if(ieri.eq.-3)then
+              nCFCctlloops=nCFCctlloops-1
+              return
+            else
+              iCFCctldatevalid(nCFCctlloops,ik,1)=1
+              iCFCctldatevalid(nCFCctlloops,ik,2)=365
+              nCFCdayctlperiods(nCFCctlloops,ik)=IP
+            endif
+
+C Initialise and edit array of start times.
+            call initperr(IP,rper,rperf,'i')
+            do 6784 IDP=1,IP
+              if(IDP.eq.1)then
+                CFCctlperiodstart(nCFCctlloops,ik,IDP)=0.
+              else
+                if(rper(IDP).gt.0.0)then 
+                  CFCctlperiodstart(nCFCctlloops,ik,IDP)=rper(IDP)
+                else
+                  CFCctlperiodstart(nCFCctlloops,ik,IDP)=float(IDP)
+                endif
+              endif
+              iCFCctltype(nCFCctlloops,ik,IDP)=1
+              iCFCctllaw(nCFCctlloops,ik,IDP)=1
+              CFCmiscdata(nCFCctlloops,ik,IDP,1)=2.
+              CFCmiscdata(nCFCctlloops,ik,IDP,2)=0.
+              CFCmiscdata(nCFCctlloops,ik,IDP,3)=0.
+ 6784       continue
+ 6687      continue
         endif
       elseif(ACT.eq.'C')then
 
@@ -626,6 +829,9 @@ C Copy an existing control loop.
         elseif(icfoc.eq.5.and.ngf+1.gt.mcf)then
           call usrmsg('Cannot add more optical controls.',' ','W')
           return
+        elseif(icfoc.eq.6.and.nCFCctlloops+1.gt.mcf)then
+          call usrmsg('Cannot add more complex fen. controls.',' ','W')
+          return
         endif
         ICC=1
         if(icfoc.eq.0)limit=ncf
@@ -633,6 +839,7 @@ C Copy an existing control loop.
         if(icfoc.eq.2)limit=ncc
         if(icfoc.eq.3)limit=ngf
         if(icfoc.eq.5)limit=nof
+        if(icfoc.eq.6)limit=nCFCctlloops
         h(1)='Control functions are referenced by their index. '
         h(2)='A cancel returns you to the main control menu. '
         CALL EASKI(ICC,' ',' Which control function index to copy? ',
@@ -785,6 +992,44 @@ C Copy an existing control loop.
   9           continue
   8         continue
   7       continue
+        elseif(icfoc.eq.6)then
+          nCFCctlloops=nCFCctlloops+1
+          iCFCsensor(nCFCctlloops,1)=iCFCsensor(ICC,1)
+          iCFCsensor(nCFCctlloops,2)=iCFCsensor(ICC,2)
+          iCFCsensor(nCFCctlloops,3)=iCFCsensor(ICC,3)
+          iCFCsensor(nCFCctlloops,3)=0    ! set nested control to OFF as default
+          iCFCactuator(nCFCctlloops,1)=iCFCactuator(ICC,1)
+          iCFCactuator(nCFCctlloops,2)=iCFCactuator(ICC,2)
+          iCFCactuator(nCFCctlloops,3)=iCFCactuator(ICC,3)
+          if(nCFCctldaytypes(ICC).eq.0)then
+            licc=3
+          else
+            licc=nCFCctldaytypes(ICC)
+          endif
+          nCFCctldaytypes(nCFCctlloops)=nCFCctldaytypes(ICC)
+          do 6780 IDT=1,licc
+            iCFCctldatevalid(nCFCctlloops,IDT,1)=
+     &      iCFCctldatevalid(ICC,IDT,1)
+            iCFCctldatevalid(nCFCctlloops,IDT,2)=
+     &      iCFCctldatevalid(ICC,IDT,2)
+            nCFCdayctlperiods(nCFCctlloops,IDT)=
+     &      nCFCdayctlperiods(ICC,IDT)
+            do 6781 IDP=1,nCFCdayctlperiods(ICC,IDT)
+              CFCctlperiodstart(nCFCctlloops,IDT,IDP)=
+     &        CFCctlperiodstart(ICC,IDT,IDP)
+              iCFCctltype(nCFCctlloops,IDT,IDP)=
+     &        iCFCctltype(ICC,IDT,IDP)
+              iCFCctllaw(nCFCctlloops,IDT,IDP)=
+     &        iCFCctllaw(ICC,IDT,IDP)
+              CFCmiscdata(nCFCctlloops,IDT,IDP,1)=
+     &        CFCmiscdata(ICC,IDT,IDP,1)
+              imis=INT(CFCmiscdata(ICC,IDT,IDP,1))
+              do 6782 IPM=2,imis+1
+                CFCmiscdata(nCFCctlloops,IDT,IDP,IPM)=
+     &          CFCmiscdata(ICC,IDT,IDP,IPM)
+ 6782         continue
+ 6781       continue
+ 6780     continue
         endif
       endif
       return
@@ -792,11 +1037,15 @@ C Copy an existing control loop.
 
 C ******** ADDCTLD
 C Add or delete a building/plant/flow/global/optical control day type.
-      SUBROUTINE ADDCTLD(icfoc,II,IER)
+      SUBROUTINE ADDCTLD(icfoc,II)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
 
+C Parameters
+      integer icfoc   ! control domain to work with 
+      integer II      ! index of the control
+      
       common/pophelp/h(60)
       character h*72
 
@@ -810,6 +1059,8 @@ C Add or delete a building/plant/flow/global/optical control day type.
         nn=ngcdt(ii)
       elseif(icfoc.eq.5)then
         nn=nocdt(ii)
+      elseif(icfoc.eq.6)then
+        nn=nCFCctldaytypes(ii)
       endif
 
       h(1)='One of the actions which can be taken on a control.'
@@ -914,7 +1165,27 @@ C Add or delete a building/plant/flow/global/optical control day type.
   1       continue
           NN=NN-1
           nocdt(II)=NN
-        endif
+        elseif(icfoc.eq.6.and.NN.ge.2)then
+          do 6793 IDT=ID,NN-1
+            iCFCctldatevalid(II,IDT,1)=iCFCctldatevalid(II,IDT+1,1)
+            iCFCctldatevalid(II,IDT,2)=iCFCctldatevalid(II,IDT+1,2)
+            nCFCdayctlperiods(II,IDT)=nCFCdayctlperiods(II,IDT+1)
+            do 6794 IDP=1,nCFCdayctlperiods(II,IDT)
+              CFCctlperiodstart(II,IDT,IDP)=
+     &        CFCctlperiodstart(II,IDT+1,IDP)
+              iCFCctltype(II,IDT,IDP)=iCFCctltype(II,IDT+1,IDP)
+              iCFCctllaw(II,IDT,IDP)=iCFCctllaw(II,IDT+1,IDP)
+              CFCmiscdata(II,IDT,IDP,1)=CFCmiscdata(II,IDT+1,IDP,1)
+              imis=INT(CFCmiscdata(II,IDT,IDP,1))
+              do 6795 IPM=2,imis+1
+                CFCmiscdata(II,IDT,IDP,IPM)=
+     &          CFCmiscdata(II,IDT+1,IDP,IPM)
+ 6795         continue
+ 6794       continue
+ 6793     continue
+          NN=NN-1
+          nCFCctldaytypes(II)=NN
+          endif
       ELSEIF(IW.EQ.2)THEN
 
 C Create a new control day type.
@@ -1028,6 +1299,28 @@ C Create a new control day type.
             ioclaw(II,no,IDP)=0
             omiscd(II,no,IDP,1)=0.
   4       continue
+        elseif(icfoc.eq.6.and.NN+1.LE.MCDT)then
+          IP=1
+          CALL EASKI(IP,' How many periods in this day type? ',
+     &      '(default is 1 period free floating)',
+     &      1,'F',MCDP,'F',1,'ctl periods',IERI,7)
+          if(ieri.eq.-3)then
+            goto 77
+          else
+            NN=NN+1
+            nCFCctldaytypes(II)=NN
+            nb=nCFCctldaytypes(II)
+            iCFCctldatevalid(II,nb,1)=1
+            iCFCctldatevalid(II,nb,2)=365
+            nCFCdayctlperiods(II,nb)=IP
+          endif
+          do 6784 IDP=1,IP
+            if(IDP.eq.1)CFCctlperiodstart(II,nb,IDP)=0.
+            if(IDP.gt.1)CFCctlperiodstart(II,nb,IDP)=float(IDP)
+            iCFCctltype(II,nb,IDP)=1
+            iCFCctllaw(II,nb,IDP)=1
+            CFCmiscdata(II,nb,IDP,1)=2.
+ 6784     continue
         endif
       elseif(IW.EQ.3)then
 
@@ -1125,7 +1418,24 @@ C Copy and existing control loop day type.
               omiscd(II,no,IDP,IPM)=omiscd(II,IDC,IDP,IPM)
   6         continue
   5       continue
-         endif
+        elseif(icfoc.eq.6.and.NN+1.LE.MCDT)then
+          NN=NN+1
+          nCFCctldaytypes(II)=NN
+          nb=nCFCctldaytypes(II)
+          iCFCctldatevalid(II,nb,1)=iCFCctldatevalid(II,IDC,1)
+          iCFCctldatevalid(II,nb,2)=iCFCctldatevalid(II,IDC,2)
+          nCFCdayctlperiods(II,nb)=nCFCdayctlperiods(II,IDC)
+          do 6494 IDP=1,nCFCdayctlperiods(II,IDC)
+            CFCctlperiodstart(II,nb,IDP)=CFCctlperiodstart(II,IDC,IDP)
+            iCFCctltype(II,nb,IDP)=iCFCctltype(II,IDC,IDP)
+            iCFCctllaw(II,nb,IDP)=iCFCctllaw(II,IDC,IDP)
+            CFCmiscdata(II,nb,IDP,1)=CFCmiscdata(II,IDC,IDP,1)
+            imis=INT(CFCmiscdata(II,IDC,IDP,1))
+            do 6495 IPM=2,imis+1
+              CFCmiscdata(II,nb,IDP,IPM)=CFCmiscdata(II,IDC,IDP,IPM)
+ 6495       continue
+ 6494     continue
+        endif
       elseif(IW.EQ.4)then
         return
       endif
@@ -1133,22 +1443,29 @@ C Copy and existing control loop day type.
       end
 
 C ******** ADDCTLDP
-C Add or delete a building/plant/flow/global/optical control period.
-C II is the loop, ID is the day type, act is "D" delete, "A"
-C for add.
-      SUBROUTINE ADDCTLDP(icfoc,II,ID,act,IER)
+C Add or delete a building/plant/flow/global/optical/complex fen
+C control period.
+      SUBROUTINE ADDCTLDP(icfoc,II,ID,act)
 #include "building.h"
 #include "net_flow.h"
 #include "control.h"
 
+C Parameters
+      integer icfoc   ! control domain to work with 
+      integer II      ! control loop to work with
+      integer ID      ! day type to act on
+      character ACT*1 ! action to take - D (delete) or A (add)
+
+
       common/pophelp/h(60)
-      character h*72,act*1
+      character h*72
 
       if(icfoc.eq.0)limit=nbcdp(II,ID)
       if(icfoc.eq.1)limit=npcdp(II,ID)
       if(icfoc.eq.2)limit=nfcdp(II,ID)
       if(icfoc.eq.3)limit=ngcdp(II,ID)
       if(icfoc.eq.5)limit=nocdp(II,ID)
+      if(icfoc.eq.6)limit=nCFCdayctlperiods(II,ID)
       if(act(1:1).eq.'D'.or.act(1:1).eq.'d')then
         IP=1
         h(1)='Expecting an index of the period. If you select'
@@ -1216,6 +1533,20 @@ C for add.
   2         continue
   1       continue
           nocdp(II,ID)=nocdp(II,ID)-1
+        elseif(icfoc.eq.6)then
+          do 994 IDP=IP,limit-1
+            CFCctlperiodstart(II,ID,IDP)=
+     &      CFCctlperiodstart(II,ID,IDP+1)
+            iCFCctltype(II,ID,IDP)=iCFCctltype(II,ID,IDP+1)
+            iCFCctllaw(II,ID,IDP)=iCFCctllaw(II,ID,IDP+1)
+            CFCmiscdata(II,ID,IDP,1)=CFCmiscdata(II,ID,IDP+1,1)
+            imis=INT(CFCmiscdata(II,ID,IDP+1,1))
+            do 995 IPM=2,imis+1
+              CFCmiscdata(II,ID,IDP,IPM)=
+     &        CFCmiscdata(II,ID,IDP+1,IPM)
+  995       continue
+  994     continue
+          nCFCdayctlperiods(II,ID)=nCFCdayctlperiods(II,ID)-1
         endif
       elseif(act(1:1).eq.'A'.or.act(1:1).eq.'a')then
 
@@ -1263,6 +1594,15 @@ C Add a control period (make period start 1 hour after the previous one.
           ioctyp(II,ID,IDP)=0
           ioclaw(II,ID,IDP)=2
           omiscd(II,ID,IDP,1)=0.
+        elseif(icfoc.eq.6.and.limit+1.LE.MCDP)then
+          nCFCdayctlperiods(II,ID)=nCFCdayctlperiods(II,ID)+1
+          IDP=nCFCdayctlperiods(II,ID)
+          CFCctlperiodstart(II,ID,IDP)=0.
+          if(IDP.gt.1)CFCctlperiodstart(II,ID,IDP)=
+     &    CFCctlperiodstart(II,ID,IDP-1)+1.0
+          iCFCctltype(II,ID,IDP)=1
+          iCFCctllaw(II,ID,IDP)=1
+          CFCmiscdata(II,ID,IDP,1)=2.
         endif
       endif
       return
@@ -1271,23 +1611,27 @@ C Add a control period (make period start 1 hour after the previous one.
 C ******** LSTCNTL
 C List a building/plant/flow/global/optical control.  If II = 0 then
 C list out the zone/loop associations. 
-      SUBROUTINE LSTCNTL(itru,icfoc,II,IER)
+      SUBROUTINE LSTCNTL(itru,icfoc,II)
 #include "building.h"
 #include "geometry.h"
 #include "net_flow.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
+C Parameters
+      integer itru  ! unit for feedback
+      integer icfoc ! control domain to work with
+      integer II    ! zero list all otherwise list specific
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctl/icascf(mcom)
 
-      character outs*124,SSTR*72
+      character outs*124,SSTR*96
 
 C List linkages with zones if II = 0.
       if(II.eq.0)then
-        if(icfoc.eq.0)then
+        if(icfoc.eq.0.or.icfoc.eq.6)then
           call edisp(itru,' ')
           call edisp(itru,' Zone to contol loop linkages:')
           DO 28 LC=1,NCOMP
@@ -1329,6 +1673,8 @@ C List function details.
         nn=necdt(ii)
       elseif(icfoc.eq.5)then
         nn=nocdt(ii)
+      elseif(icfoc.eq.6)then
+        nn=nCFCctldaytypes(ii)
       endif
       IF(nn.EQ.0)THEN
         call edisp(itru,
@@ -1341,7 +1687,7 @@ C List function details.
       if(nn.eq.0)nn=3
       do 20 j=1,nn
         JJ=J
-        call lstcntld(itru,icfoc,II,JJ,iier)
+        call lstcntld(itru,icfoc,II,JJ)
    20 CONTINUE
       return
       end
@@ -1409,6 +1755,15 @@ C Copies from control commons to working array.
         do 47 m=2,iv1+1
           cm(m)=OMISCD(I,J,K,m)
   47    continue
+      elseif(icfoc.eq.6)then
+        iclaw=iCFCctllaw(I,J,K)
+        ictyp=iCFCctltype(I,J,K)
+        tcps=CFCctlperiodstart(I,J,K)
+        iv1=int(CFCmiscdata(I,J,K,1))
+        cm(1)=CFCmiscdata(I,J,K,1)
+        do 48 m=2,iv1+1
+          cm(m)=CFCmiscdata(I,J,K,m)
+  48    continue
       endif
       return
       end
@@ -1473,6 +1828,14 @@ C is introduced
         do 47 m=2,iv1+1
           OMISCD(I,J,K,m)=cm(m)
   47    continue
+      elseif(icfoc.eq.6)then
+        iCFCctllaw(I,J,K)=iclaw
+        iCFCctltype(I,J,K)=ictyp
+        CFCctlperiodstart(I,J,K)=tcps
+        CFCmiscdata(I,J,K,1)=cm(1)
+        do 48 m=2,iv1+1
+          CFCmiscdata(I,J,K,m)=cm(m)
+  48    continue
       endif
       return
       end

@@ -34,8 +34,10 @@ C esrures/psychart.F - revised to for plotting climate data.
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/CLMDT1/CLMLOC
-      COMMON/CLMDT0/CLAT,CLONG
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
       COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
      &              CDIR(MT),CHUM(MT)
       common/pixhist/ipixhist(8760,2)
@@ -45,7 +47,7 @@ C esrures/psychart.F - revised to for plotting climate data.
       CHARACTER*30 CLMLOC
       character PERST1*14,PERST2*40,PERST3*40
       logical close,colok,cscaleok,ok,dok
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
@@ -77,8 +79,10 @@ C of ambient temperature from current climate period.
       enthminx= (enthp2(Xmin,Ytmax/1000.))    
       enthminy= (enthp2(Xmin,Ytmin/1000.)) 
       enthmaxy= (enthp2(Xmin,Ytmax/1000.)) 
-C Debug..
+
+C Debug.
 C      write(6,*)'x x ',xmin,xmax,enthmax,enthminx,enthminy,enthmaxy
+
  10   call psychartbackground(Xmin,Xmax,Ytmin,Ytmax,enthmax,
      &  enthminx,enthminy,enthmaxy)
 
@@ -198,8 +202,10 @@ C range of T or RH via colmult.
 C If within temperature range, plot it.
             if(X.ge.Xmin.and.X.le.Xmax)then
               call u2pixel(X,GS,ix,iy)
-C Debug..
+
+C Debug.
 C              write(6,*) ihrplt,colmult,icolindex,ix,iy,CTMP(K),CHUM(K)
+
               ipixhist(ihrplt,1)=ix
               ipixhist(ihrplt,2)=iy
               call esymbol(ix,iy,32,1)
@@ -284,10 +290,10 @@ C enthmaxy enthalpy y axis maximum
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       logical close,colok,cscaleok
-      CHARACTER puts*12
+      CHARACTER puts*16
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
@@ -412,8 +418,10 @@ C Case where TD<60 and GS>30
               IPFLAG=1 
             ENDIF                                       
           ENDIF
-C Debug...
+
+C Debug.
 C          write(6,*) TD,xmax,xmax/2.
+
           call eclose(TD,real(int(xmax/2.)),0.001,close)
 C          IF(TD.EQ.int(xmax/2.)) THEN
           IF(close) THEN

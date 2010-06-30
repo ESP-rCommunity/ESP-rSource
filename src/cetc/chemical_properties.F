@@ -54,6 +54,89 @@ C  Thermodynamics", John Wiley & Sons, 1994.
 C
 C======================================================================
 
+C------------------ Populate_compounds --------------------------------
+C
+C This function populates the array iCompound_Composition with integers
+C containing the composition of various chemical compounds.
+C
+C Inputs
+C  - None
+C
+C Outputs:
+C  - Array iCompound_Composition populated with chemical compositions
+C
+C----------------------------------------------------------------------
+
+      subroutine populate_compounds()
+      implicit none
+#include "chemical_properties.h"
+
+      logical bChemPopulated
+      save bChemPopulated
+      data bChemPopulated / .false. /
+
+      if ( bChemPopulated ) return
+
+C.....First zero all arrays
+       compound_loop: do iCPc = 1, iCompound_count
+
+         element_loop: do iElc = 1, iElement_count
+
+          iCompound_Composition(iCPc, iElc ) = 0
+
+         enddo element_loop
+
+      enddo compound_loop
+
+C.....Now add elemental compositions
+      iCompound_Composition(iHydrogen,   iElement_Hydrogen ) =  2
+
+      iCompound_Composition(iMethane,    iElement_Carbon   ) =  1
+      iCompound_Composition(iMethane,    iElement_Hydrogen ) =  4
+
+      iCompound_Composition(iEthane,     iElement_Carbon   ) =  2
+      iCompound_Composition(iEthane,     iElement_Hydrogen ) =  6
+
+      iCompound_Composition(iPropane,    iElement_Carbon   ) =  3
+      iCompound_Composition(iPropane,    iElement_Hydrogen ) =  8
+
+      iCompound_Composition(iButane,     iElement_Carbon   ) =  4
+      iCompound_Composition(iButane,     iElement_Hydrogen ) = 10
+
+      iCompound_Composition(iHexane,     iElement_Carbon   ) =  6
+      iCompound_Composition(iHexane,     iElement_Hydrogen ) = 14
+
+      iCompound_Composition(iPentane,    iElement_Carbon   ) =  5
+      iCompound_Composition(iPentane,    iElement_Hydrogen ) = 12
+
+      iCompound_Composition(iC_Monoxide, iElement_Carbon   ) =  1
+      iCompound_Composition(iC_Monoxide, iElement_Oxygen   ) =  1
+
+      iCompound_Composition(iC_Dioxide,  iElement_Carbon   ) =  1
+      iCompound_Composition(iC_Dioxide,  iElement_Oxygen   ) =  2
+
+      iCompound_Composition(iOxygen,     iElement_Oxygen   ) =  2
+
+      iCompound_Composition(iNitrogen,   iElement_Nitrogen ) =  2
+
+      iCompound_Composition(iWater_l,    iElement_Hydrogen ) =  2
+      iCompound_Composition(iWater_l,    iElement_Oxygen   ) =  1
+
+      iCompound_Composition(iWater_v,    iElement_Hydrogen ) =  2
+      iCompound_Composition(iWater_v,    iElement_Oxygen   ) =  1
+
+      iCompound_Composition(iMethanol,   iElement_Carbon   ) =  1
+      iCompound_Composition(iMethanol,   iElement_Hydrogen ) =  4
+      iCompound_Composition(iMethanol,   iElement_Oxygen   ) =  1
+
+      iCompound_Composition(iEthanol,    iElement_Carbon   ) =  2
+      iCompound_Composition(iEthanol,    iElement_Hydrogen ) =  6
+      iCompound_Composition(iEthanol,    iElement_Oxygen   ) =  1
+
+      bChemPopulated = .true. 
+
+      return
+      end subroutine populate_compounds
 
 C------------------ fCompound_R ---------------------------------------
 C
@@ -161,8 +244,8 @@ C.....Counters
       integer ii, jj
 
 C.....Element index (also the element's atomic number)
-      integer iElement_index      
-      
+      integer iElement_index
+
       logical bMolarMass
       save bMolarMass
       data bMolarMass / .false. /
@@ -170,6 +253,7 @@ C.....Element index (also the element's atomic number)
 
 C.....Check if masses have been initialized
       if ( .not. bMolarMass ) then
+        call populate_compounds()
 C----------------------------------------------------------------------
 C     Molar masses (kg/kmol).
 C----------------------------------------------------------------------
@@ -183,7 +267,7 @@ C...........Loop through active elements
 C..............Get indicies of active elements
                iElement_index = iActive_elements(jj)
 
-C..............Increment molar mass table with compound               
+C..............Increment molar mass table with compound
                fMolar_Mass_Table(ii) = fMolar_Mass_Table(ii)
      &           + float( iCompound_Composition (ii,iElement_index) )
      &                * fElement_Molar_mass ( iElement_index )
@@ -197,8 +281,8 @@ C..............Increment molar mass table with compound
       endif
 
 C.....Return requested molar mass
+      
       fEval_Compound_MM = fMolar_Mass_Table ( iCompound )
-
       return
       end
 
@@ -428,7 +512,7 @@ C.....References
 
 C.....On first call, populate LHV_table
       if ( .not. bLower_Heating_Value ) then
-
+         call populate_compounds()
 C........Loop through compounds
          do ii = 1, iCompound_count
 C...........If compound cannot be oxidized, report LHV as zero
@@ -724,6 +808,8 @@ C----------------------------------------------------------------------
       integer ii
 
       real fMol_count
+
+      call populate_compounds()
 
       fMol_count = 0.0
       do ii = 1, iCompound_count

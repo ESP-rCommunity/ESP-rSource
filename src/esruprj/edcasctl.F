@@ -26,6 +26,7 @@ C EDCASCTL - edit casual gain control data.
 
       SUBROUTINE  EDCASCTL(ITRC,ICOMP,IER)
 #include "building.h"
+#include "model.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
@@ -47,10 +48,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
@@ -79,11 +76,6 @@ C TMC common block:
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
 
-
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
       common/RAY3/MODIFY,MODLEN,MODBND
 
       DIMENSION ITMC2DF(30),KSTR(MDTY)
@@ -94,7 +86,6 @@ C TMC common block:
       logical browse
 
       character H*72,outs*124,LTMP*72,DTMP*64
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -104,6 +95,11 @@ C TMC common block:
       CHARACTER SPARENT*12
       CHARACTER info*18,cgcdesc*64,brw*8
       INTEGER IX,IY,IZ,KSTR
+#ifdef OSI
+      integer iix,iiy
+#else
+      integer*8 iix,iiy
+#endif
 
 C Assume daylight coeffs do need calculated.
       ldcoef=.true.
@@ -201,7 +197,7 @@ C Rescan geometry file.
       IUF=IFIL+1
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,0,0,ITRU,IER)
+        call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
       else
         call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,ITRU,IER)
       endif
@@ -290,8 +286,8 @@ C For each sensor for methods 1,2,4.
           COG1(3)=CGH(ICOMP,N,J)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),ix,iy)
-          CALL ecirc(ix,iy,2,1)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL ecirc(iix,iiy,2,1)
           tip(1)=CGX(ICOMP,N,J)+UX(ICOMP,N,J)
           tip(2)=CGY(ICOMP,N,J)+UY(ICOMP,N,J)
           tip(3)=CGH(ICOMP,N,J)+UH(ICOMP,N,J)
@@ -322,8 +318,8 @@ C Daylight coef method (5).
           COG1(3)=CGH(ICOMP,N,J)
           CALL VECTRN(COG1,TEMAT,COG2,IER)
           CALL VECTRN(COG2,ETSMAT,COG3,IER)
-          call u2pixel(COG3(1),COG3(2),ix,iy)
-          CALL ecirc(ix,iy,2,1)
+          call u2pixel(COG3(1),COG3(2),iix,iiy)
+          CALL ecirc(iix,iiy,2,1)
           tip(1)=CGX(ICOMP,N,J)+UX(ICOMP,N,J)
           tip(2)=CGY(ICOMP,N,J)+UY(ICOMP,N,J)
           tip(3)=CGH(ICOMP,N,J)+UH(ICOMP,N,J)
@@ -1038,12 +1034,20 @@ C status.
           DO 51 I=1,NSUR
             IF(ITMCFL(ICOMP,I).gt.0)then
               NTMC=ITMCFL(ICOMP,I)
-C              write(6,*) 'TMC No. =',NTMC            
+
+C Debug.
+C              write(6,*) 'TMC No. =',NTMC 
+           
               IF(IBCMT(ICOMP,NTMC).EQ.1) NDCFS(ig) = 2
+
+C Debug.
 C              write(6,*) 'Suface No. =',I
 C              write(6,*) 'Blind flag = ',IBCMT(ICOMP,NTMC)
+
             ENDIF
 51        CONTINUE
+
+C Debug.
 C          write(6,*) 'No. of DC stages = ',NDCFS(ig)
          
 C Set all daylight coefficients to -1 for this sensor (i.e. not calculated yet)

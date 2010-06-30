@@ -20,6 +20,9 @@ C Boston, MA 02111-1307 USA.
 
 C PLELEV: Scales and draws a site plan/elev showing zone & obstructions.
 
+C NOTE: This version of PELEV is no longer called. All code now uses
+C the version in plelevvc.F
+
 C ************* PLELEV
 C PLELEV Scales and draws a plan or elevation of a model
 C and the surrounding obstruction blocks. direc is
@@ -29,8 +32,9 @@ C array of selected zones to include.
 C IUF is file unit for geometry, utility file units.
       SUBROUTINE PLELEV(IUF,direc,ier)
 #include "building.h"
+#include "model.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G2/precz/GS5/GS6.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -40,18 +44,10 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
+      COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
@@ -61,14 +57,13 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/GFONT/IFS,ITFS,IMFS
 
       CHARACTER sstr*90,blabel*4,direc*1
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       character tz*13
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
 #else
       integer*8 igwid,igheight  ! for use with axiscale
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
 #endif
       logical newgeo  ! to use for testing if new/old geometry file.
       newgeo=.false.  ! assume older format geometry.
@@ -128,30 +123,30 @@ C file and plot it. Move to first vertex and give the zone name.
         newfoc=nznog(mz)
         call eclose(gversion(newfoc),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+          call georead(IUF,LGEOM(newfoc),newfoc,0,IUOUT,IER)
         else
           call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
         endif
 
 C Check for a zone obstructions file.
         if(IOBS(newfoc).EQ.1)then
-          CALL EGOMST(IUF,ZOBS(newfoc),0,0,iuout,IER)
+          CALL EGOMST(IUF,newfoc,ZOBS(newfoc),0,0,iuout,IER)
         elseif(IOBS(newfoc).EQ.2)then
           continue
         endif
 
         if(direc.eq.'P')then
-          call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,2),ix,iy)
+          call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,2),iix,iiy)
           iupdown=0
           isym=0
           call etplot(ZCOG(newfoc,1),ZCOG(newfoc,2),iupdown,isym)
         elseif(direc.eq.'S')then
-          call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,3),ix,iy)
+          call u2pixel(ZCOG(newfoc,1),ZCOG(newfoc,3),iix,iiy)
           iupdown=0
           isym=0
           call etplot(ZCOG(newfoc,1),ZCOG(newfoc,3),iupdown,isym)
         elseif(direc.eq.'E')then
-          call u2pixel(ZCOG(newfoc,2),ZCOG(newfoc,3),ix,iy)
+          call u2pixel(ZCOG(newfoc,2),ZCOG(newfoc,3),iix,iiy)
           iupdown=0
           isym=0
           call etplot(ZCOG(newfoc,2),ZCOG(newfoc,3),iupdown,isym)
@@ -159,10 +154,12 @@ C Check for a zone obstructions file.
         IF(lnzname(newfoc).GT.1)THEN
           write(tz,'(A)')zname(newfoc)
           call winfnt(ITFS)
-          call wstxpt(ix+2,iy-2,tz)
+          iid1=iix+2; iid2=iiy-2;
+          call wstxpt(iid1,iid2,tz)
         ELSE
           call winfnt(ITFS)
-          call wstxpt(ix+2,iy-2,'Target')
+          iid1=iix+2; iid2=iiy-2;
+          call wstxpt(iid1,iid2,'Target')
         endif
 
         DO 400 I=1,NSUR
@@ -190,39 +187,42 @@ C Check for a zone obstructions file.
   400   CONTINUE
         call forceflush()
 
-C Now draw each obstruction block by first converting to GEN (COMMON G1)
-C and plotting.
-        if(NB.eq.0)goto 54
-        DO 420 IB= 1,NB
-          CALL ERECC(XO(IB),YO(IB),ZO(IB),DX(IB),DY(IB),DZ(IB),BANG(IB))
-          DO 422 I=1,NSUR
-            J=JVN(I,1)
+C Now draw each obstruction block by first converting to GB1
+C common block via CNVBLK.
+        if(nbobs(newfoc).eq.0)goto 54
+        DO 420 IB= 1,nbobs(newfoc)
+          CALL CNVBLK(XOB(newfoc,IB),YOB(newfoc,IB),ZOB(newfoc,IB),
+     &      DXOB(newfoc,IB),DYOB(newfoc,IB),DZOB(newfoc,IB),
+     &      BANGOB(newfoc,IB,1))
+          DO 422 I=1,6   ! for each surface in the block
+            J=JVNB(I,1)
             iupdown=0
             isym=0
-            if(direc.eq.'P')call etplot(X(J),Y(J),iupdown,isym)
-            if(direc.eq.'S')call etplot(X(J),Z(J),iupdown,isym)
-            if(direc.eq.'E')call etplot(Y(J),Z(J),iupdown,isym)
-            K=NVER(I)
+            if(direc.eq.'P')call etplot(XB(J),YB(J),iupdown,isym)
+            if(direc.eq.'S')call etplot(XB(J),ZB(J),iupdown,isym)
+            if(direc.eq.'E')call etplot(YB(J),ZB(J),iupdown,isym)
+            K=4          ! for each edge of block surface
             DO 424 L=2,K
-              M=JVN(I,L)
+              M=JVNB(I,L)
               iupdown=1
               isym=0
-              if(direc.eq.'P')call etplot(X(M),Y(M),iupdown,isym)
-              if(direc.eq.'S')call etplot(X(M),Z(M),iupdown,isym)
-              if(direc.eq.'E')call etplot(Y(M),Z(M),iupdown,isym)
+              if(direc.eq.'P')call etplot(XB(M),YB(M),iupdown,isym)
+              if(direc.eq.'S')call etplot(XB(M),ZB(M),iupdown,isym)
+              if(direc.eq.'E')call etplot(YB(M),ZB(M),iupdown,isym)
   424       CONTINUE
             iupdown=1
             isym=0
-            if(direc.eq.'P')call etplot(X(J),Y(J),iupdown,isym)
-            if(direc.eq.'S')call etplot(X(J),Z(J),iupdown,isym)
-            if(direc.eq.'E')call etplot(Y(J),Z(J),iupdown,isym)
+            if(direc.eq.'P')call etplot(XB(J),YB(J),iupdown,isym)
+            if(direc.eq.'S')call etplot(XB(J),ZB(J),iupdown,isym)
+            if(direc.eq.'E')call etplot(YB(J),ZB(J),iupdown,isym)
   422     CONTINUE
-          if(direc.eq.'P')call u2pixel(X(J),Y(J),ix,iy)
-          if(direc.eq.'S')call u2pixel(X(J),Z(J),ix,iy)
-          if(direc.eq.'E')call u2pixel(Y(J),Z(J),ix,iy)
+          if(direc.eq.'P')call u2pixel(XB(J),YB(J),iix,iiy)
+          if(direc.eq.'S')call u2pixel(XB(J),ZB(J),iix,iiy)
+          if(direc.eq.'E')call u2pixel(YB(J),ZB(J),iix,iiy)
           WRITE(blabel,423)IB
   423     FORMAT('B',I2)
-          call wstxpt(ix+4,iy-4,blabel)
+          iid1=iix+4; iid2=iiy-4;
+          call wstxpt(iid1,iid2,blabel)
   420   CONTINUE
   54  continue
       call forceflush()
@@ -250,26 +250,31 @@ C If there is a ground, ITDSP is flagged and plan view draw it.
 C Print labels and return to default font.
       call winfnt(IFS)
       if(direc.eq.'P')then
-        WRITE(sstr,'(a,a)')'Site Plan of: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'Site Plan of: ',
+     &    modeltitle(1:lnblnk(modeltitle))
       elseif(direc.eq.'S')then
-        WRITE(sstr,'(a,a)')'South elev of: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'South elev of: ',
+     &    modeltitle(1:lnblnk(modeltitle))
       elseif(direc.eq.'E')then
-        WRITE(sstr,'(a,a)')'East elev of: ',LSNAM(1:lnblnk(LSNAM))
+        WRITE(sstr,'(a,a)')'East elev of: ',
+     &    modeltitle(1:lnblnk(modeltitle))
       endif
-      iy= igt-10
-      ix = igl
-      call wstxpt(ix,iy,sstr)
+      iiy= igt-10
+      iix = igl
+      call wstxpt(iix,iiy,sstr)
       call forceflush()
 
 C If izgfoc is not zero and nzg is one and there is an obstructions
 C file then reload current zone geometry file before returning.
+
 C << this may not be necessary if newgeo is true >>
+
       if(nzg.eq.1.and.izgfoc.gt.0)then
         newfoc=izgfoc
         IF(IOBS(newfoc).EQ.1)THEN
           call eclose(gversion(newfoc),1.1,0.01,newgeo)
           if(newgeo)then
-            call georead(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
+            call georead(IUF,LGEOM(newfoc),newfoc,0,IUOUT,IER)
           else
             call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
           endif

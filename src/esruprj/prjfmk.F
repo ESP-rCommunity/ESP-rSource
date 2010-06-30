@@ -53,7 +53,8 @@ C facility just after the common blocks have been filled
 C and should just write out this data.
       SUBROUTINE PRJFMK(ITRC,ITRU,IUO,ICOMP,IER,IVER)
 
-#include "building.h"
+#include "building.h"  
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -65,12 +66,6 @@ C and should just write out this data.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-
-C LPROJ   - zone scheduling (operation file)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
 
@@ -117,7 +112,7 @@ C updated when the user exits).
 
       LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
- 
+       
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -136,7 +131,7 @@ C just write operations file
       IF(IVER.NE.0)then
         ICOMP=IVER
         if(cfgok.and.(.NOT.browse))then
-          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
           IF(IER.LT.0)THEN
             call edisp(iuout,
      &        'Problem saving current operations to the new file.')
@@ -243,6 +238,7 @@ C Debug.
 C            write(6,*) 'the browsed file is ',ltmp(1:lnblnk(ltmp))
 C            write(6,*) 'the zonepth is ',zonepth(1:lnblnk(zonepth))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
             gotviabrowse=.true.
           else
             LTMP=GFILE
@@ -439,7 +435,7 @@ C Write file and return.
      &        'Updating model to reflect changes',
      &        'in zone operations data or file name...','-')
             LPROJ(ICOMP)=LTMP
-            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+            CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
             CALL EMKCFG('-',ier)
             call usrmsg(
      &        'Updating model to reflect changes',
@@ -518,8 +514,9 @@ C of the distribution and let the user select one.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -604,8 +601,9 @@ C The from scratch should intially be version 2.0
           CALL PHELPD('operation setup',23,'-',0,0,IER)
           call initcasday(ier)
 
-C debug
+C Debug.
 C          write(6,*) 'after ncas1 ncas2 ncas3 ',ncas1,ncas2,ncas3
+
           MODOPR=.true.
           sorted=.true.
         elseif(igu.eq.3.or.igu.eq.4.or.igu.eq.6.or.igu.eq.7)then
@@ -660,8 +658,9 @@ C user select one.
      &          iier)
               if(snpfile(1:2).ne.'  ')then
 C Debug.
-            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
-            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
+C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -708,6 +707,7 @@ C Remind users to check their data.
       h(7)='to confirm that performance is as expected.'
           CALL PHELPD('operation import confirm',7,'-',0,0,IER)
         endif
+      
       ENDIF
 
 C Display different options depending on the version of the file.
@@ -720,10 +720,10 @@ C Display different options depending on the version of the file.
         ITEM(6)=              '  ----------------------------- '
         ITEM(7)=              'c edit scheduled air flows      '
         ITEM(8)=              'd edit casual gains             '
-        ITEM(9)=              '  ----------------------------- '    
+        ITEM(9)=             '  ----------------------------- '    
         ITEM(10)=             '! list air flow & casual gains  '
         ITEM(11)=             '  ----------------------------- '
-        ITEM(12)=             '> save air flow & casual gains  '
+        ITEM(12)=             '> save operations file          '
         ITEM(13)=             '? help                          '
         ITEM(14)=             '- exit this menu                '
         NITEMS=14
@@ -737,10 +737,10 @@ C Display different options depending on the version of the file.
         ITEM(6)=              '  ----------------------------- '
         ITEM(7)=              'c edit scheduled air flows      '
         ITEM(8)=              'd edit casual gains             '
-        ITEM(9)=              '  ----------------------------- '    
+        ITEM(9)=             '  ----------------------------- '    
         ITEM(10)=             '! list air flow & casual gains  '
         ITEM(11)=             '  ----------------------------- '
-        ITEM(12)=             '> save air flow & casual gains  '
+        ITEM(12)=             '> save operations file          '
         ITEM(13)=             '? help                          '
         ITEM(14)=             '- exit this menu                '
         NITEMS=14
@@ -816,8 +816,12 @@ C even if modopr has not been set.
      &        'Before exiting do you wish to sort possible changes',
      &        'to the casual gain periods?',OK,DOK,2)
             if(ok)then
-               call PROCESSOLDCAS(ICOMP,0,iuout,IER)
-               MODOPR=.true.
+
+C Sort the gains and then updated the file and mark MODOPR.
+              call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+              IUO=IFIL+1
+              CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+              MODOPR=.false.
             endif
           endif
         endif
@@ -832,6 +836,10 @@ C even if modopr has not been set.
           CALL ASKOK('Before exiting do you wish to',
      &      'save any changes made?',OK,DOK,4)
           IF(.not.OK) return
+
+C So save the changes to the file and then exit.
+          IUO=IFIL+1
+          CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
         endif
         RETURN
       ELSEIF(INO.EQ.2)THEN
@@ -911,7 +919,7 @@ C Edit or browse for operations file name.
 C Save current information into a descriptive file
 C and rewrite the system configuration file if not browsing.
         if(cfgok.and.(.NOT.browse))then
-   11     CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,ITRU,IER)
+   11     CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
           IF(IER.LT.0)THEN
             DOK=.true.
             h(1)='You were presented with this message because a'
@@ -926,6 +934,8 @@ C and rewrite the system configuration file if not browsing.
               IER=1
               RETURN
             ENDIF
+          else
+            MODOPR=.false.  ! signal that we have saved the file.
           endif
           CALL EMKCFG('-',IER)
         else
@@ -1277,6 +1287,7 @@ C IER=0 is OK.
       SUBROUTINE EDAIR2(ICOMP,IER)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
       
@@ -1285,11 +1296,6 @@ C      integer lnblnk  ! function definition
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
 
@@ -1576,6 +1582,7 @@ C File browse from patterns.
 C Debug.
 C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -1700,6 +1707,7 @@ C IER=0 is OK.
       SUBROUTINE EDAIR3(ICOMP,IER)
 
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
       
@@ -1708,11 +1716,6 @@ C      integer lnblnk  ! function definition
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       common/pophelp/h(60)
 
@@ -2023,6 +2026,7 @@ C File browse from patterns.
 C Debug.
 C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -2581,6 +2585,7 @@ C << initial intent to guide later revisions?
       subroutine COPYAIRFL(isource,idest,afact,iflow,vflow,sfile,
      &  itrc,act,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -2588,12 +2593,6 @@ C << initial intent to guide later revisions?
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-
-C LPROJ   - zone scheduling (operation file)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -2850,7 +2849,7 @@ C Save the destination operation file.
       call usrmsg(
      &  'Updating model to reflect changes in destination',
      &  'operations data or file name...','-')
-      CALL EMKOPER(IUO,LPROJ(idest),idest,iuout,IER)
+      CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
       CALL EMKCFG('-',ier)
       call usrmsg(
      &  'Updating model to reflect changes in destination',
@@ -3123,14 +3122,16 @@ C  ICOMP zone number
 
       character outs*124
       dimension TACI(24),TACV(24)
-#ifdef OSX
+#ifdef OSI
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iid1,iid2
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iid1,iid2
 #endif
 
       IDTY=IDTYP
@@ -3313,9 +3314,10 @@ C Title and labels.
       isize=1
       ifont=1
       call viewtext(outs,iside,isize,ifont)
-
-      call wstxpt(igl+20,igt-65,'Infiltration')
-      call wstxpt(igr-100,igt-65,'Ventilation')
+      iid1=igl+20; iid2=igt-65;
+      call wstxpt(iid1,iid2,'Infiltration')
+      iid1=igr-100; iid2=igt-65;
+      call wstxpt(iid1,iid2,'Ventilation')
       call pixel2u(igl+120,igt-69,gx,gy)
       iupdown=0
       isym=0
@@ -3331,9 +3333,12 @@ C Title and labels.
       CALL etplot(gx,gy,iupdown,isym)
 
       ioff=(int(ipltwd)/3)
-      call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
-      call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
-      call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
+      iid1=igl+ioff; iid2=igt-10;
+      call wstxpt(iid1,iid2,CALENTAG(IDAY))
+      iid1=iglsat+ioff; iid2=igt-10;
+      call wstxpt(iid1,iid2,CALENTAG(JDAY))
+      iid1=iglsun+ioff; iid2=igt-10;
+      call wstxpt(iid1,iid2,CALENTAG(KDAY))
       call forceflush()
 
       return
@@ -3741,7 +3746,7 @@ C Add new casual gain period.
      &        'Cancel',ICGTS,3)
           if (ICGTS.ne.4) then
             IQ=0
-            if(.NOT.browse)call checkcascount(icomp,ier)
+            if(.NOT.browse)call checkcascount(icomp)
             call EASKABC('Add period for one or all day types',
      &          ' ','One day type','All day types','Cancel',IOPT,1)
             IF(IOPT.EQ.1)THEN
@@ -3845,9 +3850,11 @@ C File browsing from pattern folder.
               call browsefilelist('b','pat','opr',sfile,snpfile,nfile,
      &          iier)
               if(snpfile(1:2).ne.'  ')then
+
 C Debug.
 C            write(6,*) 'the browsed file is ',sfile(1:lnblnk(sfile))
 C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
+
                 isource=0
               else
 
@@ -3894,7 +3901,9 @@ C Remind users to check their data.
       h(6)='One approach is to generate a new QA report and check this'
       h(7)='against the previous model and then run a short assessment'
       h(8)='to confirm that the predictions are as expected. '
-      CALL PHELPD('operation import confirm',8,'-',0,0,IER)
+          CALL PHELPD('operation import confirm',8,'-',0,0,IER)
+        elseif(iw.eq.-3)then
+          goto 44  ! re-display the menu
         endif
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
@@ -3950,10 +3959,17 @@ C SCASL: Import a profile from a profiles database to build casual
 C gain patterns.
       SUBROUTINE  SCASL(IN,IDAY,IER,ICOMP)
 
+C << introduce concept of profiles with multiple day types as well
+C << as multiple casual gain types
+
+C << also consider that periods can be defined as reals for later
+C << use in the zone operation file timings
+
 #include "building.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
+#include "profile.h"
 
       common/pophelp/h(60)
 
@@ -3973,19 +3989,26 @@ C Electrical data flag and elctrical data.
 C Descriptive label for a zone load or casual gain types.
       common/loadlabel/lodlabel(mcom,7)
 
-C Profile database commons.
-      COMMON/PDBITM/NPDBITEMS,lastrec,NCG(MGIT),NO(MGIT),PDBDESC(MGIT)
-      COMMON/PDBELM/ICGS1(MGIT,MPRFDBPER),ICGF1(MGIT,MPRFDBPER),
-     &             CGS1(MGIT,MPRFDBPER),CGL1(MGIT,MPRFDBPER)
-      CHARACTER PDBDESC*40
+C Profile database commons via profile.h.
 
       DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
       CHARACTER H*72,hold*40,lodlabel*6
       character*8 ll1,ll2,ll3
+      character lltmp*144
+      character fs*1  ! file separator
       logical OK,DOK
 
       integer IPPFT,IPPHAST  ! for local editing.
+      logical unixok  ! to check for database path file separators
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Labels for loads.
       write(ll1,'(1x,a6,1x)') lodlabel(icomp,1)
@@ -4001,13 +4024,21 @@ C Labels for loads.
       IPPFT=0
       IPPF=0
 
-C Scan the binary event profiles database. If an error state is
+C Scan the event profiles database. If an error state is
 C returned then it might be an ASCII file, try and scan that.
-      call TRIPROBIN(IER)
+      lndbp=lnblnk(standarddbpath)
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        lltmp=LPRFDB  ! use as is
+      elseif(ipathprodb.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
+      endif
+      call TRIPROBIN(IPRODB,lltmp,IER)
       if(ier.ne.0)then
         CALL ERPFREE(IPRODB,ISTAT)
         CALL USRMSG(' opened profiles db...',' ','-')
-        call TRIPROCOM(IPRODB,LPRFDB,IER)
+        ier=0   ! reset prior to call to triprocom
+        call TRIPROCOM(IPRODB,lltmp,IER)
         if(ier.ne.0)then
           call usrmsg('Error opening the db. Please use one',
      &                'of the other options.','W')
@@ -4175,6 +4206,7 @@ C << and small power can be entered in terms of W/m2.
       ENDIF
  42   call usrmsg(' ',' ','-')
 
+C Instanciate the casual gain commons with data from the profile.
       NCAS(IDAY) = NCAS(IDAY) + NCG(INDEX)
       DO 140 I = 1,NCG(INDEX)
 	ICGS(IDAY,I+IN) = ICGS1(INDEX,I)
@@ -4246,7 +4278,7 @@ C If new period then set defaults otherwise get data from common.
         BVOLTX=0.0
       ELSEIF(IDT.GT.0)THEN
         call CPYCASIT(icomp,idt,iper,icgtX,icgsX,icgfX,cmgsX,cmglX,
-     &    radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
+     &    radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
       endif
 
 C If silent jump to insertion logic.
@@ -4257,6 +4289,7 @@ C Ask for start and finish times.
       write (hold,'(2i5,a)') ICGSX,ICGFX,'  '
       h(1)='Period during which casual gains applies.'
       CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
+      if(ier.eq.-3) return  ! user canceled
       K=0
       CALL EGETWI(hold,K,IVS,0,24,'F','period start',IER)
       CALL EGETWI(hold,K,IVF,IVS+1,24,'F','period end',IER)
@@ -4285,57 +4318,58 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
       h(5)=' Watts per object - gain/object and number of objects are'
       h(6)='  required (an object could be a person or computer).'
       h(7)=' Square meters per object - will use the floor area of the'
-      h(8)='  zone to calculate the total gain.'
-      h(9)=' '
-      h(10)='ESP-r asks for fixed sensible and latent values. The'
-      h(11)='values for occupants are really a function of the current'
-      h(12)='zone temperature (CIBSE Concise Handbook Table 6.1)'
-      h(13)='If possible pick a value for the likely temperature rnage.'
-      h(14)='For an adult and average mix '
-      h(15)='                   Tot 15C sen lat 20C sen lat 24C sen lat'
-      h(16)='Seated inactive    115     100  15     90  25      75  40'
-      h(17)='       avg mix     100      87  13     78  22      65  35'
-      h(18)='Seated light work  140     110  30    100  40      80  60'
-      h(19)='       avg mix     126      99  27     90  36      72  54'
-      h(20)='Seated office work 140     110  30    100  40      80  60'
-      h(21)='       avg mix     130     102  28     93  37      74  56'
-      h(22)='Standing light work 160    120  40    110  50      85  75'
-      h(23)='       avg mix      141    106  35     97  44      75  66'
-      h(24)='Light factory work 235     150  85    130 105     100 135'
-      h(25)='       avg mix     209     133  76    116  93      89 121'
-      h(26)='Medium factory work 265    160 105    140 125     105 160'
-      h(27)='       avg mix      249    150  99    132 117      99 150'
-      h(28)='Heavy factory work 440     220 220    190 250     135 305'
-      h(29)='       avg mix     440     220 220    190 250     135 305'
-      h(30)=' '
+      h(8)='  zone to calculate the total gain. For the particular'
+      h(9)='  case of an occupant there is an assumption that each'
+      h(10)=' person is 95W sensible and 45W latent.'
+      h(11)=' '
+      h(12)='ESP-r asks for fixed sensible and latent values. The'
+      h(13)='values for occupants are really a function of the current'
+      h(14)='zone temperature (CIBSE Concise Handbook Table 6.1)'
+      h(15)='If possible pick a value for the likely temperature rnage.'
+      h(16)='For an adult and average mix '
+      h(17)='                   Tot 15C sen lat 20C sen lat 24C sen lat'
+      h(18)='Seated inactive    115     100  15     90  25      75  40'
+      h(19)='       avg mix     100      87  13     78  22      65  35'
+      h(20)='Seated light work  140     110  30    100  40      80  60'
+      h(21)='       avg mix     126      99  27     90  36      72  54'
+      h(22)='Seated office work 140     110  30    100  40      80  60'
+      h(23)='       avg mix     130     102  28     93  37      74  56'
+      h(24)='Standing light work 160    120  40    110  50      85  75'
+      h(25)='       avg mix      141    106  35     97  44      75  66'
+      h(26)='Light factory work 235     150  85    130 105     100 135'
+      h(27)='       avg mix     209     133  76    116  93      89 121'
+      h(28)='Medium factory work 265    160 105    140 125     105 160'
+      h(29)='       avg mix      249    150  99    132 117      99 150'
+      h(30)='Heavy factory work 440     220 220    190 250     135 305'
+      h(31)='       avg mix     440     220 220    190 250     135 305'
+      h(32)=' '
       IGU=1
       CALL EASKABCD('Gain to be specified as: (see help)',' ','Watts',
      &     'Watts per square meter','Watts per object',
-     &     'Square meters per object',IGU,30)
+     &     'Square meters per object',IGU,32)
 
-C Commonportion of help message.
-      h(3)=' '
-      h(4)='ESP-r asks for fixed sensible and latent values. The'
-      h(5)='values for occupants are really a function of the current'
-      h(6)='zone temperature (CIBSE Concise Handbook Table 6.1)'
-      h(7)='If possible pick a value for the likely temperature rnage.'
-      h(8)='For an adult and average mix '
-      h(9)='               Total W 15C sen lat 20C sen lat 24C sen lat'
-      h(10)='Seated inactive   115     100  15     90  25      75  40'
-      h(11)='       avg mix    100      87  13     78  22      65  35'
-      h(12)='Seated light work 140     110  30    100  40      80  60'
-      h(13)='       avg mix    126      99  27     90  36      72  54'
-      h(14)='Seated office work 140    110  30    100  40      80  60'
-      h(15)='       avg mix     130    102  28     93  37      74  56'
-      h(16)='Standing light work 160   120  40    110  50      85  75'
-      h(17)='       avg mix      141   106  35     97  44      75  66'
-      h(18)='Light factory work 235    150  85    130 105     100 135'
-      h(19)='       avg mix     209    133  76    116  93      89 121'
-      h(20)='Medium factory work 265   160 105    140 125     105 160'
-      h(21)='       avg mix      249   150  99    132 117      99 150'
-      h(22)='Heavy factory work 440    220 220    190 250     135 305'
-      h(23)='       avg mix     440    220 220    190 250     135 305'
-      h(24)=' '
+C Common portion of help message for detailed dialogs.
+      h(4)=' '
+      h(5)='ESP-r asks for fixed sensible and latent values. The'
+      h(6)='values for occupants are really a function of the current'
+      h(7)='zone temperature (CIBSE Concise Handbook Table 6.1)'
+      h(8)='If possible pick a value for the likely temperature rnage.'
+      h(9)='For an adult and average mix '
+      h(10)='              Total W 15C sen lat 20C sen lat 24C sen lat'
+      h(11)='Seated inactive   115     100  15     90  25      75  40'
+      h(12)='       avg mix    100      87  13     78  22      65  35'
+      h(13)='Seated light work 140     110  30    100  40      80  60'
+      h(14)='       avg mix    126      99  27     90  36      72  54'
+      h(15)='Seated office work 140    110  30    100  40      80  60'
+      h(16)='       avg mix     130    102  28     93  37      74  56'
+      h(17)='Standing light work 160   120  40    110  50      85  75'
+      h(18)='       avg mix      141   106  35     97  44      75  66'
+      h(19)='Light factory work 235    150  85    130 105     100 135'
+      h(20)='       avg mix     209    133  76    116  93      89 121'
+      h(21)='Medium factory work 265   160 105    140 125     105 160'
+      h(22)='       avg mix      249   150  99    132 117      99 150'
+      h(23)='Heavy factory work 440    220 220    190 250     135 305'
+      h(24)='       avg mix     440    220 220    190 250     135 305'
       if (IGU.eq.1) then
 
 C Gain as W - require gain only.
@@ -4346,15 +4380,17 @@ C Gain as W - require gain only.
         endif
         h(1)='Supply the sensible and latent gain in Watts.'
         h(2)=' '
+        h(3)=' '
         call EASKS(HOLD,'Sensible and latent gain (W):',
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
+        if(ier.eq.-3) goto 10  ! user canceled
         K=0
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
-        call EGETWR(HOLD,K,XLAT,0.,100000.0,'W','latent gain',IER)
+        call EGETWR(HOLD,K,XLATGN,0.,100000.0,'W','latent gain',IER)
         if (IER.ne.0) goto 20
         if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
         CMGSX=XSEN
-        CMGLX=XLAT
+        CMGLX=XLATGN
       elseif (IGU.eq.2) then
 
 C Gain as W/m^2 - require gain per square meter.
@@ -4365,20 +4401,25 @@ C Gain as W/m^2 - require gain per square meter.
         endif
  30     h(1)='Supply the sensible and latent gain in Watts/m^2.'
         h(2)=' '
+        h(3)=' '
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
+        if(ier.eq.-3) goto 10  ! user canceled
         K=0
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-        call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
+        call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 30
         if (ICGTX.eq.1) then
           CMGSX=XSEN*zb
-          CMGLX=XLAT*zb
+          CMGLX=XLATGN*zb
         else
           if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
           CMGSX=XSEN
-          CMGLX=XLAT
+          CMGLX=XLATGN
         endif
+        write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts are now ',CMGSX,
+     &    ' & latent Watts ',CMGLX
+        call edisp(iuout,outs)
       elseif (IGU.eq.3) then
 
 C Gain as W/object - require no of objects and gain per object. If
@@ -4386,7 +4427,8 @@ C user cancels go back to initial question.
 C << an actual cancel option not yet implemented >>
         NOBJ=1
  40     h(1)='The number of objects for the current gain type is '
-        h(2)='required. For example the number of people or computers.'
+        h(2)='required. For example the number of computers.'
+        h(3)=' '
         CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
      &    0,'W',100,'W',1,'no. objects',IERI,24)
         if(ieri.eq.0)then
@@ -4400,15 +4442,20 @@ C << an actual cancel option not yet implemented >>
         write (HOLD,'(2f8.1,a)') CMGSX/real(NOBJ),CMGLX/real(NOBJ),'  '
         h(1)='Supply the sensible and latent gain in Watts.'
         h(2)=' '
+        h(3)=' '
         call EASKS(HOLD,'Object sensible and latent gain (W):',
      &          ' ',24,'  0.   0. ','casual gn info',IER,24)
         K=0
+        if(ier.eq.-3) goto 10  ! user canceled
         call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-        call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
+        call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 40
         if (ICGTX.lt.0) ICGTX=ICGTX*(-1)
         CMGSX=XSEN*real(NOBJ)
-        CMGLX=XLAT*real(NOBJ)
+        CMGLX=XLATGN*real(NOBJ)
+        write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts are now ',CMGSX,
+     &    ' & latent Watts ',CMGLX
+        call edisp(iuout,outs)
       elseif (IGU.eq.4) then
 
 C Gain as m^2/object - floor area of an object and gain per object.
@@ -4421,35 +4468,50 @@ C If user cancels go back to initial question.
         endif
         XFLA=FLA
         h(1)='The floor area per object for the current gain type is '
-        h(2)='required. For example the area per person.'
+        h(2)='required. For example the area per person assuming that'
+        h(3)='for people the sensible is 95W and latent is 45W. '
         call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
      &    0.1,'F',100.0,'W',1.0,'area per object',IERI,24)
         if(IERI.eq.0)then
           FLA=XFLA
           if (iabs(ICGTX).eq.1) then
+
+C If dealing with occupants treat this as a special case which assumes
+C that each person is 95W sensible and 45W latent.
             ICGTX=-1
-            CMGSX=FLA
+            CMGSX=FLA  ! Set sensible to the m^2 per person entered
             CMGLX=0.   ! Why is CMGLX set to zero?
+            VS=(ZBASEA(ICOMP)/CMGSX)*95.  ! find sensible watts
+            VL=(ZBASEA(ICOMP)/CMGSX)*45.  ! find latent watts
+            write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts now ',VS,
+     &        ' & latent Watts ',VL
+            call edisp(iuout,outs)
           else
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
             h(1)='Supply the sensible and latent gain in Watts/object.'
             h(2)=' '
+            h(3)=' '
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
      &          ' ',24,'0.   0. ','casual gn info',IER,24)
             K=0
             call EGETWR(HOLD,K,XSEN,0.,50.0,'W','sensible gain',IER)
-            call EGETWR(HOLD,K,XLAT,0.,50.0,'W','latent gain',IER)
+            call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
             if (IER.ne.0) goto 50
             if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
             CMGSX=XSEN*zb/FLA
-            CMGLX=XLAT*zb/FLA
+            CMGLX=XLATGN*zb/FLA
+            write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts now ',CMGSX,
+     &        ' & latent Watts ',CMGLX
+            call edisp(iuout,outs)
           endif
         elseif(ieri.eq.-3)then
           goto 10
         else
           goto 50
         endif
+      elseif (IGU.eq.-3) then
+        goto 10  ! user hit the cancel button
       endif
 
 C Ask for rad/ conv split.
@@ -4615,9 +4677,9 @@ C Now update common blocks. Loop backwards from
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
             call CPYCASTI(icomp,idt,ix,icgtX,icgsX,icgfX,cmgsX,cmglX,
-     &      radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX,ier)
+     &      radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
           else
-            call CPYCASIJ(icomp,IDT,IX,IX-1,ier)
+            call CPYCASIJ(icomp,IDT,IX,IX-1)
           endif
  300    continue
       ENDIF
@@ -4784,6 +4846,7 @@ C << initial intent to guide later revisions?
       subroutine IMPORTZCASG(isource,idest,actcas,iwatt,sfile,itrc,
      &  act,ier)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -4791,12 +4854,6 @@ C << initial intent to guide later revisions?
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-
-C LPROJ   - zone scheduling (operation file)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -5138,7 +5195,7 @@ C Save the destination operation file.
      &    'Updating model to reflect changes',
      &    'in destination operation data or file name...','-')
       endif
-      CALL EMKOPER(IUO,LPROJ(idest),idest,ITRU,IER)
+      CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
       CALL EMKCFG('s',ier)
       if(act(1:1).eq.'-')then
         call usrmsg(
@@ -5179,14 +5236,16 @@ C Descriptive label for a zone load or casual gain.
 
       character lodlabel*6, outs*124
 
-#ifdef OSX
+#ifdef OSI
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iid1,iid2
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to etplot
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iid1,iid2
 #endif
 
       logical COLOK
@@ -5213,9 +5272,11 @@ C Scan each days gains and calculate maximum gain.
           if (I.gt.ICGS(IDAY,J).and.I.le.ICGF(IDAY,J)) then
             if (ICGT(IDAY,J).eq.-1) then
 
-C For case of m2/person CMGL1()J remains zero so use cmgs1(J) instead.
-              CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*95.
-              CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(IDAY,J))))*45.
+C For case of m2/person CMGL1()J remains zero so use cmgs1(J) which
+C is the m^2 per person instead. Base graphed value on fractional 
+C persons per m^2.
+              CGNS=CGNS+(ZBASEA(ICOMP)/CMGS(IDAY,J))*95.
+              CGNL=CGNL+(ZBASEA(ICOMP)/CMGS(IDAY,J))*45.
             elseif (ICGT(IDAY,J).lt.-1) then
               CGNS=CGNS+CMGS(IDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(IDAY,J)*ZBASEA(ICOMP)
@@ -5531,9 +5592,11 @@ C Title and labels.
       isize=1
       ifont=1
       call viewtext(outs,iside,isize,ifont)
-
-      call wstxpt(igl+20,igt-65,' Total sensible')
-      call wstxpt(igr-100,igt-65,'Total latent')
+      iid1=igl+20; iid2=igt-65;
+      call wstxpt(iid1,iid2,' Total sensible')
+      iid1=igr-100; iid2=igt-65;
+      call wstxpt(iid1,iid2,'Total latent')
+      iid1=igl+120; iid2=igt-69;
       call pixel2u(igl+120,igt-69,gx,gy)
       iupdown=0
       isym=0
@@ -5551,10 +5614,12 @@ C Title and labels.
         write(outs,'(2a)')
      &        lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'
         IY=igt-(12*I)-18
-        call wstxpt(igl+20,IY,outs)
+        iid1=igl+20; iid2=IY;
+        call wstxpt(iid1,iid2,outs)
         write(outs,'(2a)')
      &          lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
-        call wstxpt(igr-100,IY,outs)
+        iid1=igr-100; iid2=IY;
+        call wstxpt(iid1,iid2,outs)
         if (COLOK) call winscl('z',I)
         call pixel2u(igl+120,IY-4,gx,gy)
         iupdown=0
@@ -5573,9 +5638,12 @@ C Title and labels.
  300  continue
 
       ioff=(int(ipltwd)/3)
-      call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
-      call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
-      call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
+      iid1=igl+ioff; iid2=igt-10;
+      call wstxpt(iid1,iid2,CALENTAG(IDAY))
+      iid1=iglsat+ioff; iid2=igt-10;
+      call wstxpt(iid1,iid2,CALENTAG(JDAY))
+      iid1=iglsun+ioff; iid2=igt-10;
+      call wstxpt(iid1,iid2,CALENTAG(KDAY))
       call forceflush()
 
       return
@@ -5623,7 +5691,7 @@ C data up.
         ix = ncasX+1
  234    continue
         ix = ix-1
-        call CPYCASIJ(icomp,IDTY,ix,ix-1,ier)
+        call CPYCASIJ(icomp,IDTY,ix,ix-1)
         ncas(IDTY)=ncas(IDTY)+1
         if(ielf(icomp).ne.0)then
           nel(IDTY)=nel(IDTY)+1
@@ -5640,7 +5708,7 @@ C is the last possible period then only decrement counters.
           if(ielf(icomp).ne.0)nel(IDTY)=nel(IDTY)-1
         else
           do 110 IX=IDP,NCAS(IDTY)
-            call CPYCASIJ(icomp,IDTY,ix,ix+1,ier)
+            call CPYCASIJ(icomp,IDTY,ix,ix+1)
             if(ielf(icomp).ne.0)then
               nel(IDTY)=nel(IDTY)-1
             endif
@@ -5704,6 +5772,8 @@ C initcasday does initial setup of all casual day types.
         CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
         CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
         CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
+
+C Debug.
 C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper
 
 C Get user to specify the start times for occup periods if non-zero.

@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -26,7 +26,6 @@ C  CLRPRB : clears the zone based memory in preparation for reading
 C           a new model file. 
 C  cfgpk:  Reacts to one of several configuration buttons and presents
 C          related images.
-C  ERUTIL: Reads a commented zone utility file.
 C  EGOMST: Reads site obstruction data as ASCII strings, with or without
 C          range checking and printed summary.
 C  MKGOMST:Creates an annotated site obstruction file based 
@@ -64,11 +63,17 @@ C CLRPRB clears the zone based memory in preparation for reading
 C in a new model file. 
       SUBROUTINE CLRPRB
 #include "building.h"
+#include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/G4/c20/precz.
 #include "geometry.h"
 #include "cfd.h"
 #include "sbem.h"
+#include "ipvdata.h"
+#include "seasons.h"
+#include "schedule.h"
+
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
@@ -79,10 +84,6 @@ C << G7 and G8 need to be cleared >>
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation. 
 C   toggle for assessment where:
@@ -112,18 +113,10 @@ C HOT3000: AIM-2.
       common/aim2def/iAIM2,LAIM2
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C3F/LCNN
-      common/C4/XLAT,XLON
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C23/IFPNF,LPNF
       common/cctl/icascf(mcom)
       COMMON/PREC8/SLAT,SLON
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
 C Radiance scenes file.
       common/radcfg/LRADCF
@@ -142,9 +135,6 @@ C IPV description.
 C Anchor data.
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
-
-C Project demands (lifts/fans/DHW).
-      COMMON/BL1/dmdsdesc,bdmds
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -239,17 +229,19 @@ C thbrpercent is the user defined fraction for thermal bridges used by
 C   losspercent and is assumed to apply to all zones in the model.
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal      
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
 
-C IPV text strings
-      character ipvtitl*40,ipvvers*40,ipvsynop*248,ipvsimu*6
-      common/IPVA/ipvtitl,ipvvers,ipvsynop,ipvsimu
-      common/IPVSEA/nipvassmt,nipvdispjd,ipvastjd(MIPVA),
-     &              ipvafnjd(MIPVA),ipvdispjd(10)
+C IPV data comes via ipvdata.h
+
+C Assumption about inserted window surface percentage and assumed
+C door width and height.
+      real defwininsert,defdoorwidth,defdoorheight
+      common/ginsert/defwininsert,defdoorwidth,defdoorheight
       
-      CHARACTER*72 LCFD,LCNN
+      CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPRJLG,LPNF
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -257,14 +249,13 @@ C IPV text strings
       character SSPARENT*12
 
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       character hvacfile*72,LAIM2*72,LBSIMP*72
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
-      character dmdsdesc*248,bdmds*72,lradcf*72
+      character lradcf*72
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
@@ -343,6 +334,15 @@ C Clear pre-simulation sets.
         isstmon(i)=0
         isfnday(i)=0
         isfnmon(i)=0
+	seahddwk(i)=0.0
+	seacddwk(i)=0.0
+	seahddtot(i)=0.0
+        seacddtot(i)=0.0
+	wkdiff(i)=0.0
+	iwkbest(i)=0
+	iwkbstrt(i)=0
+        wkheatdd(i)=0.0
+	wkcooldd(i)=0.0
   39  continue
   
 C Clear IPV strings and number of assessmments.
@@ -435,16 +435,64 @@ C Clear image related data.
       IAIRN=0
       LAPROB='UNKNOWN'
 
-      XLAT=50.0
+      sitelat=50.0
       SLAT=50.
-      XLON=0.0
+      sitelongdif=0.0
       SLON=0.
 
+C Assumptions about doors and windows.
+      defwininsert=15.0
+      defdoorwidth=0.8
+      defdoorheight=2.1
+      
+C Season data.
+      ihaveseason=0
+      ia1wins=0; ia1winf=0; ia1sprs=0; ia1sprf=0
+      iasums=0;  iasumf=0;  ia2sprs=0; ia2sprf=0; ia2wins=0; ia2winf=0 
+      is1wins=0; is1winf=0; is2wins=0; is2winf=0; is1sprs=0; is1sprf=0
+      is2sprs=0; is2sprf=0; is1sums=0; is1sumf=0
+      hddw=1.0; cddw=1.0; radw=1.0; hddbaset=0.0; cddbaset=0.0
+ 
 C Zone level common blocks.
       do 42 IX = 1,MCOM
         do 43 IXS = 1,MS
-          SNAME(IX,IXS)=' '
+          SNAME(IX,IXS)=' '   ! clear surface name
+          zboundarytype(IX,IXS,1)=0  ! clear surface boundary
+          zboundarytype(IX,IXS,2)=0
+          zboundarytype(IX,IXS,3)=0
+          zhasglaze(ix,ixs)=0.0
+          zhasdoor(ix,ixs)=0.0
+          isznbedges(ix,ixs)=0
+          do 54 ivu=1,MV
+            iszlist(ix,ixs,ivu)=0
+            szcoords(ix,ixs,1)=0.0
+            szcoords(ix,ixs,2)=0.0
+            szcoords(ix,ixs,3)=0.0
+  54      continue
    43   continue
+
+C Clear obstructions in all zones.
+        do 55 ibu=1,MB
+          XOB(ix,ibu) = 0.0
+          YOB(ix,ibu) = 0.0
+          ZOB(ix,ibu) = 0.0
+          DXOB(ix,ibu) = 0.0
+          DYOB(ix,ibu) = 0.0
+          DZOB(ix,ibu) = 0.0
+          BANGOB(ix,ibu,1) = 0.0
+          BANGOB(ix,ibu,2) = 0.0
+          BANGOB(ix,ibu,3) = 0.0
+          BLOCKNAME(ix,ibu) = ' '
+          LNBLOCKNAME(ix,ibu) = 0
+          BLOCKMAT(ix,ibu) = ' '
+          LNBLOCKMAT(ix,ibu) = 0
+          BLOCKTYP(ix,ibu) = 'obs '
+          do 56 ibe=1,8
+            XBP(ix,ibu,ibe)=0.0
+            YBP(ix,ibu,ibe)=0.0
+            ZBP(ix,ibu,ibe)=0.0
+  56      continue
+  55    continue
 
 C Clear SHOCC zone information as well.
         bZoneSHOCCed(IX)=.false.
@@ -452,13 +500,42 @@ C Clear SHOCC zone information as well.
 
         NZSUR(IX)=0
         NZTV(IX)=0
+        NBWALLS(IX)=0
         NCCODE(IX)=0
         NDP(IX)=3
         IDPN(IX,1)=0
         IDPN(IX,2)=0
         IDPN(IX,3)=0
         CTYPE(IX)=' '
+        shape(IX)=' '
         gversion(ix)=1.0
+        rotateit(ix,1)=0.0
+        rotateit(ix,2)=0.0
+        rotateit(ix,3)=0.0
+        rotateit(ix,4)=0.0
+        rotateit(ix,5)=0.0
+        rotateit(ix,6)=0.0
+        zorigin(ix,1)=0.0
+        zorigin(ix,2)=0.0
+        zorigin(ix,3)=0.0
+        zsize(ix,1)=0.0
+        zsize(ix,2)=0.0
+        zsize(ix,3)=0.0
+        znbglz(ix) = 0
+        znbdoor(ix) = 0
+        znbmass(ix) = 0
+        do 158 imu=1,4
+          zdatamass(ix,imu,1)=0.0
+          zdatamass(ix,imu,2)=0.0
+          zdatamass(ix,imu,3)=0.0
+          zdatamass(ix,imu,4)=0.0
+          zdatamass(ix,imu,5)=0.0
+          zdatamass(ix,imu,6)=0.0
+          zdatamass(ix,imu,7)=0.0
+          ztextmass(ix,imu,1)=' '
+          ztextmass(ix,imu,2)=' '
+          ztextmass(ix,imu,3)=' '
+  158   continue
         zdesc(IX)=' '
         lnzdesc(IX)=0
         zname(IX)=' '
@@ -470,8 +547,6 @@ C Clear SHOCC zone information as well.
         LVIEW(IX)='UNKNOWN'
         ISI(IX)=0
         LSHAD(IX)='UNKNOWN'
-        INDUTL(IX)=0
-        LUTIL(IX)='UNKNOWN'
         IHC(IX)=0
         LHCCO(IX)='UNKNOWN'
 
@@ -521,16 +596,16 @@ C Clear the connection list.
         SSUSE(icc,1)='-'
         SSUSE(icc,2)='-'
    32 CONTINUE
-      icfgv=3
+      icfgv=4  ! set cfg file version to latest type
       NCON=0
       ncomp=0
-      IXPOS=1
-      GREF=0.2
-      ITGREF=1
-      SREF=0.4
+      siteexposureindex=1
+      groundrefl=0.2
+      groundreflmodel=1
+      snowgroundrefl=0.4
       DO 60 I=1,12
-        GREF12(I)=GREF
-        NSNOW(I)=0
+        groundreflmonth(I)=groundrefl
+        dayswithsnow(I)=0
    60 CONTINUE
       SNFNAM=' '
 
@@ -542,6 +617,7 @@ C Clear the linear thermal bridges variables
           losspercent(IX) = 0.0
           thbrpercent = 0.0
           totheatloss(ix) = 0.0
+          uavtotal(ix) = 0.0
     2   CONTINUE
     3 CONTINUE
 
@@ -560,7 +636,35 @@ C Clear sbem string arrays (from sbem.h).
       certaddress=' not yet defined'
       certcity=' not yet defined'
       certPC=' not yet defined'
-
+      UPRN='000000000000'
+      Accr_Scheme=' not yet defined'
+      assessRegNumber=' not yet defined'
+      empl_Trading_name=' not yet defined'
+      addr_empl_Trading=' not yet defined'
+      party_disclosure=' not yet defined'
+      qualifications_assessor=' NOS3'
+      insurer_Company=' not yet defined'
+      policyNumberInsurance=' not yet defined'
+      pjLevComplexity='Undefined'     
+      do 4 isystCurrent=1,MNS
+        ductwork(isystCurrent)='No, use default leakage'
+        AHUleakage(isystCurrent)='No, use default leakage'
+        duct_tDLd(isystCurrent)=0.15
+        AHU_tDLd(isystCurrent)=0.06
+ 4    continue
+       
+C Also integers from sbem.h 
+      Y_inspect=2009
+      M_inspect=1
+      D_inspect=1
+      S_Yinsur=2009
+      S_Minsur=1
+      S_Dinsur=1
+      E_Yinsur=2010
+      E_Minsur=1
+      E_Dinsur=1
+      pi_limit=0
+      INOTI=0  ! assume we have an original model
       return
       end
 
@@ -653,16 +757,13 @@ C Loop through all zones to see if there is a domain flow description.
 C ***** Notice that an active description button has been pressed.
       subroutine cfgpk(act)
 #include "building.h"
+#include "model.h"
 #include "net_flow.h"
 #include "control.h"
       common/pophelp/h(60)
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       COMMON/C23/IFPNF,LPNF
       COMMON/LOG/LPRJLG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -671,9 +772,6 @@ C ***** Notice that an active description button has been pressed.
 
 C Control
       common/cctlnm/ctldoc,lctlf
-
-      common/ctlnm/znctldoc,plctldoc,flctldoc,elctldoc,glctldoc,
-     &             opticdoc
 
 C Images.
       integer noimg  ! number of images
@@ -687,8 +785,7 @@ C Images.
       CHARACTER LCFD*72
       CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72,LPRJLG*72
       CHARACTER ctldoc*248,lctlf*72
-      character znctldoc*248,plctldoc*248,flctldoc*248,elctldoc*248
-      character glctldoc*248,opticdoc*248,CNTMDESC*124,CONTMNAM*12
+      character CNTMDESC*124,CONTMNAM*12
 
       call usrmsg('Scanning for related images. Please wait...',' ','-')
       if(act.eq.'r')then
@@ -696,7 +793,7 @@ C Images.
 C Registration, show all available images.
         call imgdisp(0,'****',ier)
         h(1)='The current model is named:'
-        write(h(2),'(a)')LSNAM
+        write(h(2),'(a)')modeltitle
         h(3)='The model is documented in: '
         write(h(4),'(a)')LPRJLG
         h(5)=' '
@@ -709,7 +806,7 @@ C Registration, show all available images.
 C Zone button, show zone/site/gridding related images.
         call imgdisp(1,'FZON',ier)
         h(1)='The current model is named:'
-        write(h(2),'(a)')LSNAM
+        write(h(2),'(a)')modeltitle
         h(3)=' '
         write(h(4),'(a,i3,a,i4,a)')'It is composed of',NCOMP,
      &    ' zones and',NCON,' surfaces.'
@@ -755,7 +852,7 @@ C Show network related images.
 C Show control related images (assumes that control has already been scanned).
         call imgdisp(1,'FCTL',ier)
         if(ncf.gt.0.or.ncl.gt.0.or.ncc.gt.0.or.ngf.gt.0)then
-          write(h(1),'(a,a)')'System control is via ',LCTLF(1:56)
+          write(h(1),'(a,a)')'System control via ',LCTLF(1:50)
           nh=1
           if(ncf.gt.0)then
             nh=nh+1
@@ -790,281 +887,27 @@ C Domain flow button, show cfd image.
       return
       end
 
-C ***************** ERUTIL 
-C ERUTIL Reads a zone utility file and fills the common blocks INDICS
-C and UDESC. ITRU unit number for user output, IER=0 OK. 
-      SUBROUTINE ERUTIL(IFIL,LFIL,IZ,IER)
-#include "building.h"
-#include "espriou.h"
-C espriou.h provides currentfile.
-      
-      integer lnblnk  ! function definition
-
-      common/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      common/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
-      common/GR3D100/BLDG3D,ZONE3D(MCOM)
-      common/GR3D108/L3DCVS(MCOM),L3DCNC(MCOM),L3DNDC(MCOM),L3DTAQ(MCOM)
-      common/MOIST01/MSTROK,MSTRZN(MCOM)
-      common/MOIST02/LMOIST(MCOM)
-
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
-      character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
-      character LFIL*72,OUTSTR*124
-      logical BLDG3D,ZONE3D,MSTROK,MSTRZN
-
-C Open the utility file, return if not found.
-      IER=0
-      CALL EFOPSEQ(IFIL,LFIL,1,IER)
-      IF(IER.LT.0)THEN
-        IER=1
-        RETURN
-      ENDIF
-      write(currentfile,'(a)') LFIL(1:lnblnk(LFIL))
-
-      ZONE3D(IZ)=.TRUE.
-
-      CALL STRIPC(IFIL,OUTSTR,0,ND,1,'air file flag',IER)
-
-      CALL STRIPC(IFIL,OUTSTR,0,ND,1,'casual flag',IER)
-
-      CALL STRIPC(IFIL,OUTSTR,0,ND,1,'viewfactor flag',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,IVF(IZ),0,1,'W','viewfactor flag',IER)
-      IF(IER.NE.0) GOTO 1001
-      IF(IVF(IZ).EQ.1)THEN
-        CALL STRIPC(IFIL,OUTSTR,0,ND,1,'viewfactor file',IER)
-        LVIEW(IZ)=OUTSTR(1:72)
-      ENDIF
-
-      CALL STRIPC(IFIL,OUTSTR,0,ND,1,'shading flag',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,ISI(IZ),0,1,'W','shading flag',IER)
-      IF(IER.NE.0) GOTO 1001
-      IF(ISI(IZ).EQ.1)THEN
-        CALL STRIPC(IFIL,OUTSTR,0,ND,1,'shading db',IER)
-        LSHAD(IZ)=OUTSTR(1:72)
-      ENDIF
-
-      CALL STRIPC(IFIL,OUTSTR,0,ND,1,'convec coef flag',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,IHC(IZ),0,1,'W','conv coef flag',IER)
-      IF(IER.NE.0) GOTO 1001
-      IF(IHC(IZ).EQ.1)THEN
-        CALL STRIPC(IFIL,OUTSTR,0,ND,1,'convec coef file',IER)
-        LHCCO(IZ)=OUTSTR(1:72)
-      ENDIF
-
-C Skip past any default window blind control data.
-      CALL STRIPC(IFIL,OUTSTR,0,ND,1,'blind flag',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,IBC,0,1,'W','blind flag',IER)
-      IF(IER.NE.0) GOTO 1001
-      IF(IBC.EQ.1)THEN
-        CALL STRIPC(IFIL,OUTSTR,0,ND,1,'blind file',IER)
-      ENDIF
-
-      CALL STRIPC(IFIL,OUTSTR,0,ND,1,'TMC flag',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,ITW(IZ),0,1,'W','TMC flag',IER)
-      IF(IER.NE.0) GOTO 1001
-      IF(ITW(IZ).EQ.1)THEN
-        CALL STRIPC(IFIL,OUTSTR,0,ND,1,'TMC file',IER)
-        LTWIN(IZ)=OUTSTR(1:72)
-      ENDIF
-
-      CALL STRIPC(IFIL,OUTSTR,0,ND,1,'casual control flag',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,ICGC(IZ),0,1,'W',
-     &            'casual cntrl flag',IER)
-      IF(IER.NE.0) GOTO 1001
-      IF(ICGC(IZ).EQ.1)THEN
-        CALL STRIPC(IFIL,OUTSTR,0,ND,1,'casual cntrl file',IER)
-        LCGCIN(IZ)=OUTSTR(1:72)
-      ENDIF
-
-C Older versions of utility file will not have this, so if line does
-C not exist assume no obstructions exist.
-      CALL STRIPC(IFIL,OUTSTR,0,ND,0,'obstructions flag',IIER)
-      IF(IIER.NE.0)THEN
-        IOBS(IZ)=0
-      ELSE
-        K=0
-        CALL EGETWI(OUTSTR,K,IOBS(IZ),0,2,'W','obstr flag',IER)
-        IF(IER.NE.0) GOTO 1001
-        IF(IOBS(IZ).EQ.1)THEN
-          CALL STRIPC(IFIL,OUTSTR,0,ND,0,'obstructions file',IER)
-          IF(IER.NE.0) GOTO 1001
-          ZOBS(IZ)=OUTSTR(1:72)
-        ENDIF
-      ENDIF
-
-C Older versions of utility file will not have this, so if line does
-C not exist assume no control volumes file exist.
-      CALL STRIPC(IFIL,OUTSTR,0,ND,0,'volumes flag',IIER)
-      IF(IIER.NE.0)THEN
-        ZONE3D(IZ)=.FALSE.
-      ELSE
-        K=0
-        CALL EGETWI(OUTSTR,K,ICVS,0,1,'W','volumes flag',IER)
-        IF(IER.NE.0)THEN
-          ZONE3D(IZ)=.FALSE.
-          GOTO 1001
-        ENDIF
-        IF(ICVS.EQ.1)THEN
-          CALL STRIPC(IFIL,OUTSTR,0,ND,0,'volumes file',IER)
-          IF(IER.NE.0)THEN
-            ZONE3D(IZ)=.FALSE.
-            GOTO 1001
-          ENDIF
-          L3DCVS(IZ)=OUTSTR(1:72)
-        ELSE
-          ZONE3D(IZ)=.FALSE.
-        ENDIF
-      ENDIF
-
-C Older versions of utility file will not have this, so if line does
-C not exist assume no connections file exist.
-      CALL STRIPC(IFIL,OUTSTR,0,ND,0,'connections flag',IIER)
-      IF(IIER.NE.0)THEN
-        ZONE3D(IZ)=.FALSE.
-      ELSE
-        K=0
-        CALL EGETWI(OUTSTR,K,ICNC,0,1,'W','connections flag',IER)
-        IF(IER.NE.0)THEN
-          ZONE3D(IZ)=.FALSE.
-          GOTO 1001
-        ENDIF
-        IF(ICNC.EQ.1)THEN
-          CALL STRIPC(IFIL,OUTSTR,0,ND,0,'connections file',IER)
-          IF(IER.NE.0)THEN
-            ZONE3D(IZ)=.FALSE.
-            GOTO 1001
-          ENDIF
-          L3DCNC(IZ)=OUTSTR(1:72)
-        ELSE
-          ZONE3D(IZ)=.FALSE.
-        ENDIF
-      ENDIF
-
-C Older versions of utility file will not have this, so if line does
-C not exist assume no nodes coordinates file exist.
-      CALL STRIPC(IFIL,OUTSTR,0,ND,0,'coordinates flag',IIER)
-      IF(IIER.NE.0)THEN
-        ZONE3D(IZ)=.FALSE.
-      ELSE
-        K=0
-        CALL EGETWI(OUTSTR,K,INDC,0,1,'W','coordinates flag',IER)
-        IF(IER.NE.0)THEN
-          ZONE3D(IZ)=.FALSE.
-          GOTO 1001
-        ENDIF
-        IF(INDC.EQ.1)THEN
-          CALL STRIPC(IFIL,OUTSTR,0,ND,0,'coordinates file',IER)
-          IF(IER.NE.0)THEN
-            ZONE3D(IZ)=.FALSE.
-            GOTO 1001
-          ENDIF
-          L3DNDC(IZ)=OUTSTR(1:72)
-        ELSE
-          ZONE3D(IZ)=.FALSE.
-        ENDIF
-      ENDIF
-
-C Older versions of utility file will not have this, so if line does
-C not exist assume no nodes temperature file exist.
-      CALL STRIPC(IFIL,OUTSTR,0,ND,0,'temperatures flag',IIER)
-      IF(IIER.NE.0)THEN
-        ZONE3D(IZ)=.FALSE.
-      ELSE
-        K=0
-        CALL EGETWI(OUTSTR,K,INDC,0,1,'W','temperatures flag',IER)
-        IF(IER.NE.0)THEN
-          ZONE3D(IZ)=.FALSE.
-          GOTO 1001
-        ENDIF
-        IF(INDC.EQ.1)THEN
-          CALL STRIPC(IFIL,OUTSTR,0,ND,0,'temperatures file',IER)
-          IF(IER.NE.0)THEN
-            ZONE3D(IZ)=.FALSE.
-            GOTO 1001
-          ENDIF
-          L3DTAQ(IZ)=OUTSTR(1:72)
-        ELSE
-          ZONE3D(IZ)=.FALSE.
-        ENDIF
-      ENDIF
-
-C Older versions of utility file will not have this, so if line does
-C not exist assume no CFD file exist.
-      CALL STRIPC(IFIL,OUTSTR,0,ND,0,'cfd flag',IIER)
-
-C Older versions of utility file will not have this, so if line does
-C not exist assume no nodes temperature file exist.
-      CALL STRIPC(IFIL,OUTSTR,0,ND,0,'moisture flag',IIER)
-      IF(IIER.NE.0)THEN
-        MSTRZN(IZ)=.FALSE.
-      ELSE
-        K=0
-        CALL EGETWI(OUTSTR,K,INDC,0,1,'W','moisture flag',IER)
-        IF(IER.NE.0)THEN
-          MSTRZN(IZ)=.FALSE.
-          GOTO 1001
-        ENDIF
-        IF(INDC.EQ.1)THEN
-          CALL STRIPC(IFIL,OUTSTR,0,ND,0,'moisture file',IER)
-          IF(IER.NE.0)THEN
-            MSTRZN(IZ)=.FALSE.
-            GOTO 1001
-          ENDIF
-          MSTRZN(IZ)=.TRUE.
-          LMOIST(IZ)=OUTSTR(1:72)
-        ELSE
-          MSTRZN(IZ)=.FALSE.
-        ENDIF
-      ENDIF
-      CALL ERPFREE(IFIL,ISTAT)
-      RETURN
-
- 1001 CALL USRMSG(' Problem reading utility data in',OUTSTR,'W')
-      CALL ERPFREE(IFIL,ISTAT)
-      RETURN
-      END
-
-
 C ************** EGOMST 
 C EGOMST:  Reads site obstruction data as ASCII strings, with or without
 C range checking and printed summary. An obstruction block name (up to
-C 12 characters) may be included as an option and is returned via BLKNAME. 
-      SUBROUTINE EGOMST(IUNIT,LOBS,IR,ITRC,ITRU,IER)
+C 12 characters) may be included as an option and is returned via BLOCKNAME. 
+      SUBROUTINE EGOMST(IUNIT,ICOMP,LOBS,IR,ITRC,ITRU,IER)
 #include "building.h"
+C geometry.h provides common block GS5/GS6/GS7/GS8
+#include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
-
-C NB number of obstruction blocks.
-C X0 Y0 Z0 coordinates of each block origin.
-C DX DY DZ width depth and height of each block
-C BANG block rotation angle.
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-
-C NOX NOZ gridding resolution of surfaces for shading
-C NGX NGZ not used.
-C BLKNAME (8 char) name of obstruction block.
-C BLKMAT (12 char) obstruction block construction attribute (for Radiance).
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
 C Error messages (for use by low level I/O calls)
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER LOBS*72,BLKNAME*8,BLKMAT*12,tmp*8,OUTSTR*124,WORD*20
+      CHARACTER LOBS*72,OUTSTR*124,WORD*32
       character dllsubr*12,dllmesg*124,outs*124
       logical dll
+      integer NGXD,NGZD  ! dummy values for depreciated NGX & NGZ
+      real VX,VY,VZ   ! local values for XOB YOB ZOB
+      integer llbm    ! length of block material
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -1096,43 +939,67 @@ C in the data.
 C Read number of obstruction blocks and check for range errors.
       CALL STRIPC(IUNIT,OUTSTR,1,ND,1,'number of blocks',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NB,1,MB,'F','no of obstr',IER)
+      CALL EGETWI(OUTSTR,K,nbo,1,MB,'F','number of obstr',IER)
       IF(IER.NE.0)GOTO 99
+      nbobs(icomp)=nbo  ! remember how many for this zone
 
 C Read each obstruction block, if 7 items found then unattributed, if
 C 8 items assume the last is a name for the obstruction block, if 9 items
 C then the last is the construction attribute. If no  name & or construction
 C then assign the block index as the name via internal read.
-      DO 10 I=1,NB
+
+C Note: legacy zone obstruction files only contain the single type
+C of obstruction with one angle of rotation.
+      DO 10 I=1,nbobs(icomp)
         CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'obstruction block',IER)
         IF(IER.NE.0)GOTO 99
         IF(ND.eq.7.OR.ND.eq.8.OR.ND.eq.9)THEN
           K=0
-          CALL EGETWR(OUTSTR,K,XO(I),-999.,998.,'W','X org',IER)
-          CALL EGETWR(OUTSTR,K,YO(I),-999.,998.,'W','Y org',IER)
-          CALL EGETWR(OUTSTR,K,ZO(I), -99., 99.,'W','Z org',IER)
-          CALL EGETWR(OUTSTR,K,DX(I),   0., 99.,'W','X dis',IER)
-          CALL EGETWR(OUTSTR,K,DY(I),   0., 99.,'W','Y dis',IER)
-          CALL EGETWR(OUTSTR,K,DZ(I),   0., 99.,'W','Z dis',IER)
-          CALL EGETWR(OUTSTR,K,BANG(I),-359.,359.,'W','rot a',IER)
+          CALL EGETWR(OUTSTR,K,VX,-999.,998.,'W','obs X org',IER)
+          CALL EGETWR(OUTSTR,K,VY,-999.,998.,'W','obs Y org',IER)
+          CALL EGETWR(OUTSTR,K,VZ, -99., 99.,'W','obs Z org',IER)
+          XOB(icomp,I)=VX
+          YOB(icomp,I)=VY
+          ZOB(icomp,I)=VZ
+          CALL EGETWR(OUTSTR,K,VX,0., 99.,'W','obs X dis',IER)
+          CALL EGETWR(OUTSTR,K,VY,0., 99.,'W','obs Y dis',IER)
+          CALL EGETWR(OUTSTR,K,VZ,0., 99.,'W','obs Z dis',IER)
+          DXOB(icomp,I)=VX
+          DYOB(icomp,I)=VY
+          DZOB(icomp,I)=VZ
+          CALL EGETWR(OUTSTR,K,VX,-359.,359.,'W','obs rot ang',IER)
+          BANGOB(icomp,I,1)=VX
           IF(ND.EQ.7)THEN
             IF(I.LE.9)THEN
-              WRITE(BLKNAME(I),77)I
+              WRITE(BLOCKNAME(ICOMP,I),77)I
    77         FORMAT('B',I1)
+              LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
             ELSEIF(I.GT.9)THEN
-              WRITE(BLKNAME(I),78)I
+              WRITE(BLOCKNAME(ICOMP,I),78)I
    78         FORMAT('B',I2)
+              LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
             ENDIF
-            BLKMAT(I)='NONE'
+            BLOCKMAT(ICOMP,I)='NONE'
+            LNBLOCKMAT(ICOMP,I)=4
+            BLOCKTYP(ICOMP,I)='obs '
           ELSEIF(ND.EQ.8)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-            BLKNAME(I)=WORD(1:8)
-            BLKMAT(I)='NONE'
+            BLOCKNAME(ICOMP,I)=WORD(1:12)
+            LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
+            BLOCKMAT(ICOMP,I)='NONE'
+            LNBLOCKMAT(ICOMP,I)=4
+            BLOCKTYP(ICOMP,I)='obs '
           ELSEIF(ND.EQ.9)THEN
+
+C Get name of obstruction block and its construction (which might
+C contain spaces).
             CALL EGETW(OUTSTR,K,WORD,'W','obs blk name',IFLAG)
-            BLKNAME(I)=WORD(1:8)
-            CALL EGETW(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
-            BLKMAT(I)=WORD(1:12)
+            BLOCKNAME(ICOMP,I)=WORD(1:12)
+            LNBLOCKNAME(ICOMP,I)=lnblnk(BLOCKNAME(ICOMP,I))
+            CALL EGETP(OUTSTR,K,WORD,'W','obs mat name',IFLAG)
+            write(BLOCKMAT(ICOMP,I),'(a)') WORD(1:lnblnk(WORD))
+            LNBLOCKMAT(icomp,i)=lnblnk(BLOCKMAT(icomp,i))
+            BLOCKTYP(ICOMP,I)='obs '
           ENDIF
         ELSE
           CALL USRMSG(' mismatch block descr in',OUTSTR,'W')
@@ -1141,13 +1008,15 @@ C then assign the block index as the name via internal read.
    10 CONTINUE
 
 C Read surface test grid information and check ranges.
-      CALL STRIPC(IUNIT,OUTSTR,4,ND,1,'obs grid infor',IER)
+      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'obs grid infor',IER)
       IF(IER.NE.0)GOTO 99
       K=0
-      CALL EGETWI(OUTSTR,K,NOX,4,MOX,'F','opq grid X',IER)
-      CALL EGETWI(OUTSTR,K,NOZ,4,MOZ,'F','opq grid Z',IER)
-      CALL EGETWI(OUTSTR,K,NGX,4,10,'F','win grid X',IER)
-      CALL EGETWI(OUTSTR,K,NGZ,4,10,'F','win grid Z',IER)
+      CALL EGETWI(OUTSTR,K,NOX(icomp),4,MOX,'F','surf shd grid X',IER)
+      CALL EGETWI(OUTSTR,K,NOZ(icomp),4,MOZ,'F','surf shd grid Z',IER)
+      if(ND.eq.4)then
+       CALL EGETWI(OUTSTR,K,NGXD,4,10,'F','win grid X depreciated',IER)
+       CALL EGETWI(OUTSTR,K,NGZD,4,10,'F','win grid Z depreciated',IER)
+      endif
 
 C Close site file.
    99 CALL ERPFREE(IUNIT,ISTAT)
@@ -1156,19 +1025,23 @@ C Trace.
       IF(ITRC.GT.0)THEN
         CALL EDISP(ITRU,' ')
         CALL EDISP(ITRU,'Details of obstruction blocks:')
-        WRITE(OUTSTR,997)NOX,NOZ
+        WRITE(OUTSTR,997)NOX(icomp),NOZ(icomp)
   997   FORMAT('Shading based on a grid of ',
      &           I2,' by ',I2,' for surfaces.')
         CALL EDISP(ITRU,OUTSTR)
-        WRITE(OUTSTR,9996)NB
- 9996   FORMAT('There are ',I2,' blocks associated with the zone.')
+        WRITE(OUTSTR,9996)nbobs(icomp)
+ 9996   FORMAT('There are ',I2,
+     &         ' obstructions associated with the zone.')
         CALL EDISP(ITRU,OUTSTR)
         CALL EDISP(ITRU,
      &  'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien')
-        DO 9995 I=1,NB
-          tmp=BLKNAME(I)
-          WRITE(OUTSTR,9994)I,XO(I),YO(I),ZO(I),DX(I),DY(I),DZ(I),
-     &      BANG(I),tmp(1:LNBLNK(TMP)),BLKMAT(I)
+        DO 9995 I=1,nbobs(icomp)
+          llbm=LNBLOCKMAT(ICOMP,I)
+          llbn=LNBLOCKNAME(ICOMP,I)
+          WRITE(OUTSTR,9994)I,XOB(ICOMP,I),YOB(ICOMP,I),ZOB(ICOMP,I),
+     &      DXOB(ICOMP,I),DYOB(ICOMP,I),DZOB(ICOMP,I),
+     &      BANGOB(ICOMP,I,1),BLOCKNAME(ICOMP,I)(1:llbn),
+     &      BLOCKMAT(ICOMP,I)(1:llbm)
  9994     FORMAT(I3,7F8.1,' ',a,' ',a)
           CALL EDISP(ITRU,OUTSTR)
  9995   CONTINUE
@@ -1184,20 +1057,17 @@ C MKGOMST: Creates an annotated site obstruction file based
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
 #include "building.h"
+#include "model.h"
+C geometry.h provides common block GS5/GS6/GS7/GS8
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      COMMON/GS5/NB,XO(MB),YO(MB),ZO(MB),DX(MB),DY(MB),DZ(MB),BANG(MB)
-      COMMON/GS6/NOX,NOZ,NGX,NGZ,BLKNAME(MB),BLKMAT(MB)
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       CHARACTER Z*72
-      CHARACTER BLKNAME*8,BLKMAT*12
       character outl*124,outld*124
+      integer llbm  ! length of block material
 
 C Create/Open the file.
       CALL EFOPSEQ(IAF,Z,3,IER)
@@ -1217,23 +1087,27 @@ C Write all site information.
      &  ' 0. 0.   # dummy values for site position'
 
 C Write number of blocks.
-      WRITE(IAF,'(I5,A)',IOSTAT=IOS,ERR=3) NB,
+      WRITE(IAF,'(I5,A)',IOSTAT=IOS,ERR=3) nbobs(icomp),
      &  '    # no obstruction blocks'
 
 C For each block write info, use space as item separation.
       WRITE(IAF,'(a)')
      &'# origin X Y Z, width, depth, height, rot angle, descr, material'
-      DO 10 I=1,NB
-        WRITE(outl,34,IOSTAT=IOS,ERR=3)XO(I),YO(I),ZO(I),DX(I),DY(I),
-     &    DZ(I),BANG(I),BLKNAME(I),BLKMAT(I),I
-  34    FORMAT(7F9.3,2X,A8,1X,A12,1X,'# block ',I2)
+      DO 10 I=1,nbobs(icomp)
+        llbm=LNBLOCKMAT(ICOMP,I)
+        llbn=LNBLOCKNAME(ICOMP,I)
+        WRITE(outl,34,IOSTAT=IOS,ERR=3)XOB(icomp,I),YOB(icomp,I),
+     &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
+     &    BANGOB(icomp,I,1),
+     &    BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm),I
+  34    FORMAT(7F9.3,2X,A,1X,A,1X,'# block ',I2)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
    10 CONTINUE
 
-C Read surface test grid information and check ranges.
-      WRITE(IAF,'(A)',IOSTAT=IOS,ERR=3) '# grid opq X opq Z win X win Z'
-      WRITE(IAF,'(4I6)',IOSTAT=IOS,ERR=3) NOX,NOZ,NGX,NGZ
+C Write surface test grid information.
+      WRITE(IAF,'(A)',IOSTAT=IOS,ERR=3) '# grid surf X surf Z'
+      WRITE(IAF,'(2I6)',IOSTAT=IOS,ERR=3) NOX(icomp),NOZ(icomp)
 
 C Close site file.
       CALL ERPFREE(IAF,ISTAT)
@@ -1792,17 +1666,29 @@ C rule MORS is the handedness of the axes defining the polygon
 C verticies.  For solid bodies whose faces have been described anti-
 C clockwise when viewed from the outside the unit normals within this
 C routine will point outwards from the body.
-      SUBROUTINE EPLNEQN(ITRC,ITRU,MORS,ISTA,PNTLST,CG,EQN,IERR)
+
+C Note: this subroutine is not called
+
+      SUBROUTINE EPLNEQN(ITRU,MORS,ISTA,PNTLST,CG,EQN,IERR)
 #include "building.h"
 
-      DIMENSION PNTLST(100),CG(3),VNORM(3),EQN(4),
-     &          PNT(MV,3),E(MV,3),VN(MV,3),EV1(3),EV2(3),EV3(3)
+C Parameters
+      integer itru  ! unit for writing errors
+      integer mors  ! indicates handedness of polygon - see below
+      integer ISTA  ! start pointer to pntlst
+      real PNTLST   ! list of points - see below
+      real CG       ! returned centroid of polygon
+      real EQN      ! returned equation of the plane
+      DIMENSION PNTLST(100),CG(3),EQN(4)
+      integer IERR  ! error state - see below
+      
+      real VNORM,PNT,E,VN,EV1,EV2,EV3
+      dimension VNORM(3),PNT(MV,3),E(MV,3),VN(MV,3)
+      dimension EV1(3),EV2(3),EV3(3)
       CHARACTER outs*124
       logical close
 
 C INPUTS.
-
-C    ISTA              START POINTER TO PNTLST.
 C    PNTLST(ISTA)      NO. OF POINTS IN THE POLYGON.
 C    PNTLST(ISTA+1)    FIRST VERTEX X COORD.
 C    PNTLST(ISTA+2)    FIRST VERTEX Y COORD.
@@ -1815,14 +1701,6 @@ C                                         E.G. MODEL COORDS.
 C                      IF MORS=2 FLAGS A LEFT HANDED SYSTEM
 C                                         E.G. SCREEN COORDS.
 
-C OUTPUTS.
-C    CG(1)  THE X COORD. OF THE CENTROID OF THE POLYGON.
-C    CG(2)  '   Y   '
-C    CG(3)  '      '
-C    EQN(1) THE A COEFFICIENT OF THE EQUATION OF THE PLANE.
-C    EQN(2) '   B   '
-C    EQN(3) '   C   '
-C    EQN(4) '   D   '
 C    IERR   AN ERROR FLAG. IF .GE. 0 ALL O.K.
 C           IF -1 THEN THE MAGNITUDE OF THE UNIT NORMAL IS .LT.10E-4
 C           IF -2 THEN LESS THAN 3 POINTS IN THE POLYGON.
@@ -2106,7 +1984,10 @@ C Check if tollerably close to an axis.
       elseif(vdx.lt.0.0.and.vdy.gt.0.0)then
         azim=360.0-(acos(vdy/dist)/RAD)
       endif
+
+C Debug.
 C      write(6,*)'UV2AZ azim elev <<vdx vdy vdz=',azim,elev,vdx,vdy,vdz
+
       return
       end
 
@@ -2180,7 +2061,10 @@ C Reconstitute the viewing vector.
         vdx = XYDIS*SIN(RYAZI)
         vdy = XYDIS*COS(RYAZI)
       ENDIF
+
+C Debug.
 C      write(6,*)'AZ2UV azim elev >>vdx vdy vdz=',azim,elev,vdx,vdy,vdz
+
       return
       end
 
@@ -2395,6 +2279,7 @@ C If MOD = t or T then the focus is thermophysical.
 C It is assumed that the user will make one selection only.
       SUBROUTINE EASKGEOF(PROMPT,CFGOK,IZONE,MOD,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 
@@ -2402,10 +2287,6 @@ C It is assumed that the user will make one selection only.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
       common/user/browse
       LOGICAL CFGOK,SELECT,delzone,browse,cpyzone,XST
 
@@ -2680,6 +2561,7 @@ C complete, `v` note view factors, `g` casual gain ctl, `d` domain flow,
 C `h` heat transfer (comvective) methods, `-` zone names only.
       SUBROUTINE ASKZONE(IZONE,IDZONE,prompt,title,mod,errmsg,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
 
@@ -2689,12 +2571,6 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
@@ -2708,7 +2584,6 @@ C =2 with more than 3 day types allowed and sorted
       CHARACTER VERT*27,KEY*1,prompt2*36
       character h*72,mod*1,outs*124
       CHARACTER*72 LCFD
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -2986,6 +2861,7 @@ C `h` heat transfer (comvective) methods, 'b' obstruction blocks,
 C `-` zone names only.
       SUBROUTINE ASKMULTIZONE(INPIC,IVALS,prompt,title,mod,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "epara.h"
       
@@ -2997,10 +2873,6 @@ C `-` zone names only.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
@@ -3013,8 +2885,7 @@ C =2 with more than 3 day types allowed and sorted
       DIMENSION VERT(35),IVALS(MCOM)
       CHARACTER VERT*27,KEY*1,prompt2*36
       character h*72,mod*1,outs*124
-      CHARACTER*72 LSNAM,LPROJ,LGEOM,LSHAD,LTHRM,LUTIL,LCFD
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+      CHARACTER*72 LCFD
 
 C Clear IVALS and INPICK.
       IER=0
@@ -3242,6 +3113,7 @@ C Display the menu.
 C Debug.
 C        write(6,*) 'inpic is ',inpic
 C        write(6,*) 'ivals is ',ivals
+
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
@@ -3472,31 +3344,14 @@ C databases have been opened.
       subroutine asksnode(icomp,is,ilay,inode,ier)
 #include "building.h"
 #include "esprdbfile.h"
+#include "material.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      character DESC*48
-      integer NMLC,IPR,LAYERS
-      real DTHK,DRAIR
-      COMMON/MLC/NMLC,DESC(MMLC),DTHK(MMLC,ME),IPR(MMLC,ME),
-     &           LAYERS(MMLC),DRAIR(MMLC,ME,3)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-      integer mathash
-      common/mathasharray/mathash(0:600)
-
-      character matname*32,matdoc*248,matopaq*1
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
 
 C Special materials file flag
       DIMENSION PNAM(ME),item(ME+10)
@@ -3504,7 +3359,7 @@ C Special materials file flag
       character item*32,NAM*72,PNAM*20,H*72,outs*124
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12
-      logical close  ! to check version of materials db.
+      logical closemat1,closemat2  ! to check version of materials db.
 
 C Check name of surface with construction name in MLC common.
       imatch=0
@@ -3519,7 +3374,8 @@ C Check name of surface with construction name in MLC common.
          ier=1
          return
       endif
-      call eclose(matver,1.1,0.001,close)  ! check materials version.
+      call eclose(matver,1.1,0.001,closemat1)  ! check materials version 1.1.
+      call eclose(matver,1.2,0.001,closemat2)  ! check materials version 1.2.
         
 C Write menu displaying a list of layer names
       header=3
@@ -3532,10 +3388,9 @@ C Write menu displaying a list of layer names
 C Pick up the material name of each layer by reading data from
 C materials db or from the.
         iel=IPR(imatch,j)
-        if(close)then
-          legmat=iel   ! which legacy index
-          if(legmat.ge.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
+        if(closemat1.or.closemat2)then
+          matarrayindex=IPRMAT(imatch,j)
+          if(matarrayindex.ge.0)then
             write(NAM,'(a)') matname(matarrayindex)(1:32)
             PNAM(j)=NAM(1:20)
           endif
@@ -3829,6 +3684,7 @@ C Similar to code ZLIST in esrures/utils.F.
       dimension list(insize)
       CHARACTER zdescr*248,outs*248,outsd*248
       character t124*124
+      logical unixok
 
       t124=' '
       length=0
@@ -3861,10 +3717,14 @@ C First try to use t124 string (so have room for zones label).
         return
       endif
 
-   1  if(IOS.eq.2)then
-        write(6,*) 'ZARLIST: no permission to write zone names: ',outs
-      else
-        write(6,*) 'ZARLIST: error writing zone names: ',outs
+C Trap for I/O errors.
+   1  call isunix(unixok)
+      if(unixok)then
+        if(IOS.eq.2)then
+          write(6,*)'ZARLIST: no permission to write zone names: ',outs
+        else
+          write(6,*)'ZARLIST: error writing zone names: ',outs
+        endif
       endif
       ierr=1
       return

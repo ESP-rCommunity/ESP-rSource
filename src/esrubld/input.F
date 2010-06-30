@@ -36,10 +36,10 @@ C Common block variables are:
 C indcfg  - is the configuration file index where: 1= building only,
 C           2= plant only, 3= building and plant
 
-C xlat,   - Site latitude and the longitudinal difference between the 
-C xlon      site and the reference time zone (east +ve).
+C sitelat,    - Site latitude and the longitudinal difference between the 
+C sitelongdif   site and the reference time zone (east +ve).
  
-C ixpos   - Site exposure index :
+C siteexposureindex - Site exposure index (site.h):
 C           1= city centre, normal case; 2= urban site, normal case
 C           3= rural site, normal case;
 C           4= city centre, equal sky, ground & building view factors
@@ -48,9 +48,9 @@ C              buildings
 C           6= rural site, isolated; 7= totally enclosed building
 C           8= user defined
  
-C gref    - external ground reflectivity
+C gref    - external ground reflectivity (site.h)
  
-C lsnam   - the name of the entire system
+C modeltitle - the name of the entire system
  
 C ncomp   - number of zones comprising the system to be simulated
 C nccode  - zone code (for eventual database reference)
@@ -58,8 +58,6 @@ C nccode  - zone code (for eventual database reference)
 C lproj   - zone scheduling (operation file)
 C lgeom   - zone geometry file      
 C lthrm   - zone construction file
-C indutl  - Zone utilities file index: 0= none 1= zone utility file supplied
-C lutil   - Zone utilities file name.
  
 C ncon    - total number of intra-zone connections
  
@@ -101,9 +99,11 @@ C laprob  - fluid flow description file
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
+#include "site.h"
 #include "plant.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
+#include "material.h"
       PARAMETER (MSTMC=20)
       integer igraphiclib  ! external definition
       integer lnblnk  ! function definition
@@ -113,6 +113,7 @@ C laprob  - fluid flow description file
       common/filep/ifil
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
       common/outin/iuout,iuin
 
@@ -120,8 +121,6 @@ C Path to model and command line file name.
       common/rpath/path
       common/rcmd/LCMDFL
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C5/IXPOS,GREF,ITGREF,GREF12(12),SREF,NSNOW(12),SNFNAM
-      CHARACTER*72 SNFNAM
       common/c6/indcfg
       common/CFGV/icfgv
 
@@ -176,19 +175,12 @@ C igshp=1 indicates GSHP models are active; 0 indicates no GSHP models.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
-C Material data arrays.
-      real matver
-      integer matcats,matcatitems,matdbitems
-      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
- 
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,LTMP*72,MODE*4,cfgroot*24
-      CHARACTER outs*124,h*72,spsname*8,L144*144
-      CHARACTER LTDF*72,LTDFA*72,LCMDFL*144
+      CHARACTER outs*124,h*72,spsname*8,L144*144,longtmp*144
+      CHARACTER outs*248,LTDF*72,LTDFA*72,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
       DIMENSION ICLN(30)  ! for checking material db categories
@@ -199,11 +191,22 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL BLDG3D,ZONE3D,GRND3D,MSTROK,MSTRZN
-      logical dll,close
+      logical dll,closemat1,closemat2,unixok
+      character lworking*144,fs*1
+
+      integer ier
 
 C Reset error indicator and check if running as a dll.
       ier1=0
       call isadll(dll)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Initialize the system variables.
       GAM=0.5
@@ -342,7 +345,7 @@ C If the power flow simulation flag is set then set up the electrical network.
 
 C Advanced albedo model: pre-process snow depth file. The ascii file is
 C read and converted to a binary file
-      IF (ITGREF.EQ.3) THEN
+      IF (groundreflmodel.EQ.3) THEN
         CALL PPGREF(IER)
         IF (IER.NE.0) RETURN
       ENDIF
@@ -405,6 +408,7 @@ C If IREP=1 then use default.
       IF(GRND3D)THEN
 
 C Specify ground simulation start-up period.
+        ier=0
         CALL EFOPRAN(ICNC,LGDCNC,7,1,IER)
         READ(ICNC,REC=1,IOSTAT=ISTAT,ERR=7)ITCNSTG
         CALL ERPFREE(ICNC,ISTAT)
@@ -435,8 +439,23 @@ C Specify ground simulation start-up period.
 
 C If materials db not yet defined or has not yet been opened do so.
 C Use the unit IFMAT=IFIL+5 for this via common condb.
+
+C << this logic could be updated to use MATFROMBIN as in ascii_mat.F >>
+
       IF(.NOT.MATDBOK)THEN
-  55    call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+  55    write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
+
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          ier=0
+          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+        elseif(ipathmat.eq.2)then
+          ier=0
+          lndbp=lnblnk(standarddbpath)
+          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+          call EFOPRAN(IFMAT,lworking,40,1,IER)
+        endif
+
         if(ier.ne.0)then
           if(dll)then
             dllsubr='mzinpt'
@@ -444,14 +463,15 @@ C Use the unit IFMAT=IFIL+5 for this via common condb.
             ier=2
             return
           else
+
             IER=0
             H(1)='The material db holds the thermophysical'
             H(2)='properties for aluminium, brick, earth, tile, etc.'
-            ltmp=LFMAT
-  56        CALL EASKS(ltmp,' Material database? ',
-     &        ' ',72,DFCON,'material db file name',IER,2)
-            if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-              LFMAT=ltmp
+            write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+  56        CALL EASKS(lltmp,' Material database? ',
+     &        ' ',144,DFCON,'material db file name',IER,2)
+            if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+              write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
               goto 55
             else
               goto 56
@@ -472,10 +492,27 @@ C code from esruprj/eddb.F subroutine opendb.
             goto 139  !  a binary file found so carry on.
           endif
  1006     CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          call rascimat(iuout,IFMAT,LFMAT,IER)  ! try current ascii format
+          write(currentfile,'(a)') LFMAT(1:lnblnk(LFMAT))
+
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
+          elseif(ipathmat.eq.2)then
+            lndbp=lnblnk(standarddbpath)
+            write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &        LFMAT(1:lnblnk(LFMAT))
+            call rascimat(IFMAT,lworking,IER)  ! try current ascii format
+          endif
           if(ier.eq.-2)then
             ier=0
-            call rlegacymat(iuout,IFMAT,LFMAT,ier)  ! try older ascii format
+            if(ipathmat.eq.0.or.ipathmat.eq.1)then
+              call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
+            elseif(ipathmat.eq.2)then
+              lndbp=lnblnk(standarddbpath)
+              write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &          LFMAT(1:lnblnk(LFMAT))
+              call rlegacymat(IFMAT,lworking,ier)  ! try older ascii format
+            endif
+
             if(ier.ne.0)then
               if(dll)then
                 dllsubr='mzinpt'
@@ -487,12 +524,14 @@ C code from esruprj/eddb.F subroutine opendb.
      &            'found or file was corrupt','W')
               endif
             else
-              call eclose(matver,1.1,0.001,close)
-              if(close) MATDBOK=.TRUE.
+              call eclose(matver,1.1,0.001,closemat1)
+              call eclose(matver,1.2,0.001,closemat2)
+              if(closemat1.or.closemat2) MATDBOK=.TRUE.
             endif
           elseif(ier.eq.0)then
-            call eclose(matver,1.1,0.001,close)
-            if(close) MATDBOK=.TRUE.
+            call eclose(matver,1.1,0.001,closemat1)
+            call eclose(matver,1.2,0.001,closemat2)
+            if(closemat1.or.closemat2) MATDBOK=.TRUE.
           endif
         endif
       ENDIF
@@ -502,9 +541,16 @@ C data may be accessed by control and reporting facilities.
 C Use file unit IAPROB to read db.
  139  IFMUL=IAPROB
       CALL ERPFREE(IFMUL,ISTAT)
-      call FINDFIL(LFMUL,XST)
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        lworking=lfmul  ! use as is
+      elseif(ipathmul.eq.2)then
+        lndbp=lnblnk(standarddbpath)
+        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+      endif
+      call FINDFIL(lworking,XST)
       if(.NOT.XST)then
-        write(outs,'(A,A)') ' Could not find construction database ',
+        write(outs248,'(2A)') ' Could not find construction database ',
      &    LFMUL(1:lnblnk(LFMUL))
         call isadll(dll)
         if(dll)then
@@ -513,7 +559,7 @@ C Use file unit IAPROB to read db.
           ier=2
           return
         else
-          call usrmsg(outs,' ','W')
+          call lusrmsg(outs248,' ','W')
         endif
       else
         CALL ERMLDB(0,iuout,IER)
@@ -570,17 +616,35 @@ C a climate file by reading records 366 and 367.
         iclim=ifil
         call erpfree(iclim,istat)
         if (.not.autook) then
-          LTMP=LCLIM
-          CALL EASKS(LTMP,'  Climate file name ?',
-     &               '  ',72,DCLIM,'climate file name',IER,9)
-          IF(LTMP(1:2).EQ.'  ')goto 35
-          LCLIM=LTMP
+          longtmp=LCLIM
+
+C If using X11 assume that the full path is less than 96 chars
+C but if using GTK then we need the full length to avoid truncation.
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &        96,DCLIM,'climate file name',IER,3)
+          elseif(iglib.eq.2)then
+            CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &        144,DCLIM,'climate file name',IER,3)
+          else
+            CALL EASKF(longtmp,' ',' Climate file name ? ',
+     &        96,DCLIM,'climate file name',IER,3)
+          endif
+          if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+          if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
+            LCLIM=longtmp
+          endif
+
         endif
       endif
+
+      ier=0
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
       IF(ier.eq.0)THEN
         IREC=366
-        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,IRT
+        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
         IREC=367
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)CLMLOC
         WRITE(OUTSTR,1000)CLMLOC,ICYEAR
@@ -588,7 +652,7 @@ C a climate file by reading records 366 and 367.
         CALL EDISP(IUOUT,' ')
         CALL EDISP(IUOUT,OUTSTR)
         IRTYPE=0
-        IF(IRT.EQ.123)IRTYPE=1
+        IF(ICDNGH.EQ.123)IRTYPE=1
 
 C If older configuration, confirm the year.
         if(icfgv.lt.3)then
@@ -630,7 +694,7 @@ C Open and scan the bidirectional data file if it exists.
         continue
       else
         iua=IAPROB
-        call erbiwin(0,iuout,iua,bidirfile,ier)
+        call erbiwin(iuout,iua,bidirfile,ier)
         if(ier.eq.0)then
           call edisp(itru,'The bi-directional data was sucessfully')
           call edisp(itru,'scanned.')
@@ -689,6 +753,8 @@ C IREP=1 implies no reporting or data checking.
 
       SUBROUTINE MZPREC(IREP,IER)
 #include "building.h"
+#include "model.h"
+#include "site.h"
 
 C geometry.h provides commons G0/G2/c20/precz.
 #include "geometry.h"
@@ -701,25 +767,17 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
 
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =3 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C14/UGRDTP(12,MGRDP),NGRDP
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C During setup scan for inbuilt and user defined ground temperatures.
@@ -727,7 +785,6 @@ C igttype: if > 1 then index points to most often used standard profile
 C         if < 1 then index points to most often used user profile
 C         if = 0 then use compiled pattern.
       common/C25/igttype,GTMP(12)
-      common/ground/grdtmp(12,mgrdp)
 
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -770,7 +827,8 @@ C Thermal bridge common block is described in esruprj/edgeo.F
       real psi,lngth,losspercent,totheatloss,thbrpercent
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent
+     &               thbrpercent,uavtotal(MCOM)
+      real uavtotal   
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -842,7 +900,7 @@ C translate the casual gains.
 
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
+          call georead(IUNIT,LGEOM(IZ),IZ,1,ITU,IER)
         else
           call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
         endif
@@ -948,7 +1006,7 @@ C no mismatch.
       IW=IWARN
       IWARN=0
       call usrmsg(' Checking model topology...',' ','-')
-      call ckcurmatch(prob,iprob,ier)
+      call ckcurmatch(prob,iprob)
       if(prob.and.iprob.gt.1)then
         outs='More than one complaint about model contiguity'
         if(dll)then
@@ -1020,7 +1078,7 @@ C has reciprocal information.
           endif
         endif
 
-C Debug...
+C Debug.
 C        write(6,*) 'i,ioc,nz2,ns2,IC1(ioc),IE1(ioc)',i,ioc,nz2,ns2,
 C     &    IC1(ioc),IE1(ioc)
 
@@ -1187,8 +1245,11 @@ C Find out which was most often used in terms of ground temperatures.
           igumaxindex=ij
         endif
   8   continue
-      write(6,*) igmax,igmaxindex,igarray
-      write(6,*) igumax,igumaxindex,iguarray
+
+C Debug.
+C      write(6,*) igmax,igmaxindex,igarray
+C      write(6,*) igumax,igumaxindex,iguarray
+
       if(igmaxindex.eq.0.and.igumaxindex.eq.0)then
 
 C Nothing specified as a connection so use UK monthly mean
@@ -1221,7 +1282,8 @@ C More user defined profiles used so get from UGRDTP
           GTMP(ij)=UGRDTP(ij,igumaxindex)
   5     continue
       endif
-C Debug...
+
+C Debug.
 C      write(6,*) 'lw gtmp is ',GTMP
 
 C Identify special materials file & call routine to read it.
@@ -1239,6 +1301,7 @@ C Timestep zone airflow is handled by tdf.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
 
@@ -1247,17 +1310,6 @@ C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
-
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
 
       COMMON/CHANNL/NOCHAN
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
@@ -1271,7 +1323,6 @@ C Residential hydrogen cogen: control file
                                 !- controller inputs
 
       CHARACTER*5 NAME
-      CHARACTER*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       CHARACTER*72 LBSIMP
       character dllsubr*12,dllmesg*124,outs*124
       LOGICAL dll
@@ -1416,7 +1467,10 @@ C whether to save every timestep to the file.
           irdact=0
         endif
         tstepok=.true.
-        write(6,*) 'in input irdact & isavgh are ',irdact,isavgh 
+
+C Debug.
+C        write(6,*) 'in input irdact & isavgh are ',irdact,isavgh
+ 
       endif
 
 C << Need to do plant timesteps >>
@@ -1481,16 +1535,22 @@ C Check that we have enough info to proceede if autook
         spfileok=.true.
       endif
 
-C Debug...
+C Debug.
 C      write(6,*)'spfileok,perok,tstepok,saveok,autook,exitok,startupok'
 C      write(6,*)spfileok,perok,tstepok,saveok,autook,exitok,startupok
+
       return
       end
 
 C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
-      subroutine ckcurmatch(prob,iprob,ier)
+      subroutine ckcurmatch(prob,iprob)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
+
+C Parameters
+      logical prob  ! true if there is a problem
+      integer iprob ! number of mis-matches detected
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1502,12 +1562,7 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-
-      logical prob,dup,first
+      logical dup,first
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78
@@ -1520,7 +1575,7 @@ C ****** Scan and report current mis-matches (similar to code in emkcfg.F).
       do 287 IZ=1,NCOMP
         call eclose(gversion(IZ),1.1,0.01,newgeo)
         if(newgeo)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
         else
           call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
         endif

@@ -57,6 +57,7 @@ C geometry.h provides commons G0 and G2.
       character act*1,paction*16,h*72
       logical ok,dok
       logical newgeo  ! Used to test for new/old geometry file.
+      integer ier
 
 C Day of average solar declination in each month.
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
@@ -144,6 +145,7 @@ C simulation, append 'Jan' or 'Feb' to the end of the base name to
 C identify them. Close any previous file on iunit and open a new one.
          tbase=ltrns(1:lnblnk(ltrns))//month(mon)
          irecw=ms+5
+         ier=0
          call efopran(iunit,tbase,irecw,3,ier)
 
 C Write the first record of the zone transitional shading file.
@@ -154,7 +156,7 @@ C Write the first record of the zone transitional shading file.
          write(iunit,rec=irec,iostat=istat,err=1000)(irecs(i),i=1,ms)
          call tfile1(icomp)
          call shadc(icomp)
-         call ssave(ier)
+         call ssave(icomp,ier)
          if(ier.ne.0)then
             call usrmsg('Error condition detected during file save!',
      &                  'Terminating calculation.','W')
@@ -317,16 +319,14 @@ C Calculates the direct and diffuse solar shading. Called from shdcon.
 
       subroutine shadc(icomp)
 #include "building.h"
+#include "geometry.h"
 
       common/tracech/icout
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/prec8/slat,slon
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/contr/mon,isc(ms),iyd
-      common/gs5/nb,xo(mb),yo(mb),zo(mb),dx(mb),dy(mb),dz(mb),ang(mb)
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/ihtime/ihour
       common/sangl1/sazi1,salt1
       common/sangl2/sazi2,salt2
@@ -337,7 +337,7 @@ C performed and is set to 1 when they have.
       common/data1/ical,idifc,init
 
       dimension month(12),npz(8),alt(8),azi(8)
-      character blkname*8,blkmat*12,outs*124,paction*16
+      character outs*124,paction*16
       character month*3,mode*3
       logical tok
 
@@ -353,7 +353,7 @@ C If trace requested enable writing.
       tok=.false.
       if(icout.eq.33)tok=.true.
 
-      if(nb.eq.0)then
+      if(nbobs(icomp).eq.0)then
          call usrmsg('No obstruction blocks defined so',
      &               'exiting from shading calculation.','W')
          return
@@ -373,7 +373,7 @@ C ksu is the number of sun-up hours
    10 continue
 
 C knt is the total number of target surfaces in zone.
-      do 11 i=1,nsur
+      do 11 i=1,nzsur(icomp)
          if(isc(i).eq.1)knt=knt+1
    11 continue
 
@@ -383,7 +383,7 @@ C progress report.
 
 C Commence direct (mode=dir) and diffuse (mode=dif) shading computation
 C for each target surface in turn.
-      do 20 itsur=1,nsur
+      do 20 itsur=1,nzsur(icomp)
          init=0
 
 C Skip if surface is not selected by user.
@@ -403,23 +403,23 @@ C Trace output.
 C Partially derive transformation equations by computing time
 C independent part of equation coefficients - equivalent to
 C translation plus three-dimensional plane rotation.
-         call trnsf1(itsur)
+         call trnsf1(icomp,itsur)
 
 C Transfer transformed surface coordinates to zone transitional
 C shading file.
-         call tfile2(itsur)
+         call tfile2(icomp,itsur)
 
 C Set up target surface mesh.
-         call mesh(itsur)
+         call mesh(icomp,itsur)
 
 C Proceed hour-by-hour.
          do 30 ihr=1,24
 
 C Reset foshd each hour, setting any grid point not within surface
 C to -1.0.
-            do 401 i=1,nox
-               do 402 j=1,noz
-                  call point1(itsur,xop(i,j),zop(i,j),ians)
+            do 401 i=1,nox(icomp)
+               do 402 j=1,noz(icomp)
+                  call point1(icomp,itsur,xop(i,j),zop(i,j),ians)
                   foshd(i,j)=0
                   if(ians.eq.0)foshd(i,j)=-1.0
   402          continue
@@ -445,7 +445,7 @@ C Trace output.
                if(tok)then
                   call edisp(icout,' ')
                   write(outs,9997)ihour
- 9997             format('*** SHADC: Sun not up at ',I2)
+ 9997             format('*** SHADC: Sun not up at hour ',I2)
                   call edisp(icout,outs)
                endif
                goto 30
@@ -465,9 +465,9 @@ C here for use in shdtst.
 
 C Reset ioshd before each sun or sky patch loop, setting any
 C grid point not within target surface to -1.
-              do 403 i=1,nox
-                 do 404 j=1,noz
-                    call point1(itsur,xop(i,j),zop(i,j),ians)
+              do 403 i=1,nox(icomp)
+                 do 404 j=1,noz(icomp)
+                    call point1(icomp,itsur,xop(i,j),zop(i,j),ians)
                     ioshd(i,j)=0
                     if(ians.eq.0)ioshd(i,j)=-1
   404            continue
@@ -480,9 +480,9 @@ C Direct case.
 C Trace output.
                   if(tok)then
                      call edisp(icout,' ')
-                     write(outs,9996)ihour
- 9996                format(
-     &                '*** SHADC: calculating direct shading at ',i2)
+                     write(outs,'(a,i2)')
+     &               '*** SHADC: calculating direct shading at hour ',
+     &               ihour
                      call edisp(icout,outs)
                   endif
 
@@ -493,10 +493,9 @@ C Diffuse case (only initilise gssa at start of sky vault processing).
 C Trace output.
                   if(tok)then
                      call edisp(icout,' ')
-                     write(outs,9995)ihour,ip-1
- 9995                format(
-     &                  '*** SHADC: calculating diffuse shading at ',
-     &                       i2,' for patch ',i3)
+                     write(outs,'(a,i2,a,i3)')
+     &               '*** SHADC: calculating diffuse shading at hour ',
+     &               ihour,' for patch ',ip-1
                      call edisp(icout,outs)
                   endif
 
@@ -545,11 +544,11 @@ C from the sun or sky patch.
 
 C Complete projection transformation on an obstruction block (ibn)
 C and surface-by-surface (ibs) basis.
-               do 50 ibn=1,nb
+               do 50 ibn=1,nbobs(icomp)
 
 C Compute X, Y and Z coordinates of obstruction block corners 
 C relative to the original site coordinate system.
-                 call cornr(ibn)
+                 call cornr(icomp,ibn)
 
 C Project obstruction block surface, form intersection with plane
 C of target surface if necessary, then determine target surface
@@ -557,7 +556,7 @@ C shading.
                  do 60 ibs=1,6
                    call trnsf3(ihour,ibn,ibs)
                    call decomp(ibn,ibs,itsur)
-                   call shdtst(itsur)
+                   call shdtst(icomp,itsur)
    60            continue 
    50          continue         ! obstruction block loop
 
@@ -572,8 +571,8 @@ C each target surface grid point (foshd) and determine overall
 C diffuse surface shading if last sky patch has just been
 C considered (psof).
                elseif(mode.eq.'dif')then
-                  do 70 i=1,nox
-                     do 80 j=1,noz
+                  do 70 i=1,nox(icomp)
+                     do 80 j=1,noz(icomp)
                         if(ioshd(i,j).eq.-1)goto 80
                         foshd(i,j)=foshd(i,j)+float(ioshd(i,j))/145.0
    80                continue
@@ -584,8 +583,8 @@ C considered (psof).
 
 C Surface cannot see sun or sky patch.
     2          if(mode.eq.'dir')then
-                  do 90 i=1,nox
-                     do 100 j=1,noz
+                  do 90 i=1,nox(icomp)
+                     do 100 j=1,noz(icomp)
                         if(ioshd(i,j).eq.-1)goto 100
                         if(mode.eq.'dir')ioshd(i,j)=1
 C                       if(mode.eq.'dif')foshd(i,j)=foshd(i,j)+1.0/145.0
@@ -835,27 +834,28 @@ C Tell shdtst to abandon shadow polygon.
       endif
 
 C Trace output.
-   1  if(.not.tok)goto 9999
-      call edisp(icout,' ')
-      write(outs,9998)itsur,ibn,ibs
- 9998 format('*** DECOMP: Target surface ',i2,
+   1  if(tok)then
+        call edisp(icout,' ')
+        write(outs,9998)itsur,ibn,ibs
+ 9998   format('*** DECOMP: Target surface ',i2,
      &       '; obstruction block ',i2,', surface ',i2,'.')
-      call edisp(icout,outs)
-      call edisp(icout,case)
-      if(iscnt.ne.0)then
-         write(outs,'(a,4i2)')'Excluded vertices =',(ipc(i),i=1,iscnt)
-         call edisp(icout,outs)
+        call edisp(icout,outs)
+        call edisp(icout,case)
+        if(iscnt.ne.0)then
+          write(outs,'(a,4i2)')'Excluded vertices =',(ipc(i),i=1,iscnt)
+          call edisp(icout,outs)
+        endif
+        call edisp(icout,'Shadow polygon (XS,ZS):')
+        call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
+        if(npoint.eq.0)then
+          call edisp(icout,'None')
+          goto 9999
+        endif
+        do 9997 I=1,npoint
+          write(outs,'(i2,f10.2,f20.2)')i,xs(i),zs(i)
+          call edisp(icout,outs)
+ 9997   continue
       endif
-      call edisp(icout,'Shadow polygon (XS,ZS):')
-      call edisp(icout,'     X-Coord   Y-Coord   Z-Coord')
-      if(npoint.eq.0)then
-         call edisp(icout,'None')
-         goto 9999
-      endif
-      do 9997 I=1,npoint
-         write(outs,'(i2,f10.1,f20.1)')i,xs(i),zs(i)
-         call edisp(icout,outs)
- 9997 continue
 
  9999 return
       end
@@ -907,44 +907,44 @@ C Intersection point.
        zi=zt(ip1)+(((yt(ip1)*zt(ip1))-(yt(ip1)*zt(ip2)))/diff)
 
 C Trace output.
-   1  if(.not.tok)goto 9999
-      call edisp(icout,' ')
-      if(ishd.eq.1)call edisp(icout,
+   1  if(tok)then
+        call edisp(icout,' ')
+        if(ishd.eq.1)call edisp(icout,
      &       '*** INTERSECT: line crosses yt=0 plane.')
-      if(ishd.eq.0)call edisp(icout,
+        if(ishd.eq.0)call edisp(icout,
      &       '*** INTERSECT: line does not cross yt=0 plane.')
-      write(outs,'(a,i1,a,i1)')'Line = ',ip1,' - ',ip2
-      call edisp(icout,outs)
-      write(outs,'(a,3f10.3)')'Point 1 = ',xt(ip1),yt(ip1),zt(ip1)
-      call edisp(icout,outs)
-      write(outs,'(a,3f10.3)')'Point 2 = ',xt(ip2),yt(ip2),zt(ip2)
-      call edisp(icout,outs)
-      write(outs,'(a,2f10.3)')'Intersection = ',xi,zi
-      call edisp(icout,outs)
+        write(outs,'(a,i1,a,i1)')'Line = ',ip1,' - ',ip2
+        call edisp(icout,outs)
+        write(outs,'(a,3f10.3)')'Point 1 = ',xt(ip1),yt(ip1),zt(ip1)
+        call edisp(icout,outs)
+        write(outs,'(a,3f10.3)')'Point 2 = ',xt(ip2),yt(ip2),zt(ip2)
+        call edisp(icout,outs)
+        write(outs,'(a,2f10.3)')'Intersection = ',xi,zi
+        call edisp(icout,outs)
+      endif
 
- 9999 return
+      return
       end
 
 C ********** SHDTST **********
 C Tests each grid centre point of a user-specified grid to
 C establish if it is within the target surface and shadow polygon.
 
-      subroutine shdtst(itsur)
+      subroutine shdtst(izone,itsur)
 #include "building.h"
+#include "geometry.h"
 
-      common/gs6/nox,noz,ngx,ngz,blkname(mb),blkmat(mb)
       common/shad2/ishd,npoint,xs(5),zs(5)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
-      character blkname*8,blkmat*12
 
       if(ishd.eq.0)return
 
 C For each opaque surface grid point, test whether it is within 
 C the target surface. If it is, then test whether also within
 C the shadow polygon.
-      do 10 i=1,nox
-         do 20 j=1,noz
+      do 10 i=1,nox(izone)
+         do 20 j=1,noz(izone)
 C Is point within surface itsur?
             if(ioshd(i,j).eq.-1)goto 20
 

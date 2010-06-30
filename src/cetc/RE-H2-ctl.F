@@ -385,7 +385,7 @@ C-----ancillaries. If the electrolyzer was previously on, then power
 C-----draw of the compressor and cooling pump are already part of the AC load; in this case
 C-----allowance is set to zero. If the electrolyzer was not previously on, then allowance
 C-----should be set to the 'H2 deadband' input by the user. 
-      if ( Electrolyzer_ON_p .eq. 1 ) then
+      if ( Electrolyzer_ON_p > 0.99 ) then
            fH2_prod_allowance = 0.
       else
            fH2_prod_allowance = fH2_deadband
@@ -427,7 +427,7 @@ C---------and excess power goes to grid.
             endif
 
           ELSEIF ( SOC_battery > SOC_electrolyzer_OFF
-     &            .and. Electrolyzer_ON_p==1.
+     &            .and. Electrolyzer_ON_p > 0.99
      &            .and. ( PV_power_to_DCbus >
      &           (power_DC_to_AC_required + fH2_prod_allowance) ) ) THEN
 
@@ -1193,6 +1193,10 @@ C Node number of DC bus
       
 C Get power balance on AC bus (balance = generation + load, loads are -ive)
 C    
+
+C Return if Res-H2 control not active. 
+      if ( iResH2Ctl /= 1 ) return
+
       fNetworkBalance = penodg(IENOD_ACbus) + penodl(IENOD_ACbus)
 
       IF (mandChargeCycle .EQ. 1) THEN

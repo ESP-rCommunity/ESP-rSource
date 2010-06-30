@@ -55,6 +55,7 @@ C IER=0 indicates no error.
 #include "building.h"
 #include "geometry.h"
 #include "cfd.h"
+#include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
@@ -66,7 +67,7 @@ C IER=0 indicates no error.
       common/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/DEFLT3/DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
       common/param2/TITLE(MNZ),CFTRFL(MNZ),LPHI(MNZ)
@@ -81,7 +82,7 @@ C IER=0 indicates no error.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER*72 TITLE,CFTRFL,LPHI
-      character*72 DFCFD,DECMPDBFL,DMCMPDBFL,DICONDBFL,dmdbnam
+      character*72 DFCFD,DECMPDBFL,DICONDBFL
 
 C Note: to make this more general, we need to have prj set the value of ICFD.
 C ICFD=1 for the first CFD domain in the building, 2 for the second CFD domain, etc.
@@ -358,6 +359,7 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDGGRD(izone,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "cfd.h"
 
@@ -371,11 +373,6 @@ C IER=0 indicates no error.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
@@ -747,9 +744,11 @@ C anything other than zero.
             endif
           endif
   43    continue
+  
 C debug       write(6,*) ilx,(XSS(j),j=1,ilx)
 C debug       write(6,*) ily,(YSS(j),j=1,ily)
 C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
+
         if(NREG(1,ICFD).eq.0)NREG(1,ICFD)=ilx-1
         if(NREG(2,ICFD).eq.0)NREG(2,ICFD)=ily-1
         if(NREG(3,ICFD).eq.0)NREG(3,ICFD)=ilz-1
@@ -781,6 +780,7 @@ C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
             ntcx = ntcx + NCELX(ij,ICFD)
   44      continue
         endif
+
 C debug        write(6,*) xd,tolx,int(xd/tolx)
 C debug        write(6,*) 'ncellx ',NCELX
 
@@ -811,6 +811,7 @@ C debug        write(6,*) 'ncellx ',NCELX
             ntcy = ntcy + NCELY(ij,ICFD)
   45      continue
         endif
+
 C debug        write(6,*) yd,toly,int(yd/toly)
 C debug        write(6,*) 'ncelly ',NCELY
 
@@ -841,8 +842,10 @@ C debug        write(6,*) 'ncelly ',NCELY
             ntcz = ntcz + NCELZ(ij,ICFD)
   46      continue
         endif
+
 C debug        write(6,*) zd,tolz,int(zd/tolz)
 C debug        write(6,*) 'ncellz ',NCELZ
+
       elseif(INO.EQ.7)then
 
 C Grid X-axis.
@@ -959,7 +962,7 @@ C to be refreshed.
             izgfoc=izone
             call eclose(gversion(nznog(1)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
+              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,
      &          IUOUT,IER)
             else
               call egomin(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
@@ -1678,6 +1681,7 @@ C IER=0 indicates no error.
 
       SUBROUTINE CFDBVAR(IZONE,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "cfd.h"
 
@@ -1691,11 +1695,6 @@ C IER=0 indicates no error.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
 
       COMMON/ICFNOD/ICFD,ICP
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
@@ -1827,7 +1826,7 @@ C to be refreshed.
             izgfoc=izone
             call eclose(gversion(nznog(1)),1.1,0.01,newgeo)
             if(newgeo)then
-              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
+              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,
      &          IUOUT,IER)
             else
               call egomin(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
@@ -3436,6 +3435,8 @@ C PIKCELS controls the editing of the cells defining a boundary region.
       SUBROUTINE PIKCELS(BTYPE,BNAME,Ii,If,Ji,Jf,Ki,Kf,IFACE,IER)
 
 #include "cfd.h"
+      integer iCountWords
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/grdmax/NTCX,NTCY,NTCZ
@@ -3606,7 +3607,7 @@ C Ask for cells.
       h(5)='If in doubt, review the cell coordinates which listed'
       h(6)='in the text feedback area.'
       call EASKS(s30,'Boundary cells?',t30,30,dflt,'bndry cells',IER,6)
-      call CHITMS(s30,NITMS)
+      NITMS = iCountWords(s30)
       if (NITMS.ne.6) goto 10
 
 C Read six cell locations.
@@ -3727,9 +3728,9 @@ C Check for incompatable face/ cell definition
       elseif (IFACE.eq.2) then
         if (Ii.ne.NTCX.or.If.ne.NTCX) IER=2
       elseif (IFACE.eq.3) then
-        if (Ji.ne.1.or.Kf.ne.1) IER=2
+        if (Ji.ne.1.or.Jf.ne.1) IER=2
       elseif (IFACE.eq.4) then
-        if (Ji.ne.NTCY.or.Kf.ne.NTCY) IER=2
+        if (Ji.ne.NTCY.or.Jf.ne.NTCY) IER=2
       elseif (IFACE.eq.5) then
         if (Ki.ne.1.or.Kf.ne.1) IER=2
       elseif (IFACE.eq.6) then
@@ -3750,6 +3751,7 @@ C gridding generation.
       SUBROUTINE TOPBOT(ICOMP,act,IER)
 #include "building.h"
 #include "prj3dv.h"
+      integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
@@ -3769,6 +3771,11 @@ C Curvilinear boundary vertex numbers.
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
 
       CHARACTER act*1,H*72,HOLD*72,outs*124
+#ifdef OSI
+      integer iix,iiy,ixd,iyd
+#else
+      integer*8 iix,iiy,ixd,iyd
+#endif
 
 C Tell the user the rules of selection.
       ier=0
@@ -3831,9 +3838,9 @@ C the individual vertex numbers from the list.
             COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            ixd=ix-ixx
-            iyd=iy-iyy
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            ixd=iix-ixx
+            iyd=iiy-iyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -3855,13 +3862,15 @@ C << Should Check that points are in the same plane and that X is increasing. >>
             call edisp(iuout,'Not enough points.')
             goto 41
           endif
+
+C This write assumes not-very-complex zones and surfaces.
           HOLD=' '
           WRITE(HOLD,'(24I3)')(JJVN(J),J=1,ijvn)
           CALL EASKS(HOLD,' Associated high vertices (confirm):',
      &      '  ',72,' ','associated vertices',IIER,8)
         endif
       endif
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       K=0
       DO 94 J=1,NV
         CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)
@@ -3894,9 +3903,9 @@ C Ask for and display the bottom defining vertices (west to east).
             COG1(3)=Z(I)
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),ix,iy)
-            ixd=ix-ixx
-            iyd=iy-iyy
+            call u2pixel(COG3(1),COG3(2),iix,iiy)
+            ixd=iix-ixx
+            iyd=iiy-iyy
             if(abs(ixd).lt.5.and.abs(iyd).lt.5)then
               if(found)then
                 call edisp(iuout,'Close points...try again.')
@@ -3916,13 +3925,15 @@ C Ask for and display the bottom defining vertices (west to east).
             call edisp(iuout,'Not enough points.')
             goto 51
           endif
+
+C This write statement assumes not-very-complex zones and polygons. 
           HOLD=' '
           WRITE(HOLD,'(24I3)')(JJVN(J),J=1,ijvn)
           CALL EASKS(HOLD,' Associated low vertices (confirm):',
      &      '  ',72,' ','associated vertices',IIER,8)
         endif
       endif
-      CALL CHITMS(HOLD,NV)
+      NV = iCountWords(HOLD)
       K=0
       DO 95 J=1,NV
         CALL EGETWI(HOLD,K,JV,1,NTV,'W','vertex list',IER)
@@ -4426,13 +4437,13 @@ C Act silently.
  40     continue
       endif
 
-C Debug...
-      do 30 I=1,NNPK
-        IP=NODPS(ICPK(I))
-        IN=NODNE(ICPK(I))
-        IC=ITPCON(ICPK(I))
-        write(6,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
- 30   continue
+C Debug.
+C      do 30 I=1,NNPK
+C        IP=NODPS(ICPK(I))
+C        IN=NODNE(ICPK(I))
+C        IC=ITPCON(ICPK(I))
+C        write(6,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
+C 30   continue
 
       return
       end

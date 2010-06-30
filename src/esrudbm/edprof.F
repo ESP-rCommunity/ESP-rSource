@@ -350,7 +350,7 @@ C      DIMENSION VAL1(1440),VAL2(1440)
       character DayT*8,Patr*8,ETEXT*72
       character ittag*12,itmenu*32
       logical vclose1,vclose2
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
@@ -479,10 +479,12 @@ C   IEXP = 99 check number of items and return in ITEMS
 #include "espriou.h"
       
       integer lnblnk  ! function definition
+      integer iCountWords
 
       CHARACTER*600 OUTSTR,STRING,TMP
       CHARACTER loutstr*248
       CHARACTER*(*) MSG
+      logical unixok
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
@@ -503,11 +505,11 @@ C Take the string and check for a #, discarding any text which follows.
 
 C Find out the number of separate words/string groupings.
       if(IEXP.eq.99)then
-        CALL ELCHITMS(OUTSTR,ITEMS)
+        ITEMS = iCountWords(OUTSTR)
       elseif(IEXP.eq.0)then
         ITEMS=0
       elseif(IEXP.gt.0)then
-        CALL ELCHITMS(OUTSTR,ITEMS)
+        ITEMS = iCountWords(OUTSTR)
         if(IEXP.ne.ITEMS)then
           if(currentfile(1:2).ne.'  ')then
             WRITE(loutstr,'(3A,I3,3A)')' In ',
@@ -551,7 +553,10 @@ C Find out the number of separate words/string groupings.
         CALL LUSRMSG(' ',loutstr,'-')
       ENDIF
       goto 4
-   1  write(6,*) 'ELSTRIPC: error writing warning re: ',OUTSTR
+
+C I/O error trap.
+   1  call isunix(unixok)
+      if(unixok)write(6,*)'ELSTRIPC: error writing warning re: ',OUTSTR
 
       END
 
@@ -651,12 +656,13 @@ C Single line prompt.
           CALL msgbox(MSG1,MSG2)
         ELSEIF(LEVEL.EQ.'W'.OR.LEVEL.EQ.'w')THEN
 
-C If warning mode then clear continuebox after use clicks continue.
-          CALL continuebox(MSG1,MSG2,cont)
+C If warning mode then clear continuebox after 3 second pause.
+          CALL msgbox(MSG1,MSG2)
+          call pauses(3)
           CALL msgbox(blnk,blnk2)
         ELSEIF(LEVEL.EQ.'P'.OR.LEVEL.EQ.'p')THEN
           CALL msgbox(MSG1,MSG2)
-          call pauses(1)
+          call pauses(2)
         ELSEIF(LEVEL.EQ.'F'.OR.LEVEL.EQ.'f')THEN
 
 C Place in text window since about to exit from program.
@@ -675,45 +681,5 @@ C Place in text window since about to exit from program.
       ENDIF
     1 call edisp(iuout,'USRMSG: error composing prompt. ')
       return
-      END
-
-
-C ********************* ELCHITMS 
-C ELCHITMS checks an extremely long character string (A), returning the number of data
-C items (IW) separated by ' ' tab or ','.  Note to keep from 
-C overwriting the string passed, deal with a copy.
-      SUBROUTINE ELCHITMS(A,IW)
-      integer lnblnk  ! function definition
-      CHARACTER*(*) A
-      CHARACTER B*600,C*1
-
-      lastcc = MIN0(LNBLNK(A),599)
-      WRITE(B,'(A)',IOSTAT=ISTAT,ERR=1) A(1:lastcc+1)
-C      WRITE(B,'(A)') A(1:LNBLNK(A)+1)
-
-C Loop through B and convert all ',' and 'tabs' to blanks.
-      DO 100 I=1,LNBLNK(B)+1
-        C=B(I:I)
-        IF(C.EQ.','.OR.ICHAR(C).EQ.9) B(I:I)=' '
-  100 CONTINUE
-
-C Loop through B and see how many 'words'.
-      K=0
-      IW=0
-  102 IW=IW+1
-
-C Start by skipping blanks before the word.
-   10 K=K+1
-      C=B(K:K)
-      IF(C.EQ.' ') GOTO 10
-
-C Loop character by character until separator is found.
-   20 K=K+1
-      C=B(K:K)
-      IF(K.GE.LNBLNK(B))RETURN
-      IF(C.EQ.' ') GOTO 102
-      GOTO 20
-   1  write(6,*) 'CHITMS: error in internal write: ',A
- 
       END
 

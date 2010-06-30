@@ -75,6 +75,12 @@ C Pre calculated data (filtered).
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
 
+#ifdef OSI
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
+
       DATA DESC/'very cold, danger        ','cold, shivering          ',
      &          'cool, unpleasant         ','slightly cool, acceptable',
      &          'comfortable, pleasant    ','slightly warm, acceptable',
@@ -502,7 +508,7 @@ C of one of the casual gain types test here.
         call getocup(izone,iday,ih,ioc,ier)
         if(ioc.eq.0)ICMFRT=10
 
-C Debug...
+C Debug.
 C        write(6,*)'icmfrt,izone,iday,ih,ioc',icmfrt,izone,iday,ih,ioc
 
 C Verbal category only printed if activity level is sedentary.
@@ -556,10 +562,11 @@ C (to test for occupancy in the next pass).
       endif
 
       RETURN
-   1  if(IOS.eq.2)then
-         write(6,*) 'MOCMFT: no permission to write string.'
+   1  call isunix(unixok)
+      if(IOS.eq.2)then
+        if(unixok)write(6,*)'MOCMFT: no permission to write string.'
       else
-         write(6,*) 'MOCMFT: error in internal string handling.'
+        if(unixok)write(6,*)'MOCMFT: internal string handling error.'
       endif
       END
 
@@ -734,11 +741,12 @@ C implemented.
           endif
   45    continue
 
-C Debug...
+C Debug.
 C        write(6,*) 'zone:',izone,'  iocut:',iocut,'  iocuset:',iocuset
 C        write(6,*) 'ioucpz (wkd)',(ioucpz(izone,j),j=1,24)
 C        write(6,*) 'ioucpz (sat)',(ioucpz(izone,j),j=25,48)
 C        write(6,*) 'ioucpz (sun)',(ioucpz(izone,j),j=49,72)
+
  42   continue
       return
       end
@@ -767,7 +775,9 @@ C Temporal db commons.
      &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM)
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
@@ -846,7 +856,10 @@ C cases of temporal gains.
             elseif(iocut.eq.3)then
               if(close17) ioc=0
             endif
-            if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
+
+C Debug.
+C            if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
+
   141     continue
           return
         endif
@@ -879,7 +892,10 @@ C If close to zero then zone is not occupied.
         elseif(iocut.eq.3)then
           if(close17) ioc=0
         endif
-        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
+
+C Debug.
+C        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
+
         return
       endif
 
@@ -915,7 +931,10 @@ C a decision on the calculation of the lighting gains>>
         elseif(iocut.eq.3)then
           if(close17) ioc=0
         endif
-        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
+
+C Debug.
+C        if(ioc.gt.0) write(6,*) '* Found temporal occupancy @',itt
+
       endif
 
       return
@@ -937,8 +956,8 @@ C Firstly recover the temperature values.
       if (ICP.eq.4) then
 
 C Need dT between CFD cells. set to zero and warn user.
-        write (6,*) 
-     &        ' Missing information on local air T, setting dT to zero.'
+        call edisp(iuout,
+     &    ' Missing information on local air T, setting dT to zero.')
 C        CALL GZQM(IDAY,IZONE,ISET)
       elseif (ICP.eq.5) then
 
@@ -973,6 +992,8 @@ C If iflag is returned as -1 then outside bounds of algorithm.
       SUBROUTINE DISCOMF(iflag,XX,PPD)
 
 C At the time of testing lets know what input parameter we have: 
+
+C Debug.
 C    write(6,*)'flag, XX=',iflag,XX 
 
 C Assume nobody is dissatisfied.

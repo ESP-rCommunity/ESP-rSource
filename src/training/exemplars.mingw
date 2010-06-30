@@ -100,6 +100,10 @@
 *cfg	C:\Esru\esp-r\training\cellular_pv\cfg\cellular_pv.cfg
 *root	C:\Esru\esp-r\training\cellular_pv
 *item
+*name	... with multiple input single output controller
+*cfg	C:\Esru\esp-r\training\cellular_miso\cfg\cellular_miso.cfg
+*root	C:\Esru\esp-r\training\cellular_miso
+*item
 *name	two offices and passage with occupant controlled nat vent
 *cfg	C:\Esru\esp-r\training\cellular_natv\cfg\cellular_natv.cfg
 *root	C:\Esru\esp-r\training\cellular_natv
@@ -251,10 +255,6 @@
 *name   transparent insulation (variable properties)
 *cfg    C:\Esru\esp-r\training\constr\adapt\cfg\tim.cfg
 *root	C:\Esru\esp-r\training\constr\adapt
-*item
-*name   phase change materials
-*cfg    C:\Esru\esp-r\training\PCM\cfg\Phase_Change_Materials.cfg
-*root	C:\Esru\esp-r\training\PCM
 *item
 *name   adaptive 1-D gridding
 *cfg    C:\Esru\esp-r\training\constr\adapt\cfg\g1d.cfg

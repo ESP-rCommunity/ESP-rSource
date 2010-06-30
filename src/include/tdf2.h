@@ -1,7 +1,11 @@
 C tdf2.h Parameters for TDF program, November 2004 version.
 
-C Allowed number of tabular entries in the TDF file.
-      PARAMETER (MIT=38)
+      INTEGER MIT,MTABC,MHEL,MBITS,MGAT,MGAR,MGAI,MALT,MHTS
+
+C Allowed number of tabular entries in the TDF file. For large
+C models there may be one item per zone so this should reflect
+C the number of zones in building.h
+      PARAMETER (MIT=72)
 
 C Allowed columns of tabular data in TAB file.
       PARAMETER (MTABC=50)

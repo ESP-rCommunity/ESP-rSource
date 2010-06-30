@@ -103,6 +103,8 @@ C injections to each node in the discretisation scheme.
       subroutine mznasg(icomp)
 
 #include "building.h"
+#include "roam.h"
+#include "model.h"
 
       common/pvalc/tpc(mcom,ms,mn),qpc(mcom)
       common/pvals/tps(mcom,ms),qps(mcom)
@@ -121,8 +123,6 @@ C injections to each node in the discretisation scheme.
       COMMON/ADJCS/ATFS(MCOM,MS),ARFS(MCOM,MS)
 
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
-      COMMON/INDICS/IVF(MCOM),ISI(MCOM),IHC(MCOM),
-     &              ITW(MCOM),ICGC(MCOM),IOBS(MCOM)
 
 C Zone casual gain control data.
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
@@ -180,5 +180,7 @@ C Set the previous time step zone-side power consumption totals initial values.
       ZONPPP(ICOMP)=0.0
       ZONQPP(ICOMP)=0.0
 
+C Read roaming data if roaming is activated
+      if(iroam.eq.1)call rroam
       return
       end

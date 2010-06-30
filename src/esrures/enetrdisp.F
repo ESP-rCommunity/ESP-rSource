@@ -72,14 +72,16 @@ C The period details
 
       REAL  VNEG,VPOS,YOLD,TIMEOLD
       INTEGER YAXSET,ADDLIN,EVAXIS,EVMARK,EVLINE,EFILT
-#ifdef OSX
+#ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
+      integer iid1,iid2
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iid1,iid2
 #endif
 
 C Set up scaling and graph parameters
@@ -368,7 +370,8 @@ C draw vertical axis.
             ELSE
               CALL VRTAXIS(GMIN,GMAX,IGX(I),IGB,IGT,YADD(I),
      &                         YSC(I),0,ILR(I),'  ')
-              CALL WSTXPT(IGX(I),IGT-5,NETXLAB(I))
+              iid1=IGX(I); iid2=igt-5;
+              CALL WSTXPT(iid1,iid2,NETXLAB(I))
             ENDIF           
           ENDIF
 
@@ -868,7 +871,7 @@ C Array of recovered data
       CHARACTER EVLABS*16,EVLABU*4,EXLAB*5
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
-#ifdef OSX
+#ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
