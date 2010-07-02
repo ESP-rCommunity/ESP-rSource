@@ -2672,6 +2672,7 @@ C Produce help text for the menu.
       ELSEIF(INO.EQ.1)THEN
   
 C Building project description. Echo after edit.
+        D20='Project un-named'
         H(1)='Input a succinct description of the project name here.'
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
      &    20,D20,'project name',IER,1)
@@ -2681,6 +2682,7 @@ C Building project description. Echo after edit.
       ELSEIF(INO.EQ.3)THEN
   
 C Building address. Echo after edit.
+        D64='No site selected.'
         H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
      &    64,D64,'build address',IER,1)
@@ -2691,6 +2693,7 @@ C Building address. Echo after edit.
       ELSEIF(INO.EQ.5)THEN
   
 C Building city name. Echo after edit.
+        D64='No site selected.'
         H(1)='Input the names of the town/city of the building.'
         CALL EASKS(bcity,'building city?','(<64 characters)',
      &    64,D64,'city building',IER,1)
@@ -2700,6 +2703,7 @@ C Building city name. Echo after edit.
       ELSEIF(INO.EQ.7)THEN
   
 C Building post code. Echo after edit.
+        D64='No site selected.'
         H(1)='Input for: building post code'
         CALL EASKS(buildingPC,'building post code?',
      &    '(<64 characters)',64,D64,'building PC',IER,1)
@@ -2710,6 +2714,7 @@ C Building post code. Echo after edit.
       ELSEIF(INO.EQ.9)THEN
 
 C Building owner name. Echo after edit.
+        D64='Owner name withheld'
         H(1)='Input a succinct description of the owner name here'
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
      &    64,D64,'owner name',IER,1)
@@ -2720,6 +2725,7 @@ C Building owner name. Echo after edit.
       ELSEIF(INO.EQ.11)THEN
   
 C Building owner phone number.
+        D64='Owner phone withheld'
         H(1)='telephone number of the owner'
         CALL EASKS(ownertel,'Phone of owner?','(<64 characters)',
      &    64,D64,'owner tel',IER,1)
@@ -2730,6 +2736,7 @@ C Building owner phone number.
       ELSEIF(INO.EQ.13)THEN
   
 C Building owner address.
+        D64='Owner address withheld.'
         H(1)='Street address of the owner'
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
      &    64,D64,'owner address',IER,1)
@@ -2740,6 +2747,7 @@ C Building owner address.
       ELSEIF(INO.EQ.15)THEN
   
 C Building owner city.
+        D64='Owner city withheld.'
         H(1)='City (where the owner is located)'
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
      &    64,D64,'owner city',IER,1)
@@ -2750,6 +2758,7 @@ C Building owner city.
       ELSEIF(INO.EQ.17)THEN
   
 C Building owner postcode.
+        D64='Owner postcode withheld.'
         H(1)='Post code (where the owner is located)'
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
      &    64,D64,'owner post code',IER,1)
@@ -2760,6 +2769,7 @@ C Building owner postcode.
       ELSEIF(INO.EQ.19)THEN
   
 C Building certifier name.
+        D64='Certifier name withheld.'
         H(1)='certifier name'
         CALL EASKS(certifname,'Name of certifier?','(<64 characters)',
      &    64,D64,'certifier name',IER,1)
@@ -2770,6 +2780,7 @@ C Building certifier name.
       ELSEIF(INO.EQ.21)THEN 
       
 C Building certifier phone number.
+        D64='Certifier phone number withheld.'
         H(1)='certifier telephone number'
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
      &    64,D64,'certifier tel',IER,1)
@@ -2780,6 +2791,7 @@ C Building certifier phone number.
       ELSEIF(INO.EQ.23)THEN 
       
 C Building certifier address.
+        D64='Certifier address withheld.'
         H(1)='certifier street address'
         CALL EASKS(certaddress,'Address of certifier?',
      &    '(<64 characters)',64,D64,'certifier address',IER,1)
@@ -2790,6 +2802,7 @@ C Building certifier address.
       ELSEIF(INO.EQ.25)THEN 
       
 C Building certifier city.
+        D64='Certifier city withheld.'
         H(1)='Name of city of the certifier.'
         CALL EASKS(certcity,'City of certifier?','(<64 characters)',
      &    64,D64,'certifier city',IER,1)
@@ -2800,6 +2813,7 @@ C Building certifier city.
       ELSEIF(INO.EQ.27)THEN 
       
 C Building certifier postcode.
+        D64='Certifier postcode withheld.'
         H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
      &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
@@ -2810,45 +2824,59 @@ C Building certifier postcode.
       ELSEIF(INO.EQ.29)THEN 
 
 C Enter all information
+        D20='Project un-named'
         H(1)='Input a succinct description of the project name here.'
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
      &    20,D20,'project name',IER,1)
+        D64='No site selected.'
         H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
      &    64,D64,'build address',IER,1)
+        D64='No site selected.'
         H(1)='Input the names of the town/city of the building.'
         CALL EASKS(bcity,'building city?','(<64 characters)',
      &    64,D64,'city building',IER,1)
+        D64='No site selected.'
         H(1)='Input for: building post code'
         CALL EASKS(buildingPC,'building post code?',
      &    '(<64 characters)',64,D64,'building PC',IER,1)
+        D64='Owner name withheld'
         H(1)='Input a succinct description of the owner name here'
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
      &    64,D64,'owner name',IER,1)
+        D64='Owner phone withheld'
         H(1)='telephone number of the owner'
         CALL EASKS(ownertel,'Telephone of owner?','(<64 characters)',
      &    64,D64,'owner tel',IER,1)
+        D64='Owner address withheld.'
         H(1)='Street address of the owner'
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
      &    64,D64,'owner address',IER,1)
+        D64='Owner city withheld.'
         H(1)='City (where the owner is located)'
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
      &    64,D64,'owner city',IER,1)
+        D64='Owner postcode withheld.'
         H(1)='Post code (where the owner is located)'
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
      &    64,D64,'owner post code',IER,1)
+        D64='Certifier name withheld.'
         H(1)='certifier name'
         CALL EASKS(certifname,'Name of certifier?',
      &    '(<64 characters)',64,D64,'certifier name',IER,1)
+        D64='Certifier phone number withheld.'
         H(1)='certifier telephone number'
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
      &    64,D64,'certifier tel',IER,1)
+        D64='Certifier address withheld.'
         H(1)='Certifier street address'
         CALL EASKS(certaddress,'Address of certifier?',
      &    '(<64 characters)',64,D64,'certifier address',IER,1)
+        D64='Certifier city withheld.'
         H(1)='Name of city of the certifier.'
         CALL EASKS(certcity,'City of certifier ?','(<64 characters)',
      &    64,D64,'certifier city',IER,1)
+        D64='Certifier postcode withheld.'
         H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
      &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
@@ -2945,10 +2973,11 @@ C Produce help text for the menu.
 C Unique Property Reference Number (UPRN)
 C Leave it as a string because it is not certain if this is always an integer
 C (it may be a mix of letters and numbers). 
+        D64='000000000000'
         H(1)='Input the Unique Property Reference Number (UPRN) here.'
         H(2)='Applicable only for England, Wales & Northern Ireland.'
-        CALL EASKS(UPRN,'UPR Number ?','(<64 characters)',
-     &    64,D64,'UPR Number',IER,2)
+        CALL EASKS(UPRN,'Unique Property Reference Number (UPRN)?',
+     &    '(<64 characters)',64,D64,'UPR Number',IER,2)
         call tstamp('>','PRJ: edited UPRN')
         write(outs,'(2a)') 'Unique Property Reference Number (UPRN): ',
      &    UPRN(1:lnblnk(UPRN))
@@ -2988,16 +3017,13 @@ C Accreditation scheme
       ELSEIF(INO.EQ.7)THEN
 
 C Assessor registration number
-        H(1)='Input assessor registration number'
+        H(1)='The assessor registration number should be in the'
+        H(2)='form of CCCCNNNNNN where C is character and N is a'
+        H(3)='number such as ABCD123456.'
         D64='ABCD123456'
-        call EDISP(IUOUT,' ')
-        call EDISP(IUOUT,'Input assessor registration number')
-        call EDISP(IUOUT,'It should be of the form CCCCNNNNNN')
-        call EDISP(IUOUT,'where C is an alphabet and N is a number.')
-        call EDISP(IUOUT,
-     &  'Otherwise EPC Generation program will complain ')
-        CALL EASKS(assessRegNumber,'Assessor number ?',
-     &    '(<64 characters)',64,D64,'assessor number',IER,1)
+        CALL EASKS(assessRegNumber,
+     &    'Assessor regisration number (see help)?',
+     &    '(e.g. ABCD123456)',64,D64,'assessor number',IER,3)
         call tstamp('>','PRJ: edited assessor registration number')
         D64='<this item has not been described>'
         write(outs,'(2a)') 
@@ -3007,6 +3033,7 @@ C Assessor registration number
       ELSEIF(INO.EQ.9)THEN
   
 C Employer or trading name of energy assessor
+        D64='Not a registered company.'
         H(1)='The employer or the trading name of the energy'
         H(2)='assessor. Applicable only for England, '          
         H(3)='Wales & Northern Ireland.'
@@ -3020,6 +3047,7 @@ C Employer or trading name of energy assessor
       ELSEIF(INO.EQ.11)THEN
   
 C Employer/trading address of energy assessor
+        D64='PO box in Basingstoke.'
         H(1)='The employer or the trading address of the energy'
         H(2)='assessor. Applicable only for England, '          
         H(3)='Wales & Northern Ireland.'
@@ -3033,6 +3061,7 @@ C Employer/trading address of energy assessor
       ELSEIF(INO.EQ.13)THEN
   
 C Related party disclosure
+        D64='No related party.'
         H(1)='Any related party disclosure by the energy'
         H(2)='assessor. Applicable only for England, '          
         H(3)='Wales & Northern Ireland.'
@@ -3065,6 +3094,7 @@ C Qualifications of the energy assessor (3 choices)
       ELSEIF(INO.EQ.17)THEN
   
 C Name of the energy assessor's insurance company
+        D64='Not insured.'
         H(1)='Name of the insurance company. Applicable '          
         H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKS(insurer_Company,'Name of insurance company ?',
@@ -3076,6 +3106,7 @@ C Name of the energy assessor's insurance company
       ELSEIF(INO.EQ.19)THEN 
   
 C The energy assessor's insurance policy number
+        D64='Not insured.'
         H(1)='Enter insurance policy number. Applicable '          
         H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKS(policyNumberInsurance,'Policy number ?',
@@ -7338,7 +7369,7 @@ C It finally generate BRUKL input document and other SBEM reports.
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character fs*1, col*1
+      character fs*1, col*1 
       character BATCHFL*72
        
 C Build variable (These should eventually be placed in build_info.h)
@@ -7367,9 +7398,15 @@ C      character cURL*256             ! Repository URL commented out in build_in
       real zhvacarea !temporary passing activity index to hvac 
       dimension zhvacarea(MNS,MCOM)
       real b_alpha
-      CHARACTER*12 WALL_MAX_N,FLOR_MAX_N,ROOF_MAX_N,WNRF_MAX_N,
-     &P_DR_MAX_N,V_DR_MAX_N,H_DR_MAX_N
+
+C Names of surfaces associated with highest U value.
+      character WALL_MAX_N*12,FLOR_MAX_N*12,ROOF_MAX_N*12,WNRF_MAX_N*12
+      character P_DR_MAX_N*12,V_DR_MAX_N*12,H_DR_MAX_N*12
       logical flagoverheating
+
+C Counters for components of buildings.
+      integer N_WALL,N_FLOR,N_ROOF,N_WNRF,N_P_DR,N_V_DR
+      integer N_H_DR,I_WALL,I_FLOR,I_ROOF,I_WNRF,I_P_DR,I_V_DR,I_H_DR
 
 C build_info is generated by the Install script.
 #include "build_info.h"
@@ -7607,7 +7644,13 @@ c              EXP_COND=EXP_COND+SSNA(ICC)*UVU
               EXP_AREA=EXP_AREA+SSNA(ICC)
 c              EXP_COND=EXP_COND+SSNA(ICC)*UVH
             ELSEIF(TMPSTR2(1:8).EQ.'C-WINDOW')THEN
-              ! No checks on windows are made
+              IF(WNRF_MAX_U.LT.UVH)THEN
+                WNRF_MAX_U=UVH
+                WNRF_MAX_N=SSNAME(ICC)
+                I_WNRF=1
+              ENDIF
+              WNRF_AVG_U=WNRF_AVG_U+UVH
+              N_WNRF=N_WNRF+1
               EXP_AREA=EXP_AREA+SSNA(ICC)            
             ELSEIF(TMPSTR2(1:8).EQ.'D-WINDOW')THEN
               ! No checks on display window are made
@@ -7701,7 +7744,7 @@ C write out information for roofs
      &  ROOF_AVG_U
       WRITE(IUF,'(a,f6.3)',iostat=ios)  '  ROOF-U-MAX         = ',
      &  ROOF_MAX_U
-      if(I_ROOF.gt.0.0)then
+      if(I_ROOF.gt.0)then
         WRITE(IUF,'(2a)',iostat=ios)    '  ROOF-MAX           = ',
      &    ROOF_MAX_N
       else     
@@ -7714,7 +7757,7 @@ C write out information for windows and rooflights
      &  WNRF_AVG_U
       WRITE(IUF,'(a,f6.3)',iostat=ios)  '  WINROOF-U-MAX      = ',
      &  WNRF_MAX_U
-      if(I_WNRF.gt.0.0)then
+      if(I_WNRF.gt.0)then
         WRITE(IUF,'(2a)',iostat=ios)    '  WINROOF-MAX        = ',
      &    WNRF_MAX_N
       else     
@@ -7727,7 +7770,7 @@ C write out information for personnel doors
      &  P_DR_AVG_U
       WRITE(IUF,'(a,f6.3)',iostat=ios)  '  P-DOOR-U-MAX       = ',
      &  P_DR_MAX_U
-      if(I_P_DR.gt.0.0)then
+      if(I_P_DR.gt.0)then
         WRITE(IUF,'(2a)',iostat=ios)    '  P-DOOR-MAX         = ',
      &    P_DR_MAX_N
       else     
@@ -8468,7 +8511,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
-      character fs*1, col*1
+      character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
       integer mpof, ibrowse
       LOGICAL UNIXOK
@@ -8796,9 +8839,8 @@ C << This is left commented for future use >>
 C      WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' EA-KEY           = ',
 C     &  ' ""'
 
-C Need to loop for the systems and write the
-C fuel for the system that covers the largest area?
-C << TO BE DONE  - hardwired to LPG for now>>
+C Loop for the systems and write the
+C fuel for the system that covers the largest area.
       fBerMainFuel=0.
       do 161 IHF=1,MFT
         if(BERF(IHF).gt.fBerMainFuel)then
@@ -13204,6 +13246,7 @@ C Determine the path of current model
      &    ibrowse)
         fs = char(92)
         col = char(58)
+        quote = char(34)
 
 C Generate an ini file for use with EPCgen.exe (v3.4b)
 C Three lines in the file - 1st line includes the path
@@ -13237,10 +13280,11 @@ C option. Also copy EPCgen.log from  C:\Esru\esp-r\bin to model cfg folder)
         ENDIF
         WRITE(IUF,'(6A)',IOSTAT=IOS,ERR=3) 'cd C',col,fs,'Esru',fs,
      &    'UKNCMbin'
-        WRITE(IUF,'(3A)',IOSTAT=IOS,ERR=3) 'EPCgen.exe /I ',
-     &    lpath(1:lnblnk(lpath)),EPCINIFL(1:lnblnk(EPCINIFL))
-        WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3) 'copy EPCgen.log ',
-     &    lpath(1:lnblnk(lpath))
+        WRITE(IUF,'(5A)',IOSTAT=IOS,ERR=3) 'EPCgen.exe /I ',
+     &    quote,lpath(1:lnblnk(lpath)),
+     &    EPCINIFL(1:lnblnk(EPCINIFL)),quote
+        WRITE(IUF,'(4A)',IOSTAT=IOS,ERR=3) 'copy EPCgen.log ',
+     &    quote,lpath(1:lnblnk(lpath)),quote
         CALL ERPFREE(IUF,ISTAT)
         
 C Run batch file to call EPCgen.exe
