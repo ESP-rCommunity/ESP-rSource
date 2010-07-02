@@ -1,11 +1,10 @@
 #!/bin/bash -f
 
 echo " "
-echo "This script installs an ESP-r 11.6 X11 or GTK distribution on"
-echo "a Mac OSX 10.4+ computer which already has the X11, developers"
-echo "environment and the fink environment setup and running. On a"
-echo "PPC Mac this should run natively. On an Intel based Mac it"
-echo "should run in emulation mode."
+echo "This script installs an ESP-r 11.9 X11 or GTK distribution on"
+echo "a Mac OSX 10.5+ computer which already has the X11, developers"
+echo "environment and the fink environment setup and running. On an"
+echo "Intel Mac this should run natively."
 echo " "
 echo "It includes ESP-r executables, example models and standard"
 echo "databases as well as some helper applications. "
@@ -17,9 +16,6 @@ echo "The installation will be to a standard location, which"
 echo "is /opt/esru and a link will be created to this from "
 echo "/usr/esru if it does not already exist."
 echo " "
-echo "Note: this installer will also attempt to install a version"
-echo "of Radiance for OSX. This may clobber any existing Radiance"
-echo "on your computer."
 
 DSP1=" \n
  You should have administrative access or the installer might not work.\n"
@@ -32,15 +28,11 @@ DSP3=" \n
 DSP4=" \n
  The PATH environment variable is being updated. The .cshrc\n
  file the path= line should include the following...\n
- /opt/esru/bin /opt/esru/esp-r/bin /usr/local/bin /usr/local/bin/ray /sw/bin\n
- \n
- and the Radiance RAYPATH environment variable has also\n
- been set.\n
+ /opt/esru/esp-r/bin /usr/local/bin /sw/bin\n
  \n
  Once you have completed the install logout and then\n
- login as a normal user and start up an X terminal and\n
- invoke the tcsh shell via the command 'tcsh' (without the\n
- quotes). This loads environmental variables.\n
+ login as a normal user and start up an X terminal.\n
+ This loads environmental variables.\n
   \n
  Next issue the command 'which prj' (without the quotes).\n
  If the installation was successful you should find\n
@@ -114,7 +106,7 @@ fi
 echo " "
 echo " ESP-r is available in two versions:"
 echo " a) the standard X11 impementation"
-echo " b) NOT AVAILABLE - an implementation using the GTK graphics"
+echo " b) an implementation using the GTK graphics"
 echo "    library (some functions have not yet been ported)"
 echo " "
 echo " selection option [a/b]:"
@@ -150,18 +142,16 @@ if [ ! -d /opt/esru ]; then
   sudo mkdir /opt/esru
 fi
   
-cd /
+cd /opt
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  sudo tar xf $ISD/esp-r_X11_11.6_intel_osx.tar
+  sudo /sw/bin/zcat $ISD/esp-r_X11_11.9_intel_osx.tar.gz | tar xf -
 elif [[ $which = 'b' ]] ; then
   echo " Extracting GTK ESP-r distribution ..."
-  sudo tar xf $ISD/esp-r_GTK_11.6_intel_osx.tar
+  sudo /sw/bin/zcat $ISD/esp-r_GTK_11.9_intel_osx.tar.gz | tar xf -
 fi
 echo " Extracting ESP-r distribution ...done."
 echo " "
-echo "Creating a link to the ESP-r distribution... "
-sudo ln -s /opt/esru /usr/esru
 echo "Setting folder permissions... "
 chmod a+x /opt/esru
 chmod a+x /opt/esru/bin

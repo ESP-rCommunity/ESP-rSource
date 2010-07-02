@@ -1,30 +1,27 @@
 
-        Steps to create or use the ESP-r self extractor on OSX
+        Steps to create or use the ESP-r installers on OSX
+                             June 2010
 
 There are two patterns used to create an installer for ESP-r for use
-on OSX machines.  One is via a single-file self extractor and the
-second is to use compressed archive files.  Both of these will be
-covered in this document.
+on OSX machines.  One is via a single-file self extractor based on
+the 'makeself' script typically used in Linux and the second is to 
+use compressed archive files. Both of these will be covered in this 
+document.
 
-If you want to use the self-extractor or compressed archive file
+If you want to USE the self-extractor or compressed archive file
 please skip down to the relevant section.  On some OSX computers
 the single-file self extractor does not work correctly.
 
 
-Building a self-extractor
 
-The self-extractor for ESP-r on a Mac is based on a package called 
-makeself-2.1.5 (which also works on Linux and in the Cygwin environment
-of Windows PCs). Makeself is a script which can be downloaded from
-<XX>  and it allows a pre-compiled version of ESP-r to be extracted on
-a users computer with minimal interaction.
+Compiling ESP-r from source
 
 First compile a standard version of esp-r (X11 version) in the standard
 location which on OSX should be /opt/esru with a command such as:
 
-  ./Install -d /opt/esru --gcc3 --compiler_version -3.4
+  ./Install -d /opt/esru --gcc3 --compiler_version -3.4 --reuse_ish_calcs
   or
-  ./Install -d /opt/esru --gcc4 --compiler_version -4.3
+  ./Install -d /opt/esru --gcc4 --compiler_version -4.3 --reuse_ish_calcs
 
 You can find out more about the source code compile process by giving
 the command:
@@ -33,25 +30,11 @@ the command:
 
 Second, there may be hidden folders related to the version control system
 called subversion which is used by the ESP-r development community. There
-is no need for these hidden folders in /opt/esru. To clean these up go 
+is no need for these hidden folders in a distribution. To clean these up go 
 to /opt/esru and issue the following command:
 
   find . -name .svn -print >which_svn
   rm -rf `cat which_svn`
-
-Create a folder /opt/precompiled_for_osx
-
-  sudo mkdir /opt/precompiled_for_osx
-
-Then create a tar file of the esp-r folders (the example below 
-includes a version in the name of the tar file which you may
-wish to change to reflect the current version number).
-
- cd /
- sudo tar cf esp-r_X11_11.7_osx.tar /opt/esru/esp-r
- sudo gzip -9 esp-r_X11_11.7_osx.tar
-
-and move it into /opt/precompiled_for_osx.
 
 A similar process is taken for the GTK version.  You will need
 the C header files and libraries related to GTK before you can
@@ -64,19 +47,52 @@ remove the executables from the /opt/esru/esp-r/bin folder.
 Clear the source (via a make clean) and compile a new GTK 
 version of esp-r.
 
-  ./Install -d /opt/esru --gcc3 --compiler_version -3.4
+  ./Install -d /opt/esru --gcc3 --compiler_version -3.4 --reuse_ish_calcs
   or
-  ./Install -d /opt/esru --gcc4 --compiler_version -4.3
+  ./Install -d /opt/esru --gcc4 --compiler_version -4.3 --reuse_ish_calcs
  
 Again remove the subversion files from the /opt/esru folders.
 
-Create the tar file of the GTK distribution and gzip it and
+
+
+
+Building a self-extractor
+
+The self-extractor for ESP-r on a Mac is based on a package called 
+makeself (which also works on Linux and in the Cygwin environment
+of Windows PCs). Makeself is a script which can be installed as part
+of the Darwin Ports and is also  downloaded from
+<http://megastep.org/makeself>. It allows a pre-compiled version 
+of ESP-r to be extracted on a users computer with minimal interaction.
+Unfortunately it does not seem to extract properly on most OSX 10.5 and
+10.6 computers.
+
+Create a folder /opt/precompiled_for_osx
+
+  sudo mkdir /opt/precompiled_for_osx
+
+Then create a tar file of the /opt/esru/esp-r folders (the example below 
+includes a version in the name of the tar file which you may
+wish to change to reflect the current version number). If you compiled
+an X11 version of ESP-r use the following:
+
+ cd /opt/
+ sudo tar cf esp-r_X11_11.9_osx.tar esru
+ sudo gzip -9 esp-r_X11_11.9_osx.tar
+
+and move it into /opt/precompiled_for_osx.
+
+Compile and create the tar file of the GTK distribution and gzip it and
 place it in the precompiled_for_osx folder (as above). 
+
+ cd /opt/
+ sudo tar cf esp-r_GTK_11.9_osx.tar esru
+ sudo gzip -9 esp-r_GTK_11.9_osx.tar
 
 Remember to remove any older *.tar.gz files from the precompiled_for_osx
 folder so that are not included in the installer run file.
 
-Next, Edit the setup script (setup_osx) to include the specific names 
+Next, Edit the setup script (setup) to include the specific names 
 of the gzipped tar files.
 
 In folder /opt/precompiled_for_osx along with the gziped tar files
@@ -91,18 +107,13 @@ slightly to include the specific ...tar.gz files.  The other
 files are helper applications that setup_osx is going to copy.
 
 The way that the self extractor is created is via a command similar
-to the one below (adapt for your makeself.sh location and for the
-machine type PPC/Intel):
+to the one below (adapt for your makeself location and version):
 
-For PPC
-sudo /Users/jon/bin/makeself-2.1.5/makeself.sh pre_compiled_for_osx esp-r_v11.7_osx_precomp.run "ESP-r V11.7 distribution PPC for OSX (/opt/esru)" ./setup_osx
-
-For Intel
-sudo /Users/jon/bin/makeself-2.1.5/makeself.sh pre_compiled_for_osx esp-r_v11.7_osx_precomp_intel.run "ESP-r V11.7 distribution Intel for OSX (/opt/esru)" ./setup
+sudo /opt/local/bin/makeself pre_compiled_for_osx esp-r_v11.9_osx_precomp_intel.run "ESP-r V11.9 distribution Intel for OSX (/opt/esru)" ./setup
 
 The tokens in the above command are as follows:
 
-makeself.sh is a general script that creates installers. makeself-2.1.5 
+makeself.sh or makeself is a general script that creates installers. makeself-2.1.5 
 can be downloaded from the web and it will create its own executables.  
 The command includes the full path to where makeself.sh is located on your 
 machine. 
@@ -136,8 +147,8 @@ ESP-r executables.  To ensure the correct path is included in the tar
 file create the tar file via the following commands:
 
   cd /
-  sudo tar cf esp-r_x11_v11.7_osx_intel_in_opt.tar opt/esru
-  sudo gzip -9 esp-r_x11_v11.7_osx_intel_in_opt.tar
+  sudo tar cf esp-r_x11_v11.9_osx_intel_in_opt.tar opt/esru
+  sudo gzip -9 esp-r_x11_v11.9_osx_intel_in_opt.tar
 
 Now clean up the source distribution via a 'make clean' command. As the
 example models and databases will be ok all you need to do is to remove
@@ -148,8 +159,8 @@ After compiling the GTK version create a compressed tar file for
 this via the commands
 
   cd /
-  sudo tar cf esp-r_gtk_v11.7_osx_intel_in_opt.tar opt/esru
-  sudo gzip -9 esp-r_gtk_v11.7_osx_intel_in_opt.tar
+  sudo tar cf esp-r_gtk_v11.9_osx_intel_in_opt.tar opt/esru
+  sudo gzip -9 esp-r_gtk_v11.9_osx_intel_in_opt.tar
 
   
 
@@ -166,11 +177,15 @@ If you are running the X11 version of esp-r there are only a few libraries
 that the executables will be looking for (the version numbers may 
 be different on your machine):
 
- otool -L ./clm
+otool -L ./clm
 ./clm:
-        /usr/X11R6/lib/libX11.6.dylib (compatibility version 6.2.0, current version 6.2.0)
-        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 88.1.11)
-        /usr/lib/libmx.A.dylib (compatibility version 1.0.0, current version 93.0.0)
+        /usr/X11/lib/libX11.6.dylib (compatibility version 9.0.0, current version 9.0.0)
+        /usr/local/lib/libstdc++.6.dylib (compatibility version 7.0.0, current version 7.10.0)
+        /usr/lib/libxslt.1.dylib (compatibility version 3.0.0, current version 3.12.0)
+        /usr/lib/libxml2.2.dylib (compatibility version 9.0.0, current version 9.16.0)
+        /usr/local/lib/libgfortran.3.dylib (compatibility version 4.0.0, current version 4.0.0)
+        /usr/local/lib/libgcc_s.1.dylib (compatibility version 1.0.0, current version 1.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.1.5)
 
 These libraries will typically be installed with the X11 environment 
 on Apple computers. X11 is an optional installer and is required to run ESP-r
@@ -206,11 +221,6 @@ Instructions for using 'fink' are found in a different document.
         /sw/lib/libiconv.2.dylib (compatibility version 6.0.0, current version 6.0.0)
         /usr/lib/libmx.A.dylib (compatibility version 1.0.0, current version 93.0.0)
 
-The PPC version of ESP-r will usually run on Intel machines in emulation. 
-Testing has indicated that on an Intel machine attempting to use PPC
-executables may require the gfortran run-time libraries libgfortran.3.dylib, 
-libgfortran.a and libgfortran.la.  
-
 The Intel version of ESP-r will not run on PPC computers. The gfortran run time
 libraries (for Intel) may be needed. 
 
@@ -220,7 +230,6 @@ not have the full GNU GCC compiler tool set.
 
 
 Using/testing the self-extractor
-
 
 If you have just created an installer you should test this on a 
 separate machine to confirm that it works.  If you have downloaded 
@@ -232,13 +241,13 @@ Typically the `run` file you downloaded should be placed in /opt
 and run via a sudo command from that folder via a command (adapt 
 to reflect the actual name of the `run` file).
  
-  sudo ./esp-r_v11.7_osx_precomp.run
+  sudo ./esp-r_v11.9_osx_precomp.run
 
 On most OSX machines a file ending in .run will be treated as 
 an executable. If the installer does not execute you may have 
 to issue the following command to change its permissions:
 
-  sudo chmod a+x ./esp-r_v11.7_osx_precomp.run
+  sudo chmod a+x ./esp-r_v11.9_osx_precomp.run
 
 There are two versions of ESP-r which can be installed. The
 so-called X11 version is the legacy version and the GTK version
@@ -313,10 +322,8 @@ of an OSX machine to work with ESP-r.
 
 Installing via compressed archive files
 
-As an alternative for OSX machines do not work well with self-extractor. 
-In this case the gzipped tar files can be used to install ESP-r. The 
-following is a list of steps that users should take in order to install 
-via a tar file.
+The following is a list of steps that users should take in order to install 
+via a compressed archive file.
 
 The first step is to prepare a folder to install the ESP-r distribution. The
 usual location is /opt/esru.  If you already have an /opt folder then skip
