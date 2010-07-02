@@ -972,6 +972,9 @@ C QPAQ.
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
         endif
       endif
+	  
+C << include output of optical CFC data here (?) >>
+
       RETURN
       END
 
