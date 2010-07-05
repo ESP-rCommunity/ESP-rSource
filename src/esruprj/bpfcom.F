@@ -1686,7 +1686,7 @@ c        call edisp(itru,
 c     &     ' The function day types are Weekdays, Saturdays & Sundays')	 
 c        IF(nbdaytype.GT.3)THEN 
           call edisp(itru,' The following day types are defined: ') 
-          DO 30 ID=4,NBDAYTYPE 
+          DO 30 ID=1,NBDAYTYPE 
             call edisp(itru,calentag(id)) 
  30       CONTINUE 
 c        ENDIF
