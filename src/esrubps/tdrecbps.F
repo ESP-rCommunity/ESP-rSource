@@ -85,7 +85,7 @@ C need to do once per simulaton. Skip if any of the UK NCM models
       IF(INOTI.LT.1.OR.INOTI.GT.4)THEN
         IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
           h(1)='tdf - simulation timestep mismatch'
-          h(2)='You are simulating with time step greater'
+          h(2)='You are simulating with a time step shorter'
           h(3)='than that at which measured data is recorded'
           h(4)='This can cause errors in results!'
           CALL PHELPD('tdf warning ',4,'bsim-tdf-mismatch',0,0,IER)
@@ -282,7 +282,7 @@ C need to do once per simulaton. Skip if any of the UK NCM models
       IF(INOTI.LT.1.OR.INOTI.GT.4)THEN
         IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
           h(1)='tdf - simulation timestep mismatch'
-          h(2)='You are simulating with time step greater'
+          h(2)='You are simulating with a time step shorter'
           h(3)='than that at which measured data is recorded'
           h(4)='This can cause errors in results!'
           CALL PHELPD('tdf warning ',4,'bsim-tdf-mismatch',0,0,IER)
