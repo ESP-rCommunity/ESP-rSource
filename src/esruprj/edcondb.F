@@ -257,6 +257,9 @@ C Add another category to the database << not yet tested >>
           matprandtl(ILNE,2)=0.0
           matgapsht(ILNE,1)=0.0
           matgapsht(ILNE,2)=0.0
+          matcatitems(matcats)=matcatitems(matcats)+1 ! increment nb of cat items
+          matcatindex(ILNE)=matcats  ! remember its category
+          matdbitems=matdbitems+1    ! increment nb of db items
           chgdb=.true.
         endif
         goto 40
