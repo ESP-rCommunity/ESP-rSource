@@ -224,8 +224,13 @@ C focus and actions arguments).
       issave=2
       isavgh=0
       NSIGFIG=3
-      matver=0.0   ! initial assumption of binary materials database
 
+C Initial assumptions about databases (prior to configuration file scan
+C that the default database files will be defined explicitly).
+      matver=0.0   ! initial assumption of binary materials database
+      ipathapres=0; ipathoptdb=0; ipathpcdb=0; ipathprodb=0
+      ipathmat=0; ipathmul=0; ipathclim=0; ipathsbem=0; ipathmsc=0
+      
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then

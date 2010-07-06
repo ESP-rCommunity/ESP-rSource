@@ -533,6 +533,7 @@ C Simulation parameters
       integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
       integer itru    ! unit for output
+      integer iflag   ! for error traps
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
@@ -544,6 +545,7 @@ C Simulation parameters
 C Check if running in dll mode.
       call isadll(dll)
       itru=iuout   ! set trace unit to use in subroutine calls
+      iflag=0      ! initial value
 
 C Initalizing starting point for parsing simulation presets (*sps)
       iSet_start = 1

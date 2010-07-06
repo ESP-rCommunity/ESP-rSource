@@ -188,9 +188,11 @@ C Error subroutine and error details for dll mode.
       logical dll,checkbase
       logical havec24
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
-      integer lsn  ! length of currentfile
+      integer lsn   ! length of currentfile
+      integer iflag ! for read errors
 
-      IER=0
+      IER=0    ! initial values of read state
+      iflag=0
       ZN=' '
       phrase=' '
       checkbase=.false.
@@ -1420,9 +1422,11 @@ C GS7/GS8 are defined in geometry.h
       integer lsn   ! length of currentfile
       integer lno   ! length of optics name
       real VX,VY,VZ ! local values for XOB YOB ZOB
+      integer iflag ! for read error state
 
 C Set initial values.
       IER=0
+      iflag=0
       itrct=0
       ZN=' '
       phrase=' '
