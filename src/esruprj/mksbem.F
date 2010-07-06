@@ -6802,61 +6802,62 @@ C Integrate zonal base area
         TBASEA=TBASEA+ZBASEA(ICOMP)
 
 C Heating energy for stripped model. Calculate energy generated
-        call eclose(HGEF(IHLZP),0.0,0.001,near)
-        if(near)then
-          BERHEAT_afterefficiency(ICOMP)=0.
-        else  
-          if(iDsmTestingFlag.eq.2)then
-            BERHEAT_afterefficiency(ICOMP)=BERHEAT(ICOMP)/0.73
-          else
-            BERHEAT_afterefficiency(ICOMP)=BERHEAT(ICOMP)/HGEF(IHLZP)
+        IF(IHLZP.NE.0)THEN ! Only if there is plant linked to this zone
+          call eclose(HGEF(IHLZP),0.0,0.001,near)
+          if(near)then
+            BERHEAT_afterefficiency(ICOMP)=0.
+          else  
+            if(iDsmTestingFlag.eq.2)then
+              BERHEAT_afterefficiency(ICOMP)=BERHEAT(ICOMP)/0.73
+            else
+              BERHEAT_afterefficiency(ICOMP)=BERHEAT(ICOMP)/HGEF(IHLZP)
+            endif
           endif
-        endif
         
 C Integrating for total energy
-        BER_HEAT=BER_HEAT+BERHEAT_afterefficiency(ICOMP)
+          BER_HEAT=BER_HEAT+BERHEAT_afterefficiency(ICOMP)
 
 C Integrating for total CO2 emissions
-        BER_HEATCO2=BER_HEATCO2+
+          BER_HEATCO2=BER_HEATCO2+
      &    BERHEAT_afterefficiency(ICOMP)*FUELCO2(IFTYP(IHLZP))
 
 C Integrating for fuel type
-        BERF(IFTYP(IHLZP))=
+          BERF(IFTYP(IHLZP))=
      &    BERF(IFTYP(IHLZP))+BERHEAT_afterefficiency(ICOMP)
 
 C Integrating energy generated for each HVAC type
-        BERSH(IHLZP)=BERSH(IHLZP)+BERHEAT_afterefficiency(ICOMP)
+          BERSH(IHLZP)=BERSH(IHLZP)+BERHEAT_afterefficiency(ICOMP)
 
 C Hold heating energy based on fuel type (to work out main heating fuel)
-        FHM(IFTYP(IHLZP))=
+          FHM(IFTYP(IHLZP))=
      &    FHM(IFTYP(IHLZP))+BERHEAT_afterefficiency(ICOMP)
 
 C Cooling energy is always supplied by electricity type (10).
 C Only if a coolth generator is associated with this zone
-        BERCOOL(ICOMP)=ABS(BERCOOL(ICOMP))
-        NEAR=.FALSE.
-        CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
-        IF(.NOT.NEAR)THEN
-          BERCOOL_afterefficiency(ICOMP)=BERCOOL(ICOMP)/CGEF(IHLZP)
-        ELSE ! no cooling generator hence no cooling load 
-          BERCOOL_afterefficiency(ICOMP)=0.0
-        ENDIF
-        if(iDsmTestingFlag.eq.2)THEN
-        BERCOOL_afterefficiency(ICOMP)=BERCOOL(ICOMP)/2.25
-        endif
+          BERCOOL(ICOMP)=ABS(BERCOOL(ICOMP))
+          NEAR=.FALSE.
+          CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
+          IF(.NOT.NEAR)THEN
+            BERCOOL_afterefficiency(ICOMP)=BERCOOL(ICOMP)/CGEF(IHLZP)
+          ELSE ! no cooling generator hence no cooling load 
+            BERCOOL_afterefficiency(ICOMP)=0.0
+          ENDIF
+          if(iDsmTestingFlag.eq.2)THEN
+            BERCOOL_afterefficiency(ICOMP)=BERCOOL(ICOMP)/2.25
+          endif
 
 C Integrating for total energy
-        BER_COOL=BER_COOL+BERCOOL_afterefficiency(ICOMP)
+          BER_COOL=BER_COOL+BERCOOL_afterefficiency(ICOMP)
 
 C Integrating for total CO2 emissions
-        BER_COOLCO2=BER_COOLCO2+
+          BER_COOLCO2=BER_COOLCO2+
      &    BERCOOL_afterefficiency(ICOMP)*FUELCO2(10)
 
 C Integrating for electricity fuel type.
-        BERF(10)=BERF(10)+BERCOOL_afterefficiency(ICOMP)
+          BERF(10)=BERF(10)+BERCOOL_afterefficiency(ICOMP)
 
 C Hold cooling energy based on fuel type (to work out main heating fuel)
-        BERSC(IHLZP)=BERSC(IHLZP)+BERCOOL_afterefficiency(ICOMP)
+          BERSC(IHLZP)=BERSC(IHLZP)+BERCOOL_afterefficiency(ICOMP)
 
 C DHW energy ...
 C (depending upon whether there is a stand alone DHW
@@ -6864,57 +6865,58 @@ C generator for this zone or DHW is additionally generated from the
 C space heating HVAC system. Each zone has to have a DHW source, if the
 C user had not defined it warn the user and assume DHW is supplied from
 C HVAC system.
-        IF(IDHWLZ(ICOMP).EQ.0)THEN
-          WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
+          IF(IDHWLZ(ICOMP).EQ.0)THEN
+            WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
      &      ZNAME(ICOMP)
-          CALL EDISP(IUOUT,OUTS)
-          OUTS=' '
-          write(outs,'(2A)')' Assuming DHW supplied from ',
+            CALL EDISP(IUOUT,OUTS)
+            OUTS=' '
+            write(outs,'(2A)')' Assuming DHW supplied from ',
      &      HVACNAME(IHLZP)
-          CALL EDISP(IUOUT,OUTS)
-          IDHWLZ(ICOMP)=-1*IHLZP
-        ENDIF
-        IF(IDHWLZ(ICOMP).GT.0)THEN
+            CALL EDISP(IUOUT,OUTS)
+            IDHWLZ(ICOMP)=-1*IHLZP
+          ENDIF
+          IF(IDHWLZ(ICOMP).GT.0)THEN
 
 C We have a dedicated DHW system.
-          BERDHW_afterefficiency(ICOMP)=
+            BERDHW_afterefficiency(ICOMP)=
      &      BERDHW(ICOMP)/HWEF(IDHWLZ(ICOMP))
-          DHWCO2RATE=FUELCO2(IDHFL(IDHWLZ(ICOMP)))
-          BERF(IDHFL(IDHWLZ(ICOMP)))=BERF(IDHFL(IDHWLZ(ICOMP)))+
+            DHWCO2RATE=FUELCO2(IDHFL(IDHWLZ(ICOMP)))
+            BERF(IDHFL(IDHWLZ(ICOMP)))=BERF(IDHFL(IDHWLZ(ICOMP)))+
      &      BERDHW_afterefficiency(ICOMP)
-        ELSEIF(IDHWLZ(ICOMP).LT.0)THEN
+          ELSEIF(IDHWLZ(ICOMP).LT.0)THEN
 
 C We are taking DHW from the heating system.
-          INDX=-1*IDHWLZ(ICOMP) ! INDX is actually set equal to IHLZP
-          CALL ECLOSE(HGEF(INDX),0.0,0.001,CLOSER)
-          IF(.NOT.CLOSER)THEN
-            if(iDsmTestingFlag.eq.2)then
-              BERDHW_afterefficiency(ICOMP)=BERDHW(ICOMP)/0.45
-            else
-              BERDHW_afterefficiency(ICOMP)=BERDHW(ICOMP)/HGEF(INDX)
-            endif
-            DHWCO2RATE=FUELCO2(IFTYP(INDX))
-            BERF(IFTYP(IHLZP))=
+            INDX=-1*IDHWLZ(ICOMP) ! INDX is actually set equal to IHLZP
+            CALL ECLOSE(HGEF(INDX),0.0,0.001,CLOSER)
+            IF(.NOT.CLOSER)THEN
+              if(iDsmTestingFlag.eq.2)then
+                BERDHW_afterefficiency(ICOMP)=BERDHW(ICOMP)/0.45
+              else
+                BERDHW_afterefficiency(ICOMP)=BERDHW(ICOMP)/HGEF(INDX)
+              endif
+              DHWCO2RATE=FUELCO2(IFTYP(INDX))
+              BERF(IFTYP(IHLZP))=
      &        BERF(IFTYP(IHLZP))+BERDHW_afterefficiency(ICOMP)
-          ELSE
-            BERDHW_afterefficiency(ICOMP)=0.0
+            ELSE
+              BERDHW_afterefficiency(ICOMP)=0.0
+            ENDIF
           ENDIF
-        ENDIF
-        BER_DHW=BER_DHW+BERDHW_afterefficiency(ICOMP)
-        BER_DHWCO2=BER_DHWCO2+BERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+          BER_DHW=BER_DHW+BERDHW_afterefficiency(ICOMP)
+          BER_DHWCO2=BER_DHWCO2+BERDHW_afterefficiency(ICOMP)*DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
+C Auxiliary energy.
+          BER_AUX=BER_AUX+BERAUX(ICOMP)
+          BER_AUXCO2=BER_AUXCO2+BERAUX(ICOMP)*FUELCO2(10)
+          BERF(10)=BERF(10)+BERAUX(ICOMP)
+          BERSA(IHLZP)=BERSA(IHLZP)+BERAUX(ICOMP)
+        ENDIF
+
 C Lighting energy
         BER_LIGHT=BER_LIGHT+BERLIGHT(ICOMP)
         BER_LIGHTCO2=BER_LIGHTCO2+BERLIGHT(ICOMP)*FUELCO2(10)
         BERF(10)=BERF(10)+BERLIGHT(ICOMP)
-
-C Auxiliary energy.
-        BER_AUX=BER_AUX+BERAUX(ICOMP)
-        BER_AUXCO2=BER_AUXCO2+BERAUX(ICOMP)*FUELCO2(10)
-        BERF(10)=BERF(10)+BERAUX(ICOMP)
-        BERSA(IHLZP)=BERSA(IHLZP)+BERAUX(ICOMP)
  100  CONTINUE
 
 C Calculation of emissions and total energy for stripped model
@@ -6974,85 +6976,89 @@ C Work out efficiency of heating, cooling and DHW systems associated
 C with each zone paragraphs 44 and table 6 NCM Modelling Guide
         DHWNGE=0.45
         IHLZP=IHLZ(ICOMP)  ! set up pointer
+        IF(IHLZP.NE.0)THEN ! Only if there is plant linked to this zone
 
 C Heated and Mechanically ventilated
-        IF(INCMSYS(IHLZP).EQ.4)THEN
-          CoolSSEER_N(IHLZP)=0.
-          HeatSCoP_N(IHLZP)=0.78
+          IF(INCMSYS(IHLZP).EQ.4)THEN
+            CoolSSEER_N(IHLZP)=0.
+            HeatSCoP_N(IHLZP)=0.78
 
 C Heated and naturally ventilated (or heated only)
-        ELSEIF(INCMSYS(IHLZP).LE.11)THEN
-          CoolSSEER_N(IHLZP)=0.
-          HeatSCoP_N(IHLZP)=0.73
+          ELSEIF(INCMSYS(IHLZP).LE.11)THEN
+            CoolSSEER_N(IHLZP)=0.
+            HeatSCoP_N(IHLZP)=0.73
 
 C Air conditioned
-        ELSE
-          CoolSSEER_N(IHLZP)=1.67
-          HeatSCoP_N(IHLZP)=0.83
-        ENDIF
+          ELSE
+            CoolSSEER_N(IHLZP)=1.67
+            HeatSCoP_N(IHLZP)=0.83
+          ENDIF
 
 C Heating energy
-        AERHEAT_afterefficiency(ICOMP)=AERHEAT(ICOMP)/HeatSCoP_N(IHLZP)
-        AER_HEAT=AER_HEAT+AERHEAT_afterefficiency(ICOMP)
-        AER_HEATCO2=AER_HEATCO2+
+          AERHEAT_afterefficiency(ICOMP)=
+     &    AERHEAT(ICOMP)/HeatSCoP_N(IHLZP)
+          AER_HEAT=AER_HEAT+AERHEAT_afterefficiency(ICOMP)
+          AER_HEATCO2=AER_HEATCO2+
      &    AERHEAT_afterefficiency(ICOMP)*FUELCO2(NHF)
-        AERF(NHF)=AERF(NHF)+AERHEAT_afterefficiency(ICOMP)
-        AERSH(IHLZP)=AERSH(IHLZP)+AERHEAT_afterefficiency(ICOMP)
+          AERF(NHF)=AERF(NHF)+AERHEAT_afterefficiency(ICOMP)
+          AERSH(IHLZP)=AERSH(IHLZP)+AERHEAT_afterefficiency(ICOMP)
 
 C Cooling energy only if a coolth generator is associated with this zone
 C Cooling energy is always supplied by electricity type (10).
-        AERCOOL(ICOMP)=ABS(AERCOOL(ICOMP))
-        NEAR=.FALSE.
-        CALL ECLOSE(CoolSSEER_N(IHLZP),0.0,0.001,NEAR)
-        IF(.NOT.NEAR)THEN
-          AERCOOL_afterefficiency(ICOMP)=
+          AERCOOL(ICOMP)=ABS(AERCOOL(ICOMP))
+          NEAR=.FALSE.
+          CALL ECLOSE(CoolSSEER_N(IHLZP),0.0,0.001,NEAR)
+          IF(.NOT.NEAR)THEN
+            AERCOOL_afterefficiency(ICOMP)=
      &      AERCOOL(ICOMP)/CoolSSEER_N(IHLZP)
-        ELSE
-          AERCOOL_afterefficiency(ICOMP)=0.0
-        ENDIF
-        AER_COOL=AER_COOL+AERCOOL_afterefficiency(ICOMP)
-        AER_COOLCO2=AER_COOLCO2+
+          ELSE
+            AERCOOL_afterefficiency(ICOMP)=0.0
+          ENDIF
+          AER_COOL=AER_COOL+AERCOOL_afterefficiency(ICOMP)
+          AER_COOLCO2=AER_COOLCO2+
      &    AERCOOL_afterefficiency(ICOMP)*FUELCO2(10)  ! electricity
-        AERF(10)=AERF(10)+AERCOOL_afterefficiency(ICOMP)
-        AERSC(IHLZP)=AERSC(IHLZP)+AERCOOL_afterefficiency(ICOMP)
+          AERF(10)=AERF(10)+AERCOOL_afterefficiency(ICOMP)
+          AERSC(IHLZP)=AERSC(IHLZP)+AERCOOL_afterefficiency(ICOMP)
 
 C DHW energy (depending upon whether there is a stand alone DHW
 C generator for this zone or DHW is additionally generated from the
 C space heating HVAC system. Each zone has to have a DHW source, if the
 C user had not defined it warn the user and assume DHW is supplied from
 C HVAC system
-        IF(IDHWLZ(ICOMP).EQ.0)THEN
-          WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
+          IF(IDHWLZ(ICOMP).EQ.0)THEN
+            WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
      &      ZNAME(ICOMP)
-          CALL EDISP(IUOUT,OUTS)
-          write(outs,'(2A)')' Assuming DHW supplied from ',
+            CALL EDISP(IUOUT,OUTS)
+            write(outs,'(2A)')' Assuming DHW supplied from ',
      &      HVACNAME(IHLZP)
-          CALL EDISP(IUOUT,OUTS)
-        ENDIF
-        IF(IDHWLZ(ICOMP).GT.0)THEN
-          AERDHW_afterefficiency(ICOMP)=AERDHW(ICOMP)/DHWNGE
-          DHWCO2RATE=FUELCO2(NHF)
-          AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
-        ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
-          AERDHW_afterefficiency(ICOMP)=AERDHW(ICOMP)/HeatSCoP_N(IHLZP)
-          DHWCO2RATE=FUELCO2(NHF)
-          AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
-        ENDIF
-        AER_DHW=AER_DHW+AERDHW_afterefficiency(ICOMP)
-        AER_DHWCO2=AER_DHWCO2+AERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+            CALL EDISP(IUOUT,OUTS)
+          ENDIF
+          IF(IDHWLZ(ICOMP).GT.0)THEN
+            AERDHW_afterefficiency(ICOMP)=AERDHW(ICOMP)/DHWNGE
+            DHWCO2RATE=FUELCO2(NHF)
+            AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
+          ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
+            AERDHW_afterefficiency(ICOMP)=
+     &      AERDHW(ICOMP)/HeatSCoP_N(IHLZP)
+            DHWCO2RATE=FUELCO2(NHF)
+            AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
+          ENDIF
+          AER_DHW=AER_DHW+AERDHW_afterefficiency(ICOMP)
+          AER_DHWCO2=AER_DHWCO2+AERDHW_afterefficiency(ICOMP)*DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
-C Lighting energy
-        AER_LIGHT=AER_LIGHT+AERLIGHT(ICOMP)
-        AER_LIGHTCO2=AER_LIGHTCO2+AERLIGHT(ICOMP)*FUELCO2(10)
-        AERF(10)=AERF(10)+AERLIGHT(ICOMP)
-
 C Auxiliary energy
         AER_AUX=AER_AUX+AERAUX(ICOMP)
         AER_AUXCO2=AER_AUXCO2+AERAUX(ICOMP)*FUELCO2(10)
         AERF(10)=AERF(10)+AERAUX(ICOMP)
         AERSA(IHLZP)=AERSA(IHLZP)+AERAUX(ICOMP)
+        ENDIF
+
+C Lighting energy
+        AER_LIGHT=AER_LIGHT+AERLIGHT(ICOMP)
+        AER_LIGHTCO2=AER_LIGHTCO2+AERLIGHT(ICOMP)*FUELCO2(10)
+        AERF(10)=AERF(10)+AERLIGHT(ICOMP)
 
 C Get zonal CO2 emissions for calculation of Improvement Factor
         ZCO2N(ICOMP)=AERHEAT_afterefficiency(ICOMP)*FUELCO2(NHF)+
@@ -7118,58 +7124,63 @@ C Calculate all energy and CO2 emissions information for reference model
 C Work out efficiency of heating, cooling and DHW systems associated
 C with each zone paragraphs 44 and table 6 NCM Modelling Guide
 C Heating energy
-        HeatSCoP_R(IHLZP)=0.73     ! Fix heating efficiency to 0.73 
-        CoolSSEER_R(IHLZP)=2.25    ! Fix cooling efficiency to 2.25
+        IF(IHLZP.NE.0)THEN ! Only if there is plant linked to this zone
+          HeatSCoP_R(IHLZP)=0.73     ! Fix heating efficiency to 0.73 
+          CoolSSEER_R(IHLZP)=2.25    ! Fix cooling efficiency to 2.25
 
-        RERHEAT_afterefficiency(ICOMP)=RERHEAT(ICOMP)/HeatSCoP_R(IHLZP)
-        RER_HEAT=RER_HEAT+RERHEAT_afterefficiency(ICOMP)
-        RER_HEATCO2=RER_HEATCO2+
-     &  RERHEAT_afterefficiency(ICOMP)*FUELCO2(1)
+          RERHEAT_afterefficiency(ICOMP)=
+     &    RERHEAT(ICOMP)/HeatSCoP_R(IHLZP)
+          RER_HEAT=RER_HEAT+RERHEAT_afterefficiency(ICOMP)
+          RER_HEATCO2=RER_HEATCO2+
+     &    RERHEAT_afterefficiency(ICOMP)*FUELCO2(1)
 
 C Heating and hot water are always Natural Gas for reference building (NHF=1)
-        RERF(1)=RERF(1)+RERHEAT_afterefficiency(ICOMP)
-        RERSH(IHLZP)=RERSH(IHLZP)+RERHEAT_afterefficiency(ICOMP)
+          RERF(1)=RERF(1)+RERHEAT_afterefficiency(ICOMP)
+          RERSH(IHLZP)=RERSH(IHLZP)+RERHEAT_afterefficiency(ICOMP)
 
 C DHW for reference building - need to use 0.73 efficiency if there is no
 C stand-alone generator
-        IF(IDHWLZ(ICOMP).EQ.0)THEN
-          WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
+          IF(IDHWLZ(ICOMP).EQ.0)THEN
+            WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
      &      ZNAME(ICOMP)
-          CALL EDISP(IUOUT,OUTS)
-          write(outs,'(2A)')' Assuming DHW supplied from ',
+            CALL EDISP(IUOUT,OUTS)
+            write(outs,'(2A)')' Assuming DHW supplied from ',
      &      HVACNAME(IHLZP)
-          CALL EDISP(IUOUT,OUTS)
-        ENDIF
-        IF(IDHWLZ(ICOMP).GT.0)THEN
-          RERDHW_afterefficiency(ICOMP)=RERDHW(ICOMP)/DHWNGE
-          DHWCO2RATE=FUELCO2(1)
+            CALL EDISP(IUOUT,OUTS)
+          ENDIF
+          IF(IDHWLZ(ICOMP).GT.0)THEN
+            RERDHW_afterefficiency(ICOMP)=RERDHW(ICOMP)/DHWNGE
+            DHWCO2RATE=FUELCO2(1)
 
 C Heating and hot water are always supplied by Natural Gas for reference building (NHF=1)
-          RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
-        ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
-          RERDHW_afterefficiency(ICOMP)=RERDHW(ICOMP)/HeatSCoP_R(IHLZP)
-          DHWCO2RATE=FUELCO2(1)
+            RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
+          ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
+            RERDHW_afterefficiency(ICOMP)=
+     &      RERDHW(ICOMP)/HeatSCoP_R(IHLZP)
+            DHWCO2RATE=FUELCO2(1)
 
 C Heating and hot water are always supplied by Natural Gas for reference building (NHF=1)
-          RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
-        ENDIF
-        RER_DHW=RER_DHW+RERDHW_afterefficiency(ICOMP)
-        RER_DHWCO2=RER_DHWCO2+RERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+            RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
+          ENDIF
+          RER_DHW=RER_DHW+RERDHW_afterefficiency(ICOMP)
+          RER_DHWCO2=RER_DHWCO2+RERDHW_afterefficiency(ICOMP)*DHWCO2RATE
                 
 C Cooling energy is always supplied by electricity type (10). 
-        RERCOOL(ICOMP)=ABS(RERCOOL(ICOMP))
-        RERCOOL_afterefficiency(ICOMP)=RERCOOL(ICOMP)/CoolSSEER_R(IHLZP)
-        RER_COOL=RER_COOL+RERCOOL_afterefficiency(ICOMP)
-        RER_COOLCO2=RER_COOLCO2+
+          RERCOOL(ICOMP)=ABS(RERCOOL(ICOMP))
+          RERCOOL_afterefficiency(ICOMP)=
+     &    RERCOOL(ICOMP)/CoolSSEER_R(IHLZP)
+          RER_COOL=RER_COOL+RERCOOL_afterefficiency(ICOMP)
+          RER_COOLCO2=RER_COOLCO2+
      &    RERCOOL_afterefficiency(ICOMP)*FUELCO2(10)
-        RERF(10)=RERF(10)+RERCOOL_afterefficiency(ICOMP)
-        RERSC(IHLZP)=RERSC(IHLZP)+RERCOOL_afterefficiency(ICOMP)
+          RERF(10)=RERF(10)+RERCOOL_afterefficiency(ICOMP)
+          RERSC(IHLZP)=RERSC(IHLZP)+RERCOOL_afterefficiency(ICOMP)
         
 C Auxiliary energy is always supplied by electricity type (10).
-        RER_AUX=RER_AUX+RERAUX(ICOMP)
-        RER_AUXCO2=RER_AUXCO2+RERAUX(ICOMP)*FUELCO2(10)
-        RERF(10)=RERF(10)+RERAUX(ICOMP)
-        RERSA(IHLZP)=RERSA(IHLZP)+RERAUX(ICOMP)
+          RER_AUX=RER_AUX+RERAUX(ICOMP)
+          RER_AUXCO2=RER_AUXCO2+RERAUX(ICOMP)*FUELCO2(10)
+          RERF(10)=RERF(10)+RERAUX(ICOMP)
+          RERSA(IHLZP)=RERSA(IHLZP)+RERAUX(ICOMP)
+        ENDIF
 
 C Add the fuel needed for lights - same as notional building (electricity)
 C This is why AERLIGHT(ICOMP) is used here 
@@ -7214,85 +7225,87 @@ C Calculate all energy and CO2 emissions information for notional model
 C Work out efficiency of heating, cooling and DHW systems associated
 C with each zone paragraphs 44 and table 6 NCM Modelling Guide
         DHWNGE=0.45
-
         IHLZP=IHLZ(ICOMP)  ! set up pointer
+        IF(IHLZP.NE.0)THEN ! Only if there is plant linked to this zone
+
 C Heated and Mechanically ventilated
-        IF(INCMSYS(IHLZP).EQ.4)THEN
-          CoolSSEER_T(IHLZP)=0.
-          HeatSCoP_T(IHLZP)=0.55
+          IF(INCMSYS(IHLZP).EQ.4)THEN
+            CoolSSEER_T(IHLZP)=0.
+            HeatSCoP_T(IHLZP)=0.55
 
 C Heated and naturally ventilated (or heated only)
-        ELSEIF(INCMSYS(IHLZP).LE.11)THEN
-          CoolSSEER_T(IHLZP)=0.
-          HeatSCoP_T(IHLZP)=0.55
+          ELSEIF(INCMSYS(IHLZP).LE.11)THEN
+            CoolSSEER_T(IHLZP)=0.
+            HeatSCoP_T(IHLZP)=0.55
 
 C Air conditioned
-        ELSE
-          CoolSSEER_T(IHLZP)=1.17
-          HeatSCoP_T(IHLZP)=0.55
-        ENDIF
+          ELSE
+            CoolSSEER_T(IHLZP)=1.17
+            HeatSCoP_T(IHLZP)=0.55
+          ENDIF
 
 C Heating energy
-        TyERHEAT_afterefficiency(ICOMP)=
+          TyERHEAT_afterefficiency(ICOMP)=
      &    TyERHEAT(ICOMP)/HeatSCoP_T(IHLZP)
-        TyER_HEAT=TyER_HEAT+TyERHEAT_afterefficiency(ICOMP)
-        TyER_HEATCO2=TyER_HEATCO2+
+          TyER_HEAT=TyER_HEAT+TyERHEAT_afterefficiency(ICOMP)
+          TyER_HEATCO2=TyER_HEATCO2+
      &    TyERHEAT_afterefficiency(ICOMP)*FUELCO2(1)
 
 C Heating and hot water are always supplied by Natural Gas for typical building (NHF=1)
-        TyERF(1)=TyERF(1)+TyERHEAT_afterefficiency(ICOMP)  
-        TyERSH(IHLZP)=TyERSH(IHLZP)+TyERHEAT_afterefficiency(ICOMP)
+          TyERF(1)=TyERF(1)+TyERHEAT_afterefficiency(ICOMP)  
+          TyERSH(IHLZP)=TyERSH(IHLZP)+TyERHEAT_afterefficiency(ICOMP)
         
 C Cooling energy only if a coolth generator is associated with this zone
-        TyERCOOL(ICOMP)=ABS(TyERCOOL(ICOMP))
-        NEAR=.FALSE.
-        CALL ECLOSE(CoolSSEER_T(IHLZP),0.0,0.001,NEAR)
-        IF(.NOT.NEAR)THEN
-          TyERCOOL_afterefficiency(ICOMP)=
+          TyERCOOL(ICOMP)=ABS(TyERCOOL(ICOMP))
+          NEAR=.FALSE.
+          CALL ECLOSE(CoolSSEER_T(IHLZP),0.0,0.001,NEAR)
+          IF(.NOT.NEAR)THEN
+            TyERCOOL_afterefficiency(ICOMP)=
      &      TyERCOOL(ICOMP)/CoolSSEER_T(IHLZP)
-        ELSE
-          TyERCOOL_afterefficiency(ICOMP)=0.0
-        ENDIF
-        TyER_COOL=TyER_COOL+TyERCOOL_afterefficiency(ICOMP)
-        TyER_COOLCO2=TyER_COOLCO2+
+          ELSE
+            TyERCOOL_afterefficiency(ICOMP)=0.0
+          ENDIF
+          TyER_COOL=TyER_COOL+TyERCOOL_afterefficiency(ICOMP)
+          TyER_COOLCO2=TyER_COOLCO2+
      &    TyERCOOL_afterefficiency(ICOMP)*FUELCO2(10)
-        TyERF(10)=TyERF(10)+TyERCOOL_afterefficiency(ICOMP)
-        TyERSC(IHLZP)=TyERSC(IHLZP)+TyERCOOL_afterefficiency(ICOMP)
+          TyERF(10)=TyERF(10)+TyERCOOL_afterefficiency(ICOMP)
+          TyERSC(IHLZP)=TyERSC(IHLZP)+TyERCOOL_afterefficiency(ICOMP)
 
 C DHW energy (depending upon whether there is a stand alone DHW
 C generator for this zone or DHW is additionally generated from the
 C space heating HVAC system. Each zone has to have a DHW source, if the
 C user had not defined it assume DHW is supplied from HVAC system
-        IF(IDHWLZ(ICOMP).GT.0)THEN
-          TyERDHW_afterefficiency(ICOMP)=TyERDHW(ICOMP)/DHWNGE
-          DHWCO2RATE=FUELCO2(1)
+          IF(IDHWLZ(ICOMP).GT.0)THEN
+            TyERDHW_afterefficiency(ICOMP)=TyERDHW(ICOMP)/DHWNGE
+            DHWCO2RATE=FUELCO2(1)
 
 C Heating and hot water are always supplied by Natural Gas for typical building (NHF=1)
-          TyERF(1)=TyERF(1)+TyERDHW_afterefficiency(ICOMP)
-        ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
-          TyERDHW_afterefficiency(ICOMP)=
+            TyERF(1)=TyERF(1)+TyERDHW_afterefficiency(ICOMP)
+          ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
+            TyERDHW_afterefficiency(ICOMP)=
      &      TyERDHW(ICOMP)/HeatSCoP_T(IHLZP)
-          DHWCO2RATE=FUELCO2(NHF)
+            DHWCO2RATE=FUELCO2(NHF)
 
 C Heating and hot water are always supplied by Natural Gas for typical building (NHF=1)
-          TyERF(1)=TyERF(1)+TyERDHW_afterefficiency(ICOMP)
-        ENDIF
-        TyER_DHW=TyER_DHW+TyERDHW_afterefficiency(ICOMP)
-        TyER_DHWCO2=
+            TyERF(1)=TyERF(1)+TyERDHW_afterefficiency(ICOMP)
+          ENDIF
+          TyER_DHW=TyER_DHW+TyERDHW_afterefficiency(ICOMP)
+          TyER_DHWCO2=
      &    TyER_DHWCO2+TyERDHW_afterefficiency(ICOMP)*DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
+C Auxiliary energy
+          TyER_AUX=TyER_AUX+TyERAUX(ICOMP)
+          TyER_AUXCO2=TyER_AUXCO2+TyERAUX(ICOMP)*FUELCO2(10)
+          TyERF(10)=TyERF(10)+TyERAUX(ICOMP)
+          TyERSA(IHLZP)=TyERSA(IHLZP)+TyERAUX(ICOMP)
+        ENDIF
+
 C Lighting energy
         TyER_LIGHT=TyER_LIGHT+TyERLIGHT(ICOMP)
         TyER_LIGHTCO2=TyER_LIGHTCO2+TyERLIGHT(ICOMP)*FUELCO2(10)
         TyERF(10)=TyERF(10)+TyERLIGHT(ICOMP)
-
-C Auxiliary energy
-        TyER_AUX=TyER_AUX+TyERAUX(ICOMP)
-        TyER_AUXCO2=TyER_AUXCO2+TyERAUX(ICOMP)*FUELCO2(10)
-        TyERF(10)=TyERF(10)+TyERAUX(ICOMP)
-        TyERSA(IHLZP)=TyERSA(IHLZP)+TyERAUX(ICOMP)
  400  CONTINUE
 
 C Calculation of emissions and total energy for notional model
