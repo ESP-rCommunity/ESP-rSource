@@ -109,7 +109,6 @@ C Name of current application
 
       integer fstgrp,fstsur,lstsur,strtgr
       logical browse
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(19)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
@@ -191,7 +190,6 @@ C IFILE+2 and ASCII viewing and geometry file reading on IFILE+1.
       ITFS=0
       IMFS=1
       ATR=.TRUE.
-      newgeo=.false.  ! assume older format geometry.
       ZN='UNKNOWN'
       LCFGF='UNKNOWN'
       ICOMP=-1
@@ -757,12 +755,7 @@ C Process a zone....
 C On entry refresh geometry, determine its bounds, force it
 C drawn and remember number of surfaces to pass to sensor file.
       ICOMP=IC
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-      else
-        call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-      endif
+      call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
 
 C Initialize the default viewfactors and MRT sensor file name and the 
 C matching geometry file.

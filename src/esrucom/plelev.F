@@ -65,8 +65,6 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iix,iiy,iid1,iid2    ! passed to etplot
 #endif
-      logical newgeo  ! to use for testing if new/old geometry file.
-      newgeo=.false.  ! assume older format geometry.
 
       IER=0
       IF(MMOD.LT.8)THEN
@@ -121,12 +119,7 @@ C file and plot it. Move to first vertex and give the zone name.
       newpic=nzg
       do 54 mz=1,newpic
         newfoc=nznog(mz)
-        call eclose(gversion(newfoc),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUF,LGEOM(newfoc),newfoc,0,IUOUT,IER)
-        else
-          call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
-        endif
+        call georead(IUF,LGEOM(newfoc),newfoc,0,IUOUT,IER)
 
 C Check for a zone obstructions file.
         if(IOBS(newfoc).EQ.1)then
@@ -272,12 +265,7 @@ C << this may not be necessary if newgeo is true >>
       if(nzg.eq.1.and.izgfoc.gt.0)then
         newfoc=izgfoc
         IF(IOBS(newfoc).EQ.1)THEN
-          call eclose(gversion(newfoc),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IUF,LGEOM(newfoc),newfoc,0,IUOUT,IER)
-          else
-            call egomin(IUF,LGEOM(newfoc),newfoc,0,0,IUOUT,IER)
-          endif
+          call georead(IUF,LGEOM(newfoc),newfoc,0,IUOUT,IER)
         endif
       endif
       RETURN

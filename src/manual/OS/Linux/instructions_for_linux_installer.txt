@@ -1,6 +1,6 @@
 
-        Steps to create or use the ESP-r self extractor on Linux
-                            November 2009
+     Steps to create or use the ESP-r self extractor on Linux
+                        June 2010
 
 There are two patterns used to create an installer for ESP-r for use
 on Linux computers.  One is via a single-file self-extractor and 
@@ -79,11 +79,23 @@ Create a folder /opt/esru/precompiled_for_linux
 
 Then create a tar file of the esp-r folders (the example below 
 includes a version in the name of the tar file which you may
-wish to change to reflect the current version number).
+wish to change to reflect the current version number). For 32
+bit Linux computers use the following:
 
-  tar cf esp-r_X11_11.8_linux.tar esp-r
-  gzip -9 esp-r_X11_11.8_linux.tar
-  mv esp-r_X11_11.8_linux.tar.gz /opt/esru/precompiled_for_linux
+  cd /opt/esru
+  tar cf esp-r_X11_11.9_linux.tar esp-r
+  gzip -9 esp-r_X11_11.9_linux.tar
+  mv esp-r_X11_11.9_linux.tar.gz /opt/esru/precompiled_for_linux
+
+If you are working on a 64 bit computer then alter the names to
+avoid confusion.
+
+  cd /opt/esru
+  tar cf esp-r_X11_11.9_linux_64.tar esp-r
+  gzip -9 esp-r_X11_11.9_linux_64.tar
+  mv esp-r_X11_11.9_linux_64.tar.gz /opt/esru/precompiled_for_linux
+
+
 
 A similar process is taken for the GTK version.  You will need
 the C header files and libraries related to GTK before you can
@@ -105,9 +117,17 @@ Again remove the subversion files from the /opt/esru folders.
 Create the tar file of the GTK distribution and gzip it and
 place it in the precompiled_for_linux folder (as above). 
 
-  tar cf esp-r_GTK_11.8_linux.tar esp-r
-  gzip -9 esp-r_GTK_11.8_linux.tar
-  mv esp-r_GTK_11.8_linux.tar.gz /opt/esru/precompiled_for_linux
+  cd /opt/esru
+  tar cf esp-r_GTK_11.9_linux.tar esp-r
+  gzip -9 esp-r_GTK_11.9_linux.tar
+  mv esp-r_GTK_11.9_linux.tar.gz /opt/esru/precompiled_for_linux
+
+or 
+
+  cd /opt/esru
+  tar cf esp-r_GTK_11.9_linux_64.tar esp-r
+  gzip -9 esp-r_GTK_11.9_linux_64.tar
+  mv esp-r_GTK_11.9_linux_64.tar.gz /opt/esru/precompiled_for_linux
 
 Remember to remove any older *.tar.gz files from the precompiled_for_linux
 folder so that are not included in the installer run file.
@@ -128,7 +148,11 @@ files are helper applications that setup is going to copy.
 The way that the self extractor is created is via a command similar
 to the one below (adapt for your makeself.sh location):
 
-sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_linux esp-r_v11.8_linux_precomp.run "ESP-r V11.8 distribution" ./setup
+32 bit:
+sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_linux esp-r_v11.9_linux_precomp.run "ESP-r V11.9 32bit distribution" ./setup
+
+64 bit:
+sudo /home/jon/bin/makeself-2.1.5/makeself.sh precompiled_for_linux esp-r_v11.9_linux_precomp_64.run "ESP-r V11.9 64bit distribution" ./setup64
 
 The tokens in the above command are as follows:
 
@@ -174,13 +198,13 @@ Typically the `run` file you downloaded should be placed in /tmp within
 and run from that folder via a command (adapt to reflect the 
 actual name of the `run` file).  For example:
 
-  ./esp-r_v11.8_linux_precomp.run
+  ./esp-r_v11.9_linux_precomp.run
 
 If nothing happens it may be that the download process has removed the
 execute permissions from the run file.  You can re-enable these via
 the command:
 
-  chmod a+x ./esp-r_v11.8_linux_precomp.run
+  chmod a+x ./esp-r_v11.9_linux_precomp.run
 
 There are two versions of ESP-r which can be installed. The
 so-called X11 version is the legacy version and the GTK version

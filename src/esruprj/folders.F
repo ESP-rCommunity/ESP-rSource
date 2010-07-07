@@ -1689,12 +1689,7 @@ C Edit zone name - read and then write the geometry file.
      &                'mode, you must `own` the model!','W')
           goto 3
         endif
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
-        else
-          call egomin(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
-        endif
+        call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
         H(1)='The zone name is used as an identifier during'
         H(2)='results analysis. Names should be unique.'
         T15=zname(IZ)

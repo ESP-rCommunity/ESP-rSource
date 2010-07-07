@@ -876,10 +876,8 @@ C IPRZ is primitive db ref for each layer.
       character ZN*12,SN*12,DS*7,DS1*10,tg*1,delim*1
       integer legmat  ! local variable for legacy index.
       logical closemat1,closemat2
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Set chosen result set.
-      newgeo=.false.  ! assume older format geometry.
       ISET=ISIM
 
 C Set values as common block gets overwritten.
@@ -898,12 +896,7 @@ C If output to file alter the edisp unit number.
 
 C Read (silently) in the zone geometry data.
       IUNITF=IFIL+1
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
-      else
-        call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
-      endif
+      call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
       IF(IER.NE.0)THEN
         write(outs,'(A,A72)')' Could not find ',LGEOM(ICOMP)
         CALL USRMSG(' ',outs,'W')

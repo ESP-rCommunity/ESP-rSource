@@ -106,9 +106,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/IPVF/lipvdatf
       common/CFGV/icfgv
 
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
       logical found,XST,apply,MODIFY,MODLEN,MODBND,duplicate
@@ -720,12 +717,7 @@ C << mlcmatch not yet used >>
 
 C << it might not be necesary to scan geometry file >>
             LTMP=LGEOM(IVALS(IZ))
-            call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
-            else
-              call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
-            endif
+            call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
 
 C For each surface in current zone check for match to attributes.
             do 11 i=1,nzsur(ivals(iz))
@@ -1415,12 +1407,7 @@ C Jump if no zones.
       do 97 IZ=1,INPIC
         if(IVALS(IZ).GT.0)then
           LTMP=LGEOM(IVALS(IZ))
-          call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
-          else
-            call egomin(IUF,LTMP,IVALS(IZ),1,0,iuout,IER)
-          endif
+          call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
           OPQ=0.
           TRN=0.
           attribok(IVALS(IZ))=.true.
@@ -1498,12 +1485,7 @@ C Jump if no zones or no zone info requested.
         IZZ=IVALS(IZ)
         if(IZZ.eq.0)goto 98
         LTMP=LGEOM(IZZ)
-        call eclose(gversion(izz),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUF,LTMP,IZZ,1,itu,IER)
-        else
-          call egomin(IUF,LTMP,IZZ,1,0,itu,IER)
-        endif
+        call georead(IUF,LTMP,IZZ,1,itu,IER)
 
         call edisp(itu,'  ')
         WRITE(outs,240)

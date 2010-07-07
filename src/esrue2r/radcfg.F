@@ -920,13 +920,11 @@ C if MODE is not - then sensor points file name confirmation required.
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
 
       LOGICAL MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer lnrp  ! length of run path
 
 C New grid so set number of grid points to zero.
       lnrp=lnblnk(runpath)
       NDFP=0
-      newgeo=.false.  ! assume older format geometry.
 
 C Remember current graphics display options.
       call SVDSOPT
@@ -990,13 +988,7 @@ C Ask for surface and highlight.
 
 C Now read zone geometry file to enable edge selection.
       ITA1 = IFIL+6
-      ITRC=0
-      call eclose(gversion(ifocz),1.1,0.01,newgeo)
-      if(newgeo)then
-        call georead(ITA1,LGEOM(ifocz),ifocz,0,IUOUT,IER)
-      else
-        call EGOMIN(ITA1,LGEOM(ifocz),ifocz,0,ITRC,IUOUT,IER)
-      endif
+      call georead(ITA1,LGEOM(ifocz),ifocz,0,IUOUT,IER)
 
 C Generate a list of edges. JVN(MS,MV)
       NI=0

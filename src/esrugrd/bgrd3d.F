@@ -993,14 +993,12 @@ C geometry.h provides commons G0 and G2.
       COMMON/GR3D10/XMINS(MS),XMAXS(MS),ZMINS(MS),ZMAXS(MS)
 
       LOGICAL ZONOK
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION IVALZ(MCOM)
 
       CHARACTER SZN*12,H*72
 
       IUNIT=IFIL+2
-      newgeo=.false.  ! assume older format geometry.
 
 C Show the zone selection menu.
       H(1)='    Select the zone for which the multi-D gridding'
@@ -1012,12 +1010,7 @@ C Show the zone selection menu.
       IZ=IVALZ(1)
       IF(IZ.GT.0.AND.IZ.LE.NCOMP)THEN
         SZN=zname(IZ)
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
-        else
-          call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
-        endif
+        call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
         IF(IER.EQ.0)CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,IUOUT,IER)
         IF(IER.EQ.0)THEN
           ZONOK=.TRUE.

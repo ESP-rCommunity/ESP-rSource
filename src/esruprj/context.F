@@ -1311,6 +1311,7 @@ C temporal data to be associated with a model.
 
       SUBROUTINE setuptemporal(MODSIT,IER)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
 #include "control.h"
@@ -1328,14 +1329,7 @@ C temporal data to be associated with a model.
      &          SUSE(MS,2),SPARENT(MS)
      
 C TDF related.
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
-      common/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
@@ -1347,9 +1341,8 @@ C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
       character cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48
-      character*72 LTDF,LTDFA,DLTDF
+      character*72 DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
-      character TAG*12,TTYPE*8,TMENU*16,TAIDE*36
       character OUTSTR*124,HDR*12
       character*34 ITEMS(7)
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
@@ -1442,7 +1435,7 @@ C and present a different interface depending on file type.
       H(32)=' VERTSOL -Vertical solar radiation data for a facade'
       H(33)=' HTCLSETP -Specify columns to read H/C setpoints.'
       H(34)=' DBTZNM  - measured zone db temperature'
-      H(35)=' '
+      H(35)=' SURTM   - measured surface temperature'
       H(36)=' '
       H(37)='manage associations - you can add and delete associations'
       H(38)='  that have been previously defined. Note this does not'
@@ -2351,6 +2344,21 @@ C Measured db T (probably associated with a zone).
             IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 354
             write(DBZN(ITE),'(a)') zname(IC)(1:12)
             DBSN(ITE)='ALL' 
+          elseif(TTYPE(it)(1:5).eq.'SURTM')then
+
+C Measured surface T (associated with a zone and up to 6 surfaces).
+            IC=-1
+ 355        izdef=0
+            call askzone(ic,izdef,'Related zone for measured surf T?',
+     &        'Related zone','-',
+     &        'Measured surface T within which zone?',ier)
+            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 355
+            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+            call easksur(IC,ISUR,'-',
+     &        'Select surface associated with measured temperature',
+     &        ' ',IER)
+            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 355
+            write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12) 
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            

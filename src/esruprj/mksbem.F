@@ -185,9 +185,6 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER IENTXIST
       CHARACTER entflnam*72
 
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      INTEGER IUTDF,ITDFLG,IUTDFA
-
       common/IPVF/lipvdatf
       CHARACTER*72 LIPVDATF
 
@@ -599,6 +596,7 @@ C ier is returned as non-zero if there was a problem.
 #include "geometry.h"
 #include "sbem.h"
 #include "model.h"
+C #include "tdf2.h"
 C #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -3493,26 +3491,18 @@ C required models ') which returned iuact=1.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C TDF related.
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP    
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
+      COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
 C Need to write TDF info in the cfg file. Use next common(s) for this.
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)  
       COMMON/HDAT/IHREC(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)          
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf 
       character ctldoc*248,LCTLF*72
 
-      character LTDF*72,LTDFA*72
       CHARACTER DFILE*72,LIMP*72,LEXP*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       
