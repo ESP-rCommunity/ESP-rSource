@@ -121,6 +121,10 @@ C Where ESP-r was installed (as recorded when it was compiled).
 C Radiance RIF file.
       common/radcfg/LRADCF
 
+C Temporal definitions.
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFT/LTDF,LTDFA
+
 C IPV description via ipvdata.h.
       common/IPVF/lipvdatf
 
@@ -155,6 +159,7 @@ C Name of current application
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,isdok,Vldtng,changedit
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
@@ -167,8 +172,8 @@ C      character outs248*248
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
-      character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72
-      character journcmd*20,jfile*72,tfile*72,cjfile*72
+      character ctldoc*248,lctlf*72,ETEXT*82,lradcf*72,LTDFA*72
+      character journcmd*20,jfile*72,tfile*72,cjfile*72,LTDF*72 
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
@@ -224,13 +229,9 @@ C focus and actions arguments).
       issave=2
       isavgh=0
       NSIGFIG=3
-
-C Initial assumptions about databases (prior to configuration file scan
-C that the default database files will be defined explicitly).
       matver=0.0   ! initial assumption of binary materials database
-      ipathapres=0; ipathoptdb=0; ipathpcdb=0; ipathprodb=0
-      ipathmat=0; ipathmul=0; ipathclim=0; ipathsbem=0; ipathmsc=0
-      
+      newgeo=.false.  ! assume older format geometry.
+
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -820,7 +821,12 @@ C Pass information to C library code if running in graphic mode.
             endif
           else
             itru=iuout
-            call georead(IFIL+1,LGEOM(index),index,1,iuout,IER)
+            call eclose(gversion(index),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(index),index,1,iuout,IER)
+            else
+              call egomin(IFIL+1,LGEOM(index),index,1,ITRC,iuout,IER)
+            endif
             IF(IER.NE.0)goto 3
 
             CALL EDZONE(ITRC,index,IER)
@@ -1421,11 +1427,9 @@ C ********** simula
 C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
-#include "model.h"
 #include "esprdbfile.h"
 #include "sbem.h"
 #include "ipvdata.h"
-#include "tdf2.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
       
@@ -1443,6 +1447,9 @@ C to include the path and create a string to drive the modules.
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Temporal header (to get its time frequency)
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
+     &             LSTREC,NDBSTP,NUWPR
       common/CFGV/icfgv
       common/IPVF/lipvdatf
 
@@ -3259,8 +3266,10 @@ C to include the path and create a string to drive the modules.
       logical tmcok,shdok
       integer icple,iscple  ! coupled zone and surface for tmc check.
       integer itmc1,itmc2   ! non-zero if surface a tmc
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       asked=.false.
+      newgeo=.false.  ! assume older format geometry.
 
       IUO=IFIL+1
       if(nsset.gt.0)isset=1
@@ -3479,7 +3488,12 @@ C Check contiguity.
       ICC=0
       prob=.false.
       do 287 IZ=1,NCOMP
-        call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
+        call eclose(gversion(iz),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
+        else
+          call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+        endif
         do 289 IS=1,NSUR
           ICC=ICC+1
           CALL ZSID(IZ,IS,ZSDES,ZSDESC,ZSDESS)
@@ -3644,7 +3658,12 @@ C Do cursory check to see if the file is sorted.
           else
 
 C Zone construction file exists so attempt to scan it.
-            call georead(IFIL+1,LGEOM(I),I,0,iuout,IER)
+            call eclose(gversion(i),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(I),I,0,iuout,IER)
+            else
+              call egomin(IFIL+1,LGEOM(I),I,0,0,iuout,IER)
+            endif
             CALL ECONST(LTHRM(I),IFIL+1,I,0,IUOUT,IER)
             if(ier.ne.0)then
               if(lh.lt.60)then
@@ -4469,7 +4488,11 @@ C geometry and attribution
             ICOMP=ivals(IC)
             EXT='.geo'
             call eclose(gversion(icomp),1.1,0.01,newgeo)
-            call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
+            if(newgeo)then
+              call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
+            else
+              call egomin(IUF,LGEOM(ICOMP),ICOMP,1,0,iuout,IER)
+            endif
             CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
             LGEOM(ICOMP)=NNAME
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -5137,7 +5160,11 @@ C Check if geometry file has already been updated.
             if(.NOT.donegeo)then
               EXT='.geo'
               call eclose(gversion(icomp),1.1,0.01,newgeo)
-              call georead(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRU,IER)
+              if(newgeo)then
+                call georead(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRU,IER)
+              else
+                call egomin(IUNIT,LGEOM(ICOMP),ICOMP,IR,ITRC,ITRU,IER)
+              endif
               CALL FNCNGR(LGEOM(ICOMP),APE,EXT,NNAME)
               LGEOM(ICOMP)=NNAME
               if(igupgrade.eq.2.and.(.NOT.newgeo))then

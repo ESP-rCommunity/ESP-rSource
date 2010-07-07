@@ -23,7 +23,7 @@ C an AutoCad DXF file or viewer file.
 C e2thf takes an esp-r problem definition and creates a
 C THF (THINGS) file for use in MicroGDS.
 
-      subroutine e2vdxf(incobs,ichop)
+      subroutine e2vdxf(itrc,incobs,ichop)
 #include "building.h"
 #include "model.h"
 
@@ -47,12 +47,14 @@ C geometry.h provides commons G0/G2/precz/GS5.
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head
       logical doobs
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       character oformat*24,head*4,ZN*12,outs*124
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
 
 C Setup standard assumptions.
+      newgeo=.false.  ! assume older format geometry.
       if(incobs.eq.1)doobs=.true.
       IFIL=11
 
@@ -74,7 +76,12 @@ C Clear properties.
 C Read in the zone geometry.
           WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
           CALL edisp(iuout,outs)
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          call eclose(gversion(newfoc),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
           call strup(zname(newfoc),ZN)
 
 C Write surface information to the viewer file. First invert edges.
@@ -142,7 +149,12 @@ C Write obstructions to output file.
           ENDIF
 
 C Free the viewer file and reread the geometry file.
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          call eclose(gversion(newfoc),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
    4    continue
 
         CALL ERPFREE(ioout,ISTAT)
@@ -295,7 +307,12 @@ C Clear properties.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(mz)
         CALL edisp(iuout,outs)
-        call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
+        call eclose(gversion(mz),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        endif
         call strup(zname(mz),ZN)
 
 C Read in util & obstruction file.
@@ -338,7 +355,12 @@ C << what about 6 sided obstruction? >>
   43      continue
 
 C Reread in the geometry file.
-          call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
+          call eclose(gversion(mz),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+          endif
         endif
   61    continue
 
@@ -455,9 +477,11 @@ C THF (THINGS) file for use in MicroGDS.
       character oformat*24,head*4,ZN*12,outs*124
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
+      logical newgeo  ! to use for testing if new/old geometry file.
       integer llbm    ! length of block material
 
 C Setup standard assumptions.
+      newgeo=.false.  ! assume older format geometry.
       if(incobs.eq.1)doobs=.true.
       IFIL=11
 
@@ -479,7 +503,12 @@ C Clear properties.
 C Read in the zone geometry.
           WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
           CALL edisp(iuout,outs)
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          call eclose(gversion(newfoc),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
           call strup(zname(newfoc),ZN)
 
 C Write surface information to the THF file.
@@ -530,7 +559,12 @@ C Write obstruction information as a clump of surfaces.
 C << Still to do - read and convert any ground topology. >>
 
 C Free the THF file and reread in the geometry file.
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          call eclose(gversion(newfoc),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
    4    continue
 
         CALL ERPFREE(ioout,ISTAT)

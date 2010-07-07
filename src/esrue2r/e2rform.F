@@ -315,6 +315,7 @@ C geometry.h provides commons G0 and G2.
 
       LOGICAL OK,DOK,XST,fict,MODIFY,MODLEN,MODBND
       logical skydone,outdone,indone,misdone,vewdone,glzdone
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(17)
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
@@ -326,6 +327,7 @@ C geometry.h provides commons G0 and G2.
       ITA1 = IFIL+6
       outdone=.false.
       fict=.false.
+      newgeo=.false.  ! assume older format geometry.
       iscope=2
       ier=0
 C      GTGEOM = 'UNKNOWN'
@@ -444,7 +446,12 @@ C Write out materials, composition & glazing files.
 
 C Re-Read in the initial zone geometry file into common & restore
 C the image.
-        call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+        endif
         nzg=1
         nznog(1)=ICOMP
         MODIFY=.TRUE.
@@ -590,6 +597,7 @@ C TMC data
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ZSN(MS),iskip(MMLC),VP(3),EQN(4)
       DIMENSION SVALS(3),TVALS(3),TFORM(3)
@@ -619,6 +627,7 @@ C TMC data
       nobs=0
       ISTAT=0
       IER=0
+      newgeo=.false.  ! assume older format geometry.
       lnrp=lnblnk(runpath)
 
 C Find version of materials database.
@@ -855,7 +864,12 @@ C Aternative glazing descriptions file.
 
 C Check for blind shutter control.
             do 100 newfoc=1,ncomp
-              call georead(ita3,LGEOM(newfoc),newfoc,1,ITRU,IER)
+              call eclose(gversion(newfoc),1.1,0.01,newgeo)
+              if(newgeo)then
+                call georead(ita3,LGEOM(newfoc),newfoc,1,ITRU,IER)
+              else
+                call egomin(ita3,LGEOM(newfoc),newfoc,1,ITRC,ITRU,IER)
+              endif
               do 111 isf=1,nsur
                ICN=IZSTOCN(newfoc,isf)
                if(ITMCFL(newfoc,isf).gt.0.AND.
@@ -1042,11 +1056,20 @@ C Clear properties.
 
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
+        call eclose(gversion(newfoc),1.1,0.01,newgeo)
         if(ACT.eq.'i')then
           call usrmsg(' ',outs,'-')
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
+          endif
         else
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          if(newgeo)then
+            call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+          else
+            call egomin(ITA1,LGEOM(newfoc),newfoc,1,0,IUOUT,IER)
+          endif
         endif
         call FINDFIL(LTHRM(newfoc),XST)
         if(XST)then

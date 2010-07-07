@@ -59,6 +59,8 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,SAVEOK
       LOGICAL ZONOK,XST,MSTROK,MSTRZN
+      logical newgeo  ! to use for testing if new/old geometry file.
+
       CHARACTER ITEM(13)*34,ITEMC(MS)*20,FLTYP*25
       CHARACTER*12 ZONENM
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -71,6 +73,7 @@ C geometry.h provides commons G0/G2/c20/precz.
       IZ=0
       ZONOK=.FALSE.
       SAVEOK=.FALSE.
+      newgeo=.false.  ! assume older format geometry.
 
    10 INO=-3
       IF(ZONOK)THEN
@@ -134,7 +137,12 @@ C Show the zone selection menu.
         IZ2=IVALZ(1)
         IF(IZ2.GE.1.AND.IZ2.LE.NCOMP)THEN
           IZ=IZ2
-          call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
+          call eclose(gversion(IZ),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUNIT,LGEOM(IZ),IZ,1,IUOUT,IER)
+          else
+            call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,IUOUT,IER)
+          endif
           IF(IER.EQ.0)CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,IUOUT,IER)
           IF(IER.EQ.0)THEN
             ZONOK=.TRUE.

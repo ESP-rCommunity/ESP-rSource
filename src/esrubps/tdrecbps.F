@@ -42,6 +42,12 @@ C day and VAL(2...) are timestep fields.
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      common/tdset/itdyear,itdbdoy,itdedoy
+      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
+     &             LSTREC,NDBSTP,NUWPR
+      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
+     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
+      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       COMMON/TDATPREV/TABUPREV(MTABC)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -233,6 +239,12 @@ C day and VAL(2...) are timestep fields.
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      common/tdset/itdyear,itdbdoy,itdedoy
+      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
+     &             LSTREC,NDBSTP,NUWPR
+      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
+     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
+      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       COMMON/TDATPREV/TABUPREV(MTABC)
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh

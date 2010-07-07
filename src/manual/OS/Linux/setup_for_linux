@@ -1,13 +1,13 @@
 #!/bin/bash -f
 
 echo " "
-echo "This script installs an ESP-r 64 bit distribution on a Linux"
+echo "This script installs an ESP-r distribution on a Linux"
 echo "computer including executables, example models and "
 echo "standard databases."
 echo " "
 echo "You should be root when running this installer"
 echo " "
-echo "NOTE: the installation folder is /opt/esru. IF YOU HAVE AN"
+echo "NOTE: the installation folder is /usr/esru. IF YOU HAVE AN"
 echo "OLDER ESP-r in /home/esru or /usr/esru you should"
 echo "remove it."
 echo " "
@@ -25,7 +25,7 @@ DSP3=" \n
 DSP4=" \n
  Your PATH environment variable needs to be updated. The .bash_profile\n
  file the PATH= line should include the following...\n
- :/opt/esru/bin:/opt/esru/esp-r/bin\n
+ :/usr/esru/bin:/usr/esru/esp-r/bin\n
  \n
  and if you have separately installed Radiance then be sure\n
  to define the RAYPATH environment variable and export it.\n
@@ -121,29 +121,31 @@ fi
 echo " This may take a few minutes ..."
 
 # Check that necessary folders exist.
-if [ ! -d /opt/esru ]; then
-  mkdir /opt/esru
+if [ ! -d /usr/esru ]; then
+  mkdir /usr/esru
 fi
   
-cd /opt/esru
+cd /usr/esru
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  zcat $ISD/esp-r_X11_11.9_linux_64.tar.gz | tar xf - 
+  zcat $ISD/esp-r_X11_11.6_linux.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 elif  [[ $which = 'b' ]] ; then
   echo "proceeding with the GTK version..."
   echo " Extracting GTK ESP-r distribution ..."
-  zcat $ISD/esp-r_GTK_11.9_linux_64.tar.gz | tar xf - 
+  zcat $ISD/esp-r_GTK_11.6_linux.tar.gz | tar xf - 
   echo " Extracting ESP-r distribution ...done."
 fi
 echo " "
+# echo "Creating a link to the ESP-r distribution... "
+# ln -s /opt/esru /usr/esru
 echo "Setting folder permissions... "
-chmod a+x /opt/esru
-chmod a+x /opt/esru/esp-r
-chmod a+x /opt/esru/esp-r/bin
-chmod a+r /opt/esru
-chmod a+r /opt/esru/esp-r
-chmod a+r /opt/esru/esp-r/bin
+chmod a+x /usr/esru
+chmod a+x /usr/esru/esp-r
+chmod a+x /usr/esru/esp-r/bin
+chmod a+r /usr/esru
+chmod a+r /usr/esru/esp-r
+chmod a+r /usr/esru/esp-r/bin
 
 echo "...done. "
 echo -e $DSP4

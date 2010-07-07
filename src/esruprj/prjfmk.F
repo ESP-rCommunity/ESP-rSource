@@ -211,12 +211,12 @@ C Operations file not known, allow user to give name or browse.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.2)then
           CALL EASKSCMD(LTMP,' ','Confirm zone operations file:',
-     &      'browse another',clkok,72,GFILE,'operations file',ISER,16)
+     &      'browse',clkok,72,GFILE,'operations file',ISER,10)
           if(clkok)iclkok=1   ! notice browse button
           if(iser.eq.-3)iclkok=2  ! notice cancel button
         else
           CALL EASKS2CMD(LTMP,' ','Confirm zone operations file:',
-     &      'browse another','cancel',iclkok,72,GFILE,
+     &      'browse','cancel',iclkok,72,GFILE,
      &      'operations file',IER,16)
         endif
         call usrmsg(' ',' ','-')   ! clear the display
@@ -4546,7 +4546,7 @@ C Ask for rad/ conv split.
      &        ' ',24,' 0.5  0.5  ','casual gn info',IER,26)
       K=0
       call EGETWR(HOLD,K,RAD,0.,1.0,'F','rad frac',IER)
-      CMAX=(1.00-RAD)+0.02  ! allow for small rounding errors
+      CMAX=1.00-RAD
       call EGETWR(HOLD,K,CON,0.,CMAX,'F','conv frac',IER)
       if (IER.ne.0) goto 70
       if(rad+con.lt.0.9)then

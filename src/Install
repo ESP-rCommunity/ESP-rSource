@@ -1935,12 +1935,13 @@ if [ "$install_training" = "yes" ]; then
      $CLM -mode text -file dec94_clm -act asci2bin silent dec94_clm.a >/dev/null
      cd ${SRCdir}
      echo " Done."
-     echo -n "   - Updating climate databases in validation models..."
+     echo -n "   - Updating materials and climate databases in validation models..."
      cd ${SRCdir}/validation/CEN/13791/databases
      $CLM -mode text -file Cond.clm -act asci2bin silent Cond.clm.a >/dev/null
      $CLM -mode text -file WM_A.clm -act asci2bin silent WM_A.clm.a >/dev/null
      $CLM -mode text -file WM_B.clm -act asci2bin silent WM_B.clm.a >/dev/null
      cd ${SRCdir}
+     ./bin/materials_db_conv validation/CEN/13791/databases prim.db.a prim.db >/dev/null
      echo " Done."
      echo -n "   - Copying training and validation models..."
      cp -r ${SRCdir}/training ${ESPdir}/training
@@ -1952,9 +1953,10 @@ if [ "$install_training" = "yes" ]; then
      find  ${ESPdir}/training -name "\.svn" | xargs rm -fr
      find  ${ESPdir}/validation -name "\.svn" | xargs rm -fr
      echo " Done."
-     echo -n "   - Removing binary database from training models ..."
+     echo -n "   - Removing binary materials db from training models ..."
      cd ${SRCdir}/
      rm -f training/cg_ctl/daylit_coef/cfg/dec94_clm
+     rm -f validation/CEN/13791/databases/prim.db
      rm -f validation/CEN/13791/databases/WM_A.clm
      rm -f validation/CEN/13791/databases/WM_B.clm
      rm -f validation/CEN/13791/databases/Cond.clm

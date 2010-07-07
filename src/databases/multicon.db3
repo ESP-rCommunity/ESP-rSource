@@ -164,12 +164,9 @@
    38    0.1500  concrete 150mm : Concrete high density 150mm (UK code)
   129    0.0500  Screed 50mm : Flooring screed 50mm (UK code)
 # layers  description   optics name   symmetry tag
-    8    Sol_grnd_not  OPAQ  OPAQUE        NONSYMMETRIC  
+    5    Sol_grnd_not  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
-  268    0.1500  Clay underfloor 750 mm : Clay underfloor default 750 mm
-  268    0.2000  Clay underfloor 750 mm : Clay underfloor default 750 mm
-  268    0.2000  Clay underfloor 750 mm : Clay underfloor default 750 mm
-  268    0.2000  Clay underfloor 750 mm : Clay underfloor default 750 mm
+  268    0.7500  Clay underfloor 750 mm : Clay underfloor default 750 mm
     9    0.0250  Brick slips 25 mm : Brick 25 mm (UK code)
    39    0.1000  Cast concrete 100 mm : Cast concrete 100 mm (UK code)
   289    0.1250  EPS 80mm : EPS 80mm

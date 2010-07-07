@@ -883,6 +883,7 @@ C Iskip : If = 0, then skip the list of surfaces menu
 
       LOGICAL MODIFY,MODLEN,MODBND,zbzero,context,SelSurf
       logical changedit
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       zbzero=.FALSE.
       changedit=.false.
@@ -890,7 +891,12 @@ C Iskip : If = 0, then skip the list of surfaces menu
 C Read geometry file for chosen zone.
       ITMP=IFIL+1
       itru=6
-      call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(ITMP,LGEOM(ICOMP),ICOMP,0,iuout,IER)
+      else
+        call egomin(ITMP,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+      endif
       MODIFY =.TRUE.
       MODBND =.TRUE.
       If (Icomp .eq. 1) then
@@ -1574,9 +1580,11 @@ C << Why is SDATA used? >>
       REAL LCAValue(MIMP),LCAValuP(MIMP),LCAValuS(MIMP),StepImp
       REAL LayerTot(MIMP),CompoTot(MIMP),ZoneTot(MIMP),StageTot(MIMP),
      &     WholeTot(MIMP),ProjTot(MIMP)
+      logical newgeo  ! to use for testing if new/old geometry file.
  
 
 C Initialisation
+      newgeo=.false.  ! assume older format geometry.
       do 142 I=1,MIMP
         LCAValue(I)=0.0
         LCAValuP(I)=0.0
@@ -1956,7 +1964,12 @@ C ------------------------
 C If approach is model based, read the current zone information
         IF (ICalType.EQ.1) THEN
           ICurZone=nznog(IZ)
-          call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,IER)
+          call eclose(gversion(ICurZone),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,IER)
+          else
+            call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,IER)
+          endif
           call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
           vol(ICurZone)=zvol
           context=.false.
@@ -2580,6 +2593,7 @@ C phylosophy as LCACalc
       COMMON/ZFunction/ZFun(NbSteps,MMLC,ME)
 
       logical closemat1,closemat2
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       DIMENSION ITEM(NbSteps+5)
       DIMENSION WeitLayr(ME),WtLayrDu(ME),WtLayrBu(ME),WtLayrRe(ME)
@@ -2619,6 +2633,7 @@ C Find version of materials database.
       call eclose(matver,1.2,0.01,closemat2)
 
       dupedges=.false.
+      newgeo=.false.  ! assume older format geometry.
       IV = 0
 
       LabelImp = '    GWP    |    AP     |   POCP    |   NRE   '
@@ -3095,7 +3110,14 @@ C ------------------------
 C If approach is model based, read the current zone information
           IF (ICalType.EQ.1) THEN
             ICurZone=nznog(IZ)
-            call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,IER)
+            call eclose(gversion(ICurZone),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(ICurZone),ICurZone,0,iuout,
+     &          IER)
+            else
+              call egomin(IFIL+1,LGEOM(ICurZone),ICurZone,0,0,iuout,
+     &          IER)
+            endif
             call ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
             vol(ICurZone)=zvol
             context=.false.

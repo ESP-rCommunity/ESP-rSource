@@ -1376,11 +1376,13 @@ C geometry.h provides commons G0 and G2.
       character outs*124
 
       logical XST
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       ITA1=IFIL+6
 
 C NABS = number of alternative blind states.
       NABS=0
+      newgeo=.false.  ! assume older format geometry.
 
 C Loop through zones checking if a tmc file has been referenced.
       do 10 ICOMP=1,NCOMP
@@ -1390,7 +1392,12 @@ C Rescan zone Construction and TMC file
 C (need to test blind/ shuter control flags).
           call FINDFIL(LTHRM(ICOMP),XST)
           if(XST)then
-            call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
+            call eclose(gversion(icomp),1.1,0.01,newgeo)
+            if(newgeo)then
+              call georead(ITA1,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
+            else
+              call egomin(ITA1,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
+            endif
             CALL ECONST(LTHRM(ICOMP),ITA1,ICOMP,0,IUOUT,IER)
             CALL ERTWIN(0,IUOUT,ITA1,LTWIN(ICOMP),ICOMP,IER)
           else

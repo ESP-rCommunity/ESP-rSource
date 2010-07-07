@@ -201,6 +201,15 @@ C IZSTOCN - for each zone:surface a pointer to connection index.
       COMMON/NWKSTR/NWKNAM,NWKDSC,NWKFLNAM,NWKTYPSTR(MNWKTYP)
 
 C Temporal definition commons.
+C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFT/LTDF,LTDFA
+      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
+     &             LSTREC,NDBSTP,NUWPR
+
+C ITEMSTD: Number of temporal items associated/used in this model.
+      COMMON/TDFFLG/ITEMSTD
+
 C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
@@ -436,7 +445,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER*72 FILE,LCFD
-      CHARACTER*72 LAPROB,LPNF
+      CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
       character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
@@ -473,6 +482,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character LWndSupp*72
       character HDR*12
       character ipvact*3  ! to singnal internal or external IPV file
+      logical newgeo  ! to use for testing if new/old geometry file.
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
       integer ier
@@ -482,6 +492,8 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       dimension IRVC(mcon),IRCC(365)
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
+
+      newgeo=.false.  ! assume older format geometry.
 
 C Check if running in dll mode.
       call isadll(dll)

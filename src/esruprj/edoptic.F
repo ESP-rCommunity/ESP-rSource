@@ -582,6 +582,7 @@ C Free the files, restore the optics db name and file unit.
 C ****** OPT2TMP(ier)
 C Copy current optical db to temporary file.
       SUBROUTINE OPT2TMP(IER)
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       CHARACTER topt*72,SOPT*12,GDESCR*36
 
@@ -622,6 +623,7 @@ C EDITOPT edits one set of optical properties via common block.
       
       integer lnblnk  ! function definition
 
+      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/GOPTED/DGED(5),HGED(5),UVALED,VTRNED,NTLED,ABED(ME,5),
      &  RFED(ME),SRFED,SABED
@@ -1571,6 +1573,7 @@ C to 20 for the present.
 C      integer lnblnk  ! function definition
 
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
+      common/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND

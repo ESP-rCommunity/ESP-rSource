@@ -470,6 +470,7 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
+      COMMON/OUTIN/IUOUT,IUIN
 
 C The electrical nodes
       COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),
@@ -666,6 +667,7 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
+      COMMON/OUTIN/IUOUT,IUIN
 
 C The connected hybrid components
       COMMON/HYBE/NHYBCOM,HYBCOMNO(MHYCOM),HYCOMTYP(MHYCOM),
@@ -851,6 +853,7 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
+      COMMON/OUTIN/IUOUT,IUIN
 
 C The connected power only components
       COMMON/POWC/NPOWCOM,POWCOMNO(MPOWCOM),POWCOMID(MPOWCOM),
@@ -1039,6 +1042,7 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
+      COMMON/OUTIN/IUOUT,IUIN
 
 C The connecting components
       COMMON/CONCOM/NCONECOM,CONECOMNO(MCONECOM),CONECOMID(MCONECOM),
@@ -1227,6 +1231,7 @@ C of which is selected
 
 C Commons
       COMMON/POPHELP/H(60)
+      COMMON/OUTIN/IUOUT,IUIN
 
 C The electrical network topology
       COMMON/ECONN/NECON,ECONO(MECON),CONPHTYP(MECON),

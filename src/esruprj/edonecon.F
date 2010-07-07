@@ -196,7 +196,12 @@ C Remember current surface attribute.
 C Display the reference zone (if type 3 then display both).
 C Remember the topology attributes for reference zone.
         IUO=IFIL+1
-        call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
+        call eclose(gversion(IC1(IFOC)),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
+        else
+          call egomin(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
+        endif
         do 322 IJ=1,NSUR
           ICN=IZSTOCN(IC1(IFOC),IJ)
           write(TOTHER(IJ,1),'(a)') SSOTHER(ICN,1)
@@ -581,7 +586,12 @@ C Update zone geometry if attributes have changed.
         if(browse)goto 3
         if(UPDGEO)then
           call usrmsg(' Updating problem...',' ','-')
-          call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
+          call eclose(gversion(IC1(IFOC)),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,iuout,IER)
+          else
+            call egomin(IUO,LGEOM(IC1(IFOC)),IC1(IFOC),0,0,iuout,IER)
+          endif
           do 323 IJ=1,NSUR
             SOTHER(IJ,1)=TOTHER(IJ,1)
             SOTHER(IJ,2)=TOTHER(IJ,2)
@@ -610,7 +620,12 @@ C in the zone pointed to by IC2, update SOTHER (of index IE2 in the
 C other zone) and write out that zones geometry.
         if(updoth)then
           call usrmsg(' Updating other side...',' ','-')
-          call georead(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,iuout,IER)
+          call eclose(gversion(IC2(IFOC)),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,iuout,IER)
+          else
+            call egomin(IUO,LGEOM(IC2(IFOC)),IC2(IFOC),0,0,iuout,IER)
+          endif
 
           ICN=IZSTOCN(IC2(IFOC),IE2(IFOC))
           SSOTHER(ICN,1)='ANOTHER'

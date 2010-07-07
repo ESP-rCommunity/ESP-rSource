@@ -74,6 +74,7 @@ C Passed parameter.
       character SSPARENT*12,ETEXT*82
       CHARACTER temp*16,DESCRC*25,stemp*13,OUTSTR*124,temp20*21
       CHARACTER MLCN*12,t13*13
+      logical newgeo  ! to use for testing if new/old geometry file.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
@@ -88,6 +89,7 @@ C If not in graphic mode return.
       if(MMOD.lt.8)return
 
 C If libraries and monitor support greyscale remember this.
+      newgeo=.false.  ! assume older format geometry.
       greyok=.false.
       if(nifgrey.gt.4)then
         greyok=.true.
@@ -164,7 +166,12 @@ C the obstruction description into a gen body and plot them out
 C before going on to the surfaces in the zone itself.
       IF(ITDSP.EQ.0.or.ITDSP.eq.5)CALL DRAWOBS(nznog(IZ),ier)
       IF(nznog(IZ).NE.izgfoc)THEN
-        call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,IUOUT,IER)
+        call eclose(gversion(nznog(IZ)),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,IUOUT,IER)
+        else
+          call egomin(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,0,IUOUT,IER)
+        endif
       ELSEIF(nznog(IZ).EQ.izgfoc)THEN
         CALL ERCZONE(nznog(IZ))
       ENDIF

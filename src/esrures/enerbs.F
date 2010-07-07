@@ -58,6 +58,7 @@ C =2 with more than 3 day types
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER TSTR*10,CSTR*25
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
@@ -66,8 +67,14 @@ C =2 with more than 3 day types
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,outs*124
 
 C Read in the zone geometry data.
+      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
-      call georead(IUNIT,LGEOM(IZONE),IZONE,0,IUOUT,IER)
+      call eclose(gversion(izone),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUNIT,LGEOM(IZONE),IZONE,0,IUOUT,IER)
+      else
+        call egomin(IUNIT,LGEOM(IZONE),IZONE,0,0,IUOUT,IER)
+      endif
 
 C Read (silently) construction file to get surface emissivities.
       CALL ECONST(LTHRM(IZONE),IUNIT,IZONE,0,IUOUT,IER)

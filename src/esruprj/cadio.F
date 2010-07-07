@@ -1533,6 +1533,7 @@ C ICLIM,LCLIM (for climate file)
       common/radcfg/LRADCF
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      COMMON/TDFFT/LTDF,ltdfa
       common/GTFIL/GTGEOM
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/rcmd/LCMDFL
@@ -1591,7 +1592,7 @@ C The string buffer doit is only used within ifdef code.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character tp*32,tr*32
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
-      character GTGEOM*72,lipvdatf*72
+      character LTDF*72,LTDFA*72,GTGEOM*72,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
       character docpth*24,tmppth*24,dbspth*24,LTMPFL*72
       character LF*72,LFL*144

@@ -139,7 +139,6 @@ C a subroutine rather than as an application.
       subroutine SubBps
 
 #include "building.h"
-#include "model.h"
 #include "plant.h"
 #include "uncertainty.h"
 #include "net_flow.h"
@@ -244,6 +243,8 @@ C Project journal on/off, unit number, cmd, file name.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/CHANNL/NOCHAN
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFT/LTDF,LTDFA
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -296,7 +297,7 @@ C      logical gopher  ! not references
       character RFILE*72,PFILE*72,MSTRFILE*72
       character LAFRES*72
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
-      character dllsubr*12,dllmesg*124
+      character dllsubr*12,dllmesg*124,LTDF*72,LTDFA*72
       character t16*16,outs248*248
       
 C Flags for multi-year simulation menus

@@ -383,6 +383,14 @@ C Bidirectional data - explicit definitions:
       integer IBISET_timestep !the bidirectional dataset number to use. 
                               !Use the number specified in tdf if exists. Otherwise use the 1st dataset.                 
 
+C Tdf common block to allow using vertical solar radiation data
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+
       DIMENSION VAL(MBITS+2)            
       real sumDirDiff !the sum of the direct and diffuse components for use in tdf (vertical solar)
 
@@ -1418,9 +1426,9 @@ C If IBOFOT()=2, then linear interpolation is ON - alternative values set.
             KP=NBPONT(ICOMP,I)
             IF(IANS(I).EQ.0)THEN
               IF(IBOFOT(ICOMP,I).EQ.2)THEN
-                STMIN=TMCT2(ICOMP,ITMC,IND1(I),KP)
-                STMAX=TMCT(ICOMP,ITMC,IND1(I))
-                XX1=STMIN + (STMAX - STMIN)*ECRAT(ICOMP,I)
+                TMIN=TMCT2(ICOMP,ITMC,IND1(I),KP)
+                TMAX=TMCT(ICOMP,ITMC,IND1(I))
+                XX1=TMIN + (TMAX - TMIN)*ECRAT(ICOMP,I)
               ELSEIF(IBOFOT(ICOMP,I).EQ.1)THEN
                 XX1=TMCT2(ICOMP,ITMC,IND1(I),KP)
               ELSE
@@ -1438,9 +1446,9 @@ C XX? is the direct-direct component; YY? is the direct-diffuse component
                 XX2=0
               ELSE
                 IF(IBOFOT(ICOMP,I).EQ.2)THEN
-                  STMIN=TMCT2(ICOMP,ITMC,IND2(I),KP)
-                  STMAX=TMCT(ICOMP,ITMC,IND2(I))
-                  XX2=STMIN + (STMAX - STMIN)*ECRAT(ICOMP,I)
+                  TMIN=TMCT2(ICOMP,ITMC,IND2(I),KP)
+                  TMAX=TMCT(ICOMP,ITMC,IND2(I))
+                  XX2=TMIN + (TMAX - TMIN)*ECRAT(ICOMP,I)
                 ELSEIF(IBOFOT(ICOMP,I).EQ.1)THEN
                   XX2=TMCT2(ICOMP,ITMC,IND2(I),KP)
                 ELSEIF(IBIDIR.EQ.0)THEN
@@ -1490,12 +1498,12 @@ C Now for diffuse transmitted radiation - not required for bidirectional
 C data as the diffuse transmittance is specified.
             IF(IBIDIR.EQ.0)THEN
               IF(IBOFOT(ICOMP,I).EQ.2)THEN
-                STMIN=TMCT2(ICOMP,ITMC,2,KP)
-                STMAX=TMCT(ICOMP,ITMC,2)
-                YY1=STMIN + (STMAX - STMIN)*ECRAT(ICOMP,I)
-                STMIN=TMCT2(ICOMP,ITMC,3,KP)
-                STMAX=TMCT(ICOMP,ITMC,3)
-                YY2=STMIN + (STMAX - STMIN)*ECRAT(ICOMP,I)
+                TMIN=TMCT2(ICOMP,ITMC,2,KP)
+                TMAX=TMCT(ICOMP,ITMC,2)
+                YY1=TMIN + (TMAX - TMIN)*ECRAT(ICOMP,I)
+                TMIN=TMCT2(ICOMP,ITMC,3,KP)
+                TMAX=TMCT(ICOMP,ITMC,3)
+                YY2=TMIN + (TMAX - TMIN)*ECRAT(ICOMP,I)
               ELSEIF(IBOFOT(ICOMP,I).EQ.1)THEN
                 YY1=TMCT2(ICOMP,ITMC,2,KP)
                 YY2=TMCT2(ICOMP,ITMC,3,KP)
@@ -3017,12 +3025,12 @@ C If IBOFOT()=1 the blind/shutter or If IBOFOT()=2 linear is on.
         ABTOT=ABTOT+ABF(LL)
     1 CONTINUE
       IF (IBOFOT(ICOMP,ISUR).EQ.2) THEN
-        STMIN=TMCT2(ICOMP,ITMCFL(ICOMP,ISUR),2,KP)
-        STMAX=TMCT(ICOMP,ITMCFL(ICOMP,ISUR),2)
-        XX1=STMIN + (STMAX - STMIN)*ECRAT(ICOMP,ISUR)
-        STMIN=TMCT2(ICOMP,ITMCFL(ICOMP,ISUR),3,KP)
-        STMAX=TMCT(ICOMP,ITMCFL(ICOMP,ISUR),3)
-        XX2=STMIN + (STMAX - STMIN)*ECRAT(ICOMP,ISUR)
+        TMIN=TMCT2(ICOMP,ITMCFL(ICOMP,ISUR),2,KP)
+        TMAX=TMCT(ICOMP,ITMCFL(ICOMP,ISUR),2)
+        XX1=TMIN + (TMAX - TMIN)*ECRAT(ICOMP,ISUR)
+        TMIN=TMCT2(ICOMP,ITMCFL(ICOMP,ISUR),3,KP)
+        TMAX=TMCT(ICOMP,ITMCFL(ICOMP,ISUR),3)
+        XX2=TMIN + (TMAX - TMIN)*ECRAT(ICOMP,ISUR)
       ELSEIF (IBOFOT(ICOMP,ISUR).EQ.1) THEN
         XX1=TMCT2(ICOMP,ITMCFL(ICOMP,ISUR),2,KP)
         XX2=TMCT2(ICOMP,ITMCFL(ICOMP,ISUR),3,KP)
@@ -3765,6 +3773,14 @@ C existing and new controls should be added here.
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/BTIME/BTIMEP,BTIMEF
+
+C Tdf common block to allow using different bidirectional datasets
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
 
       COMMON/trc/itrc ! needed to recover tdf data
 

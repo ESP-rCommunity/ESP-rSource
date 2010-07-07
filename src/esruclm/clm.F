@@ -486,7 +486,7 @@ C Present the opening display and control menu.
       INO=-3
       CALL EMENU('Climate Analysis',ITEM,NITEM,INO)
       IF(INO.EQ.NITEM)THEN
-        call usrmsg(' Closing climate module...',' ','P')
+        call usrmsg(' Closing clmate module...',' ','P')
         write(outs248,'(3a)')'Climate_selected',tab,
      &    LCMDFL(1:lnblnk(LCMDFL))
 

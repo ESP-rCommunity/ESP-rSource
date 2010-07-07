@@ -149,8 +149,13 @@ C << files held in memory so files can be updated without having
 C << to re-read. several steps required before this is possible.
 
               call eclose(gversion(iotherzone),1.1,0.01,newgeo)
-              call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
+              if(newgeo)then
+                call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
      &            iuout,IER)
+              else
+                call egomin(IFIL+2,LGEOM(iotherzone),iotherzone,0,0,
+     &            iuout,IER)
+              endif
 
 C Adjust the data structures.
               ICT(IXU)=-1
@@ -190,8 +195,13 @@ C be rewritten. Scan it and update ssother and then write.
      &          zname(iotherzone)(1:lnzname(iotherzone)),'...'
               call edisp(iuout,outs)
               call eclose(gversion(iotherzone),1.1,0.01,newgeo)
-              call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
+              if(newgeo)then
+                call georead(IFIL+2,LGEOM(iotherzone),iotherzone,0,
      &            iuout,IER)
+              else
+                call egomin(IFIL+2,LGEOM(iotherzone),iotherzone,0,0,
+     &            iuout,IER)
+              endif
 
 C Update IE2 and ssother third tag in the other zone.
               IE2(IXU)=IE2(IXU)-1
@@ -592,7 +602,6 @@ C Use pickssur to find up to ilimit surfaces to copy, returning
 C the selections via array ispk.
         CALL EDISP(iuout,'Please specify surface(s) to copy...')
         IS=1
-        IZ=1
         inpick=0
         if(same)then
           CALL EPMENSV
@@ -614,7 +623,12 @@ C the selections via array ispk.
 
 C Read the other zone and put selected surface data into temp storage.
         if(.NOT.same)then
-          call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
+          call eclose(gversion(IZ),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
+          else
+            call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+          endif
         endif
         npick=1
   191   continue
@@ -669,7 +683,12 @@ C blocks. Because the surface to be added is not yet in the
 C connections list find ICON future position via `one connection 
 C past the current last surface in the zone`.
         if(.NOT.same)then
-          call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,iuout,IER)
+          call eclose(gversion(icomp),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IFIL+1,LGEOM(ICOMP),ICOMP,0,iuout,IER)
+          else
+            call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,0,0,iuout,IER)
+          endif
         endif
 
 C Up the surface count.
@@ -1001,7 +1020,11 @@ C copying the next surface.
             call edisp(iuout,' getting donor zone info...')
 
             call eclose(gversion(IZ),1.1,0.01,newgeo)
-            call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
+            if(newgeo)then
+              call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
+            else
+              call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,iuout,IER)
+            endif
             write(outs,'(3a)') ' Repeat transforms for ',
      &        SNAME(IZ,ispk(npick)),' ?'
           else

@@ -1844,7 +1844,11 @@ C Read in the zone geometry.
         WRITE(outs,'(a,a)',iostat=ios,err=5)' Scanning : ',LGEOM(mz)
         CALL edisp(iuout,outs)
         call eclose(gversion(mz),1.1,0.01,newgeo)
-        call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
+        if(newgeo)then
+          call georead(ITA1,LGEOM(mz),mz,1,IUOUT,IER)
+        else
+          call egomin(ITA1,LGEOM(mz),mz,1,ITRC,IUOUT,IER)
+        endif
 
 C Loop through all vertices and find the top and bottom of the zone.
         ZMX=-1.E+7

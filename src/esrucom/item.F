@@ -28,8 +28,8 @@ C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
-      DIMENSION ISGGT(27),IVAL(27)
+      COMMON/TDFGH2/GTYPES(23),GMENUS(23)
+      DIMENSION ISGGT(26),IVAL(26)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
       CHARACTER KEY*1,ISGGT*30,FOCUS*8,h*72
@@ -85,14 +85,16 @@ C ITRU is the unit number for user output, IER=0 OK, IER=1 problem.
 C FOCUS is the generic type string, IFOC is the instance array.
 C In the case of FOCUS='ALL' IFOC is not used. 
       SUBROUTINE GENDAT(FOCUS,IFOC,FOUND,IER)
-#include "building.h"
 #include "tdf2.h"
+      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
+     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
+      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
 C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
+      COMMON/TDFGH2/GTYPES(23),GMENUS(23)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -124,7 +126,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=24
+      NITEMS=23
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data:  '
       GTYPES(2) ='CASUALT'
@@ -169,10 +171,8 @@ C Pick up the arrays used for displaying current generic items.
       GMENUS(21)='Vertical solar:'     
       GTYPES(22)='HTCLSETP'
       GMENUS(22)='H&C set points:'     
-      GTYPES(23)='DBTZNM'
+      GTYPES(23)='DBZNM'
       GMENUS(23)='Msr Dry Bulb T:'
-      GTYPES(24)='SURTM'
-      GMENUS(24)='Msr surface T: '
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -546,20 +546,6 @@ C Measured zone air temperature: one data item.
         GMF(1)='REAL,1,0.0,-49.0,49.0'
         MGMA(1)='Meas Zn DB temperature (C): '
         FOUND=.TRUE.
-        
-      ELSEIF(FOCUS(1:5).EQ.'SURTM')THEN
-
-C Measured surface temperature: one data item.
-        GAIDE   ='Measured surface temp '
-        GHELP(1)='Zone surf temperature deg C. This type used for'
-        GHELP(2)='measurements and to display.'
-        GMH='2,1,0,0,1,0,-999.0'
-        GDHDRT(1)='   time  | meas surface'
-        GDHDRT(2)='   of day| temperature '
-        GDHDRT(3)='Meas Surf temperature:'
-        GMF(1)='REAL,1,0.0,-49.0,49.0'
-        MGMA(1)='Meas surf temperature (C): '
-        FOUND=.TRUE.
 
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN
         RETURN
@@ -580,11 +566,11 @@ C            NHELP,NBITS,NSTATIC,NGMAT,NGMAR,NGMAI,GERR
 C        GMH='2,2,8,1,7,2,-999.0'
           K=0
           CALL EGETWI(GMH,K,NHELP,0,MHEL,'F','help',IER)
-          CALL EGETWI(GMH,K,NTBITS(IFOC),1,MBITS,'F','total bits',IER)
-          CALL EGETWI(GMH,K,NTSTAT(IFOC),0,MGAR,'F','nb of stat',IER)
-          CALL EGETWI(GMH,K,NTMAT(IFOC),0,MGAT,'F','nb tex flds',IER)
-          CALL EGETWI(GMH,K,NTMAR(IFOC),0,MGAR,'F','nb real flds',IER)
-          CALL EGETWI(GMH,K,NTMAI(IFOC),0,MGAI,'F','nb int flds',IER)
+          CALL EGETWI(GMH,K,NTBITS(IFOC),1,MBITS,'F','bits',IER)
+          CALL EGETWI(GMH,K,NTSTAT(IFOC),0,MGAR,'F','nstat',IER)
+          CALL EGETWI(GMH,K,NTMAT(IFOC),0,MGAT,'F','tx fld',IER)
+          CALL EGETWI(GMH,K,NTMAR(IFOC),0,MGAR,'F','rl fld',IER)
+          CALL EGETWI(GMH,K,NTMAI(IFOC),0,MGAI,'F','in fld',IER)
 
 C Loop through the field definitions (in GMF) to get patterns.
 C IEFLDS is the total number of fields in this instance.
@@ -625,7 +611,6 @@ C Strip from typical string.  GMF(?)='TEXT,4,1
 C ******* EXGMAT
 C Extract text alternatives from gmat in the string array salt.
       subroutine exgmat(ia,SALT,ier)
-#include "building.h"
 #include "tdf2.h"
       integer iCountWords
 

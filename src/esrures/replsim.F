@@ -31,7 +31,7 @@ C MZINPT code in espbps/input.f.
       SUBROUTINE MOGCFG
 #include "building.h"
 #include "model.h"
-C #include "geometry.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "esprdbfile.h"
 
@@ -52,17 +52,23 @@ C =2 with more than 3 day types
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/recver/izver,ipver,iever
 
-      CHARACTER*72 LCFGF,path
+C Temporal definition commons.
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFT/LTDF,LTDFA
+
+      CHARACTER*72 LCFGF,path,LTDF,LTDFA
       character longtmp*144
       CHARACTER MODE*4,OUTSTR*124,H*72,LCTLF*72,CTLDOC*248
       character cfgroot*24,outs*124
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
+      logical newgeo  ! to use for testing if new/old geometry file.
 
 C The common code method of reading in a system configuration file
 C uses the same common blocks as MOINIT so there is no convenient way
 C of checking that they are the same. The header does not contain
 C the UTILITY file name etc. so must read in the system configuration
 C file here.
+      newgeo=.false.  ! assume older format geometry.
  289  IAPROB=IFIL+2
       IFCFG=IFIL+1
       CALL ERPFREE(IFCFG,ISTAT)
@@ -120,7 +126,12 @@ C if izver >=4 the zone operation file is not needed.
       call usrmsg(' ',' Checking existence of descriptive files...','-')
       DO 30 J=1,NCOMP
         IUNIT=IFIL+1
-        call georead(IUNIT,LGEOM(J),J,1,IUOUT,IER)
+        call eclose(gversion(J),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUNIT,LGEOM(J),J,1,IUOUT,IER)
+        else
+          call egomin(IUNIT,LGEOM(J),J,1,0,IUOUT,IER)
+        endif
         if(izver.eq.4)then
           continue
         else

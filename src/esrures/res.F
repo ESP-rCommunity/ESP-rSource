@@ -54,7 +54,6 @@ C           - Principle use is for function button facility on workstations.
 C For operational details refer to the ESP-r program user's manual.
       program res
 #include "building.h"
-#include "model.h"
 #include "esprdbfile.h"
 #include "material.h"
 C esprdbfile.h supplies the following:
@@ -116,6 +115,8 @@ C CFD commons.
 
 C Flags for generic data retrieval routines:
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
+      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
+      COMMON/TDFFT/LTDF,LTDFA
 
 C Optional title for graph and up to 5 other labels and their positions.
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
@@ -153,7 +154,7 @@ C IEEE callback (Solaris)
       character cfgroot*24,fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character bact*4,pifltog*4,lpifl*72
-      character graftitle*64,grlbl*24
+      character graftitle*64,grlbl*24,LTDF*72,LTDFA*72
       character firstbit*72,secondbit*72
       character longtmp*144
 

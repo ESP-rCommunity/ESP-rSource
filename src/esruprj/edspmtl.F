@@ -343,7 +343,7 @@ C Data items.
 #include "net_flow.h"
 #include "building.h"
 #include "model.h"
-C #include "geometry.h"
+#include "geometry.h"
 #include "power.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -395,6 +395,7 @@ C sstr in spdesc.
       logical ok,dok, SPREPT
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL MODIFY,MODLEN,MODBND
+      logical newgeo  ! to use for testing if new/old geometry file.
       integer header,footer
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
       CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
@@ -420,6 +421,7 @@ C with ier=1.
 
 C Set the special components reporting variable
       SPREPT=.FALSE.
+      newgeo=.false.  ! assume older format geometry.
 
 C Set the number of special maperials
       ispmn=ispm
@@ -635,7 +637,12 @@ c      ISO=ispmloc(IVAL,2)
       CALL ASKZONE(IZ,0,OUTS,'Select zone','-','spm locate',IER)
       call usrmsg(' ',' ','-')
       if(IZ.eq.0) return
-      call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+      call eclose(gversion(IZ),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+      else
+        call egomin(IFIL+1,LGEOM(IZ),IZ,1,0,iuout,IER)
+      endif
 
 C << rewrite logic to use G7 common rather than call zinfo >>
 
@@ -684,7 +691,12 @@ C Edit item identified by KEYIND. Recover the related zone.
 c      CALL KEYIND(MVERT,IVERT,IFOC,IO)
 c      IVAL=IFOC
 
-      call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+      call eclose(gversion(IZ),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+      else
+        call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+      endif
       CALL SURADJ(IZ,ISO,IE,TMP,IZC,ISC,IC,DESCRC)
 
       MODIFY=.TRUE.
@@ -865,7 +877,12 @@ C For ducted wind turbine - select the position of the DWT outlet
         CALL ASKZONE(IZ,0,OUTS,'Select zone','-','spm locate',IER)
         call usrmsg(' ',' ','-')
         if(IZ.eq.0) return
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+        else
+          call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        endif
         CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 C General image option flags.
         ITDSP=1
@@ -899,7 +916,12 @@ C General image option flags.
         CALL EPMENRC
 
 C Recover the related zone.
-        call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+        call eclose(gversion(IZ),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
+        else
+          call egomin(IFIL+1,LGEOM(IZ),IZ,1,ITRC,iuout,IER)
+        endif
         CALL SURADJ(IZ,ISO,IE,TMP,IZC,ISC,IC,DESCRC)
 
         MODIFY=.TRUE.

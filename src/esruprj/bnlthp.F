@@ -101,6 +101,7 @@ C geometry.h provides commons G0/G2/precz.
       DIMENSION IVAL2(4),IVAL3(MCOM),IVAL4(MS),IVAL5(ME)
       LOGICAL INTHPS,INTHPZ
       LOGICAL OK,DOK,SAVEOK,XST
+      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER ITEM(16)*35,ITEM2(4)*25,LNLTHP*72,H*72
       CHARACTER*20 ITEM3(MCOM),ITEM4(MS),ITEM5(ME)
@@ -110,10 +111,16 @@ C geometry.h provides commons G0/G2/precz.
       character ltmp*72
 
 C Read the complete building thermal and geometical data.
+      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       SAVEOK=.FALSE.
       DO 5 ICOMP=1,NCOMP
-        call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
+        call eclose(gversion(icomp),1.1,0.01,newgeo)
+        if(newgeo)then
+          call georead(IUNIT,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
+        else
+          call egomin(IUNIT,LGEOM(ICOMP),ICOMP,1,0,IUOUT,IER)
+        endif
         IF(IER.NE.0)RETURN
         CALL ECONST(LTHRM(ICOMP),IUNIT,ICOMP,0,IUOUT,IER)
         IF(IER.NE.0)RETURN
