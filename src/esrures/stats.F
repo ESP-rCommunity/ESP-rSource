@@ -2235,8 +2235,6 @@ C << file does not need to be scanned to get the surface emissivity.
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
@@ -2250,8 +2248,6 @@ C =2 with more than 3 day types
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*13 LABELS(13)
       CHARACTER*5 LABSurf(2)
       character outs*124,lodlabel*6,act*1,prompt*124

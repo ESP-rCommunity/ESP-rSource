@@ -45,8 +45,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/pophelp/h(60)
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -58,8 +56,6 @@ C LPRFDB,IPRODB (for event profile database)
       dimension IVALB(MB)
       CHARACTER*33 VERT(35)
       character*32 PICK(MB)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER KEY*1,H*72,HOLD*24
       character blkroot*8,mat*12,tbn*12
       character holds*36

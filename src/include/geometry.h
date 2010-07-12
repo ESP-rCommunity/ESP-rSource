@@ -95,30 +95,17 @@ C to accumulate information prior to the generation of the connection list.
       common/metageo/isznbedges(MCOM,MS),iszlist(MCOM,MS,MV),
      &               szcoords(MCOM,MTV,3)
 
-
-C The following section will hold derived data such as volume and surface
+C The following section holds derived data such as volume and surface
 C areas which are of general interest to many subroutines.
-C vol   - zone bounded volume (m^3)
-C zonetotsurfacearea - area (m2) of surfaces associated with each zone.
-      real vol,zonetotsurfacearea
+      real vol                ! zone bounded volume (m^3)
+      real zonetotsurfacearea ! area (m2) of surfaces associated with each zone
       common/prec2/vol(MCOM),zonetotsurfacearea(MCOM)
 
-      real ssna    ! surface area of each polygon
-      real sspazi  ! plane azimuth angle (degrees 0=north, 90=west)
-      real sspelv  ! plane elevation angle (degrees 0=wall, 90=ceiling -90=floor
-      real ssperim ! perimeter of each surface (m).
-      real ssureqn ! equation of each polygon A*X + B*Y + C*Z = D
-      real ssurcog ! vertex weighted COG of polygon,
-      real ssurvn  ! unit normal vector from COG of polygon.
-      common/g7/ssna(MCON),sspazi(MCON),sspelv(MCON),ssperim(MCON),
-     &          ssureqn(MCON,4),ssurcog(MCON,3),ssurvn(MCON,3)
-
-C zname (12 char) - the zone name.
-C zedsc (64 char) - zone notes.
-C lnzname,lnzdesc - length of strings.
-      character zname*12,zdesc*64
+      character zname*12  ! the zone name
+      character zdesc*64  ! zone notes
       COMMON/precz/zname(MCOM),zdesc(MCOM)
-      integer lnzname,lnzdesc
+
+      integer lnzname,lnzdesc ! length of zname and zdesc strings
       common/preczln/lnzname(MCOM),lnzdesc(MCOM)
 
 C Obstruction block commons (whole model)
@@ -151,5 +138,55 @@ C LNBLOCKNAME,LNBLOCKMAT - length of strings.
       common/GS8/BLOCKNAME(MCOM,MB),BLOCKMAT(MCOM,MB),BLOCKTYP(MCOM,MB)
       integer LNBLOCKNAME,LNBLOCKMAT
       common/GS8LN/LNBLOCKNAME(MCOM,MB),LNBLOCKMAT(MCOM,MB)
+
+C The following section hold arrays associated with each zone connection
+C in the model. These data structures are typically used when the model
+C composition is fixed (surfaces are not being added or subtracted) and
+C all surfaces in the model need to be accessed.
+
+C Surface attributes:
+      character SSNAME*12  ! surface name attribute (see also SNAME)
+      character SSOTF*32   ! indicates OPAQUE or optical property name (see SOFT).
+      character SSVFC*4    ! indicates whether the surface is to be counted
+                           ! as a FLOR (face up), VERT (wall), CEIL (face down),
+                           ! SLOP (not vertical) or UNKN (not yet defined) 
+                           ! (see also SVFC). 
+      character SSMLCN*32  ! surface construction attribute currently only
+                           ! only the first 12 char are used. (see also SMLCN)
+      character SSOTHER*24 ! three surface attributes for `other` side as below 
+
+C SSOTHER(i,1) = UNKNOWN indicatesthat no attribute has been set and
+C                for this case SSOTHER(i,2) and SSOTHER(i,3) are '0'
+C SSOTHER(i,1) = EXTERIOR means SSOTHER(i,2) and SSOTHER(i,3) are '0'
+C SSOTHER(i,1) = ADIABATIC means SSOTHER(i,2) and SSOTHER(i,3) are '0'
+C SSOTHER(i,1) = SIMILAR means that SSOTHER(i,2) and SSOTHER(i,3) are as IC2 & IE2
+C SSOTHER(i,1) = BASESIMP means that SSOTHER(i,2) and SSOTHER(i,3) are as IC2 & IE2
+C SSOTHER(i,1) = GROUND means that SSOTHER(i,2) and SSOTHER(i,3) are as IC2 & IE2
+C SSOTHER(i,1) = ANOTHER then SSOTHER(2) is zone index and SSOTHER(i,3) is
+C                the surface index in that zone (e.g. as IC2 and IE2).
+
+      character SSUSE*8     ! two attributes of the usage of the surface:
+
+C DOOR,CLOSED  DOOR,UNDERCUT  DOOR,OPEN  DOOR,BIDIR
+C FRAME,CLOSED FRAME,CRACK    FRAME,OPEN
+C WINDOW,CLOSED WINDOW,CRACK  WINDOW,OPEN  WINDOW,SASH  WINDOW,BIDIR
+C GRILL,SOURCE  GRILL,EXTRACT
+C FICT,CLOSED  FICT,CRACK  FICT,OPEN  FICT,BIDIREC
+C BLIND,FIXED  BLIND,MOVE (??explicit blinds)
+C otherwise  -,- )
+C see geometry.F for a full explanation). Not found in older geometry files
+      character SSPARENT*12 ! the name of the parent surface or '-'
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+
+      real ssna    ! surface area of each polygon
+      real sspazi  ! plane azimuth angle (degrees 0=north, 90=west)
+      real sspelv  ! plane elevation angle (degrees 0=wall, 90=ceiling -90=floor
+      real ssperim ! perimeter of each surface (m).
+      real ssureqn ! equation of each polygon A*X + B*Y + C*Z = D
+      real ssurcog ! vertex weighted COG of polygon,
+      real ssurvn  ! unit normal vector from COG of polygon.
+      common/g7/ssna(MCON),sspazi(MCON),sspelv(MCON),ssperim(MCON),
+     &          ssureqn(MCON,4),ssurcog(MCON,3),ssurvn(MCON,3)
 
 

@@ -346,9 +346,6 @@ C should calculate pressure coefficients.
      &              zcoab(MPCP),azim(MPCP),TYPE(MPCP),elev(MPCP)
       common/pophelp/h(60)
       common/FILEP/IFIL
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -371,8 +368,6 @@ C should calculate pressure coefficients.
       character*72 LTMP,FICOCP
       CHARACTER OUTSTR*124,RSTR*124
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16,t28*28
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION XX(MV),YY(MV),ZZ(MV)

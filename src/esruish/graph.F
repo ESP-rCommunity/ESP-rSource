@@ -196,19 +196,16 @@ C Draws the elevation of the target surface.
       subroutine facdrw(ihour,icomp,isur,nv,xmin,xmax,zmin,zmax,
      &                                                Xadd,Zadd,sca)
 #include "building.h"
+#include "geometry.h"
 
       common/contr/mon,isc(ms),iyd
       common/g1T/xft(mv),zft(mv)
       common/c24/izstocn(mcom,ms)
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
 
       dimension month(12)
       character*72 etext*72,month*3
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ipos,iupdown,isym     ! passed to etplot

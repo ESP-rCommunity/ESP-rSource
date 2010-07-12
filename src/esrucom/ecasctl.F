@@ -482,8 +482,6 @@ C ACT - 's' do not ask the user for confirmation of file write.
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
@@ -505,8 +503,6 @@ C Daylight coefficient common block data definition:
      & IDCFID(MCOM,MLCOM,MDF)
 
       character cgcdesc*64,outs*128
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER tmp*16,LCGCIN*72,ACT*1
       DIMENSION NCGTCX(MDTY)
       INTEGER ILEN,NCGTCX,LENGTHX,ITRUNCX

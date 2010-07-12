@@ -218,19 +218,16 @@ C *********************************************************************
       SUBROUTINE LCLCMP(IZ)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 
       common/pophelp/h(60)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD31/INDLCL(MS)
 
       CHARACTER KEY*1,H*72,ITEM(20)*31,STTS*13
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
 C Initialise connection menu size variables based on window size. 
 C INO is the menu position, NITEMS the current number of menu lines.
@@ -931,12 +928,11 @@ C *********************************************************************
       SUBROUTINE DFNMTR(IComp)
 #include "epara.h"
 #include "building.h"
+#include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)
@@ -944,8 +940,6 @@ C *********************************************************************
       COMMON/GRSD53/IMColS(MMTR),IMColE(MMTR)
       COMMON/GRSD54/IMLayS(MMTR),IMLayE(MMTR)
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER KEY*1,H*72,LstMtr*72,SrfNm*12
       character*38 ITEM(20)
 
