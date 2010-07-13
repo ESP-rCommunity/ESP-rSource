@@ -331,6 +331,8 @@ C Required for WATSUN-PV model
       real TRANSBB_SYS,TRANSD_SYS,REFL_SYS,CFCabs
       real TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,CFCabsV
 
+      integer iSolVis ! switch for CFC solar / visual data calculation
+	  
       logical VTSOL,vsolfl,closea,neglum
 
       logical bCloseToZero     ! Boolean used for comparison to zero
@@ -1618,12 +1620,16 @@ C layers have profile angle dependency
 
 C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
 C and absorbed fluxes in each CFC layer.
+             iSolVis=0
              call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &       tmpIBM,tmpIDF,0,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+     &        tmpIBM,tmpIDF,iSolVis,TRANSBB_SYS,TRANSD_SYS,
+     &        REFL_SYS,AbsSol)
 
 C Calculate CFC system visual beam transmitted, diffuse transmitted.
+             iSolVis=1
              call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &       tmpIBM,tmpIDF,1,TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,AbsVis)
+     &        tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
+     &        REFL_SYSV,AbsVis)
 
             ELSE     !surface is self-shaded
 
@@ -1638,12 +1644,16 @@ C each CFC layer. Incidence and profile angles set to 0 since self-shaded.
 
 C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
 C and absorbed fluxes in each CFC layer.
+             iSolVis=0
              call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &       tmpIBM,tmpIDF,0,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+     &         tmpIBM,tmpIDF,iSolVis,TRANSBB_SYS,TRANSD_SYS,
+     &         REFL_SYS,AbsSol)
 
 C Calculate CFC system visual beam transmitted, diffuse transmitted.
+             iSolVis=1
              call solar_multilayer(icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &       tmpIBM,tmpIDF,1,TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,AbsVis)
+     &        tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
+     &        REFL_SYSV,AbsVis)
 
             END IF
 
@@ -1831,8 +1841,9 @@ C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflec
 C and absorbed fluxes in each CFC layer.Here, the transmitted component is actually
 C the reflected component on the inside surface since the source is from the
 C inside.
+                iSolVis=0
                 call solar_multilayer(icomp,ks,icfcfl(icomp,ks),
-     &          temp1,temp2,temp3,X1,0,TRANSBB_SYS,TRANSD_SYS,
+     &          temp1,temp2,temp3,X1,iSolVis,TRANSBB_SYS,TRANSD_SYS,
      &          REFL_SYS,AbsSol)
 
                 QIREF=QIREF+TRANSD_SYS*PAREA    !reflected 
@@ -1913,9 +1924,10 @@ C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflec
 C and absorbed fluxes in each CFC layer.Here, the transmitted component is actually
 C the reflected component on the inside surface since the source is from the
 C inside.
+                iSolVis=0
                 call solar_multilayer(icomp,k,icfcfl(icomp,k),
-     &          temp1,temp2,temp3,X2,0,TRANSBB_SYS,TRANSD_SYS,
-     &          REFL_SYS,AbsSol)
+     &           temp1,temp2,temp3,X2,iSolVis,TRANSBB_SYS,TRANSD_SYS,
+     &           REFL_SYS,AbsSol)
 
                 QIREF=QIREF+TRANSD_SYS*SNA(ICOMP,K)         !reflected
                 q2lost(2)=q2lost(2)+REFL_SYS*SNA(ICOMP,K)   !transmitted back to ambient(reporting)
@@ -2001,9 +2013,10 @@ C Calculate CFC system solar beam transmitted, diffuse transmitted, total reflec
 C and absorbed fluxes in each CFC layer.Here, the transmitted component is actually
 C the reflected component on the inside surface since the source is from the
 C inside.
+             iSolVis=0
              call solar_multilayer(icomp,i,icfcfl(icomp,i),
-     &       temp1,temp2,temp3,RDIFR,0,TRANSBB_SYS,TRANSD_SYS,
-     &       REFL_SYS,AbsSol)
+     &        temp1,temp2,temp3,RDIFR,iSolVis,TRANSBB_SYS,TRANSD_SYS,
+     &        REFL_SYS,AbsSol)
 
              RREF=RREF+TRANSD_SYS*SNA(ICOMP,i)              !reflected
              q2lost(2)=q2lost(2)+REFL_SYS*SNA(ICOMP,i)      !transmitted back to ambient(reporting)
