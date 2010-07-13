@@ -69,6 +69,18 @@ C.....Passed variable
       integer iZone            ! Zone number
 
 C.....Common variables
+
+      common/btime/btimep,btimef
+      real btimep,btimef
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      integer IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+
+C Calender and day types
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+
+C Basic zone information
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
       integer ncon           ! number of connections 
@@ -162,6 +174,10 @@ C ICGCTL - pointer to controlled gain type.
      &     Cas_Con_dat(MCOM),   !  - Convective (W)
      &     Cas_Lat_dat(MCOM)    !  - Latent (W)
       real Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
+
+C Descriptive label for a zone load or casual gain types.
+      common/loadlabel/lodlabel(mcom,MGTY)
+      CHARACTER lodlabel*6
 
 C Average illuminance in lighting zone
       common/CFCLighting/AveLtzIllum(mcom,mlcom),Nlitz2(MCOM)
@@ -339,6 +355,10 @@ C      REAL TMA                  ! Mean air point temperature (oC)
       REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
       REAL Qm2_zone,Qm2_heat,Qm2_cool ! Total heat injection / extraction per m2 of floor area  
       INTEGER i_ZnCtl           ! Zone control flag
+
+      integer IDTY,IDAY         ! index for current day type, current day
+
+      integer IGN,IPER,iPID     ! index of gain type, casual gain period, loop index for casual gain period
 
       real TS
       DIMENSION TS(MS)  ! surface temperatures for current zone (for resultant temp calc)
@@ -595,6 +615,12 @@ C----------------------------------------------------------------------
 
       endif reset_building_totals
 
+C------------------------- current day type ---------------------------
+      IDAY=IDYP
+      IF(IHRF.EQ.1)IDAY=IDYP+1
+      IF(IDAY.GT.365)IDAY=IDAY-365
+      IDTY=ICALENDER(IDAY)
+
 C----------------------------------------------------------------------
 C.....Determine control function for current zone.
 C.....The following code should determine the zone heat injection
@@ -722,6 +748,7 @@ C-----------------------------------------------------------------------
 C.....Collect zone air-changes/hour
       fZoneInfiltrationACH = AIM2_infil_to_zones(iZone) / VOL(iZone)
      &                          * 3600.0
+
 
 C-----------------------------------------------------------------------
 C     Compute external heat loss/heat gain metrics by examining all
@@ -1203,6 +1230,58 @@ C.......Create base name for zone data output
      &              // cSep // zname(iZone)(1:lnzname(iZone))
 
         iH3K_NameLen = 3+1+lnzname(iZone)
+
+C-----------------------------*****-------------------------------------
+C       Report casual gains by type.
+C       Code logic is taken from /esrubld/casual.F
+C       Casual loads defined via .tdf are disregarded!
+C       SHOCC loads are disregarded!
+C-----------------------------*****-------------------------------------
+
+C For each casual gain type get gain for current period.
+      gain_type_loop: do IGN=1,3!MGTY
+
+C Calculate the current period id.
+        IPER=NCGPER(iZone,IDTY,IGN)
+
+        period_id_loop: do iPID=1,NCGPER(iZone,IDTY,IGN)
+          if (BTIMEF.le.TCGS(iZone,IDTY,IGN,iPID+1).and.
+     &          BTIMEF.gt.TCGS(iZone,IDTY,IGN,iPID)) then
+            IPER=iPID
+          endif
+        enddo period_id_loop
+
+C Get future casual gain values if there is periods defined.
+        if ((IPER.gt.0).and.(lodlabel(iZone,IGN)(1:1).ne.'')) then
+          call add_to_xml_reporting (
+     &      CGSENC(iZone,IDTY,IGN,IPER)*
+     &                CGCTL(iZone,2,IGN)/zbasea(iZone), ! convective
+     &      H3K_rep_NAME(1:iH3K_NameLen) 
+     &       // '/casual/' // lodlabel(iZone,IGN) // '/con',
+     &       'units', '(W/m2)',
+     &       'convective gain'
+     &    )
+          call add_to_xml_reporting (
+     &      CGSENR(iZone,IDTY,IGN,IPER)*
+     &                CGCTL(iZone,2,IGN)/zbasea(iZone), ! radiative
+     &      H3K_rep_NAME(1:iH3K_NameLen) 
+     &       // '/casual/' // lodlabel(iZone,IGN) // '/rad',
+     &       'units', '(W/m2)',
+     &       'radiative gain'
+     &    )
+          call add_to_xml_reporting (
+     &      CGLAT(iZone,IDTY,IGN,IPER)*
+     &               CGCTL(iZone,2,IGN)/zbasea(iZone),  ! latent
+     &      H3K_rep_NAME(1:iH3K_NameLen) 
+     &       // '/casual/' // lodlabel(iZone,IGN) // '/lat',
+     &       'units', '(W/m2)',
+     &       'latent gain'
+     &    )
+        endif
+      enddo gain_type_loop
+
+C-------------------------------*****----------------------------------
+
 
 C.....Lighting zone illuminance
       if (nlitz2(iZone).gt.0) then
@@ -2282,6 +2361,10 @@ C*******************************************************************************
 #include "building.h"
 #include "MultiYear_simulations.h"
 
+C Calender and day types
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+
 C.....Declare passed variables
       real     btimep, btimef   ! building present & future time (0.0->23.999..)
       integer  ihrp, ihrf       ! building present & future hour (1->24)
@@ -2298,18 +2381,26 @@ C.....Local variables
       integer idyp_adjust
       integer iCurrent_year, iStart_year
       integer iH3K_NameLen
+      integer IDTY, IDAY        ! index for current day type, current day
+
 C.....References
       integer LNBLNK            ! function returning # of non-blank characters in
                                 ! a string
       integer h3k_month         ! function returning index of current month when
                                 ! passed the current day (1.0->365.999...)
 
-C.....Set climate data output base name
+C.....Set time data output base name
       cBuildingName='bui'
 
-C.......Set base name for climate data output
+C.......Set base name for time data output
       H3K_rep_NAME = cBuildingName
       iH3K_NameLen=lnblnk(H3K_rep_NAME)
+
+C------------------------- current day type ---------------------------
+      IDAY=IDYP
+      IF(IHRF.EQ.1)IDAY=IDYP+1
+      IF(IDAY.GT.365)IDAY=IDAY-365
+      IDTY=ICALENDER(IDAY)
 
 C.....Building simulation time (present)
 C.....-> update meta-data
@@ -2423,6 +2514,13 @@ C.....Building simulation day (future) ->real number
      &         H3K_rep_NAME(1:iH3K_NameLen)//'/day/future',
      &         'units', '(day)',
      &         'Day corresponding to future simulation time row' )
+
+C.....Current building simulation daytype
+      call add_to_xml_reporting (
+     &         real(IDTY),
+     &         H3K_rep_NAME(1:iH3K_NameLen)//'/day/type',
+     &         'units', '(-)',
+     &         'Current daytype (casual gains, controls)' )
 
 C.....Building simulation timestep
       call add_to_xml_reporting (
