@@ -781,6 +781,14 @@ C the present time row surface and air point temperatures.
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/BTIME/BTIMEP,BTIMEF
 
+C Description of zone control action.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
       character outs*124
 
       B1=BB1
@@ -1054,6 +1062,10 @@ C Temperature too high: extract fixed cooling.
       B2=BB2
       B3=BB3
       GOTO 18
+
+C Save heating/cooling setpoints
+      fHeatSetpoint(iicomp) = TL
+      fCoolSetpoint(iicomp) = TU
 
    99 write(outs,98)ITYPE
    98 format(' BCL00: building control law',I3,' does not yet')
@@ -1437,7 +1449,11 @@ c      WRITE(*,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
 
 C Set QFUT for use by slave controller
       Qmst(ICF)=QFUT
-      
+
+C Update stored heating/cooling setpoints as they can have changed
+      fHeatSetpoint(iicomp) = HSP
+      fCoolSetpoint(iicomp) = CSP
+
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
@@ -1523,6 +1539,14 @@ C An exponential pre-heat (or cool) controller.
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/BTIME/BTIMEP,BTIMEF
       
+C Description of zone control action.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
       character outs*124
 
 C Fatal error test.
@@ -1643,6 +1667,10 @@ C Is this available ?
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
 
+C Save heating/cooling setpoints
+      fHeatSetpoint(iicomp) = HSP
+      fCoolSetpoint(iicomp) = CSP
+
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
@@ -1673,6 +1701,14 @@ C A fixed heat injection/extraction controller.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/PREC1/SNA(MCOM,MS)
+C Description of zone control action.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
       CHARACTER OUTS*124
 
 C Fatal error test.
@@ -1753,6 +1789,10 @@ C Trace output.
          call edisp(itu,' Leaving subroutine BCL04')
       END IF
 
+C Save heating/cooling setpoints
+      fHeatSetpoint(iicomp) = HSP
+      fCoolSetpoint(iicomp) = CSP
+
       RETURN
    99 call edisp(iuout,' BCL04: data incomplete.')
       call epwait
@@ -1780,6 +1820,14 @@ C suitable for use with controller types 0,35,36,37,38,39.
 
       COMMON/BLGPID/BPID(MCF,6),NSINCR
       
+C Description of zone control action.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
       character outs*124
 
 C Fatal error test:
@@ -2026,6 +2074,10 @@ C Convert from (/m^2) if necessary.
       TCONT=TFUT      
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
+
+C Save heating/cooling setpoints
+      fHeatSetpoint(iicomp) = HSP
+      fCoolSetpoint(iicomp) = CSP
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -2508,6 +2560,14 @@ C        =-2; cooling mode, stage 2
 C        =-3; cooling mode, stage 3
       COMMON/BCL07M/ISTG07(MCOM)
       
+C Description of zone control action.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
       character outs*124
 
       DIMENSION QH(4),QC(4)
@@ -2682,6 +2742,10 @@ C Potentially decreased cooling energy supplied.
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
 
+C Save heating/cooling setpoints
+      fHeatSetpoint(iicomp) = HSP
+      fCoolSetpoint(iicomp) = CSP
+
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) THEN
@@ -2727,6 +2791,14 @@ C with limit constraints.
       COMMON/MBINFO/ZMBI(MCOM,4)
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
       
+C Description of zone control action.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
       character outs*124
 
 C Fatal error test if there are less than 6 misecel items.
@@ -2800,6 +2872,10 @@ C << have to do with this component ??
 
 C Total mass flow rate lost from the zone (no moisture included).
       ZMBI(IICOMP,4)=ZMBI(IICOMP,4)+AFR*1.2
+
+C Save heating/cooling setpoints
+      fHeatSetpoint(iicomp) = HSP
+      fCoolSetpoint(iicomp) = CSP
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -3136,6 +3212,14 @@ C It also is used to support temporal file setpoint sensing.
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
      
+C Description of zone control action.
+      common/H3KReportsControl/bZoneHeated,   bZoneCooled,
+     &                         fHeatSetpoint, fCoolSetpoint
+C Flags indicating zone is heated, cooled.
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+C Heating and cooling setpoint (oC)
+      real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+
       character outs*248
       
       DIMENSION SNWGHT(MSEN)  
@@ -3359,6 +3443,11 @@ C Is this capacity available ?
       QMN=0
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
+
+C Save heating/cooling setpoints (name for output, actual
+C variables from controller context ...)
+      fHeatSetpoint(iicomp) = TEMPHI
+      fCoolSetpoint(iicomp) = TEMPLO
 
 C Trace output.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.

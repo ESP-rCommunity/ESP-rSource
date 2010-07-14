@@ -1253,6 +1253,30 @@ C.......Create base name for zone data output
 
         iH3K_NameLen = 3+1+lnzname(iZone)
 
+C---------------------*****---------------------------------------------
+C       Report heating and cooling setpoints if zone is controlled
+C---------------------*****---------------------------------------------
+
+      if (icascf(iZone).ne.0) then
+      ! Heating
+        call add_to_xml_reporting (
+     &    fHeatSetpoint(iZone),
+     &    H3K_rep_NAME(1:iH3K_NameLen) 
+     &     // '/ctl/heatsetpt',
+     &     'units', '(°C)',
+     &     'zone control heating setpoint'
+     &  )
+
+      ! Cooling
+        call add_to_xml_reporting (
+     &    fCoolSetpoint(iZone),
+     &    H3K_rep_NAME(1:iH3K_NameLen) 
+     &     // '/ctl/coolsetpt',
+     &     'units', '(°C)',
+     &     'zone control cooling setpoint'
+     &  )
+      endif
+
 C-----------------------------*****-------------------------------------
 C       Report casual gains by type.
 C       Code logic is taken from /esrubld/casual.F and /esrubld/blibsv.F
