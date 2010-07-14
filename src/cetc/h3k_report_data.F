@@ -152,6 +152,28 @@ C.....Surface orientation flags
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient
 
+C Temporal db commons.
+      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
+     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
+     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
+     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
+     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
+     &       IDBTZNM(MCOM)
+      integer IALLCLM,ICASUAL,IZIVENT,IRAIRVL,ISETPTT,ICTLSTA
+      integer ISKYLUX,IDBTEXT,IWINDVL,IWINDDR,IRELHUM,IDIFHSL
+      integer IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,ISKYTMP,IGLOVRT
+      integer ICASUAL3,IACTIV,IBIDIRS,IVERSOL,IHTCLSETP,IDBTZNM
+
+C Common for occupant/lighting/equipment sensible convective, sensible
+C radiant and latent W for future and present in each zone.
+      common/applyctl/ctlperocupc(MCOM,2),ctlperocupr(MCOM,2),
+     &  ctlperocupl(MCOM,2),ctlperlightc(MCOM,2),ctlperlightr(MCOM,2),
+     &  ctlperlightl(MCOM,2),ctlperequipc(MCOM,2),ctlperequipr(MCOM,2),
+     &  ctlperequipl(MCOM,2) 
+      real ctlperocupc,ctlperocupr,ctlperocupl ! occupant after control applied
+      real ctlperlightc,ctlperlightr,ctlperlightl ! lighting after control applied
+      real ctlperequipc,ctlperequipr,ctlperequipl ! equipment after control applied
+
 C Casual gain data.
 C NCGPER - number of periods for each gain (zone, day type, gain type)
 C TCGS - start time of gain (zone, day type, gain type, period)
@@ -352,13 +374,13 @@ C      REAL TMA                  ! Mean air point temperature (oC)
       real TRESL  ! Zone resultant temperature
       real YDUM   ! Dummy variable
       real trsum
-      REAL Q_zone,Q_heat,Q_cool ! Total heat injection / extraction
+      REAL Q_zone,Q_heat,Q_cool   ! Total heat injection / extraction
       REAL Qm2_zone,Qm2_heat,Qm2_cool ! Total heat injection / extraction per m2 of floor area  
-      INTEGER i_ZnCtl           ! Zone control flag
+      INTEGER i_ZnCtl             ! Zone control flag
 
-      integer IDTY,IDAY         ! index for current day type, current day
+      integer IDTY,IDAY           ! index for current day type, current day
 
-      integer IGN,IPER,iPID     ! index of gain type, casual gain period, loop index for casual gain period
+      integer IGN,IPER,iPID       ! index of gain type, casual gain period, loop index for casual gain period
 
       real TS
       DIMENSION TS(MS)  ! surface temperatures for current zone (for resultant temp calc)
@@ -1233,52 +1255,119 @@ C.......Create base name for zone data output
 
 C-----------------------------*****-------------------------------------
 C       Report casual gains by type.
-C       Code logic is taken from /esrubld/casual.F
-C       Casual loads defined via .tdf are disregarded!
-C       SHOCC loads are disregarded!
+C       Code logic is taken from /esrubld/casual.F and /esrubld/blibsv.F
+C       Code is kind of duplicated ...
+C       SHOCC loads are disregarded (?)
 C-----------------------------*****-------------------------------------
 
-C For each casual gain type get gain for current period.
-      gain_type_loop: do IGN=1,3!MGTY
-
-C Calculate the current period id.
-        IPER=NCGPER(iZone,IDTY,IGN)
-
-        period_id_loop: do iPID=1,NCGPER(iZone,IDTY,IGN)
-          if (BTIMEF.le.TCGS(iZone,IDTY,IGN,iPID+1).and.
-     &          BTIMEF.gt.TCGS(iZone,IDTY,IGN,iPID)) then
-            IPER=iPID
-          endif
-        enddo period_id_loop
-
-C Get future casual gain values if there is periods defined.
-        if ((IPER.gt.0).and.(lodlabel(iZone,IGN)(1:1).ne.'')) then
+C Check if ICASUAL(), ICASUAL3() or IACTIV() is set. If yes, 
+C write casual data. Else (casual data via .opr) check for period id
+C and if in current period write casual data
+        if (ICASUAL(iZone).ne.0 .or. ICASUAL3(iZone).ne.0 
+     &       .or. IACTIV(iZone).ne.0) then
+		! Occupants
           call add_to_xml_reporting (
-     &      CGSENC(iZone,IDTY,IGN,IPER)*
-     &                CGCTL(iZone,2,IGN)/zbasea(iZone), ! convective
+     &      ctlperocupc(iZone,1)/zbasea(iZone), ! convective
      &      H3K_rep_NAME(1:iH3K_NameLen) 
-     &       // '/casual/' // lodlabel(iZone,IGN) // '/con',
+     &       // '/casual/Occupt/con',
      &       'units', '(W/m2)',
      &       'convective gain'
      &    )
           call add_to_xml_reporting (
-     &      CGSENR(iZone,IDTY,IGN,IPER)*
-     &                CGCTL(iZone,2,IGN)/zbasea(iZone), ! radiative
+     &      ctlperocupr(iZone,1)/zbasea(iZone), ! radiative
      &      H3K_rep_NAME(1:iH3K_NameLen) 
-     &       // '/casual/' // lodlabel(iZone,IGN) // '/rad',
+     &       // '/casual/Occupt/rad',
      &       'units', '(W/m2)',
      &       'radiative gain'
      &    )
           call add_to_xml_reporting (
-     &      CGLAT(iZone,IDTY,IGN,IPER)*
-     &               CGCTL(iZone,2,IGN)/zbasea(iZone),  ! latent
+     &      ctlperocupl(iZone,1)/zbasea(iZone),  ! latent
      &      H3K_rep_NAME(1:iH3K_NameLen) 
-     &       // '/casual/' // lodlabel(iZone,IGN) // '/lat',
+     &       // '/casual/Occupt/lat',
      &       'units', '(W/m2)',
      &       'latent gain'
      &    )
-        endif
-      enddo gain_type_loop
+        ! Lights (no latent)
+          call add_to_xml_reporting (
+     &      ctlperlightc(iZone,1)/zbasea(iZone), ! convective
+     &      H3K_rep_NAME(1:iH3K_NameLen) 
+     &       // '/casual/Lights/con',
+     &       'units', '(W/m2)',
+     &       'convective gain'
+     &    )
+          call add_to_xml_reporting (
+     &      ctlperlightr(iZone,1)/zbasea(iZone), ! radiative
+     &      H3K_rep_NAME(1:iH3K_NameLen) 
+     &       // '/casual/Lights/rad',
+     &       'units', '(W/m2)',
+     &       'radiative gain'
+     &    )
+        ! Equipment (possible latent for plants etc.)
+          call add_to_xml_reporting (
+     &      ctlperequipc(iZone,1)/zbasea(iZone), ! convective
+     &      H3K_rep_NAME(1:iH3K_NameLen) 
+     &       // '/casual/Equipt/con',
+     &       'units', '(W/m2)',
+     &       'convective gain'
+     &    )
+          call add_to_xml_reporting (
+     &      ctlperequipr(iZone,1)/zbasea(iZone), ! radiative
+     &      H3K_rep_NAME(1:iH3K_NameLen) 
+     &       // '/casual/Equipt/rad',
+     &       'units', '(W/m2)',
+     &       'radiative gain'
+     &    )
+          call add_to_xml_reporting (
+     &      ctlperequipl(iZone,1)/zbasea(iZone),  ! latent
+     &      H3K_rep_NAME(1:iH3K_NameLen) 
+     &       // '/casual/Equipt/lat',
+     &       'units', '(W/m2)',
+     &       'latent gain'
+     &    )
+
+      else ! data in operations file
+C     For each casual gain type get gain for current period.
+        gain_type_loop: do IGN=1,3!MGTY
+
+C Calculate the current period id.
+          IPER=NCGPER(iZone,IDTY,IGN)
+
+          period_id_loop: do iPID=1,NCGPER(iZone,IDTY,IGN)
+            if (BTIMEF.le.TCGS(iZone,IDTY,IGN,iPID+1).and.
+     &            BTIMEF.gt.TCGS(iZone,IDTY,IGN,iPID)) then
+              IPER=iPID
+            endif
+          enddo period_id_loop
+
+C Get future casual gain values if there is periods defined.
+          if ((IPER.gt.0).and.(lodlabel(iZone,IGN)(1:1).ne.'')) then
+            call add_to_xml_reporting (
+     &        CGSENC(iZone,IDTY,IGN,IPER)*
+     &                  CGCTL(iZone,2,IGN)/zbasea(iZone), ! convective
+     &        H3K_rep_NAME(1:iH3K_NameLen) 
+     &         // '/casual/' // lodlabel(iZone,IGN) // '/con',
+     &         'units', '(W/m2)',
+     &         'convective gain'
+     &      )
+            call add_to_xml_reporting (
+     &        CGSENR(iZone,IDTY,IGN,IPER)*
+     &                  CGCTL(iZone,2,IGN)/zbasea(iZone), ! radiative
+     &        H3K_rep_NAME(1:iH3K_NameLen) 
+     &         // '/casual/' // lodlabel(iZone,IGN) // '/rad',
+     &         'units', '(W/m2)',
+     &         'radiative gain'
+     &      )
+            call add_to_xml_reporting (
+     &        CGLAT(iZone,IDTY,IGN,IPER)*
+     &                 CGCTL(iZone,2,IGN)/zbasea(iZone),  ! latent
+     &        H3K_rep_NAME(1:iH3K_NameLen) 
+     &         // '/casual/' // lodlabel(iZone,IGN) // '/lat',
+     &         'units', '(W/m2)',
+     &         'latent gain'
+     &      )
+          endif
+        enddo gain_type_loop
+      endif
 
 C-------------------------------*****----------------------------------
 
