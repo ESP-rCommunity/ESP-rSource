@@ -3420,6 +3420,19 @@ C PI controller
      &    '; proportional band=',cm(5),'; integral reset=',cm(6),
      &    '; action flag=',cm(7),'; optional multi sensing loop=',cm(8)
           call SDELIM(lmsg,message,'S',IW)
+C High-low controller with hysteresis, GaE Jul. 2010
+        elseif(IFCLAW(II,JJ,KK).EQ.6)then
+          SSTR='high/low + hysteresis'
+          cm(2)=fmiscd(II,JJ,KK,2)
+          cm(3)=fmiscd(II,JJ,KK,3)
+          cm(4)=fmiscd(II,JJ,KK,4)
+          cm(5)=fmiscd(II,JJ,KK,5)
+          cm(6)=fmiscd(II,JJ,KK,6)
+          write(lmsg,'(a,f7.2,a,f4.1,a,f6.2,a,f5.1,a,f6.2,a)') 
+     &      ' high/low + hysteresis: (not used) ',cm(2),
+     &      ' valve lower limit (%)',cm(3),' signal upper limit ',
+     &      cm(4),' valve upper limit (%)',cm(5),' dS ',cm(6),'.'
+          call SDELIM(lmsg,message,'S',IW)
         endif
         return
       endif

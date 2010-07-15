@@ -108,10 +108,12 @@ C Mass flow control law 3: multi-sensor ON/OFF controller
 C Nicol control algorithm
       ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.4)THEN
          CALL FCL04
- 
 C PI controller
       ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.5)THEN
          CALL FCL05
+C Mass flow control law 6: ON/OFF controller with hysteresis
+      ELSE IF(IFCLAW(ICFP,IDTYPP,IPERP).EQ.6)THEN
+         CALL FCL06
 
 C New controllers inserted here!
       ELSE
@@ -1248,4 +1250,125 @@ C Controlling a component.
   1     continue
       endif
  9595 RETURN
+      END
+
+C *******  FCL06 High-Low controller with hysteresis
+C Copyright: GaE - July 2010
+C 
+      SUBROUTINE FCL06
+      implicit none
+#include "net_flow.h"
+#include "building.h"
+#include "control.h"
+
+      COMMON/mfctl/ctlpos(MCNN)
+      real ctlpos
+      COMMON/FCLSOL/ICFP,IDTYPP,IPERP
+      integer icfp,idtypp,iperp
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      integer nnod,ncmp,ncnn
+      COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
+     &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
+      integer nodps,nodne,itpcon,ndscnn
+      real hgtps,hgtne
+
+C local variables
+      integer icnn,iControlled
+      real SIGNAL
+
+C OnOffHist is a function returning the controller position.
+      real OnOffHist
+
+      iControlled=ifan(icfp,2) ! controlled item
+
+      if(ifan(ICFP,1).eq.-3)then
+
+C Controlling a connection. (ICNN not relevant, therefor 0)
+        CALL CFFVAR(SIGNAL,0)
+        CTLPOS(iControlled)=OnOffHist(SIGNAL)
+      else
+
+C Controlling a component
+        do 1 icnn=1,ncnn
+          if(ITPCON(ICNN).eq.iControlled)
+     &      then
+
+C Establish sensed variable magnitude and actuated node location
+            CALL CFFVAR(SIGNAL,icnn)
+
+C Establish control position
+            ctlpos(iControlled)=OnOffHist(SIGNAL)
+          endif
+  1     continue  
+      endif
+          
+      RETURN
+      END
+
+C ***** OnOffHist
+C Signal position logic for High/Low control with hysteresis
+C Copyright: GaE - July 2010
+C
+C SIGL  - signal lower limit Sl (whatever is sensed by ctl loop)
+C PSIGL - relative valve position H/H100 at Sl (%)
+C SIGU  - signal upper limit Su (whatever is sensed by ctl loop)
+C PSIGU - relative valve position H/H100 at Su (%)
+C DSHY  - delta sensor value to overcome valve/damper hysteresis
+      FUNCTION OnOffHist(SIGNAL)
+      implicit none
+#include "net_flow.h"
+#include "building.h"
+#include "control.h"
+
+      real OnOffHist,SIGNAL
+
+      COMMON/MFCPOS/HHH100(MCNN),HSASC(MCNN)
+      real HHH100,HSASC
+      COMMON/FCLSOL/ICFP,IDTYPP,IPERP
+      integer ICFP,IDTYPP,IPERP
+
+      logical close
+
+C Local variables
+      real SIGL,PSIGL,SIGU,PSIGU,DSHY
+      real currentPosition,newPosition
+
+C Read controller parameters
+      SIGL=fmiscd(ICFP,IDTYPP,IPERP,2)
+      PSIGL=fmiscd(ICFP,IDTYPP,IPERP,3)/100.0
+      SIGU=fmiscd(ICFP,IDTYPP,IPERP,4)
+      PSIGU=fmiscd(ICFP,IDTYPP,IPERP,5)/100.0
+      DSHY=fmiscd(ICFP,IDTYPP,IPERP,6)
+
+      currentPosition=HHH100(ICFP)
+
+C Change of controller postion between high and low settings depends
+C on current position, current signal and size of hysteresis
+      call eclose(currentPosition,PSIGU,0.0001,close)
+      if (close) then
+	  ! controller is currently "High"
+        if (SIGNAL.ge.(SIGU-DSHY)) then
+        ! signal is in hysteresis bracketor above high - don't change
+          newPosition=currentPosition
+        elseif (SIGNAL.lt.(SIGU-DSHY)) then
+        ! signal is under high minus hyst - turn "Low"
+          newPosition=PSIGL
+        endif
+      else ! currentPostion=PSIGL
+        if (SIGNAL.ge.SIGU) then
+        ! signal is above high point, turn on!
+          newPosition=PSIGU
+        else
+        ! signal is below high point, don't change
+          newPosition=currentPosition
+        endif
+      endif
+
+C Refresh history for H/H100 and in case of change recalculate HSASC
+      HHH100(ICFP)=newPosition
+
+C Pass value to calling routine
+      OnOffHist=newPosition
+
+      RETURN
       END
