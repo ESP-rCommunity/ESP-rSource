@@ -1,24 +1,24 @@
 
 Notes for the self-extracting installer for a precompiled 
 GTK or X11 version of ESP-r to run within the cygwin environment
-of a Windows 2000/XP computer. This installer is intended
+of a Window XP/Vista computer. This installer is intended
 to be used within a CYGWIN COMMAND WINDOW.
 
 The X11 version is the complete standard interface to
 ESP-r. The GTK version is an almost-complete port to
 an alternative graphics library.
 
-Typically the file you downloaded (esp-r_v11.8_cygwin_precomp.run)
-where v11.8 is the version number, should be placed in /tmp and 
+Typically the file you downloaded (esp-r_v11.9_cygwin_precomp.run)
+where v11.9 is the version number, should be placed in /tmp and 
 run (typcially as Administrator) from 
-that folder via the command ./esp-r_v11.8_cygwin_precomp.run
+that folder via the command ./esp-r_v11.9_cygwin_precomp.run
 
 On most Windows machines running Cygwin a file ending 
 in .run will be treated as an executable.
 If the installer does not execute you may have to
 issue the following command to change its permissions:
 
-  chmod a+x ./esp-r_v11.8_cygwin_precomp.run
+  chmod a+x ./esp-r_v11.9_cygwin_precomp.run
 
 It will ask you a number of yes/no questions and, if
 successful it will place an ESP-r distribution
@@ -54,8 +54,8 @@ for an ESP-r module use the -help option with
 the module name e.g. 'mrt -help' (without the quotes).
 
 Note: the ESP-r executables were created on a Windows XP
-computer running an March 2008 version of Cygwin. It should run
-run on most 32-bit Windows 2000 or XP computers on which
+computer running an May 2009 version of Cygwin. It should run
+run on most 32-bit Windows XP/Vista computers on which
 the cygwin emulation envirnment has been setup. Full instructions
 for setting up cygwin and invoking its graphic environment
 are given in the file setting_up_cygwin_may2009.txt.
@@ -67,7 +67,7 @@ than the X11 version. If ESP-r refuses to run you might have to
 download a few packages from the Cygwin site via the
 Cygwin setup application.
 
-Check the ESRU web site <http://www.esru.strath.ac.uk>
+Check the ESRU web site <http://www.strath.ac.uk/esru>
 for tutorials, publications and the ESP-r cookbook as 
 well as for information on how to join the ESP-r 
 discussion list.
