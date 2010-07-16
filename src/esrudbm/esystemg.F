@@ -119,7 +119,7 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/prec2/precz/c20.
+C geometry.h provides commons G0/G2/G5/prec2/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -159,8 +159,6 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
       COMMON/ER1/IER1
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -451,8 +449,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
       character hvacfile*72,LAIM2*72,LBSIMP*72,LFClds*72
@@ -2538,11 +2534,7 @@ C if possible. If ICON=0 then generate a text heading.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
       if(ICON.EQ.0.AND.ICF.GT.0)then
         WRITE(CXSTR,8986)  

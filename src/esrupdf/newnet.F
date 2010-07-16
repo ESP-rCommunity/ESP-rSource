@@ -2084,14 +2084,12 @@ C The routine presents a list of surface layers.
 
       subroutine CONTLYR(IZ,IS,IND)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -2100,8 +2098,6 @@ C The routine presents a list of surface layers.
       integer header,footer
       character item*32
       CHARACTER NAM*72,PNAM*20,H*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
 C Establish if material data arrays have been filled. If not return
 C with ier=1.

@@ -1184,8 +1184,6 @@ C output, IER=0 indicates no error.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -1242,8 +1240,6 @@ C Flag noting whether casual gain periods are currently sorted.
       character*72 CFILE,DFILE,LTMP,LCFD
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character LCFGF*72,H*72,SFIL*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
       character jsparent*12,jsuse*8
       character doit*248,tmode*8,DSFIL*72,ZN*12

@@ -26,6 +26,17 @@ C Default solar distribution and shading directives.
       integer ndp,idpn
       common/g4/ndp(MCOM),idpn(MCOM,3)
 
+C Surface attributes for the current zone.
+      character SNAME*12   ! surface name attribute
+      character SOTF*32    ! see SSOTF below
+      character SVFC*4     ! see SSVFC below
+      character SMLCN*32   ! see SSMLCN below
+      character SOTHER*24  ! see SSOTHER below
+      character SUSE*8     ! see SSUSE below
+      character SPARENT*12 ! see SSPARENT below
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+
 C NZSUR (integer) is the number of surfaces in each zone.
 C NZTV (integer) is the number of vertices in each zone.
 C nbwalls (integer) how many vertical walls (e.g. 4 for a box, 3+ for extrude).

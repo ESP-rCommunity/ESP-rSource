@@ -120,38 +120,11 @@ C << add logic to check for existance of obstructions file and
 C << shading file in subsequent read and then update the values
 C << as appropriate
 
-C SNAME (12 char) - surface name attribute
+C SNAME (12 char) - surface name attribute. Other G5 common block
+c variables are defined in geometry.h
 C ZBASEA    - area of base (m^2)
 C IBASES    - surfaces (up to 12) associated with base area. If all 0 then
 C             base area has been supplied by the user.
-C SOTF (32 char) - surface attribute indicating OPAQUE or an optical property.
-C SVFC (4 char) - string indicating whether the surface is to be
-C     counted as a FLOR (face up), VERT (wall), CEIL (face down),
-C     SLOP (not vertical) for purposes of floor area and daylighting.
-C 
-C SMLCN (32 char) surface construction attribute.
-C SOTHER (24 char * 3) surface attributes for `other` side. 
-C   SOTHER(i,1) = UNKNOWN indicatesthat no attribute has been set and
-C               for this case SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = EXTERIOR means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = ADIABATIC means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = SIMILAR means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = BASESIMP means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = GROUND means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = if a zone name then its index will be moved to SOTHER(2) and
-C               the surface index in SOTHER(3) and the key word ANOTHER is
-C               put in SOTHER(1).
-C   SOTHER(i,1) = ANOTHER then SOTHER(2) is zone index and SOTHER(3) is
-C               the surface index in that zone (e.g. as IC2 and IE2).
-
-C SUSE (8 char * 2) is the usage of the surface. This concept is not
-C supported in the older versions of geometry file and a  -,-  the
-C initial state for newly created surfaces and surfaces which the user
-C has not yet expressed an opinion is assumed.
-
-C SPARENT(MS) (12 char) the name of the parent surface or '-'
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
 C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC (64 char) - zone notes (from geometry.h).
@@ -173,8 +146,6 @@ C Error subroutine and error details for dll mode.
       
       CHARACTER LGEOMF*72,WORD*20,loutstr*248
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124
       character OTF*4,OPT*12 ! for use with parsemlcdesc
@@ -1233,7 +1204,7 @@ C Also now can include a token to remember users prior rotateit request.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20/GS5/GS6.
+C geometry.h provides commons G0/G2/G4/G5/prec2/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -1275,23 +1246,9 @@ C SVFC (4 char) - string indicating whether the surface is to be
 C     counted as a FLOR (face up), VERT (wall), CEIL (face down),
 C     SLOP (not vertical) for purposes of floor area and daylighting.
 C 
-C SMLCN (32 char) surface construction attribute.
-C SOTHER (24 char * 3) surface attributes for `other` side. 
-C   SOTHER(i,1) = UNKNOWN indicatesthat no attribute has been set and
-C               for this case SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = EXTERIOR means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = ADIABATIC means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = SIMILAR means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = BASESIMP means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = GROUND means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = if a zone name then its index will be moved to SOTHER(2) and
-C               the surface index in SOTHER(3) and the key word ANOTHER is
-C               put in SOTHER(1).
-C   SOTHER(i,1) = ANOTHER then SOTHER(2) is zone index and SOTHER(3) is
-C               the surface index in that zone (e.g. as IC2 and IE2).
-C SUSE (8 char * 2) is the usage of the surface.
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
+C SMLCN (32 char) surface construction attribute and other G5 common block
+C variables are defined in geometry.h  Some additonal information on the
+C variables SSUSE and SUSE follow:
 
 C    Surfaces which function as opaque portions of a facade are
 C    marked as `WALL`. If they are vertical they will be composed
@@ -1392,8 +1349,6 @@ C GS7/GS8 are defined in geometry.h
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       CHARACTER LGEOMF*72,WORD*32
       CHARACTER tmpvfc*4,tother*15,tother1*15,tother2*15
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
@@ -4720,20 +4675,17 @@ C << should this also fill G6?? >>.
 
       SUBROUTINE FILSUR(ICOMP,ISUR)
 #include "building.h"
+#include "geometry.h"
 
 C Parameters
       integer icomp ! zone number
       integer isur  ! zero do all surfaces otherwise index of a surface
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient, iSurfWall, iSurfCeiling, iSurfFloor
       parameter (iSurfWall=1, iSurfFloor=2, iSurfCeiling=3)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.  Gather misc zone infor-

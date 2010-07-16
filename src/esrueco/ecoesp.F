@@ -863,8 +863,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
       common/pophelp/h(60)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
@@ -877,8 +875,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
       DIMENSION VERT(35)
 
       CHARACTER H*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER VERT*44,KEY*1,head*31,OutStr*124
 
       LOGICAL MODIFY,MODLEN,MODBND,zbzero,context,SelSurf
@@ -1452,8 +1448,6 @@ C
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1554,8 +1548,6 @@ C << Why is SDATA used? >>
       CHARACTER*1 ComAsPa,MaintTyp,LayerCat,MainPart,AsProjPa,LayerTyp
       CHARACTER*12 CompoNam,LayerNam,MatNameco
       CHARACTER*72 MatDesc,MatCat,LayerDes
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER H*72,outs*170,ITEM*36,OposLayName*12
       CHARACTER StepName*36,StepSName*12
@@ -2481,8 +2473,6 @@ C phylosophy as LCACalc
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2589,8 +2579,6 @@ C phylosophy as LCACalc
       CHARACTER*72 MatDesc,MatCat,LayerDes, TITL
 
 
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER*72 NAM
       CHARACTER H*72,outs*160,ITEM*36, Tmpstring*72

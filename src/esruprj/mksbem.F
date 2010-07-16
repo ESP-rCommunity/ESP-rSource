@@ -4178,8 +4178,6 @@ C This routine assumes newer geometry files are being used.
 
 C << G1 is probably not the common block to use for this >>
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
 C G9 holds information on children of a surface.
       integer nbchild   ! how many children (up to 4) for each connection
@@ -4194,12 +4192,10 @@ C G9 holds information on children of a surface.
       CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension 
       character APE*6    ! up to 6 characters in variant name
-      CHARACTER SPARENT*12
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,NNAME*72,H*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12
-      CHARACTER SNAME*12,SOTF*32,SMLCN*32,SVFC*4,SOTHER*24,SUSE*8
       CHARACTER*12 XJCCU,XKCCU
 
 C ivalsg keeps track of whether a geometry file has alread been copied.

@@ -1325,8 +1325,6 @@ C temporal data to be associated with a model.
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
      
 C TDF related.
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
@@ -1345,8 +1343,6 @@ C TDF related.
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character OUTSTR*124,HDR*12
       character*34 ITEMS(7)
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       integer ier
 
 C Action to pass to tdfedit. Prior 'update' option moved into

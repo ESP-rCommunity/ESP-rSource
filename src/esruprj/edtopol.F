@@ -779,8 +779,6 @@ C the user to confirm before writing to temporary configuration file.
 
 C G5 required for updating zone geometry file (until such time as geometry
 C write can use G6 common blocks).
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
 C Pause length during sequentail scan longpause (true=1 sec)
       common/scanpause/longpause
@@ -795,8 +793,6 @@ C Pause length during sequentail scan longpause (true=1 sec)
       character outs*124,CXSTR*78,SN*12
       character SO*24,TOTHER*24
       character DESCRC*25
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER H*72
       character DCNN*72,cfgroot*24,LCFGF*72,bl*2
       integer izselfcheck  ! the surface being tested

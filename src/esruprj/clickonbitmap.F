@@ -35,7 +35,7 @@ C via clicking on a bitmap.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
+C geometry.h provides commons G0/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -55,9 +55,6 @@ C geometry.h provides commons G0/G2/G4/G7/prec17/precz/c20/GS5/GS6.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -96,8 +93,6 @@ C end indices for each zone.
 
       CHARACTER*72 H
       CHARACTER ITEMS*33,outs*124,temp6*6,temp3*3
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character phrase*124,WORD*48,msg*72,ltmp*72,fs*1
       character zn*12
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72

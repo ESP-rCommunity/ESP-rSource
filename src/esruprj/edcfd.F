@@ -2269,6 +2269,7 @@ C IER=0 indicates no error.
 
       SUBROUTINE EDSLDB(IZONE,ISB,IER)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
 
       common/pophelp/h(60)
@@ -2284,14 +2285,9 @@ C IER=0 indicates no error.
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-
       character ITMSS(12)*50,H*72
       character face*6,ltmp*16,t12*12,d12*12
       character VOLNAME*12, VCsurf*12
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER t20*20
 
 

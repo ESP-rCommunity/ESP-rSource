@@ -54,8 +54,6 @@ C geometry.h provides commons G0 and G2.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -71,8 +69,6 @@ C TOTHER is a temporary array for manipulating SSOTHER.
 C SO is a tempporary array to hold current surface SSOTHER.
       DIMENSION VERT(35),TOTHER(MS,3),SO(3)
       CHARACTER VERT*46,KEY*1,CXSTR*78,H*72,outs*124,DESCRC*25
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character SO*24,TOTHER*24
       character CXITM*43
       logical newgeo  ! to use for testing if new/old geometry file.

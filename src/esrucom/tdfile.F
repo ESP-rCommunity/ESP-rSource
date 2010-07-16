@@ -76,14 +76,10 @@ C Related to TDF ITEMS file.
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Need to loop for number of surfaces for bidirectional and vertical solar radiation data
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)   
 
       COMMON/TDFOPEN/OPTDF
       LOGICAL OPTDF,XST
 
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER tfile*72,LTMPFL*72
       character FOCUS*8,msgl2*48,fs*1,act*1,outs*124
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
