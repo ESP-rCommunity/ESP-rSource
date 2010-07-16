@@ -1254,7 +1254,16 @@ C Controlling a component.
 
 C *******  FCL06 High-Low controller with hysteresis
 C Copyright: GaE - July 2010
-C 
+C
+C       ^
+C PSIGU ¦           ¦-------<------¦--<->------
+C       ¦           ¦              ¦
+C       ¦           v              ¦
+C       ¦           ¦              ^
+C       ¦           ¦              ¦
+C PSIGL ----->--<---¦------->------¦-----
+C                SIGU-DSHY        SIGU
+C
       SUBROUTINE FCL06
       implicit none
 #include "net_flow.h"

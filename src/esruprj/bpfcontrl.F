@@ -4664,9 +4664,9 @@ C Generate menu entry for each period in day type.
           outsc=' '
           if(NITEMS.gt.0)then
             if(NITEMS.LE.9)then
-              write(outsb,'(9F9.2)')(cm(L),L=2,NITEMS+1)
+              write(outsb,'(9F10.3)')(cm(L),L=2,NITEMS+1)
             else
-              write(outsb,'(9F9.2)')(cm(L),L=2,10)
+              write(outsb,'(9F10.3)')(cm(L),L=2,10)
             endif
             call SDELIM(outsb,outsc,'S',IW)
           endif
@@ -4740,9 +4740,9 @@ C of if:elseif:else recover.
           WRITE(outs,'(a,i3,a)')' For period',KK,' current data...'
           call edisp(iuout,outs)
           if(NITEMS.LE.12)then
-            write(outs,'(12F10.2)')(cm(L),L=2,NITEMS+1)
+            write(outs,'(12F10.3)')(cm(L),L=2,NITEMS+1)
           else
-            write(outs,'(12F10.2)')(cm(L),L=2,12)
+            write(outs,'(12F10.3)')(cm(L),L=2,12)
           endif
           call SDELIM(outs,outsc,'S',IW)
           call edisp(iuout,outsc)
@@ -4777,7 +4777,8 @@ C What is the equivalent for flow.....
      &   'c range based (for 30 35 40 110 130)',
      &   'd multi-sensor on/off',
      &   'e human behaviour algorithm ver 1.0',
-     &   'f proportional and integral ',' ',' ',' ',' ',' '
+     &   'f proportional and integral ',
+     &   'g high/low with hysteresis ',' ',' ',' ',' '
      &   ,' ',ino,idno,5)
         if(ino.eq.0)then
           continue
@@ -5213,6 +5214,40 @@ C PI controller
             CM(8)=ocli
           ENDIF
           if(ier.ne.0)goto 101
+
+        elseif(iclaw.eq.6)then
+
+C Miscellaneous data for high/low w hyst. controller.
+          cm(1)=5.
+  57      WRITE(HOLD,'(5f8.3)')cm(2),cm(3),cm(4),cm(5),cm(6)
+          H(1)='Number of items for high/low w hyst. cntl = 5 '
+          H(2)='  1st is not used'
+          H(3)='  2nd is valve position at lower limit (0-100 %),'
+          H(4)='  3rd is signal (what is sensed for this control)'
+          H(5)='      upper limit (SIGU), '
+          H(6)='  4th is valve position at upper limit (0-100 %),'
+          H(7)='  5th delta signal to overcome hysteresis (DSHY).'
+          H(8)='                                              '
+          H(9)= '       ^                                     '
+          H(10)=' PSIGU ¦           ¦-------<------¦--<->--   '
+          H(11)='       ¦           ¦              ¦          '
+          H(12)='       ¦           v              ¦          '
+          H(13)='       ¦           ¦              ^          '
+          H(14)='       ¦           ¦              ¦          '
+          H(15)=' PSIGL ----->--<---¦------->------¦-----     '
+          H(16)='               SIGU-DSHY        SIGU         '
+          CALL EASKS(HOLD,
+     &  ' High/low w hyst: signal lower lmt, lower valve psn (%), ',
+     &  'signal upper lmt, upper valve psn (%), hysteresis: ',42,
+     &  ' 99.  0.  20. 100.  5.',' flow high/low w hyst. controller',
+     &      IER,16)
+          K=0
+          CALL EGETWR(HOLD,K,cm(2),0.,0.,'-',' - dummy - ',IER)
+          CALL EGETWR(HOLD,K,cm(3),0.,100.,'F',' PSIGL ',IER)
+          CALL EGETWR(HOLD,K,cm(4),0.,0.,'-',' SIGU ',IER)
+          CALL EGETWR(HOLD,K,cm(5),0.,100.,'F',' PSIGU ',IER)
+          CALL EGETWR(HOLD,K,cm(6),0.,9999.,'F',' DSHY ',IER)
+          if(ier.ne.0)goto 57
 
 C Miscellaneous data for additional flow controllers should follow here.
         endif
