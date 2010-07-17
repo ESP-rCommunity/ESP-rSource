@@ -548,13 +548,13 @@ C Draw construction section.
       iid1=igr; iid2=igt-10;
       call wstxpt(iid1,iid2,ZN)
       igr=13
-      X=0.
+      XX=0.
       YD=TMAX-TMIN
       NE=NELTS(ICOMP,ISUR)
       DO 101 L=1,NE
-        XL=X
+        XL=XX
         XD=ETHK(L)
-        X=X+ETHK(L)
+        XX=XX+ETHK(L)
         if(IPRZ(ISUR,L).ne.0)call egrbox(XL,TMIN,XD,YD,igr)
   101 CONTINUE
 
@@ -580,16 +580,16 @@ C Placing them in XVAL1 and then into VAL2.
 C Commence drawing. Remember that everything shifted over 1
 C to allow for outside temp to be in VAL2(1,?)
           icnt=icnt+1
-          X=THKMIN
+          XX=THKMIN
           iupdown=0
           isym=0
-          call etplot(X,VAL2(1,J),iupdown,isym)
-          X=0.
+          call etplot(XX,VAL2(1,J),iupdown,isym)
+          XX=0.
           iupdown=1
           DO 90 L=1,NNT
-            call etplot(X,VAL2(L+1,J),iupdown,isym)
+            call etplot(XX,VAL2(L+1,J),iupdown,isym)
             M=((L-1)/2)+1
-            X=X+ETHK(M)/2.
+            XX=XX+ETHK(M)/2.
    90     CONTINUE
           iupdown=1
           call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
@@ -621,16 +621,16 @@ C each timestep. Pause 200msec at each timestep.
 C If possible reset the foreground colour to white and redraw the line.
             if(nifgrey.gt.4)then
               call winscl('i',nifgrey-1)
-              X=THKMIN
+              XX=THKMIN
               iupdown=0
               isym=0
-              call etplot(X,VAL2(1,J),iupdown,isym)
-              X=0.
+              call etplot(XX,VAL2(1,J),iupdown,isym)
+              XX=0.
               iupdown=1
               DO 91 L=1,NNT
-                call etplot(X,VAL2(L+1,J),iupdown,isym)
+                call etplot(XX,VAL2(L+1,J),iupdown,isym)
                 M=((L-1)/2)+1
-                X=X+ETHK(M)/2.
+                XX=XX+ETHK(M)/2.
    91         CONTINUE
               iupdown=1
               call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
@@ -644,13 +644,13 @@ C Re-Draw construction section.
             iid1=igr; iid2=igt-10;
             call wstxpt(iid1,iid2,ZN)
             igr=13
-            X=0.
+            XX=0.
             YD=TMAX-TMIN
             NE=NELTS(ICOMP,ISUR)
             DO 102 L=1,NE
-              XL=X
+              XL=XX
               XD=ETHK(L)
-              X=X+ETHK(L)
+              XX=XX+ETHK(L)
               if(IPRZ(ISUR,L).ne.0)call egrbox(XL,TMIN,XD,YD,igr)
   102       CONTINUE
             call forceflush

@@ -4176,9 +4176,6 @@ C This routine assumes newer geometry files are being used.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-C << G1 is probably not the common block to use for this >>
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
 C G9 holds information on children of a surface.
       integer nbchild   ! how many children (up to 4) for each connection
       integer nbgchild  ! how many grand children (up to 4) for each connection
@@ -5409,7 +5406,7 @@ C IMODE = 4 -> Typical model
      & total_Aux,total_Heat_D,total_Cool_D,total_DHW_D
       integer IZNOVERHEAT !counter for zones to report overheating
       REAL A,B,C,D,E,F,G ! Annual parameters
-      REAL T(12),U(12),V(12),W(12),X(12),Y(12),Z(12) ! Monthly parameters
+      REAL T(12),U(12),V(12),W(12),XX(12),YY(12),ZZ(12) ! Monthly parameters
 
 C Monthly averaging parameters
       REAL DHW_Supply(12), DHW_Demand(12)
@@ -6274,9 +6271,9 @@ C      write(6,*) 'AER is ',AER
           U(IM)=-1.*Cool_Supply(IM)/tbasea
           V(IM)=DHW_Supply(IM)/tbasea
           W(IM)=Aux_Supply(IM)/tbasea
-          X(IM)=Light_Supply(IM)/tbasea
-          Y(IM)=T(IM)+V(IM) ! gas load 
-          Z(IM)=W(IM)+X(IM)+U(IM) ! electricity load
+          XX(IM)=Light_Supply(IM)/tbasea
+          YY(IM)=T(IM)+V(IM) ! gas load 
+          ZZ(IM)=W(IM)+XX(IM)+U(IM) ! electricity load
  70     CONTINUE
         A=total_Heat_S/tbasea
         B=-1.*total_Cool_S/tbasea
@@ -6352,51 +6349,51 @@ C Write detailed Latex input file
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
-     &" & ",X(1)," & ",Y(1)," & ",Z(1),"\\\\"
+     &" & ",XX(1)," & ",YY(1)," & ",ZZ(1),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Feb & ",T(2)," & ",U(2)," & ",V(2)," & ",W(2),
-     &" & ",X(2)," & ",Y(2)," & ",Z(2),"\\\\"
+     &" & ",XX(2)," & ",YY(2)," & ",ZZ(2),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Mar & ",T(3)," & ",U(3)," & ",V(3)," & ",W(3),
-     &" & ",X(3)," & ",Y(3)," & ",Z(3),"\\\\"
+     &" & ",XX(3)," & ",YY(3)," & ",ZZ(3),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Apr & ",T(4)," & ",U(4)," & ",V(4)," & ",W(4),
-     &" & ",X(4)," & ",Y(4)," & ",Z(4),"\\\\"
+     &" & ",XX(4)," & ",YY(4)," & ",ZZ(4),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"May & ",T(5)," & ",U(5)," & ",V(5)," & ",W(5),
-     &" & ",X(5)," & ",Y(5)," & ",Z(5),"\\\\"
+     &" & ",XX(5)," & ",YY(5)," & ",ZZ(5),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jun & ",T(6)," & ",U(6)," & ",V(6)," & ",W(6),
-     &" & ",X(6)," & ",Y(6)," & ",Z(6),"\\\\"
+     &" & ",XX(6)," & ",YY(6)," & ",ZZ(6),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jul & ",T(7)," & ",U(7)," & ",V(7)," & ",W(7),
-     &" & ",X(7)," & ",Y(7)," & ",Z(7),"\\\\"
+     &" & ",XX(7)," & ",YY(7)," & ",ZZ(7),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Aug & ",T(8)," & ",U(8)," & ",V(8)," & ",W(8),
-     &" & ",X(8)," & ",Y(8)," & ",Z(8),"\\\\"
+     &" & ",XX(8)," & ",YY(8)," & ",ZZ(8),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Sep & ",T(9)," & ",U(9)," & ",V(9)," & ",W(9),
-     &" & ",X(9)," & ",Y(9)," & ",Z(9),"\\\\"
+     &" & ",XX(9)," & ",YY(9)," & ",ZZ(9),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Oct & ",T(10)," & ",U(10)," & ",V(10)," & ",W(10),
-     &" & ",X(10)," & ",Y(10)," & ",Z(10),"\\\\"
+     &" & ",XX(10)," & ",YY(10)," & ",ZZ(10),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Nov & ",T(11)," & ",U(11)," & ",V(11)," & ",W(11),
-     &" & ",X(11)," & ",Y(11)," & ",Z(11),"\\\\"
+     &" & ",XX(11)," & ",YY(11)," & ",ZZ(11),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Dec & ",T(12)," & ",U(12)," & ",V(12)," & ",W(12),
-     &" & ",X(12)," & ",Y(12)," & ",Z(12),"\\\\"
+     &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
           write(92,*)"\\hline"
         ELSEIF(IMODE.EQ.2)THEN
           write(92,*)"\\multicolumn{8}{|c|}{Notional model Energy $kWh/m
@@ -6407,51 +6404,51 @@ C Write detailed Latex input file
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
-     &" & ",X(1)," & ",Y(1)," & ",Z(1),"\\\\"
+     &" & ",XX(1)," & ",YY(1)," & ",ZZ(1),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Feb & ",T(2)," & ",U(2)," & ",V(2)," & ",W(2),
-     &" & ",X(2)," & ",Y(2)," & ",Z(2),"\\\\"
+     &" & ",XX(2)," & ",YY(2)," & ",ZZ(2),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Mar & ",T(3)," & ",U(3)," & ",V(3)," & ",W(3),
-     &" & ",X(3)," & ",Y(3)," & ",Z(3),"\\\\"
+     &" & ",XX(3)," & ",YY(3)," & ",ZZ(3),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Apr & ",T(4)," & ",U(4)," & ",V(4)," & ",W(4),
-     &" & ",X(4)," & ",Y(4)," & ",Z(4),"\\\\"
+     &" & ",XX(4)," & ",YY(4)," & ",ZZ(4),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"May & ",T(5)," & ",U(5)," & ",V(5)," & ",W(5),
-     &" & ",X(5)," & ",Y(5)," & ",Z(5),"\\\\"
+     &" & ",XX(5)," & ",YY(5)," & ",ZZ(5),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jun & ",T(6)," & ",U(6)," & ",V(6)," & ",W(6),
-     &" & ",X(6)," & ",Y(6)," & ",Z(6),"\\\\"
+     &" & ",XX(6)," & ",YY(6)," & ",ZZ(6),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jul & ",T(7)," & ",U(7)," & ",V(7)," & ",W(7),
-     &" & ",X(7)," & ",Y(7)," & ",Z(7),"\\\\"
+     &" & ",XX(7)," & ",YY(7)," & ",ZZ(7),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Aug & ",T(8)," & ",U(8)," & ",V(8)," & ",W(8),
-     &" & ",X(8)," & ",Y(8)," & ",Z(8),"\\\\"
+     &" & ",XX(8)," & ",YY(8)," & ",ZZ(8),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Sep & ",T(9)," & ",U(9)," & ",V(9)," & ",W(9),
-     &" & ",X(9)," & ",Y(9)," & ",Z(9),"\\\\"
+     &" & ",XX(9)," & ",YY(9)," & ",ZZ(9),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Oct & ",T(10)," & ",U(10)," & ",V(10)," & ",W(10),
-     &" & ",X(10)," & ",Y(10)," & ",Z(10),"\\\\"
+     &" & ",XX(10)," & ",YY(10)," & ",ZZ(10),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Nov & ",T(11)," & ",U(11)," & ",V(11)," & ",W(11),
-     &" & ",X(11)," & ",Y(11)," & ",Z(11),"\\\\"
+     &" & ",XX(11)," & ",YY(11)," & ",ZZ(11),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Dec & ",T(12)," & ",U(12)," & ",V(12)," & ",W(12),
-     &" & ",X(12)," & ",Y(12)," & ",Z(12),"\\\\"
+     &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
           write(92,*)"\\hline"
         ELSEIF(IMODE.EQ.3)THEN
           write(92,*)"\\multicolumn{8}{|c|}{Reference model Energy $kWh/
@@ -6462,51 +6459,51 @@ C Write detailed Latex input file
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
-     &" & ",X(1)," & ",Y(1)," & ",Z(1),"\\\\"
+     &" & ",XX(1)," & ",YY(1)," & ",ZZ(1),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Feb & ",T(2)," & ",U(2)," & ",V(2)," & ",W(2),
-     &" & ",X(2)," & ",Y(2)," & ",Z(2),"\\\\"
+     &" & ",XX(2)," & ",YY(2)," & ",ZZ(2),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Mar & ",T(3)," & ",U(3)," & ",V(3)," & ",W(3),
-     &" & ",X(3)," & ",Y(3)," & ",Z(3),"\\\\"
+     &" & ",XX(3)," & ",YY(3)," & ",ZZ(3),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Apr & ",T(4)," & ",U(4)," & ",V(4)," & ",W(4),
-     &" & ",X(4)," & ",Y(4)," & ",Z(4),"\\\\"
+     &" & ",XX(4)," & ",YY(4)," & ",ZZ(4),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"May & ",T(5)," & ",U(5)," & ",V(5)," & ",W(5),
-     &" & ",X(5)," & ",Y(5)," & ",Z(5),"\\\\"
+     &" & ",XX(5)," & ",YY(5)," & ",ZZ(5),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jun & ",T(6)," & ",U(6)," & ",V(6)," & ",W(6),
-     &" & ",X(6)," & ",Y(6)," & ",Z(6),"\\\\"
+     &" & ",XX(6)," & ",YY(6)," & ",ZZ(6),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jul & ",T(7)," & ",U(7)," & ",V(7)," & ",W(7),
-     &" & ",X(7)," & ",Y(7)," & ",Z(7),"\\\\"
+     &" & ",XX(7)," & ",YY(7)," & ",ZZ(7),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Aug & ",T(8)," & ",U(8)," & ",V(8)," & ",W(8),
-     &" & ",X(8)," & ",Y(8)," & ",Z(8),"\\\\"
+     &" & ",XX(8)," & ",YY(8)," & ",ZZ(8),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Sep & ",T(9)," & ",U(9)," & ",V(9)," & ",W(9),
-     &" & ",X(9)," & ",Y(9)," & ",Z(9),"\\\\"
+     &" & ",XX(9)," & ",YY(9)," & ",ZZ(9),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Oct & ",T(10)," & ",U(10)," & ",V(10)," & ",W(10),
-     &" & ",X(10)," & ",Y(10)," & ",Z(10),"\\\\"
+     &" & ",XX(10)," & ",YY(10)," & ",ZZ(10),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Nov & ",T(11)," & ",U(11)," & ",V(11)," & ",W(11),
-     &" & ",X(11)," & ",Y(11)," & ",Z(11),"\\\\"
+     &" & ",XX(11)," & ",YY(11)," & ",ZZ(11),"\\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Dec & ",T(12)," & ",U(12)," & ",V(12)," & ",W(12),
-     &" & ",X(12)," & ",Y(12)," & ",Z(12),"\\\\"
+     &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
           write(92,*)"\\hline"
           write(92,*)""
         ENDIF
@@ -6554,7 +6551,7 @@ C Part F for Northern Ireland.
 
 C Solar insolation interpolation variables
       REAL C_ORIENTATION,C_INCLINATION,A,B,C,D,AC,BD,P,
-     &Q,X1,X2,X,ANG_O,ANG_I
+     &Q,X1,X2,XX,ANG_O,ANG_I
 
 C Renewable energy sources variables
       REAL Q_ses   ! kWh from solar thermal
@@ -6646,13 +6643,13 @@ C Interpolate across orientation
             X2=(C*(BD-ANG_O)+D*(ANG_O-AC))/(BD-AC)
 
 C Interpolate across inclination
-            X=(X1*(Q-ANG_I)+X2*(ANG_I-P))/(Q-P)
+            XX=(X1*(Q-ANG_I)+X2*(ANG_I-P))/(Q-P)
           ENDIF
           IF(NRENTYPE(IREN).EQ.1)THEN 
   
 C Solar thermal
 C Calculate energy according to SBEM technical manual
-            Q_ses=X*0.38*RENDATA(IREN,2)
+            Q_ses=XX*0.38*RENDATA(IREN,2)
             INDX=nint(RENDATA(IREN,1))
             ITDH=INDX
 
@@ -6681,7 +6678,7 @@ C Reduce zone demand by fraction of load supplied by thermal collector
 C Solar PV
 C Calculate annual kWh produced by PV (system efficiency is 75%) and CO2
 C displaced by it
-            Q_pv=Q_pv+X*RENDATA(IREN,1)*0.75*RENDATA(IREN,2) ! kWh
+            Q_pv=Q_pv+XX*RENDATA(IREN,1)*0.75*RENDATA(IREN,2) ! kWh
             PVDCO2=Q_pv*0.568 ! kgCO2
           ELSEIF(NRENTYPE(IREN).EQ.3)THEN 
 

@@ -37,6 +37,15 @@ C Surface attributes for the current zone.
       COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
      &          SUSE(MS,2),SPARENT(MS)
 
+C Surface polygon information for the current zone.
+      real X,Y,Z   ! coordinate in space (m)
+      integer NSUR ! number of surfaces in the zone
+      integer JVN  ! list of edges (vertex indices anticlockwise
+                   ! looking from outside) for each surface
+      integer NVER ! number of edges that make up each surface
+      integer NTV  ! total number of vertices in the zone 
+      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+
 C NZSUR (integer) is the number of surfaces in each zone.
 C NZTV (integer) is the number of vertices in each zone.
 C nbwalls (integer) how many vertical walls (e.g. 4 for a box, 3+ for extrude).

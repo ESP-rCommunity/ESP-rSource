@@ -35,7 +35,7 @@ C via clicking on a bitmap.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -53,8 +53,6 @@ C geometry.h provides commons G0/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth

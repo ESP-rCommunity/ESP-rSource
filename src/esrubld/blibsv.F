@@ -138,8 +138,8 @@ C Write one construction file name per record.
 
 C Record width is not sensitive to the number of surfaces in the model
 C extra records are used.
-      X=FLOAT(NCON)/20.
-      N=INT(X)+1
+      XW=FLOAT(NCON)/20.
+      N=INT(XW)+1
       DO 100 I = 1,N
       J1 = I*20-19
       J2 = I*20
@@ -1399,11 +1399,11 @@ C   ventilation conductance (CVV?M) is adjusted to outside
 C   temperatures.]; 
         if (IDAVER.eq.1) then
           QV1=CVIF*(TF-TFA(ICOMP))
-          X=TF
-          Y=TP
-          IF(ABS(X).LT.SMALL)X=1.
-          IF(ABS(Y).LT.SMALL)Y=1.
-          QV2=CVVFM*X-CVVF*TFA(ICOMP)
+          XV=TF
+          YV=TP
+          IF(ABS(XV).LT.SMALL)XV=1.
+          IF(ABS(YV).LT.SMALL)YV=1.
+          QV2=CVVFM*XV-CVVF*TFA(ICOMP)
 
 C Solar distribution values: QW1 slot used for solar entering from outside,
 C QW2 slot used for solar from adjacent zones and QSA is solar absorbed.
@@ -1415,11 +1415,11 @@ C Thermal bridges.
           qbridge=totheatloss(icomp)*(TF-TFA(icomp))
         else
           QV1=(CVIP*(TP-TPA(ICOMP))+CVIF*(TF-TFA(ICOMP)))*0.5
-          X=TF
-          Y=TP
-          IF(ABS(X).LT.SMALL)X=1.
-          IF(ABS(Y).LT.SMALL)Y=1.
-          QV2=(CVVPM*Y-CVVP*TPA(ICOMP)+CVVFM*X-CVVF*TFA(ICOMP))*0.5
+          XV=TF
+          YV=TP
+          IF(ABS(XV).LT.SMALL)XV=1.
+          IF(ABS(YV).LT.SMALL)YV=1.
+          QV2=(CVVPM*YV-CVVP*TPA(ICOMP)+CVVFM*XV-CVVF*TFA(ICOMP))*0.5
 
 C Solar trace rather than default window stuff.
           QW1=(q1outs(1)+q1outs(2))*0.5
@@ -1974,8 +1974,8 @@ C QW1 and QW2 and QSA are used for solar trace only.
               tot=QV1+QV2+QCASC+outopq+opqin+outtrn+trnin+qma+qair
               d1=CVIP*(TP-TPA(ICOMP))
               d2=CVIF*(TF-TFA(ICOMP))
-              d3=CVVPM*Y-CVVP*TPA(ICOMP)
-              d4=CVVFM*X-CVVF*TFA(ICOMP)
+              d3=CVVPM*YV-CVVP*TPA(ICOMP)
+              d4=CVVFM*XV-CVVF*TFA(ICOMP)
               d5=totheatloss(icomp)*(TP-TPA(icomp))
               d6=totheatloss(icomp)*(TF-TFA(icomp))
               call edisp(itu,'  ')

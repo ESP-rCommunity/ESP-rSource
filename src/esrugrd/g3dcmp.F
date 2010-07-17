@@ -75,7 +75,6 @@ C *********************************************************************
 
       COMMON/PREC8/SLAT,SLON
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -382,8 +381,8 @@ C SRFBND defines the boundary of a surface.
 C *********************************************************************
       SUBROUTINE SRFBND(IS)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
 
       COMMON/GR3D03/NLINB(MS),NLIND(MS),NLINA(MS)
@@ -641,10 +640,10 @@ C SRFIND defines the surfaces indentation from inside.
 C *********************************************************************
       SUBROUTINE SRFIND
 #include "building.h"
+#include "geometry.h"
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
       COMMON/GR3D08/Y1S(MS),Y1SS(MSSZ),Y1SE(MSEZ)
@@ -944,7 +943,6 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/PREC8/SLAT,SLON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -1182,9 +1180,9 @@ C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWEDG(IEG)
 #include "building.h"
+#include "geometry.h"
 #include "prj3dv.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -1724,8 +1722,8 @@ C TOTEDG determines the total number of edges in the zone.
 C *********************************************************************
       SUBROUTINE TOTEDG
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
 
@@ -1874,8 +1872,8 @@ C EDGCRT creates new edges or appends new edge to existing one.
 C *********************************************************************
       SUBROUTINE EDGCRT(IS1,IS2,IV1,IV2)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
@@ -2199,9 +2197,9 @@ C also draws the gridding in the local z direction.
 C *********************************************************************
       SUBROUTINE DRWCRN(ICR)
 #include "building.h"
+#include "geometry.h"
 #include "prj3dv.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
@@ -2913,8 +2911,8 @@ C TOTCRN determines the total number of corners in the zone.
 C *********************************************************************
       SUBROUTINE TOTCRN
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D31/NUMCRN,INDXC(MCZ),DCOSC(MCZ,3,3)
       COMMON/GR3D34/ISFCRN(MCZ,3),IVXCRN(MCZ)

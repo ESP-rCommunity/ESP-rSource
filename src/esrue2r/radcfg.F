@@ -893,8 +893,6 @@ C if MODE is not - then sensor points file name confirmation required.
       common/pophelp/h(60)
 
       common/expath/runpath,pathtype
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON

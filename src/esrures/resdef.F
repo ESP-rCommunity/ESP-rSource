@@ -978,8 +978,8 @@ C << of the database file
 C Jump over header block records containing data not
 C required at present.
       IF(IBP.EQ.2)RETURN
-      X=FLOAT(NCON)/20.
-      IJ=INT(X)+1
+      XX=FLOAT(NCON)/20.
+      IJ=INT(XX)+1
       DO 1030 I=1,NCOMP
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LPROJ(I)
       IREC=IREC+1

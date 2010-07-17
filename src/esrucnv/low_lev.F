@@ -46,7 +46,7 @@ C face3d are triangles or quads which are general surfaces in autocad.
       character instring*72,oformat*24,head*4,RZNAME*24
       logical match
 
-      real x(10),y(10),z(10)
+      real xx(10),yy(10),zz(10)
       integer count
 
       xnorm = 0.
@@ -60,12 +60,12 @@ C face3d are triangles or quads which are general surfaces in autocad.
             call matchl(currlay,head,RZNAME,match,im)
             if(match)indxzon=im
          elseif (gcode.ge.10 .and. gcode.le.16) then
-            x(gcode-9)=coorx        
-            y(gcode-9)=coory
-            z(gcode-9)=elev
+            xx(gcode-9)=coorx        
+            yy(gcode-9)=coory
+            zz(gcode-9)=elev
             count = gcode - 9
          elseif (gcode.ge.30 .and. gcode.le.36) then
-            z(gcode-29)=realin
+            zz(gcode-29)=realin
             count = gcode -29
          elseif (gcode.eq.62) then
             currcol = innum
@@ -81,11 +81,11 @@ C face3d are triangles or quads which are general surfaces in autocad.
       endif
 
 c Test for triangular patch.
-      if (x(count).eq.x(count-1).and.y(count).eq.y(count-1)
-     &     .and.z(count).eq.z(count-1)) count = count - 1
+      if (xx(count).eq.xx(count-1).and.yy(count).eq.yy(count-1)
+     &     .and.zz(count).eq.zz(count-1)) count = count - 1
 
-      if (x(count).eq.x(1).and.y(count).eq.y(1)
-     &     .and.z(count).eq.z(1)) count = count - 1
+      if (xx(count).eq.xx(1).and.yy(count).eq.yy(1)
+     &     .and.zz(count).eq.zz(1)) count = count - 1
 
       if (count .lt. 3) return
       call writelc
@@ -122,9 +122,9 @@ C Update the izstocn array!
       endif
 
       do 10 i=1,count
-         coorx=x(i)
-         coory=y(i)
-         coorz=z(i)
+         coorx=xx(i)
+         coory=yy(i)
+         coorz=zz(i)
          call putcoods(itrc)
  10   continue
 

@@ -835,7 +835,7 @@ C  FRAC : fraction of casual gain (returned value)
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G1/G2/precz.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -853,8 +853,6 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
 C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       common/C21/IFCFG,cfgroot,LCFGF
 

@@ -34,7 +34,7 @@ C situated.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/G4/c20/precz/GS5/GS6.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -48,8 +48,6 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       common/dxfe/oformat,indxzon,head

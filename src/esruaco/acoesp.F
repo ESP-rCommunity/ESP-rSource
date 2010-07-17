@@ -170,14 +170,12 @@ C ZoneDisp - displays zone based information and allows....
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
+C geometry.h provides commons G0/G1/G2/G4/prec2/precz/prec17.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -357,8 +355,6 @@ C          1 = textual feedback or 2 = File
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL

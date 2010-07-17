@@ -76,7 +76,7 @@ C **************************************************************
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G5/precz.
+C geometry.h provides commons G0/G1/G2/G5/precz.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
@@ -87,7 +87,6 @@ C geometry.h provides commons G0/G2/G5/precz.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP) 

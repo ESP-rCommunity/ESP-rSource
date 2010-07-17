@@ -420,10 +420,9 @@ C               the common/ua2/ arrays).
 
       SUBROUTINE UAE01(IZONE,IACT,DIR)
 #include "building.h"
+#include "geometry.h"
 #include "uncertainty.h"
 #include "esprdbfile.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C      COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -609,8 +608,6 @@ C               the common/ua2/ arrays).
 #include "uncertainty.h"
 #include "esprdbfile.h"
 #include "material.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -1083,11 +1080,11 @@ C UAE05 edits convection coefficients algorithm choice.
 
       SUBROUTINE UAE05(IZONE,IACT,DIR)
 #include "building.h"
+#include "geometry.h"
 #include "uncertainty.h"
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
      &             NSNOG(MNIL,MCOM,MS)
@@ -1142,8 +1139,6 @@ C UAZ01 edits surface properties in memory.
 #include "building.h"
 #include "geometry.h"
 #include "uncertainty.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
      &             NSNOG(MNIL,MCOM,MS)

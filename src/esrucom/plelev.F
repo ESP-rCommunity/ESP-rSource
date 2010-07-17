@@ -34,7 +34,7 @@ C IUF is file unit for geometry, utility file units.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/precz/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/precz/GS5/GS6.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -43,7 +43,6 @@ C geometry.h provides commons G0/G2/precz/GS5/GS6.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)

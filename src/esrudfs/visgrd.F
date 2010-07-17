@@ -49,7 +49,7 @@ C  to represent these by polygons to perform the point containment tests.
      &               TvecXend(ntcelx,ntcely,ntcelz),
      &               TvecZbeg(ntcelx,ntcely,ntcelz),
      &               TvecZend(ntcelx,ntcely,ntcelz)
-      COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
+      COMMON/VISSET/imgqua,NOXX,NOZZ,tscal,hLscal,hWscal,vLscal
 
 C XS(i) and ZS(i) are the face co-ordinates of vertex i.  These are passed 
 C back to the calling routine through common/arpoly/XS(4),ZS(4).
@@ -219,7 +219,7 @@ C  mesh points it covers.  Sets the contents of the IOSHD array.
 #include "flowvis.h"
 
       COMMON/ICFNOD/ICFD,ICP
-      COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
+      COMMON/VISSET/imgqua,NOXX,NOZZ,tscal,hLscal,hWscal,vLscal
       COMMON/arpoly/XS(7),ZS(7),bXmin,bXmax,bZmin,bZmax
       COMMON/TRNSF/A(5),B(5),C(3),XOR,YOR,ZOR
       COMMON/BIT1/TOSHD(MGRXZ,MGRXZ)
@@ -260,8 +260,8 @@ C If contaminants are to be plotted remember which
       ENDIF
 
 C Clear the image by setting all pixels blank in bit array.
-      do 5 Jmesh=1,NOZ
-        do 6 Imesh=1,NOX+60
+      do 5 Jmesh=1,NOZZ
+        do 6 Imesh=1,NOXX+60
           TOSHD(Imesh,Jmesh)=-1000.
     6   continue
     5 continue
@@ -614,9 +614,9 @@ C Convert coords to pixels.
 
 C Check not out of range.
             IP1=max0(1,IP1)
-            IP2=min0(NOX,IP2)
+            IP2=min0(NOXX,IP2)
             IQ1=max0(1,IQ1)
-            IQ2=min0(NOZ,IQ2)
+            IQ2=min0(NOZZ,IQ2)
 
 C Assign background colour, interpolating between values for surrounding 8 
 C control volumes.
@@ -685,9 +685,9 @@ C Only if colouring in background.
 
 C Convert coords of vector bounding box to pixels (rounding outwards).
           IP1=max(INT(bXmin/DIVXcf),1)
-          IP2=min(INT(bXmax/DIVXcf)+1,NOX)
+          IP2=min(INT(bXmax/DIVXcf)+1,NOXX)
           IQ1=max(INT(bZmin/DIVZcf),1)
-          IQ2=min(INT(bZmax/DIVZcf)+1,NOZ)
+          IQ2=min(INT(bZmax/DIVZcf)+1,NOZZ)
 
 C Determine which mesh points are covered by this flow vector by
 C performing a point containment test.
@@ -728,7 +728,7 @@ C  deduced by examining files created by the `bitmap' program.
 
       common/FILEP/IFIL
 
-      COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
+      COMMON/VISSET/imgqua,NOXX,NOZZ,tscal,hLscal,hWscal,vLscal
       COMMON/VISFIL/LVEC,LBIT
       COMMON/BIT1/TOSHD(MGRXZ,MGRXZ)
 
@@ -740,7 +740,7 @@ C Open file.
 
 C Write the first two lines of the bitmap file.  These contain the width
 C and height of the bitmap image, measured in pixels.
-      write(IUNIT,1000) NOX,NOZ
+      write(IUNIT,1000) NOXX,NOZZ
  1000 format('#define flow_width ',i4,/,'#define flow_height ',i4)
 
 C Write the third line of the bitmap file.  This is the start of the `c'
@@ -765,8 +765,8 @@ C Start at the top left and progress to the right and down.  This direction
 C is dictated by the required format of the bitmap file.
 C NUMCHX is the number of 8-pixel groupings along the horizontal direction.
 C ISUM is the running sum indicating which bits of the 8-pixel grouping are on.
-      numchx = NOX/8
-      do 10 Jmesh=NOZ,1,-1
+      numchx = NOXX/8
+      do 10 Jmesh=NOZZ,1,-1
         do 15 Ichar=1,numchx
           isum = 0
           do 20 ibit = 1,8
@@ -812,7 +812,7 @@ C  deduced by examining files created by the `bitmap' program.
 
       common/FILEP/IFIL
 
-      COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
+      COMMON/VISSET/imgqua,NOXX,NOZZ,tscal,hLscal,hWscal,vLscal
       COMMON/VISFIL/LVEC,LBIT
       COMMON/BIT1/TOSHD(MGRXZ,MGRXZ)
       COMMON/BIT2/BITITL
@@ -851,14 +851,14 @@ C  deduced by examining files created by the `bitmap' program.
 
 C Add a scale to the rhs of the image.
 C Draw grey box (-992.0=grey) around interpolated colour bar.
-      do 100 I=NOX+4,NOX+56
-        do 110 J=40,NOZ-40
-          TOSHD(NOX+3,J)=-992.0
-          TOSHD(NOX+57,J)=-992.0
-          TOSHD(I,J)=((TMAX-TMIN)*(J-50)/(NOZ-100)) + TMIN
+      do 100 I=NOXX+4,NOXX+56
+        do 110 J=40,NOZZ-40
+          TOSHD(NOXX+3,J)=-992.0
+          TOSHD(NOXX+57,J)=-992.0
+          TOSHD(I,J)=((TMAX-TMIN)*(J-50)/(NOZZ-100)) + TMIN
  110    continue
         TOSHD(I,40)=-992.0
-        TOSHD(I,NOZ-40)=-992.0
+        TOSHD(I,NOZZ-40)=-992.0
  100  continue
 
 C Write maximum value.
@@ -887,8 +887,8 @@ C Write text (-995.0=black).
         do 200 I=1,11
           do 210 J=1,15
             if (LETTER(I,J).ne.0) then
-              IX=NOX+5+I+(K-1)*10
-              IZ=NOZ-42-J
+              IX=NOXX+5+I+(K-1)*10
+              IZ=NOZZ-42-J
               TOSHD(IX,IZ)=-995.0
             endif
  210      continue
@@ -906,7 +906,7 @@ C Write text (-1000.0=white).
         do 201 I=1,11
           do 211 J=1,15
             if (LETTER(I,J).ne.0) then
-              IX=NOX+5+I+(K-1)*10
+              IX=NOXX+5+I+(K-1)*10
               IZ=58-J
               TOSHD(IX,IZ)=-1000.0
             endif
@@ -925,8 +925,8 @@ C Write text (-995.0=black).
           do 203 I=1,11
             do 213 J=1,15
               if (LETTER(I,J).ne.0) then
-                IX=NOX+5+I+(K-1)*10
-                IZ=int(58.0+(real(NOZ)-100.0)*(real(KK)/4.)-real(J))
+                IX=NOXX+5+I+(K-1)*10
+                IZ=int(58.0+(real(NOZZ)-100.0)*(real(KK)/4.)-real(J))
                 TOSHD(IX,IZ)=-995.0
               endif
  213        continue
@@ -949,7 +949,7 @@ C Write text (-995.0=black).
           do 202 I=1,11
             do 212 J=1,15
               if (LETTER(I,J).ne.0) then
-                IX=NOX+5+I+(K-1)*10
+                IX=NOXX+5+I+(K-1)*10
                 IZ=35-J
                 TOSHD(IX,IZ)=-995.0
               endif
@@ -967,8 +967,8 @@ C Write text (-995.0=black).
         do 204 I=1,11
           do 214 J=1,15
             if (LETTER(I,J).ne.0) then
-              IX=NOX+5+I+(K-1)*11
-              IZ=NOZ-22-J
+              IX=NOXX+5+I+(K-1)*11
+              IZ=NOZZ-22-J
               TOSHD(IX,IZ)=-995.0
             endif
  214      continue
@@ -985,7 +985,7 @@ C and height of the bitmap image, measured in pixels.
       write(IUNIT,'(a)') '/* XPM */'
       write(IUNIT,'(a)') 'static char *test[] = {'
       write(IUNIT,'(a)') '/* width height num_colors chars_per_pixel */'
-      write(IUNIT,'(a,4I5,2a)') quote,NOX+60,NOZ,84,1,quote,comma
+      write(IUNIT,'(a,4I5,2a)') quote,NOXX+60,NOZZ,84,1,quote,comma
       write(IUNIT,'(a)') '/* colours */'
       do 5 I=1,84
         write(IUNIT,'(6a)') quote,HTAB(I),' c #',HCTAB(I),quote,comma
@@ -993,8 +993,8 @@ C and height of the bitmap image, measured in pixels.
       write(IUNIT,'(a)') '/* pixels */'
 
 C Loop through each row from top of image.
-      do 10 Jmesh=NOZ,1,-1
-        do 15 Imesh=1,NOX+60
+      do 10 Jmesh=NOZZ,1,-1
+        do 15 Imesh=1,NOXX+60
           TCHK=TOSHD(Imesh,Jmesh)
           if (TCHK.gt.-990.0) then
             if (TMAX.le.TMIN) then
@@ -1017,7 +1017,8 @@ C Loop through each row from top of image.
  15     continue
 
 C Format needs to be altered if MGRXZ changed in flowvis.h.
-        write(IUNIT,'(1600a)')quote,(bitrow(II),II=1,NOX+60),quote,comma
+        write(IUNIT,'(1600a)')quote,(bitrow(II),II=1,NOXX+60),quote,
+     &    comma
  10   continue
 
 C Close the static char array.
@@ -1038,10 +1039,10 @@ C consideration.
 C This is a pared-down version of TRNSF1 from esruish/trnsf.F
       SUBROUTINE TRNSF1(IS)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/PANGL/PAZI,PELV,PTILT
       COMMON/TRNSF/A(5),B(5),C(3),XOR,YOR,ZOR
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       DIMENSION  XX(MV),YY(MV),ZZ(MV)
 
@@ -1107,7 +1108,7 @@ C are returned to the calling routine.
 #include "cfd.h"
 
       COMMON/TRNSF/A(5),B(5),C(3),XOR,YOR,ZOR
-      COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
+      COMMON/VISSET/imgqua,NOXX,NOZZ,tscal,hLscal,hWscal,vLscal
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
       common/vecXYZ/vecXbeg(ntcelx,ntcely,ntcelz),
      1              vecXend(ntcelx,ntcely,ntcelz),
@@ -1174,10 +1175,10 @@ C It is based largely on esruish's MESH routine, but glazed surfaces
 C have been excluded.
       SUBROUTINE MESH(IS)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
-      COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
+      COMMON/VISSET/imgqua,NOXX,NOZZ,tscal,hLscal,hWscal,vLscal
       COMMON/DIVcf/DIVXcf,DIVZcf
 
 C Find max and min X & Z values for this surface.
@@ -1202,10 +1203,10 @@ C DXMESH equals the width of the surface and DZMESH the height.
       DZMESH=ZMAX-ZMIN
 
 C Establish grid interval for this surface.
-C NOX and NOZ are the number of grid divisions specified by
+C NOXX and NOZZ are the number of grid divisions specified by
 C the user. DIVXcf and DIVZcf are the width and height of the shading grids.
-      DIVXcf=DXMESH/NOX
-      DIVZcf=DZMESH/NOZ
+      DIVXcf=DXMESH/NOXX
+      DIVZcf=DZMESH/NOZZ
 
       RETURN
       END
@@ -1228,8 +1229,8 @@ C           face vertices.
 
       subroutine pangs(is)
 #include "building.h"
+#include "geometry.h"
 
-      common/g1/x(mtv),y(mtv),z(mtv),nsur,jvn(ms,mv),nver(ms),ntv
       common/pangl/pazi,pelv,ptilt
 
       logical bHorizontal
