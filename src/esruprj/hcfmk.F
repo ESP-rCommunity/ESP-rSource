@@ -3063,7 +3063,7 @@ C Control laws and associated data for each surface
 C  Additional information for air channels
           WRITE(IUF,'(I3,F6.3,F6.3,A)',IOSTAT=ISTAT,ERR=990)
      &      IAORZ,CWIDTH,CHEIGHT,
-     & '# Air origin zone (+ chan. width and height if Bar-Cohen corr.)'
+     &' # Air origin zone (+ chan. width and height if Bar-Cohen cor.)'
         elseif(ICTL(I).eq.4) then
 
 C CEN 13791 mode sets values for specific locations.
