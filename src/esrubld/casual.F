@@ -77,14 +77,6 @@ C Zone casual gain control data.
 C Switch off delay time memory common block
       COMMON/SOFDT/IDTM(MCOM,MLCOM)
 
-C Temporal db commons.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/prec7/itcnst
@@ -161,11 +153,6 @@ C Adaptive comfort commons
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
 
 C.........START: USED FOR ACTIVITY TDF DATA.....................
-C TDFINT are ranges allowed for integer fields in the instance.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-
 C Using the TOTOCCUP as a shortcut for the total occupant gains
 C that are taken from the activities temporal data
       REAL QTOTOCCUP,QOCCCASC,QOCCCASR,QOCCLATN,QTOTEQUIP,QEQUIPCASC
@@ -926,13 +913,11 @@ C Illuminance database.
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
       logical bInStartup
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Definition of sun altitude for daylight coefficient method:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
       iunit=ifil+1
-      newgeo=.false.  ! assume older format geometry.
 
 C Trace output ?
       IFT=1
@@ -958,12 +943,7 @@ C If esp pre-processor or user defined df then read in geometry data.
         IF((IDFST(ICOMP,iu).EQ.1).or.(IDFST(ICOMP,iu).eq.2))nog=.true.
   1   continue
       if(nog)then
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(iunit,lgeom(icomp),icomp,0,itu,ier)
-        else
-          call egomin(iunit,lgeom(icomp),icomp,0,itrc,itu,ier)
-        endif
+        call georead(iunit,lgeom(icomp),icomp,0,itu,ier)
       endif
 
 C Assume casual gains untouched and establish solar data for correct

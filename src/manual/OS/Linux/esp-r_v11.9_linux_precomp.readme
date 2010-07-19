@@ -1,9 +1,9 @@
       ESP-r Self-extracting Installer
-                Version 11.8
-               November 2009
+                Version 11.9
+               June 2010
 
 The 'run' file is a self-extracting installer
-for a precompiled ESP-r version 11.8. The installer
+for a precompiled ESP-r version 11.9. The installer
 offers two versions of ESP-r - a GTK graphics library
 version and an X11 version. The GTK version looks and
 feels like the native Windows version of ESP-r but is
@@ -12,13 +12,13 @@ not quite as feature rich as the X11 version.
 On most Linux boxes a file ending in .run will
 be treated as an executable.
 
-Typically the file esp-r_v11.8_linux_precomp.run
+Typically the file esp-r_v11.9_linux_precomp.run
 should be placed in /tmp and run (as root) from 
-that folder via the command ./esp-r_v11.8_linux_precomp.run
+that folder via the command ./esp-r_v11.9_linux_precomp.run
 
 If the installer does not execute you may have to
 issue the following command to change its permissions:
-  chmod a+x ./esp-r_v11.8_linux_precomp.run
+  chmod a+x ./esp-r_v11.9_linux_precomp.run
 
 It will ask you a number of questions and, if
 successful it will place an ESP-r distribution

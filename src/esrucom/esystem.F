@@ -250,16 +250,6 @@ C Defaults for some of the obscure files.
       character*72 DFCFD,DECMPDBFL,DICONDBFL
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
-C Temporal definition commons.
-C itdflg=0 none, 1 older file, 2 asci v2, 3 asci v3, -2 bin v2, -3 bin v3
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-
-C ITEMSTD: Number of temporal items associated/used in this model.
-      COMMON/TDFFLG/ITEMSTD
-
 C DBTAG (12 char) tag of temporal entity associated with model.
 C DBTASK (12 char) the type of temporal entity (which determines what
 C   parts of the model it can be associated with
@@ -503,12 +493,12 @@ C Simulation parameters
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER LCFD*72
-      CHARACTER*72 LAPROB,LPNF,LTDF,LTDFA
+      CHARACTER*72 LAPROB,LPNF
       character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
-      CHARACTER WORD*20,NODID*12,CXSTR*78,ZN*12
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,phrase*64,DBSN*15
+      CHARACTER WORD*20,NODID*12,CXSTR*78
+      CHARACTER DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character WORD2*20,msgl2*48
       character lradcf*72
       CHARACTER CTLDOC*248,LCTLF*72
@@ -542,6 +532,8 @@ C Simulation parameters
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
+      integer itru    ! unit for output
+      integer iflag   ! for error traps
 
       DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
@@ -552,6 +544,8 @@ C Simulation parameters
 
 C Check if running in dll mode.
       call isadll(dll)
+      itru=iuout   ! set trace unit to use in subroutine calls
+      iflag=0      ! initial value
 
 C Initalizing starting point for parsing simulation presets (*sps)
       iSet_start = 1
@@ -842,7 +836,7 @@ C Range checking.
       ENDIF
 
 C Reporting.
-      IF(ITRC.GE.1.AND.ITRC.LT.4)CALL SITEINFO(iuout)
+      IF(ITRC.GE.1.AND.ITRC.LT.4)CALL SITEINFO(itru)
 
 C If initial configuration format (without database sections then
 C skip to building/plant section.
@@ -853,7 +847,7 @@ C If '* CONFIGURATION' found then read in the databases.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'* DATABASES',IER)
         if(IER.NE.0)return
         if(OUTSTR(1:7).ne.'* DATAB')then
-          call edisp(iuout,' Did not find `* DATABASES` ')
+          call edisp(itru,' Did not find `* DATABASES` ')
           ier=1
           return
         endif
@@ -1036,6 +1030,7 @@ c bSHOCCed true and then check and see if the file exists.
           write(outs,'(3a)') 'SHOCC project library file ',
      &      SHOCCshlFile(1:lnblnk(SHOCCshlFile)),
      &      ' was referenced but not found.'
+          call edisp(iuout,outs)
         endif
 
       elseif(WORD(1:5).eq.'*hvac')then
@@ -2326,78 +2321,17 @@ C Warn user about old utility file.
    20   CONTINUE
       endif
 
-C Geometry file, get or derive the zone name via reading the first
-C line. Make temporary use of file unit IUF. 
+C Geometry file, get or derive the zone name via reading the file.
+C Make temporary use of file unit IUF. 
  142  do 22 ICOMP=1,NCOMP
         zname(ICOMP)='UNKNOWN'
         call FINDFIL(LGEOM(ICOMP),XST)
 
-C Quick read, if version 1.1 or newer then the file must be
-C fully read to find the number of surfaces in the zone.
         IF(XST)THEN
           write(currentfile,'(a)') LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP)))
           CALL ERPFREE(IUF,ios)
-          CALL EFOPSEQ(IUF,LGEOM(ICOMP),1,IER)
-          IF(IER.NE.0)goto 1
-          CALL STRIPC(IUF,OUTSTR,99,ND,1,'geom 1st',IER)
-          if(OUTSTR(1:13).eq.'*Geometry 1.1')then
-            K=13
-            CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-            write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-            zname(ICOMP)=' '
-            CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-            ZN=WORD(1:12)
-            call st2name(ZN,zname(ICOMP))
-            lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update length of this string.
-            CALL ERPFREE(IUF,ios)
-            call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
-            gversion(icomp) = 1.1   ! set the version number.
-            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
-          else
-
-C Quick read, get the zone name and the number of surfaces if the
-C file version is prior to version 1.1.
-            K=0
-            IF(ND.EQ.1)THEN
-              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-              zname(ICOMP)=' '
-              lnzname(ICOMP)=0
-              zdesc(ICOMP)=' '
-              lnzdesc(ICOMP)=0
-            ELSEIF(ND.EQ.2)THEN
-              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-              CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-              ZN=WORD(1:12)
-              call st2name(ZN,zname(ICOMP))
-              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
-              zdesc(ICOMP)=' '
-              lnzdesc(ICOMP)=0
-            ELSEIF(ND.gt.2)THEN
-              CALL EGETW(OUTSTR,K,WORD,'W','CTYPE',IFLAG)
-              write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
-              CALL EGETW(OUTSTR,K,WORD,'W','Z name',IFLAG)
-              ZN=WORD(1:12)
-              call st2name(ZN,zname(ICOMP))
-              lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update this string length
-              call egetrm(outstr,K,phrase,'W','Z description',IER)
-              ZDESC(ICOMP)=phrase
-              lnzdesc(ICOMP)=lnblnk(phrase)  ! update the length of this string.
-            ENDIF
-            CALL STRIPC(IUF,OUTSTR,99,ND,1,'NTV NSUR AR',IER)
-            K=0
-            CALL EGETWI(OUTSTR,K,NTV,4,MTV,'F','no verts',IER)
-            CALL EGETWI(OUTSTR,K,NSUR,3,MS,'F','no surfs',IER)
-            NZSUR(ICOMP)=NSUR
-            NZTV(ICOMP)=NTV
-            IF(IFLAG.NE.0)GOTO 1
-
-C Close geometry file and set version number.
-            gversion(icomp) = 1.0   ! set the version number.
-            CALL ERPFREE(IUF,ISTAT)
-            write(currentfile,'(a)') FILE(1:lnblnk(FILE))
-          endif
+          call georead(iuf,LGEOM(ICOMP),ICOMP,1,itru,ier)
+          write(currentfile,'(a)') FILE(1:lnblnk(FILE))
         ELSE
           ZNAME(ICOMP)='UNKNOWN'
           write(outs,'(a)')LGEOM(ICOMP)
@@ -2644,13 +2578,13 @@ C If MODE='ALL ' we also want to fill obstruction data structures
 C but there is a case where a version 1.1 geometry file might
 C not yet include obstruction blocks that were in legacy zone
 C obstructions files. If this is the case then scan them.
-            call georead(iuf,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+            call georead(iuf,LGEOM(ICOMP),ICOMP,1,itru,ier)
             if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
               if(iobs(icomp).eq.1)then
                 call FINDFIL(ZOBS(ICOMP),XST)
                 if(XST)then
                   CALL ERPFREE(IUF,ISTAT)
-                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
+                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,itru,IER)
                 endif
               elseif(iobs(icomp).eq.2)then
                 continue
@@ -2660,13 +2594,13 @@ C obstructions files. If this is the case then scan them.
 	    
 C If MODE='ALL ' also scan obstruction blocks from zone
 C obstruction file if older model.
-            call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,iuout,ier)
+            call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,itru,ier)
             if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
               if(iobs(icomp).eq.1)then
                 call FINDFIL(ZOBS(ICOMP),XST)
                 if(XST)then
                   CALL ERPFREE(IUF,ISTAT)
-                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,iuout,IER)
+                  CALL EGOMST(iuf,ICOMP,ZOBS(ICOMP),0,ITRC,itru,IER)
                 endif
               elseif(iobs(icomp).eq.2)then
                 continue
@@ -2676,8 +2610,10 @@ C obstruction file if older model.
           DO 243 IS=1,NZSUR(ICOMP)
             icc=IZSTOCN(icomp,is)
             if(icc.eq.0)then
-              write(iuout,*)'zero icc associated with zn ',icomp,
-     &          ' & sur',is
+              write(outs,'(a,i3,a,i3)')
+     &          'zero icc associated with zone ',
+     &          icomp,' & surface',is
+              call edisp(itru,outs)
               goto 243
             endif
  243      continue
@@ -2710,11 +2646,11 @@ C Instanciate the vcoord and nzjvn nzvner arrays.
 C Trace geometry related information. Because not all zones will have
 c beeen read in do not include the extended surface `context`.
           if(ITRC.ne.0.and.ITRC.lt.4)then
-            call ZINFOREP(iuout,icomp)
+            call ZINFOREP(itru,icomp)
             context=.false.
-            CALL SURINFO(ICOMP,iuout,context)
-            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(iuout)
-            CALL INSINFO(ICOMP,iuout)
+            CALL SURINFO(ICOMP,itru,context)
+            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(itru)
+            CALL INSINFO(ICOMP,itru)
           endif
         endif
  242  continue

@@ -61,6 +61,7 @@ C The common blocks ??? are updated by this routine.
 C ITRU is the unit number for user output, IER=0 OK, IER=1 problem.
 C IALT is the number of text alternatives available for a text field.
       SUBROUTINE EDTITEM(ITRC,IFOC,IER)
+#include "building.h"
 #include "tdf2.h"
 #include "epara.h"
       
@@ -70,30 +71,18 @@ C IALT is the number of text alternatives available for a text field.
       COMMON/FILEP/IFIL      
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFTEX/TMAT(MIT,MGAT)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
       COMMON/TDFG1/GAIDE,GHELP(MHEL),GDHDRT(3),GMH
       COMMON/TDFG5/GMF(MBITS),MGMA(MBITS)
       COMMON/TDFG6/IALT(MBITS)
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/tdset/itdyear,itdbdoy,itdedoy
       COMMON/GDPER/igbdoy,igedoy
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP    
                         
       DIMENSION SALT(6),IVAL(6),IPD(34)
       CHARACTER KEY*1,SALT*16,H*72
-      CHARACTER PROMP*32,MSG*32,head*40
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      CHARACTER TDFDES*32,TMAT*16,GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
+      CHARACTER PROMP*32,MSG*32,head*52
+      CHARACTER GAIDE*36,GHELP*72,GDHDRT*72,GMH*32
       CHARACTER GMF*32,MGMA*32,TTAG*12,TTAIDE*36
       CHARACTER IPD*64,CSTR*54,DESCR*7,DESCR1*10,TPROMP*42
       CHARACTER*5 DESCRH,DESCRD
@@ -315,7 +304,7 @@ C Help text for this menu.
       H(8)='Use the page option to jump to other periods.'
 
       INODA=-2
-      write(head,'(a,a,2x,a)') '  Tabular: ',TMENU(IFOC),TTYPE(IFOC)
+      write(head,'(a,a,2x,a)') ' Tabular: ',TMENU(IFOC),TTYPE(IFOC)
       if(MMOD.ge.8)then
         iw=LEN(IPD(1))
         write(itypes,9)
@@ -903,26 +892,20 @@ C Set up to allow user to specify the association between one of more
 C columns in an import file and fields in a tabular instance.
 C IPS is the timestep to insert data at.
       SUBROUTINE EDIMPT(ITRC,IFOC,IPS,IER)
+#include "building.h"
 #include "tdf2.h"
       
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/TDFFH/NWPR,NITDF,NTSPH,NEXTCL,NEXTRC,LASTHD,
-     &             LSTREC,NDBSTP,NUWPR
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
       DIMENSION IMPT(21),IMSTC(MBITS),SALT(6)
       CHARACTER IMPT*42,H*72,KEY*1,OUTSTR*124,WORD*20,OUTS*124
       CHARACTER*72 LIMP,LEXP
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36,SALT*16
-      CHARACTER TDFDES*32,DFILE*72,tfile*72,msgl2*48
+      CHARACTER SALT*16
+      CHARACTER DFILE*72,tfile*72,msgl2*48
       logical warncas,XST
 
 C Clear column association.
@@ -1274,25 +1257,18 @@ C  EDSTATICIMPT:  Edits data importation specification for the static values.
 C thew tdf entities. Set up to allow user to specify which item should be read
 C from a file and to which static value it matches.
       SUBROUTINE EDSTATICIMPT(IFOC,IER)
+#include "building.h"
 #include "tdf2.h"
       
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/TDFIH1/TAG(MIT),TTYPE(MIT),TMENU(MIT),TAIDE(MIT)
-      COMMON/TDFIH2/NTSTAT(MIT),NTBITS(MIT),
-     &              NTMAR(MIT),NTMAT(MIT),NTMAI(MIT)
-      COMMON/TDFLD1/TDFDES(MIT,MBITS)
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
      
       DIMENSION IMPT(27),IMSTC(MBITS)
       CHARACTER IMPT*42,H*72,KEY*1,OUTSTR*124,WORD*20,OUTS*124
       CHARACTER*72 LIMP,LEXP
-      CHARACTER TAG*12,TTYPE*8,TMENU*16,TAIDE*36
-      CHARACTER TDFDES*32,DFILE*72,tfile*72,msgl2*48
+      CHARACTER DFILE*72,tfile*72,msgl2*48
       logical XST
 
 C Static item association.

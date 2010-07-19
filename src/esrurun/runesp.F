@@ -71,9 +71,6 @@ C ************************************************************
      &             dbspth
       common/radcfg/LRADCF
 
-C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
       common/IPVF/lipvdatf
 
 C Path to problem and command line file (if any).
@@ -120,8 +117,8 @@ C Uncertainty.
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
       character*72 LCFGF,LPRJLG
-      character LCTLF*72,ctldoc*248,lradcf*72,LTDFA*72
-      character LTDF*72,LAPROB*72 
+      character LCTLF*72,ctldoc*248,lradcf*72
+      character LAPROB*72 
       character bidirfile*72,bidirname*12
       LOGICAL unixok,concat
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

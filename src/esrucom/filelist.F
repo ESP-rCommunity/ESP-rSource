@@ -199,6 +199,13 @@ C (just use the relative path defined above).
         continue
       endif
 #endif
+
+#ifdef MINGW
+C In DOS no need to prepend odir (just use the relative path defined above).
+      write(subpath,'(a)',iostat=ios,err=2)
+     &  relative(1:lnblnk(relative))
+#endif
+
       if(what(1:3).eq.'dir')then
         action='dir'
         write(outs,*) 'folders in ',subpath
@@ -281,6 +288,8 @@ C (just use the relative path defined above).
         action='zip'
         write(outs,*) 'ZIP/cflo3 files in ',subpath
       endif
+
+      call edisp(iuout,outs) 
 
 C Clear the list of files and recover a list of files matching
 C the current criteria. Copy this list into listfc for use by

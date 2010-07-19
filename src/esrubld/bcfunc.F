@@ -379,15 +379,8 @@ C with the sensor defined for the control function.
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
 
 C TDF commons.
-C Index for each potential temporal db entry type 0=not used, 2=tabular data.
-C For each zone a pointer to relevant temporal db entry type 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
+C Index for each potential temporal db entry type 0=not used are in
+C ommon tdfflg2
 
       common/bfngr/cfgsd(MCF,6),ibsnv(mcf,3),bfngn
       common/dllerr/dllsubr,dllmesg
@@ -614,14 +607,6 @@ C Recover control point data.
       COMMON/CMSVAR/NSEN(MCF),ISMOD(MCF),IBMSN(MCF,MSEN,4),
      &TAUXSN(MCF,MSEN)
       common/btime/btimep,btimef
-
-C For each zone a pointer to relevant temporal db entry type 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
 
       common/dllerr/dllsubr,dllmesg
       DIMENSION VAL(MTABC+2)
@@ -5129,7 +5114,7 @@ C if 0 for a wetted surface 1 for a swiming pool.
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 #include "control.h"
 
       COMMON/TC/ITC,ICNT
@@ -5154,7 +5139,6 @@ C Evaporation common block for use in MZVAPC.
       common/evapsur/vapsur(mcom)
 
       CHARACTER OUTS*124
-      logical newgeo  ! to use for testing if new/old geometry file.
       logical unixok
 
 C Fatal error test.
@@ -5165,7 +5149,6 @@ C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(41).NE.0) call edisp(itu,' Entering subroutine BCL20')
 
-      newgeo=.false.  ! assume older format geometry.
       QFUT=0.
       TFUT=TNP
 
@@ -5224,12 +5207,7 @@ C Use zone moisture content (xi), x at saturation to evaluate Ev.
         cw=4180.
 
 C Read in surface details and calculate the area weighted radiant temperature. 
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(ifil+1,lgeom(icomp),icomp,0,itu,ier)
-        else
-          call egomin(ifil+1,lgeom(icomp),icomp,0,0,itu,ier)
-        endif
+        call georead(ifil+1,lgeom(icomp),icomp,0,itu,ier)
         tsurf=0.
         do 20 isurf=1,nsur
           if(isurf.ne.isur)then
@@ -5655,21 +5633,9 @@ C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
       COMMON/CLIMIF/QFLWP,QFLWF,TFLWP,TFLWF,QDFLP,QDFLF,VFLP,VFLF,
      &             DFLP,DFLF,HFLP,HFLF
 
-C TDF commons.
-C Index for each potential temporal db entry type 0=not used, 2=tabular data.
-C For each zone a pointer to relevant temporal db entry type 0=not used.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
-C These two commons relate to setting cooling on if temperature exceeds
+C These common TDFREL relate to setting cooling on if temperature exceeds
 C the heating set point by 1degC for the UKNCM notional model (and
 C associated DSM testing models)
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
 
       character dllsubr*12,dllmesg*124,outs*124,cmsg*12
       logical dll,near
@@ -6137,7 +6103,7 @@ C ICALL = 2 signals call from solar with request for alternative props.
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -6180,7 +6146,6 @@ C Material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
       CHARACTER SPARENT*12
@@ -6192,7 +6157,6 @@ C << of 3 surface to change will have to be increased!        >>
       logical itpmod, close, usealt, CHANGED
       
       iunit=ifil+1
-      newgeo=.false.  ! assume older format geometry.
       
 C Debug...
 C      write(6,*) 'BCL 99 ',btimef
@@ -6287,12 +6251,7 @@ C Reset properties by reading in zone descriptor files.
 C Debug.
 C        write(6,*)'Resetting tp properties at btimef ',btimef
 
-        call eclose(gversion(ICMP),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
-        else
-          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
-        endif
+        call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
         itpmod(ICMP)=.false.
       elseif ((.not.itpmod(ICMP)).and.usealt) then
@@ -6301,12 +6260,7 @@ C        write(6,*)'Resetting tp properties at btimef ',btimef
 C Change to alternate properties (up to three constructions).
 C Read in the thermophysical properties for this zone 
 C (needed in subroutine mzcoe1).
-        call eclose(gversion(ICMP),1.1,0.01,newgeo)
-        if(newgeo)then
-          call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
-        else
-          call egomin(iunit,lgeom(ICMP),ICMP,0,itrc,itu,ier)
-        endif
+        call georead(iunit,lgeom(ICMP),ICMP,0,itu,ier)
         call econst(lthrm(ICMP),iunit,ICMP,itrc,itu,ier)
 
 C Get replacement properties for up to 3 constructions from 

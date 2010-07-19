@@ -1126,18 +1126,6 @@ C                 external temperature (for use in MZLS3).
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
 
-C TDF commons.
-      COMMON/TDFINT/ITMAR(MIT,MGAI),ITMIN(MIT,MGAI),ITMAX(MIT,MGAI)
-
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)      
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
      
@@ -2207,13 +2195,6 @@ C typical building based on rules in the UK NCM guide (v4d March 2008)
       logical closeto0
       integer itdi,icomp
 
-C TDFREL are ranges allowed for real fields in the instance.
-C TMIN,TMAX: Acceptable minimum and maximum for range checking.
-C TMAR : real attributes to be passed to outside code.
-      COMMON/TDFREL/TMAR(MIT,MGAR),TMIN(MIT,MGAR),TMAX(MIT,MGAR)
-      real TMAR,TMIN,TMAX
-      COMMON/TDFLD2/ITDFTR(MIT,MBITS),IATDF(MIT,MBITS),ITCOL(MIT,MBITS)
-      integer ITDFTR,IATDF,ITCOL
       common/btime/btimep,btimef
       real btimep,btimef
       real VAL
@@ -2232,19 +2213,6 @@ C Auxiliary energy:
       integer i_countsteps
       integer numbStartTimesteps  !total number of start-up timesteps
       integer numTotTimstps !total number of timesteps including the start-up days
-
-C Temporal db commons.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-     
-      integer IALLCLM,ICASUAL,IZIVENT,IRAIRVL,ISETPTT,ICTLSTA,ISKYLUX
-      integer IDBTEXT,IWINDVL,IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL
-      integer IOBJVEL,IOBJDIR,ISKYTMP,IGLOVRT,ICASUAL3,IACTIV,IBIDIRS
-      integer IVERSOL,IHTCLSETP,IDBTZNM
 
 C Common to count for the number of timesteps that systems are in operatrion
 C Used to calculate an NCM Auxiliary energy (post-processed in save level 6)
