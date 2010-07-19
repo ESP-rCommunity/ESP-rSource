@@ -757,6 +757,7 @@ C Complete the polygon.
 C ********************* VSB3D *********************
 C VSB3D - draws the solid boundaries - highlighting the chosen one.
       SUBROUTINE VSB3D(ISBHL)
+#include "building.h"
 #include "cfd.h"
 #include "prj3dv.h"
       
@@ -1015,6 +1016,7 @@ C Label in center of boundary.
 C ********************* VAO3D *********************
 C VAO3D - draws the air openings - highlighting the chosen one.
       SUBROUTINE VAO3D(IOPENHL)
+#include "building.h"
 #include "cfd.h"
 #include "prj3dv.h"
       

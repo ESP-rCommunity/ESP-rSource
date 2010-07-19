@@ -4864,6 +4864,7 @@ C Get precz common block from geometry.h
 C ************* GDUPDATE
 C GDUPDATE Update the graphical display of the model.
       subroutine GDUPDATE
+#include "building.h"
 #include "prj3dv.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -5046,8 +5047,6 @@ C ITPPSW current view - perspective/plan/south/west
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK
       logical MODIFY,MODLEN,MODBND
@@ -5211,7 +5210,7 @@ C Refresh the image.
         MODBND=.TRUE.
         MODIFY=.TRUE.
         do 444,ix=1,ncomp
-          ZBFLG(ix)=0.
+          iZBFLG(ix)=0
   444   continue
         CALL ADJVIEW(IER)
         IF(ier.NE.0)RETURN

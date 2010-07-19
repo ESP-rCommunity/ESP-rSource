@@ -121,6 +121,7 @@ C ********* chgazi
 C CHGAZI is called from C code in esp-r.c or esru_x.c with an increment or 
 C decrement to the viewing azimuth (icazi). If not needed then provide a dummy. 
       subroutine chgazi(icazi)
+#include "building.h"
 #include "prj3dv.h"
 
 C Passed paremter.
@@ -160,6 +161,7 @@ C ********* chgelev
 C CHGELEV is called from C code in esp-r.c or esru_x.c with an increment or 
 C decrement to the viewing elevation (icelev). If not needed then provide a dummy. 
       subroutine chgelev(icelev)
+#include "building.h"
 #include "prj3dv.h"
 
 C Passed paramter.

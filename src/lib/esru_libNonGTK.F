@@ -4320,8 +4320,6 @@ C ITPPSW current view - perspective/plan/south/west
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK
@@ -4714,7 +4712,7 @@ C Refresh the image.
         MODBND=.TRUE.
         MODIFY=.TRUE.
         do 444,ix=1,ncomp
-          ZBFLG(ix)=0.
+          iZBFLG(ix)=0
   444   continue
         CALL ADJVIEW(IER)
         IF(ier.NE.0)RETURN

@@ -41,6 +41,7 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 #include "building.h"
 #include "model.h"
 #include "site.h"
+#include "prj3dv.h"
 
 C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec2/prec17/precz/c20/GS5.
 #include "geometry.h"
@@ -81,8 +82,6 @@ C prec17 common is described in geometry.h.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/user/browse
@@ -1556,7 +1555,7 @@ C clear the pending rotateit structure.
             goto 77
           endif
 
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(icomp) =1.1
@@ -1796,7 +1795,7 @@ C If user has not canceled then perform the transform.
             Y(I)=Y(I)+VALY
             Z(I)=Z(I)+VALZ
    62     continue
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(icomp) =1.1
@@ -1982,7 +1981,7 @@ C <<  model (e.g. for EnergyPlus) so more work is required).
               JVN(ins,iyy)=jvn1(izz)
   147       CONTINUE
   148     continue
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
 
 C Logic for deciding which format of geometry file to write.
           call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -5050,8 +5049,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,ok,dok,match,matchver
       logical withinbox  ! true if point within bounding box.
 
@@ -5607,7 +5604,7 @@ C And re-draw the zone to clean up the circles.
           MODGEO=.TRUE.
           MODIFY=.TRUE.
           MODBND=.TRUE.
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
           call usrmsg(' ',' ','-')
           CALL INLNST(1)
           nzg=1
@@ -5643,7 +5640,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
           call edisp(itru,outs)
           MODIFY=.TRUE.
           MODBND=.TRUE.
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
           call usrmsg(' ',' ','-')
           CALL INLNST(1)
           nzg=1
@@ -5888,7 +5885,7 @@ C Show the new point on the current wireframe.
             MODGEO=.TRUE.
             MODIFY=.TRUE.
             MODBND=.TRUE.
-            ZBFLG(ICOMP)=0.
+            iZBFLG(ICOMP)=0
             call usrmsg(' ',' ','-')
             CALL INLNST(1)
             nzg=1
@@ -5944,7 +5941,7 @@ C applied to the 'a' 'c' and 'f' options.
             MODGEO=.TRUE.
             MODIFY=.TRUE.
             MODBND=.TRUE.
-            ZBFLG(ICOMP)=0.
+            iZBFLG(ICOMP)=0
             call usrmsg(' ',' ','-')
             CALL INLNST(1)
             nzg=1
@@ -6107,7 +6104,7 @@ C number of vertices.
               IPACT=CREATE
               CALL EKPAGE(IPACT)
               MODGEO=.TRUE.
-              ZBFLG(ICOMP)=0.
+              iZBFLG(ICOMP)=0
             endif
           endif
         elseif(IRT.eq.2)then
@@ -6135,7 +6132,7 @@ C order so that compating of list works correctly.
             MODGEO=.TRUE.
             MODIFY=.TRUE.
             MODBND=.TRUE.
-            ZBFLG(ICOMP)=0.
+            iZBFLG(ICOMP)=0
           endif
         elseif(IRT.eq.3)then
 
@@ -6162,7 +6159,7 @@ C << detected. This needs debugging... >>
             MODGEO=.TRUE.
             MODIFY=.TRUE.
             MODBND=.TRUE.
-            ZBFLG(ICOMP)=0.
+            iZBFLG(ICOMP)=0
           endif
         elseif(IRT.eq.4)then
 
@@ -6191,7 +6188,7 @@ C only up to MTV.
                 MODGEO=.TRUE.
                 MODIFY=.TRUE.
                 MODBND=.TRUE.
-                ZBFLG(ICOMP)=0.
+                iZBFLG(ICOMP)=0
               endif
             endif
           endif
@@ -6224,7 +6221,7 @@ C Present vertex coords for editing then parse data from HOLD.
               MODBND=.TRUE.
               MODGEO=.TRUE.
               MODLEN=.TRUE.
-              ZBFLG(ICOMP)=0.
+              iZBFLG(ICOMP)=0
               call warnmod(ICOMP,'str')
  145        continue
           endif
@@ -6257,7 +6254,7 @@ C Present vertex coords for editing then parse data from HOLD.
         MODBND=.TRUE.
         MODGEO=.TRUE.
         MODLEN=.TRUE.
-        ZBFLG(ICOMP)=0.
+        iZBFLG(ICOMP)=0
         call warnmod(ICOMP,'str')
       ELSE
 C Not one of the legal menu choices.
@@ -6297,8 +6294,6 @@ C Make use of VERINFO to display the current vertex surface connections.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       DIMENSION  COG1(3),COG2(3),COG3(3)
 
       CHARACTER DESCRC*25
@@ -7332,7 +7327,7 @@ C Record the recent changes and re-display
 C Update the image.
         MODBND=.TRUE.
         MODIFY=.TRUE.
-        ZBFLG(ICOMP)=0.
+        iZBFLG(ICOMP)=0
         call usrmsg(' ',' ','-')
         CALL INLNST(1)
         nzg=1

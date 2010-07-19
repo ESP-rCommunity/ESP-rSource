@@ -367,6 +367,7 @@ C If use = 'i' then initial assumptions.
 C If use = 'f' then force files to account for change in root/dir name.
       subroutine rifset(ic,use)
 #include "building.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -383,8 +384,6 @@ C If use = 'f' then force files to account for change in root/dir name.
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -400,15 +399,13 @@ C If use = 'f' then force files to account for change in root/dir name.
 
       character use*1
       logical skydone,outdone,indone,misdone,vewdone,glzdone
-      logical close
 
 C Make the initial part of new file names to follow scene root name.
       write(pre,'(a)') SCENERT(IRIFFOC)(1:lnblnk(SCENERT(IRIFFOC)))
 
 C Have information on ground disk ready. << ? case of external view with ifocz -1 >>
       if(ifocz.gt.0)then
-        call eclose(ZBFLG(ifocz),0.0,0.001,CLOSE)
-        if (CLOSE) call BNDOBJ(0,IER)
+        if (iZBFLG(ifocz).eq.0) call BNDOBJ(0,IER)
       endif
       XD=(XMX-XMN)**2 + (YMX-YMN)**2
       DD=SQRT(XD)*1.5
