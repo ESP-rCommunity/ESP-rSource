@@ -950,6 +950,8 @@ C assumed that this information has been checked.
 C GENFIL is the name of the file to be written to (any existing file
 C by this name is overwritten).  
 
+C << consider how to move away from common G1 >>
+
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,iwf,IER)
 #include "building.h"
 
@@ -1022,20 +1024,20 @@ C File is always a GEN type as this is representation in common.
      &  zname(ICOMP)(1:lz),zdesc(ICOMP)(1:lnzdesc(ICOMP)),
      &  '# type, name, descr'
 
-C Vertex coordinates.
+C Vertex coordinates. << convert from G1 >>
       msg='3rd line with nb of surfs and vert'
       WRITE(IFILG,'(I8,I8,F8.3,4x,A)',IOSTAT=ios,ERR=13)
      &  NZTV(ICOMP),NZSUR(ICOMP),AR,
      &  '# vertices, surfaces, rotation angle'
       WRITE(IFILG,32,IOSTAT=ios,ERR=13)
   32  FORMAT('#  X co-ord, Y co-ord, Z co-ord')
-      DO 960 I = 1,NTV
+      DO 960 I = 1,NZTV(ICOMP)
         msg='vertex data line'
         WRITE(IFILG,33,IOSTAT=ios,ERR=13)X(I),Y(I),Z(I),I
   33    FORMAT(1X,3F12.5,'  # vert ',I3)
 960   CONTINUE
 
-C Vertex list.
+C Vertex list. << convert from G1 >>
       WRITE(IFILG,34,IOSTAT=ios,ERR=13)
   34  FORMAT('# no of vertices followed by list of associated vert')
       DO 970 I = 1,NZSUR(ICOMP)
@@ -1090,8 +1092,8 @@ C name of the optical property so if SOTF is not OPAQUE then
 C set it to TRAN within the legacy geometry file.
         IF(SSOTF(icc)(1:2).EQ.'  ')then
           SSOTF(icc)='OPAQUE'
-        ELSEIF(SSOTF(icc)(1:4).EQ.'OPAQ'
-     &            .OR.SSOTF(icc)(1:4).EQ.'CFC ')then
+        ELSEIF(SSOTF(icc)(1:4).EQ.'OPAQ'.OR.
+     &         SSOTF(icc)(1:4).EQ.'CFC ')then
           continue
         ELSE
           SSOTF(icc)='TRAN'
@@ -2438,7 +2440,7 @@ C directive that the user gave.
      &  '# tag, X co-ord, Y co-ord, Z co-ord'
 
 C Write vertices with minimal white space comma separated.
-      DO 960 I = 1,NTV
+      DO 960 I = 1,NZTV(ICOMP)
         WRITE(outs,'(a,3F12.5)',IOSTAT=ios,ERR=13)'*vertex ',
      &    X(I),Y(I),Z(I)
         call SDELIM(outs,outsd,'C',IW)
@@ -2734,6 +2736,9 @@ C height (metres from the BLHC upwards),
 C angle of rotation A degrees between the length side and due east axis
 C (anticlockwise is positive).
 C Information is converted into the common block G1.
+
+C << add zone index to passed parameters so g1 no longer needed >>
+
       SUBROUTINE ERECC(XO,YO,ZO,DX,DY,DZ,A)
 #include "building.h"
 #include "geometry.h"
@@ -2816,6 +2821,9 @@ C The angle of rotation C is between the width side and the horizon
 C (positive lifts the edge) NOT YET implemented. This alters the Y
 C and Z coordinates but not the X.
 C Information is converted into the common block G1.
+
+C << add zone index to passed parameters so g1 no longer needed >>
+
       SUBROUTINE ERECC3A(XO,YO,ZO,DX,DY,DZ,A,B,C)
 #include "building.h"
 #include "geometry.h"
@@ -3283,6 +3291,9 @@ C The number of vertical walls, X & Y coords of the bottom corner of
 C each wall in an anticlockwise direction (defining a polygon in a plan
 C view) as well as the floor & ceiling heights are passed to EREGC and
 C the GEN description returned via common G1.
+
+C << consider passing zone index to avoid G1 common block >>
+
       SUBROUTINE EREGC(NW,Z1,Z2,XX,YY)
 #include "building.h"
 #include "geometry.h"
@@ -3357,6 +3368,8 @@ C reduce NW.
 C ******************** ESCROT 
 C Rotate a zone by ANG degrees and return information via common G1.
 C X1,Y1 is the point to rotate about.
+
+C << consider zone index so no longer necessary to use G1 >>
 
       SUBROUTINE ESCROT(ANG,X1,Y1)
 #include "building.h"
@@ -3578,7 +3591,7 @@ C require a recent scan of zone geometry.
 
       call edisp(itu,' ')
 
-C Convert nsur,ntv,zvol etc into strings with no leading spaces.
+C Convert nzsur,nztv,zvol etc into strings with no leading spaces.
       CALL INTSTR(NZSUR(icomp),t10,lna,IER)
       CALL INTSTR(NZTV(icomp),t10a,lnaa,IER)
       WRITE(outstr,'(3a,i2,5a)')' Zone ',
@@ -4835,7 +4848,7 @@ C and a list of surfaces associated with each vertex.  The second
 C prints a list of surface numbers and the list of vertices which 
 C define them.  Information is gathered from common block G1.
 
-C << could this use ?? rather than G1 >>
+C << pass zone index have options other than G1 >>
  
       SUBROUTINE VERINFO(ITRU)
 #include "building.h"
