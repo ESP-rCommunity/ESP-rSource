@@ -5145,7 +5145,7 @@ C Within the header so skip request.
 C List help text for the vertex menu.
         CALL PHELPD('configuration section',2,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
-        CALL VERINFO(ITRU)
+        CALL VERINFO(ICOMP,ITRU)
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
 C Vertex transforms (start).
@@ -6488,7 +6488,7 @@ C Check vertex topology.
         call tstamp('>','PRJ: check zone vertex topology')
         call ckvert(1,icomp,bound,iub,inv,ier)
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
-        CALL VERINFO(ITRU)
+        CALL VERINFO(ICOMP,ITRU)
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Miscel. geometric transforms. Ask which surface and setup temp array.
@@ -7921,7 +7921,8 @@ C If only 3 items on first line read another OUTSTR and try to continue.
         rotateit(icomp,2)=XO1
         rotateit(icomp,3)=YO1
 
-C Now convert to a gen description.
+C Now convert to a gen description. Pass in critical dimensions
+C and expect the data back via common G1.
         CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,ARX)
         rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! shift the pending rotation
         rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone

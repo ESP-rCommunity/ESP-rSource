@@ -2426,7 +2426,7 @@ c beeen read in so can include the extended surface `context`.
             call ZINFOREP(itru,ic)
             context=.true.
             CALL SURINFO(IC,ITRU,context)
-            IF(ITRC.GT.1)CALL VERINFO(ITRU)
+            IF(ITRC.GT.1)CALL VERINFO(IC,ITRU)
             CALL INSINFO(IC,ITRU)
           endif
 
