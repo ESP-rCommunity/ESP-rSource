@@ -36,7 +36,7 @@ C the results database.
       SUBROUTINE MOTHKE(ICOMP,ISUR)
 #include "building.h"
 #include "model.h"
-#include "geometry.h"
+C #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -47,17 +47,10 @@ C the results database.
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
 
       CHARACTER outs*124
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Read (silently) in the zone geometry data.
-      newgeo=.false.  ! assume older format geometry.
       IUNITF=IFIL+1
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
         call georead(IUNITF,LGEOM(ICOMP),ICOMP,0,IUOUT,IER)
-      else
-        call egomin(IUNITF,LGEOM(ICOMP),ICOMP,0,0,IUOUT,IER)
-      endif
       IF(IER.NE.0)THEN
         write(outs,'(A,A72)')' Could not find ',LGEOM(ICOMP)
         CALL USRMSG(' ',outs,'W')

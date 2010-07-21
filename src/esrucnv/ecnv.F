@@ -383,7 +383,7 @@ C Find the path and local file name.
 
         if(oformat(1:6).eq.'viewer'.or.oformat(1:3).eq.'dxf')then
           open(ioout,file=filname2,status='UNKNOWN', err=901)
-          call e2vdxf(itrc,incobs,ichop)
+          call e2vdxf(incobs,ichop)
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND
           STOP
@@ -407,7 +407,7 @@ C Create THF (THINGS) file.
           WRITE(ioout,'(a)') ' '
           WRITE(ioout,'(a)') 'ESP'
           WRITE(ioout,'(a)') 'ANT'
-          call e2zip(itrc,incobs,ichop)
+          call e2zip(incobs,ichop)
           CALL ERPFREE(ioout,ISTAT)
           call edisp(iuout,' End of conversion.')
           CALL EPAGEND

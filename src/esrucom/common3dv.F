@@ -903,7 +903,6 @@ C Passed parameters.
      &  NGVER(MGRT),IVEDGE(MGRT)
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
       LOGICAL OK,dok
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
@@ -912,7 +911,6 @@ C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
 
       IER=0
       IUF=IFIL+1
-      newgeo=.false.  ! assume older format geometry.
 
 C Write to previously opened viewer file.
 
@@ -948,12 +946,7 @@ C << task to be done >>
       IF(INPIC.EQ.0)GOTO 105
       DO 83 IZ=1,INPIC
         IF(IVALS(IZ).GT.0)THEN
-          call eclose(gversion(IVALS(IZ)),1.1,0.01,newgeo)
-          if(newgeo)then
             call georead(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,iuout,IER)
-          else
-            call egomin(IUF,LGEOM(IVALS(IZ)),IVALS(IZ),1,0,iuout,IER)
-          endif
           IF(IER.NE.0)THEN
             dok=.false.
             h(1)='While scanning the model`s zone geometry a problem'

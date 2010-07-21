@@ -168,7 +168,6 @@ C Name of current application.
       character xfile*144,tg*1,delim*1,mode*4
       character exportfile*72 ! for ascii shading file
       logical silent,unixok,there,context,existing
-      logical newgeo  ! to use for testing if new/old geometry file.
       logical modify,modlen,modbnd,xst
       logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok
       logical user_recalc  ! user requested recalculation
@@ -243,7 +242,6 @@ C Set folder separator (fs) to \ or / as required.
       iedoy=1
       itc=0
       icout=iuout
-      newgeo=.false.  ! Assume old format geometry.
 
 C Initial coordinates for eye point, viewing point and angle of view.
       eyem(1)=-100.
@@ -1022,13 +1020,8 @@ C to reconstruct /G1/,/G2/ and /G5/.
          if(iw.eq.1)then
             call tstamp('>','Ish: enter site plan')
             call sitpln(icomp)
-            call eclose(gversion(icomp),1.1,0.01,newgeo)
-            if(newgeo)then
                call georead(iuf,lgeom(icomp),icomp,0,iuout,ier)
             else
-               call egomin(iuf,lgeom(icomp),icomp,0,0,iuout,ier)
-            endif
-         else
 
 C Draw the zone and any obstructions associated with it based on
 C the sun position. Confirm the latitude & longitude, request
@@ -1536,25 +1529,14 @@ C  ifstat = 8  new file filled via import of ascii file
       character h*72,exportfile*72,paction*16,outs*124
 
       logical modify,modlen,modbnd,silent,xst
-      logical newgeo  ! Used to test for new/old geometry file.
 
       iuf=ifil+1
-      newgeo=.false.  ! Assume old format geometry.
 
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(silent)then
-         if(newgeo)then
             call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
          else
-            call egomin(iuf,lgeom(icomp),icomp,1,0,iuout,ier)
-         endif
-      else
-         if(newgeo)then
             call georead(iuf,lgeom(icomp),icomp,1,iuout,ier)
-         else
-            call egomin(iuf,lgeom(icomp),icomp,1,1,iuout,ier)
          endif
-      endif
       if(ier.ne.0)then
          call edisp(iuout,'Problem detected while trying to open/read')
          call edisp(iuout,'zone geometry file. Respecify via menu.')

@@ -55,7 +55,7 @@ C IER=0 indicates no error.
 #include "building.h"
 #include "geometry.h"
 #include "cfd.h"
-#include "esprdbfile.h"
+C #include "esprdbfile.h"
       
       integer lnblnk  ! function definition
 
@@ -360,7 +360,7 @@ C IER=0 indicates no error.
       SUBROUTINE CFDGGRD(izone,IER)
 #include "building.h"
 #include "model.h"
-#include "geometry.h"
+C #include "geometry.h"
 #include "cfd.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -406,14 +406,12 @@ C Arrays for sorting domains from (see code for comments).
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer iorgt,ixendt,iyendt,izendt,izendet  ! for local editing
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Assume axes defined and set initial values for general resolution
 C of the X Y Z axis.
 C << Todo: set these based on a higher level concept of
 C << low/medium/high resolution and/or the size of the zone.
       origin=.TRUE.
-      newgeo=.false.  ! assume older format geometry.
       icellx=20
       icelly=20
       icellz=20
@@ -960,14 +958,7 @@ C to be refreshed.
             nzg=1
             nznog(1)=izone
             izgfoc=izone
-            call eclose(gversion(nznog(1)),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,
-     &          IUOUT,IER)
-            else
-              call egomin(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
-     &          IUOUT,IER)
-            endif
+            call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,IUOUT,IER)
             CALL ESCZONE(izone)
             CALL BNDOBJ(0,IER)
             CALL ERCZONE(izone)
@@ -1740,7 +1731,7 @@ C IER=0 indicates no error.
       SUBROUTINE CFDBVAR(IZONE,IER)
 #include "building.h"
 #include "model.h"
-#include "geometry.h"
+C #include "geometry.h"
 #include "cfd.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1774,7 +1765,6 @@ C IER=0 indicates no error.
       character VOLNAME*12,VCsurf*12,t12*12,NAMES(MNVLS)*12
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       logical MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -1782,7 +1772,6 @@ C << Note: for more complex domains grow this menu needs
 C << to be one that can support multiple pages.
 
 C Create menu text.
-      newgeo=.false.  ! assume older format geometry.
  5    M=0
       do 10 I=1,NVOL(ICFD)
         M=M+1
@@ -1882,14 +1871,7 @@ C to be refreshed.
             nzg=1
             nznog(1)=izone
             izgfoc=izone
-            call eclose(gversion(nznog(1)),1.1,0.01,newgeo)
-            if(newgeo)then
-              call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,
-     &          IUOUT,IER)
-            else
-              call egomin(IFIL+1,LGEOM(nznog(1)),nznog(1),1,0,
-     &          IUOUT,IER)
-            endif
+            call georead(IFIL+1,LGEOM(nznog(1)),nznog(1),1,IUOUT,IER)
             CALL ESCZONE(izone)
             CALL BNDOBJ(0,IER)
             CALL ERCZONE(izone)

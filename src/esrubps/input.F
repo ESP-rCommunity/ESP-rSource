@@ -167,6 +167,7 @@ C                         use the inside surface node temperature
       subroutine mzinpt(IREP,IER)
 
 #include "building.h"
+#include "model.h"
 #include "site.h"
 
 C espriou.h provides current file.
@@ -213,9 +214,6 @@ C Path to model and command line file name.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-
 C For each timestep (assuming 10tsph frequency over a year) iknowrec
 C will be zero if not yet set and a positive number representing the record
 C to read from the temporal file if already known.
@@ -267,7 +265,7 @@ C For reading in of bi-directional data.
 
       CHARACTER OUTSTR*124,LCFGF*72,MODE*4,cfgroot*24
       CHARACTER outs*124,louts*248,h*72,spsname*8,L144*144
-      CHARACTER outs248*248,LTDF*72,LTDFA*72,LCMDFL*144
+      CHARACTER outs248*248,LCMDFL*144
       character*72 laprob,path,ENTFLNAM
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
@@ -976,7 +974,6 @@ C Simulator parameters.
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72,H*72
@@ -995,7 +992,6 @@ C Simulator parameters.
       call isadll(dll)
 
 C Zone-by-zone. Use IUNIT for geometry file.
-      newgeo=.false.  ! assume older format geometry.
       IUNIT=IFIL+1
       NNDS=0
       MNDS=0
@@ -1048,12 +1044,7 @@ C        write(6,*) IZ,IP3VER(IZ)
 C Zero the thermal bridge heat loss before (perhaps) reading in from geometry file.
         totheatloss(IZ)=0.0
 
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
           call georead(IUNIT,LGEOM(IZ),IZ,1,ITU,IER)
-        else
-          call egomin(IUNIT,LGEOM(IZ),IZ,1,ITRC,ITU,IER)
-        endif
         if(ier.eq.1)then
           write(outs,'(a,i2,a)') 
      &        'Error reading geometry file for zone ',IZ,'.'
@@ -1900,22 +1891,15 @@ C Parameters
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       logical dup,first
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78
 
-      newgeo=.false.  ! assume older format geometry.
       IPROB=0
       ICC=0
       prob=.false.
       first=.false.
       do 287 IZ=1,NCOMP
-        call eclose(gversion(IZ),1.1,0.01,newgeo)
-        if(newgeo)then
           call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
-        endif
         nzsur(iz)=nsur
         do 288 IS=1,NSUR
           ICC=ICC+1

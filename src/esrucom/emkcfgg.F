@@ -129,9 +129,6 @@ C Structured mesh.
       COMMON/GRSD101/LGrdSt
 
 C Temporal definition commons.
-      COMMON/TDFI/IUTDF,ITDFLG,IUTDFA
-      COMMON/TDFFT/LTDF,LTDFA
-      COMMON/TDFFLG/ITEMSTD
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Primary energy and emissions conversions.
@@ -217,7 +214,7 @@ C Generic databases from esprdbfile.h.
       CHARACTER LCFGF*72
       CHARACTER LAPROB*72,LPRJLG*72
       CHARACTER CXSTR*78,cfgroot*24
-      CHARACTER LPNF*72,LTDF*72,LTDFA*72
+      CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER ctldoc*248,LCTLF*72,H*72
@@ -1090,22 +1087,15 @@ C Parameters
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       logical dup,first
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78
 
-      newgeo=.false.  ! assume older format geometry.
       IPROB=0
       ICC=0
       prob=.false.
       first=.false.
       do 287 IZ=1,NCOMP
-        call eclose(gversion(iz),1.1,0.01,newgeo)
-        if(newgeo)then
           call georead(IFIL+1,LGEOM(IZ),IZ,0,itru,IER)
-        else
-          CALL EGOMIN(IFIL+1,LGEOM(IZ),IZ,0,0,itru,IER)
-        endif
         nzsur(iz)=nsur
         do 288 IS=1,NSUR
           ICC=ICC+1

@@ -72,7 +72,7 @@ C Default esp-r distribution path.
       logical haveconstr
 
       character H*72,path*72
-      character*72 ITEMS(16)
+      character*72 ITEMS(15)
       character dinstpath*48
       
 C Strings for dos version of source and destination of db file.
@@ -99,49 +99,51 @@ C Begin with menu of default dbs.
       
       WRITE(ITEMS(1),'(2A)')'  model path: ',path(1:56)
       ITEMS(2) ='  _______________________________ '
-      WRITE(ITEMS(3),'(2A)')'a annual climate         : ',LCLIM(1:44)
-      WRITE(ITEMS(4),'(2A)')'b multi-year climate     : ',cTemp(1:44)
+      WRITE(ITEMS(3),'(2A)')  'a annual climate         : ',LCLIM(1:43)
+      WRITE(ITEMS(4),'(2A)')  'b multi-year climate     : ',cTemp(1:43)
       if(ipathapres.eq.0.or.ipathapres.eq.1)then
-        WRITE(ITEMS(5),'(2A)')'c pressure distributions : ',LAPRES(1:44)
+        WRITE(ITEMS(5),'(2A)')'c pressure distributions : ',LAPRES(1:43)
       elseif(ipathapres.eq.2)then
-        WRITE(ITEMS(5),'(2A)')'c std pressure distrib   : ',LAPRES(1:44)
+        WRITE(ITEMS(5),'(2A)')'c std pressure distrib   : ',LAPRES(1:43)
       endif
       if(ipathmat.eq.0.or.ipathmat.eq.1)then
-      WRITE(ITEMS(6),'(2A)')'d materials              : ',LFMAT(1:44)
+        WRITE(ITEMS(6),'(2A)')'d materials              : ',LFMAT(1:43)
       elseif(ipathmat.eq.2)then
-        WRITE(ITEMS(6),'(2A)')'d std materials          : ',LFMAT(1:44)
+        WRITE(ITEMS(6),'(2A)')'d std materials          : ',LFMAT(1:43)
       endif
 
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
-      WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:44)
+        WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:43)
       elseif(ipathmul.eq.2)then
-        WRITE(ITEMS(7),'(2A)')'e std constructions      : ',LFMUL(1:44)
+        WRITE(ITEMS(7),'(2A)')'e std constructions      : ',LFMUL(1:43)
       endif
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
-        WRITE(ITEMS(8),'(2A)') 'f plant components       : ',LPCDB(1:44)
+        WRITE(ITEMS(8),'(2A)')'f plant components       : ',LPCDB(1:43)
       elseif(ipathpcdb.eq.2)then
-        WRITE(ITEMS(8),'(2A)') 'f std plant components   : ',LPCDB(1:44)
+        WRITE(ITEMS(8),'(2A)')'f std plant components   : ',LPCDB(1:43)
       endif
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-      WRITE(ITEMS(9),'(2A)')'g event profiles         : ',LPRFDB(1:44)
+        WRITE(ITEMS(9),'(2A)')'g event profiles         : ',
+     &    LPRFDB(1:43)
       elseif(ipathprodb.eq.2)then
-        WRITE(ITEMS(9),'(2A)')'g std event profiles     : ',LPRFDB(1:44)
+        WRITE(ITEMS(9),'(2A)')'g std event profiles     : ',
+     &    LPRFDB(1:43)
       endif
       if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         WRITE(ITEMS(10),'(2A)')'h optical properties     : ',
-     &    LOPTDB(1:44)
+     &    LOPTDB(1:43)
       elseif(ipathoptdb.eq.2)then
         WRITE(ITEMS(10),'(2A)')'h std optical properties : ',
-     &    LOPTDB(1:44)
+     &    LOPTDB(1:43)
       endif
       WRITE(ITEMS(11),'(A)')   'i mould & mycotoxins     : None'
 
       if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
-      WRITE(ITEMS(12),'(2A)')  'j miscel components      : ',
-     &  MCMPDBFL(1:44)
+        WRITE(ITEMS(12),'(2A)')'j miscel components      : ',
+     &    MCMPDBFL(1:43)
       elseif(ipathmsc.eq.2)then
-        WRITE(ITEMS(12),'(2A)')  'j std miscel components  : ',
-     &    MCMPDBFL(1:44)
+        WRITE(ITEMS(12),'(2A)')'j std miscel components  : ',
+     &    MCMPDBFL(1:43)
       endif
       ITEMS(13)='  _______________________________ '
       ITEMS(14)='? help                            '

@@ -139,9 +139,33 @@ C Assume the model folders exist when calling pregist.
 
 C If there is a line with the root name of a climate file look
 C for a match in the current climate location and if there is
-C one set the name of that file, scan it and find its site.
+C one set the name of that file, scan it and find its site. If
+C there is no weather file then at least set the default seasons.
       if(weather(1:4).eq.'none')then
-        continue
+
+C Set default early winter, spring, summer, autumn, late winter periods.
+        CALL EDAY(9,1,ia1wins)
+        CALL EDAY(15,1,ia1winf)
+        CALL EDAY(6,3,ia1sprs)
+        CALL EDAY(12,3,ia1sprf)
+        CALL EDAY(11,7,iasums)
+        CALL EDAY(17,7,iasumf)
+        CALL EDAY(2,10,ia2sprs)
+        CALL EDAY(8,10,ia2sprf)
+        CALL EDAY(20,11,ia2wins)
+        CALL EDAY(26,11,ia2winf)
+
+C Default season definitions.
+        CALL EDAY(1,1,is1wins)
+        CALL EDAY(28,2,is1winf)
+        CALL EDAY(1,11,is2wins)
+        CALL EDAY(31,12,is2winf)
+        CALL EDAY(1,3,is1sprs)
+        CALL EDAY(30,4,is1sprf)
+        CALL EDAY(1,9,is2sprs)
+        CALL EDAY(31,10,is2sprf)
+        CALL EDAY(1,5,is1sums)
+        CALL EDAY(31,8,is1sumf)
       else
 
 C First check if the climate file exists in the subpath. Also
@@ -239,6 +263,7 @@ C Fell through, no change in climate and location.
         endif
 
 C Impose climate site data on the model.
+C << but we might want to use what was already in the META file >>
   75    continue
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
@@ -256,8 +281,9 @@ C Impose climate site data on the model.
      &    '. Previously used ',sitelat,sitelongdif,'.'
         call edisp(iuout,outs)
 
-C Rescan the `climatelist` file. Check if this climate is
-C in the list. If not instanciate season and typical start and end dates.
+C If there is not a model specific season definition rescan
+C the `climatelist` file. Check if this climate is in the
+C list. If not instanciate season and typical start and end dates.
         if(ihaveseason.gt.0)then
           continue
         else
@@ -295,8 +321,10 @@ C Default season definitions.
             endif
           endif
         endif
+      endif
 
-        if(nsset.gt.0)then
+C Fall through if no climate located.
+  74  if(nsset.gt.0)then
 
 C Instanciate the IPV data based on value of simact.
           call ipvdatinit(simact)
@@ -309,7 +337,10 @@ C data into the simulation parameter set data structure.
           endif
         endif
 
-C Write calendar information (just the default one for the moment)       
+C Write calendar information (just the default one for the moment)
+
+C << later include calendar and day types within the META file >>
+     
         calename='standard weekday Sat & Sun'
         nbdaytype=3
         nbcaldays(1)=0
@@ -335,7 +366,7 @@ C Write calendar information (just the default one for the moment)
         calendayname(9)='-'
         do 542 ijd=1,365
 
-C for julian day ijd find month and day of month and day of week.
+C For julian day ijd find month and day of month and day of week.
           call edayr(ijd,idayn,imthn)
           call eweekd(idayn,imthn,iyear,idwk)
           if(idwk.ge.1.and.idwk.le.5)then
@@ -418,10 +449,6 @@ C Loop around the possible defined xml outputs
           call erpfree(iuf,istat)
         endif
       
-C Fall through point if no climates located.
-  74    continue
-      endif
-
 C Other logic here....
 
       return
@@ -2638,7 +2665,8 @@ C the file with minimum interaction.
 C#include "control.h"
 C espriou.h provides currentfile.
 #include "control.h"
-      
+#include "ipvdata.h"
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -2699,13 +2727,14 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       character dstmp*24
 
       character act*1      ! action requested.
-C      character simact*6  ! action for creating assessments.
+      character simact*6   ! action for creating assessments.
       character subpath*72 ! not yet used
 
 C At the head of the file is a menu string and a description
 C modeltitle (char 72) and modeldocblock (char 248) which identifies
 C the contents of the file via model.h.
       character weather*32     ! file name for the location (no path)
+      character cpath*72,cfile*72 ! for finding the climate file name
       character*(*) lfile      ! name of the file
       character fs*1           ! file separator
 
@@ -2738,7 +2767,7 @@ C Site related local variables.
       integer isilentncf !silent decide how many control functions needed
       character tab*1
       integer lnzp,lnnp,lncp,lndcp,lndbp ! lengths of paths to model folders
-
+      integer lnc  ! for length of climate file
       integer metaver  ! one for 1.1 and two for 1.2
 
 C  The following data statements carry the proportions of
@@ -2811,8 +2840,16 @@ C Currently set the block of text to the model title.
       write(modeldocblock,'(a)')  modeltitle(1:lnblnk(modeltitle))
 
 C Site data.
-C << for weather we need to use logic sort of like finddbpath >>
-      weather='XXX'
+C Remove the path from the climate file and set the file name
+C only (the first 32 char) into weather.
+C << later introduce local/distribution logic for file name >>
+      call fdroot(LCLIM,cpath,cfile)
+      lnc=lnblnk(cfile)
+      if(lnc.lt.32)then
+        write(weather,'(a)') cfile(1:lnc)
+      else
+        write(weather,'(a)') cfile(1:31)
+      endif
       hoursGTM=0.0
 
 C The hourlysnowfile is SNFNAM.
@@ -3058,13 +3095,84 @@ C reflect whether the standard database folder is being used.
      &      MCMPDBFL(1:lnblnk(MCMPDBFL)),' # miscel cmp db'
       endif
 
+C << plant template file needs to be written >>
+
 C Simulation parameters.
       if(havesimparameters)then
         write(ifilg,'(2a,I2,a,I2,a,I2,a,I1,a)',IOSTAT=IOS,ERR=13)
      &    '*sim_parameters',tab,simstartup,tab,simzonetimestep,tab,
      &    simplanttimestep,tab,simsavelevel,'  # simulation parameters'
 
-C << *assessments still to do >>
+C *assessments if nsset is non-zero
+        if(nsset.gt.0)then
+          simact=ipvsimu
+          if(simact(1:6).eq.'------')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'default   # one default assessment '
+          elseif(simact(1:6).eq.'icwint')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'winter typical_week  # typical winter week assessment'
+          elseif(simact(1:6).eq.'icwinf')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'winter fortnight  # winter fortnight assessment'
+          elseif(simact(1:6).eq.'icwins')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'winter season  # winter season assessment'
+          elseif(simact(1:6).eq.'icsprt')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'spring typical_week  # typical spring week assessment'
+          elseif(simact(1:6).eq.'icsprf')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'spring fortnight  # spring fortnight assessment'
+          elseif(simact(1:6).eq.'icsprs')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'spring season  # spring season assessment'
+          elseif(simact(1:6).eq.'icsumt')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'summer typical_week  # summer typical assessment'
+          elseif(simact(1:6).eq.'icsumf')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'summer fortnight  # summer fortnight assessment'
+          elseif(simact(1:6).eq.'icsums')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'summer season  # summer season assessment'
+          elseif(simact(1:6).eq.'icautt')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'autumn typical_week  # autumn typical assessment'
+          elseif(simact(1:6).eq.'icautf')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'autumn fortnight  # autumn fortnight assessment'
+          elseif(simact(1:6).eq.'icauts')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'autumn season  # autumn season assessment'
+          elseif(simact(1:3).eq.'ias')then
+             WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &         'annual   # one annual assessment '
+          elseif(simact(1:3).eq.'i3s')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'three_season season # three seasonal assessment'
+          elseif(simact(1:3).eq.'i3t')then
+            WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'three_season typical_week ',
+     &        '# three seasonal typical assessment'
+          elseif(simact(1:3).eq.'i3u')then
+            WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'three_season user ',
+     &        '# three seasonal user defined assessment'
+          elseif(simact(1:3).eq.'i5s')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'five_season season # five seasonal assessment'
+          elseif(simact(1:3).eq.'i5t')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'five_season typical_week # five typical assessment'
+          elseif(simact(1:3).eq.'i5u')then
+            WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &        'five_season user # five user assessment'
+          elseif(simact(1:3).eq.'i1d')then
+             WRITE(ifilg,'(2A)',IOSTAT=IOS,ERR=13) '*assessments ',
+     &         'single   # one default single assessment '
+      endif
+        endif
       endif
 
 C Write out data for each zone in the model. The nsz loop

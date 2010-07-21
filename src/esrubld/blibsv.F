@@ -618,6 +618,7 @@ C ndbph is number of data blocks/hr for monitor function.
 C#include "cfd.h"
 #include "monitor.h"
 #include "control.h"
+#include "tdf2.h"
 
       COMMON/TC/ITC,ICNT
 
@@ -776,15 +777,6 @@ C radiant and latent W for future and present in each zone.
      &  ctlperequipl(MCOM,2) 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365) 
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY 
-
-C Temporal db commons.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-
 
 C Local variables for casual gains.
       integer icurrentday  ! julian day

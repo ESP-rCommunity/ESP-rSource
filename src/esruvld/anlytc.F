@@ -843,7 +843,7 @@ C *********************************************************************
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -862,7 +862,6 @@ C geometry.h provides commons G0 and G2.
       character LCMDFL*144
 
       logical xst
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check if the root validation directory is available.
       IER=0
@@ -875,7 +874,6 @@ C Check if the root validation directory is available.
       endif
 
 C Copy the default validation model.
-      newgeo=.false.  ! assume older format geometry.
       VlDirL='Validation'
       H(1)=' Enter the name of the directory within which the'
       H(2)=' Validation model will be defined, and results will be'
@@ -902,12 +900,7 @@ C Copy the default validation model.
       NZONES=NCOMP
       ISFSUM=0
       CALL ZDATA (ITRC,IER,NZONES,ISFSUM)
-      call eclose(gversion(IComp),1.1,0.01,newgeo)
-      if(newgeo)then
         call georead(IUnit,LGEOM(IComp),IComp,1,IUOUT,IER)
-      else
-        call egomin(IUnit,LGEOM(IComp),IComp,1,ITRC,IUOUT,IER)
-      endif
       CALL ECONST(LTHRM(IComp),IUnit,IComp,ITRC,IUOUT,IER)
       CALL EROPER(ITRC,IUOUT,IUnit,IComp,IER)
       CALL EZCTLR(IUnit,ITRC,IUOUT,IER)
@@ -999,7 +992,7 @@ C *********************************************************************
       SUBROUTINE VSaveP(NPER,ier)
 #include "building.h"
 #include "model.h"
-#include "geometry.h"
+C #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1011,10 +1004,8 @@ C *********************************************************************
       CHARACTER ctldoc*248,LCTLF*72
 
       logical QUIET,IGR1D,XST
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       QUIET=.true.
-      newgeo=.false.  ! assume older format geometry.
       ITRC=0
       IComp=1
 
@@ -1034,12 +1025,7 @@ C Save control file.
 
 C Save geometry file.
       IUF=IFIL+2
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
         call geowrite(IUF,LGEOM(ICOMP),IComp,IUOUT,3,IER)
-      else
-        call emkgeo(IUF,LGEOM(ICOMP),IComp,3,IER)
-      endif
 
 C Save construction file.
       CALL EMKCON(LTHRM(ICOMP),IUF,IComp,QUIET,IER)

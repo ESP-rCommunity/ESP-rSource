@@ -2259,14 +2259,12 @@ C =2 with more than 3 day types
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       DIMENSION XVAL1(MZS)
       DIMENSION ST(6,10)
-      logical newgeo  ! to use for testing if new/old geometry file.
 
 C Check for sufficient information.
       IF(ISAVE.le.1)THEN
         CALL EPAGEW
         RETURN
       ENDIF
-      newgeo=.false.  ! assume older format geometry.
 
       LABSurf(1)= ' @opq'
       LABSurf(2)= ' @trn'
@@ -2333,12 +2331,8 @@ C Read geometry and construction files and setup labels.
       DO 65 JZ=1,NZ
         izone=NZNO(JZ)
         iunit=ifil+1
-        call eclose(gversion(izone),1.1,0.01,newgeo)
-        if(newgeo)then
           call georead(iunit,LGEOM(izone),izone,0,iuout,ier)
-        else
-          call egomin(iunit,LGEOM(izone),izone,0,0,iuout,ier)
-        endif
+
         CALL ECONST(LTHRM(IZONE),IUNIT,izone,0,IUOUT,IER)
 
 C Update labels to match the current zone.

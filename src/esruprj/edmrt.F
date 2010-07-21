@@ -37,7 +37,6 @@ C will have been defined prior to calling edmrt.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
-      common/CFGV/icfgv
 
       common/pophelp/h(60)
 
@@ -60,7 +59,6 @@ C will have been defined prior to calling edmrt.
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
       logical silent,unixok
-      logical newgeo  ! to use for testing if new/old geometry file.
       CHARACTER VERT*46,H*72,CUBN*6,LTMP*72,cfgroot*24
       CHARACTER LCFGF*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
@@ -80,7 +78,6 @@ C will have been defined prior to calling edmrt.
 #endif
 
       cfgmod=.false.
-      newgeo=.false.  ! assume older format geometry.
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -106,12 +103,7 @@ C matching geometry file.
       write(ZN,'(A)') zname(ICOMP)
 
 C Set VEWF array in preparation for editing or silent creation.
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
         call georead(IUF,LGEOM(ICOMP),ICOMP,1,IUOUT,IER)
-      else
-        call egomin(IUF,LGEOM(ICOMP),ICOMP,1,ITRC,IUOUT,IER)
-      endif
 
 C << update logic to use alternative source for ZOA rather than call zinfo >>
       CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
@@ -626,7 +618,6 @@ C EDMRTS: Edit details of a MRT sensor block.
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),

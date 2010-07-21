@@ -189,8 +189,10 @@ C Error subroutine and error details for dll mode.
       logical havec24
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
       integer lsn  ! length of currentfile
+      integer iflag ! for read errors
 
-      IER=0
+      IER=0    ! initial values of read state
+      iflag=0
       ZN=' '
       phrase=' '
       checkbase=.false.
@@ -220,7 +222,8 @@ C Initialise geometry data file. and set currentfile.
 C Read lines from file, if one item then assumed to 
 C be CTYPE, if 2 then the second is the zone name which
 C is tested for illegal characters, if '*Geometry 1.1'
-C the should use georead to scan the file.
+C the code should use georead to scan the file so return
+C ier as a 3.
       call lstripc(IUNIT,loutstr,99,ND,1,'geo line 1',IER)
       IF(IER.NE.0)goto 1001
       if(loutstr(1:13).eq.'*Geometry 1.1')then
@@ -234,9 +237,22 @@ C the should use georead to scan the file.
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
         gversion(icomp) = 1.1   ! set the version number.
         CALL ERPFREE(IUNIT,ios)
-        call georead(IUNIT,LGEOMF,ICOMP,IR,ITRU,IER)
+        write(outs,'(3a)') 'Geometry file ',LGEOMF(1:lnblnk(LGEOMF)),
+     &      ' was newer format than egeomin can read.'
+        if(dll)then
+          dllsubr='EGOMIN'
+          dllmesg=outs
+          ier=2
         return
       else
+          call edisp(itru,outs)
+          IER=2
+          RETURN
+        endif
+
+      else
+
+C We can deal with this format.
         K=0
         IF(ND.EQ.1)THEN
           CALL EGETW(loutstr,K,WORD,'W','CTYPE',IFLAG)
@@ -1406,8 +1422,12 @@ C GS7/GS8 are defined in geometry.h
       integer lsn   ! length of currentfile
       integer lno   ! length of optics name
       real VX,VY,VZ ! local values for XOB YOB ZOB
+      integer iflag ! for read error state
 
+C Set initial values.
       IER=0
+      iflag=0
+      itrct=0
       ZN=' '
       phrase=' '
       checkbase=.false.
@@ -1459,6 +1479,8 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
       CALL LSTRIPC(IUNIT,LOUTSTR,99,ND,1,'geo line 1',IER)
       IF(IER.NE.0)goto 1002
       if(LOUTSTR(1:13).eq.'*Geometry 1.1')then
+
+C Decode first line of version 1.1 geometry file.
         K=13
         CALL EGETW(LOUTSTR,K,WORD,'W','CTYPE',IFLAG)
         write(CTYPE(icomp),'(a)') WORD(1:lnblnk(WORD))
@@ -1469,6 +1491,8 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
         lnzname(ICOMP)=lnblnk(zname(ICOMP))  ! update string length
         gversion(icomp) = 1.1   ! set the version number.
       else
+
+C Check if it matches the syntax of older geometry file format.
         K=0
         IF(ND.EQ.1)THEN
           CALL EGETW(LOUTSTR,K,WORD,'W','CTYPE',IFLAG)
@@ -1499,11 +1523,11 @@ C      22      10   0.000    # vertices, surfaces, rotation angle
         IF(IFLAG.NE.0)GOTO 1002
 
 C If we have reached this position then it is an older geometry
-C file so close the file and set error message.
+C file that seems to be readable so close the file and call egomin.
         CALL ERPFREE(IUNIT,ios)
-        ier=2
-        call usrmsg('Attempt to read older geometry file in georead.',
-     &    LGEOMF,'W')
+        gversion(icomp) = 1.0   ! set the version number.
+        itrct=0                 ! set to silent
+        call egomin(IUNIT,LGEOMF,ICOMP,IR,ITRCT,ITRU,IER)
         return
       endif
 
@@ -4651,13 +4675,12 @@ C SSURVN is point 1 unit vectpr off of surface COG along the normal.
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
-      LOGICAL OK,dok,newgeo
+      LOGICAL OK,dok
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       character SSPARENT*12,h*72,outs*124
 
       integer lng     ! length of geometry file name
       integer itrct   ! temporary trace level
-      newgeo=.false.  ! assume older geometry format
 
 C Assuming this routine is called in order: read in the geometry file
 C using georead or egomin and pass across into the appropriate array.
@@ -4668,12 +4691,7 @@ C using georead or egomin and pass across into the appropriate array.
           write(outs,'(2a)') ' Reading : ',LGEOM(ICOMP)(1:lng)
           CALL USRMSG(' ',outs,'-')
         endif
-        call eclose(gversion(icomp),1.1,0.01,newgeo)
-        if(newgeo)then
           call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
-        else
-          call egomin(IFIL+1,LGEOM(ICOMP),ICOMP,1,ITRC,iuout,ier)
-        endif
         IF(IER.NE.0)THEN
           dok=.true.
           h(1)='When scanning the zone geometry file to build up'

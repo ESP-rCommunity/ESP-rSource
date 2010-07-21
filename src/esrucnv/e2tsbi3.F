@@ -68,12 +68,10 @@ C creates a grey-scale VRML 2.0 world.
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
       character outs*124,outsd*124,hc*1
       logical XST,numb
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer llbm    ! length of block material
       
 C Setup standard assumptions.
       IFIL=11
-      newgeo=.false.  ! assume older format geometry.
 
 C Ftr is cut-off point for deciding visual trans is high enough
 C for surface to be considered fictitious.
@@ -186,12 +184,7 @@ C For each zone in the model create an anchor.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         CALL edisp(iuout,outs)
-        call eclose(gversion(newfoc),1.1,0.01,newgeo)
-        if(newgeo)then
           call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
-        else
-          call egomin(ITA1,LGEOM(newfoc),newfoc,1,ITRC,IUOUT,IER)
-        endif
         CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
         vol(newfoc)=zvol
         zonetotsurfacearea(newfoc)=zoa

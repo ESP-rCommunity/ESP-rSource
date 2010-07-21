@@ -82,7 +82,6 @@ C TMC common block:
       DIMENSION  COG1(3),COG2(3),COG3(3),tip(3),ipoints(6,2)
       LOGICAL XST,lcouple,ldcoef
       logical MODIFY,MODLEN,MODBND
-      logical newgeo  ! to use for testing if new/old geometry file.
       logical browse
 
       character H*72,outs*124,LTMP*72,DTMP*64
@@ -103,7 +102,6 @@ C TMC common block:
 
 C Assume daylight coeffs do need calculated.
       ldcoef=.true.
-      newgeo=.false.  ! assume older format geometry.
 
 C Check and see if a casual gain control file exists.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
@@ -195,12 +193,7 @@ C Read existing file.
 
 C Rescan geometry file.
       IUF=IFIL+1
-      call eclose(gversion(icomp),1.1,0.01,newgeo)
-      if(newgeo)then
         call georead(IUF,LGEOM(ICOMP),ICOMP,0,ITRU,IER)
-      else
-        call egomin(IUF,LGEOM(ICOMP),ICOMP,0,0,ITRU,IER)
-      endif
       MODIFY=.TRUE.
       MODBND=.TRUE.
 

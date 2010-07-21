@@ -607,11 +607,23 @@ C Set folder separator (fs) to \ or / as required.
 
  293  H(1)='You may read in an existing ESP-r zone geometry file,'
       H(2)='convert a cflow3/IES zip file into one or more zones'
-      H(3)='(i.e whole model conversion)or create a zone by inputing'
-      H(4)='data related to primitive shapes.'
+      H(3)='(i.e whole model conversion) or create a zone by inputing'
+      H(4)='data related to primitive shapes. '
+      h(5)=' '
+      h(6)='NOTE: a cflow3/IES zip file is NOT a DXF file. If you'
+      h(7)='want to import DXF use the Model Management -> import CAD'
+      h(8)='file facility. '
+      h(9)=' '
+      h(10)='NOTE: it is assumed that you the zone geometry file'
+      h(11)='that you specify is not that is NOT already used in'
+      h(12)='your model! Otherwise the Project Manager may get '
+      h(13)='confused because two zones point to the same fie! '
+      h(14)=' '
+      h(15)='Check the zone name after you have loaded the existing'
+      h(16)='zone geometry file to make sure it is unique. '
       CALL EASKABCD(' ','New zone options:','input dimensions',
-     &  'load existing (ESP-r)','load existing (CAD)','cancel',
-     &  INZOPT,48)
+     &  'load existing (ESP-r)','load existing (cflow3 zip)',
+     &  'cancel',INZOPT,16)
 
 C Input dimensions.
       if(INZOPT.eq.1)then
@@ -658,13 +670,18 @@ C User did not select a file. Take them back to the question.
         endif
 
 C Existing ESP-r geom file.
-        h(1)='If there was not existing geometry file found in the'
-        h(2)='../zones folder then you must supply a file name. '
-        h(3)='It should be relative to the cfg folder. '
+        h(1)='If there was no existing geometry file found in the'
+        h(2)='../zones folder then you must supply a file name.'
+        h(3)='It should be relative to the cfg folder.'
+        h(4)=' '
+        h(5)='NOTE: it is assumed that you the zone geometry file'
+        h(6)='that you specify is not that is NOT already used in'
+        h(7)='your model! Otherwise the Project Manager may get '
+        h(8)='confused because two zones point to the same fie! '
         DFILE=' '
         WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
      &   ' the geometry is defined in:'
-        CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,3)
+        CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,8)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
         call FINDFIL(LTMP,XST)
         IF(.NOT.XST)THEN
@@ -682,12 +699,7 @@ C Existing ESP-r geom file.
 
 C Scan geometry file and update control and connections.
 C Try reading in the geometry to fill in the data below.
-        call eclose(gversion(IC),1.1,0.01,newgeo)
-        if(newgeo)then
           call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
-        endif
         IF(IER.NE.0)THEN
           dok=.true.
           h(1)='While scanning the geometry file a problem was'
@@ -702,6 +714,7 @@ C Try reading in the geometry to fill in the data below.
             return   ! stop this before the model gets messed up.
           endif
         ENDIF
+        call eclose(gversion(ic),1.1,0.01,newgeo) ! find out what version
 
 C Read in control file if defined.
         OKC=.false.
@@ -718,6 +731,7 @@ C Update the connection list and then the model configuration.
         NZSUR(NCOMP)=NSUR
         NZTV(NCOMP)=NTV
         NCCODE(NCOMP)=NCOMP
+        ZBFLG(NCOMP)=0
         if(OKC)then
           icascf(NCOMP)=0
           call CTLWRT(ICTLF,IER)
@@ -811,6 +825,15 @@ C Update the connection based data structures.
           IZSTOCN(ncomp,icc)=iccc
   132   CONTINUE
         NCON=ICCC
+
+C Update the global coordinates for this new zones surfaces so that
+C the subsequent wireframe image can be drawn and the bounds of
+C the zone can be calculated.
+        DO 40 J=1,NZTV(NCOMP)
+          VCOORD(NCOMP,J,1)=X(J)
+          VCOORD(NCOMP,J,2)=Y(J)
+          VCOORD(NCOMP,J,3)=Z(J)
+   40   CONTINUE
 
 C If any of the boundary conditions were altered then write out
 C the geometry file.
@@ -1375,12 +1398,7 @@ C the values of ICT, IE2 and IC2.
       do 25 IX=1,NCOMP
         if(IX.ne.IW2)then
           changed=.FALSE.
-          call eclose(gversion(IX),1.1,0.01,newgeo)
-          if(newgeo)then
             call georead(IFIL+1,LGEOM(IX),IX,1,iuout,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IX),IX,1,0,iuout,IER)
-          endif
           do 28 ISX=1,NSUR
             ioc=IZSTOCN(ix,isx)
 
@@ -1479,12 +1497,7 @@ C Reread selected zone data then remove each of the surfaces
 C in reverse order (adjusting the connections as required).
       write(outs,'(2A)') ' removing surfaces in ',zname(IW2)
       call usrmsg('  ',outs,'-')
-      call eclose(gversion(IW2),1.1,0.01,newgeo)
-      if(newgeo)then
         call georead(IFIL+1,LGEOM(IW2),IW2,1,iuout,IER)
-      else
-        call egomin(IFIL+1,LGEOM(IW2),IW2,1,0,iuout,IER)
-      endif
       IX=NSUR+1
   35  CONTINUE
       IX=IX-1
@@ -1665,12 +1678,7 @@ C commons via reading in related files.
       write(outs,'(A)') ' rebuilding model... '
       call usrmsg('  ',outs,'-')
       do 48 ir=1,NCOMP
-        call eclose(gversion(ir),1.1,0.01,newgeo)
-        if(newgeo)then
           call georead(IFIL+1,LGEOM(ir),ir,1,IUOUT,IER)
-        else
-          call egomin(IFIL+1,LGEOM(ir),ir,1,0,IUOUT,IER)
-        endif
         XST=.false.
         call FINDFIL(LPROJ(ir),XST)
         IF(XST)THEN

@@ -716,12 +716,7 @@ C lowest and highest point and cog of surface.
      &      ' # connection, description, area, azimuth, elevation, ',
      &      ' Z Min/COG/Max'
           DO 930 IZ = 1,NCOMP
-            call eclose(gversion(IZ),1.1,0.01,newgeo)
-            if(newgeo)then
               call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
-            else
-              call egomin(IUF,LGEOM(IZ),IZ,1,0,iuout,IER)
-            endif
             DO 931 IS = 1,NSUR
               szlow= 1000.0
               szcog= 0.0
@@ -1633,14 +1628,14 @@ C          write(6,*) 'lctlf is ',LCTLF
             endif
           endif
 
-C Read the geometry to fill in the data below.
+C Read the geometry of the source zone to fill in the data below.
+C Make the source zone and the destination zone the same version
+C number. When reading in the source zone use the updated ncomp
+C zone index so that the zone related commons are filled.
           NCOMP=NCOMP+1
-          call eclose(gversion(NCOMP),1.1,0.01,newgeo)
-          if(newgeo)then
-            call georead(IFIL+1,LTMP,NCOMP,1,iuout,IER)
-          else
-            call egomin(IFIL+1,LTMP,NCOMP,1,ITRC,iuout,IER)
-          endif
+          call eclose(gversion(IC),1.1,0.01,newgeo)
+          gversion(ncomp)=gversion(ic)  ! set to same version
+          call georead(IFIL+1,LTMP,ncomp,1,iuout,IER)
           IF(IER.NE.0)THEN
             dok=.true.
             h(1)='While scanning the file a problem was noted. If you'
@@ -1913,7 +1908,8 @@ C the zone can be calculated.
             VCOORD(ncomp,J,3)=Z(J)
    41     CONTINUE
 
-C Now it is ok to write out the copied zone.
+C Now it is ok to write out the copied zone. If upgrading
+C ensure that we use the latest version.
           call eclose(gversion(NCOMP),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(ncomp) =1.1
@@ -2425,12 +2421,7 @@ C Update the configuration file.
         ELSEIF(IC.LE.NCOMP)THEN
 
 C Scan the geometry file and freshen derived geometric common blocks.
-          call eclose(gversion(IC),1.1,0.01,newgeo)
-          if(newgeo)then
             call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
-          else
-            call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
-          endif
           if(IER.NE.0)then
             dok=.true.
             h(1)='A problem was found while reading the geometry and'
@@ -3032,12 +3023,7 @@ C CFD.
         call askzone(ic,izdef,' ','Zone CFD Selection',
      &         'd','Zone index for cfd.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
-        call eclose(gversion(IC),1.1,0.01,newgeo)
-        if(newgeo)then
           call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
-        else
-          call egomin(IFIL+1,LGEOM(IC),IC,1,ITRC,iuout,IER)
-        endif
 
         IUF=IFIL+1
         call cfdcomp(ic,iuf,ier)
@@ -4289,12 +4275,10 @@ C      of obstruction data.
           write(outs,'(3a)') ' Transforming: ',zn(1:lnblnk(zn)),'...'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
           LTMP=LGEOM(IICOMP)
+
+C Find out the version number so we know what to do with obstructions later.
           call eclose(gversion(IICOMP),1.1,0.01,newgeo)
-          if(newgeo)then
             call georead(IUF,LTMP,IICOMP,1,iuout,IER)
-          else
-            call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
-          endif
           DO 62 I=1,NTV
             X(I)=X(I)+VALX
             Y(I)=Y(I)+VALY
@@ -4479,12 +4463,10 @@ C user can un-do this action.
           write(outs,'(3a)') ' Rotating: ',zn(1:lnblnk(zn)),'...'
           if(.NOT.silent)CALL USRMSG(' ',outs,'-')
           LTMP=LGEOM(IICOMP)
+
+C Find out version number so we know if upgrade required.
           call eclose(gversion(IICOMP),1.1,0.01,newgeo)
-          if(newgeo)then
             call georead(IUF,LTMP,IICOMP,1,iuout,IER)
-          else
-            call egomin(IUF,LTMP,IICOMP,1,0,iuout,IER)
-          endif
           CALL ESCROT(VAL,x1,y1)
           ZBFLG(IICOMP)=0.
 
