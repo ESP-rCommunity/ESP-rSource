@@ -4768,14 +4768,16 @@ C Now calculate and output U-value for IGU of this construction
         else
           sIGU = 'TGU'
         endif
+        CFC_ISO_Uvalue(icomp,icfctp)=1.0/(RGap1nom + RGap2 + 0.17)
+        CFC_nom_Uvalue(icomp,icfctp)=1.0/(RGap1 + RGap2 + Rsi + Rse)
         call add_to_xml_reporting (
-     &       1.0/(RGap1nom + RGap2 + 0.17),
+     &       CFC_ISO_Uvalue(icomp,icfctp),
      &       H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/Unom_' // sIGU ,
      &       'units', '(W/(m2 K))',
      &       'Nominal CFC IGU U-value' )
 
         call add_to_xml_reporting (
-     &       1.0/(RGap1 + RGap2 + Rsi + Rse),
+     &       CFC_nom_Uvalue(icomp,icfctp),
      &       H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/Uact_' // sIGU ,
      &       'units', '(W/(m2 K))',
      &       'Actual CFC IGU U-value' )

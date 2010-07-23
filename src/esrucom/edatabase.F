@@ -768,9 +768,18 @@ C construction based on contents of common MLC.
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
-      
+#include "geometry.h"
+#include "CFC_common.h"
+
       integer lnblnk  ! function definition
+
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       
+      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
+     &NPGAP(MCOM,MS,MGP)
+      integer nconst,nelts,ngaps,npgap
+
       COMMON/GVALCAL/CLAMDA(MMLC)
 
       integer matarrayindex ! the indes within matdatarray
@@ -834,7 +843,7 @@ C Reporting based on report level.
 C Loop through all of the layers and compose RT for the construction.
       RT=0.
       DO 15, IL=1,LAYERS(IFOC)
-      
+
 C If data available in material array gather it. And if an air
 C layer include the R values in the display.
           matarrayindex=IPRMAT(IFOC,IL)   ! which array index
@@ -943,19 +952,22 @@ C Compact report has more room for material description.
 
 C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
 C 0.10 inside upward flow and 0.17 inside downward flow.
-      CLAMDA(IFOC)=1./RT
-      RTH=RT+0.04+0.13
-      UVALUEH=1.0/RTH
-      RTU=RT+0.04+0.10
-      UVALUEU=1.0/RTU
-      RTD=RT+0.04+0.17
-      UVALUED=1.0/RTD
-      RTI=RT+0.13+0.13
-      UVALUEI=1.0/RTI
-      write(OUTSTR,'(A,3F7.3,a,F7.3)')
-     &  ' ISO 6946 U values (horiz/upward/downward heat flow)=',
-     &  UVALUEH,UVALUEU,UVALUED,' (partition)',UVALUEI
-      IF(ITRC.NE.0)call edisp(itru,OUTSTR)
+Cag@23072010: Turn this off for CFC?
+      if(OTF(1:4).NE.'CFC ')then
+        CLAMDA(IFOC)=1./RT
+        RTH=RT+0.04+0.13
+        UVALUEH=1.0/RTH
+        RTU=RT+0.04+0.10
+        UVALUEU=1.0/RTU
+        RTD=RT+0.04+0.17
+        UVALUED=1.0/RTD
+        RTI=RT+0.13+0.13
+        UVALUEI=1.0/RTI
+        write(OUTSTR,'(A,3F7.3,a,F7.3)')
+     &    ' ISO 6946 U values (horiz/upward/downward heat flow)=',
+     &    UVALUEH,UVALUEU,UVALUED,' (partition)',UVALUEI
+        IF(ITRC.NE.0)call edisp(itru,OUTSTR)
+      endif
 
 C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs.
 C << NOTE this code needs further debugging.
@@ -971,9 +983,27 @@ C QPAQ.
           SOPT=OPT
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
         endif
-      endif
-	  
-C << include output of optical CFC data here (?) >>
+      elseif (OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).EQ.'CFC ') then
+C << include output of optical CFC data here (?) ... not the best place, probably >>
+C We will need to loop through all zones, probably, as a MLC of type CFC
+C can be used for different actual glazing properties on a zone for zone
+C base (?)
+      do 16, iZone=1,mcom
+        do 17, iConstruction=1,nconst(iZone)
+          if (icfcfl(iZone,iConstruction).gt.0) then
+            icfctp=icfcfl(iZone,iConstruction)
+C           write for current zone / surface
+            write(OUTSTR,'(5a,F7.3)')
+     &      'Zone ',zname(iZone)(1:lnzname(iZone)),
+     &      ' Surface ',' ?? ',
+     &      ' CFC Approx. ISO 6946 U-value (horiz)=',
+     &      CFC_ISO_Uvalue(iZone,icfctp)
+            IF(ITRC.NE.0)call edisp(itru,OUTSTR)
+          endif
+ 17     continue
+ 16   continue
+
+      endif ! end CFC output for QS report (?)
 
       RETURN
       END

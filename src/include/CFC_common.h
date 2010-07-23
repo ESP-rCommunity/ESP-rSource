@@ -721,3 +721,8 @@ C COMMONS FOR CFC type CONSTRUCTIONS
       real transBB_V,transD_V,refl_V
       real issur_self_shd,proang_s,qtmca_ext
 
+C---------------------------------------------------------------------------------
+C COMMONS for reporting of CFC type CONSTRUCTIONS 
+      common/CFCthermal/CFC_ISO_Uvalue(mcom,mcfc),
+     &      CFC_nom_Uvalue(mcom,mcfc)
+      real CFC_ISO_Uvalue,CFC_nom_Uvalue
