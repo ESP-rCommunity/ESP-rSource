@@ -776,10 +776,6 @@ C construction based on contents of common MLC.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       
-      COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
-     &NPGAP(MCOM,MS,MGP)
-      integer nconst,nelts,ngaps,npgap
-
       COMMON/GVALCAL/CLAMDA(MMLC)
 
       integer matarrayindex ! the indes within matdatarray
@@ -950,9 +946,9 @@ C Compact report has more room for material description.
         ENDIF
   15  CONTINUE
 
-C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C ISO 6946 1/hc assumptions are 0.04 external, 0.13 inside horizontal,
 C 0.10 inside upward flow and 0.17 inside downward flow.
-Cag@23072010: Turn this off for CFC?
+C Turn this off for CFC, as it is wrong for CFC
       if(OTF(1:4).NE.'CFC ')then
         CLAMDA(IFOC)=1./RT
         RTH=RT+0.04+0.13
@@ -984,14 +980,22 @@ C QPAQ.
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
         endif
       elseif (OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).EQ.'CFC ') then
-C << include output of optical CFC data here (?) ... not the best place, probably >>
+C << include output of optical CFC data here (?) >>
 C We will need to loop through all zones, probably, as a MLC of type CFC
 C can be used for different actual glazing properties on a zone for zone
 C base (?)
       do 16, iZone=1,mcom
-        do 17, iConstruction=1,nconst(iZone)
-          if (icfcfl(iZone,iConstruction).gt.0) then
-            icfctp=icfcfl(iZone,iConstruction)
+        do 17, iSurface=1,nzsur(iZone)
+		! icfcfl() does not seem to be set, here ... do what?
+          if (icfcfl(iZone,iSurface).gt.0) then
+            icfctp=icfcfl(iZone,iSurface)
+C           proang=0.1 ! profile angle ... ??
+C           do 18, iAng=1,5
+C            Calculate properties for 0°, 40°, 55°, 70° and 80° incidence angle
+C            call cfc_eff_opt_prop(iZone,iConstruction,icfctp,
+C     &                               incang(iAng),
+C     &                               proang_s(iZone,icfctp,ms))
+C 18
 C           write for current zone / surface
             write(OUTSTR,'(5a,F7.3)')
      &      'Zone ',zname(iZone)(1:lnzname(iZone)),
