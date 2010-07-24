@@ -1,4 +1,5 @@
 SRCdir = `pwd`/..
+BPSdir = $(SRCdir)/esrubps
 COMdir = $(SRCdir)/esrucom
 CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
@@ -33,7 +34,7 @@ OBJECTS = prj.o anlytc.o aim2_pretimestep.o arrow.o ascii_mat.o blcond.o bnlthp.
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
-	  PltDummy.o
+	  PltDummy.o 
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
@@ -232,6 +233,11 @@ readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
 
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
+
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -248,9 +254,6 @@ clean:
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelevvc.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
-	readTrnsys.F PltDummy.F
-
-
-
+	readTrnsys.F PltDummy.F editCFC.F
 
 

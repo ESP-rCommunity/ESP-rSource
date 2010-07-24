@@ -773,16 +773,30 @@ C construction based on contents of common MLC.
 
       integer lnblnk  ! function definition
 
+c-- ag     
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      
+
+      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+      integer nccode,indutl
+      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+
+      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
+     &          SUSE(MS,2),SPARENT(MS)
+      CHARACTER SNAME*12,SOTF*32,SMLCN*32,SVFC*4,SOTHER*24,SUSE*8
+      CHARACTER SPARENT*12
+	  
+      COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
+c-- ag end
+
       COMMON/GVALCAL/CLAMDA(MMLC)
 
       integer matarrayindex ! the indes within matdatarray
       integer lnam    ! length of material name
       integer lfordoc ! length available for material documentation
       logical closemat1,closemat2
-      logical bCloseToZero
+      logical bCloseToZero,XST
 
       DIMENSION PNAM(ME)
       CHARACTER OUTSTR*124,NAM*72,PNAM*72
@@ -984,28 +998,67 @@ C << include output of optical CFC data here (?) >>
 C We will need to loop through all zones, probably, as a MLC of type CFC
 C can be used for different actual glazing properties on a zone for zone
 C base (?)
-      do 16, iZone=1,mcom
-        do 17, iSurface=1,nzsur(iZone)
-		! icfcfl() does not seem to be set, here ... do what?
-          if (icfcfl(iZone,iSurface).gt.0) then
-            icfctp=icfcfl(iZone,iSurface)
-C           proang=0.1 ! profile angle ... ??
+      do 16, iZone=1,ncomp
+        if (icfc(iZone).eq.1) then
+C Read construction file
+          call read_in_cfc_file(0,itru,IFIL+1,lcfcin(iZone),iZone,ier)
+          do 17, iSurf=1,nzsur(iZone)
+            if (icfcfl(iZone,iSurf).gt.0) then
+              icfctp=icfcfl(iZone,iSurf)  ! cfc type ... should be correlated with current mlc
+              LayNo=ncfc_el(iZone,icfctp) ! number of layers of current type
 C           do 18, iAng=1,5
-C            Calculate properties for 0°, 40°, 55°, 70° and 80° incidence angle
-C            call cfc_eff_opt_prop(iZone,iConstruction,icfctp,
-C     &                               incang(iAng),
-C     &                               proang_s(iZone,icfctp,ms))
-C 18
-C           write for current zone / surface
-            write(OUTSTR,'(5a,F7.3)')
-     &      'Zone ',zname(iZone)(1:lnzname(iZone)),
-     &      ' Surface ',' ?? ',
-     &      ' CFC Approx. ISO 6946 U-value (horiz)=',
-     &      CFC_ISO_Uvalue(iZone,icfctp)
-            IF(ITRC.NE.0)call edisp(itru,OUTSTR)
-          endif
- 17     continue
- 16   continue
+C             Calculate layer properties for 0°, 40°, 55°, 70° and 80° incidence angle
+c             angi1=30
+c             call cfc_eff_opt_prop(iZone,iSurface,icfctp,
+c     &                               incang(iAng),
+c     &                               angi1,
+c     &                               proang_s(iZone,icfctp,iSurface))
+C or total properties? Not quite clear where inc angle comes in, here ...
+c             call solar_multilayer(icomp,isurf,icfctp,GBM,GDF,IBM,IDF,
+c     &                 isolvis,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
+C  18
+C           Write for current zone / surface
+            IF (ITRC.NE.0) then 
+              write(OUTSTR,'(5a,F7.3)')
+     &        'Zone <',zname(iZone)(1:lnzname(iZone)),
+     &        '> Surface <',sname(iZone,iSurf),
+     &        '> CFC Approx. ISO 6946 U-value (horiz)=',
+     &        CFC_ISO_Uvalue(iZone,icfctp) ! this would be *very* nice ...
+              call edisp(itru,OUTSTR)
+C             Layer data
+              write(outstr,'(a)') 
+     &               'Optical layer properties '
+		      CALL EDISP(ITRU,OUTSTR)
+              write(outstr,'(2a)') 
+     &               '  type  t_sol rf_sol rb_sol  t_vis rf_vis',
+     &               ' rb_vis  eps_f  eps_b'
+		      CALL EDISP(ITRU,OUTSTR)
+C             Write out non-gas layer data (sequence order should be as in LBNL Window)
+              do 19, iLay=1,LayNo
+                if (icfcltp(iZone,icfctp,iLay).ne.0) then
+                  write(outstr,'(2x,I4,1x,8(f6.3,1x))')
+     &               icfcltp(iZone,icfctp,iLay),
+     &               solT(iZone,icfctp,iLay),
+     &               solRF(iZone,icfctp,iLay),
+     &               solRB(iZone,icfctp,iLay),
+     &               visT(iZone,icfctp,iLay),
+     &               visRF(iZone,icfctp,iLay),
+     &               visRB(iZone,icfctp,iLay),
+     &               rlwEF(iZone,icfctp,iLay),
+     &               rlwEB(iZone,icfctp,iLay)
+                  CALL EDISP(ITRU,OUTSTR)
+                endif ! not gas layer
+  19          continue
+              write(outstr,'(a)') ' '
+              call edisp(itru,outstr)
+            endif ! itrc.ne.0
+          endif ! icfcfl.gt.0
+  17    continue ! surface in zone loop
+
+c        ENDIF ! lthrm(izone) exists
+      endif ! icfc.gt.0
+
+  16  continue ! zone loop
 
       endif ! end CFC output for QS report (?)
 
