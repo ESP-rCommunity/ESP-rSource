@@ -979,7 +979,7 @@ C ********************************************************************
       subroutine read_in_cfc_file(itrc,itru,iua,lua,icomp,ier)
 #include "building.h"
 #include "geometry.h"
-#include "espriou.h"
+c #include "espriou.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
@@ -1362,12 +1362,14 @@ C
 C ********************************************************************
       subroutine editCFC_shading_schedule(icomp,icfctype,ier)
 # include "building.h"
+# include "geometry.h"
+# include "epara.h"
 # include "CFC_common.h"   
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
-      character zname*12, zdesc*64
-      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
-      integer MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+c      COMMON/precz/zname(MCOM),zdesc(MCOM)
+c      character zname*12, zdesc*64
+c      COMMON/PMENU/MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
+c      integer MHEAD,MCTL,MIFULL,MFULL,IST,ILEN,IPM,MPM,IPFLG
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
@@ -1633,6 +1635,8 @@ C complete, `v` note view factors, `g` casual gain ctl, `d` domain flow,
 C `h` heat transfer (comvective) methods, `-` zone names only.
       subroutine askCFCtype(icomp,icfctype,IER)
 #include "building.h"
+#include "geometry.h"
+#include "model.h"
 #include "epara.h"
 #include "CFC_common.h"
 
@@ -1650,18 +1654,18 @@ c      integer nzsur,nztv
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+c      COMMON/precz/zname(MCOM),zdesc(MCOM)
       
       COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
 
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
+c      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
+c     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
+c      integer nccode,indutl
+c      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
 
-      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
-     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
+c      common/UDESC/LVIEW(MCOM),LHCCO(MCOM),
+c     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
@@ -1672,10 +1676,10 @@ C =2 with more than 3 day types allowed and sorted
       CHARACTER title*72
       
       DIMENSION VERT(35)
-      CHARACTER VERT*27,KEY*1,zname*12,zdesc*64,prompt2*36
+      CHARACTER VERT*27,KEY*1,prompt2*36
       character h*72,mod*1,outs*124
       CHARACTER*72 LCFD
-      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
+c      character*72 LVIEW,LHCCO,LTWIN,LCGCIN,ZOBS
       integer ncfctypes,nlast
       
       character OUTSTR*124
@@ -1694,7 +1698,8 @@ C =2 with more than 3 day types allowed and sorted
       MCTL=3
 
 C Initial menu entry setup.
-   92 IER=0
+c   92 IER=0
+      IER=0
       IVERT=-3
 
 C find *.cfc file for this zone and read it in      
@@ -1833,12 +1838,13 @@ C
 C ********************************************************************
       subroutine plot_CFC_schedules(ICOMP,icfctype,idtyp)
 #include "building.h"
+#include "geometry.h"
 #include "CFC_common.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/PREC2/VOL(MCOM)
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+c      COMMON/PREC2/VOL(MCOM)
+c      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
@@ -1849,7 +1855,7 @@ C ********************************************************************
       INTEGER NAC,IACS,IACF,IPT,IDTY,IDAY,JDAY,KDAY
       REAL ACI,ACV,TA
 
-      character zname*12,zdesc*64,outs*124
+      character outs*124
       dimension TACI(24),TACV(24)
 #ifdef OSX
       integer ipltwd,igheight  ! for use with axiscale
@@ -2110,6 +2116,7 @@ C     =2 shade ON/OFF, =0 slat angle.
 C ********************************************************************
       subroutine editCFC_period_data(ICOMP,icfctype,IDT,IPER,itype)
 #include "building.h"
+#include "geometry.h"
 #include "CFC_common.h"
       
       integer lnblnk  ! function definition
@@ -2119,15 +2126,15 @@ C ********************************************************************
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+c      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
-      COMMON/PREC2/VOL(MCOM)
+c      COMMON/PREC2/VOL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
      
-      character OUTS*124,HOLD*16,h*72,zname*12,zdesc*64
+      character OUTS*124,HOLD*16,h*72
 
 C Working variables
       real slatX         !shade ON/OFF, slat angle
@@ -2555,11 +2562,12 @@ C
 C ********************************************************************
       subroutine cpdelCFC_period_data(icomp,icfctype,ICD)
 #include "building.h"
+#include "geometry.h"
 #include "CFC_common.h"
 
       common/pophelp/h(60)
 
-      COMMON/precz/zname(MCOM),zdesc(MCOM)
+c      COMMON/precz/zname(MCOM),zdesc(MCOM)
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -2570,7 +2578,7 @@ C ********************************************************************
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
       
-      character zname*12,zdesc*64,h*72,VERT(3*MA)*35,OUTS*124,OUT*4
+      character h*72,VERT(3*MA)*35,OUTS*124,OUT*4
       INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilen,ilm,IJ,L,M
 
       integer IctlSX,IctlFX,ishdONX
