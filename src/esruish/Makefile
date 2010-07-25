@@ -15,7 +15,7 @@ OBJECTS = ish.o arrow.o ascii_mat.o c2fdum.o common3dv.o cread3dv.o \
 	  esru_misc.o esystem.o sifile.o eroper.o graph.o inscon.o \
 	  item.o mfcdat.o miscel.o nwkrewr.o plelevvc.o pltcfg.o \
 	  readTrnsys.o rwipv.o rwsbem.o shdcon.o sifops.o sort.o \
-	  startup.o synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o
+	  startup.o synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o editCFC.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -108,6 +108,10 @@ tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
 
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -120,4 +124,4 @@ clean:
 	ctread.F dossupport.F e3dviews.F econstr.F edcondb.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F esru_misc.F esystem.F \
 	eroper.F item.F mfcdat.F nwkrewr.F plelevvc.F readTrnsys.F rwipv.F \
-	rwsbem.F sort.F startup.F tdfile.F pltcfg.F 
+	rwsbem.F sort.F startup.F tdfile.F pltcfg.F editCFC.F

@@ -14,7 +14,8 @@ OBJECTS = aco.o acocalc.o acoesp.o arrow.o ascii_mat.o c2fdum.o common3dv.o crea
 	ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	edcondb.o egeometry.o emfnetw.o enetmisc.o eroper.o esru_misc.o \
 	esystem.o item.o mfcdat.o nwkrewr.o pltcfg.o readaco.o \
-	readBCF.o readTrnsys.o rwipv.o rwsbem.o sort.o startup.o tdfile.o
+	readBCF.o readTrnsys.o rwipv.o rwsbem.o sort.o startup.o tdfile.o \
+    editCFC.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o  $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(F_to_C_flags)
@@ -107,6 +108,10 @@ tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
 
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -119,4 +124,5 @@ clean:
 	arrow.F ascii_mat.F blcond.F c2fdum.F common3dv.F cread3dv.F ctlexp.F ctread.F dossupport.F \
 	e3dviews.F ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F enetmisc.F enetrewr.F emkcfg.F eroper.F esru_misc.F esystem.F inside.F \
-	item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F sort.F startup.F tdfile.F 
+	item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F sort.F startup.F \
+    tdfile.F editCFC.F 

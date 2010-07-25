@@ -1006,6 +1006,19 @@ C Read construction file
             if (icfcfl(iZone,iSurf).gt.0) then
               icfctp=icfcfl(iZone,iSurf)  ! cfc type ... should be correlated with current mlc
               LayNo=ncfc_el(iZone,icfctp) ! number of layers of current type
+C             find out if current construction of mlc is that which current CFC is 
+C             based on ...
+
+c              if(NMLC.gt.0)then
+c                ICF=-1
+c                lstr=lnblnk(SMLCN(NS))
+c                DO 20 IC=1,NMLC
+c                  if(lstr.lt.12)then
+c                    IF(DESC(IC)(1:lstr).EQ.SMLCN(NS)(1:lstr))ICF=IC
+c                  else
+c                    IF(DESC(IC)(1:12).EQ.SMLCN(NS)(1:12))ICF=IC
+c                  endif
+
 C           do 18, iAng=1,5
 C             Calculate layer properties for 0°, 40°, 55°, 70° and 80° incidence angle
 c             angi1=30

@@ -11,7 +11,7 @@ OBJECTS = dfs.o arrow.o ascii_mat.o bndarybl.o bndaryl.o bndaryt.o c2fdum.o cfca
 	  cfconv.o cfdrw.o cfdumb.o cfdumm.o cfgrid.o cfmatl.o cfmgerc.o cftext.o \
 	  cfutil.o cgd.o chkconvg.o common3dv.o conc.o e3dviews.o edatabase.o egeometry.o \
 	  eroper.o esru_misc.o lisolv.o locmage.o mitzero.o plot.o psychro.o \
-	  read3dv.o sort.o startup.o visgrd.o visual.o visvec.o wvapour.o
+	  read3dv.o sort.o startup.o visgrd.o visual.o visvec.o wvapour.o editCFC.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -62,6 +62,10 @@ startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
 
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -71,4 +75,4 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	arrow.F ascii_mat.F c2fdum.F cfdrw.F cfgrid.F common3dv.F e3dviews.F edatabase.F egeometry.F \
-	eroper.F esru_misc.F psychro.F read3dv.F sort.F startup.F 
+	eroper.F esru_misc.F psychro.F read3dv.F sort.F startup.F editCFC.F

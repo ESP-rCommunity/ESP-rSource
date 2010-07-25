@@ -15,7 +15,7 @@ OBJECTS = grd.o arrow.o ascii_mat.o bgrd1d.o bgrd1m.o bgrd3d.o bgrdst.o c2fdum.o
 	 edcondb.o egeometry.o egrid.o emfnetw.o emkcfg.o emoist.o enetmisc.o eroper.o \
 	 esgrid.o esru_misc.o esystem.o item.o g3dcmp.o g3dcnc.o g3dmsc.o g3dmsh.o \
 	 grd_misc.o grnd3d.o mfcdat.o nwkrewr.o pltcfg.o readTrnsys.o \
-	 rwipv.o rwsbem.o sort.o startup.o tdfile.o
+	 rwipv.o rwsbem.o sort.o startup.o tdfile.o editCFC.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -117,6 +117,10 @@ tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
 
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -129,4 +133,4 @@ clean:
 	e3dviews.F econstr.F edatabase.F edcondb.F egeometry.F egrid.F emfnetw.F \
 	enetmisc.F enetrewr.F emkcfg.F emoist.F esgrid.F eroper.F esru_misc.F \
 	esystem.F item.F mfcdat.F nwkrewr.F pltcfg.F rwipv.F rwsbem.F sort.F \
-	startup.F tdfile.F trnsf.F readTrnsys.F
+	startup.F tdfile.F trnsf.F readTrnsys.F editCFC.F

@@ -14,7 +14,7 @@ OBJECTS = ecnv.o ascii_mat.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o item.o low_lev.o mfcdat.o mid_lev.o \
 	  nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
-	  startup.o tdfile.o wwxfig.o zipcnv.o
+	  startup.o tdfile.o wwxfig.o zipcnv.o editCFC.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -89,6 +89,10 @@ tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
 
+editCFC.F:
+	rm -f editCFC.F
+	ln -s $(PRJdir)/editCFC.F .
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -100,4 +104,4 @@ clean:
 	ascii_mat.F c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
 	item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
-	sort.F startup.F tdfile.F
+	sort.F startup.F tdfile.F editCFC.F
