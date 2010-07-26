@@ -2176,8 +2176,8 @@ C Get the connections this node sends mass to
         IBLDGZ=NINT(BMISCD(ICF,IDTYP,IPER,7))
         ICON=0
         DO 1 IPCON=1,NPCON
-          IF(IPC2(IPCON).EQ.IN)THEN
-            IF(NINT(PCONSD(IPCON,1)).EQ.IBLDGZ)THEN
+          IF(IPC2(IPCON).EQ.IPCMP)THEN
+            IF(NINT(PCONSD(IPCON,1)).EQ.ICOMP)THEN
               ICON=IPCON
               XMDR=PCONDR(ICON)
             ENDIF
