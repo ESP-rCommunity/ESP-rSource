@@ -122,6 +122,7 @@ C prec17 common is described in geometry.h.
       real uavgtran,uavgsky,uavwall,uavfltroof,uavslproof,wallper
 
       integer lna,lnb,lnbm,lnbn
+      integer IRT  ! for radio button selections
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -852,6 +853,7 @@ C Remind user of current surface boundary attributes.
           h(4)='surfaces to apply this to. Boundary conditions are'
           h(5)='set in the same way as are the USES of surfaces (to'
           h(6)='assist with code compliance).'
+          IRT=1
           CALL EASKATOG('Surface attribution: ',' ',
      &    'name','composition','boundary condition','usage',
      &    'cancel',' ',' ',IRT,6)
@@ -1083,8 +1085,20 @@ C (T14) and ensure that there are no spaces or strange characters.
 
               call snamdup(D12,icomp,ISS,nameok)
               if(nameok)then
+
+C Update commons and update the geometry file.
                 SNAME(ICOMP,ISS)=D12
                 SSNAME(ioc)=D12
+                call eclose(gversion(icomp),1.1,0.01,newgeo)
+                if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                  gversion(icomp) =1.1
+                  newgeo = .true.
+                endif
+                if(newgeo)then
+                  call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+                else
+                  call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+                endif
               else
                 call edisp(iuout,
      &                  'Surface name is a duplicate of an existing')
@@ -3074,6 +3088,22 @@ C Menu control.
       CALL EMENU('Surface Attributes',ISD,ISDN,INODA)
       IF(INODA.EQ.ISDN)THEN
 
+C If an attribute has changed save the geometry file.
+        if(cfgok.and.(.NOT.browse))then
+          if(MODGEO)then
+            call eclose(gversion(icomp),1.1,0.01,newgeo)
+            if(igupgrade.eq.2.and.(.NOT.newgeo))then
+              gversion(icomp) =1.1
+              newgeo = .true.
+            endif
+            if(newgeo)then
+              call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            else
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            endif
+          endif
+        endif
+
 C Exit and choose another surface.
         return
       ELSEIF(INODA.EQ.ISDN-1)THEN
@@ -3134,6 +3164,19 @@ C XO1,ZO1,XW,ZH are not used in an interactive insert.
         if(nameok)then
           SNAME(ICOMP,IS)=SN2
           SSNAME(ioc)=SN2
+
+C Save names so they are not wiped out by wire-frame drawing
+C code.
+          call eclose(gversion(icomp),1.1,0.01,newgeo)
+          if(igupgrade.eq.2.and.(.NOT.newgeo))then
+            gversion(icomp) =1.1
+            newgeo = .true.
+          endif
+          if(newgeo)then
+            call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+          else
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+          endif
         else
           call edisp(iuout,'Surface name is a duplicate of an existing')
           call edisp(iuout,'surface. Please supply a different name.')
