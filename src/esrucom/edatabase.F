@@ -774,6 +774,9 @@ C construction based on contents of common MLC.
       integer lnblnk  ! function definition
 
 c-- ag     
+      COMMON/OUTIN/IUOUT,IUIN
+      integer iuout,iuin
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
@@ -782,10 +785,12 @@ c-- ag
       integer nccode,indutl
       character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      CHARACTER SNAME*12,SOTF*32,SMLCN*32,SVFC*4,SOTHER*24,SUSE*8
-      CHARACTER SPARENT*12
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
+     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
+      CHARACTER SSNAME*12,SSOTF*32,SSMLCN*32,SSVFC*4
+      CHARACTER SSOTHER*24,SSUSE*8,SSPARENT*12
 	  
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
 c-- ag end
@@ -795,6 +800,7 @@ c-- ag end
       integer matarrayindex ! the indes within matdatarray
       integer lnam    ! length of material name
       integer lfordoc ! length available for material documentation
+      integer LayNo,icfctp
       logical closemat1,closemat2
       logical bCloseToZero,XST
 
@@ -987,44 +993,35 @@ C      call ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
-C QPAQ.
+C OPAQ.
       if(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')then
         if(OPT(1:4).ne.'OPAQ'.and.OPT(1:4).ne.'UNKN')then
           SOPT=OPT
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
         endif
       elseif (OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).EQ.'CFC ') then
-C << include output of optical CFC data here (?) >>
 C We will need to loop through all zones, probably, as a MLC of type CFC
 C can be used for different actual glazing properties on a zone for zone
 C base (?)
       do 16, iZone=1,ncomp
         if (icfc(iZone).eq.1) then
-C Read construction file
-c          call read_in_cfc_file(0,itru,IFIL+1,lcfcin(iZone),iZone,ier)
+C         Read construction file
+c          call read_in_cfc_file(0,itru,iunit,lcfcin(iZone),iZone,ier)
           do 17, iSurf=1,nzsur(iZone)
-            if (icfcfl(iZone,iSurf).gt.0) then !.and.
-c     &           (MLCN(1:12).eq.
-c     &            SMLCN(iSurf)(1:12))) then
+            if ( (icfcfl(iZone,iSurf).gt.0).and.
+     &           (MLCN(1:12).eq.
+     &            SSMLCN(izstocn(iZone,iSurf))(1:12))) then
               icfctp=icfcfl(iZone,iSurf)  ! cfc type ... should be correlated with current mlc
               LayNo=ncfc_el(iZone,icfctp) ! number of layers of current type
-
-C           do 18, iAng=1,5
-C             Calculate layer properties for 0°, 40°, 55°, 70° and 80° incidence angle
-c             angi1=30
-c             call cfc_eff_opt_prop(iZone,iSurface,icfctp,
-c     &                               incang(iAng),
-c     &                               angi1,
-c     &                               proang_s(iZone,icfctp,iSurface))
-C or total properties? Not quite clear where inc angle comes in, here ...
-c             call solar_multilayer(icomp,isurf,icfctp,GBM,GDF,IBM,IDF,
-c     &                 isolvis,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,AbsSol)
-C  18
+       write(*,*)'CFC typ=',icfctp,' MLCN=',MLCN,' SSMLCN()=',
+     &        SSMLCN(izstocn(iZone,iSurf))(1:15),' LayNo=',LayNo
 C           Write for current zone / surface
             IF (ITRC.NE.0) then 
+              imlcnlength=lnblnk(SSMLCN(izstocn(iZone,iSurf)))
               write(OUTSTR,'(5a,F7.3)')
      &        'Zone <',zname(iZone)(1:lnzname(iZone)),
-     &        '> Surface <',sname(iZone,iSurf),
+     &        '> Surface <',
+     &          SSMLCN(izstocn(iZone,iSurf))(1:imlcnlength),
      &        '> CFC Approx. ISO 6946 U-value (horiz)=',
      &        CFC_ISO_Uvalue(iZone,icfctp) ! this would be *very* nice ...
               call edisp(itru,OUTSTR)
@@ -1057,12 +1054,8 @@ C             Write out non-gas layer data (sequence order should be as in LBNL 
             endif ! itrc.ne.0
           endif ! icfcfl.gt.0
   17    continue ! surface in zone loop
-
-c        ENDIF ! lthrm(izone) exists
       endif ! icfc.gt.0
-
   16  continue ! zone loop
-
       endif ! end CFC output for QS report (?)
 
       RETURN

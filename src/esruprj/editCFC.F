@@ -979,7 +979,7 @@ C ********************************************************************
       subroutine read_in_cfc_file(itrc,itru,iua,lua,icomp,ier)
 #include "building.h"
 #include "geometry.h"
-c #include "espriou.h"
+#include "espriou.h"
 #include "CFC_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
@@ -1027,9 +1027,10 @@ C if the surface attribute should be updated.
       ncfc(icomp)=0
       DO 10 I=1,NS
         icfcfl(icomp,i)=iva(i)
-       IF(icfcfl(icomp,i).NE.0.AND.(SSOTF(I).NE.'CFC '))THEN
+       IF(icfcfl(icomp,i).NE.0.AND.
+     &     (SSOTF(IZSTOCN(ICOMP,I)).NE.'CFC '))THEN
          WRITE(OUTS,'(5a)')' The CFC file ',LUA(1:lnblnk(LUA)),
-     &      ' not sure if ',SSNAME(I),
+     &      ' not sure if ',SSNAME(IZSTOCN(ICOMP,I)),
      &     ' is a complex fenestration constr.'
          call edisp(itru,outs)
          call edisp(itru,' Check your zone files.')
@@ -1073,9 +1074,9 @@ C layers matches mlc database.
           IF(IERR.EQ.1)THEN
             write(outs,'(6a)')
      &      ' Mismatched CFC & mlc layers: ',
-     &      SSNAME(J)(1:lnblnk(SSNAME(J))),' in ',
-     &      zname(ICOMP)(1:lnblnk(zname(ICOMP))),' composed of ',
-     &      SSMLCN(J)
+     & SSNAME(IZSTOCN(ICOMP,J))(1:lnblnk(SSNAME(IZSTOCN(ICOMP,J)))),
+     &   ' in ',zname(ICOMP)(1:lnblnk(zname(ICOMP))),' composed of ',
+     &      SSMLCN(IZSTOCN(ICOMP,J))
             call edisp(iuout,outs)
             goto 1002
           ENDIF
