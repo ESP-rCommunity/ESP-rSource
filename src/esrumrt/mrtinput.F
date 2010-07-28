@@ -224,6 +224,7 @@ C EDSURT display/edit surface temperatures.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EDSURT(ICOMP,IER)
 #include "building.h"
+#include "geometry.h"
 #include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -234,10 +235,6 @@ C IER=0 OK, IER=1 problem.
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
       common/tmrt2/temp(ms),tempmrt
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER H*72,STMENU*30,KEY*1
 
       DIMENSION STMENU(30)

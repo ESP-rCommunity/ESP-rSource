@@ -613,9 +613,6 @@ C   specification and 2 if there was a cancel issued during editing.
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
      &             NSNOG(MNIL,MCOM,MS)
@@ -624,8 +621,6 @@ C   specification and 2 if there was a cancel issued during editing.
       DIMENSION STMP(MS),IVALZ(MCOM),IVALS(MS)
 
       character LUALF*72,LCNG*15,LLOC*15,t15*15
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER H*72,STMP*12
 
       integer idst,ihst,idft,ihft   ! for local editing.

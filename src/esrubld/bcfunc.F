@@ -6102,8 +6102,8 @@ C ICALL = 2 signals call from solar with request for alternative props.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0 and G2.
-C #include "geometry.h"
+C geometry.h provides commons G0,G2 G5.
+#include "geometry.h"
 
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -6133,8 +6133,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/PREC14/emarea(MCOM)
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       common/tpmod/itpmod(mcom)
@@ -6146,9 +6144,6 @@ C Material properties.
       integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
-
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
 C << for the case of bcl being called from solar is the limit >>
 C << of 3 surface to change will have to be increased!        >>

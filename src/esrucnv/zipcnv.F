@@ -58,7 +58,7 @@ C geometry.h provides commons G0/G2/G4/c20/precz/GS5/GS6.
       CHARACTER OUTSTR*124,WORD*20,phrase*64
       CHARACTER*72 upgcfg,LCFGF
       character GFILE*72,ZN*12,outs*124,tmp*124,cfgroot*24
-      character oformat*24,head*4,LOUT*72,SOTF*4,SN*12
+      character oformat*24,head*4,LOUT*72,OTF*4,SN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,dstmp*24
       logical okform,okant,zipok
@@ -345,8 +345,8 @@ C Create and write geometry file.
         do 65 is=1,NSUR
           IF(is.LE.9)WRITE(SN,'(a5,i1)')'Surf-',is
           IF(is.GT.9)WRITE(SN,'(a5,i2)')'Surf-',is
-          SOTF='OPAQ'
-          write(iotmp2,'(i3,a2,a12,a2,a4,a)')is,', ',SN,'  ',SOTF,
+          OTF='OPAQ'
+          write(iotmp2,'(i3,a2,a12,a2,a4,a)')is,', ',SN,'  ',OTF,
      &        '  UNKN  UNKNOWN      UNKNOWN'
   65    continue
         close(iotmp2)

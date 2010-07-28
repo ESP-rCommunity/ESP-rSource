@@ -1050,12 +1050,8 @@ C the user is interested in for stats/ graphs/ listings etc.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       DIMENSION IVA(MS),IVALS(MS)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character H*72,ST(MS)*12,CSTR*25
       character outs*124
 

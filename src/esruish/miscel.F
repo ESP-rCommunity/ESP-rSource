@@ -92,8 +92,6 @@ C no selection.  'iva' is the array of selections.
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c24/izstocn(mcom,ms)
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/contr/mon,isc(ms),iyd
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation;
@@ -106,8 +104,6 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &       nsurfinso(mcom),isurfinso(mcom,ms)
 
       dimension stmp(ms),iva(ms),ivals(ms)
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
       character h*72,stmp*33,act*1
 
       integer ichoice ! temporary local variable for a call to easkab

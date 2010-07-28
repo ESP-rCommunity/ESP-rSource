@@ -28,7 +28,7 @@ C EDCASCTL - edit casual gain control data.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/c20/precz.
+C geometry.h provides commons G0/G2/G5/c20/precz.
 #include "geometry.h"
 #include "prj3dv.h"
       
@@ -51,8 +51,6 @@ C geometry.h provides commons G0/G2/c20/precz.
       common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
@@ -90,8 +88,6 @@ C TMC common block:
       character docpth*24,tmppth*24,dbspth*24
       character*48 ITEM(30)
       CHARACTER*72 DLCGCIN,LCFGF
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER info*18,cgcdesc*64,brw*8
       INTEGER IX,IY,IZ,KSTR
 #ifdef OSI

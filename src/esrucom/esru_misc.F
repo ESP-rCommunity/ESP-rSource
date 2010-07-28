@@ -66,7 +66,7 @@ C in a new model file.
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/G4/c20/precz.
+C geometry.h provides commons G0/G2/G4/G5/c20/precz.
 #include "geometry.h"
 #include "cfd.h"
 #include "sbem.h"
@@ -76,10 +76,6 @@ C geometry.h provides commons G0/G2/G4/c20/precz.
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 C << G7 and G8 need to be cleared >>
       
       integer ncomp,ncon
@@ -243,10 +239,6 @@ C door width and height.
       
       CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPRJLG,LPNF
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
@@ -2161,13 +2153,9 @@ C G4 G5 into SG1 SG2 SG3 SG4 SG5.
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
       COMMON/SG4/NDP1,IDPN1(3)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/SG5/SNAME1(MS),SOTF1(MS),SMLCN1(MS),SVFC1(MS),
      &           SOTHER1(MS,3),SUSE1(MS,2),SPARENT1(MS)
 
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER CTYPE1*4,SOTHER1*24,SNAME1*12,SMLCN1*32
       CHARACTER SVFC1*4,SOTF1*32,SUSE1*8,SPARENT1*12
 
@@ -2222,13 +2210,9 @@ C G4 G5 from SG1 SG2 SG3 SG4 SG5.
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
       COMMON/SG4/NDP1,IDPN1(3)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/SG5/SNAME1(MS),SOTF1(MS),SMLCN1(MS),SVFC1(MS),
      &           SOTHER1(MS,3),SUSE1(MS,2),SPARENT1(MS)
 
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER CTYPE1*4,SOTHER1*24,SNAME1*12,SMLCN1*32
       CHARACTER SVFC1*4,SOTF1*32,SUSE1*8,SPARENT1*12
 
@@ -3186,8 +3170,6 @@ C show attributes in list.
 #include "epara.h"
 
       common/pophelp/h(60)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -3196,8 +3178,6 @@ C show attributes in list.
 
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,VERT*20,VERTS*40,KEY*1,MOD*1,title*29
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       LOGICAL SELECT
 
       IER=0
@@ -3343,6 +3323,7 @@ C databases have been opened.
 
       subroutine asksnode(icomp,is,ilay,inode,ier)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
@@ -3350,15 +3331,11 @@ C databases have been opened.
       common/pophelp/h(60)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C Special materials file flag
       DIMENSION PNAM(ME),item(ME+10)
       integer header,footer
       character item*32,NAM*72,PNAM*20,H*72,outs*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       logical closemat1,closemat2  ! to check version of materials db.
 
 C Check name of surface with construction name in MLC common.
@@ -3615,11 +3592,7 @@ C << not required for this. >>
       integer lnblnk  ! function definition
 
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       CHARACTER ZSDES*28,ZSDESC*20,SST1*12,ZST1*12,ZSDESS*16
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       ZSDESC=' '
       ZSDESS='  '

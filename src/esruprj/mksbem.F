@@ -3481,8 +3481,6 @@ C required models ') which returned iuact=1.
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -3512,8 +3510,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character subpath*72         
       CHARACTER OUTSTR*124     
  
-      CHARACTER SSPARENT*12,ACT*1,ADF*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      CHARACTER ACT*1,ADF*124
       character cfgroot*24,LCFGF*72,NNAME*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48,tab*1
@@ -4181,10 +4178,6 @@ C This routine assumes newer geometry files are being used.
 
 C << G1 is probably not the common block to use for this >>
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C G9 holds information on children of a surface.
       integer nbchild   ! how many children (up to 4) for each connection
@@ -4199,13 +4192,10 @@ C G9 holds information on children of a surface.
       CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension 
       character APE*6    ! up to 6 characters in variant name
-      CHARACTER SSPARENT*12,SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,NNAME*72,H*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12
-      CHARACTER SNAME*12,SOTF*32,SMLCN*32,SVFC*4,SOTHER*24,SUSE*8
       CHARACTER*12 XJCCU,XKCCU
 
 C ivalsg keeps track of whether a geometry file has alread been copied.
@@ -5155,11 +5145,6 @@ C Changes to the model are then made.
 
       common/C1/NCOMP,NCON
       integer ncomp,ncon
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER IZSTOCN
@@ -7364,8 +7349,6 @@ C It finally generate BRUKL input document and other SBEM reports.
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/OUTIN/IUOUT,IUIN
       integer nbrdg, ibrdg
@@ -7393,8 +7376,7 @@ C      character cURL*256             ! Repository URL commented out in build_in
 
       CHARACTER BRUKFL*72
       CHARACTER CFGROOT*24,LCFGF*72,MODE*4
-      CHARACTER SSPARENT*12,TMPSTR*24,TMPSTR2*70
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
+      CHARACTER TMPSTR*24,TMPSTR2*70
       character delim*1,louts*248,outs*124,TEMP1*42
       LOGICAL CONTEXT,BNDRY,ISNEAR,ISNEAR2,ISNEAR3
       LOGICAL UNIXOK
@@ -13517,10 +13499,6 @@ C   act = '-' work silently, 'w' print warnings.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
 
 C G9 holds information on children of a surface.
       integer nbchild   ! how many children (up to 4)

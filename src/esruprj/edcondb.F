@@ -2141,8 +2141,6 @@ C Paramters
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -2165,8 +2163,7 @@ C Note: size of MLED supports a dozen layers in a construction.
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,MMLAY*38,MLCSYM*12
       character PNAM*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character ZN*12,SN*12,SSPARENT*12
+      character ZN*12,SN*12
 
 C Check to see that optical properties are available.
       IF(.NOT.OPTKOK)THEN
@@ -3366,11 +3363,8 @@ C so that partitions are counted as half area).
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character mlcname*12,SSPARENT*12
+      character mlcname*12
       logical found
       dimension areamlc(MCOM)
 

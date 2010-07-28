@@ -201,8 +201,6 @@ C   itmc & isc:   toggles for each surface, if 1 then surface is an
 C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
@@ -225,8 +223,6 @@ C isurfinso list of insolation sources.
      &       lstsfcalc(mcom,ms),nsurfinso(mcom),isurfinso(mcom,ms)
 
       dimension iva(ms)
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
       character paction*16
       character act*1
 
@@ -796,15 +792,11 @@ C at hour jj.
 
       common/inswin/igins(mox,moz)
       common/pinsol/ins(ms),pins(ms),pinw(ms),pcshad
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/outin/iuout,iuin
       common/c24/izstocn(mcom,ms)
 
       dimension icounts(ms+4),icountw(ms+4),icountt(ms+4)
       character outs*124
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
 
 C Initialise.
       ihit=0

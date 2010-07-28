@@ -941,10 +941,12 @@ C Error messages.
       end
 
 C **** wegeom
-C write esp geometry file.
+C write esp-r (older style) geometry file.
       subroutine wegeom(iotmp2,iv,lf,ier)
 #include "building.h"
 #include "geometry.h"
+
+C << update this to generate v1.1 geometry file >>
       
       integer lnblnk  ! function definition
 
@@ -958,7 +960,7 @@ C common prec17 is described in geometry.h.
 
 C Use YOS to hold dummy values for surface indentation.
       dimension ndum(MS),Y0S(MS)
-      character lf*72,SN*12,SOTF*4,louts*248
+      character lf*72,SN*12,OTF*4,louts*248
       integer lnzn
        
       ier=0
@@ -1018,9 +1020,9 @@ C << surfaces.
       do 60 is=1,NZSUR(iv)
         IF(is.LE.9)WRITE(SN,'(a5,i1)')'Surf-',is
         IF(is.GT.9)WRITE(SN,'(a5,i2)')'Surf-',is
-        SOTF='OPAQ'
-        if(itmcfl(iv,is).eq.1)SOTF='TRAN'
-        write(iotmp2,'(i3,a2,a12,a2,a4,a)')is,', ',SN,'  ',SOTF,
+        OTF='OPAQ'
+        if(itmcfl(iv,is).eq.1)OTF='TRAN'
+        write(iotmp2,'(i3,a2,a12,a2,a4,a)')is,', ',SN,'  ',OTF,
      &        '  UNKN  UNKNOWN      UNKNOWN'
   60  continue
   

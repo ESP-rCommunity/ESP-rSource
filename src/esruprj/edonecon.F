@@ -54,10 +54,6 @@ C geometry.h provides commons G0 and G2.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -73,10 +69,6 @@ C TOTHER is a temporary array for manipulating SSOTHER.
 C SO is a tempporary array to hold current surface SSOTHER.
       DIMENSION VERT(35),TOTHER(MS,3),SO(3)
       CHARACTER VERT*46,KEY*1,CXSTR*78,H*72,outs*124,DESCRC*25
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character SO*24,TOTHER*24
       character CXITM*43
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -655,13 +647,9 @@ C information. This is shorter than the string returned by CONXINFO.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER CXITM*43,SST1*12,ZST1*12,SST2*12,ZST2*12
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       integer ICM  ! connection for current surface.
 
       CXITM=' '

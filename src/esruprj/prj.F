@@ -3239,8 +3239,6 @@ C to include the path and create a string to drive the modules.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
@@ -3248,8 +3246,6 @@ C to include the path and create a string to drive the modules.
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
 
       character H*72,CXSTR*78
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*72 LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16,zn*12
       CHARACTER*72 LAPROB

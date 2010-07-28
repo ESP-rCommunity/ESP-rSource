@@ -42,8 +42,6 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -57,8 +55,6 @@ C *********************************************************************
       LOGICAL OK,DOK,IGR1D,SAVEOK,XST
       CHARACTER ITEM(14)*31,ITEMZ(MCOM)*20,ITEMC(MS)*20,ITEML(ME)*20
       CHARACTER H*72,TEXT*40,LGRD1D*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       DIMENSION IVALSZ(MCOM),IVALSC(MS),IVALSL(ME)
 
@@ -528,8 +524,6 @@ C *********************************************************************
       COMMON/PREC15/RGAPS(MCOM,MS,MGP)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -547,8 +541,6 @@ C *********************************************************************
 
       CHARACTER ITEM(15)*31,H*72,TEXT2*120,MSG1*50
       CHARACTER ITEMZ(MCOM)*20,ITEMC(MS+2)*28,HCFILE*72,OUTSTR*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
 C Initialise the external and internal convective heat transfer 
 C coefficient.
