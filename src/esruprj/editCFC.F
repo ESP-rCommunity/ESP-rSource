@@ -989,10 +989,12 @@ C ********************************************************************
      &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
       CHARACTER SSPARENT*12
+C CAUTION! Using this common may work only for 1-zone models! The variables
+C contain values for the last zone of a multi-zone model by default ...
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       integer ne,nairg,ipairg
       real rairg
-
+	  
       integer iva,itrc,itru,iua,icomp,ier,NS,IRVA,i,j,k,ierr
       integer nshade_layers,ie,ND,ISR,icn,ntmpcfc_el,iflag,istat
       integer lnblnk    !function definition
@@ -1070,7 +1072,9 @@ C layers matches mlc database.
         CALL EGETWI(OUTSTR,K,ntmpcfc_el,1,ME,'W','CFC layers',IER)
         IERR=0
         DO 21 J=1,NS
-          IF(icfcfl(icomp,j).EQ.I.AND.ntmpcfc_el.NE.NE(J))IERR=1
+c          IF(icfcfl(icomp,j).EQ.I.AND.ntmpcfc_el.NE.NE(J))IERR=1
+c          IF(icfcfl(icomp,j).EQ.I.AND.
+c     &       ntmpcfc_el.NE.nelts(icomp,J)) IERR=1
           IF(IERR.EQ.1)THEN
             write(outs,'(6a)')
      &      ' Mismatched CFC & mlc layers: ',
@@ -1082,7 +1086,7 @@ C layers matches mlc database.
           ENDIF
    21   CONTINUE
         ncfc_el(icomp,i)=ntmpcfc_el
-! 
+
 C Read normal solar optical properties for complex fenestration construction.
       do 40 j=1,ncfc_el(icomp,i)
         CALL STRIPC(IUA,OUTSTR,99,ND,1,'normal solar-optical',IER)

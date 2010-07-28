@@ -774,11 +774,13 @@ C construction based on contents of common MLC.
       integer lnblnk  ! function definition
 
 c-- ag     
+      COMMON/FILEP/IFIL
+
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
 
-      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer ncomp,ncon
 
       COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
      &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
@@ -793,6 +795,8 @@ c-- ag
       CHARACTER SSOTHER*24,SSUSE*8,SSPARENT*12
 	  
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
+      integer ne,nairg,ipairg
+      real rairg
 c-- ag end
 
       COMMON/GVALCAL/CLAMDA(MMLC)
@@ -1003,20 +1007,23 @@ C OPAQ.
 C We will need to loop through all zones, probably, as a MLC of type CFC
 C can be used for different actual glazing properties on a zone for zone
 C base (?)
+      IF (ITRC.NE.0) then 
       do 16, iZone=1,ncomp
         if (icfc(iZone).eq.1) then
 C         Read construction file
-c          call read_in_cfc_file(0,itru,iunit,lcfcin(iZone),iZone,ier)
+          XST=.false.
+          call FINDFIL(lcfcin(iZone),XST)
+          IF(XST)THEN
+           CALL ERPFREE(IFIL+1,ISTAT)
+           call read_in_cfc_file(0,itru,IFIL+1,lcfcin(iZone),iZone,ier)
+          ENDIF        
           do 17, iSurf=1,nzsur(iZone)
             if ( (icfcfl(iZone,iSurf).gt.0).and.
      &           (MLCN(1:12).eq.
      &            SSMLCN(izstocn(iZone,iSurf))(1:12))) then
               icfctp=icfcfl(iZone,iSurf)  ! cfc type ... should be correlated with current mlc
               LayNo=ncfc_el(iZone,icfctp) ! number of layers of current type
-       write(*,*)'CFC typ=',icfctp,' MLCN=',MLCN,' SSMLCN()=',
-     &        SSMLCN(izstocn(iZone,iSurf))(1:15),' LayNo=',LayNo
 C           Write for current zone / surface
-            IF (ITRC.NE.0) then 
               imlcnlength=lnblnk(SSMLCN(izstocn(iZone,iSurf)))
               write(OUTSTR,'(5a,F7.3)')
      &        'Zone <',zname(iZone)(1:lnzname(iZone)),
@@ -1051,11 +1058,11 @@ C             Write out non-gas layer data (sequence order should be as in LBNL 
   19          continue
               write(outstr,'(a)') ' '
               call edisp(itru,outstr)
-            endif ! itrc.ne.0
           endif ! icfcfl.gt.0
   17    continue ! surface in zone loop
       endif ! icfc.gt.0
   16  continue ! zone loop
+      endif ! itrc.ne.0
       endif ! end CFC output for QS report (?)
 
       RETURN
