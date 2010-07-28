@@ -114,7 +114,6 @@ C Uncertainty.
       logical MODIFY,MODLEN,MODBND,browse
       logical xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer iglib   ! to test for X11 interface
 
       dimension ITEMS(30)
@@ -147,7 +146,6 @@ C Uncertainty.
 #endif
 
 C Set folder separator (fs) to \ or / as required.
-      newgeo=.false.  ! assume older format geometry.
       call isunix(unixok)
       if(unixok)then
         fs = char(47)
