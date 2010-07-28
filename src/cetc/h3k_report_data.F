@@ -4263,19 +4263,19 @@ C.........output node data
      &              'units', '(oC)',
      &              'mfn node temperature' )
 
-	! contaminant concentration from flow network *******************************
-       do jj=1,NCONTM
-         write(H3K_rep_NAME,'(A,A,A)')
-     &              Node_Name(1:lnNodeName),
-     &              '/conc/',
-     &              CONTMNAM(jj)(1:LNBLNK(CONTMNAM(jj)))
-
-         call add_to_xml_reporting (
-     &              CCONC(ii,jj),
-     &              H3K_rep_NAME,
-     &              'units', 'kg/kg',
-     &              'mfn node contaminant concentration' )
-       enddo
+c	! contaminant concentration from flow network *******************************
+c       do jj=1,NCONTM
+c         write(H3K_rep_NAME,'(A,A,A)')
+c     &              Node_Name(1:lnNodeName),
+c     &              '/conc/',
+c     &              CONTMNAM(jj)(1:LNBLNK(CONTMNAM(jj)))
+c
+c         call add_to_xml_reporting (
+c     &              CCONC(ii,jj),
+c     &              H3K_rep_NAME,
+c     &              'units', 'kg/kg',
+c     &              'mfn node contaminant concentration' )
+c       enddo
 
 C........Only use positive side of connections
 
