@@ -2106,10 +2106,6 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
-      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
-     &             ICONDX(MPCOM,MNODEC,MPCONC)
-      COMMON/C10/NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON),
-     &           IPC2(MPCON),IPN2(MPCON),PCONDR(MPCON),PCONSD(MPCON,2)
 
       DIMENSION ICPL(MPCOM,2),IXTC(MPCOM,2)
 
@@ -2146,30 +2142,17 @@ C Fatal error tests
          STOP
       endif
 
+
       QFUT=0.
       TFUT=TNP
       INEX=0
-      XMDR=1.0 ! Mass diversion fraction for fluid flow to zone
 
 C Determine coupled supply plant component and node.
+
       IF(ISIND.NE.4) THEN 
         IPCMP=IFIX(BMISCD(ICF,IDTYP,IPER,2))
         IPNOD=IFIX(BMISCD(ICF,IDTYP,IPER,3))
         IN=NPCDAT(IPCMP,9)+IPNOD-1
-
-C Get the connections this node sends mass to 
-        IBLDGZ=NINT(BMISCD(ICF,IDTYP,IPER,7))
-        ICON=0
-        DO 1 IPCON=1,NPCON
-          IF(IPC2(IPCON).EQ.IN)THEN
-            IF(NINT(PCONSD(IPCON,1)).EQ.IBLDGZ)THEN
-              ICON=IPCON
-              XMDR=PCONDR(ICON)
-            ENDIF
-          ENDIF
- 1      CONTINUE
-        IF(ICON.EQ.0)CALL EDISP(ITU,
-     &  'BCL06: Mass diversion for plant zone link not found')
       ELSEIF(ISIND.EQ.4) THEN
 
 C Set the embedded flag to zero after finding ipcmp.
@@ -2257,7 +2240,7 @@ C      from the previous time step to calculate the resulting heat injection.
 
 C Temperature, 1st and 2nd mass flow rate of plant injection node
          TMPN=CSVF(IN,1) 
-         AMFR=CSVF(IN,2)*xmdr
+         AMFR=CSVF(IN,2)
          VMFR=CSVF(IN,3)
 
 C Heat capcity of dry air & vapor:

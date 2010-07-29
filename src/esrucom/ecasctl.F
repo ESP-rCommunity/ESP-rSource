@@ -129,7 +129,7 @@ c Read type of casual gain to be controlled during each day type.
         if(OUTSTR(1:5).eq.'*desc')then
           k=6
           CALL EGETRM(OUTSTR,K,cgcdesc(icomp),'W','descr',IER)
-          CALL STRIPC(IUNIT,OUTSTR,3,ND,1,'cgc line 3',IER)
+          CALL STRIPC(IUNIT,OUTSTR,NBDAYTYPE,ND,1,'cgc line 3',IER)
         endif
       endif
       K=0
