@@ -10,7 +10,7 @@ PROG = ecnv$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = ecnv.o ascii_mat.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
-	  e2vdxf.o e2zip.o edatabase.o egeometry.o egtgeom.o \
+	  e2vdxf.o e2zip.o econstr.o edatabase.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o item.o low_lev.o mfcdat.o mid_lev.o \
 	  nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
@@ -28,6 +28,9 @@ c2fdum.F:
 ctread.F:
 	rm -f ctread.F
 	ln -s $(COMdir)/ctread.F .
+econstr.F:
+	rm -f econstr.F
+	ln -s $(COMdir)/econstr.F .
 edatabase.F:
 	rm -f edatabase.F
 	ln -s $(COMdir)/edatabase.F .
@@ -101,7 +104,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	ascii_mat.F c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
+	ascii_mat.F c2fdum.F ctread.F econstr.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
 	item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
 	sort.F startup.F tdfile.F editCFC.F

@@ -12,7 +12,7 @@ PROG2 = espvwf$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = espvwf.o arrow.o ascii_mat.o bound.o bubble.o c2fdum.o checkrec.o common3dv.o \
-	  cread3dv.o ctread.o dossupport.o e3dviews.o edatabase.o edmrt.o egeometry.o \
+	  cread3dv.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o edmrt.o egeometry.o \
 	  emfnetw.o emkcfg.o enetmisc.o eroper.o esru_misc.o esystem.o filein.o \
 	  grid.o inside.o item.o matpol.o mfcdat.o mrtinput.o nwkrewr.o \
 	  plelevvc.o plne.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o sparea.o startup.o \
@@ -45,6 +45,9 @@ dossupport.F:
 e3dviews.F:
 	rm -f e3dviews.F
 	ln -s $(COMdir)/e3dviews.F .
+econstr.F:
+	rm -f econstr.F
+	ln -s $(COMdir)/econstr.F .
 edatabase.F:
 	rm -f edatabase.F
 	ln -s $(COMdir)/edatabase.F .
@@ -119,6 +122,6 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
 	arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctread.F dossupport.F e3dviews.F \
-	edatabase.F edmrt.F egeometry.F emfnetw.F enetmisc.F enetrewr.F emkcfg.F \
+	econstr.F edatabase.F edmrt.F egeometry.F emfnetw.F enetmisc.F enetrewr.F emkcfg.F \
 	eroper.F esru_misc.F esystem.F item.F mfcdat.F nwkrewr.F editCFC.F \
 	plelevvc.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F sort.F startup.F tdfile.F

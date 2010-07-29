@@ -1072,9 +1072,7 @@ C layers matches mlc database.
         CALL EGETWI(OUTSTR,K,ntmpcfc_el,1,ME,'W','CFC layers',IER)
         IERR=0
         DO 21 J=1,NS
-c          IF(icfcfl(icomp,j).EQ.I.AND.ntmpcfc_el.NE.NE(J))IERR=1
-c          IF(icfcfl(icomp,j).EQ.I.AND.
-c     &       ntmpcfc_el.NE.nelts(icomp,J)) IERR=1
+          IF(icfcfl(icomp,j).EQ.I.AND.ntmpcfc_el.NE.NE(J))IERR=1
           IF(IERR.EQ.1)THEN
             write(outs,'(6a)')
      &      ' Mismatched CFC & mlc layers: ',

@@ -769,6 +769,7 @@ C construction based on contents of common MLC.
 #include "esprdbfile.h"
 #include "material.h"
 #include "geometry.h"
+#include "model.h"
 #include "CFC_common.h"
 
       integer lnblnk  ! function definition
@@ -781,11 +782,6 @@ c-- ag
 
       COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
-
-      COMMON/C2/LSNAM,NCCODE(MCOM),LPROJ(MCOM),LGEOM(MCOM),
-     &          LSHAD(MCOM),LTHRM(MCOM),INDUTL(MCOM),LUTIL(MCOM)
-      integer nccode,indutl
-      character LSNAM*72,LPROJ*72,LGEOM*72,LSHAD*72,LTHRM*72,LUTIL*72
 
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -1010,13 +1006,15 @@ C base (?)
       IF (ITRC.NE.0) then 
       do 16, iZone=1,ncomp
         if (icfc(iZone).eq.1) then
-C         Read construction file
           XST=.false.
           call FINDFIL(lcfcin(iZone),XST)
           IF(XST)THEN
-           CALL ERPFREE(IFIL+1,ISTAT)
-           call read_in_cfc_file(0,itru,IFIL+1,lcfcin(iZone),iZone,ier)
-          ENDIF        
+           iunit=IFIL+1
+c           CALL ERPFREE(iunit,ISTAT)
+C          Read construction file
+           CALL ECONST(LTHRM(iZone),iunit,iZone,0,itru,IER) ! should fill /T1/
+           call read_in_cfc_file(0,itru,iunit,lcfcin(iZone),iZone,ier)
+          ENDIF
           do 17, iSurf=1,nzsur(iZone)
             if ( (icfcfl(iZone,iSurf).gt.0).and.
      &           (MLCN(1:12).eq.
@@ -1025,12 +1023,12 @@ C         Read construction file
               LayNo=ncfc_el(iZone,icfctp) ! number of layers of current type
 C           Write for current zone / surface
               imlcnlength=lnblnk(SSMLCN(izstocn(iZone,iSurf)))
-              write(OUTSTR,'(5a,F7.3)')
-     &        'Zone <',zname(iZone)(1:lnzname(iZone)),
-     &        '> Surface <',
+              write(OUTSTR,'(5a,F7.3,a)')
+     &        'In zone: ',zname(iZone)(1:lnzname(iZone)),
+     &        ', for surface: ',
      &          SSMLCN(izstocn(iZone,iSurf))(1:imlcnlength),
-     &        '> CFC Approx. ISO 6946 U-value (horiz)=',
-     &        CFC_ISO_Uvalue(iZone,icfctp) ! this would be *very* nice ...
+     &        ' the CFC Approx. ISO 6946 U-value (horiz) is ',
+     &        CFC_ISO_Uvalue(iZone,icfctp),' W/(m2 K)' ! this would be *very* nice ...
               call edisp(itru,OUTSTR)
 C             Layer data
               write(outstr,'(a)') 
