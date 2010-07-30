@@ -178,15 +178,11 @@ C geometry.h provides commons G0/G2/G4/prec2/precz/prec17.
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER outs*124
 
       LOGICAL MODIFY,MODLEN,MODBND,zbzero
@@ -363,8 +359,6 @@ C          1 = textual feedback or 2 = File
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
@@ -381,8 +375,6 @@ C          1 = textual feedback or 2 = File
      &            SurfEquP(MaxPub,MNbAbs), SurfEquF(MaxFur,MNbAbs),
      &            SurfEquT(MNbAbs), SurfTot, TReverb(MNbAbs), Tmean
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER*36 RevLabA,RevLabB
       CHARACTER*63 FreqLabA,FreqLabB
       CHARACTER extraouts*189, outs*156

@@ -132,9 +132,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
 C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
 
@@ -142,8 +139,6 @@ C IPRZ is material db ref for each layer.
       logical closemat1,closemat2
 
       CHARACTER outs*124,CSTR*25
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
 C Use material arrays if available. This also assumes that constructions will
 C have been filled after the model cfg file was scanned.
@@ -396,14 +391,10 @@ C If act = i then initial display, if act = s then single step display.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,CSTR*25
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character TSTR*6,ZN*12,RSNAME*40,SN*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character act*1
       integer lml   ! string length for construction name.
 #ifdef OSI

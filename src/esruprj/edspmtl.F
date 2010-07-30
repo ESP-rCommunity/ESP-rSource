@@ -343,7 +343,7 @@ C Data items.
 #include "net_flow.h"
 #include "building.h"
 #include "model.h"
-C #include "geometry.h"
+#include "geometry.h"
 #include "power.h"
 #include "epara.h"
 #include "esprdbfile.h"
@@ -365,8 +365,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
 C << rewrite logic using G6 common block >>
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -399,8 +397,6 @@ C sstr in spdesc.
       character outs*124,spmlabel*16,item*32,spitem*32,entflnam*72
       CHARACTER NAM*72,PNAM*20,spdefnam*16,labl*16,H*72
       CHARACTER DADESC*72,spitem2*32
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER spflnam*72,spdesc*72
       CHARACTER SPSTR*72,SSTR*72, MODE*2, T72*72, t144*144
       CHARACTER PCITM(35)*42,DEPRE*40,KEY*1,DESCRC*25

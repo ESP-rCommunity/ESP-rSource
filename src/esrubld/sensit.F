@@ -605,13 +605,12 @@ C               the common/ua2/ arrays).
 
       SUBROUTINE UAE02(IZONE,IACT,DIR)
 #include "building.h"
+#include "geometry.h"
 #include "uncertainty.h"
 #include "esprdbfile.h"
 #include "material.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -625,8 +624,6 @@ C               the common/ua2/ arrays).
       COMMON/UA4/NIACT,IACTD(MNACT,2)
 
 C      CHARACTER TITL*72,NAM*72,CSTR*25
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER MATNAM*12,CSTR*25
 
 C Data stored in UA02 has the following meaning in this routine:
@@ -1204,14 +1201,9 @@ C IEL = index of matching elements
 
       SUBROUTINE CHKPRIM(IZONE,ISURF,IPRIM,NEL,IEL)
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
       DIMENSION IEL(ME)
 

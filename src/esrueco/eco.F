@@ -93,8 +93,6 @@ C Zone information
 
 C Composites information
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
@@ -166,8 +164,6 @@ C      CHARACTER tab*1
       CHARACTER TxtZone*31,TxtCompo*22,TxtMat*22, TxtLCA*28
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8, Oldunit*8
       CHARACTER xfile*144,tg*1,delim*1,MODE*4
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
       INTEGER IWHICH
       LOGICAL close

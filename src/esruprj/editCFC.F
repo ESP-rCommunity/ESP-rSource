@@ -72,10 +72,6 @@ C ********************************************************************
       character h*72
       COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
       integer izstocn
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       integer ne,nairg,ipairg
@@ -985,12 +981,6 @@ C ********************************************************************
       integer iuout,iuin
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer izstocn
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
-C CAUTION! Using this common may work only for 1-zone models! The variables
-C contain values for the last zone of a multi-zone model by default ...
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       integer ne,nairg,ipairg
       real rairg
@@ -1642,14 +1632,6 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
 #include "model.h"
 #include "epara.h"
 #include "CFC_common.h"
-
-c      COMMON/C20/NZSUR(MCOM),NZTV(MCOM)
-c      integer nzsur,nztv
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
 
       COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
       integer izstocn

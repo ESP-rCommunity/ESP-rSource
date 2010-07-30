@@ -120,43 +120,11 @@ C << add logic to check for existance of obstructions file and
 C << shading file in subsequent read and then update the values
 C << as appropriate
 
-C SNAME (12 char) - surface name attribute
+C SNAME (12 char) - surface name attribute. Other G5 common block
+c variables are defined in geometry.h
 C ZBASEA    - area of base (m^2)
 C IBASES    - surfaces (up to 12) associated with base area. If all 0 then
 C             base area has been supplied by the user.
-C SOTF (32 char) - surface attribute indicating OPAQUE or an optical property.
-C SVFC (4 char) - string indicating whether the surface is to be
-C     counted as a FLOR (face up), VERT (wall), CEIL (face down),
-C     SLOP (not vertical) for purposes of floor area and daylighting.
-C 
-C SMLCN (32 char) surface construction attribute.
-C SOTHER (24 char * 3) surface attributes for `other` side. 
-C   SOTHER(i,1) = UNKNOWN indicatesthat no attribute has been set and
-C               for this case SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = EXTERIOR means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = ADIABATIC means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = SIMILAR means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = BASESIMP means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = GROUND means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = if a zone name then its index will be moved to SOTHER(2) and
-C               the surface index in SOTHER(3) and the key word ANOTHER is
-C               put in SOTHER(1).
-C   SOTHER(i,1) = ANOTHER then SOTHER(2) is zone index and SOTHER(3) is
-C               the surface index in that zone (e.g. as IC2 and IE2).
-
-C SUSE (8 char * 2) is the usage of the surface. This concept is not
-C supported in the older versions of geometry file and a  -,-  the
-C initial state for newly created surfaces and surfaces which the user
-C has not yet expressed an opinion is assumed.
-
-C SPARENT(MS) (12 char) the name of the parent surface or '-'
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-
-C The connections based variant of G5 which can be instantiated
-C if the common block C24 has been filled.
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC (64 char) - zone notes (from geometry.h).
@@ -178,10 +146,6 @@ C Error subroutine and error details for dll mode.
       
       CHARACTER LGEOMF*72,WORD*20,loutstr*248
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124
       character OTF*4,OPT*12 ! for use with parsemlcdesc
@@ -1020,16 +984,12 @@ C << todo: emkgeo could use ZNDATA if there was a way for the
 C << calling code to signal that ZNDATA could be used instead.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
 
 C Dummy array for default windows.
       dimension NGLD(MS)
 
       CHARACTER louts*248,outs*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER SO*15    ! to write out legacy
       logical newgeo  ! to use for testing if new/old geometry file.
       character msg*48
@@ -1244,7 +1204,7 @@ C Also now can include a token to remember users prior rotateit request.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/prec2/prec17/precz/c20/GS5/GS6.
+C geometry.h provides commons G0/G2/G4/G5/prec2/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -1286,23 +1246,9 @@ C SVFC (4 char) - string indicating whether the surface is to be
 C     counted as a FLOR (face up), VERT (wall), CEIL (face down),
 C     SLOP (not vertical) for purposes of floor area and daylighting.
 C 
-C SMLCN (32 char) surface construction attribute.
-C SOTHER (24 char * 3) surface attributes for `other` side. 
-C   SOTHER(i,1) = UNKNOWN indicatesthat no attribute has been set and
-C               for this case SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = EXTERIOR means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = ADIABATIC means SOTHER(2) and SOTHER(3) are '0'
-C   SOTHER(i,1) = SIMILAR means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = BASESIMP means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = GROUND means that SOTHER(2) and SOTHER(3) are as IC2 & IE2
-C   SOTHER(i,1) = if a zone name then its index will be moved to SOTHER(2) and
-C               the surface index in SOTHER(3) and the key word ANOTHER is
-C               put in SOTHER(1).
-C   SOTHER(i,1) = ANOTHER then SOTHER(2) is zone index and SOTHER(3) is
-C               the surface index in that zone (e.g. as IC2 and IE2).
-C SUSE (8 char * 2) is the usage of the surface.
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
+C SMLCN (32 char) surface construction attribute and other G5 common block
+C variables are defined in geometry.h  Some additonal information on the
+C variables SSUSE and SUSE follow:
 
 C    Surfaces which function as opaque portions of a facade are
 C    marked as `WALL`. If they are vertical they will be composed
@@ -1372,11 +1318,6 @@ C    and surfaces which the user has not yet expressed an opinion. This
 C    can also be used for internal surfaces which may not be of concern
 C    within building code complence assessments.
 
-C The connections based variant of G5 which can be instanciated
-C if the common block C24 has been filled.
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
 C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC (64 char) - zone notes (from geometry.h).
 
@@ -1408,10 +1349,6 @@ C GS7/GS8 are defined in geometry.h
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       CHARACTER LGEOMF*72,WORD*32
       CHARACTER tmpvfc*4,tother*15,tother1*15,tother2*15
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
@@ -2425,9 +2362,6 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
 C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC (64 char) - zone notes (from geometry.h).
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -2447,8 +2381,6 @@ C Error subroutine and error details for dll mode.
 C Obstruction blocks common GS5/GS6 is found in geometry.h.
 
       CHARACTER GENFIL*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character outs*144,outsd*144,outs72*72,OTHSTR*30
       character louts*248,loutsd*248
       character tab*1    ! separator
@@ -3476,16 +3408,13 @@ C If context is .true. then give verbose description of the boundary.
 
       common/SFIG/NSIGFIG
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical context
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER OUTSTR*124,OTHSTR*30
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12,SIGSTR*12
+      CHARACTER SIGSTR*12
 C      character SO*15  ! buffer to use for sother() info.
       integer lzn      ! length of zone name
 
@@ -3581,11 +3510,7 @@ C the connections file).
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       CHARACTER OTHSTR*30,SST2*12,ZST2*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
       if(izone.ne.0.and.izone.le.NCOMP)then
         if(isurf.le.NZSUR(izone).and.isurf.ne.0)then
@@ -3852,14 +3777,11 @@ C << could it use ?? instead of G1? >>
 
       common/OUTIN/IUOUT,IUIN
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION XX(MV),YY(MV),ZZ(MV),CG(3),EQN(4)
       LOGICAL CLOSE,closeaz,closeel
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12,outs*124
+      CHARACTER outs*124
       integer lln   ! length of surface name
 
 C ZGUPDATE assumes that the zone geometry file has been read prior to
@@ -4073,8 +3995,6 @@ C act is '-' derive geometric data or 'c' also determine parent
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
@@ -4096,8 +4016,7 @@ C   where a surface such as a floor has been subdivided)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12,outs*124,act*1,h*72
+      CHARACTER outs*124,act*1,h*72
       logical closeazi,closeelv,foundone,ok,dok,same
 
 C iwhich is local variable to sort most often referenced adjacent surf.
@@ -4376,8 +4295,6 @@ C be duplicates.
 #include "geometry.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C G9 holds information on children of a surface.
       integer nbchild   ! how many children (up to 4)
@@ -4396,8 +4313,6 @@ C G9 holds information on children of a surface.
       dimension idupv(MS,6)    ! duplicate vertex indices
       dimension iduplist(MS,6) ! position in list
       LOGICAL PARENT,closeazi,closeelv
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
       CHARACTER ACT*1,CHILDRIN*12,PARENTIN*12
       integer isur   ! loop counter for parent surface loop
       integer jsur   ! loop counter for child surface loop
@@ -4664,8 +4579,6 @@ C << zone geometry file if havec24 is true?
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C Variables from geometry.h:
 C SSURCOG is centre of gravity of surface (vertex weighted).
@@ -4676,8 +4589,7 @@ C SSURVN is point 1 unit vectpr off of surface COG along the normal.
      &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
       LOGICAL OK,dok
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12,h*72,outs*124
+      CHARACTER h*72,outs*124
 
       integer lng     ! length of geometry file name
       integer itrct   ! temporary trace level
@@ -4763,20 +4675,17 @@ C << should this also fill G6?? >>.
 
       SUBROUTINE FILSUR(ICOMP,ISUR)
 #include "building.h"
+#include "geometry.h"
 
 C Parameters
       integer icomp ! zone number
       integer isur  ! zero do all surfaces otherwise index of a surface
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient, iSurfWall, iSurfCeiling, iSurfFloor
       parameter (iSurfWall=1, iSurfFloor=2, iSurfCeiling=3)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.  Gather misc zone infor-
@@ -4874,15 +4783,11 @@ C << update documentation as well as reporting based on files >>
 #include "model.h"
 #include "geometry.h"
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
 
       CHARACTER OUTSTR*124
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character sdescr*80
 
 C Print out information about the default insolation planes if
@@ -5096,11 +5001,7 @@ C If 'is' is passed as 0 then check all, otherwise exclude surface is.
       
       integer lnblnk  ! function definition
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character string*12,SN*12
       logical ok
       
@@ -5134,11 +5035,7 @@ C If 'is' is returned as 0 if no match.
       
       integer lnblnk  ! function definition
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character string*12,SN*12
       
       lstr=lnblnk(string)
@@ -5163,16 +5060,13 @@ C lstsf is the list of surface indices, sdescr is the string returned
 C and length is its maximum length. 
       subroutine surlist(icomp,nbsur,lstsf,sdescr,length,ierr)
 #include "building.h"
+#include "geometry.h"
       
       integer lnblnk  ! function definition
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       
       dimension lstsf(mcom,ms),iva(ms)
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER sdescr*80,sn*12
       logical unixok
 

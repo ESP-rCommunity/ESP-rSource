@@ -779,10 +779,6 @@ C the user to confirm before writing to temporary configuration file.
 
 C G5 required for updating zone geometry file (until such time as geometry
 C write can use G6 common blocks).
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
 C Pause length during sequentail scan longpause (true=1 sec)
       common/scanpause/longpause
@@ -797,10 +793,6 @@ C Pause length during sequentail scan longpause (true=1 sec)
       character outs*124,CXSTR*78,SN*12
       character SO*24,TOTHER*24
       character DESCRC*25
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER H*72
       character DCNN*72,cfgroot*24,LCFGF*72,bl*2
       integer izselfcheck  ! the surface being tested
@@ -1762,8 +1754,6 @@ C Parameters: logical variables set the context of what to check
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -1778,8 +1768,6 @@ C Parameters: logical variables set the context of what to check
       CHARACTER CXSTR*78,outs*124
       CHARACTER OUTSTR*124,SO*12,ZN*12,TMP*54,H*72
       CHARACTER bl*2
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
 
 C General image option flags.
       newgeo=.false.  ! assume older format geometry.
@@ -2930,9 +2918,6 @@ C espriou.h for climatelist file name.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
 C IDST tool commands.
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
      &             CMDLNAM(10)
@@ -2947,8 +2932,6 @@ C IDST tool commands.
       character LCFGF*72,cfgroot*24,h*72
       character CXITM*43,outs*124,LTMP*72
       character clmdb*144
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      CHARACTER SSPARENT*12
       character doit*248,tmode*8,tfile*72,aut*8,runmode*12,keepres*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,alias*32,donegdst*72
@@ -3310,8 +3293,6 @@ C Serchrpl handles search and replace of composition attributes.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
 
@@ -3323,8 +3304,7 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
 
       character LTMP*72
       character H*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character ZN*12,outs*124,SN*12,SSPARENT*12
+      character ZN*12,outs*124,SN*12
       character DESCRC*25,act*1
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character AL1*12,AL2*12,AL3*12,AL4*12,AL5*12,AL6*12,AL7*12

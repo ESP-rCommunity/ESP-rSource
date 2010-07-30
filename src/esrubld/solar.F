@@ -195,8 +195,6 @@ C in elevation and azimuth.
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/PREC1/SNA(MCOM,MS)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
@@ -338,8 +336,6 @@ C Required for WATSUN-PV model
       logical bCloseToZero     ! Boolean used for comparison to zero
 
       character outs*124,vsnam*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
       DIMENSION QIABS(MS),IANS(MS),IND1(MS),IND2(MS),ANGI(MS),
      &SRADDO(MS),SRADF(MS),SKYDIF(MS),GRDDIF(MS)
@@ -3773,14 +3769,13 @@ C existing and new controls should be added here.
 
       SUBROUTINE MZSCTL(ICOMP,ISURFNumber,SRADDO,SRADF,ISET)
 #include "building.h"
+#include "geometry.h"
 #include "tdf2.h"
 #include "control.h"
 #include "esprdbfile.h"
 #include "material.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/BTIME/BTIMEP,BTIMEF
 
@@ -3832,8 +3827,6 @@ C Daylight coeff specific
 C Definitions for daylight coefficient patch altitude:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character outs*124
       character ctl_constrdb_name*72 !to match the name of the controlled construction (from db)
                                      !with the name of the construction of the study

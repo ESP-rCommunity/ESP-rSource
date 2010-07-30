@@ -76,7 +76,7 @@ C **************************************************************
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G2/G5/precz.
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
@@ -91,8 +91,6 @@ C geometry.h provides commons G0/G2/precz.
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP) 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/VTHP11/NTHF,IBTHAL(MTHF,3)
       COMMON/VTHP12/NTHEQ(MTHF),BTHDT(MTHF,MTHEQ,MDATA)
       COMMON/VTHP18/LNLTHP
@@ -105,8 +103,6 @@ C geometry.h provides commons G0/G2/precz.
       CHARACTER ITEM(16)*35,ITEM2(4)*25,LNLTHP*72,H*72
       CHARACTER*20 ITEM3(MCOM),ITEM4(MS),ITEM5(ME)
       CHARACTER*95 TEXT,TEXT1
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character ltmp*72
 
 C Read the complete building thermal and geometical data.

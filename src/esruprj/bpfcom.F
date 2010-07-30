@@ -1627,10 +1627,10 @@ C Parameters
       common/c1/ncomp,ncon
       common/cctl/icascf(mcom)
 
-      common/calena/calename,calentag(MDTY),calendayname(MDTY) 
-      character calename*32,calentag*12,calendayname*32 
-      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365) 
-      INTEGER nbdaytype,nbcaldays,icalender 
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER nbdaytype,nbcaldays,icalender
 
       character outs*124,SSTR*96
 
@@ -1682,14 +1682,10 @@ C List function details.
         nn=nCFCctldaytypes(ii)
       endif
       IF(nn.EQ.0)THEN
-c        call edisp(itru,
-c     &     ' The function day types are Weekdays, Saturdays & Sundays')	 
-c        IF(nbdaytype.GT.3)THEN 
           call edisp(itru,' The following day types are defined: ') 
           DO 30 ID=1,NBDAYTYPE 
             call edisp(itru,calentag(id)) 
  30       CONTINUE 
-c        ENDIF
       ELSE
         WRITE(outs,78)nn
   78    FORMAT(' There have been ',I2,' day types defined.')
@@ -1699,7 +1695,7 @@ c        ENDIF
       do 20 j=1,nn
         JJ=J
         call lstcntld(itru,icfoc,II,JJ)
-   20 CONTINUE
+ 20   CONTINUE
       return
       end
 

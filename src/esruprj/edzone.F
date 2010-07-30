@@ -36,7 +36,7 @@ C an extrusion. IER=0 OK.
 #include "building.h"
 #include "model.h"
 
-C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
+C Use geometry for common g0/g2/g4/g5/g6/g7/prec16/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -48,10 +48,6 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
       common/pophelp/h(60)
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       Logical MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
@@ -70,11 +66,8 @@ C Use geometry for common g0/g2/g4/g7/prec16/precz/c20.
       common/cctl/icascf(mcom)
 
       DIMENSION XX(MS),YY(MS)
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER HOLD*32
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character MODE*4,SSPARENT*12,fs*1
+      character MODE*4,fs*1
       CHARACTER OUTSTR*124,H*72,ZN*12,outs*124
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
@@ -566,10 +559,6 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       common/pophelp/h(60)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -583,10 +572,6 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
      &             dbspth
 
       CHARACTER*72 LTMP,DFILE
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER OUTSTR*124,H*72,ctldoc*248,LCTLF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24
@@ -1060,10 +1045,6 @@ C espriou.h provides currentfile.
       common/pophelp/h(60)
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1101,11 +1082,7 @@ C Anchor data.
       logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       CHARACTER cfgroot*24
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER H*72,ctldoc*248,LCTLF*72,outs*124
       character ltmp*72,NDNAM*12
       character ALOC*12,ALOCLBL*12,ALOCTYP*4

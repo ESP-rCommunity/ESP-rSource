@@ -69,9 +69,6 @@ C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
@@ -167,8 +164,6 @@ C Remember if each zone is fully attributed.
       character longtfile*144,longtfiledos*144
       character LFIL*96,llitem*144    ! for editing the QA report file.
       character DESCRC*25
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
       character xfile*144,tg*1,delim*1,head*21,mlcmatch*12
@@ -2205,9 +2200,6 @@ C not browsing.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
-
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2236,8 +2228,6 @@ C Images.
 
       character cfgroot*24,LCFGF*72,h*72,outs*124
       CHARACTER CTLDOC*248,LCTLF*72
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       character ZN*12
       character ipvaction*3  ! to instruct it to read from external IPV file
       logical ok,dok,XST,anyish,unixok

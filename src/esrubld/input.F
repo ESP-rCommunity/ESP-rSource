@@ -753,7 +753,7 @@ C IREP=1 implies no reporting or data checking.
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/c20/precz.
+C geometry.h provides commons G0/G2/G5/c20/precz.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -764,9 +764,6 @@ C geometry.h provides commons G0/G2/c20/precz.
 
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
-
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -831,8 +828,6 @@ C Thermal bridge common block is described in esruprj/edgeo.F
 
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72,lfil*72,H*72
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spsname*8,spfdescr*8
       character dllsubr*12,dllmesg*124

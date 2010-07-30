@@ -49,9 +49,6 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       COMMON/RECV5/SNA(MCOM,MS)
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
-
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
@@ -60,8 +57,6 @@ C =2 with more than 3 day types
       logical SNAPSH
 
       CHARACTER TSTR*10,CSTR*25
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER SN*12,ZN*12
       character DESCRD*5,DDX*7,DDX1*10,DHX*5,outs*124
 

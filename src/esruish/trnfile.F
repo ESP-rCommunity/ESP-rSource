@@ -116,8 +116,6 @@ C and computes the overall direct and diffuse shading factors.
       common/outin/iuout,iuin
       common/tracech/icout
       common/filep/ifil
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
       common/grid3/ogrida(ms)
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
@@ -127,8 +125,6 @@ C and computes the overall direct and diffuse shading factors.
       common/c24/izstocn(mcom,ms)
       common/data1/ical,idifc,init
 
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
       character outs*248,mode*3
       logical tok
 

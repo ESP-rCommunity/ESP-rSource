@@ -1474,13 +1474,9 @@ C   from common block variable icp.
       
       integer lnblnk  ! function definition
 
-      COMMON/G6/SSNAME(MCON),SSOTF(MCON),SSMLCN(MCON),SSVFC(MCON),
-     &          SSOTHER(MCON,3),SSPARENT(MCON),SSUSE(MCON,2)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/ICFNOD/ICFD,ICP
 
-      CHARACTER SSMLCN*32,SSVFC*4,SSOTF*32,SSOTHER*24,SSNAME*12,SSUSE*8
-      character SSPARENT*12
       CHARACTER SURF*12
       integer lnssn,lnsurf
 

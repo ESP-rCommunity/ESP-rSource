@@ -383,18 +383,15 @@ C 1.0-AI() is assumed to represent the visible reflectance of surfaces.
 
       SUBROUTINE INTCMP(ICOMP,J,WIDTH,HIGH,ZWMIN,XIC)
 #include "building.h"
+#include "geometry.h"
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV  
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
 C TMC data
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
 
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       logical close
 
 C Loop through zone verticies and find out ZMIN and ZMAX.

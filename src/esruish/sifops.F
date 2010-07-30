@@ -46,8 +46,6 @@ C with the db at simulation time.
       common/outin/iuout,iuin
       common/pophelp/h(60)
       common/filep/ifil
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
@@ -59,8 +57,6 @@ C with the db at simulation time.
       common/mtfile/ltrns,multic,mons,monf
 
       character ltrns*72
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
       character sn*12
       character*12 sourcename(MS)   ! name of insolation source
       character*3 month(12)
@@ -952,8 +948,6 @@ C  ier (integer) is zero if no problems, -3 if empty.
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/g6/ssname(mcon),ssotf(mcon),ssmlcn(mcon),ssvfc(mcon),
-     &          ssother(mcon,3),ssparent(mcon),ssuse(mcon,2)
 
       common/c24/izstocn(mcom,ms)
       common/tmc/itmc(ms),nwins
@@ -961,8 +955,6 @@ C  ier (integer) is zero if no problems, -3 if empty.
       common/data3/ishd(12),isadd(12),ntmc(ms),ioffs(ms)
       common/data4/insst(mgt,24,misur),pinsst(mgt,24,misur)
 
-      character ssname*12,ssotf*32,ssmlcn*32,ssvfc*4,ssother*24,
-     &          ssparent*12,ssuse*8
       character sn*12
       character*12 sourcename(MS)   ! name of insolation source
       character*3 month(12)

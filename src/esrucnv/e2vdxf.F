@@ -27,7 +27,7 @@ C THF (THINGS) file for use in MicroGDS.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/precz/GS5.
+C geometry.h provides commons G0/G2/G5/precz/GS5.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -40,8 +40,6 @@ C geometry.h provides commons G0/G2/precz/GS5.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -49,8 +47,6 @@ C geometry.h provides commons G0/G2/precz/GS5.
       logical doobs
 
       character oformat*24,head*4,ZN*12,outs*124
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
 
 C Setup standard assumptions.
       if(incobs.eq.1)doobs=.true.
@@ -444,8 +440,6 @@ C THF (THINGS) file for use in MicroGDS.
 
       COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      COMMON/G5/SNAME(MCOM,MS),SOTF(MS),SMLCN(MS),SVFC(MS),SOTHER(MS,3),
-     &          SUSE(MS,2),SPARENT(MS)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -453,8 +447,6 @@ C THF (THINGS) file for use in MicroGDS.
       LOGICAL doobs
 
       character oformat*24,head*4,ZN*12,outs*124
-      CHARACTER SOTHER*24,SNAME*12,SMLCN*32,SVFC*4,SOTF*32,SUSE*8
-      CHARACTER SPARENT*12
       integer llbm    ! length of block material
 
 C Setup standard assumptions.
