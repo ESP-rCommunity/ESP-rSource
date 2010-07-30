@@ -360,7 +360,7 @@ C IER=0 indicates no error.
       SUBROUTINE CFDGGRD(izone,IER)
 #include "building.h"
 #include "model.h"
-C #include "geometry.h"
+#include "geometry.h"
 #include "cfd.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -373,8 +373,6 @@ C #include "geometry.h"
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C NREG(1,*) is X, NREG(2,*) is Y, NREG(3,*) is west, NREG(4,*) is east
 C (the east (4,*) is for curvilinear gridding).
@@ -3728,13 +3726,13 @@ C TOPBOT: Define upper and lower curvilinear x-section for use in
 C gridding generation.
       SUBROUTINE TOPBOT(ICOMP,act,IER)
 #include "building.h"
+#include "geometry.h"
 #include "prj3dv.h"
       integer iCountWords
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -3927,6 +3925,7 @@ C and cell distribution for each region.
 
       SUBROUTINE GRIDDEF(IAX,NRG,NTC,TOTDIS,NCEL,REG,plaw,ierr)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
 #include "epara.h"
 
@@ -3938,7 +3937,6 @@ C and cell distribution for each region.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/ICFNOD/ICFD,ICP
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       dimension NCEL(MNREG,MNZ),plaw(MNREG,MNZ)
       dimension NRG(4,MNZ),REG(MNREG,MNZ)

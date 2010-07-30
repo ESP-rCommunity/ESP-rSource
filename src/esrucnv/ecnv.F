@@ -1095,10 +1095,10 @@ C  Putcoods writes co-ordinates into .vew file or esp geometry commons.
       logical match
       integer nbofsurf  ! to pass to matchv
 
-C Multiply current x,y,z by transformation matrix
-      x = coorx*amat(1,1) + coory*amat(1,2) + coorz*amat(1,3)
-      y = coorx*amat(2,1) + coory*amat(2,2) + coorz*amat(2,3)
-      z = coorx*amat(3,1) + coory*amat(3,2) + coorz*amat(3,3)
+C Multiply current xx,yy,zz by transformation matrix
+      xx = coorx*amat(1,1) + coory*amat(1,2) + coorz*amat(1,3)
+      yy = coorx*amat(2,1) + coory*amat(2,2) + coorz*amat(2,3)
+      zz = coorx*amat(3,1) + coory*amat(3,2) + coorz*amat(3,3)
 
       llay=lnblnk(layname(currlay))
 
@@ -1109,18 +1109,18 @@ C For both file formats convert from mm to metres.
       if(oformat(1:6).eq.'viewer')then
         if (flagins.eq.0) then      
           if(head.eq.'BLK_')then
-            write(ioblk,'(3f12.4)') x*dxfconv, y*dxfconv, z*dxfconv
+            write(ioblk,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
           else
-            write(ioout,'(3f12.4)') x*dxfconv, y*dxfconv, z*dxfconv
+            write(ioout,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
           endif
         else        
-          x = x-blkxorg
-          y = y-blkyorg        
-          z = z-blkzorg      
+          xx = xx-blkxorg
+          yy = yy-blkyorg        
+          zz = zz-blkzorg      
           if(head.eq.'BLK_')then
-            write(ioblk,'(3f12.4)')  x*dxfconv, y*dxfconv, z*dxfconv        
+            write(ioblk,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv        
           else
-            write(ioout,'(3f12.4)')  x*dxfconv, y*dxfconv, z*dxfconv        
+            write(ioout,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv        
           endif
         endif  
       elseif(oformat(1:3).eq.'esp')then
@@ -1130,17 +1130,17 @@ C For both file formats convert from mm to metres.
 C Currently writing to temporary block file so do this in viewer
 C format (for later recovery as an obstruction block).
           if (flagins.eq.0) then      
-            write(ioblk,'(3f12.4)') x*dxfconv, y*dxfconv, z*dxfconv
+            write(ioblk,'(3f12.4)') xx*dxfconv, yy*dxfconv, zz*dxfconv
           else        
-            x = x-blkxorg
-            y = y-blkyorg        
-            z = z-blkzorg      
-            write(ioblk,'(3f12.4)')  x*dxfconv, y*dxfconv, z*dxfconv  
+            xx = xx-blkxorg
+            yy = yy-blkyorg        
+            zz = zz-blkzorg      
+            write(ioblk,'(3f12.4)')  xx*dxfconv, yy*dxfconv, zz*dxfconv  
           endif      
         else
-          x1=x*dxfconv
-          y1=y*dxfconv
-          z1=z*dxfconv
+          x1=xx*dxfconv
+          y1=yy*dxfconv
+          z1=zz*dxfconv
 
 C If on layer "0" or "1" do not bother to match vertex if there are
 C named layers. If there are no named layers then accept '0'. 

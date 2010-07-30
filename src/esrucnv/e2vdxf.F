@@ -27,7 +27,7 @@ C THF (THINGS) file for use in MicroGDS.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G5/precz/GS5.
+C geometry.h provides commons G0/G1/G2/G5/precz/GS5.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -38,7 +38,6 @@ C geometry.h provides commons G0/G2/G5/precz/GS5.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
 
@@ -438,7 +437,6 @@ C THF (THINGS) file for use in MicroGDS.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       COMMON/PRECT3/NTMC,NGLAZ(MTMC)
 

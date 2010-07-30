@@ -917,17 +917,18 @@ C         surface vertex) when transformed to normal view and
 C         apply reverse transformation to give vertices in
 C         global co-ordinates.
 
-      subroutine  transp(icc,x,y,z,dx,dz,xxw,yyw,zzw)
+      subroutine  transp(icc,xx,yy,zz,dx,dz,xxw,yyw,zzw)
 #include "building.h"
 #include "geometry.h"
 
 C Parameters
       integer icc   ! the model surface connection index
-      real x,y,z    ! coordinates passed
+      real xx,yy,zz    ! coordinates passed
       real dx,dz    ! grid location
-      real xxw,yyw,zzw ! transformed coordinate
+      real xxw,yyw,zzw  ! transformed coordinate
+      real xxx,yyy,zzzz ! for use in last orttrn
 
-      dimension x(mtv),y(mtv),z(mtv)
+      dimension xx(mtv),yy(mtv),zz(mtv)
       dimension tmat(4,4),rmat(4,4)
       dimension vp(3),ep(3)
 
@@ -942,8 +943,8 @@ C Recover eye point and view point for eyemat.
       call eyemat(ep,vp,1.0,tmat,rmat)
 
 C Transform first 2 surface vertices.
-      call orttrn(x(1),y(1),z(1),tmat,x1,y1,zzz,ierr)
-      call orttrn(x(2),y(2),z(2),tmat,x2,y2,zzz,ierr)
+      call orttrn(xx(1),yy(1),zz(1),tmat,x1,y1,zzz,ierr)
+      call orttrn(xx(2),yy(2),zz(2),tmat,x2,y2,zzz,ierr)
       alpha=atan2((y2-y1),(x2-x1))
       beta=atan2(dz,dx)
       d=sqrt(dx*dx+dz*dz)
@@ -951,9 +952,9 @@ C Transform first 2 surface vertices.
       yyw=y1+d*sin(alpha+beta)
 
 C Take each grid point and apply transformation.
-      call orttrn(xxw,yyw,zzz,rmat,xx,yy,zz,ierr)
-      xxw=xx
-      yyw=yy
-      zzw=zz
+      call orttrn(xxw,yyw,zzz,rmat,xxx,yyy,zzzz,ierr)
+      xxw=xxx
+      yyw=yyy
+      zzw=zzzz
       return
       end

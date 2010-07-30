@@ -40,7 +40,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G1/G2/c20.
 #include "geometry.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
@@ -59,7 +59,6 @@ C espriou.h provides currentfile.
       common/CFGV/icfgv
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
 C ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
@@ -774,8 +773,6 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C G5 required for updating zone geometry file (until such time as geometry
 C write can use G6 common blocks).
@@ -3292,7 +3289,6 @@ C Serchrpl handles search and replace of composition attributes.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/anchorb/IALOC(20),lstanchr(20,60)
 

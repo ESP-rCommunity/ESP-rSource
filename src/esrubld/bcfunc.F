@@ -5096,8 +5096,8 @@ C if 0 for a wetted surface 1 for a swiming pool.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0 and G2.
-C #include "geometry.h"
+C geometry.h provides commons G0/G1/G2.
+#include "geometry.h"
 #include "control.h"
 
       COMMON/TC/ITC,ICNT
@@ -5110,8 +5110,6 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/ATPRES/PATMOS
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C In support of ZRH calculations.
       common/concoe/hcip(mcom,ms),hcif(mcom,ms),hcop(mcom,ms),

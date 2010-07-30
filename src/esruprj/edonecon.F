@@ -39,7 +39,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0 and G2.
+C geometry.h provides commons G0/G1 and G2.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -53,7 +53,6 @@ C geometry.h provides commons G0 and G2.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/user/browse
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -847,7 +846,7 @@ C Find bounding box and center related to a surface. Dx is cushion
 C to place around the box (m).
       subroutine surbox(iz,is,dx,cx,cy,cz,sxmx,sxmn,symx,symn,szmx,szmn)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       SXMX=-1.E+7
       SYMX=-1.E+7
       SXMN=1.E+7

@@ -142,7 +142,7 @@ C BDMDS,dbdsdesc - name file project demands file and related description.
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/prec2/precz/c20.
+C geometry.h provides commons G0/G1/G2/prec2/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -215,15 +215,6 @@ C Seasons.
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
 C VCOORD, NZNVER & NZJVN (from geometry.h)
-
-C For use with MODE=ALL to setup ZNDATA arrays.
-C X,Y & Z   - coordinates of the vertices defining the zone
-C NSUR      - Number of faces comprising zone
-C JVN       - contains an ordered description (anticlockwise) of the
-C             vertices in each face
-C NTV       - total number of vertices in zone
-C NVER      - contains the number of vertices in each face
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C IFCFG is the file unit for the model configuration file.
 C cfgroot (24 char) root name for the model (used when generating

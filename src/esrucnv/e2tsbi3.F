@@ -44,7 +44,6 @@ C creates a grey-scale VRML 2.0 world.
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       COMMON/GTFIL/GTGEOM

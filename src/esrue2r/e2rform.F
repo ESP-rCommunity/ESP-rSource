@@ -548,8 +548,6 @@ C If ACT='i' then interactive, ACT='s' for silent.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

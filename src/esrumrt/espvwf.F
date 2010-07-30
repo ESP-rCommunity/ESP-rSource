@@ -25,7 +25,7 @@ C Revised to take in configuration file and zone focus.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/c20/precz.
+C geometry.h provides commons G0/G1/G2/c20/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -52,7 +52,6 @@ C IEEE callback (Solaris)
       COMMON/FIL/IOFIL,IFPOL
       COMMON/FATRIB/ATR
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/pophelp/h(60)

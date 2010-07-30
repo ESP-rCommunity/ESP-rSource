@@ -1047,7 +1047,7 @@ C Trace.
 C ************** MKGOMST 
 C MKGOMST: Creates an annotated site obstruction file based 
 C on passed parameters and the contents of common GS5.
-      SUBROUTINE MKGOMST(IAF,Z,ICOMP,IER)
+      SUBROUTINE MKGOMST(IAF,ZF,ICOMP,IER)
 #include "building.h"
 #include "model.h"
 C geometry.h provides common block GS5/GS6/GS7/GS8
@@ -1057,19 +1057,19 @@ C geometry.h provides common block GS5/GS6/GS7/GS8
 
       common/OUTIN/IUOUT,IUIN
 
-      CHARACTER Z*72
+      CHARACTER ZF*72  ! zone file name
       character outl*124,outld*124
       integer llbm  ! length of block material
 
 C Create/Open the file.
-      CALL EFOPSEQ(IAF,Z,3,IER)
+      CALL EFOPSEQ(IAF,ZF,3,IER)
       IF(IER.LT.0)THEN
         IER=1
         RETURN
       ENDIF
 
 C Write out a file header.
-      WRITE(IAF,31)Z(1:lnblnk(Z)),
+      WRITE(IAF,31)ZF(1:lnblnk(ZF)),
      &  LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP)))
   31  FORMAT('# site obstruction file defined in ',a,/,
      &       '# associated with zone geometry file ',a)
@@ -2149,7 +2149,6 @@ C G4 G5 into SG1 SG2 SG3 SG4 SG5.
 
       real gversion1
       COMMON/SG0/CTYPE1,gversion1
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
       COMMON/SG4/NDP1,IDPN1(3)
@@ -2206,7 +2205,6 @@ C G4 G5 from SG1 SG2 SG3 SG4 SG5.
 
       real gversion1
       COMMON/SG0/CTYPE1,gversion1
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/SG1/X1(MTV),Y1(MTV),Z1(MTV),NSUR1,JVN1(MS,MV),NVER1(MS),
      &           NTV1
       COMMON/SG4/NDP1,IDPN1(3)

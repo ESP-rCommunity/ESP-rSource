@@ -32,7 +32,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
       COMMON/MRT2/GEOLOAD,MRTLOAD

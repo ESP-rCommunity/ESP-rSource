@@ -33,7 +33,7 @@ C ver (real) should be 1.2, 1.3, 1.4 or 2.0
 #include "model.h"
 #include "site.h"
 
-C geometry.h provides commons G0/G2/G4/G5/G7/prec2/prec17/precz/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec2/prec17/precz/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -58,7 +58,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/cctlnm/ctldoc,lctlf
 
