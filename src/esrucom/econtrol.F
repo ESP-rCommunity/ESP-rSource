@@ -1848,7 +1848,7 @@ C Reporting: Get a string describing the current sensor based on common.
 
 C Range checking.
           if(iCFCactuator(ii,1).lt.0.or.
-     &     iCFCactuator(ii,1).gt.3)goto 1005
+     &     iCFCactuator(ii,1).gt.4)goto 1005
           if(iCFCactuator(ii,2).le.0.or.iCFCactuator(ii,3).lt.0.or.
      &     iCFCactuator(ii,2).gt.mcom.or.
      &     iCFCactuator(ii,3).gt.mcfc)goto 1005

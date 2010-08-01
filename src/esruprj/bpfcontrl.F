@@ -3433,8 +3433,17 @@ C Remember current control type
         H(2)='Broadly, you want to select based on what is to'
         H(3)='be actuated and what is being sensed. This information'
         H(4)='will be used later when setting the control actions.'
+        H(5)='Type   Action '
+        H(6)= ' 1+2  '
+        H(7)= ' 3+4  Sens solar radiation, actuate shade'
+      H(8)= '      3  shade always on, 3 slat angles can be defined '
+      H(9)= '      4  shade on/off, slat angle is cntr-d to cut-off '
+        H(10)= ' 5    Sens wind speed, actuate shade'
+        H(11)= ' 6    Sens wind direction, actuate shade'
+        H(12)=' 7    no sensor, schedule (via .opr)'
+
   64    CALL EPICKS(IX,IVALS,' ',' Controller type: (see help)',
-     &         40,7,SALT,'controller type',IER,4)
+     &         40,7,SALT,'controller type',IER,12)
         if(ix.eq.0.or.IVALS(1).eq.0)goto 64
         if(ix.ne.0)iCFCctltype(II,JJ,KK)=IVALS(1)
         ictyp=iCFCctltype(II,JJ,KK)
