@@ -1311,7 +1311,7 @@ C depending on the unit of flow (ifunit).
         endif
 
 C Debug.
-        CALL DAYCLK(IDYP,BTIMEF,6)
+c        CALL DAYCLK(IDYP,BTIMEF,6)
 C        write(6,*)'tdf infil data @',btimef,' is item',itdi,
 C     &   ' values ',ifunit,aci,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
 
