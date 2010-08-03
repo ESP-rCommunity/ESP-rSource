@@ -58,8 +58,6 @@ C << what about including common zndata in this manipulation? >>
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
       common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
      &          iedgshr(MCON,MV),imatshr(MCON,MV)
       
@@ -1217,8 +1215,6 @@ C   for new position, IER is -3 user aborted action.
       common/pophelp/h(60)
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -1541,7 +1537,6 @@ C   pass back in ier.
 #include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey,closez
@@ -1884,7 +1879,6 @@ C << could this be done with G6 and with ??
 #include "geometry.h"
 #include "prj3dv.h"
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION itv1(MS*MV),ITV2(MS*MV),irelsur(MS*MV)
@@ -2047,8 +2041,6 @@ C Assumption about inserted window surface percentage and assumed
 C door width and height.
       real defwininsert,defdoorwidth,defdoorheight
       common/ginsert/defwininsert,defdoorwidth,defdoorheight
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -2920,8 +2912,7 @@ C Uses a temporary transform into 2D to get this data so
 C it work on surface of most orientations.
       SUBROUTINE SURLEHI(IS,XYMAX,ZMAX)
 #include "building.h"
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
 
       DIMENSION  XX(MV),YY(MV),ZZ(MV),XA(4),YA(4),ZA(4)
       DIMENSION  VP(3),EP(3),EQN(4)
@@ -3078,7 +3069,6 @@ C icon is the index of the new connection (from parent code).
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       integer IX,ival1,ival2
 
 C Update the connection list. Move all others up and then insert with

@@ -1327,8 +1327,8 @@ C ZCVENT(*)+ZMBI(*,1). ZCVENT is purely a trace device.
         ZMBI(ICOMP,2)=0.0
         ZMBI(ICOMP,4)=0.0
         ZCVENT(ICOMP)=0.0
-        X=TF
-        IF(ABS(X).LT.SMALL)X=1.
+        XX=TF
+        IF(ABS(XX).LT.SMALL)XX=1.
         DO 602 I=1,NCOMP
           if(I.eq.IACC1)then
             CCVVF(I)=0.33*VOL(ICOMP)*ACC1
@@ -1345,10 +1345,10 @@ C ZCVENT(*)+ZMBI(*,1). ZCVENT is purely a trace device.
           else
             CCVVF(I)=0.
           endif
-          CCVVFM(I)=CCVVF(I)*TFA(I)/X
+          CCVVFM(I)=CCVVF(I)*TFA(I)/XX
           SUM=SUM+CCVVFM(I)
   602   CONTINUE
-        XX3=CVIF*TF+SUM*X
+        XX3=CVIF*TF+SUM*XX
         CVVFM=SUM
 
 C If UK ncm calculations then use fresh air requirements from
@@ -1476,11 +1476,11 @@ C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file
         CVIF=0.33*VOL(ICOMP)*ACI        
         IF(ACI.LE.0.)CVIF=0.
 
-C set x=0 for now. Not used at the moment but attempting
+C set xx=0 for now. Not used at the moment but attempting
 C to follow similar pattern as the classic ventilation
 C entry in tdf
-        X=0. 
-        XX3=CVIF*TF+SUM*X
+        XX=0. 
+        XX3=CVIF*TF+SUM*XX
         CVVFM=0.
       else
 
@@ -1705,23 +1705,23 @@ C Modify to relate to outside temperature.
       IF(IAIRN.ge.1)THEN
 
 C In the case of a flow network.
-        X=TF
-        IF(ABS(X).LT.SMALL)X=1.
+        XX=TF
+        IF(ABS(XX).LT.SMALL)XX=1.
         CVVFM=TAF
       ELSE
 
 C No flow network.
-        X=TF
-        IF(ABS(X).LT.SMALL)X=1.
+        XX=TF
+        IF(ABS(XX).LT.SMALL)XX=1.
         if(ICF.EQ.0)then
-          CVVFM=CF*TAF/X
+          CVVFM=CF*TAF/XX
         else
-          CVVFM=CF*TFA(ICF)/X
+          CVVFM=CF*TFA(ICF)/XX
         endif
       ENDIF
 
 C Determine XX3.
-      XX3=CVIF*TF+CVVFM*X
+      XX3=CVIF*TF+CVVFM*XX
 
 C Save future-time values for use at next time-step.
   171 CVM(ICOMP)=CVVFM

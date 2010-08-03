@@ -24,7 +24,7 @@ C file.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/precz.
+C geometry.h provides commons G0/G1/G2/precz.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -32,8 +32,6 @@ C geometry.h provides commons G0/G2/precz.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       common/io/ioin,ioout,ioblk,iosblk,iotobs
       dimension ndum(MS)

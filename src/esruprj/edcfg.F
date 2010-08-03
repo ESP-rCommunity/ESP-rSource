@@ -37,7 +37,7 @@ C output; IER=0 indicates no error.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G7/prec2/precz.
+C geometry.h provides commons G0/G1/G2/G7/prec2/precz.
 #include "geometry.h"
 #include "uncertainty.h"
 #include "net_flow.h"
@@ -67,7 +67,6 @@ C LPRFDB,IPRODB (for event profile database)
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/user/browse
       common/uhome/upath
       common/CFGV/icfgv
@@ -1183,7 +1182,6 @@ C output, IER=0 indicates no error.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
@@ -4229,10 +4227,6 @@ C      of obstruction data.
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      integer NSUR,JVN,NVER,NTV
-      real X,Y,Z
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
       COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),

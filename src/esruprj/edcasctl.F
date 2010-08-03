@@ -28,7 +28,7 @@ C EDCASCTL - edit casual gain control data.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G5/c20/precz.
+C geometry.h provides commons G0/G1/G2/G5/c20/precz.
 #include "geometry.h"
 #include "prj3dv.h"
       
@@ -49,8 +49,6 @@ C geometry.h provides commons G0/G2/G5/c20/precz.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)

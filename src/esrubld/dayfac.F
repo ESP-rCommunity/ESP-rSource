@@ -51,7 +51,6 @@ C Initiate calc. of daylight factor(s) for standard CIE overcast sky.
       COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
      & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/D7/T1,T2,P1,P2
 
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
@@ -385,7 +384,6 @@ C 1.0-AI() is assumed to represent the visible reflectance of surfaces.
 #include "building.h"
 #include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV  
       COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
 C TMC data
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),

@@ -2118,7 +2118,7 @@ C assumes that -99 entities may be gasses.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G7/precz.
+C geometry.h provides commons G0/G1/G2/G7/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -2139,8 +2139,6 @@ C Paramters
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB

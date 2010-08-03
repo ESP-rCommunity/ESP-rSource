@@ -1065,7 +1065,7 @@ C ****** Scan and report current mis-matches.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/c20.
+C geometry.h provides commons G0/G1/G2/c20.
 #include "geometry.h"
 
 C Parameters
@@ -1079,8 +1079,6 @@ C Parameters
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       logical dup,first
 

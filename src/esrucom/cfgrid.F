@@ -419,12 +419,12 @@ C KS - total number of grid points in z direction.
 C ier is set to one if a vertical step is found.
       SUBROUTINE GRIDCRV(IS,KS,ier)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
 
 C Passed parameters.
       integer IS,KS,ier
       
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GEOMCURV/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
      2            DZHP(ntcelz),DZPL(ntcelz),

@@ -862,8 +862,6 @@ C Iskip : If = 0, then skip the list of surfaces menu
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -1446,8 +1444,6 @@ C
       COMMON/FILEP/IFIL
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2471,8 +2467,6 @@ C phylosophy as LCACalc
       COMMON/FILEP/IFIL
       COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -4029,7 +4023,6 @@ C in the current zones common blocks.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON

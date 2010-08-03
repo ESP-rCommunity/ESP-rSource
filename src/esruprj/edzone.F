@@ -36,7 +36,7 @@ C an extrusion. IER=0 OK.
 #include "building.h"
 #include "model.h"
 
-C Use geometry for common g0/g2/g4/g5/g6/g7/prec16/precz/c20.
+C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
       
@@ -46,7 +46,6 @@ C Use geometry for common g0/g2/g4/g5/g6/g7/prec16/precz/c20.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       Logical MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -557,8 +556,6 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1043,8 +1040,6 @@ C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2116,7 +2111,7 @@ C It assumes that calling code will decide whether the distance
 C can be used. 
       subroutine pointtoline(ipoint,iwhich1,iwhich2,offset,match)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       dimension vd(3),vd1(3),vd2(3)
       logical match
 
@@ -2179,10 +2174,10 @@ C   nothing found).
 C      subroutine twodpointtoline(itx,ity,icomp,ioffset,ifsurf1,ifsurf2,
 C     &  ifvrt1,ifvrt2,match)
 C#include "building.h"
+C#include "geometry.h"
 
 C << logic needs to be written >>
 
-C      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 C      dimension vd(3),vd1(3),vd2(3)
 C      logical match
 

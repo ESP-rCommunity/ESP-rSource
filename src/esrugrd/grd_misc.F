@@ -63,8 +63,6 @@ c           surface respectively
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
@@ -163,7 +161,6 @@ C (equivalent to subroutine in esruish/miscel.F)
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/TC/ITC,ICNT
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       COMMON/GRID11/XOP(MOX,MOZ),ZOP(MOX,MOZ)
       COMMON/GRID3/OGRIDA(MS)
@@ -297,7 +294,7 @@ C 'POINT1' determines if a specified point is within or outwith any
 C specified object body face boundary.
       SUBROUTINE POINT1(IS,XX,ZZ,IANS)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       COMMON/G1T/XFT(MV),ZFT(MV)
       DIMENSION C(26)
       IANS=0
@@ -337,8 +334,8 @@ C Determine if point XX,ZZ is within this face.
 C *****************************************************************
       SUBROUTINE TRNSF4(IS)
 #include "building.h"
+#include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/G1T/XFT(MV),ZFT(MV)
       COMMON/GR3D09/XP(3),YP(3),ZP(3)
 

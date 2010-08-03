@@ -776,13 +776,13 @@ C Draw construction section.
       iid1=igr; iid2=igt-10;
       call wstxpt(iid1,iid2,ZN)
       igr=13
-      X=0.
+      XX=0.
       YD=PMAX-PMIN
       LAY=NELTS(ICOMP,ISUR)
       DO 101 L=1,LAY
-        XL=X
+        XL=XX
         XD=ETHK(L)
-        X=X+ETHK(L)
+        XX=XX+ETHK(L)
         if(IPRZ(ISUR,L).ne.0)call egrbox(XL,PMIN,XD,YD,igr)
   101 CONTINUE
 

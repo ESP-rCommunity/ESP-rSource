@@ -629,6 +629,7 @@ C series data ie. timesteps-vs-day-vs-data.
       CHARACTER*10 AXIS(3),ANAME,ANAME1
       character detail*72
       logical close,zlist
+      real z1,x1  ! to avoid conflicts with G1 common
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
@@ -819,12 +820,12 @@ C Store 3D coordinates for axis arrow heads.
           XYZARW(5,2)=0.0
           XYZARW(6,2)=0.0
 
-60        Z=ZDATA(ILINE)
+60        Z1=ZDATA(ILINE)
 
 C Plot each line on the second pass only.
-C Note: Z in PLOT3e should be an array of 100 elements but does not
+C Note: Z1 in PLOT3e should be an array of 100 elements but does not
 C work if done that way.
-          CALL PLOT3E(1110,XDATA,YDATA,Z,XSCALE,YSCALE,ZSCALE,
+          CALL PLOT3E(1110,XDATA,YDATA,Z1,XSCALE,YSCALE,ZSCALE,
      1                IPASS,XMAX,XMIN,YMAX,YMIN,SCALE,II,JVXYZ,INCI,
      2                ILINE,IFIRST,NXPNTS,COEFF,MASK,VERTEX,
      3                XLT,YLT,IALT,XLAST,YLAST)
@@ -892,10 +893,10 @@ C Second figure - data running parallel to Z axis.
 83        CONTINUE
 
 C Call to plot3e, X below should be an array.
-          X=XDATA(ILINE)
+          X1=XDATA(ILINE)
 
 C Plot each line.
-          CALL PLOT3E(11,X,YDATA,ZDATA,XSCALE,YSCALE,ZSCALE,
+          CALL PLOT3E(11,X1,YDATA,ZDATA,XSCALE,YSCALE,ZSCALE,
      1                IPASS,XMAX,XMIN,YMAX,YMIN,SCALE,II,JVXYZ,INCI,
      2                ILINE,IFIRST,NZPNTS,COEFF,MASK,VERTEX,
      3                XLT,YLT,IALT,XLAST,YLAST)

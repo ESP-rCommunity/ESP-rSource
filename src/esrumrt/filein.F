@@ -98,7 +98,7 @@ C ESMZON makes a copy of the current contents of common blocks G1
 C into G1M.
       SUBROUTINE ESMZON
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
 

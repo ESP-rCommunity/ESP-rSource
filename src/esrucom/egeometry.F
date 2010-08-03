@@ -105,14 +105,6 @@ C espriou.h provides current file.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-C X,Y & Z   - coordinates of the vertices defining the zone
-C NSUR      - Number of faces comprising zone
-C JVN       - contains an ordered description (anticlockwise) of the
-C             vertices in each face
-C NTV       - total number of vertices in zone
-C NVER      - contains the number of vertices in each face
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
 C Include ishdirc common in legacy file read so that some inference
 C can be made in case the data is saved to version 1.1 file.
 
@@ -961,7 +953,7 @@ C by this name is overwritten).
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,iwf,IER)
 #include "building.h"
 
-C geometry.h provides commons G0/G2/G4/prec17/precz/c20.
+C geometry.h provides commons G0/G1/G2/G4/prec17/precz/c20.
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -983,7 +975,6 @@ C holds this information globally.
 C << todo: emkgeo could use ZNDATA if there was a way for the
 C << calling code to signal that ZNDATA could be used instead.
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
 
 C Dummy array for default windows.
@@ -1204,7 +1195,7 @@ C Also now can include a token to remember users prior rotateit request.
 #include "building.h"
 #include "model.h"
 
-C geometry.h provides commons G0/G2/G4/G5/prec2/prec17/precz/c20/GS5/GS6.
+C geometry.h provides commons G0/G1/G2/G4/G5/prec2/prec17/precz/c20/GS5/GS6.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -1223,14 +1214,6 @@ C Parameters
 
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
-
-C X,Y & Z   - coordinates of the vertices defining the zone
-C NSUR      - Number of faces comprising zone
-C JVN       - contains an ordered description (anticlockwise) of the
-C             vertices in each face
-C NTV       - total number of vertices in zone
-C NVER      - contains the number of vertices in each face
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -2352,8 +2335,6 @@ C scanned and is being worked on. ZNDATA holds this information globally.
 C << todo: geowrite could use ZNDATA if there was a way for the
 C << calling code to signal that ZNDATA could be used instead.
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
 C   1 is 'all_applicable', 0 is manual selection of surfaces.
@@ -2755,7 +2736,7 @@ C (anticlockwise is positive).
 C Information is converted into the common block G1.
       SUBROUTINE ERECC(XO,YO,ZO,DX,DY,DZ,A)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       PI = 4.0 * ATAN(1.0)
       R=PI/180.
       SA=SIN(A*R)
@@ -2837,12 +2818,11 @@ C and Z coordinates but not the X.
 C Information is converted into the common block G1.
       SUBROUTINE ERECC3A(XO,YO,ZO,DX,DY,DZ,A,B,C)
 #include "building.h"
+#include "geometry.h"
 C Parameters
       real XO,YO,ZO  ! origin of the box
       real DX,DY,DZ  ! length, width, height of box
       real A,B,C     ! angles of rotation
-
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
       real PI,R,SA,CA,SB,CB ! local variables
 C     real SC,CC
@@ -3305,7 +3285,7 @@ C view) as well as the floor & ceiling heights are passed to EREGC and
 C the GEN description returned via common G1.
       SUBROUTINE EREGC(NW,Z1,Z2,XX,YY)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       DIMENSION XX(MS),YY(MS)
 
 C Assign bottom points X(1) to X(NW) etc. anticlockwise and assign top
@@ -3380,7 +3360,7 @@ C X1,Y1 is the point to rotate about.
 
       SUBROUTINE ESCROT(ANG,X1,Y1)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
 
       PI = 4.0 * ATAN(1.0)
       A=-ANG*PI/180.
@@ -3635,6 +3615,7 @@ C 'ZINFO' takes data from the zone geometry commons G1,G2,G3 and returns
 C several derived values.
       SUBROUTINE ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 #include "building.h"
+#include "geometry.h"
 #include "sbem.h"
 
 C Parameters
@@ -3646,7 +3627,6 @@ C Parameters
       dimension PAZI(MS),PELV(MS)
       real ZVOL ! returned zone bounded volume
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       LOGICAL CLOSE
       character outs*124
@@ -3776,7 +3756,6 @@ C VOL(MCOM)     - zone bounded volume
 C << could it use ?? instead of G1? >>
 
       common/OUTIN/IUOUT,IUIN
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION XX(MV),YY(MV),ZZ(MV),CG(3),EQN(4)
@@ -3994,7 +3973,6 @@ C act is '-' derive geometric data or 'c' also determine parent
 
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
 
 C nbedgdup(MCON) number of duplicate edges in surface edge list.
 C iedgdup(MCON,MV) for each edge, the connection and edge duplicated.
@@ -4294,8 +4272,6 @@ C be duplicates.
 #include "building.h"
 #include "geometry.h"
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
 C G9 holds information on children of a surface.
       integer nbchild   ! how many children (up to 4)
       integer nbgchild  ! how many grand children (up to 4)
@@ -4578,8 +4554,6 @@ C << zone geometry file if havec24 is true?
       COMMON/FILEP/IFIL
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
-
 C Variables from geometry.h:
 C SSURCOG is centre of gravity of surface (vertex weighted).
 C SSUREQN is the surface equation A*X + B*Y + C*Z = D
@@ -4681,7 +4655,6 @@ C Parameters
       integer icomp ! zone number
       integer isur  ! zero do all surfaces otherwise index of a surface
 
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient, iSurfWall, iSurfCeiling, iSurfFloor
       parameter (iSurfWall=1, iSurfFloor=2, iSurfCeiling=3)
@@ -4868,7 +4841,7 @@ C << could this use ?? rather than G1 >>
  
       SUBROUTINE VERINFO(ITRU)
 #include "building.h"
-      COMMON/G1/X(MTV),Y(MTV),Z(MTV),NSUR,JVN(MS,MV),NVER(MS),NTV
+#include "geometry.h"
       DIMENSION ISASSO(MS)
       CHARACTER OUTSTR*124,LOUTSTR*248
 
