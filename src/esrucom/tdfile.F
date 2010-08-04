@@ -1363,8 +1363,8 @@ C     &  ' ndata',ndata
       endif
 
 C Debug.
-      write(6,*) 'b nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
-     &  ' ndata',ndata
+c      write(6,*) 'b nwpr=',nwpr,' nuwpr=',nuwpr,' itwpr=',itwpr,
+c     &  ' ndata',ndata
 
       ier=0
       call EFOPRAN(iutdf,LTDF,ITWPR,3,IER)
