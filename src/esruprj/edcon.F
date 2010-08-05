@@ -1661,6 +1661,7 @@ C through each of the existing surfaces and finds unique optical types.
       COMMON/TMCB3/NBCTT(MCOM,MBP,MTMC),BACTPT(MCOM,MBP,MTMC)
       LOGICAL found,OK,dok
       logical canceled   ! toggle set if user interupts an edit session.
+      integer IRT        ! for radio button
 
       CHARACTER OPT*12,lastopt*12,TOPTIC*12,GDESCR*36,H*72
       CHARACTER outs*124
@@ -2031,6 +2032,7 @@ C For each control period get the appropriate replacement properties.
           H(47)='the optical property control logic so some care and'
           H(48)='testing is required to ensure that optical and flow'
           H(49)='control works together.'
+          IRT=1
           if(n3.eq.-99)then
             call EASKATOG('Controlled on:','(currently time)',
      &      'time','incident radiation','ambient temp.','zone temp.',

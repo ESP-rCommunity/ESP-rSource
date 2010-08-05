@@ -4038,6 +4038,7 @@ C     subset of choices can be presented.
       character guesstype*24  ! for context of surface addition
       dimension iuseopt(32)
       character*32 useopt(23)
+      integer IRT  ! for radio button
 
 C Set local working variables.
       is=isur
@@ -4436,6 +4437,7 @@ C Do not need second tag if generating notional model
         h(16)='applied to the width of the opening. '
         h(17)=' '
         h(18)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','DOOR air leakage:',
      &    'closed','undercut','open','bidirectional',
      &    'cancel',' ',' ',IRT,18)
@@ -4477,6 +4479,7 @@ C Do not need second tag if generating notional model
         h(16)='applied to the width of the opening. '
         h(17)=' '
         h(18)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','FICT surface air leakage:',
      &    'closed','crack','open','bidirectional',
      &    'cancel',' ',' ',IRT,18)
@@ -4530,6 +4533,7 @@ C Do not need second tag if generating notional model
         h(12)='might be applied (to vary the opening area) '
         h(13)=' '
         h(14)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','FRAME surface air leakage:',
      &    'closed','crack','vent','cancel',
      &    ' ',' ',' ',IRT,14)
@@ -4638,6 +4642,7 @@ C Do not need second tag if generating notional model
         h(18)='applied to the width of the opening. '
         h(19)=' '
         h(20)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','WINDOW surface air leakage:',
      &    'closed','crack','open','sash ','bidirectional',
      &    'cancel',' ',IRT,20)
@@ -4895,6 +4900,7 @@ C Do not need second tag if generating notional model
         h(16)='applied to the width of the opening. '
         h(17)=' '
         h(18)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','DOOR air leakage:',
      &    'closed','undercut','open','bidirectional',
      &    'cancel',' ',' ',IRT,18)
@@ -4931,6 +4937,7 @@ C Do not need second tag if generating notional model
         h(16)='applied to the width of the opening. '
         h(17)=' '
         h(18)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','FICT surface air leakage:',
      &    'closed','crack','open','bidirectional',
      &    'cancel',' ',' ',IRT,18)
@@ -4974,6 +4981,7 @@ C Do not need second tag if generating notional model
         h(12)='might be applied (to vary the opening area) '
         h(13)=' '
         h(14)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','FRAME surface air leakage:',
      &    'closed','crack','vent','cancel',
      &    ' ',' ',' ',IRT,14)
@@ -5052,6 +5060,7 @@ C Do not need second tag if generating notional model
         h(18)='applied to the width of the opening. '
         h(19)=' '
         h(20)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','WINDOW surface air leakage:',
      &    'closed','crack','open','sash ','bidirectional',
      &    'cancel',' ',IRT,20)
@@ -5100,6 +5109,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       CHARACTER VERT*33,KEY*1,H*72,head*28,HOLD*36
       character outs*124,headv*48
       logical anotherone  ! to signal that another point will be requested
+      integer IRT  ! for radio button
 #ifdef OSI
       integer iix,iiy
 #else
@@ -6127,6 +6137,7 @@ C Alter vertex list by deleting/ copy / replicate / editing.
         h(14)='clicking on the wire-frame image. '
         h(15)=' '
         h(16)='A cancel request leaves the model unchanged. '
+        IRT=1
         CALL EASKATOG(' ','Vertex operations:','add','delete','copy',
      &    'replicate','edit several','cancel',' ',IRT,14)
         if(IRT.eq.1)then

@@ -65,6 +65,7 @@ C LPRFDB,IPRODB (for event profile database)
       logical moddb,browse,OK,DOK,edt
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
+      integer IOW     ! for radio button
       logical unixok  ! to check for database path file separators
 
 C Set folder separator (fs) to \ or / as required.
@@ -243,6 +244,7 @@ C Import/Add/Del/Copy if not browsing....
         h(6)='the thickness after the import.'
         h(7)=' '
         h(8)='Add/Delete/Copy work on current contents of db. '
+        IOW=1
         CALL EASKATOG('Optical actions: ',' ',
      &    'Import Window4 or Window5','Import WIS',
      &    'Add','Delete','Copy','Ignore',' ',IOW,8)

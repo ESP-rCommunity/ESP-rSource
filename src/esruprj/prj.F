@@ -2458,6 +2458,7 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
 
       logical XST,browse,remote,concat,unixok
       logical atreports,im2
+      integer IWM   ! for radio button
 
 C   anu_ht_m2 - annual heat kWh/m2/a
 C   anu_ht_bld - annual heat for building kWh/a
@@ -2848,6 +2849,7 @@ C Toggle delimeter.
         H(5) ='  - comma separator (e.g. for excel);'
         H(6) ='  - tab separator (e.g. for excel);'
         H(7) ='  - tagged (marked up data).'
+        IWM=1
         CALL EASKATOG('Column delimeter:',' ',
      &    'spaces','single space','tab','comma','tagged',
      &    'cancel',' ',IWM,7)
@@ -4412,6 +4414,7 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
       logical unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical updatetitle ! if true the edit IPV titles.
+      integer IW  ! for radio button
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
@@ -4808,6 +4811,7 @@ C << formats e.g. to remove obstructions from within geometry file.
           h(23)='Selecting continue at this point you will be asked'
           h(24)='if you want to make any other changes to the model'
           h(25)='before the information is written out. '
+          IW=1
           CALL EASKATOG(
      &      'The model includes detailed shading/insolation.',' ',
      &      'dereference shading','dereference obstructions',

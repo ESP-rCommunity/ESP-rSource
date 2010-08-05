@@ -60,6 +60,7 @@ C Special materials file flag
 
       CHARACTER*23 ITEM(15)
       character outs*124,xfile*144,H*72,tg*1,delim*1,spflnam*72
+      integer IWM  ! for radio button
 
 C Default value for GRTOOL file = 0 (off), day hash marks off.
       IHFLAG=0
@@ -172,6 +173,7 @@ C Toggle delimeter.
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
         H(7) ='  tagged - marked up data'
+        IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
      &    'continue',' ',IWM,7)

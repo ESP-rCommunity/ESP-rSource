@@ -1450,6 +1450,7 @@ C IER=0 OK, IER=1 problem.
       LOGICAL OK,dok,moddb
       integer lndbp   ! for length of standard database path
       integer lnwkg   ! for length of working file name
+      integer iw      ! for radio button
       logical unixok  ! to check for database path file separators
 
 C Set folder separator (fs) to \ or / as required.
@@ -1599,6 +1600,7 @@ C List pressure coefficients.
 
 C The next section is to add/delete/copy a set.
         H(1)='The continue option allows you to cancel choice. '
+        iw=1
         call easkatog('Modify sets:',' ','add (manually)',
      &    'add (via caluclation)','delete','copy','continue',' ',' ',
      &    iw,1)

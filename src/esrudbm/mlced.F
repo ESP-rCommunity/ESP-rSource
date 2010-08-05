@@ -82,6 +82,7 @@ C Backup of documentation (for editing).
       character unitchr*4,unitstr*12,unitnote*72
       logical primod,ok,dok,bkdocok,modit,dmodit
       real misc1,misc2
+      integer IWM   ! for radio button
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -614,6 +615,7 @@ C Present options.
         h(17)='thickness. For nails or structural supports give the'
         h(18)='`equivalent` thickness that will have the same mass as '
         h(19)='object. Impacts are expressed per unit of mass.'
+        IWM=1
         CALL EASKATOG('Options:',' ','thermal solid','thermal gas',
      &    'LCIA frame','LCIA spacer','LICA other','continue',
      &    ' ',IWM,19)

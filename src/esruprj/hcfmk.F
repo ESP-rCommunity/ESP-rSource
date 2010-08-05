@@ -2284,6 +2284,7 @@ C NS is the number of surface in the zone << why pass this value? >>
       CHARACTER stuff*10
       character hcfpdescr*72
       logical close,ok,dok
+      integer IW  ! for radio button
 
       NS=NZSUR(IZ)
 
@@ -2326,6 +2327,7 @@ C Determine type of control over calculations.
       h(20)='Note that the `outside` surface of a mlc may be interior'
       h(21)='to the building, ie. it may face the air-point of an '
       h(22)='adjacent zone. '
+      IW=1
       CALL EASKATOG('calculation control (see help):',' ',
      &  'fixed coefficients','fixed correlations','adaptive cor',
      &  'CEN coef','cancel',' ',' ',IW,22)

@@ -96,6 +96,7 @@ C << what about including common zndata in this manipulation? >>
       character HOLD*72,hold64*64,holds*36,t248*248
       character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
+      integer IRT  ! for radio button
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
@@ -692,6 +693,7 @@ C Generate combined name for dialog.
         H(6)=' Do several operations to the surface.'
         H(7)=' Continue with no action.'
         if(.NOT.DDOK)then
+          IRT=1
           CALL EASKATOG(' Actions to take on the new surface :',' ',
      &      'shift along normal','transform xyz','rotate','invert',
      &      'combination','continue ?',' ',IRT,7)

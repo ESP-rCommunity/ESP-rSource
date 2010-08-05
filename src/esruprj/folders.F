@@ -1317,6 +1317,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       character iformat*4,ifocus*4,limg*72,t5*5
       character H*72
 C      character outs*124
+      integer IRT,IRF  ! for radio buttons
 
 C Display current information.
       ier=0
@@ -1349,6 +1350,7 @@ C      call edisp(iuout,outs)
       H(1)='Select one of these standard image types. Each type'
       H(2)='must have a related display application specified'
       H(3)='in your .esprc file, e.g. *image_display GIF xv.'
+      IRT=1
       call EASKATOG(' ','Image format?',
      &  'GIF','TIFF','XBM','XWD','other',' ',' ',IRT,3)
       if(IRT.eq.1)then
@@ -1374,6 +1376,7 @@ C      call edisp(iuout,outs)
       h(2)='displayed when the model is loaded, otherwise it'
       h(3)='will only be displayed when requested via a graphic'
       h(4)='display button.'
+      IRF=1
       call EASKATOG(' ','Image focus?',
      &  'general','building','networks','control',
      &  'CFD','performance','other',IRF,4)
