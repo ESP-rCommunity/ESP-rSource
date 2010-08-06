@@ -2271,6 +2271,8 @@ C It is assumed that the user will make one selection only.
       COMMON/C1/NCOMP,NCON
       common/user/browse
       LOGICAL CFGOK,SELECT,delzone,browse,cpyzone,XST
+      integer ivert  ! zone selected
+      integer mvert  ! size for list of zones
 
       DIMENSION VERT(35)
       character*(*) PROMPT
@@ -2409,6 +2411,9 @@ C Display the menu.
       else
         CALL EMENU('Zones',VERT,MVERT,IVERT)
       endif
+
+C Debug.
+C      write(6,*) 'zone selected (list) is ',IVERT,MOD
       IF(IVERT.LE.MHEAD)THEN
         IVERT=-1
         goto 3
@@ -2416,7 +2421,13 @@ C Display the menu.
 
 C If no selection has been made before exit then return with 0.
         IF(.NOT.SELECT)IZONE=0
-        call usrmsg('  ','  ','-')
+        call usrmsg('  ','no zone selected','-')
+        RETURN
+      ELSEIF(IVERT.EQ.0)THEN
+
+C If nothing from list return with 0.
+        IZONE=0
+        call usrmsg('  ','no zone selected','-')
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 

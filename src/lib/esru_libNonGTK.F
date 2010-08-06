@@ -3266,7 +3266,8 @@ C x pixel and the last 4 the y pixel.
         ino=-100000000*iuresp-10000*irpx-irpy
       endif
 C Debug...
-C      write(6,*) 'EWMENU (fortran) ',iw,irpx,irpy,ino,ipflg,iuresp
+C      write(6,'(a,7i10)') 'EWMENU (fortran) ',iw,irpx,irpy,ino,inoe,
+C     &  ipflg,iuresp
       return
       end
 
