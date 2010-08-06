@@ -2133,7 +2133,7 @@ C IGET = 10  Total sensible zone loads.
 C IGET = 32  All latent zone loads.
           IGETNO(NGET,1)=32
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
-          SUFFIX=' TotSen'
+          SUFFIX=' TotLat'
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone latent load (kW)'
           elseif(IROC.eq.1)then
