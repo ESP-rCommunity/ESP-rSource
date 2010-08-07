@@ -147,6 +147,7 @@ C Name of current application
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer NITEMS,INO  ! max items and current menu item
 
 C Initial assumptions (summary reporting).
       call ezero

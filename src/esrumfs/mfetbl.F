@@ -59,6 +59,7 @@ C ICLIM,LCLIM (for climate file)
       character outs*124,OUTSTR*124,outs248*248
       character WORD*20,NDNAM*12,NR*12,NT*12
       logical OK,DOK,intg
+      integer NITMS,INO ! max items and current menu item
 
 C Integration initially off.
       intg=.false.

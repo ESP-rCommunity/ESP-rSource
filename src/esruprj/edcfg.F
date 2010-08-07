@@ -137,6 +137,8 @@ C Uncertainty.
       character ltpath*72,filen*72
       character t144*144    ! for passing to erprcdb
       integer ictl
+      integer nitems,INO ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
@@ -1254,6 +1256,8 @@ C Flag noting whether casual gain periods are currently sorted.
       integer inpic     ! type for passed parameters
       integer iuf       ! file unit type
       integer IRT,irop  ! for radio buttons
+      integer nitems,INO ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild

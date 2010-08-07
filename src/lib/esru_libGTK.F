@@ -2244,6 +2244,8 @@ C will be truncated at the width ISTRW.
       character lista*74,listb*74,KEY*1,outs*124
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STALT(*)
       CHARACTER H*72,SEL*40
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer impx,impy,iw
 #else
@@ -2518,6 +2520,8 @@ C Parameters passed.
 
       DIMENSION VERT(16)
       CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer impx,impy,iw
 #else

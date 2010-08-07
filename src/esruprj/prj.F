@@ -191,8 +191,10 @@ C Returned parameters from silentread.
       real d1,d2,d3   ! data used with transfor or rotate command line
       integer ivals   ! holds list of zones to be rotated or transformed.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer MITEM,INO ! max items and current menu item
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
@@ -1491,6 +1493,8 @@ C dd is character array for selecting simulation parameter sets.
       logical tmcok,shdok
 
       integer isstupt,isbnstept,ispnstept,issavet  ! for local editing
+      integer MITEM,INO,ic,IRT ! max items and current menu item
+
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
@@ -4015,6 +4019,7 @@ C of the same project that can later be modified.
       CHARACTER ITEMS*36,ITEMS2*36,APP*6
       CHARACTER NBSTR*6,CFGROOT*24,OUTS*124
       LOGICAL BROWSE
+      integer MITEM,INO,MITEMS2,KNO ! max items and current menu item
 
       IF(BROWSE)THEN
         CALL EDISP(IUOUT,

@@ -50,6 +50,7 @@ C Initial view.
       character ITEMS1*47,doit*248,tedlbl*20,teditor*20
       character tmode*8,hold32*32
       character ureturn*8  ! info back from silentread
+      integer NITMS,INO1 ! max items and current menu item
 
 C Set initial states to false and clear text buffers.
       MODSIT=.false.
@@ -158,8 +159,8 @@ C Help text for menu.
       H(37)=' '
       H(38)='The test button is for scanning the ESP-r meta file.'
       H(39)='Only use this if no other model is loaded. '
-
-      CALL EMENU('Tool preferences',ITEMS1,14,INO1)
+      NITMS=14
+      CALL EMENU('Tool preferences',ITEMS1,NITMS,INO1)
       IF(INO1.EQ.1)THEN
 
 C Wire frame view point.

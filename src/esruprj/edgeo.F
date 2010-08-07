@@ -123,6 +123,7 @@ C prec17 common is described in geometry.h.
 
       integer lna,lnb,lnbm,lnbn
       integer IRT  ! for radio button selections
+      integer NITMS,INO,INOR ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -608,7 +609,8 @@ C Help text for this menu.
       H(31)='  surface in a zone.'
 
 C Menu for zone geometry.
-      CALL EMENU(HEAD,ITEMS,ITEMC+20,INO)
+      NITMS=ITEMC+20
+      CALL EMENU(HEAD,ITEMS,NITMS,INO)
       IF(INO.EQ.ITEMC+20)THEN
         if(browse)return
         if(MODGEO)then
@@ -1496,7 +1498,8 @@ C Help for rotation/transform/mirror options
         WRITE(HEAD,'(2a)')'Transforms for Zone ',zname(ICOMP)
 
 C Menu for zone rotations and transforms.
-        CALL EMENU(HEAD,trnalt,17,INOR)
+        NITMS=17
+        CALL EMENU(HEAD,trnalt,NITMS,INOR)
         if(INOR.EQ.17)then
           goto 3
         elseif(INOR.EQ.16)then
@@ -2404,6 +2407,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       LOGICAL comold,tmcold,vwfold,ishold,cfcold
       logical changed,newgeo
       logical unixok
+      integer ISDN,INODA ! max items and current menu item
 
       IER=0
       changed=.false.
@@ -2950,6 +2954,7 @@ C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
       real XO1,ZO1  ! to prevent name clash in geometry.h
+      integer ISDN,INODA ! max items and current menu item
 
 C Display a selection of surfaces available in the zone. If surface
 C faces another zone, get the other surface connection index. 
@@ -5112,6 +5117,8 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       character outs*124,headv*48
       logical anotherone  ! to signal that another point will be requested
       integer IRT  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iix,iiy
 #else
@@ -6378,6 +6385,7 @@ C Strings for surface attributes to pass to insrec.
       character rsname*12,rsotf*32,rsmlcn*32,rsuse1*8,rsuse2*8
       character rsparent*12
       real XO1,ZO1  ! to prevent name clash in geometry.h
+      integer MVERT,IVERT,NITMS,IRT ! max items and current menu item
       
 #ifdef OSI
       integer iix,iiy
@@ -6579,7 +6587,8 @@ C Miscel. geometric transforms. Ask which surface and setup temp array.
         options(6)  ='f identify cause of surface warp  '
         options(7)  ='? help                            '
         options(8)  ='- exit this menu                  '
-        CALL EMENU(head,options,8,IRT)
+        NITMS=8
+        CALL EMENU(head,options,NITMS,IRT)
         if(IRT.EQ.(8))then
           MODIFY=.FALSE.
           goto 92
@@ -7503,6 +7512,8 @@ C IER=0 OK, IER=1 problem.
       CHARACTER*(*) TITLE,PROMPT1,PROMPT2
       CHARACTER item*33,outs*124,KEY*1
       logical found
+      integer MVERT,IVERT ! max items and current menu item
+
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
@@ -8550,6 +8561,7 @@ C   losspercent and is assumed to apply to all zones in the model.
 
       integer lna,lnb
       real psiv,lenv  ! local variables for psi and length.
+      integer ISDN,INODA ! max items and current menu item
       real defpsi     ! default value for psi
       dimension defpsi(16)
       real zerolen,zeropsi  ! for bridge types that have yet to be used.

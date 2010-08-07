@@ -685,7 +685,7 @@ C.....Menu
       character*124 cMsg, cContext
       
 C.....Counter
-      integer iCount,iNext       
+      integer iCount,iNext      
 
 C.....Display of records      
       integer iMaxDisp              ! max number of records to display

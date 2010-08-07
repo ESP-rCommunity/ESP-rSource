@@ -79,6 +79,7 @@ C LPRFDB,IPRODB (for event profile database)
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      integer NITMS1,INO ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -717,6 +718,7 @@ C LAPRES,IAPRES (for window pressure databases)
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
       integer IVV  ! for radio button
+      integer NITMS,IVERT ! max items and current menu item
 
       CALL USRMSG(' ','Input/edit node data: ','-')
 

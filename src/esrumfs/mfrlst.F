@@ -44,6 +44,7 @@ C ASKRNOD presents a list of mass flow nodes returning the index IS.
       CHARACTER H*72,VERT*72,KEY*1,MOD*1,NDNAM*12,NODTYP*12,
      &FTYPN*6
       LOGICAL SELECT
+      integer MVERT,IVERT  ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -189,6 +190,7 @@ C ASKRCMP presents a list of mass flow components returning the index IS.
       CHARACTER H*72,VERT*84,KEY*1,MOD*1
       CHARACTER LTPCMP*60,CMNAM*12
       LOGICAL SELECT
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 
@@ -313,6 +315,7 @@ C Starting and ending node numbers.
       CHARACTER H*72,VERT*68,KEY*1,MOD*1
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       LOGICAL SELECT
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initialise node menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number 

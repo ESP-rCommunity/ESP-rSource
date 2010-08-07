@@ -203,7 +203,8 @@ C in the current model. A -1 means not applicable
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
-      logical nameok  ! to use for testing if duplicate names in zone,
+      logical nameok  ! to use for testing if duplicate names in zone
+      integer NITMS,ino ! max items and current menu item
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -397,8 +398,8 @@ C Help for menu.
       h(35)=' '
       h(36)='Once you generate a QA report file you can select the'
       h(37)='`edit QA report` option and an editor will be launched.'
-
-      call emenu('Model reports',items,25,ino)
+      NITMS=25
+      call emenu('Model reports',items,NITMS,ino)
 
       if(ino.eq.25)then
         if(changedit)then

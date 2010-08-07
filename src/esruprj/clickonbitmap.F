@@ -108,8 +108,10 @@ C Signal first entry to subroutine with justentered as true, once
 C an object has been saved the set justentered to false.
       logical justentered
       LOGICAL OKC,XST,dok,ok
-      logical newgeo  ! to use for testing if new/old geometry file.
-      integer IWM,IWMG ! for radio buttons
+      logical newgeo    ! to use for testing if new/old geometry file.
+      integer IWM,IWMG  ! for radio buttons
+      integer MITEM,INO ! max items and current menu item
+
 #ifdef OSI
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4

@@ -178,6 +178,8 @@ C Name of current application.
       integer lnshd   ! length of current shading file string.
       integer numberofzones ! to pass to updwire rather than ncomp
       integer ier
+      integer nitems,inos ! max items and current menu item
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else

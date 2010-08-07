@@ -74,6 +74,7 @@ C Return up to 6 real valus from external subroutine.
 
       LOGICAL ISEL,CSEL,close,isexavail
       logical closect,closewt,closeft
+      integer NECDATA,ICOUT1 ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe
@@ -731,6 +732,7 @@ C WORDSS and WORDSE are arrays of string tokens from each NWICHNIS.
       CHARACTER*32 WORDSS(12),WORDSE(12)
       character VSTR*12,VNPSTR*12,ISTR*12,INPSTR*12,key*1
       CHARACTER IECDATE*40,t32*32,lasttag*12
+      integer NECDATA,ICOUT1 ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe
@@ -1093,6 +1095,7 @@ C Return up to 5 real valus from external subroutine.
 
       LOGICAL ISEL,CSEL,MATCH,close,isexavail,ok,dok
       logical closect,closewt,closeft,closev,closex,closey,closez
+      integer NECDATA,ICOUT1,NECDATAs,ICOUT2 ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe
@@ -1230,8 +1233,7 @@ C If a long list include page facility text.
           WRITE(IECDATE(M+3),'(A)') '- exit this menu '
           NECDATA=M+MCTL  
           CALL NETWDRW
-          CALL EMENU('Component data ',IECDATE,NECDATA,
-     &      ICOUT1)
+          CALL EMENU('Component data ',IECDATE,NECDATA,ICOUT1)
           IF(ICOUT1.EQ.NECDATA)THEN
             RETURN
           ELSEIF(ICOUT1.EQ.NECDATA-1)THEN   
@@ -1809,6 +1811,7 @@ C WORDSS and WORDSE are arrays of string tokens from each NWICHNIS.
       character VSTR*12,VNPSTR*12,ISTR*12,INPSTR*12,key*1
       CHARACTER CATSI*12,IECDATE*34,CATIES*32,
      &IECDATEs*49,DATCATIE*12,TAGCATIE*12,t32*32
+      integer NECDATA,ICOUT1,NECDATAs,ICOUT2 ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe

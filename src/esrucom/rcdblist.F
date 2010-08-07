@@ -52,6 +52,7 @@ C seasons.h provides typper and typsea
       character name*32,mitem*33,OUTSTR*124,WORD*20
       character group*32,key*1,look*32,tlook*32
       character clmdb*144,llclmdb*144,h*72,actreturn*1
+      integer NCO,ICO ! max items and current menu item
 
 C Set default early winter, spring, summer, autumn, late winter periods.
       CALL EDAY(9,1,ia1wins)

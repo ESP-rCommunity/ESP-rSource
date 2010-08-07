@@ -111,6 +111,7 @@ C ITEMS is menu for site/context items.
       integer idwe1T,idwe2T,iyearT   ! local values for editing.
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
+      integer nitms,INO ! max items and current menu item
       
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
@@ -1092,6 +1093,7 @@ C and control of project images.
       character docpth*24,tmppth*24,dbspth*24
       character sfile*72,snpfile*72
       character tcname*248   ! for editing image notes
+      integer nimgitms,INOI  ! max items and current menu item
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1344,6 +1346,7 @@ C TDF related.
       character OUTSTR*124,HDR*12
       character*34 ITEMS(7)
       integer ier
+      integer nitms,irt ! max items and current menu item
 
 C Action to pass to tdfedit. Prior 'update' option moved into
 C esrub2e rather than invoking tdf.
@@ -2407,6 +2410,7 @@ C  phwco2,phwnox,phwsox = how water related emissions co2/nox/sox
       dimension ITEMS(18)
       character items*36,h*72,hold*40,act*1
       logical MODSIT
+      integer nitms,INO ! max items and current menu item
 
       MODSIT=.false.
 
@@ -2645,6 +2649,7 @@ C act (char*1) action to take 'i' initialise, '-' interactive
       COMMON/FILEP/IFIL
       common/cctlnm/ctldoc,lctlf
       character ctldoc*248,LCTLF*72
+      integer MVERT,IVERT,mcvert,icvert ! max items and current menu item
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.

@@ -40,6 +40,8 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       LOGICAL mxmn
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+      integer NITMS,INO  ! max items and current menu item
+
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
 #else

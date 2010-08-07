@@ -115,6 +115,7 @@ C Name of current application
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer IWM     ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Initialize global common data.
       call ezero
@@ -731,6 +732,7 @@ C SETUP provides the menu's and control logic for the mfs SETUP menu.
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
       DIMENSION SETUPM(5)
       CHARACTER SETUPM*36,H*72
+      integer NITMS,ISETUP ! max items and current menu item
 
 C Present the setup menu, ISETUP is the menu index returned. Generate
 C the menu text from current common block into via UPSET.
@@ -766,7 +768,8 @@ C Help text for this menu.
       H(6)='so that complex images may be viewed in greater '
       H(7)='detail.'
 
-      CALL EMENU('  Mfs preferences',SETUPM,5,ISETUP)
+      NITMS=5
+      CALL EMENU('  Mfs preferences',SETUPM,NITMS,ISETUP)
       IF(ISETUP.EQ.1)THEN
 
 C Allow user to toggle between 'Fri 10 Jan'/'10 Jan'/'DOY 124' format.

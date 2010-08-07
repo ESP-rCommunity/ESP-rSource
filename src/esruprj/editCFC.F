@@ -1369,6 +1369,7 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       
       character OUTSTR*124
       integer IUA, NS, K, M, L, i, j, icn
+      integer MVERT,IVERT ! max items and current menu item
 
       DIMENSION IVA(MS)
       

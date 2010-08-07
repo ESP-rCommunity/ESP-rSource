@@ -107,6 +107,7 @@ C seasons.h provides typper and typsea
       dimension pmenu(29)
       CHARACTER h*72,pmenu*24
       character PERST1*14,PERST2*44,PERST3*44
+      integer NITEM,INO  ! max items and current menu item
 
 C Assume whole day requested.
       ier=0
@@ -430,6 +431,7 @@ C ITM is main item editing menu.
       DIMENSION IPICK(6)
       integer onleft  ! number of left axis
       integer onright ! number of right axis
+      integer nitms,INO  ! max items and current menu item
      
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/

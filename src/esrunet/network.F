@@ -230,6 +230,7 @@ C Name of current application
       character*72 DFCFD,DECMPDBFL,DICONDBFL
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer NITEMS,INO ! max items and current menu item
 
 C Initialize global common data. IUEX is file unit for the
 C model external data summary.
@@ -1224,6 +1225,7 @@ C ICITEM2 is ...
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
 
       LOGICAL CLOSEX,CLOSEY,OK,DOK,MREPT, ISEL,CSEL,found
+      integer NICITEM,IMOUT,NICITEM2,IMOUT2 ! max items and current menu item
 
 C Set the component reporting flag.
       MREPT=.FALSE.
@@ -2891,6 +2893,7 @@ C CATIES is menu entry for each data field
       character VSTR*12,VNPSTR*12,ISTR*12,INPSTR*12,key*1
       CHARACTER CATSI*12,IECDATE*34,CATIES*32,
      &IECDATEs*49,DATCATIE*12,TAGCATIE*12,t32*32
+      integer NECDATA,ICOUT1,NECDATAs,ICOUT2 ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iw
@@ -3216,6 +3219,7 @@ C znamecon is the zone name associated with inside face a conneciton
       character zn*12
       LOGICAL OK,DOK,isexavail
       integer IRT  ! for radio button
+      integer NITMS,IVERT ! max items and current menu item
 
 C Rewind summary file if it exists (assumed to be open on unit iuex).
       if(isexavail)then

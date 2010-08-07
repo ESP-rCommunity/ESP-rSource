@@ -2380,6 +2380,7 @@ C and current items then lengths of each list.
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character dbnote*72,CLDES*38,KEY*1,head*37,h*72,ctype*8,ct*8
+      integer NCO,ICO ! max items and current menu item
 
 C Setup for menu.
 C Gather the names of the various classes and present this list.
@@ -2523,6 +2524,7 @@ C and current items then lengths of each list.
 
       character KEY*1,PDBM*34,head*42,h*72
       logical OK,dok
+      integer NITMS,INO ! max items and current menu item
 
 C Assumes that the db file is open, get gendb6 via scandbhd and
 C then gather the catg documentation. 

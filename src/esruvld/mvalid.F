@@ -48,6 +48,7 @@ C      common/user/browse
 
       character*25 item(8)
       character h*72,VlDirR*72,VlDirL*72
+      integer MITEM,INO ! max items and current menu item
 
 C      VlDirR='/usr/esru/esp-r/validation'
       DTime=3600.0
@@ -126,6 +127,7 @@ C *********************************************************************
 
       character h*72
       character*35 item(7)
+      integer MITEM,INO ! max items and current menu item
       
    10 INO=-3
       ITEM(1)='a conduction'

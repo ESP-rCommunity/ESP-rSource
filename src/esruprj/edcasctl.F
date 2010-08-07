@@ -89,6 +89,8 @@ C TMC common block:
       CHARACTER info*18,cgcdesc*64,brw*8
       INTEGER IX,IY,IZ,KSTR
       integer IRT  ! for radio button
+      integer NITEMS,INO ! max items and current menu item
+
 #ifdef OSI
       integer iix,iiy
 #else

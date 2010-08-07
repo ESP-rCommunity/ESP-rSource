@@ -2271,13 +2271,12 @@ C It is assumed that the user will make one selection only.
       COMMON/C1/NCOMP,NCON
       common/user/browse
       LOGICAL CFGOK,SELECT,delzone,browse,cpyzone,XST
-      integer ivert  ! zone selected
-      integer mvert  ! size for list of zones
 
       DIMENSION VERT(35)
       character*(*) PROMPT
       CHARACTER VERT*27,KEY*1,DFILE*72,MOD*1,H*72
       CHARACTER*72 LFILG
+      integer MVERT,IVERT  ! max items and current menu item
 
 C If no configuration file then ask for zone number and name.
       delzone = .false.
@@ -2577,6 +2576,7 @@ C =2 with more than 3 day types allowed and sorted
       CHARACTER VERT*27,KEY*1,prompt2*36
       character h*72,mod*1,outs*124
       CHARACTER*72 LCFD
+      integer MVERT,IVERT  ! max items and current menu item
 
 C Initialise zone menu variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.

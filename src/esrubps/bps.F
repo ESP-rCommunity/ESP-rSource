@@ -309,6 +309,7 @@ C Variables used to configure h3kreports
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
+      integer NITMS,INO  ! max items and current menu item
 
 C (possibly) Enable floating point exception error handling on
 C gnu 3.X compilers

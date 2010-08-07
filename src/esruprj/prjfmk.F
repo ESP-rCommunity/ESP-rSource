@@ -112,6 +112,7 @@ C updated when the user exits).
 
       LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer NIGU,IGU,NITEMS,INO ! max items and current menu item
        
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1320,6 +1321,7 @@ C      integer lnblnk  ! function definition
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY),ix,iy
       integer IW  ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Initial menu entry setup.
       idtyp = 1
@@ -1754,6 +1756,7 @@ C of one signals m3/h and a value of 2 signals m3/s.
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY)
       integer IW   ! for radio button
+      integer MVERT,IVERT ! max items and current menu item
 
 C Return if the version is not three.
       if(ip3ver(icomp).lt.3)then
@@ -3396,6 +3399,7 @@ C How many of each gain type is there each zone/gaintype/daytype.
       logical browse,ok,silent,dok,XST
       logical sorted,modopr
       integer ICGTS,IW  ! for radio buttons
+      integer MVERT,IVERT ! max items and current menu item
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
       character lodlabel*6,typstr*8,H*72

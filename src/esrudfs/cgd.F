@@ -53,6 +53,7 @@ C IC = zone number (if in dfs set to 1)
       character outs*124,ETEXT*30
 
       logical GRMODE
+      integer NITMS,INO  ! max items and current menu item
 
 C Set default values.
 C GRMODE = graphics mode.

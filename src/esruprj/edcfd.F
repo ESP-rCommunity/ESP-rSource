@@ -84,6 +84,7 @@ C #include "esprdbfile.h"
       CHARACTER*72 TITLE,CFTRFL,LPHI
       character*72 DFCFD,DECMPDBFL,DICONDBFL
       integer IWO  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Note: to make this more general, we need to have prj set the value of ICFD.
 C ICFD=1 for the first CFD domain in the building, 2 for the second CFD domain, etc.
@@ -406,6 +407,7 @@ C Arrays for sorting domains from (see code for comments).
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer iorgt,ixendt,iyendt,izendt,izendet  ! for local editing
+      integer NITMS,INO ! max items and current menu item
 
 C Assume axes defined and set initial values for general resolution
 C of the X Y Z axis.
@@ -1033,6 +1035,7 @@ C Solution methods.
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
       LOGICAL CALPOL,CALLMA,OK,dok
+      integer NITMS,INO ! max items and current menu item
 
 C Check gridding to set velocity solution.
       if (NTCX.gt.1) then
@@ -1248,6 +1251,7 @@ C Additional data needed for some models.
       LOGICAL ZEROT,ZandKE,MITzero
       LOGICAL BUOYA,BOUSSA
       LOGICAL CALPOL,CALLMA
+      integer NITMS,INO ! max items and current menu item
 
 C Check gridding to set velocity solution.
       if (NTCX.gt.1) then
@@ -1710,6 +1714,7 @@ C #include "geometry.h"
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer INB     ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C << Note: for more complex domains grow this menu needs
 C << to be one that can support multiple pages.
@@ -2004,6 +2009,7 @@ C#include "building.h"
       character face*6,ltmp*17,t12*12,d12*12
       character VOLNAME*12, VCsurf*12,t20*20
       integer IWO  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
       Ii=IVCELLS(IAO,ICFD,1)-1
@@ -2294,7 +2300,7 @@ C IER=0 indicates no error.
       character VOLNAME*12, VCsurf*12
       CHARACTER t20*20
       integer IWO  ! for radio button
-
+      integer NITMS,INO ! max items and current menu item
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
       Ii=IVCELLS(ISB,ICFD,1)-1
@@ -2508,6 +2514,7 @@ C IER=0 indicates no error.
       CHARACTER*60 ITMSS2(14+MCTM)*60,ITMSS3(14+MCTM)*60
       LOGICAL CALPOL,CALLMA,OK,DOK
       INTEGER SPMTYP,SSLINK1,SSLINK2
+      integer NITMS,INO,NITMSS1,IIO,NITMSS2,IXO,NITUM,INUO,NITMSS3 ! max items and current menu item
 
 C Initialise SRCE 
       IF(ICTDFAF.NE.1)THEN
@@ -2878,7 +2885,8 @@ C Ask for information to calculate Schmidt number
             GOTO 3044
  3042       H(1) = 'No sources/sinks defined for this contaminant'
             CALL PHELPD(' ',1,'-',0,0,IER)
- 3044     ENDIF
+ 3044       continue
+          ENDIF
         ENDIF
         GOTO 144
 
@@ -3157,7 +3165,8 @@ C Now get source sink information from contaminants network
           GOTO 3045
  3043     H(1) = 'No sources/sinks defined for this contaminant'
           CALL PHELPD(' ',1,'-',0,0,IER)
- 3045   ENDIF
+ 3045     continue
+        ENDIF
       elseif (INO.eq.(NITMS-1)) then
 
 C Create help for 'sources edit' menu
@@ -3211,6 +3220,7 @@ C IER=0 indicates no error.
       character VOLNAME*12, VCsurf*12
 
       logical ERROR
+      integer NITMS,INO ! max items and current menu item
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
       Ii=IVCELLS(ISB,ICFD,1)-1
@@ -3354,6 +3364,7 @@ C HANDSHK controls the editing of the handshaking mechanism.
 
       dimension IHSID(13)
       character ITMSS(13)*60
+      integer NITMS,INO ! max items and current menu item
 
 C Set up menu - display only applicable handshaking mechanisms based on 
 C current turbulence modelling choice.
@@ -3956,7 +3967,8 @@ C and cell distribution for each region.
 
       character H*72,ITEM(MNREG+5)*44,KEY*1,HOLD*24,outs*124,TITLE*30
 
-      integer icellt   ! for local editing.
+      integer icellt    ! for local editing.
+      integer MVERT,INO ! max items and current menu item
 
 C Set additional output units to stdout. Then redirect warning 
 C messages to stderr in case of rule script program control.

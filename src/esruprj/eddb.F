@@ -71,6 +71,7 @@ C Default esp-r distribution path.
       logical moddb,browse,modcon,QUIET
       logical haveconstr
       integer ihd  ! for radio button
+      integer NITMS,INO ! max items and current menu item
 
       character H*72,path*72
       character*72 ITEMS(15)
@@ -177,15 +178,15 @@ C Help text for this menu.
       H(17)='are not found, the most likely reason is that they'
       H(18)='have not been correctly installed in folders'
       H(19)='/usr/esru/esp-r/climate & /usr/esru/esp-r/databases.'
-
+      NITMS=15
       if(MMOD.EQ.8)then
         impx=0
         impy=0
         iwe=iw
-        CALL VWMENU('Database Maintenance',ITEMS,15,impx,impy,iwe,
+        CALL VWMENU('Database Maintenance',ITEMS,NITMS,impx,impy,iwe,
      &    irpx,irpy,INO)
       else
-        CALL EMENU('Database Maintenance',ITEMS,15,INO)
+        CALL EMENU('Database Maintenance',ITEMS,NITMS,INO)
       endif
       IF(INO.EQ.15)THEN
         if(browse)return

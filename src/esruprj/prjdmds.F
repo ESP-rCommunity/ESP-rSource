@@ -75,6 +75,7 @@ C Flags noting whether casual gain periods are currently sorted.
       character docpth*24,tmppth*24,dbspth*24
       character calename*32,calentag*12,calendayname*32
       LOGICAL OK,DOK,XST,MODOPR,browse
+      integer NITEMS,INO ! max items and current menu item
 
 C GFILE is the default file name for project gains file.
       if(ctlpth(1:2).eq.'  '.or.ctlpth(1:2).eq.'./')then
@@ -509,6 +510,7 @@ C blodlabel(1)='Occup',(2)='Lights',(3)='SmPowr',(4)='Fans',(5)='Pumps',(6)='Lif
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
       character calename*32,calentag*12,calendayname*32
       integer IEBCGTS,IWM  ! for radio buttons
+      integer MVERT,IVERT ! max items and current menu item
 
 C Labels for loads.
       write(ll1,'(1x,a6,1x)') blodlabel(1)

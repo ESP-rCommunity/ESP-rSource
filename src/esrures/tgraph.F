@@ -47,7 +47,8 @@ C user's manual.
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER*23 ITEM(13)
-      character outs*124,h*72,LAPROB*72 
+      character outs*124,h*72,LAPROB*72
+      integer NITMS,INO ! max items and current menu item 
 
 C Setup menu text.
       ITEM(1) ='2 Select result set   '

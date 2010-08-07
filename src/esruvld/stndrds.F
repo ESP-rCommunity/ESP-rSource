@@ -51,6 +51,7 @@ C gh() is array of help entries.
       character H*72,separ*42
       logical XST
       integer irpt  ! for radio button
+      integer NCOG,ICOG ! max items and current menu item
 
 #ifdef OSI
       integer impx,impy,iwe
