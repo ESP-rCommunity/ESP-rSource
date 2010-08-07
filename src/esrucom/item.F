@@ -26,13 +26,14 @@ C EBRSITM searches the item definition and produces a menu of generic
 C TABULAR choices available and returns its index INO.
 C IER=0 OK, IER=1 problem.
       SUBROUTINE EBRSTAB(IFG,IER)
+      character h*72
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
       COMMON/TDFGH2/GTYPES(24),GMENUS(24)
       DIMENSION ISGGT(27),IVAL(27)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
-      CHARACTER KEY*1,ISGGT*30,FOCUS*8,h*7
+      CHARACTER KEY*1,ISGGT*30,FOCUS*8
       integer nitms,INO ! max items and current menu item
 
 C Read the generic descriptions to see what is available.

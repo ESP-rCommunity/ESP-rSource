@@ -2200,7 +2200,7 @@ C Common for libsv3 trace
       character outs*124,h*72,dtrace*72,ltrace*72
       character cfgroot*24,LCFGF*72
       logical OK,dok
-      integer NITMS,INO  ! max items and current menu item
+      integer NITEMS,INO  ! max items and current menu item
 
       ITEM(1) ='a electrical calculations    '
       ITEM(2) ='b temporal file items & assoc'
