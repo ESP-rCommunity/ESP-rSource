@@ -892,7 +892,7 @@ C Second figure - data running parallel to Z axis.
             IL=IL+NPR
 83        CONTINUE
 
-C Call to plot3e, X below should be an array.
+C Call to plot3e, X1 below should be an array.
           X1=XDATA(ILINE)
 
 C Plot each line.

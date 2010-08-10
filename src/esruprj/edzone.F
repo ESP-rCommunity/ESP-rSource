@@ -233,6 +233,7 @@ C Allow user choices of beginning as a simple shape (with image feedback).
      &       -359.0,'W',359.0,'W',0.0,'box elevation',IER,4)
 
 C Convert box into a gen description using two rotation angles.
+C Pass in critical dimensions and expect the data back via common G1.
         CALL ERECC3A(XO1,YO1,ZO1,DX1,DY1,DZ1,ANG,ANGE,0.0)
         NSUR=6
         IUZBASEA(icomp)=0
@@ -295,7 +296,8 @@ C Allow user to have a 2nd chance to input the vertices.
         CALL EASKR(AR,' ','Rotation angle?',
      &       -359.0,'W',359.0,'W',0.0,'extrusion rotation',IER,2)
 
-C Convert into a gen body and rotate if required.
+C Convert into a gen body and rotate if required. Pass in critical dimensions
+C and expect the data back via common G1. And ESCROT also acts on G1.
         CALL EREGC(NW,Z1,Z2,XX,YY)
         IF(AR.LT.-.01.OR.AR.GT..01)then
           x1=XX(1)
@@ -315,7 +317,7 @@ C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
       IF(ishape.ne.3.and.ishape.ne.4)THEN
 
-C << does this fill all of the G5 variables? >>
+C Use subroutine filsur to instanciate G5 common block.
         CALL FILSUR(ICOMP,0)
 
 C Update the connection list and hash.

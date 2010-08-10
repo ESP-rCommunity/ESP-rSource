@@ -1889,7 +1889,6 @@ C Allow the user to select the roof of the building
       call usrmsg(' ',' ','-')
       if(IZ.eq.0) goto 11
 
-      itrc=0
       call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
 
 C General image option flags.

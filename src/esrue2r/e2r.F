@@ -1363,7 +1363,7 @@ C inqu_tmc: Check if tmc control active.
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL

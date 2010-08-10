@@ -140,6 +140,8 @@ C might be zone information so jump to 81 avoiding re-read).
 C Now begin the loop for zones. Zip uses the geometry type line
 C to convey other information.  If two items on the line then the
 C second is the zone name, if more items then not a proper name.
+C Note: the code below generates a minimal version zero zone
+C geometry file and makes extensive use of the G1 common block.
   80  CONTINUE
       read(ioin,'(A)',end=44,err=900) tmp
       OUTSTR=tmp(1:LNBLNK(tmp))
@@ -194,7 +196,8 @@ C Zone is of type REC, look for 7 items on one or two lines.
       IF(CTYPE(ic)(1:3).EQ.'REC')THEN
         read(ioin,*) XO1,YO1,ZO1,DX1,DY1,DZ1,AR
 
-C Now convert to a gen description.
+C Now convert to a gen description. Pass in critical dimensions
+C and expect the data back via common G1.
         CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,AR)
         CTYPE(ic)='GEN '
 
@@ -207,7 +210,8 @@ C Read base vertex data.
           read(ioin,*) XX(IW),YY(IW)
    60   CONTINUE
 
-C Now convert to Gen body type and place into in common block.
+C Now convert to Gen body type and place into in common block G1.
+C And ESCROT also acts on data in G1.
         CALL EREGC(NW,Z1,Z2,XX,YY)
         if(AR.LT.-.01.OR.AR.GT..01)then
           x1=X(1)
@@ -232,7 +236,7 @@ C the number of expected vertices (first item on list).
           read(ioin,*) NVER(I),(JVN(I,KV),KV=1,NVER(I))
    10   CONTINUE
 
-C Rotate if required.
+C Rotate if required. Act on data in common G1.
         if(AR.LT.-.01.OR.AR.GT..01)then
           x1=X(1)
           y1=Y(1)

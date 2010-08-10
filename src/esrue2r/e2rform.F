@@ -294,7 +294,7 @@ C ACT = 's' silent, ACT = 'i' interactive.
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
       
       integer lnblnk  ! function definition
 
