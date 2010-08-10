@@ -1,0 +1,15 @@
+*Operations 1.0
+*date Thu Jan 11 10:03:02 2007  # latest file modification 
+# operations of rad_400 defined in: 
+# ../zones/rad_400.opr
+nothing happens in this zone
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     0   # no Weekday flow periods
+     0   # no Saturday flow periods
+     0   # no Sunday flow periods 
+     0   # no Weekday casual gains 
+     0   # no Saturday casual gains 
+     0   # no Sunday casual gains 
+# Labels for gain types 
+ Occupt Lights Equipt
