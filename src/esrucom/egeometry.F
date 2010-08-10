@@ -4546,6 +4546,7 @@ C << zone geometry file if havec24 is true?
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -4558,9 +4559,6 @@ C Variables from geometry.h:
 C SSURCOG is centre of gravity of surface (vertex weighted).
 C SSUREQN is the surface equation A*X + B*Y + C*Z = D
 C SSURVN is point 1 unit vectpr off of surface COG along the normal.
-
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
       LOGICAL OK,dok
       CHARACTER h*72,outs*124
@@ -4632,7 +4630,7 @@ C seems to use this information (yet).
 C Set to check zone bounds.
       INPIC=NZONES
       DO 42 I=1,INPIC
-        ZBFLG(I)=0
+        iZBFLG(I)=0
   42  CONTINUE
 
       RETURN

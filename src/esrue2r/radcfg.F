@@ -1107,6 +1107,7 @@ C ********************** DFGRIDLBL **********************
 C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
 C the daylight factor (act = d|D).
       SUBROUTINE DFGRIDLBL(act)
+#include "building.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
