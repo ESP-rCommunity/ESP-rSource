@@ -205,7 +205,13 @@ C Average illuminance in lighting zone
       common/CFCLighting/AveLtzIllum(mcom,mlcom),Nlitz2(MCOM)
       real AveLtzIllum
       integer Nlitz2
- 
+C Infiltration
+
+      COMMON/COE39S/CIF(MCOM),CVF(MCOM),X3(MCOM),CVM(MCOM)
+      real CIF,CVF,X3,CVM	  
+      COMMON/COE39PS/CIP(MCOM),CVP(MCOM),QVP(MCOM),CVPM(MCOM)
+      real CIP,CVP,QVP,CVPM
+
 C.....Window properties
       common/prectc/itmcfl(mcom,ms),tmct(mcom,mtmc,5),
      &       tmca(mcom,mtmc,me,5),tmcref(mcom,mtmc),tvtr(mcom,mtmc)
@@ -1393,8 +1399,17 @@ C Get future casual gain values if there is periods defined.
         enddo gain_type_loop
       endif
 
+C--------------------------------***-----------------------------------
+C Report infiltration rate
+            call add_to_xml_reporting (
+c     &        CIF(iZone)/(0.33*Vol(iZone)),  ! approx. ACH (O.K. for .opr infil, but off somewhat for .tdf. Also, hour fraction values not good)
+     &        CVIF/(0.33*Vol(iZone)),  ! ACH (?)
+     &        H3K_rep_NAME(1:iH3K_NameLen) 
+     &         // '/infiltration',
+     &         'units', '(ACH)',
+     &         'infiltration rate'
+     &      )
 C-------------------------------*****----------------------------------
-
 
 C.....Lighting zone illuminance
       if (nlitz2(iZone).gt.0) then
