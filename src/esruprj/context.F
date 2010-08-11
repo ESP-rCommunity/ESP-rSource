@@ -2871,6 +2871,7 @@ C Edit calendar day tag and name.
               endif
 
 C Update operations and control data for all zones to include this new day type
+              ICTLF=-1*ICTLF
               CALL CTLWRT(ICTLF,IER)
               CALL UPDOPR
               modify=.true.

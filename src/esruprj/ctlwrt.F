@@ -52,7 +52,13 @@ C an ascii file.
       character DS*7,DS1*10,DE*7,DE1*10,SSTR*96,SSTR1*96,SSTR2*248
       logical Vldtng
 
-      IER=0
+      IER=0 ; iincd=0
+
+C If called after day types have been increased set up flag 
+      if(iunit.lt.0)then 
+        iunit=-1*iunit 
+        iincd=1 
+      endif 
 
 C Initialise control file.
       if(Vldtng)then
@@ -105,6 +111,18 @@ C Building control information.
         ENDIF
         DO 20 J=1,NN
           JJ=J
+
+C If additional day types are defined then set all related periods of 
+C validity to annual, and set up free floating control 
+          IF(iincd.eq.1.and.jj.gt.3)THEN 
+            IF(IBCDV(II,JJ,1).LE.0)IBCDV(II,JJ,1)=1 
+            IF(IBCDV(II,JJ,2).LE.0)IBCDV(II,JJ,2)=365 
+            NBCDP(II,JJ)=1        ! nb. periods in day 
+            LL=1 
+            IBCTYP(II,JJ,1)=0     ! control type 
+            IBCLAW(II,JJ,1)=2     ! control law free-floating 
+            TBCPS(II,JJ,1)=0.     ! starting at 
+          ENDIF 
           CALL STDATE(IYEAR,IBCDV(II,JJ,1),DS,DS1)
           CALL STDATE(IYEAR,IBCDV(II,JJ,2),DE,DE1)
           write(outs,'(4a)') '  # valid ',DS1,' - ',DE1

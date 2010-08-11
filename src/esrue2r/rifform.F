@@ -353,26 +353,22 @@ C If use = 'i' then initial assumptions.
 C If use = 'f' then force files to account for change in root/dir name.
       subroutine rifset(ic,use)
 #include "building.h"
+#include "prj3dv.h"
 #include "e2r_common.h"
       
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
       integer lnblnk  ! function definition
 
       character pre*28
       character use*1
-      logical close
 
 C Make the initial part of new file names to follow scene root name.
       write(pre,'(a)') SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE)))
 
 C Have information on ground disk ready. << ? case of external view with ifocz -1 >>
       if(ifocz.gt.0)then
-        call eclose(ZBFLG(ifocz),0.0,0.001,CLOSE)
-        if (CLOSE) call BNDOBJ(0,IER)
+        if (iZBFLG(ifocz).eq.0) call BNDOBJ(0,IER)
       endif
       XD=(XMX-XMN)**2 + (YMX-YMN)**2
       DD=SQRT(XD)*1.5

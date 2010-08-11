@@ -41,6 +41,7 @@ C geometry file, ITRU unit number for user output, IER=0 OK.
 #include "building.h"
 #include "model.h"
 #include "site.h"
+#include "prj3dv.h"
 
 C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec2/prec17/precz/c20/GS5.
 #include "geometry.h"
@@ -81,8 +82,6 @@ C prec17 common is described in geometry.h.
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
      &             dbspth
       common/user/browse
@@ -123,6 +122,7 @@ C prec17 common is described in geometry.h.
       real uavgtran,uavgsky,uavwall,uavfltroof,uavslproof,wallper
 
       integer lna,lnb,lnbm,lnbn
+      integer IRT  ! for radio button selections
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -853,6 +853,7 @@ C Remind user of current surface boundary attributes.
           h(4)='surfaces to apply this to. Boundary conditions are'
           h(5)='set in the same way as are the USES of surfaces (to'
           h(6)='assist with code compliance).'
+          IRT=1
           CALL EASKATOG('Surface attribution: ',' ',
      &    'name','composition','boundary condition','usage',
      &    'cancel',' ',' ',IRT,6)
@@ -1084,8 +1085,20 @@ C (T14) and ensure that there are no spaces or strange characters.
 
               call snamdup(D12,icomp,ISS,nameok)
               if(nameok)then
+
+C Update commons and update the geometry file.
                 SNAME(ICOMP,ISS)=D12
                 SSNAME(ioc)=D12
+                call eclose(gversion(icomp),1.1,0.01,newgeo)
+                if(igupgrade.eq.2.and.(.NOT.newgeo))then
+                  gversion(icomp) =1.1
+                  newgeo = .true.
+                endif
+                if(newgeo)then
+                  call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+              else
+                  call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+                endif
               else
                 call edisp(iuout,
      &                  'Surface name is a duplicate of an existing')
@@ -1556,7 +1569,7 @@ C clear the pending rotateit structure.
             goto 77
           endif
 
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(icomp) =1.1
@@ -1796,7 +1809,7 @@ C If user has not canceled then perform the transform.
             Y(I)=Y(I)+VALY
             Z(I)=Z(I)+VALZ
    62     continue
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(icomp) =1.1
@@ -1982,7 +1995,7 @@ C <<  model (e.g. for EnergyPlus) so more work is required).
               JVN(ins,iyy)=jvn1(izz)
   147       CONTINUE
   148     continue
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
 
 C Logic for deciding which format of geometry file to write.
           call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -3075,6 +3088,22 @@ C Menu control.
       CALL EMENU('Surface Attributes',ISD,ISDN,INODA)
       IF(INODA.EQ.ISDN)THEN
 
+C If an attribute has changed save the geometry file.
+        if(cfgok.and.(.NOT.browse))then
+          if(MODGEO)then
+            call eclose(gversion(icomp),1.1,0.01,newgeo)
+            if(igupgrade.eq.2.and.(.NOT.newgeo))then
+              gversion(icomp) =1.1
+              newgeo = .true.
+            endif
+            if(newgeo)then
+              call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+            else
+              call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+            endif
+          endif
+        endif
+
 C Exit and choose another surface.
         return
       ELSEIF(INODA.EQ.ISDN-1)THEN
@@ -3135,6 +3164,19 @@ C XO1,ZO1,XW,ZH are not used in an interactive insert.
         if(nameok)then
           SNAME(ICOMP,IS)=SN2
           SSNAME(ioc)=SN2
+
+C Save names so they are not wiped out by wire-frame drawing
+C code.
+          call eclose(gversion(icomp),1.1,0.01,newgeo)
+          if(igupgrade.eq.2.and.(.NOT.newgeo))then
+            gversion(icomp) =1.1
+            newgeo = .true.
+          endif
+          if(newgeo)then
+            call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,iuout,3,IER)
+        else
+            call emkgeo(IFIL+2,LGEOM(ICOMP),ICOMP,3,IER)
+          endif
         else
           call edisp(iuout,'Surface name is a duplicate of an existing')
           call edisp(iuout,'surface. Please supply a different name.')
@@ -5050,8 +5092,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       LOGICAL MODIFY,MODLEN,MODBND,MODGEO,ok,dok,match,matchver
       logical withinbox  ! true if point within bounding box.
 
@@ -5148,7 +5188,7 @@ C Within the header so skip request.
 C List help text for the vertex menu.
         CALL PHELPD('configuration section',2,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
-        CALL VERINFO(ITRU)
+        CALL VERINFO(ICOMP,ITRU)
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
 C Vertex transforms (start).
@@ -5607,7 +5647,7 @@ C And re-draw the zone to clean up the circles.
           MODGEO=.TRUE.
           MODIFY=.TRUE.
           MODBND=.TRUE.
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
           call usrmsg(' ',' ','-')
           CALL INLNST(1)
           nzg=1
@@ -5643,7 +5683,7 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
           call edisp(itru,outs)
           MODIFY=.TRUE.
           MODBND=.TRUE.
-          ZBFLG(ICOMP)=0.
+          iZBFLG(ICOMP)=0
           call usrmsg(' ',' ','-')
           CALL INLNST(1)
           nzg=1
@@ -5888,7 +5928,7 @@ C Show the new point on the current wireframe.
             MODGEO=.TRUE.
             MODIFY=.TRUE.
             MODBND=.TRUE.
-            ZBFLG(ICOMP)=0.
+            iZBFLG(ICOMP)=0
             call usrmsg(' ',' ','-')
             CALL INLNST(1)
             nzg=1
@@ -5944,7 +5984,7 @@ C applied to the 'a' 'c' and 'f' options.
             MODGEO=.TRUE.
             MODIFY=.TRUE.
             MODBND=.TRUE.
-            ZBFLG(ICOMP)=0.
+            iZBFLG(ICOMP)=0
             call usrmsg(' ',' ','-')
             CALL INLNST(1)
             nzg=1
@@ -6107,7 +6147,7 @@ C number of vertices.
               IPACT=CREATE
               CALL EKPAGE(IPACT)
               MODGEO=.TRUE.
-              ZBFLG(ICOMP)=0.
+              iZBFLG(ICOMP)=0
             endif
           endif
         elseif(IRT.eq.2)then
@@ -6135,7 +6175,7 @@ C order so that compating of list works correctly.
             MODGEO=.TRUE.
             MODIFY=.TRUE.
             MODBND=.TRUE.
-            ZBFLG(ICOMP)=0.
+            iZBFLG(ICOMP)=0
           endif
         elseif(IRT.eq.3)then
 
@@ -6162,7 +6202,7 @@ C << detected. This needs debugging... >>
             MODGEO=.TRUE.
             MODIFY=.TRUE.
             MODBND=.TRUE.
-            ZBFLG(ICOMP)=0.
+            iZBFLG(ICOMP)=0
           endif
         elseif(IRT.eq.4)then
 
@@ -6191,7 +6231,7 @@ C only up to MTV.
                 MODGEO=.TRUE.
                 MODIFY=.TRUE.
                 MODBND=.TRUE.
-                ZBFLG(ICOMP)=0.
+                iZBFLG(ICOMP)=0
               endif
             endif
           endif
@@ -6224,7 +6264,7 @@ C Present vertex coords for editing then parse data from HOLD.
               MODBND=.TRUE.
               MODGEO=.TRUE.
               MODLEN=.TRUE.
-              ZBFLG(ICOMP)=0.
+              iZBFLG(ICOMP)=0
               call warnmod(ICOMP,'str')
  145        continue
           endif
@@ -6257,7 +6297,7 @@ C Present vertex coords for editing then parse data from HOLD.
         MODBND=.TRUE.
         MODGEO=.TRUE.
         MODLEN=.TRUE.
-        ZBFLG(ICOMP)=0.
+        iZBFLG(ICOMP)=0
         call warnmod(ICOMP,'str')
       ELSE
 C Not one of the legal menu choices.
@@ -6297,8 +6337,6 @@ C Make use of VERINFO to display the current vertex surface connections.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       COMMON/RAY6/LINSTY(MCON)
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       DIMENSION  COG1(3),COG2(3),COG3(3)
 
       CHARACTER DESCRC*25
@@ -6493,7 +6531,7 @@ C Check vertex topology.
         call tstamp('>','PRJ: check zone vertex topology')
         call ckvert(1,icomp,bound,iub,inv,ier)
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
-        CALL VERINFO(ITRU)
+        CALL VERINFO(ICOMP,ITRU)
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Miscel. geometric transforms. Ask which surface and setup temp array.
@@ -7332,7 +7370,7 @@ C Record the recent changes and re-display
 C Update the image.
         MODBND=.TRUE.
         MODIFY=.TRUE.
-        ZBFLG(ICOMP)=0.
+        iZBFLG(ICOMP)=0
         call usrmsg(' ',' ','-')
         CALL INLNST(1)
         nzg=1
@@ -7926,7 +7964,8 @@ C If only 3 items on first line read another OUTSTR and try to continue.
         rotateit(icomp,2)=XO1
         rotateit(icomp,3)=YO1
 
-C Now convert to a gen description.
+C Now convert to a gen description. Pass in critical dimensions
+C and expect the data back via common G1.
         CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,ARX)
         rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! shift the pending rotation
         rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone

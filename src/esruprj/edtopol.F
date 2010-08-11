@@ -1760,14 +1760,12 @@ C Parameters: logical variables set the context of what to check
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       LOGICAL OK,DOK,MODIFY,MODLEN,MODBND,close,longpause
-      logical newgeo  ! to use for testing if new/old geometry file.
 
       CHARACTER CXSTR*78,outs*124
       CHARACTER OUTSTR*124,SO*12,ZN*12,TMP*54,H*72
       CHARACTER bl*2
 
 C General image option flags.
-      newgeo=.false.  ! assume older format geometry.
       bl='  '
       ITDSP=1
       ITBND=1

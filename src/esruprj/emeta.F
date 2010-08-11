@@ -638,7 +638,8 @@ C Pending rotation angle and set point to origin of the zone.
         rotateit(ICOMP,2)=XOC
         rotateit(ICOMP,3)=YOC
 
-C Convert box into a gen description.
+C Convert box into a gen description. Pass in critical dimensions
+C and expect the data back via common G1.
         CALL ERECC(XOC,YOC,ZOC,DXC,DYC,DZC,ANG)
         rotateit(ICOMP,4)=rotateit(ICOMP,1)   ! remmeber the pending rotation
         rotateit(ICOMP,5)=rotateit(ICOMP,2)   ! and the origin of the zone
@@ -647,6 +648,7 @@ C Convert box into a gen description.
         rotateit(ICOMP,2)=0.0
         rotateit(ICOMP,3)=0.0
         NSUR=6
+        NZSUR(ICOMP)=NSUR
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
         IZBASELIST(ICOMP)=1
@@ -667,7 +669,9 @@ C Assume that the origin of the zone is 1st coord.
         rotateit(ICOMP,2)=XX(1)
         rotateit(ICOMP,3)=YY(1)
 
-C Convert into a gen body and rotate if required.
+C Convert into a gen body and rotate if required. Pass in 
+C critical dimensions to eregc and expect the data back
+C via common G1. ESCROT also works via G1.
         CALL EREGC(NW,Z1,Z2,XX,YY)
         IF(AR.LT.-.01.OR.AR.GT..01)then
           x1=XX(1)
@@ -681,17 +685,19 @@ C Convert into a gen body and rotate if required.
           rotateit(ICOMP,3)=0.0
         endif
         NSUR=NW+2
+        NZSUR(ICOMP)=NSUR
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=NSUR
         IZBASELIST(ICOMP)=1
       ELSEIF(ishape.eq.3)THEN
 
 C For a poly shaped zone use similar logic to reading geometry file.
+C Instanciate nsur and ntv for use in escrot and filsur.
         NSUR=nbwalls(ICOMP)
         NZSUR(ICOMP)=nbwalls(ICOMP)
         NTV=nztv(icomp)
         AR=rotateit(ICOMP,1)
-        DO 62 I=1,NTV
+        DO 62 I=1,nztv(icomp)
           X(I)=szcoords(ICOMP,I,1)
           Y(I)=szcoords(ICOMP,I,2)
           Z(I)=szcoords(ICOMP,I,3)
@@ -700,17 +706,18 @@ C For a poly shaped zone use similar logic to reading geometry file.
 C Remember first zone point as rotation point.
         rotateit(ICOMP,2)=X(1)
         rotateit(ICOMP,3)=Y(1)
-        DO 10 I=1,NSUR
+        DO 10 I=1,NZSUR(ICOMP)
           NVER(I)=isznbedges(ICOMP,I)
           DO 12 KV=1,NVER(I)
             JVN(I,KV)=iszlist(ICOMP,I,KV)
    12     CONTINUE
    10   CONTINUE
         IUZBASEA(icomp)=0
-        IBASES(ICOMP,1)=NSUR  ! initial guess, need to check
+        IBASES(ICOMP,1)=NZSUR(ICOMP)  ! initial guess, need to check
         IZBASELIST(ICOMP)=1
 
-C Rotate if pending.
+C Rotate if pending. Pass in critical dimensions to escrot
+C and expect the data back via common G1.
         if(AR.LT.-.01.OR.AR.GT..01)then
           x1=X(1)
           y1=Y(1)
@@ -719,16 +726,17 @@ C Rotate if pending.
 
       ENDIF
 
-C Begin with default assumptions for each surface then overwrite.
+C Begin with default assumptions for each surface then overwrite. The
+C subroutine filsur updates variables in common block G5.
 C Because filsur clears the surface name rememeber in hasname first.
-      do 322 ICC=1,NSUR
+      do 322 ICC=1,NZSUR(ICOMP)
         write(hasname(icc),'(a)') sname(icomp,icc)  ! remember surface name
  322  continue
       CALL FILSUR(ICOMP,0)
 
 C Update the connection list.
       ICCC=NCON
-      DO 32 ICC=1,NSUR
+      DO 32 ICC=1,NZSUR(ICOMP)
         ICCC=ICCC+1
         IC1(ICCC)=ICOMP
         IE1(ICCC)=ICC

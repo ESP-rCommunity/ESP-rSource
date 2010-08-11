@@ -1037,6 +1037,7 @@ C if user requests conversion to a general 6 sided polygon.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "prj3dv.h"
 
 C Parameters
       integer ITRU   ! unit for writing errors
@@ -1053,10 +1054,6 @@ C Parameters
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-C ZXMN(),ZYMN(),ZZMN() are the zone minimum bounds.
-C ZXMX(),ZYMX(),ZZMX() are the zone maximum bounds.
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       LOGICAL MODIFY,MODLEN,MODBND
       DIMENSION VERT(22),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,H*72,S12*12

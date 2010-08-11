@@ -28,6 +28,7 @@ C Returns the corner points of the arrow as pixel locations in 'ipoints'.
 C IDRAW=0 don't draw; =1 shaft single line thickness; =2 shaft double line thickness.
 
       SUBROUTINE ARROW(P,Q,al,aw,ipoints,act,IDRAW)
+#include "building.h"
 #include "prj3dv.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN

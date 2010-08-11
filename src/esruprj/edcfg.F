@@ -114,7 +114,6 @@ C Uncertainty.
       logical MODIFY,MODLEN,MODBND,browse
       logical xst,clkok,havefile,unixok
       LOGICAL GON,SON,concat,remote
-      logical newgeo  ! to use for testing if new/old geometry file.
       integer iglib   ! to test for X11 interface
 
       dimension ITEMS(30)
@@ -147,7 +146,6 @@ C Uncertainty.
 #endif
 
 C Set folder separator (fs) to \ or / as required.
-      newgeo=.false.  ! assume older format geometry.
       call isunix(unixok)
       if(unixok)then
         fs = char(47)
@@ -1162,6 +1160,7 @@ C output, IER=0 indicates no error.
 #include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -1173,8 +1172,6 @@ C output, IER=0 indicates no error.
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -1754,7 +1751,7 @@ C Act on the skip transform request.
               Y(I)=Y(I)+VALY
               Z(I)=Z(I)+VALZ
   162       continue
-            ZBFLG(NCOMP)=0.
+            iZBFLG(NCOMP)=0
             okzt=.true.
           endif
 
@@ -1829,7 +1826,7 @@ C Rotation choices. Clear pending rotateit, update prior rotateit.
                 rotateit(ncomp,2)=0.0
                 rotateit(ncomp,3)=0.0
               endif
-              ZBFLG(NCOMP)=0.
+              iZBFLG(NCOMP)=0
             endif
           endif
 
@@ -2427,7 +2424,7 @@ c beeen read in so can include the extended surface `context`.
             call ZINFOREP(itru,ic)
             context=.true.
             CALL SURINFO(IC,ITRU,context)
-            IF(ITRC.GT.1)CALL VERINFO(ITRU)
+            IF(ITRC.GT.1)CALL VERINFO(IC,ITRU)
             CALL INSINFO(IC,ITRU)
           endif
 
@@ -3260,6 +3257,7 @@ C  ier = 0 if no problems found.
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"
+#include "prj3dv.h"
 #include "espriou.h"  
 C espriou.h for parameter MFFOLD
       
@@ -3273,8 +3271,6 @@ C espriou.h for parameter MFFOLD
       common/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/RAY3/MODIFY,MODLEN,MODBND
-      common/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -3860,7 +3856,7 @@ C Display any general associated images.
 C If a plant only model then no need to read zone files.
 C Set flag so that bounds are checked.
         DO 77 ICU=1,NCOMP
-          ZBFLG(ICU)=0
+          iZBFLG(ICU)=0
    77   CONTINUE
         IF(IER.NE.0)THEN
           dok=.true.
@@ -4214,6 +4210,7 @@ C      of obstruction data.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
       real valx,valy,valz  ! the transforms
@@ -4228,10 +4225,6 @@ C      of obstruction data.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       
-      real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
-
       integer ncub,ivfok
       real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
       character CUBN*6
@@ -4267,7 +4260,7 @@ C Find out the version number so we know what to do with obstructions later.
             Y(I)=Y(I)+VALY
             Z(I)=Z(I)+VALZ
    62     continue
-          ZBFLG(IICOMP)=0.
+          iZBFLG(IICOMP)=0
 
 C Decide whether to upgrade the geometry file format.
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -4403,6 +4396,7 @@ C user can un-do this action.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
       integer izlistnb,izlist,itru,ier  ! type for passed parameters
@@ -4416,10 +4410,6 @@ C user can un-do this action.
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-
-      real ZXMN,ZYMN,ZZMN,ZXMX,ZYMX,ZZMX,ZBFLG
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
       integer ncub,ivfok
       real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
@@ -4451,7 +4441,7 @@ C Find out version number so we know if upgrade required.
           call eclose(gversion(IICOMP),1.1,0.01,newgeo)
             call georead(IUF,LTMP,IICOMP,1,iuout,IER)
           CALL ESCROT(VAL,x1,y1)
-          ZBFLG(IICOMP)=0.
+          iZBFLG(IICOMP)=0
 
 C Remember user directive for future un-do.
           rotateit(iicomp,1)=0.0

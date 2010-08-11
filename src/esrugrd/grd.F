@@ -63,8 +63,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
 C Path to problem
       common/rpath/path
@@ -291,7 +289,7 @@ C Initialize the 1D gridding variables.
 
 C Set flag so that bounds are checked.
               DO 30 ICOMP=1,NCOMP
-                ZBFLG(ICOMP)=0
+                iZBFLG(ICOMP)=0
    30         CONTINUE
               CFGOK=.TRUE.
               MODIFY=.TRUE.
@@ -412,7 +410,7 @@ C Initialize the 1D gridding variables.
 
 C Set flag so that bounds are checked.
           DO 20 ICOMP=1,NCOMP
-            ZBFLG(ICOMP)=0
+            iZBFLG(ICOMP)=0
    20     CONTINUE
           ENDIF
         ELSE
@@ -499,7 +497,7 @@ C *********************************************************************
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 

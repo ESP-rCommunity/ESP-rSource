@@ -1,6 +1,9 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2009.
+C Strathclyde, Glasgow Scotland, 2010.
+
+C Note this include file must be referenced after building.h
+C (it uses some parameters from building.h).
 
       integer MPL !  Max. number of vertices in polygon structure
       PARAMETER  (MPL = 200)
@@ -28,3 +31,10 @@ C View coordinates
       real HANG      ! half angle of view (degrees)
       real WIDE      ! does not seem to be used
       COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
+
+C Zone bounds (minimum and maximum for each axis.
+      real ZXMN,ZYMN,ZZMN ! the zone minimum bounds (m)  for X Y Z axis.
+      real ZXMX,ZYMX,ZZMX ! the zone maximum bounds (m)  for X Y Z axis.
+      integer iZBFLG  ! zero bounds must be recalculated, ZBFLG is one use current value.
+      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
+     &            ZYMX(MCOM),ZZMX(MCOM),iZBFLG(MCOM)

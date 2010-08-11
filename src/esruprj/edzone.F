@@ -39,6 +39,7 @@ C an extrusion. IER=0 OK.
 C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -49,8 +50,6 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
 
       Logical MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -234,6 +233,7 @@ C Allow user choices of beginning as a simple shape (with image feedback).
      &       -359.0,'W',359.0,'W',0.0,'box elevation',IER,4)
 
 C Convert box into a gen description using two rotation angles.
+C Pass in critical dimensions and expect the data back via common G1.
         CALL ERECC3A(XO1,YO1,ZO1,DX1,DY1,DZ1,ANG,ANGE,0.0)
         NSUR=6
         IUZBASEA(icomp)=0
@@ -241,7 +241,7 @@ C Convert box into a gen description using two rotation angles.
         MODBND=.TRUE.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
-        ZBFLG(ICOMP)=0
+        iZBFLG(ICOMP)=0
       ELSEIF(ishape.eq.2)THEN
 
 C User begins with an extruded shape.
@@ -296,7 +296,8 @@ C Allow user to have a 2nd chance to input the vertices.
         CALL EASKR(AR,' ','Rotation angle?',
      &       -359.0,'W',359.0,'W',0.0,'extrusion rotation',IER,2)
 
-C Convert into a gen body and rotate if required.
+C Convert into a gen body and rotate if required. Pass in critical dimensions
+C and expect the data back via common G1. And ESCROT also acts on G1.
         CALL EREGC(NW,Z1,Z2,XX,YY)
         IF(AR.LT.-.01.OR.AR.GT..01)then
           x1=XX(1)
@@ -309,14 +310,14 @@ C Convert into a gen body and rotate if required.
         MODBND=.TRUE.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
-        ZBFLG(ICOMP)=0
+        iZBFLG(ICOMP)=0
       ENDIF
 
 C Begin with default assumptions for each surface then overwrite
 C this if user supplied information exists.
       IF(ishape.ne.3.and.ishape.ne.4)THEN
 
-C << does this fill all of the G5 variables? >>
+C Use subroutine filsur to instanciate G5 common block.
         CALL FILSUR(ICOMP,0)
 
 C Update the connection list and hash.
@@ -427,7 +428,7 @@ C Update the connection list and hash for initial surface.
         MODBND=.TRUE.
         MODIFY=.TRUE.
         MODLEN=.TRUE.
-        ZBFLG(icomp)=0
+        iZBFLG(icomp)=0
       elseif(ishape.eq.4)then
 
 C Point and click on a bitmap. After return, re-scan the system
@@ -550,6 +551,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -561,8 +563,6 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
@@ -615,7 +615,7 @@ C other zone files. If the cfg file is version 4 or newer then
 C set to create version 1.1 zone geometry files.
         CALL SCRZONE(IC,IER)
         CALL EDZONE(ITRC,IC,IER)
-        ZBFLG(IC)=0
+        iZBFLG(IC)=0
         return
 
 C Load existing ESP-r.
@@ -713,7 +713,7 @@ C Update the connection list and then the model configuration.
         NZSUR(NCOMP)=NSUR
         NZTV(NCOMP)=NTV
         NCCODE(NCOMP)=NCOMP
-        ZBFLG(NCOMP)=0
+        iZBFLG(NCOMP)=0
         if(OKC)then
           icascf(NCOMP)=0
           call CTLWRT(ICTLF,IER)
@@ -1034,6 +1034,7 @@ C DELZONE systematicly removes a thermal zone.
 #include "CFC_common.h"
 C espriou.h provides currentfile.
 #include "control.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -1070,8 +1071,6 @@ C Anchor data.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1618,7 +1617,7 @@ C Shift viewing bounds.
         ZXMX(IX)=ZXMX(IX+1)
         ZYMX(IX)=ZYMX(IX+1)
         ZZMX(IX)=ZZMX(IX+1)
-        ZBFLG(IX)=ZBFLG(IX+1)
+        iZBFLG(IX)=iZBFLG(IX+1)
         ZCOG(IX,1)=ZCOG(IX+1,1)
         ZCOG(IX,2)=ZCOG(IX+1,2)
         ZCOG(IX,3)=ZCOG(IX+1,3)

@@ -1073,8 +1073,7 @@ C present editing of vertices with the option for mouse.
           if(iglib.eq.1)then
             if(ISCOPT.eq.0)then  
               hold64='                                                '
-              write(t248,'(4a)') hold64,hold64,hold64,'               '
-              WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
+              write(t248,'(3a)') hold64,hold64,hold64
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
               NV = iCountWords(t248)
@@ -1124,8 +1123,11 @@ C User has specified clicking from mouse so just do that.
                 call edisp(iuout,'Not enough points to make a surface.')
                  goto 41
               endif
+
+C Clear the string buffer, write into it the list of vertices that were
+C selected by the user so that errors and duplicates can be corrected.
               hold64='                                                '
-              write(t248,'(4a)') hold64,hold64,hold64,'               '
+              write(t248,'(3a)') hold64,hold64,hold64
               WRITE(t248,'(32I4)')(JJVN(J),J=1,ijvn)
               CALL EASKS248(t248,' Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,9)
@@ -1139,11 +1141,12 @@ C User has specified clicking from mouse so just do that.
             endif
           elseif(iglib.eq.2)then
 
-C For the GTK version there is no mouse click so offer a long blank editing
-C string. Fill the string first with spaces and a single character (GTK 
+C For the GTK version there is no mouse click so offer a blank editing
+C string. Fill the string first with spaces and a single character (GTK
 C does not seem to like to start with a fully blank string).
-            hold64='  1                                               '
-            write(t248,'(4a)') hold64,hold64,hold64,'                 '
+C            hold64='                                                  '
+C            write(t248,'(3a)') hold64,hold64,hold64
+            t248='  1                                               '
             CALL EASKS248(t248,'Associated vertices (type indices)?',
      &        ' ',72,' 1  2  3  4  ','associated vertices',IER,8)
             NV = iCountWords(t248)
@@ -1156,7 +1159,10 @@ C does not seem to like to start with a fully blank string).
           endif
         endif
 
-C Fill default attributes.
+C Fill default attributes. Edit with a 14 char wide string buffer
+C and then copy to 12 char string (SN) and then use st2name to
+C get rid of blanks and non-printable characters and then use
+C snamdup to ensure that it is a unique name (in this zone).
         CALL FILSUR(ICOMP,NSUR)
         T14=' '
         write(T14,'(2a)') SNAME(ICOMP,NSUR),'  '

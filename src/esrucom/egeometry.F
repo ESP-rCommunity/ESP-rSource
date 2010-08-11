@@ -286,8 +286,9 @@ C If only 3 items on first line read another loutstr and try to continue.
         rotateit(ICOMP,3)=YO1
         nbwalls(ICOMP)=4        ! there are 4 walls in box
 
-C Now convert to a gen description. After this move the rotateit from
-C pending to previous.
+C Now convert to a gen description. Pass in critical dimensions
+C and expect the data back via common G1. After this move the
+C rotateit from pending to previous.
         CALL ERECC(XO1,YO1,ZO1,DX1,DY1,DZ1,AR1)
         NZSUR(ICOMP)=NSUR
         NZTV(ICOMP)=NTV
@@ -384,7 +385,7 @@ C look for the rotation point.
 
 C Read each vertex data line, strip any comments, see if 3 items and
 C place in X(),Y(),Z().
-        DO 62 I=1,NTV
+        DO 62 I=1,NZTV(ICOMP)
           call lstripc(IUNIT,loutstr,3,ND,1,'vertex data',IER)
           IF(IER.NE.0)goto 1001
           K=0
@@ -395,7 +396,7 @@ C place in X(),Y(),Z().
 
 C Read vertex list for each surface, strip comments, begin by finding
 C the number of expected vertices (first item on list).
-        DO 10 I=1,NSUR
+        DO 10 I=1,NZSUR(ICOMP)
           
           call lstripc(IUNIT,loutstr,99,ND,1,'vertex list',IER)
           IF(IER.NE.0)goto 1001
@@ -454,12 +455,12 @@ C Unrecognized keyword.
 
 C Read line of unused indices (one per surface) if any index is
 C non zero then it represents a depreciated default window.
-      IRVA=NSUR
+      IRVA=NZSUR(ICOMP)
       CALL EGETWIA(IUNIT,IVA,IRVA,0,MG,'F','def window list',IER)
 
 C Read the window dimension details and advise user (if IVA non-zero).
       
-      DO 16 KS=1,NSUR
+      DO 16 KS=1,NZSUR(ICOMP)
         IF( IVA(KS).GT.0 )THEN
           DO 18 KW=1,IVA(KS)
             call lstripc(IUNIT,loutstr,99,ND,1,'window data',IER)
@@ -484,9 +485,9 @@ C Read the window dimension details and advise user (if IVA non-zero).
       
 
 C Read surface indentations (one per surface).
-      IRVA=NSUR
+      IRVA=NZSUR(ICOMP)
       CALL EGETWRA(IUNIT,YY,IRVA,0.,1.,'W','surfaces recess',IER)
-      DO 22 KS=1,NSUR
+      DO 22 KS=1,NZSUR(ICOMP)
         Y0S(KS)=YY(KS)
    22 CONTINUE
 
@@ -541,7 +542,7 @@ C Debug.
 C        call edisp(iuout,'Subsequent geometry scan...')
       endif
 
-      DO 42 I=1,NSUR
+      DO 42 I=1,NZSUR(ICOMP)
 
 C Check and see if izstocn returns non-zeros and set havec24.
         
@@ -888,7 +889,7 @@ C Get surface areas via call to zinfo.
       zonetotsurfacearea(icomp)=zoa
       ZTRANA(ICOMP)=0.
       lastlist=0
-      do 43 ijj=1,NSUR
+      do 43 ijj=1,NZSUR(ICOMP)
         if(checkbase)then
           if(SVFC(ijj)(1:4).eq.'FLOR')then
 
@@ -949,6 +950,8 @@ C mation currently held in common blocks G0 G1 G3 G4 G6.  It is
 C assumed that this information has been checked.
 C GENFIL is the name of the file to be written to (any existing file
 C by this name is overwritten).  
+
+C << consider how to move away from common G1 >>
 
       SUBROUTINE EMKGEO(IFILG,GENFIL,ICOMP,iwf,IER)
 #include "building.h"
@@ -1022,20 +1025,20 @@ C File is always a GEN type as this is representation in common.
      &  zname(ICOMP)(1:lz),zdesc(ICOMP)(1:lnzdesc(ICOMP)),
      &  '# type, name, descr'
 
-C Vertex coordinates.
+C Vertex coordinates. << convert from G1 >>
       msg='3rd line with nb of surfs and vert'
       WRITE(IFILG,'(I8,I8,F8.3,4x,A)',IOSTAT=ios,ERR=13)
      &  NZTV(ICOMP),NZSUR(ICOMP),AR,
      &  '# vertices, surfaces, rotation angle'
       WRITE(IFILG,32,IOSTAT=ios,ERR=13)
   32  FORMAT('#  X co-ord, Y co-ord, Z co-ord')
-      DO 960 I = 1,NTV
+      DO 960 I = 1,NZTV(ICOMP)
         msg='vertex data line'
         WRITE(IFILG,33,IOSTAT=ios,ERR=13)X(I),Y(I),Z(I),I
   33    FORMAT(1X,3F12.5,'  # vert ',I3)
 960   CONTINUE
 
-C Vertex list.
+C Vertex list. << convert from G1 >>
       WRITE(IFILG,34,IOSTAT=ios,ERR=13)
   34  FORMAT('# no of vertices followed by list of associated vert')
       DO 970 I = 1,NZSUR(ICOMP)
@@ -1090,8 +1093,8 @@ C name of the optical property so if SOTF is not OPAQUE then
 C set it to TRAN within the legacy geometry file.
         IF(SSOTF(icc)(1:2).EQ.'  ')then
           SSOTF(icc)='OPAQUE'
-        ELSEIF(SSOTF(icc)(1:4).EQ.'OPAQ'
-     &            .OR.SSOTF(icc)(1:4).EQ.'CFC ')then
+        ELSEIF(SSOTF(icc)(1:4).EQ.'OPAQ'.OR.
+     &         SSOTF(icc)(1:4).EQ.'CFC ')then
           continue
         ELSE
           SSOTF(icc)='TRAN'
@@ -1593,6 +1596,8 @@ C Now proceed to read vertices on one or more lines.
           endif
           goto 62
         elseif(WORD(1:5).eq.'*surf')then
+
+C Increment counter for surfaces (NS).
           NS=NS+1
           if(NS.eq.1)then
 
@@ -2438,7 +2443,7 @@ C directive that the user gave.
      &  '# tag, X co-ord, Y co-ord, Z co-ord'
 
 C Write vertices with minimal white space comma separated.
-      DO 960 I = 1,NTV
+      DO 960 I = 1,NZTV(ICOMP)
         WRITE(outs,'(a,3F12.5)',IOSTAT=ios,ERR=13)'*vertex ',
      &    X(I),Y(I),Z(I)
         call SDELIM(outs,outsd,'C',IW)
@@ -2734,6 +2739,9 @@ C height (metres from the BLHC upwards),
 C angle of rotation A degrees between the length side and due east axis
 C (anticlockwise is positive).
 C Information is converted into the common block G1.
+
+C << add zone index to passed parameters so g1 no longer needed >>
+
       SUBROUTINE ERECC(XO,YO,ZO,DX,DY,DZ,A)
 #include "building.h"
 #include "geometry.h"
@@ -2816,6 +2824,9 @@ C The angle of rotation C is between the width side and the horizon
 C (positive lifts the edge) NOT YET implemented. This alters the Y
 C and Z coordinates but not the X.
 C Information is converted into the common block G1.
+
+C << add zone index to passed parameters so g1 no longer needed >>
+
       SUBROUTINE ERECC3A(XO,YO,ZO,DX,DY,DZ,A,B,C)
 #include "building.h"
 #include "geometry.h"
@@ -3283,6 +3294,9 @@ C The number of vertical walls, X & Y coords of the bottom corner of
 C each wall in an anticlockwise direction (defining a polygon in a plan
 C view) as well as the floor & ceiling heights are passed to EREGC and
 C the GEN description returned via common G1.
+
+C << consider passing zone index to avoid G1 common block >>
+
       SUBROUTINE EREGC(NW,Z1,Z2,XX,YY)
 #include "building.h"
 #include "geometry.h"
@@ -3357,6 +3371,8 @@ C reduce NW.
 C ******************** ESCROT 
 C Rotate a zone by ANG degrees and return information via common G1.
 C X1,Y1 is the point to rotate about.
+
+C << consider zone index so no longer necessary to use G1 >>
 
       SUBROUTINE ESCROT(ANG,X1,Y1)
 #include "building.h"
@@ -3578,7 +3594,7 @@ C require a recent scan of zone geometry.
 
       call edisp(itu,' ')
 
-C Convert nsur,ntv,zvol etc into strings with no leading spaces.
+C Convert nzsur,nztv,zvol etc into strings with no leading spaces.
       CALL INTSTR(NZSUR(icomp),t10,lna,IER)
       CALL INTSTR(NZTV(icomp),t10a,lnaa,IER)
       WRITE(outstr,'(3a,i2,5a)')' Zone ',
@@ -4546,6 +4562,7 @@ C << zone geometry file if havec24 is true?
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "prj3dv.h"
       
       integer lnblnk  ! function definition
 
@@ -4558,9 +4575,6 @@ C Variables from geometry.h:
 C SSURCOG is centre of gravity of surface (vertex weighted).
 C SSUREQN is the surface equation A*X + B*Y + C*Z = D
 C SSURVN is point 1 unit vectpr off of surface COG along the normal.
-
-      COMMON/RAY7/ZXMN(MCOM),ZYMN(MCOM),ZZMN(MCOM),ZXMX(MCOM),
-     &            ZYMX(MCOM),ZZMX(MCOM),ZBFLG(MCOM)
 
       LOGICAL OK,dok
       CHARACTER h*72,outs*124
@@ -4632,7 +4646,7 @@ C seems to use this information (yet).
 C Set to check zone bounds.
       INPIC=NZONES
       DO 42 I=1,INPIC
-        ZBFLG(I)=0
+        iZBFLG(I)=0
   42  CONTINUE
 
       RETURN
@@ -4836,12 +4850,14 @@ C VERINFO prints two summaries, the first includes vertex coordinates
 C and a list of surfaces associated with each vertex.  The second
 C prints a list of surface numbers and the list of vertices which 
 C define them.  Information is gathered from common block G1.
-
-C << could this use ?? rather than G1 >>
  
-      SUBROUTINE VERINFO(ITRU)
+      SUBROUTINE VERINFO(ICOMP,ITRU)
 #include "building.h"
 #include "geometry.h"
+
+C Parameters
+      integer icomp  ! zone index
+      integer itru   ! unit to write report to
       DIMENSION ISASSO(MS)
       CHARACTER OUTSTR*124,LOUTSTR*248
 
@@ -4850,9 +4866,9 @@ C << could this use ?? rather than G1 >>
      &' The zone is defined by the following general polygon vertices:')
       call edisp(ITRU,
      &' Vertex|X-coord.| Y-coord.| Z-coord.|Associated surfaces     |')
-      DO 8790 I=1,NTV
+      DO 8790 I=1,NZTV(ICOMP)
         IHIT=0
-        DO 8792 IS=1,NSUR
+        DO 8792 IS=1,NZSUR(ICOMP)
           DO 8794 IV=1,NVER(IS)
             IF(I.EQ.JVN(IS,IV))THEN
               IHIT=IHIT+1
@@ -4872,7 +4888,7 @@ C Surfaces with associated vertices.
       call edisp(ITRU,
      &' Surface|No.of   | vertex list (anticlockwise viewed from ext)')
       call edisp(ITRU,'        |Vertices|')
-      DO 9991 I=1,NSUR
+      DO 9991 I=1,NZSUR(ICOMP)
         NV=NVER(I)
         if(NV.le.27)then
           WRITE(OUTSTR,9990)I,NV,(JVN(I,J),J=1,NV)

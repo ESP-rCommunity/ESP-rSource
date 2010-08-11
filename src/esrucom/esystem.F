@@ -2651,7 +2651,7 @@ c beeen read in do not include the extended surface `context`.
             call ZINFOREP(itru,icomp)
             context=.false.
             CALL SURINFO(ICOMP,itru,context)
-            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(itru)
+            IF(ITRC.GT.1.AND.ITRC.LT.4)CALL VERINFO(icomp,itru)
             CALL INSINFO(ICOMP,itru)
           endif
         endif
