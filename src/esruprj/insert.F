@@ -2467,12 +2467,20 @@ C Assign parent name if in silent name, otherwise use placeholder.
         SPARENT(NSUR)='-'
       endif
 
-C New surface to inherit the general properties of the parent.
+C New surface to inherit the general properties of the parent. If
+C parent is already marked as ANOTHER then set to UNKNOWN
+C (otherwise there will be two surfaces point to the same other surface).
       SOTF(NSUR)=SOTF(IS)
       SVFC(NSUR)=SVFC(IS)
-      SOTHER(NSUR,1)=SOTHER(IS,1)
-      SOTHER(NSUR,2)=SOTHER(IS,2)
-      SOTHER(NSUR,3)=SOTHER(IS,3)
+      if(SOTHER(IS,1)(1:7).eq.'ANOTHER')then
+        SOTHER(NSUR,1)='UNKNOWN'
+        SOTHER(NSUR,2)='0'
+        SOTHER(NSUR,3)='0'
+      else
+        SOTHER(NSUR,1)=SOTHER(IS,1)
+        SOTHER(NSUR,2)=SOTHER(IS,2)
+        SOTHER(NSUR,3)=SOTHER(IS,3)
+      endif
       SUSE(NSUR,1)='-'
       SUSE(NSUR,2)='-'
 
@@ -2639,7 +2647,8 @@ C No other hole so link to first vertex of surface.
         endif
 
 C Since this rectangle is a new surface, add it to the connection list assuming
-C it has the same boundary conditions as the parent surface.
+C it has the same boundary conditions as the parent surface (but for a partition
+C set to unknown).
         NCON=NCON+1
         IX=NCON+1
 
@@ -2648,9 +2657,15 @@ C Update common blocks G6 & G7 (insert data into connections based list).
 
         IC1(ICONT)=ICOMP
         IE1(ICONT)=NSUR
-        ICT(ICONT)=ICT(ICONO)
-        IC2(ICONT)=IC2(ICONO)
-        IE2(ICONT)=IE2(ICONO)
+        if(ICT(ICONO).eq.3)then
+          ICT(ICONT)=-1  ! if parent a partition set child to unknown
+          IC2(ICONT)=0
+          IE2(ICONT)=0
+        else
+          ICT(ICONT)=ICT(ICONO)
+          IC2(ICONT)=IC2(ICONO)
+          IE2(ICONT)=IE2(ICONO)
+        endif
         IZSTOCN(icomp,nsur)=icont
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)
@@ -2776,9 +2791,15 @@ C Update common blocks G6 & G7 (insert data into connections based list).
 
         IC1(ICONT)=ICOMP
         IE1(ICONT)=NSUR
-        ICT(ICONT)=ICT(ICONO)
-        IC2(ICONT)=IC2(ICONO)
-        IE2(ICONT)=IE2(ICONO)
+        if(ICT(ICONO).eq.3)then
+          ICT(ICONT)=-1  ! if parent a partition set child to unknown
+          IC2(ICONT)=0
+          IE2(ICONT)=0
+        else
+          ICT(ICONT)=ICT(ICONO)
+          IC2(ICONT)=IC2(ICONO)
+          IE2(ICONT)=IE2(ICONO)
+        endif
         IZSTOCN(icomp,nsur)=icont
         SSNAME(ICONT)=SNAME(ICOMP,NSUR)
         SSOTF(ICONT)=SOTF(NSUR)
