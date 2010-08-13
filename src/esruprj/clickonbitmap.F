@@ -109,6 +109,7 @@ C an object has been saved the set justentered to false.
       logical justentered
       LOGICAL OKC,XST,dok,ok
       logical newgeo  ! to use for testing if new/old geometry file.
+      integer IWM,IWMG ! for radio buttons
 #ifdef OSI
       integer iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4
@@ -870,6 +871,7 @@ C Support bitmap panning - left, right, up, down.
         write(msg,'(a,i4,a,i4,a)') 
      &    'Panning options: (current offset x',ixoffset,' y ',
      &    iyoffset,' pixels)'
+        IWM=1
         CALL EASKATOG(msg,' ','done','left','right','up','down',' ',
      &    ' ',IWM,2)
         if(iwm.eq.1.or.iwm.gt.5)then
@@ -1069,6 +1071,7 @@ C Gridding options. Check if user wants a grid.
         if(.NOT.xbmgrid)then
           h(1)='A grey grid will overlay the bitmap from corner to '
           h(2)='corner. '
+          IWMG=1
           CALL EASKATOG('Gridding options:',' ',
      &      'none','2.0m','1.0m','0.5m','0.25m','0.1m','other',IWMG,2)
           if(iwmg.eq.1)then
@@ -1401,6 +1404,7 @@ C If user typed `p` or `P` then do panning until user says done and then continu
               write(msg,'(a,i4,a,i4,a)') 
      &          'Panning options: (current offset x',ixoffset,' y ',
      &          iyoffset,' pixels)'
+              IWM=1
               CALL EASKATOG(msg,' ','done','left','right','up','down',
      &          ' ',' ',IWM,2)
               if(iwm.eq.1.or.iwm.gt.5)then
@@ -1794,6 +1798,7 @@ C If user typed `p` or `P` then allow for panning and then continue.
               write(msg,'(a,i4,a,i4,a)') 
      &          'Panning options: (current offset x',ixoffset,' y ',
      &          iyoffset,' pixels)'
+              IWM=1
               CALL EASKATOG(msg,' ','done','left','right','up','down',
      &          ' ',' ',IWM,2)
               if(iwm.gt.1.and.iwm.le.5)then
@@ -2214,6 +2219,7 @@ C If user typed `p` or `P` then do panning until user says done and then continu
               write(msg,'(a,i4,a,i4,a)') 
      &          'Panning options: (current offset x',ixoffset,' y ',
      &          iyoffset,' pixels)'
+              IWM=1
               CALL EASKATOG(msg,' ','done','left','right','up','down',
      &          ' ',' ',IWM,2)
               if(iwm.eq.1.or.iwm.gt.5)then

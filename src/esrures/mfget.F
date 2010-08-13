@@ -163,6 +163,7 @@ C air flow reporting.
 
       integer YAXSET, ADDLIN
       integer lcname  ! length of contaminate string
+      integer IOT,IWM  ! for radio buttons
 
       logical CLIST,NLIST,CNLST,CRLST,OKL,dok,CTLST
 #ifdef OSI
@@ -728,6 +729,7 @@ C based set iocut=-1, if always occup set iocut=0.
             H(3)='list. Type 1 usually represents casual gains from '
             H(4)='people,although any of the three casual gain types'
             H(5)='can be used. '
+            IOT=1
             CALL EASKATOG('Which casual gain represents occupancy:',
      &         '  ','Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,5)
             if (IOT.gt.1.and.IOT.lt.5) then
@@ -855,6 +857,7 @@ C Toggle delimeter.
           H(5) ='  comma separator (for excel)'
           H(6) ='  tab separator (for excel)'
           H(7) ='  tagged - marked up data'
+          IWM=1
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &      'normal spaces','single space','tab','comma','tagged',
      &      'continue',' ',IWM,7)

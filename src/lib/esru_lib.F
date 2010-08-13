@@ -783,6 +783,8 @@ C options available, (these should not be too long).
       SUBROUTINE EASKAB(MSG1,MSG2,AOPT,BOPT,IWHICH,NHELP)
 
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT
+      integer IWHICH ! the returned value
+      integer NHELP  ! number of help lines to display
       character COPT*2,DOPT*2,EOPT*2,FOPT*2,GOPT*2
 
       COPT=' '
@@ -802,6 +804,8 @@ C of the choices has been chosen. See EASKATOG for parameter documentation.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT
+      integer IWHICH ! the returned value
+      integer NHELP  ! number of help lines to display
       character DOPT*2,EOPT*2,FOPT*2,GOPT*2
 
       DOPT=' '
@@ -820,6 +824,8 @@ C of the choices has been chosen. See EASKATOG for parameter documentation.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT
+      integer IWHICH ! the returned value
+      integer NHELP  ! number of help lines to display
       character EOPT*2,FOPT*2,GOPT*2
 
       EOPT=' '

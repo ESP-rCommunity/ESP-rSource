@@ -60,6 +60,7 @@ C Special materials file flag
 
       CHARACTER*23 ITEM(15)
       character outs*124,xfile*144,H*72,tg*1,delim*1,spflnam*72
+      integer IWM  ! for radio button
 
 C Default value for GRTOOL file = 0 (off), day hash marks off.
       IHFLAG=0
@@ -172,6 +173,7 @@ C Toggle delimeter.
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
         H(7) ='  tagged - marked up data'
+        IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
      &    'continue',' ',IWM,7)
@@ -323,7 +325,11 @@ C If requested or writing to file start lines with a '#'.
             write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
           else
             lnb=MIN0(lnblnk(outs248),124)
-            call edisp248(itru,outs248,lnb)
+            if(lnb.lt.72)then
+              call edisp(itru,outs248(1:lnb))
+            else
+              call edisp248(itru,outs248,lnb)
+            endif
           endif
           WRITE(outs,'(4A)')'# ',PDESCR(1:lnblnk(PDESCR)),' ',
      &      SDESCR(11:lnblnk(SDESCR))
@@ -343,7 +349,11 @@ C If requested or writing to file start lines with a '#'.
             write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
           else
             lnb=MIN0(lnblnk(outs248),124)
-            call edisp248(itru,outs248,lnb)
+            if(lnb.lt.72)then
+              call edisp(itru,outs248(1:lnb))
+            else
+              call edisp248(itru,outs248,lnb)
+            endif
           endif
           WRITE(outs,'(3A)')PDESCR(1:lnblnk(PDESCR)),' ',
      &      SDESCR(11:lnblnk(SDESCR))
@@ -481,7 +491,11 @@ C demarcations are omitted.
                 write(itru,'(A)',iostat=ios,err=1)outs400(1:lnb)
               else
                 lnb=MIN0(lnblnk(outs248),124)
-                call edisp248(itru,outs248,lnb)
+                if(lnb.lt.72)then
+                  call edisp(itru,outs248(1:lnb))
+                else
+                  call edisp248(itru,outs248,lnb)
+                endif
               endif
             else
               if (IDHFLG.eq.1.and.ixopen.eq.1)then
@@ -489,7 +503,11 @@ C demarcations are omitted.
                 write(itru,'(A)',iostat=ios,err=1)outs400(1:lnb)
               elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
                 lnb=MIN0(lnblnk(outs248),124)
-                call edisp248(itru,outs248,lnb)
+                if(lnb.lt.72)then
+                  call edisp(itru,outs248(1:lnb))
+                else
+                  call edisp248(itru,outs248,lnb)
+                endif
               else
                 continue
               endif
@@ -619,7 +637,11 @@ C If using X delimeter (tagged data) then set the delimeter to a comma.
 
 C Writing to screen so use shorter file buffer.
             lnb=MIN0(lnblnk(outs248),124)
-            call eddisp248(itru,outs248,lnb)
+            if(lnb.lt.72)then
+              call eddisp(itru,outs248(1:lnb))
+            else
+              call eddisp248(itru,outs248,lnb)
+            endif
           endif
  421    CONTINUE
  10   continue

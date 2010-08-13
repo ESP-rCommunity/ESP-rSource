@@ -83,6 +83,7 @@ C #include "esprdbfile.h"
       character docpth*24,tmppth*24,dbspth*24
       CHARACTER*72 TITLE,CFTRFL,LPHI
       character*72 DFCFD,DECMPDBFL,DICONDBFL
+      integer IWO  ! for radio button
 
 C Note: to make this more general, we need to have prj set the value of ICFD.
 C ICFD=1 for the first CFD domain in the building, 2 for the second CFD domain, etc.
@@ -303,7 +304,8 @@ C Conflation options.
         h(32)='For further details, refer to:'
         h(33)='Clarke J A and Beausoleil-Morrison I, The Integration'
         h(34)='of Computational Fluid Dynamics into Building'
-        h(35)='Simulation, IBPSA News, V9, N2, Dec. 1997.' 
+        h(35)='Simulation, IBPSA News, V9, N2, Dec. 1997.'
+        IWO=0
         call EASKATOG('Conflation options:',' ','CFD only',
      &    'type 1 thermal','type 2 thermal','air-flow',
      &    'cancel','  ','  ',IWO,35)
@@ -1707,6 +1709,7 @@ C #include "geometry.h"
       logical MODIFY,MODLEN,MODBND
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer INB     ! for radio button
 
 C << Note: for more complex domains grow this menu needs
 C << to be one that can support multiple pages.
@@ -1835,6 +1838,7 @@ C Add a new/ delete a boundary definition.
      &               'Delete','Cancel',IAD,1)
         if (IAD.eq.1) then
           h(1)='Choose the type of new boundary condition.'
+          INB=1
           call EASKATOG('Which type of boundary?','  ',
      &       'Air flow opening','Solid surface','Source',
      &       'Blockage','Cancel',' ',' ',INB,1)
@@ -1999,6 +2003,7 @@ C#include "building.h"
       character ITMSS(13)*50,H*72
       character face*6,ltmp*17,t12*12,d12*12
       character VOLNAME*12, VCsurf*12,t20*20
+      integer IWO  ! for radio button
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
       Ii=IVCELLS(IAO,ICFD,1)-1
@@ -2126,6 +2131,7 @@ C Choose an opening type.
         h(12)='If you wish not to conflate CFD and flow network then'
         h(13)='simply choose some other boundary condition and ALL'
         h(14)='openings will be restored.'
+        IWO=1
         CALL EASKATOG('Opening types: (see help)',' ','pressure',
      &    'velocity','zero gradient','from flow network',
      &    'cancel','  ','  ',IWO,14)
@@ -2287,6 +2293,7 @@ C IER=0 indicates no error.
       character face*6,ltmp*16,t12*12,d12*12
       character VOLNAME*12, VCsurf*12
       CHARACTER t20*20
+      integer IWO  ! for radio button
 
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
@@ -2400,8 +2407,9 @@ C Get boundary name.
 C Choose an opening type.
         h(1)= '  '
         h(2)= ' ... '
+        IWO=1
         CALL EASKATOG('Boundary types:',' ','temperature','heat flux',
-     &        'symmetrical','building surface','cancel','  ','  ',IWO,2)
+     &    'symmetrical','building surface','cancel','  ','  ',IWO,2)
 
 C Try to remember non conflated option if building surface chosen.
         if (IWO.eq.4) then
@@ -3425,6 +3433,7 @@ C PIKCELS controls the editing of the cells defining a boundary region.
 
       character BTYPE*20,BNAME*12,s30*30,dflt*30,H*72,lface*7,t30*30
       character outs*124
+      integer IFACE   ! for radio button
 
  5    IER=0
       t30='  '
@@ -3452,6 +3461,7 @@ C Ask for face first if necessary.
         h(4)= 'the face X/Y or Z cell coordinates will be reported'
         h(5)= 'in the text feedback area. '
         write (t30,'(2a)') 'Current face: ',lface
+        IFACE=1
         CALL EASKATOG('Boundary face is on which side?',t30,'West',
      &                'East','South','North','Low','High',' ',IFACE,5)
       endif
@@ -3694,6 +3704,7 @@ C Check for conflicts.
      &               'Please choose from the following list.','W')
         h(1)= 'You will have to pick a face at which'
         h(2)= 'the boundary condition will apply.'
+        IFACE=1
         CALL EASKATOG('Boundary face is on which side?',' ','West',
      &                'East','South','North','Low','High',' ',IFACE,2)
       endif

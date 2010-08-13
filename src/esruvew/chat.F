@@ -32,6 +32,7 @@ C Redirected text/graphics parameters.
       character wins*20,outs*124,H*72,hold*36
       character xfile*144,tg*1,delim*1
       logical close,OK
+      integer IW  ! for radio button
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
 #else
@@ -476,6 +477,7 @@ C DEFAULT VIEW SETTING
       h(5)='  elevation (N,S,E,W) '
       h(6)='  cavalier (plan oblique 45/45)'
       h(7)='  sun view (at a specific date & time'
+      IW=1
       call easkatog('Default views:',' ','perspec','plan','isometric',
      &              'elev.','cavalier','sun',' ',IW,7)
       call usrmsg(' ',' ','-')

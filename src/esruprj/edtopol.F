@@ -3303,6 +3303,7 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character AL1*12,AL2*12,AL3*12,AL4*12,AL5*12,AL6*12,AL7*12
       character AL8*12,AL9*12,CXITM*43
+      integer ltype,ins2,ins3   ! for radio buttons
 
       iuf=IFIL+1
       newgeo=.false.  ! assume older format geometry.
@@ -3420,6 +3421,7 @@ C Anchor point substitution.
           AL4=ALOCLBL(4)
           AL5=ALOCLBL(5)
           h(1)='Indicate which anchor to use. '
+          ltype=1
           CALL easkatog(' Which anchor:',' ',AL1,AL2,AL3,AL4,AL5,
      &      'other anchors','continue',ltype,1)
           if(ltype.eq.7)then
@@ -3430,6 +3432,7 @@ C Anchor point substitution.
             AL7=ALOCLBL(7)
             AL8=ALOCLBL(8)
             AL9=ALOCLBL(9)
+            ltype=1
             CALL easkatog(' Which anchor:',' ',AL6,AL7,AL8,AL9,
      &        'continue',' ',' ',ltype,1)
             if(ltype.gt.4)then
@@ -3515,6 +3518,7 @@ C << of TRAN for SSOTF.
 
         H(1)='You may restrict updating to only surfaces which '
         H(2)='face the outside, partitions (internal) etc. '
+        ins2=1
         call EASKATOG(' Second filter--surface contiguity:',' ',
      &      'external','similar','constant','partitions','ground',
      &      'adiabatic','cancel',ins2,2)
@@ -3524,6 +3528,7 @@ C << of TRAN for SSOTF.
 
         H(1)='You may restrict updating to only surfaces which '
         H(2)='have a particular orientation. '
+        ins3=1
         call EASKATOG(' Third filter--surface orientation:',' ',
      &      'vertical','sloped','horizontal up','horizontal down',
      &      'any horizontal','any orien.','cancel',ins3,2)

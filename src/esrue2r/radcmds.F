@@ -680,6 +680,7 @@ C ITP =1 - image only; =2 - glare info to display on image.
       character doit*256,LBSRIF*72,runpath*72,pathtype*24
       character imgqua*6,detlvl*6,llvar*6,penumb*5
       integer lnrp  ! length of run path
+      integer IWT,IWP   ! for radio buttons
 
       logical XST,anim,unixok
       CHARACTER*3 NMTHNM(12)
@@ -803,6 +804,7 @@ C Ask for end time of the animation.
 C Figure out the increment.
           H(1)='The increment is usually set as a compromise between'
           H(2)='the visual jump between views and computation time. '
+          IWT=1
           CALL EASKATOG('Interval between views:',' ','one min',
      &      'five min','ten min','15 min','20 min','30 min','cancel',
      &      IWT,2)
@@ -828,6 +830,7 @@ C Up the image quality if low.
 C Size of the images (set IFP to double so can filter).
           H(1)='The image frame size is a compromise between the'
           H(2)='visual detail and and computation time. '
+          IWP=1
           CALL EASKATOG('Image frame size (pixels):',' ','240',
      &      '320','400','500','600','700','cancel',IWP,2)
           if(IWP.EQ.1)then

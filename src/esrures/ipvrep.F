@@ -103,6 +103,7 @@ C Pre calculated data (filtered).
 
       logical XST,OK,DOK,pvok,usermode,within,dmdsok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+      integer IWM  ! for radio button
 
 C Remember the initial periods.
       jiod1=IOD1
@@ -390,6 +391,7 @@ C Toggle delimeter.
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
         H(7) ='  tagged - marked up data'
+        IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
      &    'continue',' ',IWM,7)

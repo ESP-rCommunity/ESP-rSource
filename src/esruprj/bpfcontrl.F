@@ -85,6 +85,7 @@ C ipeerptbk is pointer from position in display to day type.
       character sfile*72,snpfile*72,fs*1
       logical LINKED,OK,dok,XST,browse,unixok
       integer icomp
+      integer IW   ! for radio button
       logical CFCfilexists,CFCcontrolOK
       
 C Zeroize all control data.
@@ -863,6 +864,7 @@ C Add or delete a zone control function.
 C Warn user to update any connections to plant loops.
         h(1)='Delete/add/copy a control loop'
         h(2)='(unless wkd:sat:sun control).'
+        IW=1
         CALL EASKATOG(' ','Options:','delete control loop',
      &     'add control loop','copy control loop',
      &     'cancel',' ',' ',' ',IW,2)
@@ -5199,6 +5201,7 @@ C Edit global control function II.
       character hold*42
       CHARACTER*84 VERT(20)
       logical close1
+      integer IADR  ! for radio button
 
 C Number of global functions and day type must be > 0.
       IF(II.LE.0.OR.IV.LE.0)RETURN
@@ -5513,9 +5516,10 @@ C upon whether the last output from the loop was on/off respectively.
                   CALL EDISP(IUOUT,'Current action is MIN')
                   IONE=1
                 ENDIF
+                IADR=1
                 CALL EASKATOG('Logical action variable',
      &          'with next sensor','AND','OR','NOT','SLAVE',
-     &          'MAX','MIN',' ',iadR,28)
+     &          'MAX','MIN',' ',IADR,28)
                 CM(ICLP*3+1)=REAL(IADR)
               ELSE
                 CM(ICLP*3+1)=CM((ICLP-1)*3+1)

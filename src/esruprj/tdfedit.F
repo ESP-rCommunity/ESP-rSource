@@ -77,6 +77,7 @@ C Logical flags for file openings.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer IRE  ! for radio button
 
 C For debugging set itrc =2
       ITRC=1
@@ -553,6 +554,7 @@ C Help about temporal facility.
 C Save TDF data. May have to move to the last record before exiting.
         h(1)='You may save the current binary file or'
         h(2)='import or export a ASCII version. '
+        IRE=1
         CALL EASKATOG(' File options:',' ','save ascii file',
      &   'ascii temporal>binary','binary>ascii temporal',
      &   'extract data','continue',' ',' ',IRE,2)

@@ -70,6 +70,7 @@ C user-specified variable.
       real equipc,equipr,equipl ! average equipment to write out
       real otherc,otherr,otherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
+      integer jsur,jclm,ICI  ! for radio buttons
 
       DATA ITITLX/'Time-steps'/
       DATA ITITLZ/'Year day  '/
@@ -172,6 +173,7 @@ C IGET = 6  Resultant temperature.
         IGET=24
         ITITLE = 'Mean Radiant temperature'
       elseif(INO.EQ.11)then
+        jsur=1
         CALL EASKATOG('Surface temperatures:',' ',
      &    'T inside','T outside','T node',' ',' ',' ',' ',jsur,1)
         zlist=.true.
@@ -204,6 +206,7 @@ C IGET = 6  Resultant temperature.
       elseif(INO.EQ.12)then
         H(1)='Convection and solar radiation absorbed at the '
         H(2)='inside and other/external faces. '
+        jsur=1
         CALL EASKATOG('Surface fluxes:',' ',
      &    'Convection int','Convection ext','Total convec int',
      &    'Solar abs ext','Solar abs int',' ',' ',jsur,1)
@@ -298,6 +301,7 @@ C IGET = 15  Casual gains  << ? expand, perhaps to total and perhaps by type >>
         if(ICRCG.eq.2)ITITLE = 'Casual gain radiant (w)'
       elseif(INO.EQ.22)then
         H(1)='To select more than one item, rechoose climate pick'
+        jclm=1
         CALL EASKATOG('Climate data:',' ',
      &    'Solar direct','Solar diffuse','Wind speed','Ambient rh',' ',
      &    ' ',' ',jclm,1)
@@ -323,6 +327,7 @@ C IGET = 23  Comfort, ask which index and initialise.
         H(1) ='Comfort indicies are: Predicted Mean Vote PMV, PMV '
         H(2) ='using efective temperature and Predicted Percentage '
         H(3) ='Dissatisfied PPD. '
+        ICI=1
         CALL EASKATOG('Comfort indices:',' ',
      &    'PMV','PMV (set)','PPD',' ',' ',' ',' ',ICI,3)
         if(ICI.eq.1)ITITLE = 'Comfort PMV'
