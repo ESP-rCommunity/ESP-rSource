@@ -98,6 +98,8 @@ C << what about including common zndata in this manipulation? >>
       character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
       integer IRT  ! for radio button
+      integer icmpall  ! to signal request to compare all names
+
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
@@ -112,8 +114,11 @@ C << what about including common zndata in this manipulation? >>
       valy=0.0
       valz=0.0
       angr=0.0
+      same=.true.
+      clkok=.false.
       IOK=0
       IRV=1
+      IZC=0
 
       IF(ACTION.EQ.'D')THEN
 
@@ -587,7 +592,6 @@ C Use pickssur to find up to ilimit surfaces to copy, returning
 C the selections via array ispk.
         CALL EDISP(iuout,'Please specify surface(s) to copy...')
         IS=1
-        IZ=1
         inpick=0
         if(same)then
           CALL EPMENSV
@@ -614,7 +618,7 @@ C Read the other zone and put selected surface data into temp storage.
           call georead(IFIL+1,LGEOM(IZC),IZC,0,iuout,IER)
         endif
         npick=1
-  191   continue
+  191   continue   ! jump back point for processing subsequent surfaces.
         is=ispk(npick)
         if(same)then
           write(outs,'(2a)') ' Copying attributes of ',SNAME(ICOMP,IS)
@@ -631,8 +635,6 @@ C Read the other zone and put selected surface data into temp storage.
 
 C Generate a new surface name and default, then check to see if
 C if is a duplicate. 
-C << note: does not check name against the most recently copied
-C << surface.
   141   if(same)then
           write(SNAMED,'(a,a)') 'x',SNAME(ICOMP,IS)(1:11)
           write(SNAME1,'(a)') SNAME(ICOMP,IS)(1:12)
@@ -640,7 +642,8 @@ C << surface.
           write(SNAMED,'(a,a)') 'x',SNAME(IZC,IS)(1:11)
           write(SNAME1,'(a)') SNAME(IZC,IS)(1:12)
         endif
-        call snamdup(SNAME1,icomp,0,nameok)
+        icmpall=0 ! force compare of all surfaces
+        call snamdup(SNAME1,icomp,icmpall,nameok)
         if(.NOT.nameok)then
 
 C Copy to a slightly longer buffer for editing and ensure that
@@ -998,8 +1001,9 @@ C copying the next surface.
             endif
             call edisp(iuout,' getting donor zone info...')
 
+C Rescan the other zone before returning.
             call eclose(gversion(IZC),1.1,0.01,newgeo)
-            call georead(IFIL+1,LGEOM(IZC),IZ,0,iuout,IER)
+            call georead(IFIL+1,LGEOM(IZC),IZC,0,iuout,IER)
             write(outs,'(3a)') ' Repeat transforms for ',
      &        SNAME(IZC,ispk(npick)),' ?'
           else
@@ -1028,7 +1032,7 @@ C copying the next surface.
             h(7)='correctly and face the correct direction. '
             CALL ASKOK(outs,'(see help)',DDOK,dok,7)
           endif
-          goto 191
+          goto 191   ! jump back and process next surface
         endif
         MODBND=.TRUE.
         MODIFY=.TRUE.

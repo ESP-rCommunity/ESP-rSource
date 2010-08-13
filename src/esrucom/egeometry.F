@@ -4993,12 +4993,14 @@ C If 'is' is passed as 0 then check all, otherwise exclude surface is.
       COMMON/C24/IZSTOCN(MCOM,MS)
       character string*12,SN*12
       logical ok
+      integer lstr  ! length of passed in surface name
+      integer icn   ! which connection
       
       lstr=lnblnk(string)
       ok=.true.
-      do 42 i=1,NZSUR(icomp)-1      ! last surface corresponds to new surface for which a connection does not yet exist so don't count it
+      do 42 i=1,NZSUR(icomp)-1   ! last surface corresponds to new surface for which a connection does not yet exist so don't count it
         icn=izstocn(icomp,i)
-        SN=SSNAME(icn)
+        SN=SSNAME(icn)           ! assign local name for other surface
         if(string(1:lstr).eq.SN(1:lnblnk(SN)))then
           if(is.eq.0)then
             ok=.false.

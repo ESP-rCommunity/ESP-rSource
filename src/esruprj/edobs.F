@@ -1033,7 +1033,9 @@ C Write to geometry file or the obstructions file.
 
 C ************* EDOBSB 
 C EDOBSB: Edit details of an obstruction block. Adapt interface
-C if user requests conversion to a general 6 sided polygon.
+C if user requests conversion to a general 6 sided polygon. This
+C subroutine assues that the current zone geometry common blocks
+C have already been filled.
       SUBROUTINE EDOBSB(ITRU,IUF,ICOMP,IB,IER)
 #include "building.h"
 #include "model.h"
@@ -1288,6 +1290,9 @@ C One set of interface actions if type 'obs' or 'obs3'.
      &        ZOB(ICOMP,IB)
             MODIFY=.TRUE.
           elseif(IBOPT.eq.2)then
+
+C Use current zone G1 common blocks to present list of points
+C via epkvert.
             inpick=1
             CALL EPMENSV
             call EPKVERT(INPICK,IVLST,'Vertices for origin',
@@ -1302,6 +1307,9 @@ C One set of interface actions if type 'obs' or 'obs3'.
               goto 92
             endif
           elseif(IBOPT.eq.3)then
+
+C Use current zone G1 common blocks to present list of points
+C via epkvert.
             inpick=1
             CALL EPMENSV
             call EPKVERT(INPICK,IVLST,'Vertice in zone',
