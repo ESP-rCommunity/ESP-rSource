@@ -2834,8 +2834,9 @@ C If copy action set inpic to ilimit otherwise set to nzsur().
 
 C Loop through each surface in the zone and make up display list based on the
 C attributes of the surface. For shading or insulation mark surfaces
-C which are not applicable.
-        DO 11 I=1,INPIC
+C which are not applicable. The do loop needs to use nzsur so that all
+C surfaces are presented even if only ilimit can be copied.
+        DO 11 I=1,NZSUR(IZONE)
          ioc=IZSTOCN(izone,i)
          if(act.eq.'s'.or.act.eq.'S')then
            if(SSOTHER(ioc,1)(1:5).eq.'EXTER')then
