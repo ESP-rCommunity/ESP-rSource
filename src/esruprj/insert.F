@@ -1758,7 +1758,7 @@ C then parse into new vertex.
         H(1)='The vertex coordinates should be in metres. '
         H(2)='Exact duplicate vertices should be avoided.'
         H(3)='It is not advisable for Z to be negative.'
-        write(outs,'(a,i2,a,i2,a)')'Copied Vertex (',NUM,
+        write(outs,'(a,i3,a,i3,a)')'Copied Vertex (',NUM,
      &    ' old; current index ',NTV+1,')'
         CALL EASKS(HOLD,outs,' X  Y  Z (in metres): ',
      &    36,' 0. 0. 0. ','vertex coord',IER,3)
@@ -2569,7 +2569,7 @@ C in the new surface.
      &      'corner of the new surface to connect to: ','lower left',
      &      'lower right',ICH,24)
 
-          WRITE(outs,'(32i3)')(JVN(IS,J),J=1,NVER(IS))
+          WRITE(outs,'(30i4)')(JVN(IS,J),J=1,NVER(IS))
           call edisp(iuout,'The bounding surface vertices are...')
           call edisp(iuout,outs)
  8795     CALL EASKI(IVH,

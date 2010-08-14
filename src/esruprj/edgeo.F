@@ -5655,7 +5655,7 @@ C inserting the new vertex index.
                       JVN(jivj,jivjj+1)=jwhich3
 
 C Debug...
-C                      write(6,'(a,30i3)') 'now jvn is ',
+C                      write(6,'(a,32i4)') 'now jvn is ',
 C     &                  (JVN(jivj,ii),ii=1,NVER(jivj))
  
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -6073,7 +6073,7 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug...
-C                     write(6,'(a,30i3)') 'now jvn is ',
+C                     write(6,'(a,32i4)') 'now jvn is ',
 C     &                 (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
@@ -7453,7 +7453,7 @@ C Set up a long string buffer for editing vertex list for the
 C surface. 
         hold64='                                                      '
         write(t248,'(4a)') hold64,hold64,hold64,'                     '
-        WRITE(t248,'(24I4)')(JVN(IFOC,j),J=1,nv)
+        WRITE(t248,'(32I4)')(JVN(IFOC,j),J=1,nv)
         CALL EASKS248(t248,' Associated vertices (type the indices)?',
      &    ' ',72,' 1  2  3  4  ','associated vertices',IIER,8)
         NV = iCountWords(t248)
