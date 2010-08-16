@@ -2244,6 +2244,11 @@ C will be truncated at the width ISTRW.
       character lista*74,listb*74,KEY*1,outs*124
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STALT(*)
       CHARACTER H*72,SEL*40
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
 C Fill the help string buffer.
       call dupphelp(NHELP+1)
@@ -2371,7 +2376,10 @@ C If a long list include page facility text.
 
 C Now display the menu (depending on the width of the strings).
       IF(MMOD.EQ.8)THEN
-        call VWMENU(SEL,LISTA,MVERT,0,0,ISTRW+4,irpx,irpy,ivert)
+        impx=0
+        impy=0
+        iw=ISTRW+4
+        call VWMENU(SEL,LISTA,MVERT,impx,impy,iw,irpx,irpy,ivert)
       ELSE
         DO 144 IJ=1,MVERT
           if((ISTRW+4).LT.74)then
@@ -2485,7 +2493,7 @@ C menu format but with the text for each selection passed (as in
 C easkatog). It is assumed that the user will make one selection
 C only and if nothing selected it returns an index of zero.
 C
-C It is passed a prompt, menu title, menu width (mw characters),
+C It is passed a prompt, menu title, string options (aopt ect.)
 C default index (idindex) and current index (index) if zero then
 C assumes no current selection. If user exits without selection then
 C index is returned as zero if index was passed in as zero and
@@ -2495,16 +2503,26 @@ C passed within the parameter list text.
       SUBROUTINE MENUATOL(prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,
      &  GOPT,HOPT,IOPT,JOPT,KOPT,LOPT,index,idindex,nhelp)
 
+C Parameters passed.
+      CHARACTER*(*) prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
+      CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
+      integer index   ! current index
+      integer idindex ! default index
+      integer nhelp   ! number of help lines to display
+
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       character h*72
       common/pophelp/h(60)
       LOGICAL SELECT
-      CHARACTER*(*) prompt,title,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
-      CHARACTER*(*) HOPT,IOPT,JOPT,KOPT,LOPT
 
       DIMENSION VERT(16)
       CHARACTER VERT*48,KEY*1,prompt2*36,outs*124
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
 C Generate default help text, clear local menu string and remember
 C the incomming index.
@@ -2635,7 +2653,10 @@ C Number of actual items displayed.
 C Display the menu, if in graphic mode pass display width.
       call usrmsg(PROMPT,PROMPT2,'-')
       if(MMOD.EQ.8)then
-        call VWMENU(title,VERT,MVERT,0,0,ISTRW+2,irpx,irpy,ivert)
+        impx=0
+        impy=0
+        iw=ISTRW+2
+        call VWMENU(title,VERT,MVERT,impx,impy,iw,irpx,irpy,ivert)
       else
         CALL EMENU(title,VERT,MVERT,IVERT)
       endif
@@ -2845,10 +2866,14 @@ C and the messages will appear in a pop-up dialogue box.
       SUBROUTINE EASKATOG(MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT,
      &  IWHICH,NHELP)
 
+C Parameters passed.
+      CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
+      integer iwhich  ! select passed back
+      integer nhelp   ! number of lines of help to display
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      CHARACTER*(*) MSG1,MSG2,AOPT,BOPT,COPT,DOPT,EOPT,FOPT,GOPT
       CHARACTER ANS*2,MSG3*124,H*72,head*12,outs*124
       character prompt*144
 
@@ -3647,6 +3672,14 @@ C INO is the number of the item chosen.
       CHARACTER*(*) NAME,ITEMS(NITMS)
       CHARACTER*80 tmpa
       logical odd
+      integer irpx,irpy
+
+C To conform to Fortran -> C passing conventions on 32bit and 64bit
+#ifdef OSI
+      integer impx,impy
+#else
+      integer*8 impx,impy
+#endif
 
       tmpa='                                                          '
 
@@ -3671,7 +3704,9 @@ C Bitmapped screen :  do calls for raster menu, 0,0 are passed
 C to define std upper right position, IRPX,IRPY not used.
         irpx=0
         irpy=0
-        CALL EWMENU(NAME,ITEMS,NITMS,0,0,IRPX,IRPY,INO)
+        impx=0
+        impy=0
+        CALL EWMENU(NAME,ITEMS,NITMS,impx,impy,IRPX,IRPY,INO)
         return
       else
         IF(INO.GE.-1)GO TO 20
@@ -3762,6 +3797,14 @@ C items passed in call to vwmenu.
       SUBROUTINE EWMENU(name,items,nitms,impx,impy,irpx,irpy,ino)
       character*(*) name, items(*)
       character itypes*40
+      integer irpx,irpy
+
+C To conform to Fortran -> C passing conventions on 32bit and 64bit
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
       iw=LEN(items(1))
       call VWMENU(name,items,nitms,impx,impy,iw,irpx,irpy,ino)
@@ -3773,6 +3816,14 @@ C VWMENU: Is the binding to C function for menu dialogue.  It
 C allows the string widths to be variable widths.
       SUBROUTINE VWMENU(name,items,nitms,impx,impy,iw,irpx,irpy,ino)
       character*(*) name, items(*)
+      integer irpx,irpy
+
+C To conform to Fortran -> C passing conventions on 32bit and 64bit
+#ifdef OSI
+      integer impx,impy,iw
+#else
+      integer*8 impx,impy,iw
+#endif
 
 C Fill the help string buffer (need to pass NHELP).
       NHELP=20
@@ -5064,8 +5115,10 @@ C ITPPSW current view - perspective/plan/south/west
      &            'Sep','Oct','Nov','Dec'/
 #ifdef OSI
       integer ivt2,ivt3,ivt4  ! for use with viewtext
+      integer ICPMOD          ! passed from tchild
 #else
       integer*8 ivt2,ivt3,ivt4  ! for use with viewtext
+      integer*8 ICPMOD          ! passed from tchild
 #endif
 
 C If not in graphic mode return.
@@ -5380,6 +5433,7 @@ C ITPPSW current view - perspective/plan/south/west
       character aopt*32,bopt*32,copt*32,dopt*32,eopt*32,fopt*32
       character gopt*32,hopt*32,iopt*32,jopt*32,kopt*32,lopt*32
       CHARACTER head*19
+      integer IW  ! for radio button
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
@@ -5575,6 +5629,7 @@ C Allow this selection by text string.
 C Hilight control.
         h(1)='Display of surfaces can be limited to surfaces which'
         h(1)='match some filter. '
+        IW=1
         CALL EASKATOG('Highlight choices: ',' ','normal','composition',
      &    'opaq:transp','partial attrib','continue ?',' ',' ',IW,2)
         ITHLS=IW-1

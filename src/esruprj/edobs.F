@@ -65,6 +65,7 @@ C LPRFDB,IPRODB (for event profile database)
       logical silent  ! to signal quiet dependency resolution
       integer llbm,llbn  ! for length of block material and name
       logical havesaved  ! to signal zone file written
+      integer IW  ! for radio button
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -456,6 +457,7 @@ C Rotation choices.
 
 C +- Obstruction.
         h(1)='Use this to add / delete / copy obstructions. '
+        IW=1
         CALL EASKATOG('Modify obstruction list:',' ',
      &    'add','delete','copy','continue',' ',' ',' ',IW,1)
         IF(IW.EQ.2)THEN

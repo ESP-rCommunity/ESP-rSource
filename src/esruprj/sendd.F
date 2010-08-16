@@ -397,6 +397,7 @@ C SDDEF004 - Operations distribution definition.
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
 
       CHARACTER H*72
+      integer IRT  ! for radio button
 
 C << contextual help should be added >>
 

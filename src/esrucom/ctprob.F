@@ -1929,6 +1929,7 @@ C MEDIT is ??
       INTEGER SPMTYP,SSLINK1,SSLINK2
       REAL SPMSUP,WCONCA(MT)
       LOGICAL OK,DOK,EDIT
+      integer IW  ! for radio button
 
       IF(MEDIT.NE.0)THEN
         EDIT=.TRUE.
@@ -2043,6 +2044,7 @@ C << to be done - return data to previous value before exit >>
 C Ask for concentration of this contaminant at all internal airpoints
         H(1) = 'You can also set the initial contaminant concentrations'
         H(2) = 'for each node separately by choosing no'
+        IW=1
         CALL EASKATOG('Is initial conc at each node equal to ambient?',
      & ' ','yes','no','default (yes)',' ',' ',' ',' ',IW,NHL)
         IF(IW.EQ.1.OR.IW.EQ.3)THEN

@@ -74,6 +74,7 @@ C SNAPSH is a logical flag to request variation in header.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER RSNAME*40
       CHARACTER*3 NMTHNM(12)
+      integer IWM,ihd  ! for radio buttons
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -713,6 +714,7 @@ C Toggle delimeter.
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
         H(7) ='  tagged - marked up data'
+        IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
      &    'continue',' ',IWM,7)
@@ -733,6 +735,7 @@ C Display help messages.
 
 C Menu help text.
         H(1)='Information on each report is provided.'
+        ihd=1
         call easkatog(' ','Help options:','overview','summary stats',
      &   'frequency table','energy balances','detailed stats',
      &   'monthly gain loss','cancel',ihd,1)

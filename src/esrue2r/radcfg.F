@@ -325,6 +325,7 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
       dimension VERT(35)
 
       LOGICAL SELECT,delzone,cpyzone,modscene
+      integer IW  ! for radio button
 
       integer irif ! loop variable for more than one rif per scene
       
@@ -484,6 +485,7 @@ C Allow a scene to be added or deleted.
         IF(MODE.EQ.'M'.OR.MODE.EQ.'m')THEN
           H(1)='As with other entities a standard set of add/delete'
           H(2)='and copy functions is provided. '
+          IW=1
           CALL EASKATOG(' ','Action: ','add scene','delete scene',
      &      'copy scene','cancel',' ',' ',' ',IW,2)
           if(IW.EQ.1)then

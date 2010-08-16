@@ -199,6 +199,7 @@ C in the current model. A -1 means not applicable
       integer iercl  ! error state returned for scanning climate list.
       integer llbm,llbn  ! string lengths for obstructions
       integer ivz        ! index of current zone in list
+      integer ins2,ins3  ! for radio buttons
 
       character*10 wkd1, wkd2
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -629,12 +630,14 @@ C << mlcmatch not yet used >>
 
         H(1)='You may filter for surfaces which face the outside,'
         H(2)='partitions (internal) etc. '
+        ins2=1
         call EASKATOG(' Second filter--surface contiguity:',' ',
      &      'external','similar','constant','partitions','ground',
      &      'adiabatic','any contiguity',ins2,2)
 
         H(1)='You may filter for surfaces which have a particular'
         H(2)='orientation. '
+        ins3=1
         call EASKATOG(' Third filter--surface orientation:',' ',
      &      'vertical','sloped','horizontal up','horizontal down',
      &      'any horizontal','any orientation',' ',ins3,2)

@@ -1253,6 +1253,7 @@ C Flag noting whether casual gain periods are currently sorted.
       real val,x1,y1    ! type for passed parameters
       integer inpic     ! type for passed parameters
       integer iuf       ! file unit type
+      integer IRT,irop  ! for radio buttons
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD     ! passed from tchild
@@ -1385,6 +1386,7 @@ C different list of options for X11 and GTK.
         h(3)='surfaces matching some criteria (e.g. vertical and'
         h(4)='opaque) to be assigned a particular attribute.'
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        IRT=1
         if(iglib.eq.2)then
           call EASKATOG(' Global action?',' ',
      &      'transform','rotate','attribute','search & replace',
@@ -1981,6 +1983,7 @@ C in the copied zone).
 C Ask if user wants to copy or point to other zone files.
 C Construction and zone TMC file.
           call FINDFIL(LTHRM(IC),XST)
+          irop=1
           if(XST)then
             h(1)='You can have the new zone constructions based'
             h(2)='on the source zone (by copying the file)'
@@ -2108,6 +2111,7 @@ C                  write(6,*) DFILE
 C Operations file. If source has a file offer options to copy or
 C point to it, otherwise offer option to browse for an existing file.
           call FINDFIL(LPROJ(IC),XST)
+          irop=1
           if(XST)then
             h(1)='You can have the new zone operations based initially'
             h(2)='on the source zones operations (by copying the file)'
@@ -2202,6 +2206,7 @@ C See if the source zone has a viewfactor file.
             h(3)='point to the source zone file (use care because'
             h(4)='the two zones may change shape) or browse available '
             h(5)='files or continue. '
+            irop=1
             CALL EASKATOG(
      &        'Source zone has a view factor file.',
      &        'Options:','copy file','point to file',
@@ -2267,6 +2272,7 @@ C See if the source zone has a casual gain control file.
             h(2)='the source zone (by copying the file) or you'
             h(3)='can point to the source zone file or browse'
             h(4)='available files.'
+            irop=1
             CALL EASKATOG(
      &        'Source zone has a CG ctl file.',
      &        'Options:','copy file','point to file',
@@ -2330,6 +2336,7 @@ C See if the source zone has a convection regime file.
             h(2)='the source zone (by copying the file) or you'
             h(3)='can point to the source zone file or browse  '
             h(4)='available files or continue.'
+            irop=1
             CALL EASKATOG('Source zone has a CC file.',
      &        'Options:','copy file','point file',
      &        'browse file','cancel',' ',' ',' ',irop,4)

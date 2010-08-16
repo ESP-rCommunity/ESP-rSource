@@ -182,6 +182,10 @@
 *cfg	/usr/esru/esp-r/training/office/cfg/office_sum.cfg
 *root	/usr/esru/esp-r/training/office
 *item
+*name	comfort in hospital rooms with radiant pannel heating
+*cfg	/usr/esru/esp-r/training/rad_room_heat/cfg/rad_rooms_heat.cfg
+*root	/usr/esru/esp-r/training/rad_room_heat
+*item
 *group	real projects
 *help	These models were built for use in consultancy/research projects.
 *item
@@ -198,6 +202,13 @@
 *root	/usr/esru/esp-r/training/office_vent
 *item
 *label	___ Models with a special focus:
+*item
+*group	training workshops
+*help	A set of models associated with ESP-r Cookbook.
+*item
+*name	Office for a doctor
+*cfg	/usr/esru/esp-r/training/office_doctor/cfg/office_for_doctor.cfg
+*root	/usr/esru/esp-r/training/office_doctor
 *item
 *group	network ventilation
 *help	These models demonstrate the nodal network approach to flow modelling.
@@ -349,13 +360,6 @@
 *name	College La Vanoise, Modane, France (lightshelves and atrium)
 *cfg	/usr/esru/Projects/Dl-e/Vanoise/Cfg/mod_as_is.cfg
 *root	/usr/esru/Projects/Dl-e/Vanoise
-*item
-*group	acoustics
-*help	A set of models focusing on acoustic performance.
-*item
-*name	Energie Ouest Suisse building, atrium acoustic analysis
-*cfg	/usr/esru/esp-r/training/acoustic/EOS_atrium/cfg/EOS_atrium.cfg
-*root	/usr/esru/esp-r/training/acoustic/EOS_atrium
 *item
 *group	air movement
 *help	These models demonstrate ESP-r's CFD capabilities.

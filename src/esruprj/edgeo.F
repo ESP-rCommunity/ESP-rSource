@@ -2743,6 +2743,9 @@ C IVA array of selections is returned.
         RETURN
       ENDIF
 
+C Debug.
+C      write(6,*) 'pickssur ',izone,NP,act,IVA,iaplic,ilimit,IER
+
  43   if(act.eq.'s'.or.act.eq.'S')then
         h(1) ='A shading analysis calculates the time varying patterns'
         h(2) ='of shading on external zone surfaces. You must select'
@@ -2823,8 +2826,7 @@ C If copy action set inpic to ilimit otherwise set to nzsur().
 C Loop through each surface in the zone and make up display list based on the
 C attributes of the surface. For shading or insulation mark surfaces
 C which are not applicable.
-C        DO 11 I=1,INPIC
-        DO 11 I=1,NZSUR(IZONE)
+        DO 11 I=1,INPIC
          ioc=IZSTOCN(izone,i)
          if(act.eq.'s'.or.act.eq.'S')then
            if(SSOTHER(ioc,1)(1:5).eq.'EXTER')then
@@ -4038,6 +4040,7 @@ C     subset of choices can be presented.
       character guesstype*24  ! for context of surface addition
       dimension iuseopt(32)
       character*32 useopt(23)
+      integer IRT  ! for radio button
 
 C Set local working variables.
       is=isur
@@ -4436,6 +4439,7 @@ C Do not need second tag if generating notional model
         h(16)='applied to the width of the opening. '
         h(17)=' '
         h(18)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','DOOR air leakage:',
      &    'closed','undercut','open','bidirectional',
      &    'cancel',' ',' ',IRT,18)
@@ -4477,6 +4481,7 @@ C Do not need second tag if generating notional model
         h(16)='applied to the width of the opening. '
         h(17)=' '
         h(18)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','FICT surface air leakage:',
      &    'closed','crack','open','bidirectional',
      &    'cancel',' ',' ',IRT,18)
@@ -4530,6 +4535,7 @@ C Do not need second tag if generating notional model
         h(12)='might be applied (to vary the opening area) '
         h(13)=' '
         h(14)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','FRAME surface air leakage:',
      &    'closed','crack','vent','cancel',
      &    ' ',' ',' ',IRT,14)
@@ -4638,6 +4644,7 @@ C Do not need second tag if generating notional model
         h(18)='applied to the width of the opening. '
         h(19)=' '
         h(20)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','WINDOW surface air leakage:',
      &    'closed','crack','open','sash ','bidirectional',
      &    'cancel',' ',IRT,20)
@@ -4895,6 +4902,7 @@ C Do not need second tag if generating notional model
         h(16)='applied to the width of the opening. '
         h(17)=' '
         h(18)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','DOOR air leakage:',
      &    'closed','undercut','open','bidirectional',
      &    'cancel',' ',' ',IRT,18)
@@ -4931,6 +4939,7 @@ C Do not need second tag if generating notional model
         h(16)='applied to the width of the opening. '
         h(17)=' '
         h(18)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','FICT surface air leakage:',
      &    'closed','crack','open','bidirectional',
      &    'cancel',' ',' ',IRT,18)
@@ -4974,6 +4983,7 @@ C Do not need second tag if generating notional model
         h(12)='might be applied (to vary the opening area) '
         h(13)=' '
         h(14)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','FRAME surface air leakage:',
      &    'closed','crack','vent','cancel',
      &    ' ',' ',' ',IRT,14)
@@ -5052,6 +5062,7 @@ C Do not need second tag if generating notional model
         h(18)='applied to the width of the opening. '
         h(19)=' '
         h(20)='Cancel does what it says. '
+        IRT=1
         CALL EASKATOG(' ','WINDOW surface air leakage:',
      &    'closed','crack','open','sash ','bidirectional',
      &    'cancel',' ',IRT,20)
@@ -5100,6 +5111,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       CHARACTER VERT*33,KEY*1,H*72,head*28,HOLD*36
       character outs*124,headv*48
       logical anotherone  ! to signal that another point will be requested
+      integer IRT  ! for radio button
 #ifdef OSI
       integer iix,iiy
 #else
@@ -6127,6 +6139,7 @@ C Alter vertex list by deleting/ copy / replicate / editing.
         h(14)='clicking on the wire-frame image. '
         h(15)=' '
         h(16)='A cancel request leaves the model unchanged. '
+        IRT=1
         CALL EASKATOG(' ','Vertex operations:','add','delete','copy',
      &    'replicate','edit several','cancel',' ',IRT,14)
         if(IRT.eq.1)then
@@ -6344,6 +6357,7 @@ C Make use of VERINFO to display the current vertex surface connections.
       logical newgeo  ! to use for testing if new/old geometry file.
       integer ifoc    ! local variable for current surface index
       integer iwhich  ! for the worst off point (warped surface check)
+      integer iadds   ! for use in addsur calls
       logical close   ! for checking if warp distance is zero
       logical foundit ! if isolation of warped vertex was successful
       real ZZZ,ofby   ! the distance worst point is warped
@@ -6984,11 +6998,13 @@ C the mouse click option.
         if(IRT.eq.1)then
           call tstamp('>','PRJ: insert surface via vertex')
           iopt=0     ! offer editing box and mouse click option.
-          CALL ADDSUR(ITRC,ICOMP,0,'A','V',iopt,IER)
+          iadds=0
+          CALL ADDSUR(ITRC,ICOMP,iadds,'A','V',iopt,IER)
         elseif(IRT.eq.2)then
           call tstamp('>','PRJ: insert surface via vertex')
           iopt=1     ! offer mouse click directly
-          CALL ADDSUR(ITRC,ICOMP,0,'A','V',iopt,IER)
+          iadds=0
+          CALL ADDSUR(ITRC,ICOMP,iadds,'A','V',iopt,IER)
         elseif(IRT.eq.3)then
           CALL EPMENSV
           call tstamp('>','PRJ: insert surface into another')
@@ -7016,12 +7032,14 @@ C << ?? make use of rsname etc in interactive use?? >>
      &      rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
         elseif(IRT.eq.4)then
           call tstamp('>','PRJ: copy local surfaces')
-          iopt=2      ! offer copy of local surfaces 
-          CALL ADDSUR(ITRC,ICOMP,0,'C','V',iopt,IER)
+          iopt=2      ! offer copy of local surfaces
+          iadds=0
+          CALL ADDSUR(ITRC,ICOMP,iadds,'C','V',iopt,IER)
         elseif(IRT.eq.5)then
           call tstamp('>','PRJ: copy another zone surfaces')
           iopt=1      ! offer mouse click directly ??
-          CALL ADDSUR(ITRC,ICOMP,0,'C','V',iopt,IER)
+          iadds=0
+          CALL ADDSUR(ITRC,ICOMP,iadds,'C','V',iopt,IER)
         elseif(IRT.eq.6.or.IRT.eq.9)then
 
 C Get vertical rectangular surface orgin.

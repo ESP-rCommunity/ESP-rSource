@@ -66,6 +66,7 @@ C with the db at simulation time.
       integer isourcecount  ! to help with sourcename list
       integer nboftmc       ! number of insolation sources returned from findtmc
       integer itu           ! for reporting
+      integer ipick         ! for radio button
 
       logical ok,dok
 
@@ -186,6 +187,7 @@ C Present options menu.
       h(9)='After calculations are completed, during a normal exit'
       h(10)='from the ish module a backup ASCII file will normally be'
       h(11)='created. If it is not then used the export option. '
+      ipick=1
       call easkatog(' ','Options:','list','edit','export','import',
      &              'cancel',' ',' ',ipick,11)
 

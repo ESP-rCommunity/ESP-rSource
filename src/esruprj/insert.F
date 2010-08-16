@@ -84,6 +84,7 @@ C << what about including common zndata in this manipulation? >>
       integer foundone  ! index of a shared vertex
       integer foundonepos ! position of shared vertex in parent jvn array
       integer iotherzone ! the other zone needing to be updated
+      integer ipkany,izc ! for use with pickssur
 
       dimension X1(MV),Y1(MV),Z1(MV),jvn1(MV),XT(MV),YT(MV),ZT(MV)
       dimension jvn2(MV)  ! dummy array for sorti call
@@ -96,6 +97,7 @@ C << what about including common zndata in this manipulation? >>
       character HOLD*72,hold64*64,holds*36,t248*248
       character guesstype*24  ! for context of surface addition
       character myparentis*12 ! to remember the parent of a surface.
+      integer IRT  ! for radio button
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
@@ -542,10 +544,13 @@ C Find out which other zone to copy from. Save the current state of the
 C menu so that can return to where we were. Also connected surface.
  99       CALL EPMENSV
           CALL EASKGEOF('Select source zone to copy from:',
-     &      CFGOK,IZ,'-',IER)
+     &      CFGOK,IZC,'-',IER)
+
+C Debug.
+C          write(6,*) 'copy from zone ',izc
           CALL EPMENRC
-          if(iz.eq.icomp)goto 99
-          if(iz.eq.0)return
+          if(izc.eq.icomp)goto 99
+          if(izc.eq.0)return
           same=.false.
         elseif(ISCOPT.eq.2)then
           same=.true.
@@ -571,7 +576,7 @@ C Reset all surface lines in donor zone.
           CALL INLNST(1)
           itsnm=0
           nzg=1
-          nznog(1)=IZ
+          nznog(1)=IZC   ! alter focus to the other zone
           izgfoc=ICOMP
           CALL ADJVIEW(IER)
           MODIFY=.TRUE.
@@ -587,7 +592,8 @@ C the selections via array ispk.
         if(same)then
           CALL EPMENSV
           ilimit=iposbcp
-          call pickssur(icomp,inpick,'c',ispk,0,ilimit,ier)
+          ipkany=0
+          call pickssur(icomp,inpick,'c',ispk,ipkany,ilimit,ier)
           CALL EPMENRC
           if(inpick.eq.0)then
             return
@@ -595,7 +601,8 @@ C the selections via array ispk.
         else
           CALL EPMENSV
           ilimit=iposbcp
-          call pickssur(iz,inpick,'c',ispk,0,ilimit,ier)
+          ipkany=0
+          call pickssur(izc,inpick,'c',ispk,ipkany,ilimit,ier)
           CALL EPMENRC
           if(inpick.eq.0)then
             return
@@ -604,7 +611,7 @@ C the selections via array ispk.
 
 C Read the other zone and put selected surface data into temp storage.
         if(.NOT.same)then
-            call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
+          call georead(IFIL+1,LGEOM(IZC),IZC,0,iuout,IER)
           endif
         npick=1
   191   continue
@@ -612,7 +619,7 @@ C Read the other zone and put selected surface data into temp storage.
         if(same)then
           write(outs,'(2a)') ' Copying attributes of ',SNAME(ICOMP,IS)
         else
-          write(outs,'(2a)') ' Copying attributes of ',SNAME(IZ,IS)
+          write(outs,'(2a)') ' Copying attributes of ',SNAME(IZC,IS)
         endif
         call usrmsg(outs,' ','-')
         NVER1=NVER(IS)
@@ -630,8 +637,8 @@ C << surface.
           write(SNAMED,'(a,a)') 'x',SNAME(ICOMP,IS)(1:11)
           write(SNAME1,'(a)') SNAME(ICOMP,IS)(1:12)
         else
-          write(SNAMED,'(a,a)') 'x',SNAME(IZ,IS)(1:11)
-          write(SNAME1,'(a)') SNAME(IZ,IS)(1:12)
+          write(SNAMED,'(a,a)') 'x',SNAME(IZC,IS)(1:11)
+          write(SNAME1,'(a)') SNAME(IZC,IS)(1:12)
         endif
         call snamdup(SNAME1,icomp,0,nameok)
         if(.NOT.nameok)then
@@ -692,6 +699,7 @@ C Generate combined name for dialog.
         H(6)=' Do several operations to the surface.'
         H(7)=' Continue with no action.'
         if(.NOT.DDOK)then
+          IRT=1
           CALL EASKATOG(' Actions to take on the new surface :',' ',
      &      'shift along normal','transform xyz','rotate','invert',
      &      'combination','continue ?',' ',IRT,7)
@@ -990,10 +998,10 @@ C copying the next surface.
             endif
             call edisp(iuout,' getting donor zone info...')
 
-            call eclose(gversion(IZ),1.1,0.01,newgeo)
-              call georead(IFIL+1,LGEOM(IZ),IZ,0,iuout,IER)
+            call eclose(gversion(IZC),1.1,0.01,newgeo)
+            call georead(IFIL+1,LGEOM(IZC),IZ,0,iuout,IER)
             write(outs,'(3a)') ' Repeat transforms for ',
-     &        SNAME(IZ,ispk(npick)),' ?'
+     &        SNAME(IZC,ispk(npick)),' ?'
           else
             call edisp(iuout,' updating current zone...')
             call eclose(gversion(icomp),1.1,0.01,newgeo)

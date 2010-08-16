@@ -992,6 +992,7 @@ C Passed parameters.
 C Local variables for gas materials.
       real gapcnd,visco,gapden,prandtl,gapsht
       dimension gapcnd(4),visco(4),gapden(4),prandtl(2),gapsht(2)
+      integer jsur   ! for radio button
 
 C If index is outwith range just return.
       if(index.gt.0.and.index.le.matdbitems)then
@@ -1346,6 +1347,7 @@ C Offer to toggle between different types.
         h(12)=' '
         h(13)=' Data (viscosity, conductivity, density, CP at'
         h(14)=' 4 temperature points.'
+        jsur=1
         CALL EASKATOG('Material options:',message,
      &    'legacy opaque','opaque','transparent',
      &    'gas data+correction ','gas data @4 temps','leave un-changed',
@@ -1493,6 +1495,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
       REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)
+      integer IW   ! for radio button
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1703,6 +1706,7 @@ C Manage the list of constructions.
         h(8)='of the room the carpet is on the inside face and from the'
         h(9)='point of view of the floor void the carpet should be on '
         h(10)='the outside face. '
+        IW=1
         call easkatog('Constructions options:',' ',
      &    'add (at end of list)','delete','copy','copy & invert',
      &    'continue',' ',' ',IW,10)

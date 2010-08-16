@@ -70,6 +70,7 @@ C Default esp-r distribution path.
       logical OK,DOK,XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical moddb,browse,modcon,QUIET
       logical haveconstr
+      integer ihd  ! for radio button
 
       character H*72,path*72
       character*72 ITEMS(15)
@@ -334,6 +335,7 @@ C Manage miscellaneous componens database.
 
 C Menu help text.
         H(1)='Information on each databases is provided.'
+        ihd=1
         call easkatog(' ','Help options:','overview','climate',
      &   'materials','constructions','optics','plant','cancel',ihd,1)
         if(ihd.eq.1)then

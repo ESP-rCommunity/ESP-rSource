@@ -88,6 +88,7 @@ C TMC common block:
       CHARACTER*72 DLCGCIN,LCFGF
       CHARACTER info*18,cgcdesc*64,brw*8
       INTEGER IX,IY,IZ,KSTR
+      integer IRT  ! for radio button
 #ifdef OSI
       integer iix,iiy
 #else
@@ -685,6 +686,7 @@ C Control type.
         H(6)='* Dimming   - three dimming control algorithms are'
         H(7)='              supported'
         H(8)='* Probab    - user probability switching algorithm'
+        IRT=1
         call EASKATOG(' Control type:',' ',
      &    'Alway On','Alway Off','On-Off','Step','Dimming','Probab',
      &    'cancel',IRT,8)
@@ -708,6 +710,7 @@ C Control type.
           H(9)='  algorithm requiring night-time and day-time '
           H(10)='  calibration of photocell. Usually photocell is'
           H(11)='  located at ceiling.'
+          IRT=1
           call EASKATOG(' Dimming control type:',' ',
      &        'Ideal','Integral reset','Close loop',
      &        'cancel',' ',' ',' ',IRT,11)
@@ -796,7 +799,9 @@ C Calculation type.
         H(31)='  daylight coeff. THIS IS AN EXPERT LEVEL AND CAN BE'
         H(32)='  COMPUTATIONALY INTENSIVE!'
         CALL PHELPD('cgs calct type',32,'photocell   ',0,0,IER)
+
         h(1)='See the previously displayed summary. '
+        IRT=1
         call EASKATOG(' Calculation type:',' ',
      &      'Analyt DF','User DF','Extern','Coupling','DayCoeff',
      &      'cancel',' ',IRT,1)

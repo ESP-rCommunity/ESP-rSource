@@ -481,6 +481,7 @@ C Type casting (all varaiables and arrays cast explicitly)
 
       CHARACTER ITEM*24,IELLAB*64,IESLAB*16,IEULAB*4,DELIM*1,
      &TG*1,XFILE*144,H*72,HEADER*32,VALUES*20
+      integer IWM  ! for radio button
 
 C Firstly clear all existing selections and initialise variables.
       CALL EDISP (IUOUT,' ')
@@ -839,6 +840,7 @@ C Toggle delimeter.
             H(5) ='  comma separator (for excel)'
             H(6) ='  tab separator (for excel)'
             H(7) ='  tagged - marked up data'
+            IWM=1
             CALL EASKATOG('Delimeter to use between columns of data:',
      &        ' ','normal spaces','single space','tab','comma','tagged',
      &        'continue',' ',IWM,7)

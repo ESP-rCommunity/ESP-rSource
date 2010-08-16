@@ -716,6 +716,7 @@ C LAPRES,IAPRES (for window pressure databases)
       CHARACTER LAPROB*72,t72*72,t144*144
       CHARACTER PCITM(35)*42,KEY*1,MOD*1
       LOGICAL MODIFY,MODLEN,MODBND,OK,dok
+      integer IVV  ! for radio button
 
       CALL USRMSG(' ','Input/edit node data: ','-')
 
@@ -807,6 +808,7 @@ C Node type
         h(22)='wind velocity, wind direction and a pressure '
         h(23)='coefficient, Cp, (assigned based on the orientation and'
         h(24)='geometry of the surface): P=f(V,D,Cp).'
+        IVV=1
         CALL EASKATOG(prt,' ',
      &  'internal:unknown','internal:known','boundary:known',
      &  'boundary:wind induced','continue',' ',' ',IVV,24)

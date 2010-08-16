@@ -114,6 +114,7 @@ C Name of current application
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+      integer IWM     ! for radio button
 
 C Initialize global common data.
       call ezero
@@ -507,6 +508,7 @@ C Toggle delimeter.
         H(4) ='  single space between columns'
         H(5) ='  comma separator (for excel)'
         H(6) ='  tab separator (for excel)'
+        IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','continue',' ',
      &    ' ',IWM,6)

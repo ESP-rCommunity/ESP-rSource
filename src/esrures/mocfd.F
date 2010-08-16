@@ -328,6 +328,7 @@ C MCFDM - define the parameters for the visualization of results.
 
       CHARACTER H*72,KEY*1,ITEM(35)*26,outs*124
       character LBITrt*12,t12*12,t24*24
+      integer IWM,IWE  ! for radio buttons
 
 C Set vector colour option to velocity and temperature only.
       IMOPTS=0
@@ -511,6 +512,7 @@ C Add new image definition.
           h(1)='Please supply the direction from which the view is'
           h(2)='made e.g. Chose North if you wist a view from the North'
           h(3)='looking South.'
+          IWM=1
           CALL EASKATOG('View direction:',' ','South','East',
      &                    'North','West','Top','Bottom','  ',IWM,3)
           ISURvw(ICOMP,NV)=IWM
@@ -614,6 +616,7 @@ C be deleted or copied, respectively.
         NV=INO-MHEAD
  200    write (outs,'(a,a,a)') 'For image definition ',
      &        LBITrt(ICOMP,NV)(1:lnblnk(LBITrt(ICOMP,NV))),' edit:'
+        IWE=1
         call EASKATOG(outs,' ','Name','View dir & layer','Resolution',
      &           'Customise arrows','Continue','  ','  ',IWE,3)
         if (IWE.eq.1) then
@@ -634,6 +637,7 @@ C View direction and layer.
           h(1)='Please supply the direction from which the view is'
           h(2)='made e.g. Chose North if you wist a view from the North'
           h(3)='looking South.'
+          IWM=1
           CALL EASKATOG('View direction:',' ','South','East',
      &                    'North','West','Top','Bottom','  ',IWM,3)
           ISURvw(ICOMP,NV)=IWM

@@ -1334,6 +1334,7 @@ C      integer lnblnk  ! function definition
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY),ix,iy
+      integer IW  ! for radio button
 
 C Initial menu entry setup.
       idtyp = 1
@@ -1509,6 +1510,7 @@ C Add delete copy period or import from another zone.
         H(33)=' b) preserve the volume of air implied by the ac/h in'
         H(34)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
         H(35)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
+        IW=1
         CALL EASKATOG(' ','Options (see help):',
      &    'add period','delete period','copy period',
      &    'import from other zone','import pattern','cancel',' ',IW,35)
@@ -1766,6 +1768,7 @@ C of one signals m3/h and a value of 2 signals m3/s.
       character afact*8,iflow*8,vflow*8,outs*124,sfile*72,snpfile*72
       logical XST,closezero,closeone,closetwo
       integer KSTR(MDTY)
+      integer IW   ! for radio button
 
 C Return if the version is not three.
       if(ip3ver(icomp).lt.3)then
@@ -1949,6 +1952,7 @@ C Add delete copy period or import from another zone.
         H(33)=' b) preserve the volume of air implied by the ac/h in'
         H(34)='    the source zone, e.g. 1.5 ac/h in a 50m^3 source'
         H(35)='    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
+        IW=1
         CALL EASKATOG(' ','Options (see help):',
      &    'add period','delete period','copy period',
      &    'import from other zone','import pattern','cancel',' ',IW,35)
@@ -3406,6 +3410,7 @@ C How many of each gain type is there each zone/gaintype/daytype.
      &               loadmixed(mcom,7,MDTY)
       logical browse,ok,silent,dok,XST
       logical sorted,modopr
+      integer ICGTS,IW  ! for radio buttons
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
       character lodlabel*6,typstr*8,H*72
@@ -3418,7 +3423,7 @@ C   absolute W in source zone in destination zone which has a
 C   different base area. e.g. 123W in source zone of 2.3m^2 becomes
 C   267W in a 5.0m^2 base zone.
       character act*8,iwatt*8
-      integer kstr,ILLEN,IW,IQ,IX,I,IDU,IDT,IOPT,ICGTS,IDTYP
+      integer kstr,ILLEN,IQ,IX,I,IDU,IDT,IOPT,IDTYP
       dimension kstr(MDTY),ILLEN(MDTY)
 
 C If not browsing, take the information from loadcnt
@@ -3680,6 +3685,7 @@ C If different period, update the menu length.
         h(3)='studies on profiles which have been imported).'
         H(4)='If you are not scaling gains choose all gains and then'
         H(5)='choose a factor of 1.0'
+        ICGTS=1
         CALL EASKATOG('Apply scaling factor to which casual gain type?',
      &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &     'All gain types','Cancel',' ',' ',ICGTS,5)
@@ -3750,6 +3756,7 @@ C Add delete copy period or import full set of casual gains.
         H(23)='    destination zone base areas e.g. 123W in source'
         H(24)='    zone of 2.3m^2 becomes 267W in a 5.0m^2 base area'
         H(25)='    zone.'
+        IW=1
         CALL EASKATOG('Casual gain period options:','(see help)',
      &    'add period','delete period','copy period',
      &    'import from other zone','import pattern ','cancel',' ',IW,25)

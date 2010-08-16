@@ -7130,6 +7130,7 @@ int		len_title;
              xbox(menubx,fg,white,BMEDGES|BMCLEAR);	/* clear menu box */
              *ino = (long int) i + (long int) 1;  /* compensate for c starting at zero */
              *uresp = (long int) 0;
+/* debug     fprintf(stderr,"click %s %d %d\n",m_list[i],i,*ino); */
    	     break;
            }
          } else if (!xboxinside(gmenubx,x,y)){   /* outside menu - check aux menu */
@@ -7214,6 +7215,7 @@ int		len_title;
                 no_valid_event = FALSE;
                 *ino = (long int) index + (long int) 1;   /* add 1 to compensate for c starting at zero */
                 *uresp = (long int) 0;
+/* debug        fprintf(stderr,"key %s %d %d\n",m_list[index],index,*ino); */
                 iy = menubx.b_top + ((index + 1) * (f_height+2)) + 5;
                 hl_box.b_bottom = iy + 3;
                 hl_box.b_top = hl_box.b_bottom - (f_height+4);

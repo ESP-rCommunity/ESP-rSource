@@ -74,6 +74,7 @@ C Pre calculated data (filtered).
       CHARACTER*6 lodlabel
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
+      integer IOT  ! for radio button
 
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
@@ -195,6 +196,7 @@ C up hash list of zone:time:occupancy.
         H(16)='within the zone operations file the first Type is for'
         H(17)='occupants the second Type is lights and the third Type'
         H(18)='is Equipment (small power).'
+        IOT=1
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
      &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,18)
         if (IOT.gt.1.and.IOT.lt.5) then
@@ -380,6 +382,7 @@ C Casual gain type.  Ask user which constitutes occupancy.
         H(3)='list. Type 1 usually represents casual gains from '
         H(4)='people,although any of the three casual gain types can '
         H(5)='be used. '
+        IOT=1
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
      &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,5)
         if (IOT.gt.1.and.IOT.lt.5) then
