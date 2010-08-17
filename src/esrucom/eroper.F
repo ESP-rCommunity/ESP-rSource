@@ -339,15 +339,20 @@ C Generate a brief descrition and proceed acording to control type.
         else
 
 C << put in a loop for each day type >>
-          ctlstr(icomp,1)='unknown flow control   '
-          ctlstr(icomp,2)='unknown flow control   '
-          ctlstr(icomp,3)='unknown flow control   '
+          DO 500 IDTY=1,NBDAYTYPE
+            ctlstr(icomp,IDTY)='unknown flow control   '
+ 500      continue
           goto 1022
         endif
 
-C << put in a loop for each day type >>
-        ctlstr(icomp,2)=ctlstr(icomp,1)  ! set Sat and Sun
-        ctlstr(icomp,3)=ctlstr(icomp,1)
+C << put in a loop for each day type >> ! set remaining day types
+        if (nbdaytype.gt.1) then
+          DO 501 IDTY=2,NBDAYTYPE
+            ctlstr(icomp,IDTY)=ctlstr(icomp,1)
+ 501      continue
+        endif
+c        ctlstr(icomp,2)=ctlstr(icomp,1)  
+c        ctlstr(icomp,3)=ctlstr(icomp,1)
 
         if(ijk.eq.1)goto 202
 

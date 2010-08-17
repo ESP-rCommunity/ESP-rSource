@@ -978,6 +978,8 @@ C << must be revised for multiple day types and periods. >>
 #include "building.h"
 #include "geometry.h"
       common/pophelp/h(60)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
@@ -1003,9 +1005,12 @@ C Flow control browse & editing.
         THI(ICOMP)=100.
         TUP(ICOMP)=0.
         TLO(ICOMP)=0.
-        ctlstr(ICOMP,1)='no control of air flow  '
-        ctlstr(ICOMP,2)='no control of air flow  '
-        ctlstr(ICOMP,3)='no control of air flow  '
+        DO 500 IDTY=1,NBDAYTYPE
+          ctlstr(icomp,IDTY)='unknown flow control   '
+ 500    continue
+c        ctlstr(ICOMP,1)='no control of air flow  '
+c        ctlstr(ICOMP,2)='no control of air flow  '
+c        ctlstr(ICOMP,3)='no control of air flow  '
         return
       endif
 
@@ -1097,6 +1102,12 @@ C << to be done >>
 
       endif
 
+C fill all day types with same control type
+      if (nbdaytype.gt.1) then
+        DO 501 IDTY=2,NBDAYTYPE
+            ctlstr(icomp,IDTY)=ctlstr(icomp,1)
+ 501    continue
+      endif
       H(1)='For temperature control the limit is in degC.'
       H(2)='For wind speed control the limit is in m/s.'
       h(3)=' '
