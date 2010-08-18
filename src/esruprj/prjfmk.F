@@ -988,7 +988,7 @@ C << must be revised for multiple day types and periods. >>
      &             IVH(MCOM),TAH(MCOM)
       common/p3ver/ip3ver(MCOM)
 
-      DIMENSION IVAL(4), IVALS(3), ALT(4),ALTS(3)
+      DIMENSION IVAL(4), IVALS(3), ALT(6),ALTS(3)
       CHARACTER hold*40,outs*80,outs2*80
       CHARACTER ALT*32,ALTS*31,H*72
       LOGICAL OK,DOK
@@ -1018,6 +1018,8 @@ c        ctlstr(ICOMP,3)='no control of air flow  '
       ALT(2)='adjacent zone air temperature  '
       ALT(3)='external air temperature       '
       ALT(4)='wind velocity                  '
+      ALT(5)='ext. air temp. w/ factors      '
+      ALT(6)='ext. and zone temp. w/ factors '
 
       H(1)='Control of air flow can be based on one of the'
       H(2)='following parameters: '
@@ -1026,12 +1028,19 @@ c        ctlstr(ICOMP,3)='no control of air flow  '
       H(5)='* air temperature within another modelled zone;'
       H(6)='* external air temperature;'
       H(7)='* external wind velocity.'
-      H(8)=' '
-      H(9)='Note that thermostatic or wind velocity control'
-      H(10)='applies to all days within a simulation.'
+      H(8)='* external air temp.; use factors to change'
+      H(9)='  infiltration rates given in schedule. Respects'
+      H(10)='  day types and schedule intervals'
+      H(11)='* ext. and zone temp.; use factors to change'
+      H(12)='  infil rates given in schedule. Respects '
+      H(13)='  day types and schedule intervals '
+      H(14)='  Evaluates both amb. and zone temperature '
+      H(15)=' '
+      H(16)='Note that thermostatic or wind velocity control'
+      H(17)='applies to all days within a simulation.'
       IX=1
       CALL EPICKS(IX,IVAL,' ','Air Flow Control Options',
-     &         32,4,ALT,'air flow control',IER,10)
+     &         32,5,ALT,'air flow control',IER,17)
 
       IF(IX.EQ.0) RETURN
       ITCTL(icomp)=IVAL(1)
@@ -1057,17 +1066,21 @@ c        ctlstr(ICOMP,3)='no control of air flow  '
         IMULTI=1
       END IF
       IF(IMULTI.NE.-10)ITCTL(ICOMP)=ITCTL(ICOMP)*IMULTI
-      IF(IMULTI.EQ.-10.AND.ITCTL(ICOMP).LT.4)
+      IF(IMULTI.EQ.-10.AND.ITCTL(ICOMP).LE.6)
      &     ITCTL(ICOMP)=IMULTI-ITCTL(ICOMP)
-      IF(IMULTI.EQ.-10.AND.ITCTL(ICOMP).EQ.4)
-     &     ITCTL(ICOMP)=-ITCTL(ICOMP)
+c      IF(IMULTI.EQ.-10.AND.ITCTL(ICOMP).EQ.5)
+c     &     ITCTL(ICOMP)=-ITCTL(ICOMP)
 
 
 C Generate a brief description.
 C << this does not yet take into account day type >>
       if(ip3ver(icomp).le.2)then
         IY=ITCTL(ICOMP)
-        if(IY.eq.-14)then
+        if(IY.eq.-16)then
+          ctlstr(icomp,1)='inf, ext+zone t, factors'
+        elseif(IY.eq.-15)then
+          ctlstr(icomp,1)='infil, ext db t, factors'
+        elseif(IY.eq.-14)then
           ctlstr(icomp,1)='infil only: wind speed  '
         elseif(IY.eq.-13)then
           ctlstr(icomp,1)='infil only: ext db temp '
@@ -2364,7 +2377,7 @@ C Set vent to zero and increase infiltration.
             call USRMSG('Supply of outside air being treated as',
      &       'infiltration. Updating infiltration flow rate.','W')
             ACIX=ACIX+ACVX
-            ACVX=0
+            ACVX=0.0
             IPTX=0
             TAX=0.0
           endif

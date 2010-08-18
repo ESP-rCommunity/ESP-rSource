@@ -1556,11 +1556,11 @@ c space is accounted for here.
 C Now zone-coupling advection.
 C NB TIA? holds the normalised (to external air temperature)
 C ventilation conductance in case an air flow network exists.
-	CV1=CVVN(ID1,ICOMP,IT1)
-	CV2=CVVN(ID2,ICOMP,IT2)
-	IC2=ICCN(ID2,ICOMP,IT2)
-	TA1=TIAN(ID1,ICOMP,IT1)
-	TA2=TIAN(ID2,ICOMP,IT2)
+        CV1=CVVN(ID1,ICOMP,IT1)
+        CV2=CVVN(ID2,ICOMP,IT2)
+        IC2=ICCN(ID2,ICOMP,IT2)
+        TA1=TIAN(ID1,ICOMP,IT1)
+        TA2=TIAN(ID2,ICOMP,IT2)
         CF=CV1+(TRAT*(CV2-CV1))
         ICF=IC2
         TAF=TA2
@@ -1580,8 +1580,9 @@ C It is controlled. Establish sensed variable.
           IF(IVAL.GT.4)IVAL=IVAL-10
           TX=TFA(ICOMP)
           IF(IVAL.EQ.2)TX=TFA(ICF)
-          IF(IVAL.EQ.3)TX=TF
+          IF(IVAL.EQ.3)TX=TF ! infil only: ext db temp
           IF(IVAL.EQ.4)TX=VF
+          IF(IVAL.EQ.5)TX=TF ! infil, ext db t, factors
           IV=ITCTL(ICOMP)
 
 C Check if infiltration is thermostatically controlled.
@@ -1601,6 +1602,43 @@ C Control on wind.
      &            (TUP(ICOMP)-TLO(ICOMP)))
             ENDIF
             CVIF=ACR*0.33*VOL(ICOMP)
+C ITCTL = -15, factors for CVIF which respect day types and periods defined
+          elseif (ITCTL(ICOMP).EQ.-15) then
+            if (TX.LE.TLO(icomp)) then
+              ! do nothing, i.e. use values from .opr schedule
+            elseif (TX.GT.TLO(ICOMP).AND.TX.LE.TUP(ICOMP)) then
+              ! multiply .opr-value by ACIL
+              CVIF = CVIF*ACIL(ICOMP)
+            elseif (TX.GT.TUP(ICOMP).AND.TX.LE.THI(ICOMP)) then
+              ! multiply .opr-value by ACIU
+              CVIF = CVIF*ACIU(ICOMP)
+            else
+              ! multiply .opr-value by ACIH
+              CVIF = CVIF*ACIH(ICOMP)
+            endif
+C ITCTL = -16, factors for CVIF which respect day types and periods defined
+C              This logic looks at both TF and TFA(ICF) and is designed for
+C              "summer ventilation"
+          elseif (ITCTL(ICOMP).EQ.-16) then
+            if (TF.LE.TLO(icomp)) then
+              ! do nothing, i.e. use values from .opr schedule
+            elseif (TF.GT.TLO(ICOMP).and.
+     &               TF.LE.THI(ICOMP)) then
+              if (TFA(ICOMP).LE.TUP(ICOMP)) then
+                ! multiply .opr-value by ACIL
+                CVIF = CVIF*ACIL(ICOMP)
+              elseif (TFA(ICOMP).GT.TUP(ICOMP).and.
+     &                 TFA(ICOMP).LE.THI(ICOMP)) then
+                ! multiply .opr-value by ACIU
+                CVIF = CVIF*ACIU(ICOMP)
+              else ! TFA(ICOMP) .gt. thi
+                ! multiply .opr-value by ACIH
+                CVIF = CVIF*ACIH(ICOMP)
+              endif
+            else ! TF .gt. THI
+              ! do nothing, i.e. use values from .opr schedule
+            endif
+C -----END new code (18.08.2010)
           else
 
             IF(TX.GT.TLO(ICOMP).AND.TX.LE.TUP(ICOMP))goto 201
@@ -1614,7 +1652,8 @@ C Differential cooling function.
           endif
 
 C Check if ventilation is thermostatically controlled.
-  201     IF(IV.EQ.-11.OR.IV.EQ.-12.OR.IV.EQ.-13.OR.IV.EQ.-4)goto 202
+  201     IF(IV.EQ.-11 .OR. IV.EQ.-12 .OR. IV.EQ.-13 .OR.
+     &         IV.EQ.-15 .OR. IV.EQ.-16 .OR. IV.EQ.-4) goto 202
           IF(ITCTL(ICOMP).EQ.4)then
 
 C Control on wind.
