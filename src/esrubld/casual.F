@@ -336,6 +336,7 @@ C new day control period:
           else ! we are not in a controlled period, set AveLtzIllum zero ... better: if no radiation set zero ... but where?
             do 21 N=1,NLITZ(ICOMP)
               AveLtzIllum(ICOMP,N)=0.0
+              CGCTL(ICOMP,2,ICGCTL(ICOMP))=0.0 ! 25082010 (Test: h3k output, looks O.K.!)
 21          continue
           endif
         endif
