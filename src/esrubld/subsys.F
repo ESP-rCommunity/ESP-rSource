@@ -1619,6 +1619,8 @@ C ITCTL = -15, factors for CVIF which respect day types and periods defined
 C ITCTL = -16, factors for CVIF which respect day types and periods defined
 C              This logic looks at both TF and TFA(ICF) and is designed for
 C              "summer ventilation"
+C << to do: ignore weekends (or better: unoccupied intervals), 
+C           add hysteresis for "ACIH"-case (?) >>
           elseif (ITCTL(ICOMP).EQ.-16) then
             if (TF.LE.TLO(icomp)) then
               ! do nothing, i.e. use values from .opr schedule
