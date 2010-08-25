@@ -388,6 +388,9 @@ C      REAL TMA                  ! Mean air point temperature (oC)
 
       integer IGN,IPER,iPID       ! index of gain type, casual gain period, loop index for casual gain period
 
+      integer is_occupied
+      dimension is_occupied(MCOM)
+
       real TS
       DIMENSION TS(MS)  ! surface temperatures for current zone (for resultant temp calc)
       
@@ -1290,12 +1293,17 @@ C       Code is kind of duplicated ...
 C       SHOCC loads are disregarded (?)
 C-----------------------------*****-------------------------------------
 
+        is_occupied(iZone)=0 ! set occupancy flag zero
+c        is_lighted(iZone)=0  ! set artif. lighting flag zero
+
 C Check if ICASUAL(), ICASUAL3() or IACTIV() is set. If yes, 
 C write casual data. Else (casual data via .opr) check for period id
 C and if in current period write casual data
         if (ICASUAL(iZone).ne.0 .or. ICASUAL3(iZone).ne.0 
      &       .or. IACTIV(iZone).ne.0) then
 		! Occupants
+          if (ctlperocupc(iZone,1).gt.0.0) is_occupied(iZone)=1
+
           call add_to_xml_reporting (
      &      ctlperocupc(iZone,1)/zbasea(iZone), ! convective
      &      H3K_rep_NAME(1:iH3K_NameLen) 
@@ -1325,6 +1333,9 @@ C and if in current period write casual data
      &       'units', '(W/m2)',
      &       'convective gain'
      &    )
+
+c          if (ctlperlightc(iZone,1).gt.0.0) is_lighted(iZone)=1 ! flag "lighting is available"
+
           call add_to_xml_reporting (
      &      ctlperlightr(iZone,1)/zbasea(iZone), ! radiative
      &      H3K_rep_NAME(1:iH3K_NameLen) 
@@ -1395,8 +1406,30 @@ C Get future casual gain values if there is periods defined.
      &         'units', '(W/m2)',
      &         'latent gain'
      &      )
+C           Now check if occupied in this period
+C           gain type "1"
+            if (CGSENC(iZone,IDTY,1,IPER).gt.0.0) is_occupied(iZone)=1
           endif
         enddo gain_type_loop
+      endif
+
+C Report occupancy status
+            call add_to_xml_reporting (
+     &        real(is_occupied(iZone)),  ! flag
+     &        H3K_rep_NAME(1:iH3K_NameLen) 
+     &         // '/occupt',
+     &         'units', '(-)',
+     &         'occupancy flag, 0 not occ, 1 occ'
+     &      )
+
+C.....ARTIFICIAL LIGHTING GAIN FRACTION
+
+      if (ICGCTL(iZone).gt.0) then
+        call add_to_xml_reporting (
+     &         CGCTL(iZone,2,ICGCTL(iZone)),
+     &         H3K_rep_Name(1:iH3K_NameLen)// '/lighting/frac',
+     &         'units', '(-)',
+     &         'Zone lighting gain fraction (controlled) FRAC' )
       endif
 
 C--------------------------------***-----------------------------------
@@ -1800,16 +1833,6 @@ C.....Zone solar gains coinciding with heating loads !cooling loads?
      & 'units', '(W)',
      & 'Solar gains admitted through glazing that increase cooling '
      & // 'loads')
-
-C.....ARTIFICIAL LIGHTING GAIN FRACTION
-
-      if (ICGCTL(iZone).gt.0) then
-        call add_to_xml_reporting (
-     &         CGCTL(iZone,2,ICGCTL(iZone)),
-     &         H3K_rep_Name(1:iH3K_NameLen)// '/lighting/frac',
-     &         'units', '(-)',
-     &         'Zone lighting gain fraction (controlled) FRAC' )
-      endif
 
 C.....TOTAL CASUAL GAINS
       call add_to_xml_reporting (
