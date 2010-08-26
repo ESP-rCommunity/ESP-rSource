@@ -377,7 +377,7 @@ C.....Sky temperature and cloud cover; ground temperature,
 C.....Local variables
 C      REAL TMA                  ! Mean air point temperature (oC)
       REAL ZRH                  ! Zone Relative Humidity (-)
-      real TRESL  ! Zone resultant temperature
+      real TRESL,ZPROD,allsurf  ! for Zone resultant temperature
       real YDUM   ! Dummy variable
       real trsum
       REAL Q_zone,Q_heat,Q_cool   ! Total heat injection / extraction
@@ -1457,11 +1457,23 @@ C.....Lighting zone illuminance
       endif
 
 C.....Zone Resultant TEMPERATURE
-      do 22 iSur=1,NZSUR(iZone)
-         TS(iSur)=TFS(iZone,iSur)
- 22   continue
- 
-      call MORESL(iZone,TFA(iZone),TS,YDUM,NZSUR(iZone),TRESL)
+c      do 22 iSur=1,NZSUR(iZone)
+c         TS(iSur)=TFS(iZone,iSur)
+c 22   continue
+
+c      call MORESL(iZone,TFA(iZone),TS,YDUM,NZSUR(iZone),TRESL)
+c The moresl code (necessary due to different common usage in res ...
+
+C Sum product of surface temperatures and areas (i.e. area weighted surface temp).
+      ZPROD=0.
+      allsurf=0.
+      DO 23 iSur=1,NZSUR(iZone)
+        ZPROD=ZPROD+SNA(iZone,iSur)*TFS(iZone,iSur)
+        allsurf=allsurf+SNA(iZone,iSur)
+ 23   CONTINUE
+
+      TRESL=0.5*TFA(iZone)+0.5*(ZPROD/allsurf)
+C End moresl code
 
       call add_to_xml_reporting (
      &      TRESL,
