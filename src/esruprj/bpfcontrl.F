@@ -5636,7 +5636,7 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Build up text strings for the menu. 
-      M=MHEAD
+   33 M=MHEAD
       if(icfoc.eq.0)then
         WRITE(VERT(1),'(a)') 'a senses current zone db temp         '
         WRITE(VERT(2),'(a)') 'b senses mix of zone db temp and MRT  '
@@ -5752,6 +5752,8 @@ C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
+          IVERT=-2
+          goto 33
         ELSE
           goto 92
         ENDIF
@@ -6442,7 +6444,7 @@ C Initial menu entry setup.
       IVERT=-3
 
 C Build up text strings for the menu. 
-      M=MHEAD
+   33 M=MHEAD
       if(icfoc.eq.0)then
         WRITE(VERT(1),'(a)')'a at current zone air point           '
         WRITE(VERT(2),'(a)')'b mix of convection and radiation     '
@@ -6519,6 +6521,8 @@ C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
           IPACT=EDIT
           CALL EKPAGE(IPACT)
+          IVERT=-2
+          goto 33
         ENDIF
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
@@ -6543,6 +6547,7 @@ C Decode from the potentially long list to the zone number via KEYIND.
      &      'at inside face','node within surface','continue',IWN,2)
           if(IWN.eq.1)then
             ian3=0
+            goto 33
           elseif(IWN.eq.2)then
 
 C Work with local variables and only instanciate if ier is zero.
@@ -6552,24 +6557,26 @@ C Work with local variables and only instanciate if ier is zero.
             if(ier.eq.0)then
               ilay=ilayt
               ian3=ian3t
+              goto 33
             else
-              goto 3
+              goto 3   ! reset select
             endif
           elseif(IWN.eq.3)then
-            goto 3
+            goto 3   ! reset select
           endif
         elseif(IW.eq.3)then
-          goto 3
+          goto 3   ! reset select
         endif
       elseif(ivert.eq.1.and.(icfoc.eq.0))then 
 
-C Actuates current zone air point.
+C Actuates current zone air point (fall though to exit).
         ian1=0
         ian2=0
         ian3=0
       elseif(ivert.eq.1.and.(icfoc.eq.1))then
 
-C Within a plant component (offer the user a cancel option).
+C Within a plant component (offer the user a cancel option)
+C otherwise fall through to exit.
         ian1T=-1
         H(1)='This value specifies the plant component index in '
         H(2)='the plant network definition file. '
@@ -6854,6 +6861,7 @@ C Not one of the legal menu choices.
         goto 92
       endif
 
+C If fell though to this point exit the subroutine.
       return
       END
 
