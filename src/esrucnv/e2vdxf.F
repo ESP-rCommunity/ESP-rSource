@@ -29,6 +29,8 @@ C THF (THINGS) file for use in MicroGDS.
 
 C geometry.h provides commons G0/G1/G2/G5/precz/GS5.
 #include "geometry.h"
+C CFC_common.h provides ncfc(mz)
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -204,7 +206,7 @@ C If there are transparent surfaces put them in another layer << .. >>
           write(ioout,"(' 62',/,'     7',/,'  6',/,'CONTINUOUS')")
           write(ioout,'(a)')'  0'
         endif
-        if(ITW(mz).EQ.1)then
+        if((ITW(mz).EQ.1).or.(ncfc(mz).ne.0))then
           write(ioout,"('LAYER',/,'  2')")
           write(ioout,'(a4,a)') 'TRN_',ZN(1:lnblnk(ZN))
           write(ioout,"(' 70',/,'    64')")
@@ -344,7 +346,7 @@ C them in layer 'TRN_??' and opaque in zone layer'
           if(iv.eq.3.or.iv.eq.4)then
             WRITE(ioout,'(A)')'3DFACE'
             WRITE(ioout,'(A)')'  8'
-            if(SOTF(isf).eq.'TRAN')then
+            if((SOTF(isf).eq.'TRAN').or.(SOTF(isf).eq.'CFC '))then
               WRITE(ioout,'(A4,a)') 'TRN_',ZN(:lnblnk(ZN))
             else
               WRITE(ioout,'(A)') ZN(:lnblnk(ZN))
@@ -376,7 +378,7 @@ C If a triangular surface duplicate the 4th corner.
 
 C More complex shape - write as a 3DPOLY with VERTEX.
             WRITE(ioout,"('POLYLINE',/,'  8')")
-            if(SOTF(isf).eq.'TRAN')then
+            if((SOTF(isf).eq.'TRAN').or.(SOTF(isf).eq.'CFC '))then
               WRITE(ioout,'(A4,a)') 'TRN_',ZN(1:lnblnk(ZN))
             else
               WRITE(ioout,'(A)') ZN(1:lnblnk(ZN))
