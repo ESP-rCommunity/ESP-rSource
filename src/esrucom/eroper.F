@@ -296,7 +296,7 @@ C Thermostatic control data. If 4th item then
         havehi = .false.
         CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
         K=0
-        CALL EGETWI(OUTSTR,K,ITCTL(ICOMP),-16,4,'W','opr cntl',IER)
+        CALL EGETWI(OUTSTR,K,ITCTL(ICOMP),-17,4,'W','opr cntl',IER)
         CALL EGETWR(OUTSTR,K,TLO(ICOMP),0.,0.,'-','lower temp',IER)
         CALL EGETWR(OUTSTR,K,TUP(ICOMP),0.,0.,'-','mid temp',IER)
         if(nd.eq.4)then
@@ -309,7 +309,9 @@ C Thermostatic control data. If 4th item then
 
 C Generate a brief descrition and proceed acording to control type.
         IY=ITCTL(ICOMP)
-        if(IY.eq.-16)then
+        if(IY.eq.-17)then
+          ctlstr(icomp,1)='vent, zone t, factors   '
+        elseif(IY.eq.-16)then
           ctlstr(icomp,1)='inf, ext+zone t, factors'
         elseif(IY.eq.-15)then
           ctlstr(icomp,1)='infil, ext db t, factors'
@@ -446,7 +448,7 @@ C Thermostatic control data.
           IVENTUNIT(icomp,idaytype)=IV
 
 C << ITCTL needs to be updated for day type and period >>
-          CALL EGETWI(OUTSTR,K,ITCTL(ICOMP),-16,4,'W','opr cntl',IER)
+          CALL EGETWI(OUTSTR,K,ITCTL(ICOMP),-17,4,'W','opr cntl',IER)
           goto 77
         elseif(WORD(1:7).eq.'*Period'.or.WORD(1:7).eq.'*period')then
           iperiod=iperiod+1
@@ -913,7 +915,7 @@ C Thermostatic control data. If 4th item then
       havehi = .false.
       CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,ITCTLC,-16,4,'W','opr cntl',IER)
+      CALL EGETWI(OUTSTR,K,ITCTLC,-17,4,'W','opr cntl',IER)
       CALL EGETWR(OUTSTR,K,TLOC,0.,0.,'-','lower temp',IER)
       CALL EGETWR(OUTSTR,K,TUPC,0.,0.,'-','mid temp',IER)
       if(nd.eq.4)then
@@ -926,7 +928,9 @@ C Thermostatic control data. If 4th item then
 
 C Generate a brief descrition and proceed acording to control type.
       IY=ITCTLC
-      if(IY.eq.-16)then
+      if(IY.eq.-17)then
+        ctlstrc='vent, zone t, factors   '
+      elseif(IY.eq.-16)then
         ctlstrc='inf, ext+zone t, factors'
       elseif(IY.eq.-15)then
         ctlstrc='infil, ext db t, factors'
@@ -1231,12 +1235,14 @@ C Thermostatic control data. If 4th item then
       havehi = .false.
       CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,ITCTLC,-16,4,'W','opr cntl',IER)
+      CALL EGETWI(OUTSTR,K,ITCTLC,-17,4,'W','opr cntl',IER)
       if(nd.eq.4)havehi=.true.
 
 C Generate a brief descrition and proceed acording to control type.
       IY=ITCTLC
-      if(IY.eq.-16)then
+      if(IY.eq.-17)then
+        ctlstrc='vent, zone t, factors   '
+      elseif(IY.eq.-16)then
         ctlstrc='inf, ext+zone t, factors'
       elseif(IY.eq.-15)then
         ctlstrc='infil, ext db t, factors'

@@ -1020,6 +1020,7 @@ c        ctlstr(ICOMP,3)='no control of air flow  '
       ALT(4)='wind velocity                  '
       ALT(5)='ext. air temp. w/ factors      '
       ALT(6)='ext. and zone temp. w/ factors '
+      ALT(7)='vent zone temp. w/ factors     '
 
       H(1)='Control of air flow can be based on one of the'
       H(2)='following parameters: '
@@ -1040,7 +1041,7 @@ c        ctlstr(ICOMP,3)='no control of air flow  '
       H(17)='applies to all days within a simulation.'
       IX=1
       CALL EPICKS(IX,IVAL,' ','Air Flow Control Options',
-     &         32,5,ALT,'air flow control',IER,17)
+     &         32,7,ALT,'air flow control',IER,17)
 
       IF(IX.EQ.0) RETURN
       ITCTL(icomp)=IVAL(1)
@@ -1076,7 +1077,9 @@ C Generate a brief description.
 C << this does not yet take into account day type >>
       if(ip3ver(icomp).le.2)then
         IY=ITCTL(ICOMP)
-        if(IY.eq.-16)then
+        if(IY.eq.-17)then
+          ctlstr(icomp,1)='vent, zone t, factors   '
+        elseif(IY.eq.-16)then
           ctlstr(icomp,1)='inf, ext+zone t, factors'
         elseif(IY.eq.-15)then
           ctlstr(icomp,1)='infil, ext db t, factors'

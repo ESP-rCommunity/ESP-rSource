@@ -1685,6 +1685,27 @@ C Control on wind.
             ENDIF
             CVVF=ACR*0.33*VOL(ICOMP)
             CF=CVVF
+C Add own ventilation control, here
+C ITCTL = -17, factors for CVVF which respect day types and periods defined
+C              << functionality ??>>
+C << to do: ?? >>
+          elseif (ITCTL(ICOMP).EQ.-17) then
+            if (TFA(ICOMP).LE.TLO(icomp)) then
+              ! do nothing, i.e. use values from .opr schedule
+            elseif (TFA(ICOMP).GT.TLO(ICOMP).and.
+     &                 TFA(ICOMP).LE.TUP(ICOMP)) then
+              ! multiply .opr-value by ACVL
+              CVVF = CVVF*ACVL(ICOMP)
+            elseif (TFA(ICOMP).GT.TUP(ICOMP).and.
+     &                 TFA(ICOMP).LE.THI(ICOMP)) then
+              ! multiply .opr-value by ACVU
+              CVVF = CVVF*ACVU(ICOMP)
+            else ! TFA(ICOMP) .gt. thi
+              ! multiply .opr-value by ACIH
+              CVVF = CVVF*ACVH(ICOMP)
+            endif
+C -----END new code (27.08.2010)
+
           else
 
 C Some other control.
