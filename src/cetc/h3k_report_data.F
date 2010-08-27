@@ -1433,7 +1433,7 @@ C.....ARTIFICIAL LIGHTING GAIN FRACTION
       endif
 
 C--------------------------------***-----------------------------------
-C Report infiltration rate
+C Report infiltration + ventilation rate
             call add_to_xml_reporting (
 c     &        CIF(iZone)/(0.33*Vol(iZone)),  ! approx. ACH (O.K. for .opr infil, but off somewhat for .tdf. Also, hour fraction values not good)
      &        CVIF/(0.33*Vol(iZone)),  ! ACH (?)
@@ -1442,6 +1442,15 @@ c     &        CIF(iZone)/(0.33*Vol(iZone)),  ! approx. ACH (O.K. for .opr infil
      &         'units', '(ACH)',
      &         'infiltration rate'
      &      )
+
+            call add_to_xml_reporting (
+     &        CVVF/(0.33*Vol(iZone)),  ! ventilation ACH (?)
+     &        H3K_rep_NAME(1:iH3K_NameLen) 
+     &         // '/ventilation',
+     &         'units', '(ACH)',
+     &         'infiltration rate'
+     &      )
+
 C-------------------------------*****----------------------------------
 
 C.....Lighting zone illuminance
