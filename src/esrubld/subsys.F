@@ -851,7 +851,7 @@ C re-enable previous 2.
 C Surrounding buildings component.
         IF(EE(ICOMP,I).LE.1.0)THEN
           QELWFB(I)=A1(ICOMP,I)*SBC*(TBLD(I)**4-(TFC(ICOMP,I,1)+
-     &              ZEROK)**4)/(2/EE(ICOMP,I)-1.0)
+     &              ZEROK)**4)/(2.0/EE(ICOMP,I)-1.0)
         ELSE
 C Modify equation if emissivity is artificially high (>1).
           QELWFB(I)=A1(ICOMP,I)*SBC*(TBLD(I)**4-(TFC(ICOMP,I,1)+
@@ -863,7 +863,7 @@ C Sky component.
      &            (TFC(ICOMP,I,1)+ZEROK)**4)
 
 C Sky component (original equation of Berdahl and Martin).
-        QELWFC(I)=B1(ICOMP,I)*4*EE(ICOMP,I)*SBC*((TF+ZEROK)**3)*
+        QELWFC(I)=B1(ICOMP,I)*4.0*EE(ICOMP,I)*SBC*((TF+ZEROK)**3)*
      &            (TFC(ICOMP,I,1)+ZEROK-TSKY)*(-1.0)
 
 C Angle of surface inclination
@@ -1154,6 +1154,8 @@ C Save present values for possible iterations at this time step.
 
       common/ts4/itsitr(msch),itrpas
 
+      common/TAFtoH3K/TAF
+      real TAF
 C AIM-2 common. iAIM2=1 if AIM-2 infiltration model active.
       common/aim2def/iAIM2,LAIM2
       character LAIM2*72
@@ -1222,7 +1224,7 @@ C     This prevents the zone becoming too cold.
       integer idayn
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       integer ICF,IDTYP,IPER,IICOMP
-      real BB1,BB2,BB3,TNP,QFUT,TFUT
+      real BB1,BB2,BB3,TNP,QFUT,TFUT,grad
 
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
@@ -1244,6 +1246,7 @@ C Remember present coefficients for possible iterations.
         CIP(ICOMP)=CIF(ICOMP)
         CVP(ICOMP)=CVF(ICOMP)
         QVP(ICOMP)=X3(ICOMP)-(CIF(ICOMP)+CVF(ICOMP))*TFA(ICOMP)
+        TAF=TF ! initialise ventilation air temp.
       else
         CVVPM=CVPM(ICOMP)
         CVIP=CIP(ICOMP)
@@ -1586,7 +1589,7 @@ C It is controlled. Establish sensed variable.
           IV=ITCTL(ICOMP)
 
 C Check if infiltration is thermostatically controlled.
-          IF(IV.EQ.-1.OR.IV.EQ.-2.OR.IV.EQ.-3)goto 201
+          IF(IV.EQ.-1.OR.IV.EQ.-2.OR.IV.EQ.-3.or.IV.eq.-17)goto 201
 
           if(ITCTL(ICOMP).EQ.4)then
 
@@ -1656,7 +1659,7 @@ C Differential cooling function.
 C Check if ventilation is thermostatically controlled.
   201     IF(IV.EQ.-11 .OR. IV.EQ.-12 .OR. IV.EQ.-13 .OR.
      &         IV.EQ.-15 .OR. IV.EQ.-16 .OR. IV.EQ.-4) goto 202
-          IF(ITCTL(ICOMP).EQ.4)then
+          IF (ITCTL(ICOMP).EQ.4) then
 
 C Control on wind.
             AMH=ACVH(ICOMP)
@@ -1690,21 +1693,52 @@ C ITCTL = -17, factors for CVVF which respect day types and periods defined
 C              << functionality ??>>
 C << to do: ?? >>
           elseif (ITCTL(ICOMP).EQ.-17) then
-            if (TFA(ICOMP).LE.TLO(icomp)) then
-              ! do nothing, i.e. use values from .opr schedule
-            elseif (TFA(ICOMP).GT.TLO(ICOMP).and.
-     &                 TFA(ICOMP).LE.TUP(ICOMP)) then
-              ! multiply .opr-value by ACVL
-              CVVF = CVVF*ACVL(ICOMP)
-            elseif (TFA(ICOMP).GT.TUP(ICOMP).and.
-     &                 TFA(ICOMP).LE.THI(ICOMP)) then
-              ! multiply .opr-value by ACVU
-              CVVF = CVVF*ACVU(ICOMP)
-            else ! TFA(ICOMP) .gt. thi
-              ! multiply .opr-value by ACIH
-              CVVF = CVVF*ACVH(ICOMP)
+            if (TF.LE.TLO(icomp)) then
+C   ** "winter control" **
+              if (TFA(ICOMP).LE.ACIL(icomp)) then
+                ! ventilation with 100% of scheduled ACH at TAL(icomp)
+                TAF  = TAL(icomp)
+              elseif (TFA(ICOMP).LE.20.0) then
+                ! ventilation rate acc. to ramp between ACVL and 20 °C, also at TAL(icomp)
+                ! Lower end of ramp is 40% of scheduled ACH
+                call eclose(20.0,ACVL(icomp),0.01,closeto0)
+                if (closeto0) then
+                  grad=1.0
+                else
+                  grad=-0.6/(20.0-ACVL(icomp))
+                endif
+                CVVF = CVVF*(grad*TFA(icomp)+1.0-grad*ACVL(icomp))
+                TAF  = TAL(icomp)
+              else
+                ! ventilation with 40% of scheduled ACH at TAL(icomp)
+                CVVF = CVVF*0.4
+              endif
+            else
+C   ** transitional / summer season control **
+              ! Set TAF according to ambient temp.
+              if (TF.lt.TUP(ICOMP)) then
+                TAF = TAU(icomp)
+              else
+                TAF = TAH(icomp)
+              endif
+              if (TFA(ICOMP).LE.ACVU(icomp)) then
+                ! ventilation with 40% of scheduled ACH at TAF acc. to ambient temp.
+                CVVF = CVVF*0.4
+              elseif (TFA(ICOMP).lt.ACVH(icomp)) then
+                ! ventilation rate acc. to ramp between ACVU and ACVH, at TAF acc.
+                ! to ambient temp. Lower end of ramp is 40% of scheduled ACH
+                call eclose(ACVH(icomp),ACVU(icomp),0.01,closeto0)
+                if (closeto0) then
+                  grad=1.0
+                else
+                  grad=0.6/(ACVH(icomp)-ACVU(icomp))
+                endif
+                CVVF = CVVF*(grad*TFA(icomp)+0.4-grad*ACVU(icomp))
+              else
+                ! ventilation with 100% of scheduled ACH at TAF
+              endif
             endif
-C -----END new code (27.08.2010)
+C -----END new code (30.08.2010)
 
           else
 

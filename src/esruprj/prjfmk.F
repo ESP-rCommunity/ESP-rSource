@@ -988,7 +988,7 @@ C << must be revised for multiple day types and periods. >>
      &             IVH(MCOM),TAH(MCOM)
       common/p3ver/ip3ver(MCOM)
 
-      DIMENSION IVAL(4), IVALS(3), ALT(6),ALTS(3)
+      DIMENSION IVAL(4), IVALS(3), ALT(7),ALTS(3)
       CHARACTER hold*40,outs*80,outs2*80
       CHARACTER ALT*32,ALTS*31,H*72
       LOGICAL OK,DOK
@@ -1020,7 +1020,7 @@ c        ctlstr(ICOMP,3)='no control of air flow  '
       ALT(4)='wind velocity                  '
       ALT(5)='ext. air temp. w/ factors      '
       ALT(6)='ext. and zone temp. w/ factors '
-      ALT(7)='vent zone temp. w/ factors     '
+      ALT(7)='vent ext. and zone temp. w/ramp'
 
       H(1)='Control of air flow can be based on one of the'
       H(2)='following parameters: '
@@ -1036,12 +1036,17 @@ c        ctlstr(ICOMP,3)='no control of air flow  '
       H(12)='  infil rates given in schedule. Respects '
       H(13)='  day types and schedule intervals '
       H(14)='  Evaluates both amb. and zone temperature '
-      H(15)=' '
-      H(16)='Note that thermostatic or wind velocity control'
-      H(17)='applies to all days within a simulation.'
+      H(15)='* zone temp. w/ factors; use factors to change'
+      H(16)='  ventilation rates given in schedule. Respects'
+      H(17)='  day types and schedule intervals. Evaluates'
+      H(18)='  ambient and zone temperatures. '
+      H(19)='  See esrubld/subsys.F,line 1688 ff. for details'
+      H(20)=' '
+      H(21)='Note that thermostatic or wind velocity control'
+      H(22)='applies to all days within a simulation.'
       IX=1
       CALL EPICKS(IX,IVAL,' ','Air Flow Control Options',
-     &         32,7,ALT,'air flow control',IER,17)
+     &         32,7,ALT,'air flow control',IER,22)
 
       IF(IX.EQ.0) RETURN
       ITCTL(icomp)=IVAL(1)

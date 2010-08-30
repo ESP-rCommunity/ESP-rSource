@@ -374,6 +374,8 @@ C.....Sky temperature and cloud cover; ground temperature,
       REAL TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH
       REAL TBSUTH,TBEAST,TBWEST
 
+      common/TAFtoH3K/TAF
+      real TAF
 C.....Local variables
 C      REAL TMA                  ! Mean air point temperature (oC)
       REAL ZRH                  ! Zone Relative Humidity (-)
@@ -1440,7 +1442,7 @@ c     &        CIF(iZone)/(0.33*Vol(iZone)),  ! approx. ACH (O.K. for .opr infil
      &        H3K_rep_NAME(1:iH3K_NameLen) 
      &         // '/infiltration',
      &         'units', '(ACH)',
-     &         'infiltration rate'
+     &         'Infiltration rate'
      &      )
 
             call add_to_xml_reporting (
@@ -1448,7 +1450,15 @@ c     &        CIF(iZone)/(0.33*Vol(iZone)),  ! approx. ACH (O.K. for .opr infil
      &        H3K_rep_NAME(1:iH3K_NameLen) 
      &         // '/ventilation',
      &         'units', '(ACH)',
-     &         'infiltration rate'
+     &         'Ventilation rate'
+     &      )
+
+	             call add_to_xml_reporting (
+     &        TAF,  ! ventilation temperature (?)
+     &        H3K_rep_NAME(1:iH3K_NameLen) 
+     &         // '/vent_temp',
+     &         'units', '(oC)',
+     &         'Inlet temperature of ventilation air'
      &      )
 
 C-------------------------------*****----------------------------------
