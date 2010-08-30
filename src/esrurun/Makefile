@@ -1,4 +1,5 @@
 SRCdir = `pwd`/..
+BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
@@ -6,7 +7,6 @@ MFSdir = $(SRCdir)/esrumfs
 PDFdir = $(SRCdir)/esrupdf
 PRJdir = $(SRCdir)/esruprj
 TDFdir = $(SRCdir)/esrutdf
-CETCdir= $(SRCdir)/cetc
 PROG = run$(EXE)
 PROG2 = runesp$(EXE)
 
@@ -14,7 +14,7 @@ PROG2 = runesp$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = runesp.o aim2_pretimestep.o arrow.o ascii_mat.o \
+OBJECTS = runesp.o aim2_module.o arrow.o ascii_mat.o \
 	blcond.o bnlthp.o bpfcom.o bsimsel.o \
 	c2fdum.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	clickonbitmap.o commonclm.o context.o ctlexp.o ctlwrt.o ctread.o \
@@ -29,6 +29,8 @@ OBJECTS = runesp.o aim2_pretimestep.o arrow.o ascii_mat.o \
 	pltcfg.o pltnet.o prescoef.o prjdmds.o prjfmk.o prjqa.o \
 	psychro.o rcdblist.o readTrnsys.o rwipv.o rwroam.o rwsbem.o sort.o \
 	startup.o tdfedit.o tdfile.o tdgraph.o
+
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
@@ -279,9 +281,9 @@ tdgraph.F:
 tdfedit.F:
 	rm -f tdfedit.F
 	ln -s $(PRJdir)/tdfedit.F .
-aim2_pretimestep.F:
-	rm -f aim2_pretimestep.F
-	ln -s $(CETCdir)/aim2_pretimestep.F .
+aim2_module.F:
+	rm -f aim2_module.F
+	ln -s $(BLDdir)/aim2_module.F .
 editCFC.F:
 	rm -f editCFC.F
 	ln -s $(PRJdir)/editCFC.F .
@@ -292,8 +294,8 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir)/$(PROG2); fi
 
 clean:
-	rm -f core $(PROG) $(PROG2) $(PROG).exe $(PROG2).exe $(OBJECTS) \
-	aim2_pretimestep.F arrow.F ascii_mat.F blcond.F bnlthp.F bpfcom.F bsimsel.F \
+	rm -f core $(PROG) $(PROG2) $(PROG).exe $(PROG2).exe $(OBJECTS) $(MODULES) \
+	aim2_module.F arrow.F ascii_mat.F blcond.F bnlthp.F bpfcom.F bsimsel.F \
 	c2fdum.F cfdat.F cfdrw.F cfg3dv.F cfgmsc.F cfgrid.F cgd.F clickonbitmap.F commonclm.F \
 	context.F ctlexp.F ctlwrt.F ctread.F dossupport.F e3dviews.F ecasctl.F \
 	econstr.F econtrol.F edcfd.F edcon.F edcondb.F edatabase.F eddb.F edgeo.F edipv.F \

@@ -61,6 +61,9 @@ C  ENLARGE  performs geometric enlargement (contraction) of a surface.
 C ********************* MMGFUN
 C MMGFUN controls all UK NCM related tasks
       SUBROUTINE MMGFUN
+      
+      USE AIM2_InputData, ONLY: iAIM2
+      
       IMPLICIT NONE
 #include "building.h"
 #include "sbem.h"
@@ -122,9 +125,6 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER   iDHW_FLAG
       CHARACTER sDHW_InputFileName*72
 
-      COMMON/aim2def/iAIM2,LAIM2
-      INTEGER IAIM2
-      CHARACTER LAIM2*72
 
       COMMON/Fcell/iFClds,LFClds
       INTEGER iFClds
@@ -3485,7 +3485,7 @@ C required models ') which returned iuact=1.
       COMMON/RAY6/LINSTY(MCON)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C TDF related.
@@ -3514,7 +3514,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       character cfgroot*24,LCFGF*72,NNAME*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,fs*1,msgl2*48,tab*1
-      character outs*124,h*72,GUESS*24
+      character outs*124,h*72,GUESS*24,aimpth*24
 
       LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
       logical unixok,XST
@@ -7355,14 +7355,14 @@ C It finally generate BRUKL input document and other SBEM reports.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)   
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       common/rpath/path
       common/uhome/upath
       character DOIT*248
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
       character fs*1, col*1 
       character BATCHFL*72
        
@@ -8496,14 +8496,14 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       common/C21/IFCFG,cfgroot,LCFGF
      
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       common/rpath/path
       common/uhome/upath
       character DOIT*248
       character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
       character path*72,upath*72,lupath*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
       character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
       integer mpof, ibrowse

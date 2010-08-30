@@ -650,23 +650,23 @@ C**********************************************************************
       
       
       SUBROUTINE H3KOUTPUT_AIMSDATA(IWU)
-C      USE AIM2_CALC_DATA
+
+      USE AIM2_InputData, ONLY:iAIM2
+      USE AIM2_CalcData, ONLY:AIM2_HOUSE_VOL
+
       IMPLICIT NONE
 #include "building.h"
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 #include "h3kstore_common.h"
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
-      common/aim2def/iAIM2,LAIM2
       DIMENSION MTHNAM(12)
-      INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP,iAIM2,IWU,IMONTH
+      INTEGER ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP,IWU,IMONTH
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
       DATA MTHNAM/'JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG',
      &     'SEP','OCT','NOV','DEC'/ 
       CHARACTER OUTS*124
-      CHARACTER LAIM2*72
+      
       
       IF (iAIM2 == 1) THEN
       WRITE(OUTS,'(A)')' '

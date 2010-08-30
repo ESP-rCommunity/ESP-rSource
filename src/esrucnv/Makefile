@@ -1,4 +1,5 @@
 SRCdir = `pwd`/..
+BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 PRJdir = $(SRCdir)/esruprj
@@ -9,16 +10,21 @@ PROG = ecnv$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = ecnv.o ascii_mat.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
+OBJECTS = aim2_module.o ecnv.o ascii_mat.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
 	  e2vdxf.o e2zip.o edatabase.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o item.o low_lev.o mfcdat.o mid_lev.o \
 	  nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
 	  startup.o tdfile.o wwxfig.o zipcnv.o
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
 
+$(PROG): $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+
+aim2_module.F:
+	rm -f aim2_module.F
+	ln -s $(BLDdir)/aim2_module.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
@@ -96,8 +102,8 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	ascii_mat.F c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	aim2_module.F ascii_mat.F c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
 	item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
 	sort.F startup.F tdfile.F

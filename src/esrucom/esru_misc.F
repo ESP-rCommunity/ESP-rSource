@@ -62,6 +62,10 @@ C ************* CLRPRB
 C CLRPRB clears the zone based memory in preparation for reading
 C in a new model file. 
       SUBROUTINE CLRPRB
+
+      USE AIM2_InputData, ONLY: iAIM2,LAIM2
+      USE AIM2, ONLY: AIM2_ClearAll
+      
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -105,8 +109,6 @@ C Simulation parameter presets.
 C HOT3000: BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
 
-C HOT3000: AIM-2.
-      common/aim2def/iAIM2,LAIM2
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -171,7 +173,7 @@ C CPCALC description
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
 
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG
@@ -243,8 +245,8 @@ C door width and height.
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
-      character hvacfile*72,LAIM2*72,LBSIMP*72
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
+      character hvacfile*72,LBSIMP*72
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
       character lradcf*72
@@ -257,6 +259,9 @@ C door width and height.
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
 
       call tstamp('>','PRJ: clearing model commons')
+      
+C Clear any allocated arrays      
+      CALL DeallocateAllArrays
 
 C Project level common blocks.
 
@@ -275,6 +280,7 @@ C Initial assumption is no SHOCC files.
       zonepth='./'
       netpth='./'
       ctlpth='./'
+      aimpth='./'
       imgpth='./'
       radpth='./'
       dbspth='./'
@@ -306,6 +312,7 @@ C will be reset if `*hvac' included in .cfg.
 C HOT3000: AIM-2.
       iAIM2=0
       LAIM2='UNKNOWN'
+      CALL AIM2_ClearAll
 
 C Clear pre-simulation sets.
       nsset= 0
@@ -3712,3 +3719,19 @@ C Trap for I/O errors.
       return
       END
 
+C ******************** DeallocateAllArrays ****************************
+C *********************************************************************
+C Created by: Francesca Macdonald
+C Date: 23/07/2010
+C 
+C DeallocateAllArrays deallocates all the memory asociated with
+C allocatable arrays.
+C *********************************************************************
+
+      SUBROUTINE DeallocateAllArrays
+      
+      USE AIM2, ONLY:AIM2_DEALLOCATE
+     
+      CALL AIM2_DEALLOCATE
+      
+      END SUBROUTINE DeallocateAllArrays

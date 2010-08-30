@@ -1,4 +1,5 @@
 SRCdir = `pwd`/..
+BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 PRJdir = $(SRCdir)/esruprj
 PROG = dfs$(EXE)
@@ -7,15 +8,20 @@ PROG = dfs$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = dfs.o arrow.o ascii_mat.o bndarybl.o bndaryl.o bndaryt.o c2fdum.o cfcalc.o cfdat.o \
+OBJECTS = dfs.o aim2_module.o arrow.o ascii_mat.o bndarybl.o bndaryl.o bndaryt.o c2fdum.o cfcalc.o cfdat.o \
 	  cfconv.o cfdrw.o cfdumb.o cfdumm.o cfgrid.o cfmatl.o cfmgerc.o cftext.o \
 	  cfutil.o cgd.o chkconvg.o common3dv.o conc.o e3dviews.o edatabase.o egeometry.o \
 	  eroper.o esru_misc.o lisolv.o locmage.o mitzero.o plot.o psychro.o \
 	  read3dv.o sort.o startup.o visgrd.o visual.o visvec.o wvapour.o
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
 
+$(PROG): $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+
+aim2_module.F:
+	rm -f aim2_module.F
+	ln -s $(BLDdir)/aim2_module.F .
 arrow.F:
 	rm -f arrow.F
 	ln -s $(PRJdir)/arrow.F .
@@ -69,6 +75,6 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	arrow.F ascii_mat.F c2fdum.F cfdrw.F cfgrid.F common3dv.F e3dviews.F edatabase.F egeometry.F \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	aim2_module.F arrow.F ascii_mat.F c2fdum.F cfdrw.F cfgrid.F common3dv.F e3dviews.F edatabase.F egeometry.F \
 	eroper.F esru_misc.F psychro.F read3dv.F sort.F startup.F 

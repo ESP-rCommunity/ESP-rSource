@@ -165,6 +165,9 @@ C                         zone air temp. used and if cntdat(3) zero
 C                         use the inside surface node temperature
 
       subroutine mzinpt(IREP,IER)
+      
+      USE AIM2_InputData, ONLY: iAIM2, LAIM2
+      USE AIM2, ONLY: AIM2_READIN
 
 #include "building.h"
 #include "model.h"
@@ -249,8 +252,6 @@ C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
 
-C AIM-2.
-      common/aim2def/iAIM2,LAIM2
 
 C Mechanical Ventilation systems.
       Integer iMech
@@ -270,7 +271,7 @@ C For reading in of bi-directional data.
       character dllsubr*12,dllmesg*124,bidirfile*72,bidirname*12
 
 C HVAC AIM-2
-      character hvacfile*72,LAIM2*72
+      character hvacfile*72
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST

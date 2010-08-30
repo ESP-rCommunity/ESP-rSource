@@ -74,7 +74,7 @@ C ESP-r commons.
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
 
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -104,7 +104,7 @@ C Name of current application
       character path*72,upath*72
       character upgcfg*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
       character cfgroot*24,dstmp*24,MODE*4
       character buffer*144
 
@@ -1419,7 +1419,7 @@ C << MUST be updated to reflect ipath and longer database names >>
       common/CFGV/icfgv
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
 
       common/cctlnm/ctldoc,lctlf
       common/io/ioin,ioout,ioblk,iosblk,iotobs
@@ -1454,7 +1454,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character indxcmt*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
       character dstmp*24
 
       IER=0
@@ -1481,6 +1481,8 @@ C Comment for configuration index (upgrade registration level).
      &  '  # path to networks'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*ctlpth ',ctlpth,
      &  '  # path to controls'
+      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*aimpth ',aimpth,
+     &  '  # path to aim2'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*radpth ',radpth,
      &  '  # path to radiance files'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,

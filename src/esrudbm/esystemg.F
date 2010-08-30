@@ -115,6 +115,13 @@ C           network need not be matched.
 C BDMDS,dbdsdesc - name file project demands file and related description.
 
       SUBROUTINE ERSYSG(FILE,IUC,IUF,MODE,ITRC,IER)
+C AIM-2.
+C IAIM2 set to 1 if AIM-2 infiltration model active.
+C LAIM2 (72 char) file holding AIM-2 infiltration model data.
+C      common/aim2def/iAIM2,LAIM2
+
+      USE AIM2_InputData, ONLY: iAIM2,LAIM2
+
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -222,7 +229,7 @@ C DOCPTH (24 char) relative path to the model documents folder
 C TMPPTH (24 char) relative path to scratch folder
 C dbspth (24 char) relative path to model specific databases folder
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -332,10 +339,6 @@ C Simulation parameter presets.
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
 
-C AIM-2.
-C IAIM2 set to 1 if AIM-2 infiltration model active.
-C LAIM2 (72 char) file holding AIM-2 infiltration model data.
-      common/aim2def/iAIM2,LAIM2
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds
@@ -447,11 +450,11 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
       CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
-      character hvacfile*72,LAIM2*72,LBSIMP*72,LFClds*72
+      character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
@@ -665,6 +668,10 @@ C via tags.
           goto 34
         elseif(WORD(1:7).eq.'*ctlpth')then
           CALL EGETRM(OUTSTR,K,ctlpth,'W','path to ctl',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
+        elseif(WORD(1:7).eq.'*aimpth')then
+          CALL EGETRM(OUTSTR,K,ctlpth,'W','path to aim2',IER)
           IF(IER.NE.0)goto 1
           goto 34
         elseif(WORD(1:7).eq.'*imgpth')then

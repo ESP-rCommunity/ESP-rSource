@@ -35,6 +35,10 @@ C SIMCON sets the final parameters before executing a simulation.  MZNUMA is
 C called the required number of times, saving results after each simulation. 
 
       subroutine SIMCON
+      
+      USE AIM2_InputData, ONLY:iAIM2
+      USE AIM2, ONLY: AIM2_SETVARS
+
 C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
 #include "building.h"
 #include "uncertainty.h"
@@ -59,9 +63,6 @@ C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA5/IMET,ISIM,NRSIM
 
-C AIM-2 common. iAIM2=1 if AIM-2 infiltration model active.
-      common/aim2def/iAIM2,LAIM2
-      character*72 LAIM2
 
 c Mechanical ventilation system activator
       Integer iMech

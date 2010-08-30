@@ -1105,6 +1105,10 @@ C CVVPM & CVVFM - as CVVP & CVVF but normalised to the
 C                 external temperature (for use in MZLS3).
 
       SUBROUTINE MZVENT(ICOMP)
+      
+      USE AIM2_InputData, ONLY:iAIM2
+      USE AIM2_TIMESTEP, ONLY:AIM2_CONTROL
+
 #include "building.h"
 #include "geometry.h"
 #include "tdf2.h"
@@ -1154,9 +1158,6 @@ C Save present values for possible iterations at this time step.
 
       common/ts4/itsitr(msch),itrpas
 
-C AIM-2 common. iAIM2=1 if AIM-2 infiltration model active.
-      common/aim2def/iAIM2,LAIM2
-      character LAIM2*72
 
 c Mechanical ventilation systems
       Common /mechvdef/ iMech, LMech

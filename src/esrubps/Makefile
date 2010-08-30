@@ -23,8 +23,8 @@ PROG = bps$(EXE)
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
-BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o bctlf.o \
-	  blibsv.o bmatsu.o bmatsv.o basesimp.o bscoeff.o bscoeff_extended.o \
+BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_timestep.o ascii_mat.o \
+	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
 	  climi.o cntmnt.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o ecasctl.o \
@@ -39,8 +39,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
 	  reslib.o rnor.o rwipv.o rwroam.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
 	  spmatl.o spmisc.o startup.o subsys.o tdfile.o tdrecbps.o trstyp.o \
-	  tscon.o utilf.o aim2_pretimestep.o aim2_timestep.o\
-	  MechVentIN.o CentralVentSys.o \
+	  tscon.o utilf.o MechVentIN.o CentralVentSys.o \
 	  hvacinput.o hvacsim.o furnace.o init_hvac_var.o fan.o ashp.o \
 	  ashp_cooling.o baseboard.o hvac_output.o h3koutput.o h3kstore.o\
 	  FC_components.o FC_functions.o gshpinput.o gshpsim.o \
@@ -58,8 +57,10 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o bcfunc.o
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
 	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o
 
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_timestep.mod
+
 $(PROG): $(BPS_OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags) 
 
 adaptconf1.F:
 	rm -f adaptconf1.F
@@ -415,12 +416,12 @@ tscon.F:
 utilf.F:
 	rm -f utilf.F
 	ln -s $(BLDdir)/utilf.F .
-aim2_pretimestep.F:
-	rm -f aim2_pretimestep.F
-	ln -s $(CETCdir)/aim2_pretimestep.F .
+aim2_module.F:
+	rm -f aim2_module.F
+	ln -s $(BLDdir)/aim2_module.F .
 aim2_timestep.F:
 	rm -f aim2_timestep.F
-	ln -s $(CETCdir)/aim2_timestep.F .
+	ln -s $(BLDdir)/aim2_timestep.F .
 MechVentIN.F:
 	rm -f MechVentIN.F
 	ln -s $(CETCdir)/MechVentIN.F .
@@ -657,8 +658,8 @@ install:
 
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) \
-	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_pretimestep.F aim2_timestep.F \
+	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) $(MODULES)\
+	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_module.F aim2_timestep.F \
 	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
 	bsim2cfd.F btherm.F c2fdum.F casual.F CentralVentSys.F \

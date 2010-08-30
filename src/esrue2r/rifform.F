@@ -37,7 +37,7 @@ C ******* Setup of image quality and calculation options.
       common/radrp/ipicx
       common/expath/runpath,pathtype
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       common/raddata/SCENE(MCOM+1),RIFNAME(MCOM+1),SCENERT(MCOM+1),
      &               RIFDESC(MCOM+1),RIFPURP(MCOM+1)
       common/raddata2/NRIF,IRIFFOC
@@ -52,7 +52,7 @@ C ******* Setup of image quality and calculation options.
       character rscedes*72,rzoncmd*60,rupaxis*1,fil*80
       character vewcmds*124,rvewsh*10,ltmp*72,ltmp60*60
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
       character SCENE*28,RIFNAME*72,SCENERT*28,RIFDESC*72,RIFPURP*12
 
       DIMENSION ITEM(24),IVALV(20),VALT(20)

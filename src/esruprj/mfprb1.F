@@ -57,7 +57,7 @@ C LPRFDB,IPRODB (for event profile database)
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -74,7 +74,7 @@ C LPRFDB,IPRODB (for event profile database)
       CHARACTER H*72,LTMP*72,outs*124,outstr*124
       character cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok

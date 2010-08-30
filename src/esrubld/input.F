@@ -97,6 +97,9 @@ C           NB fluid flow network and plant energy network need not be matched
 C laprob  - fluid flow description file
 
       subroutine mzinpt(IREP,IER)
+C AIM-2.
+      USE AIM2_InputData, ONLY:iAIM2,LAIM2
+      USE AIM2, ONLY:AIM2_READIN
 
 #include "building.h"
 #include "model.h"
@@ -160,8 +163,6 @@ C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       common/hvacinfo/ihvacflag,hvacfile
 
-C AIM-2.
-      common/aim2def/iAIM2,LAIM2
 
 C Flag indicating presence of GSHP models:
 C igshp=1 indicates GSHP models are active; 0 indicates no GSHP models.
@@ -183,7 +184,7 @@ C For reading in of bi-directional data.
       DIMENSION ICLN(30)  ! for checking material db categories
 
 C HVAC AIM-2
-      character hvacfile*72,LAIM2*72
+      character hvacfile*72,
 
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST

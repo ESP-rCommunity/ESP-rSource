@@ -42,7 +42,7 @@ C geometry.h provides commons G0/G1/G2/G5/c20/precz.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       common/user/browse
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
@@ -83,7 +83,7 @@ C TMC common block:
       character H*72,outs*124,LTMP*72,DTMP*64
       character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
       character*48 ITEM(30)
       CHARACTER*72 DLCGCIN,LCFGF
       CHARACTER info*18,cgcdesc*64,brw*8

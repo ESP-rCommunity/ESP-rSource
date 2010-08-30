@@ -1,4 +1,5 @@
 SRCdir = `pwd`/..
+BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 TDFdir = $(SRCdir)/esrutdf
@@ -8,14 +9,19 @@ PROG = dbm$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = jdbm.o bcffile.o c2fdum.o ctlexp.o ctread.o dbmedit.o dossupport.o edprof.o \
+OBJECTS = aim2_module.o jdbm.o bcffile.o c2fdum.o ctlexp.o ctread.o dbmedit.o dossupport.o edprof.o \
 	egeometry.o emfnetw.o emkcfgg.o enved.o eroper.o esru_misc.o esystemg.o \
 	gendbb.o hyged.o implegadb.o item.o mfcdat.o mlced.o nwkrewr.o pltcfg.o \
 	prsitem.o sort.o startupg.o tdfile.o readTrnsys.o
 
-$(PROG) : $(OBJECTS)
-	$(MFC) $(FFLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
 
+$(PROG) : $(OBJECTS)
+	$(MFC) $(FFLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+
+aim2_module.F:
+	rm -f aim2_module.F
+	ln -s $(BLDdir)/aim2_module.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -75,6 +81,6 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean :
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) aim2_module.F c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
 	egeometry.F emfnetw.F emkcfgg.F eroper.F esru_misc.F item.F mfcdat.F nwkrewr.F \
 	pltcfg.F sort.F tdfile.F readTrnsys.F

@@ -55,7 +55,7 @@ C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -97,7 +97,7 @@ C end indices for each zone.
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
-      character longtfile*144,fname*96
+      character longtfile*144,fname*96,aimpth*24
 
       logical xbmorigin,xbmnorth,xbmscale,xbmgrid,xbmload,xbmsnap
       logical trimmed,completed,unique,CLOSEX,CLOSEY,addinganother

@@ -73,9 +73,9 @@ C Climate data.
       character XMLMETRICS*248
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -502,7 +502,7 @@ C Parameters
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
 
@@ -542,7 +542,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       character ctldoc*248,LCTLF*72,zd*64
       character DFILE*72,CFILE*72,OFILE*72,TFILE*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24
       character act*2
       character subpath*72,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
@@ -1280,7 +1280,7 @@ C IPV description via ipvdata.h.
       integer icascf
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       common/C21/IFCFG,cfgroot,LCFGF
 
 C XMLMETRICS are the metrics that could be included in the input.xml
@@ -1301,7 +1301,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       integer IFCFG
                
-      CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124
+      CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124,aimpth*24
       character dstmp*24
       character word248*248
 
@@ -1593,6 +1593,9 @@ C Debug.
         goto 43
       elseif(WORD(1:7).eq.'*ctlpth')then
         CALL EGETRM(OUTSTR,K,ctlpth,'W','path to ctl',IER)
+        goto 43
+      elseif(WORD(1:7).eq.'*aimpth')then
+        CALL EGETRM(OUTSTR,K,aimpth,'W','path to aim2',IER)
         goto 43
       elseif(WORD(1:7).eq.'*imgpth')then
         CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
@@ -2690,7 +2693,7 @@ C IPV description via ipvdata.h.
       integer icascf
 
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -2712,7 +2715,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       character docpth*24,tmppth*24,dbspth*24,cfgroot*24,LCFGF*72
       integer IFCFG
                
-      CHARACTER outs*124,outsd*124
+      CHARACTER outs*124,outsd*124,aimpth*24
       character dstmp*24
 
       character act*1      ! action requested.
@@ -2816,9 +2819,10 @@ C single folder model, otherwise use distributed folders.
       lnzp=lnblnk(zonepth)
       lnnp=lnblnk(netpth)
       lncp=lnblnk(ctlpth)
+      lnap=lnblnk(aimpth)
       lndcp=lnblnk(docpth)
       lndbp=lnblnk(dbspth)
-      if((lnzp+lnnp+lncp+lndcp+lndbp).lt.12)then
+      if((lnzp+lnnp+lncp+lnap+lndcp+lndbp).lt.12)then
         write(folder,'(a)') 'single'  ! multiple folders
       else
         write(folder,'(a)') 'distributed'  ! multiple folders
@@ -2958,6 +2962,8 @@ C extracting to a set of standard ESP-r files.
      &  '  # path to networks'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*ctlpth ',ctlpth(1:lncp),
      &  '  # path to controls'
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*aimpth ',aimpth(1:lncp),
+     &  '  # path to aim2'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*radpth ',radpth,
      &  '  # path to radiance files'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*imgpth ',imgpth,

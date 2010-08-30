@@ -28,6 +28,9 @@ C archiveit:  Archive the current model.
 C ********** exportcad
 C exportcad: controls model export facilities.
       subroutine exportcad(itrc,IER)
+
+      USE AIM2_InputData, ONLY: iAIM2,LAIM2
+
 #include "building.h"
 #include "model.h"
       
@@ -1503,6 +1506,9 @@ C pass to tar archive. Detect where the current model is located
 C and if the user is browsing the model.
 C << to be done - then name file generated is never cleaned up >>
       subroutine archiveit(ier)
+
+      USE AIM2_InputData, ONLY: iAIM2,LAIM2
+
 #include "building.h"
 #include "model.h"
 #include "uncertainty.h"
@@ -1537,7 +1543,7 @@ C ICLIM,LCLIM (for climate file)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/rcmd/LCMDFL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
       common/user/browse
       common/IPVF/lipvdatf
       COMMON/GR1D05/LGRD1D
@@ -1566,7 +1572,6 @@ C ICLIM,LCLIM (for climate file)
       common/imagfi/noimg,iton
       common/hvacinfo/ihvacflag,hvacfile
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
-      common/aim2def/iAIM2,LAIM2
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
       character LPRJLG*72,LPNF*72,LMOIST*72
@@ -1593,12 +1598,12 @@ C The string buffer doit is only used within ifdef code.
       character ctldoc*248,LCTLF*72,lradcf*72,LGrdSt*72
       character GTGEOM*72,lipvdatf*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,LTMPFL*72
+      character docpth*24,tmppth*24,dbspth*24,LTMPFL*72,aimpth*24
       character LF*72,LFL*144
       CHARACTER spflnam*72,entflnam*72
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
       character LLASCI*144
-      character hvacfile*72,LAIM2*72,LBSIMP*72
+      character hvacfile*72,LBSIMP*72
 
       logical browse,XST,unixok
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
@@ -1891,8 +1896,26 @@ C Write HOT3000 hvac file if known.
 C Write HOT3000 AIM-2 file if known.
       if(iAIM2.eq.0)then
         continue
+      elseif(LAIM2(1:7).eq.'UNKNOWN'.or.LAIM2(1:2).eq.'  ')then
+        continue
       else
-        call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LAIM2)
+        lc=lnblnk(aimpth)
+        if(aimpth(1:lc).eq.LAIM2(1:lc))then
+          if(aimpth(1:3).eq.'../')then
+            if(.NOT.pathome)then
+              write(IUNIT,'(5a)',IOSTAT=IOS,ERR=2) tr(1:ltr),fs,
+     &          aimpth(4:lc),fs,LAIM2(lc+2:lnblnk(LAIM2))
+            else
+              write(IUNIT,'(5a)',IOSTAT=IOS,ERR=2) tp(1:ltp),fs,
+     &          aimpth(1:lc),fs,LAIM2(lc+2:lnblnk(LAIM2))
+            endif
+          elseif(aimpth(1:2).eq.'./')then
+            write(IUNIT,'(5a)',IOSTAT=IOS,ERR=2) tp(1:ltp),fs,
+     &        aimpth(3:lc),fs,LAIM2(lc+1:lnblnk(LAIM2))
+          endif
+        else
+          call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LAIM2)
+        endif
       endif
 
 C Write uncertainty analysis library file if known.

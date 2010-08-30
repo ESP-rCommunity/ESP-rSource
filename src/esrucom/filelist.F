@@ -52,7 +52,7 @@ C espriou.h for parameter MFFOLD
       common/uhome/upath
       common/rpath/path
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
@@ -87,7 +87,7 @@ C   `qac` QA contents file, `zip` cflo3 zip (geometry) file.
       character*72 upath,path,odir
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,fs*1,act*1
+      character docpth*24,tmppth*24,dbspth*24,fs*1,act*1,aimpth*24
       character dinstpath*48
 
 C Array for browse menu.
@@ -139,6 +139,11 @@ C project manager was started from).
      &    path(1:lnblnk(path)),ctlpth(1:lnblnk(ctlpth))
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    ctlpth(1:lnblnk(ctlpth))
+      elseif(where(1:3).eq.'aim')then
+        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
+     &    path(1:lnblnk(path)),ctlpth(1:lnblnk(aimpth))
+        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
+     &    aimpth(1:lnblnk(aimpth))
       elseif(where(1:3).eq.'img')then
         write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
@@ -218,6 +223,9 @@ C In DOS no need to prepend odir (just use the relative path defined above).
       elseif(what(1:3).eq.'ctl')then
         action='ctl'
         write(outs,*) 'control files in ',subpath
+      elseif(what(1:3).eq.'aim')then
+        action='aim'
+        write(outs,*) 'aim2 files in ',subpath
       elseif(what(1:3).eq.'afn')then
         action='afn'
         write(outs,*) 'network files in ',subpath

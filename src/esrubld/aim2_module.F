@@ -20,9 +20,11 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C This file contains the following routines related to the AIM-2 infiltration model.
+C This file contains the module AIM2 which contains the data for
+C the following routines related to the AIM-2 infiltration model.
 C These routines are invoked prior to bps commencing its time-step simulation:
 
+C   AIM2_H2KDefaults	    Initializes generic house data 
 C   AIM2_READIN             Reads the data contained in the .aim file.
 C   AIM2_SETVARS            Controls calc of time-invariant data for AIM-2 model.
 C   AIM2_HOUSE_VOLUME       Calculates house volume.
@@ -57,8 +59,476 @@ C    Wieringa, J. (1986), `Roughness-dependant Geographical Interpolation
 C    of surface wind speed averages', Quart. J. R. Met. Soc, 112, 867-889.
 C
 C *******************************************************************************
+C ********************************************************************************
+C ************************ MODULE AIM2 *******************************************
+C Created by: Francesca Macdonald
+C Date: July 3, 2010
+C 
+C ********************************************************************************
+      MODULE AIM2_InputData 
+      
+      IMPLICIT NONE
+      
+      SAVE !ensures values do not change between sucessive invocations
+
+C---------------------------------------------------------------------------------
+C Constant initialization.
+C---------------------------------------------------------------------------------
+
+C PI is initialized here because FORTRAN lacks an intrinsic function for PI.
+        REAL, PARAMETER :: PI = 3.14156
+
+C Gravitational acceleration (m/s^2).
+        REAL, PARAMETER :: gravity = 9.81
+
+C Interaction coefficient between wind and stack effects. Defined as
+C a constant by Walker and Wilson (1993, p4) based on empirical
+C observations.
+        REAL, PARAMETER :: AIM2_B1 = -1./3.
 
 
+C---------------------------------------------------------------------------------
+C Declare parameters
+C---------------------------------------------------------------------------------
+
+c previously defined in common/aim2def/iAIM2,LAIM2
+
+C Flag for whether aim2 AIM-2 infiltration model active.  iAIM2=1 if active
+      INTEGER :: iAIM2
+C Filename for aim2 file       
+      CHARACTER :: LAIM2 *72
+
+C Air tightness type as defined in HOT2000 interface:
+C 1=blower door test; 2=quick blower door test;
+C 3=loose; 4=average; 5=present; 6=energy tight.
+      INTEGER :: airtight_type
+
+C Three options are available for the blower-door results inputs
+C Option 1: flow coefficient C0 [m^3/(s Pa^n)]
+C           flow exponent n
+C Option 2: Air change rate @ 50Pa
+C           Pressure difference in Pa
+C Option 3: Air change rate @ 50Pa
+C           Pressure difference in Pa
+C           Equivalent leakage area in cm^2
+C           Discharge coefficient Cd used to calculate leakage area
+            
+      INTEGER :: blower_door_input_option
+
+C Both flow coefficient and flow exponent can be either user inputs or
+C derived variables, depending on the blower door input option.
+C Since they are already declared as derived variables in
+C COMMON/AIM2_CALC_DATA/, no change is made in this respect.
+
+C Air change rate @ 50Pa. Used for blower_door_input_option equal to 2 and 3
+      REAL :: ACH_50Pa
+
+C Pressure difference in Pa for ELA_cm.
+      REAL :: ELA_deltaP
+        
+C Flag indicating whether user input ELA: 0=no input; 1=input given.
+      INTEGER :: ELA_given
+
+C Equivalent leakage area in cm^2. Only used for blower_door_input_option equal to 3
+      REAL :: ELA_cm
+
+C Discharge coefficient. Only used for blower_door_input_option equal to 3
+      REAL :: ELA_Cd
+              
+C Flag indicating whether user has specified leakage fractions for ceiling,
+C wall, and floor: 0 indicates user input not given; 1 indicates user input given.
+      INTEGER :: userspec_leakage
+
+C Ceiling, wall, and floor leakage fractions.
+      REAL :: AIM2_ceil_frac,AIM2_wall_frac,AIM2_floor_frac
+
+C Terrain flag at weather station:
+C         1=Open sea,fetch > 5 km
+C         2=Mud flats,no vegetation
+C         3=Open flat terrain, grass
+C         4=Low crops, x/H > 20
+C         5=High crops, scattered obstacles
+C         6=Parkland, bushes, x/H ~ 10
+C         7=Suburban, forest
+C         8=City centre
+      INTEGER :: AIM2_terrain_weather
+      
+C Terrain flag at building site. Same options as for AIM2_terrain_weather.
+      INTEGER :: AIM2_terrain_building
+
+C Flag indicating local shielding on walls:
+C         1=No local shielding
+C         2=Light local shielding
+C         3=Heavy
+C         4=Very heavy
+C         5=Complete (by large buildings)
+      INTEGER :: AIM2_wall_shielding
+
+C Flag indicating local shielding on flue. Same options as for AIM2_wall_shielding.
+      INTEGER :: AIM2_flue_shielding
+
+C Height of anenometor at weather station (m).
+      REAL :: AIM2_anemom_height
+
+C Height of building eaves (m).
+      REAL :: AIM2_eaves_height
+
+C Diameter of furnace flue (mm).
+      REAL :: AIM2_furnace_flue
+
+C Diameter of #1 fireplace flue (mm).
+      REAL :: AIM2_fire_flue1
+
+C Diameter of #2 fireplace flue (mm).
+      REAL :: AIM2_fire_flue2
+
+C Diameter of primary DHW system flue (mm).
+      REAL :: AIM2_DHW_flue1
+
+C Diameter of secondary DHW system flue (mm).
+      REAL :: AIM2_DHW_flue2
+
+C Number of zone whose temperature is used as reference for infiltration calculcations.
+      INTEGER :: AIM2_ref_zone
+
+C Number of zones that receive infiltration.
+      INTEGER :: AIM2_num_zones_infil
+
+C Matrix holding indices of zones that receive infiltration.
+C Dynamic memory allocation to set the size of the array, means
+C a maximum does not need to be decided at this point
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: AIM2_zone_infil
+
+C Zone number of basement (basements treated differently that living space in terms of
+C allocation of infiltration air flow).
+      INTEGER :: AIM2_basement_zone
+
+C Zone number of Crawl Space (The volume of the crawl space is not included
+c in the house volume for infiltration calculations).
+      INTEGER :: AIM2_CrawlSpace_zone
+
+C Zone number of attic. Infiltration to attics not calculated with AIM-2 model
+C but rather treated with different approach.
+      INTEGER :: AIM2_attic_zone
+
+C File version (used in report functions)
+      REAL :: fAIM2VersionNumber
+	
+C Initialization flag	
+      LOGICAL :: AIM2_Initialized 
+
+      END MODULE AIM2_InputData
+
+C ********************************************************************************
+C ********************************************************************************
+
+      MODULE AIM2_CalcData 
+
+      IMPLICIT NONE
+      
+      SAVE !ensures values do not change between sucessive invocations
+C ********************************************************************************
+C ************************* AIM2_CALC_DATA ***************************************
+C Created by: Ian Beausoleil-Morrison
+C Initial Creation Date: October 19, 2000
+C Copyright 2000: NRCan Buildings Group
+
+C This module declares the variables to hold data that are calculated by the
+C AIM-2 model. Variables that are calculated prior to the time-step simulation
+C are treated here. Most variables that are calculated during the time-step
+C simulation are passed through calling statements rather than in this module.
+C The only exception is the array which stores the infiltration rate to each
+C zone. That is included in this module so that its data can exist following
+C the return from AIM2_CONTROL.
+
+
+C The height of the flue (m).
+      REAL :: AIM2_flue_height
+
+C The normalized height of the flue. Refer to eq 20 of Wilson and Walker (1990).
+      REAL :: AIM2_Betaf
+
+C The building fabric flow coefficient.
+      REAL :: AIM2_CO
+
+C The building flow exponent (dimensionless).
+      REAL :: AIM2_n
+
+C Diameter of furnace flue when furnace operating (mm).
+      REAL :: furnON_flue_diam
+
+C Diameter of furnace flue when furnace off (mm).
+      REAL :: furnOFF_flue_diam
+
+C The wind speed correction factor.
+      REAL :: AIM2_Ct
+
+C The shelter coefficients for the walls.
+      REAL :: AIM2_Swo
+
+C The shelter coefficients for the flue.
+      REAL :: AIM2_Swflue
+
+C House volume in m^3.
+      REAL :: AIM2_house_vol
+
+C Matrix holding the infiltration rate apportioned to each zone.
+C Dynamic memory allocation to set the size of the array
+      REAL, ALLOCATABLE, DIMENSION(:) :: AIM2_infil_to_zones
+
+      END MODULE AIM2_CalcData 
+
+      
+C ********************************************************************************
+C ********************************************************************************
+
+      MODULE AIM2_H2K_DUMMY 
+
+      IMPLICIT NONE
+      
+      SAVE !ensures values do not change between sucessive invocations
+
+C     ********************************************************************************
+C     ************************* AIM2_H2K_DUMMY ***************************************
+C     Created by: Ian Beausoleil-Morrison
+C     Initial Creation Date: October 19, 2000
+C     Copyright 2000: NRCan Buildings Group
+        
+C     This module declares and initialzes generic house data that is required by
+C     the AIM-2 model. These data are "hard-wired" here for the purposes of testing
+C     the AIM-2 model. As work proceeds to integrate the HOT2000 interface and the ESP-r
+C     engine these data will be passed by the interface rather than initialized here.
+
+C House type (as defined in H2K list 62):
+C   1 = Single detached
+C   2 = Double/Semi-detached
+C   3 = Duplex
+C   4 = Triplex
+C   5 = Apartment unit (Individual) 
+C   6 = Row house, end unit
+C   7 = Mobile home
+C   8 = Row house, middle unit
+      INTEGER :: H2K_house_type 
+        
+        
+C     Description of number of storeys input by user (as defined in H2K list 63):
+C     1 = One storey
+C     2 = One and a half
+C     3 = Two storeys
+C     4 = Two and a half
+C     5 = Three storeys
+C     6 = Split level
+C     7 = Split entry / Raised basement
+      INTEGER :: H2K_storeys
+        
+C     Number of foundations input by user.
+      INTEGER ::  H2K_found_num
+        
+        
+C     Foundation type (as defined in H2K iFndatn). The index indicates the
+C     foundation number under consideration.
+C     1 = N/A
+C     2 = Basement
+C     3 = Slab-on-grade
+C     4 = Closed crawl space
+C     5 = Vented crawl space
+C     6 = Open crawl space
+C     7 = Walkout basement
+      INTEGER :: H2K_found_type(6)
+
+        
+C     Foundation depth (see H2K rFndatn). The index indicates the
+C     foundation number under consideration.
+      REAL H2K_found_depth(6) 
+        
+        
+C     Foundation floor area (see H2K rFndatn). The index indicates the
+C     foundation number under consideration.
+      REAL :: H2K_found_area(6) 
+        
+        
+C     Flags indicating whether "fireplace #1" and "fireplace #2" exist.
+      LOGICAL :: H2K_fireplace1  
+      LOGICAL :: H2K_fireplace2
+        
+	
+C     Flags indicating presence of primary ("1" suffix) and secondary ("2" suffix)
+C     DHW systems.
+      LOGICAL :: H2K_DHW1_exist
+      LOGICAL :: H2K_DHW2_exist
+        
+        
+C     Flags indicating whether the primary and secondary DHW systems share the
+C     flue with the furnace.
+      LOGICAL :: H2K_DHW1_shareflue
+      LOGICAL :: H2K_DHW2_shareflue 
+        
+        
+C     Flags indicating whether the primary and secondary DHW systems are located
+C     indoors (true) or outdoors (false).
+      LOGICAL :: H2K_DHW1_inside
+      LOGICAL :: H2K_DHW2_inside
+       
+        
+C     Flag indicating whether primary DHW system is a solar collector. Interface
+C     does not allow secondary system to be solar.
+      LOGICAL :: H2K_DHW1_solar
+	
+
+      END MODULE AIM2_H2K_DUMMY 
+C ********************************************************************************
+C ********************************************************************************
+
+      MODULE AIM2
+      
+      USE AIM2_InputData
+      USE AIM2_CalcData
+      USE AIM2_H2K_DUMMY
+
+      IMPLICIT NONE
+  
+C Add Proceedures
+      CONTAINS
+C ********************************************************************************
+C ************************ Initialize_AIM2_Params *******************************************
+C Created by: Francesca Macdonald on May 4, 2010:
+
+C This subroutine initializes the AIM2 parameters, this allows checks to be made on
+C which parameters have been defined (for use in menu options).
+     
+      SUBROUTINE Initialize_AIM2_Params
+      
+      CALL AIM2_Deallocate
+
+      airtight_type = 0      
+      blower_door_input_option = 0
+      ACH_50Pa = 0.
+      ELA_deltaP = 0.
+      ELA_given = 0
+      ELA_cm = 0.
+      ELA_Cd = 0.
+      userspec_leakage = 0
+      AIM2_ceil_frac= 0.
+      AIM2_wall_frac = 0.
+      AIM2_floor_frac = 0.
+      AIM2_terrain_weather = 0
+      AIM2_terrain_building = 0
+      AIM2_wall_shielding = 0
+      AIM2_flue_shielding = 0
+      AIM2_anemom_height = 10.
+      AIM2_eaves_height = 0.
+      AIM2_furnace_flue = 0.
+      AIM2_fire_flue1 = 0.
+      AIM2_fire_flue2 = 0.
+      AIM2_DHW_flue1 = 0.
+      AIM2_DHW_flue2 = 0.
+      AIM2_ref_zone = 0
+      AIM2_num_zones_infil = 0
+      AIM2_basement_zone = 0
+      AIM2_CrawlSpace_zone = 0
+      AIM2_attic_zone = 0
+      fAIM2VersionNumber = -1.
+      AIM2_Initialized = .TRUE.
+      
+      END SUBROUTINE Initialize_AIM2_Params
+
+C ********************************************************************************
+C ************************ InitializeH2KDefaults *******************************************
+C Created by: Ian Beausoleil-Morrison
+C Initial Creation Date: July 31, 2000
+C Copyright 2000: NRCan Buildings Group
+
+C Modified by Francesca Macdonald on May 4, 2010:
+C   - Seperated this into a subroutine for use with the new interface 
+
+C This subroutine declares and initialzes generic house data that is required by
+C the AIM-2 model. These data are "hard-wired" here for the purposes of testing
+C the AIM-2 model. As work proceeds to integrate the HOT2000 interface and the ESP-r
+C engine these data will be passed by the interface rather than initialized here.
+     
+      SUBROUTINE AIM2_H2KDefaults
+      
+      IMPLICIT NONE
+   
+
+C House type (as defined in H2K list 62):
+C   1 = Single detached
+C   2 = Double/Semi-detached
+C   3 = Duplex
+C   4 = Triplex
+C   5 = Apartment unit (Individual)
+C   6 = Row house, end unit
+C   7 = Mobile home
+C   8 = Row house, middle unit
+         
+      H2K_house_type = 1
+
+C Description of number of storeys input by user (as defined in H2K list 63):
+C   1 = One storey
+C   2 = One and a half
+C   3 = Two storeys
+C   4 = Two and a half
+C   5 = Three storeys
+C   6 = Split level
+C   7 = Split entry / Raised basement
+      H2K_storeys = 1
+
+C Number of foundations input by user.
+      H2K_found_num = 1
+
+C Foundation type (as defined in H2K iFndatn). The index indicates the
+C foundation number under consideration.
+C   1 = N/A
+C   2 = Basement
+C   3 = Slab-on-grade
+C   4 = Closed crawl space
+C   5 = Vented crawl space
+C   6 = Open crawl space
+C   7 = Walkout basement
+      H2K_found_type(1) = 3
+
+
+C Foundation depth (see H2K rFndatn). The index indicates the
+C foundation number under consideration.
+      H2K_found_depth(1) = 0.0
+
+
+C Foundation floor area (see H2K rFndatn). The index indicates the
+C foundation number under consideration.
+      H2K_found_area(1) = 80.0
+         
+
+C Flags indicating whether "fireplace #1" and "fireplace #2" exist.
+ 
+      H2K_fireplace1= .false.
+      H2K_fireplace2 = .false.
+
+C Flags indicating presence of primary ("1" suffix) and secondary ("2" suffix)
+C DHW systems.
+
+      H2K_DHW1_exist = .true.
+      H2K_DHW2_exist = .false.
+
+C Flags indicating whether the primary and secondary DHW systems share the
+C flue with the furnace.
+        
+      H2K_DHW1_shareflue = .true. 
+      H2K_DHW2_shareflue = .true.
+
+C Flags indicating whether the primary and secondary DHW systems are located
+C indoors (true) or outdoors (false).
+       
+      H2K_DHW1_inside = .true.
+      H2K_DHW2_inside = .true.
+
+C Flag indicating whether primary DHW system is a solar collector. Interface
+C does not allow secondary system to be solar.
+      H2K_DHW1_solar = .false. 
+
+C **END H2K Defaults. 
+
+      END SUBROUTINE AIM2_H2KDefaults
+      
 C ********************************************************************************
 C ************************ AIM2_READIN *******************************************
 C Created by: Ian Beausoleil-Morrison
@@ -125,13 +595,10 @@ C    AIM2_zone_infil(i) = Zone number of i'th zone that receives infiltration.
 C    AIM2_basement_zone = Zone number of basement.
 C    AIM2_CrawlSpace_zone = Zone number of crawlspace.
 C    AIM2_attic_zone = Zone number of attic.
-C --------------------------------------------------------------------------------
-
+      
       SUBROUTINE AIM2_READIN
-
       IMPLICIT NONE
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+
 #include "espriou.h"
 C espriou.h provides currentfile.
 
@@ -143,9 +610,8 @@ C espriou.h provides currentfile.
       COMMON/FILEP/IFIL
       INTEGER IFIL
 
-      common/aim2def/iAIM2,LAIM2
-      INTEGER iAIM2
-      CHARACTER LAIM2 *72
+      COMMON/C1/NCOMP,NCON
+      INTEGER NCOMP,NCON
 
       COMMON/WindowControl/
      &     fWindowSetpoint,
@@ -173,99 +639,18 @@ C Declarations for local variables and variables passed in common blocks.
       REAL val
       LOGICAL CLOSE
       
-C **Begin H2K Defaults.** 
-C This module declares and initialzes generic house data that is required by
-C the AIM-2 model. These data are "hard-wired" here for the purposes of testing
-C the AIM-2 model. As work proceeds to integrate the HOT2000 interface and the ESP-r
-C engine these data will be passed by the interface rather than initialized here.
-        
-
-C House type (as defined in H2K list 62):
-C   1 = Single detached
-C   2 = Double/Semi-detached
-C   3 = Duplex
-C   4 = Triplex
-C   5 = Apartment unit (Individual)
-C   6 = Row house, end unit
-C   7 = Mobile home
-C   8 = Row house, middle unit
-         
-        H2K_house_type = 1
-
-C Description of number of storeys input by user (as defined in H2K list 63):
-C   1 = One storey
-C   2 = One and a half
-C   3 = Two storeys
-C   4 = Two and a half
-C   5 = Three storeys
-C   6 = Split level
-C   7 = Split entry / Raised basement
-
-        H2K_storeys = 1
-
-C Number of foundations input by user.
-        
-        H2K_found_num = 1
-
-C Foundation type (as defined in H2K iFndatn). The index indicates the
-C foundation number under consideration.
-C   1 = N/A
-C   2 = Basement
-C   3 = Slab-on-grade
-C   4 = Closed crawl space
-C   5 = Vented crawl space
-C   6 = Open crawl space
-C   7 = Walkout basement
-        H2K_found_type(1) = 3
-
-
-C Foundation depth (see H2K rFndatn). The index indicates the
-C foundation number under consideration.
-        H2K_found_depth(1) = 0.0
-
-
-C Foundation floor area (see H2K rFndatn). The index indicates the
-C foundation number under consideration.
-        H2K_found_area(1) = 80.0
-         
-
-C Flags indicating whether "fireplace #1" and "fireplace #2" exist.
- 
-        H2K_fireplace1= .false.
-
-        H2K_fireplace2 = .false.
-
-C Flags indicating presence of primary ("1" suffix) and secondary ("2" suffix)
-C DHW systems.
-
-        H2K_DHW1_exist = .true.
-
-        H2K_DHW2_exist = .false.
-
-C Flags indicating whether the primary and secondary DHW systems share the
-C flue with the furnace.
-        
-        H2K_DHW1_shareflue = .true. 
-        H2K_DHW2_shareflue = .true.
-
-C Flags indicating whether the primary and secondary DHW systems are located
-C indoors (true) or outdoors (false).
-       
-        H2K_DHW1_inside = .true.
-        H2K_DHW2_inside = .true.
-
-C Flag indicating whether primary DHW system is a solar collector. Interface
-C does not allow secondary system to be solar.
-        H2K_DHW1_solar = .false. 
-
-C **END H2K Defaults. 
-
+      INTEGER :: allocate_status	!allocate status=0 if sucessfull
+      
+C Initialise H2K Defaults
+      CALL AIM2_H2KDefaults()
+      
 
 C Open AIM-2 input data file. Note that if IFIL only incremented by one, problems
 C occur as this file unit is already in use.
       IUNIT=IFIL+10
       CALL ERPFREE(IUNIT,ISTAT)
       CALL EFOPSEQ(IUNIT,LAIM2,1,IER)
+    
       IF(ier.ne.0)goto 1000
       write(currentfile,'(a)') LAIM2(1:lnblnk(LAIM2))
 
@@ -545,14 +930,41 @@ C of the zones that do receive infiltration.
         goto 1000
       endif
       AIM2_num_zones_infil = IVAL
-      DO ICOMP=1,AIM2_num_zones_infil
-        CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' zone receiving infil',IER)
-        if(IER.NE.0)then
-          call edisp(IUOUT,' zone receiving infil.')
-          goto 1000
-        endif
-        AIM2_zone_infil(ICOMP) = IVAL
-      END DO
+      
+ 
+      IF (AIM2_num_zones_infil.GT.0) THEN
+        CALL AIM2_Deallocate
+        IF ((.NOT.ALLOCATED(AIM2_zone_infil)).AND.
+     &      (.NOT.ALLOCATED(AIM2_infil_to_zones))) THEN
+          ALLOCATE(AIM2_zone_infil(AIM2_num_zones_infil),
+     &       STAT=allocate_status)
+C Check allocation was sucessful     
+          IF (.NOT.ALLOCATED(AIM2_zone_infil)) THEN
+            CALL EDISP(IUOUT,' Warning: AIM2_zone_infil not allocated')
+          END IF
+	  
+          ALLOCATE(AIM2_infil_to_zones(NCOMP),
+     &       STAT=allocate_status)
+C Check allocation was sucessful     
+          IF (.NOT.ALLOCATED(AIM2_infil_to_zones)) THEN
+            CALL EDISP(IUOUT,'AIM2_infil_to_zones not allocated')
+	  END IF
+	  
+          IF ((ALLOCATED(AIM2_zone_infil)).AND.
+     &        (ALLOCATED(AIM2_infil_to_zones))) THEN
+            DO ICOMP=1,AIM2_num_zones_infil
+              CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
+     &            ' zone receiving infil',IER)
+              if(IER.NE.0)then
+                call edisp(IUOUT,' zone receiving infil.')
+                goto 1000
+              endif
+              AIM2_zone_infil(ICOMP) = IVAL
+	    END DO
+          END IF
+        END IF
+      END IF
+
 
 C Read zone number of basement (basements treated differently that living space
 C in terms of allocation of infiltration air flow).
@@ -660,7 +1072,7 @@ C Error handling.
 
  1001 Continue
       RETURN
-      END
+      END SUBROUTINE AIM2_READIN
 
 
 C ********************************************************************************
@@ -683,7 +1095,6 @@ C ------------------------------------------------------------------------------
       SUBROUTINE AIM2_SETVARS
 
       IMPLICIT NONE
-
 C Calculate the volume of the house.
       CALL AIM2_HOUSE_VOLUME
 
@@ -707,7 +1118,7 @@ C Set the height of the flue.
       CALL AIM2_FLUEHGT
 
       RETURN
-      END
+      END SUBROUTINE AIM2_SETVARS
 
 
 C ********************************************************************************
@@ -733,16 +1144,15 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_HOUSE_VOLUME
 
-C   USE AIM2_CALC_DATA
-
       IMPLICIT NONE
 
 #include "building.h"
 #include "geometry.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: IUOUT,IUIN
 
 
 C Declarations for local variables.
@@ -752,18 +1162,22 @@ C Sum the volumes of the zones that are aerodynamically part of the
 C house's living space. The zones to include in this summation are defined
 C in the AIM-2 input file.
       AIM2_house_vol = 0.
-      DO i=1,AIM2_num_zones_infil
-        ICOMP = AIM2_zone_infil(i)                    ! Get zone index number.
+      IF (ALLOCATED(AIM2_zone_infil)) THEN
+        DO i=1,AIM2_num_zones_infil
+          ICOMP = AIM2_zone_infil(i)                    ! Get zone index number.
 c       AIM2_house_vol = AIM2_house_vol + VOL(ICOMP)  ! Add volume of zone.
 c The crawl space zone is not part of the living space
-        If ( ICOMP .ne. AIM2_CrawlSpace_zone .and.
-     &       ICOMP .ne. AIM2_attic_zone) Then
-           AIM2_house_vol = AIM2_house_vol + VOL(ICOMP)
-        Endif
-      END DO
+          If ( ICOMP .ne. AIM2_CrawlSpace_zone .and.
+     &        ICOMP .ne. AIM2_attic_zone) Then
+          AIM2_house_vol = AIM2_house_vol + VOL(ICOMP)
+          Endif
+        END DO
+        ELSE
+          CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated')
+	END IF
 
       RETURN
-      END
+      END SUBROUTINE AIM2_HOUSE_VOLUME
 
 
 C ********************************************************************************
@@ -787,13 +1201,9 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_FLUEHGT
 
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 C Set the flue height.
       AIM2_flue_height = AIM2_eaves_height + 1.5
@@ -803,7 +1213,7 @@ C Wilson and Walker (1990).
       AIM2_Betaf = AIM2_flue_height / AIM2_eaves_height
 
       RETURN
-      END
+      END SUBROUTINE AIM2_FLUEHGT
 
 
 C ********************************************************************************
@@ -837,13 +1247,8 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_LEAKDIST
 
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_H2K_DUMMY
-
       IMPLICIT NONE
 
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 C Type declarations for local variables.
       INTEGER i,j,k,n
@@ -938,7 +1343,7 @@ C---------`LeakDis' array.
       ENDIF
 
       RETURN
-      END
+      END SUBROUTINE AIM2_LEAKDIST
 
 
 C ********************************************************************************
@@ -962,12 +1367,9 @@ C	j  The foundation type index corresponding to the `LeakDis' array.
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_SETJ(ifound,j)
-C     USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
 
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 C Declarations for local variables.
       INTEGER ifound,j
@@ -985,7 +1387,7 @@ C and set `j' index accordingly.
       if ( H2K_found_type(ifound).eq.7 ) j=4  ! Walkout
 
       RETURN
-      END
+      END SUBROUTINE AIM2_SETJ
 
 
 C ********************************************************************************
@@ -1013,13 +1415,9 @@ C    AIM2_n  The exponent of the flow-pressure relationship (dimensionless).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_COandN
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
-C      USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
@@ -1128,7 +1526,7 @@ C (dimensionless).
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_COandN
 
 
 C ********************************************************************************
@@ -1152,14 +1550,10 @@ C    furnOFF_flue_diam  Diameter of furnace flue when furnace off (mm).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_flue_size
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 #include "building.h"
 #include "hvac_parameters.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 #include "hvac_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -1304,7 +1698,7 @@ C its fuel.
       END SELECT
 
       RETURN
-      END
+      END SUBROUTINE AIM2_flue_size
 
 
 C ********************************************************************************
@@ -1328,12 +1722,9 @@ C    AIM2_Swflue  The shelter coefficients for the flue (dimensionless).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_shelter_wall_flue
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
@@ -1405,7 +1796,7 @@ C and coefficients are used as for the walls.
       END SELECT
 
       RETURN
-      END
+      END SUBROUTINE AIM2_shelter_wall_flue
 
 
 C ********************************************************************************
@@ -1432,12 +1823,9 @@ C    AIM2_Ct  The wind speed correction factor.
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_wind_correct
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
+
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
@@ -1549,7 +1937,7 @@ C weather station. This is equation 27 from Bradley (1993, p8).
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_wind_correct
 
 C ********************************************************************************
 C **************************** AIM2_report **************************************
@@ -1563,16 +1951,11 @@ C AIM2_report decodes the AIM-2 common blocks into a brief report.
       IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
 
       integer lnblnk
 
-      common/aim2def/iAIM2,LAIM2
-      INTEGER iAIM2
-      CHARACTER LAIM2 *72
 
       COMMON/WindowControl/
      &     fWindowSetpoint,
@@ -1941,5 +2324,65 @@ C Describe crawl space, attic and controls.
       call edisp248(itru,outs248,90)
 
       return
-      end
+      END subroutine AIM2_report
 
+
+C ******************** AIM2_Deallocate ****************************
+C *********************************************************************
+C Created by: Francesca Macdonald
+C Date: 23/07/2010
+C 
+C AIM2_Deallocate deallocates the memory asociated with
+C the allocatable arrays in the AIM2 model
+C AIM2_infil_to_zones
+C AIM2_zone_infil
+C *********************************************************************
+      SUBROUTINE AIM2_Deallocate
+      
+      IMPLICIT NONE
+
+C Declare local variables
+      INTEGER :: deallocatestatus
+C Common blocks
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: IUOUT,IUIN
+
+      IF (ALLOCATED(AIM2_infil_to_zones)) THEN
+C Debig AIM2      
+C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones      	
+	DEALLOCATE(AIM2_infil_to_zones, STAT=deallocatestatus)
+        IF (deallocatestatus.NE.0) THEN
+          CALL EDISP(IUOUT,
+     &       ' Problem with deallocation of AIM2_infil_to_zones array')
+        END IF
+      END IF
+
+      IF (ALLOCATED(AIM2_zone_infil)) THEN
+C Debig AIM2      
+C        WRITE(*,*)'AIM2_zone_infil',AIM2_zone_infil      	
+        DEALLOCATE(AIM2_zone_infil, STAT=deallocatestatus)
+        IF (deallocatestatus.NE.0) THEN
+          CALL EDISP(IUOUT,
+     &       ' Problem with deallocation of AIM2_infil_to_zones array')
+        END IF
+      END IF
+
+      END SUBROUTINE AIM2_Deallocate
+       
+C ******************** AIM2_ClearAll ****************************
+C *********************************************************************
+C Created by: Francesca Macdonald
+C Date: 15/08/2010
+C 
+C ClearAim2 resets all the aim2 parameters, used when a new model is loaded
+C *********************************************************************
+      SUBROUTINE AIM2_ClearAll
+ 
+      IMPLICIT NONE
+      
+      CALL Initialize_AIM2_Params
+      CALL AIM2_H2KDefaults    
+      
+      END SUBROUTINE AIM2_ClearAll
+ 
+      END MODULE AIM2
