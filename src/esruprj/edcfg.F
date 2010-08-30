@@ -74,7 +74,7 @@ C LPRFDB,IPRODB (for event profile database)
       common/uhome/upath
       common/CFGV/icfgv
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth
+     &             dbspth,aimpth,bsmpth
 
 C Plant network.
       common/C23/IFPNF,LPNF
@@ -127,7 +127,7 @@ C Uncertainty.
       character NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
+      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,entflnam*72,upath*72,aimpth*24
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
@@ -1235,7 +1235,7 @@ C output, IER=0 indicates no error.
 
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth
+     &             dbspth,aimpth,bsmpth
       common/appw/iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -1295,7 +1295,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character outs*124,outs248*248,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character HOLD*32,zd*64
       character lworking*144
       CHARACTER ETEXT*82
@@ -4069,7 +4069,7 @@ C      common/OUTIN/IUOUT,IUIN
       common/C21/IFCFG,cfgroot,LCFGF
       common/radcfg/LRADCF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth
+     &             dbspth,aimpth,bsmpth
       common/appw/iappw,iappx,iappy
       common/user/browse
       logical concat,OK,DOK,browse,XST,deref,unixok
@@ -4077,7 +4077,8 @@ C      common/OUTIN/IUOUT,IUIN
       character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
       character doit*124,tmode*8,H*72,act*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,longtfile*124,aimpth*24
+      character docpth*24,tmppth*24,dbspth*24,longtfile*124,aimpth*24,
+     &          bsmpth*24
       character brw*8   ! to signal model is being browsed
 #ifdef OSI
       integer ICPMOD     ! passed from tchild

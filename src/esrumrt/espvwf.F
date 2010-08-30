@@ -79,7 +79,7 @@ C Path to model.
       common/uhome/upath
       common/rcmd/LCMDFL
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth
+     &             dbspth,aimpth,bsmpth
 
 C Indicator of possible focus zone.
       common/rzone/inzone
@@ -121,7 +121,7 @@ C Name of current application
       character journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,aimpth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer numberofzones ! to pass to updwire rather than ncomp

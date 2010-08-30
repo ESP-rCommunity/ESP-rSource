@@ -4,6 +4,8 @@ COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 PRJdir = $(SRCdir)/esruprj
 TDFdir = $(SRCdir)/esrutdf
+CETCdir = $(SRCdir)/cetc
+BLDdir = $(SRCdir)/esrubld
 PROG = mrt$(EXE)
 PROG2 = espvwf$(EXE)
 
@@ -12,10 +14,12 @@ PROG2 = espvwf$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = espvwf.o aim2_module.o arrow.o ascii_mat.o bound.o bubble.o c2fdum.o checkrec.o common3dv.o \
+OBJECTS = espvwf.o aim2_module.o arrow.o ascii_mat.o \
+	  basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
+   bound.o bubble.o c2fdum.o checkrec.o common3dv.o \
 	  cread3dv.o ctread.o dossupport.o e3dviews.o edatabase.o edmrt.o egeometry.o \
 	  emfnetw.o emkcfg.o enetmisc.o eroper.o esru_misc.o esystem.o filein.o \
-	  grid.o inside.o item.o matpol.o mfcdat.o mrtinput.o nwkrewr.o \
+	  filelist.o grid.o inside.o item.o matpol.o mfcdat.o mrtinput.o nwkrewr.o \
 	  plelevvc.o plne.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o sparea.o startup.o \
 	  surinv.o survis.o tdfile.o temper.o
 
@@ -33,6 +37,18 @@ arrow.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
+basesimp.F:
+	rm -f basesimp.F
+	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
+bscoeff.F:
+	rm -f bscoeff.F
+	ln -s $(BLDdir)/bscoeff.F .
+bscoeff_extended.F:
+	rm -f bscoeff_extended.F
+	ln -s $(CETCdir)/bscoeff_extended.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -78,6 +94,9 @@ esru_misc.F:
 esystem.F:
 	rm -f esystem.F
 	ln -s $(COMdir)/esystem.F .
+filelist.F:
+	rm -f filelist.F
+	ln -s $(COMdir)/filelist.F .
 item.F:
 	rm -f item.F
 	ln -s $(COMdir)/item.F .
@@ -120,7 +139,8 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
-	aim2_module.F arrow.F ascii_mat.F c2fdum.F common3dv.F cread3dv.F ctread.F dossupport.F e3dviews.F \
+	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
+	c2fdum.F common3dv.F cread3dv.F ctread.F dossupport.F e3dviews.F \
 	edatabase.F edmrt.F egeometry.F emfnetw.F enetmisc.F enetrewr.F emkcfg.F \
-	eroper.F esru_misc.F esystem.F item.F mfcdat.F nwkrewr.F \
+	eroper.F esru_misc.F esystem.F filelist.F item.F mfcdat.F nwkrewr.F \
 	plelevvc.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F sort.F startup.F tdfile.F

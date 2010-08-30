@@ -4,16 +4,19 @@ COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 PRJdir = $(SRCdir)/esruprj
 TDFdir = $(SRCdir)/esrutdf
+CETCdir = $(SRCdir)/cetc
+BLDdir = $(SRCdir)/esrubld
 PROG = ecnv$(EXE)
 
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = aim2_module.o ecnv.o ascii_mat.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
+OBJECTS = aim2_module.o ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
+	  bscoeff.o bscoeff_extended.o blk_extr.o c2fdum.o ctread.o e2tsbi3.o \
 	  e2vdxf.o e2zip.o edatabase.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
-	  esystem.o item.o low_lev.o mfcdat.o mid_lev.o \
+	  esystem.o filelist.o item.o low_lev.o mfcdat.o mid_lev.o \
 	  nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
 	  startup.o tdfile.o wwxfig.o zipcnv.o
 
@@ -28,6 +31,18 @@ aim2_module.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
+basesimp.F:
+	rm -f basesimp.F
+	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
+bscoeff.F:
+	rm -f bscoeff.F
+	ln -s $(BLDdir)/bscoeff.F .
+bscoeff_extended.F:
+	rm -f bscoeff_extended.F
+	ln -s $(CETCdir)/bscoeff_extended.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -64,6 +79,9 @@ esru_misc.F:
 esystem.F:
 	rm -f esystem.F
 	ln -s $(COMdir)/esystem.F .
+filelist.F:
+	rm -f filelist.F
+	ln -s $(COMdir)/filelist.F .
 item.F:
 	rm -f item.F
 	ln -s $(COMdir)/item.F .
@@ -103,7 +121,8 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
-	aim2_module.F ascii_mat.F c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
+	aim2_module.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
+	c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
-	item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
+	filelist.F item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
 	sort.F startup.F tdfile.F

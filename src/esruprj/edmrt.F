@@ -49,7 +49,7 @@ C will have been defined prior to calling edmrt.
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth
+     &             dbspth,aimpth,bsmpth
       common/appw/iappw,iappx,iappy
 
       DIMENSION VERT(35)
@@ -61,7 +61,7 @@ C will have been defined prior to calling edmrt.
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
       character doit*248,tmode*8,tfile*72,ZN*12
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,act*1,aimpth*24
+      character docpth*24,tmppth*24,dbspth*24,act*1,aimpth*24,bsmpth*24
       character longtfile*144,longtfiledos*144
       integer icni,icnj  ! connection numbers for pair of surfaces.
 #ifdef OSI

@@ -17,7 +17,8 @@ PROG = prj$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS)  $(BUILD_OPTIONS) -c $<
 
-OBJECTS = prj.o anlytc.o aim2_module.o aim2_inputs.o arrow.o ascii_mat.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o \
+OBJECTS = prj.o anlytc.o aim2_module.o aim2_inputs.o arrow.o ascii_mat.o basesimp.o \
+	  basesimp_inputs.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o bscoeff.o bscoeff_extended.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	  clickonbitmap.o common3dv.o commonclm.o context.o ctlexp.o ctlwrt.o ctprob.o \
 	  ctread.o DG_controller_menu.o DHW_module.o dossupport.o e2eplus.o \
@@ -46,6 +47,18 @@ anlytc.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
+basesimp.F:
+	rm -f basesimp.F
+	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
+bscoeff.F:
+	rm -f bscoeff.F
+	ln -s $(BLDdir)/bscoeff.F .
+bscoeff_extended.F:
+	rm -f bscoeff_extended.F
+	ln -s $(CETCdir)/bscoeff_extended.F .
 bsimsel.F:
 	rm -f bsimsel.F
 	ln -s $(COMdir)/bsimsel.F .
@@ -242,7 +255,8 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
-	anlytc.F aim2_module.F ascii_mat.F bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
+	anlytc.F aim2_module.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
+	bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
 	DHW_module.F exlgrad.F dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F \
 	edatabase.F egeometry.F egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F \

@@ -56,7 +56,7 @@ C                             data for validity.
       common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth,aimpth
+     &             dbspth,aimpth,bsmpth
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
@@ -81,7 +81,7 @@ C ipeerptbk is pointer from position in display to day type.
       CHARACTER CTLDOC*248,LCTLF*72,KEY*1,LCFGF*72
       CHARACTER outs*124,H*72,LASCI*72,cfgroot*24,aimpth*24
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,t248*248,SSTR*96
+      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,t248*248,SSTR*96
       character sfile*72,snpfile*72,fs*1
       logical LINKED,OK,dok,XST,browse,unixok
       integer icomp

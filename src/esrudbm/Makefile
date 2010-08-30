@@ -3,15 +3,20 @@ BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 TDFdir = $(SRCdir)/esrutdf
+PRJdir = $(SRCdir)/esruprj
+CETCdir = $(SRCdir)/cetc
+BLDdir = $(SRCdir)/esrubld
 PROG = dbm$(EXE)
 
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = aim2_module.o jdbm.o bcffile.o c2fdum.o ctlexp.o ctread.o dbmedit.o dossupport.o edprof.o \
+OBJECTS = aim2_module.o jdbm.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
+	bcffile.o c2fdum.o ctlexp.o ctread.o dbmedit.o dossupport.o edprof.o \
 	egeometry.o emfnetw.o emkcfgg.o enved.o eroper.o esru_misc.o esystemg.o \
-	gendbb.o hyged.o implegadb.o item.o mfcdat.o mlced.o nwkrewr.o pltcfg.o \
+	filelist.o gendbb.o hyged.o implegadb.o item.o \
+	mfcdat.o mlced.o nwkrewr.o pltcfg.o \
 	prsitem.o sort.o startupg.o tdfile.o readTrnsys.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
@@ -22,6 +27,18 @@ $(PROG) : $(OBJECTS)
 aim2_module.F:
 	rm -f aim2_module.F
 	ln -s $(BLDdir)/aim2_module.F .
+basesimp.F:
+	rm -f basesimp.F
+	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
+bscoeff.F:
+	rm -f bscoeff.F
+	ln -s $(BLDdir)/bscoeff.F .
+bscoeff_extended.F:
+	rm -f bscoeff_extended.F
+	ln -s $(CETCdir)/bscoeff_extended.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -52,6 +69,9 @@ eroper.F:
 esru_misc.F:
 	rm -f esru_misc.F
 	ln -s $(COMdir)/esru_misc.F .
+filelist.F:
+	rm -f filelist.F
+	ln -s $(COMdir)/filelist.F .
 item.F:
 	rm -f item.F
 	ln -s $(COMdir)/item.F .
@@ -77,10 +97,12 @@ readTrnsys.F:
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
-install: 
+install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean :
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) aim2_module.F c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
-	egeometry.F emfnetw.F emkcfgg.F eroper.F esru_misc.F item.F mfcdat.F nwkrewr.F \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	aim2_module.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
+	c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
+	egeometry.F emfnetw.F emkcfgg.F eroper.F esru_misc.F filelist.F item.F mfcdat.F nwkrewr.F \
 	pltcfg.F sort.F tdfile.F readTrnsys.F

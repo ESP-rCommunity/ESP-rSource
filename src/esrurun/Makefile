@@ -7,6 +7,8 @@ MFSdir = $(SRCdir)/esrumfs
 PDFdir = $(SRCdir)/esrupdf
 PRJdir = $(SRCdir)/esruprj
 TDFdir = $(SRCdir)/esrutdf
+BLDdir = $(SRCdir)/esrubld
+CETCdir = $(SRCdir)/cetc
 PROG = run$(EXE)
 PROG2 = runesp$(EXE)
 
@@ -15,6 +17,7 @@ PROG2 = runesp$(EXE)
 	$(MFC) $(FFLAGS) -c $<
 
 OBJECTS = runesp.o aim2_module.o arrow.o ascii_mat.o \
+	basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	blcond.o bnlthp.o bpfcom.o bsimsel.o \
 	c2fdum.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	clickonbitmap.o commonclm.o context.o ctlexp.o ctlwrt.o ctread.o \
@@ -41,6 +44,18 @@ arrow.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
+basesimp.F:
+	rm -f basesimp.F
+	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
+bscoeff.F:
+	rm -f bscoeff.F
+	ln -s $(BLDdir)/bscoeff.F .
+bscoeff_extended.F:
+	rm -f bscoeff_extended.F
+	ln -s $(CETCdir)/bscoeff_extended.F .
 blcond.F:
 	rm -f blcond.F
 	ln -s $(PRJdir)/blcond.F .
@@ -295,7 +310,9 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG2) $(PROG).exe $(PROG2).exe $(OBJECTS) $(MODULES) \
-	aim2_module.F arrow.F ascii_mat.F blcond.F bnlthp.F bpfcom.F bsimsel.F \
+	aim2_module.F arrow.F ascii_mat.F \
+	basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
+	blcond.F bnlthp.F bpfcom.F bsimsel.F \
 	c2fdum.F cfdat.F cfdrw.F cfg3dv.F cfgmsc.F cfgrid.F cgd.F clickonbitmap.F commonclm.F \
 	context.F ctlexp.F ctlwrt.F ctread.F dossupport.F e3dviews.F ecasctl.F \
 	econstr.F econtrol.F edcfd.F edcon.F edcondb.F edatabase.F eddb.F edgeo.F edipv.F \
@@ -306,5 +323,5 @@ clean:
 	pltcfg.F pltnet.F prescoef.F prjdmds.F prjfmk.F prjqa.F psychro.F rcdblist.F \
 	rwipv.F rwroam.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
 	editCFC.F
-	
+
 

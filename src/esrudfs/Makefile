@@ -2,16 +2,20 @@ SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 PRJdir = $(SRCdir)/esruprj
+CETCdir = $(SRCdir)/cetc
+BLDdir = $(SRCdir)/esrubld
 PROG = dfs$(EXE)
 
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = dfs.o aim2_module.o arrow.o ascii_mat.o bndarybl.o bndaryl.o bndaryt.o c2fdum.o cfcalc.o cfdat.o \
+OBJECTS = dfs.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
+   bndarybl.o bndaryl.o bndaryt.o bscoeff.o bscoeff_extended.o c2fdum.o cfcalc.o cfdat.o \
 	  cfconv.o cfdrw.o cfdumb.o cfdumm.o cfgrid.o cfmatl.o cfmgerc.o cftext.o \
 	  cfutil.o cgd.o chkconvg.o common3dv.o conc.o e3dviews.o edatabase.o egeometry.o \
-	  eroper.o esru_misc.o lisolv.o locmage.o mitzero.o plot.o psychro.o \
+	  eroper.o esru_misc.o filelist.o \
+	  lisolv.o locmage.o mitzero.o plot.o psychro.o \
 	  read3dv.o sort.o startup.o visgrd.o visual.o visvec.o wvapour.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
@@ -28,6 +32,18 @@ arrow.F:
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
+basesimp.F:
+	rm -f basesimp.F
+	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
+bscoeff.F:
+	rm -f bscoeff.F
+	ln -s $(BLDdir)/bscoeff.F .
+bscoeff_extended.F:
+	rm -f bscoeff_extended.F
+	ln -s $(CETCdir)/bscoeff_extended.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -55,6 +71,10 @@ eroper.F:
 esru_misc.F:
 	rm -f esru_misc.F
 	ln -s $(COMdir)/esru_misc.F .
+filelist.F:
+	rm -f filelist.F
+	ln -s $(COMdir)/filelist.F .
+
 psychro.F:
 	rm -f psychro.F
 	ln -s $(COMdir)/psychro.F .
@@ -76,5 +96,7 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
-	aim2_module.F arrow.F ascii_mat.F c2fdum.F cfdrw.F cfgrid.F common3dv.F e3dviews.F edatabase.F egeometry.F \
-	eroper.F esru_misc.F psychro.F read3dv.F sort.F startup.F 
+	aim2_module.F arrow.F ascii_mat.F \
+	basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
+	c2fdum.F cfdrw.F cfgrid.F common3dv.F e3dviews.F edatabase.F egeometry.F \
+	eroper.F esru_misc.F filelist.F psychro.F read3dv.F sort.F startup.F 

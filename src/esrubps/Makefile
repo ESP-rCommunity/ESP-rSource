@@ -24,13 +24,13 @@ PROG = bps$(EXE)
 	$(MCC) $(CFLAGS) -c $<
 
 BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_timestep.o ascii_mat.o \
-	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o bscoeff.o bscoeff_extended.o \
+	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
 	  climi.o cntmnt.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o egrid.o emfnetw.o emoist.o \
 	  enetbound.o enetmath.o enetmisc.o enetpost.o enetrewr.o enetsetu.o \
-	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o g3dfac.o \
+	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o filelist.o g3dfac.o \
 	  g3dfnc.o g3dmtx.o gcfunc.o gsdmtx.o inital.o initalc.o initalp.o \
 	  input.o item.o lisolv.o locmage.o matsv.o mfbndr.o mfcdat.o mfcntl.o \
 	  mfmach.o mfmode.o mfsbld.o mfsbps.o mfsplt.o mfutil.o mitzero.o \
@@ -80,6 +80,9 @@ ascii_mat.F:
 basesimp.F:
 	rm -f basesimp.F
 	ln -s $(BLDdir)/basesimp.F .
+basesimp_inputs.F:
+	rm -f basesimp_inputs.F
+	ln -s $(PRJdir)/basesimp_inputs.F .
 bcfunc.F:
 	rm -f bcfunc.F
 	ln -s $(BLDdir)/bcfunc.F .
@@ -227,6 +230,9 @@ esru_misc.F:
 esystem.F:
 	rm -f esystem.F
 	ln -s $(COMdir)/esystem.F .
+filelist.F:
+	rm -f filelist.F
+	ln -s $(COMdir)/filelist.F .
 g3dfac.F:
 	rm -f g3dfac.F
 	ln -s $(BLDdir)/g3dfac.F .
@@ -316,7 +322,7 @@ mzoutp.F:
 	ln -s $(BLDdir)/mzoutp.F .
 ncm_overheating.F:
 	rm -f ncm_overheating.F
-	ln -s $(BLDdir)/ncm_overheating.F .        
+	ln -s $(BLDdir)/ncm_overheating.F .
 nwkrewr.F:
 	rm -f nwkrewr.F
 	ln -s $(COMdir)/nwkrewr.F .
@@ -564,8 +570,8 @@ Hydrogen_MH_store.F:
 	rm -f Hydrogen_MH_store.F
 	ln -s $(PLTdir)/Hydrogen_MH_store.F
 enet_state_variable_manipulate.F:
-	rm -f enet_state_variable_manipulate.F 
-	ln -s $(PFSdir)/enet_state_variable_manipulate.F 
+	rm -f enet_state_variable_manipulate.F
+	ln -s $(PFSdir)/enet_state_variable_manipulate.F
 Hydrogen_demand_controller.F:
 	rm -f Hydrogen_demand_controller.F
 	ln -s $(PLTdir)/Hydrogen_demand_controller.F
@@ -660,7 +666,7 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) $(MODULES)\
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_module.F aim2_timestep.F \
-	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F bcfunc.F bctlf.F \
+	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F basesimp_inputs.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
 	bsim2cfd.F btherm.F c2fdum.F casual.F CentralVentSys.F \
 	CETC_BATTERY.F cetc_cogen.F compressed_cylinder.F ConfigureH3kReports.F \
@@ -670,7 +676,7 @@ clean:
 	drylink.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
 	egrid.F emfnetw.F emoist.F enetbound.F enetmath.F enetmisc.F enetpost.F \
 	enetrewr.F enetsetu.F enetsolv.F enet_state_variable_manipulate.F eroper.F esgrid.F \
-	esru_misc.F esystem.F fan.F furnace.F g3dfac.F g3dfnc.F g3dmtx.F gcfunc.F gsdmtx.F \
+	esru_misc.F esystem.F fan.F filelist.F furnace.F g3dfac.F g3dfnc.F g3dmtx.F gcfunc.F gsdmtx.F \
 	gshpinput.F gshpsim.F h2_components.F h2_comps.F h2_matrix_library.F h3koutput.F \
 	h3kstore.F hvacinput.F hvac_output.F hvacsim.F Hydrogen_appliances.F \
 	Hydrogen_demand_controller.F Hydrogen_MH_store.F Hydrogen_PEMFC.F \
