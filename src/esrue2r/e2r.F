@@ -66,7 +66,7 @@ C Path to model.
       common/uhome/upath
       common/expath/runpath,pathtype
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       common/user/browse
 
       common/rcmd/LCMDFL
@@ -96,7 +96,7 @@ C Name of current application
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character OUTSTR*124
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character ltmp72*72,dtmp72*72,ltmp*72
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
@@ -1180,9 +1180,9 @@ C Path to model.
       common/initv/initvt,EYEMI(3),VIEWMI(3),ANGI
 
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
       character path*72,cfgroot*24,runpath*72,pathtype*24,GTGEOM*72
       CHARACTER LCMDFL*144,LCFGF*72

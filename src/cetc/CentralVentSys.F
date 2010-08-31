@@ -27,11 +27,9 @@ c Created October 4, 2001
 c Edited: BB Oct 4, 15, Nov 2
 c ---
      
-c
+c 
+      
       Implicit None
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"
-#include "aim2_common.h"
 #include "Ventilation_Data.h"
       Integer iComp
       Integer iFun
@@ -62,6 +60,7 @@ c     Call WINMSG ( Msg )
       Return
       END
 c ---
+
       Subroutine MECH_VENT_CONTROL ( iComp, ZONE_infil_cond )
 c
 c Copyright 2001: NRCan Buildings Group
@@ -71,11 +70,12 @@ c ---
 
      
 c ---
+      USE AIM2_InputData, ONLY:AIM2_ref_zone,AIM2_CrawlSpace_zone,
+     &            AIM2_attic_zone,AIM2_num_zones_infil,AIM2_zone_infil
+      USE AIM2_CalcData, ONLY:AIM2_house_vol!AIM2_zone_infil
       IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
-#include "aim2_parameters.h"
-#include "aim2_common.h"
 #include "Ventilation_Data.h"
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
@@ -86,6 +86,8 @@ c ---
        COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
        REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: IUOUT,IUIN
 c
 c     Implicit None
       INTEGER J
@@ -163,15 +165,18 @@ c Apportion ventilation to each zone.  For now just distribute the air flow
 c in proportion to each room's volume
          ZoneFraction = 0.
 c
-         Do j = 1, AIM2_num_zones_infil
-c
-            If ( AIM2_zone_infil(j) .eq. iComp ) Then
-c
-               ZoneFraction = VOL(iComp) / AIM2_house_vol
-               Exit
-c
-            Endif
-         End Do
+C Check to ensure memory has been allocated
+	 IF (ALLOCATED(AIM2_zone_infil)) THEN
+           Do j = 1, AIM2_num_zones_infil
+              If ( AIM2_zone_infil(j) .eq. iComp ) Then
+                 ZoneFraction = VOL(iComp) / AIM2_house_vol
+                 Exit
+              Endif
+           End Do
+	 ELSE
+          CALL EDISP(IUOUT,
+     &          ' Warning: array AIM2_zone_infil not allocated')
+	 END IF
 c
 c --- Air heat loss rate for zone
 c

@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -18,24 +18,24 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C The file esru_misc.F is a collection of support facilities for 
+C The file esru_misc.F is a collection of support facilities for
 C reading and reporting ESP-r compatible files.
 
 C esru_misc.F contains the following:
 C  CLRPRB : clears the zone based memory in preparation for reading
-C           a new model file. 
+C           a new model file.
 C  cfgpk:  Reacts to one of several configuration buttons and presents
 C          related images.
 C  EGOMST: Reads site obstruction data as ASCII strings, with or without
 C          range checking and printed summary.
-C  MKGOMST:Creates an annotated site obstruction file based 
+C  MKGOMST:Creates an annotated site obstruction file based
 C          on passed parameters and the contents of common GS5.
 C  ERMRT:  Read the viewfactor/ MRT sensor definition file.
-C  EMKMRT: Write viewfactor/MRT sensor definition file based on 
+C  EMKMRT: Write viewfactor/MRT sensor definition file based on
 C          information in common blocks MRTC, MRTF.
 
 C  PLEQN:  Finds the equation EQN to a plane containing a polygon
-C          defined as a set of X() Y() Z() verticies tracing the edges. 
+C          defined as a set of X() Y() Z() verticies tracing the edges.
 C  ETRANSW: used when creating an insert rectangular shape into a surface.
 C  TRANSUR: Transforms a surface along its normal.
 
@@ -55,13 +55,17 @@ C  ASKMULTIZONE: presents a list of zones to select one or more from.
 C  EASKSUR: Presents a list of surfaces in a zone IZONE.
 C  asksnode: Presents a list of layers/nodes within a surface.
 C  FLNAME: Provides a name for a defined file type.
-C  ZSID:   Returns a compact description in ZSDESC of the zone:surface. 
+C  ZSID:   Returns a compact description in ZSDESC of the zone:surface.
 C ZNARLIST takes an array (list) of zone indices and returns descr string.
 
-C ************* CLRPRB 
+C ************* CLRPRB
 C CLRPRB clears the zone based memory in preparation for reading
-C in a new model file. 
+C in a new model file.
       SUBROUTINE CLRPRB
+
+      USE AIM2_InputData, ONLY: iAIM2,LAIM2
+      USE AIM2, ONLY: AIM2_ClearAll
+      
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -79,11 +83,11 @@ C provides LRADCF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C << G7 and G8 need to be cleared >>
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-C iaplic(1) toggle for shading; iaplic(2) toggle for insolation. 
+C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
 C   1 is 'all_applicable', 0 is manual selection of surfaces.
 C nsurfcalc nb of shaded surfaces, lstsfcalc() list of applicable surfaces.
@@ -107,8 +111,6 @@ C Simulation parameter presets.
 C HOT3000: BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
 
-C HOT3000: AIM-2.
-      common/aim2def/iAIM2,LAIM2
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
@@ -170,7 +172,7 @@ C CPCALC description
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG
@@ -199,10 +201,10 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
      &                SHOCCshzFile(mcom)
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
-      
-C Thermal bridge common block: 
+
+C Thermal bridge common block:
 C nbrdg is the number of thermal bridge types in the zone
-C psi is the linear thermal transmittance value, 
+C psi is the linear thermal transmittance value,
 C lngth is the length of the thermal bridge and
 C ibrdg is an index defining the type of thermal bridge as follows:
 C   1 to 8 (NOT metal cladding)
@@ -224,7 +226,7 @@ C thbrpercent is the user defined fraction for thermal bridges used by
 C   losspercent and is assumed to apply to all zones in the model.
       integer nbrdg, ibrdg
       real psi,lngth,losspercent,totheatloss,thbrpercent
-      real uavtotal      
+      real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
@@ -235,15 +237,15 @@ C Assumption about inserted window surface percentage and assumed
 C door width and height.
       real defwininsert,defdoorwidth,defdoorheight
       common/ginsert/defwininsert,defdoorwidth,defdoorheight
-      
+
       CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPRJLG,LPNF
 
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
-      character hvacfile*72,LAIM2*72,LBSIMP*72
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
+      character hvacfile*72,LBSIMP*72
       character ctldoc*248,lctlf*72
       character GTGEOM*72,GTNAME*15,spflnam*72,entflnam*72,lipvdatf*72
 
@@ -256,6 +258,9 @@ C door width and height.
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
 
       call tstamp('>','PRJ: clearing model commons')
+      
+C Clear any allocated arrays      
+      CALL DeallocateAllArrays
 
 C Project level common blocks.
 
@@ -274,6 +279,7 @@ C Initial assumption is no SHOCC files.
       zonepth='./'
       netpth='./'
       ctlpth='./'
+      aimpth='./'
       imgpth='./'
       radpth='./'
       dbspth='./'
@@ -305,6 +311,7 @@ C will be reset if `*hvac' included in .cfg.
 C HOT3000: AIM-2.
       iAIM2=0
       LAIM2='UNKNOWN'
+      CALL AIM2_ClearAll
 
 C Clear pre-simulation sets.
       nsset= 0
@@ -335,7 +342,7 @@ C Clear pre-simulation sets.
         wkheatdd(i)=0.0
 	wkcooldd(i)=0.0
   39  continue
-  
+
 C Clear IPV strings and number of assessmments.
       ipvtitl=' '
       ipvvers=' '
@@ -346,7 +353,7 @@ C Clear IPV strings and number of assessmments.
       ipvastjd(1)=0
       ipvafnjd(1)=0
       ipvdispjd(1)=0
-      
+
 C Clear anchors.
       NALOC=0
       do 40 i=1,20
@@ -435,15 +442,15 @@ C Assumptions about doors and windows.
       defwininsert=15.0
       defdoorwidth=0.8
       defdoorheight=2.1
-      
+
 C Season data.
       ihaveseason=0
       ia1wins=0; ia1winf=0; ia1sprs=0; ia1sprf=0
-      iasums=0;  iasumf=0;  ia2sprs=0; ia2sprf=0; ia2wins=0; ia2winf=0 
+      iasums=0;  iasumf=0;  ia2sprs=0; ia2sprf=0; ia2wins=0; ia2winf=0
       is1wins=0; is1winf=0; is2wins=0; is2winf=0; is1sprs=0; is1sprf=0
       is2sprs=0; is2sprf=0; is1sums=0; is1sumf=0
       hddw=1.0; cddw=1.0; radw=1.0; hddbaset=0.0; cddbaset=0.0
- 
+
 C Zone level common blocks.
       do 42 IX = 1,MCOM
         do 43 IXS = 1,MS
@@ -549,7 +556,7 @@ C HOT3000: BASESIMP.
         ICGC(IX)=0
         LCGCIN(IX)='UNKNOWN'
         IOBS(IX)=0
-        ZOBS(IX)  ='UNKNOWN'  
+        ZOBS(IX)  ='UNKNOWN'
         L3DCVS(IX)='UNKNOWN'
         L3DCNC(IX)='UNKNOWN'
         L3DNDC(IX)='UNKNOWN'
@@ -636,15 +643,15 @@ C Clear sbem string arrays (from sbem.h).
       qualifications_assessor=' NOS3'
       insurer_Company=' not yet defined'
       policyNumberInsurance=' not yet defined'
-      pjLevComplexity='Undefined'     
+      pjLevComplexity='Undefined'
       do 4 isystCurrent=1,MNS
         ductwork(isystCurrent)='No, use default leakage'
         AHUleakage(isystCurrent)='No, use default leakage'
         duct_tDLd(isystCurrent)=0.15
         AHU_tDLd(isystCurrent)=0.06
  4    continue
-       
-C Also integers from sbem.h 
+
+C Also integers from sbem.h
       Y_inspect=2009
       M_inspect=1
       D_inspect=1
@@ -664,7 +671,7 @@ C see if there are images associated with descriptive buttons.
       subroutine cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 #include "building.h"
-      
+
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG
@@ -752,7 +759,7 @@ C ***** Notice that an active description button has been pressed.
 #include "net_flow.h"
 #include "control.h"
       common/pophelp/h(60)
-      
+
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C23/IFPNF,LPNF
@@ -878,16 +885,16 @@ C Domain flow button, show cfd image.
       return
       end
 
-C ************** EGOMST 
+C ************** EGOMST
 C EGOMST:  Reads site obstruction data as ASCII strings, with or without
 C range checking and printed summary. An obstruction block name (up to
-C 12 characters) may be included as an option and is returned via BLOCKNAME. 
+C 12 characters) may be included as an option and is returned via BLOCKNAME.
       SUBROUTINE EGOMST(IUNIT,ICOMP,LOBS,IR,ITRC,ITRU,IER)
 #include "building.h"
 C geometry.h provides common block GS5/GS6/GS7/GS8
 #include "geometry.h"
 #include "espriou.h"
-      
+
       integer lnblnk  ! function definition
 
 C Error messages (for use by low level I/O calls)
@@ -1043,15 +1050,15 @@ C Trace.
       END
 
 
-C ************** MKGOMST 
-C MKGOMST: Creates an annotated site obstruction file based 
+C ************** MKGOMST
+C MKGOMST: Creates an annotated site obstruction file based
 C on passed parameters and the contents of common GS5.
       SUBROUTINE MKGOMST(IAF,ZF,ICOMP,IER)
 #include "building.h"
 #include "model.h"
 C geometry.h provides common block GS5/GS6/GS7/GS8
 #include "geometry.h"
-      
+
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
@@ -1116,14 +1123,14 @@ C Close site file.
 
       END
 
-C ************* ERMRT 
+C ************* ERMRT
 C ERMRT Read the MRT sensor definition file. IC is the zone index
 C (for use in mrt).  IER=0 OK, IER=1 problem.
       SUBROUTINE ERMRT(ITRC,ITRU,IUF,LMRT,IC,IER)
 #include "building.h"
 #include "geometry.h"
 #include "espriou.h"
-      
+
       integer lnblnk  ! function definition
 
       common/TOTAL/nsurmf, NGRID, NTRPOL
@@ -1385,17 +1392,17 @@ C Close the file and free the unit number.
 
 
 C ************* EMKMRT
-C EMKMRT Write viewfactor/MRT sensor definition file based on 
+C EMKMRT Write viewfactor/MRT sensor definition file based on
 C information currently held in common blocks MRTC, MRTF.
 C LMRT is the name of the file to be written to (any existing file
 C by this name is overwritten).  zname is the zone name (12 char),
-C ICOMP is the zone number.  
+C ICOMP is the zone number.
 C ITRU unit number for user output, IER=0 OK, IER=1 problem.
 C act character*1 if 'a' then area weighted, if 'r' ray traced.
       SUBROUTINE EMKMRT(LMRT,LGEOM,NZS,IUF,ICOMP,act,IER)
 #include "building.h"
 #include "geometry.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
@@ -1408,7 +1415,7 @@ C act character*1 if 'a' then area weighted, if 'r' ray traced.
 
       IER=0
 
-C Place ouput into IUF. Open any existing file by this name, 
+C Place ouput into IUF. Open any existing file by this name,
 C (ask user for confirmation to over-write) or create a new file.
       CALL EFOPSEQ(IUF,LMRT,4,IER)
       IF(IER.LT.0)THEN
@@ -1533,12 +1540,12 @@ C Useful for block shapes prior to call to PLEQN.
 
 C ********************  PLEQN
 C PLEQN finds the equation EQN to a plane containing a polygon which
-C is defined as a set of X() Y() Z() verticies tracing in order the 
-C edges of the polygon.  The plane is the best fit from points and its 
+C is defined as a set of X() Y() Z() verticies tracing in order the
+C edges of the polygon.  The plane is the best fit from points and its
 C equation is in the form:
 C       A*X + B*Y + C*Z = D
 C where the vector (A B C) is the unit normal vector to the plane.
-C The normal will point out from the surface if the vertices are 
+C The normal will point out from the surface if the vertices are
 C passed in anti-clockwise.
 C If ierpln=-1 then SNORM is very close to zero
 C If ierpln=1 then number of points is zero
@@ -1605,7 +1612,7 @@ C Loop through vertices calculating cross product.
         endif
 
 C Do cross product and if VC is not close to zero then
-C normalise it (so that a polygon with long and short 
+C normalise it (so that a polygon with long and short
 C edges is treated correctly.
         call CROSS(VA,VB,VC)
         SNORM=0.00
@@ -1638,16 +1645,16 @@ C Make the surface normal of unit length and build EQN from VN.
  40     continue
       endif
 
-C Calculate constant term. 
+C Calculate constant term.
       EQN(4)=(EQN(1)*CG(1)) + (EQN(2)*CG(2)) + (EQN(3)*CG(3))
 
       RETURN
       END
 
 
-C ******************** EPLNEQN 
+C ******************** EPLNEQN
 C EPLNEQN finds the equation EQN to a plane containing a polygon which
-C is defined as a set of X Y Z verticies tracing in order the edges of 
+C is defined as a set of X Y Z verticies tracing in order the edges of
 C the polygon (this information is contained in PNTLST).  The plane is
 C the best fit from PNTLST and its equation is in the form:
 C       A*X + B*Y + C*Z = D
@@ -1672,7 +1679,7 @@ C Parameters
       real EQN      ! returned equation of the plane
       DIMENSION PNTLST(100),CG(3),EQN(4)
       integer IERR  ! error state - see below
-      
+
       real VNORM,PNT,E,VN,EV1,EV2,EV3
       dimension VNORM(3),PNT(MV,3),E(MV,3),VN(MV,3)
       dimension EV1(3),EV2(3),EV3(3)
@@ -1786,7 +1793,7 @@ C MORS flag not recognised.
       RETURN
       END
 
-C ********************* ETRANSW 
+C ********************* ETRANSW
 C ETRANSW used when creating an insert rectangular shape into a surface.
 C OFFSET is the offset from the polygon (zero tpically).
 
@@ -1872,7 +1879,7 @@ C the Z point by OFFSET.
       END
 
 
-C ********************* TRANSUR 
+C ********************* TRANSUR
 C TRANSUR transforms a surface along its normal.
 C OFFSET is the offset from the base polygon (0.02 typically).
 C NB       = no. base surf vertices,
@@ -2059,7 +2066,7 @@ C      write(6,*)'AZ2UV azim elev >>vdx vdy vdz=',azim,elev,vdx,vdy,vdz
       return
       end
 
-C ********************* CHECKWARP 
+C ********************* CHECKWARP
 C CHECKWARP transforms surface into 2D and checks if points are
 C are not in the plane of the surface.
 
@@ -2077,7 +2084,7 @@ C ivoff is the number of vertices which are more than 1mm off.
       integer isurf,iwhich,itrc,itru,n,ivoff
       real X,Y,Z,ofby
       DIMENSION  X(MV),Y(MV),Z(MV)
-      
+
       integer i,j,ierr   ! types for local variables
       real TMAT,RMAT,VP,EP,EQN,X1,Y1,ZZZ,diff
       DIMENSION  TMAT(4,4),RMAT(4,4)
@@ -2089,17 +2096,17 @@ C Find transformation matrices that normalise face.
       call PLEQN(X,Y,Z,N,VP,EQN,IERR)
 
       if (IERR .LT. 0) then
-        WRITE(OUTSTR,'(a,i3)') 
+        WRITE(OUTSTR,'(a,i3)')
      &    ' CHECKWARP Plane equation error for surface: ',isurf
         return
       endif
       DO 250 J = 1,3
         EP(J) = VP(J) + EQN(J)
   250 CONTINUE
-  
+
 C Report if user has toggled trace on.
       IF(ITRC.GT.1)THEN
-        WRITE(OUTSTR,'(a,i3)') 
+        WRITE(OUTSTR,'(a,i3)')
      &    ' CHECKWARP Plane equation data for surface: ',isurf
         CALL EDISP(ITRU,outstr)
         WRITE(OUTSTR,'(a,3F8.3)')' Center of grav:',(VP(I),I=1,3)
@@ -2109,7 +2116,7 @@ C Report if user has toggled trace on.
         WRITE(OUTSTR,'(a,3F8.3)')' Eye Point:',(EP(I),I=1,3)
         CALL EDISP(ITRU,OUTSTR)
       ENDIF
-      
+
 C Call eyemat with 1m offset.
       CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
 
@@ -2139,7 +2146,7 @@ C from the 1m offset.
       END
 
 
-C ***************** ESCZONE 
+C ***************** ESCZONE
 C ESZONE makes a copy of the current contents of common blocks G1 G3
 C G4 G5 into SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ESCZONE(ICOMP)
@@ -2195,7 +2202,7 @@ C block for later recovery.
       END
 
 
-C **************** ERCZONE 
+C **************** ERCZONE
 C ERZONE recovers the saved contents of common blocks G1 G2 G3
 C G4 G5 from SG1 SG2 SG3 SG4 SG5.
       SUBROUTINE ERCZONE(ICOMP)
@@ -2250,7 +2257,7 @@ C block for later recovery.
       RETURN
       END
 
-C **************** EASKGEOF 
+C **************** EASKGEOF
 C EASKGEOF asks for the zone number and geometry file name. If the
 C configuration file has been read present a list of zone names,
 C otherwise ask for a specific zone number and file name.
@@ -2265,7 +2272,7 @@ C It is assumed that the user will make one selection only.
 #include "epara.h"
 
       common/pophelp/h(60)
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/user/browse
@@ -2313,7 +2320,7 @@ C nothing has been selected.
         RETURN
       ENDIF
 
-C Initialise zone menu variables based on window size. 
+C Initialise zone menu variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
 C Use shorter menu depending on what MOD is.
       SELECT=.FALSE.
@@ -2337,8 +2344,8 @@ C Initial menu entry setup.
    92 IER=0
       IVERT=-3
 
-C Loop through the items until the page to be displayed. M is the 
-C current menu line index. Build up text strings for the menu. 
+C Loop through the items until the page to be displayed. M is the
+C current menu line index. Build up text strings for the menu.
     3 M=MHEAD
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LT.(IST+MIFULL)))THEN
@@ -2366,11 +2373,11 @@ C current menu line index. Build up text strings for the menu.
 C Number of actual items displayed.
       MVERT=M+MCTL
 
-C If a long list include page facility text and info on portion seen.      
+C If a long list include page facility text and info on portion seen.
       IF(IPFLG.EQ.0)THEN
         VERT(M+1)=  '  ______________________'
       ELSE
-        WRITE(VERT(M+1),15)IPM,MPM 
+        WRITE(VERT(M+1),15)IPM,MPM
    15   FORMAT ('0 page: ',I1,' -- of:',I1)
       ENDIF
 
@@ -2542,7 +2549,7 @@ C Not one of the legal menu choices.
 
       END
 
-C **************** ASKZONE 
+C **************** ASKZONE
 C ASKZONE presents  a list of zones to select from.
 C It is passed a prompt, menu title, default
 C index and indicates current index (if zero then says no prior
@@ -2560,7 +2567,7 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -2577,7 +2584,7 @@ C =2 with more than 3 day types allowed and sorted
       character h*72,mod*1,outs*124
       CHARACTER*72 LCFD
 
-C Initialise zone menu variables based on window size. 
+C Initialise zone menu variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
       SELECT=.FALSE.
       MHEAD=0
@@ -2606,7 +2613,7 @@ C Initial menu entry setup.
    92 IER=0
       IVERT=-3
 
-C Build up text strings for the menu. 
+C Build up text strings for the menu.
     3 M=MHEAD
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -2625,7 +2632,7 @@ C Build up text strings for the menu.
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &            ' (not found)'
               endif
-            endif 
+            endif
           elseif(mod.eq.'o')then
 
 C Check for operations files. For each one that exists, scan to see
@@ -2654,7 +2661,7 @@ C if it has been sorted and notify user.
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &            ' (not found)'
               endif
-            endif 
+            endif
           elseif(mod.eq.'s')then
 
 C Check for existing shading files.
@@ -2668,7 +2675,7 @@ C Check for existing shading files.
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &            ' (not found)'
               endif
-            endif 
+            endif
           elseif(mod.eq.'v')then
 
 C Check for existing viewfactor files.
@@ -2732,11 +2739,11 @@ C Check for heat transfer regime files.
 C Number of actual items displayed.
       MVERT=M+MCTL
 
-C If a long list include page facility text and info on portion seen.      
+C If a long list include page facility text and info on portion seen.
       IF(IPFLG.EQ.0)THEN
         VERT(M+1)=  '  ______________________'
       ELSE
-        WRITE(VERT(M+1),15)IPM,MPM 
+        WRITE(VERT(M+1),15)IPM,MPM
    15   FORMAT ('0 page part: ',I1,' -- of:',I1)
       ENDIF
 
@@ -2842,7 +2849,7 @@ C Not one of the legal menu choices.
 
       END
 
-C **************** ASKMULTIZONE 
+C **************** ASKMULTIZONE
 C ASKMULTIZONE presents a list of zones to select one or more from.
 C It is passed a prompt, menu title, and number of allowable items inpic
 C It returns inpick and array IVALS.
@@ -2856,13 +2863,13 @@ C `-` zone names only.
 #include "model.h"
 #include "geometry.h"
 #include "epara.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
@@ -2886,7 +2893,7 @@ C Clear IVALS and INPICK.
         IVALS(I)=0
    40 CONTINUE
 
-C Initialise zone menu variables based on window size. 
+C Initialise zone menu variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
       MHEAD=0
       MCTL=3
@@ -2898,7 +2905,7 @@ C Initial menu entry setup.
    92 IER=0
       IVERT=-3
 
-C Build up text strings for the menu. 
+C Build up text strings for the menu.
     3 M=MHEAD
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -2917,7 +2924,7 @@ C Build up text strings for the menu.
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &            ' (not found)'
               endif
-            endif 
+            endif
           elseif(mod.eq.'o')then
 
 C Check for operations files. For each one that exists, scan to see
@@ -2946,7 +2953,7 @@ C if it has been sorted and notify user.
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &            ' (not found)'
               endif
-            endif 
+            endif
           elseif(mod.eq.'s')then
 
 C Check for existing shading files.
@@ -2960,7 +2967,7 @@ C Check for existing shading files.
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &            ' (not found)'
               endif
-            endif 
+            endif
           elseif(mod.eq.'b')then
 
 C Check for existing obstruction block files.
@@ -2974,7 +2981,7 @@ C Check for existing obstruction block files.
                 WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &            ' (not found)'
               endif
-            endif 
+            endif
           elseif(mod.eq.'v')then
 
 C Check for existing viewfactor files.
@@ -3038,11 +3045,11 @@ C Check for heat transfer regime files.
 C Number of actual items displayed.
       MVERT=M+MCTL
 
-C If a long list include page facility text and info on portion seen.      
+C If a long list include page facility text and info on portion seen.
       IF(IPFLG.EQ.0)THEN
         VERT(M+1)=  '  ______________________'
       ELSE
-        WRITE(VERT(M+1),15)IPM,MPM 
+        WRITE(VERT(M+1),15)IPM,MPM
    15   FORMAT ('0 page part: ',I1,' -- of:',I1)
       ENDIF
 
@@ -3167,7 +3174,7 @@ C Not one of the legal menu choices.
 
       END
 
-C ******************* EASKSUR 
+C ******************* EASKSUR
 C EASKSUR presents a list of surfaces in a zone IZONE returning the
 C index IS. It assumes that a geometry file has been read in.
 C If MOD = '-' name list only, MOD = 'M' attribute Many, MOD = 'A'
@@ -3178,15 +3185,15 @@ C show attributes in list.
 #include "epara.h"
 
       common/pophelp/h(60)
-      
-      integer ncomp,ncon
+
+      integer ncomp,ncon,ibst,BSM,a,b
       COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
-      DIMENSION VERT(35),VERTS(35)
+      DIMENSION VERT(35),VERTS(35),BSM(35),BSM_TEST(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,VERT*20,VERTS*40,KEY*1,MOD*1,title*29
-      LOGICAL SELECT
+      LOGICAL SELECT,BSM_TEST
 
       IER=0
       IF(IZONE.GT.NCOMP.OR.IZONE.EQ.0)THEN
@@ -3196,7 +3203,7 @@ C show attributes in list.
       ENDIF
       write(title,'(2a)')'  Surfaces in ',zname(IZONE)(1:lnzname(IZONE))
 
-C Initialise surface menu variables based on window size. 
+C Initialise surface menu variables based on window size.
 C IVERT is the menu position, MVERT the current number of menu lines.
       SELECT=.FALSE.
       if(MOD.eq.'-')then
@@ -3217,8 +3224,8 @@ C Initial menu entry setup.
    92 IER=0
       IVERT=-3
 
-C Loop through the items until the page to be displayed. M is the 
-C current menu line index. Build up text strings for the menu. 
+C Loop through the items until the page to be displayed. M is the
+C current menu line index. Build up text strings for the menu.
     3 M=MHEAD
       DO 10 L=1,ILEN
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -3241,14 +3248,14 @@ C << consider writing out different info depending on what SSOTHER is >>
 C Number of actual items displayed.
       MVERT=M+MCTL
 
-C If a long list include page facility text.      
+C If a long list include page facility text.
       IF(IPFLG.EQ.0)THEN
         VERT(M+1) ='  ________________  '
         VERTS(M+1)='  _________________________  '
       ELSE
-        WRITE(VERT(M+1),15)IPM,MPM 
+        WRITE(VERT(M+1),15)IPM,MPM
    15   FORMAT ('0 page part: ',I1,' of ',I1)
-        WRITE(VERTS(M+1),16)IPM,MPM 
+        WRITE(VERTS(M+1),16)IPM,MPM
    16   FORMAT ('0 page --- part: ',I1,' of ',I1)
       ENDIF
 
@@ -3283,6 +3290,18 @@ C Display the menu.
 C If no selection has been made before exit then return with 0.
         IF(.NOT.SELECT)IS=0
         call usrmsg(' ',' ','-')
+
+C Checks the surfaces in the current zone to see if any of the surface
+C attributes are 'BASESIMP'.
+         a=icc-ILEN+1
+         b=icc
+         DO i=a,b
+           IF(SSOTHER(i,1).EQ.'BASESIMP')THEN
+             CALL BASESIMP_INPUTS(IZONE,IER)
+        RETURN
+           END IF
+         END DO
+C End of code added for BASESIMP functionality
         RETURN
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
         CALL PHELPD('zone geom file section',2,'-',0,0,IER)
@@ -3322,7 +3341,7 @@ C Not one of the legal menu choices.
 
       END
 
-C ********* asksnode 
+C ********* asksnode
 C Subroutine asksnode provides a selection list for the layers
 C and nodes within a construction. Passed zone index (icomp)
 C and surface index (IS) and returns layer index (ilay) and
@@ -3351,7 +3370,7 @@ C Check name of surface with construction name in MLC common.
       icc=IZSTOCN(icomp,is)
       do 5 i=1,nmlc
         if(SSMLCN(icc)(1:12).eq.DESC(i)(1:12)) then
-          imatch=i          
+          imatch=i
         endif
   5   continue
       if(imatch.eq.0) then
@@ -3361,7 +3380,7 @@ C Check name of surface with construction name in MLC common.
       endif
       call eclose(matver,1.1,0.001,closemat1)  ! check materials version 1.1.
       call eclose(matver,1.2,0.001,closemat2)  ! check materials version 1.2.
-        
+
 C Write menu displaying a list of layer names
       header=3
       footer=3
@@ -3389,11 +3408,11 @@ C materials db or from the.
      &        A,DRV,NAM
             PNAM(j)=NAM(1:20)
           ENDIF
-        endif 
+        endif
         write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
         ndisp=header+j
   10  continue
-      item(ndisp+footer-2)='  ----------------------------' 
+      item(ndisp+footer-2)='  ----------------------------'
       item(ndisp+footer-1)='? help  '
       item(ndisp+footer)  ='- exit  '
       ino=-1
@@ -3408,7 +3427,7 @@ C Instanciate help messages for this menu.
 
 C Ask for the nodal location, first calculate a location at centre.
         nodloc=2*(ino-header)
-        h(1)='Select a node within the layer (the value shown is' 
+        h(1)='Select a node within the layer (the value shown is'
         h(2)='at the centre of the layer). Nodes are indexed from'
         h(3)='the outside face to the inside face and the default'
         h(4)='nodal scheme uses 3 nodes per layer. '
@@ -3456,7 +3475,7 @@ C Ask for the nodal location, first calculate a location at centre.
       return
       end
 
-C ******************** SURADJ 
+C ******************** SURADJ
 C SURADJ is a updated version of MOFADJ which returns information about
 C connections between surfaces.  Given IZONE & ISFN (the zone and
 C surface under consideration) it returns the following information:
@@ -3544,11 +3563,11 @@ C *********************************************************************
       SUBROUTINE FLNAME(ICOMP,FILENM,FLTYP,EXT,NHLP,IER)
 #include "building.h"
 #include "geometry.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      
+
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
@@ -3587,16 +3606,16 @@ C *********************************************************************
       RETURN
       END
 
-C **************** ZSID 
+C **************** ZSID
 C ZSID returns compact descriptions of the zone:surface.
 C ZSDES has no truncation, ZSDESC compacts to 20 char with minimum
-C of truncation. 
+C of truncation.
 C << check if calling code knows that current geometry file read is >>
 C << not required for this. >>
       SUBROUTINE ZSID(IZ,IS,ZSDES,ZSDESC,ZSDESS)
 #include "building.h"
 #include "geometry.h"
-      
+
       integer lnblnk  ! function definition
 
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -3656,7 +3675,7 @@ C ******************** ZNARLIST ********************
 C ZNARLIST takes number of items (inlist) in the array (list)
 C of size (insize) and builds a descriptive string (zdescr)
 C of character length (length) to be used in reports.
-C Similar to code ZLIST in esrures/utils.F. 
+C Similar to code ZLIST in esrures/utils.F.
 
       SUBROUTINE ZNARLIST(inlist,list,insize,zdescr,length,ierr)
 #include "building.h"
@@ -3711,3 +3730,19 @@ C Trap for I/O errors.
       return
       END
 
+C ******************** DeallocateAllArrays ****************************
+C *********************************************************************
+C Created by: Francesca Macdonald
+C Date: 23/07/2010
+C 
+C DeallocateAllArrays deallocates all the memory asociated with
+C allocatable arrays.
+C *********************************************************************
+
+      SUBROUTINE DeallocateAllArrays
+      
+      USE AIM2, ONLY:AIM2_DEALLOCATE
+     
+      CALL AIM2_DEALLOCATE
+      
+      END SUBROUTINE DeallocateAllArrays

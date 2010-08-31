@@ -29,6 +29,8 @@ C common blocks into the file and unit specified in COMMON/C21.
 C This version uses generic databases.
       SUBROUTINE EMKCFGG(act_1,IER)
 
+      USE AIM2_InputData, ONLY: iAIM2,LAIM2
+
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -72,7 +74,7 @@ C Plant network.
 C Project log file, paths to standard file locations.
       COMMON/LOG/LPRJLG
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -166,8 +168,6 @@ C Simulation parameter presets.
 
 C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
-C AIM-2.
-      common/aim2def/iAIM2,LAIM2
 C HVAC
 C Flag indicating presence of HVAC models:
 C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
@@ -209,7 +209,7 @@ C Calendar commons.
 
 C Generic databases from esprdbfile.h.
 
-      CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
+      CHARACTER*72 LBSIMP,hvacfile,LFClds
 
       CHARACTER LCFGF*72
       CHARACTER LAPROB*72,LPRJLG*72
@@ -224,7 +224,7 @@ C Generic databases from esprdbfile.h.
       character*10 wkd1, wkd2
       character LUALF*72,LCNG*15,LLOC*15,lipvdatf*72,act_1*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       CHARACTER outs*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,ltmp*72,louts*144
@@ -378,6 +378,8 @@ C Begin writing the file.
      &  '  # path to networks'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*ctlpth ',ctlpth,
      &  '  # path to controls'
+      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*aimpth ',ctlpth,
+     &  '  # path to aim2 files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*radpth ',radpth,
      &  '  # path to radiance files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,

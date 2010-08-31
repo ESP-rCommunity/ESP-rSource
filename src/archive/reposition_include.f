@@ -99,10 +99,6 @@ C f90 -o reposition_include reposition_include.o
           write(2,'(4a)') '      INCLUDE ',sq,'CETC_definitions.h',sq
         elseif(outs(11:24).eq.'Stirling_CHP.h')then
           write(2,'(4a)') '      INCLUDE ',sq,'Stirling_CHP.h',sq
-        elseif(outs(11:27).eq.'aim2_parameters.h')then
-          write(2,'(4a)') '      INCLUDE ',sq,'aim2_parameters.h',sq
-        elseif(outs(11:23).eq.'aim2_common.h')then
-          write(2,'(4a)') '      INCLUDE ',sq,'aim2_common.h',sq
         elseif(outs(11:27).eq.'hvac_parameters.h')then
           write(2,'(4a)') '      INCLUDE ',sq,'hvac_parameters.h',sq
         elseif(outs(11:26).eq.'furnace_common.h')then

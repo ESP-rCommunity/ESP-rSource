@@ -66,7 +66,7 @@ C #include "esprdbfile.h"
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       common/RAY3/MODIFY,MODLEN,MODBND
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/ICFNOD/ICFD,ICP
@@ -80,7 +80,7 @@ C #include "esprdbfile.h"
       CHARACTER ITEM(11)*34
       character ltmp*72,dtmp*72,LCFD*72
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       CHARACTER*72 TITLE,CFTRFL,LPHI
       character*72 DFCFD,DECMPDBFL,DICONDBFL
       integer IWO  ! for radio button

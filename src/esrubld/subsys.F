@@ -1105,6 +1105,10 @@ C CVVPM & CVVFM - as CVVP & CVVF but normalised to the
 C                 external temperature (for use in MZLS3).
 
       SUBROUTINE MZVENT(ICOMP)
+      
+      USE AIM2_InputData, ONLY:iAIM2
+      USE AIM2_TIMESTEP, ONLY:AIM2_CONTROL
+
 #include "building.h"
 #include "geometry.h"
 #include "tdf2.h"
@@ -1157,8 +1161,8 @@ C Save present values for possible iterations at this time step.
       common/TAFtoH3K/TAF
       real TAF
 C AIM-2 common. iAIM2=1 if AIM-2 infiltration model active.
-      common/aim2def/iAIM2,LAIM2
-      character LAIM2*72
+c      common/aim2def/iAIM2,LAIM2
+c      character LAIM2*72
 
 c Mechanical ventilation systems
       Common /mechvdef/ iMech, LMech
@@ -2065,9 +2069,9 @@ C Last line of equation takes into account the effect of a
 C cooling coil on zone moisture balance.
       RHS=GPA(ICOMP)*ZMDAP(ICOMP)+
      &    (VCIF(ICOMP)*GEXTF+VCCF(ICOMP)+VCMF(ICOMP)+VCLGF(ICOMP)+
-     &    VSRCF(ICOMP))*3600./(2*NTSTEP)+
+     &    VSRCF(ICOMP))*3600./(2.0*NTSTEP)+
      &    (VCIP(ICOMP)*GEXTP+VCCP(ICOMP)+VCMP(ICOMP)+VCLGP(ICOMP)+
-     &    VSRCP(ICOMP))*3600./(2*NTSTEP)-
+     &    VSRCP(ICOMP))*3600./(2.0*NTSTEP)-
      &    GPA(ICOMP)*VCLP(ICOMP)*3600./(2.*NTSTEP)
      &    + coil_moist_in(ICOMP) - coil_moist_out1(ICOMP)  
 
@@ -2161,9 +2165,9 @@ C Right hand side
 
 C Sum of the RHS including outflow at future timerow, assuming no RH control.
           RHS2=(VCIF(ICOMP)*GEXTF+VCCF(ICOMP)+VCMF(ICOMP)+VCLGF(ICOMP)
-     &    +VSRCF(ICOMP))*3600./(2*NTSTEP)+
+     &    +VSRCF(ICOMP))*3600./(2.0*NTSTEP)+
      &    (VCIP(ICOMP)*GEXTP+VCCP(ICOMP)+VCMP(ICOMP)+VCLGP(ICOMP)
-     &    +VSRCP(ICOMP))*3600./(2*NTSTEP) -GPA(ICOMP)*VCLP(ICOMP)
+     &    +VSRCP(ICOMP))*3600./(2.0*NTSTEP) -GPA(ICOMP)*VCLP(ICOMP)
      &    *3600./(2.*NTSTEP)
      &    -GFA(ICOMP)*VCLF(ICOMP)*3600./(2.*NTSTEP)
           WRITE(OUTS,'(A,F10.5)') 'Total in - total out (kg)',RHS2
@@ -2195,12 +2199,12 @@ C Calculate amount of moisture (kg) to remove if dehumidification required.
             GFA(ICOMP)=GCTU
 C Check that the maximum dehumidification is not exceeded (kg).
 C ADDMOIST will be negative for dehumidification.   
-            IF(ADDMOIST.LT.RHDC(ICOMP)*3600/NTSTEP) THEN
+            IF(ADDMOIST.LT.RHDC(ICOMP)*3600.0/NTSTEP) THEN
 
 C At the maximum dehumidification, so undertake moisture mass balance with this quantity of moisture removed.
-              GFA(ICOMP)=(RHDC(ICOMP)*3600/NTSTEP+RHS)/
+              GFA(ICOMP)=(RHDC(ICOMP)*3600.0/NTSTEP+RHS)/
      &                   (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
-              ADDMOIST=RHDC(ICOMP)*3600/NTSTEP
+              ADDMOIST=RHDC(ICOMP)*3600.0/NTSTEP
         ENDIF
 C Enthalpy for final moisture content (J/kg). 
             ENTHCT=ENTHP2(TFA(ICOMP),GFA(ICOMP))*1000.
@@ -2208,7 +2212,7 @@ C Enthalpy if  humidification had not been applied.
             ENTHUC=ENTHP2(TFA(ICOMP),GFA(ICOMP)
      &             -ADDMOIST/ZMDAF(ICOMP))*1000.
 C Calculate the latent addition/extraction (W).
-            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)/(3600/NTSTEP)
+            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)/(3600.0/NTSTEP)
 
           ELSEIF(GFA(ICOMP).LT.GCTL)THEN  
             ADDMOIST=GCTL*(ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
@@ -2217,12 +2221,12 @@ C Calculate the latent addition/extraction (W).
 
 C Check that the maximum humidification is not exceeded (kg).
 C ADDMOIST will be positive for humidification.   
-            IF(ADDMOIST.GT.RHHC(ICOMP)*3600/NTSTEP) THEN
+            IF(ADDMOIST.GT.RHHC(ICOMP)*3600.0/NTSTEP) THEN
 
 C At the maximum humidification, so undertake moisture mass balance with this quantity of moisture added.
-              GFA(ICOMP)=(RHHC(ICOMP)*3600/NTSTEP+RHS)/
+              GFA(ICOMP)=(RHHC(ICOMP)*3600.0/NTSTEP+RHS)/
      &                   (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./(2.*NTSTEP))
-              ADDMOIST=RHHC(ICOMP)*3600/NTSTEP
+              ADDMOIST=RHHC(ICOMP)*3600.0/NTSTEP
             ENDIF
 C Enthalpy for final moisture content (J/kg) 
             ENTHCT=ENTHP2(TFA(ICOMP),GFA(ICOMP))*1000.
@@ -2230,7 +2234,7 @@ C Enthalpy if  humidification had not been applied
             ENTHUC=ENTHP2(TFA(ICOMP),GFA(ICOMP)
      &             -ADDMOIST/ZMDAF(ICOMP))*1000.
 C Calculate the latent addition/extraction (W)
-            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)/(3600/NTSTEP)
+            ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)/(3600.0/NTSTEP)
           ENDIF
       ELSE
           ZLLDF(ICOMP)=0.0

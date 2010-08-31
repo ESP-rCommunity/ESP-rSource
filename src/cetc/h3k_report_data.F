@@ -59,11 +59,12 @@ C
 C**********************************************************************************************
 
       SUBROUTINE H3K_transport_build_data(iZone)
+      USE AIM2_CalcData, ONLY:AIM2_infil_to_zones
+
       IMPLICIT NONE
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
-#include "aim2_common.h"
 #include "control.h"
 C.....Passed variable
       integer iZone            ! Zone number
@@ -369,6 +370,9 @@ C.....Sky temperature and cloud cover; ground temperature,
       COMMON/ELWE3/GTP(6),GTF(6),QGLP,QGLF,QGGP,QGGF,GC(6,4),
      &TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH,
      &TBSUTH,TBEAST,TBWEST
+
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: IUOUT,IUIN
 
       REAL GTP,GTF,QGLP,QGLF,QGGP,QGGF,GC
       REAL TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH
@@ -779,8 +783,13 @@ C-----------------------------------------------------------------------
         endif INF_is_zone_heated
 
 C.....Collect zone air-changes/hour
+        IF (ALLOCATED(AIM2_infil_to_zones)) THEN
       fZoneInfiltrationACH = AIM2_infil_to_zones(iZone) / VOL(iZone)
      &                          * 3600.0
+        ELSE
+          CALL EDISP(IUOUT,
+     &       ' Warning: AIM2_infil_to_zones array not allocated')
+        END IF
 
 
 C-----------------------------------------------------------------------

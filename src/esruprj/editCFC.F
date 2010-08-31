@@ -77,9 +77,9 @@ C ********************************************************************
       integer ne,nairg,ipairg
       real rairg
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
 
       integer IER,IS,icomp,icn1,ncfccount,igap,ie
       integer nmaxtypes,ntypes,icfctp,isame,iss,ncfctypes,i,icount
@@ -1955,7 +1955,7 @@ C first day type requested
       do 60 IP=1,n_ctl_periods(icomp,icfctype,IDAY)
         do 65 IHR=i_ctl_start(icomp,icfctype,IDAY,IP),
      &            i_ctl_end(icomp,icfctype,IDAY,IP)-1
-          TACI(IHR+1)=i_shdONorOFF(icomp,icfctype,IDAY,IP)
+          TACI(IHR+1)=real(i_shdONorOFF(icomp,icfctype,IDAY,IP))
           TACV(IHR+1)=slat_angle(icomp,icfctype,IDAY,IP)
  65     continue
  60   continue
@@ -1990,7 +1990,7 @@ C second day type requested
       do 160 IP=1,n_ctl_periods(icomp,icfctype,JDAY)
        do 165 IHR=i_ctl_start(icomp,icfctype,JDAY,IP),
      &            i_ctl_end(icomp,icfctype,JDAY,IP)-1
-          TACI(IHR+1)=i_shdONorOFF(icomp,icfctype,JDAY,IP)
+          TACI(IHR+1)=real(i_shdONorOFF(icomp,icfctype,JDAY,IP))
           TACV(IHR+1)=slat_angle(icomp,icfctype,JDAY,IP)
  165    continue
  160  continue
@@ -2026,7 +2026,7 @@ C third day type requested
       do 260 IP=1,n_ctl_periods(icomp,icfctype,KDAY)
        do 265 IHR=i_ctl_start(icomp,icfctype,KDAY,IP),
      &            i_ctl_end(icomp,icfctype,KDAY,IP)-1
-          TACI(IHR+1)=i_shdONorOFF(icomp,icfctype,KDAY,IP)
+          TACI(IHR+1)=real(i_shdONorOFF(icomp,icfctype,KDAY,IP))
           TACV(IHR+1)=slat_angle(icomp,icfctype,KDAY,IP)
  265    continue
  260  continue

@@ -34,6 +34,9 @@ C Control editing of system configuration file and allow updated
 C information to be saved into a new file. ITRU unit number for user 
 C output; IER=0 indicates no error. 
       subroutine edcfg(ITRC,ITRU,IER)
+      
+      USE AIM2_Inputs, ONLY : AIM2_Interface
+      
 #include "building.h"
 #include "model.h"
 
@@ -71,7 +74,7 @@ C LPRFDB,IPRODB (for event profile database)
       common/uhome/upath
       common/CFGV/icfgv
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
 C Plant network.
       common/C23/IFPNF,LPNF
@@ -124,9 +127,9 @@ C Uncertainty.
       character NDNAM*12,LFIL*72
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24,tmode*8,doit*248
+      character docpth*24,tmppth*24,dbspth*24,bsmpth*24,tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,entflnam*72,upath*72
+      character selres*72,entflnam*72,upath*72,aimpth*24
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
       character CXITM*43,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
@@ -185,6 +188,15 @@ C are active.
       else
         ITEMS(8)='d plant & systems            '
       endif
+
+C Check flags for air flow type
+      IF ((iairn.lt.1).AND.(iAIM2.EQ.0)) THEN
+        IF (iAIM2.EQ.1) THEN
+          ITEMS(9)='e empirical air infiltration'
+        ELSE 
+          ITEMS(9)='e air flow                  '
+        ENDIF
+      ELSE
       if(iairn.eq.1)then
         ITEMS(9)='e network flow (menu)       '
       elseif(iairn.eq.2)then
@@ -192,6 +204,7 @@ C are active.
       else
         ITEMS(9)='e network flow              '
       endif
+      ENDIF
       if(ientxist.gt.0)then
         ITEMS(10)='f electrical (defined)      '
       else
@@ -596,6 +609,40 @@ C If an error has been encountered then reset the configuration type.
       ELSEIF(INO.EQ.9)THEN
 
 C Flow description.
+        H(1)='Air flow can be modelled using an empirical air'
+        H(2)='infiltration model, sheduling flow by prescribing'
+        H(3)='flowrates and imposing controls or by defining a'
+        H(4)='detailed air flow network.'
+        H(5)=''
+        H(6)='The Alberta Air Infiltration Model (AIM-2) is used '
+        H(7)='to describe the empirical air infilration model.'
+        H(8)=''
+        H(9)='It is possible to schedule air flowing from the'
+        H(10)='outside (infiltration) and from specified zones or'
+        H(11)='plant components (ventilation). This is sometimes'
+        H(12)='appropriate at an early design stage and for flow'
+        H(13)='problems of limited complexity.'
+        H(14)=' '
+        H(15)='The flow network approach employs flow components'
+        H(16)='(doors, cracks, ducts, fans etc.) to explicitly'
+        H(17)='represent the distributed flow paths. This approach'
+        H(18)='requires significantly more defining information.'
+        H(19)='(A related facility, described elsewhere, allows'
+        H(20)='a CFD domain to be linked to this flow network so'
+        H(21)='that intra-zone flows can be evaluated under the'
+        H(22)='influence of the above flow network.)'
+        H(23)=' '
+        H(24)='Flow networks may be defined by selecting components'
+        H(25)='from a menu or by graphical manipulation.'
+
+        CALL EASKABC(' ','Define air flow via:',
+     &       'empirical air inflitration model','network flow',
+     &       'cancel',IW,25)
+C Use AIM2 interface     
+        airflowtype: IF(IW.EQ.1)THEN
+          CALL AIM2_Interface()
+        ELSE IF(IW.EQ.2)THEN airflowtype 
+C  Use exsisting functionality for network flow
         H(1)='It is possible to schedule air flowing from the'
         H(2)='outside (infiltration) and from specified zones or'
         H(3)='plant components (ventilation). This is sometimes'
@@ -610,20 +657,17 @@ C Flow description.
         H(12)='a CFD domain to be linked to this flow network so'
         H(13)='that intra-zone flows can be evaluated under the'
         H(14)='influence of the above flow network.)'
-        H(14)=' '
-        H(14)='Flow networks may be defined by selecting components'
-        H(14)='from a menu or by graphical manipulation.'
-        if(iairn.eq.1)then
-          call edisp(iuout,'Flow network (menu).')
-        elseif(iairn.eq.2)then
-          call edisp(iuout,'Flow network (graphic).')
-        else
-          call edisp(iuout,'No network defined.')
-        endif
+          H(16)=' '
+          H(17)='Flow networks may be defined by selecting components'
+          H(18)='from a menu or by graphical manipulation.'
+          CALL EASKABCD(' ','Define network flow via:',
+     &       'schedule','flow network (menu)','flow network (graphic)',
+     &       'cancel',IW,18)
+          IF(IW.EQ.1)THEN
 
         CALL EASKABCD(' ','Define air flow via:',
      &       'schedule','flow network (menu)','flow network (graphic)',
-     &       'cancel',IW,14)
+     &       'cancel',IW,18)
         IF(IW.EQ.1)THEN
 
 C Operation file creation and editing. Set IVER to zero to signal
@@ -651,15 +695,17 @@ C unix and non-unix machine types).
           if(LAPROB(1:2).eq.'  '.or.LAPROB(1:4).eq.'UNKN')then
             if(unixok)then
               if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
-                WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.gnf'
+                    WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),
+     &               '.gnf'
               else
                 WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
      &          cfgroot(1:lnblnk(cfgroot)),'.gnf'
               endif
             else
-              if(netpth(1:2).eq.'  '.or.(ichar(netpth(1:1)).eq.46.and.
-     &           ichar(netpth(2:2)).eq.92))then
-                WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.gnf'
+                  if(netpth(1:2).eq.'  '.or.(ichar(netpth(1:1)).eq.46
+     &              .and.ichar(netpth(2:2)).eq.92))then
+                    WRITE(LAPROB,'(2a)')cfgroot(1:lnblnk(cfgroot)),
+     &                   '.gnf'
               else
                 WRITE(LAPROB,'(4a)') netpth(1:lnblnk(netpth)),fs,
      &          cfgroot(1:lnblnk(cfgroot)),'.gnf'
@@ -675,7 +721,8 @@ C passing a black string to erprcdeb. Write to unit number 42.
           t144='  '
           CALL ERPRCDB(t144,0,3,IER)
           if (ier.ne.0) THEN
-            CALL EDISP(IUOUT,'Error opening pressure coefficients db!.')
+                CALL EDISP(IUOUT,
+     &            'Error opening pressure coefficients db!.')
             call edisp(iuout,' ')
             goto 3
           endif 
@@ -685,17 +732,19 @@ C passing a black string to erprcdeb. Write to unit number 42.
           CALL EFOPSEQ(42,ltmp,4,IER)
           tab=','
           call dstamp(dstmp)
-          write(42,'(3a)',iostat=ios,err=13) '*Synopsis',tab,'for_flow'
+              write(42,'(3a)',iostat=ios,err=13) '*Synopsis',tab,
+     &		'for_flow'
           write(42,'(3a)',iostat=ios,err=13) '*Date',tab,dstmp
           write(42,'(3A)',iostat=ios,err=13) '*cfg',tab,
      &      LCFGF(1:lnblnk(LCFGF))
-          write(42,'(2a,i3)',iostat=ios,err=13) '*Pressures',tab,NPRE
+              write(42,'(2a,i3)',iostat=ios,err=13) '*Pressures',tab,
+     &		NPRE
           do 201 IM=1,NPRE
             write(42,'(a)') DEPRE(IM)
   201     continue
           write(42,'(a)',iostat=ios,err=13) '*End_Pressures'
-          write(42,'(2a,i3,a)',iostat=ios,err=13) '*Zones',tab,NCOMP,
-     &      ' # name, volume, centre @ XYZ'
+              write(42,'(2a,i3,a)',iostat=ios,err=13) '*Zones',tab,
+     &           NCOMP,' # name, volume, centre @ XYZ'
           do 97 IZ=1,NCOMP
             write(outsn,'(a,1x,f7.1,3f8.3)') 
      &      zname(IZ),VOL(IZ),ZCOG(IZ,1),ZCOG(IZ,2),ZCOG(IZ,3)
@@ -849,11 +898,12 @@ C Link nodes and zones.
 C Save the configuration file so that connections and graphic mass flow
 C network are know.
           dok=.true.
-          h(1)='You have been working on an independant description of'
-          h(2)='a flow network. To use it in a simulation you need to'
-          h(3)='associate it with zones in the current model.'
+            h(1)='You have been working on an independant description'
+            h(2)='of a flow network. To use it in a simulation you '
+            h(3)='need to associate it with zones in the current' 
+            h(4)='model.'
           CALL ASKOK('Save graphic flow network links to zones',
-     &      'in the configuration file?',OK,dok,3)
+     &        'in the configuration file?',OK,dok,4)
           IF(OK)then
             IAIRN=2
             LAPROB=NWKFLNAM
@@ -870,6 +920,10 @@ C          call tstamp('>','PRJ: export to java agent')
 C          doit = '/usr/esru/bin/flow_agent.sh'
 C          call runit(doit,'-')
         endif
+        ENDIF
+        ELSEIF(IW.EQ.3)THEN airflowtype
+         GOTO 3 
+        END IF airflowtype
       ELSEIF(INO.EQ.10)THEN
 
 C Electrical network description.
@@ -1181,7 +1235,7 @@ C output, IER=0 indicates no error.
 
       common/user/browse
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       common/appw/iappw,iappx,iappy
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -1241,7 +1295,7 @@ C Flag noting whether casual gain periods are currently sorted.
       character outs*124,outs248*248,cfgroot*24
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
       character HOLD*32,zd*64
       character lworking*144
       CHARACTER ETEXT*82
@@ -4016,7 +4070,7 @@ C      common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
       common/appw/iappw,iappx,iappy
       common/user/browse
       logical concat,OK,DOK,browse,XST,deref,unixok
@@ -4024,7 +4078,8 @@ C      common/OUTIN/IUOUT,IUIN
       character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
       character doit*124,tmode*8,H*72,act_1*1
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24,fs*1
-      character docpth*24,tmppth*24,dbspth*24,longtfile*124
+      character docpth*24,tmppth*24,dbspth*24,longtfile*124,aimpth*24,
+     &          bsmpth*24
       character brw*8   ! to signal model is being browsed
 #ifdef OSI
       integer ICPMOD     ! passed from tchild

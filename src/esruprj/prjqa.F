@@ -27,6 +27,14 @@ C ************ prjqa
 C Prjqa writes out a QA report (to screen or file) for
 C the current model.
       subroutine prjqa(ier)
+C AIM-2.
+C IAIM2 set to 1 if AIM-2 infiltration model active.
+C LAIM2 (72 char) file holding AIM-2 infiltration model data.
+C      common/aim2def/iAIM2,LAIM2
+
+      USE AIM2_InputData, ONLY:iAIM2,LAIM2
+      USE AIM2, ONLY:AIM2_READIN, AIM2_report
+      
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -86,8 +94,6 @@ C LPNF (72 char) plant network file name.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
-C AIM-2.
-      common/aim2def/iAIM2,LAIM2
 
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
@@ -178,7 +184,6 @@ C Remember if each zone is fully attributed.
       character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
       character uname*24,pwd*40
-      character LAIM2*72
       character ipvaction*3  ! signal that external ipv file
       character MLCSYM*12
       character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname

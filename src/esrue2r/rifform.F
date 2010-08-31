@@ -30,7 +30,7 @@ C ******* Setup of image quality and calculation options.
       common/pophelp/h(60)
       common/expath/runpath,pathtype
       common/paths/zonepth,netpth,ctlpth,imgpth,radpth,docpth,tmppth,
-     &             dbspth
+     &             dbspth,aimpth,bsmpth
 
       CHARACTER doit*124,VALT*32
       character runpath*72,pathtype*24
@@ -38,7 +38,7 @@ C ******* Setup of image quality and calculation options.
       character fil*80
       character ltmp*72,ltmp60*60
       character zonepth*24,netpth*24,ctlpth*24,imgpth*24,radpth*24
-      character docpth*24,tmppth*24,dbspth*24
+      character docpth*24,tmppth*24,dbspth*24,aimpth*24,bsmpth*24
 
       DIMENSION ITEM(24),IVALV(20),VALT(20)
 

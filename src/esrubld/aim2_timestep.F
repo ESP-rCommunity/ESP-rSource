@@ -102,15 +102,13 @@ C OUTPUTS:
 C    ZONE_infil_cond  The zone's infiltration, expressed in terms of
 C                     a conductance (W/K).
 C --------------------------------------------------------------------------------
-
+      MODULE AIM2_TIMESTEP
+      USE AIM2
+      CONTAINS
       SUBROUTINE AIM2_CONTROL(ICOMP,ZONE_infil_cond)
-C      USE AIM2_CALC_DATA
-C      USE HVAC_CALC_DATA
+
 
       IMPLICIT NONE
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 
 
@@ -230,7 +228,7 @@ C to the HOT3000 interface.
 
 C Completion of the infiltration calculations for this zone, this time-step.
       RETURN
-      END
+      END SUBROUTINE AIM2_CONTROL
 
 
 C ********************************************************************************
@@ -277,15 +275,10 @@ C    AIM2_Cflue  The flue leakage coefficient (m^3/s/Pa^1/n).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_FLUELEAK(inf_regime,AIM2_Cflue)
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
-C      USE AIM2_H2K_DUMMY
 
       IMPLICIT NONE
 
 #include "building.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       REAL TFA,QFA
@@ -371,7 +364,7 @@ C m^3/(s Pa^n) where `n' is the flow exponent (dimensionless).
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_FLUELEAK
 
 
 C ********************************************************************************
@@ -402,13 +395,8 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_C_R_X_Y(AIM2_Cflue,AIM2_Ctotal,AIM2_Y,AIM2_R,
      &                        AIM2_X)
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 C Type declarations for variables passed in calling statement.
       REAL AIM2_Cflue,AIM2_Ctotal,AIM2_Y,AIM2_R,AIM2_X
@@ -431,7 +419,7 @@ C (Beausoleil-Morrison 2000, eq 14).
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_C_R_X_Y
 
 
 C ********************************************************************************
@@ -457,13 +445,9 @@ C    AIM2_Fs  The stack flow factor (dimensionless).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_stack_flowF(AIM2_Y,AIM2_R,AIM2_X,AIM2_Fs)
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 C Type declarations for variables passed in calling statement.
       REAL AIM2_Y,AIM2_R,AIM2_X,AIM2_Fs
@@ -503,7 +487,7 @@ C Note that this reduces to Walker & Wilson eq 9 when there is no flue.
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_stack_flowF
 
 
 C ********************************************************************************
@@ -530,14 +514,10 @@ C    AIM2_Ps  The stack effect reference pressure (Pa).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_stack_pressure(AIM2_Ps)
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
 #include "building.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
@@ -580,7 +560,7 @@ C warmer outside produced nearly identical results.
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_stack_pressure
 
 
 C ********************************************************************************
@@ -606,12 +586,8 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_stack_infil(AIM2_Ctotal,AIM2_Fs,AIM2_Ps,
      &                            AIM2_Qstack)
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 
 C Declarations for variables passed in calling statement.
@@ -625,7 +601,7 @@ C these other effects to calculate the actual infiltration to the house.
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_stack_infil
 
 
 C ********************************************************************************
@@ -650,12 +626,8 @@ C    AIM2_Fw  The wind flow factor (dimensionless).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_wind_flowF(AIM2_Y,AIM2_R,AIM2_X,AIM2_Fw)
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 C Type declarations for variables passed in calling statement.
       REAL AIM2_Y,AIM2_R,AIM2_X,AIM2_Fw
@@ -715,7 +687,7 @@ C       Note that this reduces to Walker & Wilson eq 16 when there is no flue.
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_wind_flowF
 
 
 C ********************************************************************************
@@ -739,12 +711,8 @@ C    AIM2_Sw  The local wind shelter coefficient (dimensionless).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_wind_shelter(AIM2_Y,AIM2_Sw)
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 
 C Type declarations for variables passed in calling statement.
@@ -756,7 +724,7 @@ C Walker & Wilson (1990, p17).
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_wind_shelter
 
 
 C ********************************************************************************
@@ -781,13 +749,9 @@ C    AIM2_Pw  The wind effect reference pressure (Pa).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_wind_pressure(AIM2_Sw,AIM2_Pw)
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF, HP, HF
@@ -814,7 +778,7 @@ C Walker & Wilson (1990, p9).
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_wind_pressure
 
 
 C ********************************************************************************
@@ -839,12 +803,8 @@ C    AIM2_Qwind  The air flow induced by the wind effect (m^3/s).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_wind_infil(AIM2_Ctotal,AIM2_Fw,AIM2_Pw,AIM2_Qwind)
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"
-#include "aim2_common.h"
 
 C Declarations for variables passed in calling statement.
       REAL AIM2_Ctotal,AIM2_Fw,AIM2_Pw,AIM2_Qwind
@@ -857,7 +817,7 @@ C these other effects to calculate the actual infiltration to the house.
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_wind_infil
 
 
 C ********************************************************************************
@@ -886,13 +846,8 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_stack_plus_wind(AIM2_Qstack,AIM2_Qwind,
      &                                AIM2_natural)
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 
 C Declarations for variables passed in calling statement.
@@ -913,7 +868,7 @@ C actual air flow from outdoors to the house.
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_stack_plus_wind
 
 
 C ********************************************************************************
@@ -951,7 +906,7 @@ C is balanced. Refer to Bradley (1993, p8-9).
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_mechanical
 
 
 C ********************************************************************************
@@ -979,12 +934,8 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_comb_nat_mech(AIM2_natural,AIM2_unbal_mech,
      &                              AIM2_total)
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 
 C Declarations for variables passed in calling statement.
@@ -1006,7 +957,7 @@ C Calculate the net air flow using the Kiel-Wilson approach (m^3/s).
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_comb_nat_mech
 
 
 C ********************************************************************************
@@ -1050,7 +1001,7 @@ C Then calculate the contribution to the average air flow rate over the time-ste
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_sumover_DT
 
 
 C ********************************************************************************
@@ -1080,18 +1031,17 @@ C    AIM2_infil_to_zones(i)  The infiltration rate (m^3/s) apportioned to zone `
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_split2zones(AIM2_total)
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
 #include "building.h"
 #include "geometry.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: IUOUT,IUIN
 
 C Declarations for variables passed in calling statement.
       REAL AIM2_total
@@ -1103,24 +1053,28 @@ C Declarations for local variables.
 C Apportion infiltration to each zone. For now just distribute the air flow
 C in proportion to each room's volume. The basement should be treated somewhat
 C differently in the future.
-      DO ICOMP=1,NCOMP                    ! Examine each zone in the model.
-        AIM2_infil_to_zones(ICOMP) = 0.   ! Initialize infil to zone.
+      IF (ALLOCATED(AIM2_zone_infil).AND.
+     &    ALLOCATED(AIM2_infil_to_zones)) THEN
 
-        do i=1,AIM2_num_zones_infil                             ! Check if there is infil to this zone.
+        DO ICOMP=1,NCOMP                    ! Examine each zone in the model.
+	  AIM2_infil_to_zones(ICOMP) = 0.       ! Initialize infil to zone.
+          DO i=1,AIM2_num_zones_infil       ! Check if there is infil to this zone.
 c Note: Not including the crawl space BB
-          if( AIM2_zone_infil(i) .eq. ICOMP .and. 
+            if( AIM2_zone_infil(i) .eq. ICOMP .and. 
      &          ICOMP .ne. AIM2_CrawlSpace_zone )then
-            AIM2_infil_to_zones(ICOMP) =                        ! There is infil to this zone:
-     &                   VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate.
-            exit                                                ! Processing of this zone complete.
-          endif
-        end do
-
-      END DO
+              AIM2_infil_to_zones(ICOMP) =                        ! There is infil to this zone:
+     &                 VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate.
+              exit                                                ! Processing of this zone complete.
+            endif
+          end do
+        END DO
+      ELSE
+	CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated')
+      END IF
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_split2zones
 
 
 C ********************************************************************************
@@ -1146,14 +1100,12 @@ C                     a conductance (W/K).
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_airflow_to_conduct(ICOMP,ZONE_infil_cond)
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
-#include "building.h" ! for MCOM in aim2_common.h
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF, HP, HF
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: IUOUT,IUIN
 
 C Type declarations for variables passed in calling statement.
       REAL ZONE_infil_cond
@@ -1173,11 +1125,16 @@ C range of outdoor air temperatures (-30oC to +30oC).
 
 C Express the infiltration air flow rate in terms of a conductance between the
 C indoor-outdoor temperature difference.
-      ZONE_infil_cond = AIM2_infil_to_zones(ICOMP) * rho * Cp
+      IF (ALLOCATED(AIM2_infil_to_zones)) THEN
+        ZONE_infil_cond = AIM2_infil_to_zones(ICOMP) * rho * Cp
+      ELSE
+        CALL EDISP(IUOUT,
+     &        ' Warning: AIM2_infil_to_zones array not allocated')
+      END IF
 
 
       RETURN
-      END
+      END SUBROUTINE AIM2_airflow_to_conduct
 
 
 C ********************************************************************************
@@ -1197,18 +1154,17 @@ C    AIM2_infil_to_zones(i)  The infiltration rate (m^3/s) apportioned to zone `
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_inf2attic
-C      USE AIM2_INPUT_DATA
-C      USE AIM2_CALC_DATA
 
       IMPLICIT NONE
 
 #include "building.h"
 #include "geometry.h"
-#include "aim2_parameters.h"      
-#include "aim2_common.h"
 
 C Declarations for local variables.
       REAL attic_ach
+
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: IUOUT,IUIN
 
 C If user has specified that one of the zones in the model is an attic, then
 C set the infiltration rate for the attic. IF an attic has not been specified,
@@ -1222,11 +1178,16 @@ C model. Sensitivity tests showed that this has only a minor impact on the heati
 C although a significant impact on the zone air temperature in the attic. A more refined
 C treatment should be used in the future.
         attic_ach = 0.5
-        AIM2_infil_to_zones(AIM2_attic_zone) =
+      
+        IF (ALLOCATED(AIM2_infil_to_zones)) THEN
+           AIM2_infil_to_zones(AIM2_attic_zone) =
      &             attic_ach * VOL(AIM2_attic_zone) / 3600.
-
-
+        ELSE
+	  CALL EDISP(IUOUT,
+     &         ' Warning: AIM2_infil_to_zones array not allocated')
+        END IF
       END IF
 
       RETURN
-      END
+      END SUBROUTINE AIM2_inf2attic
+      END MODULE AIM2_TIMESTEP
